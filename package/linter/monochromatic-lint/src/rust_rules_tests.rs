@@ -25,10 +25,18 @@ fn max_lines_preserves_boundaries_message_and_severity() {
     assert_eq!(findings.len(), 1);
     assert_eq!(findings[0].code, "rust/max-lines");
     assert_eq!(findings[0].severity, Severity::Warn);
-    assert_eq!(findings[0].message, "file has 3 code lines, limit is 2 (blank and comment lines excluded)");
+    assert_eq!(
+        findings[0].message,
+        "file has 3 code lines, limit is 2 (blank and comment lines excluded)"
+    );
     assert_eq!(findings[0].labels[0].span.line, 5);
     assert_eq!(findings[0].filename, "fixture.rs");
-    assert_eq!(check_max_lines(&source, 0, Severity::Error)[0].labels[0].span.line, 2);
+    assert_eq!(
+        check_max_lines(&source, 0, Severity::Error)[0].labels[0]
+            .span
+            .line,
+        2
+    );
 }
 
 /// Every listed kind has a concrete source fixture rather than relying on one function case.
@@ -55,7 +63,12 @@ fn documentation_kind_catalog_is_exercised() {
         let input = context(format!("//! file docs\n{source}").as_str());
         let expected = format!("Missing rustdoc on {label}.");
         let findings = check_rustdoc(&input, Severity::Error);
-        assert!(findings.iter().any(|finding| return finding.message == expected), "{source}: missing expected {expected}");
+        assert!(
+            findings
+                .iter()
+                .any(|finding| return finding.message == expected),
+            "{source}: missing expected {expected}"
+        );
     }
     let empty = check_rustdoc(&context(""), Severity::Error);
     assert_eq!(empty.len(), 1);
@@ -71,10 +84,21 @@ fn only_real_doc_comments_satisfy_documentation() {
     ] {
         assert!(check_rustdoc(&context(source), Severity::Error).is_empty());
     }
-    let findings = check_rustdoc(&context("// ordinary\n// rust-linter-disable-next-line\nfn f() {}"), Severity::Warn);
+    let findings = check_rustdoc(
+        &context("// ordinary\n// rust-linter-disable-next-line\nfn f() {}"),
+        Severity::Warn,
+    );
     assert_eq!(findings.len(), 2);
-    assert!(findings.iter().all(|finding| return finding.severity == Severity::Warn));
-    assert!(findings.iter().all(|finding| return finding.labels[0].span.line == 3));
+    assert!(
+        findings
+            .iter()
+            .all(|finding| return finding.severity == Severity::Warn)
+    );
+    assert!(
+        findings
+            .iter()
+            .all(|finding| return finding.labels[0].span.line == 3)
+    );
 }
 
 /// Macro invocations and extern blocks are excluded, but their documentable foreign items remain covered.
@@ -85,16 +109,28 @@ fn unsatisfiable_macro_and_extern_block_docs_are_not_required() {
     let foreign = context("//! file\nunsafe extern \"C\" { fn foreign(); static VALUE: u8; }");
     let findings = check_rustdoc(&foreign, Severity::Error);
     assert_eq!(findings.len(), 2);
-    assert!(findings.iter().any(|finding| return finding.message == "Missing rustdoc on function \"foreign\"."));
-    assert!(findings.iter().any(|finding| return finding.message == "Missing rustdoc on static \"VALUE\"."));
+    assert!(
+        findings
+            .iter()
+            .any(|finding| return finding.message == "Missing rustdoc on function \"foreign\".")
+    );
+    assert!(
+        findings
+            .iter()
+            .any(|finding| return finding.message == "Missing rustdoc on static \"VALUE\".")
+    );
 }
 
 /// cxx-qt exempts imports and trait-impl members, not inherent methods.
 #[test]
 fn cxx_qt_carve_out_is_scoped_to_the_established_items() {
-    let bridge = context("//! file\nuse cxx_qt_lib::QString;\n/// S\nstruct S;\n/// impl\nimpl Default for S { fn default() -> Self { S } }");
+    let bridge = context(
+        "//! file\nuse cxx_qt_lib::QString;\n/// S\nstruct S;\n/// impl\nimpl Default for S { fn default() -> Self { S } }",
+    );
     assert!(check_rustdoc(&bridge, Severity::Error).is_empty());
-    let inherent = context("//! file\nuse cxx_qt::Thing;\n/// S\nstruct S;\n/// impl\nimpl S { fn work() {} }");
+    let inherent = context(
+        "//! file\nuse cxx_qt::Thing;\n/// S\nstruct S;\n/// impl\nimpl S { fn work() {} }",
+    );
     let findings = check_rustdoc(&inherent, Severity::Error);
     assert_eq!(findings.len(), 1);
     assert_eq!(findings[0].message, "Missing rustdoc on function \"work\".");
@@ -108,7 +144,11 @@ fn comments_and_strings_cannot_enable_cxx_qt_exemptions() {
         "//! file\n/// text\nconst TEXT: &str = \"cxx_qt_lib\";\nuse other::Thing;",
     ] {
         let findings = check_rustdoc(&context(source), Severity::Error);
-        assert!(findings.iter().any(|finding| return finding.message == "Missing rustdoc on use."));
+        assert!(
+            findings
+                .iter()
+                .any(|finding| return finding.message == "Missing rustdoc on use.")
+        );
     }
 }
 

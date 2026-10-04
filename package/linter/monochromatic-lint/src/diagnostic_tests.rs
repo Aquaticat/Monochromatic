@@ -7,14 +7,22 @@
 //! ```
 
 /// Import the production model, renderer and internal fix type.
-use super::{render, Diagnostic, Severity, Span};
+use super::{Diagnostic, Severity, Span, render};
 use crate::edits::{Edit, Fix};
 
 /// One finding with a source span whose fields are deliberately distinct.
 fn fixture() -> Diagnostic {
     return Diagnostic::new(
-        "rust/max-lines", Severity::Error, String::from("message"), String::from("file.rs"),
-        Span { offset: 7, length: 3, line: 2, column: 4 },
+        "rust/max-lines",
+        Severity::Error,
+        String::from("message"),
+        String::from("file.rs"),
+        Span {
+            offset: 7,
+            length: 3,
+            line: 2,
+            column: 4,
+        },
     );
 }
 
@@ -22,7 +30,13 @@ fn fixture() -> Diagnostic {
 #[test]
 fn stable_shape_omits_absent_hints_and_internal_fix() {
     let mut finding = fixture();
-    finding.fix = Some(Fix { edits: vec![Edit { start: 0, end: 1, replacement: String::from("x") }] });
+    finding.fix = Some(Fix {
+        edits: vec![Edit {
+            start: 0,
+            end: 1,
+            replacement: String::from("x"),
+        }],
+    });
     let output = render(&[finding]).expect("serialize finding");
     let value: serde_json::Value = serde_json::from_str(output.as_str()).expect("strict JSON");
     assert_eq!(value["code"], "rust/max-lines");

@@ -6,10 +6,10 @@
 //! // JSONL carries diagnostic fields; Fix stays internal to the fixing pipeline.
 //! ```
 
+use crate::edits::Fix;
 /// What: Import Serde's field encoder and the internal atomic-fix model.
 /// Why: The existing JSON encoder handles quotes, controls and Unicode at the output boundary.
 use serde::Serialize;
-use crate::edits::Fix;
 
 /// What: Severities that can appear in a reported finding.
 /// Why: Off is configuration, not a third kind of diagnostic.
@@ -103,10 +103,24 @@ pub struct Diagnostic {
 /// ```
 impl Diagnostic {
     /// Create a finding with no optional hints or fix.
-    pub fn new(code: &str, severity: Severity, message: String, filename: String, span: Span) -> Diagnostic {
+    pub fn new(
+        code: &str,
+        severity: Severity,
+        message: String,
+        filename: String,
+        span: Span,
+    ) -> Diagnostic {
         return Diagnostic {
-            message, code: String::from(code), severity, causes: [], filename,
-            labels: vec![Label { span }], related: [], url: None, help: None, fix: None,
+            message,
+            code: String::from(code),
+            severity,
+            causes: [],
+            filename,
+            labels: vec![Label { span }],
+            related: [],
+            url: None,
+            help: None,
+            fix: None,
         };
     }
 }

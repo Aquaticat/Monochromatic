@@ -13,9 +13,12 @@ use crate::diagnostic::Span;
 /// Blank and comment-only lines do not count, while string contents remain code.
 #[test]
 fn real_lexer_distinguishes_comments_from_string_contents() {
-    let source = RustSource::new(String::from("input.rs"), String::from(
-        "// comment\n\n/* block\ncomment */\nfn main() {\n  let text = \"// not a comment\";\n}\n",
-    ));
+    let source = RustSource::new(
+        String::from("input.rs"),
+        String::from(
+            "// comment\n\n/* block\ncomment */\nfn main() {\n  let text = \"// not a comment\";\n}\n",
+        ),
+    );
     assert_eq!(source.code_line_count(), 3);
     assert_eq!(source.code_line_at(0), Some(5));
     assert_eq!(source.code_line_at(1), Some(6));
@@ -28,7 +31,10 @@ fn real_lexer_distinguishes_comments_from_string_contents() {
 /// Every physical line in a multiline literal counts, including its internally blank line.
 #[test]
 fn multiline_literals_count_every_touched_line() {
-    let source = RustSource::new(String::from("input.rs"), String::from("const TEXT: &str = r#\"one\n\nthree\"#;\n"));
+    let source = RustSource::new(
+        String::from("input.rs"),
+        String::from("const TEXT: &str = r#\"one\n\nthree\"#;\n"),
+    );
     assert_eq!(source.code_line_count(), 3);
 }
 
@@ -37,9 +43,33 @@ fn multiline_literals_count_every_touched_line() {
 fn line_spans_keep_lf_conventions_and_bounds() {
     let source = RustSource::new(String::from("input.rs"), String::from("a\r\nb\n"));
     assert_eq!(source.line_span(0), None);
-    assert_eq!(source.line_span(1), Some(Span { offset: 0, length: 2, line: 1, column: 1 }));
-    assert_eq!(source.line_span(2), Some(Span { offset: 3, length: 1, line: 2, column: 1 }));
-    assert_eq!(source.line_span(3), Some(Span { offset: 5, length: 0, line: 3, column: 1 }));
+    assert_eq!(
+        source.line_span(1),
+        Some(Span {
+            offset: 0,
+            length: 2,
+            line: 1,
+            column: 1
+        })
+    );
+    assert_eq!(
+        source.line_span(2),
+        Some(Span {
+            offset: 3,
+            length: 1,
+            line: 2,
+            column: 1
+        })
+    );
+    assert_eq!(
+        source.line_span(3),
+        Some(Span {
+            offset: 5,
+            length: 0,
+            line: 3,
+            column: 1
+        })
+    );
     assert_eq!(source.line_span(4), None);
 }
 
@@ -47,9 +77,33 @@ fn line_spans_keep_lf_conventions_and_bounds() {
 #[test]
 fn ranges_preserve_byte_columns_and_clamp_underlines() {
     let source = RustSource::new(String::from("input.rs"), String::from("éx\nnext"));
-    assert_eq!(source.span(2, 20), Span { offset: 2, length: 1, line: 1, column: 3 });
-    assert_eq!(source.span(4, 4), Span { offset: 4, length: 4, line: 2, column: 1 });
-    assert_eq!(source.span(20, 4), Span { offset: 20, length: 0, line: 2, column: 17 });
+    assert_eq!(
+        source.span(2, 20),
+        Span {
+            offset: 2,
+            length: 1,
+            line: 1,
+            column: 3
+        }
+    );
+    assert_eq!(
+        source.span(4, 4),
+        Span {
+            offset: 4,
+            length: 4,
+            line: 2,
+            column: 1
+        }
+    );
+    assert_eq!(
+        source.span(20, 4),
+        Span {
+            offset: 20,
+            length: 0,
+            line: 2,
+            column: 17
+        }
+    );
 }
 
 /// Empty and syntactically broken sources still produce queryable recovery trees.
@@ -57,7 +111,15 @@ fn ranges_preserve_byte_columns_and_clamp_underlines() {
 fn empty_and_recovery_trees_do_not_become_parse_findings() {
     let empty = RustSource::new(String::from("empty.rs"), String::new());
     assert_eq!(empty.code_line_count(), 0);
-    assert_eq!(empty.line_span(1), Some(Span { offset: 0, length: 0, line: 1, column: 1 }));
+    assert_eq!(
+        empty.line_span(1),
+        Some(Span {
+            offset: 0,
+            length: 0,
+            line: 1,
+            column: 1
+        })
+    );
     let broken = RustSource::new(String::from("broken.rs"), String::from("fn broken( {"));
     assert_eq!(broken.code_line_count(), 1);
     assert!(!broken.syntax().text().is_empty());

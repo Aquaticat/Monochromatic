@@ -6,12 +6,12 @@
 //! // checkMaxLines(source, limit, severity), checkRustdoc(source, severity)
 //! ```
 
-/// Import the syntax kinds and typed impl/doc-comment views used by the incumbent.
-use ra_ap_syntax::ast::{DocCommentIter, Impl};
-use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode};
 /// Import the new core's source and diagnostic interfaces.
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rust_source::RustSource;
+/// Import the syntax kinds and typed impl/doc-comment views used by the incumbent.
+use ra_ap_syntax::ast::{DocCommentIter, Impl};
+use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode};
 
 /// What: Documentable node kinds paired with their established diagnostic labels.
 /// Why: One fixed table owns both selection and wording; macros and extern blocks remain excluded.
@@ -67,7 +67,9 @@ fn uses_cxx_qt(root: &SyntaxNode) -> bool {
         let NodeOrToken::Token(token) = element else {
             continue;
         };
-        if token.kind() == SyntaxKind::IDENT && (token.text() == "cxx_qt" || token.text() == "cxx_qt_lib") {
+        if token.kind() == SyntaxKind::IDENT
+            && (token.text() == "cxx_qt" || token.text() == "cxx_qt_lib")
+        {
             return true;
         }
     }
@@ -144,10 +146,21 @@ pub fn check_max_lines(context: &RustSource, limit: usize, severity: Severity) -
     if count <= limit {
         return Vec::new();
     }
-    let line = context.code_line_at(limit).expect("an exceeded limit has an offending code line");
-    let span = context.line_span(line).expect("a classified code line has a source span");
-    let message = format!("file has {count} code lines, limit is {limit} (blank and comment lines excluded)");
-    return vec![Diagnostic::new("rust/max-lines", severity, message, context.filename.clone(), span)];
+    let line = context
+        .code_line_at(limit)
+        .expect("an exceeded limit has an offending code line");
+    let span = context
+        .line_span(line)
+        .expect("a classified code line has a source span");
+    let message =
+        format!("file has {count} code lines, limit is {limit} (blank and comment lines excluded)");
+    return vec![Diagnostic::new(
+        "rust/max-lines",
+        severity,
+        message,
+        context.filename.clone(),
+        span,
+    )];
 }
 
 /// What: Report missing docs on all documentable nodes, including private items and the file.
@@ -174,7 +187,13 @@ pub fn check_rustdoc(context: &RustSource, severity: Severity) -> Vec<Diagnostic
         let length = usize::from(node.text_range().len());
         let span = context.span(offset, length);
         let message = missing_message(&node, label);
-        findings.push(Diagnostic::new("rust/require-rustdoc", severity, message, context.filename.clone(), span));
+        findings.push(Diagnostic::new(
+            "rust/require-rustdoc",
+            severity,
+            message,
+            context.filename.clone(),
+            span,
+        ));
     }
     return findings;
 }

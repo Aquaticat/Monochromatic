@@ -6,10 +6,10 @@
 //! class RustSource { source: string; syntax: SyntaxNode; codeLines: number[] }
 //! ```
 
-/// Import the exact rust-analyzer syntax interface already used by the incumbent.
-use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxKind, SyntaxNode};
 /// Import the common diagnostic wire range.
 use crate::diagnostic::Span;
+/// Import the exact rust-analyzer syntax interface already used by the incumbent.
+use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxKind, SyntaxNode};
 
 /// What: Owned per-file source with a parser-owned syntax handle.
 /// Why: The context outlives individual rule calls while lending read-only views.
@@ -111,7 +111,13 @@ impl RustSource {
         let parsed = SourceFile::parse(source.as_str(), Edition::CURRENT);
         let syntax = parsed.syntax_node();
         let lines = code_lines(&syntax, starts.as_slice());
-        return RustSource { filename, source, syntax, line_starts: starts, code_lines: lines };
+        return RustSource {
+            filename,
+            source,
+            syntax,
+            line_starts: starts,
+            code_lines: lines,
+        };
     }
 
     /// Borrow the retained syntax handle for rule traversal.
@@ -135,28 +141,43 @@ impl RustSource {
             return None;
         }
         let start = *self.line_starts.get(line - 1)?;
-        let next = self.line_starts.get(line).copied().unwrap_or(self.source.len());
+        let next = self
+            .line_starts
+            .get(line)
+            .copied()
+            .unwrap_or(self.source.len());
         let end = if next > start && self.source[start..next].ends_with('\n') {
             next - 1
         } else {
             next
         };
-        return Some(Span { offset: start, length: end - start, line, column: 1 });
+        return Some(Span {
+            offset: start,
+            length: end - start,
+            line,
+            column: 1,
+        });
     }
 
     /// Resolve a byte range and clamp its underline to the first line, preserving Rust byte columns.
     pub fn span(&self, offset: usize, length: usize) -> Span {
         let index = line_index(offset, self.line_starts.as_slice());
         let start = self.line_starts[index];
-        let next = self.line_starts.get(index + 1).copied().unwrap_or(self.source.len());
+        let next = self
+            .line_starts
+            .get(index + 1)
+            .copied()
+            .unwrap_or(self.source.len());
         let end = if next > start && self.source[start..next].ends_with('\n') {
             next - 1
         } else {
             next
         };
         return Span {
-            offset, length: length.min(end.saturating_sub(offset)),
-            line: index + 1, column: offset.saturating_sub(start).saturating_add(1),
+            offset,
+            length: length.min(end.saturating_sub(offset)),
+            line: index + 1,
+            column: offset.saturating_sub(start).saturating_add(1),
         };
     }
 }
