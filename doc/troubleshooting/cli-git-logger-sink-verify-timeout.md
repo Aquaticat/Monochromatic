@@ -1,5 +1,10 @@
 # cli-git logger sink verify timeout
 
+Issue [#573](https://github.com/Aquaticat/Monochromatic/issues/573) remains unresolved.
+The investigation identifies the Node default sink and validates a timeout detector,
+but has not reproduced the reported delay without fault injection.
+No production behavior or verification deadline was changed.
+
 ## Symptom
 
 The original 2026-09-26 report recorded this line on every `git` command in that session.
@@ -151,12 +156,80 @@ installed external dependencies,
 and the forbidden-strings scanner are held constant.
 This isolates source changes but does not recreate the full September 25 runtime environment.
 
-Next action:
-run rotated repeated endpoint trials,
-then bisect only if their outcomes support a revision-dependent signal.
-A single silent run must not classify an intermittent revision as good.
-The positive-control delay must not classify revisions either:
-it intentionally forces an otherwise valid timeout.
+The completed traced comparison ran four rotated trials per endpoint.
+Each trial rebuilt the selected wrapper and committed in both a disposable main repository and linked worktree.
+All 16 commits exited successfully with empty stderr.
+Every trial produced five JSONL files containing 38 lines,
+so file logging was exercised rather than silently absent.
+
+The 5100 ms positive control was also run against freshly rebuilt wrappers at `e8880898d^` and `e8880898d`.
+Both produced the exact 5000 ms verification diagnostic.
+This establishes that the September 23 change did not introduce the diagnostic's basic timed-Node behavior;
+it does not explain the historical operation delay.
+
+A prior repeated-run attempt was interrupted by a 30-second command-runner deadline during trust setup,
+without a sink verification diagnostic.
+At inspection the host load average was 65.79 and multiple Node processes were waiting on I/O.
+The complete comparison then passed with a 90-second setup budget.
+The logger's own deadline remained 5000 ms throughout.
+The setup timeout is not a reproduction of issue #573.
+
+The uninstrumented comparison repeated the same four rotated trials per endpoint,
+with the filesystem tracer disabled.
+All 16 commits again had empty stderr,
+and every trial again produced five log files with 38 lines.
+Across the traced and uninstrumented comparisons,
+32 commits passed without the issue diagnostic.
+
+No discriminating endpoint was established,
+so no `git bisect good` or `git bisect bad` classification was recorded.
+Silence cannot classify an intermittent revision as good,
+and the injected delay cannot classify it as bad because it intentionally forces a timeout.
+The next diagnostic requirement is an actual failing invocation captured with its process and filesystem stage,
+or a controlled workload that reproduces a revision-dependent difference.
+
+### Retained historical log window
+
+A read-only inspection enumerated the root log directory and selected all 2225 retained files
+whose names fall between 2026-09-26 01:34 UTC and 01:40 UTC,
+surrounding the recorded decision commit.
+No selected file exceeded the 2 MB read budget,
+so every selected file was read.
+
+Four files mention `cli-git-concurrent-commits`:
+three concern a main-worktree handover,
+and one records root discovery for the linked worktree.
+They do not identify the process that emitted the timeout.
+The deleted linked worktree's own log directory was not available.
+These retained root logs cannot establish that the failing process completed verification.
+
+### Local diagnostic artifacts
+
+The investigation's scripts and raw outputs are retained under `${HOME}/temp/agent/`,
+with the `issue-573-` prefix:
+
+- `issue-573-probe.ts`:
+  disposable main and linked-worktree commits with the reported policies.
+- `issue-573-trace.mjs`:
+  filesystem verification tracing and the optional delayed-`mkdir` positive control.
+- `issue-573-link-deps.ts`:
+  isolated historical workspace source links with current external dependencies held constant.
+- `issue-573-history.ts`:
+  rotated endpoint builds and probes.
+- `issue-573-history-1791123474130.jsonl`:
+  completed traced comparison's stdout and stderr.
+- `issue-573-history-1791124085415.jsonl`:
+  completed uninstrumented comparison's stdout and stderr.
+- `issue-573-host-timeout-control.ts` and `issue-573-host-timeout-control.jsonl`:
+  positive controls around the September 23 change.
+- `issue-573-historical-log-window.ts`:
+  read-only selection of retained incident-window logs.
+
+The scripts currently record this checkout's absolute path.
+They are local diagnostic artifacts,
+not portable package tests or a completed regression guard.
+The tracer captures invocation arguments and paths;
+inspect and redact its output before sharing externally.
 
 ### Proposed agent instruction correction
 
@@ -169,6 +242,25 @@ regressions: test historical endpoints, bisect with a validated signal. State at
 
 This is a proposal,
 not an applied change to agent instructions.
+
+## Upstream filing decision
+
+The existing repository issue #573 is the tracking location;
+no separate upstream issue or duplicate is warranted.
+
+1.  No third-party fault is established;
+    the diagnostic comes from this repository's logger.
+2.  Repository-owned code can be changed once the delayed operation is identified.
+3.  Node command-line logging is a documented supported use case.
+4.  The owner explicitly requested this investigation and fix.
+5.  There is no established external maintainer decision to evaluate.
+6.  No causal fix has been prototyped;
+    forcing a timeout validates observation only.
+
+The additive issue update records sink identity,
+endpoint and positive-control results,
+and the unresolved reproduction requirement.
+The issue stays open.
 
 ## Open questions
 
