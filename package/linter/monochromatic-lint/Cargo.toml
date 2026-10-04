@@ -28,6 +28,11 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # rust-analyzer syntax has no point-release API stability; retain the already approved parser revision.
 ra_ap_syntax = "=0.0.335"
+# ra-ap-rustc_lexer 0.165.0 asserts that both crates use the same Unicode tables.
+# 1.0.25+ of unicode-ident uses Unicode 18; the approved parser stack uses Unicode 17.
+# Pin the same matching pair already locked by the incumbent Rust linter.
+unicode-ident = "=1.0.24"
+unicode-properties = "=0.1.4"
 
 # Standalone package, matching the repository's Cargo ownership convention.
 [workspace]

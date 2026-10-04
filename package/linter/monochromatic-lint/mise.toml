@@ -34,6 +34,10 @@ run = "cargo fmt --check"
 description = "Run native unit and conformance tests"
 run = "cargo test --all-targets"
 
+[tasks."dependencies:fetch"]
+description = "Fetch the locked dependency archives before offline container verification"
+run = "cargo fetch --locked"
+
 [tasks.lock]
 description = "Regenerate the owning Cargo lockfile without fetching dependencies"
 run = "cargo generate-lockfile --offline"
