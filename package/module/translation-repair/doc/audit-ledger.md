@@ -5947,6 +5947,42 @@ reads `ran 4, still cold 0, cold since then 0, not loaded 0`
 and the edited source "loaded it and left 0 cold stretches".
 No B entry found.
 
+The seventeenth cluster of that census,
+`corpus-run/contributor`,
+against `census-D1SlGz` at `a57969b33`:
+7 stretches over `contributor-name-authorities.ts` and
+`contributor-name-restore.ts`
+(`b2a0f5395`,
+`539a98d16`,
+`bcdd232b2`).
+Five are cased:
+the page-rendering fallback
+(a new `contributor-name-authorities.unit.test.ts` leaves the
+own-unit-tests allowlist,
+`nameAuthorities` exported through `corpus-barrel`:
+a page naming no section where the archive never rendered the handle
+leaves it to its pinyin reading),
+the name match on a heading titled outright with the signed name
+(which also runs the colon-less prefix arms),
+and a heading whose original names no contributor left alone.
+The reach runs corrected three fixtures,
+not code:
+the authority derives from the signature,
+the archive rendering returns before the page read,
+and an uncarried page leaves the pinyin standing.
+Two were the identical-line unchanged arms of the heading and signature
+rewrites,
+unreachable behind `carriesRendering`
+(the name is the trimmed span and the written name the trimmed tail,
+so an identical rebuild means the rendering is already carried),
+removed (ledger M112's shape).
+The last was the skip for a slice the replacements never wrote,
+cased.
+The reach census (`~/temp/agent/mimo-trial/reach-contributor5.log`)
+reads `ran 1, still cold 0, cold since then 0, not loaded 0`
+and the edited source "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

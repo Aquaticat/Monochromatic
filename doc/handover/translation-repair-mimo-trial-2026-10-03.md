@@ -683,6 +683,43 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  07:16 UTC:
+  the T8 `corpus-run/contributor` batch closed with commits `b2a0f5395`,
+  `539a98d16` and `bcdd232b2`:
+  7 stretches over two files.
+  Five carry cases
+  (the page-rendering fallback in a new authorities test file that leaves
+  the own-unit-tests allowlist,
+  the outright name match,
+  and the heading whose original names no contributor),
+  two identical-line unchanged arms came out unreachable behind
+  `carriesRendering`,
+  and the skip for an unwritten slice carries its case.
+  The reach runs corrected three fixtures along the way
+  (the authority derives from the signature;
+  the archive rendering returns before the page read).
+  A correction on `bcdd232b2`'s body:
+  shell substitution ate the backticked phrase naming the two
+  identical-line checks,
+  leaving "The  arms sat unreachable";
+  the phrase is `after === line` and the commit stands as written.
+  The reach census reads `ran 1, still cold 0, cold since then 0, not loaded 0`
+  and the edited source "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-contributor5.log`).
+  Counts at the close:
+  the full suite 1,553 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-contributor-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-contributor-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `bcdd232b2`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `introduced` cluster
+  (the ranking's next at `census-D1SlGz`).
+
+- 2026-10-04,
   06:40 UTC:
   the next batch's baseline census taken at commit `d5e942e39`:
   `census written to ~/.cache/translation-repair/coverage/census-D1SlGz/census.json`
