@@ -1,9 +1,12 @@
 # cli-git logger sink verify timeout
 
-Issue [#573](https://github.com/Aquaticat/Monochromatic/issues/573) remains unresolved.
-The investigation identifies the Node default sink and validates a timeout detector,
-but has not reproduced the reported delay without fault injection.
-No production behavior or verification deadline was changed.
+Issue [#573](https://github.com/Aquaticat/Monochromatic/issues/573) was closed at the owner's request
+with the comment "can't reproduce".
+The investigation identified the Node default sink and validated a timeout detector,
+but did not reproduce the reported delay without fault injection.
+The cause remains unknown;
+no production behavior or verification deadline was changed.
+The investigation is concluded.
 
 ## Symptom
 
@@ -186,7 +189,7 @@ No discriminating endpoint was established,
 so no `git bisect good` or `git bisect bad` classification was recorded.
 Silence cannot classify an intermittent revision as good,
 and the injected delay cannot classify it as bad because it intentionally forces a timeout.
-The next diagnostic requirement is an actual failing invocation captured with its process and filesystem stage,
+Any renewed investigation would need an actual failing invocation captured with its process and filesystem stage,
 or a controlled workload that reproduces a revision-dependent difference.
 
 ### Retained historical log window
@@ -274,7 +277,9 @@ no separate upstream issue or duplicate is warranted.
 The additive issue update records sink identity,
 endpoint and positive-control results,
 and the unresolved reproduction requirement.
-The issue stays open.
+The owner subsequently requested closure with "can't reproduce".
+The issue was closed as not planned,
+not as a verified code fix.
 
 ## Open questions
 
