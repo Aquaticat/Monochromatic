@@ -683,6 +683,35 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  08:32 UTC:
+  the T8 `image` batch closed with commits `167332775`,
+  `feada2f6e` and `480561e23`:
+  6 stretches over three files.
+  Five carry cases
+  (the dotless name's empty extension,
+  both decoder successes and the whole OCR path on tool-made fixtures,
+  the deterministic count read both ways,
+  and the reader-failure catch with its missing-binary half
+  through the reader name now being a defaulted parameter).
+  One roster guard came out behind the capability gate,
+  the roster read now `nonNullishOrThrow`'s.
+  The reach census reads `ran 1, still cold 0, cold since then 0, not loaded 0`
+  and the two edited sources "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-image3.log`).
+  Counts at the close:
+  the full suite 1,554 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-image-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-image-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `480561e23`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/coverage` cluster
+  (the ranking's next at `census-mgeQC0`).
+
+- 2026-10-04,
   07:56 UTC:
   the next batch's baseline census taken at commit `67694f69d`:
   `census written to ~/.cache/translation-repair/coverage/census-mgeQC0/census.json`

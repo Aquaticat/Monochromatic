@@ -6009,6 +6009,41 @@ The reach census (`~/temp/agent/mimo-trial/reach-introduced3.log`)
 reads `ran 7, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The nineteenth cluster of that census,
+`image`,
+against `census-mgeQC0` at `3df615eea`:
+6 stretches over `image-asset.ts`,
+`image-ocr.ts` and `image-reading-pair.ts`
+(`167332775`,
+`feada2f6e`,
+`480561e23`).
+Five are cased:
+a name carrying no dot reads no extension
+(`extensionOf` joined the barrel beside `encodeImageAsset`,
+the gap its own file's header recorded),
+the two decoder successes and the whole OCR read path
+(tool-made fixtures,
+the tools being the subject:
+one picture falls to the fallback decoder and reads through tesseract,
+one webp never leaves the first decoder,
+and the fixtures carry a sentence rather than two words
+because the textless line is `MIN_READING_CHARS`),
+the deterministic count in the textless confirmation
+(cased both ways),
+and the reader-failure catch
+(a picture wider than the reader processes,
+and a reader binary not there at all,
+the last through the reader name now being a defaulted parameter).
+One was the could-not-name roster guard,
+unreachable behind the capability gate:
+every unnamed slot answers with a reading before any exchange,
+so no rejected ask arrives at an unnamed position,
+and the roster read is `nonNullishOrThrow`'s now.
+The reach census (`~/temp/agent/mimo-trial/reach-image3.log`)
+reads `ran 1, still cold 0, cold since then 0, not loaded 0`
+and the two edited sources "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
