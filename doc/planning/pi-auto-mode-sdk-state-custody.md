@@ -477,6 +477,34 @@ rethrowing the already-latched retirement still preserves the original exception
 The earlier matrix was not replayed or rewritten.
 Use `contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs` for further integration.
 
+## Fixed question selection prototype
+
+`proc_c02b` passed 31 pure cases and 11 guard removals for `contract/lifecycle/judgment-questions/selection.mjs`.
+Pinned question definitions supply the exact emitted text.
+An owned occurrence-resolver double canonicalizes admitted aliases;
+copied or foreign claim/batch handles reject.
+Distinct occurrences may use the same predicate,
+but an issued claim cannot be issued again after uncertainty or malformed output.
+Whole-batch validation precedes issuance and answer publication.
+
+Current-use reads remain source/deadline-gated.
+Separate retained-only inspection preserves late or stale diagnostics without reviving usable evidence.
+Late responses are recorded as discarded,
+not accepted estimates.
+The finite profile bounds total declarations and issued batches.
+No model,
+SDK session,
+truth band,
+policy verdict,
+or human permission was involved.
+
+This does not qualify a native binding resolver,
+semantic equivalence across differently named definitions,
+or one-time construction across adaptive rounds and nested work.
+The next integration extends the existing owned producer response record with one enclosing-judgment reservation,
+then binds declared/final prepared members and existing dependency finalization to that same owner and budget.
+See private `contract/lifecycle/runtime-continuation/enclosing-judgment-next.json`.
+
 ## Next action
 
 Preserve the completed runtime,
