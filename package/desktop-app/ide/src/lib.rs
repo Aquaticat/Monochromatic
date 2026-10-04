@@ -47,3 +47,9 @@ mod selection_paint;
 
 /// One local project boundary exposes directory snapshots without mutation operations.
 pub mod workspace;
+
+/// Unmodified variable and real italic font assets with stable source-font identities.
+pub mod font_asset;
+
+/// Validated immutable source weight, italic, and OpenType feature settings.
+pub mod source_typography;

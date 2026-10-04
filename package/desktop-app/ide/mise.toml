@@ -201,7 +201,7 @@ const env = {
   XDG_CACHE_HOME: join(scratch, 'cache'),
   XDG_DATA_HOME: join(scratch, 'data'),
 }
-for (const family of ['Inter', 'JetBrains Mono']) {
+for (const family of ['Inter Variable', 'JetBrains Mono']) {
   const fallback = execFileSync('fc-match', ['--format', '%{family}', family], { env, encoding: 'utf8' }).trim()
   if (fallback.split(',').includes(family)) { throw new Error('font isolation still exposes ' + family) }
   console.error('System-font isolation: ' + family + ' resolves to ' + fallback)

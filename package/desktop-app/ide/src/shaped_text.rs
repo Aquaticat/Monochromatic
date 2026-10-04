@@ -6,15 +6,19 @@ use crate::document::Document;
 use crate::source_style::StyleSpan;
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::{Projection, project_line};
-/// Four-byte OpenType tags avoid stringly typed feature names in the source defaults.
-use parley::setting::Tag;
+/// Variable roman and real italic blobs retain stable cache identities.
+use crate::font_asset::code_faces;
+/// Immutable font requests validate continuous weights before shaping.
+use crate::source_typography::SourceTypography;
+/// Construction failures identify unsupported source typography.
+use anyhow::Result;
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
 use parley::{
-    Affinity, Cursor, FontContext, FontFamily, FontFeature, FontFeatures, Layout, LayoutContext,
-    LineHeight, Selection, StyleProperty,
+    Affinity, Cursor, FontContext, FontFamily, FontFeature, FontFeatures, FontStyle, FontWeight,
+    Layout, LayoutContext, LineHeight, Selection, StyleProperty,
 };
 /// Font bytes are shared immutably across the font database.
-use std::{borrow::Cow, sync::Arc};
+use std::borrow::Cow;
 
 /// Logical dimensions and scale of the source viewport.
 #[derive(Clone, Copy, PartialEq)]
@@ -65,8 +69,8 @@ pub struct TextShaper {
     fonts: FontContext,
     /// Reusable paragraph-building allocations.
     layouts: LayoutContext<u32>,
-    /// Immutable source feature policy, shared by every row and baseline probe.
-    features: Vec<FontFeature>,
+    /// Immutable variable-weight, italic, and feature policy shared by rows and baseline probes.
+    typography: SourceTypography,
 }
 
 /// Constructing a default shaper registers the bundled source font.
@@ -81,30 +85,25 @@ impl Default for TextShaper {
 impl TextShaper {
     /// Register the embedded primary face; system fonts supply other scripts.
     pub fn new() -> Self {
-        // JetBrains Mono puts programming ligatures and contextual punctuation in calt, not liga.
-        return Self::with_features(vec![FontFeature::new(Tag::new(b"calt"), 1)]);
+        return Self::with_typography(SourceTypography::default()).expect("valid default source typography");
     }
 
     /// Create a source shaper with explicit OpenType features, without changing source characters.
     /// Settings are immutable for this shaper; replacing it also requires invalidating native frame state.
     pub fn with_features(features: Vec<FontFeature>) -> Self {
-        // What: FontContext owns font discovery/cache state; Arc shares static bytes.
-        // Why: The source font must remain available without its installed counterpart.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const fonts = new FontContext();
-        // fonts.register(embeddedJetBrainsMono);
-        // ```
+        let typography = SourceTypography { features, ..SourceTypography::default() };
+        return Self::with_typography(typography).expect("valid default source weight");
+    }
+
+    /// Select continuous variable weight and the real roman or italic face.
+    pub fn with_typography(typography: SourceTypography) -> Result<Self> {
+        typography.validate()?;
         let mut fonts = FontContext::new();
-        let bytes: &'static [u8] = include_bytes!("../asset/font/JetBrainsMono-Regular.ttf");
-        let blob = parley::fontique::Blob::new(Arc::new(bytes));
-        fonts.collection.register_fonts(blob, None);
-        return Self {
-            fonts,
-            layouts: LayoutContext::new(),
-            features,
-        };
+        // Registration includes both faces, so italic requests never depend on a host font or fake slant.
+        for blob in code_faces() {
+            fonts.collection.register_fonts(blob, None);
+        }
+        return Ok(Self { fonts, layouts: LayoutContext::new(), typography });
     }
 
     /// Shape text with explicit source typography and no soft wrapping.
@@ -122,10 +121,13 @@ impl TextShaper {
             Cow::Borrowed("JetBrains Mono"),
         )));
         builder.push_default(StyleProperty::FontSize(15.0));
+        builder.push_default(StyleProperty::FontWeight(FontWeight::new(self.typography.weight)));
+        let style = if self.typography.italic { FontStyle::Italic } else { FontStyle::Normal };
+        builder.push_default(StyleProperty::FontStyle(style));
         builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(24.0)));
         builder.push_default(StyleProperty::Brush(0));
         builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
-            Cow::Borrowed(&self.features),
+            Cow::Borrowed(&self.typography.features),
         )));
         for (start, end, role) in roles {
             builder.push(StyleProperty::Brush(*role), *start..*end);

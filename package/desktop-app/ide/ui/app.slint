@@ -1,8 +1,9 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
 import { Palette } from "std-widgets.slint";
-import "../asset/font/Inter-Regular.ttf";
-import "../asset/font/Inter-SemiBold.ttf";
-import "../asset/font/JetBrainsMono-Regular.ttf";
+import "../asset/font/InterVariable.ttf";
+import "../asset/font/InterVariable-Italic.ttf";
+import "../asset/font/JetBrainsMono-Variable.ttf";
+import "../asset/font/JetBrainsMono-VariableItalic.ttf";
 
 export struct SourceSelection {
     x: float,
@@ -18,7 +19,7 @@ export component AppWindow inherits Window {
     min-width: 480px;
     min-height: 320px;
     background: Palette.background;
-    default-font-family: "Inter";
+    default-font-family: "Inter Variable";
     forward-focus: code-focus;
 
     in property <image> source-image;
