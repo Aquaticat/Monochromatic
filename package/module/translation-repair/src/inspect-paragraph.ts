@@ -243,21 +243,18 @@ export function inspectParagraph(
       kind: 'rejected',
       reason: 'unparseable',
     };
-  if (
-    (alone.root
-      .children
-      .length
-      !== 1)
-    || (alone.root
-      .children[0]
-      ?.type
-      !== 'paragraph')
-  ) {
+  /**
+   Whole structure the paragraph-alone parse holds: one block exactly,
+   whose kind the leading-block check reads off the definitions parse.
+   */
+  const aloneCount = alone.root
+    .children
+    .length;
+  if (aloneCount !== 1)
     return {
       kind: 'rejected',
       reason: 'not-one-paragraph',
     };
-  }
 
   /**
    The same paragraph with definitions in scope, so its references resolve.

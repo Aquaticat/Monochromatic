@@ -176,6 +176,73 @@ await describe({
             );
           },
         },),
+
+        it({
+          name: 'reads an image url and a resolved reference as protected atoms, '
+            + 'each carrying its destination',
+          fn: async () => {
+            expect(atomTokens(
+              'See ![the cat](https://example.invalid/cat.png) and [the essay][a] now.',
+              '[a]: https://example.invalid/essay',
+            ),).toEqual([
+              'image-url:https://example.invalid/cat.png',
+              'reference:a',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'reads the atoms inside formatting spans, whose own nodes carry '
+            + 'none and pass the walk through',
+          fn: async () => {
+            expect(atomTokens('The **2019** and *2020* seasons.'),).toEqual([
+              'number:2019',
+              'number:2020',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'refuses a paragraph the strict grammar rejects, since no atom '
+            + 'inventory can be trusted out of a parse that failed',
+          fn: async () => {
+            /** Paragraph holding an unclosed JSX tag. */
+            const inspection = inspectParagraph({ text: '<div>', },);
+            expect(inspection.kind,).toBe('rejected',);
+            expect(inspection.kind === 'rejected' ? inspection.reason : '',).toBe(
+              'unparseable',
+            );
+          },
+        },),
+
+        it({
+          name: 'refuses a paragraph whose definitions the strict grammar rejects, '
+            + 'though the paragraph on its own parses',
+          fn: async () => {
+            /** Definitions holding an unclosed JSX tag. */
+            const inspection = inspectParagraph({
+              text: 'The cat naps.',
+              definitions: '<div>',
+            },);
+            expect(inspection.kind,).toBe('rejected',);
+            expect(inspection.kind === 'rejected' ? inspection.reason : '',).toBe(
+              'unparseable',
+            );
+          },
+        },),
+
+        it({
+          name: 'refuses one block that is not a paragraph, since the lane rewrites '
+            + 'prose and not structure',
+          fn: async () => {
+            /** Single block arriving as a heading. */
+            const inspection = inspectParagraph({ text: '# Heading', },);
+            expect(inspection.kind,).toBe('rejected',);
+            expect(inspection.kind === 'rejected' ? inspection.reason : '',).toBe(
+              'not-one-paragraph',
+            );
+          },
+        },),
       ],
     },),
 
@@ -253,6 +320,20 @@ await describe({
             },);
             expect(verdict.kind,).toBe('refused',);
             expect(verdict.kind === 'refused' ? verdict.detail : '',).toContain('candidate rejected',);
+          },
+        },),
+
+        it({
+          name: 'refuses a rewrite whose base is not inspectable at all, naming which '
+            + 'side failed',
+          fn: async () => {
+            /** Base arriving as one heading. */
+            const verdict = gateParagraphRewrite({
+              base: '# Heading',
+              candidate: 'The cat naps in the sun and the bowl stays full all afternoon.',
+            },);
+            expect(verdict.kind,).toBe('refused',);
+            expect(verdict.kind === 'refused' ? verdict.detail : '',).toContain('base paragraph not inspectable',);
           },
         },),
       ],
