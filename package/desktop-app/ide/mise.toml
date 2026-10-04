@@ -15,6 +15,7 @@ const runBounded = (args, options = {}) => execFileSync('podman', [
   '--volume', process.cwd() + ':/work', '--volume', 'ide-cargo:/cargo',
   '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2',
   '--env', 'SLINT_EMIT_DEBUG_INFO=1',
+  '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
   image, ...args
 ], { stdio: 'inherit', ...options })
 const runCargo = (args, options = {}) => runBounded(['cargo', ...args], options)
@@ -135,6 +136,7 @@ const scratch = mkdtempSync(join(tmpdir(), 'monochromatic-ide-ui-'))
 for (const name of ['config', 'cache', 'data']) { mkdirSync(join(scratch, name)) }
 const env = {
   ...process.env,
+  HELIX_RUNTIME: join(process.cwd(), 'target/debug/runtime'),
   SLINT_MCP_PORT: process.env.SLINT_MCP_PORT ?? '9317',
   SLINT_BACKEND: process.env.SLINT_BACKEND ?? 'headless',
   XDG_CONFIG_HOME: join(scratch, 'config'),
@@ -167,6 +169,7 @@ const fontConfig = join(scratch, 'fonts.conf')
 writeFileSync(fontConfig, '<fontconfig><dir>/usr/share/fonts</dir><cachedir prefix="xdg">fontconfig</cachedir></fontconfig>')
 const env = {
   ...process.env,
+  HELIX_RUNTIME: resolve('target/debug/runtime'),
   SLINT_BACKEND: 'winit',
   SLINT_MCP_PORT: scheme === 'dark' ? '9318' : '9319',
   FONTCONFIG_FILE: fontConfig,

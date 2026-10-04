@@ -35,3 +35,6 @@ pub mod file_reload;
 
 /// One bounded background read/diff job keeps the native input loop independent.
 pub mod reload_worker;
+
+/// Helix-backed source classifications use canonical character offsets.
+pub mod syntax;
