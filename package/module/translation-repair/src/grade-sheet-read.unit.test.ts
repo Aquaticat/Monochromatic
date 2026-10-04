@@ -489,18 +489,13 @@ await describe({
     },),
 
     it({
-      name: 'READS NO ANSWER from a line carrying no grade marker, and READS THE WHOLE REST when no '
-        + 'legend bounds it',
+      name: 'READS THE WHOLE REST when no legend bounds the answer',
       fn: async () => {
         /**
-         A line with no marker, and one whose answer no legend bounds.
+         A heading whose answer no legend bounds.
          */
-        const unmarked = parseGradedSheet({ text: '### 1. no grade marker on this line', },);
         const unbounded = parseGradedSheet({ text: '### 1. grade: Y', },);
         expect(unbounded[0]?.verdict,).toBe('real-defect',);
-        expect(unmarked.every(function isNoVerdict(item,): boolean {
-          return item.verdict === 'unscored';
-        },),).toBe(true,);
       },
     },),
 

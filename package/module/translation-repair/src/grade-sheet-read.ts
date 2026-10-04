@@ -128,11 +128,10 @@ const LEGEND_MARKER = '(Y = ';
  */
 function extractAnswer({ line, }: { readonly line: string; },): string {
   /**
-   Where the grade begins.
+   Where the grade begins. The item filter keeps only lines carrying the
+   marker, so this is always a real offset.
    */
   const start = line.indexOf(GRADE_MARKER,);
-  if (start === (-1))
-    return '';
 
   /**
    Everything after the marker, with the trailing legend cut off. The legend
