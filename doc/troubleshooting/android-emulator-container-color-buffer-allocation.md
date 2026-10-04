@@ -1,0 +1,213 @@
+# Android Emulator 37.2.12 host rendering aborts during an API37 container color-buffer probe
+
+## Symptom
+
+An owned disposable `Fold_No_Hardware_Probe` launch under Fedora44 with
+`podman run --memory=6g --cpus=2`,
+`-gpu host` and Xvfb exited before guest readiness.
+The emulator emitted:
+
+```text
+# Android Emulator startup diagnostic
+ERROR        | Failed to allocate ColorBuffer with Vulkan backing.
+ERROR        | Failed to setup memory type index test ColorBuffer.
+FATAL        | Failed to find memory type for ColorBuffers.
+```
+
+The owning process returned the emulator's abort status `134` through
+Node's failed `execFileSync` call.
+This is not a music-player APK failure,
+a demonstrated host out-of-memory event or the prior packaged
+SwiftShader `SIGSEGV` incident.
+No native application frame or fresh guest settings snapshot was retained
+from this attempt.
+
+## Source-traced failure boundary
+
+Read-only `google/gfxstream` source was inspected at
+`07ee40efb0e7037a9a9b7fe59071e7c4997e7cbe`.
+It matches the diagnostic sequence,
+but is not mapped to the installed emulator's binary revision.
+Source findings are comparable implementation evidence only.
+
+`host/vulkan/vk_common_operations.cpp:3233` to `3240`
+reports a false result from the external-memory allocator:
+
+```cpp
+// host/vulkan/vk_common_operations.cpp
+bool allocRes = allocExternalMemory(vk, &infoPtr->memory,
+                                    deviceAlignment, kNullopt, dedicatedImage, infoPtr);
+if (!allocRes) {
+    GFXSTREAM_ERROR("Failed to allocate ColorBuffer with Vulkan backing.");
+    return false;
+}
+```
+
+`findRepresentativeColorBufferMemoryTypeIndexLocked` at lines `5307` to `5319`
+creates a `64` by `64` RGBA probe with device-local memory properties.
+Failure returns no representative result:
+
+```cpp
+// host/vulkan/vk_common_operations.cpp
+if (!createVkColorBufferLocked(kArbitraryWidth, kArbitraryHeight,
+                               GfxstreamFormat::R8G8B8A8_UNORM,
+                               kArbitraryHandle, true, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                               kArbitraryMipLevels)) {
+    GFXSTREAM_ERROR("Failed to setup memory type index test ColorBuffer.");
+    return std::nullopt;
+}
+```
+
+The initialization path at lines `1751` to `1754` turns that missing probe
+result into the fatal:
+
+```cpp
+// host/vulkan/vk_common_operations.cpp
+if (!representativeInfo) {
+    GFXSTREAM_FATAL("Failed to find memory type for ColorBuffers.");
+}
+```
+
+The final message does not prove the physical GPU lacks every memory type.
+The comparable path can reach it after an allocation failure.
+The installed allocator's deciding failure and driver/device exposure
+remain unresolved;
+no ABI,
+libunwind,
+RAM-cap or shader defect is attributed from nearby messages alone.
+
+## Verification and reproduction boundary
+
+The current installed `emulator/source.properties` reports
+`Pkg.Revision=37.2.12` and `Pkg.BuildId=16428233`.
+An initial draft carried the historical `37.1.11` version from an older
+incident;
+that attribution is withdrawn.
+The freshly read installed package metadata is the current version evidence.
+The private startup harness uses:
+
+```bash
+# Disposable reproduction; requires the already owned AVD and inspected Xvfb files.
+podman run --memory=6g --cpus=2 --rm \
+  --name fold-light-feedback-avd \
+  --security-opt label=disable --device /dev/kvm \
+  --volume /usr:/usr:ro \
+  --volume "${HOME}/Android/Sdk:${HOME}/Android/Sdk:ro" \
+  --volume "${HOME}/temp/agent/fold-no-hardware-avd:${HOME}/temp/agent/fold-no-hardware-avd:rw" \
+  --volume "${HOME}/temp/agent/fold-no-hardware-avd/Xvfb-container:/opt/Xvfb:ro" \
+  --volume "${HOME}/temp/agent/fold-no-hardware-avd/xvfb-run-fedora44:/opt/xvfb-run:ro" \
+  --env HOME=/tmp --env PATH=/opt:/usr/bin:/usr/sbin \
+  --env LIBGL_DRIVERS_PATH=/usr/lib64/dri \
+  --env "ANDROID_AVD_HOME=${HOME}/temp/agent/fold-no-hardware-avd" \
+  registry.fedoraproject.org/fedora:44 \
+  /usr/bin/sh /opt/xvfb-run -d --error-file=/dev/stderr \
+  "${HOME}/Android/Sdk/emulator/emulator" \
+  -avd Fold_No_Hardware_Probe -ports 5580,5581 \
+  -no-snapshot -no-audio -no-boot-anim -no-window \
+  -gpu host -memory 4096 -cores 2
+```
+
+The current SDK binary's `-help` and `-help-feature` were invoked in a
+2 GiB/2 CPU container before the configuration probe.
+The feature help documents force-enabling or disabling a named feature
+with `-feature`.
+The installed `lib/advancedFeatures.ini:249` to `251` names `Vulkan`:
+
+```ini
+# emulator/lib/advancedFeatures.ini
+# Vulkan------------------------------------------------------------------------
+# If enabled, the guest Vulkan HAL (if installed) will activate.
+Vulkan = off
+```
+
+That default text is not a read-back of effective runtime graphics state.
+The failing log separately reports initialized host Vulkan emulation.
+Guest HAL activation and host graphics allocation must not be conflated.
+
+### Failing catalog
+
+- The invocation without a feature override reached the quoted color-buffer
+  allocation fatal before guest readiness.
+- Adding only `-feature -Vulkan` then reached a distinct multiple-instance
+  fatal before the graphics result could be compared.
+  This does not prove the override fixes or preserves the allocation failure.
+
+### Passing controls
+
+- Current SDK help and feature-help invocations returned successfully in
+  their bounded container.
+- `lsof` and `fuser` identified an intentionally held disposable control file.
+  Empty exact-lock probes therefore had a demonstrated owner-detection
+  positive control before any lock was moved.
+- These controls are not passing guest boots or application-rendering
+  acceptance.
+
+## Workaround status and tradeoffs
+
+No graphics workaround has passed yet.
+An explicit guest-Vulkan override is a consumer-side experiment,
+not an installed-source patch or proof that host allocation is disabled.
+Changing the graphics backend also changes the capture environment;
+any successful cohort must retain its exact effective environment and
+cannot claim renderer-independent evidence.
+
+The separate restart rejection followed the multiple-instance branch.
+Matching container/process,
+`lsof`,
+`fuser` and `lslocks` checks found no owner of the exact disposable locks.
+The two named files were jointly moved into a private backup,
+not deleted,
+before a bounded retry.
+The retry passed the lock rejection and remained running under the same
+6 GiB/2 CPU caps.
+Its bounded readiness watch exited because ADB reported
+`device unauthorized`,
+not because a successful shell read proved guest boot incomplete.
+No guest boot-completion or fresh settings read has yet succeeded.
+The owning-container console's `help` command was accepted,
+so the running runtime and console remain reachable.
+Guest ADB authorization and console-token authorization are distinct
+boundaries.
+See [the lock lifecycle boundary](android-emulator-37-disposable-avd-lock-after-hard-stop.md).
+This lock recovery does not diagnose the initial graphics failure.
+
+## What does not work
+
+- Treating the feature-override attempt's lock fatal as a graphics result.
+- Inferring host RAM exhaustion from the word `memory` in the final fatal.
+- Attributing the failure to nearby libunwind or XKEYBOARD warnings without
+  a distinguishing control.
+- Using `-read-only` to bypass a writable fixture's stale-lock rejection.
+- Modifying the original AVD or deleting arbitrary lock files.
+
+## Upstream filing decision
+
+Nothing is filed or drafted as ready.
+The comparable source trace supplies a diagnostic boundary,
+not an upstream defect with a matched source/binary reproduction.
+
+- Fault:
+  the deciding allocator failure and host device/driver conditions are
+  unresolved;
+  this is not yet an isolated upstream defect.
+- Ability:
+  allocator or fallback changes are possible in principle,
+  but no architectural limitation or concrete required change is claimed.
+- Supported input:
+  current emulator help exposes host rendering,
+  headless operation and named feature overrides;
+  the exact container driver environment is not an established guarantee.
+- Contribution policy:
+  no contribution path for a matched responsible revision was audited.
+- Likely action:
+  no maintainer decision about this exact allocation failure was established.
+- Prototype:
+  only consumer configuration and owned-fixture lifecycle are being probed;
+  no upstream source edit or unverified candidate patch is retained.
+
+No upstream draft is prepared,
+so duplicate-tracker and `.out-of-scope/` filing checks are not represented
+as completed.
+The source clone remains read-only.
+No original AVD,
+real library or application storage operation is part of this investigation.

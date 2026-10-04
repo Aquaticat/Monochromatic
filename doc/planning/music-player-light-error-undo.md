@@ -196,13 +196,32 @@ and `multiinstance.lock` files.
 Their private backup is retained;
 no original AVD or arbitrary lock was changed.
 
-The same bounded post-quarantine startup is running in `proc_ca9b`;
-`proc_f3c6` owns readiness and a fresh settings snapshot.
-The read-only comparable gfxstream source clone is running in `proc_f700`
-for the separate graphics diagnostic.
-No source identity or graphics workaround is asserted yet.
-The next action is to inspect those terminal outcomes,
-then run the prepared cover/200% combined and failed-trash fit controls
+The post-quarantine runtime remained live under its measured caps,
+but the readiness watch failed on `adb: device unauthorized`.
+That is not a successful read proving incomplete guest boot.
+Owning-container console help remained reachable and accepted graceful
+shutdown;
+an absence watch must finish before any restart.
+No guest settings were changed through the unauthorized transport and no
+fresh settings snapshot or application frame was captured.
+
+Fresh installed metadata and the running emitter identify Android Emulator
+`37.2.12.0`,
+build `16428233`;
+the historical `37.1.11` attribution does not apply to this visit.
+Read-only comparable gfxstream revision
+`07ee40efb0e7037a9a9b7fe59071e7c4997e7cbe`
+traces the allocation/probe/fatal sequence,
+not source/binary equivalence or a proved allocator cause.
+[The graphics and transport boundary](../troubleshooting/android-emulator-container-color-buffer-allocation.md)
+retains those separate outcomes.
+
+The next action is to finish owned-runtime absence verification,
+then use the current SDK's inspected `-skip-adb-auth` option only on this
+owned disposable AVD and retain a fresh read-back snapshot.
+This debug-transport option is not storage-consent bypass or a change to
+the original AVD.
+The prepared cover/200% combined and failed-trash fit controls still run
 before any full capture cohort.
 Verification must establish stable fresh root/viewport rectangles,
 LTR configuration,
