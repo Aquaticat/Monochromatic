@@ -1,500 +1,395 @@
 # Slint IDE implementation handover
 
-## Purpose and immediate next action
+## Purpose and next action
 
-Continue the authorized implementation,
-not another scope interview.
-The user confirmed the [scope][scope],
-reviewed the [approach][plan],
-and explicitly said to implement.
-The IDE is **not complete**.
-The user explicitly corrected an unnecessary stop after the checkpoint:
-handover updates do not pause the authorized implementation.
-Keep working through the queue unless the user requests a pause or a genuine blocker appears.
+Continue the authorized implementation of `package/desktop-app/ide`.
+The user confirmed [the scope][scope] and [the approach][plan],
+then authorized implementation.
+A checkpoint is not a pause:
+continue the queue without asking the user to say “continue”.
+The application remains an incomplete source-view gate.
 
-Current action:
-finish verification of the implemented clap/help fix and embedded fonts,
-then use the repo-owned nested compositor for native IDE verification.
-The IDE remains incomplete.
+Current boundary:
+verify source-render reuse through native wheel and caret input,
+then implement live external refresh and the remaining application surfaces.
+Do not restart technology selection:
+Helix reuse and the standalone Rust/Slint architecture are approved.
 
-## Confirmed requirements and later additions
+## Confirmed contract
 
-The complete product contract is in [the accepted scope][scope].
-Important later additions are:
-
-- Implement editord's Ctrl+0 through Ctrl+9 navigation,
-  including promotion,
-  recency badges,
+- Current Linux x86_64 KDE/Wayland host only;
+  local projects,
+  one project root/window/source view.
+- Read-only source navigation:
+  file tree,
+  combined path/content search,
+  syntax highlighting,
+  line numbers,
+  caret/selection/copy,
+  in-file find.
+- Definition,
+  references,
+  hover,
+  inlay hints,
+  and displayed-file diagnostics,
+  according to actual backend capabilities.
+- Coverage is actual repository source/configuration languages found by `tokei`,
+  intersected with Helix support.
+  Documentation fences do not expand semantic coverage.
+  No custom integrations for unsupported languages.
+- No direct or delegated project-file writes.
+  Scoped private caches and temporary files outside the project are allowed.
+  Cache relocation alone is not write confinement.
+- External changes refresh during selection,
+  preserving best-effort source correspondence and roughly stable viewport.
+  Required cases are `I am a bi|g cat.` to `I was a bi|g cat.`,
+  and `I [am a] big cat` to `I [was a] big cat, but now I am a human!`.
+  The selection must not jump to the later occurrence of `am a`.
+- Ctrl+0 through Ctrl+9 match editord:
+  unique MRU slots,
+  promotion,
+  tree badges,
   ancestor expansion,
-  and reveal.
-  History remains session-local.
-- Bundle JetBrains Mono for source text and Inter for UI text,
-  with applicable font licenses.
-  Do not rely on those families being installed on the host.
-- Follow system light/dark appearance,
-  including changes while running.
-  There is no app-specific theme override.
-- Correct the user-reported CJK/Latin source-line misalignment.
-  The first native screenshot is rejected as a layout acceptance result.
-- Preserve true pixel-level smooth scrolling even with a notched mouse wheel.
-  Consult music-player's implementation rather than adding a parallel scroll mechanism.
-- Use the repo-owned `package/cli/nested-wayland-session` for isolated native input,
-  screenshots,
-  and appearance verification.
-- Add `--help` to that compositor using clap.
-
-The user preapproves Helix-owned dependencies and explicitly waives a broad choosing-technology exercise.
-Use actual API/source inspection and focused integration checks rather than restarting vendor selection.
-Inlay placement is delegated to the implementation.
-Language support is capability-aware and bounded by Helix;
-private caches/temp files outside the project are allowed.
+  reveal,
+  and session-local history.
+  Ctrl+0 is the current file;
+  Ctrl+1 alternates the last two after promotion;
+  empty slots do nothing.
+- Bundle Inter and JetBrains Mono with their licenses.
+  Follow system appearance,
+  including runtime changes,
+  without an app-specific override.
+- Shared CJK/Latin baseline and advance geometry.
+  The independently centered per-grapheme screenshot was rejected.
+- Genuine pixel-level smooth scrolling with a notched wheel,
+  following music-player's native `Flickable` approach.
+- Record every deliberate difference from editord.
+  Editing,
+  saves,
+  formatting,
+  refactoring,
+  filesystem mutations,
+  go-to-line,
+  tabs/splits,
+  multiple roots,
+  Git/status/diff UI,
+  terminal/task/agent control,
+  project-wide problems,
+  rendered/media previews,
+  persistent restore,
+  remote support,
+  and additional platforms are excluded.
 
 ## Work queue
 
-- [ ] Finish nested Wayland clap/help verification.
-  The parser replacement is implemented;
-  11 parser tests and 3 real-executable tests pass,
-  and the host debug binary's `--help` invocation exits 0.
-  Full tests,
-  release build,
-  formatting,
-  and scoped lint remain to be completed.
-- [ ] Finish bundled-font verification.
-  Inter Regular/SemiBold and JetBrains Mono Regular,
-  their original licenses,
-  checksum provenance,
-  and Slint imports are committed.
-  The markup check passes;
-  embedded binary and font-isolation checks remain.
-- [ ] Native source-view interaction and external-change correspondence,
-  including corrected CJK/Latin alignment and measured intermediate notched-wheel scroll positions.
-- [ ] Live file tree,
+- [x] Implement and verify nested compositor clap help.
+  Full package tests now report 39 passing cases,
+  including wheel protocol and joined-option cases.
+  Release build and post-wheel Clippy pass.
+  Debug/release help exit 0 before Wayland startup.
+- [x] Bundle and verify font embedding.
+  Inter Regular/SemiBold and JetBrains Mono Regular are imported by Slint.
+  `build.rs` explicitly selects `EmbedResourcesKind::EmbedFiles`.
+  Generated Rust embeds/registers the bytes.
+  Native fontconfig excludes host copies of those families.
+- [ ] Complete native source-view interaction,
+  clipboard readback,
+  CJK/combining/tab boundary coverage,
+  source rendering,
+  and smooth-wheel acceptance.
+- [ ] Implement live external refresh and exercise both supplied correspondence examples through the GUI.
+- [ ] Implement tree,
   search,
+  in-file find,
   file switching,
-  and native Ctrl+digit navigation/reveal.
-- [ ] Definition,
+  and native recent-file reveal/badges.
+- [ ] Implement runtime syntax and language-server paths:
+  definition,
   references,
   hover,
-  inlays,
+  hints,
   displayed-file diagnostics,
-  and external-reload language-server synchronization.
-- [ ] Measured Helix runtime languages and subprocess project-write confinement.
-- [ ] System-theme verification in both modes and during a theme change.
-- [ ] Complete scoped lint/tests,
-  consumer-boundary verification,
+  and reload synchronization.
+- [ ] Provision measured Helix runtime language coverage and enforce subprocess project-write confinement.
+- [ ] Verify light mode and live system-theme changes using the private portal,
+  not host KDE settings.
+- [ ] Finish scoped formatting,
+  Rust documentation/line budgets,
+  Clippy,
+  tests,
   packaging,
-  and all behavior-difference documentation.
+  consumer-boundary checks,
+  and behavior-difference documentation.
 
-The document tests passing is not a completion boundary for this queue.
+## Current source boundaries
 
-## Current IDE implementation
+`src/document.rs` owns the Helix rope,
+content revision,
+selection,
+caret,
+and viewport anchor.
+`prepare_reload()` uses `compare_ropes`;
+`apply_reload()` rejects stale revisions and maps the latest reading state.
+Its seven tests include both required correspondence cases,
+reverse selection,
+Unicode prefix,
+deletion,
+stale result rejection,
+and selection movement while a reload is pending.
 
-Current layout correction in progress:
-`src/shaped_text.rs`,
-`src/text_projection.rs`,
-and `src/text_raster.rs` reuse Parley and Swash already present through Slint.
-The native bindings are being switched from independently centered glyph items to shaped-row pixels.
-The new tests and native build are running;
-treat the correction as unverified until their results and a new native screenshot are checked.
+`src/recent.rs` implements ten unique push-to-front slots and exact Ctrl+digit decoding.
+Its four tests pass.
+It is not yet wired to file switching or the native tree.
 
-Music-player evidence:
-`ui/app.slint` uses complete `Text` rows inside `Flickable` and two-way scrollbar bindings.
-Its README and `doc/troubleshooting/slint-flickable-smooth-scroll.md` explain built-in notched-wheel animation.
-The installed Slint 1.18.1 `items/flickable.rs` retains that physics path.
-Keep fractional content offsets and verify motion between endpoints.
+`src/text_projection.rs` preserves source/display correspondence through expanded tabs.
+`src/shaped_text.rs` uses Parley 0.11 layouts for glyph advances,
+fallback baselines,
+caret,
+selection,
+and hit testing.
+`src/text_raster.rs` uses Swash 0.2 to paint those exact glyph runs into premultiplied RGBA.
+Both dependencies were already present through Slint.
+The raster has a 64 MiB viewport allocation limit.
 
-Package:
-`package/desktop-app/ide`.
+`src/glyph_cache.rs` adds bounded reuse of glyph masks/color images:
+16 MiB of image data and 4096 entries.
+Keys retain font blob/face,
+size,
+variation coordinates,
+glyph ID,
+and exact fractional position bits.
+Empty glyphs are cached too.
+Theme colors are applied while compositing alpha masks.
 
-- `src/document.rs` owns a Helix rope,
-  content revision,
-  caret/selection,
-  and viewport source anchor.
-  It prepares reloads using `compare_ropes` and rejects a reload whose base revision is stale.
-  Selection mapping uses application-selected affinities,
-  not substring relocation.
-- `tests/document.rs` contains the supplied caret and replacement-selection cases,
-  reverse selection,
-  Unicode prefix,
-  deletion,
-  stale reload rejection,
-  and selection movement while a reload is pending.
-- `src/view_model.rs` produces visible grapheme cells and hit-test geometry.
-  It accounts for tabs,
-  wide graphemes,
-  and combining sequences.
-- `tests/view_model.rs` adds geometry,
-  source-copy,
-  viewport,
-  CRLF,
-  and empty-document tests.
-  These were written after the successful document-test run and have not been run yet.
-- `src/recent.rs` implements ten unique push-to-front history slots and exact Ctrl+digit decoding.
-  `tests/recent.rs` covers eviction,
-  promotion,
-  Ctrl+1 toggling,
-  empty slots,
-  and modifiers.
-  These tests have not been run yet.
-- `src/native.rs` binds the current source-view gate to Slint.
-  It opens one supplied file or an explicit in-memory fixture.
-  It wires pointer selection,
-  select-all,
-  left/right,
-  Home/End,
-  and Copy.
-- `ui/app.slint` paints glyphs and the caret inside a `Flickable`,
-  with viewport-limited line numbers and a read-only accessible source value.
-  A hidden `TextInput` is used only as a toolkit clipboard bridge,
-  not as a separately laid-out input underneath the source.
+`src/source_frame.rs` distinguishes paint inputs from collapsed caret movement.
+The native renderer reuses its image and shaped geometry for caret-only changes.
+Selection range,
+source revision,
+syntax spans,
+viewport tile,
+scale,
+horizontal origin,
+and palette invalidate painting.
+Reset the stamp and accessibility revision when replacing the displayed document with another file.
 
-### Important unfinished behavior
+`src/native.rs` owns the current UI-thread state and startup.
+`src/native/render.rs`,
+`src/native/input.rs`,
+and `src/native/viewport.rs` separate presentation,
+input,
+and native scrolling.
+Pointer selection,
+Ctrl+A,
+left/right,
+Home/End,
+and Copy are wired.
+A hidden `TextInput` is only a clipboard bridge,
+not a second text layout.
 
-- Native Ctrl+0 through Ctrl+9 is **not wired yet**.
-  Only the history/decoding module and tests exist.
-- There is no file tree,
-  search surface,
-  in-file find,
-  or file-watching loop yet.
-- There is no runtime syntax parser or language-server integration yet.
-  Native `styles` is currently empty,
-  so the screenshot proves plain-text rendering,
-  not syntax highlighting.
-- The UI's accessibility description already mentions automatic external refresh,
-  but the running gate has no watcher.
-  Correct that claim or implement the path before treating the UI as user-ready.
-- Up/down,
-  PageUp/PageDown,
-  full focus navigation,
-  and live viewport preservation still need work.
-- Horizontal content width is currently a fixed 240 cells;
-  replace that with measured document geometry before claiming arbitrary-line navigation.
-- Font assets and explicit embedding configuration now exist,
-  but the still-running original headless process predates them.
-- Clippy,
-  Rust documentation/line-budget checks,
-  formatting,
-  and the new tests have not all been run.
+Unfinished surfaces:
+`styles` is empty;
+no syntax parser,
+watcher,
+tree,
+search,
+find,
+file switching,
+LSP,
+or write confinement exists yet.
+Up/down,
+PageUp/PageDown,
+and focus navigation remain incomplete.
+The accessible description claims automatic refresh before that path exists;
+implement it before acceptance.
+Legacy terminal-cell geometry and tests remain in `view_model.rs`;
+extract the still-used `StyleSpan` before removing that obsolete path.
 
-## Verified results
+## Verification and measured rendering issue
 
-- `mise run //package/desktop-app/ide:fetch` succeeded.
-- `mise run //package/desktop-app/ide:test` ran **7 document tests**,
-  all passing.
-  It did not include the subsequently added recent-file and view-model tests.
-- `mise run //package/desktop-app/ide:build` succeeded after the key adapter fix.
-- `mise run //package/desktop-app/ide:mcp` built with `slint/mcp`,
-  launched headlessly,
-  and exposed its native UI inspection server.
-- MCP reported a 1100 by 660 window and a read-only source element containing the exact fixture text.
-- A screenshot was captured and inspected at
-  `~/temp/agent/slint-ide-languages.mEr8K9/source-view.png`.
-  It shows the light-mode plain-text gate,
-  not the finished IDE or verified system-theme behavior.
+The complete IDE suite before render reuse passed 21 tests:
+seven document,
+four recent,
+five shaped-text,
+and five legacy view-model cases.
+The shaped build and Slint markup check passed.
+A native dark screenshot was inspected at
+`/tmp/monochromatic-ide-native-DdPO53/shaped.png`.
+This is not whole-application acceptance.
 
-No native pointer/keyboard/clipboard regression sequence has been completed yet.
-Neither supplied external-change example has been exercised through a running file-watching GUI yet.
+A native click reached `Selection 61:61` after the leading CJK glyph;
+keyboard selection reached `Selection 60:61`.
+Clipboard readback is still unverified.
+A multi-step MCP probe timed out,
+but subsequent state reads responded and showed the expected selection;
+this did not establish an application deadlock.
 
-## Running process and inspection interface
+Repeated Home MCP requests took 357.19,
+364.49,
+and 359.61 ms,
+while an ignored `x` request took 2.31 ms.
+These are end-to-end request timings,
+not isolated paint timings.
+The bounded `test:raster` fixture then measured unchanged shaping at 9.82 to 10.29 ms
+and rasterization at 368.16 to 373.14 ms.
+After glyph caching,
+unchanged shaping measured 9.42 to 9.59 ms
+and rasterization 7.76 to 8.10 ms.
+Repeated cached pixels match byte-for-byte.
+The container limits mean absolute fixture timings are not native-host timings.
+Additional cache-invalidation and native-boundary checks remain necessary.
 
-At handover creation,
-`process list` reported:
+A genuine native notch before the cache fix moved from 0 to -60 pixels,
+with fractional positions including -5.85,
+-13.183334,
+and -48.442593.
+At the materialization boundary,
+a state request took 367.79 ms and the next observed position jumped to -60.
+Evidence:
+`/tmp/monochromatic-ide-native-8CCvg2/wheel-before.json`.
+Native `Flickable` easing exists,
+but the synchronous source raster interrupted it.
+Retest after the cached renderer rebuild.
 
-- Process ID:
-  `proc_37fc`.
-- Name:
-  `ide-headless-source-view`.
-- Command:
-  `mise run //package/desktop-app/ide:mcp`.
-- MCP endpoint:
-  `http://127.0.0.1:9317/mcp`.
-- Logs:
-  `/tmp/pi-processes-UdAlmh/proc_37fc-stdout.log` and
-  `/tmp/pi-processes-UdAlmh/proc_37fc-stderr.log`.
+MCP `scroll_element` sends `TouchPhase::Cancelled`,
+which exercises immediate scrolling and is not a notched-wheel test.
+The repo compositor now supports
+`wheel X Y HORIZONTAL_NOTCHES VERTICAL_NOTCHES`,
+using `AxisSource::Wheel`,
+v120 notch units,
+and ordinary axis deltas.
+See [the scroll investigation][scroll].
 
-Inspect the current process list before starting another instance.
-Handles and process IDs are session-local and must be rediscovered if the process is restarted.
+## Active probes at this checkpoint
 
-The tool registry did not expose this dynamically started MCP server;
-raw loopback HTTP calls worked.
-Use JSON-RPC `tools/call` with
+- `proc_f5f1`,
+  `ide-native-wheel-probe`,
+  runs the pre-cache source renderer with the rebuilt compositor.
+  MCP is `http://127.0.0.1:9318/mcp`.
+  Socket:
+  `/tmp/monochromatic-ide-native-8CCvg2/control.sock`.
+  Source:
+  `/tmp/monochromatic-ide-native-8CCvg2/fixture.ts`.
+  Stop through socket `quit` and restart after the new build.
+- `proc_ea50`,
+  `ide-caret-reuse-tests-build`,
+  runs scoped tests then the native build.
+  Inspect its completion before claiming the frame-stamp changes pass.
+- `proc_37fc` and `proc_7948` are stopped.
+  Their original source-view handles and binaries are obsolete.
+
+Rediscover windows and elements after every restart.
+JSON-RPC `tools/call` accepts loopback POST with
 `Content-Type: application/json` and `Accept: application/json, text/event-stream`.
-Tool results wrap JSON text inside `result.content`.
+Tool JSON is inside `result.content[].text`.
+`list_windows` returns `windowHandles`,
+not `windows`.
+Use `find_elements_by_id` for `AppWindow::scroll`.
+Element and window handles are distinct even when their shapes coincide.
+Read current `tools/list` schemas before driving input.
 
-Observed handles:
-window `{generation: "1", index: "1"}`;
-root element `{generation: "1", index: "1"}`;
-`AppWindow::code-focus` element `{generation: "1", index: "2"}`.
-Window and element handles are not interchangeable despite the identical shape.
+## Build and runtime evidence
 
-`tools/list` exposed:
-`list_windows`,
-`get_window_properties`,
-`get_element_tree`,
-`get_element_properties`,
-`find_elements_by_id`,
-`query_element_descendants`,
-`take_screenshot`,
-`click_element`,
-`drag_element`,
-`hover_element`,
-`move_pointer`,
-scroll dispatch,
-accessibility actions,
-`set_element_value`,
-`dispatch_key_event`,
-and event recording.
-Read current schemas before invoking them.
-
-`dispatch_key_event` takes `eventType` of `Press`,
-`Release`,
-or `PressAndRelease` and encoded `text`.
-Installed Slint 1.18.1 defines Control as U+0011,
-Shift as U+0010,
-left arrow as U+F702,
-and right arrow as U+F703.
-These are app-local events through the inspection server,
-not host desktop synthetic keyboard injection.
-
-## Build and generated-file constraints
-
-Cargo tasks use the existing `localhost/monochromatic/terminal` build image.
-They mount only this package and the dedicated `ide-cargo` volume,
+All Cargo tasks run through package `mise.toml` in the existing terminal build image,
 with 2 GiB RAM,
 2 CPUs,
 512 processes,
 4096 file descriptors,
 and two Cargo jobs.
-They do not mount the user's home or credentials.
+Only the package and dedicated Cargo volume are mounted.
+Slint resolves to 1.18.1.
+Its installed source is under
+`~/.local/share/containers/storage/volumes/ide-cargo/_data/registry/src/`.
 
-Cargo resolved Slint and slint-build to **1.18.1**.
-The earlier design inspection used 1.17.0;
-read the installed 1.18.1 interfaces when implementing.
-The Cargo cache is available at:
-`~/.local/share/containers/storage/volumes/ide-cargo/_data`.
-
-Root `file-enforcer.config.ts:1517` owns the Slint dependency shape.
-It rewrote our optional dependency to an unconditional one.
-The initial GUI feature then caused Cargo to report:
+Root `file-enforcer.config.ts` owns the unconditional Slint dependency.
+`gui = []` gates generated UI code,
+not optional dependency membership.
+Reintroducing `dep:slint` would reproduce Cargo's
 `feature gui includes dep:slint, but slint is not an optional dependency`.
-The fix preserves the generated dependency and makes `gui = []` gate only UI code generation.
-Do not restore the old optional dependency against its owner.
-
-`rustc E0277` rejected comparing `SharedString` directly with a Slint `Key`.
-The fixed adapter uses `SharedString::from(Key::...)`,
-backed by `i-slint-core-1.18.1/input.rs:386`.
-
-Slint's compiler warned that `viewport-width`,
-`viewport-height`,
-and `viewport-y` were deprecated.
-The current markup uses `content-width`,
+Native key comparisons use `SharedString::from(Key::...)`.
+Current Slint markup uses `content-width`,
 `content-height`,
-and `content-y`.
+and `content-y` rather than deprecated `viewport-*` names.
 
-## Nested Wayland help fix
+Font provenance,
+checksums,
+and original OFL licenses live in `asset/font/README.md` and adjacent license files.
+Selected releases are Inter v4.1 and JetBrains Mono v2.304.
+Native fontconfig resolves both absent primary families to Adwaita Mono externally,
+while the app retains its embedded faces.
 
-This additional task is explicitly authorized and the source change is implemented.
-`test:cli:container` passes 11 parser tests and 3 executable tests.
-`inspect:cli -- --help` also succeeds on the host.
-Full package/release/lint verification remains pending.
+Read [the private theme-portal investigation][theme].
+The compositor supports startup `--color-scheme dark|light` on a private D-Bus session.
+Live theme-switch signaling still needs investigation and verification.
 
-Relevant files:
+## Helix and behavioral references
 
-- `package/cli/nested-wayland-session/src/cli.rs`:
-  converts clap matches to the existing public `Config` and preserves the anyhow error interface.
-- `src/cli_command.rs`:
-  clap builder grammar with generated help,
-  version,
-  repeated-option overrides,
-  and trailing child arguments.
-- `src/cli_config.rs` and `src/cli_size.rs`:
-  retained configuration and dimension validation.
-- `src/cli_tests.rs` and `tests/cli.rs`:
-  parser cases and no-display executable tests.
-- `src/main.rs`:
-  recognizes wrapped clap errors and honors their print/exit policy before logging or Wayland startup.
-- `Cargo.toml`:
-  clap version 4 with the repository's canonical features.
-- `mise.toml`:
-  bounded container dispatch,
-  `test:cli:container`,
-  `format:rust:container`,
-  and `inspect:cli` tasks.
-
-The executable is not on PATH.
-An existing binary is at:
-`package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session`.
-Before the fix,
-its real invocation with `--help` returned exit 1 and `unknown flag: --help`.
-The new debug binary passes help verification;
-recheck the release artifact after its current rebuild completes.
-
-The first executable test incorrectly required a `Usage:` line for every clap error.
-A real `--socket` invocation demonstrated that clap emits affected-option text and `--help` guidance without usage.
-The corrected test retains exit-2,
-stdout/stderr,
-help guidance,
-and no-Wayland assertions.
-
-Use clap as requested.
-Root Cargo policy already defines clap as version `4` with `derive` enabled;
-using its builder interface is also compatible.
-Inspect installed clap interfaces before use.
-
-Preserve these token forms:
-
-- Parent options followed by `-- app --help` forward `--help` to the child.
-- `app --help` forwards the child option after the command starts.
-- Bare parent `--help` and `-h` print help and exit 0 without starting Wayland.
-- Unknown parent options remain usage errors,
-  not accidental executable names.
-- Missing required values and a missing child command remain errors.
-- Existing socket,
-  size,
-  color-scheme,
-  isolation,
-  CPU quota,
-  and CPU weight options remain available.
-
-Preserve or deliberately account for the public `parse_args` error interface.
-A clap help error must not get wrapped into an ordinary anyhow failure that exits 1.
-Verify the built binary with display-related environment variables absent.
-
-Also propose tightening `AGENTS.md` rule `VB1` to include successful no-startup CLI help verification.
-This policy proposal is not yet applied or accepted.
-Also propose tightening `PXQ` for the observed stopping failure:
-completion means the queue;
-handover/checkpoint requests do not pause authorized work;
-continue remaining items unasked and stop only when complete or genuinely blocked.
-Neither proposal changes the current authorization to keep implementing.
-
-Suggested `VB1` replacement body:
-
-> Servers:
-> check responses.
-> CLIs:
-> run real commands and check output;
-> `--help` must exit 0 without normal startup.
-> Hooks/plugins:
-> trigger via host.
-> Libraries:
-> test from a consumer.
-
-## Fonts and system theme
-
-Font assets now live in `package/desktop-app/ide/asset/font`,
-with original licenses and SHA-256 provenance in that directory's README.
-`ui/app.slint` imports them and `build.rs` explicitly selects `EmbedResourcesKind::EmbedFiles`.
-The markup check accepts these imports.
-Runtime font-isolation verification remains pending.
-
-The host also resolves:
-`~/.local/share/fonts/JetBrainsMono-Regular.ttf` and
-`~/.local/share/fonts/Inter-Regular.ttf`.
-That explains the initial rendering and is not bundling verification.
-
-Official release metadata inspected:
-
-- JetBrains Mono `v2.304`:
-  `https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip`.
-- Inter `v4.1`:
-  `https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip`.
-
-Both upstream font licenses were fetched and identify SIL Open Font License 1.1.
-Include the release's copyright/license notices and record asset checksums.
-Bundle the faces actually used by the UI,
-including its non-regular weight if required.
-
-Installed `i-slint-compiler-1.18.1/parser/document.rs:299` documents `import "something.ttf";`.
-`passes/embed_glyphs.rs:47` implements loading imported font bytes.
-The source evidence is now complemented by the successful Slint markup check with real font imports.
-Binary embedding and font-isolation verification remain separate checks.
-`slint-build` exposes `CompilerConfiguration::embed_resources(EmbedResourcesKind::EmbedFiles)`;
-Rust output defaults to embedded resources,
-but configure/test this explicitly rather than rely on a build-machine font path.
-A top-level Rust `slint::register_font_from_memory` function was not found;
-avoid inventing that API.
-
-The current UI uses `Palette.background`,
-`Palette.foreground`,
-selection colors,
-and `Palette.color-scheme` for token palette branches.
-The host portal probe returned appearance value **1**,
-meaning dark.
-The headless screenshot was light;
-it is not evidence of host-theme tracking.
-
-Read [the private theme-portal investigation][theme] before native verification.
-The nested compositor supports startup `--color-scheme dark|light` using a private session bus.
-Do not change host KDE appearance for tests.
-A runtime theme-switch command was not established;
-inspect the portal and its signal path before claiming dynamic theme-change verification.
-
-## Helix and runtime evidence
-
+Pinned Helix revision:
+`ba40e547426b0f9896c8bdc699a4ab11f2b37dbc`.
 Source clone:
 `~/temp/agent/slint-ide-languages.mEr8K9/helix`.
-Revision:
-`ba40e547426b0f9896c8bdc699a4ab11f2b37dbc`.
-The app's Helix dependencies are pinned to this revision for integration consistency.
-
-Useful interfaces already inspected:
-`compare_ropes`,
+All selected Helix crates use that same revision.
+Relevant inspected APIs include `compare_ropes`,
 `ChangeSet::map_pos`,
 `syntax::Loader`,
 `Syntax`,
-`DocumentFormatter`,
 `TextAnnotations`,
 and `helix-lsp::Client`/`Registry`.
-
-The current tree-house highlighter is an event-offset API,
+The installed tree-house highlighter uses event offsets,
 not the older start/end/source iterator shape.
-Inspect its installed `highlighter.rs` before writing the adapter.
 
-`helix-loader::config::default_lang_config()` supplies the built-in language registry.
-`helix-loader::grammar::{fetch_grammars, build_grammars}` exist,
-but runtime grammar preparation has not been implemented.
-Respect configured synchronization mode when calling `text_document_did_change`.
+`helix-loader::config::default_lang_config()` supplies the registry.
+Grammar fetching/building exists in `helix-loader::grammar`,
+but the app has not provisioned its runtime yet.
+Respect each server's text synchronization mode.
+The measured inventory includes TS/JS,
+Rust,
+Kotlin,
+Slint,
+QML,
+HCL,
+SQL,
+shell,
+C/C++,
+Batch,
+and configuration/markup families.
+Inspected SQL,
+XML/SVG,
+and Batch entries have grammars but no configured LSP.
 
-The installed `/usr/bin/hx` reports `25.07.1 (a05c151b)`.
-`hx --health typescript` found a parser,
-queries,
-and `typescript-language-server` at
-`~/.local/share/mise/installs/npm-typescript-language-server/6.0.0/bin/typescript-language-server`.
-The installed Helix runtime directory has not been located.
-Probes of `/usr/share/helix/runtime` and `/usr/lib/helix/runtime` failed;
-a broad RPM/find lookup timed out and no such probe process remained afterward.
-Do not infer that the parser assets are missing or assume compatibility with the pinned Helix revision.
+Installed `hx` reports `25.07.1 (a05c151b)`.
+`hx --health typescript` found parser/query assets and typescript-language-server 6.0.0.
+Its runtime directory was not located;
+failed path guesses do not prove assets are missing or compatible with the pinned revision.
 
-## Commits and worktree safety
+Editord reference:
+`package-paused/desktop-daemon/editord`.
+Recency behavior is in `src/client/recent-files.ts`,
+`src/client/app/app.ts`,
+and `src/client/file-tree/reveal.ts`.
+The paused browser/WebSocket daemon architecture is not being revived.
 
-Task commits:
+## Repository safety and policy proposals
 
-- `913d8be3f`:
-  package scaffold.
-- `1e0f83090`:
-  document correspondence and acceptance tests.
-- `5ef871936`:
-  initial test evidence.
-- `c3aa4f535`:
-  native source-view gate.
-- `89edaf1bd`:
-  recent-file module and generated-manifest adaptation.
-- `9ccd1f8d8`:
-  native key conversion fix and layout tests.
-- `f12aef03c`:
-  isolated native inspection task.
+Scope every commit to task files and preserve concurrent work.
+Auto-push is enabled.
+Untracked `package/desktop-app/ide/LICENSES/` was produced by repository enforcement;
+preserve and include it appropriately.
+Current unrelated linter work is concurrent work,
+not something to revert.
 
-At handover creation,
-`git status --short` showed only untracked `package/desktop-app/ide/LICENSES/`.
-Those GPL/LGPL texts appeared through the repository's file enforcement;
-preserve them and include them appropriately rather than deleting them.
-Earlier unrelated changes were concurrent work and were not reverted.
+Recent task commits:
+`4af24d5c7` adds the raster probe;
+`6385c1fe1` adds bounded glyph images;
+`205ff25ea` splits native boundaries;
+`d4e4b3973` adds caret-only image reuse.
+Inspect current Git status and process state rather than assuming this snapshot is live.
 
-Recheck status before editing.
-Commit only explicitly scoped task paths;
-auto-push is enabled.
+Outstanding policy proposal:
+tighten `AGENTS.md` `VB1` to require CLI `--help` to exit 0 without normal startup.
+The earlier stop correction also called for making checkpoint continuation explicit in `PXQ`.
+These proposals are not permission to pause implementation or silently change policy.
 
 [scope]: ../decision/slint-ide-0x-scope.md
 [plan]: ../planning/slint-ide-implementation.md
 [theme]: ../troubleshooting/slint-nested-color-scheme-portal.md
+[scroll]: ../troubleshooting/slint-flickable-smooth-scroll.md
