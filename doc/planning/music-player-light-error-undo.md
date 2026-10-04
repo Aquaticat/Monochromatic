@@ -174,10 +174,26 @@ Dismiss changes only local error-bar presentation.
 The error bar explicitly owns its navigation inset;
 Scaffold content padding is not assumed to protect custom bottom-bar controls.
 
-The bounded APK build is running in `proc_7d1d`.
+The bounded APK build passed in `proc_7d1d`.
+The fresh merged manifest retains the isolated host,
+disables production entry/services and removes automatic WorkManager
+initialization.
+The retained APK SHA-256 is
+`523573ee2937200c74135751b36fe84fe56ad9bc17dc1f89132c125c8193f121`.
 No native light-feedback capture or artifact acceptance is claimed yet.
-The next action is to inspect the build and fresh merged manifest,
-then capture on the owned disposable emulator.
+
+The first owned emulator attempt aborted before guest readiness with
+`Failed to find memory type for ColorBuffers.`
+The obsolete boot watch was stopped and container/matching-emulator
+absence checked.
+A bounded host-GLES attempt with an explicit `-feature -Vulkan` override
+is running in `proc_5f1f`;
+`proc_3bf4` owns readiness and the fresh settings snapshot.
+This is an attempted consumer-side configuration change,
+not a verified workaround or a proven cause.
+The next action is to inspect that terminal readiness outcome,
+then run the prepared cover/200% combined and failed-trash fit controls
+before any full capture cohort.
 Verification must establish stable fresh root/viewport rectangles,
 LTR configuration,
 finite contained overlay geometry,
