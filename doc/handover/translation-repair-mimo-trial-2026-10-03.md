@@ -698,6 +698,33 @@ so a fresh context resumes from this file alone.
   the `corpus-run/handle` batch.
 
 - 2026-10-04,
+  18:14 UTC:
+  the T8 `corpus-run/handle` batch closed with commits `216e4986d`,
+  `2db4930ee`:
+  4 line stretches over `handle-gloss-place.ts`
+  and `handle-reading.ts`,
+  one closed as unreachable
+  (the slice-text fallback narrowed),
+  three cased
+  (the unclosed and multiline parenthesis,
+  the embedded handle,
+  and the name-shaped rendering).
+  The reach census reads `left 0 cold stretches`
+  (`~/temp/agent/mimo-trial/reach-handle2.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-handle-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-handle-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `2db4930ee`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/slice` cluster
+  (the ranking's next at `census-c2UUBT`).
+
+- 2026-10-04,
   17:48 UTC:
   the next batch's baseline census taken at commit `3a433ae2e`:
   `census written to ~/.cache/translation-repair/coverage/census-IjEvWX/census.json`

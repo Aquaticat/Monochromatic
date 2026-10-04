@@ -6561,6 +6561,24 @@ The reach census (`~/temp/agent/mimo-trial/reach-roster.log`)
 reads `ran 4, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The forty-second cluster of that census,
+`corpus-run/handle`,
+against `census-c2UUBT` at `64b7cc8f7`:
+4 line stretches over `handle-gloss-place.ts`
+and `handle-reading.ts`
+(`216e4986d`,
+`2db4930ee`).
+One closed as unreachable:
+the placement walk's slice-text fallback
+(the texts map and the appearance walk share one replaced set).
+Three cased:
+a parenthesis that is unclosed or holds a line end,
+a handle embedded in a word,
+and a rendering whose parenthesis opens with no space before it.
+The reach census (`~/temp/agent/mimo-trial/reach-handle2.log`)
+reads `left 0 cold stretches`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
