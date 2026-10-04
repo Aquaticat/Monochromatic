@@ -1683,6 +1683,164 @@ The workaround is private input capture with conservative stale-result refusal;
 unsupported publishers and subsequent prompt transformations remain outside its qualified scope.
 There is no new upstream defect or filing artifact.
 
+## Owned native base prompt and mutable working copies
+
+### Measured helper gaps
+
+The first private base helper checked only its canonical options identity,
+then returned its retained view at
+`contract/collector/base-prompt-custody/base-owner.mjs:40`:
+
+```javascript
+// Private base-prompt-custody/base-owner.mjs:40
+return current.view;
+```
+
+It did not revalidate the resource occurrence.
+`proc_14bd` first proved a valid original read,
+changed the actual owned resource occurrence through reload,
+and confirmed that the expected refusal was missing.
+The fresh helper rechecks that original relation at current use:
+
+```javascript
+// Private base-prompt-custody-v2/base-owner.mjs:47
+const frame=readBoundResourceFrame({binding:scope.binding,loader:scope.loader});
+```
+
+```javascript
+// Private base-prompt-custody-v2/base-owner.mjs:48
+if(frame!==scope.view.resourceFrame||current!==scope||active)throw new SourceCollectionError('Original resource occurrence or native base changed before current read');
+```
+
+A separate resource diagnostic,
+`proc_8da2`,
+replaced the ordinary output field with an accessor returning the same array.
+The original reader invoked that accessor and accepted the view.
+The correction checks the output's data-property descriptor before any native reader can invoke it:
+
+```javascript
+// Private base-prompt-custody-v2/resource-owner.mjs:74
+if(!field||!Object.hasOwn(field,'value'))throw new SourceCollectionError('Native resource output field '+name+' is not an own data property');
+```
+
+The corrected pure controls,
+`proc_3378`,
+passed 17 cases.
+Separate single-guard controls,
+`proc_d6a3`,
+removed only the original-resource comparison or only the output descriptor rejection.
+Both produced
+`AssertionError [ERR_ASSERTION]: Missing expected exception (BaseCompositionError).`
+The accessor mutant invoked the getter once;
+the intact case rejected it without invocation.
+No SDK matrix was replayed for these pure sensitivity controls.
+
+### Native copies and lifetime
+
+The private native session now owns base options in a private field
+and builds them through the recorded native read/normalization operation.
+The inspected SDK normalizer explicitly constructs both optional prompt keys,
+even when their values are undefined:
+
+```javascript
+// SDK 1.0.2: dist/core/system-prompt.js:10
+customPrompt: input.customPrompt,
+forceSystemPrompt: input.forceSystemPrompt,
+```
+
+The schema copy rebuilds nested skill-source metadata before freezing.
+It does not freeze the loader's borrowed source object.
+The private SDK supplies a new copy to each command-context read
+and to the native run-hook input:
+
+```javascript
+// Private base-prompt-sdk-copy/stage-private/session.mjs:2826
+getSystemPromptOptions: () => copyPromptOptions(this.#baseSystemPromptOptions),
+```
+
+```javascript
+// Private base-prompt-sdk-copy/stage-private/session.mjs:1635
+const result = await this._extensionRunner.emitBeforeAgentStart(expandedText, currentImages, copyPromptOptions(this.#baseSystemPromptOptions));
+```
+
+`proc_516c` verified this through actual SDK 1.0.2 sessions:
+two sessions,
+one injected request,
+and no semantic assessment.
+A command changed its returned copy without changing canonical base data.
+A `before_agent_start` handler changed its mutable working copy,
+and that change reached the actual request.
+The canonical base stayed unchanged.
+Same-value resource reload made the base stale until an actual native rebuild.
+Missing opaque binding refused protected collection,
+and disposal refused current reads while retaining inspection.
+
+This is private copy and current-use behavior.
+It does not authenticate strings merely because they match,
+make a copied working object canonical,
+or establish governing-source authority.
+
+### Preserved fixture failure and original-judgment consumer
+
+The first native fixture,
+`proc_c33b`,
+installed a direct stream wrapper rather than registering its consumer.
+It created one session,
+made no wire request,
+completed disposal,
+and persisted
+`RequestProducerError: Native producer stream is not bound to this issuer`.
+The deciding check was already present at
+`contract/collector/request-producer-judgment-consumers/owner.mjs:77`:
+
+```javascript
+// Private request-producer-judgment-consumers/owner.mjs:77
+if(!consumer)throw new RequestProducerError('Native producer stream is not bound to this issuer');
+```
+
+The corrected fixture used the existing `producerOwner.bindConsumer`.
+It also separated the JSONL header from the entries comparison:
+the native manager's `getEntries()` excludes the header.
+That comparison had not been reached in the original failure,
+so it is not a second observed failure.
+No base-helper or SDK behavior change was needed for this fixture correction.
+
+`proc_02ab` exercised the base-linked collector in the actual original judgment:
+two sessions,
+four injected requests,
+two canned assessments,
+and root-definition counts `[2, 1]`.
+The same-value native base rebuild produced
+`RequestObservationStaleError: Observed request is no longer current`,
+caused by
+`SourceCollectionError: Native base prompt was rebuilt after this source snapshot`.
+The first outcome remained recorded and the second definition did not start.
+The original assessment budget stayed closed.
+
+These native phases used `mise --no-env --no-hooks run check`
+in their named private directories.
+Source identities,
+complete streams,
+persisted results,
+and disposal were checked.
+No external model ran.
+The original failed namespace remains unchanged.
+
+### Limits and upstream disposition
+
+The private remedy owns base data and refuses stale current use,
+but does not claim complete run-option or final-request source coverage.
+Legitimate handler mutations remain supported through working copies;
+later handler ancestry and projection need their own records.
+The finite profile is not a new universal policy restriction.
+Unlinked native options remain observations only;
+protected readers cannot release them as qualified source evidence.
+
+The defects were in the owned helpers and fixture.
+No upstream defect or contribution is established,
+and no upstream issue or patch is proposed.
+The existing upstream-filing decision remains unchanged.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution

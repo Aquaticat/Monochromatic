@@ -1495,6 +1495,57 @@ then apply code-owned source authority and policy without promoting filenames,
 role labels,
 or equal rendered text.
 
+## Native base-prompt derivation
+
+The private `contract/collector/base-prompt-sdk-copy/` graph now links actual native base normalization
+to a constructor-issued resource binding.
+Canonical base options live in native private state and are immutable owned copies.
+Command-context readers and `before_agent_start` receive separate mutable copies,
+including nested skill-source metadata.
+These records establish observed derivation,
+not instruction authority or legitimate delegation.
+
+The first helper had two measured gaps:
+`proc_14bd` retained a base as current after its resource occurrence changed,
+and `proc_8da2` accepted a same-value accessor replacing an output data field.
+The corrected helpers passed 17 pure cases in `proc_3378`.
+`proc_d6a3` removed the resource-occurrence comparison and data-descriptor guard separately;
+both reached their exact missing-exception witnesses.
+Original diagnostics and review corrections remain preserved.
+
+The actual SDK controls in `proc_516c` used two sessions and one injected request,
+with no semantic assessment.
+They confirmed actual normalizer field shape,
+isolated command copies,
+mutable run-hook copies reaching the wire,
+unchanged canonical base,
+missing-binding refusal,
+and disposal-aware current reads with retained inspection.
+The earlier `proc_c33b` fixture failed before any wire request
+because it bypassed the existing producer binding;
+that one-session failed prefix remains separate.
+
+`proc_02ab` then passed the original-judgment consumer:
+two sessions,
+four injected requests,
+two original canned assessments,
+and root-definition counts `[2, 1]`.
+A native same-value base rebuild invalidated the original source snapshot.
+The first completed outcome remained recorded,
+and the second root stayed unentered.
+Post-deadline execution still used the closed original budget.
+
+This is the declared base-derivation profile,
+not a universal rule about every legitimate dynamic source transition.
+Run-handler ancestry,
+forced projections,
+other prompt producers,
+governing-source authority,
+qualified semantic applicability,
+and final policy decisions remain open.
+The next source step must preserve the actual handler snapshot and native working-copy flow,
+not infer source membership from callback counts or equal text.
+
 ## Next work
 
 The runtime result was a checkpoint in the migration,
