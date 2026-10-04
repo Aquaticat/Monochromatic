@@ -177,7 +177,8 @@ impl ShapedView {
             let local = head.saturating_sub(shaped.source_start).min(shaped.projection.source_to_byte.len() - 1);
             let cursor = Cursor::from_byte_index(&shaped.layout, shaped.projection.source_to_byte[local], Affinity::Downstream);
             let rect = cursor.geometry(&shaped.layout, self.viewport.scale);
-            return ReadingRect { x: rect.x0 / self.viewport.scale, y: row as f32 * 24.0 + 2.0, width: 2.0, height: 20.0 };
+            // Parley's geometry uses f64; Slint logical coordinates use f32.
+            return ReadingRect { x: rect.x0 as f32 / self.viewport.scale, y: row as f32 * 24.0 + 2.0, width: 2.0, height: 20.0 };
         }
         return ReadingRect { x: 0.0, y: row as f32 * 24.0 + 2.0, width: 2.0, height: 20.0 };
     }
@@ -198,8 +199,8 @@ impl ShapedView {
             let selection = Selection::new(anchor, focus);
             for (rect, _) in selection.geometry(&shaped.layout) {
                 result.push(ReadingRect {
-                    x: rect.x0 / self.viewport.scale, y: shaped.row as f32 * 24.0,
-                    width: (rect.x1 - rect.x0) / self.viewport.scale, height: 24.0,
+                    x: rect.x0 as f32 / self.viewport.scale, y: shaped.row as f32 * 24.0,
+                    width: (rect.x1 - rect.x0) as f32 / self.viewport.scale, height: 24.0,
                 });
             }
         }

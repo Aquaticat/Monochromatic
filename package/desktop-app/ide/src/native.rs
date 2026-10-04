@@ -14,11 +14,15 @@ mod ui {
 }
 
 /// Native window and model row generated from the UI declaration.
-use ui::{AppWindow, SourceGlyph};
+use ui::{AppWindow, SourceSelection};
 /// Toolkit handles and models bridge owned Rust state to the window.
 use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 /// Source and display geometry use the same library interface tested headlessly.
-use ide_app::{document::{Document, ReadingPosition}, view_model::{build_view, hit_test, StyleSpan}};
+use ide_app::{document::{Document, ReadingPosition}, view_model::StyleSpan};
+/// Shared shaping replaces terminal-column assumptions in native hit testing.
+use ide_app::shaped_text::{ShapedView, TextShaper, Viewport};
+/// Raster output retains the exact glyph positions used by selection.
+use ide_app::text_raster::{CodeColors, TextRaster};
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
 /// Why: Callbacks need the same document without cross-thread Arc/Mutex overhead.
 ///
@@ -38,58 +42,102 @@ struct State {
     first: usize,
     /// Bounded number of materialized source lines.
     count: usize,
+    /// Logical width of the visible code area.
+    width: f32,
+    /// Horizontal tile origin; native Flickable supplies fractional movement.
+    horizontal: f32,
+    /// Widest measured line of the current document.
+    document_width: f32,
+    /// Reusable paragraph/font resources.
+    shaper: TextShaper,
+    /// Reusable outline raster resources.
+    raster: TextRaster,
+    /// Exact displayed geometry used by pointer input.
+    shaped: Option<ShapedView>,
+    /// Avoid cloning whole source for accessibility on each selection change.
+    presented_revision: Option<u64>,
 }
 
-/// Render a snapshot after releasing the state borrow before modifying Slint.
+/// Convert a toolkit palette color to raster input without losing alpha.
+fn rgba(color: slint::Color) -> [u8; 4] {
+    return [color.red(), color.green(), color.blue(), color.alpha()];
+}
+
+/// Render shared shaped rows, releasing state before any Slint setter can reenter.
 fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
-    // What: borrow() lends shared access until this scope ends.
-    // Why: Snapshot construction cannot race another UI mutation.
+    let factor = window.window().scale_factor();
+    let colors = CodeColors {
+        foreground: rgba(window.get_source_foreground().color()),
+        selected: rgba(window.get_selected_foreground().color()),
+        dark: window.get_dark_scheme(),
+    };
+    let mut current = state.borrow_mut();
+    let first = current.first;
+    let horizontal = current.horizontal;
+    let viewport = Viewport {
+        first, count: current.count, width: current.width + 256.0, scale: factor,
+    };
+    // What: Destructure a mutable borrow into disjoint fields.
+    // Why: The shaper and raster own caches while the document remains borrowed read-only.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const current = state.current;
+    // const { document, styles, shaper, raster } = state.current;
     // ```
-    let current = state.borrow();
-    let view = build_view(&current.document, current.first, current.count, &current.styles);
-    let position = current.document.position();
-    let source = current.document.text().to_string();
-    let selected = current.document.selected_text();
-    let revision = current.document.revision();
-    let lines = current.document.text().len_lines();
-    // What: Vec::new creates owned model rows, unlike a borrowed slice.
-    // Why: Slint retains these rows after this function returns.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const rows: SourceGlyph[] = [];
-    // ```
-    let mut rows = Vec::new();
-    for glyph in view.glyphs {
-        rows.push(SourceGlyph {
-            // SharedString owns toolkit text; it is not a borrow into the document.
-            text: SharedString::from(glyph.text),
-            row: glyph.row as i32,
-            column: glyph.column as i32,
-            cells: glyph.width as i32,
-            selected: glyph.selected,
-            style: glyph.style as i32,
-        });
+    let State { document, styles, shaper, raster, .. } = &mut *current;
+    let view = shaper.prepare(document, viewport, styles);
+    let pixels = match raster.paint(&view, colors, horizontal) {
+        Ok(pixels) => pixels,
+        Err(error) => {
+            tracing::error!(%error, "source raster failed");
+            drop(current);
+            window.set_source_image(slint::Image::default());
+            window.set_status(SharedString::from(format!("Cannot render source: {error}")));
+            return;
+        }
+    };
+    let caret = view.caret(document);
+    let mut selections = Vec::new();
+    for rect in view.selection(document) {
+        selections.push(SourceSelection { x: rect.x, y: rect.y, width: rect.width, height: rect.height });
     }
-    // Release the RefCell guard before property callbacks may re-enter Rust.
+    let position = document.position();
+    let revision = document.revision();
+    let lines = document.text().len_lines();
+    let selected = document.selected_text();
+    let source;
+    if current.presented_revision != Some(revision) {
+        source = Some(current.document.text().to_string());
+        current.presented_revision = Some(revision);
+    } else {
+        source = None;
+    }
+    let mut document_width = current.document_width;
+    for row in &view.rows {
+        document_width = document_width.max(row.layout.width() / factor);
+    }
+    current.document_width = document_width;
+    current.shaped = Some(view);
     drop(current);
-    // What: Rc::new and ModelRc retain the model across the language boundary.
-    // Why: The native view receives data, not a second copy of text-editing state.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // window.glyphs = new ArrayModel(rows);
-    // ```
-    window.set_glyphs(ModelRc::from(Rc::new(VecModel::from(rows))));
-    window.set_source_text(SharedString::from(source));
+
+    // Premultiplied pixels share the font engine's baseline and advances.
+    let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(
+        &pixels.bytes, pixels.width, pixels.height,
+    );
+    window.set_source_image(slint::Image::from_rgba8_premultiplied(buffer));
+    window.set_source_selections(ModelRc::from(Rc::new(VecModel::from(selections))));
+    window.set_image_x(horizontal);
+    window.set_image_y(first as f32 * 24.0);
+    window.set_image_width(pixels.width as f32 / factor);
+    window.set_image_height(pixels.height as f32 / factor);
+    window.set_document_width(document_width);
+    window.set_caret_x(caret.x);
+    window.set_caret_y(caret.y);
+    if let Some(source) = source {
+        window.set_source_text(SharedString::from(source));
+    }
     window.set_selected_text(SharedString::from(selected));
     window.set_total_lines(lines as i32);
-    window.set_caret_row(view.caret_row as i32);
-    window.set_caret_column(view.caret_column as i32);
     window.set_selection_anchor(position.anchor as i32);
     window.set_selection_head(position.head as i32);
     window.set_revision(revision as i32);
@@ -117,10 +165,10 @@ fn bind_pointer(window: &AppWindow, state: &Rc<RefCell<State>>) {
     // ```ts
     // window.onPointerHit((row, column, extend) => { ... });
     // ```
-    window.on_pointer_hit(move |row, column, extend| {
+    window.on_pointer_hit(move |row, x, extend| {
         let mut current = state.borrow_mut();
-        let view = build_view(&current.document, current.first, current.count, &current.styles);
-        let head = hit_test(&current.document, &view, row.max(0) as usize, column);
+        let Some(view) = &current.shaped else { return; };
+        let head = view.hit(&current.document, row.max(0) as usize, x);
         let mut position = current.document.position();
         if !extend {
             position.anchor = head;
@@ -141,19 +189,24 @@ fn bind_pointer(window: &AppWindow, state: &Rc<RefCell<State>>) {
     });
 }
 
-/// Bind viewport changes while retaining only visible rows and overscan.
+/// Retain pixel scrolling; update the raster only at viewport tile boundaries.
 fn bind_viewport(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let state = Rc::clone(state);
     let weak = window.as_weak();
-    window.on_viewport_changed(move |offset, height| {
+    window.on_viewport_changed(move |horizontal, offset, width, height| {
         let first = (offset.max(0.0) / 24.0) as usize;
         let count = (height.max(0.0) / 24.0).ceil() as usize + 3;
+        let tile_x = ((horizontal.max(0.0) / 128.0).floor() * 128.0 - 128.0).max(0.0);
+        let width = width.max(1.0);
         let mut current = state.borrow_mut();
-        if current.first == first.saturating_sub(1) && current.count == count {
+        if current.first == first.saturating_sub(1) && current.count == count
+            && current.horizontal == tile_x && current.width == width {
             return;
         }
         current.first = first.saturating_sub(1);
         current.count = count;
+        current.horizontal = tile_x;
+        current.width = width;
         let text = current.document.text();
         let line = first.min(text.len_lines().saturating_sub(1));
         let mut position = current.document.position();
@@ -250,11 +303,25 @@ pub fn run() -> anyhow::Result<()> {
         styles: Vec::new(),
         first: 0,
         count: 32,
+        width: 1044.0,
+        horizontal: 0.0,
+        document_width: 0.0,
+        shaper: TextShaper::new(),
+        raster: TextRaster::new(),
+        shaped: None,
+        presented_revision: None,
     }));
     window.set_file_label(SharedString::from(label));
     bind_pointer(&window, &state);
     bind_viewport(&window, &state);
     bind_keys(&window, &state);
+    let theme_state = Rc::clone(&state);
+    let theme_window = window.as_weak();
+    window.on_theme_changed(move || {
+        if let Some(window) = theme_window.upgrade() {
+            render(&window, &theme_state);
+        }
+    });
     render(&window, &state);
     window.run()?;
     // What: Ok(()) reports success without a payload; Err would carry a failure.
