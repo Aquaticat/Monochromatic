@@ -34,7 +34,9 @@ pub(crate) fn finding(
         context.node_span(id),
     );
     if let Some(source_edit) = edit {
-        diagnostic.fix = Some(Fix { edits: vec![source_edit] });
+        diagnostic.fix = Some(Fix {
+            edits: vec![source_edit],
+        });
     }
     return diagnostic;
 }

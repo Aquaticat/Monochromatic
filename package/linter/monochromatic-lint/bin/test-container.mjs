@@ -20,6 +20,7 @@ try {
   if (!config.includes('directory = \"/work/vendor\"')) throw new Error('Cargo vendor did not emit the expected source mapping')
   await mkdir(join(context, 'cargo-config'), { recursive: true })
   await writeFile(join(context, 'cargo-config/config.toml'), config)
+  await cp(resolve(source, '../../../clippy.toml'), join(context, 'clippy.toml'))
   await cp(join(source, 'test.Containerfile'), join(context, 'Containerfile'))
   const build = spawnSync('podman', ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/monochromatic-lint-test:development', context], { stdio: 'inherit' })
   if (build.error) throw build.error

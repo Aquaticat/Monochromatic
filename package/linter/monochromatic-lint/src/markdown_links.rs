@@ -34,12 +34,18 @@ fn escape(text: &str, reserved: &[char]) -> String {
 /// ```
 fn bare_link_replacement(mdx: bool, written: &str, url: &str) -> (String, &'static str) {
     if !mdx {
-        return (format!("<{written}>"), "Bare URL; wrap it in angle brackets.");
+        return (
+            format!("<{written}>"),
+            "Bare URL; wrap it in angle brackets.",
+        );
     }
     // Borrow context-specific punctuation lists; each output string owns its escaped content.
     let label: String = escape(written, &['\\', '[', ']']);
     let destination: String = escape(url, &['\\', '<', '>']);
-    return (format!("[{label}](<{destination}>)"), "Bare URL; use an inline link.");
+    return (
+        format!("[{label}](<{destination}>)"),
+        "Bare URL; use an inline link.",
+    );
 }
 
 /// Wrap bare supported URLs/emails without turning MDX text into JSX.
@@ -64,7 +70,8 @@ pub fn no_bare_urls(context: &MarkdownSource, severity: Severity) -> Vec<Diagnos
         if !wrappable {
             continue;
         }
-        let (replacement, message): (String, &str) = bare_link_replacement(context.mdx, written, url);
+        let (replacement, message): (String, &str) =
+            bare_link_replacement(context.mdx, written, url);
         let (start, end) = context.offsets(*id);
         findings.push(finding(
             context,

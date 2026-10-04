@@ -166,7 +166,10 @@ fn input_trees_are_unchanged_and_output_is_owned() {
     // actual.a.push(true);
     // ```
     if let JsoncKind::Record { entries } = &mut actual.kind {
-        if let JsoncKind::Array { elements: merged_elements } = &mut entries[0].value.kind {
+        if let JsoncKind::Array {
+            elements: merged_elements,
+        } = &mut entries[0].value.kind
+        {
             merged_elements.push(JsoncValue::boolean(true));
         } else {
             panic!("ownership fixture must produce an array member");
