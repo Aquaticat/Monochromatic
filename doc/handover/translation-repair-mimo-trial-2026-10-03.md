@@ -702,6 +702,36 @@ so a fresh context resumes from this file alone.
   the `mask` batch.
 
 - 2026-10-04,
+  21:21 UTC:
+  the T8 `mask` batch closed with commits `29326895e`,
+  `d4a3c3c65`:
+  4 line stretches over `mask-invisible-lines.ts`
+  and `mask-container-tags.ts`,
+  two closed as unreachable
+  (the code point
+  and the line start:
+  both reads their walks guarantee),
+  two cased
+  (the non-letter tag name
+  and the closer with anything past its name).
+  The reach census reads `left 1 cold stretch` for
+  `mask-invisible-lines.ts` in the focused run,
+  none in the whole-suite census
+  (`~/temp/agent/mimo-trial/reach-mask2.log`).
+  Counts at the close:
+  the full suite 1,562 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-mask-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-mask-scans2.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `d4a3c3c65`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `source` cluster
+  (the ranking's next at `census-4BqrOY`).
+
+- 2026-10-04,
   20:56 UTC:
   the next batch's baseline census taken at commit `c087e5884`:
   `census written to ~/.cache/translation-repair/coverage/census-E4DYQO/census.json`

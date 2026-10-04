@@ -6789,6 +6789,33 @@ The reach census (`~/temp/agent/mimo-trial/reach-canadian.log`)
 reads `ran 1, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The fifty-second cluster of that census,
+`mask`,
+against `census-4BqrOY` at `ccc45bd68`:
+4 line stretches over `mask-invisible-lines.ts`
+and `mask-container-tags.ts`
+(`29326895e`,
+`d4a3c3c65`).
+Two closed as unreachable:
+the character's code point
+and the line's start offset,
+both reads their own walks guarantee.
+Two cased:
+a tag name starting with no letter
+and a closer carrying anything past its name,
+both reading as no tag
+(the fixtures are lone tag lines,
+the only ones the line filter keeps).
+The new `mask-container-tags` unit file takes the module
+off the own-tests allowlist,
+and `maskLoneContainerTags` joins the index exports.
+The reach census (`~/temp/agent/mimo-trial/reach-mask2.log`)
+reads `left 1 cold stretch` for `mask-invisible-lines.ts`
+in the focused run,
+and the whole-suite census lists none for it
+(`census-g0gs4w`).
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
