@@ -59,7 +59,8 @@ The reported experience is that a commit might take 20 seconds.
 This is a reported symptom,
 not an agent measurement or an attributed bottleneck.
 The user then supplied a concrete observation:
-`git add -- doc/planning/slint-ide-0x.md && git commit --message 'docs(planning): fix scope interview semantic line breaks' -- doc/planning/slint-ide-0x.md`
+staging `doc/planning/slint-ide-0x.md`,
+then committing that explicit path with message `docs(planning): fix scope interview semantic line breaks`,
 took 8.9 seconds in the command harness.
 This is combined staging and commit elapsed time,
 not an isolated commit-phase measurement.
@@ -164,9 +165,62 @@ or migration strategy has been adopted.
   and rollback only when prerequisite preferences are settled.
 - Request explicit confirmation of shared understanding before implementation.
 
+## Installed-wrapper baseline execution
+
+A detached worktree under the private agent scratch directory,
+`cli-git-rust-latency-20261004`,
+contains a temporary `perf:installed-boundary` task in `package/git-policy/cli/mise.toml`.
+No production sources are changed.
+
+The task runs the existing lifecycle benchmark twice in fresh,
+mount-free containers.
+It copies the installed wrapper rather than the differently dated packed tarball.
+Both original and copied `index.mjs` have SHA-256
+`a418ca48f202850cbda6943efe8eaaad02488c16aad5d9e7321ea10af22894cd`.
+
+The source Containerfile for the reused local image is
+`package/git-policy/cli/e2e/concurrent-commits.Containerfile`.
+The pinned local base image ID is
+`1d29d429cddf5663ca721fc1f4bc2480c90e09694b3acacafc648e7638748910`.
+The probe reuses its installed dependencies,
+replaces the wrapper artifact,
+and selects its Git 2.55.0 executable.
+No dependency download runs.
+
+Execution is bounded to 2 GiB RAM,
+2 CPUs,
+256 PIDs,
+and the existing finite sample and fixture counts.
+Network is disabled;
+no real home,
+credentials,
+repository mount,
+or external remote is available.
+All fixtures,
+trust records,
+commits,
+and pushes stay inside the disposable container.
+The inspected benchmark uses a synthetic scanner,
+a 2,048-file tree,
+and local bare remotes.
+It does not reproduce the live repository's Markdown policy,
+real scanner workload,
+GitHub transport,
+or concurrent host commits.
+It cannot establish or dismiss the cause of the reported 8.9 seconds.
+
+Invocation:
+`mise run //package/git-policy/cli:perf:installed-boundary` in the detached worktree.
+Managed process:
+`cli-git-installed-lifecycle-baseline`.
+Status:
+started;
+results pending.
+
 ## Next action
 
-Inspect the Rust JSONC and forbidden-strings interfaces and prepare disposable performance measurements.
-Ask the next independent preference questions together and wait for the user's answers.
+Ask the embedding and custom-policy questions together and wait for the user's answers.
+Inspect baseline completion when notified,
+then extend only the missing workload surfaces needed to reproduce the reported delay.
 Keep the current implementation running;
 do not port code during the interview.
