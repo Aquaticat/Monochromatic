@@ -26,13 +26,13 @@ await describe({
          */
         const authorities = nameAuthorities({
           slices: [pair({
-            sliceIndex: 0,
-            source: '### 其三：猫猫\n\n它睡了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 17 日</p>',
-            target: '### Maomao\n\nIt sleeps.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
+            sliceIndex: 1,
+            source: '### 其十：锦猫\n\n它醒了。\n\n<p style="text-align: end;">——锦猫, 2025 年 2 月 10 日</p>',
+            target: '',
           },),],
-          pageText: new Map([[5, '### Anon\n\nUnrelated.',],]),
+          pageText: new Map([[1, '### Anon\n\nUnrelated.',],]),
         },);
-        expect(authorities.get('猫猫',)?.rendering,).toBe('Maomao',);
+        expect(authorities.get('锦猫',)?.rendering,).toBe('Jinmao',);
       },
     },),
   ],

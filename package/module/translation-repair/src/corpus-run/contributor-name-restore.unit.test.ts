@@ -214,16 +214,16 @@ await describe({
         const restored = restoreContributorNames({
           slices: [pair({
             sliceIndex: 0,
-            source: '### 其三：猫猫\n\n它睡了。\n\n### 狗狗\n\n它跑了。',
-            target: '### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.',
+            source: '### 其三：猫猫\n\n它睡了。\n\n### 狗狗\n\n它跑了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 17 日</p>',
+            target: '### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
           },),],
           replacements: [{
             sliceIndex: 0,
-            replacementText: '### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.',
+            replacementText: '### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
           },],
         },);
         expect(restored.replacements[0]?.replacementText,)
-          .toBe('### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.',);
+          .toBe('### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',);
       },
     },),
   ],
