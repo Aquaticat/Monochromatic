@@ -683,6 +683,28 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  20:28 UTC:
+  the next batch's baseline census taken at commit `81727ed38`:
+  `census written to ~/.cache/translation-repair/coverage/census-vlck42/census.json`
+  (`~/temp/agent/mimo-trial/census-56.log`).
+  `library source: 111 files, 182 stretches over 392 lines, 4 functions never called`.
+  The ranking's first three clusters
+  (`corpus-run/published`,
+  `active`,
+  `declined`)
+  all carry documented-left arms.
+  The next actionable cluster is `displacement`
+  with 4 stretches over 5 lines in 1 file,
+  then `corpus-run/name`,
+  `corpus-run/canadian`,
+  `mask`,
+  `source`,
+  each at 4 stretches.
+  This line lands in the trial-log commit that follows `81727ed38`.
+  Next:
+  the `displacement` batch.
+
+- 2026-10-04,
   20:20 UTC:
   the next batch's baseline census taken at commit `edd68a330`:
   `census written to ~/.cache/translation-repair/coverage/census-PGu68D/census.json`
