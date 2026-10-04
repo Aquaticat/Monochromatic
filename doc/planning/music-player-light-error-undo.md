@@ -286,8 +286,16 @@ path before installation or any frame:
 Node reported `ENOENT` for the absent settings path.
 The consumer harness path is corrected without changing the emulator,
 APK or original snapshot.
-The renewed acquisition retains renderer/build provenance and final
-post-stability layout diagnostics;
+The renewed acquisition's scene guard rejected the first frame because a
+System UI ANR owned window focus.
+Private screenshot and focused-window evidence identify that overlay;
+the underlying authored `missing` scene had entered and logged layout.
+The inspected overlay was dismissed through owned ADB input before a
+new acquisition attempt.
+This does not identify the ANR's cause or permit silent dismissal during
+capture.
+Renderer/build provenance and final post-stability layout diagnostics
+remain required;
 no initial cohort is complete yet.
 Boot success does not prove that the earlier graphics failure is fixed.
 New capture and interaction evidence still gates publication.
