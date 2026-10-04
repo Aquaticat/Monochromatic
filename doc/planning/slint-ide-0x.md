@@ -266,8 +266,9 @@ Preserve a complete record when the plan moves into package documentation.
   Try to preserve current relative position and brute-force the work where necessary.
   The follow-up example establishes content-anchored caret mapping,
   not fixed offsets or fractional scrolling.
-  The user then clarifies:
-  "Best effort. 'Roughly' the same position in the viewport is fine. Minimize location loss for human eyes."
+  The user then clarifies that preservation is best effort,
+  roughly the same viewport position is sufficient,
+  and minimizing visual location loss is the goal.
   No further preference question about deleted-context fallback is needed.
   A subsequent selection example requires mapping `am a` to the replacement `was a`,
   while ignoring a new literal `am a` later in the document.
