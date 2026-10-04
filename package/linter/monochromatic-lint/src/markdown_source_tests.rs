@@ -108,7 +108,10 @@ fn reported_mdx_errors_are_processing_failures() {
         // The native error vector is a positive control: this fixture must actually exercise rejection.
         let native_errors: Vec<(usize, String)> =
             satteri_pulldown_cmark::parse(source, satteri_pulldown_cmark::Options::ENABLE_MDX).1;
-        assert!(!native_errors.is_empty(), "native parser must report the mismatched closing tag");
+        assert!(
+            !native_errors.is_empty(),
+            "native parser must report the mismatched closing tag"
+        );
         let result: Result<MarkdownSource, super::MarkdownError> =
             MarkdownSource::new(String::from("broken.mdx"), String::from(source), true);
         let error: super::MarkdownError = match result {
@@ -117,7 +120,10 @@ fn reported_mdx_errors_are_processing_failures() {
         };
         assert!(error.message.starts_with("MDX parsing failed:"));
         assert!(error.message.contains("closing tag"));
-        assert_eq!(error.offset, source.find("</B>").expect("closing tag marker"));
+        assert_eq!(
+            error.offset,
+            source.find("</B>").expect("closing tag marker")
+        );
         assert_eq!(error.to_string(), error.message);
     }
 }
@@ -129,7 +135,8 @@ fn esm_node_acceptance_does_not_claim_javascript_validity() {
         String::from("esm.mdx"),
         String::from("export const =\n"),
         true,
-    ).expect("native ESM construction does not report this JavaScript error");
+    )
+    .expect("native ESM construction does not report this JavaScript error");
     let esm: u32 = node(&document, MdastNodeType::MdxjsEsm);
     assert_eq!(document.slice(esm), "export const =");
     assert!(!document.visible_nodes().contains(&esm));

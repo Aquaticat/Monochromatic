@@ -6,14 +6,14 @@
 //! // Parse once and expose node ids, decoded data, source slices and diagnostic positions.
 //! ```
 
+use crate::diagnostic::Span;
+use crate::markdown_positions::MarkdownPositions;
 /// Import the approved parser and arena types.
 use satteri_arena::{Arena, ArenaNode, Mdast};
-use satteri_ast::mdast::{decode_string_ref_data, MdastNodeType};
+use satteri_ast::mdast::{MdastNodeType, decode_string_ref_data};
 use satteri_pulldown_cmark::{Options, parse};
 /// Import panic containment and the common diagnostic span.
 use std::panic::catch_unwind;
-use crate::diagnostic::Span;
-use crate::markdown_positions::MarkdownPositions;
 
 /// What: A parser or native-tree failure with an original-source byte position.
 /// Why: The engine reports one processing failure instead of attempting fixes on an invalid parse.
@@ -87,10 +87,13 @@ struct Traversal {
 /// function isMdx(kind: MdastNodeType): boolean;
 /// ```
 fn is_mdx(kind: MdastNodeType) -> bool {
-    return matches!(kind,
-        MdastNodeType::MdxJsxFlowElement | MdastNodeType::MdxJsxTextElement
-        | MdastNodeType::MdxFlowExpression | MdastNodeType::MdxTextExpression
-        | MdastNodeType::MdxjsEsm
+    return matches!(
+        kind,
+        MdastNodeType::MdxJsxFlowElement
+            | MdastNodeType::MdxJsxTextElement
+            | MdastNodeType::MdxFlowExpression
+            | MdastNodeType::MdxTextExpression
+            | MdastNodeType::MdxjsEsm
     );
 }
 
@@ -103,7 +106,10 @@ fn is_mdx(kind: MdastNodeType) -> bool {
 /// ```
 fn traversal(arena: &Arena<Mdast>, source: &str, bom: usize) -> Result<Traversal, MarkdownError> {
     if arena.is_empty() {
-        return Err(MarkdownError { message: String::from("Markdown parser returned no root node."), offset: bom });
+        return Err(MarkdownError {
+            message: String::from("Markdown parser returned no root node."),
+            offset: bom,
+        });
     }
     let mut visited = vec![false; arena.len()];
     let mut parents = vec![u32::MAX; arena.len()];
@@ -113,21 +119,41 @@ fn traversal(arena: &Arena<Mdast>, source: &str, bom: usize) -> Result<Traversal
     while let Some((id, hidden_parent, parent)) = pending.pop() {
         let index = id as usize;
         if index >= arena.len() || visited[index] {
-            return Err(MarkdownError { message: String::from("Markdown parser returned an invalid or repeated child reference."), offset: bom });
+            return Err(MarkdownError {
+                message: String::from(
+                    "Markdown parser returned an invalid or repeated child reference.",
+                ),
+                offset: bom,
+            });
         }
         visited[index] = true;
         parents[index] = parent;
         let node = arena.get_node(id);
         let Some(kind) = MdastNodeType::from_u8(node.node_type) else {
-            return Err(MarkdownError { message: String::from("Markdown parser returned an unknown node kind."), offset: bom });
+            return Err(MarkdownError {
+                message: String::from("Markdown parser returned an unknown node kind."),
+                offset: bom,
+            });
         };
         if id == 0 && kind != MdastNodeType::Root {
-            return Err(MarkdownError { message: String::from("Markdown parser returned a non-root entry node."), offset: bom });
+            return Err(MarkdownError {
+                message: String::from("Markdown parser returned a non-root entry node."),
+                offset: bom,
+            });
         }
         let start = node.start_offset as usize + bom;
         let end = node.end_offset as usize + bom;
-        if start > end || end > source.len() || !source.is_char_boundary(start) || !source.is_char_boundary(end) {
-            return Err(MarkdownError { message: String::from("Markdown parser returned a source range outside UTF-8 boundaries."), offset: start.min(source.len()) });
+        if start > end
+            || end > source.len()
+            || !source.is_char_boundary(start)
+            || !source.is_char_boundary(end)
+        {
+            return Err(MarkdownError {
+                message: String::from(
+                    "Markdown parser returned a source range outside UTF-8 boundaries.",
+                ),
+                offset: start.min(source.len()),
+            });
         }
         let hidden = hidden_parent || is_mdx(kind);
         all.push(id);
@@ -136,16 +162,26 @@ fn traversal(arena: &Arena<Mdast>, source: &str, bom: usize) -> Result<Traversal
         }
         let children_start = node.children_start as usize;
         let Some(children_end) = children_start.checked_add(node.children_count as usize) else {
-            return Err(MarkdownError { message: String::from("Markdown parser returned an overflowing child range."), offset: start });
+            return Err(MarkdownError {
+                message: String::from("Markdown parser returned an overflowing child range."),
+                offset: start,
+            });
         };
         let Some(children) = arena.children.get(children_start..children_end) else {
-            return Err(MarkdownError { message: String::from("Markdown parser returned an out-of-range child list."), offset: start });
+            return Err(MarkdownError {
+                message: String::from("Markdown parser returned an out-of-range child list."),
+                offset: start,
+            });
         };
         for child in children.iter().rev() {
             pending.push((*child, hidden, id));
         }
     }
-    return Ok(Traversal { all, visible, parents });
+    return Ok(Traversal {
+        all,
+        visible,
+        parents,
+    });
 }
 
 /// What: Parse with the exact accepted feature set and expose immutable views.
@@ -157,11 +193,18 @@ fn traversal(arena: &Arena<Mdast>, source: &str, bom: usize) -> Result<Traversal
 /// ```
 impl MarkdownSource {
     /// Parse source without evaluating MDX and retain parser failures as typed outcomes.
-    pub fn new(filename: String, source: String, mdx: bool) -> Result<MarkdownSource, MarkdownError> {
+    pub fn new(
+        filename: String,
+        source: String,
+        mdx: bool,
+    ) -> Result<MarkdownSource, MarkdownError> {
         let bom = if source.starts_with('\u{feff}') { 3 } else { 0 };
-        let mut options = Options::ENABLE_GFM | Options::ENABLE_TABLES
-            | Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS
-            | Options::ENABLE_FOOTNOTES | Options::ENABLE_YAML_STYLE_METADATA_BLOCKS
+        let mut options = Options::ENABLE_GFM
+            | Options::ENABLE_TABLES
+            | Options::ENABLE_STRIKETHROUGH
+            | Options::ENABLE_TASKLISTS
+            | Options::ENABLE_FOOTNOTES
+            | Options::ENABLE_YAML_STYLE_METADATA_BLOCKS
             | Options::ENABLE_PLUSES_DELIMITED_METADATA_BLOCKS;
         if mdx {
             options.insert(Options::ENABLE_MDX);
@@ -177,16 +220,31 @@ impl MarkdownSource {
                 } else {
                     format!("non-text panic payload {:?}", payload.as_ref().type_id())
                 };
-                return Err(MarkdownError { message: format!("Markdown parser panicked: {detail}"), offset: bom });
+                return Err(MarkdownError {
+                    message: format!("Markdown parser panicked: {detail}"),
+                    offset: bom,
+                });
             }
         };
         if let Some((offset, message)) = errors.first() {
-            return Err(MarkdownError { message: format!("MDX parsing failed: {message}"), offset: offset.saturating_add(bom).min(source.len()) });
+            return Err(MarkdownError {
+                message: format!("MDX parsing failed: {message}"),
+                offset: offset.saturating_add(bom).min(source.len()),
+            });
         }
         let traversal = traversal(&arena, source.as_str(), bom)?;
         let positions = MarkdownPositions::new(source.as_str());
-        return Ok(MarkdownSource { filename, source, mdx, arena, bom, positions,
-            all_nodes: traversal.all, visible_nodes: traversal.visible, parents: traversal.parents });
+        return Ok(MarkdownSource {
+            filename,
+            source,
+            mdx,
+            arena,
+            bom,
+            positions,
+            all_nodes: traversal.all,
+            visible_nodes: traversal.visible,
+            parents: traversal.parents,
+        });
     }
 
     /// Borrow the validated rule-visible traversal.
@@ -206,7 +264,8 @@ impl MarkdownSource {
 
     /// Decode a kind already checked during construction.
     pub fn kind(&self, id: u32) -> MdastNodeType {
-        return MdastNodeType::from_u8(self.node(id).node_type).expect("construction validates node kinds");
+        return MdastNodeType::from_u8(self.node(id).node_type)
+            .expect("construction validates node kinds");
     }
 
     /// Borrow direct children without flattening structural relationships.
@@ -227,7 +286,10 @@ impl MarkdownSource {
     /// Return the original-source half-open byte range.
     pub fn offsets(&self, id: u32) -> (usize, usize) {
         let node = self.node(id);
-        return (node.start_offset as usize + self.bom, node.end_offset as usize + self.bom);
+        return (
+            node.start_offset as usize + self.bom,
+            node.end_offset as usize + self.bom,
+        );
     }
 
     /// Borrow exact authored spelling rather than the parser's normalized text.

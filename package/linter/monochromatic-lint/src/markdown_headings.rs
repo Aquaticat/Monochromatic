@@ -6,11 +6,11 @@
 //! // Port the existing report-only heading checks without a new rule configuration surface.
 //! ```
 
-/// Import native heading data and shared finding construction.
-use satteri_ast::mdast::{decode_heading_data, MdastNodeType};
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::markdown_finding::finding;
 use crate::markdown_source::MarkdownSource;
+/// Import native heading data and shared finding construction.
+use satteri_ast::mdast::{MdastNodeType, decode_heading_data};
 
 /// Report heading-depth increases larger than one after the first heading.
 pub fn heading_increment(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
@@ -22,8 +22,14 @@ pub fn heading_increment(context: &MarkdownSource, severity: Severity) -> Vec<Di
         }
         let depth = decode_heading_data(context.data(*id)).depth;
         if previous != 0 && depth > previous + 1 {
-            findings.push(finding(context, *id, "markdown/heading-increment", severity,
-                format!("Heading level jumps from {previous} to {depth}; increment by one."), None));
+            findings.push(finding(
+                context,
+                *id,
+                "markdown/heading-increment",
+                severity,
+                format!("Heading level jumps from {previous} to {depth}; increment by one."),
+                None,
+            ));
         }
         previous = depth;
     }
@@ -43,8 +49,14 @@ pub fn single_h1(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic
         }
         count += 1;
         if count > 1 {
-            findings.push(finding(context, *id, "markdown/single-h1", severity,
-                String::from("Multiple top-level headings; a document should have a single h1."), None));
+            findings.push(finding(
+                context,
+                *id,
+                "markdown/single-h1",
+                severity,
+                String::from("Multiple top-level headings; a document should have a single h1."),
+                None,
+            ));
         }
     }
     return findings;
@@ -57,13 +69,17 @@ pub fn single_h1(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic
 /// ```ts
 /// const punctuation = new Set(['.', ',', ';', ':', '!', '?', '。', '，', '；', '：', '！', '？']);
 /// ```
-const SENTENCE_PUNCTUATION: &[char] = &['.', ',', ';', ':', '!', '?', '。', '，', '；', '：', '！', '？'];
+const SENTENCE_PUNCTUATION: &[char] = &[
+    '.', ',', ';', ':', '!', '?', '。', '，', '；', '：', '！', '？',
+];
 
 /// Report emphasis-only paragraphs that are not sentences or list labels.
 pub fn no_emphasis_as_heading(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
     let mut findings = Vec::new();
     for id in context.visible_nodes() {
-        if context.kind(*id) != MdastNodeType::Paragraph || context.has_ancestor(*id, MdastNodeType::ListItem) {
+        if context.kind(*id) != MdastNodeType::Paragraph
+            || context.has_ancestor(*id, MdastNodeType::ListItem)
+        {
             continue;
         }
         let children = context.children(*id);
@@ -80,8 +96,14 @@ pub fn no_emphasis_as_heading(context: &MarkdownSource, severity: Severity) -> V
         if last.is_some_and(|character| return SENTENCE_PUNCTUATION.contains(&character)) {
             continue;
         }
-        findings.push(finding(context, *id, "markdown/no-emphasis-as-heading", severity,
-            String::from("Emphasis used as a heading; use a real heading instead."), None));
+        findings.push(finding(
+            context,
+            *id,
+            "markdown/no-emphasis-as-heading",
+            severity,
+            String::from("Emphasis used as a heading; use a real heading instead."),
+            None,
+        ));
     }
     return findings;
 }
