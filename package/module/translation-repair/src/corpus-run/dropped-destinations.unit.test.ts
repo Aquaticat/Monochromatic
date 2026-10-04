@@ -313,5 +313,14 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'SHEDS a stopper the run ends on and KEEPS the run where none stands, and READS the earliest '
+        + 'of several runs',
+      fn: async () => {
+        expect(scanUrlRuns({ text: 'see https://cat.example. and https://dog.example too', },),)
+          .toStrictEqual(['https://cat.example', 'https://dog.example',],);
+      },
+    },),
   ],
 },);
