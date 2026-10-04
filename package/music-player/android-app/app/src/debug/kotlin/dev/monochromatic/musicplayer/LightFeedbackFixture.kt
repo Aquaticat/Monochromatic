@@ -1,0 +1,130 @@
+//region Authored feedback outcomes, never a real trash, restore or file operation
+// What: Package places this pure debug fixture beside the isolated first-run host.
+// Why: The owned study can test truthful outcome gating without reaching production services.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // Source-folder module namespace.
+// ```
+package dev.monochromatic.musicplayer
+
+/**
+ * What: A data class holds read-only authored operation fields; Boolean is a truth value,
+ * and String is text rather than a nullable String? or an executable recovery descriptor.
+ * Why: Request generation, completion and restoration capability must not collapse into one flag.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * type LightTrashOutcomeFixture = { outcome: string; restoreHandle: boolean; expired: boolean };
+ * ```
+ */
+data class LightTrashOutcomeFixture(
+    /** Authored request/completion marker, not a production storage-provider result. */
+    val outcome: String,
+    /** Authored owner has a restoration handle; not proof that a real restore will succeed. */
+    val restoreHandle: Boolean,
+    /** Authored Undo interval has expired; no real timer is implemented by this field. */
+    val expired: Boolean,
+)
+
+/**
+ * What: A named function classifies one authored operation record and returns Boolean.
+ * Why: A request awaiting Android approval, a failure or expiry cannot advertise successful Undo.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function lightFeedbackCanOfferUndo(input: LightTrashOutcomeFixture): boolean {
+ *   // Validate outcome; require completed success, handle and active interval.
+ * }
+ * ```
+ */
+internal fun lightFeedbackCanOfferUndo(input: LightTrashOutcomeFixture): Boolean {
+    // What: listOf creates a read-only List<String>, not a MutableList or fixed Array.
+    // Why: Unknown fixture outcomes must fail rather than render a plausible success toast.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const outcomes = ['pending', 'cancelled', 'failed', 'completed'] as const;
+    // ```
+    val outcomes: List<String> = listOf("pending", "cancelled", "failed", "completed")
+    // What: !in tests non-membership and throws a typed argument exception.
+    // Why: A typo in the acquisition route must not silently select a success branch.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (!outcomes.includes(input.outcome)) throw new Error('Unknown authored trash outcome');
+    // ```
+    if (input.outcome !in outcomes) throw IllegalArgumentException("Unknown authored trash outcome: ${input.outcome}")
+    return input.outcome == "completed" && input.restoreHandle && !input.expired
+}
+
+/**
+ * What: Another read-only record contains literal copy and omitted authored row names.
+ * Why: The renderer can prove layout and row removal without touching real file identities.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * type LightFeedbackFixture = { error: string; undo: boolean; omittedTitles: readonly string[] };
+ * ```
+ */
+data class LightFeedbackFixture(
+    /** Empty string means no authored error bar, not an unknown failure being ignored. */
+    val error: String,
+    /** Whether the authored completed-trash state has a live restoration handle. */
+    val undo: Boolean,
+    /** Literal debug-row titles omitted for these declared fixture outcomes. */
+    val omittedTitles: List<String>,
+)
+
+/**
+ * What: Exact scene branches return authored view inputs; any other scene throws.
+ * Why: Capture cannot substitute an unrelated fallback after a routing mistake.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function lightFeedbackFixture(scene: string): LightFeedbackFixture { /* exact branches */ }
+ * ```
+ */
+internal fun lightFeedbackFixture(scene: String): LightFeedbackFixture {
+    if (scene == "missing") {
+        // What: A record constructor uses named fields, not positional command descriptors.
+        // Why: Known missing-file copy remains adjacent to the exact authored omitted row.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return { error: 'Burning Aquamarine is no longer available.', undo: false, omittedTitles: [...] };
+        // ```
+        return LightFeedbackFixture(
+            error = "Burning Aquamarine is no longer available and was removed from this list.",
+            undo = false,
+            omittedTitles = listOf("Burning Aquamarine"),
+        )
+    }
+    if (scene == "undo" || scene == "combined") {
+        // Require an explicitly completed fixture with its authored restore handle.
+        val undo: Boolean = lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("completed", true, false))
+        if (scene == "combined") {
+            return LightFeedbackFixture(
+                error = "3 unavailable files were removed from this list.",
+                undo = undo,
+                omittedTitles = listOf("Burning Aquamarine", "Dokuhebi", "KillerToy", "Ghost"),
+            )
+        }
+        return LightFeedbackFixture(error = "", undo = undo, omittedTitles = listOf("Ghost"))
+    }
+    if (scene == "trash-failed") {
+        return LightFeedbackFixture(
+            error = "Ghost was not moved to trash. Its folder did not allow this operation.",
+            undo = lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("failed", false, false)),
+            omittedTitles = emptyList(),
+        )
+    }
+    if (scene == "trash-pending") {
+        return LightFeedbackFixture(
+            error = "", undo = lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("pending", false, false)),
+            omittedTitles = emptyList(),
+        )
+    }
+    throw IllegalArgumentException("Unknown light feedback fixture: $scene")
+}
+//endregion
