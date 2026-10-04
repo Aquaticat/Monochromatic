@@ -683,6 +683,35 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  11:52 UTC:
+  the T8 `corpus-run/list` batch closed with commits `45e3356bc`,
+  `99058e60a`:
+  6 line stretches over `list-spread-restore.ts`,
+  two closed as the impossible-index fallbacks they are
+  (both `nonNullishOrThrow`),
+  two cased
+  (the single-item list and the count mismatch
+  on the sides the walk actually compares),
+  two left documented
+  (the missing-position refusals,
+  reached only where a parsed item carries no offsets).
+  The reach census reads `left 2 cold stretches`,
+  those two
+  (`~/temp/agent/mimo-trial/reach-list2.log`).
+  Counts at the close:
+  the full suite 1,558 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-list-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-list-scans2.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `99058e60a`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `preservation` cluster
+  (the ranking's next at `census-RRFnX2`).
+
+- 2026-10-04,
   11:38 UTC:
   the next batch's baseline census taken at commit `d5d3b32a7`:
   `census written to ~/.cache/translation-repair/coverage/census-RRFnX2/census.json`

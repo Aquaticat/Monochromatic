@@ -6193,6 +6193,33 @@ The reach census (`~/temp/agent/mimo-trial/reach-consolidate.log`)
 reads `ran 6, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The twenty-sixth cluster of that census,
+`corpus-run/list`,
+against `census-RRFnX2` at `8fefdc00c`:
+6 line stretches over `list-spread-restore.ts`
+(`45e3356bc`,
+`99058e60a`).
+Two closed by narrowing:
+the gap walk's earlier-extent fallback
+(a `??` over an index its own map guarantees)
+and the archive lookup's undefined check
+(counts compared above),
+both `nonNullishOrThrow`,
+their own comments already arguing the values are present.
+Two cased:
+a single-item list carrying no gap to space,
+and a slice whose list counts differ between the text it replaces
+and the replacement
+(the walk reads those two sides,
+not the archive's source text).
+Left:
+the two missing-position refusals at the extents walk,
+reached only where a parsed item carries no offsets.
+The reach census (`~/temp/agent/mimo-trial/reach-list2.log`)
+reads `left 2 cold stretches`,
+those two.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
