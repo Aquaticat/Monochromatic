@@ -184,6 +184,35 @@ await describe({
         expect(note.includes('editorOffered',),).toBe(true,);
       },
     },),
+
+    it({
+      name: 'NOTES THE DEGRADED EDITOR ROSTER, since chunks repaired with fewer editors than the roster '
+        + 'configures lose the property the ensemble exists for',
+      fn: async (ctx,) => {
+        const lines = reportedLines({
+          gathered: {
+            ...gatheredWith({ repairShippedRecords: 1, editorOffered: 1, },),
+            editorRoster: { ...SILENT_ROSTER, degraded: 1, },
+          },
+          sinon: ctx.sinon,
+        },);
+        expect(lines.join('\n',),).toContain('NOTE editorDegraded',);
+      },
+    },),
+
+    it({
+      name: 'NOTES THE SILENT REFINER, since a naturalness lane no refiner answered could not run',
+      fn: async (ctx,) => {
+        const lines = reportedLines({
+          gathered: {
+            ...gatheredWith({ repairShippedRecords: 1, editorOffered: 1, },),
+            refineRoster: { ...SILENT_ROSTER, silent: 1, },
+          },
+          sinon: ctx.sinon,
+        },);
+        expect(lines.join('\n',),).toContain('NOTE refineSilent',);
+      },
+    },),
   ],
 },);
 
