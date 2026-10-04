@@ -75,15 +75,16 @@ What concrete task should justify opening this application rather than the exist
 Name a primary workflow and any ordered secondary workflow.
 Reading and navigating source,
 reviewing changes,
-and supervising agents or tasks are distinguishable jobs,
+and observing externally running agents or tasks are distinguishable jobs,
 not mutually exclusive product identities.
 
 Provisional recommendation:
 live source reading and navigation while changes happen elsewhere.
 This follows the reference's freshness rationale and does not imply an accepted feature list.
 Change review adds comparison-state requirements;
-agent or task control adds process-lifecycle requirements.
+observing external agents or tasks adds session-discovery and status requirements.
 Neither extra responsibility is accepted by the original request.
+Agent or task control that mutates files is excluded by the follow-up clarification.
 
 ### Q2: file mutations, settled
 
