@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   MARKUP_IDENTIFIER_KINDS,
   type MarkupAtom,
@@ -344,10 +346,13 @@ export function settleMarkupMoves(
           isStanding,
           index,
         ): boolean {
+          /**
+           Losses this edit has not been excused, present by the equal
+           lengths of the deltas and the standings.
+           */
+          const { unexcused, } = nonNullishOrThrow(deltas[index],);
           return isStanding
-            && (!(deltas[index]
-              ?.unexcused
-              ?? []).some(function isShort(atom,): boolean {
+            && (!unexcused.some(function isShort(atom,): boolean {
               return short.has(keyOf(atom,),);
             },));
         },);

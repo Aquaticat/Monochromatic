@@ -57,6 +57,29 @@ const CASES: readonly ScanCase[] = [
     atoms: [],
   },
   {
+    name: 'keeps an escaped close inside an expression literal, so the expression closes on the real one',
+    text: '{a\\}b}',
+    atoms: [
+      { kind: 'mdx-expression', value: '{a\\}b}', },
+    ],
+  },
+  {
+    name: 'leaves a link destination unclosed at the newline literal, since a destination cannot run on '
+      + 'into the next line',
+    text: '[cat](www\nmore)',
+    atoms: [],
+  },
+  {
+    name: 'leaves an unterminated comment with no atom, since nothing says where it ends',
+    text: '<!-- open',
+    atoms: [],
+  },
+  {
+    name: 'leaves a tag whose attribute expression never closes with no atom',
+    text: '<X y={open>',
+    atoms: [],
+  },
+  {
     name: 'consumes a code span whole, so markup inside it is code rather than atoms',
     text: 'run `a[^1]{b}<i>](c)` now',
     atoms: [{ kind: 'inline-code', value: '`a[^1]{b}<i>](c)`', },],

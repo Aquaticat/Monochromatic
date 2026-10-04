@@ -735,7 +735,6 @@ const ALLOWLIST: readonly string[] = [
   'src/linked-title-declared-name.ts',
   'src/lookup-cache.ts',
   'src/markdown-blocks.ts',
-  'src/markup-atom-preservation.ts',
   'src/mask-container-tags.ts',
   'src/naturalness-completeness-error.ts',
   'src/naturalness-quorum.ts',

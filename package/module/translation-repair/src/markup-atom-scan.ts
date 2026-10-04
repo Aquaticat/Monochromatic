@@ -361,7 +361,7 @@ function tagEnd({
     /**
      Character at the cursor.
      */
-    const character = text[walk.at] ?? '';
+    const character = text[walk.at];
     if (walk.quote !== '') {
       if (character === walk.quote)
         walk.quote = '';
@@ -494,7 +494,7 @@ function atomAt({
   /**
    Character at the cursor.
    */
-  const character = text[at] ?? '';
+  const character = text[at];
   if (character === '`')
     return codeSpanAt({
       text,
