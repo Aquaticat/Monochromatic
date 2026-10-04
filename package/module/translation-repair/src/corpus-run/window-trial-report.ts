@@ -298,6 +298,10 @@ function pairedExcessOf(
     ): number {
       /**
        Whether one arm replaced the archive:1 where it did.
+
+       @param arm - arm whose ledger row is read
+
+       @returns One where the arm shipped, zero where it stood
        */
       function shippedOf(arm: string,): number {
         return (triple.get(arm,)
