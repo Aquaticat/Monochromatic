@@ -71,6 +71,9 @@ type CoverageScript = Record<string, {
 
  @param script - reply per model, absent for a model that stays silent
 
+ @param asks - sink for the messages of every call, in order, for cases
+ reading the sheet
+
  @returns Client the stage can be driven with
 
  @example
@@ -78,7 +81,10 @@ type CoverageScript = Record<string, {
  const client = scriptedClient({ script, },);
  ```
  */
-function scriptedClient({ script, }: { readonly script: CoverageScript; },): SyntheticClient {
+function scriptedClient({ script, asks, }: {
+  readonly script: CoverageScript;
+  readonly asks?: ChatJsonRequest<unknown>['messages'][];
+},): SyntheticClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the coverage stage',);
@@ -89,6 +95,7 @@ function scriptedClient({ script, }: { readonly script: CoverageScript; },): Syn
     chatJson: async <ValueT,>(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
+      asks?.push(request.messages,);
       /**
        Reply this model was scripted to give, absent when it stays silent.
        */
@@ -245,6 +252,73 @@ await describe({
         expect(answer.verdict
           .kind,).toBe('carried',);
         expect(answer.findings,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'ASKS its follow-up sheet carrying the evidence it was handed, and one with none when it '
+        + 'was handed none',
+      fn: async () => {
+        /**
+         Script both cases share: two voices anchoring the passage.
+         */
+        const script = {
+          'hf:cat/Cat-A': {
+            coverage: 'all',
+            quote: 'the windowsill',
+          },
+          'hf:cat/Cat-B': {
+            coverage: 'all',
+            quote: 'the windowsill',
+          },
+        };
+        /**
+         Messages every roster call was asked with, evidence run first.
+         */
+        const asked: ChatJsonRequest<unknown>['messages'][] = [];
+        await runCoverageStage({
+          client: scriptedClient({
+            script,
+            asks: asked,
+          },),
+          modelIds: ROSTER,
+          fanOut: 'whole-bench',
+          sourcePassage: '小猫中午在垫子上打盹。',
+          translation: TARGET,
+          followupEvidence: {
+            verdictKind: 'partly-carried',
+            anchoredFull: 1,
+            anchoredPartial: 1,
+            absent: 0,
+            heard: 2,
+            asked: 4,
+            evidence: ['the windowsill',],
+            missingDestinationCount: 0,
+            shortfallAdmitted: false,
+          },
+          signal: AbortSignal.timeout(30_000,),
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(JSON.stringify(asked,).includes('partly-carried',),).toBe(true,);
+        /**
+         Messages the same ask collects with nothing handed in.
+         */
+        const plain: ChatJsonRequest<unknown>['messages'][] = [];
+        await runCoverageStage({
+          client: scriptedClient({
+            script,
+            asks: plain,
+          },),
+          modelIds: ROSTER,
+          fanOut: 'whole-bench',
+          sourcePassage: '小猫中午在垫子上打盹。',
+          translation: TARGET,
+          signal: AbortSignal.timeout(30_000,),
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(JSON.stringify(plain,).includes('partly-carried',),).toBe(false,);
       },
     },),
   ],

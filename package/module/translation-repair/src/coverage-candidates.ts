@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { alignBlocks, } from './align-blocks-walk.ts';
 import { alignHeadingsForced, } from './align-headings-forced.ts';
 import {
@@ -163,9 +165,7 @@ function unpairedSections(
       /**
        Section the matcher refused, present by the aligner's own contract.
        */
-      const chunk = sourceChunks[step.sourceIndex];
-      if (chunk === undefined)
-        throw new Error('unreachable: the matcher named a section outside its own input',);
+      const chunk = nonNullishOrThrow(sourceChunks[step.sourceIndex],);
 
       return [{
         scale: 'section',
@@ -232,9 +232,7 @@ function unpairedBlocks(
           /**
            Block the aligner refused, present by its own contract.
            */
-          const node = sourceNodes[step.sourceIndex];
-          if (node === undefined)
-            throw new Error('unreachable: the aligner named a block outside its own input',);
+          const node = nonNullishOrThrow(sourceNodes[step.sourceIndex],);
 
           return [{
             scale: 'block',

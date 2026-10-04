@@ -146,9 +146,10 @@ function targetSize(slice: ChunkPair,): number {
    Archive side of the slice.
    */
   const { target, } = slice;
-  return isInsertionChunk(target,)
-    ? 0
-    : codePointCount({ text: target.text, },);
+  // AN INSERTION SIZES ZERO WITHOUT A GUARD: every caller has already read
+  // isPaired, whose contract excludes insertion targets, and
+  // makeInsertionChunk keeps the text empty anyway (ledger T8).
+  return codePointCount({ text: target.text, },);
 }
 
 /**

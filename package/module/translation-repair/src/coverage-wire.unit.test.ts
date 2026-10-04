@@ -13,6 +13,7 @@ import {
 import {
   buildCoverageMessages,
   COVERAGE_IDENTITY_RULE,
+  isCoverageReportWire,
   messageText,
 } from '../dist/final/node/index.mjs';
 
@@ -159,6 +160,26 @@ await describe({
             return messageText({ message, },);
           },);
         expect(fenceOpening({ content: userText, label: 'PASSAGE', },).length,).toBeGreaterThan(LONG_FENCE_RUN.length,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a coverage reply that is no record, or whose quote, reason or coverage is no '
+        + 'string, so no field is read off a shape that cannot carry it',
+      fn: async () => {
+        expect(isCoverageReportWire([1, 2],),).toBe(false,);
+        expect(isCoverageReportWire({
+          reason: 'fixture',
+          coverage: 'all',
+        },),).toBe(false,);
+        expect(isCoverageReportWire({
+          quote: 'the windowsill',
+          coverage: 'all',
+        },),).toBe(false,);
+        expect(isCoverageReportWire({
+          quote: 'the windowsill',
+          reason: 'fixture',
+        },),).toBe(false,);
       },
     },),
   ],
