@@ -46,6 +46,26 @@ fn child_environment_isolates_wayland_and_private_bus() {
     assert_eq!(environment_change(&command, "DBUS_STARTER_BUS_TYPE"), Some(None));
 }
 
+/// Prevents clipboard libraries from falling back to the host X11 connection.
+#[test]
+fn child_environment_removes_host_x11_fallback() {
+    // What: Command stores child-only environment overrides without mutating this process.
+    // Why: Verify both inherited and explicit host display values using disposable state.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const child = { env: { DISPLAY: ':host', XAUTHORITY: '/fixture/host-authority' } };
+    // configureChildEnvironment(child);
+    // ```
+    let mut command = Command::new("app");
+    command.env("DISPLAY", ":host");
+    command.env("XAUTHORITY", "/fixture/host-authority");
+    configure_child_environment(&mut command, OsStr::new("wayland-nested"), None);
+    // Some(None) means explicitly removed, not merely absent from the override map.
+    assert_eq!(environment_change(&command, "DISPLAY"), Some(None));
+    assert_eq!(environment_change(&command, "XAUTHORITY"), Some(None));
+}
+
 /// Confirms omitted color scheme leaves inherited session bus untouched.
 #[test]
 fn child_environment_without_override_keeps_session_bus_inherited() {
