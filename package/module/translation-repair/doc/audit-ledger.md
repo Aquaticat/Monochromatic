@@ -6237,6 +6237,26 @@ The reach census (`~/temp/agent/mimo-trial/reach-preservation.log`)
 reads `left 0 cold stretches` on the edited source.
 No B entry found.
 
+The twenty-eighth cluster of that census,
+`corpus-run/prose`,
+against `census-OjpKcL` at `f9a3f7845`:
+5 line stretches over `prose-ranges.ts`
+(`55621aa6e`,
+`1c59e999d`,
+`943323375`,
+`794cd7764`).
+All cased:
+the line-comment path reading its end at the line end or the text end,
+an expression quoting with a backtick,
+a code fence read to its closing fence,
+a lone backtick pair read as no code-span end,
+a marker that never closes read as running to the text end,
+and a bare autolink read to its end mark.
+The reach census over the corpus-run tests
+(`~/temp/agent/mimo-trial/reach-prose8.log`)
+reads `ran 5, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

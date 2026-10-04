@@ -683,6 +683,36 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  12:23 UTC:
+  the T8 `corpus-run/prose` batch closed with commits `55621aa6e`,
+  `1c59e999d`,
+  `943323375`,
+  `794cd7764`:
+  5 line stretches over `prose-ranges.ts`,
+  all cased
+  (the comment end reads,
+  the quoting marks,
+  the code fence,
+  the lone backtick pair,
+  the unterminated marker,
+  and the bare autolink).
+  The reach census over the corpus-run tests reads
+  `ran 5, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-prose8.log`).
+  Counts at the close:
+  the full suite 1,558 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-prose-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-prose-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `794cd7764`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/probe` cluster
+  (the ranking's next at `census-OjpKcL`).
+
+- 2026-10-04,
   12:12 UTC:
   the next batch's baseline census taken at commit `43c129ff2`:
   `census written to ~/.cache/translation-repair/coverage/census-OjpKcL/census.json`
