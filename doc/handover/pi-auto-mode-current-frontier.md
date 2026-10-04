@@ -1181,6 +1181,48 @@ and issuer states were `[returned, returned, returned, unentered]`.
 The completed second result remained in native persisted outcomes.
 No child executed.
 
+A separate bounded Codemode declaration prototype now has native-worker evidence.
+`proc_fda3` passed four positive source cases,
+31 rejected source cases,
+three catalog rejections,
+and a compiled-source size rejection.
+It retains the original parent source,
+reparses generated callsite aliases,
+records canonical argument JSON,
+and reconstructs the original source exactly.
+These structural checks do not estimate effects.
+
+`proc_6838` passed nine run-local collection cases.
+Each callback belongs to a private declared-member record;
+two callbacks for the first member do not complete a missing second member.
+Equal alias names from separate runs do not combine their membership.
+Original cancellation,
+native-call cancellation,
+parent return,
+and staleness retain their separate rejection paths.
+
+`proc_68c2` passed seven actual Codemode 1.0.0 sandbox executions:
+original/compiled pairs for ASCII and escaped Unicode parents,
+plus duplicate-member,
+swapped-argument,
+and cancelled incomplete-set controls.
+Original and compiled forms retained the tested argument JSON,
+call ordering,
+and ordered return values under controlled reverse settlement.
+`proc_5d76` then omitted only actual-argument versus declared-callsite comparison.
+Its expected native assertion was `AssertionError [ERR_ASSERTION]: 1 !== 0`:
+the changed collector reached a group consumer that the intact guard prevented.
+This added one sandbox execution,
+not an SDK session or model request.
+
+The prototype has not yet been connected to SDK child preparation,
+the original judgment's child occurrences,
+or the native nested recorder and queue.
+It is not a workaround for the current closed SDK nested path.
+Private evidence is in `contract/lifecycle/codemode-declared-group/`;
+the concrete integration work is recorded in
+`contract/lifecycle/runtime-continuation/native-declared-group-integration-next.json`.
+
 Complete parent-program/dataflow and prepared child membership remain unfinished.
 The accepted preparation requirement applies to each actual execution group,
 not every future dynamic descendant at once.
