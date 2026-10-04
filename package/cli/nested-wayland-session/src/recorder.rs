@@ -162,8 +162,8 @@ pub fn start(state: &mut Compositor, dir: PathBuf, fps: f64, format: Format) -> 
     // Why:      The steady capture clock.
     let token = state
         .loop_handle
-        .insert_source(Timer::from_duration(period), |_, _, state: &mut Compositor| {
-            return tick(state)
+        .insert_source(Timer::from_duration(period), |_, _, event_state: &mut Compositor| {
+            return tick(event_state)
         })
         .map_err(|err| anyhow::anyhow!("registering the capture timer failed: {err}"))?;
 
@@ -350,9 +350,9 @@ impl Recorder {
                 // Why:      Backpressure without blocking; recycle the buffer on drop.
                 match self.pool.submit(frame) {
                     Ok(()) => self.captured += 1,
-                    Err(frame) => {
+                    Err(rejected_frame) => {
                         self.dropped += 1;
-                        self.pool.return_buffer(frame.pixels);
+                        self.pool.return_buffer(rejected_frame.pixels);
                     }
                 }
             }

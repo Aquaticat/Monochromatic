@@ -217,11 +217,10 @@ fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) -> Res
     // What:     `for line in reader.lines() { ... }`. Iterate the connection's lines;
     //           `lines()` yields `Result<String>` per line, ending at EOF.
     // Why:      One request per line.
-    for line in reader.lines() {
-        // What:     `let line = line.context("reading a control line")?;`. Unwrap the read
-        //           result.
-        // Why:      Propagate a read error out of the connection loop.
-        let line = line.context("reading a control line")?;
+    for line_result in reader.lines() {
+        // What:     context adds a diagnostic before ? unwraps the read result.
+        // Why:      Keep the I/O result distinct from the decoded control line.
+        let line = line_result.context("reading a control line")?;
 
         // What:     `let response = dispatch_line(&line, sender);`. Parse and execute the
         //           line (or produce an error response).

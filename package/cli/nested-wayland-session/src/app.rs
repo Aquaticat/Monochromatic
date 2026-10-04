@@ -115,8 +115,8 @@ pub fn run(config: Config) -> Result<i32> {
     //           registration error into `anyhow`.
     // Why:      Route resize / redraw / close events into the compositor.
     loop_handle
-        .insert_source(winit, |event, _, state: &mut Compositor| {
-            handle_winit_event(event, state);
+        .insert_source(winit, |event, _, event_state: &mut Compositor| {
+            handle_winit_event(event, event_state);
         })
         .map_err(|err| anyhow::anyhow!("registering the winit source failed: {err}"))?;
 

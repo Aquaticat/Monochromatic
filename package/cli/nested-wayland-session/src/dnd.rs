@@ -122,7 +122,7 @@ pub fn drop_file(state: &mut Compositor, path: &Path, x: Option<f64>, y: Option<
     //           centre. `?` propagates the "no window" error.
     // Why:      A no-coordinate drop targets the middle of the app.
     let (px, py) = match (x, y) {
-        (Some(x), Some(y)) => (x, y),
+        (Some(point_x), Some(point_y)) => (point_x, point_y),
         _ => window_centre(state)?,
     };
 
@@ -319,11 +319,10 @@ fn schedule_release(state: &mut Compositor, button: u32) -> Result<()> {
     // Why:      Perform the release where the seat lives, once the dwell elapses.
     state
         .loop_handle
-        .insert_source(timer, move |_, _, state: &mut Compositor| {
-            // What:     `release_drag(state, button);`. Send the button release, ending the
-            //           grab and delivering the drop.
-            // Why:      This is the deferred completion of the drag.
-            release_drag(state, button);
+        .insert_source(timer, move |_, _, event_state: &mut Compositor| {
+            // What:     release_drag sends the deferred button release through the current seat.
+            // Why:      The callback receives event-loop state, not the registration borrow.
+            release_drag(event_state, button);
 
             // What:     `TimeoutAction::Drop`. Tell calloop not to re-arm the timer.
             // Why:      The release is a one-shot.

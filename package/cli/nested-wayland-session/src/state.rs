@@ -531,7 +531,7 @@ impl Compositor {
         handle
             .insert_source(
                 Generic::new(display, Interest::READ, Mode::Level),
-                |_, display, state: &mut Compositor| {
+                |_, pending_display, state: &mut Compositor| {
                     // What:     `unsafe { display.get_mut().dispatch_clients(state).unwrap(); }`.
                     //           `unsafe` marks a block whose safety the compiler cannot
                     //           check: here it is sound because we never drop the display
@@ -541,7 +541,7 @@ impl Compositor {
                     // Gotcha:   `unsafe` in Rust does not mean "wrong"; it means the
                     //           caller vouches for an invariant (display stays alive).
                     unsafe {
-                        display.get_mut().dispatch_clients(state).unwrap();
+                        pending_display.get_mut().dispatch_clients(state).unwrap();
                     }
                     // What:     `Ok(PostAction::Continue)`. Tell calloop the source is
                     //           healthy and should keep listening. Tail expression.

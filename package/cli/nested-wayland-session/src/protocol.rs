@@ -281,10 +281,9 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
     //           Command::Screenshot(PathBuf::from(path.trim()))); }`. Take the rest as the
     //           destination path (trimmed of surrounding spaces).
     // Why:      Handle `screenshot` before tokenising so paths with spaces still work.
-    if let Some(path) = line.strip_prefix("screenshot ") {
-        // What:     `let path = path.trim();`. Drop surrounding whitespace.
-        // Why:      Tolerate `screenshot  /tmp/a.png ` spacing.
-        let path = path.trim();
+    if let Some(raw_path) = line.strip_prefix("screenshot ") {
+        // Trim surrounding whitespace without confusing raw input with the usable path.
+        let path = raw_path.trim();
         // What:     `if path.is_empty() { return Err(...); }`. Reject an empty path.
         // Why:      There is nowhere to write.
         if path.is_empty() {
