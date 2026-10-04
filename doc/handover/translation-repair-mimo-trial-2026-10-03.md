@@ -683,6 +683,35 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  15:34 UTC:
+  the T8 `corpus-run/cap` batch closed with commits `a5a9c4ab3`,
+  `9b1240f9a`,
+  `3af9376a5`:
+  5 line stretches over the cap census and override files,
+  three closed as unreachable
+  (the stamp split,
+  the paired content,
+  and the P99 zero:
+  all `nonNullishOrThrow`),
+  two cased
+  (the malformed stamp and unit word,
+  and the environment read).
+  The reach census reads `left 0 cold stretches`
+  (`~/temp/agent/mimo-trial/reach-cap3.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-cap-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-cap-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `3af9376a5`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/published` cluster
+  (the ranking's next at `census-4VTupe`).
+
+- 2026-10-04,
   15:02 UTC:
   the T8 `han` batch closed with commit `3948763a2`:
   5 line stretches over `han-only-text.ts`

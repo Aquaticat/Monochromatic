@@ -6413,6 +6413,34 @@ and none in the whole-suite census
 (`census-4VTupe` lists no `han-only-text.ts` stretch).
 No B entry found.
 
+The thirty-sixth cluster of that census,
+`corpus-run/cap`,
+against `census-4VTupe` at `351bb15dc`:
+5 line stretches over `cap-census-read.ts`,
+`cap-census-rule.ts`
+and `cap-override.ts`
+(`a5a9c4ab3`,
+`9b1240f9a`,
+`3af9376a5`).
+Three closed as unreachable:
+the stamp split's empty fallback
+(both line markers carry the bracket it splits on),
+the paired stream's content fallback
+(the index comes from the queue itself),
+and the P99's zero
+(the per-model group guard skips empty groups
+before the percentile runs),
+all three `nonNullishOrThrow`.
+Two cased:
+a malformed stamp read as unstamped
+beside a wrong unit word read as an other line
+and a stream carrying no content count pairing to none,
+and the hard-cap variable read from the environment
+when the caller names no raw text.
+The reach census (`~/temp/agent/mimo-trial/reach-cap3.log`)
+reads `left 0 cold stretches`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
