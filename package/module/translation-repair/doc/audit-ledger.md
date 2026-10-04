@@ -6989,6 +6989,20 @@ the OR chain's branches the census's attribution leaves cold
 with the cases asserting their round trips directly).
 No B entry found.
 
+The sixty-third cluster of that census,
+`corpus-run/reading`,
+against `census-G1oD6W` at `503af2c3b`:
+3 line stretches over `reading-cache-store.ts`
+(`1fb9cb177`).
+All cased:
+a readings list that is no array,
+an unavailable verdict whose kept readers are no array,
+and one whose reason is no string,
+each refusing to resume.
+The reach census (`~/temp/agent/mimo-trial/reach-reading.log`)
+reads `ran 3, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

@@ -683,6 +683,28 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  23:49 UTC:
+  the T8 `corpus-run/reading` batch closed with commit `1fb9cb177`:
+  3 line stretches over `reading-cache-store.ts`,
+  all cased
+  (the three malformed shapes
+  refusing to resume).
+  The reach census reads `ran 3, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-reading.log`).
+  Counts at the close:
+  the full suite 1,563 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-reading-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-reading-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `1fb9cb177`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `nudged` cluster
+  (the ranking's next at `census-G1oD6W`).
+
+- 2026-10-04,
   23:45 UTC:
   the next batch's baseline census taken at commit `c82ae61f7`:
   `census written to ~/.cache/translation-repair/coverage/census-G1oD6W/census.json`
