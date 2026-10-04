@@ -65,6 +65,28 @@ run = """
 runCargo(['fmt'])
 """
 
+[tasks.mcp]
+description = "Build and run the source-view gate with native headless UI inspection"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const { mkdtempSync, mkdirSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+runCargo(['build', '--features', 'slint/mcp'])
+const scratch = mkdtempSync(join(tmpdir(), 'monochromatic-ide-ui-'))
+for (const name of ['config', 'cache', 'data']) { mkdirSync(join(scratch, name)) }
+const env = {
+  ...process.env,
+  SLINT_MCP_PORT: process.env.SLINT_MCP_PORT ?? '9317',
+  SLINT_BACKEND: process.env.SLINT_BACKEND ?? 'headless',
+  XDG_CONFIG_HOME: join(scratch, 'config'),
+  XDG_CACHE_HOME: join(scratch, 'cache'),
+  XDG_DATA_HOME: join(scratch, 'data'),
+}
+execFileSync('./target/debug/monochromatic-ide', [], { stdio: 'inherit', env })
+"""
+
 [tasks.run]
 description = "Run the built IDE against a local root supplied as an argument"
 run = "./target/debug/monochromatic-ide"
