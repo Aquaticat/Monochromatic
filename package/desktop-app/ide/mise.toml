@@ -154,7 +154,7 @@ depends = ["runtime"]
 description = "Run the IDE in the repo compositor with isolated theme and font configuration"
 usage = '''
 arg "[scheme]" default="dark" help="Private system appearance: dark or light"
-arg "[fixture]" default="basic" help="Source fixture: basic or scroll"
+arg "[fixture]" default="basic" help="Source fixture: basic, scroll, or syntax"
 '''
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -165,7 +165,7 @@ const { join, resolve } = await import('node:path')
 const scheme = process.env.usage_scheme ?? 'dark'
 const fixture = process.env.usage_fixture ?? 'basic'
 if (scheme !== 'dark' && scheme !== 'light') { throw new Error('scheme must be dark or light') }
-if (fixture !== 'basic' && fixture !== 'scroll') { throw new Error('fixture must be basic or scroll') }
+if (!['basic', 'scroll', 'syntax'].includes(fixture)) { throw new Error('fixture must be basic, scroll, or syntax') }
 runCargo(['build', '--features', 'slint/mcp'])
 const scratch = mkdtempSync(join(tmpdir(), 'monochromatic-ide-native-'))
 for (const name of ['config', 'cache', 'data']) { mkdirSync(join(scratch, name)) }
@@ -188,7 +188,16 @@ for (const family of ['Inter', 'JetBrains Mono']) {
 }
 const socket = join(scratch, 'control.sock')
 const sourceFile = join(scratch, 'fixture.ts')
-const lines = ['I am a big cat.', 'Select text and use the native Copy action.', '猫 and é are grapheme test cases.']
+const lines = fixture === 'syntax' ? [
+  'const 猫: string = "cat";',
+  '// Mixed source scripts keep their shared baseline.',
+  'function describe(name: string): string {',
+  '  return name + " 猫";',
+  '}',
+  'const answer: number = 42;',
+  'const accent = "é";',
+  'describe(猫);',
+] : ['I am a big cat.', 'Select text and use the native Copy action.', '猫 and é are grapheme test cases.']
 if (fixture === 'scroll') { for (let index = 0; index < 200; index++) { lines.push('Line ' + String(index + 4) + ': smooth pixel scrolling, 猫 and Latin.') } }
 writeFileSync(sourceFile, lines.join(String.fromCharCode(10)))
 console.error('IDE_NATIVE_SOCKET=' + socket)
