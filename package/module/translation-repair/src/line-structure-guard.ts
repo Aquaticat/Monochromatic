@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   type BilingualPair,
   pairBoundFindings,
@@ -126,13 +128,14 @@ function bilingualPairs({ lines, }: { readonly lines: readonly string[]; },): re
   let at = 0;
   while ((at + 1) < lines.length) {
     /**
-     Line at the cursor.
+     Line at the cursor and the line after it, both present by the loop
+     bound (ledger T8, 2026-10-04).
      */
-    const here = lines[at] ?? '';
+    const here = nonNullishOrThrow(lines[at],);
     /**
      Line after it.
      */
-    const next = lines[at + 1] ?? '';
+    const next = nonNullishOrThrow(lines[at + 1],);
     if (carriesHan({ line: here, },) && isOwnEnglish({ line: next, },)) {
       pairs.push({
         han: here,

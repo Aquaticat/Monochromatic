@@ -218,6 +218,29 @@ await describe({
         },),
 
         it({
+          name: 'COUNTS NO PAIR where the line beside the Han one carries no letter at all, numbers '
+            + 'being neither tongue, so merging the two is a fault the pairing never excused',
+          fn: async () => {
+            expect(compareLineCounts({
+              lineStructured: true,
+              sourceText: '猫住在北方的小村。\n12345',
+              candidateText: 'The cat lived in a small northern village. 12345',
+            },).length,).toBeGreaterThan(0,);
+          },
+        },),
+
+        it({
+          name: 'COUNTS THE PAIR in whatever order the two languages stand, the English first here',
+          fn: async () => {
+            expect(compareLineCounts({
+              lineStructured: true,
+              sourceText: 'Å\n猫住在北方的小村。',
+              candidateText: 'Å. The cat lived in a small northern village.',
+            },).length,).toBe(0,);
+          },
+        },),
+
+        it({
           name:
             'IGNORES BLANK LINES ON BOTH SIDES, since they separate blocks rather than carry text. A '
             + 'rendering that writes a different number of them has merged nothing, and faulting it would '

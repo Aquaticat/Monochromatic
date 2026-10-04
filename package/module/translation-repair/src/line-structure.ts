@@ -68,7 +68,12 @@ function shortBlocks({ lengths, }: { readonly lengths: readonly number[]; },): b
   ): number {
     return left - right;
   },);
-  return (ascending[Math.floor(ascending.length / 2,)] ?? 0) <= MAX_MEDIAN_LENGTH;
+  /**
+   The middle length, present because the block floor above holds (ledger
+   T8, 2026-10-04).
+   */
+  const middle = nonNullishOrThrow(ascending[Math.floor(ascending.length / 2,)],);
+  return middle <= MAX_MEDIAN_LENGTH;
 }
 
 /**
