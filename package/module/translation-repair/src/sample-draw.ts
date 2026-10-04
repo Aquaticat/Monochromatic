@@ -261,17 +261,14 @@ function selectFromBand(
       if (a.rank !== b.rank)
         return a.rank - b.rank;
       /**
-       Entry-key ordering, breaking rank ties between entries.
+       Entry-key ordering, breaking rank ties between entries. Equal keys
+       mean one entry twice, whose ranks already order its candidates by
+       the issue shuffle; the stable order settles anything else (ledger
+       T8, 2026-10-04).
        */
-      const entryOrder = compareCodePoints({
+      return compareCodePoints({
         left: a.entryKey,
         right: b.entryKey,
-      },);
-      if (entryOrder !== 0)
-        return entryOrder;
-      return compareCodePoints({
-        left: a.issueKey,
-        right: b.issueKey,
       },);
     },)
     .slice(

@@ -106,31 +106,31 @@ await describe({
       name: drawStratifiedSample.name,
       children: [
         it({
-          name: 'BREAKS A CROSS-BAND RANK TIE by the entry shuffle, whatever order the candidates '
+          name: 'BREAKS A RANK TIE BETWEEN ENTRIES by the entry shuffle, whatever order the candidates '
             + 'arrived in',
           fn: async () => {
             /**
-             Two entries holding one candidate each, one per band, so both
-             sit at rank zero in their own bucket.
+             Two entries holding one candidate each in one band, so both
+             sit at rank zero in their own entry.
              */
             const drawn = drawStratifiedSample({
               candidates: [
                 candidateOf('Zeta', 'small', 'issue-a',),
-                candidateOf('Alpha', 'large', 'issue-b',),
+                candidateOf('Alpha', 'small', 'issue-b',),
               ],
               size: 2,
-              seed: 'seed-two',
+              seed: 'meow',
             },);
             /**
              The same candidates arriving in the other order.
              */
             const reversed = drawStratifiedSample({
               candidates: [
-                candidateOf('Alpha', 'large', 'issue-b',),
+                candidateOf('Alpha', 'small', 'issue-b',),
                 candidateOf('Zeta', 'small', 'issue-a',),
               ],
               size: 2,
-              seed: 'seed-two',
+              seed: 'meow',
             },);
             expect(drawn.map(function entryOf(candidate,) {
               return candidate.entryId;
@@ -142,16 +142,15 @@ await describe({
         },),
 
         it({
-          name: 'BREAKS A SAME-ENTRY RANK TIE by the issue shuffle, whatever order the candidates '
-            + 'arrived in',
+          name: 'ORDERS ONE ENTRY\'S CANDIDATES by the issue shuffle, whatever order they arrived in',
           fn: async () => {
             /**
-             Two candidates of one entry in two bands, so each is rank
-             zero in its own bucket and the issue keys settle the order.
+             Two candidates of one entry in one band, ranked by their
+             shuffled issue keys.
              */
             const drawn = drawStratifiedSample({
               candidates: [
-                candidateOf('Alpha', 'large', 'issue-b',),
+                candidateOf('Alpha', 'small', 'issue-b',),
                 candidateOf('Alpha', 'small', 'issue-a',),
               ],
               size: 2,
