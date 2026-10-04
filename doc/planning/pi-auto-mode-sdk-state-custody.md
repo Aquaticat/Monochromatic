@@ -505,6 +505,24 @@ The next integration extends the existing owned producer response record with on
 then binds declared/final prepared members and existing dependency finalization to that same owner and budget.
 See private `contract/lifecycle/runtime-continuation/enclosing-judgment-next.json`.
 
+## Enclosing judgment reservation prototype
+
+`proc_757f` passed 23 pure cases and eight guard removals for `request-producer-judgments/`.
+The existing producer response record reserves one enclosing judgment;
+no separate session/root identity registry was added.
+Duplicate construction and reentry reject,
+failed construction retains its original cause and cannot reset that response's budget,
+and separate responses remain independent.
+The original start is captured before entry getters and constructor work.
+
+This is a pure reservation profile,
+not native SDK group-entry or finalization integration.
+A subsequent private delta attaches each fixed session-specific constructor to the existing stream-consumer identity.
+Its goal is to avoid caller-selected factories or a competing stream/session lookup registry.
+Actual fixed creator,
+occurrence resolver,
+and SDK integration remain next work.
+
 ## Next action
 
 Preserve the completed runtime,
