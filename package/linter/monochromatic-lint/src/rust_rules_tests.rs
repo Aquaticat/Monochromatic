@@ -52,7 +52,8 @@ fn documentation_kind_catalog_is_exercised() {
         ("const C: u8 = 0;", "constant \"C\""),
         ("static S: u8 = 0;", "static \"S\""),
         ("mod m {}", "module \"m\""),
-        ("extern crate other;", "extern crate \"other\""),
+        // Extern-crate identifiers are NAME_REF nodes; the incumbent reports this item without a name.
+        ("extern crate other;", "extern crate"),
         ("use other::Thing;", "use"),
         ("impl S {}", "impl block"),
         ("enum E { V }", "enum variant \"V\""),
