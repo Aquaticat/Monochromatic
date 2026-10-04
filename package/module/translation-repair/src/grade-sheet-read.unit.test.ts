@@ -495,7 +495,7 @@ await describe({
         /**
          A line with no marker, and one whose answer no legend bounds.
          */
-        const unmarked = parseGradedSheet({ text: 'a plain line with no grade marker', },);
+        const unmarked = parseGradedSheet({ text: '### 1. no grade marker on this line', },);
         const unbounded = parseGradedSheet({ text: '### 1. grade: Y', },);
         expect(unbounded[0]?.verdict,).toBe('real-defect',);
         expect(unmarked.every(function isNoVerdict(item,): boolean {
