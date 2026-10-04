@@ -29,14 +29,14 @@ The fresh staging controller reverses the new callback to the old form
 and requires the entire resulting file to match the historical digest:
 
 ```javascript
-// Private contract/collector/sdk-1-0-2-paired-copy/stage.mjs, session delta check
+// Private contract/collector/sdk-1-0-2-paired-copy/stage.mjs:25, session delta check
 assert.equal(sha(currentSession.replace(newLine,oldLine)),sessionChange.expected);
 ```
 
 The old and new callback fields are:
 
 ```javascript
-// SDK 1.0.0: dist/core/agent-session.js, historical HTML renderer field
+// SDK 1.0.0: dist/core/agent-session.js:3445, historical HTML renderer field
 getToolDefinition: (name) => this.getToolDefinition(name),
 ```
 
@@ -71,7 +71,7 @@ It reached a removed installed path and failed with `ENOENT` before finding the 
 The corrected lookup selects the exact retained artifact path before reading its bytes:
 
 ```javascript
-// Private contract/collector/sdk-1-0-2-closure-copy-v3/stage.mjs, manager lookup
+// Private contract/collector/sdk-1-0-2-closure-copy-v3/stage.mjs:9, manager lookup
 managerPin=managerManifest.sources.find(entry=>entry.path===oldManager);
 ```
 
@@ -110,6 +110,17 @@ one original canned assessment,
 and two root definitions.
 The intrinsic resource binding remained current after the decision deadline closed.
 This does not replay or requalify every historical SDK matrix.
+
+The updated SDK 1.0.2 path then passed `proc_35e7`:
+three actual sessions,
+six injected requests,
+three original canned assessments,
+child-entry counts `[3, 1, 1]`,
+and sibling-root counts `[1, 0, 1]`.
+This rechecks the result-bound successor and guard-versus-ordinary-error behavior
+with parser 0.17.0 and the intrinsic resource collector.
+It is targeted changed-dependency qualification,
+not a claim that every historical SDK profile was rerun.
 
 These phases use `mise --no-env --no-hooks run stage`
 or `mise --no-env --no-hooks run check`

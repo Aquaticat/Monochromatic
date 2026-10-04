@@ -75,6 +75,19 @@ and two root definitions after evidence collection closed.
 This still observes a native prompt view;
 it does not establish the complete derivation of base/run options or their authority.
 
+A later host update installed Pi 1.0.2 and parser 0.17.0.
+Fresh source comparison and relocation preserved the completed 1.0.0 records.
+`proc_89f9` rechecked the paired original-judgment consumer,
+and `proc_35e7` rechecked result-derived successor execution:
+three updated-SDK sessions,
+six injected requests,
+child entries `[3, 1, 1]`,
+and sibling-root entries `[1, 0, 1]`.
+The [SDK staging report](../troubleshooting/pi-sdk-staging.md)
+retains the source delta,
+separate failed setup attempts,
+and exact verification scope.
+
 This qualifies pre-transform observation custody and named freshness paths,
 not instruction authority,
 raw-file identity,
