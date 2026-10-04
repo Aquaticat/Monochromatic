@@ -174,6 +174,13 @@ The driver now checks presence before uninstalling and preserves the
 retained APK bytes on a same-artifact retry.
 No frame was accepted by the rejected attempt.
 The underlying uninstall diagnostic is not independently diagnosed.
+The next rejected attempt passed a host-only APK path to container-side
+ADB and failed its local file lookup before install.
+The driver now copies the retained artifact into the owned container,
+checks exact bytes by digest,
+then verifies the guest's installed APK digest.
+Neither rejected attempt accepted a frame.
+See [the separate install-boundary notes](../troubleshooting/android-37-debug-apk-signature-update.md).
 
 D10's old `empty-a` statement that the first run analyses every file is
 superseded by D27's separate choice to analyse.
