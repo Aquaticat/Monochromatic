@@ -23,6 +23,17 @@ not an adoption decision.
   documenting every deliberate behavioral difference.
 - Support the current host only for 0.x.
 - Support local filesystem projects only.
+- Require go-to-definition,
+  find references,
+  hover types/documentation,
+  inlay hints,
+  and diagnostics.
+- Require syntax highlighting.
+- Keep combined file-path/content search and a browsable file tree.
+- Refresh automatically during external changes,
+  including while text is selected.
+  Preserve the user's position within surviving text.
+- Do not include a go-to-line command.
 
 Slint is settled as the UI toolkit.
 Host language,
@@ -66,7 +77,8 @@ No promise of editing in a later version is implied.
   Neither is adopted wholesale as the new backlog.
 - `uname --kernel-name --machine` reports `Linux x86_64` for the current host.
   The user selected the current host as the sole 0.x acceptance target.
-  Probe the actual desktop session and display configuration before native UI verification.
+  Selected environment variables report Wayland and KDE for the desktop session.
+  Probe actual display configuration before native UI verification.
 
 The paused package remains untouched during the interview.
 No deprecation,
@@ -183,89 +195,150 @@ Preserve a complete record when the plan moves into package documentation.
   reload behavior,
   and omissions against the reference and this register.
 
-## Round 2 frontier
+### External updates and read-only caret
 
-### Q5: language intelligence
+- Reference:
+  `src/client/app/events.ts` in editord calls the file loader on an external modification;
+  `src/client/app/file-loader.ts` replaces displayed text.
+  These call sites do not establish the new caret-preservation contract.
+- New scope:
+  update automatically without a selection hold.
+  Preserve caret location within surviving text rather than the old numerical offset.
+  The user explicitly accepts brute-force work to achieve this behavior.
+- Reason:
+  explicit Q8 answer and subsequent caret example.
+- Acceptance:
+  display `I am a big cat.` with caret `I am a bi|g cat.`;
+  externally replace `am` with `was`;
+  after refresh the caret is `I was a bi|g cat.`.
+  The marker is not document content.
+  Repeated text,
+  changed caret context,
+  selection mapping,
+  and viewport anchoring need further acceptance cases.
 
-Would file and text navigation without language services be useful for 0.x?
-If not,
-select the indispensable capabilities separately:
-semantic definition jumps,
-references,
-hover types or documentation,
-inline hints,
-and diagnostics.
+### Go-to-line command
 
-Recommendation:
-cut language services unless their absence defeats the selected reading workflow.
-Text matches must never be described as semantic references.
-Languages and server choices depend on this answer.
+- Reference:
+  the proposed new baseline included a go-to-line command.
+  editord also navigates to positions supplied by search and language services.
+- New scope:
+  no user-invoked go-to-line command.
+  Search-result,
+  definition,
+  and reference navigation still target source positions.
+- Reason:
+  explicit user cut.
+- Acceptance:
+  omit the command and shortcut without removing position-based navigation required by retained features.
 
-### Q6: syntax highlighting
+## Round 2 answers
 
-Is syntax coloring a release requirement independent of language intelligence?
+- Q5:
+  all listed language-intelligence capabilities are required at minimum.
+  A text-only navigator is not useful.
+  The proposed no-language-service cut is rejected.
+- Q6:
+  syntax highlighting is indispensable.
+  The proposed plain-text cut is rejected.
+- Q7:
+  B,
+  both search and tree.
+  The proposed search-only cut is rejected.
+- Q8:
+  automatic refresh,
+  explicitly without holding while text is selected.
+  Try to preserve current relative position and brute-force the work where necessary.
+  The follow-up example establishes content-anchored caret mapping,
+  not fixed offsets or fractional scrolling.
+- Baseline correction:
+  remove go-to-line.
 
-Recommendation:
-plain text for the first agreed 0.x scope unless syntax coloring is essential to actual use.
-Highlighting languages and implementation feasibility depend on this answer.
-Plain text still needs readable typography,
-selection,
-copying,
-and navigation.
-
-### Q7: finding files and code
-
-Which discovery surfaces are necessary:
-combined file-path and content search,
-a browsable file tree,
-or both?
-
-Recommendation:
-search first without a tree.
-Ranking:
-search only > both > tree only.
-Search only avoids a second discovery surface;
-both supports browsing without known search terms;
-tree only loses project-wide content discovery.
-This is a proposed difference from editord,
-not an accepted cut.
-
-### Q8: external-change policy
-
-When a viewed file changes externally,
-should the view update immediately,
-hold the displayed version while text is selected,
-or require explicit reload?
-
-Recommendation:
-automatic refresh with a visibly marked temporary hold while selecting text.
-Ranking:
-selection hold > unconditional refresh > manual reload.
-Selection hold protects reading and copying;
-unconditional refresh avoids stale state but can interrupt selection;
-manual reload makes freshness depend on user action.
-Define delete,
-rename,
-read-failure,
-and replacement-file behavior after this policy is settled.
-
-### Proposed floor and additional cuts
-
-Propose one local project root,
+Carry forward the rest of the proposed floor for final confirmation:
+one local root,
 one window,
 one file view,
 line numbers,
 selection/copy,
-in-file find,
-and go-to-line.
+and in-file find.
 
-Propose cutting tabs,
+Carry forward the proposed cuts for final confirmation:
+tabs,
 split panes,
+Git/status/diff UI,
+agent/task dashboards,
 media or rendered-document previews,
 and persistent session restore.
-These are veto-open proposals presented with the round,
-not accepted requirements.
-Do not silently expand the selected live-source workflow into change review or process supervision.
+The user did not request additions to these areas.
+
+## Round 3 frontier
+
+### Q9: semantic languages
+
+Which languages require all retained language-intelligence capabilities?
+The paused editor's language-service configuration targets JavaScript/TypeScript intelligence;
+its highlighter recognizes additional languages independently.
+
+Recommendation:
+JavaScript/TypeScript including JSX/TSX as the initial semantic scope.
+Ask for indispensable additions rather than assuming every language in this monorepo needs semantic support.
+
+### Q10: highlighting languages
+
+Which languages require syntax highlighting even without semantic support?
+The current editord parser registry includes JavaScript/TypeScript and JSX/TSX,
+JSON-family files,
+CSS,
+HTML,
+Markdown,
+YAML,
+TOML,
+Rust,
+XML,
+and SVG.
+
+Recommendation:
+retain that coverage as the acceptance target,
+with readable plain text for unrecognized types.
+This is a coverage proposal,
+not a commitment to reuse the existing parser implementation.
+
+### Q11: diagnostic scope
+
+Must diagnostics cover only the displayed file,
+or does 0.x need a project-wide problems view?
+
+Recommendation:
+displayed-file diagnostics only.
+This limits the application UI contract,
+not what files a language server may internally analyze.
+Diagnostic source selection follows the semantic-language answer.
+
+### Q12: replaced caret context
+
+The user's unchanged-context case is settled.
+If the text containing the caret is itself replaced,
+what fallback is acceptable?
+
+Recommendation:
+place the caret at the start of the changed region when no corresponding interior position survives.
+Preserve selection endpoints when they map to surviving text;
+otherwise clear the affected selection rather than silently select replacement text.
+No outcome blocks refresh.
+This fallback remains a proposal pending the user's answer.
+
+### Q13: inlay placement
+
+The paused editor renders hint labels on rows above the source line,
+not inserted between source tokens.
+Its `src/client/inlay/line.ts` packs hints onto annotation rows by source position.
+
+Recommendation:
+retain the above-line hint presentation.
+The alternative is visually inserted inline hints;
+this is independent of which hint categories are enabled.
+Diagnostic presentation is a separate decision,
+not bundled into this choice.
 
 ## Downstream decisions
 
@@ -287,15 +360,28 @@ Do not ask feature-specific questions before the primary job is settled.
 
 ## Next action
 
-Present Q5 through Q8 and the proposed floor/cuts.
-Invite explicit objections to the floor/cuts in the same round.
+Present Q9 through Q13.
+Treat the supplied caret example as settled,
+not a question to reopen.
 Wait for answers and record them before opening dependent decisions.
+
+Round 3 evidence:
+`git ls-files` over `package`,
+`package-paused`,
+and `doc` yielded 9,904 tracked paths,
+including 5,337 `.ts`,
+427 `.rs`,
+and 65 `.kt` paths.
+These are extension counts,
+not complete language counts or a claim about untracked/ignored files.
+The result motivates asking about semantic language coverage rather than inferring it from repo contents.
 
 Planning history:
 `c5654c5e1` introduced the record;
 `c37f58ca5` fixed semantic line breaks;
-`3cf1e698c` applied the no-write requirement to candidate workflows.
-The initial record passed scoped Markdown lint and a micromark rendered-output check.
+`3cf1e698c` applied the no-write requirement to candidate workflows;
+`9f1894d94` recorded Round 1 answers and the difference contract.
+The initial and Round 1 records passed scoped Markdown lint and micromark rendered-output checks.
 Repeat both after this round's update.
 
 [editor-readme]: ../../package-paused/desktop-daemon/editord/README.md
