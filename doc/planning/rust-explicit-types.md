@@ -99,8 +99,25 @@ The installed HIR package records upstream revision
 also with a dirty publication marker.
 `mise run inspect` counted 198 packages in the full dependency metadata
 and listed their build-script entry points before any compilation.
-No semantic code has run yet;
-production remains on syntax 0.0.335.
+The dependency-free consumer control compiled and ran in the bounded mount-free container.
+It distinguishes identically named generic and nongeneric methods,
+returning generic type-parameter counts `[1, 0, 1]` for omitted,
+irrelevant,
+and supplied type arguments.
+Evidence:
+process `proc_46ae`.
+
+The first invocation compiled but panicked with
+`Try to use attached db, but not db is attached`.
+The deciding source is installed `ra_ap_hir_ty` 0.0.336,
+`src/next_solver/interner.rs:2439-2466`:
+semantic operations require `attach_db` and can access that scope with `with_attached_db`.
+The corrected probe uses named functions through both APIs,
+without captured closures or new global request storage.
+This only exercises the single dependency-free crate;
+worklist selection and general workspace behavior remain to be implemented.
+The next probe checks whether `resolve_type` resolves written `_` sites to their actual inferred types.
+Production remains on syntax 0.0.335.
 
 Verify with disposable fixtures:
 

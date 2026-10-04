@@ -214,8 +214,16 @@ The first semantic dependency fetch found no published HIR 0.0.335;
 a re-probed sparse index confirms the gap.
 The disposable probe now successfully fetches synchronized 0.0.336,
 without changing production dependencies.
+Build-script entry points and their compiler-probe helpers were inspected.
+The Linux-filtered graph has 175 packages.
+The first consumer run compiled but lacked rust-analyzer's required database attachment scope.
+The corrected run (`proc_46ae`) passed receiver disambiguation with counts `[1, 0, 1]`
+using named callbacks through `attach_db` and `with_attached_db`,
+without adding anonymous functions or mutable request globals.
+The `_`-site resolution probe is now running as `proc_a10b`
+(`rust-semantic-inference-hole-control`).
 Next:
-finish build-script inspection and run a bounded semantic consumer fixture,
+verify nameable versus unnameable inferred types,
 then implement full declaration/call checks.
 
 The first full Markdown container run compiled and ran 77 tests:
