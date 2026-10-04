@@ -157,5 +157,35 @@ await describe({
         expect(textsOf({ rows: restored.replacements, },),).toEqual(['- Paws\n\n  Soft ones.\n- A tail',],);
       },
     },),
+
+    it({
+      name: 'LEAVES A SINGLE-ITEM LIST ALONE, since a list of one carries no gap whose spacing could '
+        + 'differ',
+      fn: async () => {
+        const restored = restoreListSpread({
+          slices: [pair({ sliceIndex: 0, source: '- 猫', target: '- A cat.', },),],
+          replacements: [{ sliceIndex: 0, replacementText: '- A cat.', },],
+        },);
+        expect(restored.restored,).toEqual([],);
+        expect(textsOf({ rows: restored.replacements, },),).toEqual(['- A cat.',],);
+      },
+    },),
+
+    it({
+      name: 'LEAVES A SLICE WHOSE LIST COUNTS DIFFER between the page and the archive, pairing them '
+        + 'across that gap would respace the wrong list',
+      fn: async () => {
+        const restored = restoreListSpread({
+          slices: [pair({
+            sliceIndex: 0,
+            source: '- 猫\n- 狗\n\n---\n\n- 兔',
+            target: '- A cat.\n- A dog.',
+          },),],
+          replacements: [{ sliceIndex: 0, replacementText: '- A cat.\n- A dog.', },],
+        },);
+        expect(restored.restored,).toEqual([],);
+        expect(textsOf({ rows: restored.replacements, },),).toEqual(['- A cat.\n- A dog.',],);
+      },
+    },),
   ],
 },);

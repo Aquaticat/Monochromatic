@@ -1,5 +1,7 @@
 import type { Root, } from 'mdast';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from '../chunk-document.ts';
 import { wordForCount, } from '../count-word.ts';
 import {
@@ -207,9 +209,9 @@ function readLists({ text, }: { readonly text: string; },): readonly ListSpacing
            Item before this one; present since `at` indexes the list from
            its first item.
            */
-          const earlier = extents[at];
+          const earlier = nonNullishOrThrow(extents[at],);
           return {
-            start: earlier?.end ?? later.start,
+            start: earlier.end,
             end: later.start,
           };
         },);
@@ -431,11 +433,10 @@ function listRespaces(
     at,
   ): readonly ListRespace[] {
     /**
-     Archive's list in the same place.
+     Archive's list in the same place; present since the counts were
+     compared and they run together.
      */
-    const archived = archiveLists[at];
-    if (archived === undefined)
-      return [];
+    const archived = nonNullishOrThrow(archiveLists[at],);
     if (!sameListShape({
       left: archived,
       right: list,
