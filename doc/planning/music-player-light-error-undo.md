@@ -296,7 +296,32 @@ This does not identify the ANR's cause or permit silent dismissal during
 capture.
 Renderer/build provenance and final post-stability layout diagnostics
 remain required;
-no initial cohort is complete yet.
+The complete 40-state SwiftShader initial cohort finished in `proc_868c`.
+Exact layout checks passed for every record,
+including measured 48dp action floors and 16dp toast owner separation.
+App-area cropping removes the measured system-status extent,
+retains exact RGB,
+checks opacity and essential PNG chunks,
+and preserves exact hashes.
+The inner/light/100% five-state image group has been inspected;
+remaining groups and publication are still pending.
+
+The native interaction run verified Undo intent and Dismiss movement in
+inner/light/100%,
+inner/dark/100% and inner/light/200% contexts.
+Each Undo callback fired once without changing retained presentation;
+each Dismiss callback fired once,
+removed the error bar and showed measured viewport/toast expansion.
+The owning SwiftShader process was subsequently killed with status `137`,
+and the next hierarchy read rejected `device offline`.
+That is not the host-renderer `SIGSEGV` incident or an established
+out-of-memory cause.
+The separate original restoration snapshot remains pending restoration.
+
+A fresh bounded visit with the retained granted identity is reserved for
+the remaining five native contexts and explicit restoration/read-back.
+No memory/CPU cap is raised and no complete interaction claim is made
+from the three retained controls.
 Boot success does not prove that the earlier graphics failure is fixed.
 New capture and interaction evidence still gates publication.
 
