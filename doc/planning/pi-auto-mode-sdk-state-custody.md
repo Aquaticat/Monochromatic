@@ -523,6 +523,18 @@ Actual fixed creator,
 occurrence resolver,
 and SDK integration remain next work.
 
+`proc_c390` passed the constructor-binding delta:
+eight pure cases and three guard removals.
+The exact existing consumer identity holds its fixed constructor;
+call-entry metadata cannot select another constructor.
+`proc_17a2` then staged nine private SDK artifacts without importing the SDK.
+The protected copy always uses complete-group admission and requires synchronous enclosing-judgment entry.
+Missing hooks cannot select independent per-tool fallback.
+This is source/syntax evidence only;
+the fixed creator,
+member-binding resolver,
+and actual SDK consumer integration are not yet qualified.
+
 ## Next action
 
 Preserve the completed runtime,
