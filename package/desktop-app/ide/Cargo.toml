@@ -1,0 +1,52 @@
+[package]
+name = "ide"
+version = "0.1.0"
+edition = "2024"
+license = "LGPL-3.0-or-later"
+publish = false
+description = "Read-only Slint source navigator with Helix language intelligence."
+
+[lib]
+name = "ide_app"
+path = "src/lib.rs"
+
+[[bin]]
+name = "monochromatic-ide"
+path = "src/main.rs"
+required-features = ["gui"]
+
+[features]
+default = ["gui"]
+gui = ["dep:slint"]
+
+[dependencies]
+anyhow = "1"
+# Keep all Helix crates on one revision: their internal interfaces and runtime
+# grammar/query configuration form one integration, not independent releases.
+helix-core = { git = "https://github.com/helix-editor/helix", rev = "ba40e547426b0f9896c8bdc699a4ab11f2b37dbc" }
+helix-lsp = { git = "https://github.com/helix-editor/helix", rev = "ba40e547426b0f9896c8bdc699a4ab11f2b37dbc" }
+helix-loader = { git = "https://github.com/helix-editor/helix", rev = "ba40e547426b0f9896c8bdc699a4ab11f2b37dbc" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "1.1"
+tokio = { version = "1.50", features = ["rt-multi-thread", "sync", "time", "process", "io-util", "macros"] }
+# Match the compiler/runtime release family used by the sibling native apps.
+slint = { version = "1.17.0", default-features = false, features = ["std", "compat-1-2", "backend-winit", "renderer-femtovg", "renderer-software", "accessibility"], optional = true }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[build-dependencies]
+slint-build = "1.17.0"
+
+[lints.clippy]
+disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
+
+[profile.dev]
+debug = 0
+
+[workspace]
