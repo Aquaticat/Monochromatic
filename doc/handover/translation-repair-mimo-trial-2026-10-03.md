@@ -683,6 +683,30 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  14:44 UTC:
+  the T8 `restoration` batch closed with commit `e16e16184`:
+  5 line stretches over `restoration-judge-wire.ts`
+  and `restoration-judge.ts`,
+  all cased
+  (the wire guards,
+  the duplicate judgment,
+  and the ballot naming one seed only).
+  The reach census reads `ran 4, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-restoration.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-restoration-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-restoration-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `e16e16184`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `han` cluster
+  (the ranking's next at `census-RD9far`).
+
+- 2026-10-04,
   14:42 UTC:
   the next batch's baseline census taken at commit `8c66817c7`:
   `census written to ~/.cache/translation-repair/coverage/census-RD9far/census.json`

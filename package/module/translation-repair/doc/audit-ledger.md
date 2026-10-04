@@ -6377,6 +6377,21 @@ The reach census (`~/temp/agent/mimo-trial/reach-grade3.log`)
 reads `left 0 cold stretches` on the edited source.
 No B entry found.
 
+The thirty-fourth cluster of that census,
+`restoration`,
+against `census-RD9far` at `36b501c3b`:
+5 line stretches over `restoration-judge-wire.ts`
+and `restoration-judge.ts`
+(`e16e16184`).
+All cased:
+a reply and a judgment that are no object,
+a reference that is no number,
+a duplicate judgment on one reference,
+and a ballot naming one seed only counted on that seed.
+The reach census (`~/temp/agent/mimo-trial/reach-restoration.log`)
+reads `ran 4, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
