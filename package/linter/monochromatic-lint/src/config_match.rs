@@ -6,17 +6,17 @@
 //! // prepareConfiguration(source).resolve(relativeFile) returns ignored, unconfigured, or effective rules.
 //! ```
 
-/// Import the incumbent Rust glob compiler; it matches native path bytes.
-use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
-/// Import native paths and the configuration value model.
-use std::path::{Path, PathBuf};
-use monochromatic_jsonc_edit::JsoncValue;
 /// Import ordered merging and validated source blocks.
 use crate::config_error::ConfigError;
 use crate::config_lookup::ConfigurationSource;
 use crate::config_merge::merge_values;
 use crate::configuration::ConfigBlock;
 use crate::resolved_rules::complete_rules;
+/// Import the incumbent Rust glob compiler; it matches native path bytes.
+use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
+use monochromatic_jsonc_edit::JsoncValue;
+/// Import native paths and the configuration value model.
+use std::path::{Path, PathBuf};
 
 /// What: One compiled block and its validated settings.
 /// Why: Repeated files reuse pattern compilation instead of compiling each glob again.
@@ -92,13 +92,21 @@ fn compile_patterns(patterns: &[String], directories: bool) -> Result<GlobSet, C
         builder.backslash_escape(true);
         let glob = match builder.build() {
             Ok(glob) => glob,
-            Err(error) => return Err(ConfigError::new(format!("Invalid configuration pattern {pattern:?}: {error}").as_str())),
+            Err(error) => {
+                return Err(ConfigError::new(
+                    format!("Invalid configuration pattern {pattern:?}: {error}").as_str(),
+                ));
+            }
         };
         compiled.add(glob);
     }
     match compiled.build() {
         Ok(patterns) => return Ok(patterns),
-        Err(error) => return Err(ConfigError::new(format!("Configuration pattern compilation failed: {error}").as_str())),
+        Err(error) => {
+            return Err(ConfigError::new(
+                format!("Configuration pattern compilation failed: {error}").as_str(),
+            ));
+        }
     }
 }
 
@@ -109,14 +117,24 @@ fn compile_patterns(patterns: &[String], directories: bool) -> Result<GlobSet, C
 /// ```ts
 /// function prepareConfiguration(source: ConfigurationSource): PreparedConfiguration;
 /// ```
-pub fn prepare_configuration(source: ConfigurationSource) -> Result<PreparedConfiguration, ConfigError> {
+pub fn prepare_configuration(
+    source: ConfigurationSource,
+) -> Result<PreparedConfiguration, ConfigError> {
     let mut blocks = Vec::with_capacity(source.blocks.len());
     for block in source.blocks {
         let files = compile_patterns(block.files.as_slice(), false)?;
         let ignores = compile_patterns(block.ignores.as_slice(), true)?;
-        blocks.push(CompiledBlock { files, ignores, block });
+        blocks.push(CompiledBlock {
+            files,
+            ignores,
+            block,
+        });
     }
-    return Ok(PreparedConfiguration { path: source.path, base: source.base, blocks });
+    return Ok(PreparedConfiguration {
+        path: source.path,
+        base: source.base,
+        blocks,
+    });
 }
 
 /// What: Resolve one config-relative logical path, including virtual-file suffixes.
@@ -132,7 +150,9 @@ impl PreparedConfiguration {
         // An absolute path would silently use the wrong pattern base.
         // Parent components remain valid for files explicitly selected outside cwd with --config.
         if relative_file.is_absolute() {
-            return Err(ConfigError::new("Configuration matching requires a candidate path relative to the configuration base."));
+            return Err(ConfigError::new(
+                "Configuration matching requires a candidate path relative to the configuration base.",
+            ));
         }
         for compiled in &self.blocks {
             if compiled.block.global_ignore && compiled.ignores.is_match(relative_file) {

@@ -6,11 +6,11 @@
 //! // Finalize merged settings without enabling any absent rule.
 //! ```
 
-/// Import the same exact JSONC representation used by parsing and merging.
-use monochromatic_jsonc_edit::{JsoncEntry, JsoncKey, JsoncKind, JsoncValue};
 /// Import schema readers and typed setup failures.
 use crate::config_data::{key_text, text};
 use crate::config_error::ConfigError;
+/// Import the same exact JSONC representation used by parsing and merging.
+use monochromatic_jsonc_edit::{JsoncEntry, JsoncKey, JsoncKind, JsoncValue};
 
 /// What: Fill defaults only for rules already present in the merged record.
 /// Why: No compiled-in preset may turn on a rule the configuration did not select.
@@ -33,7 +33,9 @@ pub(crate) fn complete_rules(mut rules: JsoncValue) -> Result<JsoncValue, Config
     for entry in entries {
         let id = key_text(&entry.key.units)?;
         let JsoncKind::Record { entries: options } = &mut entry.value.kind else {
-            return Err(ConfigError::new(format!("Merged rule {id} settings must be an object.").as_str()));
+            return Err(ConfigError::new(
+                format!("Merged rule {id} settings must be an object.").as_str(),
+            ));
         };
         let mut severity_present = false;
         let mut max_present = false;
@@ -43,7 +45,9 @@ pub(crate) fn complete_rules(mut rules: JsoncValue) -> Result<JsoncValue, Config
             if name == "severity" {
                 let severity = text(&option.value, "severity")?;
                 if severity != "off" && severity != "warn" && severity != "error" {
-                    return Err(ConfigError::new(format!("Rule {id} severity must be off, warn, or error.").as_str()));
+                    return Err(ConfigError::new(
+                        format!("Rule {id} severity must be off, warn, or error.").as_str(),
+                    ));
                 }
                 severity_present = true;
             } else if name == "max" {
@@ -57,11 +61,18 @@ pub(crate) fn complete_rules(mut rules: JsoncValue) -> Result<JsoncValue, Config
         }
         if id == "rust/max-lines" && !max_present {
             // The literal is a build invariant, not unvalidated external number text.
-            let value = JsoncValue::number_from_token("300").expect("default line limit is a JSON number");
-            options.push(JsoncEntry { key: JsoncKey::from_text("max"), value });
+            let value =
+                JsoncValue::number_from_token("300").expect("default line limit is a JSON number");
+            options.push(JsoncEntry {
+                key: JsoncKey::from_text("max"),
+                value,
+            });
         }
         if id == "markdown/lfs-image-url" && !exclude_present {
-            options.push(JsoncEntry { key: JsoncKey::from_text("exclude"), value: JsoncValue::array(Vec::new()) });
+            options.push(JsoncEntry {
+                key: JsoncKey::from_text("exclude"),
+                value: JsoncValue::array(Vec::new()),
+            });
         }
     }
     return Ok(rules);

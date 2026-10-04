@@ -7,10 +7,10 @@
 //! ```
 
 /// Import production parsing, preparation and result types.
-use super::{prepare_configuration, FileConfiguration, PreparedConfiguration};
-use crate::config_lookup::{ConfigurationSource, CONFIG_NAME};
+use super::{FileConfiguration, PreparedConfiguration, prepare_configuration};
+use crate::config_lookup::{CONFIG_NAME, ConfigurationSource};
 use crate::configuration::parse_configuration;
-use monochromatic_jsonc_edit::{parse_jsonc, JsoncValue};
+use monochromatic_jsonc_edit::{JsoncValue, parse_jsonc};
 use std::path::Path;
 
 /// Build a configuration with a platform-native absolute base but no filesystem access.
@@ -20,12 +20,15 @@ fn prepare(source: &str) -> PreparedConfiguration {
         path: base.join(CONFIG_NAME),
         base,
         blocks: parse_configuration(source).expect("configuration fixture parses"),
-    }).expect("configuration patterns compile");
+    })
+    .expect("configuration patterns compile");
 }
 
 /// Extract configured rules while making the other outcome variants test failures.
 fn rules(configuration: &PreparedConfiguration, path: &str) -> JsoncValue {
-    let result = configuration.resolve(Path::new(path)).expect("file settings resolve");
+    let result = configuration
+        .resolve(Path::new(path))
+        .expect("file settings resolve");
     if let FileConfiguration::Configured { rules } = result {
         return rules;
     }
@@ -36,42 +39,68 @@ fn rules(configuration: &PreparedConfiguration, path: &str) -> JsoncValue {
 #[test]
 fn file_globs_preserve_directory_boundaries() {
     let config = prepare(r#"[{"files":["*.rs"],"rules":{}}]"#);
-    assert!(matches!(config.resolve(Path::new("main.rs")).expect("match"), FileConfiguration::Configured { .. }));
-    assert_eq!(config.resolve(Path::new("src/main.rs")).expect("nested"), FileConfiguration::Unconfigured);
+    assert!(matches!(
+        config.resolve(Path::new("main.rs")).expect("match"),
+        FileConfiguration::Configured { .. }
+    ));
+    assert_eq!(
+        config.resolve(Path::new("src/main.rs")).expect("nested"),
+        FileConfiguration::Unconfigured
+    );
     let recursive = prepare(r#"[{"files":["**/*.rs"],"rules":{}}]"#);
-    assert!(matches!(recursive.resolve(Path::new("src/main.rs")).expect("nested match"), FileConfiguration::Configured { .. }));
+    assert!(matches!(
+        recursive
+            .resolve(Path::new("src/main.rs"))
+            .expect("nested match"),
+        FileConfiguration::Configured { .. }
+    ));
 }
 
 /// Global exclusions remove files even when an ordinary block would otherwise select them.
 #[test]
 fn global_directory_exclusions_take_precedence() {
-    let config = prepare(r#"[
+    let config = prepare(
+        r#"[
       {"files":["**/*.rs"],"rules":{}},
       {"ignores":["generated/"]}
-    ]"#);
-    assert_eq!(config.resolve(Path::new("generated/deep/file.rs")).expect("ignore"), FileConfiguration::Ignored);
-    assert!(matches!(config.resolve(Path::new("src/file.rs")).expect("source"), FileConfiguration::Configured { .. }));
+    ]"#,
+    );
+    assert_eq!(
+        config
+            .resolve(Path::new("generated/deep/file.rs"))
+            .expect("ignore"),
+        FileConfiguration::Ignored
+    );
+    assert!(matches!(
+        config.resolve(Path::new("src/file.rs")).expect("source"),
+        FileConfiguration::Configured { .. }
+    ));
 }
 
 /// Block-local exclusions do not globally exclude a file selected by another block.
 #[test]
 fn local_exclusions_leave_other_blocks_available() {
-    let config = prepare(r#"[
+    let config = prepare(
+        r#"[
       {"files":["**/*.rs"],"ignores":["tests/"],"rules":{"rust/max-lines":{"severity":"error","max":100}}},
       {"files":["tests/**/*.rs"],"rules":{"rust/require-rustdoc":{"severity":"warn"}}}
-    ]"#);
+    ]"#,
+    );
     let actual = rules(&config, "tests/deep/file.rs");
-    let expected = parse_jsonc(r#"{"rust/require-rustdoc":{"severity":"warn"}}"#).expect("expected rules");
+    let expected =
+        parse_jsonc(r#"{"rust/require-rustdoc":{"severity":"warn"}}"#).expect("expected rules");
     assert_eq!(actual, expected);
 }
 
 /// Later severities retain earlier options, and arrays concatenate in matching-block order.
 #[test]
 fn ordered_blocks_merge_before_defaults_are_filled() {
-    let config = prepare(r#"[
+    let config = prepare(
+        r#"[
       {"files":["**/*"],"rules":{"rust/max-lines":{"severity":"error","max":120},"markdown/lfs-image-url":{"severity":"error","exclude":["a/"]}}},
       {"files":["**/*"],"rules":{"rust/max-lines":{"severity":"warn"},"markdown/lfs-image-url":{"exclude":["b/"]}}}
-    ]"#);
+    ]"#,
+    );
     let actual = rules(&config, "file.rs");
     let expected = parse_jsonc(r#"{"rust/max-lines":{"severity":"warn","max":120},"markdown/lfs-image-url":{"severity":"error","exclude":["a/","b/"]}}"#).expect("expected merged rules");
     assert_eq!(actual, expected);
@@ -81,8 +110,15 @@ fn ordered_blocks_merge_before_defaults_are_filled() {
 #[test]
 fn rule_defaults_do_not_enable_absent_rules() {
     let empty = prepare(r#"[{"files":["**/*"],"rules":{}}]"#);
-    assert!(rules(&empty, "file.rs").entries().expect("record").is_empty());
-    let selected = prepare(r#"[{"files":["**/*"],"rules":{"rust/max-lines":{"severity":"off"},"markdown/lfs-image-url":{"severity":"warn"}}}]"#);
+    assert!(
+        rules(&empty, "file.rs")
+            .entries()
+            .expect("record")
+            .is_empty()
+    );
+    let selected = prepare(
+        r#"[{"files":["**/*"],"rules":{"rust/max-lines":{"severity":"off"},"markdown/lfs-image-url":{"severity":"warn"}}}]"#,
+    );
     let actual = rules(&selected, "file.rs");
     let expected = parse_jsonc(r#"{"rust/max-lines":{"severity":"off","max":300},"markdown/lfs-image-url":{"severity":"warn","exclude":[]}}"#).expect("defaults");
     assert_eq!(actual, expected);
@@ -92,7 +128,9 @@ fn rule_defaults_do_not_enable_absent_rules() {
 #[test]
 fn unresolved_severity_is_a_configuration_error() {
     let config = prepare(r#"[{"files":["**/*.rs"],"rules":{"rust/max-lines":{"max":10}}}]"#);
-    let error = config.resolve(Path::new("file.rs")).expect_err("missing severity");
+    let error = config
+        .resolve(Path::new("file.rs"))
+        .expect_err("missing severity");
     assert!(error.message.contains("needs severity"));
 }
 
@@ -100,16 +138,31 @@ fn unresolved_severity_is_a_configuration_error() {
 #[test]
 fn virtual_paths_keep_their_host_suffixes() {
     let config = prepare(r#"[{"files":["**/*.rs"],"ignores":["**/*.md/**"],"rules":{}}]"#);
-    assert_eq!(config.resolve(Path::new("doc/example.md/0.rs")).expect("snippet excluded"), FileConfiguration::Unconfigured);
-    assert!(matches!(config.resolve(Path::new("src/main.rs")).expect("real Rust"), FileConfiguration::Configured { .. }));
+    assert_eq!(
+        config
+            .resolve(Path::new("doc/example.md/0.rs"))
+            .expect("snippet excluded"),
+        FileConfiguration::Unconfigured
+    );
+    assert!(matches!(
+        config.resolve(Path::new("src/main.rs")).expect("real Rust"),
+        FileConfiguration::Configured { .. }
+    ));
 }
 
 /// Explicit parent-relative names can match, while passing an absolute name is a caller error.
 #[test]
 fn relative_parent_selection_is_not_silently_rebased() {
     let config = prepare(r#"[{"files":["../external/*.rs"],"rules":{}}]"#);
-    assert!(matches!(config.resolve(Path::new("../external/main.rs")).expect("outside selection"), FileConfiguration::Configured { .. }));
-    let error = config.resolve(std::env::temp_dir().as_path()).expect_err("absolute candidate");
+    assert!(matches!(
+        config
+            .resolve(Path::new("../external/main.rs"))
+            .expect("outside selection"),
+        FileConfiguration::Configured { .. }
+    ));
+    let error = config
+        .resolve(std::env::temp_dir().as_path())
+        .expect_err("absolute candidate");
     assert!(error.message.contains("relative"));
 }
 
@@ -118,7 +171,8 @@ fn relative_parent_selection_is_not_silently_rebased() {
 fn invalid_patterns_are_rejected() {
     let base = std::env::temp_dir();
     let source = ConfigurationSource {
-        path: base.join(CONFIG_NAME), base,
+        path: base.join(CONFIG_NAME),
+        base,
         blocks: parse_configuration(r#"[{"files":["["]}]"#).expect("valid schema"),
     };
     let error = match prepare_configuration(source) {
@@ -136,5 +190,8 @@ fn non_utf8_file_names_match_by_native_bytes() {
     use std::os::unix::ffi::OsStringExt;
     let config = prepare(r#"[{"files":["**/*.rs"],"rules":{}}]"#);
     let path = std::path::PathBuf::from(OsString::from_vec(b"src/\xff.rs".to_vec()));
-    assert!(matches!(config.resolve(path.as_path()).expect("byte path"), FileConfiguration::Configured { .. }));
+    assert!(matches!(
+        config.resolve(path.as_path()).expect("byte path"),
+        FileConfiguration::Configured { .. }
+    ));
 }

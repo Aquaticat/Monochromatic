@@ -26,6 +26,9 @@ pub mod config_error;
 /// Internal nearest-file and explicit configuration discovery.
 #[doc(hidden)]
 pub mod config_lookup;
+/// Internal compiled file-pattern matching and effective rule settings.
+#[doc(hidden)]
+pub mod config_match;
 /// Internal ordered JSONC configuration parser.
 #[doc(hidden)]
 pub mod configuration;
@@ -33,9 +36,9 @@ pub mod configuration;
 mod configuration_rules;
 /// Internal finalization of matched partial rule settings.
 mod resolved_rules;
-/// Internal compiled file-pattern matching and effective rule settings.
+/// Internal all-or-nothing grouped source edits.
 #[doc(hidden)]
-pub mod config_match;
+pub mod edits;
 
 /// Disposable native filesystem helpers used only by tests.
 #[cfg(test)]
