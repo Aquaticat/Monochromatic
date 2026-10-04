@@ -149,6 +149,24 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'READS THE SEAT AS NONE where the shipped text matches neither arm, so the contest reports '
+        + 'no winner rather than picking one',
+      fn: async function aThirdWordingWinsNothing() {
+        expect(
+          seatThatWon({
+            shippedProducer: {
+              kind: 'composite',
+              contributors: [],
+            },
+            shipped: 'a third wording neither arm offered',
+            first: armOffering(UNTOUCHED,),
+            second: armOffering(REWRITTEN,),
+          },),
+        ).toBe('none',);
+      },
+    },),
   ],
 },);
 
