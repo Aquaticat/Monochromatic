@@ -702,6 +702,36 @@ so a fresh context resumes from this file alone.
   the `corpus-run/runs` batch.
 
 - 2026-10-04,
+  19:40 UTC:
+  the T8 `corpus-run/runs` batch closed with commit `4e95c885d`:
+  4 line stretches over `runs-lock-holder.ts`
+  and `runs-lock.ts`,
+  two cased
+  (the unrecorded-identity lock line
+  and the race loss's named holder),
+  two left documented
+  (the unrecorded identity construction,
+  whose reads fail only where the host exposes none,
+  and the race branch's holder spread,
+  whose two-process race a single-process fixture
+cannot stage without flakiness).
+  The reach census reads `still cold 2`:
+  those two
+  (`~/temp/agent/mimo-trial/reach-runs.log`).
+  Counts at the close:
+  the full suite 1,561 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-runs-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-runs-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `4e95c885d`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `transient` cluster
+  (the ranking's next at `census-pVW4Um`).
+
+- 2026-10-04,
   19:03 UTC:
   the next batch's baseline census taken at commit `6209604f3`:
   `census written to ~/.cache/translation-repair/coverage/census-cQ5IKo/census.json`

@@ -6624,6 +6624,30 @@ on the two refusals,
 with one budget line cold since then in the focused run.
 No B entry found.
 
+The forty-fifth cluster of that census,
+`corpus-run/runs`,
+against `census-pVW4Um` at `34c05eb80`:
+4 line stretches over `runs-lock-holder.ts`
+and `runs-lock.ts`
+(`4e95c885d`).
+Two cased:
+the lock line writes the holder's named fields alone
+where its identity is unrecorded,
+and the race loss names the holder it read back
+(the error's shape with a holder).
+Left:
+the unrecorded identity construction
+(`runs-lock.ts:250-251`,
+its reads fail only where the host exposes none)
+and the race branch's holder spread
+(`runs-lock.ts:311`,
+whose two-process race the single-process fixture
+cannot stage without flakiness).
+The reach census (`~/temp/agent/mimo-trial/reach-runs.log`)
+reads `still cold 2`:
+those two.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
