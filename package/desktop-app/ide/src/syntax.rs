@@ -26,11 +26,11 @@ const SCOPES: &[&str] = &[
 /// Merge touching intervals with identical paint roles, not unrelated syntax nodes.
 fn append_span(spans: &mut Vec<StyleSpan>, incoming: StyleSpan) {
     // last_mut lends only the final owned interval; source text remains immutable.
-    if let Some(previous) = spans.last_mut() {
-        if previous.end == incoming.start && previous.style == incoming.style {
-            previous.end = incoming.end;
-            return;
-        }
+    // Extract a present interval only when its paint role and boundary both match.
+    if let Some(previous) = spans.last_mut()
+        && previous.end == incoming.start && previous.style == incoming.style {
+        previous.end = incoming.end;
+        return;
     }
     spans.push(incoming);
 }

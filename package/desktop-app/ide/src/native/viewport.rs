@@ -8,14 +8,14 @@ use slint::ComponentHandle;
 use std::{cell::RefCell, rc::Rc};
 
 /// Retain pixel scrolling; update the raster only at viewport tile boundaries.
-pub(super) fn bind_viewport(window: &AppWindow, state: &Rc<RefCell<State>>) {
-    let state = Rc::clone(state);
-    let weak = window.as_weak();
-    window.on_viewport_changed(move |horizontal, offset, width, height| {
+pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
+    let state = Rc::clone(shared);
+    let weak = owner.as_weak();
+    owner.on_viewport_changed(move |horizontal, offset, viewport_width, height| {
         let first = (offset.max(0.0) / 24.0) as usize;
         let count = (height.max(0.0) / 24.0).ceil() as usize + 3;
         let tile_x = ((horizontal.max(0.0) / 128.0).floor() * 128.0 - 128.0).max(0.0);
-        let width = width.max(1.0);
+        let width = viewport_width.max(1.0);
         let mut current = state.borrow_mut();
         if current.first == first.saturating_sub(1) && current.count == count
             && current.horizontal == tile_x && current.width == width {

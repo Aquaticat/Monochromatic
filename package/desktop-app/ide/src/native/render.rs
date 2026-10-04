@@ -46,7 +46,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     // let pixels: SourcePixels | undefined;
     // if (!samePaintInputs(previous, next)) pixels = paint(prepare(document));
     // ```
-    let mut pixels = None;
+    let mut rendered_pixels = None;
     let stamp = FrameStamp::new(&current.document, viewport, horizontal, colors, Arc::clone(&current.styles));
     if current.frame_stamp.as_ref() != Some(&stamp) {
         // Destructure the mutable borrow so caches can update while source is lent read-only.
@@ -54,7 +54,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         let view = shaper.prepare(document, viewport, styles);
         // Propagate raster failure visibly rather than retaining misleading old source pixels.
         match raster.paint(&view, colors, horizontal) {
-            Ok(image) => { pixels = Some(image); }
+            Ok(image) => { rendered_pixels = Some(image); }
             Err(error) => {
                 tracing::error!(%error, "source raster failed");
                 current.frame_stamp = None;
@@ -84,20 +84,19 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         document_width = document_width.max(row.layout.width() / factor);
     }
     current.document_width = document_width;
-    let source;
-    if current.presented_revision != Some(revision) {
-        source = Some(current.document.text().to_string());
+    let updated_source = if current.presented_revision != Some(revision) {
         current.presented_revision = Some(revision);
+        Some(current.document.text().to_string())
     } else {
-        source = None;
-    }
+        None
+    };
     let mut notices = Vec::new();
     if let Some(message) = &current.file_error { notices.push(message.as_str()); }
     if let Some(message) = &current.syntax_error { notices.push(message.as_str()); }
     let diagnostic = notices.join("\n");
     drop(current);
 
-    if let Some(pixels) = pixels {
+    if let Some(pixels) = rendered_pixels {
         // Premultiplied pixels share the font engine's baseline and advances.
         let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(
             &pixels.bytes, pixels.width, pixels.height,
@@ -113,7 +112,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     window.set_document_width(document_width);
     window.set_caret_x(caret.x);
     window.set_caret_y(caret.y);
-    if let Some(source) = source {
+    if let Some(source) = updated_source {
         window.set_source_text(SharedString::from(source));
     }
     window.set_selected_text(SharedString::from(selected));

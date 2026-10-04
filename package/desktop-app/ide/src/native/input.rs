@@ -10,7 +10,7 @@ use ide_app::document::ReadingPosition;
 use std::{cell::RefCell, rc::Rc};
 
 /// Bind pointer selection without letting the UI mutate source text.
-pub(super) fn bind_pointer(window: &AppWindow, state: &Rc<RefCell<State>>) {
+pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     // What: clone shares Rc ownership, whereas cloning a String copies its bytes.
     // Why: The callback remains valid after this binding function returns.
     //
@@ -18,8 +18,8 @@ pub(super) fn bind_pointer(window: &AppWindow, state: &Rc<RefCell<State>>) {
     // ```ts
     // const callbackState = state;
     // ```
-    let state = Rc::clone(state);
-    let weak = window.as_weak();
+    let state = Rc::clone(shared);
+    let weak = owner.as_weak();
     // What: move |...| transfers captured handles into a stored callback.
     // Why: Borrowed local variables would not outlive this function.
     //
@@ -27,7 +27,7 @@ pub(super) fn bind_pointer(window: &AppWindow, state: &Rc<RefCell<State>>) {
     // ```ts
     // window.onPointerHit((row, column, extend) => { ... });
     // ```
-    window.on_pointer_hit(move |row, x, extend| {
+    owner.on_pointer_hit(move |row, x, extend| {
         let mut current = state.borrow_mut();
         let Some(view) = &current.shaped else { return; };
         let head = view.hit(&current.document, row.max(0) as usize, x);
@@ -52,21 +52,21 @@ pub(super) fn bind_pointer(window: &AppWindow, state: &Rc<RefCell<State>>) {
 }
 
 /// Bind native keyboard caret movement and select-all.
-pub(super) fn bind_keys(window: &AppWindow, state: &Rc<RefCell<State>>) {
-    let select_state = Rc::clone(state);
-    let weak = window.as_weak();
-    window.on_select_all_request(move || {
+pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
+    let select_state = Rc::clone(shared);
+    let select_window = owner.as_weak();
+    owner.on_select_all_request(move || {
         let mut current = select_state.borrow_mut();
         let end = current.document.text().len_chars();
         current.document.select(ReadingPosition { anchor: 0, head: end, viewport: 0 });
         drop(current);
-        if let Some(window) = weak.upgrade() {
+        if let Some(window) = select_window.upgrade() {
             render(&window, &select_state);
         }
     });
-    let state = Rc::clone(state);
-    let weak = window.as_weak();
-    window.on_key_input(move |key, control, shift, _alt| {
+    let state = Rc::clone(shared);
+    let weak = owner.as_weak();
+    owner.on_key_input(move |key, control, shift, _alt| {
         let mut current = state.borrow_mut();
         let mut position = current.document.position();
         let text = current.document.text().slice(..);
