@@ -50,6 +50,7 @@ pub struct Reload {
 /// ```ts
 /// class Document { text: Rope; revision: number; position: ReadingPosition }
 /// ```
+#[derive(Clone)]
 pub struct Document {
     /// Current immutable-by-convention source snapshot.
     text: Rope,

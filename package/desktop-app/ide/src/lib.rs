@@ -29,3 +29,9 @@ mod glyph_cache;
 
 /// Paint identity separates source-image updates from caret presentation.
 pub mod source_frame;
+
+/// Disk reads prepare correspondence without mutating project files or UI state.
+pub mod file_reload;
+
+/// One bounded background read/diff job keeps the native input loop independent.
+pub mod reload_worker;
