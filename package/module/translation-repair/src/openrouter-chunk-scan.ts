@@ -39,10 +39,9 @@ export function openRouterChunksOf(
     .split('\n',)
     .flatMap(function chunkOf(rawLine,): readonly Readonly<Record<string, unknown>>[] {
       /**
-       Payload of this line. NO `{` GATE ABOVE THE PARSE: a payload the
-       parse accepts but the record check below refuses (`data: 5`) has to
-       reach that check, whose skip arm is otherwise code no input runs
-       (ledger T8, 2026-10-04).
+       Payload of this line. NO `{`-START GATE: the parse runs on every
+       payload, so the record guard's skip arm is what `data: 5` hits
+       rather than code no input runs (ledger T8, 2026-10-04).
        */
       const payload = ssePayloadOf({ line: rawLine, },);
       /**

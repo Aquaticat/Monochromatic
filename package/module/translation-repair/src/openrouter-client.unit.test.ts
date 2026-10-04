@@ -646,10 +646,9 @@ await describe({
               ],
               signal: SIGNAL,
             },);
-            /**
-             Meter the uncosted stream left flat, the positive control below
-             proving the meter can move here at all.
-             */
+            // Meter the uncosted stream left flat. The costed stream's read
+            // is this case's positive control, proving the meter can move
+            // at all.
             expect(runSpendUsd({ provider: 'openrouter', },),).toBe(0,);
             /**
              Stream whose usage block reports a cost.
