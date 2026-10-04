@@ -683,6 +683,39 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  10:43 UTC:
+  the T8 `sample` batch closed with commits `a23270119`,
+  `c3c0ac7c2`,
+  `1ecdd31b7` and `5dbdff239`:
+  6 line stretches over three files.
+  Four carry cases
+  (the round-robin quota fill,
+  the entry-shuffle tiebreak pinned in both arrival orders,
+  the byte-count refusal and the no-claim placeholders,
+  the repair context,
+  and the unrecorded generation),
+  and two settled behind their own contracts
+  (the quota loop's stopgap break became a pass ceiling;
+  the issue-key tiebreak was dead twice over,
+  the entry-shuffle compare alone remaining).
+  A new `sample-draw.unit.test.ts` leaves the own-unit-tests allowlist.
+  The reach census reads `ran 4, still cold 0, cold since then 0, not loaded 0`
+  and the edited source "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-sample6.log`).
+  Counts at the close:
+  the full suite 1,558 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-sample-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-sample-scans2.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `5dbdff239`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `line` cluster
+  (the ranking's next at `census-u4yVLi`).
+
+- 2026-10-04,
   09:52 UTC:
   the next batch's baseline census taken at commit `d85e24703`:
   `census written to ~/.cache/translation-repair/coverage/census-u4yVLi/census.json`

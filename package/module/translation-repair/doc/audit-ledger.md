@@ -6097,6 +6097,40 @@ reads `ran 2, still cold 0, cold since then 0, not loaded 0`
 and the two edited sources "loaded it and left 0 cold stretches".
 No B entry found.
 
+The twenty-second cluster of that census,
+`sample`,
+against `census-u4yVLi` at `4a5f94f64`:
+6 line stretches over `sample-draw.ts`,
+`sample-grading.ts` and `sample-manifest.ts`
+(`a23270119`,
+`c3c0ac7c2`,
+`1ecdd31b7`,
+`5dbdff239`).
+Four are cased in their own files
+(a new `sample-draw.unit.test.ts` leaves the own-unit-tests allowlist):
+the round-robin quota fill,
+the comparator's entry-shuffle tiebreak
+(pinned with both arrival orders under a seed that puts the
+later-alphabetical entry first),
+the byte-count assertion's refusal,
+the uncategorized and no-summary placeholders
+where the issue names no claim,
+the repair context carried where the issue has one,
+and a manifest whose generation says it is unrecorded.
+Two were settled behind their own contracts:
+the quota loop's no-progress break
+(a stopgap behind the `Math.min` cap the function takes)
+became a pass ceiling,
+the termination proof now structural;
+and the comparator's issue-key tiebreak was dead twice over
+(the rank is the issue-shuffle order,
+and equal entry keys mean one entry twice),
+the entry-shuffle compare alone remaining.
+The reach census (`~/temp/agent/mimo-trial/reach-sample6.log`)
+reads `ran 4, still cold 0, cold since then 0, not loaded 0`
+and the edited source "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
