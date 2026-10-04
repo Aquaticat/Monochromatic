@@ -645,5 +645,24 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'PAIRS NO NEIGHBOUR whose deficit is far below the surplus\'s conserved fraction, since a '
+        + 'small give-up explains none of the passage\'s surplus',
+      fn: async () => {
+        const classified = classifyDisplacement({
+          slices: [{
+            sourceChars: 1,
+            targetChars: 100_000,
+            sourceBlocks: 1,
+            targetBlocks: 1,
+          }, at({
+            sourceChars: 1_000,
+            ratio: 1,
+          },),],
+        },);
+        expect(classified.relocationCandidates,).toEqual([],);
+      },
+    },),
   ],
 },);
