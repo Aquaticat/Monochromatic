@@ -683,6 +683,28 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  21:53 UTC:
+  the T8 `hyper` batch closed with commit `309cafca9`:
+  3 line stretches over `hyper-client.ts`,
+  all cased
+  (the deadline and answer-length knobs
+  carried only when set).
+  The reach census reads `ran 3, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-hyper.log`).
+  Counts at the close:
+  the full suite 1,562 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-hyper-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-hyper-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `309cafca9`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `model` cluster
+  (the ranking's next at `census-bOt8GY`).
+
+- 2026-10-04,
   21:50 UTC:
   the next batch's baseline census taken at commit `4e08e3027`:
   `census written to ~/.cache/translation-repair/coverage/census-bOt8GY/census.json`

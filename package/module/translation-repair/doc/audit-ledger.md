@@ -6852,6 +6852,21 @@ The reach census (`~/temp/agent/mimo-trial/reach-cache2.log`)
 reads `ran 1, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The fifty-fifth cluster of that census,
+`hyper`,
+against `census-bOt8GY` at `5c321a8d6`:
+3 line stretches over `hyper-client.ts`
+(`309cafca9`).
+All cased:
+the per-exchange deadline and the answer-length knob
+carried on the request when the caller sets them
+and omitted when it does not
+(the knob rides the transport request,
+read off the recorded exchanges).
+The reach census (`~/temp/agent/mimo-trial/reach-hyper.log`)
+reads `ran 3, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
