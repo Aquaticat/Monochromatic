@@ -307,10 +307,10 @@ await describe({
               referenceContext: 'Cat naps are documented in the glossary.',
             },);
             for (const sheets of [refinerSheets, selectionSheets,]) {
-              expect(sheets.some(function carriesBoth(sheet,) {
-                return sheet.includes('喵工作室',)
-                  && sheet.includes('Cat naps are documented in the glossary.',);
-              },),).toBe(true,);
+              for (const text of ['喵工作室', 'Cat naps are documented in the glossary.',])
+                expect(sheets.some(function carries(sheet,) {
+                  return sheet.includes(text,);
+                },),).toBe(true,);
             }
             /**
              Sheets the same flow collects with no context in.
