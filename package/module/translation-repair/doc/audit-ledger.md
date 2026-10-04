@@ -6066,6 +6066,37 @@ The reach census (`~/temp/agent/mimo-trial/reach-coveragecontrol.log`)
 reads `ran 6, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The twenty-first cluster of that census,
+`corpus-run/rendering`,
+against `census-Vv2d8g` at `c7b022978`:
+6 line stretches over `rendering-audit-settled-buy.ts`,
+`rendering-audit-settled-subject.ts`,
+`rendering-audit-settled-input.ts` and `rendering-audit-settled-runs.ts`
+(`bce653c57`,
+`b01ca171a`,
+`be9beb63c`).
+Four are cased:
+the empty identity declaration,
+the missing-comparison-row invariant
+(a delivered slice the comparison rows never named),
+the verify refusal
+(a recorded `sourceChars` the preparation does not measure),
+and the slot phrase read in both its numbers
+(one slot and two,
+a matched slot whose text one run never recorded).
+Two were settled behind their own contracts:
+the decided filter now carries the narrowing as a type predicate
+(its re-check throw gone,
+its comment naming `asSubject` after the position scan refused
+"mapping below"),
+and the cited-pages map being total over the subjects
+makes its miss guard `nonNullishOrThrow`'s
+(the refine batch's shape).
+The reach census (`~/temp/agent/mimo-trial/reach-rendering2.log`)
+reads `ran 2, still cold 0, cold since then 0, not loaded 0`
+and the two edited sources "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

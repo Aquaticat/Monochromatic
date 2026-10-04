@@ -683,6 +683,36 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  09:43 UTC:
+  the T8 `corpus-run/rendering` batch closed with commits `bce653c57`,
+  `b01ca171a` and `be9beb63c`:
+  6 line stretches over four files.
+  Four carry cases
+  (the empty identity declaration,
+  the missing-comparison-row invariant,
+  the verify refusal over a tampered `sourceChars`,
+  and the slot phrase in both its numbers),
+  two settled behind their own contracts
+  (the decided filter carries the narrowing as a type predicate;
+  the cited-pages map is total over the subjects,
+  its miss guard now `nonNullishOrThrow`).
+  The reach census reads `ran 2, still cold 0, cold since then 0, not loaded 0`
+  and the two edited sources "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-rendering2.log`).
+  Counts at the close:
+  the full suite 1,554 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-rendering-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-rendering-scans2.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `be9beb63c`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `sample` cluster
+  (the ranking's next at `census-Vv2d8g`).
+
+- 2026-10-04,
   09:12 UTC:
   the next batch's baseline census taken at commit `6c6d7203d`:
   `census written to ~/.cache/translation-repair/coverage/census-Vv2d8g/census.json`
