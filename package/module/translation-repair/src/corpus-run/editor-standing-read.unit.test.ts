@@ -32,6 +32,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '../roster-seats.test-fixture.ts';
 
 //region Editor standing read listing tests
 
@@ -173,6 +174,38 @@ function standingOver(
   };
 }
 
+/**
+ Writes one throwaway run carrying exactly one artifact, and runs the command
+ over it.
+
+ @param artifact - artifact value to write as `Mittens.json`
+
+ @returns Both streams as the command left them
+
+ @throws Error where the command never started
+
+ @example
+ ```ts
+ const { stdout, } = standingOverArtifact({ artifact, },);
+ ```
+ */
+async function standingOverArtifact(
+  { artifact, }: { readonly artifact: unknown; },
+): Promise<StandingStreams> {
+  return await scratchDirWith({
+    prefix: 'editor-standing-read-',
+    setup: async function seeded({ path, },): Promise<StandingStreams> {
+      await mkdir(join(path, 'artifacts',), { recursive: true, },);
+      await writeFile(
+        join(path, 'artifacts', 'Mittens.json',),
+        JSON.stringify(artifact,),
+        'utf8',
+      );
+      return standingOver({ archive: path, });
+    },
+  },);
+}
+
 await describe({
   name: STANDING_COMMAND,
   children: [
@@ -209,6 +242,185 @@ await describe({
         },);
         const { stderr, } = standingOver({ archive: fixture.archive, },);
         expect(stderr.includes('no artifacts under',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS an artifact whose chunks the schema predates as earlier-schema, and one naming a '
+        + 'model the roster dropped as off-roster',
+      fn: async () => {
+        // The settled artifact the schema walk of 2026-10-04 mapped, with the
+        // rounds the repair lane records under its result.
+        const withoutRounds = {
+          artifactSchemaVersion: 3,
+          id: 'Mittens',
+          tip: 'abc',
+          pipelineDigest: `sha256-tree-v1:${'0'.repeat(64,)}`,
+          corpusSha: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+          callConfig: {},
+          durationMs: 1,
+          timestamp: '2026-09-28T10:00:00.000Z',
+          preparation: {
+            alignmentPairCount: 1,
+            identity: `sha256-preparation-v2:${'0'.repeat(64,)}`,
+            sliceCount: 1,
+            sourceChars: 1,
+            targetChars: 1,
+            sourceBytes: 1,
+            alignmentFindings: [],
+          },
+          lanes: {
+            repair: {
+              result: {
+                status: 'repaired',
+                sliceCount: 1,
+                changedSliceIndices: [0,],
+                withdrawnSliceIndices: [],
+                sliceTexts: [{
+                  chunkIndex: 0,
+                  incumbentKind: 'present',
+                  incumbentText: 'x',
+                  outcome: { kind: 'decided', acceptedText: 'y', },
+                  text: 'y',
+                },],
+              },
+              delivery: [{
+                chunkIndex: 0,
+                sourceText: 'x',
+                incumbentKind: 'present',
+                incumbentText: 'x',
+                outcome: { kind: 'decided', acceptedText: 'y', },
+                shippedText: 'y',
+                delivery: { kind: 'replacement-shipped', },
+              },],
+            },
+            translate: {
+              result: {
+                status: 'complete',
+                sliceCount: 1,
+                changedSliceCount: 1,
+                withdrawnSliceCount: 0,
+                changedSliceIndices: [0,],
+                withdrawnSliceIndices: [],
+                sliceTexts: [{
+                  chunkIndex: 0,
+                  incumbentKind: 'present',
+                  incumbentText: 'x',
+                  outcome: { kind: 'decided', acceptedText: 'y', },
+                  text: 'y',
+                },],
+              },
+              delivery: [{
+                chunkIndex: 0,
+                sourceText: 'x',
+                incumbentKind: 'present',
+                incumbentText: 'x',
+                outcome: { kind: 'decided', acceptedText: 'y', },
+                shippedText: 'y',
+                delivery: { kind: 'replacement-shipped', },
+              },],
+            },
+          },
+          comparison: [{
+            chunkIndex: 0,
+            incumbentKind: 'present',
+            incumbentText: 'x',
+            repairText: 'y',
+            translateText: 'y',
+            laneRelation: 'both-agree',
+            repairOutcome: { kind: 'decided', acceptedText: 'y', },
+            translateOutcome: { kind: 'decided', acceptedText: 'y', },
+            decisionComparison: { kind: 'comparable', verdict: 'same', },
+            repairDelivery: { kind: 'replacement-shipped', },
+            translateDelivery: { kind: 'replacement-shipped', },
+          },],
+          laneSelection: { kind: 'pending-human-decision', },
+          consolidation: { kind: 'not-run', },
+        };
+        const round = {
+          stage: 'chunk-patch',
+          modelId: 'not-on-roster',
+          kind: 'selected',
+          envelopeId: 'env/1',
+          slate: [{
+            index: 1,
+            producer: { kind: 'model', modelId: 'not-on-roster', },
+            rendered: 'y',
+            hash: 'h',
+          },],
+          ballots: [],
+          tally: {
+            judgesAvailable: 1,
+            heard: 1,
+            quorum: 1,
+            probe: 1,
+            ballots: 1,
+            abstentions: 0,
+            selfVotes: 0,
+          },
+          perCandidate: [],
+          selectionReason: 'x',
+          selectedIndex: 1,
+          selectedText: 'y',
+          judgeStatements: [],
+          voteWeight: 1,
+        };
+
+        /**
+         Runs whose artifact records no chunks and one whose round names a
+         model the roster dropped.
+         */
+        const earlier = await standingOverArtifact({ artifact: withoutRounds, });
+        expect(earlier.stdout.includes('earlierSchema=1',),).toBe(true,);
+        const offRoster = await standingOverArtifact({
+          artifact: {
+            ...withoutRounds,
+            lanes: {
+              ...withoutRounds.lanes,
+              repair: {
+                ...withoutRounds.lanes.repair,
+                result: {
+                  ...withoutRounds.lanes.repair.result,
+                  chunks: [{ rounds: [round,], },],
+                },
+              },
+            },
+          },
+        },);
+        expect(offRoster.stderr.includes('not-on-roster',),).toBe(true,);
+        expect(offRoster.stdout.includes('earlierRoster=1',),).toBe(true,);
+
+        /**
+         Run whose round names a seated model, so the standing and its
+         report render.
+         */
+        const seated = await standingOverArtifact({
+          artifact: {
+            ...withoutRounds,
+            lanes: {
+              ...withoutRounds.lanes,
+              repair: {
+                ...withoutRounds.lanes.repair,
+                result: {
+                  ...withoutRounds.lanes.repair.result,
+                  chunks: [{
+                    rounds: [{
+                      ...round,
+                      modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+                      slate: [{
+                        index: 1,
+                        producer: { kind: 'model', modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },
+                        rendered: 'y',
+                        hash: 'h',
+                      },],
+                    },],
+                  },],
+                },
+              },
+            },
+          },
+        },);
+        expect(seated.stdout.includes('read=1',),).toBe(true,);
       },
     },),
   ],
