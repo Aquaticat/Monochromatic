@@ -683,6 +683,24 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  21:50 UTC:
+  the next batch's baseline census taken at commit `4e08e3027`:
+  `census written to ~/.cache/translation-repair/coverage/census-bOt8GY/census.json`
+  (`~/temp/agent/mimo-trial/census-63.log`).
+  `library source: 106 files, 167 stretches over 377 lines, 4 functions never called`.
+  The ranking's first three clusters carry documented-left arms.
+  The next actionable cluster is `hyper`
+  with 3 stretches over 10 lines in 1 file
+  (`hyper-client.ts:364-369`,
+  `375-376`,
+  `421-422`),
+  then `model`,
+  `corpus-run/runs`.
+  This line lands in the trial-log commit that follows `4e08e3027`.
+  Next:
+  the `hyper` batch.
+
+- 2026-10-04,
   21:28 UTC:
   the next batch's baseline census taken at commit `8c9136d6b`:
   `census written to ~/.cache/translation-repair/coverage/census-oVnawX/census.json`
