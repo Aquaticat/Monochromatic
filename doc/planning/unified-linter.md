@@ -389,6 +389,9 @@ there are no directive comments.
       },
       "rust/require-rustdoc": {
         "severity": "error"
+      },
+      "rust/no-anonymous-functions": {
+        "severity": "error"
       }
     }
   },

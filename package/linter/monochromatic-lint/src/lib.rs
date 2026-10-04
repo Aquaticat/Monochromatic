@@ -58,6 +58,9 @@ mod markdown_positions;
 pub mod markdown_source;
 /// Internal finalization of matched partial rule settings.
 mod resolved_rules;
+/// Declaration-site checks used by the full semantic explicit-types rule.
+#[doc(hidden)]
+pub mod rust_explicit_declarations;
 /// Internal syntax-only rejection of anonymous Rust functions.
 #[doc(hidden)]
 pub mod rust_no_anonymous_functions;

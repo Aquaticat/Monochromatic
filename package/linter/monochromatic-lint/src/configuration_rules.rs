@@ -23,6 +23,7 @@ pub const RULE_IDS: &[&str] = &[
     "rust/max-lines",
     "rust/require-rustdoc",
     "rust/no-anonymous-functions",
+    "rust/require-explicit-types",
     "markdown/heading-increment",
     "markdown/commands-show-output",
     "markdown/no-duplicate-heading",
