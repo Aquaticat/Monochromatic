@@ -21,6 +21,7 @@ internal fun lightFeedbackBriefMessage(scene: String): String {
     if (scene == "missing") return "Track unavailable."
     if (scene == "combined") return "3 unavailable files."
     if (scene == "trash-failed") return "Ghost was not moved to trash."
+    if (scene == "detail-heavy") return "Operation unavailable."
     if (scene == "undo") return "Ghost moved to trash"
     if (scene == "trash-pending") return ""
     throw IllegalArgumentException("Unknown brief feedback scene: $scene")

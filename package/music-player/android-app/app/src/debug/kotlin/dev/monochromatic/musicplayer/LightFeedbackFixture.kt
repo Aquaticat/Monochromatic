@@ -121,6 +121,20 @@ internal fun lightFeedbackFixture(scene: String): LightFeedbackFixture {
             omittedTitles = emptyList(),
         )
     }
+    if (scene == "detail-heavy") {
+        // What: Escaped newlines retain separate diagnostic paragraphs in an ordinary immutable String.
+        // Why: Native log read-back must preserve non-ASCII detail and the final marker, not just a prefix.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const detail = '音楽の読み込み failed.\\nProvider detail ...\\nFinal marker';
+        // ```
+        return LightFeedbackFixture(
+            error = "音楽の読み込み failed for the authored track. The source returned an operation detail too long for this transient notice.\nThe second diagnostic paragraph retains quotes, punctuation and 日本語 without claiming real provider behavior.\nFinal authored diagnostic marker: feedback-detail-tail-2026.",
+            undo = false,
+            omittedTitles = emptyList(),
+        )
+    }
     if (scene == "trash-pending") {
         return LightFeedbackFixture(
             error = "", undo = lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("pending", false, false)),

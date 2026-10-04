@@ -136,6 +136,15 @@ class LightFeedbackFixtureTest {
         assertFalse(fixture.undo)
     }
 
+    /** Long diagnostic detail retains non-ASCII content and its tail without inventing successful Undo. */
+    @Test fun detailHeavyRetainsFullLogInputWithoutUndo() {
+        val fixture: LightFeedbackFixture = lightFeedbackFixture("detail-heavy")
+        assertTrue(fixture.error.contains("日本語"))
+        assertTrue(fixture.error.endsWith("feedback-detail-tail-2026."))
+        assertFalse(fixture.undo)
+        assertTrue(fixture.omittedTitles.isEmpty())
+    }
+
     /** Pending approval changes neither the row list nor successful feedback. */
     @Test fun pendingTrashKeepsRowsAndNoSuccessFeedback() {
         val fixture: LightFeedbackFixture = lightFeedbackFixture("trash-pending")

@@ -62,6 +62,7 @@ class LightFeedbackMessageTest {
         assertEquals("Track unavailable.", lightFeedbackBriefMessage("missing"))
         assertEquals("3 unavailable files.", lightFeedbackBriefMessage("combined"))
         assertEquals("Ghost was not moved to trash.", lightFeedbackBriefMessage("trash-failed"))
+        assertEquals("Operation unavailable.", lightFeedbackBriefMessage("detail-heavy"))
         assertEquals("Ghost moved to trash", lightFeedbackBriefMessage("undo"))
         assertEquals("", lightFeedbackBriefMessage("trash-pending"))
     }
