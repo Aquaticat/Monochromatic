@@ -52,6 +52,22 @@ The [implementation plan][implementation] and [handover][handover] record progre
   Best-effort caret/selection correspondence and approximately stable viewport placement minimize visual location loss.
 - Private application/tool cache and temporary storage outside the project is allowed.
 
+## Minimal interface
+
+Use as few visible UI elements as practical.
+The user explicitly rejected the persistent read-only indicator and Copy button as useless.
+Do not replace them with equivalent badges,
+toolbars,
+or permanent instructions.
+Copy remains available through the familiar keyboard shortcut;
+read-only semantics remain available to accessibility tools.
+
+Do not show implementation diagnostics such as revisions and selection offsets in routine chrome.
+Retain visible elements only for useful source/project context,
+required navigation,
+or actionable problems.
+An actual error may appear when needed without reserving an always-visible status bar.
+
 ## Required correspondence examples
 
 The marker `|` denotes the caret,

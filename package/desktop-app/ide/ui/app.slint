@@ -1,5 +1,5 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
-import { Palette, Button } from "std-widgets.slint";
+import { Palette } from "std-widgets.slint";
 import "../asset/font/Inter-Regular.ttf";
 import "../asset/font/Inter-SemiBold.ttf";
 import "../asset/font/JetBrainsMono-Regular.ttf";
@@ -36,11 +36,10 @@ export component AppWindow inherits Window {
     in property <string> source-text;
     in property <string> selected-text;
     in property <string> file-label: "Source-view verification";
-    in property <string> status: "Read only";
+    in property <string> error-message;
     in property <int> total-lines: 1;
     in property <int> selection-anchor;
     in property <int> selection-head;
-    in property <int> revision;
     in-out property <length> scroll-y: 0px;
     out property <float> viewport-height: scroll.height / 1px;
     private property <length> line-height: 24px;
@@ -72,31 +71,15 @@ export component AppWindow inherits Window {
     VerticalLayout {
         spacing: 0px;
         Rectangle {
-            height: 48px;
-            background: Palette.alternate-background;
-            HorizontalLayout {
-                padding-left: 12px;
-                padding-right: 12px;
-                Text {
-                    text: root.file-label;
-                    color: Palette.foreground;
-                    vertical-alignment: center;
-                    overflow: elide;
-                    horizontal-stretch: 1;
-                }
-                Text {
-                    text: "◉  Read only";
-                    color: Palette.foreground;
-                    font-weight: 600;
-                    vertical-alignment: center;
-                }
-                Button {
-                    text: "Copy";
-                    min-width: 64px;
-                    min-height: 48px;
-                    enabled: root.selection-anchor != root.selection-head;
-                    clicked => { root.copy-selection(); }
-                }
+            height: 32px;
+            Text {
+                x: 12px;
+                width: parent.width - 24px;
+                height: parent.height;
+                text: root.file-label;
+                color: Palette.foreground;
+                vertical-alignment: center;
+                overflow: elide;
             }
         }
 
@@ -107,7 +90,7 @@ export component AppWindow inherits Window {
             accessible-read-only: true;
             accessible-label: "Source code";
             accessible-value: root.source-text;
-            accessible-description: "Read-only source. Select text to copy; external changes refresh automatically.";
+            accessible-description: "Select text and press Ctrl+C to copy.";
 
             key-pressed(event) => {
                 if event.modifiers.control && (event.text == "c" || event.text == "C") {
@@ -196,18 +179,11 @@ export component AppWindow inherits Window {
             }
         }
 
-        Rectangle {
-            height: 48px;
-            background: Palette.alternate-background;
-            Text {
-                x: 12px;
-                width: parent.width - 24px;
-                height: parent.height;
-                text: root.status;
-                color: Palette.foreground;
-                vertical-alignment: center;
-                overflow: elide;
-            }
+        if root.error-message != "": Text {
+            text: root.error-message;
+            color: Palette.foreground;
+            font-weight: 600;
+            wrap: word-wrap;
         }
     }
 }

@@ -63,6 +63,12 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
   The independently centered per-grapheme screenshot was rejected.
 - Genuine pixel-level smooth scrolling with a notched wheel,
   following music-player's native `Flickable` approach.
+- Minimal visible UI.
+  The user rejected the read-only indicator and Copy button.
+  Those controls and the debug footer are removed from the current markup.
+  Copy stays on Ctrl+C;
+  accessibility retains read-only semantics;
+  actionable errors appear only when needed.
 - Record every deliberate difference from editord.
   Editing,
   saves,
@@ -199,10 +205,9 @@ or write confinement exists yet.
 Up/down,
 PageUp/PageDown,
 and focus navigation remain incomplete.
-The accessible description claims automatic refresh before that path exists;
-implement it before acceptance.
-Legacy terminal-cell geometry and tests remain in `view_model.rs`;
-extract the still-used `StyleSpan` before removing that obsolete path.
+The accessible description no longer claims automatic refresh before that path exists.
+Legacy terminal-cell geometry and tests in `view_model.rs` were removed on 2026-10-04.
+The retained `StyleSpan` now lives in `source_style.rs`.
 
 ## Verification and measured rendering issue
 
@@ -216,7 +221,8 @@ A native dark screenshot was inspected at
 `/tmp/monochromatic-ide-native-DdPO53/shaped.png`.
 This is not whole-application acceptance.
 
-A native click reached `Selection 61:61` after the leading CJK glyph;
+Before the debug footer was removed,
+a native click reached `Selection 61:61` after the leading CJK glyph;
 keyboard selection reached `Selection 60:61`.
 Clipboard readback is still unverified.
 A multi-step MCP probe timed out,
@@ -248,7 +254,16 @@ Evidence:
 `/tmp/monochromatic-ide-native-8CCvg2/wheel-before.json`.
 Native `Flickable` easing exists,
 but the synchronous source raster interrupted it.
-Retest after the cached renderer rebuild.
+After rebuilding,
+`/tmp/monochromatic-ide-native-S6Y37Y/wheel-after.json` shows continued fractional motion through that boundary,
+including -49.020374,
+-57.600006,
+and -59.814823.
+The boundary request took 32.52 ms in this debug build,
+not the previous 367.79 ms.
+Steady repeated Home requests after caret-image reuse took 1.68 to 2.95 ms.
+This is evidence of the corrected redraw path,
+not a claim of guaranteed frame pacing or whole-application acceptance.
 
 MCP `scroll_element` sends `TouchPhase::Cancelled`,
 which exercises immediate scrolling and is not a notched-wheel test.

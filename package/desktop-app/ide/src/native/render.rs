@@ -60,7 +60,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
                 current.frame_stamp = None;
                 drop(current);
                 window.set_source_image(slint::Image::default());
-                window.set_status(SharedString::from(format!("Cannot render source: {error}")));
+                window.set_error_message(SharedString::from(format!("Cannot render source: {error}")));
                 return;
             }
         }
@@ -99,6 +99,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
             &pixels.bytes, pixels.width, pixels.height,
         );
         window.set_source_image(slint::Image::from_rgba8_premultiplied(buffer));
+        window.set_error_message(SharedString::default());
         window.set_image_x(horizontal);
         window.set_image_y(first as f32 * 24.0);
         window.set_image_width(pixels.width as f32 / factor);
@@ -115,9 +116,5 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     window.set_total_lines(lines as i32);
     window.set_selection_anchor(position.anchor as i32);
     window.set_selection_head(position.head as i32);
-    window.set_revision(revision as i32);
-    window.set_status(SharedString::from(format!(
-        "Read only · Revision {revision} · Selection {}:{} · Source-view gate",
-        position.anchor, position.head
-    )));
+    tracing::debug!(revision, anchor = position.anchor, head = position.head, "source reading state presented");
 }
