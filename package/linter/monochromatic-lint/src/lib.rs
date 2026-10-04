@@ -40,6 +40,9 @@ pub mod diagnostic;
 /// Internal all-or-nothing grouped source edits.
 #[doc(hidden)]
 pub mod edits;
+/// Native source-file discovery with explicit ignore and failure boundaries.
+#[doc(hidden)]
+pub mod file_discovery;
 /// Internal code-fence normalization.
 #[doc(hidden)]
 pub mod markdown_code;
@@ -71,6 +74,9 @@ mod rust_explicit_inference;
 /// Full explicit-type policy over a registered semantic parse.
 #[doc(hidden)]
 pub mod rust_explicit_types;
+/// Invocation-level Rust dispatch and lazy workspace caching.
+#[doc(hidden)]
+pub mod rust_file_engine;
 /// Generic parameter ownership and argument-spelling helpers.
 mod rust_generic_arguments;
 /// Semantic disambiguation of type-shaped generic constant placeholders.
@@ -78,9 +84,6 @@ mod rust_inferred_constants;
 /// Internal syntax-only rejection of anonymous Rust functions.
 #[doc(hidden)]
 pub mod rust_no_anonymous_functions;
-/// Invocation-level Rust dispatch and lazy workspace caching.
-#[doc(hidden)]
-pub mod rust_file_engine;
 /// Typed Rust rule selection from validated merged JSONC.
 #[doc(hidden)]
 pub mod rust_rule_settings;
