@@ -683,6 +683,30 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  22:52 UTC:
+  the next batch's baseline census taken at commit `ccf8a7eb7`:
+  `census written to ~/.cache/translation-repair/coverage/census-bppPVq/census.json`
+  (`~/temp/agent/mimo-trial/census-71.log`),
+  `library source: 102 files, 159 stretches over 359 lines, 4 functions never called`.
+  The lookup batch's new file tripped three scans on its way in
+  (the own-tests allowlist entry,
+  the direct mkdtemp,
+  and the unused path join),
+  each fixed forward
+  (`153da6c69`,
+  `ccf8a7eb7`).
+  The ranking's first six clusters carry documented-left arms.
+  The next actionable cluster is `retry`
+  with 3 stretches over 6 lines in 1 file
+  (`retry-stated-wait.ts:142`,
+  `143-145`,
+  `219-220`),
+  then `corpus-run/lane`.
+  This line lands in the trial-log commit that follows `ccf8a7eb7`.
+  Next:
+  the `retry` batch.
+
+- 2026-10-04,
   22:36 UTC:
   the T8 `lookup` batch closed with commit `a9b5e71dc`:
   3 line stretches over `lookup-cache.ts`,
