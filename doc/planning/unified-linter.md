@@ -12,9 +12,15 @@ Incumbent responsibilities and their owners:
 [`doc/planning/unified-linter-coverage-ledger.md`](unified-linter-coverage-ledger.md).
 
 Status:
-confirmed by the user as the shared understanding on 2026-09-23;
-implementation awaits the user's go-ahead,
-and no product code exists.
+confirmed by the user as the shared understanding on 2026-09-23.
+On 2026-10-04,
+the cli-git rewrite's implementing agent was also assigned ownership of the unified linter.
+The user replaced HCL configuration with JSONC and explicitly required container tests,
+mutation testing,
+and fuzzing.
+The historical `monochromatic-lint.config.hcl` is now `monochromatic-lint.config.jsonc` (2026-10-04).
+Other settled behavior remains unchanged.
+No product code has been added by this session.
 
 ## Goal and scope
 
@@ -68,11 +74,10 @@ and no product code exists.
      and `satteri-ast` 0.5.3,
      pinned with `=` and upgraded together
      ([`doc/audit/tech-unified-linter-markdown-parser-vet-2026-09-23.md`](../audit/tech-unified-linter-markdown-parser-vet-2026-09-23.md));
-  - `hcl-edit` 0.9.7,
-     unpatched,
-     for configuration
-     ([`doc/audit/tech-meow-hcl-front-end-vet-2026-09-17.md`](../audit/tech-meow-hcl-front-end-vet-2026-09-17.md);
-     its two patches fix write-back only);
+  - `monochromatic-jsonc-edit`,
+     the repository's Rust JSONC package at `package/rust-module/jsonc-edit`,
+     for configuration;
+     no HCL dependency or compatibility parser;
   - `monochromatic-deepmerge` for rule-setting merges.
 - Build-time C or assembly inside dependencies is allowed
    (`psm`,
@@ -150,7 +155,7 @@ configuration uses `ignores` such as `**/*.md/**` when a block must reach real f
 ## Configuration
 
 - File name:
-   `monochromatic-lint.config.hcl`.
+   `monochromatic-lint.config.jsonc`.
 - Lookup:
    for each linted file,
    the nearest configuration file in its directory or an ancestor is used alone;
@@ -162,16 +167,17 @@ configuration uses `ignores` such as `**/*.md/**` when a block must reach real f
 - No built-in rule defaults:
    a rule runs only if the configuration turns it on.
 - Shape:
-   one-label HCL blocks,
-   as meow uses,
-   each `config "<name>" { }` with `files`,
+   an ordered JSONC array of configuration objects,
+   each with optional `name` and the existing `files`,
    `ignores`,
-   and `rules`.
+   and `rules` fields.
+  Array order preserves the existing block-merge order;
+   changing the syntax does not change lookup or merging.
 - A block with only `ignores` removes matching files from linting entirely.
 - Every other block needs `files`;
    it applies to a file when one `files` pattern matches and no `ignores` pattern does.
 - A rule setting is always an object:
-   `"rust/max-lines" = { severity = "error", max = 300 }`,
+   `"rust/max-lines": { "severity": "error", "max": 300 }`,
    with severity `off`,
    `warn`,
    or `error`.
@@ -182,14 +188,15 @@ configuration uses `ignores` such as `**/*.md/**` when a block must reach real f
    and any other value,
    or a value whose type differs from the first,
    takes the last one.
-  So a later `{ severity = "warn" }` keeps an earlier `max`,
+  So a later `{ "severity": "warn" }` keeps an earlier `max`,
    and a later `exclude` list adds to an earlier one.
-- Values are literals only;
-   `null`,
-   duplicate keys,
-   variables,
+- JSONC comments and trailing commas are accepted.
+  The configuration schema continues to reject `null` and duplicate keys,
+   even though the generic JSONC value model can represent null.
+  Variables,
    functions,
-   and expressions are configuration errors.
+   imports,
+   and expressions are not configuration features.
 - Rule options have per-rule defaults,
    such as `max = 300` for `rust/max-lines`.
 
@@ -330,69 +337,136 @@ there are no directive comments.
 
 ## Draft repository configuration
 
-```hcl
-# monochromatic-lint.config.hcl
-config "ignored-trees" {
-  ignores = ["package-paused/", "package-deprecated/", ".out-of-scope/"]
-}
-
-config "rust" {
-  files = ["**/*.rs"]
-  rules = {
-    "rust/max-lines"       = { severity = "error", max = 300 }
-    "rust/require-rustdoc" = { severity = "error" }
+```jsonc
+// monochromatic-lint.config.jsonc
+[
+  {
+    "name": "ignored-trees",
+    "ignores": [
+      "package-paused/",
+      "package-deprecated/",
+      ".out-of-scope/"
+    ]
+  },
+  {
+    "name": "rust",
+    "files": [
+      "**/*.rs"
+    ],
+    "rules": {
+      "rust/max-lines": {
+        "severity": "error",
+        "max": 300
+      },
+      "rust/require-rustdoc": {
+        "severity": "error"
+      }
+    }
+  },
+  {
+    "name": "rust-exemptions",
+    "files": [
+      "**/tests/**/*.rs",
+      "**/*_tests.rs",
+      "**/fuzz/**/*.rs",
+      "**/*.fuzz/**/*.rs",
+      "**/build.rs",
+      "**/fixture/**/*.rs",
+      "**/test-fixture/**/*.rs",
+      "**/invalid/**/*.rs",
+      "doc/audit/**/*.rs"
+    ],
+    "ignores": [
+      "**/*.md/**",
+      "**/*.mdx/**"
+    ],
+    "rules": {
+      "rust/max-lines": {
+        "severity": "off"
+      },
+      "rust/require-rustdoc": {
+        "severity": "off"
+      }
+    }
+  },
+  {
+    "name": "markdown",
+    "files": [
+      "**/*.md",
+      "**/*.mdx"
+    ],
+    "rules": {
+      "markdown/heading-increment": {
+        "severity": "error"
+      },
+      "markdown/commands-show-output": {
+        "severity": "error"
+      },
+      "markdown/no-duplicate-heading": {
+        "severity": "error"
+      },
+      "markdown/single-h1": {
+        "severity": "error"
+      },
+      "markdown/no-trailing-punctuation": {
+        "severity": "error"
+      },
+      "markdown/no-bare-urls": {
+        "severity": "error"
+      },
+      "markdown/no-emphasis-as-heading": {
+        "severity": "error"
+      },
+      "markdown/fenced-code-language": {
+        "severity": "error"
+      },
+      "markdown/link-image-reference-definitions": {
+        "severity": "error"
+      },
+      "markdown/link-image-style": {
+        "severity": "error"
+      },
+      "markdown/no-pipe-tables": {
+        "severity": "error"
+      },
+      "markdown/semantic-line-breaks": {
+        "severity": "error"
+      },
+      "markdown/lfs-image-url": {
+        "severity": "error",
+        "exclude": [
+          "package/ssg/"
+        ]
+      }
+    }
+  },
+  {
+    "name": "rustdoc",
+    "files": [
+      "**/*.rs/*.md"
+    ],
+    "rules": {
+      "markdown/single-h1": {
+        "severity": "off"
+      }
+    }
+  },
+  {
+    "name": "snippet-burn-down",
+    "files": [
+      "**/*.md/*.rs",
+      "**/*.mdx/*.rs"
+    ],
+    "rules": {
+      "rust/require-rustdoc": {
+        "severity": "warn"
+      },
+      "rust/max-lines": {
+        "severity": "warn"
+      }
+    }
   }
-}
-
-# Exemptions for real Rust files only; snippets inside Markdown stay linted.
-config "rust-exemptions" {
-  files = [
-    "**/tests/**/*.rs", "**/*_tests.rs", "**/fuzz/**/*.rs", "**/*.fuzz/**/*.rs",
-    "**/build.rs", "**/fixture/**/*.rs", "**/test-fixture/**/*.rs", "**/invalid/**/*.rs",
-    "doc/audit/**/*.rs",
-  ]
-  ignores = ["**/*.md/**", "**/*.mdx/**"]
-  rules = {
-    "rust/max-lines"       = { severity = "off" }
-    "rust/require-rustdoc" = { severity = "off" }
-  }
-}
-
-config "markdown" {
-  files = ["**/*.md", "**/*.mdx"]
-  rules = {
-    "markdown/heading-increment"                 = { severity = "error" }
-    "markdown/commands-show-output"              = { severity = "error" }
-    "markdown/no-duplicate-heading"              = { severity = "error" }
-    "markdown/single-h1"                         = { severity = "error" }
-    "markdown/no-trailing-punctuation"           = { severity = "error" }
-    "markdown/no-bare-urls"                      = { severity = "error" }
-    "markdown/no-emphasis-as-heading"            = { severity = "error" }
-    "markdown/fenced-code-language"              = { severity = "error" }
-    "markdown/link-image-reference-definitions"  = { severity = "error" }
-    "markdown/link-image-style"                  = { severity = "error" }
-    "markdown/no-pipe-tables"                    = { severity = "error" }
-    "markdown/semantic-line-breaks"              = { severity = "error" }
-    "markdown/lfs-image-url"                     = { severity = "error", exclude = ["package/ssg/"] }
-  }
-}
-
-# Rustdoc keeps level-1 sections such as `# Safety` and `# Examples`.
-config "rustdoc" {
-  files = ["**/*.rs/*.md"]
-  rules = {
-    "markdown/single-h1" = { severity = "off" }
-  }
-}
-
-# Snippet backlog at cutover: warn until the 905 findings are fixed, then delete this block.
-config "snippet-burn-down" {
-  files = ["**/*.md/*.rs", "**/*.mdx/*.rs"]
-  rules = {
-    "rust/require-rustdoc" = { severity = "warn" }
-    "rust/max-lines"       = { severity = "warn" }
-  }
-}
+]
 ```
 
 ## Build order
@@ -413,7 +487,7 @@ config "snippet-burn-down" {
      and the 13 rules with the 137 TypeScript tests ported.
 4.  Processors and fix mapping.
 5.  Configuration:
-     HCL parsing,
+     JSONC parsing through the repository package,
      lookup,
      block matching.
     Rule-setting merge lands with `monochromatic-deepmerge`,
@@ -439,6 +513,39 @@ config "snippet-burn-down" {
      and add the snippet burn-down block.
 8.  Fix the 905 snippet findings,
      then delete the burn-down block.
+
+## Required verification
+
+Container tests,
+mutation testing,
+and fuzzing are release acceptance requirements,
+not optional follow-up work.
+The combined plan specifies their concrete targets and gates:
+[`cli-git-rust-implementation.md`](cli-git-rust-implementation.md#verification-gates).
+
+- Container tests exercise the installed binary,
+  file walking,
+  configuration lookup and merges,
+  stdin fixing,
+  atomic writes,
+  process shutdown,
+  and cli-git's selected-rule integration in disposable fixtures.
+- Mutation tests target configuration precedence,
+  rule predicates,
+  fix safety,
+  virtual-to-host position mapping,
+  and error/exit handling.
+  Surviving non-equivalent mutants require stronger tests;
+  exclusions and equivalent mutants require evidence.
+- Fuzzing covers JSONC schema handling,
+  merge value shapes,
+  Markdown/MDX and Rust snippets,
+  Unicode and BOM positions,
+  nested processors,
+  and overlapping or adversarial edits.
+  Minimized failures become deterministic regressions.
+- Resource limits apply to test and fuzz subprocesses.
+  They do not silently adopt a production parse-time budget that the earlier design deferred.
 
 ## Deferred until a consumer exists
 

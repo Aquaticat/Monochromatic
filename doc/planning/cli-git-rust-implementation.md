@@ -1,14 +1,26 @@
-# cli-git Rust implementation proposal
+# cli-git and unified-linter Rust implementation proposal
 
 ## Authority and scope
 
 The user confirmed the scope in
 [`cli-git-rust-rewrite.md`](cli-git-rust-rewrite.md)
 and asked to see the implementation approach before code changes.
-This document proposes that approach;
-it does not authorize starting product changes.
+The user subsequently assigned this agent ownership of the unified linter as well,
+selected JSONC for that tool,
+and required container tests,
+mutation testing,
+and fuzzing.
 The language choice is settled.
-The expanded 2.x policy catalog is excluded.
+The expanded cli-git 2.x policy catalog is excluded;
+the unified linter's already agreed Rust,
+Markdown,
+and MDX replacement is included.
+No product changes have been made by this session.
+
+The Rust wrapper supports the latest stable Git release only.
+Resolve and record that exact release in build and test evidence.
+Do not port older-Git compatibility branches or keep an old-version test matrix.
+Normal command execution does not query the network to discover a Git release.
 
 ## Shape
 
@@ -137,27 +149,49 @@ and parsing of rendered stderr.
 It is a concrete execution-path change,
 not a quantified speedup claim.
 
-### Markdown integration and ownership
+### Unified linter and Markdown integration
 
-Port only the required commit-time rule behavior,
-not the whole Markdown linter or expanded catalog.
-The accepted
-[`unified-linter.md`](../handover/unified-linter.md)
-plan already owns the standalone Rust Markdown replacement;
-coordinate the reusable implementation with that owner instead of creating a second Markdown engine.
-That implementation is planned,
-not an already available dependency.
+This agent owns both tools.
+Implement the full accepted
+[`unified-linter.md`](unified-linter.md)
+design in `package/linter/monochromatic-lint`,
+including Rust,
+Markdown,
+MDX,
+processors,
+fix mapping,
+and JSONL output.
+Do not implement a second Markdown rule engine inside cli-git.
 
-The native-parser audit and current offset troubleshooting are starting evidence,
-not permission to copy stale byte/UTF-16 conversion code.
-Preserve the selected LFS-image rule's findings and localized edits,
+Use `package/rust-module/jsonc-edit` for both tools,
+with separate typed schemas:
+cli-git's policy settings and the linter's ordered configuration blocks are different data models.
+The linter's filename is `monochromatic-lint.config.jsonc`.
+Preserve its accepted nearest-config lookup,
+block ordering,
+per-rule defaults,
+and deepmerge semantics.
+The existing deepmerge-fork prerequisite is not waived by changing configuration syntax;
+verify its current state before implementing the merge layer,
+and do not create interim merge code.
+
+Keep the already accepted linter CLI integration rather than introducing a new public library interface or `--rule` flag.
+Cli-git's built-in Markdown policy selects the coordinated installation's owned native linter,
+creates a one-rule temporary JSONC configuration,
+and uses `--config`,
+`--stdin`,
+`--stdin-filename`,
+and `--fix` with the existing fixed-source/JSONL stream contract.
+Repository JSONC cannot choose the executable or inject leading arguments.
+First-party linter selection is installation wiring,
+not a generic custom-policy facility.
+
+Preserve the LFS-image rule's findings and localized edits,
 including astral Unicode and BOM fixtures.
-Keep malformed-input behavior bounded.
-If hard parser interruption requires process isolation,
-use a fixed shipped worker over a batch,
-not a repository-selected program or one Node process per file.
-The parser audit records malformed-MDX hangs;
-do not place unbounded parsing inside a commit's critical section.
+Do not carry over the known double offset correction.
+The earlier linter design deferred a production parse-time budget;
+this assignment does not silently reverse that choice.
+Container and fuzz runs still bound malformed-input work and retain hanging inputs as evidence.
 
 ### Commit transactions and recovery
 
@@ -196,8 +230,9 @@ Do not intentionally switch wrapper versions during a live transaction.
 If a state cannot be read safely,
 fail with an actionable recovery diagnostic rather than guessing or deleting it.
 
-Retain capability probes and degradation paths for older Git versions.
-Do not replace feature probing with an assumed minimum version.
+Use the capabilities of the supported latest Git release directly.
+Report missing required Git behavior as an unsupported-environment failure,
+not an invitation to fall back to an older transaction algorithm.
 
 ### Linked-worktree state
 
@@ -224,14 +259,21 @@ The trust subsystem's removal does not remove these locks or journals.
     and package-scoped build/lint/test tasks.
     Verify exact forwarding and self-recursion prevention before mutating Git operations.
 3.  Expose and test the scanner's structured library interface.
-    Add the shipped policy registry and the existing policy implementations.
+    Add the shipped policy registry and the existing non-Markdown policies.
     Verify planted findings,
     clean controls,
     candidate-byte isolation,
     redaction,
     fixing convergence,
     and direct `check`/`fix`.
-4.  Port transaction,
+4.  Implement the unified linter according to its accepted build order,
+    using JSONC instead of HCL.
+    Port the existing Rust and Markdown rules,
+    processors,
+    fix mapping,
+    and CLI contracts.
+    Verify rule findings and byte-exact fixes before wiring cli-git's built-in Markdown policy to it.
+5.  Port transaction,
     locking,
     hook dispatch,
     replay,
@@ -240,19 +282,21 @@ The trust subsystem's removal does not remove these locks or journals.
     and push behavior.
     Exercise crash points and concurrent actors,
     not only successful sequential commits.
-5.  Run the existing end-to-end scenarios against the Rust executable,
+6.  Complete the container,
+    mutation,
+    and fuzz gates for both tools and their integration.
+    Reuse the existing end-to-end scenarios against the Rust executable on the latest Git,
     adapting the driver rather than reproducing its logic in a new harness.
     Use equivalent disposable repositories for semantic comparisons with the incumbent and native Git.
     This verifies behavior,
     not whether to rewrite.
-6.  Package and verify the installed native executable,
+7.  Package and verify the installed native executables,
     then perform the coordinated cutover.
-    Delete the retired TypeScript implementation and authoring surface only after their consumers have moved.
+    Delete retired implementations and authoring surfaces only after their consumers have moved.
+    The unified linter's first-publication approval remains a separate requirement.
 
-The existing concurrent end-to-end environment includes Git 2.39.5,
-2.40.0,
-and 2.55.0.
-Keep its degradation scenarios and the existing Linux,
+Replace the old multi-version Git fixture with the exact latest stable release selected for the run.
+Keep the existing Linux,
 macOS,
 and Windows consumer coverage.
 Tests cover argument syntax,
@@ -274,6 +318,103 @@ Verify benchmark reach with positive controls,
 report local processing separately from remote push latency,
 and never substitute earlier shell return for completing required work.
 Do not restart the canceled incumbent profiling campaign.
+
+## Verification gates
+
+### Container tests
+
+Exercise the installed Rust binaries in disposable repositories,
+with inputs baked into the image,
+no real home or credentials,
+and local bare remotes.
+Use bounded memory,
+CPU,
+process counts,
+and workload sizes;
+network access is disabled during execution.
+Run build and fixture setup separately from the measured operations.
+Native macOS and Windows jobs remain necessary for their filesystem and process contracts.
+
+Cover cli-git commits,
+partial staging,
+hooks and signing,
+concurrent landings,
+process termination and restart,
+recovery,
+worktree copies,
+and push failures.
+Cover linter configuration discovery,
+merging,
+walking,
+stdin fixing,
+processor positions,
+atomic file writes,
+and the combined commit-time Markdown path.
+Capture stderr and require orderly shutdown without bare cleanup errors.
+
+### Mutation testing
+
+Apply mutations to repository-owned implementation code,
+not only a selected happy-path module.
+Target policy enabling and severity,
+JSONC validation,
+configuration precedence,
+rule predicates,
+fix overlap and atomicity,
+virtual-to-host mapping,
+transaction state transitions,
+lock ownership,
+recovery,
+and scanner fail-closed behavior.
+
+An unmutated baseline must pass.
+Planted guard removals must make the corresponding test fail before trusting the mutation harness.
+Inspect survivors:
+strengthen tests for non-equivalent mutants,
+and document equivalent,
+unreachable,
+or excluded mutants with evidence.
+Do not equate a mutation-tool exit code with adequate coverage.
+
+### Fuzzing
+
+Add sibling fuzz packages for cli-git and the unified linter,
+following the existing `jsonc-edit.fuzz` and `forbidden-strings.fuzz` conventions.
+Keep and extend those existing dependency fuzz suites;
+they do not replace fuzzing the integration boundaries.
+
+Targets include:
+
+- Git argument classification,
+  separators,
+  byte-valued paths,
+  and JSONC schema handling;
+- ordered configuration merge values and per-rule settings;
+- scanner candidate identities,
+  pathname/content distinction,
+  rule loading,
+  and redacted findings;
+- Markdown/MDX,
+  Rust snippets,
+  comments,
+  nested processors,
+  Unicode,
+  BOMs,
+  and byte-to-host positions;
+- edit sets,
+  overlap rejection,
+  all-or-nothing fixes,
+  and convergence;
+- serialized journals and bounded stateful transaction sequences,
+  including interruption points and concurrent actors.
+
+Run fuzzing and stateful process tests under explicit resource and input-size limits.
+Retain seeds and corpora,
+replay known failures in CI,
+and convert minimized counterexamples into deterministic regression tests.
+A fuzz crash,
+hang,
+or suspicious surviving mutation is investigated rather than filtered away.
 
 ## Cutover
 

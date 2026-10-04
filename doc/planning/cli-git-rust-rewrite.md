@@ -14,6 +14,16 @@ That proposal is recorded in
 [`cli-git-rust-implementation.md`](cli-git-rust-implementation.md).
 No production source changes have been made.
 
+On 2026-10-04,
+the user restricted support to latest Git,
+assigned this agent ownership of the unified linter as well,
+selected JSONC for that tool,
+and required container tests,
+mutation testing,
+and fuzzing.
+The combined implementation plan incorporates those requirements;
+older-Git compatibility work and HCL configuration are not carried forward.
+
 Proposed instruction refinement for `AGENTS.md`:
 explicitly stop comparative evaluation after a user settles the choice;
 retain only investigation that can change implementation,
@@ -90,6 +100,8 @@ That first-round answer explained motivation,
 not a reason to keep the language choice open after the later clarification.
 Rust is now the selected implementation language.
 Eliminating an external Node installation is not a hard requirement.
+The Rust cli-git replacement supports latest stable Git only;
+legacy Git degradation paths are not a parity requirement.
 
 ### Configuration
 
@@ -156,8 +168,12 @@ not a prerequisite for the already selected language.
 Do not propose backgrounding auto-push as a latency remedy before measuring it.
 Preserve accepted safety,
 concurrent-commit,
-and recovery requirements unless the user explicitly reopens them;
+and recovery requirements on the supported latest Git release;
 rewriting is not permission to drop functionality.
+The unified linter's current Rust,
+Markdown,
+and MDX scope is now owned by this agent,
+not an external coordination dependency.
 The rejected alternative is a generic external-policy plugin interface.
 Rust is selected.
 No specific module arrangement or migration strategy has been implemented.

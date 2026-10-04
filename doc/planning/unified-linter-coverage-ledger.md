@@ -16,9 +16,15 @@ the root `lint` aggregate in `mise.toml` does not list `lint:rust`;
 Paths are repository-relative;
 line numbers are as of commit `8d73b1bab`.
 
-Owner states:
-"decided" names the round that settled it,
-"open" means a pending question in the handover.
+The source survey and early-round owner states are historical.
+Current implementation choices are governed by `doc/planning/unified-linter.md`,
+including decisions settled after this inventory.
+On 2026-10-04,
+the cli-git rewrite agent also became the unified-linter owner,
+JSONC replaced HCL,
+and container,
+mutation,
+and fuzz tests became explicit acceptance gates.
 
 ## Rust linter
 
@@ -101,8 +107,9 @@ Packages:
    Rust language plugin,
    Rust-only (decided,
    round 2),
-   expressed in HCL (decided,
-   round 2).
+   deferred until a consumer exists in the final design.
+  The historical HCL format choice was replaced by JSONC on 2026-10-04;
+   no declarative pattern-rule format is being added in this implementation.
 - `builtin/invalid-disable-directive`,
    always `error`:
    a directive without justification,
@@ -200,9 +207,10 @@ the mapping is open.
    no `rust-linter.toml` exists;
    every consumer runs on built-in defaults.
 - Owner:
-   HCL in meow's block form (decided,
-   round 2);
-   lookup semantics open.
+   the unified linter's JSONC loader,
+   using the repository's Rust JSONC package.
+  Configuration is an ordered array of blocks;
+   nearest-file lookup and ordered deepmerge semantics are settled in the final design.
 
 ### Default exemptions
 
@@ -625,6 +633,17 @@ tests excluded unless named.
    and `doc/handover/issue-401-formatting-investigation.md`:
    a proposed repository-owned CSS checker,
    adjacent scope.
+
+## Verification ownership
+
+The implementing agent owns container tests,
+mutation testing,
+and fuzzing for the Rust wrapper,
+unified linter,
+and their integration.
+The concrete targets and acceptance criteria are recorded in
+[`cli-git-rust-implementation.md`](cli-git-rust-implementation.md#verification-gates).
+No retained responsibility is complete solely because unit tests compile or pass.
 
 ## Incidental defects
 
