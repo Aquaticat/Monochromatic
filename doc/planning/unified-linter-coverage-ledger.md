@@ -46,9 +46,13 @@ they are not incumbent parity work:
   5 tests,
   77 unrelated tests filtered out.
   This is not a full-suite pass.
-  Rule dispatch in the unfinished executable,
-  mutation testing,
-  and fuzz coverage remain required.
+  Focused mutation verification caught both viable mutants;
+  the remaining mutant is unviable because `Diagnostic` has no `Default` implementation.
+  The new Rust-style ASAN target ran 1,274 verified executions with exit 0
+  (`campaign-xNoaiG`).
+  The separate container Clippy gate passed after applying the newly enforced shadowing policy
+  without relaxing it.
+  Rule dispatch in the unfinished executable remains pending.
 - Require explicit Rust annotations,
   including the motivating `parse::<u16>()`,
   `.map::<String, _>(user_name)`,

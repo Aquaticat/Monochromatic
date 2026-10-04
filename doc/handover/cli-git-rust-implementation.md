@@ -174,9 +174,32 @@ and severity/option validation.
 Evidence:
 process `proc_3877`,
 image `268493227fcaf3af6ae661616665f7da15fac28b1caeb987d12d438ad6787f67`.
-Mutation,
-fuzzing,
-and executable dispatch remain pending.
+The focused mutation gate passed with 2 caught mutants,
+1 unviable mutant,
+and no misses.
+The unviable replacement constructs `Diagnostic::default()`,
+which rustc rejects with E0277 because `Diagnostic` intentionally has no default.
+Evidence:
+`package/linter/monochromatic-lint/target/verification/mutation-DGghv8`.
+The removed-rule mutant returned an empty findings list and was caught by the positive controls.
+
+The new raw/generated Rust-style ASAN target completed 1,274 executions with exit 0.
+The same rebuilt campaign completed 247,794 merge executions and 17,633 configuration executions.
+Evidence:
+`package/linter/monochromatic-lint.fuzz/target/verification/campaign-xNoaiG`.
+The Rust generator independently exercises bounded closure counts and non-closure controls;
+arbitrary valid UTF-8 also goes through the real parser.
+The separate Clippy gate initially failed because concurrent commit `53c1e01a9`
+added fleet-wide `shadow_reuse`,
+`shadow_same`,
+and `shadow_unrelated` denials.
+Renamed the affected owned bindings without weakening those rules;
+also replaced the Markdown link rule's late initialization with a named replacement helper.
+The test image now copies the repository's `clippy.toml` instead of silently omitting its parameters.
+`mise run //package/linter/monochromatic-lint:lint:rust-style` passed on recheck (`proc_a018`).
+Cargo still emits `cargo::unused_dependencies` for the reserved `ignore` dependency
+because the file walker is not implemented yet.
+Executable dispatch remains pending.
 The user answered A to the annotation scope question:
 full semantic enforcement is authorized for `rust/require-explicit-types`,
 including explicit generic arguments on resolved calls.
@@ -184,6 +207,16 @@ This supersedes the prior no-semantic-analysis decision for the new rule.
 Preserve `_` for unnameable function-item types;
 report resolution limitations honestly for standalone snippets.
 Do not reopen this settled scope question or substitute method-name heuristics.
+Detailed next steps and source findings:
+`doc/planning/rust-explicit-types.md`.
+A read-only rust-analyzer checkout matches the syntax crate's recorded upstream revision.
+The first semantic dependency fetch found no published HIR 0.0.335;
+a re-probed sparse index confirms the gap.
+The disposable probe now successfully fetches synchronized 0.0.336,
+without changing production dependencies.
+Next:
+finish build-script inspection and run a bounded semantic consumer fixture,
+then implement full declaration/call checks.
 
 The first full Markdown container run compiled and ran 77 tests:
 76 passed and `markdown_source::tests::invalid_mdx_is_a_processing_failure` failed
