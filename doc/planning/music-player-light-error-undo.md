@@ -325,8 +325,38 @@ The separate original restoration snapshot remains pending restoration.
 
 A fresh bounded visit with the retained granted identity is reserved for
 the remaining five native contexts and explicit restoration/read-back.
-No memory/CPU cap is raised and no complete interaction claim is made
-from the three retained controls.
+The remaining five native controls passed in `proc_d9e9`,
+completing eight measured intent/Dismiss contexts for that APK.
+Original recorded settings were restored/read back exactly,
+the owner exited cleanly,
+and absence was verified.
+No earlier base/override configuration equality is claimed.
+
+A final standards check found a missed D29 baseline constraint:
+the Undo button was `48dp`,
+but row-level vertical padding made the baseline surface
+`64.41025641025641dp`.
+The earlier geometry guard checked action floors and edge separation,
+not total toast baseline height.
+Those checks and the eight intents remain narrow evidence for the prior
+APK,
+not complete D29 compliance.
+The strengthened height guard rejects the retained baseline with
+`Authored baseline Undo surface is not 48dp`.
+Independent review confirmed the toast-height subject and inspected source
+shows baseline `48dp`/single-line guidance without a required outer
+vertical inset.
+No settled design question is reopened.
+
+Prototype `660f66a46` moves vertical clearance into the message,
+preserving native button padding,
+48dp action floors and large-font growth.
+The corrected APK build passed;
+its retained identity and new original-settings snapshot are separate from
+the previous artifacts.
+The next action is the corrected native cohort,
+height/glyph checks and fresh intent/Dismiss controls before publication.
+No old capture is relabelled as the new artifact.
 Boot success does not prove that the earlier graphics failure is fixed.
 New capture and interaction evidence still gates publication.
 
