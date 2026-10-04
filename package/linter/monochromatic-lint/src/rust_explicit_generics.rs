@@ -9,7 +9,9 @@
 /// Import owned findings and the retained source context.
 use crate::diagnostic::{Diagnostic, Severity};
 /// Import the resolved argument-owner mapping, including enum and function-trait spellings.
-use crate::rust_generic_arguments::{GenericSite, is_instantiation_path, path_site, required_arguments, supplied_arguments};
+use crate::rust_generic_arguments::{
+    GenericSite, is_instantiation_path, path_site, required_arguments, supplied_arguments,
+};
 /// Import exact source coordinates.
 use crate::rust_source::RustSource;
 /// Import ordinary findings and explicit semantic-processing failures.
@@ -18,10 +20,10 @@ use crate::rust_type_diagnostic::{resolution_failure, type_finding};
 use ra_ap_hir::{Function, GenericDef, PathResolution, Semantics};
 /// Import the database interface borrowed during a query.
 use ra_ap_hir_ty::db::HirDatabase;
-/// Import typed syntax and generic-argument accessors.
-use ra_ap_syntax::{AstNode, ast};
 /// Import the accessor implemented by method-call syntax.
 use ra_ap_syntax::ast::HasGenericArgs;
+/// Import typed syntax and generic-argument accessors.
+use ra_ap_syntax::{AstNode, ast};
 
 /// Report absent arguments on genuinely generic methods while leaving nongeneric methods unchanged.
 fn check_method(
@@ -32,7 +34,8 @@ fn check_method(
 ) -> Option<Diagnostic> {
     let Some(function): Option<Function> = semantics.resolve_method_call(&call) else {
         return Some(resolution_failure(
-            context, call.syntax(),
+            context,
+            call.syntax(),
             "Cannot resolve this Rust method call to verify its generic arguments.",
         ));
     };
@@ -41,9 +44,14 @@ fn check_method(
     if provided >= required {
         return None;
     }
-    let message: String = format!("Generic method requires {required} explicit type or constant arguments; found {provided}.");
+    let message: String = format!(
+        "Generic method requires {required} explicit type or constant arguments; found {provided}."
+    );
     return Some(type_finding(
-        context, call.syntax(), severity, message.as_str(),
+        context,
+        call.syntax(),
+        severity,
+        message.as_str(),
         "Write the required arguments after the method name, using '::<...>'. Inferred '_' slots are checked separately.",
     ));
 }
@@ -60,7 +68,8 @@ fn check_path(
     }
     let Some(resolution): Option<PathResolution> = semantics.resolve_path(&path) else {
         return Some(resolution_failure(
-            context, path.syntax(),
+            context,
+            path.syntax(),
             "Cannot resolve this Rust path to verify its generic arguments.",
         ));
     };
@@ -68,17 +77,21 @@ fn check_path(
     let PathResolution::Def(item): PathResolution = resolution else {
         return None;
     };
-    let Some(generic_site): Option<GenericSite> = path_site(semantics, &path, item) else {
-        return None;
-    };
+    // Absence here means a known nongeneric/paired qualifier site, not a failed resolution.
+    let generic_site: GenericSite = path_site(semantics, &path, item)?;
     let required: usize = required_arguments(semantics.db, generic_site.definition);
     if generic_site.provided >= required {
         return None;
     }
     let provided: usize = generic_site.provided;
-    let message: String = format!("Generic path requires {required} explicit type or constant arguments; found {provided}.");
+    let message: String = format!(
+        "Generic path requires {required} explicit type or constant arguments; found {provided}."
+    );
     return Some(type_finding(
-        context, path.syntax(), severity, message.as_str(),
+        context,
+        path.syntax(),
+        severity,
+        message.as_str(),
         "Write the required generic arguments on this type or function path. An enum constructor may put them on the enum/alias or variant.",
     ));
 }

@@ -150,6 +150,36 @@ fn semantic_conformance_and_source_overlay_controls() {
             count: 0,
         },
         Case {
+            name: "constant inference does not qualify as an unnameable-type exception",
+            source: "fn build<const N: usize>() -> [u8; N] { return [0_u8; N]; } fn main() { let values: [u8; 3] = build::<_>(); }",
+            count: 1,
+        },
+        Case {
+            name: "nameable array length stays explicit",
+            source: "fn main() { let values: [u8; _] = [0_u8; 3]; }",
+            count: 1,
+        },
+        Case {
+            name: "elided lifetimes do not become type-argument requirements",
+            source: "fn borrow<'a, T>(value: &'a T) -> &'a T { return value; } fn main() { let value: u16 = 1_u16; let reference: &u16 = borrow::<u16>(&value); }",
+            count: 0,
+        },
+        Case {
+            name: "import alias retains the generic function identity",
+            source: "mod source { pub fn identity<T>(value: T) -> T { return value; } } use source::identity as chosen; fn main() { let value: u16 = chosen(1_u16); }",
+            count: 1,
+        },
+        Case {
+            name: "fully qualified generic method retains its requirement",
+            source: "struct Item; impl Item { fn method<T>(&self, value: T) -> T { return value; } } fn main() { let value: u16 = Item::method(&Item, 1_u16); }",
+            count: 1,
+        },
+        Case {
+            name: "trait method generic arguments are checked",
+            source: "trait Identity { fn identity<T>(&self, value: T) -> T; } struct Item; impl Identity for Item { fn identity<T>(&self, value: T) -> T { return value; } } fn main() { let value: u16 = Item.identity(1_u16); }",
+            count: 1,
+        },
+        Case {
             name: "function-trait shorthand supplies its tuple argument",
             source: "fn named(value: u16) -> u16 { return value; } fn apply(value: impl Fn(u16) -> u16) -> u16 { return value(1_u16); } fn main() { let result: u16 = apply(named); }",
             count: 0,
@@ -191,7 +221,10 @@ fn semantic_conformance_and_source_overlay_controls() {
     // Revisit the original good input after every changed-source case: stale cached failures are also failures.
     assert_case(&mut fixture, &cases[0]);
     let unavailable: Vec<Diagnostic> = fixture.check("fn main() { unresolved(); }", Severity::Warn);
-    assert!(!unavailable.is_empty(), "unresolved context is not a clean result");
+    assert!(
+        !unavailable.is_empty(),
+        "unresolved context is not a clean result"
+    );
     for finding in &unavailable {
         assert!(finding.processing_failure);
         assert_eq!(finding.code, "core/rust-type-resolution");
