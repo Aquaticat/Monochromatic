@@ -31,7 +31,8 @@ await describe({
         const [scoped, tracker,] = createScopedExpect();
         // These legacy matcher calls are the implementation under test.
         await scoped(Promise.resolve('value',),).resolves.toBe('value',);
-        await scoped(Promise.reject(new Error('rejected',),),).rejects.toThrow('rejected',);
+        const rejected = Promise.reject(new Error('rejected',),);
+        await scoped(rejected,).rejects.toThrow('rejected',);
         verify(tracker.count,).toBe(2,);
       },
     },),

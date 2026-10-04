@@ -4,11 +4,13 @@
 
 Implementation authorized by the user's explicit "Do it. Proceed."
 The four-package layout is accepted.
-Extraction is in progress;
-package linking,
-builds,
-lint,
-and runtime verification are pending.
+Extraction and workspace linking are complete.
+The runner and extracted artifacts build.
+All package unit suites and runner browser acceptance have passed.
+Remaining work covers leaf lint,
+diagnostic negative-control verification,
+consumer smoke checks,
+and generated-lockfile staging.
 
 ## Confirmed direction
 
@@ -318,8 +320,27 @@ not proposals to replace our implementation or evidence of equivalent behavior.
 Earlier interview revisions passed the scoped Markdown lint and GitHub Markdown rendering checks.
 The initial `semantic-line-breaks` findings after label colons were corrected.
 The responsibility-based revision receives the same document checks.
-No implementation build or runtime test has run during this interview.
-Only this planning document has changed for this task.
+Implementation began after explicit approval.
+Commit `79a3565fc` extracts the packages.
+The first commit attempt hit a `git-policy-cli` engine failure in `mono/dependent-version-bump`;
+the documented one-invocation policy escape succeeded,
+and the following test-correction commit succeeded without an escape.
+No policy source or trust setting was changed.
+
+The first sandbox factory test used an incomplete `SinonSandboxConfig` and incorrectly expected
+local detached-fake configuration to be forbidden after completion.
+Installed Sinon types require all configuration fields;
+`sandbox-fake.ts` explicitly permits local behavior/history changes while guarding descriptor changes.
+The test now supplies the full configuration,
+checks rejection of `fake.value`,
+and verifies `fake.returns` cannot reattach the restored target.
+No production behavior changed for this correction.
+
+The first extracted-assertion lint identified the existing variadic-matcher allowlist still naming the old paths.
+Move those exact existing path entries to `test-expect`,
+without widening their rule scope.
+The runner lint already passed with zero warnings or errors.
+Browser acceptance passed through the existing bounded Playwright task.
 
 ## Next action
 
