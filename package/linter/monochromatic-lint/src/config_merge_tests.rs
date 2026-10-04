@@ -15,7 +15,7 @@
 /// import { parseJsonc, emitJsoncValue } from 'jsonc-edit';
 /// ```
 use super::merge_values;
-use monochromatic_jsonc_edit::{emit_jsonc_value, parse_jsonc, JsoncValue};
+use monochromatic_jsonc_edit::{emit_jsonc_value, parse_jsonc, JsoncKind, JsoncValue};
 
 /// What: Read a required corpus field as an independent owned value.
 /// Why: Missing fixture fields must fail the test rather than silently remove a case.
@@ -133,6 +133,22 @@ fn input_trees_are_unchanged_and_output_is_owned() {
     let mut actual = merge_values(&inputs);
     assert_eq!(actual.comment, elements[1].comment);
     actual.comment = None;
+    // What: Borrow the output record and then its array mutably, without borrowing any input.
+    // Why: This proves independence of nested payloads as well as the outer comment.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // actual.a.push(true);
+    // ```
+    if let JsoncKind::Record { entries } = &mut actual.kind {
+        if let JsoncKind::Array { elements } = &mut entries[0].value.kind {
+            elements.push(JsoncValue::boolean(true));
+        } else {
+            panic!("ownership fixture must produce an array member");
+        }
+    } else {
+        panic!("ownership fixture must produce a record");
+    }
     assert_eq!(document, snapshot);
     assert_ne!(actual.comment, elements[1].comment);
 }

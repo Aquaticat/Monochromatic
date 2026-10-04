@@ -37,11 +37,34 @@ The first crates.io publication still needs explicit user approval.
   Fork work is unnecessary after the user's handwritten-merge instruction.
   Do not read or copy its embargoed `*.local.*` findings into public artifacts.
 
+## Completed slices
+
+The handwritten merge is implemented in `package/linter/monochromatic-lint/src/config_merge.rs`.
+It uses the parser's value model,
+merges every key's full input group together,
+concatenates arrays,
+preserves first-seen key order,
+and selects the last value on any kind mismatch.
+The public JSON corpus is copied from the existing sidecar;
+no generic deepmerge package is added.
+
+Verification:
+
+- `mise run //package/linter/monochromatic-lint:lint:types` passed.
+- `mise run //package/linter/monochromatic-lint:test:container` passed in a mount-free,
+  network-disabled 2 GiB / 2 CPU container.
+- Tests include the independent corpus,
+  a wrong-pairwise-fold positive control,
+  and the parser's 512-container limit.
+- The first comment-ownership fixture failed because comments after a comma on the same line belong to the preceding value.
+  The fixture now uses separate lines and asserts that the intended final comment is present before testing ownership.
+
+Mutation and fuzz gates are not yet implemented;
+this is an implementation slice,
+not package completion.
+
 ## Current step
 
-Implement and verify the linter's handwritten ordered JSONC merge as the first production foundation.
-Keep non-equivalent all-input type-mismatch cases,
-array concatenation,
-key order,
-non-mutation,
-and nesting in its tests.
+Add JSONC schema validation and configuration lookup.
+Reject duplicate keys and invalid data before invoking the merge;
+preserve the accepted nearest-config and ordered-block semantics.

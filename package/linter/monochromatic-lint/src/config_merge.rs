@@ -1,6 +1,7 @@
 //! What: Ordered merging of the JSONC values used by rule settings.
 //! Why: The linter needs record merging and array concatenation, not a general JavaScript merge library.
 //! Inputs are borrowed and never changed; configuration validation rejects duplicate keys first.
+//! Merged records retain each key's first spelling and key comment; the final value owns its value comment.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
