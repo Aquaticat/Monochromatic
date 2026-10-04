@@ -280,8 +280,11 @@ publication remains unverified.
 
 The initial Markdown lint reported `semantic-line-breaks` after inline label colons.
 Those prose breaks were corrected.
-The initial document was also rendered successfully through GitHub's Markdown endpoint;
-final checks follow each document revision.
+`mise run lint:markdown doc/planning/module-test-split.md` passed for the revised frontier.
+GitHub's Markdown endpoint rendered the question headings,
+code spans,
+and external links with no unparsed emphasis markers.
+No product build or test was run because no implementation changed.
 Only this planning document has been committed for this task.
 
 ## Next action
