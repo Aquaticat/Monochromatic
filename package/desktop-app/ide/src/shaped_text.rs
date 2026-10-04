@@ -52,6 +52,8 @@ pub struct ShapedView {
     pub width: u32,
     /// Physical raster height.
     pub height: u32,
+    /// Shared logical selection rectangles drive both native backgrounds and glyph clipping.
+    pub selections: Vec<ReadingRect>,
 }
 
 /// Own font discovery and shaping scratch space, rather than recreate per glyph.
@@ -117,9 +119,6 @@ impl TextShaper {
     /// Prepare a visible viewport using native font advances rather than character cells.
     pub fn prepare(&mut self, document: &Document, viewport: Viewport, styles: &[StyleSpan]) -> ShapedView {
         let text = document.text();
-        let position = document.position();
-        let selection_start = position.anchor.min(position.head);
-        let selection_end = position.anchor.max(position.head);
         let last = viewport.first.saturating_add(viewport.count).min(text.len_lines());
         let probe = self.line_layout("M", viewport.scale, &[]);
         // A known primary glyph establishes a consistent baseline for all source rows.
@@ -138,19 +137,15 @@ impl TextShaper {
                     roles.push((projection.source_to_byte[start], projection.source_to_byte[end], span.style as u32));
                 }
             }
-            let start = selection_start.saturating_sub(source_start).min(source_len);
-            let end = selection_end.saturating_sub(source_start).min(source_len);
-            if start < end {
-                // Role 64 is reserved for the selected foreground, applied last.
-                roles.push((projection.source_to_byte[start], projection.source_to_byte[end], 64));
-            }
             let layout = self.line_layout(&projection.text, viewport.scale, &roles);
             let natural = layout.lines().next().expect("source line layout").metrics().baseline;
             rows.push(ShapedRow { row, source_start, projection, layout, baseline, baseline_shift: baseline - natural });
         }
         let width = (viewport.width.max(1.0) * viewport.scale).ceil() as u32;
         let height = ((last.saturating_sub(viewport.first).max(1) as f32) * 24.0 * viewport.scale).ceil() as u32;
-        return ShapedView { rows, viewport, width, height };
+        let mut view = ShapedView { rows, viewport, width, height, selections: Vec::new() };
+        view.selections = view.selection(document);
+        return view;
     }
 }
 

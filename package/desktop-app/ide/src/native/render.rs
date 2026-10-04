@@ -72,7 +72,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let document = &current.document;
     let caret = view.caret(document);
     let mut selections = Vec::new();
-    for rect in view.selection(document) {
+    for rect in &view.selections {
         selections.push(SourceSelection { x: rect.x, y: rect.y, width: rect.width, height: rect.height });
     }
     let position = document.position();
