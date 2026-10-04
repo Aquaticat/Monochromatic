@@ -94,6 +94,9 @@ pub mod keymap;
 /// ```
 pub mod protocol;
 
+/// End-of-dispatch delivery must not depend on a visible rendering window.
+pub mod protocol_flush;
+
 /// What:     `pub mod screenshot;`. Declares the framebuffer-readback module.
 /// Why:      Renders a frame and encodes it as a PNG.
 ///

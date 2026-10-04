@@ -167,7 +167,9 @@ pub fn run(config: Config) -> Result<i32> {
     //           empty per-iteration callback. Returns when `loop_signal.stop()` is called.
     // Why:      This is the program's main blocking loop.
     event_loop
-        .run(None, &mut state, |_| {})
+        .run(None, &mut state, |current| {
+            crate::protocol_flush::finish_dispatch(&mut current.display_handle);
+        })
         .context("event loop failed")?;
 
     // What:     `Ok(state.child_exit_code.unwrap_or(0))`. Return the recorded child code,
