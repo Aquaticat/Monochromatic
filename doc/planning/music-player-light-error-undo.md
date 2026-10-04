@@ -216,9 +216,12 @@ not source/binary equivalence or a proved allocator cause.
 [The graphics and transport boundary](../troubleshooting/android-emulator-container-color-buffer-allocation.md)
 retains those separate outcomes.
 
-The next action is to finish owned-runtime absence verification,
-then use the current SDK's inspected `-skip-adb-auth` option only on this
-owned disposable AVD and retain a fresh read-back snapshot.
+The owning runtime exited cleanly and its absence watch passed.
+The current SDK's inspected `-skip-adb-auth` option is being tested only
+on this owned disposable AVD in `proc_440d`;
+`proc_b7c7` owns bounded readiness and the fresh read-back snapshot.
+The next action is to inspect that terminal result and recorded settings,
+then begin the prepared fit controls.
 This debug-transport option is not storage-consent bypass or a change to
 the original AVD.
 The prepared cover/200% combined and failed-trash fit controls still run
