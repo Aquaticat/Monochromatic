@@ -448,5 +448,65 @@ await describe({
         );
       },
     },),
+
+    it({
+      name: 'READS THE BODY ITSELF where it is the row array, and READS NO IMAGE INPUT where the '
+        + 'modalities field is no array',
+      fn: async () => {
+        /**
+         Row named under the served id, and one whose modalities field is no
+         array.
+         */
+        const row = listingRowFor({
+          body: [{ id: 'm', },],
+          servedId: 'm',
+        },);
+        expect(row,).not.toBe(undefined,);
+        expect(cardFieldsFrom({
+          provider: 'openrouter',
+          row: {
+            id: 'm',
+            architecture: { input_modalities: 'images', },
+          },
+        },),).toEqual({
+          readsImages: NOT_LISTED,
+          maxOutputLength: NOT_LISTED,
+          contextLength: NOT_LISTED,
+          promptPrice: NOT_LISTED,
+          completionPrice: NOT_LISTED,
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS the vision flag where it is a boolean and NOT_LISTED where it is anything else, and '
+        + 'reads a bedrock listing as the bare fields it names',
+      fn: async () => {
+        expect(cardFieldsFrom({
+          provider: 'hyper',
+          row: {
+            id: 'm',
+            capabilities: { vision: true, },
+          },
+        },).readsImages,).toBe(true,);
+        expect(cardFieldsFrom({
+          provider: 'hyper',
+          row: {
+            id: 'm',
+            capabilities: { vision: 'sometimes', },
+          },
+        },).readsImages,).toBe(NOT_LISTED,);
+        const bedrock = cardFieldsFrom({
+          provider: 'bedrock',
+          row: {
+            id: 'm',
+            max_output_tokens: 64_000,
+            context_length: 200_000,
+          },
+        },);
+        expect(bedrock.readsImages,).toBe(NOT_LISTED,);
+        expect(bedrock.maxOutputLength,).toBe(64_000,);
+      },
+    },),
   ],
 },);
