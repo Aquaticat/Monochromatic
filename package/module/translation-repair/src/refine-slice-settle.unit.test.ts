@@ -320,5 +320,23 @@ await describe({
         },),).toBe(true,);
       },
     },),
+
+    it({
+      name: 'CARRIES no neighbour onto the sheet when the slice stands alone, the spreads staying absent',
+      fn: async () => {
+        /**
+         Sheets the flow asked with no neighbour handed in.
+         */
+        const asked: string[] = [];
+        await settleWith({
+          nonTranslationStanding: true,
+          client: scriptedSettleClient({ asked, },),
+        },);
+        expect(asked.length,).toBeGreaterThan(0,);
+        expect(asked.some(function carriesNeighbour(sheet,) {
+          return sheet.includes('邻猫每天下午都在窗台上晒太阳。',);
+        },),).toBe(false,);
+      },
+    },),
   ],
 },);

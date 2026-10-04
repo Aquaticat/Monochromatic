@@ -2,6 +2,7 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
@@ -274,14 +275,14 @@ export async function runRefineStage(
       const gated = resolution.operations
         .flatMap(function survivesGate(operation,): readonly PatchOperation[] {
           /**
-           Paragraph this operation replaces.
+           Paragraph this operation replaces, present by the resolver's
+           own contract: `resolveRefineRewrites` binds an operation only
+           to an envelope it found.
            */
-          const envelope = plan.envelopes
+          const envelope = nonNullishOrThrow(plan.envelopes
             .find(function matches(candidate,) {
               return candidate.envelopeId === operation.envelopeId;
-            },);
-          if (envelope === undefined)
-            return [];
+            },),);
 
           /**
            Replacement as it will ship, quote style restored, so the gate
