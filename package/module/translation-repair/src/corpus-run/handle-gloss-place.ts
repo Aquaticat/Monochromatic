@@ -291,7 +291,7 @@ function placeOne(
       /**
        Slice text as it stands.
        */
-      const text = texts.get(appearance.sliceIndex,) ?? '';
+      const text = nonNullishOrThrow(texts.get(appearance.sliceIndex,),);
       /**
        What the appearance reads now.
        */

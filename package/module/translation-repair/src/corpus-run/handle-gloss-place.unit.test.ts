@@ -302,20 +302,5 @@ await describe({
         expect(bySlice({ replacements: embedded.replacements, },).get(0,),).toContain('### Ten: xJinmao',);
       },
     },),
-
-    it({
-      name: 'LEAVES a replacement naming a slice the pass holds no text for, since nothing it writes can '
-        + 'be placed against a text that is not there',
-      fn: async () => {
-        const placed = placeHandleGlosses({
-          slices: [HEADED,],
-          replacements: [{
-            sliceIndex: 7,
-            replacementText: '### Ten: Jinmao (Brocade Cat)\n\nIt woke.',
-          },],
-        },);
-        expect(placed.replacements[0]?.replacementText,).toContain('Jinmao (Brocade Cat)',);
-      },
-    },),
   ],
 },);
