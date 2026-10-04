@@ -235,11 +235,25 @@ No original host key,
 original AVD or guest authorization file is copied or changed.
 The current runtime accepted graceful console shutdown;
 `proc_3ef7` verifies absence before that last retry.
-The next action is to restart once without the unhelpful skip flag,
-rediscover its current local gRPC metadata,
-and inspect any actual authorization screen before input.
-If authorization remains unavailable,
-record the native verification blocker rather than repeat startup churn.
+The final persistent-owned-identity retry displayed the actual
+`Allow USB debugging?` prompt.
+Its fingerprint matched the retained runtime-generated public key.
+Authenticated gRPC input selected `Always allow from this computer`
+and `Allow`;
+ADB then reported `device`,
+`sys.boot_completed=1` and the correct `Fold_No_Hardware_Probe` identity.
+`proc_0e8c` retained the fresh settings snapshot and validated the 6 GiB/2 CPU
+bounds.
+The guest transport is no longer a blocker.
+
+The human correction identified a workflow gap:
+prioritize an available owned-device authorization prompt and verify its
+matching key/transport before repeating boot watches.
+This expected-action clarification stays in this plan;
+no `AGENTS.md` edit is made this round.
+The next action is the prepared cover/200% combined and failed-trash fit
+controls,
+then measured layout/interaction checks and the independent capture cohort.
 The prepared cover/200% combined and failed-trash fit controls still run
 before any full capture cohort.
 Verification must establish stable fresh root/viewport rectangles,

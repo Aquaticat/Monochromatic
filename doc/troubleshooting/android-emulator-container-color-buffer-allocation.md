@@ -144,7 +144,13 @@ Guest HAL activation and host graphics allocation must not be conflated.
 
 ## Workaround status and tradeoffs
 
-No graphics workaround has passed yet.
+No graphics cause or renderer-independent workaround is established.
+The post-quarantine runtime reached a rendered launcher and later an actual
+ADB authorization prompt;
+its guest transport became usable after direct approval of the matching
+owned key.
+The successful attempt also changed identity persistence and launch options,
+so it does not isolate which change affects the initial allocation failure.
 An explicit guest-Vulkan override is a consumer-side experiment,
 not an installed-source patch or proof that host allocation is disabled.
 Changing the graphics backend also changes the capture environment;
@@ -168,6 +174,40 @@ The owning-container console's `help` command was accepted,
 so the running runtime and console remain reachable.
 Guest ADB authorization and console-token authorization are distinct
 boundaries.
+
+### Guest authorization recovery
+
+The subsequent `-skip-adb-auth` attempt remained unauthorized during its
+bounded watch.
+An independently captured screen showed `System UI isn't responding`,
+not an RSA prompt.
+A console mouse command returned `OK` without the intended visible state
+change;
+authenticated local gRPC touch then removed that ANR dialog.
+That is an input positive control,
+not proof of the ANR's cause or guest authorization.
+Container-local `adb reconnect offline` and one server restart still
+reported unauthorized transport.
+
+The server's inspected environment used `HOME=/tmp` and the container
+network was isolated `pasta`.
+Only its generated key pair was retained in a private,
+mode-restricted identity directory for one retry.
+No original host key or original AVD was read or changed.
+The retry without the ineffective skip option displayed the actual
+`Allow USB debugging?` prompt.
+The displayed fingerprint matched the runtime-owned public key.
+After `Always allow from this computer` and `Allow` were selected through
+local authenticated input,
+`adb devices -l` reported `device`,
+`getprop sys.boot_completed` returned `1` and the AVD identity matched.
+The fresh settings snapshot then succeeded.
+This verifies recovery of this owned guest's debug transport,
+not a storage grant,
+application fit or universal emulator authorization mechanism.
+Generated gRPC metadata path/port/token were rediscovered for the current
+runtime;
+previous credentials and PID paths were not treated as restart invariants.
 See [the lock lifecycle boundary](android-emulator-37-disposable-avd-lock-after-hard-stop.md).
 This lock recovery does not diagnose the initial graphics failure.
 
