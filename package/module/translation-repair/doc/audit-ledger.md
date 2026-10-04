@@ -6579,6 +6579,31 @@ The reach census (`~/temp/agent/mimo-trial/reach-handle2.log`)
 reads `left 0 cold stretches`.
 No B entry found.
 
+The forty-third cluster of that census,
+`corpus-run/slice`,
+against `census-1UFhGm` at `717eb945f`:
+4 line stretches over `slice-cache-namespace.ts`
+and `slice-census-entry.ts`
+(`5bf207307`,
+`3fdbf9b19`).
+One closed as unreachable:
+the block-char read's missing-node fallback
+(the walk indexes the node list it aligns).
+Three cased:
+a cache file whose JSON is no record recomputes,
+a file that will not read surfaces its fault,
+and the census entry counts the blocks
+the translation carries and the source does not.
+The reach census (`~/temp/agent/mimo-trial/reach-slice2.log`)
+reads `still cold 2`
+(`266`,
+`378`):
+both are the single-line return and throw
+the census's attribution leaves cold
+(the same reading the spend batch recorded),
+and both cases assert their behavior directly.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

@@ -701,6 +701,38 @@ so a fresh context resumes from this file alone.
   the `corpus-run/slice` batch.
 
 - 2026-10-04,
+  18:56 UTC:
+  the T8 `corpus-run/slice` batch closed with commits `5bf207307`,
+  `3fdbf9b19`:
+  4 line stretches over `slice-cache-namespace.ts`
+  and `slice-census-entry.ts`,
+  one closed as unreachable
+  (the missing-node fallback narrowed),
+  three cased
+  (the recomputed cache file,
+  the surfaced fault,
+  and the target-only block count).
+  The reach census reads `still cold 2`
+  on `266`
+  and `378`,
+  both the single-line return and throw
+  the census's attribution leaves cold
+  (the reading the spend batch recorded),
+  and both cases assert their behavior directly.
+  Counts at the close:
+  the full suite 1,561 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-slice-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-slice-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `3fdbf9b19`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `provider` cluster
+  (the ranking's next at `census-1UFhGm`).
+
+- 2026-10-04,
   18:08 UTC:
   the next batch's baseline census taken at commit `aba6f1b61`:
   `census written to ~/.cache/translation-repair/coverage/census-c2UUBT/census.json`
