@@ -12,11 +12,13 @@ and this state-family work does not depend on their adoption.
 D8 selects immediate trash with a compact,
 content-width Undo toast rather than a confirmation dialog or full-width
 snackbar.
-D9 removes vanished rows and uses a dismissible error bar,
-collapsing multiple failures to a count.
-D29 places the left-aligned toast 16dp above the current bottom-edge owner,
-lifting above the error bar without pushing layout.
-The unresolved work is carrying those settled behaviors into the light
+D9 removes vanished rows and collapses multiple failures to a count.
+D83 replaces the old layout-reserving error bar with auto-dismissing,
+manually dismissible toast/snackbar overlays and a two-line message target.
+Longer details direct users to Android logs.
+D29's left alignment and 16dp owner separation remain applicable,
+but no message may resize the player.
+The unresolved work is carrying that current behavior into the light
 surface and verified Fold geometry,
 not asking about pill colour or spacing below their hard floors.
 
@@ -29,7 +31,7 @@ not asking about pill colour or spacing below their hard floors.
   recovery actions.
 - [ ] Build isolated native light/dark authored states for error only,
   Undo only and the combined state,
-  preserving D8/D9/D29 and accepted player information clearance.
+  preserving D8/D9/D29 as revised by D83 and accepted player information clearance.
   Completion requires fit and overlap evidence at both panels and native
   font scales,
   not a live filesystem mutation.
@@ -61,7 +63,8 @@ hierarchies and logs remain private.
 ## Initial source anchors
 
 `package/music-player/design/decisions.md` sections D8,
-D9 and D29 are the authority for behavior and placement.
+D9 and D29 retain outcome/placement context;
+D83 is the current non-reserving presentation authority.
 `package/music-player/design/candidates/err-b.dc.html` and
 `package/music-player/design/candidates/toast-a.dc.html` are historical
 accepted dark treatments to inspect,
@@ -135,6 +138,19 @@ The corrected comparator uses measured application bounds and explicit
 notice/shadow exclusions;
 raw frames remain unchanged for independent recheck.
 No exclusion is made for ordinary player content.
+The offline recheck passed for `3743106` application pixels outside the
+notice/shadow union in each retained manual/final/expiry comparison.
+
+A source audit of the accepted 7.5mm player route found the new study was
+not passing its inner information inset to `SearchPlayerPreview`.
+That selected the historical fixed-pane branch instead of the accepted
+E2 equal-surface composition.
+The study now passes the existing `12dp` information-only inset used by
+the accepted closed-player route.
+Cover ignores that inner inset.
+The first overlay APK remains diagnostic evidence,
+not the final accepted-player publication artifact.
+Corrected artifact identity and new native evidence are required.
 The owned runtime is restored/stopped before the next bounded visit,
 rather than left near its measured 6 GiB memory ceiling.
 Same-scene player-geometry equality needs a changing-geometry positive

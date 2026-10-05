@@ -524,9 +524,12 @@ new IME work and native accessibility acceptance.
 - Android media notification presentation is settled by D82.
   Accept what Android provides;
   no special notification design or variant round remains.
-- **OPEN: light surfaces not yet drawn (11d):**
-  error bar,
-  undo toast,
+- D83 replaces the error bar with transient dismissible overlays.
+  Messages target two lines;
+  longer detail directs users to Android logs.
+  Feedback must not resize the player.
+  Native overlay verification remains in progress.
+- **OPEN: other light surfaces not yet drawn (11d):**
   settings pane,
  context menu,
   first-run prompt,

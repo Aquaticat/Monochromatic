@@ -43,8 +43,12 @@ with editing and focused-control ownership preserved.
 [Its boundary record](evidence/keyboard-map-boundaries.md) distinguishes
 proposal,
 protocol and actual OS/native delivery.
-The next independent area is the light error/Undo state family under
-settled D8/D9/D29 behavior.
+The active light error/Undo work follows D83:
+auto-dismissing,
+manually dismissible overlays that never resize the player,
+with two-line messages and Android-log direction for longer detail.
+The former layout-reserving bar studies are superseded;
+D8/D9 outcome requirements and D29's non-reserving placement context remain.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds

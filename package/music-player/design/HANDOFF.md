@@ -50,7 +50,12 @@ and OS-delivery limits.
 The map is not an accepted default or production implementation.
 No per-key questionnaire is queued.
 `doc/planning/music-player-light-error-undo.md` owns the next independent
-source/fit/publication queue under settled D8/D9/D29 behavior.
+source/fit/publication queue under D83's current overlay treatment.
+D83 replaces the layout-reserving error bar with auto/manual-dismiss
+feedback that never resizes player regions.
+Messages target two lines and direct longer detail to Android logs.
+Earlier bar captures and resize/drop witnesses are superseded,
+not the current verification target.
 No real file is trashed or restored by that design work.
 
 ## Filename investigation record (started 2026-09-29)
