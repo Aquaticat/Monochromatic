@@ -80,6 +80,38 @@ await describe({
           },
         },),
         it({
+          name: 'bounds a run between its positioned neighbours, the literal riding mid-paragraph with its '
+            + 'own marker relabelled by raw text',
+          fn: async () => {
+            /**
+             One paragraph whose untokenized literal sits between
+             positioned text nodes, its own marker riding the run.
+             */
+            const text = 'A cat[^1] naps ，www.example.com[^9] tail.\n\n[^1]: The cat.\n';
+            const expected = 'A cat[^2] naps ，www.example.com[^10] tail.\n\n[^2]: The cat.\n';
+            expect(applyFootnoteRelabel({
+              text,
+              map: [{ from: '1', to: '2', }, { from: '9', to: '10', },],
+            },),).toBe(expected,);
+          },
+        },),
+        it({
+          name: 'bounds a run against the positioned inline node that follows it, the literal beside an '
+            + 'emphasis that keeps its positions',
+          fn: async () => {
+            /**
+             The literal's rebuilt nodes run up to an emphasis node, which
+             keeps its positions and bounds the run's far side.
+             */
+            const text = '，www.example.com[^9] *tail* naps.\n';
+            const expected = '，www.example.com[^10] *tail* naps.\n';
+            expect(applyFootnoteRelabel({
+              text,
+              map: [{ from: '9', to: '10', },],
+            },),).toBe(expected,);
+          },
+        },),
+        it({
           name: 'relabels a literal-looking reference riding with an autolink literal micromark did not '
             + 'tokenize, since an undefined call stays in its text (ledger B123)',
           fn: async () => {
