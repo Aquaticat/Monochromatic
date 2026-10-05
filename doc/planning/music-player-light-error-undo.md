@@ -116,6 +116,27 @@ no blocked frame is accepted as application evidence.
 
 The next action is focused native lifecycle/fit/log read-back verification,
 not another policy or cosmetic questionnaire.
+The focused cover/light/200% held poses were inspected:
+error copy remains bounded,
+independent Undo/error surfaces fit over the list,
+and long detail keeps a concise failure statement plus the Android-log
+direction.
+The native log-intent callback fired;
+these held poses do not prove expiry.
+
+The first inner/light/100% lifecycle control reached manual dismissal,
+Undo action completion and automatic expiry,
+with identical measured root and track viewport.
+A pixel comparator incorrectly included the separately animated system
+navigation region:
+its first differing pixel was at `y=2108`,
+outside the measured player root ending at `2074px`.
+The corrected comparator uses measured application bounds and explicit
+notice/shadow exclusions;
+raw frames remain unchanged for independent recheck.
+No exclusion is made for ordinary player content.
+The owned runtime is restored/stopped before the next bounded visit,
+rather than left near its measured 6 GiB memory ceiling.
 Same-scene player-geometry equality needs a changing-geometry positive
 control before any new held capture cohort.
 Log capture remains a named debug intent here,
