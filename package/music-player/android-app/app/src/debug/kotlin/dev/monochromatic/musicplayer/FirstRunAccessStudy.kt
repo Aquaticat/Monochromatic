@@ -124,8 +124,10 @@ internal fun FirstRunAccessStudy(scene: String, onAction: (String) -> Unit) {
                 ) { Text("Settings") }
                 if (fixture.analysis) {
                     Text("About true-peak analysis", style = MaterialTheme.typography.titleMedium)
+                    // D84 makes analysis automatic and not optional, so no choice is offered; when it runs is undecided.
+                    // The wording is study copy that no decision chose.
                     Text(
-                        "True peak is measured per audio file. Analysis uses CPU and battery; playback remains available while it runs. After opening a library, choose whether to analyse it.",
+                        "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs.",
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 }
