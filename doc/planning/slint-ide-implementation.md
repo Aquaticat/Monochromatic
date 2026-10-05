@@ -403,7 +403,7 @@ checksums,
 and the current toolkit optical-size boundary.
 
 Proposed `AGENTS.md` edit,
-not applied:
+declined by the user on 2026-10-05 and kept here as a rejected idea:
 tighten `VUB` to make font fidelity part of consumer-boundary verification.
 Suggested replacement body:
 

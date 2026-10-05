@@ -1519,10 +1519,17 @@ Recent task commits:
 `d4e4b3973` adds caret-only image reuse.
 Inspect current Git status and process state rather than assuming this snapshot is live.
 
-Outstanding policy proposal:
-tighten `AGENTS.md` `VB1` to require CLI `--help` to exit 0 without normal startup.
-The earlier stop correction also called for making checkpoint continuation explicit in `PXQ`.
-These proposals are not permission to pause implementation or silently change policy.
+Policy proposals were resolved on 2026-10-05.
+The user declined a CLI `--help` rule,
+a font-verification rule,
+and a reference-parity rule,
+and approved two rules:
+`QRX` in `AGENTS.md`
+(batch decisions in the question tool and re-explain each item's context in plain words)
+and `QVS` in the visual-design-review skill
+(show built screenshots of every option as committed local files before asking).
+The `PXQ` checkpoint-continuation idea was not re-proposed;
+`PXQ` already forbids ending a turn on a status report the user must answer with "continue".
 
 [scope]: ../decision/slint-ide-0x-scope.md
 [plan]: ../planning/slint-ide-implementation.md
