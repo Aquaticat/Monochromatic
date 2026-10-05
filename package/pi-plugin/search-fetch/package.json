@@ -37,7 +37,8 @@
   },
   "dependencies": {
     "@monochromatic-dev/agent-harness-shared-search-fetch": "workspace:*",
-    "@monochromatic-dev/module-logger": "workspace:*"
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "catalog:",
