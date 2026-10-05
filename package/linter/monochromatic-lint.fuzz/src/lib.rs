@@ -179,11 +179,11 @@ pub fn check_configuration(source: &str) {
         blocks, snapshot,
         "configuration merge changed parsed blocks"
     );
-    let source = JsoncValue::array(vec![JsoncValue::record(vec![
+    let reconstructed = JsoncValue::array(vec![JsoncValue::record(vec![
         entry("files", JsoncValue::array(Vec::new())),
         entry("rules", merged),
     ])]);
-    let rendered = emit_jsonc_value(&source);
+    let rendered = emit_jsonc_value(&reconstructed);
     assert!(
         parse_configuration(rendered.as_str()).is_ok(),
         "merged valid rule settings became invalid: {rendered}"

@@ -408,7 +408,13 @@ A separately measured incumbent Unicode defect is intentionally not copied:
 `İİİİ etc. Next sentence.` and `İİİİ e.g. Next sentence.` each reported byte 13,
 because lowercasing expands the prefix and shifts abbreviation ranges away from original offsets.
 The native scanner tests abbreviations at original byte positions and keeps both cases unbroken.
-The differential fixture gate remains pending.
+The differential/arena guard gate passed all 164 tests and Clippy (`proc_1baf`).
+It also verifies zero-offset punctuation,
+all inline delimiter families,
+nested quote/list prefixes,
+JSONL zero-length point spans,
+and deliberately corrupted native arenas.
+The later arithmetic simplifications still require their next snapshot's verification.
 New helper/rule files have uncommitted formatter output after their scoped feature commits.
 The Markdown ASAN generator controls passed all 5 sidecar tests in `proc_415a`.
 Its complete campaign then passed:
@@ -421,6 +427,20 @@ Evidence:
 `package/linter/monochromatic-lint.fuzz/target/verification/campaign-BUNASg`.
 This snapshot excludes table/prose additions and later scanner refactors;
 it is not a final full-implementation campaign.
+The next campaign (`proc_5733`) includes tables and prose.
+Its generator controls passed,
+but the newly added sidecar Clippy stage found `clippy::shadow_unrelated`
+in the existing configuration reconstruction helper.
+The second `source` binding is now named `reconstructed`;
+a retry is pending.
+
+Scanner embedding has begun with the structured `ScanFinding` model in
+`package/cli/forbidden-strings/src/scan_finding.rs`.
+It is not yet registered or connected to the content/path scan core.
+No scanner behavior or production executable has changed.
+Next scanner work must share typed findings with the standalone formatter,
+not parse terminal text back into candidate identities.
+The existing catch-unwind paths and stderr panic-hook behavior also need lifecycle/redaction verification.
 
 A Markdown/MDX ASAN target has been added to the fuzz sidecar.
 Every draw exercises an independently counted rule fixture,
