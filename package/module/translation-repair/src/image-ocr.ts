@@ -14,10 +14,14 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { isAsciiAlphanumeric, } from './ascii-letters.ts';
 import { wordForCount, } from './count-word.ts';
 import { extensionOf, } from './image-asset.ts';
 import { MIN_READING_CHARS, } from './image-reading-sense.ts';
-import { isMissingPathError, } from './missing-path-error.ts';
+import {
+  isMissingPathError,
+  rethrowUnlessMissingPath,
+} from './missing-path-error.ts';
 import { refusalText, } from './refusal-text.ts';
 
 //region Image OCR
@@ -81,13 +85,107 @@ const TESSERACT_LANGUAGES = 'chi_sim+eng';
 // on nothing and, worse, offers the corroboration stage two pieces of garbage
 // that may agree with each other.
 
+// THE PROGRAMS ARE RUN THROUGH A FUNCTION THE CALLER HANDS IN, never reached
+// for. A decoder and an OCR reader are programs on a machine, so a function
+// that starts them by itself can be tested only on a machine that carries
+// them and their language data, and its tests then say what that machine
+// does. The runner is REQUIRED (ledger M70): a default would be the
+// production value, and a test that left it out would start the real
+// programs. A run names the real runner, `runInstalledProgram`, once, where
+// it builds its picture sources (`corpus-run/pass-visual-evidence.ts`).
+
+/**
+ The decoder tried first, which reads the format nearly every corpus picture
+ is in.
+ */
+const WEBP_DECODER = 'dwebp';
+
+/**
+ The decoder tried second, for every format the first refuses.
+ */
+const FALLBACK_DECODER = 'magick';
+
+/**
+ The OCR reader.
+ */
+const OCR_READER = 'tesseract';
+
+/**
+ Runs one program to completion: the seam between this module and the
+ programs installed on a machine.
+
+ RESOLVES once the program has run and exited zero. Nothing it printed is
+ handed back, since every program this module runs leaves its result in a
+ file it was told to write.
+
+ REJECTS otherwise, and a caller tells the two rejections apart: a program
+ that is not installed rejects with the error `isMissingPathError`
+ recognises, Node's `ENOENT` spawn failure, and a program that ran and
+ exited unhappy rejects with anything else.
+
+ @example
+ ```ts
+ const runProgram: ProgramRunner = async () => {};
+ ```
+ */
+export type ProgramRunner = (
+  run: {
+    /**
+     Name the system finds the program by, or its path.
+     */
+    readonly program: string;
+
+    /**
+     Its arguments, in order.
+     */
+    readonly args: readonly string[];
+  },
+) => Promise<void>;
+
 /* oxlint-disable typescript/strict-void-return -- promisify deliberately ignores Node execFile's ChildProcess return while adapting its callback */
 /**
- Runs a command-line tool and waits for it, since every reader this module
- reaches for is a program rather than a library.
+ Node's `execFile` as a promise, which starts a program without a shell and
+ waits for it.
  */
 const execFileAsync = promisify(execFile,);
 /* oxlint-enable typescript/strict-void-return */
+
+/**
+ Runs a program installed on this machine and waits for it: the runner a run
+ hands to {@link readImageWithOcr}, since every reader this module reaches
+ for is a program rather than a library.
+
+ NODE'S OWN REJECTION IS PASSED ON UNCHANGED, which is what lets a caller
+ tell a program that is not installed (`ENOENT`, a string code) from one that
+ ran and exited unhappy (its exit code, a number).
+
+ @param program - name the system finds the program by, or its path
+
+ @param args - its arguments, handed over as they are and never through a
+ shell
+
+ @throws Node's spawn failure when the program is not installed, and its
+ exit failure when the program exits with a code other than zero
+
+ @example
+ ```ts
+ await runInstalledProgram({ program: 'dwebp', args: [source, '-o', png,], },);
+ ```
+ */
+export async function runInstalledProgram(
+  {
+    program,
+    args,
+  }: {
+    readonly program: string;
+    readonly args: readonly string[];
+  },
+): Promise<void> {
+  await execFileAsync(
+    program,
+    args,
+  );
+}
 
 /**
  What reading a picture without a model produced.
@@ -219,6 +317,122 @@ export function solidCharacters({ text, }: { readonly text: string; },): number 
   return count;
 }
 
+// THE SCRATCH NAMES ARE FIXED, AND NO TWO OF THEM CAN BE ONE FILE. Three files
+// land in scratch: the picture as gathered, its decoded copy, and the reading.
+// The asset's own name chooses none of them; it lends the first a short
+// extension from a closed alphabet and nothing else.
+
+/**
+ Stem of the scratch copy of a picture as it was gathered.
+ */
+const SCRATCH_COPY_STEM = 'asset';
+
+/**
+ Longest extension the scratch copy takes from an asset's name, in
+ characters.
+
+ A CHOICE WITH HEADROOM. The longest extension the corpus's pictures carry
+ is four characters (`MEDIA_TYPES` in `image-asset.ts`), and no picture
+ format is told by one four times that. What the line buys is a scratch name
+ of bounded length, so no asset name can make the write fail for being too
+ long a file name.
+ */
+const MAX_SCRATCH_EXTENSION_CHARS = 16;
+
+/**
+ Name of the decoded copy, which the scratch copy can never share.
+
+ A NAME OUTSIDE EVERY NAME `scratchCopyName` BUILDS, all of which open
+ `asset.`. While this was `asset.png`, the decoded copy of every `.png`
+ asset was the scratch copy itself: the fallback decoder rewrote its own
+ input in place, and a first decoder that wrote part of its output before
+ failing would have destroyed the picture the fallback is there to read.
+ */
+const DECODED_COPY_NAME = 'decoded.png';
+
+/**
+ Stem the OCR reader appends `.txt` to.
+ */
+const READING_STEM = 'reading';
+
+/**
+ Name of the scratch copy of a picture: `asset.` and the asset's extension
+ where that extension is a short run of ASCII letters and digits, `asset.`
+ alone for every other name.
+
+ THE EXTENSION IS TAKEN ONLY FROM A CLOSED ALPHABET, since it is text from a
+ file name on its way into a path. `extensionOf` hands back everything after
+ a name's last dot, which for an asset called `../../etc/passwd` is
+ `/etc/passwd`: joined into the scratch copy's name that pointed into a
+ directory nobody made, and the write failed. No such text can climb out of
+ scratch, since what follows a name's last dot holds no dot, but a name is
+ fixed only when the asset chooses nothing of it beyond a suffix a decoder
+ could want. An extension holding anything else is dropped, and the picture
+ is still read, since a decoder tells a format by its bytes.
+
+ @param assetName - file name the picture was gathered under
+
+ @returns File name within scratch, never a path
+
+ @example
+ ```ts
+ const name = scratchCopyName({ assetName: 'letter.WEBP', },); // 'asset.webp'
+ ```
+ */
+function scratchCopyName({ assetName, }: { readonly assetName: string; },): string {
+  /**
+   What the asset's name carries after its last dot, lowercased.
+   */
+  const extension = extensionOf({ assetName, },);
+  if (extension.length > MAX_SCRATCH_EXTENSION_CHARS)
+    return `${SCRATCH_COPY_STEM}.`;
+  for (const character of extension)
+    if (!isAsciiAlphanumeric({ character, },))
+      return `${SCRATCH_COPY_STEM}.`;
+  return `${SCRATCH_COPY_STEM}.${extension}`;
+}
+
+/**
+ The line recording why one decoder produced nothing: that it is not
+ installed, or that it ran and refused the picture.
+
+ TOLD APART, since they are different problems for whoever reads the run: a
+ machine missing a decoder needs it installed, and a picture a decoder
+ refuses is expected of every format that decoder does not read. Read off
+ the failure's code through `isMissingPathError`, as the OCR reader's
+ failure is. Both used to print as `refused by Error`, under the scratch
+ copy's path rather than the asset's name, which told a reader neither
+ which picture nor which problem.
+
+ @param assetName - picture the decoder was run on
+
+ @param program - decoder that produced nothing
+
+ @param error - what running it raised
+
+ @returns The line, naming the asset, the decoder and which of the two it was
+
+ @example
+ ```ts
+ l.debug(decoderFailureLine({ assetName, program: 'dwebp', error, },),);
+ ```
+ */
+function decoderFailureLine(
+  {
+    assetName,
+    program,
+    error,
+  }: {
+    readonly assetName: string;
+    readonly program: string;
+    readonly error: unknown;
+  },
+): string {
+  if (isMissingPathError({ error, },))
+    return `${assetName}: ${program} is not installed`;
+  return `${assetName}: ${program} did not decode it (${refusalText({ error, },)})`;
+}
+
 /**
  Decodes a picture to PNG, which is what the OCR reader accepts.
 
@@ -230,59 +444,139 @@ export function solidCharacters({ text, }: { readonly text: string; },): number 
 
  @param source - picture as written to scratch
 
- @param png - where the decoded copy should land
+ @param png - where the decoded copy should land, never the same file as
+ `source`, so a decoder that fails partway leaves the picture whole for the
+ decoder tried after it
+
+ @param assetName - picture's own name, for the lines the failures are
+ recorded under
 
  @param l - logger the two decoder failures are recorded on
+
+ @param runProgram - runner both decoders go through
 
  @returns Whether either decoder produced one
 
  @example
  ```ts
- const decoded = await decodeToPng({ source, png, l, },);
+ const decoded = await decodeToPng({ source, png, assetName, l, runProgram, },);
  ```
  */
 async function decodeToPng(
   {
     source,
     png,
+    assetName,
     l,
+    runProgram,
   }: {
     readonly source: string;
     readonly png: string;
+    readonly assetName: string;
     readonly l: Logger;
+    readonly runProgram: ProgramRunner;
   },
 ): Promise<boolean> {
   try {
-    await execFileAsync(
-      'dwebp',
-      [
+    await runProgram({
+      program: WEBP_DECODER,
+      args: [
         source,
         '-o',
         png,
       ],
-    );
+    },);
     return true;
   }
   catch (error) {
     // Expected for every format that is not webp, which is what the fallback is
     // for. Recorded rather than silent so a machine with one decoder missing
     // and one refusing the file is diagnosable from a log.
-    l.debug(`${source}: dwebp did not decode it (${refusalText({ error, },)})`,);
+    l.debug(decoderFailureLine({
+      assetName,
+      program: WEBP_DECODER,
+      error,
+    },),);
   }
 
   try {
-    await execFileAsync(
-      'magick',
-      [
+    await runProgram({
+      program: FALLBACK_DECODER,
+      args: [
         source,
         png,
       ],
-    );
+    },);
     return true;
   }
   catch (error) {
-    l.debug(`${source}: magick did not decode it (${refusalText({ error, },)})`,);
+    l.debug(decoderFailureLine({
+      assetName,
+      program: FALLBACK_DECODER,
+      error,
+    },),);
     return false;
+  }
+}
+
+/**
+ What the OCR reader left where it was told to write its reading.
+
+ A NAMED OUTCOME rather than a nullish union, which this repository does not
+ model absence with.
+
+ @example
+ ```ts
+ const left: ReadingLeft = { kind: 'absent', };
+ ```
+ */
+type ReadingLeft = {
+  readonly kind: 'written';
+
+  /**
+   What it transcribed, whitespace and all.
+   */
+  readonly text: string;
+} | {
+  /**
+   The reader exited without an error and wrote no file.
+   */
+  readonly kind: 'absent';
+};
+
+/**
+ Reads the transcript the OCR reader was told to write, or says that it
+ wrote none.
+
+ THE FILE COMES FROM OUTSIDE THE PROCESS, so its absence is a state to
+ answer for rather than one to assume away: a reader that exits without an
+ error and leaves nothing has failed, and that is a fact about the reader,
+ not a fault in this machine.
+
+ @param path - where the reader was told to write
+
+ @returns Transcript, or that no file stands there
+
+ @throws Whatever reading the file raises other than its absence
+
+ @example
+ ```ts
+ const left = await readingLeftAt({ path: `${stem}.txt`, },);
+ ```
+ */
+async function readingLeftAt({ path, }: { readonly path: string; },): Promise<ReadingLeft> {
+  try {
+    return {
+      kind: 'written',
+      text: await readFile(
+        path,
+        'utf8',
+      ),
+    };
+  }
+  catch (error) {
+    rethrowUnlessMissingPath({ error, },);
+    return { kind: 'absent', };
   }
 }
 
@@ -296,17 +590,21 @@ async function decodeToPng(
 
  @param l - lane logger
 
- @param ocrTool - reader binary name, overridable so a test can stand in a
- machine whose reader is missing
+ @param runProgram - runner the decoders and the OCR reader go through:
+ `runInstalledProgram` in a run, a runner that starts no process in a test.
+ Required, so that leaving it out is a type error rather than a reading
+ that quietly depends on what the machine has installed
 
  @returns What it read, that it read nothing, or why it could not try
 
- @throws Whatever `mkdtemp` raises when scratch cannot be made, which is a
- broken machine rather than an unreadable picture
+ @throws Whatever `mkdtemp` raises when scratch cannot be made, whatever
+ writing the scratch copy raises, and whatever reading the transcript raises
+ other than its absence, each a broken machine rather than an unreadable
+ picture
 
  @example
  ```ts
- const reading = await readImageWithOcr({ bytes, assetName: 'letter.webp', l, },);
+ const reading = await readImageWithOcr({ bytes, assetName: 'letter.webp', l, runProgram: runInstalledProgram, },);
  ```
  */
 export async function readImageWithOcr(
@@ -314,12 +612,12 @@ export async function readImageWithOcr(
     bytes,
     assetName,
     l,
-    ocrTool = 'tesseract',
+    runProgram,
   }: {
     readonly bytes: Uint8Array;
     readonly assetName: string;
     readonly l: Logger;
-    readonly ocrTool?: string;
+    readonly runProgram: ProgramRunner;
   },
 ): Promise<OcrReading> {
   /**
@@ -341,7 +639,7 @@ export async function readImageWithOcr(
    */
   const source = join(
     scratch.path,
-    `asset.${extensionOf({ assetName, },)}`,
+    scratchCopyName({ assetName, },),
   );
   await writeFile(
     source,
@@ -349,18 +647,21 @@ export async function readImageWithOcr(
   );
 
   /**
-   Decoded copy the OCR reader accepts.
+   Decoded copy the OCR reader accepts, a different file from `source` for
+   every asset name.
    */
   const png = join(
     scratch.path,
-    'asset.png',
+    DECODED_COPY_NAME,
   );
   if (!await decodeToPng({
     source,
     png,
+    assetName,
     l: ol,
+    runProgram,
   },)) {
-    ol.warn(`${assetName}: neither dwebp nor magick could decode it`,);
+    ol.warn(`${assetName}: neither ${WEBP_DECODER} nor ${FALLBACK_DECODER} could decode it`,);
     return {
       kind: 'unavailable',
       reason: 'undecodable',
@@ -372,18 +673,18 @@ export async function readImageWithOcr(
    */
   const stem = join(
     scratch.path,
-    'reading',
+    READING_STEM,
   );
   try {
-    await execFileAsync(
-      ocrTool,
-      [
+    await runProgram({
+      program: OCR_READER,
+      args: [
         png,
         stem,
         '-l',
         TESSERACT_LANGUAGES,
       ],
-    );
+    },);
   }
   catch (error) {
     /**
@@ -393,7 +694,7 @@ export async function readImageWithOcr(
      off the code, not the error's text, which carries the tool's own output.
      */
     const missing = isMissingPathError({ error, },);
-    ol.warn(`${assetName}: tesseract ${missing ? 'is not installed' : 'failed'} (${String(error,)})`,);
+    ol.warn(`${assetName}: ${OCR_READER} ${missing ? 'is not installed' : 'failed'} (${String(error,)})`,);
     return {
       kind: 'unavailable',
       reason: missing ? 'ocr-tool-missing' : 'ocr-failed',
@@ -401,12 +702,24 @@ export async function readImageWithOcr(
   }
 
   /**
+   What the reader left at its output path.
+   */
+  const left = await readingLeftAt({ path: `${stem}.txt`, },);
+  if (left.kind === 'absent') {
+    // A reader that says it succeeded and wrote nothing has failed. Reported
+    // as the reader's failure, like its unhappy exit, so the picture goes on
+    // to the readers that can still read it and the run log says why.
+    ol.warn(`${assetName}: ${OCR_READER} exited without an error and left no reading`,);
+    return {
+      kind: 'unavailable',
+      reason: 'ocr-failed',
+    };
+  }
+
+  /**
    What it transcribed, whitespace and all.
    */
-  const text = await readFile(
-    `${stem}.txt`,
-    'utf8',
-  );
+  const { text, } = left;
 
   /**
    How much of that is not whitespace, which is what the line is drawn on.
@@ -436,6 +749,50 @@ export async function readImageWithOcr(
   return {
     kind: 'read',
     text: text.trim(),
+  };
+}
+
+/**
+ Binds the OCR reader to the runner its programs go through, which gives the
+ reader a picture stage asks for (`OcrReader` in `image-reading-pair.ts`):
+ bytes, a name and a logger in, a reading out.
+
+ A FUNCTION OF ITS OWN so that the one place a run names the real runner is
+ a call made when the run's picture sources are built, and no function body
+ exists that only a real run executes. A unit test drives the reader this
+ returns with a runner that starts no process.
+
+ @param runProgram - runner every program of every reading goes through
+
+ @returns Reader that reads one picture through that runner
+
+ @example
+ ```ts
+ const readOcr = ocrReaderOver({ runProgram: runInstalledProgram, },);
+ ```
+ */
+export function ocrReaderOver(
+  { runProgram, }: { readonly runProgram: ProgramRunner; },
+): (
+  picture: {
+    readonly bytes: Uint8Array;
+    readonly assetName: string;
+    readonly l: Logger;
+  },
+) => Promise<OcrReading> {
+  return function readOcrThroughRunner(
+    {
+      bytes,
+      assetName,
+      l,
+    },
+  ): Promise<OcrReading> {
+    return readImageWithOcr({
+      bytes,
+      assetName,
+      l,
+      runProgram,
+    },);
   };
 }
 

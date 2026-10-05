@@ -3,7 +3,10 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import { readDocumentPictures, } from '../document-readings.ts';
-import { readImageWithOcr, } from '../image-ocr.ts';
+import {
+  ocrReaderOver,
+  runInstalledProgram,
+} from '../image-ocr.ts';
 import type {
   OcrReader,
   PairedReading,
@@ -33,7 +36,7 @@ export type PassVisualEvidenceReader = (args: {
 
  @example
  ```ts
- const sources: PassPictureSources = { gather: gatherEntryPictures, readOcr: readImageWithOcr, };
+ const sources: PassPictureSources = { gather: gatherEntryPictures, readOcr: ocrReaderOver({ runProgram: runInstalledProgram, },), };
  ```
  */
 export type PassPictureSources = {
@@ -48,11 +51,16 @@ export type PassPictureSources = {
 };
 
 /**
- The run's picture sources: the pinned corpus and `dwebp` with `tesseract`.
+ The run's picture sources: the pinned corpus, and the OCR reader over the
+ programs installed on this machine (`dwebp`, `magick` and `tesseract`).
+
+ THE ONE PLACE THE REAL PROGRAM RUNNER IS NAMED. `readImageWithOcr` requires
+ its runner of every caller (ledger M70), so nothing beneath this constant
+ starts a program a test did not hand it.
  */
 const RUN_PICTURE_SOURCES: PassPictureSources = {
   gather: gatherEntryPictures,
-  readOcr: readImageWithOcr,
+  readOcr: ocrReaderOver({ runProgram: runInstalledProgram, },),
 };
 
 /**

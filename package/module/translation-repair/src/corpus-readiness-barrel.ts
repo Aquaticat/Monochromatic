@@ -157,6 +157,12 @@ export {
 } from './corpus-run/pass-lanes.ts';
 export { createPassPictureReader, } from './corpus-run/pass-seated-pictures.ts';
 export { type PassPictureSources, } from './corpus-run/pass-visual-evidence.ts';
+export {
+  ocrReaderOver,
+  type ProgramRunner,
+  runInstalledProgram,
+} from './image-ocr.ts';
+export { MIN_READING_CHARS, } from './image-reading-sense.ts';
 export { pairedPageNames, } from './page-name-glossary.ts';
 export {
   type RepeatedTitleSpan,
