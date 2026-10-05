@@ -488,6 +488,21 @@ description = "Exercise every scan viewer rule on disposable copies; `-- without
 dir = "{{config_root}}"
 run = "node scan-indicator-test.mjs"
 
+[tasks."build:settings-pane"]
+description = "Build the evidence-only native D11 Settings-pane viewer from inspected witnesses"
+dir = "{{config_root}}"
+run = "node settings-pane.mjs build"
+
+[tasks."lint:settings-pane"]
+description = "Validate exact Settings-pane images, authored states, row and header geometry, scroll extents and drawn switch positions"
+dir = "{{config_root}}"
+run = "node settings-pane.mjs validate"
+
+[tasks."test:settings-pane"]
+description = "Exercise every Settings viewer rule on disposable copies; `-- without <rule>` deletes one rule, `-- list` names them"
+dir = "{{config_root}}"
+run = "node settings-pane-test.mjs"
+
 [tasks."test:first-run:access"]
 description = "Exercise first-run review image, metadata, cohort and ballot guards in disposable fixtures"
 dir = "{{config_root}}"

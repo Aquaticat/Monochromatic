@@ -12,6 +12,90 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
+## Settings pane study in progress (2026-10-05, stopped at a usage limit)
+
+Purpose: tell the next session exactly where the D11 Settings study stands.
+The plan is `doc/planning/music-player-light-settings.md`.
+
+### What is done
+
+The first owned native visit ran on APK `40d0b0e4…` and passed every measured rule,
+its input checks,
+exact restoration,
+owner exit `0` and runtime absence.
+Fresh inspection then rejected that build:
+dark header glyph and title,
+and the retained deck title and transport buttons,
+drew black on the dark page,
+and separators were a pixel different across the fold connector.
+Prototype `483f16cdd` fixes all three.
+Its unit task,
+build and Android lint passed;
+lint keeps the same inherited errors and names no Settings file.
+The current APK SHA-256 is
+`85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50`.
+
+`settings-pane.mjs`,
+`settings-pane-test.mjs`,
+`questions/settings-pane.template.html` and the `settings-pane` tasks are
+committed but cannot run yet:
+`questions/evidence/settings-pane-witnesses.json` and its images are not
+published.
+A rehearsal on a disposable copy of the first cohort passed with 101 rules,
+137 rejected inputs and every single-rule deletion noticed by name.
+Rules and cases added after that rehearsal are not yet rehearsed:
+`search-evidence-digest`,
+`title-contrast-pixels`,
+`back-contrast-pixels` and `left-half-search`.
+
+### What was running when this stopped
+
+A second owned visit on the fixed APK was started in the background.
+Its driver restores the recorded guest fields,
+stops the guest and verifies runtime absence by itself,
+whether or not a stage fails.
+Private scratch state is under `~/temp/agent/settings-pane-native-private`,
+in `study-second` and `runtime-second`.
+First check `runtime-second/visit-output.log` for the closing marker,
+then `restoration.json`,
+`owner-exit.json` and `runtime-absence.json`.
+If any is missing,
+confirm no `music-player-settings-pane-fold` container or matching emulator
+process remains before anything else.
+
+### Next actions, in order
+
+- Run `prepare-settings-pane-crops.ts`,
+  `make-settings-pane-inspection-pairs.ts` and
+  `replay-settings-pane-records.ts` from `~/temp/agent` on the second visit.
+- Inspect every light/dark pair afresh.
+  Confirm the dark header,
+  the dark deck title and the separators are now right.
+- Rehearse the builder with `dry-run-settings-pane-viewer.ts`,
+  then with its `proofs` argument.
+  `left-half-search` expects the retained left half to match the published
+  Search images within a shade tolerance;
+  on the first build only the deck title and transport region differed.
+- Still unwritten:
+  the inspection-binding record,
+  the publisher with its preflight controls,
+  the four-context browser verification,
+  the review-verification digest,
+  the boundary document and the doc-verifier extension.
+  Mirror the scan-indicator scripts of the same names.
+
+### Findings to carry to the human, not to turn into ballots
+
+At 200% text the Settings column scrolls on both panels.
+On the unfolded panel the closing sentence is hidden until scrolled;
+on the cover its first lines show and run under the system navigation area.
+Opening Settings narrows the left folder browser as the Search page does.
+The placement itself follows D50,
+D51 and existing Settings behaviour;
+it was adopted,
+not separately chosen,
+and the viewer says how to object.
+
 ## Handoff: scan-F publication complete, Settings pane next
 
 This record is the continuation state for the next agent session.
