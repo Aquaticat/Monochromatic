@@ -2480,6 +2480,18 @@ Under the widest reading of the human's words those are locks too.
 Removing them is asked of the human,
 not done.
 
+Asked the same day,
+the human answered:
+remove both.
+So the narrower reading is withdrawn.
+No builder compares a screenshot with a digest,
+and no builder requires an APK digest or a prototype commit to equal a
+value written in it.
+A manifest may still say which APK and which commit produced its captures;
+that is a statement,
+and nothing is checked against it.
+What a builder checks about an image is what it measures from the image itself.
+
 ### D89. The template language and editor follow KWGT, with stated omissions (2026-10-05)
 
 The human named KWGT (Kustom Widget Maker) as precedent for D81's template
@@ -2542,6 +2554,45 @@ and the editor's layout on the Fold.
 D81's limits stand:
 title customization is not implied,
 and D77's visible distinction before activation remains required.
+No production implementation is authorized by this record.
+
+### D90. The agent's picks for the template entries left open by D89 (2026-10-05)
+
+Asked whether the entries D89 left open were the human's to pick,
+the human answered:
+you choose,
+but for extremely obscure features (for a music player) like regex lean on no.
+
+The agent's picks,
+each open to the human's veto:
+
+- Text conversion stays at case and cutting to a length.
+  Cutting with an ellipsis,
+  padding,
+  splitting and regular-expression replace are omitted.
+  A row already shortens text that does not fit,
+  and the others have no evident use in a track row.
+- Regular-expression match is omitted.
+- Combining conditions with `&` and `|` is omitted,
+  unless a use appears.
+  A nested `if` covers the case of two fields that may each be absent.
+- The preview shows real tracks from the open library,
+  not stand-in values,
+  so the user sees their own names and the rows where a field has no value.
+  Stand-in values are used only when no library is open.
+- No list of ready-made examples.
+  The default template is the example,
+  and the field list inserts at the caret.
+- An edit applies as typed while the template is valid,
+  as Android settings do,
+  with a way back to the default.
+  While the template is invalid the rows keep the last valid template and
+  the editor shows the error.
+  There is no separate save step.
+
+These are picks about scope and behavior,
+not about appearance.
+The editor's layout on the Fold is still to be built and looked at.
 No production implementation is authorized by this record.
 
 ## Pending after the theme picks (2026-09-04)

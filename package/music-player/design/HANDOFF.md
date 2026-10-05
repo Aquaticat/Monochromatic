@@ -41,15 +41,16 @@ This section is newer than `Handoff: two-row Settings publication complete (2026
   the kept and omitted features,
   and the entries still open.
 
-### Asked of the human and not yet answered
+### Asked of the human and answered
 
-- Whether D88 also removes the builders' two remaining digest checks:
+- D88 also removes the builders' two remaining digest checks:
   each embedded screenshot against its manifest digest,
   and the manifest's APK digest against a value written in the builder.
-  The agent recommended removing both.
-- Whether the entries under `Still open` in the template-editor note are the
-  human's to pick or the agent's.
-  Absent an answer they become built variants in the editor study.
+  The human answered:
+  remove both.
+- The entries D89 left open are the agent's to pick,
+  leaning to no for features obscure in a music player.
+  D90 records the picks.
 
 ### Unfinished
 

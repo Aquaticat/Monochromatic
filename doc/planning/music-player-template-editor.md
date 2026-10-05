@@ -13,7 +13,8 @@ other row-type coverage and title customization undesigned.
 The human named KWGT (Kustom Widget Maker) as precedent on 2026-10-05.
 This note lists what KWGT's formula language and formula editor do,
 and records which of those features the player keeps and omits.
-The human answered that question on 2026-10-05 (D89).
+The human answered that question on 2026-10-05;
+D89 and D90 record the answers.
 No production implementation is authorized.
 
 ## What is already settled
@@ -223,7 +224,7 @@ Where the recommendation was to keep or to omit,
 that is now decided.
 Where the note made no recommendation and said the choice was the human's,
 the answer decides nothing;
-those entries are listed under `Still open`.
+those entries are listed under `Left to the agent and picked`.
 
 ### Kept
 
@@ -263,12 +264,27 @@ those entries are listed under `Still open`.
 - The button row for markup,
   colour and the globe.
 
-### Still open
+### Left to the agent and picked
 
 The note recommended nothing here,
-so the human's answer does not settle these.
-They are to be shown as built variants in the editor study,
-not asked in words.
+so the human's first answer did not settle these.
+Asked whose they were,
+the human answered on 2026-10-05:
+you choose,
+but for features extremely obscure in a music player,
+such as regex,
+lean on no.
+D90 records the picks,
+each open to veto:
+text conversion stays at case and cutting to a length;
+regular-expression match and combined conditions are omitted;
+the preview shows real tracks from the open library,
+with stand-in values only when none is open;
+no list of ready-made examples;
+an edit applies as typed while valid,
+with a way back to the default and no separate save step.
+
+The entries as first put:
 
 - The rest of text conversion:
   ellipsis,
@@ -292,5 +308,4 @@ not asked in words.
 - The editor's layout on the Fold's inner and cover panels.
 
 The next step is a built Compose study of the editor on the Fold,
-shown in a verified review form,
-with the entries under `Still open` as variants.
+shown in a verified review form.

@@ -1190,8 +1190,9 @@ row-type coverage,
 defaults,
 fallback,
 exact spelling of the grammar,
-the editor's layout on the Fold,
-and the entries that note lists under `Still open`.
+and the editor's layout on the Fold.
+D90 records the agent's picks for the entries D89 left open,
+which the human delegated.
 The next step is a built editor study on the Fold in a verified review form.
 
 ## 12. Existing-screen refinement, 3B settled and accepted
