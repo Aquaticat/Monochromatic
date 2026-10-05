@@ -77,9 +77,8 @@ fn line_doc(child: &mut Mapping, source: &str, token: &DocToken, margin: usize) 
     let indent: usize = body.len() - body.trim_start_matches([' ', '\t']).len();
     payload += indent.min(margin);
     let mut end: usize = token.end;
-    if source[end..].starts_with("\r\n") {
-        end += 2;
-    } else if source[end..].starts_with(['\r', '\n']) {
+    // The native lexer ends a line comment at LF or EOF, so a CRLF's carriage return is already inside the token.
+    if source[end..].starts_with('\n') {
         end += 1;
     }
     // Preserve indentation and the exact outer/inner prefix spelling.
