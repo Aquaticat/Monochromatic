@@ -1,10 +1,12 @@
 //! The window's reply checks on fabricated replies: request identity and displayed text.
 
-/// The checks under test, the request record they compare against, and the snapshot store.
+/// The checks under test and the request record they compare against.
 use super::{
-    Action, Annotations, Pending,
+    Action, Pending,
     guard::{Verdict, verdict},
 };
+/// The snapshot store the poll fills and the source renderer reads.
+use ide_app::annotation::Annotations;
 /// Replies, identities, and snapshots as the worker produces them.
 use ide_app::language::{
     diagnostics::DiagnosticsSnapshot,

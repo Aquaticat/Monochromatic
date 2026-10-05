@@ -2,8 +2,9 @@
 //!
 //! This module owns the window's one `LanguageWorker`. A 20 ms timer keeps the worker told about
 //! the displayed file, polls status, replies, and snapshots, and applies a reply only while it
-//! still answers the request it was sent for and describes the displayed text. Inlay hints and
-//! diagnostics are stored for the source renderer; this module does not draw them.
+//! still answers the request it was sent for and describes the displayed text. Accepted inlay hints
+//! and diagnostics go into `State::annotations`, the library's `ide_app::annotation::Annotations`,
+//! which the source renderer reads with the stamp of the text it draws; this module does not draw them.
 
 /// One source owner, one window, and the navigation state that opens other files.
 use super::{AppWindow, State, navigation::Navigation};
@@ -62,18 +63,6 @@ mod sync;
 /// Places a target names, and opening them.
 mod targets;
 
-/// What: `pub(super) use` re-exports a name so the parent module and this module's tests can say
-///       `language::Annotations`; the type itself lives in the library.
-/// Why: The poll stores accepted hints and diagnostics in this one store in `State`, and the
-///      source renderer reads the same store with the stamp of the text it draws:
-///      `DocumentStamp { file: state.file_generation, revision: state.document.revision() }`.
-///      One store means what was accepted is exactly what is painted.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export { Annotations } from 'ide-app/annotation';
-/// ```
-pub(super) use ide_app::annotation::Annotations;
 /// The file-open path places the caret at a target once its file is shown.
 pub(super) use targets::{Jump, place};
 
