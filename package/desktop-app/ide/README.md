@@ -627,10 +627,11 @@ a rewrite of the displayed file,
 115 to 147 ms,
 at most 281 ms.
 Watching:
-a new file took a median of 26 to 34 ms with 8 folders and 30 to 35 ms with one,
-at most 54 ms;
-a rewrite took 36 to 52 ms,
-at most 67 ms.
+a new file took a median of 29 to 35 ms with 8 folders and 31 to 35 ms with one,
+at most 96 ms;
+a rewrite took 44 to 56 ms,
+at most 92 ms.
+The medians of one build differed between its runs by at most 134 ms under polling and 6 ms under watching.
 
 ### Deliberate differences from editord
 
