@@ -1666,7 +1666,7 @@ the deciding branch is:
 ```
 
 The staged agent loop separately creates and emits persisted tool-result messages
-at `contract/collector/instruction-meaning-sdk-copy/stage-private/agent-loop.mjs:480`:
+at `contract/collector/instruction-meaning-sdk-copy/stage-private/agent-loop.mjs:481`:
 
 ```js
 // contract/collector/instruction-meaning-sdk-copy/stage-private/agent-loop.mjs
@@ -1697,8 +1697,10 @@ streams,
 outcome,
 and session JSONL.
 It checks native result identities and error messages rather than manufacturing extension callbacks.
-This is read-only reconciliation of a completed worker,
-not another SDK run or broader event qualification.
+Read-only reconciliation `proc_cc9f` passed,
+including both persisted error results and the exact omission witness.
+It added no SDK sessions or provider calls.
+This is not broader event qualification.
 The failed verifier and original namespace remain unchanged.
 
 Replaying the SDK worker to repair the verifier,

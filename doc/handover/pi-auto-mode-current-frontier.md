@@ -104,7 +104,7 @@ The exact shared-map omission produced the intended
 `AssertionError: Missing expected exception.`
 The first verifier `proc_60d2` incorrectly expected extension callbacks for admission-blocked calls.
 Its SDK worker exited successfully;
-a separate read-only reconciliation checks the persisted results without replaying that worker.
+read-only reconciliation `proc_cc9f` passed by checking persisted results without replaying that worker.
 See [the verification-boundary incident](../troubleshooting/pi-sdk-staging.md#owned-admission-verifier-confused-extension-callbacks-with-persisted-results).
 
 The batched encoding still needs its own live diagnostic.
