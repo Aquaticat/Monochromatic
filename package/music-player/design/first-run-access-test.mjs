@@ -68,17 +68,20 @@ try {
     diagnostic: 'still offers the withdrawn analysis choice' });
   reject({ change: input => { input.witnesses.splice(silent, 1); }, diagnostic: 'requires every authored state under every condition' });
   reject({ change: input => { input.witnesses[explained].dragTest.movedAppPixels = true; }, diagnostic: 'end view and the recorded drag outcome disagree' });
+  reject({ change: input => { input.witnesses[explained].scrollableContainerReported = true; }, diagnostic: 'drag outcome and the hierarchy disagree about scrolling' });
   reject({ change: input => { input.witnesses[explained].texts = input.witnesses[explained].texts.filter(text => text !== input.analysisText); },
     diagnostic: 'analysis explanation is in neither kept view' });
   // A synthetic end view: accepted with a displaced body, refused without one, refused when its first view did not move.
   const accepted = structuredClone(manifest);
   accepted.witnesses[explained].dragTest.movedAppPixels = true;
+  accepted.witnesses[explained].scrollableContainerReported = true;
   accepted.witnesses.push(endOf(accepted.witnesses[explained]));
   writeFileSync(join(evidence, manifestFile), JSON.stringify(accepted));
   if (invoke('build').status !== 0) throw new Error('A proven end view was refused.');
   writeFileSync(join(evidence, manifestFile), JSON.stringify(manifest));
   reject({ change: input => {
     input.witnesses[explained].dragTest.movedAppPixels = true;
+    input.witnesses[explained].scrollableContainerReported = true;
     const end = endOf(input.witnesses[explained]);
     end.scrollProof.verticalDisplacement = 0;
     input.witnesses.push(end);

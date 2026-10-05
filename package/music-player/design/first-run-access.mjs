@@ -64,6 +64,10 @@ for (const panel of Object.keys(panels)) for (const scheme of ['light', 'dark'])
   if (typeof moved !== 'boolean' || moved !== (end !== undefined)) {
     throw new Error('First-run end view and the recorded drag outcome disagree: ' + base);
   }
+  // The hierarchy marks a container scrollable only when its content overflows; it must tell the same story as the drag.
+  if (first.scrollableContainerReported !== moved) {
+    throw new Error('First-run drag outcome and the hierarchy disagree about scrolling: ' + base);
+  }
   if (end && (end.scrollProof?.appRgbChanged !== true || !Number.isFinite(end.scrollProof.verticalDisplacement) ||
       end.scrollProof.verticalDisplacement === 0)) {
     throw new Error('First-run end view lacks changed pixels and a displaced body: ' + base);
