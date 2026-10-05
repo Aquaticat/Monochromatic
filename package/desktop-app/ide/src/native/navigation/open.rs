@@ -37,7 +37,9 @@ pub(super) fn request_at(
         navigation.reveal = Some(path);
         source.borrow_mut().navigation_error = None;
         present::update(window, source, navigation);
-        if let Some(target) = target_line { line::reveal(window, source, target); }
+        if let Some(target) = target_line {
+            line::reveal(window, source, target);
+        }
         render(window, source);
         window.invoke_focus_source();
         return Ok(());
@@ -102,7 +104,9 @@ pub(super) fn apply(
         window.set_total_lines(lines as i32);
         window.invoke_reset_source_scroll();
     }
-    if let Some(target) = navigation.pending_line.take() { line::reveal(window, source, target); }
+    if let Some(target) = navigation.pending_line.take() {
+        line::reveal(window, source, target);
+    }
     render(window, source);
     present::update(window, source, navigation);
     window.invoke_focus_source();

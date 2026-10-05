@@ -11,23 +11,38 @@ use std::time::Duration;
 
 /// Advance a live query without waiting on subprocess work or starting repeated empty requests.
 fn tick(window: &AppWindow, search: &mut Search) -> Result<()> {
-    if !window.get_search_open() || !window.get_search_busy() { return Ok(()); }
+    if !window.get_search_open() || !window.get_search_busy() {
+        return Ok(());
+    }
     if let Some(edited) = search.edited {
-        if edited.elapsed() < Duration::from_millis(150) { return Ok(()); }
+        if edited.elapsed() < Duration::from_millis(150) {
+            return Ok(());
+        }
         search.edited = None;
         if let Some(input) = &search.input {
-            search.worker.request_scoped(input.query.clone(), search.scope.clone())?;
+            search
+                .worker
+                .request_scoped(input.query.clone(), search.scope.clone())?;
             tracing::debug!(query = input.query, scope = %search.scope.display(), "submitted debounced native search");
         }
     }
-    let Some(reply) = search.worker.try_take()? else { return Ok(()); };
-    let content_only = search.input.as_ref().is_some_and(|input| return input.content_only);
+    let Some(reply) = search.worker.try_take()? else {
+        return Ok(());
+    };
+    let content_only = search
+        .input
+        .as_ref()
+        .is_some_and(|input| return input.content_only);
     let (hits, error) = present::results(&reply.results, content_only);
     search.hits = hits;
     window.set_search_error(error.into());
     window.set_search_busy(false);
     present::rows(window, &search.hits, &reply.scope);
-    tracing::debug!(generation = reply.generation, results = search.hits.len(), "presented native search results");
+    tracing::debug!(
+        generation = reply.generation,
+        results = search.hits.len(),
+        "presented native search results"
+    );
     return Ok(());
 }
 

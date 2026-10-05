@@ -1,9 +1,14 @@
 //! Native search owns debounce, immutable result identity, and one cancellable worker.
 
-/// Search presentation never needs a second project boundary or a mutable source snapshot.
-use ide_app::{search::SearchHit, search_input::{DoubleShift, SearchInput}, search_worker::SearchWorker, workspace::Workspace};
 /// Worker startup failures remain explicit rather than silently disabling the shortcut.
 use anyhow::Result;
+/// Search presentation never needs a second project boundary or a mutable source snapshot.
+use ide_app::{
+    search::SearchHit,
+    search_input::{DoubleShift, SearchInput},
+    search_worker::SearchWorker,
+    workspace::Workspace,
+};
 /// Native paths are kept separately from lossy labels; monotonic clocks drive debounce and gestures.
 use std::{path::PathBuf, time::Instant};
 
@@ -55,9 +60,15 @@ impl Search {
     pub(super) fn new(workspace: Workspace) -> Result<Self> {
         let scope = workspace.root().to_path_buf();
         return Ok(Self {
-            worker: SearchWorker::new(workspace)?, directory: None, scope,
-            input: None, edited: None, hits: Vec::new(),
-            gesture: DoubleShift::default(), clock: Instant::now(), return_tree: false,
+            worker: SearchWorker::new(workspace)?,
+            directory: None,
+            scope,
+            input: None,
+            edited: None,
+            hits: Vec::new(),
+            gesture: DoubleShift::default(),
+            clock: Instant::now(),
+            return_tree: false,
         });
     }
 }

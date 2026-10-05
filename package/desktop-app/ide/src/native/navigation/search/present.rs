@@ -39,12 +39,24 @@ pub(super) fn rows(window: &AppWindow, hits: &[SearchHit], scope: &Path) {
         let path = hit.path.strip_prefix(scope).unwrap_or(&hit.path);
         let (detail, preview) = match &hit.kind {
             SearchKind::Path => ("File".to_string(), String::new()),
-            SearchKind::Content { line, preview, truncated } => (
+            SearchKind::Content {
+                line,
+                preview,
+                truncated,
+            } => (
                 format!("Line {line}"),
-                if *truncated { format!("{preview}…") } else { preview.clone() },
+                if *truncated {
+                    format!("{preview}…")
+                } else {
+                    preview.clone()
+                },
             ),
         };
-        rows.push(SearchEntry { path: SharedString::from(path.to_string_lossy().as_ref()), detail: SharedString::from(detail), preview: SharedString::from(preview) });
+        rows.push(SearchEntry {
+            path: SharedString::from(path.to_string_lossy().as_ref()),
+            detail: SharedString::from(detail),
+            preview: SharedString::from(preview),
+        });
     }
     window.set_search_entries(ModelRc::from(Rc::new(VecModel::from(rows))));
     window.set_search_selected(if hits.is_empty() { -1 } else { 0 });

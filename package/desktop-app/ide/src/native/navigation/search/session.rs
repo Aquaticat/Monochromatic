@@ -13,9 +13,20 @@ use std::{cell::RefCell, rc::Rc, time::Instant};
 
 /// Remember an actual tree interaction, not programmatic ancestor reveal for a recent file.
 pub(super) fn remember(navigation: &mut Navigation, index: i32) {
-    if index < 0 { return; }
-    let Some(row) = navigation.rows.get(index as usize) else { return; };
-    navigation.search.directory = if row.entry.is_directory { Some(row.entry.path.clone()) } else { row.entry.path.parent().map(|parent| return parent.to_path_buf()) };
+    if index < 0 {
+        return;
+    }
+    let Some(row) = navigation.rows.get(index as usize) else {
+        return;
+    };
+    navigation.search.directory = if row.entry.is_directory {
+        Some(row.entry.path.clone())
+    } else {
+        row.entry
+            .path
+            .parent()
+            .map(|parent| return parent.to_path_buf())
+    };
 }
 
 /// Editing invalidates both the result model and subprocess generation immediately, before the debounce delay.
@@ -37,12 +48,24 @@ pub(super) fn edit(window: &AppWindow, search: &mut Search, raw: &str) -> Result
 
 /// Capture the selected directory once; later tree refresh cannot silently broaden the open overlay's search.
 pub(super) fn start(window: &AppWindow, navigation: &mut Navigation) -> Result<()> {
-    if window.get_tree_has_focus() { remember(navigation, window.get_tree_focused_row()); }
+    if window.get_tree_has_focus() {
+        remember(navigation, window.get_tree_focused_row());
+    }
     let search = &mut navigation.search;
-    search.scope = search.directory.clone().unwrap_or_else(|| return navigation.workspace.root().to_path_buf());
+    search.scope = search
+        .directory
+        .clone()
+        .unwrap_or_else(|| return navigation.workspace.root().to_path_buf());
     search.return_tree = window.get_tree_has_focus();
-    let relative = search.scope.strip_prefix(navigation.workspace.root()).unwrap_or(&search.scope);
-    let label = if relative.as_os_str().is_empty() { window.get_project_label().to_string() } else { relative.display().to_string() };
+    let relative = search
+        .scope
+        .strip_prefix(navigation.workspace.root())
+        .unwrap_or(&search.scope);
+    let label = if relative.as_os_str().is_empty() {
+        window.get_project_label().to_string()
+    } else {
+        relative.display().to_string()
+    };
     window.set_search_scope(label.into());
     window.set_search_open(true);
     edit(window, search, "")?;
@@ -59,16 +82,32 @@ pub(super) fn close(window: &AppWindow, search: &mut Search) -> Result<()> {
     window.set_search_open(false);
     window.set_search_busy(false);
     present::rows(window, &search.hits, &search.scope);
-    if search.return_tree || !window.get_source_available() { window.invoke_focus_tree(); } else { window.invoke_focus_source(); }
+    if search.return_tree || !window.get_source_available() {
+        window.invoke_focus_tree();
+    } else {
+        window.invoke_focus_source();
+    }
     tracing::debug!("native search closed and pending work cancelled");
     return search.worker.clear();
 }
 
 /// Native hit identity, not its rendered text, supplies the latest source-open intent.
-pub(super) fn choose(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Navigation, index: i32) -> Result<()> {
-    if index < 0 || !window.get_search_open() { return Ok(()); }
-    let Some(hit) = navigation.search.hits.get(index as usize).cloned() else { return Ok(()); };
-    let line = match hit.kind { SearchKind::Path => None, SearchKind::Content { line, .. } => Some(line) };
+pub(super) fn choose(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    navigation: &mut Navigation,
+    index: i32,
+) -> Result<()> {
+    if index < 0 || !window.get_search_open() {
+        return Ok(());
+    }
+    let Some(hit) = navigation.search.hits.get(index as usize).cloned() else {
+        return Ok(());
+    };
+    let line = match hit.kind {
+        SearchKind::Path => None,
+        SearchKind::Content { line, .. } => Some(line),
+    };
     close(window, &mut navigation.search)?;
     return open::request_at(window, source, navigation, hit.path, line);
 }

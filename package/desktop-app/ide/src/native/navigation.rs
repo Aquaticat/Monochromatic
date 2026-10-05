@@ -26,12 +26,12 @@ use std::{
 mod actions;
 /// Content results set a reading position only after their file is successfully available.
 mod line;
-/// Transient combined search shares project and file-open ownership.
-mod search;
 /// Successful opens replace source atomically without losing the prior document on errors.
 mod open;
 /// Visible row presentation and ancestor expansion for reveal.
 mod present;
+/// Transient combined search shares project and file-open ownership.
+mod search;
 /// Nonblocking reply consumption and bounded directory refresh scheduling.
 mod tick;
 

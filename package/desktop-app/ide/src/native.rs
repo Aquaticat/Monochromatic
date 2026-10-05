@@ -56,6 +56,9 @@ mod navigation_tests;
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
+/// Combined search exercises native key capture, real ripgrep, scope, and source-line navigation.
+#[cfg(test)]
+mod search_tests;
 /// Source typography reaches the actual image and selection bindings.
 #[cfg(test)]
 mod source_font_tests;
