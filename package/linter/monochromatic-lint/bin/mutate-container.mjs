@@ -84,8 +84,11 @@ async function main() {
     if (rustStyle)
       command.push('--file', 'src/rust_no_anonymous_functions.rs', '--cargo-test-arg=rust_no_anonymous_functions');
     // This is scoped evidence, not a replacement for full-rule mutation. The baseline still runs.
+    // Every test the `markdown` filter selects is a library test: the baseline at c184147f ran 136 library tests
+    // and filtered out all 12 `binary` tests. `--lib` (a Cargo argument, so the build phase gets it too) stops
+    // every mutant from also rebuilding the executable and the `binary` test target, which then run no test.
     if (markdown)
-      command.push('--file', 'src/markdown_*.rs', '--cargo-test-arg=markdown');
+      command.push('--file', 'src/markdown_*.rs', '--cargo-arg=--lib', '--cargo-test-arg=markdown');
     // The parent lookup's own contract control, which never walks ancestors. Before ancestor walks were bounded by
     // the node count, a constant parent made them spin and the Markdown scope could only time out on these mutants;
     // the Markdown scope now catches them too, and this scope stays as their fastest direct check.
