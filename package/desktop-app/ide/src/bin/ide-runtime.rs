@@ -10,8 +10,51 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// Initial end-to-end source slice; later inventory coverage extends this same owner.
-const GRAMMARS: &[&str] = &["rust", "typescript", "tsx", "javascript", "jsdoc"];
+/// What: `const GRAMMARS: &[&str]` is a fixed, read-only list of borrowed text values.
+///       Each entry is a pinned Helix grammar id (the parser name), not a language name:
+///       the `qml` language uses `qmljs`, and `markdown.inline` uses `markdown_inline`.
+///       Siblings a reader might expect: `Vec<String>` (growable, owned) and `[&str; 27]`
+///       (a fixed-length array whose length is part of the type).
+/// Why:  The list never changes at run time, so no owned `Vec<String>` is needed, and a slice
+///       avoids restating the length whenever the measured inventory changes.
+///       Selection evidence lives in `doc/planning/slint-ide-runtime-languages.md`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const GRAMMARS = ['bash', 'batch', /* ... */ 'tsx'] as const;
+/// ```
+const GRAMMARS: &[&str] = &[
+    // Languages measured as repository source or configuration.
+    "bash",
+    "batch",
+    "c",
+    "cpp",
+    "css",
+    "dockerfile",
+    "hcl",
+    "html",
+    "javascript",
+    "json",
+    "kotlin",
+    "markdown",
+    "qmljs",
+    "rust",
+    "slint",
+    "sql",
+    "toml",
+    "typescript",
+    "xml",
+    "yaml",
+    // Companion grammars injected by those languages for content the repository contains.
+    "awk",
+    "comment",
+    "jsdoc",
+    "markdown_inline",
+    "regex",
+    "rust-format-args",
+    // Retained from the initial slice; no `.tsx` file is currently measured.
+    "tsx",
+];
 
 /// Selection shape understood by the pinned Helix grammar manager.
 #[derive(Serialize)]
