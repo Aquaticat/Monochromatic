@@ -35,14 +35,19 @@ use forbidden_strings::run_cli_from_env;
 // ```
 use std::process::ExitCode;
 
+/// Select the existing environment filter without introducing a captured fallback callback.
+fn logging_filter() -> tracing_subscriber::EnvFilter {
+    if let Ok(filter) = tracing_subscriber::EnvFilter::try_from_default_env() {
+        return filter;
+    }
+    return tracing_subscriber::EnvFilter::new("info");
+}
+
 /// Initialize the existing logger and run the CLI inside the process's unwind boundary.
 fn initialized_cli() -> anyhow::Result<i32> {
     // Keep all startup logging behavior inside the same failure boundary as rule loading and scanning.
     tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| return tracing_subscriber::EnvFilter::new("info")),
-        )
+        .with_env_filter(logging_filter())
         .with_writer(std::io::stderr)
         .init();
     return run_cli_from_env();
@@ -54,10 +59,9 @@ fn initialized_cli() -> anyhow::Result<i32> {
 //           returned `Result<i32>` into an `ExitCode`. The
 //           `Err` arm prints the catastrophic error to stderr with
 //           a fixed `forbidden-strings:` prefix and exits 2; the
-//           lib never produces an `Err` today (every recoverable
-//           error path eprintln's and returns `Ok(2)`), but the
-//           shape is reserved so future panics or unwrap-failures
-//           in the lib have somewhere to surface.
+//           process boundary also catches unexpected unwinds and emits
+//           a fixed redacted failure. The startup hook omits payloads;
+//           the separate catch boundary determines the final status.
 // Why:      Keep `main` to a five-line wrapper so the lib is the
 //           sole carrier of business logic, and tests can drive
 //           every code path without spawning a subprocess.

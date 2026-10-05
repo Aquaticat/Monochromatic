@@ -12,7 +12,15 @@ use crate::diagnostic::{Diagnostic, Severity, Span};
 use crate::edits::{Edit, Fix, FixError};
 
 /// Deterministic fixture behavior, not executable repository configuration.
-enum Mode { Settle, Cycle, Grow, Noop, Invalid, Processing, Fail }
+enum Mode {
+    Settle,
+    Cycle,
+    Grow,
+    Noop,
+    Invalid,
+    Processing,
+    Fail,
+}
 
 /// Named checker state records every source it was actually asked to inspect.
 struct Checker {
@@ -20,38 +28,83 @@ struct Checker {
     mode: Mode,
     /// Exact ordered inputs to check.
     seen: Vec<String>,
+    /// Optional check call that fails after earlier provisional work.
+    fail_at: Option<usize>,
+    /// Optional check call that reports incomplete processing rather than returning an error.
+    processing_at: Option<usize>,
 }
 
 impl SourceChecker for Checker {
     /// Produce a fix derived from the current source, never an offset cached from another pass.
     fn check(&mut self, source: &str) -> Result<Vec<Diagnostic>, FixError> {
         self.seen.push(String::from(source));
+        if self.fail_at == Some(self.seen.len()) {
+            return Err(FixError { message: String::from("late fixture check failed") });
+        }
         let replacement: String = match self.mode {
             Mode::Settle => {
-                if source == "é" { String::from("🚀") }
-                else if source == "🚀" { String::from("done") }
-                else { return Ok(Vec::new()); }
+                if source == "é" {
+                    String::from("🚀")
+                } else if source == "🚀" {
+                    String::from("done")
+                } else {
+                    return Ok(Vec::new());
+                }
             }
             Mode::Cycle => {
-                if source == "a" { String::from("b") } else { String::from("a") }
+                if source == "a" {
+                    String::from("b")
+                } else {
+                    String::from("a")
+                }
             }
             Mode::Grow => format!("{source}x"),
             Mode::Noop | Mode::Processing => String::from(source),
             Mode::Invalid => String::from("invalid"),
-            Mode::Fail => return Err(FixError { message: String::from("fixture check failed") }),
+            Mode::Fail => {
+                return Err(FixError {
+                    message: String::from("fixture check failed"),
+                });
+            }
         };
-        let mut finding: Diagnostic = Diagnostic::new("fixture/change", Severity::Error, format!("current: {source}"),
-            String::from("fixture.md"), Span { offset: 0, length: source.len(), line: 1, column: 1 });
-        finding.processing_failure = matches!(self.mode, Mode::Processing);
-        let end: usize = if matches!(self.mode, Mode::Invalid) { source.len() + 1 } else { source.len() };
-        finding.fix = Some(Fix { edits: vec![Edit { start: 0, end, replacement }] });
+        let mut finding: Diagnostic = Diagnostic::new(
+            "fixture/change",
+            Severity::Error,
+            format!("current: {source}"),
+            String::from("fixture.md"),
+            Span {
+                offset: 0,
+                length: source.len(),
+                line: 1,
+                column: 1,
+            },
+        );
+        finding.processing_failure = matches!(self.mode, Mode::Processing)
+            || self.processing_at == Some(self.seen.len());
+        let end: usize = if matches!(self.mode, Mode::Invalid) {
+            source.len() + 1
+        } else {
+            source.len()
+        };
+        finding.fix = Some(Fix {
+            edits: vec![Edit {
+                start: 0,
+                end,
+                replacement,
+            }],
+        });
         return Ok(vec![finding]);
     }
 }
 
 /// Construct a fresh named checker with no retained previous snapshots.
 fn checker(mode: Mode) -> Checker {
-    return Checker { mode, seen: Vec::<String>::new() };
+    return Checker {
+        mode,
+        seen: Vec::<String>::new(),
+        fail_at: None,
+        processing_at: None,
+    };
 }
 
 /// Unicode replacement lengths change between passes, and the returned diagnostics are from the final source.
@@ -99,6 +152,23 @@ fn unchanged_source_stops_even_with_a_remaining_fix() {
     assert_eq!(result.stop, FixStop::Unchanged);
     assert_eq!(result.changed_passes, 0);
     assert_eq!(state.seen, ["same", "same"]);
+}
+
+/// Failures after an edit or during the mandatory final check cannot publish provisional output.
+#[test]
+fn late_failures_do_not_escape_as_accepted_fixed_source() {
+    for mode in [Mode::Settle, Mode::Noop] {
+        let mut state: Checker = checker(mode);
+        state.fail_at = Some(2);
+        assert!(fix_source("é", &mut state).is_err());
+        assert_eq!(state.seen.len(), 2);
+    }
+    let mut incomplete: Checker = checker(Mode::Noop);
+    incomplete.processing_at = Some(2);
+    let error: FixError = fix_source("same", &mut incomplete).expect_err("incomplete final check");
+    assert!(error.message.contains("fixture.md"));
+    assert!(error.message.contains("fixture/change"));
+    assert_eq!(incomplete.seen, ["same", "same"]);
 }
 
 /// Invalid edit plans and incomplete checking never return a provisional source for publication.
