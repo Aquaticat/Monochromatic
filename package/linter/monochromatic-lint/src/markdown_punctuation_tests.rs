@@ -25,6 +25,8 @@ fn check(source: &str) -> Vec<Diagnostic> {
 fn localized_fixes_preserve_delimiters_and_unicode() {
     for (source, expected) in [
         ("# Done.\n", "# Done\n"),
+        ("# .\n", "# \n"),
+        ("# .:\n", "# \n"),
         ("# **Done:**\n", "# **Done**\n"),
         ("# 🚀 Done.:\n", "# 🚀 Done\n"),
         ("# Done\\.\n", "# Done\n"),
