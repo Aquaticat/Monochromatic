@@ -118,6 +118,9 @@ mod viewport;
 /// External changes reach the tree and source through inotify notifications, faster than polling could.
 #[cfg(test)]
 mod watch_tests;
+/// A save in progress is not shown before it finishes; an ignored measurement finds the pause that is.
+#[cfg(test)]
+mod write_wait_tests;
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.

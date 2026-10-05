@@ -72,24 +72,31 @@ fn unfinished_writes_wait_for_quiet_within_a_limit() {
         settled.due(start + REREAD_GAP, false),
         "a finished write was not read at once"
     );
+    // Past the reread gap, so only the quiet period and the wait limit decide.
+    let later = start + REREAD_GAP;
     let mut writing = source_after_first_read(start, true);
-    writing.changed(SourceChange::Unsettled, start);
+    writing.changed(SourceChange::Unsettled, later);
     assert!(
-        !writing.due(start + WRITE_QUIET - TICK, false),
+        !writing.due(later + WRITE_QUIET - TICK, false),
         "an unfinished write was read before going quiet"
     );
     assert!(
-        writing.due(start + WRITE_QUIET, false),
+        writing.due(later + WRITE_QUIET, false),
         "a quiet unfinished write was not read"
     );
     let mut continuous = source_after_first_read(start, true);
-    let mut at = start;
-    while at < start + WRITE_WAIT_LIMIT {
+    // Writes arrive twice per quiet period, so the file never goes quiet and only the limit applies.
+    let mut at = later;
+    while at < later + WRITE_WAIT_LIMIT {
         continuous.changed(SourceChange::Unsettled, at);
-        at += Duration::from_millis(50);
+        at += WRITE_QUIET / 2;
     }
     assert!(
-        continuous.due(start + WRITE_WAIT_LIMIT, false),
+        !continuous.due(later + WRITE_WAIT_LIMIT - TICK, false),
+        "a continuously written file was read before the wait limit"
+    );
+    assert!(
+        continuous.due(later + WRITE_WAIT_LIMIT, false),
         "a continuously written file waited past the limit"
     );
 }

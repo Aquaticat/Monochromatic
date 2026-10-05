@@ -171,3 +171,32 @@ fn a_failed_watch_requests_a_full_reread_and_is_retried_on_request() {
         },
     );
 }
+
+/// A watch that keeps failing the same way is reported once. Retries, which the native tick requests on
+/// every 1 s sweep, report nothing more until the failure changes; here it ends when the folder appears.
+#[test]
+fn a_watch_failing_the_same_way_is_reported_once_until_it_changes() {
+    let fixture = tempfile::tempdir().expect("disposable project");
+    let (mut watcher, workspace) = start(fixture.path());
+    let root = workspace.root().to_path_buf();
+    let missing = root.join("missing");
+    watcher.watch_only(&set(&[&root, &missing]), None);
+    arrive(&mut watcher, "the first failure's full reread", |record| {
+        return record.everything && watching(record, &root);
+    });
+    quiet(&mut watcher);
+    for _ in 0..3 {
+        watcher.retry();
+        let repeated = quiet(&mut watcher);
+        assert!(
+            !repeated.everything && repeated.watched.is_none(),
+            "an unchanged failure was reported again: {repeated:?}"
+        );
+    }
+    fs::create_dir(&missing).expect("create the missing folder");
+    quiet(&mut watcher);
+    watcher.retry();
+    arrive(&mut watcher, "the watch restored by a retry", |record| {
+        return record.directories.contains(&missing) && watching(record, &missing);
+    });
+}
