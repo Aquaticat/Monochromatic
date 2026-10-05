@@ -22,14 +22,21 @@ and the next implementation action.
 
 ## Fonts and appearance
 
-JetBrains Mono and Inter are bundled under `asset/font` with their original OFL notices.
+Official variable roman and real italic fonts for JetBrains Mono and Inter are bundled under `asset/font`
+with their original OFL notices.
 The Slint compiler is configured to embed imported font bytes.
 The UI binds to the system palette.
 Native dark/light rendering and font isolation are verified.
 Programming ligatures retain per-character caret,
 selection,
 and copy behavior.
-Inter's default kerning and real UI weights are covered by font-stack tests.
+Inter's default kerning,
+continuous weights,
+optical-size controls,
+and real italic selection are covered by font-stack tests.
+Native widget snapshots also verify intermediate weights and italic cache invalidation.
+Inter's normal Slint UI request currently retains the optical-axis default,
+not automatic optical sizing.
 Idle DPI changes are covered by a native headless window-event regression.
 Live system-theme change and physical-output scale migration remain to be verified.
 

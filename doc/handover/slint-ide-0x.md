@@ -11,7 +11,7 @@ The application remains an incomplete source-view gate.
 
 Current boundary:
 continue workspace tree/search/navigation after the verified font fixes.
-The new read-only workspace model is committed and its test run is pending.
+The read-only workspace model is committed and its five tests passed.
 Repeat native font isolation after the recent Slint procedural-macro integration change,
 then continue annotations and language intelligence.
 Actual TypeScript/Rust syntax is now wired and the highlighted native screenshot was inspected.
@@ -356,11 +356,27 @@ Fractional DPI/origin and opacity controls pass.
 Inter tests verify kerning against an off control (106.35498 versus 112.976074 pixels),
 real 400/600 face bytes,
 and tabular/proportional figures through the same Parley/fontique stack Slint uses.
-The bundled fonts are static,
-with no fvar table:
-no variable-weight or automatic optical-size capability is claimed.
-Optional stylistic sets remain upstream defaults;
-no font-settings panel was added.
+The user rejected the static subset and explicitly requested variable fonts and real italics.
+On 2026-10-04,
+`Inter-Regular.ttf`/`Inter-SemiBold.ttf` were replaced by `InterVariable.ttf`/`InterVariable-Italic.ttf`,
+and `JetBrainsMono-Regular.ttf` by `JetBrainsMono-Variable.ttf`/`JetBrainsMono-VariableItalic.ttf`.
+The original filesystem names for the latter pair are recorded in the font README;
+font bytes and internal names are unchanged.
+JetBrains Mono advertises wght 100 to 800;
+Inter advertises wght 100 to 900 and opsz 14 to 32.
+Both families have separate real italic faces.
+
+`font_asset.rs` shares stable source-font blob identities.
+`SourceTypography` validates variable weights and chooses real italic faces.
+Tests verify intermediate weights,
+exact font bytes,
+no synthetic emboldening/skew,
+variation-aware glyph caching with the same blob ID,
+and italic ligature caret/copy behavior.
+Inter tests verify explicit optical sizes 14 and 32.
+The toolkit's ordinary UI request still leaves opsz at 14;
+automatic optical sizing is not claimed.
+Optional stylistic alternates remain upstream defaults and no settings panel was added.
 `asset/font/README.md` records the measured feature boundary.
 
 `ui/app.slint` now tracks a physical pixel converted to logical length,
@@ -407,6 +423,22 @@ Copy is keyboard-only.
 Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
+
+- `proc_0d4b`,
+  `ide-variable-font-full-checks`,
+  runs the full suite,
+  Clippy,
+  and build after variable/italic asset replacement.
+- `proc_8ed6` passed both native headless tests under nextest:
+  idle DPI changes and real widget variable-weight/italic pixel changes.
+  Plain cargo test initially failed because Slint's global platform was initialized on another test thread;
+  native tests now use process isolation.
+- `proc_ed8c`,
+  `ide-macro-font-isolation-check`,
+  is running the pre-variable dark fixture at
+  `/tmp/monochromatic-ide-native-4JdC4Q/control.sock`.
+  Its macro-path font isolation and complete embedded-font bytes were verified,
+  but a fresh native run is needed for the variable assets.
 
 - `proc_f89f`,
   `ide-workspace-model-tests`,
