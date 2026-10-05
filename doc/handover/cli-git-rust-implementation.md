@@ -358,7 +358,27 @@ A separate `mutation:markdown` task verifies the current Markdown-only scope aft
 it does not replace the existing full-snapshot campaign.
 Reference-definition checking has also been ported,
 with normalized parser identities and source-preserving newline/container deletion tests.
-Its first gate remains pending.
+The complete current snapshot passed 138 tests in `proc_02be`,
+including the bare-CR regression,
+fence-offset matrix,
+reference-definition removals,
+and output-filter controls.
+Clippy stopped the mutation task on `clippy::needless_late_init` in the definition reason selection.
+The rule now returns early for the first used definition,
+then initializes its reason with a short conditional.
+The scoped mutation task has not reached mutation yet.
+A refreshed full gate is pending.
+
+A Markdown/MDX ASAN target has been added to the fuzz sidecar.
+Every draw exercises an independently counted rule fixture,
+original-byte spans,
+and reparsing after accepted grouped fixes,
+then arbitrary UTF-8 in both modes.
+The generator unit controls cover every fixture and LF/CRLF/bare-CR choice.
+`proc_415a` is running the full sidecar smoke task under the existing bounds;
+its source snapshot predates the final definition-selection refactor.
+The owning Cargo task regenerated the fuzz lockfile;
+inspection showed only the already selected Clap dependency family was added.
 Semantic fuzz controls now exercise all generated branches through production sessions.
 The first fixture path was not a crate root;
 renaming the fixed metadata path to `/main.rs` made all generator controls pass.

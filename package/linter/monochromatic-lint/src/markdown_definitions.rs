@@ -109,17 +109,15 @@ pub fn reference_definitions(context: &MarkdownSource, severity: Severity) -> Ve
         if identifier == "//" {
             continue;
         }
-        // A diagnostic reason is a borrowed static str, not a newly allocated String.
-        let reason: &str;
-        if !used.contains(identifier) {
-            reason = "Unused";
-        } else if kept.contains(identifier) {
-            reason = "Duplicate";
-        } else {
+        // Record the use decision once; a first used definition has no diagnostic.
+        let is_used: bool = used.contains(identifier);
+        if is_used && !kept.contains(identifier) {
             // Copy the first used identity into owned storage; later copies are duplicates.
             kept.insert(String::from(identifier));
             continue;
         }
+        // A short conditional selects a borrowed static str, not a newly allocated String.
+        let reason: &str = if is_used { "Duplicate" } else { "Unused" };
         // Some carries a verified edit; the shared builder groups it atomically with this finding.
         findings.push(finding(
             context,
