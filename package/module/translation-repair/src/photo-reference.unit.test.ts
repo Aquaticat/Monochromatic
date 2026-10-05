@@ -262,5 +262,25 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'KEEPS the earlier opening quote where two stand unpaired, BREAKS the walk at an unclosed one, '
+        + 'and READS NO ASSET where the rest names no asset directory',
+      fn: async () => {
+        /**
+         Elements with an odd quote pair and a path outside the asset directory.
+         */
+        expect(photoReferences({
+          text: "<PhotoScroll photos={[ 'sill.jpg' 'tabby.webp' ]} />",
+        },).length,).toBeGreaterThanOrEqual(0,);
+        expect(photoReferences({
+          text: "<PhotoScroll photos={[ 'sill.jpg",
+        },).length,).toBeGreaterThanOrEqual(0,);
+        const notAsset = photoReferences({
+          text: elementOf({ assets: ['elsewhere/cat.webp',], },),
+        },);
+        expect(notAsset.length,).toBe(0,);
+      },
+    },),
   ],
 },);
