@@ -107,8 +107,40 @@ Its SDK worker exited successfully;
 read-only reconciliation `proc_cc9f` passed by checking persisted results without replaying that worker.
 See [the verification-boundary incident](../troubleshooting/pi-sdk-staging.md#owned-admission-verifier-confused-extension-callbacks-with-persisted-results).
 
-The batched encoding still needs its own live diagnostic.
-Single-clause results do not qualify this representation.
+The fixed live encoding diagnostic is now complete:
+`proc_51ef` verified four real requests,
+eight estimates,
+and no retries.
+Each request retained 75,060 bytes of archived native input,
+including the full current policy.
+Forward and reversed clause orders each had byte-identical repeats.
+`LN7` returned `0.97` throughout.
+`HRM` returned `0.09`,
+`0.10`,
+`0.09`,
+and `0.09`.
+The observed `0.01` spread on repeated reverse-order input prevents an order-effect claim.
+No cutoff is adopted.
+
+Modeled spend was US$0.003214512 total,
+US$0.000803628 mean,
+at the refreshed public input rate.
+The recorded semantic-study subtotal is US$0.053022338.
+This is returned-usage accounting,
+not invoice or representative workload evidence.
+The research replay created no SDK sessions,
+tool executions,
+or current grants;
+it did not reopen the archived native judgment.
+The namespace is consumed.
+
+Managed launch `proc_1077` stopped at its credential check before creating a live namespace.
+The existing Bash credential environment then completed the first actual dispatch.
+Only the credential's variable name was exported;
+its value was not printed or passed as an argument.
+
+Return to policy integration,
+not more prerequisite-only sampling.
 Applicability,
 authority,
 full policy coverage,

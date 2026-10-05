@@ -30,6 +30,66 @@ The accepted AUP,
 necessity-based retention,
 and gateway-internal retry choices remain settled.
 
+## Batched instruction-meaning encoding diagnostic
+
+`proc_51ef` verified a fixed four-request study of the unchanged
+`states_approval_prerequisite` predicate in pre-authored wire slots.
+The archived native input was 75,060 bytes per request,
+with complete current policy,
+parent program,
+prepared group,
+and original main request.
+This was research over copied inputs,
+not continuation of a consumed native judgment.
+
+The `LN7` and `HRM` development references were placed in forward and reversed slot order,
+then repeated with byte-identical bodies for each order.
+The references were known before this study and were not held-out examples.
+`LN7` returned `0.97` in every sample.
+`HRM` returned `0.09`,
+`0.10`,
+`0.09`,
+and `0.09`.
+Forward repeats had no observed score change;
+the reverse `HRM` repeat changed by `0.01`.
+This does not establish a score difference caused by slot order.
+
+Both 80/20 and 90/10 diagnostic bands yielded eight correct,
+zero wrong,
+and zero unresolved estimates.
+At 95/05,
+four resolved correctly and four remained unresolved.
+No threshold is adopted.
+No vote,
+adaptive repeat,
+or alternate semantic wording was used.
+
+The study cost US$0.003214512 in modeled returned-token usage,
+with mean US$0.000803628 at 42 nanoUSD per input token.
+A cleared Node metadata read `proc_2fdd` refreshed that advertised rate before dispatch.
+Invoices,
+hidden gateway attempts,
+and representative workload cost remain unverified.
+The recorded semantic-study subtotal is US$0.053022338,
+excluding agent and reviewer costs.
+
+Separate native controls `proc_0eb5` established the original-judgment batch path using fake transport.
+The live research study itself created no SDK session or tool execution.
+Full source,
+request,
+response,
+deadline,
+stream,
+and worker-exit checks are retained in
+`contract/research/batched-instruction-runner/verified-result.json`
+in the private repository.
+That namespace is consumed.
+This result does not qualify current-action applicability,
+approval subtype or authorizer,
+instruction hierarchy,
+full policy coverage,
+or production permission.
+
 ## Real instruction-condition development result
 
 The completed older semantic screens do not qualify the new instruction-condition head.
