@@ -115,6 +115,8 @@ export component AppWindow inherits Window {
     changed physical-pixel => { root.scale-changed(); }
     private property <int> first-visible: max(0, floor((0px - root.scroll-y) / root.line-height) - 1);
 
+    // A press places the caret or, repeated quickly, selects a word or a line; a drag reports further hits.
+    callback pointer-press(int, float, bool);
     callback pointer-hit(int, float, bool);
     callback key-input(string, bool, bool, bool);
     callback viewport-changed(float, float, float, float);
@@ -229,6 +231,9 @@ export component AppWindow inherits Window {
                     content-height: max(self.height, root.total-lines * root.line-height);
                     content-y <=> root.scroll-y;
                     content-x <=> root.scroll-x;
+                    // A mouse drag selects text. Panning by mouse drag would take a quick drag away from selection;
+                    // wheel and touch scrolling are unaffected.
+                    mouse-drag-pan-enabled: false;
                     accessible-role: region;
                     accessible-label: "Source viewport";
                     accessible-value: self.content-y / 1px;
@@ -307,12 +312,14 @@ export component AppWindow inherits Window {
                         pointer-event(event) => {
                             if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
                                 code-focus.focus();
-                                root.pointer-hit(floor(self.mouse-y / root.line-height),
+                                root.pointer-press(floor(self.mouse-y / root.line-height),
                                     max(0, (self.mouse-x - root.gutter-width) / 1px),
                                     event.modifiers.shift);
                             }
                         }
                         moved => {
+                            // Only a drag with the left button extends; other buttons never started a selection.
+                            if !self.pressed { return; }
                             root.pointer-hit(floor(self.mouse-y / root.line-height),
                                 max(0, (self.mouse-x - root.gutter-width) / 1px), true);
                         }
