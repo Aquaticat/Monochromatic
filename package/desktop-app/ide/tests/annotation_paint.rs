@@ -105,7 +105,8 @@ fn columns(
     ink: [u8; 4],
 ) -> Vec<Option<f32>> {
     let center = view.rows[0].baseline + DROP;
-    let top = (center - 5.0).max(0.0) as usize;
+    // Rows below the baseline only: capital letters end there, so selected glyph ink is never counted.
+    let top = view.rows[0].baseline.ceil() as usize;
     let bottom = ((center + 5.0) as usize).min(23);
     let mut result = Vec::new();
     for x in span.0..span.1 {
