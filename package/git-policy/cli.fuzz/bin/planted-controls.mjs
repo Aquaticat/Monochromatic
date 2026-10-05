@@ -55,7 +55,7 @@ const plants = [
   {
     name: 'a separated global value is not consumed',
     file: 'package/git-policy/cli/src/native/global_arguments.rs',
-    edits: [{ from: 'index += 2;', to: 'index += 1;' }],
+    edits: [{ from: 'is_value = true;', to: 'is_value = false;' }],
   },
   {
     name: 'warn is read as error',
@@ -71,6 +71,32 @@ const plants = [
     edits: [{
       from: 'key == "hooks" || key == "indexLock" || key == "landing"',
       to: 'key == "hooks" || key == "indexLock"',
+    }],
+  },
+  {
+    name: 'a control spelling is removed anywhere in a region read without a table',
+    file: 'package/git-policy/cli/src/native/wrapper_invocation.rs',
+    edits: [{ from: 'break;', to: 'continue;' }],
+  },
+  {
+    name: 'keep-going is removed without being recorded',
+    file: 'package/git-policy/cli/src/native/wrapper_controls.rs',
+    edits: [{
+      from: 'ControlMeaning::KeepGoing => controls.keep_going = true,',
+      to: 'ControlMeaning::KeepGoing => controls.keep_going = false,',
+    }],
+  },
+  {
+    name: 'a real commit is forwarded',
+    file: 'package/git-policy/cli/src/native/refusal_frontier.rs',
+    edits: [{ from: 'return Some(Unported::CommitTransaction);', to: 'return None;' }],
+  },
+  {
+    name: 'a publishing push skips the manual-push gate',
+    file: 'package/git-policy/cli/src/native/wrapped_command.rs',
+    edits: [{
+      from: 'if any_policy_applies(&gate_request, gated.as_slice()) {',
+      to: 'if false {',
     }],
   },
 ];

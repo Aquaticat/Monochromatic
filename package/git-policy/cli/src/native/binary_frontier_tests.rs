@@ -101,6 +101,26 @@ fn a_real_commit_is_refused() {
         native
     );
     assert_eq!(head(&fixture, repo.as_path()), head_before);
+    // Git itself makes every status-format option a dry run, so those are forwarded too.
+    for format in ["--short", "--porcelain", "--long", "-z"] {
+        let through_git: Observed = run_direct(
+            &fixture,
+            repo.as_path(),
+            &["commit", "-o", format, "--", "file.txt"],
+        );
+        assert_eq!(through_git.code, Some(0), "{format}");
+        assert_eq!(
+            run_wrapped(
+                &fixture,
+                repo.as_path(),
+                &["commit", format, "--", "file.txt"]
+            ),
+            through_git,
+            "{format}"
+        );
+        assert_eq!(head(&fixture, repo.as_path()), head_before, "{format}");
+    }
+    assert_eq!(porcelain(&fixture, repo.as_path()), "A  file.txt\n");
     remove(&fixture);
 }
 

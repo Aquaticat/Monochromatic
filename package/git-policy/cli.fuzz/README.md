@@ -38,12 +38,43 @@ An accepted document must satisfy the registry-order and bound invariants
 and survive being restated canonically.
 A rejection must render as one `config-invalid` JSON line that decodes back to the same message.
 
+### `wrapper_controls`
+
+Runs wrapper-control removal and the wrapped-command lifecycle over four views of every input:
+the bytes split at NUL into arguments,
+the bytes mapped to commands,
+Git options,
+separators,
+value options,
+every wrapper control and hatch,
+and near-misses of their spellings,
+a `<command> <valueless options> -- <tokens>` list whose `--` is certainly Git's separator,
+and the same tokens behind a first byte that selects a linked worktree or no repository
+and the answers to the repository questions.
+Removal must leave its input unchanged and be repeatable,
+delete only whole tokens that spell a control or the commit hatch,
+record exactly the effects the deleted tokens asked for,
+find nothing more on a second pass,
+and keep everything from the separator on.
+The lifecycle runs with fixed repository answers and locations that do not exist on disk,
+so it reads no configuration and starts no Git.
+Whatever the arguments,
+a forwarded command must not be a `git commit` without a dry-run or status-format option,
+a `git push` without a dry-run option while the built-in content policy is on,
+a `git add` in a worktree while that policy is on,
+or a worktree creation or possible alias run from a linked worktree without `--no-worktree-copy`.
+The dry-run options are restated from Git's documentation instead of read from the subject's tables.
+
 ## Controls
 
 `mise run //package/git-policy/cli.fuzz:test` runs the generator controls.
 They count that the generators reach every layout outcome,
 both loading decisions,
-and non-default accepted configurations,
+non-default accepted configurations,
+every way a command region is read,
+every control effect,
+a control spelling that survives as a value or path,
+and every ending of the lifecycle,
 so an invariant that is never reached cannot pass unnoticed.
 
 `mise run //package/git-policy/cli.fuzz:test:planted` proves the invariants can fail.
@@ -53,7 +84,11 @@ plants one defect at a time
 a bare `git` skipping configuration,
 an unconsumed global option value,
 `warn` read as `error`,
-a rejected `landing` section),
+a rejected `landing` section,
+a control spelling removed anywhere in a region read without a table,
+keep-going removed without being recorded,
+a forwarded real commit,
+a publishing push that skips the manual-push gate),
 and requires a generator control to fail for each.
 Results are retained under `target/verification/planted-*`.
 Removing a flag from a mutation list alone is not a usable plant:
@@ -80,4 +115,6 @@ and convert them into deterministic tests beside the subject.
 These targets do not cover real-Git resolution,
 forwarding,
 configuration file reading,
+repository facts read from Git,
+leftover transaction state on disk,
 or the management grammar.
