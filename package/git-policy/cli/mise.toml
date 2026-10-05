@@ -11,8 +11,8 @@ description = "Format native wrapper Rust source without changing TypeScript"
 run = "cargo fmt"
 
 [tasks."native:check"]
-description = "Check the native wrapper implementation library"
-run = "cargo check --locked --offline"
+description = "Type-check the native wrapper library, executable and test targets without running them"
+run = "cargo check --locked --offline --all-targets"
 
 [tasks."test:git-image"]
 description = "Build the audited Git 2.56.0 release in the bounded Rust test image"
