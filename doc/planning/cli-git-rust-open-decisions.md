@@ -32,9 +32,7 @@ What to inspect:
 - Each item section states the choice in plain words,
   the evidence with its source,
   and for an item needing the owner the options with a ranking.
-- `Question batches`,
-  the last section,
-  holds a suggested wording and short option labels for each question,
+- `Question batches` holds a suggested wording and short option labels for each question,
   grouped by the phase the question blocks.
 
 How to respond:
@@ -78,7 +76,6 @@ Evidence labels:
 - "By reading" means the claim was derived from the cited source lines and was not run.
 - Outside precedent was fetched on 2026-10-05 from the named release tag,
   or from the project's default branch where no tag is named.
-  The link definitions sit at the end of the file.
 
 Option letters are local to the heading they appear under.
 
@@ -115,7 +112,7 @@ not by a decision gate for the owner.
 The crate notes in this document follow that:
 they report footprint and leave the pick to measurement.
 
-These decisions close the following ledger items in full or in part:
+These decisions close these ledger items in full or in part:
 the defaults half of "Fixed policy names and optional-policy defaults",
 the root half of "Configuration root",
 and "Legacy configuration during the rollback window".
@@ -163,6 +160,10 @@ The remaining halves have their own sections.
 - Found outside the ledger's list,
   recovery before read-only commands:
   it runs there too once recovery is ported.
+- Found outside the ledger's list,
+  a wrapper failure before Git runs:
+  exit status `2`,
+  as the spec's exit contract says.
 
 ### Needs the owner
 
@@ -417,7 +418,7 @@ which has no worktree and therefore no top level.
 - The incumbent walks up to the nearest directory holding a Git marker
   (`src/trust/config-discovery.ts:110-128`).
   By reading,
-  an ordinary bare repository has no such marker above it,
+  an ordinary bare repository has no such marker in any ancestor directory,
   so the incumbent also finds no configuration there.
 
 ### Verdict
@@ -752,7 +753,7 @@ Ctrl-C reaches Git once.
 Against:
 reading the sender needs `sigaction` with signal details,
 so `libc` or `signal-hook`,
-and a small amount of code the compiler cannot check;
+and `unsafe` code for the handler;
 if Git ignores the signal,
 for instance while an editor is open,
 the wrapper keeps waiting,
@@ -764,7 +765,8 @@ As Option B without the sender check,
 which is what tini does.
 
 For:
-simpler than Option B.
+no sender check,
+so no signal details have to be read.
 
 Against:
 Ctrl-C at a terminal reaches Git and its hooks twice,
@@ -972,7 +974,7 @@ and how a recovery journal stores such a name.
 
 - [ripgrep][ripgrep] emits a path as `{"text": "..."}` when it is UTF-8
   and as `{"bytes": "<base64>"}` otherwise (`crates/printer/src/json.rs:163-202`).
-- Git prints such a path in a quoted form with octal escapes for bytes above `0x80`
+- Git prints such a path in a quoted form with octal escapes for bytes larger than `0x80`
   (`core.quotePath`,
   `Documentation/config/core.adoc:152-164` in [Git][git-src]).
 
@@ -1000,7 +1002,7 @@ The example file name is the bytes `63 61 66 e9 2e 74 78 74`,
 
 For:
 nothing new in the schema;
-the simplest to write and to read.
+no escaping rule for a reader to learn.
 
 Against:
 different names can print the same,
@@ -1195,7 +1197,7 @@ are what Git starts instead of the repository's own hooks;
 each hands over to the wrapper's dispatcher,
 which takes the hook lock and then runs the repository's hooks.
 A pre-push file of the same kind captures what a push would send.
-Today each file is a small Node program whose first line names the Node executable.
+Today each file is a Node program whose first line names the Node executable.
 The native wrapper has no Node,
 so the files need a new form.
 A maintainer cares because the form decides what can go wrong on an unusual install path,
@@ -1511,7 +1513,7 @@ or must the repository be quiet first.
 ### Verdict
 
 Needs the owner.
-Under the first option the Linux string is not a choice:
+Under Option A the Linux string is not a choice:
 it has to match byte for byte,
 or each version takes the other's live locks.
 
@@ -1535,8 +1537,7 @@ cutover and rollback work while other sessions keep committing;
 it is the plan's stated default.
 
 Against:
-the most to port and prove,
-with a fixture for every record in both directions;
+every record needs a fixture in both directions;
 the macOS string has to reproduce `ps` output,
 by running `ps` as the incumbent does or by formatting the same text;
 the identity scheme's weaknesses stay.
@@ -1544,7 +1545,7 @@ the identity scheme's weaknesses stay.
 #### Option B: the native wrapper reads the old formats and writes new ones
 
 The native wrapper recovers and respects everything the incumbent left,
-and writes its own records under a new schema version with a sturdier identity.
+and writes its own records under a new schema version with an identity that also records the boot.
 The incumbent cannot read those and fails closed.
 
 ```jsonc
@@ -1567,7 +1568,7 @@ Each version keeps its own directories and formats,
 and each refuses to run while the other's state exists.
 
 For:
-the least to port.
+no reader for the other version's records and no cross-version fixture is needed.
 
 Against:
 both cutover and rollback need every session stopped,
@@ -1702,7 +1703,7 @@ or only a separate build made for tests.
 Needs the owner.
 The incumbent ships the markers,
 but a single JavaScript artifact left it no other way;
-Rust makes a separate build cheap,
+Rust can compile the markers out behind a Cargo feature,
 so parity does not show a preference.
 
 ### Options: where the test phase markers live
@@ -1717,7 +1718,7 @@ Git does the same.
 Against:
 an environment that carries the variable makes an installed wrapper kill itself or wait at that step.
 Whoever controls the wrapper's environment already controls `PATH`,
-so this adds little reach,
+so the variable opens no path that control of `PATH` does not already open,
 but it is test-only behavior in a tool that guards commits.
 
 #### Option B: only in a build made for tests
@@ -2000,7 +2001,7 @@ For:
 `git --version` is exactly Git's.
 
 Against:
-the quickest check for an active wrapper is gone.
+the check people use today for an active wrapper is gone.
 
 #### Ranking
 
@@ -2030,7 +2031,7 @@ the note still reaches every reader;
 `git status` is handed to Git whole.
 
 Against:
-it appears above the status instead of after it,
+it is printed before the status instead of after it,
 and a pager does not capture it.
 
 #### Option C: drop it
@@ -2187,8 +2188,9 @@ real-Git lookup,
 and one ordinary commit run on each system.
 
 For:
-it covers what actually differs,
-with shorter runs.
+it covers what actually differs;
+the suites that do not depend on the platform run once,
+on Linux.
 
 Against:
 someone has to keep the list of platform suites complete;
@@ -2211,7 +2213,7 @@ the macOS host is limited
 CI builds the wrapper for each system and runs nothing.
 
 For:
-the cheapest;
+a build step and nothing else;
 it ends "never compiled".
 
 Against:
@@ -2312,7 +2314,7 @@ and the TypeScript planning code is deleted at cutover.
 
 For:
 one plan;
-it uses the path an earlier owner decision already opened.
+it uses the path the owner decision of 2026-09-15 already opened.
 
 Against:
 the release workflow has to build or fetch the native executable;
@@ -2510,14 +2512,14 @@ Whether the slow commit the owner reported is part of the measured workload.
 - Recorded incumbent baseline (rewrite scope lines 270 to 280):
   wrapper-added medians of 409.953 and 423.590 ms for a one-file commit with local push,
   and medians of 2,336.066 and 582.359 ms for the same 256-path commit in two unchanged runs.
-  The spread between unchanged runs is large.
+  The 256-path medians differ by a factor of about 4 between unchanged runs.
 - Native state:
   no measurement exists.
 
 ### Verdict
 
 Both need the owner.
-The second is not in the ledger's list;
+The workload decision is not in the ledger's list;
 it comes from the rewrite scope lines 80 to 89.
 
 ### Options: the numbers that gate the native wrapper
@@ -2555,7 +2557,8 @@ The incumbent's method applied to the native wrapper,
 with the 2,000 ms ceiling kept.
 
 For:
-tight budgets that guard against later regressions.
+budgets close to the native wrapper's own times,
+which guard against regressions after cutover.
 
 Against:
 the thing being judged sets its own bar,
@@ -2707,6 +2710,34 @@ which uses `git status` as the command that triggers recovery.
 Without it,
 `git status` after a crash could show an index that recovery was about to repair.
 
+This overrides a choice the engine delegate made on purpose and recorded as open to veto:
+that a read-only command changes nothing a recovery would protect,
+so the read-only path need not look.
+
+### A wrapper failure before Git runs
+
+When the wrapper itself cannot proceed,
+for example it finds no real Git,
+the incumbent prints the message and exits `1` (`src/bin.ts:457-460`),
+the status the exit contract reserves for error findings.
+The contract gives usage,
+configuration,
+transaction,
+and engine failures status `2` when real Git does not run (`SPEC.md:1588-1598`).
+The native executable exits `2` for a missing real Git,
+a malformed management invocation,
+an invalid configuration,
+and a repository that cannot be inspected
+(`doc/handover/cli-git-native-foundation.md`,
+section `Exit status 2 for wrapper failures`,
+which lists it as open to veto).
+
+Settled by evidence:
+exit status `2`.
+The determining source is `SPEC.md:1588-1598` with the implementation plan lines 315 to 316,
+which make the accepted behavior the oracle where the incumbent differs from it.
+A caller that tested for `1` in these cases sees `2`.
+
 ### An alias for `commit`
 
 #### The choice
@@ -2842,6 +2873,10 @@ and the resolution it needs is already on the list of things to port.
 - The tool-cache allowlist:
   the ledger lists the missing platform branch as a defect,
   and the native code repeats the derivation unchanged.
+- A wrapper failure before Git runs:
+  the spec's exit contract says `2`,
+  the incumbent exits `1` for an error it does not classify,
+  and the native executable exits `2`.
 
 ## Not grounded
 
@@ -2987,7 +3022,7 @@ What should the native wrapper do?"
   the wrapper ends;
   recovery deals with the rest.
 - `Relay everything`:
-  simpler,
+  no sender check,
   but Ctrl-C reaches Git and hooks twice.
 
 Detail:
@@ -3016,7 +3051,7 @@ Detail:
 #### Hook entry files on Unix
 
 Suggested wording:
-"During a commit the wrapper gives Git small entry files that hand each hook over to the wrapper.
+"During a commit the wrapper gives Git entry files that hand each hook over to the wrapper.
 Today they are Node programs.
 Without Node,
 which form should they take on Linux and macOS?"
@@ -3070,7 +3105,7 @@ what must work?"
 - `Both directions, live`:
   each reads and writes the same formats;
   switching needs no quiet moment;
-  the most to port and prove.
+  every record needs a fixture in both directions.
 - `Native reads old, writes new`:
   cutover is free,
   but rollback needs every native lock and journal gone first.
@@ -3132,7 +3167,7 @@ How should an event name such a file?"
   exact,
   but readers must unescape.
 - `Replace bytes`:
-  simplest;
+  no new field and no escaping;
   the file cannot be identified from the event.
 
 Detail:
@@ -3317,7 +3352,7 @@ Detail:
 #### The hk cleanup utility
 
 Suggested wording:
-"A small TypeScript task removes leftover Git settings from the retired hk hook manager.
+"A TypeScript task removes leftover Git settings from the retired hk hook manager.
 It lives inside the wrapper package,
 whose TypeScript is deleted at the end of the rewrite.
 This machine has no such settings left.
