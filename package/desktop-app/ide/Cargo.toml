@@ -22,6 +22,7 @@ gui = []
 
 [dependencies]
 anyhow = "1"
+clap = { version = "4", features = ["derive"] }
 # Keep all Helix crates on one revision: their internal interfaces and runtime
 # grammar/query configuration form one integration, not independent releases.
 helix-core = { git = "https://github.com/helix-editor/helix", rev = "ba40e547426b0f9896c8bdc699a4ab11f2b37dbc" }
