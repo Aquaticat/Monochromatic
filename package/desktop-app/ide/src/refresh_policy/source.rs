@@ -1,7 +1,7 @@
 //! Decide when the displayed file is reread.
 
 /// Intervals shared with the directory schedule.
-use super::{SAFETY_SWEEP, UNWATCHED_SOURCE_POLL, WRITE_QUIET, WRITE_WAIT_LIMIT};
+use super::{REREAD_GAP, SAFETY_SWEEP, UNWATCHED_SOURCE_POLL, WRITE_QUIET, WRITE_WAIT_LIMIT};
 /// Notifications classify a change as finished or still being written.
 use crate::change_watch::SourceChange;
 /// What: `Instant` is a monotonic point in time; it never jumps with the wall clock.
@@ -69,8 +69,9 @@ impl SourceRefresh {
         }
     }
 
-    /// True when a read should start now: first read, a settled or quiet change, or the timer elapsed.
-    pub fn due(&self, now: Instant) -> bool {
+    /// True when a read should start now: the first read, missing highlighting, a settled or quiet
+    /// change, or the timer. `highlight_missing` says the displayed revision has no accepted highlighting.
+    pub fn due(&self, now: Instant, highlight_missing: bool) -> bool {
         // What: `let ... else` binds `Some(last)` or returns early when there was no read yet.
         // Why: The first read happens immediately, as it did under polling.
         //
@@ -81,7 +82,15 @@ impl SourceRefresh {
         let Some(last) = self.last_request else {
             return true;
         };
-        if let Some(since) = self.pending_since {
+        // Requests outside the timers wait this long after the previous read started, so a file
+        // rewritten many times per second, or one that cannot be read, is not reread on every tick.
+        let rested = now.saturating_duration_since(last) >= REREAD_GAP;
+        if highlight_missing && rested {
+            return true;
+        }
+        if let Some(since) = self.pending_since
+            && rested
+        {
             match self.unsettled_at {
                 None => {
                     return true;

@@ -546,6 +546,11 @@ and the existing bounded readers reread;
 their request identity and stale-reply fencing still decide what is shown.
 A burst of notifications for one folder becomes one pending reread,
 with at most one more after a read already under way.
+A notified folder or file is not reread sooner than 100 ms after its previous read started:
+a single change is read at the next 20 ms timer tick,
+and a folder or file that changes continuously,
+such as build output or a busy log,
+is reread at most 10 times per second.
 The IDE's own opens and reads of watched paths are not changes and are ignored.
 A new watch rereads its folder once more,
 because a change can land between the first listing and the watch;

@@ -27,6 +27,12 @@ use std::time::Duration;
 /// 40 source reads per 10 s under the old 500 ms and 250 ms polling.
 pub const SAFETY_SWEEP: Duration = Duration::from_secs(10);
 
+/// A notified item is not reread sooner than this after its previous read started.
+/// A single change is still read at the next 20 ms tick; a folder or file changing continuously is
+/// reread at most 10 times per second (the old polling read a file 4 and a folder at most 2 times per second),
+/// which bounds listing, diff, highlighting, and repaint work during a build or a busy log.
+pub const REREAD_GAP: Duration = Duration::from_millis(100);
+
 /// The displayed file is reread this often while its directory has no live watch (the previous polling rate).
 pub const UNWATCHED_SOURCE_POLL: Duration = Duration::from_millis(250);
 

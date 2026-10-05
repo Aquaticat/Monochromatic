@@ -121,7 +121,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
 
 /// Poll completed work on the UI thread; start a disk read when `State::refresh` says one is due:
 /// on a change notification for the displayed file, every 250 ms while its directory is unwatched,
-/// or on the safety sweep. Missing highlighting is requested without waiting.
+/// or on the safety sweep. Missing highlighting is requested again after the 100 ms reread gap.
 /// The returned timer owns the worker and must remain alive until the window closes.
 pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Timer> {
     let mut worker = ReloadWorker::new()?;
@@ -148,7 +148,8 @@ pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Ti
             return;
         };
         let highlight = current.syntax_revision != Some(current.document.revision());
-        if !highlight && !current.refresh.due(now) {
+        // Missing highlighting asks again without a notification, after the schedule's reread gap.
+        if !current.refresh.due(now, highlight) {
             return;
         }
         let requested = worker.request(ReloadRequest {

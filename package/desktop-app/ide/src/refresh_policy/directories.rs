@@ -1,15 +1,20 @@
 //! Decide which shown directory the single directory reader lists next.
 
 /// Intervals shared with the source schedule.
-use super::{SAFETY_SWEEP, UNWATCHED_DIRECTORY_POLL};
-/// What: `BTreeSet<PathBuf>` is an ordered set of owned paths; `Instant` is a monotonic time point.
+use super::{REREAD_GAP, SAFETY_SWEEP, UNWATCHED_DIRECTORY_POLL};
+/// What: `BTreeSet<PathBuf>` is an ordered set of owned paths and `BTreeMap<PathBuf, Instant>` an ordered
+///       map from path to time (`HashMap` is the unordered sibling); `Instant` is a monotonic time point.
 /// Why: Notified directories collapse into one pending entry each, however many events arrived.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const changed = new Set<string>();
+/// const changed = new Set<string>(); const started = new Map<string, number>();
 /// ```
-use std::{collections::BTreeSet, path::PathBuf, time::Instant};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    path::PathBuf,
+    time::Instant,
+};
 
 /// Directory reread schedule; `shown` is always the root plus visible expanded folders, in visible order.
 #[derive(Clone, Debug, Default)]
@@ -18,6 +23,8 @@ pub struct DirectoryRefresh {
     changed: BTreeSet<PathBuf>,
     /// Remaining directories of the current safety sweep; read only when nothing else waits.
     sweep: BTreeSet<PathBuf>,
+    /// When this schedule last started a read of each directory; bounds rereads of a busy folder.
+    started: BTreeMap<PathBuf, Instant>,
     /// When the last sweep started; `None` until the first schedule call starts the clock.
     last_sweep: Option<Instant>,
     /// When the last unwatched directory was read.
@@ -32,19 +39,35 @@ pub struct DirectoryRefresh {
     unwatched_index: usize,
 }
 
-/// Remove and return the first path of `shown` (visible order) that `pending` contains.
-fn first_in(pending: &mut BTreeSet<PathBuf>, shown: &[PathBuf]) -> Option<PathBuf> {
+/// Remove and return the first path of `shown` (visible order) that is pending and not read too recently.
+fn first_ready(
+    pending: &mut BTreeSet<PathBuf>,
+    shown: &[PathBuf],
+    started: &BTreeMap<PathBuf, Instant>,
+    now: Instant,
+) -> Option<PathBuf> {
     if pending.is_empty() {
         return None;
     }
     for path in shown {
-        if pending.remove(path) {
+        // What: `get` returns `Option<&Instant>`; `is_none_or` accepts a missing entry or an old enough one.
+        // Why: A folder changing continuously is reread at most once per `REREAD_GAP`; others are not delayed.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const rested = !started.has(path) || now - started.get(path) >= REREAD_GAP;
+        // ```
+        let rested = started
+            .get(path)
+            .is_none_or(|at| return now.saturating_duration_since(*at) >= REREAD_GAP);
+        if rested && pending.remove(path) {
             // `clone` returns an owned copy; the caller keeps its shown list intact.
             return Some(path.clone());
         }
     }
-    // Whatever is left is no longer shown; a later expansion reads it as a first or established listing.
-    pending.clear();
+    // Entries that are no longer shown are dropped; a later expansion reads them as a first listing
+    // and again when their watch starts. Shown entries inside their gap stay pending.
+    pending.retain(|path| return shown.contains(path));
     return None;
 }
 
@@ -82,6 +105,8 @@ impl DirectoryRefresh {
         for path in shown {
             self.sweep.insert(path.clone());
         }
+        // Forget read times of folders that are no longer shown, so the map stays as small as the tree.
+        self.started.retain(|path, _at| return shown.contains(path));
         tracing::debug!(
             directories = shown.len(),
             "started the safety reread of shown directories"
@@ -89,14 +114,14 @@ impl DirectoryRefresh {
         return true;
     }
 
-    /// The next directory to list, or `None` when nothing is due; the caller lists it right away.
-    pub fn next(
+    /// Choose without recording: notified folders, then unwatched ones on their timer, then the sweep.
+    fn pick(
         &mut self,
         shown: &[PathBuf],
         watched: &BTreeSet<PathBuf>,
         now: Instant,
     ) -> Option<PathBuf> {
-        if let Some(path) = first_in(&mut self.changed, shown) {
+        if let Some(path) = first_ready(&mut self.changed, shown, &self.started, now) {
             return Some(path);
         }
         // What: `is_none_or` is true for `None` or when the closure accepts the contained time.
@@ -124,6 +149,27 @@ impl DirectoryRefresh {
                 return Some(path);
             }
         }
-        return first_in(&mut self.sweep, shown);
+        return first_ready(&mut self.sweep, shown, &self.started, now);
+    }
+
+    /// The next directory to list, or `None` when nothing is due; the caller lists it right away.
+    pub fn next(
+        &mut self,
+        shown: &[PathBuf],
+        watched: &BTreeSet<PathBuf>,
+        now: Instant,
+    ) -> Option<PathBuf> {
+        let picked = self.pick(shown, watched, now);
+        // What: `if let Some(path) = &picked` borrows the chosen path without taking it out of `picked`.
+        // Why: The read starts now; a notification arriving during it waits out the gap from this moment.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (picked !== undefined) this.started.set(picked, now);
+        // ```
+        if let Some(path) = &picked {
+            self.started.insert(path.clone(), now);
+        }
+        return picked;
     }
 }
