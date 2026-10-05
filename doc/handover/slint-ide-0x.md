@@ -125,19 +125,11 @@ each owned by one subagent:
 - Resizable sidebar in the worktree `.claude/worktrees/ide-sidebar`
   on branch `feat/ide-sidebar-resize`,
   native probes on MCP ports 9328 and 9329.
-- Source-view reading gate in the worktree `.claude/worktrees/ide-source-keys`
-  on branch `feat/ide-source-keys`,
-  native probes on MCP ports 9338 and 9339:
-  conventional caret and selection keys,
-  two-column tab stops matching editord,
-  boundary coverage,
-  focus traversal,
-  and the dark-mode selection ink
-  (selected text is dark on blue in the dark theme).
 - Branch heads at 11:48 on 2026-10-05,
   all committed with clean worktrees:
   `feat/ide-sidebar-resize` at `4e0907962` (6 commits),
-  `feat/ide-source-keys` at `b59b15b59` (8 commits),
+  `feat/ide-source-keys` at `b59b15b59` (8 commits,
+  since integrated),
   `feat/ide-language-core` at `652d383dd` (7 commits).
   All three agents were cut off by an API session limit at about 11:10
   and resumed at 11:48 from their transcripts.
@@ -174,6 +166,53 @@ each owned by one subagent:
 
 Completed in this fan-out:
 
+- Source-view reading gate,
+  cherry-picked onto `main` as `6545c521d` through `374ea9a36`
+  from `feat/ide-source-keys`.
+  Bindings,
+  each with a Shift form that extends the selection:
+  Left and Right by grapheme (collapsing a selection first),
+  Ctrl+Left and Ctrl+Right by word,
+  Home,
+  End,
+  Ctrl+Home,
+  Ctrl+End,
+  Up and Down toward a remembered pixel x,
+  PageUp and PageDown by the lines in view;
+  every caret key scrolls the caret into view.
+  Pointer:
+  click,
+  double click for a word,
+  triple click for a line,
+  Shift+click,
+  and drag by the pressed unit;
+  mouse-drag panning of the source view is off so quick drags select.
+  Tabs are shaped as one space widened to stops every two space advances in pixels,
+  matching editord's `tab-size: 2` with mixed CJK and Latin prefixes.
+  Tab and Shift+Tab cycle tree,
+  source,
+  and the open find input;
+  the outer key-observing `FocusScope` was a dead Tab stop before.
+  Selected-text ink is now white on the blue selection fill in both schemes:
+  Slint's fluent style sets black in dark
+  (WCAG 2 ratio 4.64,
+  APCA Lc 33.4 before;
+  4.53 and Lc -76.2 after).
+  The coordinating session reran the gate on `main` after the cherry-pick:
+  234 library and integration tests in 41 binaries,
+  30 native tests,
+  and package lint pass.
+  Thirty-one guard-removal controls passed on the branch
+  (`~/temp/agent/ide-source-guard-bX6gco/results.json`,
+  `~/temp/agent/ide-source-guard-Qu70pZ/results.json`).
+  Dark and light seat-input evidence is in `~/temp/agent/source-keys-k1/evidence-final/`;
+  the coordinating session inspected the dark selection-ink and tab-stop frames.
+  Open:
+  drag autoscroll runs only while the pointer moves;
+  under container load one run timed out in
+  `native_find_recomputes_after_external_reload_and_follows_selection_correspondence`,
+  which then passed unloaded;
+  watch it.
 - Language-server write confinement,
   measured and specified but not yet implemented:
   `doc/planning/slint-ide-write-confinement.md`.
@@ -345,11 +384,12 @@ Queue after the in-flight work:
 3. IDE reaction to a live system-theme change,
    verified in the nested compositor with `color-scheme light` and `color-scheme dark` on the control socket,
    plus a headless theme-change test.
-   Scheduled after the sidebar and source-key branches land,
-   because the source-key branch changes selection ink.
-4. Remaining source-view keyboard navigation,
-   tab-width parity,
-   and the final package gates.
+   Scheduled after the sidebar branch lands.
+4. The final package gates:
+   guard-removal reruns on the final `main`,
+   packaging,
+   consumer-boundary checks,
+   and the behavior-difference record.
 
 Do not restart technology selection for the IDE architecture:
 Helix reuse and the standalone Rust/Slint design are approved.
@@ -473,11 +513,12 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
   `build.rs` explicitly selects `EmbedResourcesKind::EmbedFiles`.
   Generated Rust embeds/registers the bytes.
   Native fontconfig excludes host copies of those families.
-- [ ] Complete native source-view interaction,
+- [x] Complete native source-view interaction,
   clipboard readback,
   CJK/combining/tab boundary coverage,
   source rendering,
   and smooth-wheel acceptance.
+  Integrated from `feat/ide-source-keys` on 2026-10-05.
 - [x] Implement live external refresh and exercise both supplied correspondence examples through the GUI.
 - [x] Implement native tree, file switching, and recent-file reveal/badges.
 - [x] Implement combined path/content search and verify it in dark/light native sessions.
@@ -608,10 +649,11 @@ and subprocess project-write confinement.
 Native tree,
 file switching,
 combined search,
-and in-file find are implemented.
-Up/down,
-PageUp/PageDown,
-and focus navigation remain incomplete.
+and in-file find are implemented,
+and so are vertical,
+paging,
+word,
+and focus navigation.
 The accessible description no longer claims automatic refresh before that path exists.
 Legacy terminal-cell geometry and tests in `view_model.rs` were removed on 2026-10-04.
 The retained `StyleSpan` now lives in `source_style.rs`.

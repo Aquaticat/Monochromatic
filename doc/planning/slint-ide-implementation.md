@@ -26,7 +26,20 @@ and resumption details are in [the handover][handover].
   checksums,
   explicit embedding,
   and native font isolation are verified.
-- [ ] Finish the source-view gate.
+- [x] Finish the source-view gate.
+  On 2026-10-05 conventional caret,
+  selection,
+  paging,
+  word,
+  and pointer bindings,
+  two-column pixel tab stops,
+  focus traversal,
+  and readable dark selection ink landed on `main`
+  (234 library and integration tests,
+  30 native tests,
+  lint);
+  the package README lists the bindings and the differences from editord.
+  The earlier notes in this item are historical.
   Shared Parley rows now own CJK/Latin baseline,
   caret,
   selection,
