@@ -306,7 +306,10 @@ pub fn prepare(
         // mkdirSync(directory, { recursive: true });
         // ```
         std::fs::create_dir_all(directory).map_err(|error| {
-            return format!("cannot create {}: {error}", directory.display());
+            return format!(
+                "cannot create {}: {error}. The server is not started without its private state directory. Make that path creatable as a directory (free space, write permission, no file in its place), then restart the application",
+                directory.display()
+            );
         })?;
     }
     for directory in &launch.scratch {

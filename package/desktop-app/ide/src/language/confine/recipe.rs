@@ -37,7 +37,10 @@ pub const NO_PID_NAMESPACE: &[&str] = &["typescript-native", "typescript-languag
 pub const CARGO_SERVERS: &[&str] = &["rust-analyzer"];
 
 /// Inherited variables a server receives; every other variable of the application is cleared,
-/// so credentials in the application's environment never reach project code.
+/// so credentials in the application's environment never reach project code. Bubblewrap adds
+/// `PWD` itself after clearing (measured). Measured needs: without `PATH` the TypeScript 7
+/// launcher's `#!/usr/bin/env node` fails; without `RUSTUP_TOOLCHAIN` the rustup proxy starts the
+/// default toolchain's rust-analyzer instead of the one the user selected.
 pub const ALLOWED_ENVIRONMENT: &[&str] = &[
     "PATH",
     "HOME",

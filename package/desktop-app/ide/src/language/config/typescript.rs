@@ -79,12 +79,13 @@ fn settings() -> Value {
 pub(super) fn apply(configuration: &mut Configuration, root: &Path) {
     // Variables an application-supplied definition of this server adds are kept, for example
     // probe markers in acceptance tests; command, arguments, and settings are always replaced.
-    let environment = configuration
-        .language_server
-        .get(SERVER)
-        .map_or(HashMap::new(), |existing| {
-            return existing.environment.clone();
-        });
+    let environment =
+        configuration
+            .language_server
+            .get(SERVER)
+            .map_or(HashMap::new(), |existing| {
+                return existing.environment.clone();
+            });
     configuration.language_server.insert(
         // `to_string` copies the constant into an owned `String` the table keeps.
         SERVER.to_string(),
