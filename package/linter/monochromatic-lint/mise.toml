@@ -73,7 +73,7 @@ depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --processors"
 
 [tasks."mutation:inferred-constants"]
-description = "Mutate generic constant-slot resolution against the whole suite after full container tests and Clippy"
+description = "Mutate generic constant-slot resolution against its slot controls and the semantic conformance suite after full container tests and Clippy"
 depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --inferred-constants"
 
