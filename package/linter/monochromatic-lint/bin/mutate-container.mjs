@@ -16,6 +16,18 @@ const testImage = `localhost/monochromatic-lint-test:${imageTag}`;
 /** Campaign image layered over the tested snapshot. */
 const mutationImage = `localhost/monochromatic-lint-mutation:${imageTag}`;
 
+/**
+ * Test-name substrings of the suites that load real Cargo workspaces through the semantic engine.
+ * The executable scope skips them. They also call Rust syntax dispatch, which the remaining
+ * orchestration, processor and Rust-rule tests reach as well.
+ */
+const executableSkips = ['rust_explicit_types', 'rust_file_engine', 'rust_inferred_constants', 'rust_semantic_session', 'rust_workspace'];
+
+/** One libtest `--skip` option pair, which excludes every test whose name contains the substring. */
+function skipArguments(name) {
+  return ['--skip', name];
+}
+
 /** Verification failures keep the failing operation visible. */
 class VerificationError extends Error {}
 
@@ -37,7 +49,7 @@ function podman({ args, capture = false, allowFailure = false }) {
 /** Build and run the tool over an immutable input image, then retain its complete report. */
 async function main() {
   const options = process.argv.slice(2);
-  const scopes = ['--rust-style', '--markdown', '--markdown-parent', '--processors', '--inferred-constants'];
+  const scopes = ['--rust-style', '--markdown', '--markdown-parent', '--processors', '--inferred-constants', '--executable'];
   if (options.length > 1 || (options.length === 1 && !scopes.includes(options[0])))
     throw new VerificationError(`Only one of ${scopes.join(', ')} is accepted.`);
   const rustStyle = options[0] === '--rust-style';
@@ -45,6 +57,7 @@ async function main() {
   const markdownParent = options[0] === '--markdown-parent';
   const processors = options[0] === '--processors';
   const inferredConstants = options[0] === '--inferred-constants';
+  const executable = options[0] === '--executable';
   const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-mutation-'));
   const evidenceRoot = join(process.cwd(), 'target', 'verification');
   await mkdir(evidenceRoot, { recursive: true });
@@ -86,6 +99,16 @@ async function main() {
     // one test name only; the second `--` hands both names to the test binary, which accepts several.
     if (inferredConstants)
       command.push('--file', 'src/rust_inferred_constants.rs', '--', '--', 'rust_inferred_constants', 'rust_explicit_types');
+    // The executable's own modules: orchestration, the binary entry point and Rust rule selection. Its Markdown
+    // modules (`markdown_lfs_*`, dispatch and rule settings) are under the Markdown scope's glob.
+    // `main.rs` and the real streams are reached only by the `binary` test target, whose test names share no
+    // substring, so this scope runs every test except the semantic suites that load Cargo workspaces;
+    // those take most of the whole suite's time, which exceeded the 180 second limit (183.94 s) at 04c663cb0.
+    if (executable)
+      command.push(
+        '--file', 'src/run_*.rs', '--file', 'src/main.rs', '--file', 'src/rust_dispatch.rs', '--file', 'src/rust_rule_settings.rs',
+        '--', '--', ...executableSkips.flatMap(skipArguments),
+      );
     await writeFile(join(context, 'Containerfile'), [
       '# The tested image ID binds this campaign to an exact source snapshot.',
       `FROM ${base}`,

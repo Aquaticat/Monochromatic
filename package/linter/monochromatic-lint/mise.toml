@@ -82,6 +82,15 @@ description = "Mutate generic constant-slot resolution against its slot controls
 depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --inferred-constants"
 
+[tasks."mutation:executable"]
+description = "Mutate the executable's orchestration, entry point and Rust rule selection against every test except the Cargo-workspace semantic suites, after full container tests and Clippy"
+depends = ["lint:container"]
+run = "node bin/mutate-container.mjs --executable"
+
+[tasks."mutation:list:executable"]
+description = "Inspect the executable mutant scope without mutating or building source"
+run = "cargo mutants --list --no-config --file 'src/run_*.rs' --file src/main.rs --file src/rust_dispatch.rs --file src/rust_rule_settings.rs"
+
 [tasks."mutation:list:markdown"]
 description = "Inspect the Markdown mutant scope without mutating or building source"
 run = "cargo mutants --list --no-config --file 'src/markdown_*.rs'"
