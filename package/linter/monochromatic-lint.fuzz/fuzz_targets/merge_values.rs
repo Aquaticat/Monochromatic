@@ -15,6 +15,7 @@ use monochromatic_lint_fuzz::check_merge;
 
 // The macro supplies libFuzzer's executable entry and decodes structured inputs.
 fuzz_target!(|document: GeneratedDocument| {
-    let parsed: JsoncValue = parse_jsonc(&document.source).expect("structured generator produces valid JSONC");
+    let parsed: JsoncValue =
+        parse_jsonc(&document.source).expect("structured generator produces valid JSONC");
     check_merge(&parsed);
 });

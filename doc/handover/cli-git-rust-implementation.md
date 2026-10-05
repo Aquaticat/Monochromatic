@@ -388,6 +388,20 @@ it includes BOM and excludes NEXT LINE,
 unlike Rust's default trim.
 The latest table/prompt container gate is `proc_ccaf`.
 Tables are not covered by either currently running mutation snapshot or `proc_415a`.
+`proc_ccaf` passed 145 tests and failed the header-only table fixture:
+`A | B` followed by `- | -` did not produce a table node.
+The fixture now uses an unambiguous `--- | ---` delimiter row;
+its verification is pending rather than assumed.
+Native semantic-line-break helpers and the AST-driven rule have now been ported as well:
+byte-preserving abbreviation checks,
+closing-delimiter tails,
+paragraph/container prefixes,
+block-start guards,
+and point-anchored add-only edits.
+The current full table/prose gate is `proc_32b5`.
+New helper/rule files have uncommitted formatter output after their scoped feature commits.
+The Markdown ASAN generator unit controls passed all 5 sidecar tests in `proc_415a`;
+the instrumented build/campaign remains running and excludes table/prose additions.
 
 A Markdown/MDX ASAN target has been added to the fuzz sidecar.
 Every draw exercises an independently counted rule fixture,
