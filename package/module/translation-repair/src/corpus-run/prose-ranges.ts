@@ -514,11 +514,12 @@ function constructEnd(
    Character under the cursor.
    */
   const character = text.charAt(at,);
-  if (character === '`') {
-    return (text.charAt(at - 1,) === '`')
-      ? -1
-      : (codeSpans.get(at,) ?? (-1));
-  }
+  // The parse alone says where a code span opens. A check that a backtick
+  // after a backtick opens none stood here from before the spans came off the
+  // parse, and hid the span whose opening backtick follows an escaped one
+  // (ledger B130).
+  if (character === '`')
+    return codeSpans.get(at,) ?? (-1);
   if ((character === '<') && opensMdxTag({
     text,
     at,
