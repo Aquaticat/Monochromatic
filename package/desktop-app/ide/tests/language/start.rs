@@ -97,7 +97,9 @@ fn server_starts_on_demand_and_is_opened_once_after_initialized() {
     assert_eq!(probe.status.document, DocumentState::Attached);
     assert_eq!(probe.status.language.as_deref(), Some("scripted"));
     assert_eq!(probe.status.servers[0].server.instance, 1);
-    let features = probe.status.servers[0].features.expect("features of a ready server");
+    let features = probe.status.servers[0]
+        .features
+        .expect("features of a ready server");
     assert!(features.definition && features.references && features.hover && features.inlay_hints);
     assert!(!features.pull_diagnostics);
     let lines = support::server_text_until(&root, "alpha\nbeta\n");
@@ -145,7 +147,10 @@ fn server_starts_on_demand_and_is_opened_once_after_initialized() {
         opened["params"]["textDocument"]["uri"],
         format!("file://{}", file.display()).as_str()
     );
-    assert_eq!(support::server_text(&lines), Some((0, "alpha\nbeta\n".to_string())));
+    assert_eq!(
+        support::server_text(&lines),
+        Some((0, "alpha\nbeta\n".to_string()))
+    );
 }
 
 /// A request sent while the server is still starting is answered "starting"; nothing reaches the server.
@@ -176,7 +181,13 @@ fn request_before_initialize_is_answered_starting_and_nothing_is_sent() {
             RequestOutcome::Starting,
             "a request before initialize was not answered as starting"
         );
-        assert_eq!(answers[0].server.as_ref().map(|server| return server.instance), Some(1));
+        assert_eq!(
+            answers[0]
+                .server
+                .as_ref()
+                .map(|server| return server.instance),
+            Some(1)
+        );
     }
     probe.reload("alpha changed\n");
     assert!(

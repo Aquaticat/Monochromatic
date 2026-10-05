@@ -20,14 +20,17 @@ use super::{
 };
 /// Start failures name the operation that failed.
 use anyhow::{Context, Result};
-/// What: `StreamExt` adds `.next()` to streams, which are sequences of values that arrive over time.
-/// Why: `Registry::incoming` is a stream of server-to-client messages.
+/// What: `StreamExt` adds `.next()` to streams, which are sequences of values that arrive over
+///       time; `FuturesUnordered` is a set of pending futures (promises) that is itself a stream
+///       of their results, in completion order.
+/// Why: `Registry::incoming` is a stream of server-to-client messages, and the loop awaits its
+///      own pending requests the same way instead of handing them to helper tasks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// for await (const [server, call] of registry.incoming) { }
 /// ```
-use futures_util::StreamExt;
+use futures_util::{StreamExt, stream::FuturesUnordered};
 /// helix-lsp's server table and its key type.
 use helix_lsp::{LanguageServerId, Registry};
 /// What: `PathBuf` is an owned filesystem path; `Arc` is a thread-safe shared pointer;
@@ -93,23 +96,22 @@ pub(super) enum Command {
     },
 }
 
-/// What: Events the worker sends to itself from helper tasks.
-/// Why: Tasks that wait for a server or a timer never touch worker state; they hand the result
-///      back to the loop, so all state changes happen in one place.
+/// What: Events the worker sends to itself from timer tasks.
+/// Why: A task that waits for a timer never touches worker state; it hands the event back to
+///      the loop, so all state changes happen in one place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Internal = { type: 'answered'; answer: Answer } | { type: 'startDeadline'; server: ServerId }
+/// type Internal = { type: 'startDeadline'; server: ServerId }
 ///               | { type: 'holdExpired'; serial: number } | { type: 'retry'; ticket: Ticket };
 /// ```
 pub(super) enum Internal {
-    /// A request task finished. `Box` stores the large value on the heap so every variant stays small.
-    Answered(Box<request::Answer>),
     /// A starting server's time to answer `initialize` ran out.
     StartDeadline(LanguageServerId),
     /// The fixed delay of a diagnostics hold passed.
     HoldExpired(u64),
-    /// A superseded request should be sent again.
+    /// A superseded request should be sent again. `Box` stores the large value on the heap so
+    /// every variant stays small.
     Retry(Box<request::Ticket>),
 }
 
@@ -154,8 +156,10 @@ pub(super) struct Worker {
     pub(super) root: PathBuf,
     /// Channels to the interface thread.
     pub(super) outputs: Outputs,
-    /// Sender for events the worker's helper tasks hand back to the loop.
+    /// Sender for events the worker's timer tasks hand back to the loop.
     pub(super) internal: mpsc::UnboundedSender<Internal>,
+    /// Requests sent to servers and not yet answered; the loop awaits them itself.
+    pub(super) requests: FuturesUnordered<request::AnswerFuture>,
 }
 
 /// Dispatch and publishing.
@@ -244,17 +248,16 @@ impl Worker {
         self.publish();
     }
 
-    /// Run one event a helper task handed back.
+    /// Run one event a timer task handed back.
     fn on_internal(&mut self, event: Internal) {
         match event {
-            // `*answer` moves the value out of its heap box.
-            Internal::Answered(answer) => request::finish(self, *answer),
             Internal::StartDeadline(server) => attach::start_deadline(self, server),
             Internal::HoldExpired(serial) => {
                 if self.session.diagnostics.hold_expired(serial) {
                     tracing::debug!(serial, "diagnostics hold ended after its fixed delay");
                 }
             }
+            // `*ticket` moves the value out of its heap box.
             Internal::Retry(ticket) => request::retry(self, *ticket),
         }
         self.publish();
@@ -312,16 +315,20 @@ impl Worker {
 
 /// What: The worker loop. `tokio::select!` is a macro that waits on several futures (promises)
 ///       at once and runs the block of whichever finishes first; a branch whose pattern does not
-///       match is disabled for that round.
+///       match is disabled for that round. `biased;` makes it check the branches in the order
+///       they are written instead of a random order.
 /// Why: Server-to-client traffic must be drained continuously, because an unanswered server
-///      request stalls the server, while commands and helper-task results must not wait behind
-///      it. With no server running the stream yields `None` at once, which disables its branch.
-///      `search_process.rs` uses the same macro for the same reason.
+///      request stalls the server, while commands and timer events must not wait behind it.
+///      Answers are checked before other server traffic on purpose: helix-lsp delivers an answer
+///      before a notification the server sent after it, and the diagnostics hold relies on
+///      seeing them in that order. With no pending request, or no server, the corresponding
+///      stream yields `None` at once, which disables its branch. `search_process.rs` uses the
+///      same macro.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// for (;;) {
-///   const next = await Promise.race([commands.next(), internal.next(), registry.incoming.next()]);
+///   const next = await firstReadyInOrder([answers.next(), internal.next(), commands.next(), registry.incoming.next()]);
 ///   if (next.source === 'commands' && next.done) break;
 ///   await worker.dispatch(next);
 /// }
@@ -334,15 +341,20 @@ async fn run(
 ) {
     loop {
         tokio::select! {
+            biased;
+            Some(answer) = worker.requests.next() => {
+                request::finish(&mut worker, answer);
+                worker.publish();
+            }
+            Some(event) = internal.recv() => {
+                worker.on_internal(event);
+            }
             received = commands.recv() => {
                 // A closed queue means the handle was dropped: stop every server and end.
                 let Some(command) = received else {
                     break;
                 };
                 worker.handle(command).await;
-            }
-            Some(event) = internal.recv() => {
-                worker.on_internal(event);
             }
             Some((server, call)) = worker.registry.incoming.next() => {
                 traffic::on_call(&mut worker, server, call).await;
@@ -406,6 +418,7 @@ pub(super) fn spawn(
                     root,
                     outputs,
                     internal: internal_sender,
+                    requests: FuturesUnordered::new(),
                 };
                 run(worker, commands, internal_receiver).await;
             });

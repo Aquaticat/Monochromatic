@@ -93,6 +93,10 @@ pub struct Script {
     pub versioned_diagnostics: bool,
     /// Push diagnostics after every open and change.
     pub push_diagnostics: bool,
+    /// Push diagnostics again after every hover answer, as a server with delayed analysis does.
+    pub push_after_hover: bool,
+    /// Milliseconds to wait before answering `initialize`.
+    pub init_delay: u64,
     /// Announce and answer pull diagnostics.
     pub pull_diagnostics: bool,
     /// Announce interest in save notifications.
@@ -185,6 +189,8 @@ impl Script {
             hover_delay,
             versioned_diagnostics: read("DIAG_VERSION", "0") == "1",
             push_diagnostics: read("PUSH", "1") == "1",
+            push_after_hover: read("PUSH_AFTER_HOVER", "0") == "1",
+            init_delay: read("INIT_DELAY_MS", "0").parse().unwrap_or(0),
             pull_diagnostics: read("PULL", "0") == "1",
             save: read("SAVE", "0") == "1",
             probe: read("PROBE", "0") == "1",
