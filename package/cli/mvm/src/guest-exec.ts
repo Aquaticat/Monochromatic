@@ -212,6 +212,8 @@ const ANSWERING: unique symbol = Symbol('set while status requests are being ans
 
  @throws {@link GuestExecStatusUnavailableError} when the domain is gone or the agent stays silent past the limit
 
+ @throws {@link GuestExecOutputTooLargeError} when the finished result is larger than libvirt hands over
+
  @example
  ```ts
  const result = await attributedResult({ domain: 'mvm-dev', limits, marker, pid: 42 });
@@ -356,6 +358,8 @@ async function attributedResult({
  @throws {@link GuestExecStatusUnavailableError} when the domain is gone or the agent stays silent past the limit
 
  @throws {@link GuestExecAttributionError} when no reported result carries this command's marker
+
+ @throws {@link GuestExecOutputTooLargeError} when the finished result is larger than libvirt hands over
 
  @example
  ```ts

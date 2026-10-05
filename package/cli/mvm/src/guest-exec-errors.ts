@@ -195,6 +195,59 @@ export class GuestExecStatusUnavailableError extends Error {
 }
 
 /**
+ The command finished, but its result is larger than libvirt hands over, so
+ the output and exit status are lost: the guest agent removes a finished
+ result once it has answered with it.
+
+ @example
+ ```ts
+ try {
+   await runGuestCommand({ command: 'cat huge.log', domain: 'mvm-dev', osFamily: 'linux', shell: '/bin/bash' });
+ }
+ catch (error) {
+   if (error instanceof GuestExecOutputTooLargeError) console.error(error.pid);
+ }
+ ```
+ */
+export class GuestExecOutputTooLargeError extends Error {
+  /**
+   Guest process ID the command was started as.
+   */
+  readonly pid: number;
+
+  /**
+   @param cause - Status request whose answer was too large, kept for its text
+
+   @param domain - Prefixed libvirt domain name, named in the message
+
+   @param pid - Guest process ID the command was started as
+   */
+  constructor({
+    cause,
+    domain,
+    pid,
+  }: {
+    readonly cause: Error;
+    readonly domain: string;
+    readonly pid: number;
+  },) {
+    super(
+      [
+        `The command started in ${domain} as guest process ${
+          String(pid,)
+        } finished, but its output is too large for libvirt to hand over, so the output and the exit status are lost.`,
+        'One result may hold about 3 MiB of standard output and standard error together.',
+        'The command did run. To get large output, redirect it to a file in the guest and fetch the file with mvm pull.',
+        `Status request: ${cause.message}`,
+      ].join('\n',),
+      { cause, },
+    );
+    this.name = 'GuestExecOutputTooLargeError';
+    this.pid = pid;
+  }
+}
+
+/**
  The guest agent has no result that provably belongs to the started command.
  It no longer knows the process ID, and every finished result it reported
  under that ID lacks the command's marker line. A result without the marker

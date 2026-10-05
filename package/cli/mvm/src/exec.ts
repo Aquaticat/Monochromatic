@@ -42,6 +42,8 @@ const l = tagged({ tag: 'mvm', },);
 
  @throws {@link GuestExecAttributionError} when no result the agent reports belongs to this command
 
+ @throws {@link GuestExecOutputTooLargeError} when the command's output is larger than libvirt hands over
+
  @example
  ```ts
  // Linux VM

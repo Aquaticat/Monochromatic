@@ -27,6 +27,7 @@ export * from './file-transfer-route.ts';
 export * from './file-transfer.ts';
 export * from './guest-exec-errors.ts';
 export * from './guest-exec.ts';
+export * from './guest-file-retry.ts';
 export * from './guest-file-transfer.ts';
 export * from './libvirt-errors.ts';
 export * from './libvirt-tools.ts';

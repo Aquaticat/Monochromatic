@@ -130,6 +130,57 @@ export class GuestAgentUnreachableError extends Error {
 }
 
 /**
+ The guest agent answered, but the answer is larger than libvirt hands over,
+ so its content is lost. libvirt allows one answer 4194304 characters; binary
+ content travels base64-encoded, which leaves about 3 MiB of it.
+ Whatever the command did in the guest has happened.
+
+ @example
+ ```ts
+ try {
+   await agentCommand({ domain: 'mvm-dev', execute: 'guest-exec-status', parameters: { pid: 1 }, timeoutSeconds: 60 });
+ }
+ catch (error) {
+   if (error instanceof GuestAgentAnswerTooLargeError) console.error(error.commandName);
+ }
+ ```
+ */
+export class GuestAgentAnswerTooLargeError extends Error {
+  /**
+   Name of the guest agent command whose answer was too large.
+   */
+  readonly commandName: string;
+
+  /**
+   @param cause - Underlying virsh failure, kept for its exit status and output
+
+   @param commandName - Name of the guest agent command, kept so callers can tell which request failed
+
+   @param domain - Prefixed libvirt domain name, named in the message
+
+   @param stderr - Standard-error text virsh printed, quoted in the message
+   */
+  constructor({
+    cause,
+    commandName,
+    domain,
+    stderr,
+  }: {
+    readonly cause: unknown;
+    readonly commandName: string;
+    readonly domain: string;
+    readonly stderr: string;
+  },) {
+    super(
+      `The guest agent in ${domain} answered ${commandName}, but the answer is larger than libvirt hands over (4194304 characters), so its content is lost. virsh reported: ${stderr.trim()}`,
+      { cause, },
+    );
+    this.name = 'GuestAgentAnswerTooLargeError';
+    this.commandName = commandName;
+  }
+}
+
+/**
  The guest agent's answer did not have the shape its protocol reference gives for the command.
 
  @example
@@ -305,6 +356,12 @@ export function asciiJson(value: unknown,): string {
 const AGENT_ANSWERED_WITH_ERROR = 'unable to execute QEMU agent command';
 
 /**
+ Text libvirt prints when the agent's answer exceeds what its remote protocol carries in one string.
+ Seen on 2026-10-05 with libvirt 12.4.0 for a 3 MiB file read, whose base64 answer is 4194304 characters.
+ */
+const ANSWER_TOO_LARGE = 'Unable to encode message payload';
+
+/**
  Seconds virsh gets on top of the agent timeout before the call counts as stuck.
  */
 const VIRSH_MARGIN_SECONDS = 30;
@@ -325,6 +382,8 @@ const VIRSH_MARGIN_SECONDS = 30;
  @throws {@link GuestAgentReplyError} when the agent answered with an error
 
  @throws {@link GuestAgentUnreachableError} when no answer arrived
+
+ @throws {@link GuestAgentAnswerTooLargeError} when the answer is larger than libvirt hands over
 
  @throws {@link GuestAgentProtocolError} when the answer is not a JSON object with a `return` key
 
@@ -382,6 +441,15 @@ export async function agentCommand({
       if (stderr.includes(AGENT_ANSWERED_WITH_ERROR,)) {
         rl.debug(`${execute} in ${domain} answered with an error: ${stderr.trim()}`,);
         throw new GuestAgentReplyError({
+          cause: error,
+          commandName: execute,
+          domain,
+          stderr,
+        },);
+      }
+      if (stderr.includes(ANSWER_TOO_LARGE,)) {
+        rl.debug(`${execute} in ${domain} answered with more than libvirt hands over: ${stderr.trim()}`,);
+        throw new GuestAgentAnswerTooLargeError({
           cause: error,
           commandName: execute,
           domain,

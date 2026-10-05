@@ -28,6 +28,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  GuestFileTransferError,
+  pushThroughAgent,
+} from '../dist/final/node/index.mjs';
+import {
   createSandbox,
   fakeVirshEnv,
   runCli,
@@ -189,6 +193,50 @@ async function prepareCreate(sandbox: Sandbox,): Promise<void> {
  Metadata of a Linux VM created on a host without virtiofsd.
  */
 const AGENT_ROUTE = { fileTransfer: 'guest-agent', };
+
+/**
+ Sets environment variables of this process for the scope, restoring the prior values on disposal.
+ */
+function withProcessEnv(variables: Readonly<Record<string, string>>,): Disposable {
+  const prior = Object.keys(variables,).map(function remember(key,) {
+    return [
+      key,
+      process.env[key],
+    ] as const;
+  },);
+  Object.assign(
+    process.env,
+    variables,
+  );
+  return {
+    [Symbol.dispose]() {
+      for (
+        const [
+          key,
+          value,
+        ] of prior
+      ) {
+        if (value === undefined)
+          Reflect.deleteProperty(process.env, key,);
+        else
+          process.env[key] = value;
+      }
+    },
+  };
+}
+
+/**
+ Runs `operation` and returns what it threw; fails when it did not throw.
+ */
+async function caught(operation: () => unknown,): Promise<unknown> {
+  try {
+    await operation();
+  }
+  catch (error) {
+    return error;
+  }
+  throw new Error('expected the operation to throw',);
+}
 
 //endregion Helpers
 
@@ -740,6 +788,136 @@ await describe({
               digest(await readFile(destination,),),
             ).toBe(digest(content,),);
             expect(await readdir(sandbox.state,),).toContain('read-unanswered.used',);
+          },
+        },),
+
+        it({
+          name: 'push keeps asking while the guest agent stays silent for several commands, then finishes without shifting the data',
+          fn: async () => {
+            await using sandbox = await createSandbox({
+              silentCommandsAfterUnanswered: 4,
+              writeUnansweredAtOffset: WRITE_CHUNK,
+            },);
+            await writeMeta({
+              meta: AGENT_ROUTE,
+              name: 'dev',
+              sandbox,
+            },);
+            const guestDirectoryPath = await guestDirectory({
+              sandbox,
+              segments: ['tmp',],
+            },);
+            const source = await hostFile({
+              name: 'source.bin',
+              sandbox,
+              size: (3 * WRITE_CHUNK) + 5,
+            },);
+            const pushed = await runCli({
+              args: [
+                'push',
+                'dev',
+                source.path,
+                '/tmp/file.bin',
+              ],
+              env: fakeVirshEnv(sandbox,),
+              sandbox,
+            },);
+            expect(pushed.exitCode,).toBe(0,);
+            expect(pushed.stdout,).toContain('asking the guest agent in mvm-dev again',);
+            const inGuest = await readFile(join(
+              guestDirectoryPath,
+              'file.bin',
+            ),);
+            expect(digest(inGuest,),).toBe(digest(source.content,),);
+            expect(
+              await readFile(
+                join(
+                  sandbox.state,
+                  'silent-commands.remaining',
+                ),
+                'utf8',
+              ),
+            ).toBe('0',);
+          },
+          timeout: 120_000,
+        },),
+
+        it({
+          name: 'push stops at once when the domain shut off while the guest agent was silent',
+          fn: async () => {
+            await using sandbox = await createSandbox({
+              domstate: 'shut off',
+              silentCommandsAfterUnanswered: 50,
+              writeUnansweredAtOffset: WRITE_CHUNK,
+            },);
+            await writeMeta({
+              meta: AGENT_ROUTE,
+              name: 'dev',
+              sandbox,
+            },);
+            await guestDirectory({
+              sandbox,
+              segments: ['tmp',],
+            },);
+            const source = await hostFile({
+              name: 'source.bin',
+              sandbox,
+              size: 3 * WRITE_CHUNK,
+            },);
+            const pushed = await runCli({
+              args: [
+                'push',
+                'dev',
+                source.path,
+                '/tmp/file.bin',
+              ],
+              env: fakeVirshEnv(sandbox,),
+              sandbox,
+            },);
+            expect(pushed.exitCode,).not.toBe(0,);
+            expect(pushed.stderr,).toContain('The domain mvm-dev is now shut off',);
+            expect(pushed.stderr,).toContain(
+              `stopped after ${String(WRITE_CHUNK,)} of ${String(3 * WRITE_CHUNK,)} bytes`,
+            );
+            const repositions = (await sandbox.calls()).filter((call,) =>
+              (call.at(-1,) ?? '').includes('guest-file-seek',)
+            );
+            expect(repositions.length,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'push gives up when the guest agent stays silent for the limit, and says for how long',
+          fn: async () => {
+            await using sandbox = await createSandbox({
+              silentCommandsAfterUnanswered: 50,
+              writeUnansweredAtOffset: 0,
+            },);
+            await guestDirectory({
+              sandbox,
+              segments: ['tmp',],
+            },);
+            const source = await hostFile({
+              name: 'source.bin',
+              sandbox,
+              size: 10,
+            },);
+            using _environment = withProcessEnv(fakeVirshEnv(sandbox,),);
+            const error = await caught(() =>
+              pushThroughAgent({
+                domain: 'mvm-dev',
+                guestPath: '/tmp/file.bin',
+                hostPath: source.path,
+                limits: {
+                  retryPauseMs: 0,
+                  unresponsiveLimitMs: 0,
+                },
+              },)
+            );
+            expect(error,).toBeInstanceOf(GuestFileTransferError,);
+            expect((error as Error).message,).toContain('has not answered a file command for 0 seconds',);
+            expect((error as Error).message,).toContain('while the domain is running',);
+            expect((error as InstanceType<typeof GuestFileTransferError>).bytesTransferred,).toBe(0,);
           },
         },),
 

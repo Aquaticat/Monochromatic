@@ -13,12 +13,16 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   agentCommand,
+  GuestAgentAnswerTooLargeError,
   GuestAgentProtocolError,
   GuestAgentReplyError,
   GuestAgentUnreachableError,
 } from './agent-command.ts';
 import { decodeBase64, } from './exec-shell.ts';
-import type { DiscardedGuestResult, } from './guest-exec-errors.ts';
+import {
+  type DiscardedGuestResult,
+  GuestExecOutputTooLargeError,
+} from './guest-exec-errors.ts';
 import type { GuestExecLimits, } from './guest-exec.ts';
 import { virsh, } from './virsh.ts';
 
@@ -301,6 +305,33 @@ async function domainState(domain: string,): Promise<string> {
   }
 }
 
+/**
+ Says whether a domain whose guest agent gave no answer can still answer later.
+ A domain that is shut off, crashed, or unknown to libvirt cannot.
+
+ @param domain - Prefixed libvirt domain name
+
+ @returns Domain state, and whether that state rules out any later answer
+
+ @example
+ ```ts
+ const { gone, state } = await domainPresence('mvm-dev'); // => { gone: false, state: 'running' }
+ ```
+ */
+export async function domainPresence(domain: string,): Promise<{
+  readonly gone: boolean;
+  readonly state: string;
+}> {
+  /**
+   State libvirt reports for the domain now.
+   */
+  const state = await domainState(domain,);
+  return {
+    gone: GONE_STATES.has(state,) || (state === STATE_UNKNOWN_TO_LIBVIRT),
+    state,
+  };
+}
+
 //endregion Domain state
 
 //region Requests
@@ -362,6 +393,15 @@ async function readStatus({
         kind: 'forgotten',
       };
     }
+    if (error instanceof GuestAgentAnswerTooLargeError) {
+      // The agent has answered and thereby dropped the result; asking again would only find the process ID unknown.
+      rl.debug(`the result of guest process ${String(pid,)} in ${domain} is too large for libvirt to hand over`,);
+      throw new GuestExecOutputTooLargeError({
+        cause: error,
+        domain,
+        pid,
+      },);
+    }
     if (!(error instanceof GuestAgentUnreachableError))
       throw error;
 
@@ -369,8 +409,11 @@ async function readStatus({
     /**
      Domain state after the unanswered request; a domain that is gone ends the wait at once.
      */
-    const state = await domainState(domain,);
-    if (GONE_STATES.has(state,) || (state === STATE_UNKNOWN_TO_LIBVIRT)) {
+    const {
+      gone,
+      state,
+    } = await domainPresence(domain,);
+    if (gone) {
       return {
         error,
         kind: 'gone',

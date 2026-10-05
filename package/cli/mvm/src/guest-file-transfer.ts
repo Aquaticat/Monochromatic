@@ -5,7 +5,8 @@
  The file travels in chunks, one agent command each, and the result is
  checked against the size the guest reports. A chunk whose command gets no
  answer is sent again after moving to the chunk's absolute position, so a
- chunk the guest did apply is not applied twice at the wrong place.
+ chunk the guest did apply is not applied twice at the wrong place. It is
+ sent again for as long as `guest-file-retry.ts` allows.
 
  @module
  */
@@ -20,6 +21,13 @@ import {
   GuestAgentReplyError,
   GuestAgentUnreachableError,
 } from './agent-command.ts';
+import {
+  answered,
+  DEFAULT_GUEST_FILE_TRANSFER_LIMITS,
+  GuestAgentSilentError,
+  type GuestFileTransferLimits,
+  type Patience,
+} from './guest-file-retry.ts';
 import {
   type GuestFile,
   type GuestFileChunk,
@@ -57,11 +65,6 @@ export const WRITE_CHUNK_BYTES = 96_000;
  restarted. One read asks for 1 MiB, well inside the limit.
  */
 export const READ_CHUNK_BYTES = 1_048_576;
-
-/**
- Times one chunk is tried before the transfer gives up.
- */
-const CHUNK_ATTEMPTS = 3;
 
 /**
  Chunks between progress lines of a long transfer.
@@ -117,136 +120,6 @@ export class GuestFileTransferError extends Error {
 }
 
 //endregion Error
-
-//region Attempts
-
-/**
- Marks one attempt that got no answer from the guest agent and may be tried again.
- */
-type Unanswered = {
-  readonly unanswered: GuestAgentUnreachableError;
-};
-
-/**
- Runs one attempt and turns "no answer from the agent" into a value, so the caller can try again.
- Any other failure propagates.
-
- @param run - Attempt to make
-
- @returns The attempt's result, or the unanswered marker
-
- @example
- ```ts
- const outcome = await attempt(() => file.write(chunk));
- ```
- */
-async function attempt<const Result,>(
-  run: () => Promise<Result>,
-): Promise<Result | Unanswered> {
-  /**
-   Logger scoped to the attempt so a retried chunk is attributable.
-   */
-  const rl = tagged({
-    tag: attempt.name,
-    l,
-  },);
-  try {
-    return await run();
-  }
-  catch (error) {
-    if (!(error instanceof GuestAgentUnreachableError))
-      throw error;
-
-    rl.info(`a file command got no answer from the guest agent and is tried again: ${error.message}`,);
-    return { unanswered: error, };
-  }
-}
-
-/**
- Series of attempts at one chunk, one at a time, at most {@link CHUNK_ATTEMPTS}.
-
- @param run - Attempt to make; told whether an earlier attempt went unanswered, so it can restore the file position first
-
- @returns Outcome of each attempt in order
-
- @example
- ```ts
- for await (const outcome of attempts((repeated) => writeAt({ data, file, offset, reposition: repeated }))) {
-   if (!('unanswered' in outcome)) return outcome;
- }
- ```
- */
-async function* attempts<const Result,>(
-  run: (repeated: boolean,) => Promise<Result>,
-): AsyncGenerator<Result | Unanswered> {
-  for (let made = 0; made < CHUNK_ATTEMPTS; made += 1) {
-    /**
-     Whether an earlier attempt went unanswered, which leaves the file position unknown.
-     */
-    const repeated = made > 0;
-    yield attempt(function runOnce() {
-      return run(repeated,);
-    },);
-  }
-}
-
-/**
- Checks whether an attempt outcome is the unanswered marker.
-
- @param outcome - Outcome of one attempt
-
- @returns Whether the attempt got no answer
-
- @example
- ```ts
- isUnanswered({ unanswered: error }); // true
- ```
- */
-function isUnanswered(outcome: unknown,): outcome is Unanswered {
-  return ((typeof outcome) === 'object') && (outcome !== null)
-    && ('unanswered' in outcome);
-}
-
-/**
- Sentinel for "no attempt has failed yet".
- A unique symbol models the empty state without a nullish union.
- */
-const NO_FAILURE: unique symbol = Symbol('set before any attempt went unanswered',);
-
-/**
- Makes a repeatable step until the guest agent answers, at most {@link CHUNK_ATTEMPTS} times.
-
- @param run - Step to make; told whether an earlier attempt went unanswered, so it can restore the file position first
-
- @returns The step's result
-
- @throws {@link GuestAgentUnreachableError} when no attempt got an answer
-
- @example
- ```ts
- const written = await answered((repeated) => writeAt({ data, file, offset, reposition: repeated }));
- ```
- */
-async function answered<const Result,>(
-  run: (repeated: boolean,) => Promise<Result>,
-): Promise<Result> {
-  /**
-   Latest unanswered attempt, rethrown when every attempt went unanswered.
-   */
-  const last: { error: GuestAgentUnreachableError | typeof NO_FAILURE; } = { error: NO_FAILURE, };
-  for await (const outcome of attempts(run,)) {
-    if (!isUnanswered(outcome,)) {
-      return outcome;
-    }
-    last.error = outcome.unanswered;
-  }
-  if (last.error === NO_FAILURE) {
-    throw new Error('no attempt was made; the attempt limit is not positive',);
-  }
-  throw last.error;
-}
-
-//endregion Attempts
 
 //region Push
 
@@ -312,22 +185,26 @@ async function writeAt({
 
  @param hostPath - Host file to read chunks from
 
+ @param patience - Domain and time limits for a chunk whose command gets no answer
+
  @param size - Size of the host file in bytes
 
  @returns End offset reached after each chunk
 
  @example
  ```ts
- for await (const reached of chunkWrites({ file, hostPath: './a.bin', size: 300_000 })) console.log(reached);
+ for await (const reached of chunkWrites({ file, hostPath: './a.bin', patience, size: 300_000 })) console.log(reached);
  ```
  */
 async function* chunkWrites({
   file,
   hostPath,
+  patience,
   size,
 }: {
   readonly file: GuestFile;
   readonly hostPath: string;
+  readonly patience: Patience;
   readonly size: number;
 },): AsyncGenerator<number> {
   /**
@@ -369,13 +246,16 @@ async function* chunkWrites({
         } bytes could be read at offset ${String(offset,)}.`,
       },);
     }
-    await answered(function writeChunk(repeated,) {
-      return writeAt({
-        data,
-        file,
-        offset,
-        reposition: repeated,
-      },);
+    await answered({
+      patience,
+      run: function writeChunk(repeated,) {
+        return writeAt({
+          data,
+          file,
+          offset,
+          reposition: repeated,
+        },);
+      },
     },);
     return offset + data.length;
   }
@@ -393,6 +273,8 @@ async function* chunkWrites({
 
  @param hostPath - Host file to read
 
+ @param limits - Time limits for a guest agent that stops answering; the defaults allow five minutes of silence
+
  @throws {@link GuestFileTransferError} when the copy does not complete; the message says what the guest file holds
 
  @example
@@ -404,11 +286,20 @@ export async function pushThroughAgent({
   domain,
   guestPath,
   hostPath,
+  limits = DEFAULT_GUEST_FILE_TRANSFER_LIMITS,
 }: {
   readonly domain: string;
   readonly guestPath: string;
   readonly hostPath: string;
+  readonly limits?: GuestFileTransferLimits;
 },): Promise<void> {
+  /**
+   Domain and time limits shared by every command of this push.
+   */
+  const patience = {
+    domain,
+    limits,
+  };
   /**
    Logger scoped to this push so progress and failures are attributable.
    */
@@ -441,6 +332,7 @@ export async function pushThroughAgent({
       const reached of chunkWrites({
         file,
         hostPath,
+        patience,
         size,
       },)
     ) {
@@ -453,11 +345,14 @@ export async function pushThroughAgent({
     /**
      Length of the guest file as the guest reports it.
      */
-    const guestSize = await answered(function measure() {
-      return file.seek({
-        offset: 0,
-        whence: 'end',
-      },);
+    const guestSize = await answered({
+      patience,
+      run: function measure() {
+        return file.seek({
+          offset: 0,
+          whence: 'end',
+        },);
+      },
     },);
     await file.close();
     if (guestSize !== size) {
@@ -472,8 +367,12 @@ export async function pushThroughAgent({
   catch (error) {
     if (error instanceof GuestFileTransferError)
       throw error;
-    if (!((error instanceof GuestAgentReplyError) || (error instanceof GuestAgentUnreachableError)))
+    if (
+      !((error instanceof GuestAgentReplyError) || (error instanceof GuestAgentUnreachableError)
+        || (error instanceof GuestAgentSilentError))
+    ) {
       throw error;
+    }
 
     rl.debug(`push of ${hostPath} stopped after ${String(progress.reached,)} bytes`,);
     throw new GuestFileTransferError({
@@ -538,22 +437,26 @@ async function readAt({
 
  @param file - Open guest file
 
+ @param patience - Domain and time limits for a chunk whose command gets no answer
+
  @param position - Position of the next read; the consumer advances it after each chunk
 
  @returns Chunks in order
 
  @example
  ```ts
- for await (const chunk of chunkReads({ file, position })) {
+ for await (const chunk of chunkReads({ file, patience, position })) {
    if (chunk.eof) break;
  }
  ```
  */
 async function* chunkReads({
   file,
+  patience,
   position,
 }: {
   readonly file: GuestFile;
+  readonly patience: Patience;
   readonly position: { readonly offset: number; };
 },): AsyncGenerator<GuestFileChunk> {
   /**
@@ -566,12 +469,15 @@ async function* chunkReads({
      Position fixed for this chunk, so a repeated attempt reads the same bytes.
      */
     const { offset, } = position;
-    return answered(function readChunk(repeated,) {
-      return readAt({
-        file,
-        offset,
-        reposition: repeated,
-      },);
+    return answered({
+      patience,
+      run: function readChunk(repeated,) {
+        return readAt({
+          file,
+          offset,
+          reposition: repeated,
+        },);
+      },
     },);
   }
   // The consumer leaves the loop at the end of the file, which every file has.
@@ -588,6 +494,8 @@ async function* chunkReads({
 
  @param guestPath - Absolute path of the file in the guest
 
+ @param limits - Time limits for a guest agent that stops answering; the defaults allow five minutes of silence
+
  @returns File content
 
  @throws {@link GuestFileTransferError} when the read does not complete or the file changes while it is read
@@ -600,10 +508,19 @@ async function* chunkReads({
 export async function pullThroughAgent({
   domain,
   guestPath,
+  limits = DEFAULT_GUEST_FILE_TRANSFER_LIMITS,
 }: {
   readonly domain: string;
   readonly guestPath: string;
+  readonly limits?: GuestFileTransferLimits;
 },): Promise<Buffer> {
+  /**
+   Domain and time limits shared by every command of this pull.
+   */
+  const patience = {
+    domain,
+    limits,
+  };
   /**
    Logger scoped to this pull so progress and failures are attributable.
    */
@@ -632,6 +549,7 @@ export async function pullThroughAgent({
     for await (
       const chunk of chunkReads({
         file,
+        patience,
         position,
       },)
     ) {
@@ -650,11 +568,14 @@ export async function pullThroughAgent({
     /**
      Length of the guest file as the guest reports it after the last read.
      */
-    const guestSize = await answered(function measure() {
-      return file.seek({
-        offset: 0,
-        whence: 'end',
-      },);
+    const guestSize = await answered({
+      patience,
+      run: function measure() {
+        return file.seek({
+          offset: 0,
+          whence: 'end',
+        },);
+      },
     },);
     await file.close();
     if (guestSize !== position.offset) {
@@ -669,8 +590,12 @@ export async function pullThroughAgent({
   catch (error) {
     if (error instanceof GuestFileTransferError)
       throw error;
-    if (!((error instanceof GuestAgentReplyError) || (error instanceof GuestAgentUnreachableError)))
+    if (
+      !((error instanceof GuestAgentReplyError) || (error instanceof GuestAgentUnreachableError)
+        || (error instanceof GuestAgentSilentError))
+    ) {
       throw error;
+    }
 
     rl.debug(`pull of ${guestPath} stopped after ${String(position.offset,)} bytes`,);
     throw new GuestFileTransferError({

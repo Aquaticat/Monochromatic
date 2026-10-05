@@ -45,6 +45,7 @@ const {
   exec,
   GuestExecAttributionError,
   GuestExecLaunchError,
+  GuestExecOutputTooLargeError,
   GuestExecStatusUnavailableError,
   runGuestCommand,
 } = await import('../dist/final/node/index.mjs');
@@ -456,6 +457,32 @@ await describe({
         expect(error,).toBeInstanceOf(GuestExecStatusUnavailableError,);
         expect((error as InstanceType<typeof GuestExecStatusUnavailableError>).pid,).toBe(77,);
         expect((error as Error).message,).toContain('has not answered a status request',);
+      },
+    },),
+
+    it({
+      name: 'says the output is too large for libvirt when the finished result cannot be handed over, without asking again',
+      fn: async () => {
+        await using fake = await installFakeVirsh({
+          pids: [91,],
+          statusFailures: ['error: Unable to encode message payload',],
+        },);
+        const error = await caught(() =>
+          runGuestCommand({
+            command: 'cat huge.log',
+            domain: 'mvm-verbose',
+            osFamily: 'linux',
+            shell: '/bin/sh',
+          },)
+        );
+        expect(error,).toBeInstanceOf(GuestExecOutputTooLargeError,);
+        expect((error as InstanceType<typeof GuestExecOutputTooLargeError>).pid,).toBe(91,);
+        expect((error as Error).message,).toContain('its output is too large for libvirt to hand over',);
+        expect((error as Error).message,).toContain('fetch the file with mvm pull',);
+        const statusRequests = (await fake.calls()).filter((call,) =>
+          (call.at(-1,) ?? '').includes('guest-exec-status',)
+        );
+        expect(statusRequests.length,).toBe(1,);
       },
     },),
 

@@ -19,6 +19,7 @@
  - `writeErrorAtOffset`: every write at this offset is refused by the agent.
  - `shortWriteAtOffset`: a write at this offset stores only half of its data and says so.
  - `maxReadCount`: reads asking for more bytes fail the way an oversized answer does.
+ - `silentCommandsAfterUnanswered`: after the scripted unanswered write or read, this many following file commands fail the way a guest agent that stopped answering does, and are not applied.
 
  @module
  */
@@ -63,6 +64,12 @@ type Handle = {
  */
 const UNANSWERED =
   'error: guest agent command timed out: guest agent didn\'t respond to command within \'60\' seconds';
+
+/**
+ Text libvirt printed for every command while the Windows agent had stopped answering, recorded on this host.
+ */
+const SILENT =
+  'error: Guest agent is not responding: guest agent didn\'t respond to synchronization within \'5\' seconds';
 
 /**
  Smallest handle number handed out; the real agent's numbers are large too.
@@ -352,6 +359,78 @@ async function firstTime({
   return true;
 }
 
+/**
+ File holding how many following file commands the simulated agent leaves unanswered.
+
+ @param directory - Fake's state directory
+
+ @returns Path of the counter file
+ */
+function silencePath(directory: string,): string {
+  return join(
+    directory,
+    'silent-commands.remaining',
+  );
+}
+
+/**
+ Starts the scripted silence after an unanswered command, when the scenario asks for one.
+
+ @param directory - Fake's state directory
+
+ @param scenario - Scenario whose `silentCommandsAfterUnanswered` gives the number of silent commands
+ */
+async function startSilence({
+  directory,
+  scenario,
+}: {
+  readonly directory: string;
+  readonly scenario: Readonly<Record<string, unknown>>;
+},): Promise<void> {
+  /**
+   Number of following commands to leave unanswered.
+   */
+  const { silentCommandsAfterUnanswered, } = scenario;
+  if (((typeof silentCommandsAfterUnanswered) === 'number') && (silentCommandsAfterUnanswered > 0)) {
+    await writeFile(
+      silencePath(directory,),
+      String(silentCommandsAfterUnanswered,),
+    );
+  }
+}
+
+/**
+ Consumes one command of the scripted silence.
+
+ @param directory - Fake's state directory
+
+ @returns Whether this command falls into the silence and must go unanswered
+ */
+async function consumeSilence(directory: string,): Promise<boolean> {
+  /**
+   Counter file of the silence.
+   */
+  const path = silencePath(directory,);
+  if (!(await exists(path,))) {
+    return false;
+  }
+  /**
+   Silent commands left before this one.
+   */
+  const remaining = Number(await readFile(
+    path,
+    'utf8',
+  ),);
+  if (remaining <= 0) {
+    return false;
+  }
+  await writeFile(
+    path,
+    String(remaining - 1,),
+  );
+  return true;
+}
+
 //endregion Handles
 
 //region Commands
@@ -523,6 +602,10 @@ async function fileWrite({
       name: 'write-unanswered',
     },)))
   {
+    await startSilence({
+      directory,
+      scenario,
+    },);
     return { failure: UNANSWERED, };
   }
   return {
@@ -606,6 +689,10 @@ async function fileRead({
       name: 'read-unanswered',
     },)))
   {
+    await startSilence({
+      directory,
+      scenario,
+    },);
     return { failure: UNANSWERED, };
   }
   return {
@@ -759,6 +846,9 @@ export async function guestFileCommand({
   readonly request: Readonly<Record<string, unknown>>;
   readonly scenario: Readonly<Record<string, unknown>>;
 },): Promise<FileCommandOutcome> {
+  if (await consumeSilence(directory,)) {
+    return { failure: SILENT, };
+  }
   if (execute === 'guest-file-open') {
     return await fileOpen({
       directory,
