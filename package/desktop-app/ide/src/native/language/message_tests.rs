@@ -55,16 +55,22 @@ fn each_outcome_names_its_reason_and_remedy() {
         single(Action::Definition, RequestOutcome::Unsupported, &ready),
         "scripted-ls does not offer go to definition."
     );
+    // The fixture's server reports work in progress, which an empty answer mentions.
     assert_eq!(
         single(Action::Definition, RequestOutcome::Empty, &ready),
+        "No definition found. scripted-ls is still working (Indexing); press Ctrl+B again when it finishes."
+    );
+    let idle = status(DocumentState::Attached, None);
+    assert_eq!(
+        single(Action::Definition, RequestOutcome::Empty, &idle),
         "No definition found."
     );
     assert_eq!(
-        single(Action::References, RequestOutcome::Empty, &ready),
+        single(Action::References, RequestOutcome::Empty, &idle),
         "No usages found."
     );
     assert_eq!(
-        single(Action::Hover, RequestOutcome::Empty, &ready),
+        single(Action::Hover, RequestOutcome::Empty, &idle),
         "No hover information at this position."
     );
     let failure = RequestOutcome::Failed(RequestFailure::Rpc {
