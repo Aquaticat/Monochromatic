@@ -13,8 +13,11 @@ Current boundary:
 continue workspace tree/search/navigation after the verified font fixes.
 The read-only workspace model's five tests and the lazy tree model's eight tests pass.
 `FileTree` accepts directory snapshots without doing filesystem I/O.
-Next implement directory request generations and background reads,
-then native rows/file switching.
+Opaque directory-request identities now fence replies;
+`proc_36aa` passed all fifteen tree/request tests and scoped Rust lint.
+`DirectoryWorker` now performs bounded background reads with admission before token creation;
+its integration tests are running.
+Next bind native rows/file switching.
 The procedural-macro and variable-font paths now both pass native font isolation.
 Continue annotations and language intelligence after workspace navigation.
 Actual TypeScript/Rust syntax is now wired and the highlighted native screenshot was inspected.
@@ -445,7 +448,8 @@ Only the file context and source remain visible in the normal source-view gate.
   native tests now use process isolation.
 - `proc_e46e`,
   `ide-variable-native-isolation`,
-  is the current variable-font dark fixture at
+  stopped cleanly after variable-font verification.
+  Its completed dark fixture was at
   `/tmp/monochromatic-ide-native-m6zNtt/control.sock`.
   MCP is port 9318.
   All four complete variable/italic font byte sequences were found in the binary.
@@ -634,9 +638,25 @@ native byte filenames remain intact.
 Clippy,
 Rust documentation/line budgets,
 and Slint checks pass in `proc_1f80`.
-The model is not yet a generation-fenced async reader or a native tree UI.
+`DirectoryRequest` now carries a private shared allocation identity across threads,
+not a reusable integer or just path equality.
+Superseded,
+consumed,
+foreign-tree,
+and removed/recreated-directory replies are ignored before applying either data or errors.
+A current read error releases its request slot while preserving the previous snapshot.
+Asynchronous callers must use `complete_listing` rather than the synchronous `apply_listing` entry point.
+`DirectoryWorker` admits at most one read or unread reply,
+never blocks UI polling,
+and closes input before joining its thread on shutdown.
+The native tree UI and file-switching path remain unwired.
 
-Observed-failing guard checks are running in `proc_1d30`.
+Observed-failing guard checks passed in `proc_1d30`:
+removing snapshot validation,
+unknown-directory rejection,
+and non-directory expansion rejection each caused its named test to fail.
+Restoring all guards returned the eight-test suite to passing.
+The evidence is `results.json` beside the disposable copy.
 The disposable copy is `/home/user/temp/agent/ide-tree-guard-zlIbRv/package`;
 its baseline passed eight tests in `proc_5274`.
 `guard-check.mjs` outside that copy removes guards one at a time,
