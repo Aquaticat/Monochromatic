@@ -1,8 +1,7 @@
 # Repackage pi search fetch as an MCP server
 
-Status: design grilling finished; frontier empty, awaiting the user's confirmation of the shared understanding.
-This records the interview state, measured evidence, and the open frontier.
-Nothing is implemented yet.
+Status: implemented and verified.
+This records the interview state, measured evidence, and the implementation record.
 
 ## Goal
 
@@ -131,22 +130,69 @@ No schema or implementation change.
 
 ## Next action
 
-Restate the shared understanding and wait for explicit confirmation before implementing.
+Complete.
+Nothing remains open from the confirmed plan.
 
-Implementation shape confirmed by the interview, with recorded defaults open for veto:
+## Implementation
 
-- `package/agent-harness-shared/truncate`: neutral truncation port, differential-tested against pi's
-  `truncateHead` and `formatSize`.
-- `package/agent-harness-shared/search-fetch`: config loading, provider fallback, blocklist domain policy,
-  gh URL plans, markdown data-URL filtering, tool specs (valibot source), output formatting,
-  and the in-repo valibot to TypeBox subset converter with a fail-loud guard.
-- `package/pi-plugin/search-fetch`: slim pi adapter (converted TypeBox parameters, `label`, `promptSnippet`,
-  `registerTool`).
-- `package/mcp/search-fetch`: `@monochromatic-dev/mcp-search-fetch`, bin `search-fetch-mcp`, on `mcp-stdio`,
-  tools `web_search` and `web_fetch`, truncated output with temp path plus inline `resource_link` plus URI text.
-- `@monochromatic-dev/mcp-stdio`: grows a resources surface (`resources/list`, `resources/read` dispatch) beyond
-  the unchanged schema path.
-- Recorded defaults: resource URI scheme `search-fetch://response/<id>` backed by the same temp file,
-  bounded in-memory index of recent responses; verification runs a scripted MCP client round trip
-  (tools/list, tools/call, resources/read) and one live `ocr` review with both tools called.
-After the frontier empties, restate the shared understanding and wait for confirmation before implementing.
+Shaped exactly as the interview recorded,
+with these commits:
+
+- `feat(agent-harness-shared-truncate)`: pi-parity truncation port with differential tests.
+- `feat(agent-harness-shared-search-fetch)`: pi-free core with shared tool specs,
+  guarded valibot to TypeBox converter, shared executors, and the moved behavior suites.
+- `refactor(pi-plugin-search-fetch)`: pi adapter over the shared core.
+- `feat(mcp-stdio)`: `resources/list` and `resources/read` dispatch with a `ResourceProvider`.
+- `feat(mcp-search-fetch)`: the MCP server bin exposing `web_search` and `web_fetch`.
+
+Recorded defaults kept:
+resource URI scheme `search-fetch://response/<id>` backed by the same temp file,
+bounded in-memory index of 32 recent responses.
+
+## Verification record
+
+Unit suites (all green, zero lint findings on every package touched):
+
+- `agent-harness-shared-truncate`: behavior plus pi parity corpus.
+- `agent-harness-shared-search-fetch`: 26 cases across moved suites plus converter,
+  queue, and shared execution.
+- `mcp-stdio`: 20 cases including the resource surface.
+- `mcp-search-fetch`: 6 protocol cases including the truncated-resource round trip.
+
+Guard proof (GFP):
+the parity suite was shown to fail against `piTruncateHead` after sabotaging the port's
+separator accounting, then the port was restored and re-proved green.
+
+Scripted MCP client against the built bin
+(`/var/home/user/temp/agent/mcp-probe/out.txt`, `out2.txt`):
+
+- `server/discover` advertises `tools` and `resources` capabilities and the instructions.
+- `tools/list` shows `web_search` and `web_fetch` with the shared descriptions and schemas.
+- Real `tools/call web_search` returned Exa results as JSONL.
+- Real `tools/call web_fetch` showed live Linkup to Exa fallback on stderr and returned the Exa response.
+- A 425.3KB real response truncated to its head plus temp path,
+  then added the resource URI line and `resource_link` block;
+  `resources/list` showed the record and `resources/read` returned all 435,496 characters.
+- `resources/read` for an unknown URI answers `-32602` naming the URI.
+
+Live OpenCodeReview verification (the one real host from Q9):
+
+- `ocr config set mcp_servers.search-fetch.{command,args,tools}` written to
+  `~/.opencodereview/config.json`.
+- One real `ocr review` on a throwaway repository diff, provider `hyper/glm-5.3-flash`.
+- The review agent called `web_search` five times and `web_fetch` five times through this server,
+  19 tool calls total with zero failures.
+
+## Deviations and notes
+
+- Both new packages ship `private: true` so nothing enters the publish pipeline unasked;
+  the category siblings are publishable, and publishing stays an open offer.
+- `mcp-stdio/src/tool-schema.ts` carried a misplaced lint suppression;
+  relocated to the documented disable/enable form so the package lint reaches zero.
+- `package/pi-plugin/search-fetch` keeps 9 pre-existing type errors
+  (`tools.unit.test.ts` ctx fixtures, `mise.verify-extension.ts` fake ExtensionAPI),
+  verified identical on pristine HEAD and left to the migration owner.
+- The blocklist error text keeps its `pi-search-fetch` wording on both surfaces for parity.
+- Multi-package commits crash the `mono/dependent-version-bump` policy plugin;
+  worked around with per-package commits, recorded in
+  `doc/troubleshooting/cli-git-dependent-version-bump-decoder.md`.
