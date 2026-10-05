@@ -145,8 +145,9 @@ function pairSharesMedia(
 ): boolean {
   // A PAIR NAMES BLOCKS OF THESE LISTS: the roster's reads are range-checked
   // against them by `readBlockPairing`, and `prepareBlockPairing` checks a
-  // cached record against them through the same `assertPairsNameBlocks`
-  // before it claims media over the record, missing on one that does not fit.
+  // cached record against them through `readBlockPairing` itself, the
+  // whole reader a reply goes through, before it claims media over the record,
+  // missing on one that does not fit.
   /**
    Source block this pair names.
    */

@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { wordForCount, } from './count-word.ts';
 import type { DocumentNode, } from './document-node.ts';
 import type {
   GroupedRun,
@@ -45,6 +46,65 @@ export type OpenRun = {
  collide with.
  */
 export const NOT_AN_INSERTION = -1;
+
+/**
+ Translation blocks of a sealed section that no run can carry.
+
+ MARKED: its message is a count, positional block ids (`block/N`, which name
+ places and never wording) and sentences written here.
+
+ @example
+ ```ts
+ throw new UnplacedTranslationBlocksError({ blockIds: ['block/0',], },);
+ ```
+ */
+export class UnplacedTranslationBlocksError extends Error {
+  /**
+   Declares this message safe to forward: counts, positional block ids and
+   a sentence written here.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Ids of the translation blocks left without a run.
+   */
+  readonly blockIds: readonly string[];
+
+  /**
+   @param blockIds - ids of the blocks no run can carry
+   */
+  public constructor({ blockIds, }: { readonly blockIds: readonly string[]; },) {
+    super(
+      `translation ${
+        wordForCount({
+          count: blockIds.length,
+          one: 'block',
+          many: 'blocks',
+        },)
+      } ${blockIds.join(', ',)} can join no run: no paired run stands before ${
+        wordForCount({
+          count: blockIds.length,
+          one: 'it',
+          many: 'them',
+        },)
+      }, and the sealed run after ${
+        wordForCount({
+          count: blockIds.length,
+          one: 'it',
+          many: 'them',
+        },)
+      } takes nothing in, so the section would leave ${
+        wordForCount({
+          count: blockIds.length,
+          one: 'it',
+          many: 'them',
+        },)
+      } out of every slice`,
+    );
+    this.name = 'UnplacedTranslationBlocksError';
+    this.blockIds = blockIds;
+  }
+}
 
 /**
  Where a sealed run ends in the translation, which is where originals held
@@ -211,6 +271,10 @@ function placeHeldRuns(
 
  @returns Runs that all carry blocks on both sides, sealed runs among them
 
+ @throws {@link UnplacedTranslationBlocksError} when a sealed run stands among
+ the runs and translation blocks are left that no paired run can take, which
+ would leave them in no run
+
  @example
  ```ts
  const usable = mergeOneSidedRuns({ runs, },);
@@ -346,11 +410,10 @@ export function mergeOneSidedRuns(
   // `assertSliceCoverage` then refused the document.
   //
   // The module's stated exception survives as the case `placeHeldRuns` cannot
-  // settle: with no run to host them (no run at all, or, for held translation
-  // blocks, no paired run, or none behind the last sealed run), the blocks
-  // stay held and this returns without them, saying nothing. A section one
-  // side of which has no blocks is that case (`group-aligned.unit.test.ts`
-  // pins it), and
+  // settle without a seal in the section: with no run to host them (no run at
+  // all, or, for held translation blocks, no paired run), the blocks stay held
+  // and this returns without them, saying nothing. A section one side of which
+  // has no blocks is that case (`group-aligned.unit.test.ts` pins it), and
   // `subdivideSealedChunkPair` never groups one: an empty translation side is
   // an insertion it slices by the original, and every aligned chunk holds a
   // block. NO CALLER FALLS BACK ANY MORE: the one-slice fallback
@@ -359,11 +422,30 @@ export function mergeOneSidedRuns(
   // another way loses those blocks from its slices, and
   // `prepareDocumentPair`'s `assertSliceCoverage` is what refuses that; a
   // caller of `subdivideChunkPair` alone has no such check.
+  //
+  // A SEALED SECTION IS NOT THAT CASE, and its held translation blocks are
+  // refused here. An archive block ahead of the note with no paired run before
+  // it has nothing to join: the sealed run takes nothing in, and every block
+  // after the note is sealed with it, so none follows to take it either.
+  // A bounded probe over generated archive pages (a span note at a random
+  // place, scorer and supplied walks) reached it for 115 of 3000 sections
+  // through `prepareDocumentPair`, which then refused the page in
+  // `assertSliceCoverage`; a caller of `groupNodesSealed` alone was handed
+  // runs without the block and no word of it.
   placeHeldRuns({
     merged,
     heldSource,
     heldTarget,
   },);
+  if ((heldTarget.length > 0)
+    && merged.some(function isSealed(candidate,): boolean {
+      return candidate.kind === 'sealed';
+    },))
+    throw new UnplacedTranslationBlocksError({
+      blockIds: heldTarget.map(function toId(node,): string {
+        return node.id;
+      },),
+    },);
   return merged;
 }
 

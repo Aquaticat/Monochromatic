@@ -9,13 +9,16 @@ import {
   chunkLabel,
   type ContentChunk,
 } from './chunk-document.ts';
+import { readSectionPairing, } from './pair-sections-read.ts';
 import {
   type PairedDocumentRecord,
   pairSectionsWithRoster,
 } from './pair-sections-stage.ts';
-import type {
-  NumberedSection,
-  SectionPair,
+import {
+  type NumberedSection,
+  type SectionPair,
+  type SectionPairingError,
+  requireSectionPairingRefusal,
 } from './pair-sections-wire.ts';
 import { pairingQuestionKey, } from './pairing-question-key.ts';
 import type { RepairDocument, } from './parse-document.ts';
@@ -198,6 +201,62 @@ function roundKey(
 }
 
 /**
+ The refusal of a cached pairing read against the document's sections, or
+ nothing when the record is a pairing a fresh reply could have been.
+
+ READ THROUGH `readSectionPairing`, the whole reader a fresh reply goes
+ through (indices, then strictly increasing on both sides), since the cache
+ reader checks a record's shape only and the key names the sections' text. A
+ record a fresh reply would be refused for was not written by this pipeline
+ for this question: a damaged or hand-edited file. Handed on as stored, a
+ translation section the document lacks stopped the alignment with a
+ missing-value error naming nothing, an original section it lacks left the
+ document with no slice, a repeated or reversed pairing stopped the slicer
+ hours later, and one original paired with two translations aligned the
+ later section's pair silently.
+
+ @param pairs - pairs the cached record holds
+
+ @param sourceCount - original sections of the document
+
+ @param targetCount - translation sections of the document
+
+ @returns The refusal in a one-element list, or an empty list when the
+ record fits
+
+ @throws The caught value unchanged when the reader fails other than by
+ refusing the pairing
+
+ @example
+ ```ts
+ const [misfit,] = cachedSectionPairingMisfit({ pairs: cached.pairs, sourceCount: 3, targetCount: 2, },);
+ ```
+ */
+function cachedSectionPairingMisfit(
+  {
+    pairs,
+    sourceCount,
+    targetCount,
+  }: {
+    readonly pairs: PairedDocumentRecord['pairs'];
+    readonly sourceCount: number;
+    readonly targetCount: number;
+  },
+): readonly SectionPairingError[] {
+  try {
+    readSectionPairing({
+      value: { pairs, },
+      sourceCount,
+      targetCount,
+    },);
+    return [];
+  }
+  catch (error) {
+    return [requireSectionPairingRefusal({ error, },),];
+  }
+}
+
+/**
  Buys a section pairing when, and only when, the aligner refused something.
 
  @param client - injected model client
@@ -215,7 +274,7 @@ function roundKey(
  @param l - driver logger
 
  @param sectionCache - store a settled round is republished from, so a resumed
- entry buys nothing
+ entry buys nothing; a stored round the section reader refuses is a miss
 
  @returns Pairing to align on, empty to keep the deterministic aligner
 
@@ -287,7 +346,24 @@ export async function buySectionPairing(
    */
   const cached = sectionCache?.resumed
     .get(key,);
-  if (cached !== undefined) {
+
+  /**
+   Why the cached round does not fit these documents' sections, absent when
+   it fits or nothing was cached.
+   */
+  const [misfit,] = (cached === undefined)
+    ? []
+    : cachedSectionPairingMisfit({
+      pairs: cached.pairs,
+      sourceCount: sourceChunks.length,
+      targetCount: targetChunks.length,
+    },);
+  if (misfit !== undefined)
+    l.warn(
+      `the section pairing cache misses: the record under ${key} does not fit its sections (${misfit.message}), `
+        + 'so the roster is asked again',
+    );
+  if ((cached !== undefined) && (misfit === undefined)) {
     // REPUBLISHED BEFORE ANYTHING IS DECIDED, for the reason the block round
     // gives: this run asks nobody, so every finding the first run reported is
     // reported by nothing at all unless it comes back off disk.

@@ -38,10 +38,15 @@ import {
 import {
   type AlignedRun,
   type AlignmentStep,
+  archiveOriginalReadingOf,
   blockPairingToSteps,
   type DocumentNode,
   groupNodesSealed,
   parseDocument,
+  prepareDocumentPair,
+  sealedNodeIds,
+  UnplacedTranslationBlocksError,
+  refusalText,
 } from '../dist/final/node/index.mjs';
 import { groupWithNothingSealed, } from './group-aligned.test-fixture.ts';
 
@@ -272,6 +277,93 @@ function walkRefusal({ steps, }: { readonly steps: readonly AlignmentStep[]; },)
 }
 
 //endregion Supplied walks
+
+//region Sealed pages
+// An archive page whose translators' note says everything below it is the
+// English original, read the way the preparation reads it: the note's span
+// seals every block after it up to the next heading.
+
+/**
+ The translators' note that seals what follows it.
+ */
+const SEALING_NOTE = '<!-- 这段话以下全部，原文都是英文，中文是反向翻译的 -->';
+
+/**
+ Letter the original carries, which the archive's sealed back-translation
+ renders.
+ */
+const LETTER_SOURCE = 'Dear cat, come home.\n';
+
+/**
+ Archive with a shop greeting ahead of the sealing note and the letter after it.
+ */
+const GREETED_ARCHIVE = `A note from the shop.\n\n${SEALING_NOTE}\n\nDear cat, come home.\n`;
+
+/**
+ Archive whose greeting has an original of its own beside it, ahead of the note.
+ */
+const PAIRED_GREETING_SOURCE = `A word from the shop.\n\n${LETTER_SOURCE}`;
+
+/**
+ Ids of the blocks a sealing note covers in an archive.
+
+ @param target - parsed archive
+
+ @returns Ids of its sealed blocks
+
+ @example
+ ```ts
+ const sealed = sealedIdsOf({ target: parseDocument({ text: GREETED_ARCHIVE, },), },);
+ ```
+ */
+function sealedIdsOf({ target, }: { readonly target: ReturnType<typeof parseDocument>; },): ReadonlySet<string> {
+  /**
+   What the archive's notes say.
+   */
+  const reading = archiveOriginalReadingOf({ document: target, },);
+  return sealedNodeIds({
+    nodes: target.nodes,
+    spans: (reading.kind === 'spans') ? reading.spans : [],
+  },);
+}
+
+/**
+ Groups an original against a sealed archive.
+
+ @param sourceText - whole original
+
+ @param targetText - whole archive
+
+ @returns The runs and the ids of the originals the seal took with it
+
+ @example
+ ```ts
+ const { runs, } = groupSealedPage({ sourceText: LETTER_SOURCE, targetText: GREETED_ARCHIVE, },);
+ ```
+ */
+function groupSealedPage(
+  {
+    sourceText,
+    targetText,
+  }: {
+    readonly sourceText: string;
+    readonly targetText: string;
+  },
+): ReturnType<typeof groupNodesSealed> {
+  /**
+   Archive, parsed once for its blocks and its seal.
+   */
+  const target = parseDocument({ text: targetText, },);
+  return groupNodesSealed({
+    sourceNodes: blocksOf({ text: sourceText, },),
+    targetNodes: target.nodes,
+    sourceBudget: WIDE_BUDGET,
+    targetBudget: WIDE_BUDGET,
+    sealed: sealedIdsOf({ target, },),
+  },);
+}
+
+//endregion Sealed pages
 
 await describe({
   name: '',
@@ -1175,6 +1267,105 @@ await describe({
               translationUnnamed: 'Error: unreachable: no walk step names translation block 0, and there are '
                 + `1${coverageInvariant}`,
               empty: `Error: unreachable: no walk step names original block 0, and there are 2${coverageInvariant}`,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'groupNodesSealed on an archive page whose note seals a span',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES a translation block ahead of the sealing note that no paired run can take, naming the block '
+            + 'and why nothing takes it, where it was dropped without a word',
+          fn: async () => {
+            /**
+             What grouping the page refused with.
+             */
+            const refusal = caught(function groupsThePage(): unknown {
+              return groupSealedPage({
+                sourceText: LETTER_SOURCE,
+                targetText: GREETED_ARCHIVE,
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(UnplacedTranslationBlocksError,);
+            expect(String(refusal,),).toBe(
+              'UnplacedTranslationBlocksError: translation block block/0 can join no run: no paired run stands before '
+              + 'it, and the sealed run after it takes nothing in, so the section would leave it out of every slice',
+            );
+            expect(refusalText({ error: refusal, },),).toBe(
+              'translation block block/0 can join no run: no paired run stands before it, and the sealed run after it '
+              + 'takes nothing in, so the section would leave it out of every slice',
+            );
+          },
+        },),
+
+        it({
+          name: 'REFUSES the same page through prepareDocumentPair in the grouping\'s words, not as a block that '
+            + 'reached no slice',
+          fn: async () => {
+            /**
+             What preparing the page refused with.
+             */
+            const refusal = caught(function preparesThePage(): unknown {
+              return prepareDocumentPair({
+                sourceText: LETTER_SOURCE,
+                targetText: GREETED_ARCHIVE,
+                sealArchiveOriginal: true,
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(UnplacedTranslationBlocksError,);
+            expect(String(refusal,),).toBe(
+              'UnplacedTranslationBlocksError: translation block block/0 can join no run: no paired run stands before '
+              + 'it, and the sealed run after it takes nothing in, so the section would leave it out of every slice',
+            );
+            expect(refusalText({ error: refusal, },),).toBe(
+              'translation block block/0 can join no run: no paired run stands before it, and the sealed run after it '
+              + 'takes nothing in, so the section would leave it out of every slice',
+            );
+          },
+        },),
+
+        it({
+          name: 'GROUPS a page whose greeting has an original of its own ahead of the sealing note into one paired '
+            + 'run and takes the letter\'s original away with the seal',
+          fn: async () => {
+            /**
+             What grouping the page answers.
+             */
+            const {
+              runs,
+              sealedSourceIds,
+            } = groupSealedPage({
+              sourceText: PAIRED_GREETING_SOURCE,
+              targetText: GREETED_ARCHIVE,
+            },);
+            expect({
+              runs: runs.map(function idsOfRun(run,): unknown {
+                return {
+                  kind: run.kind,
+                  source: run.sourceRun.map(function toId(node,): string {
+                    return node.id;
+                  },),
+                  target: (run.kind === 'insertion')
+                    ? []
+                    : run.targetRun.map(function toId(node,): string {
+                      return node.id;
+                    },),
+                };
+              },),
+              sealedSourceIds: [...sealedSourceIds,],
+            },).toStrictEqual({
+              runs: [
+                {
+                  kind: 'paired',
+                  source: ['block/0',],
+                  target: ['block/0',],
+                },
+              ],
+              sealedSourceIds: ['block/1',],
             },);
           },
         },),

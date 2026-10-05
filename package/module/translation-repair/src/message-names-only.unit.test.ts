@@ -181,6 +181,7 @@ const MARKED_CLASSES: readonly string[] = [
   'UnnameableToolError',
   'UnplaceableArtifactError',
   'UnparseablePageError',
+  'UnplacedTranslationBlocksError',
   'UnpositionedContainerError',
   'UnpositionedNodeError',
   'UnpreparedSliceError',
@@ -302,6 +303,15 @@ const NAMED_PARTS: Record<string, string> = {
   'wordForCount({ count: charsSeen, one: \'character\', many: \'characters\', },)':
     'noun agreeing with a count, both forms authored here',
   'wordForCount({ count: seatCount, one: \'seat\', many: \'seats\', },)':
+    'noun agreeing with a count, both forms authored here',
+  'wordForCount({ count: blockIds.length, one: \'block\', many: \'blocks\', },)':
+    'noun agreeing with a count, both forms authored here',
+  'wordForCount({ count: blockIds.length, one: \'it\', many: \'them\', },)':
+    'pronoun agreeing with a count, both forms authored here',
+  'blockIds.join(\', \',)': 'positional block ids (block/N) of one section, naming places and never wording',
+  'wordForCount({ count: droppedCount, one: \'destination\', many: \'destinations\', },)':
+    'noun agreeing with a count, both forms authored here',
+  'wordForCount({ count: slices.length, one: \'slice\', many: \'slices\', },)':
     'noun agreeing with a count, both forms authored here',
   'wordForCount({ count: sampled, one: \'issue carries\', many: \'issues carry\', },)':
     'noun and verb agreeing with a count, both forms authored here',

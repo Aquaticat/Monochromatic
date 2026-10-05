@@ -732,8 +732,8 @@ await describe({
           },
         },),
         it({
-          name: 'LOGS A TRANSPORT THAT REJECTS as the network failing at the endpoint, where it logged the class of '
-            + 'the failure alone, and contributes no line',
+          name: 'LOGS A TRANSPORT THAT REJECTS as the request to the endpoint failing before any answer, in the '
+            + 'refusal\'s own words, where it logged the class of the failure alone, and contributes no line',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'work-title-lookup-', },);
             const {

@@ -253,17 +253,23 @@ export function censusFileText(
 /**
  An earlier census file that does not read as one this census wrote.
 
+ A STATED REFUSAL, since the baseline is a file the operator named: one that
+ is missing, a directory, not JSON or not a census is the operator's mistake,
+ and the command reports it in these words, with no frames and no talk of a
+ bug, as it does a usage line.
+
  @example
  ```ts
  throw new CensusBaselineError({ path: '/tmp/census.json', says: 'it has no stretches', },);
  ```
  */
-export class CensusBaselineError extends Error {
+export class CensusBaselineError extends StatedRefusalError {
   /**
-   Declares this message safe to forward: it names a file the operator named
+   Declared here as well as inherited, so the source scan that keeps the
+   marked-class inventory sees it: the message names a file the operator named
    and a shape this module describes.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Builds the refusal.
@@ -279,7 +285,7 @@ export class CensusBaselineError extends Error {
    new CensusBaselineError({ path: '/tmp/census.json', says: 'it has no stretches', },);
    ```
    */
-  constructor({
+  public constructor({
     path,
     says,
     cause,
@@ -288,11 +294,11 @@ export class CensusBaselineError extends Error {
     readonly says: string;
     readonly cause?: unknown;
   },) {
-    super(
-      `baseline ${path} does not read as a census this command wrote: ${says}`,
+    super({
+      says: `baseline ${path} does not read as a census this command wrote: ${says}`,
       // Conditional spread keeps cause absent when none was supplied.
-      ...((cause === undefined) ? [] : [{ cause, },]),
-    );
+      ...((cause === undefined) ? {} : { cause, }),
+    },);
     this.name = 'CensusBaselineError';
   }
 }

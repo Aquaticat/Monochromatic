@@ -14,8 +14,9 @@ import {
   type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
 import {
-  assertPairsNameBlocks,
   type BlockPairingError,
+  type FreeOrderBlocks,
+  readBlockPairing,
   requireBlockPairingRefusal,
 } from './pair-blocks-wire.ts';
 import { claimMediaAdjacentTargets, } from './pair-media-adjacency.ts';
@@ -31,11 +32,16 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 //
 // A CACHED PAIRING IS READ AGAINST THE BLOCKS BEFORE ANYTHING USES IT. The
 // cache reader checks a record's shape only (`isPairList`), and the key names
-// the blocks' text, so a record that names a block its section lacks was not
-// written by this pipeline for this question: a damaged or hand-edited file.
-// It is a miss, said on a warning, and the section is bought again; used as
-// it stood, it reached the media and definition readers, which stopped the
-// run with a missing-value error naming nothing.
+// the blocks' text, so a record that names a block its section lacks, moves
+// backwards, repeats a correspondence or pairs a definition with a body block
+// was not written by this pipeline for this question: a damaged or hand-edited
+// file. It is a miss, said on a warning, and the section is bought again. It
+// is read through `readBlockPairing`, the whole reader a fresh reply goes
+// through, with the question's own footnote definitions as the blocks whose
+// order is free. Used as it stood, a record naming a block the section lacks
+// stopped the run with a missing-value error naming nothing, a backwards one
+// stopped the slicer with a coverage error far from the cache, and a repeated
+// or mixed one was sliced without a word.
 
 /**
  The refusal of a cached pairing read against the section's blocks, or
@@ -47,6 +53,9 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 
  @param targetCount - translation blocks of the section
 
+ @param freeOrder - the section's footnote definitions, whose order the
+ reader leaves free as it does for a fresh reply
+
  @returns The refusal in a one-element list, or an empty list when the
  record fits
 
@@ -55,7 +64,7 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 
  @example
  ```ts
- const [misfit,] = cachedPairingMisfit({ pairs: cached.pairs, sourceCount: 2, targetCount: 2, },);
+ const [misfit,] = cachedPairingMisfit({ pairs: cached.pairs, sourceCount: 2, targetCount: 2, freeOrder, },);
  ```
  */
 function cachedPairingMisfit(
@@ -63,17 +72,20 @@ function cachedPairingMisfit(
     pairs,
     sourceCount,
     targetCount,
+    freeOrder,
   }: {
     readonly pairs: PairedSectionRecord['pairs'];
     readonly sourceCount: number;
     readonly targetCount: number;
+    readonly freeOrder: FreeOrderBlocks;
   },
 ): readonly BlockPairingError[] {
   try {
-    assertPairsNameBlocks({
-      pairs,
+    readBlockPairing({
+      value: { pairs, },
       sourceCount,
       targetCount,
+      freeOrder,
     },);
     return [];
   }
@@ -86,9 +98,10 @@ function cachedPairingMisfit(
  Prepares one already-aligned parent without buying unrelated section or block questions.
  Singletons and empty sides retain their zero-call paths.
  A cached section reuses its stored relations and findings without asking again.
- A cached record that names a block the section lacks is a miss: a warning
- says so in the refusal's words, and the roster is asked as for a section
- never cached.
+ A cached record the whole block reader refuses (a block the section lacks,
+ a move backwards, a repeated correspondence, a definition paired with a body
+ block) is a miss: a warning says so in the refusal's words, and the roster is
+ asked as for a section never cached.
 
  @param client - existing production model client
 
@@ -221,6 +234,7 @@ export async function prepareBlockPairing(
       pairs: cached.pairs,
       sourceCount: sourceNodes.length,
       targetCount: targetNodes.length,
+      freeOrder,
     },);
   if (misfit !== undefined)
     pl.warn(`section ${String(pairIndex,)} misses the block-pairing cache: the record under ${key} does not fit its `

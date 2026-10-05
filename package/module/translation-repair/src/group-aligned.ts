@@ -651,6 +651,9 @@ function walkIntoRuns(
  and `alignBlocks` walks every block, so only a walk built another way can
  carry either
 
+ @throws `UnplacedTranslationBlocksError` (`group-merge.ts`) when a seal stands in the
+ section and translation blocks ahead of it have no paired run to join
+
  @example
  ```ts
  const { runs, sealedSourceIds, } = groupNodesSealed({

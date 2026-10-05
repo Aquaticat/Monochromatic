@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 
 import { isAsciiAlphanumeric, } from '../ascii-letters.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Grading sheet path
 // Decides where a grading sheet is written, and refuses to write over one that
@@ -134,11 +135,11 @@ const DRAW_OUTPUTS: Readonly<Record<SheetKind, {
 
  @internal
  */
-export class GradedSheetExistsError extends Error {
+export class GradedSheetExistsError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names the sheet path and nothing inside it.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Builds the refuse-to-clobber failure.
@@ -146,7 +147,7 @@ export class GradedSheetExistsError extends Error {
    @param path - sheet that already exists
    */
   constructor({ path, }: { readonly path: string; },) {
-    super(existingSheetMessage({ path, },),);
+    super({ says: existingSheetMessage({ path, },), },);
     this.name = 'GradedSheetExistsError';
   }
 }
@@ -161,11 +162,11 @@ export class GradedSheetExistsError extends Error {
 
  @internal
  */
-export class UnsafeSeedError extends Error {
+export class UnsafeSeedError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names the seed the operator asked for.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Builds the rejected-seed failure.
@@ -173,7 +174,7 @@ export class UnsafeSeedError extends Error {
    @param seed - seed that cannot become a file name
    */
   constructor({ seed, }: { readonly seed: string; },) {
-    super(unsafeSeedMessage({ seed, },),);
+    super({ says: unsafeSeedMessage({ seed, },), },);
     this.name = 'UnsafeSeedError';
   }
 }

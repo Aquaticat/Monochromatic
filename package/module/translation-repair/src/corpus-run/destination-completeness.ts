@@ -1,4 +1,5 @@
 import type { ChunkPair, } from '../chunk-document.ts';
+import { wordForCount, } from '../count-word.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { sameAddress, } from './destination-renderings.ts';
 import {
@@ -308,8 +309,16 @@ function whereCarried(
   },);
   return (slices.length === 0)
     ? 'carried by the original outside every slice'
-    : `carried by the original in slice ${slices.map(String,)
-      .join(', ',)}`;
+    : `carried by the original in ${
+      wordForCount({
+        count: slices.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } ${
+      slices.map(String,)
+        .join(', ',)
+    }`;
 }
 
 /**
@@ -357,7 +366,13 @@ export class DroppedDestinationError extends Error {
     },
   ) {
     super(
-      `entry ${entryId} would drop ${String(droppedCount,)} source destination(s), ${whereCarried({ traces, },)}`,
+      `entry ${entryId} would drop ${String(droppedCount,)} source ${
+        wordForCount({
+          count: droppedCount,
+          one: 'destination',
+          many: 'destinations',
+        },)
+      }, ${whereCarried({ traces, },)}`,
     );
     this.name = 'DroppedDestinationError';
     this.entryId = entryId;

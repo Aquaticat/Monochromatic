@@ -58,15 +58,27 @@ export class WorkTitleLookupError extends Error {
   /**
    Builds the refusal.
 
-   @param detail - phrase the throw site authors, an HTTP status or the check the answer failed, never text read from the answer
+   @param detail - phrase the throw site authors, an HTTP status, the check the answer failed or the network failing, never text read from the answer
+
+   @param cause - failure the transport raised, kept for whoever inspects the refusal and never repeated in the message
 
    @example
    ```ts
    throw new WorkTitleLookupError({ detail: 'responded 401', },);
    ```
    */
-  constructor({ detail, }: { readonly detail: string; },) {
-    super(`search ${detail}`,);
+  constructor({
+    detail,
+    cause,
+  }: {
+    readonly detail: string;
+    readonly cause?: unknown;
+  },) {
+    super(
+      `search ${detail}`,
+      // Conditional spread keeps cause absent when none was supplied.
+      ...((cause === undefined) ? [] : [{ cause, },]),
+    );
     this.name = 'WorkTitleLookupError';
   }
 }
@@ -119,6 +131,106 @@ export function hitsOf(
 }
 
 /**
+ Sends one request, a refusal naming the endpoint where the transport rejects
+ before any answer comes back: the network failing, or a request the
+ transport will not send.
+
+ AN ABORT STAYS AN ABORT. A transport rejects with the signal's reason when
+ the caller stopped it, and that is the caller's decision, not a network
+ failure, so it passes on unchanged.
+
+ @param fetchFn - transport, `fetch` in production and a stub in tests
+
+ @param init - request the transport is given, its signal the caller's
+
+ @returns The endpoint's answer
+
+ @throws The transport's rejection unchanged when the caller's signal aborted
+
+ @throws {@link WorkTitleLookupError} when the transport rejected with the
+ signal still standing (DNS failing, a connection resetting and a header
+ value the transport will not send among the causes), the rejection kept as
+ its cause
+
+ @example
+ ```ts
+ const response = await sendSearch({ fetchFn: fetch, init: { method: 'POST', signal, }, },);
+ ```
+ */
+async function sendSearch(
+  {
+    fetchFn,
+    init,
+  }: {
+    readonly fetchFn: typeof fetch;
+    readonly init: RequestInit;
+  },
+): Promise<Response> {
+  try {
+    return await fetchFn(
+      EXA_SEARCH_URL,
+      init,
+    );
+  } catch (error) {
+    /**
+     The caller's abort, absent when the request carried none.
+     */
+    const { signal, } = init;
+    if (signal?.aborted === true)
+      throw error;
+    throw new WorkTitleLookupError({
+      detail: `request to ${EXA_SEARCH_URL} failed before any answer came back: either the network could not be reached, or the transport refused to send the request, as it does for a key or header holding a line break; check the connection and the key`,
+      cause: error,
+    },);
+  }
+}
+
+/**
+ Reads the answer's body as JSON, a refusal naming the endpoint where the
+ connection fails while the body arrives.
+
+ A BODY THAT IS NOT JSON is the parser's `SyntaxError` and passes on
+ unchanged: its message quotes the text it refused, so the log names its class
+ alone (ledger B166). An abort passes on unchanged too.
+
+ @param response - the endpoint's answer, status already checked
+
+ @param signal - the call's abort
+
+ @returns The parsed body
+
+ @throws The caller's abort, or a parse failure, unchanged
+
+ @throws {@link WorkTitleLookupError} when the connection failed while the
+ body was read, the failure kept as its cause
+
+ @example
+ ```ts
+ const parsed = await readSearchBody({ response, signal, },);
+ ```
+ */
+async function readSearchBody(
+  {
+    response,
+    signal,
+  }: {
+    readonly response: Response;
+    readonly signal: AbortSignal;
+  },
+): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch (error) {
+    if (signal.aborted || (error instanceof SyntaxError))
+      throw error;
+    throw new WorkTitleLookupError({
+      detail: `lost the network while ${EXA_SEARCH_URL} was answering`,
+      cause: error,
+    },);
+  }
+}
+
+/**
  Asks the search endpoint about one title.
 
  @param apiKey - key sent as `x-api-key`, never logged
@@ -132,7 +244,8 @@ export function hitsOf(
  @returns Hits the endpoint returned
 
  @throws {@link WorkTitleLookupError} when the endpoint answers anything but
- 2xx or a body without a results array
+ 2xx or a body without a results array, or the network fails before or while
+ it answers; the caller's abort passes on as it came
 
  @example
  ```ts
@@ -155,9 +268,9 @@ export async function searchWorkTitle(
   /**
    Endpoint's answer.
    */
-  const response = await fetchFn(
-    EXA_SEARCH_URL,
-    {
+  const response = await sendSearch({
+    fetchFn,
+    init: {
       method: 'POST',
       headers: {
         'x-api-key': apiKey,
@@ -177,7 +290,7 @@ export async function searchWorkTitle(
       },),
       signal,
     },
-  );
+  },);
   if (!response.ok) {
     // The body is not read: it is the endpoint's own words, which a refusal
     // must not carry (ledger B166).
@@ -186,7 +299,10 @@ export async function searchWorkTitle(
   /**
    Parsed body.
    */
-  const parsed: unknown = await response.json();
+  const parsed = await readSearchBody({
+    response,
+    signal,
+  },);
   if (!isJsonRecord(parsed,)) {
     throw new WorkTitleLookupError({ detail: 'answered with a body that is not an object', },);
   }

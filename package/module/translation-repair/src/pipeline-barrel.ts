@@ -212,6 +212,7 @@ export {
   groupNodesSealed,
   type SealedRun,
 } from './group-aligned.ts';
+export { UnplacedTranslationBlocksError, } from './group-merge.ts';
 export {
   fenceForMarkdown,
   longestBacktickRun,

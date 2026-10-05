@@ -110,6 +110,10 @@ import { unclaimedOutsideAlignment, } from './preparation-unclaimed.ts';
 
  @returns Slices, governance, declared names and alignment findings
 
+ @throws `UnplacedTranslationBlocksError` (`group-merge.ts`), let through from
+ the grouping, when a sealed section holds translation blocks ahead of its
+ seal that no paired run can take
+
  @example
  ```ts
  const { slices, lineStructuredSliceIndices, } = prepareDocumentPair({ sourceText, targetText, },);

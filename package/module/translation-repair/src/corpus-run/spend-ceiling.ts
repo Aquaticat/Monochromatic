@@ -1,4 +1,5 @@
 import type { ProviderName, } from '../provider-name.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { isDecimalText, } from '../whole-number-text.ts';
 
 //region Spend ceiling
@@ -42,12 +43,12 @@ export const SPEND_CEILING_PROVIDER: ProviderName = 'openrouter';
 /**
  Raised when the override is present but is not a usable amount.
  */
-export class SpendCeilingOverrideError extends Error {
+export class SpendCeilingOverrideError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names the variable and repeats
    the value the operator set in it.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names the variable, what it held, and why that cannot be a ceiling.
@@ -60,12 +61,12 @@ export class SpendCeilingOverrideError extends Error {
    ```
    */
   constructor({ value, }: { readonly value: string; },) {
-    super(
-      `${SPEND_CEILING_VAR} must be a non-negative number of USD; received ${JSON.stringify(value,)}.`
+    super({
+      says: `${SPEND_CEILING_VAR} must be a non-negative number of USD; received ${JSON.stringify(value,)}.`
         + ' This is the ceiling that stops a run spending past its allowance, so an unreadable'
         + ' value is refused rather than quietly replaced by the default: an operator who set it'
         + ' believes the run is bounded the way they asked for.',
-    );
+    },);
     this.name = 'SpendCeilingOverrideError';
   }
 }

@@ -213,10 +213,10 @@ export async function openSliceCache(
  SHAPE ONLY. What a pairing must satisfy against the blocks it describes is
  `readBlockPairing`'s question, which needs the blocks. A cached block pairing
  is read against its section's blocks by `prepareBlockPairing`, through
- `assertPairsNameBlocks`, the check `readBlockPairing` reads a reply's indices
- through, before anything uses it; a record that names a block its section
- lacks is a miss there. A cached section pairing, which this test reads
- too, gets no such read: `buySectionPairing` hands it on as stored.
+ `readBlockPairing` itself, before anything uses it; a record that reader
+ refuses is a miss there. A cached section pairing, which this test reads
+ too, is read the same way by `buySectionPairing`, through
+ `readSectionPairing`.
 
  @param value - candidate list, still unknown in type
 

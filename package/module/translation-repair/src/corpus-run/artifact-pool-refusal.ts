@@ -1,6 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { wordForCount, } from '../count-word.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { GenerationCensus, } from './artifact-generation.ts';
 import { abbreviate, } from './artifact-provenance.ts';
 
@@ -223,11 +224,11 @@ function emptyCensusLines(
 /**
  Raised when a pool spans pipeline generations and the caller named none.
  */
-export class MixedGenerationError extends Error {
+export class MixedGenerationError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it counts generations and names none of their contents.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names every generation present and how to proceed.
@@ -251,8 +252,8 @@ export class MixedGenerationError extends Error {
     const generationCount = census.groups
       .length;
 
-    super(
-      [
+    super({
+      says: [
         `This artifacts directory holds ${
           String(census.total,)
         } settled entries across ${
@@ -273,7 +274,7 @@ export class MixedGenerationError extends Error {
         'excluded and reported. To pool every generation deliberately, ask for',
         'it explicitly.',
       ].join('\n',),
-    );
+    },);
     this.name = 'MixedGenerationError';
   }
 }
@@ -281,11 +282,11 @@ export class MixedGenerationError extends Error {
 /**
  Raised when generation filtering leaves no entry to pool at all.
  */
-export class EmptyPoolError extends Error {
+export class EmptyPoolError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names a commit and a count.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names why the pool came out empty and what would refill it.
@@ -319,8 +320,8 @@ export class EmptyPoolError extends Error {
       ],
     },);
 
-    super(
-      [
+    super({
+      says: [
         ...(census.total === 0
           ? emptyCensusLines({ census, },)
           : [
@@ -360,7 +361,7 @@ export class EmptyPoolError extends Error {
         'still renders. Accumulate entries under the required pipeline, or',
         'require an earlier commit that the settled entries actually contain.',
       ].join('\n',),
-    );
+    },);
     this.name = 'EmptyPoolError';
   }
 }

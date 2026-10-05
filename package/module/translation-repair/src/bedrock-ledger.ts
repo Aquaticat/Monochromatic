@@ -14,6 +14,7 @@ import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { StatedRefusalError, } from './stated-refusal.ts';
 import { isDecimalText, } from './whole-number-text.ts';
 import { readTextOrEmptyIfMissing, } from './read-text-if-present.ts';
 import {
@@ -102,12 +103,12 @@ export function defaultBedrockLedgerPath(
  throw new BedrockCreditOverrideError({ value: 'plenty', },);
  ```
  */
-export class BedrockCreditOverrideError extends Error {
+export class BedrockCreditOverrideError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names the variable and repeats
    the value the operator set in it.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names the variable, what it held, and why that cannot be a credit.
@@ -120,9 +121,9 @@ export class BedrockCreditOverrideError extends Error {
    ```
    */
   public constructor({ value, }: { readonly value: string; },) {
-    super(
-      `${BEDROCK_CREDIT_USD_VAR} must be a non-negative number of USD; it holds ${JSON.stringify(value,)}`,
-    );
+    super({
+      says: `${BEDROCK_CREDIT_USD_VAR} must be a non-negative number of USD; it holds ${JSON.stringify(value,)}`,
+    },);
     this.name = 'BedrockCreditOverrideError';
   }
 }
