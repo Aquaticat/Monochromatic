@@ -6,10 +6,11 @@ import {
   validateName,
   VM_PREFIX,
 } from './config.ts';
+import { libvirtTools, } from './libvirt-tools.ts';
 
 /**
  Logger root for mvm after removing the package log shim.
- 
+
  @example
  ```ts
  const rl = tagged({ tag: someFunction.name, l, },);
@@ -18,12 +19,13 @@ import {
 const l = tagged({ tag: 'mvm', },);
 
 /**
- Opens an interactive serial console session to a running VM via `virsh console`.
+ Opens an interactive serial console session to a running VM via `virsh console`,
+ through the command {@link libvirtTools} chose for this host.
  The VM is configured with auto-login on ttyS0, so no credentials are needed.
  Press `Ctrl+]` to disconnect from the console.
- 
+
  @param name - VM name without the mvm- prefix
- 
+
  @example
  ```ts
  await shell({ name: 'dev-01' });
@@ -42,13 +44,22 @@ export async function shell({ name, }: { readonly name: string; },): Promise<voi
    Fully prefixed VM name expected by virsh commands.
    */
   const fullName = `${VM_PREFIX}${name}`;
+  /**
+   Command that runs virsh on this host.
+   */
+  const { virsh: tool, } = await libvirtTools();
+  /**
+   Executable and the arguments that precede virsh's own.
+   */
+  const [command, ...leading] = tool.argv;
 
   rl.info(`connecting to VM ${name} via console (press Ctrl+] to disconnect, not exit)`,);
 
   try {
     await nanoSpawn(
-      'virsh',
+      command,
       [
+        ...leading,
         '--connect',
         LIBVIRT_URI,
         'console',

@@ -37,7 +37,7 @@ import {
   ensureWinFsp,
 } from './image.ts';
 import type { WindowsImageSpec, } from './registry.ts';
-import { spawn, } from './spawn.ts';
+import { qemuImg, } from './qemu-img.ts';
 import {
   TEMPLATE_VM_NAME,
   templateVmGuard,
@@ -134,8 +134,7 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
   await using _cleanup = templateVmGuard(rl,);
 
   rl.info('creating empty disk for Windows installation...',);
-  await spawn({
-    command: 'qemu-img',
+  await qemuImg({
     args: [
       'create',
       '-f',
@@ -209,8 +208,7 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
   },);
 
   rl.info('converting disk to standalone template image...',);
-  await spawn({
-    command: 'qemu-img',
+  await qemuImg({
     args: [
       'convert',
       '-O',

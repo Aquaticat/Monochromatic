@@ -64,6 +64,8 @@ type ProcessEntry = {
  - `launchFailure`: standard-error text making every launch fail.
  - `loseLaunchedEntry`: when true a launch reports a process ID but the agent keeps no entry for it.
  - `domstate`: state reported by `domstate`; an object with a `failure` text makes it fail.
+ - `domains`: list of `{ name, state }` printed by `list --all`.
+ - `connectFailure`: when true every command fails the way virsh does without a session daemon.
  */
 type Scenario = Readonly<Record<string, unknown>>;
 
@@ -729,6 +731,57 @@ async function agentCommand({
 
 //endregion Guest agent commands
 
+//region Domain listing
+
+/**
+ Text virsh printed on this host with no session daemon and on-demand start disabled, recorded on 2026-10-05.
+ */
+const CANNOT_CONNECT = [
+  'error: failed to connect to the hypervisor',
+  'error: Failed to connect socket to \'/run/user/1000/libvirt/virtqemud-sock\': No such file or directory',
+].join('\n',);
+
+/**
+ Handles `list --all` and `list --all --name` in virsh's output layout.
+
+ @param namesOnly - Whether only names are printed, one per line
+
+ @param scenario - Scenario whose `domains` are listed
+ */
+function listDomains({
+  namesOnly,
+  scenario,
+}: {
+  readonly namesOnly: boolean;
+  readonly scenario: Scenario;
+},): void {
+  /**
+   Domains the scenario defines; entries without a name are ignored.
+   */
+  const domains = Array.isArray(scenario.domains,)
+    ? scenario.domains
+      .filter(isRecord,)
+    : [];
+  /**
+   Output lines: bare names, or virsh's table with its header and separator.
+   */
+  const lines = namesOnly
+    ? domains.map(function nameOf(domain,) {
+      return String(domain.name,);
+    },)
+    : [
+      ' Id   Name       State',
+      '--------------------------',
+      ...domains.map(function rowOf(domain,) {
+        return ` -    ${String(domain.name,)}   ${String(domain.state,)}`;
+      },),
+    ];
+  process.stdout
+    .write(`${lines.join('\n',)}\n\n`,);
+}
+
+//endregion Domain listing
+
 //region Dispatch
 
 /**
@@ -755,7 +808,16 @@ await appendFile(
  */
 const scenario = await readScenario();
 
-if (subcommand === 'qemu-agent-command') {
+if (scenario.connectFailure === true) {
+  fail(CANNOT_CONNECT,);
+}
+else if (subcommand === 'list') {
+  listDomains({
+    namesOnly: tokens.includes('--name',),
+    scenario,
+  },);
+}
+else if (subcommand === 'qemu-agent-command') {
   await agentCommand({
     scenario,
     tokens,

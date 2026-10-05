@@ -25,7 +25,7 @@ import {
   CUSTOM_GUEST_DEFAULTS,
   resolveImage,
 } from './registry.ts';
-import { spawn, } from './spawn.ts';
+import { qemuImg, } from './qemu-img.ts';
 import { waitForGuestAgent, } from './virsh-wait.ts';
 import {
   defineVm,
@@ -134,8 +134,7 @@ export async function clone(
   }
 
   rl.info('copying disk (this may take a moment)...',);
-  await spawn({
-    command: 'qemu-img',
+  await qemuImg({
     args: [
       'convert',
       '-O',

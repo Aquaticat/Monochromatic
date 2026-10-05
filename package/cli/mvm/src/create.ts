@@ -21,7 +21,7 @@ import {
   DEFAULT_IMAGE,
   resolveImage,
 } from './registry.ts';
-import { spawn, } from './spawn.ts';
+import { qemuImg, } from './qemu-img.ts';
 import { ensureTemplate, } from './template.ts';
 import { waitForGuestAgent, } from './virsh-wait.ts';
 import {
@@ -175,8 +175,7 @@ export async function create({
     === 'windows' ? WINDOWS_DISK_SIZE : DEFAULT_DISK_SIZE;
 
   rl.info('creating disk from template image...',);
-  await spawn({
-    command: 'qemu-img',
+  await qemuImg({
     args: [
       'create',
       '-f',

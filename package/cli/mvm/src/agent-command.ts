@@ -10,9 +10,10 @@
  @module
  */
 
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { failedCommandStderr, } from './spawn.ts';
+import { CommandFailedError, } from './spawn-errors.ts';
 import { virsh, } from './virsh.ts';
 
 /**
@@ -304,6 +305,11 @@ export function asciiJson(value: unknown,): string {
 const AGENT_ANSWERED_WITH_ERROR = 'unable to execute QEMU agent command';
 
 /**
+ Seconds virsh gets on top of the agent timeout before the call counts as stuck.
+ */
+const VIRSH_MARGIN_SECONDS = 30;
+
+/**
  Sends one command to the guest agent of a domain and returns its `return` value.
 
  @param domain - Prefixed libvirt domain name the agent runs in
@@ -361,13 +367,18 @@ export async function agentCommand({
             ...(parameters === undefined ? {} : { arguments: parameters, }),
           },),
         ],
+        deadlineMs: (timeoutSeconds + VIRSH_MARGIN_SECONDS) * MS_PER_SECOND,
       },);
     }
     catch (error) {
+      // Only a virsh run that failed says something about the agent; a missing executable or an unreachable libvirt is the caller's to see as is.
+      if (!(error instanceof CommandFailedError))
+        throw error;
+
       /**
        Standard-error text of the failed virsh call; decides which error the caller sees.
        */
-      const stderr = failedCommandStderr(error,);
+      const { stderr, } = error;
       if (stderr.includes(AGENT_ANSWERED_WITH_ERROR,)) {
         rl.debug(`${execute} in ${domain} answered with an error: ${stderr.trim()}`,);
         throw new GuestAgentReplyError({
