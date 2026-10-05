@@ -139,8 +139,11 @@ bound to crop hashes re-derived from the raw captures;
 offline replay of the action matrix from its 64 retained captures;
 publication of the witnesses,
 native verification and viewer with rejection controls;
-consumer tests with three guard-removal proofs;
-four-context offline browser verification with twelve inspected
+an independent read-only review of the viewer's builder and test,
+whose findings are closed;
+consumer tests with one or more rejected inputs for each of 86 rules and a
+deletion proof for every rule;
+four-context offline browser verification with sixteen inspected
 screenshots;
 and the review-verification digest.
 `verify-first-run-final-documents.ts` now checks the scan artifact.

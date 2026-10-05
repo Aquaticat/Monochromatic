@@ -289,18 +289,32 @@ missing action context and a changed replay binding before any public write.
 `questions/scan-indicator.html` are published.
 The viewer states the inspection findings from the witness data.
 Its build and exact validation passed.
-Consumer positives,
-fresh exact-cohort,
-authored-state and ellipsis-binding guard removals,
-and restored positives passed.
+
+An independent read-only review by a separate agent session then found
+gaps in the first builder and test:
+coerced type comparisons,
+unchecked bytes after the PNG end chunk,
+geometry not tied to the crop,
+ballot and offline patterns that missed unquoted and non-textarea forms,
+thirteen guard deletions the test did not notice,
+and some page statements beyond what the checks enforced.
+The published builder now holds 86 named rules,
+re-measures label clearance from the embedded images at validation,
+and limits the findings paragraph to validated data.
+The consumer test rejects 106 changed inputs,
+at least one per rule.
+Each rule and the HTML escape was deleted once in a disposable copy,
+and the test failed on that rule by name every time.
+
 Four offline Chromium contexts decoded and opened all 32 images,
 exercised every environment combination,
 status notes,
 optional observations,
 inert notes,
 stale-reply invalidation and modal zoom/pan/reset/focus.
-All twelve review,
-gallery and modal screenshots were inspected.
+All sixteen review,
+gallery,
+open-boundary and modal screenshots were inspected.
 Closed-page axe checks report zero violations or incomplete results;
 open-dialog,
 Firefox ESR140 and native accessibility acceptance remain untested.

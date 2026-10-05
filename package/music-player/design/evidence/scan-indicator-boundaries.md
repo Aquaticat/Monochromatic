@@ -218,15 +218,39 @@ the padding control,
 fixture reports,
 lint totals and restoration.
 The [offline viewer](../questions/scan-indicator.html) states the inspection
-findings from that witness data.
-Its build and validation,
-consumer tests and exact-cohort,
-authored-state and ellipsis-binding guard-removal proofs passed.
+findings from that witness data and carries its artifact provenance.
+Its builder holds 86 named rules,
+one per line.
+Validation re-measures every label clearance from the embedded images,
+so those figures are not only asserted by the manifest.
+The status readings stay read by eye and bound by hash.
+The consumer test rejects 106 changed inputs,
+at least one per rule,
+and checks HTML escaping behind the rule that normally hides it.
+Each of the 86 rules and the escape was deleted once in a disposable copy;
+the test failed on that rule by name every time.
 The [review verification record](../questions/evidence/scan-indicator-review-verification.json)
 binds exact viewer,
 builder,
 test,
 manifest and native-result digests.
+
+An independent read-only review by a separate agent session,
+given the code without this session's conclusions,
+prompted that rule-per-line form.
+It found that string font scales and array panels passed coerced
+comparisons,
+that bytes after the PNG end chunk were accepted,
+that bar and player geometry was not tied to the crop,
+that unquoted radio inputs,
+required selects and CSS imports passed the ballot and offline patterns,
+that thirteen guard deletions left the earlier test passing,
+and that some page statements claimed more than the checks enforced.
+All of these are closed in the published builder,
+test and page.
+Measured rectangles are still checked for mutual consistency and against
+the crop,
+not re-derived from the device.
 
 Four offline Chromium desktop/mobile light/dark contexts exercised all
 32 previews,
@@ -237,8 +261,9 @@ inert adversarial notes,
 stale-reply invalidation and modal zoom/pan/reset/focus.
 All distinct previews were opened in the first desktop/light pass;
 representative modal controls were separately exercised in every context.
-The twelve resulting review,
-gallery and modal screenshots were inspected.
+The sixteen resulting review,
+gallery,
+open-boundary and modal screenshots were inspected.
 Each closed-page axe audit had 22 passes,
 40 inapplicable checks and no violations or incomplete results.
 Open-dialog axe,
