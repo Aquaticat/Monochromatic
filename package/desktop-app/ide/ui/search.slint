@@ -133,13 +133,8 @@ export component ProjectSearch inherits Rectangle {
                     TouchArea {
                         width: parent.width;
                         height: parent.height;
-                        private property <[SearchEntry]> pressed-entries;
-                        pointer-event(event) => {
-                            if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
-                                self.pressed-entries = root.entries;
-                            }
-                        }
-                        clicked => { if self.pressed-entries == root.entries { root.choose(index); } }
+                        // A new result model recreates these repeated items and cancels their pending clicks.
+                        clicked => { root.choose(index); }
                     }
                 }
             }
