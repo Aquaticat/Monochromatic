@@ -7108,6 +7108,25 @@ The reach census (`~/temp/agent/mimo-trial/reach-canadian2.log`)
 reads `ran 0, still cold 2`.
 No B entry found.
 
+The sixty-ninth cluster of that census,
+`corpus-run/publish`,
+against `census-cLOz3U` at `63adf51b8`:
+3 line stretches over `publish-fixed.ts`
+(`320`,
+`321`).
+Left:
+the three trace fallbacks
+(the dropped-destination warn's `trace?.sourceSlices ?? []`
+and siblings):
+the trace's lists go absent where the address
+is dropped from the page but absent
+from every slice's text,
+a fixture whose artifact destination fields
+this pass did not build.
+No case landed;
+the reach was not run.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

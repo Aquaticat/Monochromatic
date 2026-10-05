@@ -700,6 +700,27 @@ so a fresh context resumes from this file alone.
   the `corpus-run/publish` batch.
 
 - 2026-10-05,
+  01:20 UTC:
+  the `corpus-run/publish` batch left its 3 arms documented
+  (`publish-fixed.ts:320`,
+  `321`):
+  the dropped-destination warn's trace fallbacks,
+  whose lists go absent where the address is dropped
+  from the page but absent from every slice's text,
+  a fixture whose artifact destination fields
+  this pass did not build.
+  Counts at the close:
+  the full suite 1,564 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-publish-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-publish-scans.log`).
+  This line lands in the trial-log commit that follows.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the ranking's next actionable cluster.
+
+- 2026-10-05,
   01:00 UTC:
   the next batch's baseline census taken at commit `455622520`:
   `census written to ~/.cache/translation-repair/coverage/census-2aJKLC/census.json`
