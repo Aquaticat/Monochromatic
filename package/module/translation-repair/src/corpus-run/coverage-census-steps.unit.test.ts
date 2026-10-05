@@ -3,7 +3,7 @@
  T8), each against a disposable directory: a command run under coverage with
  its markers and exit code read from its log, the coverage directory read
  twice in one order, and a bundle's map read with its sources named from the
- package. What git says of a throwaway repository is
+ package and its text kept. What git says of a throwaway repository is
  `coverage-census-commit.unit.test.ts`. Names are cat-themed invention.
 
  @module
@@ -325,7 +325,8 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'READS A BUNDLE AND ITS MAP, naming its sources from the package',
+          name: 'READS A BUNDLE AND ITS MAP, naming its sources from the package and keeping its text, which the '
+            + 'census reads each cold stretch out of',
           fn: async () => {
             await using directory = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             const distDirectory = join(
@@ -357,11 +358,12 @@ await describe({
                 mappings: ';AAAA',
               },),
             );
-            const { lines, sources, } = await readBundle({
+            const { lines, sources, text, } = await readBundle({
               distDirectory,
               packageDirectory: directory.path,
               bundle: 'nap.mjs',
             },);
+            expect(text,).toBe('x\ny',);
             expect(sources,).toEqual(['src/nap.ts',],);
             expect(sourceLineAt({
               lines,

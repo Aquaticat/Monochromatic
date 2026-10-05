@@ -1,9 +1,7 @@
-import {
-  compareCodePoints,
-  textsInCodePointOrder,
-} from '../code-points.ts';
+import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   type CensusStretch,
+  compareSourceThenLine,
   isUnmappedSource,
 } from './coverage-census-report.ts';
 
@@ -513,11 +511,10 @@ export function coldSinceOf(
       left,
       right,
     ): number {
-      return compareCodePoints({
-        left: left.source,
-        right: right.source,
-      },)
-        || (left.startLine - right.startLine);
+      return compareSourceThenLine({
+        left,
+        right,
+      },);
     },)
     .map(function standing(stretch,): ColdSince {
       return {

@@ -3,10 +3,11 @@
  (ledger T8): a cold block in a mapped bundle placed on its source line, a
  function no process called placed on the line it starts, the sources the
  loaded bundles carry, and the sources only an unloaded bundle carries;
- a bundle with no map read only where code must be placed in it, and
- refused by name there. Each case builds a disposable package with a build
- directory, its maps and a coverage directory. Names are cat-themed
- invention.
+ a cold stretch that is nothing but an invariant throw placed apart from the
+ cold stretches; a bundle with no map read only where code must be placed
+ in it, and refused by name there. Each case builds a disposable package
+ with a build directory, its maps and a coverage directory. Names are
+ cat-themed invention.
 
  @module
  */
@@ -27,7 +28,10 @@ import {
 
 import {
   bundleMapsOf,
+  invariantThrowRowsOf,
+  kindTotalsOf,
   placeTally,
+  sourceRowsOf,
   tallyCoverage,
 } from '../../dist/final/node/index.mjs';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
@@ -60,6 +64,11 @@ type FixtureBundle = {
    The source its map names, absent for a bundle written without a map.
    */
   readonly source?: string;
+
+  /**
+   Its text, absent for a bundle holding `BUNDLE_TEXT`.
+   */
+  readonly text?: string;
 };
 
 /**
@@ -117,13 +126,13 @@ async function fixturePackage(
         ),
         { recursive: true, },
       );
-      await Promise.all(bundles.map(async function writtenBundle({ bundle, source, },): Promise<void> {
+      await Promise.all(bundles.map(async function writtenBundle({ bundle, source, text, },): Promise<void> {
         await writeFile(
           join(
             distDirectory,
             bundle,
           ),
-          BUNDLE_TEXT,
+          text ?? BUNDLE_TEXT,
         );
         if (source === undefined)
           return;
@@ -210,6 +219,74 @@ async function writeCoverage(
       })),
     },),
   );
+}
+
+/**
+ A guard of the nap bundle: one throw of an `Error` whose message begins
+ `unreachable:`.
+ */
+const NAP_GUARD = 'throw new Error("unreachable: a lap is always given");';
+
+/**
+ A block of the nap bundle holding a call beside its invariant throw.
+ */
+const NAP_MIXED = '{ hiss(); throw new Error("unreachable: no lap is that cold"); }';
+
+/**
+ A function the nap bundle's third throw builds its message with.
+ */
+const NAP_CALLBACK = '(toy) => toy.name';
+
+/**
+ A throw of the nap bundle whose message holds `NAP_CALLBACK`.
+ */
+const NAP_HOLDING = `throw new Error(\`unreachable: \${toys.map(${NAP_CALLBACK}).join()} holds no toy\`);`;
+
+/**
+ The nap bundle's text: one line, then a function on a second line, which a
+ map of `;AAAA` places wholly on its source's first line.
+ */
+const NAP_TEXT = `x\nfunction nap(lap, toys) { if (lap === void 0) ${NAP_GUARD} if (lap < 0) ${NAP_MIXED} `
+  + `if (toys.length === 0) ${NAP_HOLDING} return lap; }`;
+
+/**
+ The purr bundle's only guard: one throw of a class whose name ends in
+ `InvariantError`.
+ */
+const PURR_GUARD = 'throw new PurrInvariantError({ cat });';
+
+/**
+ The purr bundle's text, laid out as `NAP_TEXT` is.
+ */
+const PURR_TEXT = `x\nfunction purr(cat) { if (cat === void 0) ${PURR_GUARD} return cat; }`;
+
+/**
+ Where a piece of a bundle's text sits, as a coverage range that never ran.
+
+ @param text - bundle text
+
+ @param piece - piece of it, written once there
+
+ @returns Its range as `[start, end, 0]`
+ */
+function coldRange(
+  {
+    text,
+    piece,
+  }: {
+    readonly text: string;
+    readonly piece: string;
+  },
+): readonly [number, number, number] {
+  /**
+   Offset of the piece's first character.
+   */
+  const start = text.indexOf(piece,);
+  return [
+    start,
+    start + piece.length,
+    0,
+  ];
 }
 
 /**
@@ -328,6 +405,190 @@ await describe({
           kind: 'library source',
           lines: 3,
         },],);
+      },
+    },),
+    it({
+      name: 'PLACES A COLD STRETCH THAT IS NOTHING BUT AN INVARIANT THROW APART FROM THE COLD STRETCHES, naming what '
+        + 'it throws, so the rows and totals built from the cold stretches leave it out and a source holding no '
+        + 'other cold code has no row; KEEPS COLD a block holding a call beside its throw, and a throw holding a '
+        + 'function no process called',
+      fn: async () => {
+        const {
+          directory,
+          distDirectory,
+          coverageDirectory,
+          prefix,
+        } = await fixturePackage({
+          bundles: [
+            {
+              bundle: 'nap.mjs',
+              source: 'src/nap.ts',
+              text: NAP_TEXT,
+            },
+            {
+              bundle: 'purr.mjs',
+              source: 'src/purr.ts',
+              text: PURR_TEXT,
+            },
+          ],
+        },);
+        await using _removed = directory;
+        await writeCoverage({
+          coverageDirectory,
+          prefix,
+          scripts: [
+            ['nap.mjs', [
+              {
+                name: '',
+                ranges: [[0, NAP_TEXT.length, 1,],],
+              },
+              {
+                name: 'nap',
+                ranges: [
+                  [2, NAP_TEXT.length, 2,],
+                  coldRange({
+                    text: NAP_TEXT,
+                    piece: NAP_GUARD,
+                  },),
+                  coldRange({
+                    text: NAP_TEXT,
+                    piece: NAP_MIXED,
+                  },),
+                  coldRange({
+                    text: NAP_TEXT,
+                    piece: NAP_HOLDING,
+                  },),
+                ],
+              },
+              {
+                name: '',
+                ranges: [coldRange({
+                  text: NAP_TEXT,
+                  piece: NAP_CALLBACK,
+                },),],
+              },
+            ],],
+            ['purr.mjs', [
+              {
+                name: '',
+                ranges: [[0, PURR_TEXT.length, 1,],],
+              },
+              {
+                name: 'purr',
+                ranges: [
+                  [2, PURR_TEXT.length, 1,],
+                  coldRange({
+                    text: PURR_TEXT,
+                    piece: PURR_GUARD,
+                  },),
+                ],
+              },
+            ],],
+          ],
+        },);
+        const placed = await placeTally({
+          packageDirectory: directory.path,
+          distDirectory,
+          bundleMaps: bundleMapsOf({
+            built: await readdir(distDirectory,),
+            distDirectory,
+          },),
+          tally: await tallyCoverage({
+            coverageDirectory,
+            bundleUrlPrefix: prefix,
+          },),
+          entryFiles: new Set(),
+        },);
+        /**
+         A stretch of the nap bundle as the census records it.
+
+         @param piece - piece of the bundle's text the stretch covers
+
+         @returns Its record
+         */
+        function napStretch({ piece, }: { readonly piece: string; },) {
+          const [start, end,] = coldRange({
+            text: NAP_TEXT,
+            piece,
+          },);
+          return {
+            bundle: 'nap.mjs',
+            start,
+            end,
+            name: '',
+            source: 'src/nap.ts',
+            startLine: 1,
+            endLine: 1,
+          };
+        }
+        /**
+         Where the purr bundle's guard sits.
+         */
+        const [purrStart, purrEnd,] = coldRange({
+          text: PURR_TEXT,
+          piece: PURR_GUARD,
+        },);
+        expect(placed.invariantThrows,).toEqual([
+          {
+            ...napStretch({ piece: NAP_GUARD, },),
+            thrown: ['Error',],
+          },
+          {
+            bundle: 'purr.mjs',
+            start: purrStart,
+            end: purrEnd,
+            name: '',
+            source: 'src/purr.ts',
+            startLine: 1,
+            endLine: 1,
+            thrown: ['PurrInvariantError',],
+          },
+        ],);
+        expect(placed.stretches,).toEqual([
+          napStretch({ piece: NAP_MIXED, },),
+          napStretch({ piece: NAP_HOLDING, },),
+        ],);
+        /**
+         The rows the census builds from the cold stretches.
+         */
+        const rows = sourceRowsOf({
+          stretches: placed.stretches,
+          uncalled: placed.uncalled,
+          entryFiles: new Set(),
+        },);
+        expect(rows,).toEqual([{
+          source: 'src/nap.ts',
+          kind: 'library source',
+          stretches: 2,
+          lines: 1,
+          uncalled: 1,
+        },],);
+        expect(kindTotalsOf({ rows, },),).toEqual([{
+          kind: 'library source',
+          files: 1,
+          stretches: 2,
+          lines: 1,
+          uncalled: 1,
+        },],);
+        expect(invariantThrowRowsOf({
+          invariantThrows: placed.invariantThrows,
+          entryFiles: new Set(),
+        },),).toEqual([
+          {
+            source: 'src/nap.ts',
+            kind: 'library source',
+            startLine: 1,
+            endLine: 1,
+            thrown: ['Error',],
+          },
+          {
+            source: 'src/purr.ts',
+            kind: 'library source',
+            startLine: 1,
+            endLine: 1,
+            thrown: ['PurrInvariantError',],
+          },
+        ],);
       },
     },),
     it({

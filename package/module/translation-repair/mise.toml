@@ -133,7 +133,7 @@ description = "Ledger T8: the node build's entries with a source map beside ever
 run = "rolldown --configLoader native --config rolldown.coverage.config.ts"
 
 [tasks."coverage-census"]
-description = "Ledger T8: build unminified with source maps, run the unit suite (or the unit test files named after --) under V8 coverage, and print the package code no test ran, mapped to source lines; add --baseline <census.json> and --source <src/file.ts> after -- to read an earlier census's stretches against this run; rebuilds the normal build after; SPENDS NO QUOTA (the whole suite writes about 8 GB of coverage under ~/.cache/translation-repair/coverage, on disk rather than in a memory-backed /tmp, deleted once read; the census and the suite's log stay beside it)"
+description = "Ledger T8: build unminified with source maps, run the unit suite (or the unit test files named after --) under V8 coverage, and print the package code no test ran, mapped to source lines, with each stretch that is nothing but invariant throws (an Error whose message begins unreachable:, or a class named ...InvariantError) counted and listed apart from the cold code, since a guard is never removed to close a stretch; add --baseline <census.json> and --source <src/file.ts> after -- to read an earlier census's stretches against this run (a census written before invariant throws were counted apart is refused: take it again); rebuilds the normal build after; SPENDS NO QUOTA (the whole suite writes about 8 GB of coverage under ~/.cache/translation-repair/coverage, on disk rather than in a memory-backed /tmp, deleted once read; the census and the suite's log stay beside it)"
 depends = ["coverage-census:build"]
 depends_post = ["build"]
 run = "node dist/final/node/coverage-census.mjs"

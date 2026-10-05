@@ -1,4 +1,3 @@
-import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   mkdir,
   mkdtemp,
@@ -16,11 +15,12 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import {
-  CENSUS_FORMAT,
   type CensusArguments,
+  censusFileText,
   readBaselineCensus,
   readCensusArguments,
 } from './coverage-census-input.ts';
+import { invariantThrowRowsOf, } from './coverage-census-invariant.ts';
 import {
   baselineReportLines,
   censusReportLines,
@@ -39,7 +39,6 @@ import {
 import {
   kindTotalsOf,
   sourceRowsOf,
-  unmappedSourceOf,
 } from './coverage-census-report.ts';
 import {
   runSuite,
@@ -63,6 +62,15 @@ import { namesOfKind, } from './directory-listing.ts';
 // every process (`coverage-tally.ts`), maps it to source lines
 // (`coverage-lines.ts`), prints the report and writes the census as JSON.
 //
+// An invariant throw is counted apart from the cold code. A stretch no test
+// ran that is nothing but throws of a broken invariant, an `Error` whose
+// message begins `unreachable:` or a class named `...InvariantError`, is a
+// guard no honest input reaches, so no test should; the report prints such
+// stretches' count beside the cold counts and lists each, the census file
+// keeps them under `invariantThrows`, and no row, total or baseline reading
+// counts one as cold (`coverage-census-invariant.ts`). A guard is never
+// removed to close a stretch.
+//
 // A BATCH OF TESTS PROVES ITS REACH by running its own test files with
 // `--baseline <an earlier census.json>` and `--source` for each source it
 // claims: every claimed stretch must read as ran, and every claimed source the
@@ -73,7 +81,9 @@ import { namesOfKind, } from './directory-listing.ts';
 // standard, this run loading it and leaving no cold stretch, since its
 // baseline lines name other code now. The baseline must be of the current
 // census format, taken from a tree matching its commit, and is read before the
-// suite runs.
+// suite runs. A census written before invariant throws were counted apart
+// holds them among its cold stretches and is refused by name
+// (`readBaselineCensus`).
 //
 // SPENDS NO QUOTA, and the raw coverage (about 8 GB for the whole suite) is
 // deleted once the census is written; the census and the suite's log stay in
@@ -177,6 +187,7 @@ async function reportCensus(
    */
   const {
     stretches,
+    invariantThrows,
     uncalled,
     loadedSources,
     unloadedBundles,
@@ -205,38 +216,18 @@ async function reportCensus(
   );
   await writeFile(
     censusPath,
-    JSON.stringify(
-      {
-        format: CENSUS_FORMAT,
-        head,
-        clean,
-        testFiles: asked.testFiles,
-        passes,
-        stretches,
-        uncalled: uncalled.map(function flat(fn,) {
-          return {
-            bundle: fn.bundle,
-            start: fn.start,
-            end: fn.end,
-            name: fn.name,
-            nested: fn.nested,
-            source: (fn.at
-              .kind
-              === 'mapped') ? fn.at
-                .source : unmappedSourceOf({ bundle: fn.bundle, },),
-            line: (fn.at
-              .kind
-              === 'mapped') ? fn.at
-                .line : 0,
-          };
-        },),
-        loadedSources: textsInCodePointOrder({ texts: [...loadedSources,], },),
-        unloadedBundles,
-        unloadedSources,
-      },
-      null,
-      1,
-    ),
+    censusFileText({
+      head,
+      clean,
+      testFiles: asked.testFiles,
+      passes,
+      stretches,
+      invariantThrows,
+      uncalled,
+      loadedSources,
+      unloadedBundles,
+      unloadedSources,
+    },),
   );
   /**
    Sources the batch claims, empty for every source.
@@ -301,6 +292,10 @@ async function reportCensus(
         passes,
         totals: kindTotalsOf({ rows, },),
         rows,
+        invariantThrows: invariantThrowRowsOf({
+          invariantThrows,
+          entryFiles,
+        },),
         uncalled,
         unloadedBundles,
         unloadedSources,

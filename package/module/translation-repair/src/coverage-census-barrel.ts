@@ -19,9 +19,25 @@ export {
   placeTally,
 } from './corpus-run/coverage-census-place.ts';
 export {
+  invariantThrowCountLine,
+  invariantThrowListLines,
+  type InvariantThrowRow,
+  invariantThrowRowsOf,
+  type InvariantThrowStretch,
+} from './corpus-run/coverage-census-invariant.ts';
+export {
+  type StretchReading,
+  stretchReadingOf,
+} from './corpus-run/coverage-invariant-throw.ts';
+export {
+  type Atom,
+  atomAt,
+} from './corpus-run/coverage-stretch-atoms.ts';
+export {
   CENSUS_FORMAT,
   CensusBaselineError,
   type CensusArguments,
+  censusFileText,
   FAIL_MARKER,
   markerCount,
   PASS_MARKER,

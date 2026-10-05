@@ -1,7 +1,9 @@
 /**
  Tests the coverage census's printed report (ledger T8): the heading's
- commit, scope and passes; a line per kind; the bundles no test loaded with
- the library sources only they carry; library rows alone; the outermost
+ commit, scope and passes; a line per kind; the invariant throws counted
+ apart from them, by kind; the bundles no test loaded with the library
+ sources only they carry; library rows alone; each invariant throw by source
+ and line with what it throws; the outermost
  uncalled functions in package source by source and line number, anonymous
  ones named so; and a baseline reading's counts, unproven stretches,
  stretches cold since, claimed sources the baseline holds no stretch in, and
@@ -64,8 +66,9 @@ function uncalledAt({
 }
 
 /**
- A census with one row and total of each kind, two unloaded sources, and
- uncalled functions of every sort the report filters.
+ A census with one row and total of each kind, invariant throws in two
+ kinds, two unloaded sources, and uncalled functions of every sort the
+ report filters.
  */
 const CENSUS: CensusSummary = {
   head: 'abc123def',
@@ -102,6 +105,29 @@ const CENSUS: CensusSummary = {
       stretches: 1,
       lines: 4,
       uncalled: 0,
+    },
+  ],
+  invariantThrows: [
+    {
+      source: '../../module/whisker/src/index.ts',
+      kind: 'other package',
+      startLine: 7,
+      endLine: 7,
+      thrown: ['WhiskerInvariantError',],
+    },
+    {
+      source: 'src/nap.ts',
+      kind: 'library source',
+      startLine: 20,
+      endLine: 21,
+      thrown: ['Error',],
+    },
+    {
+      source: 'src/nap.ts',
+      kind: 'library source',
+      startLine: 30,
+      endLine: 30,
+      thrown: ['Error', 'NapInvariantError',],
     },
   ],
   uncalled: [
@@ -164,16 +190,24 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'PRINTS THE HEADING, KINDS, UNLOADED BUNDLES, LIBRARY ROWS AND OUTERMOST UNCALLED FUNCTIONS in package source by line number',
+          name: 'PRINTS THE HEADING, KINDS, INVARIANT THROWS COUNTED APART BY KIND, UNLOADED BUNDLES, LIBRARY ROWS, EACH '
+            + 'INVARIANT THROW by source and line with what it throws, AND OUTERMOST UNCALLED FUNCTIONS in package '
+            + 'source by line number',
           fn: async () => {
             expect(censusReportLines({ census: CENSUS, },),).toEqual([
               `coverage-census at ${CENSUS.head}: the unit suite, ${String(CENSUS.passes,)} passes`,
               'library source: 1 file, 2 stretches over 5 lines, 3 functions never called',
               'entry file: 1 file, 1 stretch over 4 lines, 0 functions never called',
+              'invariant throws, counted apart from the cold stretches: 3 stretches (library source 2, other package 1)',
               'bundles no test loaded: 1, carrying 2 sources and 60 physical lines',
               '  library source only those bundles carry: src/corpus-run/nap-layout.ts',
               'library source by cold lines:',
               '  src/nap.ts: 2 stretches, 5 lines, 3 never called',
+              'invariant throws by source and line (each stretch nothing but throws of an Error whose message '
+              + 'begins "unreachable:" or of a class whose name ends in InvariantError), with what each throws:',
+              '  ../../module/whisker/src/index.ts:7-7 (other package): WhiskerInvariantError',
+              '  src/nap.ts:20-21 (library source): Error',
+              '  src/nap.ts:30-30 (library source): Error, NapInvariantError',
               'functions never called in package source, outermost:',
               '  src/nap.ts:9 (anonymous)',
               '  src/nap.ts:10 doze',

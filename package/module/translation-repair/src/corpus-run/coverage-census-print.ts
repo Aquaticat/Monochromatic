@@ -6,6 +6,11 @@ import type {
   EmptyClaim,
   StretchStatus,
 } from './coverage-census-baseline.ts';
+import {
+  invariantThrowCountLine,
+  invariantThrowListLines,
+  type InvariantThrowRow,
+} from './coverage-census-invariant.ts';
 import type {
   CensusStretch,
   KindTotal,
@@ -18,7 +23,9 @@ import type { MappedFunction, } from './coverage-lines.ts';
 // Ledger T8: the census's report as lines, apart from the entry that runs the
 // suite, so what an operator reads is tested without a subprocess. Every line
 // names package files, lines, bundle names and counts; no corpus text reaches
-// a coverage report.
+// a coverage report. The invariant throws stand apart from the cold code in
+// it: their count beside the cold counts, and each by source and line
+// (`coverage-census-invariant.ts`).
 
 /**
  A source a runner bundle carries that no test loaded.
@@ -83,6 +90,12 @@ export type CensusSummary = {
    One row per source holding cold code.
    */
   readonly rows: readonly SourceRow[];
+
+  /**
+   One row per stretch that is nothing but invariant throws, which no total
+   and no row of cold code counts, in report order.
+   */
+  readonly invariantThrows: readonly InvariantThrowRow[];
 
   /**
    Uncalled functions with their lines.
@@ -221,6 +234,7 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
           },)
         } never called`;
     },),
+    invariantThrowCountLine({ rows: census.invariantThrows, },),
     `bundles no test loaded: ${String(census.unloadedBundles
       .length,)}, carrying ${String(census.unloadedSources
         .length,)} ${
@@ -265,6 +279,7 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
           },)
         }, ${String(row.uncalled,)} never called`;
       },),
+    ...invariantThrowListLines({ rows: census.invariantThrows, },),
     'functions never called in package source, outermost:',
     ...outermost,
     `census written to ${census.censusPath}`,

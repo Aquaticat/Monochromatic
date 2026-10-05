@@ -4,6 +4,7 @@ import {
   type BundleMaps,
   requireMapFor,
 } from './coverage-bundle-maps.ts';
+import type { InvariantThrowStretch, } from './coverage-census-invariant.ts';
 import type { UnloadedSource, } from './coverage-census-print.ts';
 import {
   type CensusStretch,
@@ -15,12 +16,19 @@ import {
   unloadedSourcesOf,
 } from './coverage-census-steps.ts';
 import {
-  type BundleLines,
+  type StretchReading,
+  stretchReadingOf,
+} from './coverage-invariant-throw.ts';
+import {
   mapFunction,
   type MappedFunction,
 } from './coverage-lines.ts';
 import { mapStretch, } from './coverage-pieces.ts';
-import type { CoverageTally, } from './coverage-tally.ts';
+import type {
+  ColdStretch,
+  CoverageTally,
+  UncalledFunction,
+} from './coverage-tally.ts';
 
 //region Coverage census placement
 // Ledger T8: the census's reading of a painted tally against the build, split
@@ -29,15 +37,28 @@ import type { CoverageTally, } from './coverage-tally.ts';
 // the sources the loaded bundles carry, and the bundles no test loaded with
 // the sources only they carry. A bundle with no map is read only where code
 // must be placed in it, and refused by name there (`coverage-bundle-maps.ts`).
+//
+// A stretch that is nothing but invariant throws is placed apart from the
+// cold stretches, read from its own text in the bundle
+// (`coverage-invariant-throw.ts`), so nothing built from the cold stretches,
+// a row, a total or a baseline reading, counts a guard no honest input
+// reaches as code a test should run (`coverage-census-invariant.ts`).
 
 /**
  A painted tally placed on source lines.
  */
 export type PlacedTally = {
   /**
-   Cold stretches as the census records them, one per piece.
+   Cold stretches as the census records them, one per piece, those that are
+   nothing but invariant throws left out.
    */
   readonly stretches: readonly CensusStretch[];
+
+  /**
+   Stretches no test ran that are nothing but invariant throws, one record
+   per piece, each with what the stretch throws.
+   */
+  readonly invariantThrows: readonly InvariantThrowStretch[];
 
   /**
    Uncalled functions with their lines.
@@ -61,6 +82,69 @@ export type PlacedTally = {
 };
 
 /**
+ One stretch no process ran, placed: its census records, one per piece, and
+ what its text reads as.
+ */
+type PlacedStretch = {
+  readonly records: readonly CensusStretch[];
+  readonly reading: StretchReading;
+};
+
+/**
+ Reads one cold stretch as invariant throws or as cold code.
+
+ A function no process called is code, whatever holds it: a callback a
+ throw's message is built with keeps the stretch holding its first
+ character cold, which is also where `requirePlacedFunctions` looks for it.
+
+ @param stretch - stretch the tally found cold
+
+ @param text - text of the bundle holding it
+
+ @param uncalled - every function no process called
+
+ @returns What its text between its offsets reads as, cold where a function
+ no process called starts inside it
+
+ @example
+ ```ts
+ const reading = standingOf({ stretch, text, uncalled: tally.uncalledFunctions(), },);
+ ```
+ */
+function standingOf(
+  {
+    stretch,
+    text,
+    uncalled,
+  }: {
+    readonly stretch: ColdStretch;
+    readonly text: string;
+    readonly uncalled: readonly UncalledFunction[];
+  },
+): StretchReading {
+  /**
+   What the stretch's own text reads as.
+   */
+  const reading = stretchReadingOf({
+    text: text.slice(
+      stretch.start,
+      stretch.end,
+    ),
+  },);
+  if (reading.kind === 'cold')
+    return reading;
+  /**
+   Whether a function no process called starts inside the stretch.
+   */
+  const holdsFunction = uncalled.some(function startsInside(fn,): boolean {
+    return (fn.bundle === stretch.bundle)
+      && (fn.start >= stretch.start)
+      && (fn.start < stretch.end);
+  },);
+  return holdsFunction ? { kind: 'cold', } : reading;
+}
+
+/**
  Places a painted tally on source lines through the build's maps.
 
  @param packageDirectory - package directory the sources are named from
@@ -74,7 +158,8 @@ export type PlacedTally = {
 
  @param entryFiles - sources the build names as runner entries
 
- @returns The stretches, uncalled functions and sources, placed
+ @returns The cold stretches, the invariant throws apart from them, the
+ uncalled functions and the sources, placed
 
  @throws StatedRefusalError where the coverage names a bundle the build
  does not hold, finds code no test ran in a bundle with no map, or finds a
@@ -110,7 +195,7 @@ export async function placeTally(
     unmapped,
   } = bundleMaps;
   /**
-   Every mapped bundle's lines and sources, by name.
+   Every mapped bundle's text, lines and sources, by name.
    */
   const read = new Map(
     await Promise.all(mapped.map(async function readOne(bundle,) {
@@ -129,13 +214,13 @@ export async function placeTally(
    */
   const loaded = new Set(tally.loadedBundles(),);
   /**
-   Lines of a loaded bundle.
+   Reading of a loaded bundle.
 
    @param bundle - bundle the coverage names
 
-   @returns Its positions and map
+   @returns Its text, positions and map
    */
-  function linesOf(bundle: string,): BundleLines {
+  function readingOf(bundle: string,): Awaited<ReturnType<typeof readBundle>> {
     /**
      Its reading.
      */
@@ -148,27 +233,72 @@ export async function placeTally(
     },);
     if (reading === undefined)
       throw new StatedRefusalError({ says: `coverage names ${bundle}, which ${distDirectory} does not hold; rebuild and run again`, },);
-    return reading.lines;
+    return reading;
   }
+  /**
+   Every function no process called, as the tally reports them.
+   */
+  const uncalledSites = tally.uncalledFunctions();
+  /**
+   Every stretch no process ran, as the census records it, one record per
+   piece, with whether it reads as invariant throws.
+   */
+  const placedStretches = tally.coldStretches()
+    .map(function placedStretch(stretch,): PlacedStretch {
+      /**
+       Text, positions and map of its bundle.
+       */
+      const {
+        text,
+        lines,
+      } = readingOf(stretch.bundle,);
+      return {
+        records: censusStretchesOf({
+          stretch: mapStretch({
+            lines,
+            stretch,
+          },),
+        },),
+        reading: standingOf({
+          stretch,
+          text,
+          uncalled: uncalledSites,
+        },),
+      };
+    },);
   /**
    Cold stretches as the census records them, one per piece.
    */
-  const stretches = tally.coldStretches()
-    .flatMap(function recorded(stretch,) {
-    return censusStretchesOf({
-      stretch: mapStretch({
-        lines: linesOf(stretch.bundle,),
-        stretch,
-      },),
+  const stretches = placedStretches.flatMap(function coldRecords({
+    records,
+    reading,
+  },): readonly CensusStretch[] {
+    return (reading.kind === 'cold') ? records : [];
+  },);
+  /**
+   Stretches that are nothing but invariant throws, each record with what
+   its stretch throws.
+   */
+  const invariantThrows = placedStretches.flatMap(function apartRecords({
+    records,
+    reading,
+  },): readonly InvariantThrowStretch[] {
+    if (reading.kind === 'cold')
+      return [];
+    return records.map(function withThrown(record,): InvariantThrowStretch {
+      return {
+        ...record,
+        thrown: reading.thrown,
+      };
     },);
   },);
   /**
    Uncalled functions with their lines.
    */
-  const uncalled = tally.uncalledFunctions()
-    .map(function placed(fn,) {
+  const uncalled = uncalledSites.map(function placed(fn,) {
     return mapFunction({
-      lines: linesOf(fn.bundle,),
+      lines: readingOf(fn.bundle,)
+        .lines,
       uncalled: fn,
     },);
   },);
@@ -202,6 +332,7 @@ export async function placeTally(
   }
   return {
     stretches,
+    invariantThrows,
     uncalled,
     loadedSources,
     unloadedBundles,

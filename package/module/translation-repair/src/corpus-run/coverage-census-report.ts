@@ -11,6 +11,9 @@ import type { MappedStretch, } from './coverage-pieces.ts';
 // bodies are command-line mains) and from other workspace packages built into
 // the bundles. How a run reads an earlier census, so a batch of tests can
 // prove it reached the stretches it claims, is `coverage-census-baseline.ts`.
+// A stretch that is nothing but invariant throws is no cold stretch here: the
+// census places it apart (`coverage-census-place.ts`), so no row or total
+// counts it, and `coverage-census-invariant.ts` lists it.
 
 /**
  Where a source sits for the census.
@@ -21,6 +24,21 @@ import type { MappedStretch, } from './coverage-pieces.ts';
  ```
  */
 export type SourceKind = 'entry file' | 'library source' | 'other package' | 'unmapped';
+
+/**
+ Every kind, in the order the report names them.
+
+ @example
+ ```ts
+ const [first,] = SOURCE_KINDS; // 'library source'
+ ```
+ */
+export const SOURCE_KINDS: readonly SourceKind[] = [
+  'library source',
+  'entry file',
+  'other package',
+  'unmapped',
+];
 
 /**
  A cold stretch as the census records it: bundle offsets and the source lines
@@ -68,6 +86,40 @@ export type CensusStretch = {
    */
   readonly endLine: number;
 };
+
+/**
+ Orders two census records by source, in code-point order, and then by first
+ line, the order the reports list stretches in.
+
+ @param left - one record's source and first line
+
+ @param right - other's
+
+ @returns Negative where `left` comes first, positive where `right` does,
+ zero where the two share a source and a first line
+
+ @example
+ ```ts
+ const ordered = stretches.toSorted(function bySourceThenLine(left, right,): number {
+   return compareSourceThenLine({ left, right, },);
+ },);
+ ```
+ */
+export function compareSourceThenLine(
+  {
+    left,
+    right,
+  }: {
+    readonly left: Pick<CensusStretch, 'source' | 'startLine'>;
+    readonly right: Pick<CensusStretch, 'source' | 'startLine'>;
+  },
+): number {
+  return compareCodePoints({
+    left: left.source,
+    right: right.source,
+  },)
+    || (left.startLine - right.startLine);
+}
 
 /**
  One source file's cold code.
@@ -432,16 +484,7 @@ export function sourceRowsOf(
  ```
  */
 export function kindTotalsOf({ rows, }: { readonly rows: readonly SourceRow[]; },): readonly KindTotal[] {
-  /**
-   Kinds in report order.
-   */
-  const kinds: readonly SourceKind[] = [
-    'library source',
-    'entry file',
-    'other package',
-    'unmapped',
-  ];
-  return kinds.flatMap(function totalOf(kind,): readonly KindTotal[] {
+  return SOURCE_KINDS.flatMap(function totalOf(kind,): readonly KindTotal[] {
     /**
      Rows of this kind.
      */

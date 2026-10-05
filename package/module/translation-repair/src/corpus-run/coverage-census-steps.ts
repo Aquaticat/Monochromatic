@@ -288,13 +288,15 @@ export async function tallyCoverage(
 
  @param bundle - bundle name
 
- @returns Its lines and the sources its map names, relative to the package
+ @returns Its text, which the census reads each cold stretch out of
+ (`coverage-invariant-throw.ts`), its lines, and the sources its map names,
+ relative to the package
 
  @throws SourceMapFileError where its map does not read as a version 3 map
 
  @example
  ```ts
- const { lines, sources, } = await readBundle({ distDirectory, packageDirectory, bundle: 'index.mjs', },);
+ const { text, lines, sources, } = await readBundle({ distDirectory, packageDirectory, bundle: 'index.mjs', },);
  ```
  */
 export async function readBundle(
@@ -308,6 +310,7 @@ export async function readBundle(
     readonly bundle: string;
   },
 ): Promise<{
+  readonly text: string;
   readonly lines: BundleLines;
   readonly sources: readonly string[];
 }> {
@@ -331,15 +334,20 @@ export async function readBundle(
       'utf8',
     ),
   },);
+  /**
+   The bundle as V8 loaded it, whose offsets the coverage counts by.
+   */
+  const text = await readFile(
+    join(
+      distDirectory,
+      bundle,
+    ),
+    'utf8',
+  );
   return {
+    text,
     lines: bundleLinesOf({
-      text: await readFile(
-        join(
-          distDirectory,
-          bundle,
-        ),
-        'utf8',
-      ),
+      text,
       map,
       mapDirectory: distDirectory,
       packageDirectory,
