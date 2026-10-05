@@ -1279,7 +1279,7 @@ The plain-text test was written first and failed against the unchanged engine wi
 [Application behavior change](#application-behavior-change).
 
 `controls.mjs` then ran the four syntax test binaries in a disposable package copy with a disposable target cache.
-All 14 phases matched their predicted failures:
+All 13 phases matched their predicted failures:
 
 - committed code,
   before and after the controls:
