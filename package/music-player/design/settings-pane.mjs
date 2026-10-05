@@ -52,12 +52,12 @@ need({ rule: 'manifest-schema', holds: manifest.schema === 1, detail: 'manifest 
 need({ rule: 'manifest-apk', holds: manifest.apkSha256 === artifact.apkSha256, detail: 'APK digest differs from the inspected artifact' });
 need({ rule: 'manifest-commit', holds: manifest.prototypeCommit === artifact.prototypeCommit, detail: 'prototype commit differs from the inspected artifact' });
 need({ rule: 'manifest-witness-list', holds: Array.isArray(manifest.witnesses), detail: 'manifest has no witness list' });
-// D11's row order, and the switch field each row draws.
-const rowFields = [['strip-common-prefixes', 'strip'], ['resume-where-left-off', 'resume'], ['analyse-in-background', 'analyse']];
+// D11's row order, and the switch field each row draws. D84 removed the third, analysis row.
+const rowFields = [['strip-common-prefixes', 'strip'], ['resume-where-left-off', 'resume']];
 const states = {
-  closed: { opened: false, strip: true, resume: true, analyse: false },
-  accepted: { opened: true, strip: true, resume: true, analyse: false },
-  inverse: { opened: true, strip: false, resume: false, analyse: true },
+  closed: { opened: false, strip: true, resume: true },
+  accepted: { opened: true, strip: true, resume: true },
+  inverse: { opened: true, strip: false, resume: false },
 };
 const images = {};
 const opened = [];
@@ -129,14 +129,14 @@ for (const [index, capture] of manifest.witnesses.entries()) {
     const { player } = capture;
     need({ rule: 'closed-player-rectangle', holds: rectangle(player), detail: at + 'closed player is not an integer rectangle' });
     need({ rule: 'closed-player-root', holds: same(player, bounds), detail: at + 'closed player does not fill the application root' });
-    const absent = ['pane', 'header', 'back', 'title', 'viewport', 'closing', 'left', 'rows', 'visible', 'scrollMaxPixels', 'titleLines', 'titleOverflow', 'closingLines', 'closingOverflow'];
+    const absent = ['pane', 'header', 'back', 'title', 'viewport', 'left', 'rows', 'visible', 'scrollMaxPixels', 'titleLines', 'titleOverflow'];
     need({ rule: 'closed-no-pane', holds: absent.every(name => capture[name] === null), detail: at + 'closed player records Settings geometry' });
     fitNote = 'player with Settings closed';
     //endregion
   } else {
-    //region Measured page, header, rows and closing sentence in physical screenshot pixels
+    //region Measured page, header and rows in physical screenshot pixels; D85 removed the closing sentence
     // 72dp header, 48dp floors and the 52 by 32dp switch at the measured 390dpi density.
-    const { pane, header, back, title, viewport, closing, left, rows, visible } = capture;
+    const { pane, header, back, title, viewport, left, rows, visible } = capture;
     need({ rule: 'closed-only-player', holds: capture.player === null, detail: at + 'open Settings view records a closed player' });
     need({ rule: 'pane-rectangle', holds: rectangle(pane), detail: at + 'Settings page is not an integer rectangle' });
     const placed = same(pane, panel === 'inner' ? [1038, 0, 2076, 2152] : [0, 0, 1080, 2424]);
@@ -158,8 +158,8 @@ for (const [index, capture] of manifest.witnesses.entries()) {
     need({ rule: 'viewport-position', holds: below, detail: at + 'scroll viewport does not fill the page below the header' });
     const scroll = capture.scrollMaxPixels;
     need({ rule: 'scroll-extent', holds: Number.isInteger(scroll) && scroll >= 0, detail: at + 'scroll extent is not a whole pixel count' });
-    need({ rule: 'rows-list', holds: Array.isArray(rows) && rows.length === 3, detail: at + 'page does not record three rows' });
-    need({ rule: 'visible-record', holds: typeof visible === 'object' && visible !== null && Array.isArray(visible.rows) && visible.rows.length === 3, detail: at + 'visible-part record is absent' });
+    need({ rule: 'rows-list', holds: Array.isArray(rows) && rows.length === 2, detail: at + 'page does not record two rows' });
+    need({ rule: 'visible-record', holds: typeof visible === 'object' && visible !== null && Array.isArray(visible.rows) && visible.rows.length === 2, detail: at + 'visible-part record is absent' });
     const offset = position === 'end' ? scroll : 0;
     let previousBottom = viewport[1] - offset;
     const information = [title];
@@ -191,28 +191,22 @@ for (const [index, capture] of manifest.witnesses.entries()) {
       information.push(row.title, row.supporting, row.switch);
       shownRows.push({ whole: same(seen.row, row.row) && row.row[3] <= bounds[3], switchWhole: same(seen.switch, row.switch) });
     }
-    need({ rule: 'closing-rectangle', holds: rectangle(closing), detail: at + 'closing sentence is not an integer rectangle' });
-    need({ rule: 'closing-below-rows', holds: closing[1] >= previousBottom, detail: at + 'closing sentence overlaps the rows' });
-    need({ rule: 'closing-inside-page', holds: closing[0] >= pane[0] && closing[2] <= pane[2], detail: at + 'closing sentence leaves the page width' });
-    const closingText = Number.isInteger(capture.closingLines) && capture.closingLines >= 1 && capture.closingOverflow === false;
-    need({ rule: 'closing-text', holds: closingText, detail: at + 'closing sentence is not whole unclipped lines' });
-    information.push(closing);
     // E2: information stays off the fold connector, which ends at x 1093 on the unfolded panel.
     const offConnector = panel === 'cover' || information.every(rect => rect[0] >= 1093);
     need({ rule: 'fold-connector', holds: offConnector, detail: at + 'information starts inside the fold connector' });
-    need({ rule: 'visible-closing-part', holds: part({ visible: visible.closing, whole: closing }), detail: at + 'visible closing sentence is not part of the sentence' });
-    const closingWhole = same(visible.closing, closing) && closing[3] <= bounds[3];
+    const lastWhole = shownRows.at(-1).whole;
     need({ rule: 'position-scroll', holds: position === 'start' || scroll > 0, detail: at + 'end-of-column view exists for a column that does not scroll' });
-    // The column ends 54px (22dp) below its closing sentence plus the navigation inset under the application root.
-    const overhang = closing[3] + offset + 54 + (pane[3] - bounds[3]) - viewport[3];
+    // The column ends one divider below its last row, plus the navigation inset under the application root.
+    // The divider is read from the gap between the two rows rather than assumed, since 1dp is a fractional pixel count here.
+    const divider = rows[1].row[1] - rows[0].row[3];
+    const overhang = rows[1].row[3] + offset + divider + (pane[3] - bounds[3]) - viewport[3];
     need({ rule: 'scroll-geometry', holds: scroll === Math.max(0, overhang), detail: at + 'scroll extent is not what the measured column overhangs its viewport' });
-    const everything = closingWhole && shownRows.every(row => row.whole);
-    need({ rule: 'fits-without-scroll', holds: scroll > 0 || everything, detail: at + 'a column that does not scroll hides a row or its closing sentence' });
-    need({ rule: 'end-shows-closing', holds: position === 'start' || closingWhole, detail: at + 'end-of-column view does not show the whole closing sentence' });
+    need({ rule: 'fits-without-scroll', holds: scroll > 0 || shownRows.every(row => row.whole), detail: at + 'a column that does not scroll hides a row' });
+    need({ rule: 'end-shows-last-row', holds: position === 'start' || lastWhole, detail: at + 'end-of-column view does not show the whole last row' });
     const heights = rows.map(row => row.row[3] - row.row[1]);
-    fitNote = `rows ${heights.join(', ')} px high · closing sentence ${capture.closingLines} lines · ` + (scroll === 0 ? 'whole column fits without scrolling'
-      : position === 'end' ? `column scrolled ${scroll} px to its end` : `column scrolls ${scroll} px; ${closingWhole ? 'closing sentence already shown' : 'closing sentence not wholly shown until scrolled'}`);
-    opened.push({ capture, key, heights, closingWhole, shownRows });
+    fitNote = `rows ${heights.join(', ')} px high · ` + (scroll === 0 ? 'whole column fits without scrolling'
+      : position === 'end' ? `column scrolled ${scroll} px to its end` : `column scrolls ${scroll} px; ${lastWhole ? 'last row already shown' : 'last row not wholly shown until scrolled'}`);
+    opened.push({ capture, key, heights, lastWhole, shownRows });
     //endregion
   }
   images[key] = { file, hash, width, height, density: 390, fitNote, source: `data:image/png;base64,${png.toString('base64')}` };
@@ -232,8 +226,8 @@ for (const panel of ['inner', 'cover']) for (const scheme of ['light', 'dark']) 
 need({ rule: 'exact-cohort', holds: same(Object.keys(images).sort(), expected.sort()), detail: 'review requires exact panel, view, theme, scale and scroll-position combinations' });
 // Whole-element layout, which neither a switch position nor a theme may change.
 function layout(capture) {
-  const { pane, header, back, title, viewport, closing, scrollMaxPixels, closingLines } = capture;
-  return [pane, header, back, title, viewport, closing, scrollMaxPixels, closingLines, capture.rows.map(row => [row.row, row.title, row.supporting, row.switch, row.titleLines, row.supportingLines])];
+  const { pane, header, back, title, viewport, scrollMaxPixels } = capture;
+  return [pane, header, back, title, viewport, scrollMaxPixels, capture.rows.map(row => [row.row, row.title, row.supporting, row.switch, row.titleLines, row.supportingLines])];
 }
 for (const item of opened) {
   const { panel, view, scheme, fontScale, position } = item.capture;
@@ -242,7 +236,7 @@ for (const item of opened) {
   if (position === 'end') {
     const start = opened.find(other => other.key === `comparison/${panel}/${view}/${scheme}/${fontScale}/start`);
     const moved = item.capture.scrollMaxPixels;
-    const shifted = start !== undefined && start.capture.closing[1] - item.capture.closing[1] === moved && start.capture.rows.every((row, index) => {
+    const shifted = start !== undefined && start.capture.rows.every((row, index) => {
       const after = item.capture.rows[index].row;
       return row.row[1] - after[1] === moved && row.row[3] - after[3] === moved;
     });
@@ -338,6 +332,21 @@ function drawnSwitch({ capture, rectangle: bounds }) {
   if (handleLeading === handleTrailing) return null;
   return handleTrailing;
 }
+// D85 removed the closing sentence, so nothing is drawn after the rows: from the last row's divider down
+// to the application root bottom, above the gesture handle, the page is one uniform colour.
+function nothingAfterRows(item) {
+  const { capture } = item;
+  const last = capture.rows.at(-1).row;
+  const divider = capture.rows[1].row[1] - capture.rows[0].row[3];
+  const top = last[3] + divider;
+  if (top >= capture.applicationRoot[3]) return true;
+  const { rgb } = measuredRegion({ capture, rectangle: [capture.pane[0], top, capture.pane[2], capture.applicationRoot[3]] });
+  if (rgb === null) return false;
+  for (let offset = 3; offset < rgb.length; offset += 3) {
+    if (rgb[offset] !== rgb[0] || rgb[offset + 1] !== rgb[1] || rgb[offset + 2] !== rgb[2]) return false;
+  }
+  return true;
+}
 function switchesMatchPixels(item) {
   return item.capture.rows.every((row, index) => {
     if (!item.shownRows[index].switchWhole) return true;
@@ -411,21 +420,21 @@ function sameConditions(first, second) {
 }
 const starts = opened.filter(item => item.capture.position === 'start');
 const scrolling = starts.filter(item => item.capture.scrollMaxPixels > 0);
-const hiddenClosing = scrolling.filter(item => !item.closingWhole);
+const hiddenLast = scrolling.filter(item => !item.lastWhole);
 const normal = starts.filter(item => item.capture.fontScale === 1);
 const large = starts.filter(item => item.capture.fontScale === 2);
 const scrollSentence = scrolling.length === 0
-  ? 'The whole column, closing sentence included, fits without scrolling in every condition.'
+  ? 'The whole column fits without scrolling in every condition.'
   : `On ${conditions(scrolling)} the column scrolls, by ${range(scrolling.map(item => item.capture.scrollMaxPixels))} physical pixels; ` +
-    (hiddenClosing.length === 0 ? 'its closing sentence is still wholly shown before scrolling.'
-      : sameConditions(hiddenClosing, scrolling) ? 'there the closing sentence is not wholly shown until the column is scrolled.'
-        : `on ${conditions(hiddenClosing)} the closing sentence is not wholly shown until the column is scrolled.`) +
+    (hiddenLast.length === 0 ? 'its last row is still wholly shown before scrolling.'
+      : sameConditions(hiddenLast, scrolling) ? 'there the last row is not wholly shown until the column is scrolled.'
+        : `on ${conditions(hiddenLast)} the last row is not wholly shown until the column is scrolled.`) +
     ' Everywhere else the whole column fits.';
 const findings = `<p id="inspection-findings" class="note">Inspection and measurement found this.
 ${scrollSentence}
 Rows are ${range(normal.flatMap(item => item.heights))} physical pixels high at 100% text
 and ${range(large.flatMap(item => item.heights))} at 200%, against a 117 pixel floor;
-no row title, supporting line or closing sentence reports overflow.
+no row title or supporting line reports overflow.
 Row titles take at most ${Math.max(...normal.flatMap(item => item.capture.rows.map(row => row.titleLines)))} line at 100% text
 and ${Math.max(...large.flatMap(item => item.capture.rows.map(row => row.titleLines)))} at 200%.
 Supporting lines wrap to at most ${Math.max(...normal.flatMap(item => item.capture.rows.map(row => row.supportingLines)))} lines at 100%
@@ -452,7 +461,7 @@ if (process.argv[2] === 'build') {
   need({ rule: 'output-current', holds: readFileSync(output, 'utf8') === html, detail: 'output differs from its template and evidence' });
   for (const marker of ['color-scheme: light dark', 'D11 is settled; no new preference ballot',
     'Every switch position is authored debug state', 'it was not separately chosen', 'id="inspection-findings"',
-    'settles nothing about how the two relate', 'Also read by eye', 'id="provenance"', 'No production implementation is authorized', 'id="final-notes"',
+    'Settings has no analysis switch', 'Also read by eye', 'id="provenance"', 'No production implementation is authorized', 'id="final-notes"',
     'Native pixels', 'Reset 100% dp']) {
     need({ rule: 'required-statement', holds: html.includes(marker), detail: 'review is missing ' + marker });
   }
@@ -475,13 +484,14 @@ if (process.argv[2] === 'build') {
   for (const item of opened) {
     const at = item.capture.file + ': ';
     need({ rule: 'switch-position-pixels', holds: switchesMatchPixels(item), detail: at + 'a drawn switch position differs from its authored state' });
+    need({ rule: 'nothing-after-rows', holds: nothingAfterRows(item), detail: at + 'something is drawn between the last row and the application root bottom' });
     // 4.5 to 1 for text and 3 to 1 for a graphic are the WCAG 2 contrast minimums.
     need({ rule: 'title-contrast-pixels', holds: strongestContrast({ capture: item.capture, rectangle: item.capture.title }) >= 4.5, detail: at + 'page title does not reach 4.5 to 1 against the header' });
     need({ rule: 'back-contrast-pixels', holds: strongestContrast({ capture: item.capture, rectangle: item.capture.back }) >= 3, detail: at + 'Back glyph does not reach 3 to 1 against the header' });
     const sameHalf = item.capture.panel === 'cover' || leftHalfDifference(item.capture) === 0;
     need({ rule: 'left-half-search', holds: sameHalf, detail: at + 'retained left half differs from the published accepted Search page' });
   }
-  console.log('Validated exact offline native Settings-pane evidence, authored-state limits, drawn switch positions, header contrast and the retained left half.');
+  console.log('Validated exact offline native Settings-pane evidence, authored-state limits, drawn switch positions, the empty page after the rows, header contrast and the retained left half.');
 } else {
   throw new Error('Expected build or validate.');
 }

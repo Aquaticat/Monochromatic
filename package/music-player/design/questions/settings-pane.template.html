@@ -62,7 +62,9 @@ dialog h2 { margin-block-start: 0; }
 <header>
 <p class="summary-text">Design evidence only. D11 is settled; no new preference ballot.</p>
 <h1>The accepted Settings pane on the Fold, in light and dark</h1>
-<p>Purpose: inspect settings-a's three switch rows and closing sentence, built natively for both Fold panels.
+<p>Purpose: inspect the accepted Settings page's two switch rows, built natively for both Fold panels.
+D84 removed settings-a's third row, because true-peak analysis is automatic and not optional,
+and D85 removed its closing sentence.
 Each row is the platform's Material 3 list item with a 52 by 32dp switch, and the whole row is the control.
 The page header is 72dp high with a 48dp Back target, as on the accepted Search page.
 Both text lines of a row may wrap; nothing is shrunk to fit.</p>
@@ -101,24 +103,25 @@ bottom navigation remains. Logical dp uses the measured 390dpi density, not your
 Back are recorded separately from the static images.</p>
 <div class="gallery">
 <figure data-scene="closed" data-position="none"><h3>Player before Settings opens</h3><button type="button" class="preview-button"><img alt="Accepted native player with Settings closed"><span>Open closed-player baseline</span></button><figcaption></figcaption></figure>
-<figure data-scene="accepted" data-position="start"><h3>Settings in the accepted mock state</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched on and background analysis switched off"><span>Open accepted switch positions</span></button><figcaption></figcaption></figure>
-<figure data-scene="inverse" data-position="start"><h3>Every switch in its other position</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched off and background analysis switched on"><span>Open opposite switch positions</span></button><figcaption></figcaption></figure>
-<figure data-scene="accepted" data-position="end" data-optional><h3>Accepted state, scrolled to the end</h3><button type="button" class="preview-button"><img alt="Native Settings page in the accepted switch positions scrolled to its closing sentence"><span>Open accepted state at the column end</span></button><figcaption></figcaption></figure>
-<figure data-scene="inverse" data-position="end" data-optional><h3>Other positions, scrolled to the end</h3><button type="button" class="preview-button"><img alt="Native Settings page in the opposite switch positions scrolled to its closing sentence"><span>Open opposite state at the column end</span></button><figcaption></figcaption></figure>
+<figure data-scene="accepted" data-position="start"><h3>Settings in the accepted mock state</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched on"><span>Open accepted switch positions</span></button><figcaption></figcaption></figure>
+<figure data-scene="inverse" data-position="start"><h3>Every switch in its other position</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched off"><span>Open opposite switch positions</span></button><figcaption></figcaption></figure>
+<figure data-scene="accepted" data-position="end" data-optional><h3>Accepted state, scrolled to the end</h3><button type="button" class="preview-button"><img alt="Native Settings page in the accepted switch positions scrolled to its last row"><span>Open accepted state at the column end</span></button><figcaption></figcaption></figure>
+<figure data-scene="inverse" data-position="end" data-optional><h3>Other positions, scrolled to the end</h3><button type="button" class="preview-button"><img alt="Native Settings page in the opposite switch positions scrolled to its last row"><span>Open opposite state at the column end</span></button><figcaption></figcaption></figure>
 </div>
 <p id="scroll-note" role="status"></p></section>
 <details><summary>Read the verification boundary</summary>
 <p>The host extends ComponentActivity, not MainActivity. Its merged manifest disables production entry and
-playback/analysis services and removes automatic WorkManager initialization. No D27 consent choice is changed.</p>
-<p>The immutable fixture holds three switch values, D11's row order and copy, and one checked toggle per row.
-Pure tests and fresh unknown-scene, copy-drift, row-position-swap, unknown-event and cross-row-toggle mutants
-have separate retained reports.</p>
+playback/analysis services and removes automatic WorkManager initialization.</p>
+<p>The immutable fixture holds two switch values, the order and copy of D11's remaining rows, and one checked
+toggle per row; the removed analysis toggle is rejected like any unknown event. Pure tests and fresh unknown-scene,
+copy-drift, row-position-swap, unknown-event, cross-row-toggle and reinstated-analysis-toggle mutants have
+separate retained reports.</p>
 <p>Row heights, line counts and visibility come from rectangles and text layouts the device reported for each
 image. Whole-element rectangles carry the size and fold-connector rules; clipped rectangles carry only what the
 scroll viewport shows. Rectangles are not glyph bounds or accessibility acceptance.</p>
-<p>D11's third row is a two-state switch, while D27's first-run prompt has four answers. This study draws the
-row in both positions and settles nothing about how the two relate. The closing sentence was accepted before
-D81 placed template configuration in Settings; no template entry is drawn here.</p>
+<p>Settings has no analysis switch: D84 makes true-peak analysis automatic and not optional, and supersedes
+D27's ask-before-analysing prompt. When analysis runs is not decided by this page. D81 places template
+configuration in Settings; no template entry is drawn here.</p>
 <p>Raw screenshots, hierarchies, logs and generated identities remain private. Only freshly inspected,
 metadata-stripped app-area crops are embedded here, each checked against its recorded hash.</p>
 __SETTINGS_PANE_PROVENANCE__
