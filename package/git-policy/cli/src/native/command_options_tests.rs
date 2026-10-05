@@ -13,9 +13,7 @@ use super::{
     Arity, Boundary, DEFAULT_MODE, Occurrence, OptionError, OptionErrorKind, OptionSpec,
     OptionValue, ParseMode, ParsedOptions, WrapperOccurrence, parse_options, row,
 };
-use crate::command_options_query::{
-    has_wrapper_flag, positional_tokens, value_bytes, without_tokens,
-};
+use crate::command_options_query::{positional_tokens, value_bytes, without_tokens};
 use crate::command_test_support::{
     ALL, AMEND, MESSAGE, SYNTHETIC_TABLE, assert_table_invariants, os_arguments, parse_synthetic,
 };
@@ -265,7 +263,6 @@ fn finds_wrapper_flags_in_option_position_only() {
             WrapperOccurrence { flag: 0, token: 3 },
         ]
     );
-    assert!(has_wrapper_flag(&parsed, 0) && has_wrapper_flag(&parsed, 1));
     assert_eq!(positional_tokens(&parsed, arguments.len()), vec![5]);
     // Without the wrapper list the same token is an option Git does not know.
     assert_eq!(
@@ -275,7 +272,10 @@ fn finds_wrapper_flags_in_option_position_only() {
             token: 0
         })
     );
-    assert!(!has_wrapper_flag(&parse_synthetic(&["-a"]).expect("ok"), 0));
+    assert_eq!(
+        parse_synthetic(&["-a"]).expect("ok").wrapper,
+        Vec::<WrapperOccurrence>::new()
+    );
     // Removal is by position: the message value and the path keep their spelling.
     let mut full: Vec<OsString> = os_arguments(&["-C", "/r", "commit"]);
     full.extend(arguments.clone());
