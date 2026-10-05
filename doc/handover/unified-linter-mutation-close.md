@@ -634,12 +634,64 @@ because their sources changed the most since they were last mutated
 (the processor restructuring under `Timeouts removed` had never been mutated);
 the Markdown campaign starts only if both pass.
 
-Round 1 is running:
-`gate-mutation-close-5.log`,
-then `campaign-executable-final-1.log`,
-`campaign-processors-files-final-1.log` and `campaign-markdown-final-1.log`.
 A processor discovery pass on the gate 4 image (`mutation-dy0x0l`) was started and removed before its baseline,
 in favour of running the processor campaign once on the gate 5 image.
+
+### Gate 5
+
+`gate-mutation-close-5.log`,
+started at repository head `90044851e`,
+linter source tree `d38179d751fa78929968a682224e2c163a5e20e0`:
+382 library tests passed in 98.14 seconds,
+12 `binary` tests passed,
+and Clippy with `-D warnings` finished with no finding.
+Test image `6245a831544ee883ab3782207c7820434e9393d32cd1badc1ee1027b31959893`.
+Commits after it change the mutation runner,
+the package tasks,
+the README and this document,
+none of which is copied into the test image.
+
+### Executable campaign before the exclusion
+
+`mutation-eGKI9C` (`campaign-executable-final-1.log`) started before the decision under `Excluded mutation kinds`
+and ran without the two patterns,
+so it tried 5 mutants the scope no longer contains.
+Result:
+189 mutants,
+136 caught,
+0 missed,
+53 unviable,
+0 timeouts,
+exit status 0,
+39 minutes.
+Its per-mutant logs name the test that failed under each mutant the first run missed:
+
+- `replace debug_progress with ()`:
+  `debug_streams_workspace_progress_and_plain_runs_stay_silent`.
+- `replace || with && in run_process`:
+  `a_failing_output_stream_exits_two`, and no other test.
+- The three mutants of the new `silences_panics`
+  (constant `true`,
+  constant `false`,
+  and the deleted `!`):
+  `run_process::tests::only_debug_runs_keep_the_default_panic_hook`.
+- `src/run_workers.rs:37:37: replace * with +`:
+  the test binary aborted with `thread '<unknown>' has overflowed its stack`,
+  an unnamed worker thread.
+- `replace <= with > in process_plans`:
+  the test binary aborted with
+  `thread 'run_workers::tests::workers_parse_nesting_deeper_than_a_default_thread_stack_holds' has overflowed its stack`.
+- The redundant struct update in `check_rust_root` is gone,
+  and its mutant is no longer generated.
+
+The executable campaign is rerun with the committed runner after the other two,
+so that all three final results come from the same runner and the same image.
+
+### Round 1
+
+Running against the gate 5 image with the two patterns:
+`campaign-processors-files-final-1.log` (`mutation-Ij89RQ`, 355 mutants),
+then `campaign-markdown-final-1.log` if the processor campaign exits 0.
 
 ## Remaining
 
