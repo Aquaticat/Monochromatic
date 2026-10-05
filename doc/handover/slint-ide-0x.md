@@ -26,8 +26,13 @@ Actual nested Wayland mouse/keyboard/clipboard navigation checks pass in
 Off-screen reveal,
 Tab/Shift+Tab traversal,
 and clicks on windowed rows now pass in the light native probe.
-Finish the remaining guard controls/formatting,
-then continue combined search and in-file find.
+Guard controls,
+formatting,
+91 library/integration tests,
+ten native tests,
+and package lint pass.
+The final dark native smoke also passes with the click guard installed.
+Continue combined path/content search and in-file find.
 New identity/admission and file-open-generation guard controls remain to be exercised in the disposable copy.
 The procedural-macro and variable-font paths now both pass native font isolation.
 Continue annotations and language intelligence after workspace navigation.
@@ -442,6 +447,29 @@ Copy is keyboard-only.
 Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
+
+- Final native smoke `proc_4e47` is at port 9318,
+  socket `/tmp/monochromatic-ide-native-EGMdAC/control.sock`.
+  `interaction.mjs`,
+  `focus-reveal.mjs`,
+  and `windowed-click.mjs` all pass against the final pointer guard.
+  The dark off-screen-reveal screenshot was inspected.
+- `proc_fe92` passed final formatting,
+  the full 91-test library/integration suite,
+  all ten native tests,
+  and package lint.
+- Search work is starting from fresh reference reads of
+  `package-paused/desktop-daemon/editord/src/server/operations/search.ts`
+  and `stream-rg.ts`.
+  Path results use smart-case substring matching with a cap of 20;
+  content results use smart-case regex matching with a cap of 30 and one matching line per file.
+  The path stream and content stream run concurrently,
+  with path results presented first.
+  The host has ripgrep 15.2.0;
+  the container runtime probe is next.
+  Use NUL-delimited filename records and `--no-config` rather than inheriting arbitrary ripgrep configuration.
+  Ripgrep's current help confirms `--max-columns` does not limit JSON output,
+  so JSON record/preview handling still needs a bounded design.
 
 - `proc_fe92`,
   `ide-tree-final-format-verification`,

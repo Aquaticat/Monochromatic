@@ -164,6 +164,14 @@ runCargo(['clippy', '--all-targets', '--', '--deny', 'warnings'])
 description = "Check source-line budget and Rust documentation"
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
+[tasks."inspect:search-runtime"]
+description = "Probe the actual ripgrep runtime available in the bounded IDE environment"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runBounded(['rg', '--version'])
+"""
+
 [tasks."inspect:listview-algorithm"]
 description = "Run isolated scroll-algorithm controls against a supplied Slint repeater source file"
 usage = 'arg "<source>" help="Path to Slint internal/core/model/repeater.rs"'
