@@ -9,12 +9,12 @@
 //! ```
 
 /// The pass under test, the engine types it returns and the scripted facts.
-use super::{PassResult, pass_blocking_code, policies_of_kind, run_policy_pass};
+use super::{PassResult, policies_of_kind, run_policy_pass};
 use crate::command_test_support::os_arguments;
 use crate::config_schema::PolicyConfig;
 use crate::diagnostics::EngineFailureCode;
 use crate::policy_checks::{CandidateSource, ShippedChecks};
-use crate::policy_engine::{StageEnd, StageRequest, Unavailable};
+use crate::policy_engine::{StageEnd, StageRequest, Unavailable, pass_exit_code};
 use crate::policy_events::{FindingEvent, PolicyEvent};
 use crate::policy_registry::{PolicyId, Severity};
 use crate::policy_test_support::{ScriptedFacts, main_worktree, scripted_facts, with_severity};
@@ -31,6 +31,11 @@ fn request(trigger: Trigger, controls: Controls) -> StageRequest {
         controls,
         selected: Vec::<PolicyId>::new(),
     };
+}
+
+/// The exit code of a pass that does not reach Git: 0 means the command may proceed.
+fn exit_code(result: &PassResult) -> i32 {
+    return pass_exit_code(result.events.as_slice(), result.end);
 }
 
 /// Controls that only ask to keep going.
@@ -146,7 +151,7 @@ fn a_clean_pass_hands_back_the_transformed_arguments() {
             },
             "{values:?}"
         );
-        assert_eq!(pass_blocking_code(&result), None, "{values:?}");
+        assert_eq!(exit_code(&result), 0, "{values:?}");
         assert_eq!(asked, vec![String::from("location")], "{values:?}");
     }
 }
@@ -169,7 +174,7 @@ fn a_built_in_error_ends_the_pass_before_the_transforms() {
             end: StageEnd::Stopped,
         }
     );
-    assert_eq!(pass_blocking_code(&result), Some(1));
+    assert_eq!(exit_code(&result), 1);
     assert_eq!(asked, vec![String::from("location")]);
 }
 
@@ -191,7 +196,7 @@ fn keep_going_collects_every_stage_and_still_blocks() {
             end: StageEnd::Completed,
         }
     );
-    assert_eq!(pass_blocking_code(&rejected), Some(1));
+    assert_eq!(exit_code(&rejected), 1);
     // The transform of a command the built-in stage rejected is still applied.
     let (pushed, _pushed_asked) = pass(&stage, &["push"], below_root(), CandidateSource::None);
     assert_eq!(
@@ -202,7 +207,7 @@ fn keep_going_collects_every_stage_and_still_blocks() {
             end: StageEnd::Completed,
         }
     );
-    assert_eq!(pass_blocking_code(&pushed), Some(1));
+    assert_eq!(exit_code(&pushed), 1);
 }
 
 /// A transform rejection ends the pass unless keep-going; a transform failure always does.
@@ -223,7 +228,7 @@ fn a_transform_rejection_or_failure_ends_the_pass() {
             end: StageEnd::Stopped,
         }
     );
-    assert_eq!(pass_blocking_code(&rejected), Some(1));
+    assert_eq!(exit_code(&rejected), 1);
     for controls in [no_controls(), keep_going()] {
         let mut facts: ScriptedFacts = scripted_facts();
         facts.sequencer = Err(String::from("no sequencer answer"));
@@ -243,7 +248,7 @@ fn a_transform_rejection_or_failure_ends_the_pass() {
                 end: StageEnd::Failed,
             }
         );
-        assert_eq!(pass_blocking_code(&failed), Some(2));
+        assert_eq!(exit_code(&failed), 2);
         assert_eq!(
             asked,
             vec![String::from("location"), String::from("sequencer")]
@@ -289,7 +294,7 @@ fn unreadable_candidates_end_the_pass_as_unavailable() {
             }),
         }
     );
-    assert_eq!(pass_blocking_code(&built_in), Some(2));
+    assert_eq!(exit_code(&built_in), 2);
     // With the built-in content policy escaped, the first listed optional policy answers.
     let config: PolicyConfig = with_severity(
         &PolicyConfig::defaults(),
@@ -325,7 +330,7 @@ fn unreadable_candidates_end_the_pass_as_unavailable() {
         CandidateSource::NotPorted(needs),
     );
     assert_eq!(unlisted.end, StageEnd::Completed);
-    assert_eq!(pass_blocking_code(&unlisted), None);
+    assert_eq!(exit_code(&unlisted), 0);
 }
 
 /// A direct check runs both stages and no transform.
@@ -373,7 +378,7 @@ fn an_unported_lifecycle_is_unavailable() {
             },
             "{trigger:?}"
         );
-        assert_eq!(pass_blocking_code(&result), Some(2), "{trigger:?}");
+        assert_eq!(exit_code(&result), 2, "{trigger:?}");
         assert_eq!(asked, Vec::<String>::new(), "{trigger:?}");
     }
 }

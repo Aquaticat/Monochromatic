@@ -18,7 +18,7 @@
 /// import { runPolicyStage } from './policy_engine.ts';
 /// ```
 use super::policy_checks::ShippedChecks;
-use super::policy_engine::{StageEnd, StageRequest, StageResult, pass_exit_code, run_policy_stage};
+use super::policy_engine::{StageEnd, StageRequest, StageResult, run_policy_stage};
 use super::policy_events::PolicyEvent;
 use super::policy_registry::{POLICY_REGISTRY, PolicyId};
 use super::policy_transforms::{TransformResult, apply_fixed_transforms};
@@ -178,25 +178,6 @@ pub fn run_policy_pass<F: RepositoryFacts>(
         events,
         end: optional.end,
     };
-}
-
-/// What: The exit code of a pass, or nothing when the command may proceed.
-///       `Option<i32>` is "an exit code or nothing"; `&PassResult` borrows the pass.
-/// Why:  A pass that could not decide exits 2, one with an error finding or a transform
-///       rejection exits 1, and only a clean or warning-only pass lets the command go on.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const blocked = result.shouldForward ? undefined : result.exitCode;
-/// ```
-pub fn pass_blocking_code(result: &PassResult) -> Option<i32> {
-    let code: i32 = pass_exit_code(result.events.as_slice(), result.end);
-    if code == 0 {
-        // `None` is the "absent" case of `Option`.
-        return None;
-    }
-    // `Some(x)` is the "present" case.
-    return Some(code);
 }
 
 /// Stage order, stopping and argument hand-over stay out of the release executable.
