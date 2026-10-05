@@ -4,12 +4,14 @@
  @module
  */
 
-import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import {
+  fakeExtensionToolContext,
+} from './extension-tool-context-fixture.ts';
 import {
   createLinkupTools,
   LINKUP_WEB_FETCH_TOOL_NAME,
@@ -121,10 +123,10 @@ await describe({
             depth: 'deep',
             limit: 2,
             maxResults: 5,
-          } as never,
+          },
           undefined,
           undefined,
-          fakeContext(),
+          await fakeExtensionToolContext(),
         );
 
         expect(result.content,).toHaveLength(2,);
@@ -185,7 +187,7 @@ await describe({
           { query: 'filter', },
           undefined,
           undefined,
-          fakeContext(),
+          await fakeExtensionToolContext(),
         );
 
         /**
@@ -225,7 +227,7 @@ await describe({
           { query: 'metadata', },
           undefined,
           undefined,
-          fakeContext(),
+          await fakeExtensionToolContext(),
         );
 
         expect(parseVisibleJsonl({ result, index: 0, },),).toEqual(METADATA_SEARCH_RESPONSE.results,);
@@ -257,10 +259,10 @@ await describe({
             url: 'https://example.com',
             renderJs: false,
             includeRawHtml: true,
-          } as never,
+          },
           undefined,
           undefined,
-          fakeContext(),
+          await fakeExtensionToolContext(),
         );
 
         expect(result.content,).toHaveLength(2,);
@@ -295,7 +297,7 @@ await describe({
             { url: `https://www.${BLOCKED_HOST}/page`, },
             undefined,
             undefined,
-            fakeContext(),
+            await fakeExtensionToolContext(),
           );
         }
         catch (error: unknown) {
@@ -334,7 +336,7 @@ await describe({
           { url: 'https://example.com', },
           undefined,
           undefined,
-          fakeContext(),
+          await fakeExtensionToolContext(),
         );
 
         expect(result.details.linkupResponse,).toBe(fetchResponse,);
@@ -376,7 +378,7 @@ await describe({
           { url: 'https://example.com', },
           undefined,
           undefined,
-          fakeContext(),
+          await fakeExtensionToolContext(),
         );
 
         expect(textContentAt({ result, index: 0, },),).toBe('Before\nAfter',);
@@ -414,7 +416,7 @@ await describe({
           { url: 'https://example.com', },
           undefined,
           undefined,
-          fakeContext(),
+          await fakeExtensionToolContext(),
         );
 
         expect(result.details.linkupResponse,).toBe(fetchResponse,);
@@ -588,15 +590,6 @@ function fetchToolFrom(client: SearchFetchToolClient,) {
   if (tool === undefined)
     throw new Error('missing fetch tool',);
   return tool;
-}
-
-/**
- Build unused extension context stand-in.
- 
- @returns fake extension context
- */
-function fakeContext(): ExtensionContext {
-  return {} as unknown as ExtensionContext;
 }
 
 /**

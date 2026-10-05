@@ -122,11 +122,9 @@ function createLinkupWebSearchTool(options: CreateLinkupToolsOptions,): LinkupTo
     async execute(
       _toolCallId: string,
       rawParams: unknown,
-      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute requires positional signal before later context args, so optionality cannot move to a trailing parameter.
-      signal: AbortSignal | undefined,
-      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute provides onUpdate as callback-or-undefined in a fixed positional signature.
-      onUpdate: AgentToolUpdateCallback<LinkupToolDetails> | undefined,
-      _ctx: ExtensionContext,
+      signal?: AbortSignal,
+      onUpdate?: AgentToolUpdateCallback<LinkupToolDetails>,
+      _ctx?: ExtensionContext,
     ) {
       /**
        Logger tagged for this tool registration.
@@ -170,11 +168,9 @@ function createLinkupWebFetchTool(options: CreateLinkupToolsOptions,): LinkupToo
     async execute(
       _toolCallId: string,
       rawParams: unknown,
-      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute requires positional signal before later context args, so optionality cannot move to a trailing parameter.
-      signal: AbortSignal | undefined,
-      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute provides onUpdate as callback-or-undefined in a fixed positional signature.
-      onUpdate: AgentToolUpdateCallback<LinkupToolDetails> | undefined,
-      _ctx: ExtensionContext,
+      signal?: AbortSignal,
+      onUpdate?: AgentToolUpdateCallback<LinkupToolDetails>,
+      _ctx?: ExtensionContext,
     ) {
       /**
        Logger tagged for this tool registration.
