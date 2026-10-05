@@ -97,3 +97,8 @@ impl Scanner {
 #[cfg(test)]
 #[path = "scanner_tests.rs"]
 mod tests;
+
+/// Prefix edges and caught-panic reuse controls remain separate from the normal snapshot examples.
+#[cfg(test)]
+#[path = "scanner_boundary_tests.rs"]
+mod boundary_tests;

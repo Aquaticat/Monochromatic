@@ -105,8 +105,10 @@ pub(crate) fn scan_content(buf: &[u8], loaded: &LoadedRules) -> Vec<ScanFinding>
     let starts = line_starts(buf);
     let mut hits: Vec<ScanFinding> = Vec::<ScanFinding>::new();
     for scan_set in loaded.iter_sets() {
-        // AssertUnwindSafe: the borrows captured here (the set, `buf`, `starts`) are
-        // read-only, so a caught unwind leaves no observable broken invariant.
+        // AssertUnwindSafe permits this borrowed engine boundary. Reuse is supported by
+        // RuntimeRules::line_matches and RegexSet::line_matches allocating hits/candidates
+        // per call; RegexSet::resolve_matches also owns fresh CheckedFull scratch.
+        // The scanner boundary tests provoke a real bounds unwind and compare later scans.
         let matcher = AssertUnwindSafe(|| return scan_set.matcher.line_matches(buf, &starts));
         hits.extend(scan_one_set(scan_set.base, &scan_set.names, matcher));
     }

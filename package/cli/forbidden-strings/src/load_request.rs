@@ -76,3 +76,8 @@ pub(crate) fn load(path: &Path, builtin: bool, explicit: bool) -> Result<LoadedR
 #[cfg(test)]
 #[path = "load_request_tests.rs"]
 mod tests;
+
+/// Nested callback and partial-construction controls remain confined to unit-test builds.
+#[cfg(test)]
+#[path = "load_request_nested_tests.rs"]
+mod nested_tests;
