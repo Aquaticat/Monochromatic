@@ -40,7 +40,13 @@ to follow-up commands (`exec`,
    and `virsh`,
    none of which are available on macOS or Windows
 - KVM support (`/dev/kvm` must exist)
-- `virsh` and `qemu-img` installed (`sudo dnf install libvirt qemu-img`)
+- `virsh` and `qemu-img` installed (`sudo dnf install libvirt qemu-img`),
+  or the `org.virt_manager.virt-manager` Flatpak,
+  whose `virsh` and `qemu-img` mvm uses when `virsh` is not on `PATH`
+  (see [Host tools](#host-tools))
+- `virtiofsd` is optional:
+  without it VMs get no shared directory and files move through the guest agent
+  (see [File transfer](#file-transfer))
 
 ### hetzner backend
 
@@ -82,6 +88,144 @@ mise run //package/cli/mvm:run -- create dev-01
 mise run //package/cli/mvm:run -- create --image fedora build-box
 mise run //package/cli/mvm:run -- create --image windows win-box
 ```
+
+## Host tools
+
+The libvirt backend runs two host commands,
+`virsh` and `qemu-img`.
+mvm decides once per process how to run each of them,
+in this order:
+
+1.  The tool's environment variable,
+    `MVM_VIRSH_COMMAND` or `MVM_QEMU_IMG_COMMAND`.
+2.  The bare command name,
+    when `virsh` is an executable in a directory of `PATH`.
+3.  The tool inside the `org.virt_manager.virt-manager` Flatpak,
+    when that Flatpak is installed:
+    `flatpak run --command=virsh org.virt_manager.virt-manager`,
+    and the same with `qemu-img`.
+4.  The bare command name,
+    so that the failure names what is missing.
+
+The second and third step treat both tools as one installation:
+the `qemu-img` that creates a disk comes from the same place as the libvirt that runs it.
+On a host whose libvirt exists only in the Flatpak,
+mvm therefore works without any configuration,
+and so does the MCP server,
+which shares this code.
+The Flatpak must be able to read and write mvm's data directory;
+its default permissions include the home directory.
+
+### Command variables
+
+Each variable holds a JSON array:
+the executable,
+then the arguments that go before the tool's own.
+A JSON array is used so that an argument may contain spaces without any quoting rules.
+
+```sh
+# package/cli/mvm/README.md
+export MVM_VIRSH_COMMAND='["flatpak","run","--command=virsh","org.virt_manager.virt-manager"]'
+export MVM_QEMU_IMG_COMMAND='["/opt/qemu/bin/qemu-img"]'
+```
+
+The MCP server reads the same variables from its own environment,
+which is set where the server is registered,
+not in a shell profile:
+
+```sh
+# package/cli/mvm/README.md
+claude mcp add --scope user mvm \
+  --env 'MVM_VIRSH_COMMAND=["/opt/libvirt/bin/virsh"]' \
+  -- node /path/to/package/mcp/mvm/dist/final/node/index.mjs
+```
+
+A variable that is set but is not a JSON array of non-empty strings stops mvm with an error naming the variable.
+
+### Session daemon
+
+mvm does not start libvirt's session daemon.
+`virsh` starts `virtqemud` on demand,
+and the daemon keeps running while a domain runs and exits after two idle minutes.
+The first `virsh` call after that takes a few seconds longer.
+
+Every `virsh` call has a deadline:
+two minutes,
+or the guest agent timeout plus thirty seconds for a guest agent request.
+A call that cannot connect or outlasts its deadline fails with an error that shows how to start the daemon by hand,
+which is how to find out why it does not come up.
+
+mvm waits for `virsh` to exit,
+not for its output streams to close.
+A daemon started on demand inside the Flatpak sandbox keeps those streams open for as long as it lives,
+which made one piped `virsh` call take two minutes;
+see `doc/troubleshooting/mvm-libvirt-flatpak-only-host.md` in the repository root.
+
+## File transfer
+
+`mvm push` and `mvm pull` use one of two routes.
+The route is chosen when the VM is created and recorded in its `meta.json` as `fileTransfer`.
+
+### Shared directory
+
+When libvirt can run `virtiofsd`,
+the VM gets a `shared/` directory on the host,
+mounted in the guest at `/mnt/shared` (Linux) or `Z:\` (Windows).
+Push copies the host file into that directory and pull reads from it.
+Only the file name of the guest path is used:
+`mvm push dev-01 ./setup.sh /any/dir/setup.sh` puts the file at `/mnt/shared/setup.sh`.
+
+### Guest agent
+
+When libvirt finds no `virtiofsd`,
+a domain with the share would not start
+(`Unable to find a satisfying virtiofsd`).
+mvm asks libvirt before defining the domain,
+by converting a minimal domain with `virsh domxml-to-native`,
+and then defines the VM without the share and without the shared memory backing the share needs.
+Push and pull read and write the guest's own files through the QEMU guest agent:
+
+- The guest path must be the file's full path in the guest,
+  such as `/tmp/setup.sh` or `C:\Windows\Temp\setup.ps1`.
+  Its directory must exist;
+  the agent does not create directories.
+- Paths with spaces and non-ASCII characters need no quoting,
+  because the agent opens the path itself and no guest shell is involved.
+- The file travels in chunks,
+  one `virsh` call each:
+  96000 bytes per write and 1 MiB per read.
+  A push is therefore slow where each `virsh` call is slow,
+  as it is through the Flatpak;
+  measured rates are in `doc/handover/mvm-flatpak-libvirt.md` in the repository root.
+- A chunk whose call gets no answer is sent again at the same position.
+  When a push stops midway,
+  the error says how many bytes arrived,
+  and the guest file is incomplete until the push is repeated.
+- After a transfer,
+  the size the guest reports must equal the number of bytes moved.
+- `mvm pull` holds the whole file in memory.
+
+## Running commands
+
+`mvm exec` and `mvm run` start the command through the QEMU guest agent and wait for it.
+
+- Every command first prints a marker line that mvm removes from the output.
+  The guest agent finds a finished command by process ID alone,
+  and a reused process ID once returned an earlier command's output with exit status 0;
+  only a result carrying the marker is returned.
+  When no result carries it,
+  mvm fails and shows the results it discarded.
+  PowerShell parses a whole command before running any of it,
+  so a PowerShell command that does not parse prints no marker and is reported this way,
+  with the parser's message in the discarded output.
+- A status request that the guest agent does not answer is asked again.
+  mvm gives up when the domain is gone or when requests stay unanswered for five minutes.
+- A command a signal ended reports exit status 128 plus the signal number.
+- `mvm create` returns once the new VM's guest agent answers,
+  and waits up to five minutes for that.
+  After a reboot inside the guest,
+  a command fails until the agent answers again;
+  repeat it.
 
 ## Available images
 
@@ -220,6 +364,9 @@ with a `/bin/sh` shell for custom images.
 - **Console access** uses `virsh console` with auto-login on ttyS0 (no SSH or keys needed)
 - **Networking** uses QEMU user-mode networking (SLIRP) for outbound internet access
 - **Connection** uses `qemu:///session` so no root privileges or polkit prompts are needed
+- **Host tools** `virsh` and `qemu-img` run as described in [Host tools](#host-tools)
+- **File transfer** uses a virtiofs shared directory,
+  or the guest agent on hosts without `virtiofsd`
 - All VM names are prefixed with `mvm-` in libvirt to avoid collisions
 
 ## VM defaults
