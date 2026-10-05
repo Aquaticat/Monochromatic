@@ -86,8 +86,9 @@ async function main() {
     // This is scoped evidence, not a replacement for full-rule mutation. The baseline still runs.
     if (markdown)
       command.push('--file', 'src/markdown_*.rs', '--cargo-test-arg=markdown');
-    // Replacing the parent lookup with a constant makes every ancestor walk spin, so the Markdown scope can only
-    // report those mutants as timeouts. This scope runs the one control that never walks, where they fail at once.
+    // The parent lookup's own contract control, which never walks ancestors. Before ancestor walks were bounded by
+    // the node count, a constant parent made them spin and the Markdown scope could only time out on these mutants;
+    // the Markdown scope now catches them too, and this scope stays as their fastest direct check.
     if (markdownParent)
       command.push('--file', 'src/markdown_source.rs', '--re', 'MarkdownSource::parent', '--cargo-test-arg=parents_mirror_child_edges_and_stop_at_the_root');
     // Every processor module, not only the planted guard removals of the mutation:processors task.

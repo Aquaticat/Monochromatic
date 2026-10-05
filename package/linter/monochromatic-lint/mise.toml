@@ -68,7 +68,7 @@ depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --markdown"
 
 [tasks."mutation:markdown:parent"]
-description = "Mutate only the Markdown parent lookup against the one control that never walks ancestors, where its constant replacements fail instead of spinning"
+description = "Mutate only the Markdown parent lookup against its contract control, which never walks ancestors and fails at once under a constant replacement"
 depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --markdown-parent"
 
