@@ -74,6 +74,8 @@ pub mod markdown_punctuation;
 /// Internal native Markdown/MDX parser interface.
 #[doc(hidden)]
 pub mod markdown_source;
+/// HTML/MDX cell-text encoding at the generated table boundary.
+mod markdown_table_text;
 /// Native literal and glob command-input expansion.
 #[doc(hidden)]
 pub mod path_inputs;
