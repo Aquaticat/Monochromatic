@@ -859,12 +859,6 @@ HDM:
  build + verify light and dark;
  open it in current system mode.
 
-ATS:
- Custom interactive elements (web,
- Android):
- explicit min 48px/dp layout width + height;
- never rely on touch area expanding past bounds where neighbors can overlap.
-
 ### TSDoc comments
 
 TSD:
