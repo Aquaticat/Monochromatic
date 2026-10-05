@@ -10,9 +10,10 @@
 
 /// Import per-file processing, its outcome and the plan model.
 use crate::run_failure::{file_start, panic_text, processing_failure};
-use crate::run_file::{FileOutcome, SourceOutcome, process_file, process_source};
+use crate::run_file::{FileOutcome, SourceOutcome, Writer, process_file_with, process_source};
 use crate::run_lfs::LfsRepos;
 use crate::run_plan::FilePlan;
+use crate::run_write::write_atomically;
 use crate::rust_file_engine::RustFileEngine;
 /// Import unwind containment; `AssertUnwindSafe` states that a caught panic leaves no state we reuse unsafely.
 use std::panic::{AssertUnwindSafe, catch_unwind};
@@ -75,12 +76,37 @@ fn panicked(plan: &FilePlan, payload: &(dyn std::any::Any + Send)) -> FileOutcom
     };
 }
 
-/// What: Process one plan, converting a panic into a processing finding.
-/// Why: `catch_unwind` needs a callable; the closure only forwards to the named `process_file`.
+/// What: Process one plan through a given writer, converting a panic into a processing finding.
+/// Why: `catch_unwind` needs a callable; the closure only forwards to the named `process_file_with`.
+/// The writer parameter lets a test raise a real panic inside the contained region.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function contained(plan, fix, lfs, engine): FileOutcome { try { return processFile(...); } catch (error) { return panicked(plan, error); } }
+/// function containedWith(plan, fix, lfs, engine, writer): FileOutcome { try { return processFileWith(...); } catch (error) { return panicked(plan, error); } }
+/// ```
+pub fn contained_with(
+    plan: &FilePlan,
+    fix: bool,
+    lfs: &LfsRepos,
+    engine: Option<&mut RustFileEngine>,
+    writer: Writer,
+) -> FileOutcome {
+    let attempt: Result<FileOutcome, Box<dyn std::any::Any + Send>> =
+        catch_unwind(AssertUnwindSafe(|| {
+            return process_file_with(plan, fix, lfs, engine, writer);
+        }));
+    match attempt {
+        Ok(outcome) => return outcome,
+        Err(payload) => return panicked(plan, payload.as_ref()),
+    }
+}
+
+/// What: Process one plan with the production atomic writer, with panic containment.
+/// Why: Every file the run processes goes through this one entry.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function contained(plan, fix, lfs, engine): FileOutcome;
 /// ```
 pub fn contained(
     plan: &FilePlan,
@@ -88,14 +114,7 @@ pub fn contained(
     lfs: &LfsRepos,
     engine: Option<&mut RustFileEngine>,
 ) -> FileOutcome {
-    let attempt: Result<FileOutcome, Box<dyn std::any::Any + Send>> =
-        catch_unwind(AssertUnwindSafe(|| {
-            return process_file(plan, fix, lfs, engine);
-        }));
-    match attempt {
-        Ok(outcome) => return outcome,
-        Err(payload) => return panicked(plan, payload.as_ref()),
-    }
+    return contained_with(plan, fix, lfs, engine, write_atomically);
 }
 
 /// What: Check or fix one in-memory source, converting a panic into a processing finding.

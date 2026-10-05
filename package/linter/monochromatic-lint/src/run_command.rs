@@ -409,3 +409,8 @@ pub fn run_command(options: &CliOptions, cwd: &Path, stdin: &mut dyn Read) -> Ru
 #[cfg(test)]
 #[path = "run_command_tests.rs"]
 mod tests;
+
+/// Fixing, standard-input and LFS invocation controls stay outside release artifacts.
+#[cfg(test)]
+#[path = "run_command_fix_tests.rs"]
+mod fix_tests;

@@ -8,7 +8,7 @@
 //! ```
 
 /// Import the single endpoint normalizer; no other code turns an endpoint into an object base.
-use crate::markdown_lfs_endpoint::{LfsEndpointError, lfs_object_base};
+use crate::markdown_lfs_endpoint::{LfsUrlRejection, lfs_object_base};
 /// Import ECMAScript's trim set, which differs from Rust's `str::trim` (it includes U+FEFF, excludes U+0085).
 use crate::markdown_table_text::trim_space;
 /// Import native paths and I/O error classification.
@@ -38,7 +38,9 @@ pub(crate) fn js_trim(text: &str) -> &str {
 
 /// What: Collect endpoint values exactly as written, in file order.
 /// Why: `url` under `[lfs]` and `lfsurl` under any `[remote "..."]` section name the LFS server;
-/// comments, blank lines and unrelated keys pass through.
+/// comments, blank lines and unrelated keys pass through. Lines split on U+000A only.
+/// Section and key names fold ASCII case: the evaluation measured over every code point that no
+/// non-ASCII character lowercases to text containing a letter of the compared names.
 /// `Vec<String>` owns each value because the caller outlives the borrowed file text.
 ///
 /// In TS you'd write (pseudocode):
@@ -56,13 +58,13 @@ pub(crate) fn lfs_endpoints(text: &str) -> Vec<String> {
         if line.starts_with('[') && line.ends_with(']') {
             // Both brackets are single ASCII bytes and distinct, so the line holds at least two bytes.
             let inner: &str = &line[1..line.len() - 1];
-            section = js_trim(inner).to_lowercase();
+            section = js_trim(inner).to_ascii_lowercase();
             continue;
         }
         let Some(equals): Option<usize> = line.find('=') else {
             continue;
         };
-        let key: String = js_trim(&line[..equals]).to_lowercase();
+        let key: String = js_trim(&line[..equals]).to_ascii_lowercase();
         let value: &str = js_trim(&line[equals + 1..]);
         let lfs_url: bool = (section == "lfs" && key == "url")
             || (section.starts_with("remote ") && key == "lfsurl");
@@ -81,7 +83,7 @@ pub(crate) fn lfs_endpoints(text: &str) -> Vec<String> {
 /// ```ts
 /// function parseLfsConfig(text: string): string[]; // throws on a malformed endpoint
 /// ```
-pub(crate) fn parse_lfs_config(text: &str) -> Result<Vec<String>, LfsEndpointError> {
+pub(crate) fn parse_lfs_config(text: &str) -> Result<Vec<String>, LfsUrlRejection> {
     let mut bases: Vec<String> = Vec::<String>::new();
     for endpoint in lfs_endpoints(text) {
         // `?` returns the normalizer's failure to the caller instead of continuing with fewer bases.
@@ -150,9 +152,10 @@ pub(crate) fn read_lfs_object_base(repo_root: &Path) -> Result<Option<String>, L
     match parse_lfs_config(text.as_str()) {
         Ok(bases) => return Ok(bases.into_iter().next()),
         Err(error) => {
+            // The endpoint itself is not echoed: it may hold credentials.
             return Err(LfsConfigError {
                 message: format!(
-                    "{} declares an unusable LFS endpoint: {error}",
+                    "{} declares an LFS endpoint this linter cannot use: {error}",
                     path.display()
                 ),
             });

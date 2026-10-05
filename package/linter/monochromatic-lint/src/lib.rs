@@ -216,6 +216,10 @@ pub mod rust_workspace;
 #[cfg(test)]
 mod test_fs;
 
+/// Shared orchestration fixtures: disposable trees, parsed command lines and JSONL decoding.
+#[cfg(test)]
+mod run_test_support;
+
 /// Full semantic annotation controls, including source-overlay cache changes.
 #[cfg(test)]
 mod rust_explicit_types_tests;

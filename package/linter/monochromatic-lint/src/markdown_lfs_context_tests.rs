@@ -112,6 +112,62 @@ fn a_repository_needs_a_declared_endpoint() {
     );
 }
 
+/// Discovery from a nested directory finds the root, the credential-free base and the tracked patterns.
+#[test]
+fn discovery_reads_the_base_and_tracked_patterns_from_the_root() {
+    let fixture: Fixture = Fixture::new();
+    write_tree(&fixture.path);
+    std::fs::write(
+        fixture.path.join(".lfsconfig"),
+        "[lfs]\n\turl = https://lfs:token@lfs.example\n",
+    )
+    .expect("configuration");
+    let found: LfsImageRepo = discover_lfs_image_repo(&fixture.path.join("pkg/asset/../asset"))
+        .expect("discovery")
+        .expect("repository");
+    assert_eq!(found.repo_root, fixture.path);
+    assert_eq!(found.object_base, BASE);
+    assert_eq!(
+        found.resolve_target("pkg/asset/shot.png").expect("tracked"),
+        LfsImageTarget::Lfs {
+            oid: String::from(IMAGE_OID)
+        }
+    );
+    assert_eq!(
+        found.resolve_target("pkg/README.md").expect("plain"),
+        LfsImageTarget::Plain
+    );
+    // An endpoint outside the supported form fails discovery instead of leaving the rule inert.
+    std::fs::write(
+        fixture.path.join(".lfsconfig"),
+        "[lfs]\n\turl = ssh://git@lfs.example/x\n",
+    )
+    .expect("unsupported endpoint");
+    let error = discover_lfs_image_repo(&fixture.path).expect_err("unsupported scheme");
+    assert!(
+        error.message.contains("https://host/path"),
+        "{}",
+        error.message
+    );
+    // Attributes that cannot compile fail discovery and name their file.
+    std::fs::write(
+        fixture.path.join(".lfsconfig"),
+        "[lfs]\n\turl = https://lfs.example\n",
+    )
+    .expect("supported endpoint");
+    std::fs::write(
+        fixture.path.join(".gitattributes"),
+        "[z-a].png filter=lfs\n",
+    )
+    .expect("attributes with a reversed range");
+    let invalid = discover_lfs_image_repo(&fixture.path).expect_err("pattern");
+    assert!(
+        invalid.message.contains(".gitattributes"),
+        "{}",
+        invalid.message
+    );
+}
+
 /// Exclusion patterns are relative to the repository root and never reach files outside it.
 #[test]
 fn exclusion_is_relative_to_the_repository_root() {

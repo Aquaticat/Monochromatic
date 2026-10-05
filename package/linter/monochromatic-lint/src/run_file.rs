@@ -14,7 +14,7 @@ use crate::run_check::HostChecker;
 use crate::run_failure::{file_start, fix_refused, processing_failure};
 use crate::run_lfs::LfsRepos;
 use crate::run_plan::FilePlan;
-use crate::run_write::write_atomically;
+use crate::run_write::{WriteError, write_atomically};
 use crate::rust_file_engine::RustFileEngine;
 /// Import ordering for the stable per-file sort of findings.
 use std::cmp::Ordering;
@@ -145,10 +145,19 @@ fn unreadable(plan: &FilePlan, message: String) -> FileOutcome {
     };
 }
 
+/// What: The signature of the operation that replaces a file's contents.
+/// Why: Production passes `write_atomically`; a test passes a writer that refuses, to exercise
+/// the failed-write outcome without depending on filesystem permissions.
+/// `fn(...)` is a plain function pointer, not a closure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Writer = (path: Path, contents: Uint8Array) => void; // throws WriteError
+/// ```
+pub type Writer = fn(&std::path::Path, &[u8]) -> Result<(), WriteError>;
+
 /// What: Read, check or fix, and in fix mode atomically rewrite one file.
-/// Why: The file is rewritten only when the accepted fixed source differs from what was read. A
-/// failed write leaves the original bytes in place, so the findings reported are then those of
-/// the original source plus one processing finding for the write.
+/// Why: This is the production entry: the same pipeline as `process_file_with`, with the atomic writer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -158,7 +167,26 @@ pub fn process_file(
     plan: &FilePlan,
     fix: bool,
     lfs: &LfsRepos,
+    engine: Option<&mut RustFileEngine>,
+) -> FileOutcome {
+    return process_file_with(plan, fix, lfs, engine, write_atomically);
+}
+
+/// What: Read, check or fix, and in fix mode rewrite one file through the given writer.
+/// Why: The file is rewritten only when the accepted fixed source differs from what was read. A
+/// failed write leaves the original bytes in place, so the findings reported are then those of
+/// the original source plus one processing finding for the write.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function processFileWith(plan, fix, lfs, engine, writer): FileOutcome;
+/// ```
+pub fn process_file_with(
+    plan: &FilePlan,
+    fix: bool,
+    lfs: &LfsRepos,
     mut engine: Option<&mut RustFileEngine>,
+    writer: Writer,
 ) -> FileOutcome {
     let bytes: Vec<u8> = match std::fs::read(&plan.absolute) {
         Ok(contents) => contents,
@@ -191,7 +219,7 @@ pub fn process_file(
     if let Some(fixed) = outcome.fixed
         && fixed != source
     {
-        match write_atomically(&plan.absolute, fixed.as_bytes()) {
+        match writer(&plan.absolute, fixed.as_bytes()) {
             Ok(()) => written = true,
             Err(error) => {
                 let original: SourceOutcome =
