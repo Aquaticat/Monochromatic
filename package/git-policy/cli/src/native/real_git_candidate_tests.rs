@@ -156,6 +156,25 @@ fn script_inspection_bound_is_exact() {
     remove(root.as_path());
 }
 
+/// The bound is the incumbent's 64 KiB (`package/git/executable/src/self-shim.ts`): a launcher
+/// padded to just under it, with its marker in the last bytes, is still recognised.
+#[test]
+fn script_inspection_bound_matches_the_incumbent() {
+    assert_eq!(MAX_SCRIPT_INSPECTION_BYTES, 65_536);
+    let root: PathBuf = fixture("classify-bound-value");
+    executable(root.join("own").as_path(), b"\x7fELF own");
+    let marker: &[u8] = b"@monochromatic-dev/git-policy-cli";
+    let mut launcher: Vec<u8> = b"#!/bin/sh\n".to_vec();
+    launcher.resize(65_536 - marker.len(), b'#');
+    launcher.extend_from_slice(marker);
+    assert_eq!(launcher.len(), 65_536);
+    assert_eq!(
+        classify_content(root.as_path(), "padded-launcher", launcher.as_slice()),
+        CandidateKind::Wrapper
+    );
+    remove(root.as_path());
+}
+
 /// Entries that cannot be run as a file are unusable, and a named pipe never blocks classification.
 #[test]
 fn unusable_candidates_are_skipped() {
