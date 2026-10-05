@@ -10,9 +10,11 @@ The linter and wrapper remain the main agent's work.
 No installed production tool was published or replaced.
 
 The scoped Linux queue is complete.
-The full mutation campaign remains non-green because native Windows prefix detection is not exercised on Linux.
+The full mutation campaign remains non-green on Linux because native Windows prefix detection is not exercised there.
 Those survivors are retained,
 not excluded.
+A Windows-native follow-up caught both of them with an existing test.
+`Windows-native follow-up` records that run and the separate Windows findings it left open.
 
 ## Requirements preserved
 
@@ -201,8 +203,13 @@ The historical full-campaign counts are not rewritten by this follow-up.
 
 Pure Windows separator/counting helpers and supplied-prefix scan controls execute on Linux.
 They do not replace Windows-native `Component::Prefix` verification.
-Both survivors remain in the owning task and retained reports.
-A Windows-native run is needed to close this limitation.
+Both survivors remain in the owning task and retained Linux reports,
+whose counts are not rewritten.
+The Windows-native run this limitation required has since been made:
+both mutants are caught on native Windows by `path_scan::tests::windows_volume_prefix_is_not_name_segment`.
+Controls,
+provenance,
+and the findings that run left open are in `Windows-native follow-up`.
 
 ### Unviable mutants
 
@@ -237,6 +244,271 @@ compiler output,
 and classification remain in `unviable.txt`,
 `outcomes.json`,
 and per-mutant `log/` and `diff/` files.
+
+## Windows-native follow-up
+
+### Purpose and outcome
+
+This follow-up answers one question:
+do the existing tests kill the two retained `prefix_parts` survivors on a real Windows target?
+They do.
+Both mutants are caught by `path_scan::tests::windows_volume_prefix_is_not_name_segment`,
+an existing `#[cfg(windows)]` test that the Linux campaigns cannot execute.
+No test code was added,
+because neither mutant survived.
+
+The same run produced two findings that remain open and were not changed here:
+the unmutated suite is not green on Windows,
+and device-namespace pathnames are not name-scanned.
+`Unmutated Windows baseline` and `Device-namespace pathnames` record them.
+
+### Target and toolchain
+
+- Windows Server 2025 Standard Evaluation,
+  version `10.0.26100.1742`,
+  64-bit.
+- `rustc 1.97.0 (2d8144b78 2026-07-07)` with host and target `x86_64-pc-windows-gnu`.
+  This is the compiler commit of the Linux fixture.
+- `cargo 1.97.0 (c980f4866 2026-06-30)`,
+  Git `2.56.0.windows.1`,
+  and WinLibs MinGW-w64 with GCC `16.2.0` and binutils `2.47`.
+- A KVM virtual machine bounded to 4 virtual CPUs,
+  8192 MiB of memory,
+  and a 40 GiB disk.
+- Commands ran as `nt authority\system` through the QEMU guest agent.
+  The temporary directory was `C:\WINDOWS\SystemTemp\`.
+
+Tests were built and run inside the VM,
+the first route in the delegated order.
+Cross-compilation and Wine were not used.
+The rustup `x86_64-pc-windows-gnu` toolchain alone could not build the dependency graph:
+
+- With only that toolchain,
+  `windows-sys v0.61.2` failed with `error calling dlltool 'dlltool.exe': program not found`.
+- With the toolchain's `self-contained` directory on `PATH`,
+  its bundled `dlltool.exe` failed with `CreateProcess`.
+  The toolchain ships no `as.exe`.
+- With a complete MinGW-w64 on `PATH`,
+  every dependency compiled.
+
+### Controls and results
+
+Each source variant replaced `src/path_name_bytes.rs` in a disposable copy inside the VM.
+Mutant text is the retained `cargo-mutants 27.1.0` diff from `mutation-fJH1Io`,
+reproduced byte for byte.
+The guest verified each variant's SHA-256 before building,
+and every campaign log shows the scanner being recompiled.
+
+The command was `cargo test --locked --all-features --no-fail-fast`
+with targets `--lib --bins --test embedding --test embedding_warnings --test path_names`
+and harness argument `--test-threads=1`.
+It ran in two forms for every variant:
+
+- `suite`:
+  adds the two shipped-corpus conformance `--skip` filters of the Linux mutation campaign.
+- `green`:
+  additionally skips exactly the six tests that fail on unmutated Windows source,
+  so its baseline exits `0`.
+
+Results,
+in execution order:
+
+- Unmutated source before the variants:
+  `green` exits `0` with 164 passing tests;
+  `suite` exits `101` with the six baseline failures only.
+- `replace prefix_parts -> usize with 0`:
+  caught.
+  Both forms exit `101`.
+  The only failure absent from the matching baseline is
+  `path_scan::tests::windows_volume_prefix_is_not_name_segment` at `src\path_scan_tests.rs:155`.
+  It observed `C\x3a/[REDACTED]/clean.txt:name:2 rule=0` where `name:1` is expected.
+- `delete ! in prefix_parts`:
+  caught by the same test with the same observed and expected values.
+- Positive control `replace prefix_parts -> usize with 1`,
+  a mutant the Linux campaign already caught:
+  14 tests that pass in the matching baseline fail,
+  8 library,
+  1 embedding,
+  and 5 pathname binary tests.
+- Unmutated source after the variants:
+  both forms reproduce their first baseline exactly.
+
+On Windows both mutants make `prefix_parts` return `0` for every path,
+so they are one behavior there.
+Only that one library test distinguishes it.
+The 8 binary-boundary tests in `tests/path_names.rs` pass under both mutants.
+
+### Evidence and provenance
+
+Evidence is `package/cli/forbidden-strings/target/verification/windows-native-8Wo0tM`.
+Source snapshot is `f641523cda11a5ca4650b5b8374dccd170e95b234d2d22cf9021d6653a4ffe9e`,
+taken at repository `HEAD` `eeb3f5e75` with last scanner or engine commit `f069f6576`.
+
+- `manifest.json` hashes the 127 files sent to the VM and each variant,
+  and records target,
+  toolchain,
+  VM bounds,
+  and exact commands.
+- `control.json` holds the expected observations and each campaign's exit code and failing tests.
+- `logs/` holds the complete guest output of every provisioning step and campaign,
+  including the three failed build attempts.
+- `variant-*.diff` hold the hand-applied changes.
+
+`src/path_name_bytes.rs`,
+`src/path_scan.rs`,
+and both pathname test files are byte-identical to the `mutation-fJH1Io` snapshot.
+Only compiled inputs were sent:
+the scanner's `Cargo.toml`,
+`Cargo.lock`,
+`build.rs`,
+`src`,
+`tests`,
+and `data`;
+the engine's `Cargo.toml`,
+`Cargo.lock`,
+and `src`;
+and the tracked `forbidden-strings.append.txt` that a unit test embeds.
+This snapshot hash covers a different file set than the Linux manifests and is not comparable with theirs.
+`verify:evidence` reports one difference for this directory,
+`clippy.toml`,
+which was not sent because Clippy did not run in the VM.
+
+### Unmutated Windows baseline
+
+This finding is open.
+The unmutated suite does not pass on Windows,
+so the `green` form is a subset,
+not the complete suite.
+
+`tests/integration.rs` does not compile for Windows.
+`tests\integration.rs:109` imports `std::os::unix::fs::PermissionsExt` without a platform gate
+(`error[E0433]`),
+and lines 110 and 124 call `Permissions::from_mode` (`error[E0599]`).
+`--all-targets` therefore cannot build,
+and the CLI integration tests,
+40 on Linux,
+did not run on Windows.
+
+Six tests fail on unmutated source,
+identically in every run:
+
+- `path_scan::tests::absolute_path_under_root_uses_relative_name`:
+  `logical_path` returned `C:\WINDOWS\SystemTemp\name-root-<pid>\nested/test.txt`,
+  not `nested/test.txt`.
+- `runtime_cache::path::tests::absolute_override_wins`:
+  `absolute override: InvalidOverride`.
+- `runtime_cache::path::tests::native_platform_roots_are_derived`:
+  `macOS root: Unavailable`.
+- `runtime_cache::path::tests::source_bytes_select_content_addressed_path`:
+  the rendered path does not start with `/cache/forbidden-strings/v`.
+- `runtime_cache::path::tests::xdg_resolution_follows_base_directory_spec`:
+  `XDG root: Unavailable`.
+- `public_warning_paths_preserve_scan_results_without_emitting_terminal_json`
+  in `tests/embedding_warnings.rs`:
+  the `blocked` mode reported reason `missing` where `unreadable` is expected.
+
+No cause was established for any of them.
+Unverified readings:
+Unix-style absolute paths are not absolute to the Windows path parser;
+`canonicalize` returns a verbatim `\\?\` root that the non-verbatim input does not start with;
+and a file blocking the cache directory surfaces as not-found on Windows.
+Whether each is a test assumption or scanner behavior is undecided.
+The full form,
+which also runs both conformance tests,
+passed 151 library tests and failed the same six tests.
+
+### Device-namespace pathnames
+
+This finding is open and is scanner behavior,
+not a test artifact.
+A disposable probe test,
+never committed,
+printed the scan of one forbidden directory name under each native path form on unmutated source.
+
+These forms mask the name and report it as `name:1`:
+`C:\`,
+`C:/`,
+drive-relative `C:name`,
+`\\server\share\`,
+`//server/share/`,
+`\\?\C:\`,
+`\\?\UNC\server\share\`,
+`\\?\pictures\`,
+relative,
+and rooted without a drive.
+
+Device-namespace forms do not:
+
+- `\\.\COM1\VAULTTOKEN_LONG\clean.txt`:
+  `prefix_parts` returned `2`,
+  the display was `//./COM1/VAULTTOKEN_LONG/clean.txt`,
+  and no finding was produced.
+- `\\.\C:\VAULTTOKEN_LONG\clean.txt`:
+  `prefix_parts` returned `2`,
+  the display was `//./C\x3a/VAULTTOKEN_LONG/clean.txt`,
+  and no finding was produced.
+
+The forbidden name is neither reported nor masked.
+Source reading,
+not confirmed by a patched run:
+`count_prefix_parts` at `src/path_name_bytes.rs:44` counts the `.` of `\\.\` as a prefix part,
+while `scan_normalized_records` treats `.` as a navigation marker at `src/path_scan.rs:129`,
+ahead of the prefix skip at `src/path_scan.rs:135`,
+without consuming a prefix part.
+The unconsumed part then skips the first real name.
+Verbatim forms are unaffected because `?` is not a navigation marker.
+The probe output is `logs/probe-baseline.log` in the evidence directory.
+
+### Host bridges
+
+The `mvm` MCP tools could not reach libvirt on this host:
+`list_vms` failed twice with `Command failed: virsh --connect 'qemu:///session' list --all`.
+The host has no `virsh` or `qemu-img` on `PATH`;
+libvirt `12.4.0` and QEMU `11.0.1` exist only inside the `org.virt_manager.virt-manager` Flatpak.
+
+- Scratch `virsh` and `qemu-img` shims ran the Flatpak's tools,
+  and the `mvm` CLI ran with them first on `PATH`.
+- The session `virtqemud` was started explicitly.
+  A daemon spawned by a piped `virsh` call held the pipe open for about 120 seconds.
+- `mvm create --image windows` failed at start with `Unable to find a satisfying virtiofsd`.
+  The Flatpak ships none,
+  so the domain was redefined without its virtiofs share,
+  and files reached the guest over HTTP from host loopback at `10.0.2.2`.
+  `push_to_vm` and `pull_from_vm` depend on that share.
+- The cached Windows template's evaluation period had lapsed.
+  `slmgr.vbs /rearm` ran on the disposable overlay disk only;
+  the template was not modified,
+  and the license state was not read again after the reboot.
+
+The VM `fsnative-20261005` was destroyed after evidence retrieval.
+The file server and the session daemon started for this run were stopped.
+The scratch drivers are retained in the evidence directory.
+
+### Scope of this closure
+
+- Closed:
+  both retained survivors are caught on native Windows,
+  with a passing subset baseline before and after,
+  and a failing positive control.
+- The Linux report is unchanged.
+  Both mutants stay equivalent on that target and stay listed as missed there.
+- The run used the GNU ABI target.
+  The published Windows binaries are `x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc`
+  (`.github/workflows/cargo-publish.yml`),
+  which were not exercised.
+  In the installed `nightly-2026-09-22` standard library source,
+  `library/std/src/sys/path/mod.rs` selects Windows path parsing by `target_os = "windows"` alone;
+  the `1.97.0` source was not inspected.
+- This is one manual run on one snapshot,
+  not a recurring gate.
+  The open baseline failures prevent an all-target Windows job from passing as the suite stands.
+
+### Decisions left to the main agent
+
+- Whether and where to fix device-namespace name scanning,
+  with a test for that form.
+- Triage of the non-compiling integration target and the six failing baseline tests.
+- Whether to add a recurring Windows test job once the baseline is green.
 
 ## Matcher-state audit
 
@@ -382,5 +654,5 @@ That check exposed and corrected README bold spans split across line endings.
 The main agent should inspect the terminal results,
 retained mutant classifications,
 source inventories,
-and Windows-native limitation before any production cutover.
+and the open findings in `Windows-native follow-up` before any production cutover.
 No human response is needed to continue this scoped queue.
