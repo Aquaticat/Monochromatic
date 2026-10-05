@@ -72,6 +72,21 @@ pub mod search_protocol;
 /// Filename matching follows editord's smart-case literal-substring rule.
 pub mod search_query;
 
+/// One-way cancellation reaches both search children without waiting for another output record.
+pub mod search_cancel;
+
+/// One latest query and one latest reply keep search independent of native event-loop timing.
+pub mod search_worker;
+
+/// Child output is bounded before parsing or diagnostic retention.
+mod search_io;
+
+/// Streaming collectors preserve result order and stop at the approved caps.
+mod search_collect;
+
+/// Read-only ripgrep subprocesses are killed and reaped on cancellation or output limits.
+mod search_process;
+
 /// Unmodified variable and real italic font assets with stable source-font identities.
 pub mod font_asset;
 

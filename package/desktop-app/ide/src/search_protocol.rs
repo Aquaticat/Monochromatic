@@ -56,15 +56,30 @@ impl TextOrBytes {
 #[serde(tag = "type", content = "data", rename_all = "lowercase")]
 enum Event {
     /// A matching line carries validated path and source metadata.
-    Match(Match),
+    Match(
+        /// Validated match payload.
+        Match,
+    ),
     /// File-start metadata does not become a result.
-    Begin(serde::de::IgnoredAny),
+    Begin(
+        /// Unused file-start payload.
+        serde::de::IgnoredAny,
+    ),
     /// File-end metadata does not become a result.
-    End(serde::de::IgnoredAny),
+    End(
+        /// Unused file-end payload.
+        serde::de::IgnoredAny,
+    ),
     /// Context was not requested and does not become a content match.
-    Context(serde::de::IgnoredAny),
+    Context(
+        /// Unused context-line payload.
+        serde::de::IgnoredAny,
+    ),
     /// Aggregate counters do not become a result.
-    Summary(serde::de::IgnoredAny),
+    Summary(
+        /// Unused aggregate-statistics payload.
+        serde::de::IgnoredAny,
+    ),
 }
 
 /// Match fields used by the reader; other ripgrep offsets/statistics remain forward-compatible metadata.
