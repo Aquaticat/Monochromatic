@@ -203,6 +203,18 @@ Exposing the render node did not establish hardware rendering;
 this remains a software-rendered native-library control.
 The earlier host request resolved to LLVM22 llvmpipe in the different
 library environment.
+This native-library/LLVM20 control passed all four cover contexts:
+light/dark at 100%/200% text,
+auto expiry,
+manual dismissal,
+Undo/log intent,
+full diagnostic read-back and unchanged player geometry.
+Recorded fields were restored and the owner exited cleanly.
+The successful bounded run is not an isolated root-cause diagnosis.
+Final held-pose acquisition now keeps this configuration fixed,
+with actual adapter,
+library environment,
+image fingerprint and measured system insets in each new record.
 Exact unowned fresh-AVD locks were preserved after positive owner checks;
 no original AVD or third-party source was changed.
 
