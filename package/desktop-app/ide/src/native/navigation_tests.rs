@@ -10,7 +10,7 @@ use slint::{ComponentHandle, Model, SharedString, platform::update_timers_and_an
 use std::{cell::RefCell, fs, rc::Rc, time::{Duration, Instant}};
 
 /// Allow native timers and background replies to progress until a concrete rendered-state predicate holds.
-fn wait_until(mut ready: impl FnMut() -> bool) {
+pub(super) fn wait_until(mut ready: impl FnMut() -> bool) {
     let start = Instant::now();
     loop {
         update_timers_and_animations();
@@ -21,7 +21,7 @@ fn wait_until(mut ready: impl FnMut() -> bool) {
 }
 
 /// Find a visible fixture label; actions still use the model index backed by its native path.
-fn row(window: &AppWindow, label: &str) -> Option<i32> {
+pub(super) fn row(window: &AppWindow, label: &str) -> Option<i32> {
     let model = window.get_tree_entries();
     for index in 0..model.row_count() {
         if model.row_data(index).is_some_and(|entry| return entry.label == label) {

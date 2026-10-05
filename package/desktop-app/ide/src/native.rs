@@ -49,6 +49,9 @@ mod navigation;
 /// Native project callbacks exercise actual reader/timer and source replacement boundaries.
 #[cfg(test)]
 mod navigation_tests;
+/// Missing targets and canonical aliases exercise reveal liveness and model identity.
+#[cfg(test)]
+mod navigation_reveal_tests;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
