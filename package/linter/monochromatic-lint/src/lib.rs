@@ -43,6 +43,9 @@ pub mod diagnostic;
 /// Internal all-or-nothing grouped source edits.
 #[doc(hidden)]
 pub mod edits;
+/// Bounded cycle-aware fixpoint execution over exact source snapshots.
+#[doc(hidden)]
+pub mod fix_loop;
 /// Native source-file discovery with explicit ignore and failure boundaries.
 #[doc(hidden)]
 pub mod file_discovery;
@@ -70,11 +73,11 @@ pub mod markdown_headings;
 /// Internal link normalization checks.
 #[doc(hidden)]
 pub mod markdown_links;
-/// Owned Markdown line and UTF-16 position indexes.
-mod markdown_positions;
 /// Measured incumbent lexical-boundary conformance fixtures.
 #[cfg(test)]
 mod markdown_parity_tests;
+/// Owned Markdown line and UTF-16 position indexes.
+mod markdown_positions;
 /// Paragraph/container ancestry for add-only prose fixes.
 mod markdown_prose_context;
 /// Heading punctuation checks with complete source escape/entity edits.
