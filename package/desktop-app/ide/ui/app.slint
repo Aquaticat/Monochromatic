@@ -198,8 +198,8 @@ export component AppWindow inherits Window {
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
         sidebar-divider := SidebarDivider {
+            // An invisible divider takes no pointer input and is not a Tab stop.
             visible: root.project-visible;
-            enabled: root.project-visible;
             min-width: root.project-visible ? root.divider-width : 0px;
             max-width: root.project-visible ? root.divider-width : 0px;
             value: root.sidebar-width;
