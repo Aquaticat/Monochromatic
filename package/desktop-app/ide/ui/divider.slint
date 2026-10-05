@@ -64,13 +64,10 @@ export component SidebarDivider inherits Rectangle {
             root.resize(self.press-value + self.absolute-position.x + self.mouse-x - self.press-pointer);
         }
     }
-    // Prototype divider-tab C: not a Tab stop and no keyboard resizing. Nothing focuses this scope any more,
-    // so its keys are unreachable; assistive technology keeps the slider's increment, decrement, and set actions.
+    // A pointer press never takes keyboard focus; Tab reaches this zero-size scope between tree and source.
     keys := FocusScope {
         width: 0px;
         height: 0px;
-        focus-on-tab-navigation: false;
-        focus-on-click: false;
         key-pressed(event) => {
             if event.modifiers.control {
                 root.shortcut(event.text, true, event.modifiers.shift, event.modifiers.alt);

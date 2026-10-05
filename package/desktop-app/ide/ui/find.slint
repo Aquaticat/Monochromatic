@@ -1,5 +1,7 @@
 // Transient in-file find. Native code owns match positions and identity; this markup only edits the find text.
-import { LineEdit, Palette } from "std-widgets.slint";
+import { Palette } from "std-widgets.slint";
+// Prototype clear-icon B: the find text uses an input without the toolkit's clear icon.
+import { PlainInput } from "plain-input.slint";
 
 export component FindBar inherits Rectangle {
     in property <bool> open;
@@ -60,7 +62,7 @@ export component FindBar inherits Rectangle {
             padding-left: 12px;
             padding-right: 12px;
             spacing: 12px;
-            input := LineEdit {
+            input := PlainInput {
                 enabled: root.open;
                 min-width: 48px;
                 min-height: 48px;

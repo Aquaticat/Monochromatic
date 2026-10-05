@@ -1,0 +1,80 @@
+// Prototype for the clear-icon question, option B: a single-line input without the toolkit's clear icon.
+// It copies the fluent LineEdit's look (Slint 1.18.1 widgets/fluent/lineedit.slint and common/lineedit-base.slint)
+// so the only visible difference from option A is the missing icon. The context menu is not rebuilt here.
+import { Palette } from "std-widgets.slint";
+
+export component PlainInput inherits Rectangle {
+    in property <string> placeholder-text;
+    in property <bool> enabled: true;
+    in-out property <string> text <=> input.text;
+    out property <bool> has-focus: input.has-focus;
+    callback edited(string);
+    public function select-all() { input.select-all(); }
+    // Fluent palette values that std-widgets does not export, copied for both schemes.
+    private property <bool> dark: Palette.color-scheme == ColorScheme.dark;
+    private property <length> padding-x: 12px;
+    forward-focus: input;
+    accessible-role: text-input;
+    accessible-enabled: root.enabled;
+    accessible-value: root.text;
+    accessible-placeholder-text: root.placeholder-text;
+    accessible-action-set-value(value) => {
+        input.text = value;
+        root.edited(value);
+    }
+    min-width: 160px;
+    min-height: 32px;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: root.dark
+        ? @linear-gradient(180deg, #FFFFFF14 99.98%, #FFFFFF8A 100%, #FFFFFF8A 100%)
+        : @linear-gradient(180deg, #0000000F 99.99%, #00000073 100%, #00000073 100%);
+    background: input.has-focus ? (root.dark ? #1E1E1EB3 : #FFFFFF) : Palette.control-background;
+
+    viewport := Rectangle {
+        x: root.padding-x;
+        width: parent.width - 2 * root.padding-x;
+        height: parent.height;
+        clip: true;
+        Text {
+            width: 100%;
+            height: 100%;
+            vertical-alignment: center;
+            text: root.text == "" && input.preedit-text == "" ? root.placeholder-text : "";
+            color: root.dark ? #FFFFFFC9 : #00000099;
+            accessible-role: none;
+        }
+        input := TextInput {
+            private property <length> computed-x;
+            // Keep the caret visible when the text is wider than the box, as the toolkit input does.
+            x: min(0px, max(parent.width - self.width - self.text-cursor-width, self.computed-x));
+            width: max(parent.width - self.text-cursor-width, self.preferred-width);
+            height: 100%;
+            vertical-alignment: center;
+            single-line: true;
+            enabled: root.enabled;
+            color: Palette.foreground;
+            selection-background-color: Palette.selection-background;
+            selection-foreground-color: root.dark ? #000000 : #FFFFFF;
+            accessible-role: none;
+            cursor-position-changed(position) => {
+                if position.x + self.computed-x < 2 * root.padding-x {
+                    self.computed-x = 2 * root.padding-x - position.x;
+                } else if position.x + self.computed-x > parent.width - 2 * root.padding-x - self.text-cursor-width {
+                    self.computed-x = parent.width - position.x - 2 * root.padding-x - self.text-cursor-width;
+                }
+            }
+            edited => { root.edited(self.text); }
+        }
+    }
+
+    // The fluent focus mark: a 2px accent underline inset by the corner radius.
+    Rectangle {
+        x: root.border-radius;
+        y: parent.height - self.height;
+        width: parent.width - 2 * root.border-radius;
+        height: 2px;
+        border-radius: 1px;
+        background: input.has-focus ? Palette.accent-background : transparent;
+    }
+}
