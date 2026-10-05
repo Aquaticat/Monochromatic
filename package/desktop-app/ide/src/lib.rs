@@ -63,6 +63,15 @@ pub mod cli;
 /// Latest-request-wins project source opening preserves the displayed document until success.
 pub mod file_open;
 
+/// Bounded combined-search results retain independent filename and content outcomes.
+pub mod search;
+
+/// Ripgrep JSON and native filename payloads are validated before entering result models.
+pub mod search_protocol;
+
+/// Filename matching follows editord's smart-case literal-substring rule.
+pub mod search_query;
+
 /// Unmodified variable and real italic font assets with stable source-font identities.
 pub mod font_asset;
 
