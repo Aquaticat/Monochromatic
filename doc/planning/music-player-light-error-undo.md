@@ -85,9 +85,19 @@ not universal image stability or isolation of the older guest's cause.
 The same current E2 overlay APK then passed the fresh cover/light/200%
 long-detail and combined held-pose probe,
 including log-capture intent.
-Current native lifecycle and unchanged-layout controls continue on this
-fresh guest with recorded-settings restoration in the wrapper's cleanup
-path.
+The fresh guest then passed all four inner-panel lifecycle contexts:
+light/dark at 100%/200% text.
+Each context verified automatic expiry without manual input,
+manual dismissal,
+Undo intent,
+full multiline/non-ASCII diagnostic read-back,
+log-capture intent and unchanged measured player geometry.
+The recorded expiry observations ranged from about `4.132s` to `5.192s`;
+these are observed intervals,
+not a new fixed product timeout.
+Recorded fields were restored/read back,
+the owner exited cleanly and matching runtime absence was verified.
+Cover controls and current-artifact visual acquisition remain pending.
 The alternative API36 guest remains separately provisioned for comparison;
 no additional emulator is run concurrently with this native control.
 The fresh guest reports different stock system insets from the retired
