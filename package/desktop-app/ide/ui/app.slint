@@ -114,125 +114,125 @@ export component AppWindow inherits Window {
         }
         VerticalLayout {
             spacing: 0px;
-        Rectangle {
-            height: 32px;
-            Text {
-                x: 12px;
-                width: parent.width - 24px;
-                height: parent.height;
-                text: root.file-label;
-                color: Palette.foreground;
-                vertical-alignment: center;
-                overflow: elide;
-            }
-        }
-
-        code-focus := FocusScope {
-            visible: root.source-available;
-            vertical-stretch: 1;
-            focus-on-click: true;
-            accessible-role: text-input;
-            accessible-read-only: true;
-            accessible-label: "Source code";
-            accessible-value: root.source-text;
-            accessible-description: "Select text and press Ctrl+C to copy.";
-
-            key-pressed(event) => {
-                // Let the toolkit traverse between the tree and read-only source instead of swallowing Tab.
-                if event.text == Key.Tab { return reject; }
-                if event.modifiers.control && (event.text == "c" || event.text == "C") {
-                    root.copy-selection();
-                } else if event.modifiers.control && (event.text == "a" || event.text == "A") {
-                    root.select-all-request();
-                } else {
-                    root.tree-shortcut(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
-                    root.key-input(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
-                }
-                accept
-            }
-
-            scroll := Flickable {
-                width: parent.width;
-                height: parent.height;
-                content-width: max(self.width, root.document-width * 1px + root.gutter-width);
-                content-height: max(self.height, root.total-lines * root.line-height);
-                content-y <=> root.scroll-y;
-                accessible-role: region;
-                accessible-label: "Source viewport";
-                accessible-value: self.content-y / 1px;
-
-                // Retain native Flickable physics, including easing for notched wheels.
-                changed content-y => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
-                changed content-x => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
-                changed height => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
-                changed width => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
-
-                for selection in root.source-selections: Rectangle {
-                    x: root.gutter-width + selection.x * 1px;
-                    y: selection.y * 1px;
-                    width: selection.width * 1px;
-                    height: selection.height * 1px;
-                    background: Palette.selection-background;
-                }
-
-                Image {
-                    x: root.gutter-width + root.image-x * 1px;
-                    y: root.image-y * 1px;
-                    width: root.image-width * 1px;
-                    height: root.image-height * 1px;
-                    source: root.source-image;
-                }
-
-                for row in ceil(scroll.height / root.line-height) + 2: Text {
-                    visible: row + root.first-visible < root.total-lines;
-                    x: 0px;
-                    y: (row + root.first-visible) * root.line-height;
-                    width: root.gutter-width - 12px;
-                    height: root.line-height;
-                    text: row + root.first-visible + 1;
-                    horizontal-alignment: right;
-                    vertical-alignment: center;
+            Rectangle {
+                height: 32px;
+                Text {
+                    x: 12px;
+                    width: parent.width - 24px;
+                    height: parent.height;
+                    text: root.file-label;
                     color: Palette.foreground;
-                    opacity: 0.6;
-                    font-family: "JetBrains Mono";
-                    font-size: root.font-size;
+                    vertical-alignment: center;
+                    overflow: elide;
+                }
+            }
+
+            code-focus := FocusScope {
+                visible: root.source-available;
+                vertical-stretch: 1;
+                focus-on-click: true;
+                accessible-role: text-input;
+                accessible-read-only: true;
+                accessible-label: "Source code";
+                accessible-value: root.source-text;
+                accessible-description: "Select text and press Ctrl+C to copy.";
+
+                key-pressed(event) => {
+                    // Let the toolkit traverse between the tree and read-only source instead of swallowing Tab.
+                    if event.text == Key.Tab { return reject; }
+                    if event.modifiers.control && (event.text == "c" || event.text == "C") {
+                        root.copy-selection();
+                    } else if event.modifiers.control && (event.text == "a" || event.text == "A") {
+                        root.select-all-request();
+                    } else {
+                        root.tree-shortcut(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
+                        root.key-input(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
+                    }
+                    accept
                 }
 
-                Rectangle {
-                    visible: code-focus.has-focus && root.selection-anchor == root.selection-head;
-                    x: root.gutter-width + root.caret-x * 1px;
-                    y: root.caret-y * 1px;
-                    width: 2px;
-                    height: root.line-height - 4px;
-                    background: Palette.foreground;
-                }
+                scroll := Flickable {
+                    width: parent.width;
+                    height: parent.height;
+                    content-width: max(self.width, root.document-width * 1px + root.gutter-width);
+                    content-height: max(self.height, root.total-lines * root.line-height);
+                    content-y <=> root.scroll-y;
+                    accessible-role: region;
+                    accessible-label: "Source viewport";
+                    accessible-value: self.content-y / 1px;
 
-                pointer := TouchArea {
-                    width: scroll.content-width;
-                    height: scroll.content-height;
-                    mouse-cursor: text;
-                    pointer-event(event) => {
-                        if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
-                            code-focus.focus();
+                    // Retain native Flickable physics, including easing for notched wheels.
+                    changed content-y => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
+                    changed content-x => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
+                    changed height => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
+                    changed width => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
+
+                    for selection in root.source-selections: Rectangle {
+                        x: root.gutter-width + selection.x * 1px;
+                        y: selection.y * 1px;
+                        width: selection.width * 1px;
+                        height: selection.height * 1px;
+                        background: Palette.selection-background;
+                    }
+
+                    Image {
+                        x: root.gutter-width + root.image-x * 1px;
+                        y: root.image-y * 1px;
+                        width: root.image-width * 1px;
+                        height: root.image-height * 1px;
+                        source: root.source-image;
+                    }
+
+                    for row in ceil(scroll.height / root.line-height) + 2: Text {
+                        visible: row + root.first-visible < root.total-lines;
+                        x: 0px;
+                        y: (row + root.first-visible) * root.line-height;
+                        width: root.gutter-width - 12px;
+                        height: root.line-height;
+                        text: row + root.first-visible + 1;
+                        horizontal-alignment: right;
+                        vertical-alignment: center;
+                        color: Palette.foreground;
+                        opacity: 0.6;
+                        font-family: "JetBrains Mono";
+                        font-size: root.font-size;
+                    }
+
+                    Rectangle {
+                        visible: code-focus.has-focus && root.selection-anchor == root.selection-head;
+                        x: root.gutter-width + root.caret-x * 1px;
+                        y: root.caret-y * 1px;
+                        width: 2px;
+                        height: root.line-height - 4px;
+                        background: Palette.foreground;
+                    }
+
+                    pointer := TouchArea {
+                        width: scroll.content-width;
+                        height: scroll.content-height;
+                        mouse-cursor: text;
+                        pointer-event(event) => {
+                            if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
+                                code-focus.focus();
+                                root.pointer-hit(floor(self.mouse-y / root.line-height),
+                                    max(0, (self.mouse-x - root.gutter-width) / 1px),
+                                    event.modifiers.shift);
+                            }
+                        }
+                        moved => {
                             root.pointer-hit(floor(self.mouse-y / root.line-height),
-                                max(0, (self.mouse-x - root.gutter-width) / 1px),
-                                event.modifiers.shift);
+                                max(0, (self.mouse-x - root.gutter-width) / 1px), true);
                         }
                     }
-                    moved => {
-                        root.pointer-hit(floor(self.mouse-y / root.line-height),
-                            max(0, (self.mouse-x - root.gutter-width) / 1px), true);
-                    }
                 }
             }
-        }
 
-        if root.error-message != "": Text {
-            text: root.error-message;
-            color: Palette.foreground;
-            font-weight: 600;
-            wrap: word-wrap;
-        }
+            if root.error-message != "": Text {
+                text: root.error-message;
+                color: Palette.foreground;
+                font-weight: 600;
+                wrap: word-wrap;
+            }
         }
     }
 }
