@@ -315,11 +315,23 @@ await describe({
     },),
 
     it({
-      name: 'SHEDS a stopper the run ends on and KEEPS the run where none stands, and READS the earliest '
-        + 'of several runs',
+      name: 'READS the earliest run across both schemes, SHEDS a run ending on a stopper, and CUTS a tree '
+        + 'destination to nothing where it is all punctuation',
       fn: async () => {
-        expect(scanUrlRuns({ text: 'see https://cat.example. and https://dog.example too', },),)
-          .toStrictEqual(['https://cat.example', 'https://dog.example',],);
+        expect(scanUrlRuns({
+          text: 'see https://a.example and http://b.example too',
+        },),).toStrictEqual(['https://a.example', 'http://b.example',],);
+        expect(scanUrlRuns({
+          text: 'see https://cat.example. and https://dog.example too',
+        },),).toStrictEqual(['https://cat.example', 'https://dog.example',],);
+        expect(markdownDestinations({ text: 'see [cat](.) here', },),).toEqual({
+          urls: ['',],
+          findings: [],
+        },);
+        expect(markdownDestinations({ text: 'see [cat](---) here', },),).toEqual({
+          urls: ['---',],
+          findings: [],
+        },);
       },
     },),
   ],
