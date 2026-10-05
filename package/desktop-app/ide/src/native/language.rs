@@ -64,7 +64,9 @@ mod sync;
 /// Places a target names, and opening them.
 mod targets;
 
-/// The source renderer reads hints and diagnostics through this store in `State`.
+/// The source renderer reads hints and diagnostics through this store in `State`, asking with
+/// the stamp of the text it draws: `DocumentStamp { file: state.file_generation,
+/// revision: state.document.revision() }`.
 pub(super) use annotations::Annotations;
 /// The file-open path places the caret at a target once its file is shown.
 pub(super) use targets::{Jump, place};
