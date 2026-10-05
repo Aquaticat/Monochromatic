@@ -499,6 +499,19 @@ each owned by one subagent:
   while the coordinating session ran commands there.
   Keep every coordinator command pinned with `cd /var/home/user/Monochromatic` or `git -C`,
   and tell agents to pin theirs.
+- Commits that appear late:
+  on 2026-10-05,
+  with the host's load average near 98 from several sessions' builds,
+  a commit through the repository's `git` wrapper took minutes,
+  and one command returned while its file was still staged and its commit was not yet in `git log`.
+  Issuing the same commit again produced the real commit `e8ac286e4`
+  and an empty duplicate `29a5b0da6` with the same subject
+  (corrected by a commit comment on GitHub).
+  The wrapper's landing mechanism was not read,
+  so the cause is not established.
+  After a commit command returns without a visible commit,
+  look at `git log` again after a while and at running `git-policy-cli` processes before committing again;
+  run commits in the background and read their full output from a file.
 - Session-limit interruptions:
   the API session limit cut the running agents off twice,
   at about 11:10 and 14:15 on 2026-10-05.
