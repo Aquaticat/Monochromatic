@@ -64,9 +64,15 @@ Each killable mutant was planted by its exact recorded span and replacement
 from `mutation-exJwfB/mutants.out/outcomes.json`,
 one at a time,
 and the processor test slice was run against it.
-Planting used a single container created from the tagged test image with
-`--network=none --memory=2g --cpus=2 --pids-limit=128` and no mounts.
-Fresh copies of the committed test sources and of the one planted file were copied in with `podman cp`,
+Planting used a single container created from `localhost/monochromatic-lint-test:processor-survivors`
+with `--network=none --memory=2g --cpus=2 --pids-limit=128` and no mounts.
+That image was
+`57e310bd9253f1fd6e84437012336fb14c9ecf36fef71091b3fd9fe15beab3f5`,
+the same content-addressed image the baseline campaign mutated,
+because the branch base has identical crate sources.
+Fresh copies of the processor sources and tests,
+and then of the one planted file,
+were copied in with `podman cp`,
 so the worktree was never mutated.
 The slice passed before the first plant and again after the last one was reverted.
 
@@ -74,8 +80,11 @@ The scratch driver,
 its plan files,
 and the per-mutant results are stored beside the rerun report,
 in the `hand-plants` directory of the evidence directory named under "Rerun evidence".
-`plants-round1.json` holds the 52 original missed mutants against the new tests on unchanged source.
-`plants-round2.json` holds the mutants of the two simplified source lines.
+`plants-round1.json` holds the 52 original missed mutants against the tests of commit `43737b551`
+on unchanged processor source:
+49 fail and 3 pass.
+`plants-round2.json` holds the mutants of the two simplified source lines,
+as committed in `f54b334a9` and `e7e5b24aa`.
 
 ## Dispositions by file
 
@@ -102,7 +111,7 @@ and from the container anchor.
   killed by `spans::processors_map_zero_width_labels_at_line_starts_interiors_and_virtual_end`.
 - `20:60`,
   `&&` to `||` in `direct`:
-  killed by the same test.
+  killed by `spans::processors_map_zero_width_labels_at_line_starts_interiors_and_virtual_end`.
 - `20:32`,
   `&&` to `||` in `direct`:
   killed by `spans::processors_map_empty_block_doc_payloads_separately_from_container_anchors`.
@@ -111,19 +120,19 @@ and from the container anchor.
   killed by `spans::processors_map_zero_width_labels_at_line_starts_interiors_and_virtual_end`.
 - `29:27`,
   `<=` to `>` in `direct`:
-  killed by the same test.
+  killed by `spans::processors_map_zero_width_labels_at_line_starts_interiors_and_virtual_end`.
 - `29:45`,
   `<` to `<=` in `direct`:
-  killed by the same test.
+  killed by `spans::processors_map_zero_width_labels_at_line_starts_interiors_and_virtual_end`.
 - `30:48`,
   `&&` to `||` in `direct`:
-  killed by the same test.
+  killed by `spans::processors_map_zero_width_labels_at_line_starts_interiors_and_virtual_end`.
 - `30:26`,
   `==` to `!=` in `direct`:
-  killed by the same test.
+  killed by `spans::processors_map_zero_width_labels_at_line_starts_interiors_and_virtual_end`.
 - `30:60`,
   `==` to `!=` in `direct`:
-  killed by the same test.
+  killed by `spans::processors_map_zero_width_labels_at_line_starts_interiors_and_virtual_end`.
 - `35:30`,
   `<` to `<=` in `direct`:
   killed by `spans::processors_map_ranges_ending_at_line_boundaries_without_the_next_prefix`.
@@ -132,16 +141,16 @@ and from the container anchor.
   killed by `spans::processors_host_range_seam_refuses_malformed_spans`.
 - `54:9`,
   `||` to `&&` in `host_range`:
-  killed by the same test.
+  killed by `spans::processors_host_range_seam_refuses_malformed_spans`.
 - `53:9`,
   `||` to `&&` in `host_range`:
-  killed by the same test.
+  killed by `spans::processors_host_range_seam_refuses_malformed_spans`.
 - `70:5`,
   `anchor` body replaced by `0`:
   killed by `spans::processors_anchor_refusals_at_authored_containers_and_render_them`.
 - `70:5`,
   `anchor` body replaced by `1`:
-  killed by the same test.
+  killed by `spans::processors_anchor_refusals_at_authored_containers_and_render_them`.
 
 #### The `host_range` seam test
 
@@ -165,6 +174,8 @@ an end-only split,
 and an out-of-range end,
 after two positive controls.
 This is the only new test that bypasses the `VirtualSource` interface.
+The three mutants are equivalent on every input reachable through `VirtualSource`;
+only the direct seam call separates them.
 If the guard is judged unnecessary instead,
 deleting it and this test is the alternative.
 
@@ -196,28 +207,28 @@ or contain a line of only non-ASCII whitespace.
   killed by `docs::processors_keep_relative_indentation_in_line_doc_runs_without_a_margin`.
 - `101:40`,
   `-` to `+` in `run_margin`:
-  killed by the same test.
+  killed by `docs::processors_keep_relative_indentation_in_line_doc_runs_without_a_margin`.
 - `101:40`,
   `-` to `/` in `run_margin`:
-  killed by the same test.
+  killed by `docs::processors_keep_relative_indentation_in_line_doc_runs_without_a_margin`.
 - `123:43`,
   `-` to `+` in `block_margin`:
   killed by `docs::processors_strip_only_the_common_margin_from_undecorated_block_docs`.
 - `123:43`,
   `-` to `/` in `block_margin`:
-  killed by the same test.
+  killed by `docs::processors_strip_only_the_common_margin_from_undecorated_block_docs`.
 - `152:30`,
   `&&` to `||` in `block_doc`:
   killed by `docs::processors_strip_one_conventional_space_from_block_doc_opening_lines`.
 - `152:25`,
   `==` to `!=` in `block_doc`:
-  killed by the same test.
+  killed by `docs::processors_strip_one_conventional_space_from_block_doc_opening_lines`.
 - `153:21`,
   `+=` to `-=` in `block_doc`:
-  killed by the same test.
+  killed by `docs::processors_strip_one_conventional_space_from_block_doc_opening_lines`.
 - `153:21`,
   `+=` to `*=` in `block_doc`:
-  killed by the same test.
+  killed by `docs::processors_strip_one_conventional_space_from_block_doc_opening_lines`.
 - `155:39`,
   `-` to `+` in `block_doc`:
   killed by `docs::processors_keep_non_ascii_whitespace_lines_outside_stripped_margins`.
@@ -241,28 +252,28 @@ Under either mutant the strip consumes the character or splits it.
   killed by `rewrite::processors_project_groups_supplied_in_descending_order`.
 - `16:5`,
   `edit_key` body replaced by `(0, 1)`:
-  killed by the same test.
+  killed by `rewrite::processors_project_groups_supplied_in_descending_order`.
 - `16:5`,
   `edit_key` body replaced by `(1, 0)`:
-  killed by the same test.
+  killed by `rewrite::processors_project_groups_supplied_in_descending_order`.
 - `16:5`,
   `edit_key` body replaced by `(1, 1)`:
-  killed by the same test.
+  killed by `rewrite::processors_project_groups_supplied_in_descending_order`.
 - `29:13`,
   `||` to `&&` in `rewrite`:
   killed by `rewrite::processors_refuse_reversed_and_one_sided_split_edit_ranges`.
 - `30:13`,
   `||` to `&&` in `rewrite`:
-  killed by the same test.
+  killed by `rewrite::processors_refuse_reversed_and_one_sided_split_edit_ranges`.
 - `31:13`,
   `||` to `&&` in `rewrite`:
-  killed by the same test.
+  killed by `rewrite::processors_refuse_reversed_and_one_sided_split_edit_ranges`.
 - `42:25`,
   `>` to `==` in `rewrite`:
   killed by `rewrite::processors_refuse_edits_between_the_bytes_of_an_authored_crlf`.
 - `42:25`,
   `>` to `<` in `rewrite`:
-  killed by the same test.
+  killed by `rewrite::processors_refuse_edits_between_the_bytes_of_an_authored_crlf`.
 - `42:25`,
   `>` to `>=` in `rewrite`:
   killed by `rewrite::processors_project_insertions_before_a_leading_line_feed`.
@@ -271,7 +282,7 @@ Under either mutant the strip consumes the character or splits it.
   killed by `rewrite::processors_refuse_edits_between_the_bytes_of_an_authored_crlf`.
 - `44:53`,
   `-` to `/` in `rewrite`:
-  killed by the same test.
+  killed by `rewrite::processors_refuse_edits_between_the_bytes_of_an_authored_crlf`.
 
 ### `src/processors.rs`
 
@@ -285,7 +296,7 @@ Under either mutant the strip consumes the character or splits it.
   killed by `spans::processors_refuse_labels_with_one_endpoint_inside_a_character`.
 - `96:17`,
   `||` to `&&` in `VirtualSource::project_diagnostic`:
-  killed by the same test.
+  killed by `spans::processors_refuse_labels_with_one_endpoint_inside_a_character`.
 
 ### `src/processors_prepare.rs`
 
@@ -302,7 +313,7 @@ The new tests compare the whole prepared string.
   killed by `prepare::processors_strip_bare_hidden_markers_to_empty_lines`.
 - `57:31`,
   `+` to `*` in `hidden`:
-  killed by the same test.
+  killed by `prepare::processors_strip_bare_hidden_markers_to_empty_lines`.
 
 ### `src/processors_projection.rs`
 
@@ -447,8 +458,10 @@ The equality boundary itself remains without a test,
 because no input reaches it.
 A hand-planted `>=` to `>` control confirms that:
 it passes all 58 processor tests.
-`cargo-mutants` emits only `<` for `>=`,
-and that mutant fails many tests.
+`cargo-mutants` 27.1.0 emits only `<` for `>=`:
+the baseline campaign lists exactly one replacement for each existing `>=`,
+at `src/processors.rs:195:27` and `src/processors_projection.rs:59:49`.
+That mutant of the new comparison fails many tests.
 Reverting the one-line change restores a visible survivor,
 if a recorded exclusion is preferred over the simplification.
 
