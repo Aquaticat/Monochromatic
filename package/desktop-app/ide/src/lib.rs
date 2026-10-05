@@ -66,6 +66,15 @@ mod syntax_error;
 /// Language-server feature paths run on one worker thread and are polled; server edits are refused.
 pub mod language;
 
+/// Inlay hints and diagnostics of the displayed file, reduced to the materialized rows; stale snapshots paint nothing.
+pub mod annotation;
+
+/// Underline runs, severity markers, and hint labels positioned after each line's text from the shaped rows.
+pub mod annotation_layout;
+
+/// Diagnostic underline pixels in one line style per severity.
+pub mod annotation_paint;
+
 /// Partial ligature selection clips foreground against source selection geometry.
 mod selection_paint;
 

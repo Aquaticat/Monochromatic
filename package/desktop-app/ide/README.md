@@ -15,7 +15,9 @@ and the next implementation action.
   font fidelity,
   and native external-change correspondence pass;
   the reading keys are listed under [Source view keys](#source-view-keys);
-  annotations are pending.
+  hints and diagnostics render from injected snapshots,
+  see [Inlay hints and diagnostics](#inlay-hints-and-diagnostics),
+  and await the language-server wiring.
 - [x] Native tree,
   asynchronous file switching,
   and recent-file reveal.
@@ -569,10 +571,16 @@ a command the queue cannot take is sent again on the next 20 ms tick.
 The visible lines are reported for inlay hints once they stayed the same for 200 ms,
 a chosen value,
 and at once for newly displayed text.
-Accepted hint and diagnostic snapshots are stored in `State::annotations`
-and read with `Annotations::hints` and `Annotations::diagnostics`,
-which hand a snapshot out only for the stamp of the text being drawn;
-this section's code does not draw them.
+Accepted hint and diagnostic snapshots are stored in `State::annotations`,
+the store the section "Inlay hints and diagnostics" describes,
+which hands a snapshot out only for the stamp of the text being drawn.
+The tick that stores one repaints the source once (`src/native/language/poll.rs`),
+so hints and diagnostics appear without another event.
+While the hover popup,
+a note,
+or the location list is shown,
+the caret's problem card is hidden so the two never overlap;
+its text stays in the source view's accessible description.
 At window close the worker is dropped after the window is gone,
 which waits up to about a second for servers to exit.
 
@@ -636,6 +644,188 @@ and closing while a request is pending.
 and checks that its named test fails.
 `inspect:native` takes `IDE_NATIVE_PROJECT` and `IDE_NATIVE_FILE`
 to open a disposable project below the system temporary directory instead of its generated fixture.
+
+## Inlay hints and diagnostics
+
+The source view draws inlay hints and the displayed file's diagnostics from the Language module's
+`HintsSnapshot` and `DiagnosticsSnapshot`.
+The window state keeps them in `State::annotations`,
+an `ide_app::annotation::Annotations` (`src/annotation.rs`).
+A language poll stores each polled snapshot with `accept_hints(displayed, snapshot)`
+or `accept_diagnostics(displayed, snapshot)`,
+which refuse a snapshot of any other text,
+and renders once when either accepted;
+accepting draws nothing by itself.
+`annotate::set_annotations(window, state, hints, diagnostics)` in `src/native/annotate.rs`,
+both arguments `Option<Arc<...>>`,
+replaces both and renders.
+Nothing calls either from a running language server yet;
+tests and the inspection path below inject snapshots directly.
+
+A snapshot is painted only while its stamp names the displayed text:
+the file generation and the content revision.
+After an external change or a file switch the old snapshots draw nothing,
+and no caret card is shown,
+until snapshots for the new text arrive.
+Source text never moves in between,
+because no annotation takes space inside a line.
+
+### Placement
+
+Hints are drawn after the end of their line,
+in source order,
+each in a box,
+in the source family's real italic face at 13 px and 70 percent of the source ink.
+A line where a diagnostic starts gets a severity marker between its text and its hints.
+Nothing is inserted into a line,
+so caret movement,
+selection,
+hit testing,
+double-click words,
+find rectangles,
+tab stops,
+copying,
+and reload correspondence are those of the line without annotations.
+A click on a hint is a click past the end of its line and puts the caret at the line end.
+
+The scope delegates placement to evidence.
+Three placements were measured against the reading requirements with the production shaper
+(`tests/annotation_placement.rs`, printed by `test:annotations`),
+using the hints real servers returned in the `inspect:language` run of the Language module:
+
+- Inline virtual text (Helix's `InlineAnnotation`, also the convention of most editors) widens the line.
+  On the rust-analyzer line with four hints,
+  glyphs after the first hint move by up to 234 px;
+  on the TypeScript 7 line with two hints,
+  by up to 135 px.
+  A stale snapshot is never painted,
+  so every reload would move the text left and then right again when new hints arrive,
+  measured at 20 ms (TypeScript 7.0.2) and 40 ms (rust-analyzer) after the reload.
+  Hints are requested for one view height above and two below the visible lines,
+  so scrolling further moves arriving lines too.
+  A hint before a tab either changes the tab's width
+  (9 px without the hint, 18 px with it)
+  or leaves the tab 9 px past a tab stop.
+  Up and Down aim at a pixel x,
+  and 15 of 24 caret positions of a hinted line landed on another source position.
+- Hint rows above the line,
+  editord's placement
+  (`::before` blocks in `package-paused/desktop-daemon/editord/src/client/inlay/styles.ts`),
+  make hinted lines taller,
+  so every row below moves down by a whole row per hinted line above it,
+  again whenever hints arrive late.
+  Rows are a fixed 24 px throughout this view:
+  26 uses of that height in 8 source files and 10 `line-height` uses in `ui/app.slint` at the fork point.
+- End of line moves no source glyph and no row.
+  Its measured cost is association:
+  in the same inspection run,
+  1 of 2 hinted rust-analyzer lines and 2 of 3 hinted TypeScript lines carry more than one hint,
+  and their positions are then shown only by order.
+
+End of line is the only placement that meets the no-jump and unchanged-geometry requirements,
+so it is used.
+`late_snapshots_move_no_source_pixel` checks the result on rendered pixels.
+
+### Diagnostic marks
+
+Each diagnostic is underlined under the characters it marks,
+using the same range geometry as selection,
+so tabs,
+CJK,
+combining marks,
+and ligature halves are covered exactly.
+Severity has two visible channels besides color:
+the underline style and the marker letter.
+
+- Error: a wavy line and a marker `E`.
+- Warning: a dashed line and a marker `W`.
+- Information: a dotted line and a marker `I`.
+- Hint: sparse dots and a marker `H`.
+
+A diagnostic without a severity is shown as a warning, as Helix shows it.
+A range over several lines underlines each of its rows and marks a crossed line end like a selected terminator,
+so an empty line inside it stays visible.
+A point range gets a mark one terminator wide:
+after the text at a line end,
+centered on its position elsewhere.
+Where ranges overlap,
+the mildest severity is drawn first and the worst on top;
+the marker shows the worst severity starting on its line.
+Inside a selection an underline keeps its style but takes the selected-text ink,
+as selected glyphs do:
+the light-scheme severity inks reach only 1.16:1 to 1.39:1 against the selection fill `#0078D4`.
+
+When the caret touches a diagnostic,
+at either end of its range or inside it,
+a card under the caret's line lists every problem there,
+worst first,
+for example `Error E0308 (rustc): mismatched types`,
+with a stripe in the worst severity's ink.
+It moves above the line when the view ends first,
+shows only while the source view has keyboard focus,
+and lists at most eight problems.
+The same text starts the source view's accessible description.
+Hints are not exposed to accessibility tools and never appear in the source text they read.
+
+Severity inks have a light and a dark value each:
+the WinUI system critical and caution fill colors for errors and warnings
+(`SystemFillColorCritical` and `SystemFillColorCaution` in `microsoft/microsoft-ui-xaml`,
+`controls/dev/CommonStyles/Common_themeresources_any.xaml`),
+the accent pair of Slint's fluent style for information,
+and a neutral gray for hints.
+Measured on rendered frames (`marks_and_hints_render_in_both_schemes_with_measured_contrast`),
+the error marker reaches 5.42:1 against the light background and 8.39:1 against the dark one,
+its letter the same against the marker,
+and hint text 7.68:1 (light) and 7.49:1 (dark) against its box.
+Computed from the declared values against the fluent backgrounds `#FAFAFA` and `#1C1C1C`,
+the warning ink reaches 5.03:1 and 12.91:1,
+the information ink 6.04:1 and 9.47:1,
+and the hint-severity gray 5.93:1 and 8.22:1.
+
+### Cost and invalidation
+
+Each render takes the annotations of the materialized rows with two binary searches,
+one over hint positions and one over diagnostics indexed by start with the furthest end so far,
+so a range starting above the view is still found.
+The visible part is a frame-stamp input:
+a snapshot change outside the materialized rows repaints nothing,
+and installing the same snapshots again does nothing.
+A repaint shapes one layout per visible hint and checks each visible diagnostic against each materialized row.
+Hint labels past the widest line extend the scroll range.
+
+### Inspection
+
+Debug builds started with `IDE_INSPECT_ANNOTATIONS` naming a JSON file install that file's hints and diagnostics
+for the initially displayed text (`src/native/inspect.rs`),
+for nested-compositor frames without a language server.
+`inspect:native dark annotations` and `inspect:native light annotations` write such a file for a fixture
+with a tab,
+CJK,
+a combining mark,
+a ligature,
+overlapping ranges,
+a range over a line end,
+and a point at a line end.
+Release builds do not contain this path,
+and without the variable it does nothing.
+
+### Differences from editord
+
+editord shows hints and diagnostic messages in rows above each line, in Inter,
+with every message always visible.
+Here hints sit after the line's text in the source family,
+and a message is shown only for the caret position.
+editord shows severity by color alone,
+in its wavy underlines and its message rows;
+here the underline style and a marker letter also differ.
+editord strips a type hint's leading `: ` and a parameter hint's trailing `:`;
+here labels are shown as the server sent them,
+without padding spaces.
+
+`test:annotations` covers the visible subset, layout, painting, the frame stamp, and the placement measurements.
+`test:annotations-native` drives injected snapshots through real key and pointer events in both schemes,
+and `test:native` includes it.
+`inspect:annotation-guards` removes each guard in a disposable copy and checks that its named test fails.
 
 ## Fonts and appearance
 

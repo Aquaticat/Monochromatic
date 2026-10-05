@@ -1,5 +1,9 @@
 //! Distinguish glyph-image changes from caret-only presentation changes.
 
+/// Visible hint labels and diagnostic marks are paint inputs too.
+use crate::annotation::Visible;
+/// Annotation inks follow the system scheme.
+use crate::annotation_layout::AnnotationColors;
 /// Canonical source revision and selection define source paint inputs.
 use crate::document::Document;
 /// In-file find ranges are painted from the same shaped rows as selection.
@@ -35,6 +39,22 @@ pub struct FrameStamp {
     styles: SourceStyles,
     /// Shared immutable in-file find ranges; empty while the find bar shows nothing.
     matches: FindRanges,
+    /// What: `Arc<Visible>` shares the hint labels and diagnostic marks of the materialized rows only.
+    /// Why: A snapshot change outside the materialized rows changes no pixel, so it must not repaint.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// annotations: Readonly<Visible>;
+    /// ```
+    annotations: Arc<Visible>,
+    /// What: `Option<AnnotationColors>` is the annotation inks, or nothing for a frame without annotations.
+    /// Why: A scheme change re-tints hints and underlines.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// annotationColors?: AnnotationColors;
+    /// ```
+    annotation_colors: Option<AnnotationColors>,
 }
 
 /// Compare exact paint inputs, using shared snapshot identity before comparing new span contents.
@@ -47,7 +67,10 @@ impl PartialEq for FrameStamp {
             && self.horizontal == other.horizontal
             && self.colors == other.colors
             && (Arc::ptr_eq(&self.styles, &other.styles) || self.styles == other.styles)
-            && (Arc::ptr_eq(&self.matches, &other.matches) || self.matches == other.matches);
+            && (Arc::ptr_eq(&self.matches, &other.matches) || self.matches == other.matches)
+            && (Arc::ptr_eq(&self.annotations, &other.annotations)
+                || self.annotations == other.annotations)
+            && self.annotation_colors == other.annotation_colors;
     }
 }
 
@@ -79,6 +102,8 @@ impl FrameStamp {
             colors,
             styles,
             matches: Arc::from([]),
+            annotations: Arc::new(Visible::default()),
+            annotation_colors: None,
         };
     }
 
@@ -86,6 +111,15 @@ impl FrameStamp {
     /// The stamp is consumed and returned so existing callers without matches stay unchanged.
     pub fn with_matches(mut self, matches: FindRanges) -> Self {
         self.matches = matches;
+        return self;
+    }
+
+    /// Replace the visible hint labels and diagnostic marks and their inks; any difference is a different frame.
+    /// The stamp is consumed and returned so existing callers without annotations stay unchanged.
+    pub fn with_annotations(mut self, annotations: Arc<Visible>, colors: AnnotationColors) -> Self {
+        self.annotations = annotations;
+        // `Some` records that this frame paints annotations with these inks.
+        self.annotation_colors = Some(colors);
         return self;
     }
 }

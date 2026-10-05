@@ -43,8 +43,6 @@ use std::{
 
 /// Window callbacks: keys, pointer, list choices, and dismissal.
 mod actions;
-/// Latest accepted inlay hints and diagnostics, for the source renderer.
-mod annotations;
 /// The native checks every reply passes before it is applied.
 mod guard;
 /// Hover content as plain text.
@@ -64,13 +62,24 @@ mod sync;
 /// Places a target names, and opening them.
 mod targets;
 
-/// The source renderer reads hints and diagnostics through this store in `State`, asking with
-/// the stamp of the text it draws: `DocumentStamp { file: state.file_generation,
-/// revision: state.document.revision() }`.
-pub(super) use annotations::Annotations;
+/// What: `pub(super) use` re-exports a name so the parent module and this module's tests can say
+///       `language::Annotations`; the type itself lives in the library.
+/// Why: The poll stores accepted hints and diagnostics in this one store in `State`, and the
+///      source renderer reads the same store with the stamp of the text it draws:
+///      `DocumentStamp { file: state.file_generation, revision: state.document.revision() }`.
+///      One store means what was accepted is exactly what is painted.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { Annotations } from 'ide-app/annotation';
+/// ```
+pub(super) use ide_app::annotation::Annotations;
 /// The file-open path places the caret at a target once its file is shown.
 pub(super) use targets::{Jump, place};
 
+/// Server hints and diagnostics painted by the poll, and the problem card yielding to the popup.
+#[cfg(test)]
+mod annotation_wiring_tests;
 /// Ctrl+B, Ctrl+click, and the references fallback through real window events.
 #[cfg(test)]
 mod definition_tests;
