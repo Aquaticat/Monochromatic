@@ -245,7 +245,21 @@ No debug-app launch,
 settings write or touch was issued during that interval.
 That separates this observed startup failure from feedback scene changes;
 it does not identify the resource or library responsible.
-Recovery now targets the observed window on the same retained guest.
+Recovery closed the named startup window on the same retained guest and
+verified debug focus.
+The inner held cohort then completed all 24 contexts.
+A separate hierarchy transport timeout interrupted acquisition after
+11 completed records;
+no stale dump was accepted.
+Host/guest process inspection found no remaining dump process,
+and the resumed acquisition used fresh paths with a 60-second command
+bound while preserving the completed records.
+Cover acquisition continues on the same guest.
+The eight existing expiry logs also pass a separate single-activity and
+single-study-entry check,
+with duplicated-initialization rejection controls.
+The separate manual Close branch of Undo feedback is queued for native
+verification before shutdown.
 
 The native-container bridge is ADB touch;
 the optional gRPC helper is not used because its Python dependency is
