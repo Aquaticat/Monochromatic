@@ -488,12 +488,18 @@ The gaps were in the tests,
 and three are worth knowing about:
 
 - The CRLF refusal in `rewrite` is the only protection against one corrupting fix.
-  With it disabled,
-  an insertion between the carriage return and line feed of a `///` line was accepted,
+  A probe planted its removal,
+  then inserted `X` between the carriage return and line feed of `/// Alpha.\r\n`.
+  The group was accepted and the fixed host read `/// Alpha.\rX\n`,
+  a bare carriage return followed by a new line,
   because the carriage return stays inside the comment token and the comment re-extracts
   to the intended bytes.
+  The unmodified source refuses the same group with this refusal.
   The existing test asserted only that some refusal happened,
   and container verification supplied one for the shape it used.
+  The probe and both logs are in `hand-plants` as `processors_probe_crlf_split.rs`,
+  `run4-original.log`,
+  and `run4-planted.log`.
 - Deleting a whole doc line was only tested between lines with identical prefixes,
   where deleting the prefix of the wrong line gives the same bytes.
 - No test asserted any value returned by `processors_spans::anchor`,
@@ -566,6 +572,21 @@ so the item loses its documentation as requested and the host stays valid Rust.
 Block delimiters are never deleted by design,
 so this is the expected result,
 not a defect.
+
+## Operational notes
+
+- The first launch of the rerun task was stopped during its test-image build,
+  because the launching tool call had a short timeout,
+  and was relaunched unchanged.
+  No mutant had started.
+- Every test,
+  planting,
+  probe,
+  and campaign container was mount-free.
+  The one exception is the source-identity hash check,
+  which mounted a single checksum file read-only into the tested image to run `sha256sum --check`.
+- Plants and probes used one container at a time,
+  never concurrently with the campaign.
 
 ## Notes for integration
 
