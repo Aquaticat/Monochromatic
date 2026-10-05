@@ -7050,6 +7050,23 @@ as a TSDoc block (ledger B19);
 fixed forward (`b5cae5d8a`).
 No B entry found.
 
+The sixty-sixth cluster of that census,
+`resolution`,
+against `census-TXnKot` at `250b09177`:
+3 line stretches over `resolution-wire.ts`
+(`8bb2ce647`).
+Two cased:
+the reply that is no object
+and the check that is no object.
+Left:
+the issue's non-number refusal
+(`328`),
+the guard's single-line return
+the census's attribution leaves cold.
+The reach census (`~/temp/agent/mimo-trial/reach-resolution.log`)
+reads `ran 2, still cold 1`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

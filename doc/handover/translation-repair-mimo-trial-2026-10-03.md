@@ -683,6 +683,29 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  00:44 UTC:
+  the T8 `resolution` batch closed with commit `8bb2ce647`:
+  3 line stretches over `resolution-wire.ts`,
+  two cased,
+  one left documented
+  (the issue's non-number refusal:
+  the attribution quirk's record).
+  The reach census reads `ran 2, still cold 1`
+  (`~/temp/agent/mimo-trial/reach-resolution.log`).
+  Counts at the close:
+  the full suite 1,564 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-resolution-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-resolution-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `8bb2ce647`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `claim` cluster
+  (the ranking's next at `census-TXnKot`).
+
+- 2026-10-05,
   00:38 UTC:
   the next batch's baseline census taken at commit `40af0f949`:
   `census written to ~/.cache/translation-repair/coverage/census-TXnKot/census.json`
