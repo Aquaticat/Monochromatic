@@ -154,6 +154,38 @@ await describe({
             },),).toBe('',);
           },
         },),
+        it({
+          name: 'writes NOTHING for fragments that show a reader nothing, as for empty ones: a zero-width space, a '
+            + 'Hangul filler, or both among spaces open no paragraph at the boundary, and beside a fragment of '
+            + 'words only the words are written',
+          fn: async () => {
+            expect({
+              alone: composeInsertion({
+                fragments: [
+                  '\u{200B}',
+                  '\u{3164}',
+                  ' \u{200B}\u{3164} \n',
+                ],
+                before: 'The cat sleeps.',
+                after: 'She purrs.',
+                eol: '\n',
+              },),
+              besideWords: composeInsertion({
+                fragments: [
+                  '\u{200B}',
+                  'The cat naps.',
+                  '\u{3164}',
+                ],
+                before: 'The cat sleeps.\n\n',
+                after: 'She purrs.\n',
+                eol: '\n',
+              },),
+            },).toEqual({
+              alone: '',
+              besideWords: 'The cat naps.\n\n',
+            },);
+          },
+        },),
       ],
     },),
 

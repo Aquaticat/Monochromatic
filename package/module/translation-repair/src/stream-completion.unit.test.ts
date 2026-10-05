@@ -64,6 +64,30 @@ await describe({
         },),
 
         it({
+          name: 'leaves the refusal field absent when the refusal deltas show a reader nothing, so a JSON answer '
+            + 'beside a refusal channel of spaces, a zero-width space and a Hangul filler reads as the answer',
+          fn: async () => {
+            /** Drained stream answering in content beside a padded refusal channel. */
+            const body = [
+              String.raw`data: {"choices":[{"delta":{"content":"{\"a\":1}"}}]}`,
+              ...[
+                ' ',
+                '\u{200B}',
+                '\u{3164}',
+                '\n',
+              ].map(function refusalEvent(refusal,): string {
+                return `data: ${JSON.stringify({ choices: [{ delta: { refusal, }, },], },)}`;
+              },),
+              'data: [DONE]',
+              '',
+            ].join('\n\n',);
+            expect(extractStreamedCompletion({ bodyText: body, },),).toEqual({
+              text: '{"a":1}',
+            },);
+          },
+        },),
+
+        it({
           name: 'ignores a usage-only event that names no choices array at all, not only one that '
             + 'names an empty one, while still folding its usage',
           fn: async () => {

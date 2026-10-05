@@ -342,6 +342,41 @@ await describe({
     },),
 
     it({
+      name: 'LEAVES an appearance whose parenthesis shows a reader nothing as its writer left it, as it leaves an '
+        + 'empty one: a heading whose parenthesis holds a space, a zero-width space, a Hangul filler, or both '
+        + 'among spaces takes no gloss of that nothing, and the signature under it keeps its own',
+      fn: async () => {
+        /**
+         Rows of one slice whose heading carries a parenthesis of the given filling.
+         */
+        const pages = [
+          ' ',
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ].map(function pageUnder(filling,) {
+          return [{
+            sliceIndex: 0,
+            replacementText: `### Ten: Jinmao (${filling})\n\nIt woke.\n\n`
+              + '<p style="text-align: end;">——Jinmao (Brocade Cat), February 10, 2025</p>',
+          },];
+        },);
+        expect(pages.map(function placedOver(replacements,) {
+          return placeHandleGlosses({
+            slices: [HEADED,],
+            replacements,
+          },);
+        },),).toEqual(pages.map(function untouched(replacements,) {
+          return {
+            replacements,
+            restored: [],
+            findings: [],
+          };
+        },),);
+      },
+    },),
+
+    it({
       name: 'READS a handle standing inside a longer word as no appearance: a heading writing it after another '
         + 'letter takes no gloss, and the signature, the handle\'s one appearance, keeps its own',
       fn: async () => {

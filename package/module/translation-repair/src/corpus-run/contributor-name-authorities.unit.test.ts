@@ -35,5 +35,41 @@ await describe({
         expect(authorities.get('锦猫',)?.rendering,).toBe('Jinmao',);
       },
     },),
+    it({
+      name: 'TAKES NO page rendering that shows a reader nothing, leaving the handle to its pinyin reading: a page '
+        + 'signature whose name is a zero-width space, a Hangul filler, both among spaces, or either before a '
+        + 'meaning in parentheses renders the signer as nothing a page could repeat',
+      fn: async () => {
+        /**
+         Names a page signs with that show a reader nothing once any meaning
+         in parentheses is set aside.
+         */
+        const names = [
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+          '\u{200B} (Brocade Cat)',
+          '\u{3164} (Brocade Cat)',
+        ];
+        expect(names.map(function authoritiesUnder(name,): readonly (readonly [string, unknown,])[] {
+          return [...nameAuthorities({
+            slices: [pair({
+              sliceIndex: 1,
+              source: '它醒了。\n\n——锦猫, 2025 年 2 月 10 日',
+              target: '',
+            },),],
+            pageText: new Map([[1, `It woke.\n\n——${name}, February 10, 2025`,],]),
+          },),];
+        },),).toEqual(names.map(function pinyinAlone(): readonly (readonly [string, unknown,])[] {
+          return [[
+            '锦猫',
+            {
+              rendering: 'Jinmao',
+              origin: 'the pinyin reading of the original\'s handle',
+            },
+          ],];
+        },),);
+      },
+    },),
   ],
 },);

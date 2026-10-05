@@ -99,6 +99,51 @@ await describe({
   name: damageClaimLinesBySlice.name,
   children: [
     it({
+      name: 'NAMES A CATEGORY THAT SHOWS A READER NOTHING as unspecified, as it names an empty one: spaces, a '
+        + 'zero-width space, a Hangul filler, or both among spaces',
+      fn: async () => {
+        /**
+         Category fillings that show a reader nothing.
+         */
+        const blank = [
+          '',
+          '   ',
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ];
+        /**
+         Lines of one probed chunk whose corroborated claims carry those categories.
+         */
+        const bySlice = damageClaimLinesBySlice({
+          lane: { chunks: [
+            {
+              sliceIndex: 4,
+              accuracyPatchSelected: true,
+              introducedDefects: {
+                regions: [
+                  regionOf({
+                    claims: blank.map(function claimUnder(category,) {
+                      return claimOf({ admissibility: 'corroborated', evidence: 'naps', category, },);
+                    },),
+                  },),
+                ],
+              },
+            },
+          ], },
+        },);
+        expect([...bySlice.entries(),],).toEqual([
+          [
+            4,
+            blank.map(function lineOf() {
+              return '- hf:moonshotai/Kimi-K3 [unspecified] on the accuracy repair quotes "naps": '
+                + 'the page holds past tense';
+            },),
+          ],
+        ],);
+      },
+    },),
+    it({
       name: 'RENDERS only corroborated claims, one line each, keyed by the slice they concern, and '
         + 'LEAVES OUT chunks whose claims all failed the screen or that were never probed',
       fn: async () => {

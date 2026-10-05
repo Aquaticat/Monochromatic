@@ -226,6 +226,57 @@ await describe({
     },),
     it({
       name:
+        'REFUSES a decision whose wording shows a reader nothing at a place the archive never translated, as '
+        + 'it refuses an empty one: spaces, a zero-width space, a Hangul filler, or both among spaces fill no '
+        + 'passage either',
+      fn: async () => {
+        /**
+         Refusal of a decision of the given wording at an untranslated place.
+
+         @param acceptedText - wording the lane decided on
+
+         @returns The refusal, class and message
+
+         @example
+         ```ts
+         const refusal = refusalOf('\u{200B}',);
+         ```
+         */
+        function refusalOf(acceptedText: string,): string {
+          return String(caught(function decidedNothingVisible() {
+            assertWordingCoherent({
+              wording: {
+                sliceIndex: 4,
+                incumbentKind: 'absent',
+                incumbentText: '',
+                outcome: {
+                  kind: 'decided',
+                  acceptedText,
+                },
+              },
+            },);
+          },),);
+        }
+        /**
+         The refusal an empty decision gets, whose wording its own case pins.
+         */
+        const empty = refusalOf('',);
+        expect(empty.startsWith('WordingCoherenceError: slice 4 reports a decision of empty wording',),).toBe(true,);
+        expect([
+          '   ',
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ].map(refusalOf,),).toEqual([
+          empty,
+          empty,
+          empty,
+          empty,
+        ],);
+      },
+    },),
+    it({
+      name:
         'still accepts a decision of empty wording where the archive HAS wording, since deleting a passage '
         + 'is a decision somebody took and the delivery ledger has to be able to say so',
       fn: async () => {

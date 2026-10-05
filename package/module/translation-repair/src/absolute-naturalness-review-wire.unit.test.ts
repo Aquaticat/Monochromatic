@@ -150,13 +150,36 @@ await describe({
           name: 'REFUSES A FINDING WITH AN EMPTY problem',
           fn: async () => {
             // The one finding-level refusal decided by the finding check's last
-            // comparison (`problem !== ''`) rather than by a type or range
-            // check; it refuses the reply through the same `every` as the
-            // other finding-level cases.
+            // question, whether the problem shows a reader anything, rather
+            // than by a type or range check; it refuses the reply through the
+            // same `every` as the other finding-level cases.
             expect(isAbsoluteNaturalnessReviewWire({
               ...VALID_REVIEW,
               findings: [{ paragraph: 2, problem: '', },],
             },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A FINDING WHOSE problem SHOWS A READER NOTHING, as it refuses an empty one: spaces, a '
+            + 'zero-width space, a Hangul filler, or both among spaces',
+          fn: async () => {
+            expect([
+              '   ',
+              '\u{200B}',
+              '\u{3164}',
+              ' \u{200B}\u{3164} ',
+            ].map(function guarded(problem,) {
+              return isAbsoluteNaturalnessReviewWire({
+                ...VALID_REVIEW,
+                findings: [{ paragraph: 2, problem, },],
+              },);
+            },),).toEqual([
+              false,
+              false,
+              false,
+              false,
+            ],);
           },
         },),
 

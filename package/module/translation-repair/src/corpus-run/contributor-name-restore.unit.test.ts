@@ -305,5 +305,47 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'WRITES THE PINYIN OVER A PAGE SIGNATURE THAT SHOWS A READER NOTHING, and into the heading naming the '
+        + 'signer: a signature of a zero-width space or a Hangul filler is no rendering the page could repeat, and '
+        + 'taken for one it wrote the same nothing over the heading\'s name',
+      fn: async () => {
+        expect([
+          '\u{200B}',
+          '\u{3164}',
+        ].map(function restoredOver(name,): ReturnType<typeof restoreContributorNames> {
+          return restoreContributorNames({
+            slices: [UNCARRIED,],
+            replacements: [{
+              sliceIndex: 1,
+              replacementText: `### Ten: Brocade Cat\n\nIt wakes.\n\n<p style="text-align: end;">—${name}, February 10, 2025</p>`,
+            },],
+          },);
+        },),).toEqual([
+          '\u{200B}',
+          '\u{3164}',
+        ].map(function pinyinWritten(name,): ReturnType<typeof restoreContributorNames> {
+          /**
+           The one row the page writes, its heading and signature restored.
+           */
+          const restoredRow = {
+            sliceIndex: 1,
+            replacementText: '### Ten: Jinmao\n\nIt wakes.\n\n<p style="text-align: end;">—Jinmao, February 10, 2025</p>',
+          };
+          return {
+            replacements: [restoredRow,],
+            restored: [restoredRow,],
+            findings: [
+              'contributor-name-restored (slice 1: "### Ten: Brocade Cat" to "### Ten: Jinmao" in a heading; '
+              + 'the pinyin reading of the original\'s handle)',
+              `contributor-name-restored (slice 1: "<p style="text-align: end;">—${name}, February 10, 2025</p>" to `
+              + '"<p style="text-align: end;">—Jinmao, February 10, 2025</p>" in a signature; '
+              + 'the pinyin reading of the original\'s handle)',
+            ],
+          };
+        },),);
+      },
+    },),
   ],
 },);

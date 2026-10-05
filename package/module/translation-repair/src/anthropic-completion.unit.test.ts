@@ -253,6 +253,44 @@ await describe({
       },
     },),
     it({
+      name: 'RETURNS the prose when the tool arguments show a reader nothing, as it does when no tool was called: '
+        + 'a tool call carrying only spaces, a zero-width space and a Hangul filler carried no answer',
+      fn: async () => {
+        /**
+         Stream answering in prose beside a tool call whose arguments are padding.
+         */
+        const bodyText = startOf({ inputTokens: 12, },)
+          + deltaOf({
+            deltaType: 'text_delta',
+            field: 'text',
+            text: '{"verdict":"pass"}',
+          },)
+          + deltaOf({
+            deltaType: 'input_json_delta',
+            field: 'partial_json',
+            text: ' \u{200B}',
+          },)
+          + deltaOf({
+            deltaType: 'input_json_delta',
+            field: 'partial_json',
+            text: '\u{3164}\n',
+          },)
+          + endOf({
+            stopReason: 'tool_use',
+            outputTokens: 9,
+          },);
+        expect(extractAnthropicCompletion({ bodyText, },),).toEqual({
+          text: '{"verdict":"pass"}',
+          finishReason: 'tool_use',
+          usage: {
+            prompt_tokens: 12,
+            completion_tokens: 9,
+            total_tokens: 21,
+          },
+        },);
+      },
+    },),
+    it({
       name: 'DISCARDS the thinking channel, which is the model\'s private working and would '
         + 'corrupt the answer a validator reads if it were concatenated in',
       fn: async () => {

@@ -346,6 +346,60 @@ await describe({
     },),
 
     it({
+      name: 'says a replacement that shows a reader nothing was a deletion, rendering the sheet exactly as for '
+        + 'the empty replacement: spaces, a zero-width space, a Hangul filler, or both among spaces',
+      fn: async () => {
+        /**
+         Repair sheet over one region whose replacement is as given.
+
+         @param editorAfter - what the pipeline wrote in place of the region
+
+         @returns Rendered sheet
+
+         @example
+         ```ts
+         const sheet = sheetAfter('\u{3164}',);
+         ```
+         */
+        function sheetAfter(editorAfter: string,): string {
+          return formatRepairSheet({
+            sample: [
+              catCandidate({
+                repair: {
+                  disposition: 'shipped',
+                  regions: [
+                    {
+                      issueIds: ['adjudicated/nap',],
+                      before: 'a fabricated sentence',
+                      editorAfter,
+                    },
+                  ],
+                  refined: false,
+                },
+              },),
+            ],
+            seed: 'cat-seed',
+            corpusSha: 'sha/1',
+            drawDigest: 'digest-of-this-draw',
+          },);
+        }
+        /** The sheet for a replacement the pipeline wrote as nothing at all. */
+        const deleted = sheetAfter('',);
+        expect([
+          '   ',
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ].map(sheetAfter,),).toEqual([
+          deleted,
+          deleted,
+          deleted,
+          deleted,
+        ],);
+      },
+    },),
+
+    it({
       name: 'shows the returned slice for an item whose targeted repair lost '
         + 'but whose slice the naturalness lane rewrote anyway, since the text '
         + 'the reader got is not the original either',

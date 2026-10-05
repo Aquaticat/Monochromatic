@@ -360,6 +360,45 @@ await describe({
             },);
           },
         },),
+        it({
+          name: 'COUNTS NO VOICE FOR A RENDERING THAT SHOWS A READER NOTHING, as it counts none for an empty one: two '
+            + 'seats rendering a title as a zero-width space lose to the one seat rendering it in words, and a title '
+            + 'rendered only as a Hangul filler is left out',
+          fn: async () => {
+            /**
+             Renderings showing nothing from two seats, words from the third.
+             */
+            const { lexicon: padded, } = await settled({
+              replies: {
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: {
+                  titles: [{ title: 1, rendering: '\u{200B}', }, { title: 2, rendering: '\u{3164}', },],
+                },
+                [SEAT_HYPER_ONLY]: {
+                  titles: [{ title: 1, rendering: ' \u{200B} ', }, { title: 2, rendering: '“\u{3164}\u{200B}”', },],
+                },
+                [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: 'Song of the Cat', },], },
+              },
+            },);
+            /**
+             The same round with both seats' renderings empty.
+             */
+            const { lexicon: empty, } = await settled({
+              replies: {
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: {
+                  titles: [{ title: 1, rendering: '', }, { title: 2, rendering: '', },],
+                },
+                [SEAT_HYPER_ONLY]: {
+                  titles: [{ title: 1, rendering: '', }, { title: 2, rendering: '', },],
+                },
+                [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: 'Song of the Cat', },], },
+              },
+            },);
+            expect(padded,).toEqual(empty,);
+            expect(padded.titles,).toEqual([
+              { source: '猫之歌', occurrences: 2, rendering: 'Song of the Cat', voices: 1, heard: 3, },
+            ],);
+          },
+        },),
       ],
     },),
 

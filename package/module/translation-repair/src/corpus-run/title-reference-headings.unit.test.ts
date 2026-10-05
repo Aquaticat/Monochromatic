@@ -214,6 +214,50 @@ await describe({
       },
     },),
     it({
+      name: 'READS NO HEADING THAT SHOWS A READER NOTHING, which leaves no English to take: under a heading of a '
+        + 'zero-width space, a Hangul filler, both among spaces, either before the title\'s gloss, or a filler in an '
+        + 'HTML heading, the credit keeps the words its writer gave it and no row is rewritten',
+      fn: async () => {
+        /**
+         Credit as its writer left it.
+         */
+        const credit = '—— Yunmao \u{201C}Cat Talk\u{201D}';
+        /**
+         Headings whose rendering shows a reader nothing, in both shapes the
+         pass reads a heading from.
+         */
+        const headings = [
+          '### \u{200B}',
+          '### \u{3164}',
+          '###  \u{200B}\u{3164} ',
+          '### \u{200B} (午后猫语)',
+          '<h3>\u{3164}</h3>',
+        ];
+        expect(headings.map(function passOver(heading,): ReturnType<typeof unifyTitleReferences> {
+          return passOverHeading({
+            title: '午后猫语',
+            heading,
+            credit,
+          },);
+        },),).toEqual(headings.map(function untouched(heading,): ReturnType<typeof unifyTitleReferences> {
+          return {
+            replacements: [
+              {
+                sliceIndex: 0,
+                replacementText: heading,
+              },
+              {
+                sliceIndex: 1,
+                replacementText: credit,
+              },
+            ],
+            restored: [],
+            findings: [],
+          };
+        },),);
+      },
+    },),
+    it({
       name: 'LEAVES A REFERENCE TO A TITLE TWO HEADINGS RENDER APART, since which rendering it takes cannot be read',
       fn: async () => {
         /**

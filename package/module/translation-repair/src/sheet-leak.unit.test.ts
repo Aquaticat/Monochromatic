@@ -174,6 +174,27 @@ await describe({
       },
     },),
     it({
+      name: 'ACCEPTS a fence whose runs hold only what shows a reader nothing, as it accepts one with no label '
+        + 'between them: a zero-width space, a Hangul filler, or both among spaces',
+      fn: async () => {
+        expect([
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B} \u{3164} ',
+        ].map(function findingsBetween(filling,) {
+          return sheetLeakFindings({
+            sourceText: '猫在睡觉。',
+            pageText: '',
+            candidateText: `The cat is sleeping.\n\n=====${filling}=====\n\nThe cat woke.`,
+          },);
+        },),).toEqual([
+          [],
+          [],
+          [],
+        ],);
+      },
+    },),
+    it({
       name: 'REFUSES the editor sheet\'s region marker and its unfenced line heads copied into a rendering, '
         + 'unless the original or the page carries them (ledger B24)',
       fn: async () => {

@@ -175,6 +175,61 @@ await describe({
     },),
     it({
       name:
+        'REFUSES A SPAN THAT SHOWS A READER NOTHING as empty, though the text holds it exactly once: a locator '
+        + 'of one ideographic space, and a focus of a zero-width space, a Hangul filler or one space inside a '
+        + 'locator that holds it once',
+      fn: async () => {
+        /**
+         Original carrying each invisible character once.
+         */
+        const spaced = '三只猫住在书店的阁楼里。\u{3000}她们不吃罐头\u{200B}，\u{3164}也不喝凉牛奶。';
+        expect([
+          anchorLocatedSpan({
+            text: spaced,
+            locator: '\u{3000}',
+            focus: '\u{3000}',
+            side: 'source',
+          },),
+          anchorLocatedSpan({
+            text: spaced,
+            locator: '她们不吃罐头\u{200B}',
+            focus: '\u{200B}',
+            side: 'source',
+          },),
+          anchorLocatedSpan({
+            text: spaced,
+            locator: '\u{3164}也不喝',
+            focus: '\u{3164}',
+            side: 'source',
+          },),
+          anchorLocatedSpan({
+            text: CANDIDATE_TEXT,
+            locator: 'canned food',
+            focus: ' ',
+            side: 'candidate',
+          },),
+        ],).toEqual([
+          {
+            anchored: false,
+            reason: 'empty-locator (source)',
+          },
+          {
+            anchored: false,
+            reason: 'empty-focus (source)',
+          },
+          {
+            anchored: false,
+            reason: 'empty-focus (source)',
+          },
+          {
+            anchored: false,
+            reason: 'empty-focus (candidate)',
+          },
+        ],);
+      },
+    },),
+    it({
+      name:
         'ANCHORS ACROSS A SOFT WRAP and returns the DOCUMENT`s own characters rather than the quote`s, '
         + 'so a report never quotes a text back with wording it does not carry',
       fn: async () => {

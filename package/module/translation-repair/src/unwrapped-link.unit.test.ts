@@ -188,6 +188,52 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES a rendering whose link words show a reader nothing, the title written as plain words beside '
+        + 'a link of a zero-width space, a Hangul filler, or both among spaces, exactly as it refuses a link of '
+        + 'spaces: the link is unwrapped all the same',
+      fn: async () => {
+        /**
+         Rendering whose link carries the given words after the title in plain words.
+
+         @param words - link words
+
+         @returns Verdict on it
+
+         @example
+         ```ts
+         const verdict = verdictWith('\u{200B}',);
+         ```
+         */
+        function verdictWith(words: string,): ReturnType<typeof validateTranslatedSlice> {
+          return validateTranslatedSlice({
+            sourceText: SOURCE,
+            candidateText: `[^2]: A Nap on the Windowsill [${words}](https://example.invalid/windowsill-nap.html)`,
+            pageText: LINKED,
+          },);
+        }
+        /** Verdict on a link of spaces, which the floor already refuses. */
+        const spaced = verdictWith('   ',);
+        expect(spaced,).toEqual({
+          kind: 'invalid',
+          findings: [
+            'The ORIGINAL links words to https://example.invalid/windowsill-nap.html as '
+              + '[words](https://example.invalid/windowsill-nap.html), but your translation carries that destination '
+              + 'without words linked to it. Keep the link: put the rendered words inside the brackets and the '
+              + 'destination in the parentheses right after them, as the ORIGINAL does.',
+          ],
+        },);
+        expect([
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ].map(verdictWith,),).toEqual([
+          spaced,
+          spaced,
+          spaced,
+        ],);
+      },
+    },),
+    it({
       name: 'ACCEPTS the worded link, and stays silent where the source link is worded by its own destination',
       fn: async () => {
         expect(validateTranslatedSlice({

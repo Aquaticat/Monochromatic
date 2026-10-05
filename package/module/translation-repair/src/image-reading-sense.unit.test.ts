@@ -116,6 +116,34 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES A READING THAT SHOWS A READER NOTHING AS TOO SHORT however many characters it holds: '
+        + 'sixteen Hangul fillers, forty zero-width spaces, or both among spaces, reach the transcript line '
+        + 'and still transcribe nothing',
+      fn: async () => {
+        expect([
+          '\u{3164}'.repeat(16,),
+          '\u{200B}'.repeat(40,),
+          ` ${'\u{200B}\u{3164} '.repeat(12,)}`,
+        ].map(function verdictOf(reading,) {
+          return readingMakesSense({ reading, },);
+        },),).toEqual([
+          {
+            kind: 'refused',
+            clause: 'too-short',
+          },
+          {
+            kind: 'refused',
+            clause: 'too-short',
+          },
+          {
+            kind: 'refused',
+            clause: 'too-short',
+          },
+        ],);
+      },
+    },),
+
+    it({
       name: 'REFUSES AN ABSENCE REPORT UNDER ITS OWN CLAUSE, however short, so the pair stage can count '
         + 'two of them as a textless picture rather than as two readers who declined (Uekawakuyuurei '
         + 'IMG_1308, 2026-09-04: a painting whose canvas passed the OCR gate as 24 characters of noise)',

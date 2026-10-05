@@ -163,6 +163,40 @@ await describe({
     },),
 
     it({
+      name: 'RECORDS the api refusal text as the raw text when the content shows a reader nothing, as it does for '
+        + 'empty content: spaces and a line break, a zero-width space, a Hangul filler',
+      fn: async () => {
+        expect([
+          ' \n ',
+          '\u{200B}',
+          '\u{3164}',
+        ].map(function outcomeOf(text,) {
+          return readJsonOutcome({
+            modelId: MODEL_ID,
+            reply: { text, refusal: '不能回答。', },
+            validate: isCatVerdict,
+          },);
+        },),).toEqual([
+          {
+            kind: 'refusal-shaped',
+            rawText: '不能回答。',
+            marker: 'api-refusal-field',
+          },
+          {
+            kind: 'refusal-shaped',
+            rawText: '不能回答。',
+            marker: 'api-refusal-field',
+          },
+          {
+            kind: 'refusal-shaped',
+            rawText: '不能回答。',
+            marker: 'api-refusal-field',
+          },
+        ],);
+      },
+    },),
+
+    it({
       name: 'ACCEPTS content that quotes refusal-like phrasing but parses',
       fn: async () => {
         // THE ORDER IS THE POINT: the refusal scan runs only after a parse

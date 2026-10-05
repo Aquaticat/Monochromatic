@@ -138,6 +138,45 @@ await describe({
       },
     },),
     it({
+      name: 'refuses a quote that shows a reader nothing as empty, though the document holds it exactly once: an '
+        + 'ideographic space, a zero-width space, a Hangul filler, or spaces around invisible characters',
+      fn: async () => {
+        /**
+         Original holding each invisible character once, between words.
+         */
+        const document = parseDocument({ text: '## 猫的日常\n\n小猫喜欢追蝴蝶，\u{3000}也喜欢\u{200B}晒太阳\u{3164}。\n', },);
+        expect([
+          '\u{3000}',
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ].map(function locate(quote,) {
+          return locateQuote({
+            document,
+            side: 'source',
+            quote,
+          },);
+        },),).toEqual([
+          {
+            located: false,
+            reason: 'empty-quote (source)',
+          },
+          {
+            located: false,
+            reason: 'empty-quote (source)',
+          },
+          {
+            located: false,
+            reason: 'empty-quote (source)',
+          },
+          {
+            located: false,
+            reason: 'empty-quote (source)',
+          },
+        ],);
+      },
+    },),
+    it({
       name: 'reports an absent quote as not found',
       fn: async () => {
         const located = locateQuote({

@@ -231,6 +231,82 @@ await describe({
     },),
     it({
       name:
+        'KEEPS a one-sided claim whose unused side carries only spaces, a zero-width space or a Hangul filler, '
+        + 'screening it exactly as the same claim with that side empty: such a side quotes nothing, so it is '
+        + 'no quote on a side the category forbids',
+      fn: async () => {
+        /**
+         Unused-side fillings that show a reader nothing.
+         */
+        const padding = [
+          ' ',
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ];
+        /**
+         An omission, resting on the original alone, with its candidate side as given.
+
+         @param filling - both candidate fields' text
+
+         @returns Screened report
+
+         @example
+         ```ts
+         const screened = omissionWith('\u{200B}',);
+         ```
+         */
+        function omissionWith(filling: string,): ReturnType<typeof screenRenderingAudit> {
+          return screenOne({
+            overrides: {
+              category: 'omission',
+              sourceLocator: '只喝温牛奶',
+              sourceFocus: '温',
+              candidateLocator: filling,
+              candidateFocus: filling,
+            },
+          },);
+        }
+        /**
+         An unsupported addition, resting on the candidate alone, with its original side as given.
+
+         @param filling - both original fields' text
+
+         @returns Screened report
+
+         @example
+         ```ts
+         const screened = additionWith('\u{3164}',);
+         ```
+         */
+        function additionWith(filling: string,): ReturnType<typeof screenRenderingAudit> {
+          return screenOne({
+            overrides: {
+              category: 'unsupported-addition',
+              sourceLocator: filling,
+              sourceFocus: filling,
+              candidateLocator: 'They eat canned food',
+              candidateFocus: 'canned',
+            },
+          },);
+        }
+        expect({
+          omissions: padding.map(omissionWith,),
+          additions: padding.map(additionWith,),
+        },).toEqual({
+          omissions: padding.map(function asEmpty() {
+            return omissionWith('',);
+          },),
+          additions: padding.map(function asEmpty() {
+            return additionWith('',);
+          },),
+        },);
+        expect(omissionWith('',).dropped,).toEqual([],);
+        expect(additionWith('',).dropped,).toEqual([],);
+      },
+    },),
+    it({
+      name:
         'DROPS an unsupported-addition carrying original text, the mirror case, so a voice cannot file a '
         + 'paired claim under a one-sided category and skip the evidence a paired category asks for',
       fn: async () => {

@@ -770,6 +770,91 @@ await describe({
       },
     },),
     it({
+      name: 'READS A REVISION THAT SHOWS A READER NOTHING AS THE REMOVAL AN EMPTY ONE SPELLS: spaces, a zero-width '
+        + 'space, a Hangul filler, or both among spaces reach the selectors as the removal and ship nothing, the '
+        + 'same review, slate and outcome the empty replacement gets',
+      fn: async () => {
+        /** Block no source supports, which every reviewer proposes to remove. */
+        const award = 'The cat won an award.';
+        /**
+         Reviews the block with every reviewer writing one replacement, and
+         keeps what the selectors were shown.
+
+         @param replacementText - replacement every reviewer writes
+
+         @returns Outcome beside the selection prompts
+
+         @example
+         ```ts
+         const removal = await reviewedWith('',);
+         ```
+         */
+        async function reviewedWith(replacementText: string,) {
+          /** Prompts of every exchange. */
+          const prompts: string[] = [];
+          /** Settled review. */
+          const outcome = await runArchiveBlockReviewStage({
+            client: scriptedClient({
+              prompts,
+              replyFor: ({ schema, },) => schema === 'archive_block_review'
+                ? {
+                  disposition: 'revise',
+                  sourceQuote: '',
+                  replacementText,
+                  finding: 'The award is not in the original.',
+                }
+                : {
+                  best: 1,
+                  reason: 'Removal is the only supported answer.',
+                },
+            },),
+            modelIds: ROSTER,
+            sourceText: '猫在窗边睡觉。',
+            targetText: `The cat sleeps by the window.\n\n${award}`,
+            blockText: award,
+            priorFindings: [],
+            signal: new AbortController().signal,
+            exchangeTimeoutMs: 5_000,
+            l,
+          },);
+          return {
+            outcome,
+            selection: prompts.filter(function isSelection(prompt,): boolean {
+              return prompt.includes('CURRENT ARCHIVE BLOCK',);
+            },),
+          };
+        }
+        /** The removal as the wire spells it. */
+        const removal = await reviewedWith('',);
+        expect({
+          kind: removal.outcome.kind,
+          text: removal.outcome.text,
+          selectors: removal.selection.length,
+          shownAsRemoval: removal.selection.every(function showsRemoval(prompt,): boolean {
+            return prompt.includes('[REMOVE BLOCK]',);
+          },),
+        },).toEqual({
+          kind: 'revised',
+          text: '',
+          selectors: 4,
+          shownAsRemoval: true,
+        },);
+        /** The same review with every reviewer writing a replacement that shows nothing. */
+        const padded = await Promise.all([
+          '   ',
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ].map(reviewedWith,),);
+        expect(padded,).toEqual([
+          removal,
+          removal,
+          removal,
+          removal,
+        ],);
+      },
+    },),
+    it({
       name: 'RETAINS the block when every proposed correction drops contributor identity',
       fn: async () => {
         const prompts: string[] = [];

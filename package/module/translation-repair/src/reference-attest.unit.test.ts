@@ -12,6 +12,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  caught,
   describe,
   expect,
   it,
@@ -253,6 +254,51 @@ await describe({
       },
     },),
     it({
+      name: 'VERIFIES NO QUOTE THAT SHOWS A READER NOTHING, though the text holds the same invisible characters: a '
+        + 'zero-width space, a Hangul filler, or both among spaces quote no words, so an item quoting them on both '
+        + 'sides is discarded',
+      fn: async () => {
+        /**
+         Archive carrying each invisible character inside the brother sentence.
+         */
+        const archiveText = 'Mittens is from a small town.\nShe has a younger\u{200B}\u{3164}brother who also sits by the stove.\n';
+        /**
+         Reference line whose page carries the same characters.
+         */
+        const referenceContext = '- reference 1 https://cats.example/posts/in-memory-of-mittens ("In memory of Mittens"): '
+          + 'Mittens had a younger\u{200B}\u{3164}brother who also sat by the stove.';
+        /**
+         Quotes that show a reader nothing.
+         */
+        const invisible = [
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ];
+        expect(invisible.map(function found(quote,): boolean {
+          return quoteIsIn({ quote, text: archiveText, },);
+        },),).toEqual([
+          false,
+          false,
+          false,
+        ],);
+        expect(keptAttestations({
+          verdicts: attestationVerdicts({
+            modelId: ROSTER[0],
+            items: invisible.map(function itemQuoting(quote,) {
+              return {
+                archiveQuote: quote,
+                reference: 1,
+                referenceQuote: quote,
+              };
+            },),
+            archiveText,
+            referenceContext,
+          },),
+        },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'VERIFIES A QUOTE WHOSE MARKS DIFFER FROM THE TEXT\'S (ledger B24): a straight apostrophe against the '
         + 'archive\'s curly one, English quotes against the reference\'s corner brackets',
       fn: async () => {
@@ -421,10 +467,46 @@ await describe({
         expect(mergeAlone({ archiveQuote: BROTHER_ITEM.archiveQuote, },),).toHaveLength(1,);
         expect(function mergesAbsent() {
           mergeAlone({ archiveQuote: 'a feather toy on a string', },);
-        },).toThrow('whose archive quote is empty or absent from the archive text',);
+        },).toThrow('whose archive quote shows a reader nothing or is absent from the archive text',);
         expect(function mergesEmpty() {
           mergeAlone({ archiveQuote: ' \n ', },);
-        },).toThrow('whose archive quote is empty or absent from the archive text',);
+        },).toThrow('whose archive quote shows a reader nothing or is absent from the archive text',);
+      },
+    },),
+    it({
+      name: 'THROWS on an item whose archive quote shows a reader nothing though the archive holds those '
+        + 'characters, which verification never keeps, rather than placing a detail of no words',
+      fn: async () => {
+        /**
+         Archive carrying a zero-width space and a Hangul filler side by side.
+         */
+        const archiveText = 'Mittens is from a small town.\nShe has a younger\u{200B}\u{3164}brother.\n';
+        expect([
+          '\u{200B}',
+          '\u{3164}',
+        ].map(function refusalOf(archiveQuote,): string {
+          return String(caught(function merge(): unknown {
+            return mergedAttestations({
+              verified: [{
+                modelId: ROSTER[0],
+                item: {
+                  ...BROTHER_ITEM,
+                  archiveQuote,
+                },
+              },],
+              archiveText,
+              heard: 4,
+              needed: 1,
+            },);
+          },),);
+        },),).toEqual([
+          `Error: unreachable: an attestation from ${ROSTER[0]} citing reference 1, whose archive quote shows a `
+            + 'reader nothing or is absent from the archive text it is merged against, was never verified against '
+            + 'that text',
+          `Error: unreachable: an attestation from ${ROSTER[0]} citing reference 1, whose archive quote shows a `
+            + 'reader nothing or is absent from the archive text it is merged against, was never verified against '
+            + 'that text',
+        ],);
       },
     },),
     it({
@@ -464,6 +546,34 @@ await describe({
           text: ARCHIVE_TEXT,
           details: [BROTHER_DETAIL,],
         },),).toHaveLength(0,);
+      },
+    },),
+    it({
+      name: 'FINDS NO DETAIL for a claim quote that shows a reader nothing, though the detail\'s quote and the text '
+        + 'hold the same zero-width space and Hangul filler',
+      fn: async () => {
+        /**
+         Detail whose archive quote carries both invisible characters.
+         */
+        const padded: AttestedDetail = {
+          ...BROTHER_DETAIL,
+          archiveQuote: 'She has a younger\u{200B}\u{3164}brother',
+        };
+        expect([
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ].map(function overlapped(quote,) {
+          return attestedDetailsOverlapping({
+            quote,
+            text: 'Mittens is from a small town.\nShe has a younger\u{200B}\u{3164}brother.\n',
+            details: [padded,],
+          },);
+        },),).toEqual([
+          [],
+          [],
+          [],
+        ],);
       },
     },),
     it({

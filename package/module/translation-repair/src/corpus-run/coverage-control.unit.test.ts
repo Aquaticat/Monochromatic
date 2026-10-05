@@ -1,10 +1,23 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { withoutSpans, } from '../../dist/final/node/index.mjs';
+import {
+  coverageControlHolds,
+  withoutSpans,
+} from '../../dist/final/node/index.mjs';
+import {
+  coverageControlCasesAt,
+  coverageControlClient,
+} from './coverage-control-cases.test-fixture.ts';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../roster-seats.test-fixture.ts';
 
 //region Coverage control cut
 // What the absence control actually deletes.
@@ -97,6 +110,67 @@ await describe({
             spans: ['',],
           },),
         ).toBe('',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SPAN THAT SHOWS A READER NOTHING as it refuses an empty one, cutting none of the spaces, '
+        + 'zero-width spaces or Hangul fillers the document holds',
+      fn: async function invisibleSpanIsRefused() {
+        expect([
+          ' ',
+          '\u{200B}',
+          '\u{3164}',
+        ].map(function cut(span,): string {
+          return withoutSpans({
+            text: 'The tabby\u{200B} slept\u{3164}.',
+            spans: [span,],
+          },);
+        },),).toEqual([
+          '',
+          '',
+          '',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A CASE WHOSE CUT LEAVES ONLY WHAT SHOWS A READER NOTHING as a cut that left nothing, asking '
+        + 'the roster no second round about a page of one line break',
+      fn: async function blankRemainderIsRefused() {
+        /**
+         Sentence every scripted judge quotes, the translation's whole wording.
+         */
+        const quoted = 'Whiskers counts the birds outside.';
+        expect(await coverageControlHolds({
+          client: coverageControlClient({ quote: quoted, },),
+          cases: coverageControlCasesAt({
+            where: ['slice-0',],
+            sourcePassage: '白胡子数着外面的鸟。',
+            translationText: `${quoted}\n`,
+          },),
+          modelIds: [
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+          ],
+          signal: AbortSignal.timeout(120_000,),
+          exchangeTimeoutMs: 30_000,
+          l: tagged({ tag: 'coverage-control-test', },),
+        },),).toEqual({
+          held: false,
+          sawAbsenceOnTarget: 0,
+          sawAbsenceOnDecoy: 0,
+          decoysTaken: 0,
+          rows: [],
+          refusals: [{
+            where: 'slice-0',
+            reason: 'cut-left-nothing',
+            verdict: 'carried',
+            absent: 0,
+            offeredSpans: 3,
+          },],
+        },);
       },
     },),
   ],

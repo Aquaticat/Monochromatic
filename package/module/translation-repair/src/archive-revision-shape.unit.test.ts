@@ -14,6 +14,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -77,16 +78,6 @@ await describe({
           `archive-revision-refused (${REVIEWER}): the block is 1 block (paragraph) and the revision is 2 blocks `
             + '(paragraph, paragraph); a revision keeps the block\'s own shape',
         ],);
-        // A revision of white space alone is no removal, which is written
-        // empty, and holds no block at all.
-        expect(revisionShapeFindings({
-          modelId: REVIEWER,
-          blockText: PARAGRAPH,
-          replacementText: '   ',
-        },),).toEqual([
-          `archive-revision-refused (${REVIEWER}): the block is 1 block (paragraph) and the revision is nothing; a `
-            + 'revision keeps the block\'s own shape',
-        ],);
         expect([
           revisionShapeFindings({
             modelId: REVIEWER,
@@ -132,6 +123,33 @@ await describe({
           blockText: block,
           replacementText: '<CatBox>\n\n> She was asked to be fed at noon.\n\n</CatBox>',
         },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'THROWS on a revision that shows a reader nothing and is not empty, which the review stage reads as the '
+        + 'empty removal before any revision reaches this floor, rather than holding it to a shape a second way: '
+        + 'a zero-width space, a Hangul filler, spaces',
+      fn: async () => {
+        /**
+         Revisions that show a reader nothing.
+         */
+        const blank = [
+          '\u{200B}',
+          '\u{3164}',
+          '   ',
+        ];
+        expect(blank.map(function refusalOf(replacementText,): string {
+          return String(caught(function check(): unknown {
+            return revisionShapeFindings({
+              modelId: REVIEWER,
+              blockText: PARAGRAPH,
+              replacementText,
+            },);
+          },),);
+        },),).toEqual(blank.map(function messageFor(): string {
+          return `Error: unreachable: ${REVIEWER}'s revision shows a reader nothing and is not empty, though the `
+            + 'review stage reads such a revision as the empty removal before the slate is built';
+        },),);
       },
     },),
   ],
