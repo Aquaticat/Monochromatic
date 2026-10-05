@@ -39,19 +39,50 @@ not semantic relevance qualification.
 All indexed rules remain candidates;
 no low score is admitted as an exclusion.
 
-Git namespace derivation is being checked separately.
-The first run `proc_cd11` completed actual-repository and HTTPS controls,
-then exposed missing explicit SSH hostname normalization.
-Fresh v2 normalizes hostname only,
-preserves transport and path spelling,
-and reruns the failed suffix in disposable Git fixtures.
-The original failure is retained.
+Git namespace controls passed in `proc_481b` on Git 2.55.0,
+using disposable repositories and a linked worktree.
+The original SSH-hostname normalization failure `proc_cd11` remains preserved.
 No network fetch or production Git mutation belongs in namespace lookup.
+The fixed transport passed `proc_d04a`;
+native resource ownership and drain passed `proc_2dbb` and exact omission control `proc_b05b`.
+
+The private hook refreshes lazily at `before_provider_request`,
+where the native active-run cancellation signal is available.
+Read-only reconciliation `proc_e53e` verified the completed `proc_6478` worker:
+one SDK session,
+two runs,
+four local main requests,
+question counts `[205, 0, 1, 0]`,
+and four native fixture reads.
+The edited-rule batch contained only `LN7`.
+Both tool judgments retained zero semantic attempts;
+cache preprocessing did not reopen their budgets.
+The worker's copied terminal summary incorrectly said five sessions and ten requests.
+Its actual artifacts establish one and four;
+no SDK replay was used to correct that reporting error.
+
+The first real relevance request is now complete.
+`proc_f465` verified one 255,046-byte Jev request,
+all 205 raw answers,
+and zero additional calls for same-owner warm and restarted-owner persistent reads.
+Returned usage was 59,382 input tokens and 3,729 output tokens.
+At the retained 42 nanoUSD input-token rate,
+modeled maintenance cost was US$0.002494044.
+This is neither an invoice nor a representative per-action average.
+The cumulative recorded semantic subtotal is now US$0.055516382.
+No SDK AgentSession or native tool action was created by this live cache canary.
+
+The outer metadata checker separately emitted a logger verification timeout after reporting completion.
+The native worker and its immediate controller had empty stderr.
+`proc_6308` reproduced the pending-file-sink plus blocking-child mechanism
+and verified awaiting the incumbent logger's `flush()` before blocking.
+The paid canary was not replayed.
+See [staging diagnostics](../troubleshooting/pi-sdk-staging.md#relevance-canary-and-native-hook-diagnostics).
 
 Next:
-complete namespace verification,
-connect the fixed Jev relevance transport,
-then wire refresh through the existing resource lifecycle with original cancellation and budget.
+evaluate the retained relevance estimates against explicit references,
+qualify exclusions before selecting a cutoff,
+and continue rule-based action assessment through the existing original-judgment boundary.
 The accepted direction does not authorize production cutoff adoption,
 installed-plugin cutover,
 or cached action permission.

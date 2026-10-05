@@ -106,6 +106,29 @@ No production threshold,
 new private-data route,
 or installed-plugin cutover is selected by this clarification.
 
+### Private implementation evidence
+
+The source-bound cache,
+Git-derived namespace,
+one-shot transport,
+and native resource drain have passed their recorded controls.
+The private `before_provider_request` hook implements lazy change-on-use refresh,
+not an automatic filesystem watcher.
+Across two native runs,
+`proc_e53e` reconciled question counts `[205, 0, 1, 0]`
+without replaying the successful worker to repair its printed summary.
+The existing tool judgments did not acquire new inference attempts.
+
+`proc_f465` verified the first real cold relevance batch:
+205 independent questions in one 255,046-byte request,
+with complete current policy and verbatim selected-rule context.
+Same-owner warm and restarted-owner persistent reads required no additional request.
+Returned usage modeled US$0.002494044 of maintenance cost at 42 nanoUSD per input token.
+That cost must be amortized against measured usage before making a workload-average claim.
+Raw probabilities remain unqualified;
+all indexed rules remain candidates.
+No production cutoff or cache-based permission follows from this interface result.
+
 ### Required checks
 
 - Unchanged rules reuse classifications without another inference request.

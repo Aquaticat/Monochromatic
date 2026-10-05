@@ -30,6 +30,25 @@ The accepted AUP,
 necessity-based retention,
 and gateway-internal retry choices remain settled.
 
+## Rule-relevance interface and cache canary
+
+`proc_f465` verified one real Jev/Gateway relevance request over all 205 current indexed policy rules.
+The frozen complete-policy body was 255,046 bytes.
+Every answer matched its requested rule ID and the fixed typed response contract.
+Same-owner warm and restarted-owner persistent refreshes added no request.
+The raw estimates did not exclude rules or authorize actions.
+
+Returned usage was 59,382 input tokens and 3,729 output tokens.
+At 42 nanoUSD per input token with output unbilled,
+modeled maintenance cost was US$0.002494044.
+The cumulative recorded semantic subtotal becomes US$0.055516382,
+including the earlier US$0.053022338 subtotal.
+Invoice amounts,
+Gateway-internal attempts,
+representative workload averages,
+and relevance accuracy remain unestablished by this interface canary.
+No paid replay is needed to inspect these retained estimates.
+
 ## Batched instruction-meaning encoding diagnostic
 
 `proc_51ef` verified a fixed four-request study of the unchanged
