@@ -1203,6 +1203,12 @@ through the stage's own account,
 that enough voices answered,
 and carries that stage's findings with its verdict.
 
+The same day the damage probe shipped a rewrite after hearing none or one of three probers (ledger B160),
+and the recheck passed an issue that two of three heard checkers skipped,
+counting its one ballot against no quorum (ledger B161).
+A per-issue threshold on a gather's ballots takes the quorum the gather closed on,
+and positive evidence is read before silence wherever a rollback carries no report.
+
 The rule:
 when a rule changes what a quorum counts,
 census every threshold derived from a gather,
@@ -1676,6 +1682,13 @@ A marked class can also say too little:
 so a `TALLY` line could not tell a corrupted record from a format change from a full disk,
 and the one refusal case passed whichever check fired (ledger B69).
 
+Two lookups logged `String()` of whatever their catches caught,
+so a provider body that is not JSON reached the log quoted through V8's parse error (ledger B166);
+and the Bedrock ledger's marked refusal named the line and not the file a variable can move (ledger B167).
+A caught value reaches a log line through `refusalText`,
+and a marked class names what refused,
+which for a file repaired by hand is the file.
+
 The rule:
 a marked class writes its sentence itself,
 from counts,
@@ -1886,6 +1899,11 @@ and an OCR reader that exited cleanly and wrote no transcript made the reading r
 which the reading pair does not contain (ledger B148).
 A caller of a function that returns operations beside findings reads both,
 or says why it drops the findings.
+
+A rewrite the atom gate refused reached an info line alone,
+so the stage read as a refiner that proposed nothing (ledger B162).
+A refusal is a finding on the stage that refused,
+worded without the values it compared.
 
 The rule:
 a step that can refuse on input a page can carry refuses as its sibling refusals do,
@@ -3020,6 +3038,18 @@ an append ends a torn last line first,
 and a line that ends in a newline and does not parse is refused by name (ledger B152);
 a whole line of an older row shape is left out and counted,
 not dropped without a word (ledger B153).
+
+The audit's open items were closed:
+three coverage census readers now refuse a file that is not JSON by their own class (ledger B163);
+a failed atomic write removes its temporary file,
+and the temporary name is unique to the call,
+since two writes of one path in one process had shared one (ledger B164);
+and the runs lock is claimed by linking a file that already holds its text,
+since a second starter read the lock empty between its create and its write
+and took it over from a live holder (ledger B165).
+A temporary name is unique to its call,
+not to its process,
+and a lock another process may read as abandoned appears with its content already in it.
 
 The rule:
 a file this package writes and a later run parses is written through `writeFileAtomic`.

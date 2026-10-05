@@ -22344,6 +22344,319 @@ Recurrence:
 a walk that reads positions off phrasing nodes names which node types it reads
 and refuses the rest loudly.
 
+### B160: a damage probe that heard too few probers shipped the rewrite
+
+Red in `779c90b3f`,
+fixed in `86f7a2efa`.
+
+Left open by the recheck fix of `e0151b92c`,
+shown by its agent's probe.
+`settleRefinedSlice` (`refine-slice-settle.ts`) rolled a rewrite back on the damage probe's report
+only where the screen admitted a claim,
+and a probe that heard no prober admits none,
+so the rewrite shipped as probed.
+Measured on the built package with a scripted bench of three probers:
+none heard,
+and one heard raising nothing,
+each returned `refined: true` and shipped the rewrite,
+with `stage-quorum-unmet (introduced-defect-probe 0/3)` or `(introduced-defect-probe 1/3)` among the findings
+and no rollback finding.
+The settlement failed `everyStageHeard`,
+so it was never cached.
+
+The fix:
+`refineProbeVerdict` (`refine-probe-verdict.ts`) decides what the probe's report does to the rewrite.
+An admitted claim rolls it back under `refine-rolled-back-by-probe`,
+worded as before.
+A round short of quorum,
+read through `silentStagesOf`,
+the reader the recheck and the caches use,
+rolls it back under `refine-probe-unheard (<heard> of <configured> probers heard)`.
+Claims are read first,
+since the settler attaches no report to a rollback
+and a short round named unheard would drop a claim the screen admitted from every finding;
+the short round still shows by the probe stage's own `stage-quorum-unmet` beside it.
+A probe outage now rolls back sound rewrites,
+uncached,
+so a later run buys the slice again;
+the package's gates between a new text and a standing one fail closed.
+Decided for quality under the owner's standing directive and open to veto;
+the alternative reads the quorum first,
+as the recheck does.
+Cases in `refine-slice-settle.unit.test.ts`:
+none heard,
+one heard raising nothing,
+one heard with an admitted claim,
+and two heard,
+which ships.
+
+Cache:
+no version moved;
+a short probe round never reached the cache;
+`cache-account-audit` found no slice-cache record under refine version 5.
+
+Recurrence:
+`mistake-prevention.md`,
+"Which seats a quorum counts":
+a gate that ships on "no objection" first reads that enough voices were heard,
+through `stage-silence.ts`,
+and reads positive evidence before silence wherever a rollback carries no report.
+
+### B161: a recheck that met its quorum passed an issue it cast too few ballots on
+
+Red in `779c90b3f`,
+fixed in `86f7a2efa`.
+
+Left open by the same fix.
+`retainsResolvedIssues` (`refine-recheck.ts`) read the round's quorum off the checker stage's findings,
+but read each issue's verdict from its tally whatever the number of ballots behind it.
+A checker heard on the round may skip an issue,
+leaving `missing-check (<n>)`.
+On a bench of three that met its quorum of two,
+two checkers skipping the second of two open issues left one ballot on it,
+and the round returned `refine-recheck-passed (2 issues)` and kept the rewrite.
+A confirmed issue with one `fixed` ballot read as unresolved under `MIN_RESOLUTION_BALLOTS`
+and was named under `refine-rolled-back` as one the rewrite broke.
+On a five-seat bench the router left with two reachable seats,
+closing on two,
+one ballot on an issue passed too.
+
+The fix:
+an issue's count is its reading's ballots,
+one per heard checker that ruled on it,
+compared with the quorum the checker stage closed on:
+the bench quorum,
+or the quorum in the gather's `stage-short-bench` finding,
+matched by rebuilding that finding with `shortBenchStageFinding` and `reachableQuorum` (`checkerQuorumClosedOn`).
+An issue short of it is named `refine-recheck-unheard (<issue>: <n> ballots, quorum <q>)`,
+whatever its ballots say,
+and is never read as regressed or worsened;
+a heard issue that broke is named beside it under `refine-rolled-back`.
+Decided for quality under the owner's standing directive and open to veto.
+Such a rollback carries no `stage-quorum-unmet`,
+so it is cached as a rollback.
+Cases in `refine-recheck.unit.test.ts` hold the count at one and at exactly the quorum,
+on the bench of three and on the short bench of five.
+
+Cache:
+no version moved;
+`cache-account-audit` found no slice-cache record under refine version 5,
+the newest written at 04:26 UTC on 2026-09-27.
+
+Recurrence:
+`mistake-prevention.md`,
+"Which seats a quorum counts":
+a per-issue threshold on a gather's ballots takes the quorum the gather closed on.
+
+### B162: a rewrite the atom gate refused left no finding
+
+Red in `779c90b3f`,
+fixed in `86f7a2efa`.
+
+Left open by the same fix.
+`runRefineStage` (`refine-stage.ts`) logged an atom-gate refusal at info and recorded nothing,
+so a rewriter whose every rewrite the gate refused read in the findings as heard and not proposing,
+`refine-candidates (1/1 heard, 0 proposing)`,
+which is what the stage reports for a rewriter that proposed nothing.
+The gate's detail quotes the atoms it compared,
+such as `protected atom 1 changed (number:17 became number:18)`,
+so it could not enter the findings as it stood.
+
+The fix:
+each refused operation leaves `<model>: refine-atom-gate-refused (paragraph <n>, <kind>)`,
+the paragraph numbered as the rewriter's sheet numbers it,
+as the resolver's findings are,
+and the kind cut from the detail at its parenthetical,
+as the editor lane groups its rejections by kind (`repair-editor-stage.ts`).
+These go into the stage's findings in roster order,
+between the resolver's findings and `refine-candidates`.
+The detail stays in the log line alone.
+The consolidation polish round calls the same stage and gains the same findings.
+Two cases in `refine-stage.unit.test.ts` pin the whole result
+for a dropped number and for a changed number in a second paragraph,
+the second asserting that neither value reaches the findings.
+
+Cache:
+no version moved;
+only findings are added.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation":
+a refusal is a finding on the stage that refused,
+worded without the values it compared.
+
+### B163: three coverage census readers raised the parser's `SyntaxError` where their docs promise their own class
+
+Red in `290110436`,
+fixed in `2d5141018`.
+
+Found on 2026-10-05 by the audit of B134,
+and confirmed on the build of `e300e6c33`.
+`readBaselineCensus` (`corpus-run/coverage-census-input.ts`),
+`bundleScriptsOf` (`corpus-run/coverage-file.ts`)
+and `readSourceMap` (`corpus-run/coverage-lines.ts`)
+each ran `JSON.parse` bare,
+while each `@throws` promises its own class for a file that does not read.
+Over text cut short each threw `SyntaxError: Unterminated string in JSON at position 22 (line 1 column 23)`,
+and over text that is no JSON at all V8's message quoted ten characters of it (the fixing agent's measurement).
+The command line reports a class it does not know as a fault in the command,
+read off `cli-refusal.ts`,
+not run.
+`census.json`,
+which a later census reads back as its baseline,
+was written by a plain `writeFile` in `corpus-run/coverage-census.ts`,
+which truncates before it writes.
+
+The fix:
+each reader takes the parse failure as data (`parseModelJson`)
+and throws its own class with `says: 'it is not JSON'`,
+so the refusal names the file and quotes nothing;
+`reportCensus` writes `census.json` through `writeFileAtomic`.
+`path` and `says` were already named parts of the marker inventory.
+Each reader's test file carries a file cut short,
+asserting the class and the whole refusal.
+The writer has no case:
+only the census command reaches it,
+and that command runs the whole suite under coverage.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back".
+
+### B164: a failed atomic write left its temporary file, and two writes of one path in one process shared one
+
+Red in `290110436`,
+fixed in `2d5141018`.
+
+Found on 2026-10-05,
+the leftover by the audit of B134
+and the shared name while fixing it.
+`writeFileAtomic` (`corpus-run/atomic-write.ts`) wrote `<path>.<pid>.partial` and renamed it,
+and nothing removed that file when either step failed.
+A rename refused by a directory standing at the path left the whole temporary file (the fixing agent's measurement),
+and a write refused part way under a per-process file-size limit,
+standing in for a full disk,
+left 8192 bytes of a 65536 byte text (the fixing agent's measurement).
+Every reader steps over such a name,
+through `directory-listing.ts` and its own suffix filter,
+and none relies on finding one,
+so nothing was misread;
+the files only stayed.
+The temporary name was unique to the process and not to the call,
+so two writes of one path at once in one process opened the same file:
+of 100 such pairs,
+100 rejected one write with `ENOENT` at its rename,
+and 8 left text at the path that was neither write whole (the fixing agent's measurement).
+No production caller was shown to write one path twice at once;
+the run queue runs entries one at a time.
+
+The fix:
+the temporary name carries the process id and a `randomUUID`,
+and a write that fails removes its temporary file before its refusal goes on unchanged;
+a removal that fails too is a warning naming the file and the filesystem code.
+After it a refused rename and a refused write leave nothing beside the path,
+and 100 pairs of writes at once rejected none and tore none (the fixing agent's measurement).
+`atomic-write.unit.test.ts` carries the refused rename and the two writes at once.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back",
+with one more clause:
+a temporary name is unique to its call,
+not to its process.
+
+### B165: a second pass starting while the first claimed its lock took the lock over
+
+Red in `290110436`,
+fixed in `2d5141018`.
+
+Found on 2026-10-05 by the audit of B134 as an inference from the code order,
+and measured here.
+`claim` (`corpus-run/runs-lock.ts`) created `pass.lock` empty with an exclusive open
+and wrote the holder into it after,
+and `lockRunsDir` takes over a lock it cannot read,
+since a pass killed between the two leaves exactly that.
+A second starter arriving between the create and the write
+read the live holder's empty lock as unreadable,
+moved it aside,
+claimed its own,
+and both passes held the directory:
+two starters at once on a fresh directory in one process both acquired it in 28 of 200 rounds (the fixing agent's measurement),
+and four starters in 3 of 30 rounds (the fixing agent's measurement).
+The module takes no seam to pause a claim,
+so the case runs both starters in a child process that replaces `open` and `link` of `node:fs/promises`,
+running the second starter to its end inside the first one's claim;
+on the build of `e300e6c33` both acquired.
+
+The fix:
+the claim writes the holder's text to a name only it knows with an exclusive create
+and hard-links that name to `pass.lock`,
+which fails with `EEXIST` when anything stands there,
+so the claim and the text are one filesystem operation;
+the staged name is removed whatever the link answers.
+After it no round of two,
+four or eight starters ended with more than one holder (the fixing agent's measurement).
+A runs directory on a filesystem without hard links now refuses the lock with that filesystem's own error.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back":
+a lock another process may read as abandoned
+appears with its content already in it.
+
+### B166: two lookups logged a caught value's own words, which can quote a provider body
+
+Red in `290110436`,
+fixed in `2d5141018`.
+
+Found on 2026-10-05 by the audit of B134.
+`workTitleLookupLines` (`work-title-lookup.ts`) and `citedReferenceBlock` (`cited-reference-lookup.ts`)
+logged `String(error,)` of whatever their per-title and per-page catches caught.
+An endpoint body that is not JSON fails `response.json()` with V8's `SyntaxError`,
+whose message quotes ten characters of it:
+on the build of `e300e6c33` a stub body of cat prose reached both warnings quoted (the fixing agent's measurement).
+The package's rule for a logged failure is `refusalText`,
+which repeats a message only where its class declares it free of quoted text.
+
+The fix:
+both catches log `refusalText` of the caught value,
+so a parse failure logs `refused by SyntaxError`
+and `CacheFileUnreadableError` still logs its filesystem code and path.
+`WorkTitleLookupError` and `CitedReferenceFetchError` forward a message and cannot be marked,
+so their status code now logs as the class name alone;
+a field or a marked sentence of their own would bring it back.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B167: a Bedrock ledger line that would not read named the line and not the file
+
+Red in `290110436`,
+fixed in `2d5141018`.
+
+Found on 2026-10-05 by the audit of B134.
+`BedrockLedgerShapeError` (`bedrock-ledger.ts`) is marked `messageNamesOnly`
+and said `Bedrock spend ledger line 2 violated expectations: not valid JSON (SyntaxError)`.
+The ledger is repaired by hand,
+since a line is never skipped,
+and `TRANSLATION_REPAIR_BEDROCK_LEDGER` can move it off its default,
+so the refusal did not say which file to open.
+
+The fix:
+the class takes the ledger's path and names it before the line,
+and every throw site in `entryOf` passes it;
+`path` was already a named part of the marker inventory.
+The torn-line case in `bedrock-ledger.unit.test.ts` now asserts the whole refusal,
+and the case pinning each field's refusal carries each file's path.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries":
+a marked class names what refused,
+and for a file repaired by hand that is the file.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
