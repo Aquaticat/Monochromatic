@@ -42,17 +42,14 @@ fn fixed(source: &str) -> String {
     for diagnostic in semantic_line_breaks(&context, Severity::Error) {
         fixes.push(diagnostic.fix.expect("add-only fix"));
     }
-    return apply_fixes(source, fixes.as_slice())
-        .expect("apply")
-        .source;
+    return apply_fixes(source, fixes.as_slice()).expect("apply").source;
 }
 
 /// A paragraph below earlier lines copies its own line's prefix, for every line-ending spelling.
 #[test]
 fn later_line_paragraphs_copy_only_their_own_line_prefix() {
     for newline in ["\n", "\r\n", "\r"] {
-        let source: String =
-            format!("intro words{newline}{newline}> first, second word.{newline}");
+        let source: String = format!("intro words{newline}{newline}> first, second word.{newline}");
         let context: MarkdownSource = parse(source.as_str(), false);
         // The quoted paragraph is the second one; the intro paragraph has no container prefix.
         let mut prefixes: Vec<String> = Vec::<String>::new();

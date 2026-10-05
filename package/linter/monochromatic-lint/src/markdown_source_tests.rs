@@ -115,9 +115,13 @@ fn parents_mirror_child_edges_and_stop_at_the_root() {
     assert_eq!(edges, document.all_nodes().len() - 1);
     // Two fixed upward steps prove distinct containers without an unbounded climb.
     let strong: u32 = node(&document, MdastNodeType::Strong);
-    let paragraph: u32 = document.parent(strong).expect("strong text sits in a paragraph");
+    let paragraph: u32 = document
+        .parent(strong)
+        .expect("strong text sits in a paragraph");
     assert_eq!(document.kind(paragraph), MdastNodeType::Paragraph);
-    let item: u32 = document.parent(paragraph).expect("the paragraph sits in a list item");
+    let item: u32 = document
+        .parent(paragraph)
+        .expect("the paragraph sits in a list item");
     assert_eq!(document.kind(item), MdastNodeType::ListItem);
 }
 
