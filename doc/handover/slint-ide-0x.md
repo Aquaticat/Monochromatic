@@ -364,8 +364,9 @@ each owned by one subagent:
   and a fresh latency run;
   merge its new commits after it reports.
   The 30 watch guard controls were observed on the branch;
-  a rerun on the merged tree was started with the cache `~/temp/agent/ide-watch-guard-cache-20261005`
-  and its result is not recorded here yet.
+  the rerun on the merged tree `b35830353a255f96dd4754d9f0836bb359201a1b` passed 30 of 30
+  (`~/temp/agent/ide-watch-guard-UAHxUa`),
+  taken with the 10 s sweep and the 150 and 250 ms waits.
   The agent's measured results and open points,
   taken with the 10 s sweep and the 150 and 250 ms waits:
   - `notify` 8.2.0 with default features off;
@@ -522,6 +523,27 @@ each owned by one subagent:
   while the coordinating session ran commands there.
   Keep every coordinator command pinned with `cd /var/home/user/Monochromatic` or `git -C`,
   and tell agents to pin theirs.
+- Usage-limit stop at about 16:45 on 2026-10-05:
+  the coordinating session reached its usage limit while five agents were running.
+  Each works in its own worktree and commits as it goes;
+  none of their work was on `main` beyond what this section records as landed.
+  To resume,
+  check each worktree with `git status` and `git log`,
+  check for leftover processes and bound MCP ports,
+  and continue from the branch:
+  `feat/ide-ui-batch-2` in `.claude/worktrees/ide-ui-batch2` (UI batch 2),
+  `feat/ide-tree-watch` in `.claude/worktrees/ide-tree-watch` (the user's timing values),
+  `feat/ide-language-verify` in `.claude/worktrees/ide-language-verify` (quiet shutdown and the zombie child),
+  `feat/ide-package` in `.claude/worktrees/ide-package` (release packaging and the consumer check),
+  and `fix/ide-hints-after-reload` in `.claude/worktrees/ide-hints-reload` (hints lost after a reload).
+  Merge each on `integrate/ide-language-core`,
+  gate,
+  and land through `.claude/worktrees/ide-land`.
+  Still owed to the user,
+  with built screenshots:
+  a visible message or log only at the watch limit,
+  the divider's pointer grab width,
+  and how several inlay hints on one line are told apart.
 - Commits that appear late:
   on 2026-10-05,
   with the host's load average near 98 from several sessions' builds,
