@@ -60,6 +60,9 @@ pub mod directory_worker;
 /// Startup argument grammar is independent of filesystem and native display initialization.
 pub mod cli;
 
+/// Latest-request-wins project source opening preserves the displayed document until success.
+pub mod file_open;
+
 /// Unmodified variable and real italic font assets with stable source-font identities.
 pub mod font_asset;
 

@@ -163,6 +163,11 @@ impl ReloadWorker {
         return Ok(true);
     }
 
+    /// An unread response still occupies the reader even after its filesystem work has finished.
+    pub fn is_busy(&self) -> bool {
+        return self.busy;
+    }
+
     /// Poll without blocking the native event loop; None means no reply yet.
     pub fn try_take(&mut self) -> Result<Option<ReloadReply>> {
         match self.replies.try_recv() {
