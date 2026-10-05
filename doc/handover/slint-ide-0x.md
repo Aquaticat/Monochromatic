@@ -47,10 +47,30 @@ In-file find is not implemented yet.
 Fresh reference reads confirm that editord delegates Ctrl+F to real Chrome's find-in-page,
 rather than implementing another regular-expression search widget.
 `inspect:find-reference` now probes synthetic Unicode/whitespace cases in an isolated browser profile.
-Its current process is `proc_53b2`;
-inspect its terminal result before choosing the native matching semantics.
-It closes its own browser session in `finally`.
+`proc_53b2` passed and closed its own browser session in `finally`.
+Results are `/tmp/ide-find-reference-is2TFy/results.json`,
+with a reduced user agent reporting HeadlessChrome 149.
+The disposable profile's `Last Version` file identifies the actual build as `149.0.7827.54`.
+Positive and negative controls passed.
+The probe matches case differences,
+canonical/decomposed accents,
+plain letters against accented letters,
+`STRASSE` against `Straße`,
+`office` against `oﬃce`,
+final sigma,
+dotted I,
+and NBSP against an ordinary space.
+It preserves significant query spaces,
+treats regex punctuation literally,
+and does not treat a literal newline or tab as an ordinary space in the `<pre>` fixture.
+Literal newline queries do match literal newlines;
+empty patterns do not match.
 The probe's `Window.find` path is non-standard and is not itself proof of every Chrome toolbar behavior.
+`proc_be99` completed Chromium finder-directory discovery.
+Next read `third_party/blink/renderer/core/editing/finder/find_buffer.cc`
+at browser tag `149.0.7827.54`,
+then follow the actual string-search implementation before choosing a native matching engine;
+ordinary case-insensitive regex matching has not been shown equivalent.
 
 Historical navigation verification:
 The read-only workspace model's five tests and the lazy tree model's eight tests pass.
