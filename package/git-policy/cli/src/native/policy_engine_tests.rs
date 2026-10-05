@@ -16,7 +16,7 @@ use super::{
 use crate::config_schema::PolicyConfig;
 use crate::diagnostics::EngineFailureCode;
 use crate::policy_events::{FindingEvent, FindingLocation, PolicyEvent};
-use crate::policy_registry::{POLICY_REGISTRY, PolicyId, Severity};
+use crate::policy_registry::{POLICY_REGISTRY, PolicyId, Severity, policy_descriptor};
 use crate::policy_trigger::Trigger;
 use crate::wrapper_controls::{Controls, no_controls};
 
@@ -71,6 +71,16 @@ fn every_policy() -> Vec<PolicyId> {
         ids.push(descriptor.id);
     }
     return ids;
+}
+
+/// The settings of a repository whose configuration names all four optional policies at
+/// the severity the incumbent declares as their default.
+fn all_listed() -> PolicyConfig {
+    let mut config: PolicyConfig = PolicyConfig::defaults();
+    for setting in &mut config.settings {
+        setting.severity = policy_descriptor(setting.id).default_severity;
+    }
+    return config;
 }
 
 /// A copy of `config` with one policy's severity replaced.
@@ -130,7 +140,7 @@ fn event(
 /// A policy runs only for the triggers it declares, in the order it was given.
 #[test]
 fn policies_run_in_order_for_their_triggers() {
-    let configured: PolicyConfig = PolicyConfig::defaults();
+    let configured: PolicyConfig = all_listed();
     let none: Controls = no_controls();
     let (pre_forward, called) = run(Trigger::PreForward, &configured, &none, &[], vec![]);
     assert_eq!(called, every_policy());
@@ -183,16 +193,16 @@ fn policies_run_in_order_for_their_triggers() {
 #[test]
 fn off_escaped_and_unselected_policies_are_skipped() {
     let none: Controls = no_controls();
-    // Without a configuration file the four optional policies are off.
-    let (_, unconfigured) = run(
+    // Until the configuration names them, the four optional policies are off.
+    let (_, unlisted) = run(
         Trigger::PreForward,
-        &PolicyConfig::unconfigured(),
+        &PolicyConfig::defaults(),
         &none,
         &[],
         vec![],
     );
     assert_eq!(
-        unconfigured,
+        unlisted,
         [
             PolicyId::RequireRoot,
             PolicyId::LinkedWorktreeOnly,
@@ -202,7 +212,7 @@ fn off_escaped_and_unselected_policies_are_skipped() {
         ]
     );
     let off: PolicyConfig = with_severity(
-        &PolicyConfig::unconfigured(),
+        &PolicyConfig::defaults(),
         PolicyId::RequireRoot,
         Severity::Off,
     );
@@ -213,7 +223,7 @@ fn off_escaped_and_unselected_policies_are_skipped() {
     escaped.escaped = vec![PolicyId::AddExplicit, PolicyId::RequireRoot];
     let (_, after_escape) = run(
         Trigger::PreForward,
-        &PolicyConfig::unconfigured(),
+        &PolicyConfig::defaults(),
         &escaped,
         &[],
         vec![],
@@ -228,7 +238,7 @@ fn off_escaped_and_unselected_policies_are_skipped() {
     );
     let (_, selected) = run(
         Trigger::DirectCheck,
-        &PolicyConfig::defaults(),
+        &all_listed(),
         &none,
         &[PolicyId::ForbiddenStrings, PolicyId::RequireRoot],
         vec![],
@@ -240,7 +250,7 @@ fn off_escaped_and_unselected_policies_are_skipped() {
     // A selected policy that does not declare the trigger is still skipped.
     let (_, wrong_trigger) = run(
         Trigger::DirectFix,
-        &PolicyConfig::defaults(),
+        &all_listed(),
         &none,
         &[PolicyId::RequireRoot],
         vec![],
@@ -251,7 +261,7 @@ fn off_escaped_and_unselected_policies_are_skipped() {
 /// Without keep-going the first error finding ends the pass; with it, later policies still run.
 #[test]
 fn first_error_stops_unless_keep_going() {
-    let config: PolicyConfig = PolicyConfig::unconfigured();
+    let config: PolicyConfig = PolicyConfig::defaults();
     let script: Vec<(PolicyId, PolicyOutcome)> = vec![
         (PolicyId::RequireRoot, found("not-at-root")),
         (PolicyId::BranchWorktreeOnly, found("creates")),
@@ -310,7 +320,7 @@ fn first_error_stops_unless_keep_going() {
 #[test]
 fn warning_findings_do_not_stop_or_block() {
     let config: PolicyConfig = with_severity(
-        &PolicyConfig::unconfigured(),
+        &PolicyConfig::defaults(),
         PolicyId::BranchWorktreeOnly,
         Severity::Warn,
     );
@@ -351,7 +361,7 @@ fn warning_findings_do_not_stop_or_block() {
 #[test]
 fn unsafe_warn_is_reported_even_when_clean() {
     let config: PolicyConfig = with_severity(
-        &PolicyConfig::unconfigured(),
+        &PolicyConfig::defaults(),
         PolicyId::AddExplicit,
         Severity::Warn,
     );
@@ -385,7 +395,7 @@ fn unsafe_warn_is_reported_even_when_clean() {
     // At `error` the same policy earns no warning.
     let (error, _) = run(
         Trigger::PreForward,
-        &PolicyConfig::unconfigured(),
+        &PolicyConfig::defaults(),
         &no_controls(),
         &[],
         vec![],
@@ -408,7 +418,7 @@ fn finding_details_reach_the_event() {
     };
     let (result, _) = run(
         Trigger::DirectCheck,
-        &PolicyConfig::unconfigured(),
+        &PolicyConfig::defaults(),
         &no_controls(),
         &[],
         vec![(
@@ -449,7 +459,7 @@ fn failed_check_ends_the_pass_with_an_engine_failure() {
     keep_going.keep_going = true;
     let (result, called) = run(
         Trigger::PreForward,
-        &PolicyConfig::unconfigured(),
+        &PolicyConfig::defaults(),
         &keep_going,
         &[],
         vec![
@@ -493,7 +503,7 @@ fn unavailable_policy_ends_the_pass_without_a_clean_result() {
     let (result, called) = run(
         Trigger::PreForward,
         &with_severity(
-            &PolicyConfig::unconfigured(),
+            &PolicyConfig::defaults(),
             PolicyId::AddExplicit,
             Severity::Warn,
         ),
@@ -525,12 +535,12 @@ fn unavailable_policy_ends_the_pass_without_a_clean_result() {
 /// A trigger whose lifecycle is not ported is unavailable before any policy is asked, even when none is enabled.
 #[test]
 fn unported_triggers_are_unavailable_not_clean() {
-    let mut all_off: PolicyConfig = PolicyConfig::defaults();
+    let mut all_off: PolicyConfig = all_listed();
     for setting in &mut all_off.settings {
         setting.severity = Severity::Off;
     }
     for trigger in [Trigger::PostCommit, Trigger::ManualPush] {
-        for config in [&PolicyConfig::defaults(), &all_off] {
+        for config in [&all_listed(), &all_off] {
             let (result, called) = run(trigger, config, &no_controls(), &[], vec![]);
             assert_eq!(
                 result.end,
@@ -547,23 +557,23 @@ fn unported_triggers_are_unavailable_not_clean() {
 /// Applicability follows the same trigger, filter, escape and severity tests as the stage.
 #[test]
 fn applicability_matches_the_stage() {
-    let unconfigured: PolicyConfig = PolicyConfig::unconfigured();
+    let built_ins: PolicyConfig = PolicyConfig::defaults();
     let none: Controls = no_controls();
     let request: StageRequest = StageRequest {
         trigger: Trigger::ManualPush,
-        config: &unconfigured,
+        config: &built_ins,
         controls: &none,
         selected: &[],
     };
     let all: Vec<PolicyId> = every_policy();
-    // Only `final-newline` declares manual push among the policies that are on without a file.
+    // Only `final-newline` declares manual push among the policies that run unlisted.
     assert!(any_policy_applies(&request, all.as_slice()));
     assert!(!any_policy_applies(
         &request,
         &[PolicyId::RequireRoot, PolicyId::AddExplicit]
     ));
     assert!(!any_policy_applies(&request, &[]));
-    let off: PolicyConfig = with_severity(&unconfigured, PolicyId::FinalNewline, Severity::Off);
+    let off: PolicyConfig = with_severity(&built_ins, PolicyId::FinalNewline, Severity::Off);
     let without: StageRequest = StageRequest {
         trigger: Trigger::ManualPush,
         config: &off,
@@ -575,24 +585,21 @@ fn applicability_matches_the_stage() {
     escaped.escaped = vec![PolicyId::FinalNewline];
     let escaping: StageRequest = StageRequest {
         trigger: Trigger::ManualPush,
-        config: &unconfigured,
+        config: &built_ins,
         controls: &escaped,
         selected: &[],
     };
     assert!(!any_policy_applies(&escaping, all.as_slice()));
     let filtered: StageRequest = StageRequest {
         trigger: Trigger::ManualPush,
-        config: &unconfigured,
+        config: &built_ins,
         controls: &none,
         selected: &[PolicyId::RequireRoot],
     };
     assert!(!any_policy_applies(&filtered, all.as_slice()));
-    // With a configuration file the scanner also declares manual push.
-    let configured: PolicyConfig = with_severity(
-        &PolicyConfig::defaults(),
-        PolicyId::FinalNewline,
-        Severity::Off,
-    );
+    // Once listed, the scanner also declares manual push.
+    let configured: PolicyConfig =
+        with_severity(&all_listed(), PolicyId::FinalNewline, Severity::Off);
     let scanning: StageRequest = StageRequest {
         trigger: Trigger::ManualPush,
         config: &configured,

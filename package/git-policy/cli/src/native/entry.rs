@@ -17,7 +17,7 @@ use super::config_loading::{ConfigLoading, classify_config_loading};
 use super::forwarding::replace_process_with_real_git;
 use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
 use super::invocation_config::{
-    InvocationConfigError, config_invalid_event, legacy_warning_events, load_invocation_config,
+    InvocationConfigError, config_invalid_event, load_invocation_config,
 };
 use super::management::plan_management;
 use super::real_git::{ResolutionInputs, process_resolution_inputs, resolve_real_git};
@@ -122,21 +122,17 @@ pub fn plan_invocation(
         &arguments[..layout.prefix_len],
         overlay.as_slice(),
     ) {
-        Ok(loaded) => {
-            // `String` is owned text; `mut` allows appending the stop notice.
-            let mut stderr: String = legacy_warning_events(&loaded);
-            stderr.push_str(
-                policy_execution_unavailable(
-                    // `.to_string_lossy()` renders the subcommand for the message only.
-                    arguments[layout.prefix_len].to_string_lossy().as_ref(),
-                )
-                .as_str(),
-            );
+        // `Ok(_)` ignores the loaded settings: a legacy file left beside the JSONC file is
+        // reported by `git cli-git check` only, never on an ordinary command.
+        Ok(_) => {
             return Action::Exit {
                 code: ENGINE_FAILURE_EXIT_CODE,
                 // `String::new()` is empty owned text: wrapped commands report on standard error.
                 stdout: String::new(),
-                stderr,
+                stderr: policy_execution_unavailable(
+                    // `.to_string_lossy()` renders the subcommand for the message only.
+                    arguments[layout.prefix_len].to_string_lossy().as_ref(),
+                ),
             };
         }
         Err(InvocationConfigError::Configuration(error)) => {

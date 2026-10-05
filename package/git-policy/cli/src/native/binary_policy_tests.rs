@@ -205,9 +205,10 @@ fn inspection_commands_never_read_configuration() {
     remove(&fixture);
 }
 
-/// A valid configuration with a legacy file beside it reports the legacy file, then stops as usual.
+/// A legacy file beside a valid JSONC file is reported by `git cli-git check` only: an
+/// ordinary configuration-loading command and `git cli-git fix` print nothing about it.
 #[test]
-fn legacy_file_beside_jsonc_is_reported() {
+fn legacy_file_beside_jsonc_is_reported_by_check_only() {
     let fixture: Fixture = fixture("legacy-notice");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
     std::fs::write(
@@ -216,22 +217,64 @@ fn legacy_file_beside_jsonc_is_reported() {
     )
     .expect("valid configuration");
     std::fs::write(repo.join("cli-git.config.ts"), "export default {};\n").expect("legacy");
-    let observed: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "anything"]);
-    assert_eq!(
-        observed,
-        Observed {
-            code: Some(2),
-            stdout: Vec::<u8>::new(),
-            stderr: format!(
-                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\"}}\n\
-                 cli-git: policy execution is not implemented in this native development \
-                 executable, so git add was not run. Repository-changing commands still require \
-                 the installed cli-git.\n",
-                legacy = repo.join("cli-git.config.ts").display(),
-                jsonc = repo.join(CONFIG_FILE_NAME).display()
-            )
-            .into_bytes(),
-        }
+    std::fs::write(repo.join("cli-git.config.mjs"), "export default {};\n").expect("legacy");
+    // Positive control: the configuration really is loaded by this ordinary command.
+    let ordinary: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "anything"]);
+    assert_eq!(ordinary.code, Some(2));
+    assert_eq!(ordinary.stdout, Vec::<u8>::new());
+    let ordinary_stderr: String = String::from_utf8_lossy(&ordinary.stderr).into_owned();
+    assert!(!ordinary_stderr.contains("egacy"), "{ordinary_stderr}");
+    assert!(
+        !ordinary_stderr.contains("cli-git.config.ts"),
+        "{ordinary_stderr}"
     );
+    assert!(
+        !ordinary_stderr.contains("configuration-warning"),
+        "{ordinary_stderr}"
+    );
+    let fix: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]);
+    assert_eq!(fix.code, Some(2));
+    assert_eq!(fix.stdout, Vec::<u8>::new());
+    assert!(
+        !String::from_utf8_lossy(&fix.stderr).contains("egacy"),
+        "{:?}",
+        String::from_utf8_lossy(&fix.stderr)
+    );
+    let check: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "check", "--all"]);
+    assert_eq!(check.code, Some(2));
+    assert_eq!(
+        String::from_utf8_lossy(&check.stdout),
+        format!(
+            "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {mjs} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{mjs}\"}}\n\
+             {{\"schemaVersion\":1,\"sequence\":1,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {ts} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{ts}\"}}\n",
+            mjs = repo.join("cli-git.config.mjs").display(),
+            ts = repo.join("cli-git.config.ts").display(),
+            jsonc = repo.join(CONFIG_FILE_NAME).display()
+        )
+    );
+    assert!(
+        !String::from_utf8_lossy(&check.stderr).contains("egacy"),
+        "{:?}",
+        String::from_utf8_lossy(&check.stderr)
+    );
+    // Without the JSONC file the legacy files are a migration error on every command.
+    std::fs::remove_file(repo.join(CONFIG_FILE_NAME)).expect("remove JSONC");
+    for arguments in [
+        vec!["add", "anything"],
+        vec!["cli-git", "fix", "--all"],
+        vec!["cli-git", "check", "--all"],
+    ] {
+        let migration: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        assert_eq!(migration.code, Some(2), "{arguments:?}");
+        let text: String = format!(
+            "{}{}",
+            String::from_utf8_lossy(&migration.stdout),
+            String::from_utf8_lossy(&migration.stderr)
+        );
+        assert!(
+            text.contains("\"code\":\"config-invalid\",\"message\":\"Legacy configuration "),
+            "{arguments:?}: {text}"
+        );
+    }
     remove(&fixture);
 }

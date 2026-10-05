@@ -41,7 +41,7 @@ fn registry_order_and_names_are_stable() {
 /// `src/optional/repository-policy/dependent-version-bump-policy.ts`, `src/optional/forbidden-strings/index.ts`.
 #[test]
 fn every_identity_resolves_to_its_declared_row() {
-    // (identity, name, incumbent defaultSeverity, warnSafe, accepts options, needs a configuration file)
+    // (identity, name, incumbent defaultSeverity, warnSafe, accepts options, off unless listed)
     let expected: [(PolicyId, &str, Severity, bool, bool, bool); 9] = [
         (
             PolicyId::RequireRoot,
@@ -121,22 +121,18 @@ fn every_identity_resolves_to_its_declared_row() {
         POLICY_REGISTRY.len(),
         "every registry row is pinned"
     );
-    for (id, name, default_severity, warn_safe, accepts_options, needs_configuration_file) in
-        expected
-    {
+    for (id, name, default_severity, warn_safe, accepts_options, off_unless_listed) in expected {
         let descriptor = policy_descriptor(id);
         assert_eq!(descriptor.id, id);
         assert_eq!(descriptor.name, name);
         assert_eq!(descriptor.default_severity, default_severity, "{name}");
         assert_eq!(descriptor.warn_safe, warn_safe, "{name}");
         assert_eq!(descriptor.accepts_options, accepts_options, "{name}");
-        assert_eq!(
-            descriptor.needs_configuration_file, needs_configuration_file,
-            "{name}"
-        );
+        assert_eq!(descriptor.off_unless_listed, off_unless_listed, "{name}");
         assert_eq!(policy_by_name(name), Some(descriptor));
     }
-    // No shipped policy defaults to off: an unlisted policy must never silently stop.
+    // No incumbent default is off. Whether a policy the configuration does not name runs
+    // at all is decided by `off_unless_listed`, pinned row by row in the list here.
     for descriptor in POLICY_REGISTRY {
         assert_ne!(
             descriptor.default_severity,

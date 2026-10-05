@@ -215,7 +215,7 @@ fn policy_commands_stop_after_validating_configuration() {
     let arguments: Vec<OsString> = in_directory(repo.as_path(), &["add", "file"]);
     let source: PathBuf = repo.join(CONFIG_FILE_NAME);
     let legacy: PathBuf = repo.join("cli-git.config.ts");
-    // No configuration file: unconfigured defaults apply.
+    // No configuration file: the defaults apply.
     assert_eq!(
         stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
         not_run("add")
@@ -227,16 +227,12 @@ fn policy_commands_stop_after_validating_configuration() {
         stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
         not_run("add")
     );
-    // A legacy file beside it is one warning event before the stop notice.
+    // A legacy file beside it is not mentioned by an ordinary command: only
+    // `git cli-git check` reports it.
     std::fs::write(&legacy, "export default {};").expect("legacy config");
     assert_eq!(
         stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
-        format!(
-            "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\"}}\n{stop}",
-            legacy = legacy.display(),
-            jsonc = source.display(),
-            stop = not_run("add")
-        )
+        not_run("add")
     );
     // An invalid key is exactly one config-invalid event and no stop notice.
     std::fs::write(&source, r#"{ "policies": { "unknown": "off" } }"#).expect("invalid config");

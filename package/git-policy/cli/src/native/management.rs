@@ -225,9 +225,15 @@ pub fn plan_management(
         child_environment_overlay(environment, real_git.as_path());
     match load_invocation_config(real_git.as_path(), git_global_arguments, overlay.as_slice()) {
         Ok(loaded) => {
+            // Only `check` reports a legacy file left beside the JSONC file; `fix` stays silent.
+            let stdout: String = if fix {
+                String::new()
+            } else {
+                legacy_warning_events(&loaded)
+            };
             return Action::Exit {
                 code: ENGINE_FAILURE_EXIT_CODE,
-                stdout: legacy_warning_events(&loaded),
+                stdout,
                 stderr: policy_execution_unavailable(
                     format!("cli-git {}", direct_name(fix)).as_str(),
                 ),

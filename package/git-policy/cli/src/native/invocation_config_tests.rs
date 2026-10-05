@@ -107,9 +107,9 @@ fn linked_worktree_uses_its_own_top_level() {
     remove(root.as_path());
 }
 
-/// No repository, a bare repository and the inside of `.git` read no file and use unconfigured defaults.
+/// No repository, a bare repository and the inside of `.git` read no file and use the defaults.
 #[test]
-fn locations_without_a_worktree_use_unconfigured_defaults() {
+fn locations_without_a_worktree_use_the_defaults() {
     let root: PathBuf = fixture("invocation-none");
     let main: PathBuf = repository(root.as_path(), "main");
     let bare: PathBuf = root.join("bare.git");
@@ -130,7 +130,7 @@ fn locations_without_a_worktree_use_unconfigured_defaults() {
         assert_eq!(
             load(directory.as_path()),
             Ok(LoadedConfig {
-                config: CliGitConfig::unconfigured(),
+                config: CliGitConfig::defaults(),
                 source: None,
                 ignored_legacy: Vec::<PathBuf>::new(),
             }),
@@ -208,7 +208,7 @@ fn events_render_configuration_failures_and_legacy_warnings() {
     assert_eq!(legacy_warning_events(&without_legacy), "");
     // Without a JSONC source there is nothing authoritative to compare a legacy file with.
     let without_source: LoadedConfig = LoadedConfig {
-        config: CliGitConfig::unconfigured(),
+        config: CliGitConfig::defaults(),
         source: None,
         ignored_legacy: vec![PathBuf::from("/r/cli-git.config.ts")],
     };

@@ -239,11 +239,12 @@ fn direct_commands_validate_configuration_then_stop() {
             ""
         )
     );
-    // A legacy file beside valid configuration is a warning event on standard output.
+    // A legacy file beside valid configuration is a warning event on standard output of
+    // `check`, and of no other command.
     std::fs::write(&source, "{}").expect("valid config");
     std::fs::write(repo.join("cli-git.config.ts"), "export default {};").expect("legacy config");
     assert_eq!(
-        plan(&["fix", "--all"], repo.as_path(), &inputs),
+        plan(&["check", "--all"], repo.as_path(), &inputs),
         exit(
             2,
             format!(
@@ -252,8 +253,12 @@ fn direct_commands_validate_configuration_then_stop() {
                 jsonc = source.display()
             )
             .as_str(),
-            stopped("fix").as_str()
+            stopped("check").as_str()
         )
+    );
+    assert_eq!(
+        plan(&["fix", "--all"], repo.as_path(), &inputs),
+        exit(2, "", stopped("fix").as_str())
     );
     remove(root.as_path());
 }

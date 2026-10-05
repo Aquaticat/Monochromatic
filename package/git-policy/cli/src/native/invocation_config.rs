@@ -52,7 +52,7 @@ pub enum InvocationConfigError {
 ///       `Result<LoadedConfig, InvocationConfigError>` is the settings or the typed failure.
 /// Why:  Git itself reports which worktree applies. Outside a worktree (no repository,
 ///       a bare repository, the inside of `.git`) there is no configuration file and
-///       the unconfigured defaults apply.
+///       the defaults apply.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,9 +78,9 @@ pub fn load_invocation_config(
         };
     // `let Some(root) = ... else { ... };` unwraps the worktree top level or exits.
     let Some(root) = worktree_root(&identity) else {
-        // `Ok(...)` is the success variant: no worktree means unconfigured defaults.
+        // `Ok(...)` is the success variant: no worktree means the defaults.
         return Ok(LoadedConfig {
-            config: CliGitConfig::unconfigured(),
+            config: CliGitConfig::defaults(),
             // `None` records that no file was read.
             source: None,
             // `Vec::new()` is the empty owned list.

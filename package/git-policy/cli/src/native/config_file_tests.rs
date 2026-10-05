@@ -38,21 +38,21 @@ fn rejection(root: &Path) -> String {
         .message;
 }
 
-/// A repository without any configuration file runs built-ins only; an empty file
-/// registers every shipped policy at its incumbent default.
+/// A repository without any configuration file and one with an empty file load the same
+/// settings: built-ins on, the four optional policies off.
 #[test]
-fn absent_configuration_yields_unconfigured_defaults() {
+fn absent_and_empty_configuration_load_the_same_defaults() {
     let root: PathBuf = fixture("absent");
     assert_eq!(
         load_repository_config(root.as_path()),
         Ok(LoadedConfig {
-            config: CliGitConfig::unconfigured(),
+            config: CliGitConfig::defaults(),
             source: None,
             ignored_legacy: Vec::<PathBuf>::new(),
         })
     );
     assert_eq!(
-        CliGitConfig::unconfigured()
+        CliGitConfig::defaults()
             .policies
             .setting(PolicyId::ForbiddenStrings)
             .severity,
@@ -67,7 +67,7 @@ fn absent_configuration_yields_unconfigured_defaults() {
             .policies
             .setting(PolicyId::ForbiddenStrings)
             .severity,
-        Severity::Error
+        Severity::Off
     );
     remove(root.as_path());
 }
