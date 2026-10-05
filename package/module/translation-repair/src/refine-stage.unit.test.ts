@@ -5,7 +5,10 @@
  @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -22,6 +25,15 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  type AskedSheet,
+  askedSheetOf,
+  CITED_REFERENCES_HEADING,
+  DECLARED_NAMES_HEADING,
+  stagesAsked,
+  stagesCarrying,
+} from './asked-sheets.test-fixture.ts';
+import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -67,6 +79,39 @@ const JUDGES: readonly RosterModelId[] = [
 const REFINERS: readonly RosterModelId[] = [SEAT_HYPER_OPENROUTER_VISION_EDITOR,];
 
 /**
+ Stages one run of the fixture asks when the one refiner proposes a rewrite,
+ one entry per exchange: the refiner, then each of the four judges.
+ */
+const STAGES_OF_A_JUDGED_REWRITE: readonly string[] = [
+  'refine_report',
+  'candidate_ballot',
+  'candidate_ballot',
+  'candidate_ballot',
+  'candidate_ballot',
+];
+
+/**
+ Lines of one run's log in which the stage names the fixture's refiner, which
+ is how it logs a rewrite its atom gate refused.
+
+ @param lines - every line the stage logged
+
+ @returns Lines carrying the refiner's id and a colon, in order
+
+ @example
+ ```ts
+ const refusals = linesNamingTheRefiner({ lines, },);
+ ```
+ */
+function linesNamingTheRefiner(
+  { lines, }: { readonly lines: readonly string[]; },
+): readonly string[] {
+  return lines.filter(function namesTheRefiner(line,) {
+    return line.includes(`${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: `,);
+  },);
+}
+
+/**
  Envelopes and definitions of the repaired fixture slice.
 
  @returns Refinable slice derived from the fixture
@@ -87,7 +132,15 @@ function fixtureSlice() {
 
  @param ballot - fixed or per-model one-based choice, zero to decline
 
+ @param paragraph - one-based paragraph number the rewrite names, the
+ fixture's one paragraph unless a case names another
+
+ @param furtherRewrites - rewrites the reply lists after that one, as the
+ wire carries them, for a reply naming more than one paragraph
+
  @param selectionSheets - optional sink receiving selector conversations
+
+ @param asked - optional sink receiving every exchange's stage and sheet
 
  @returns Client usable by the refinement stage
 
@@ -101,8 +154,9 @@ function scriptedRefiner(
     newText,
     ballot,
     paragraph = 1,
+    furtherRewrites = [],
     selectionSheets,
-    refinerSheets,
+    asked,
   }: {
     readonly newText?:
       | string
@@ -111,8 +165,12 @@ function scriptedRefiner(
       | number
       | ((modelId: RosterModelId) => number);
     readonly paragraph?: number;
+    readonly furtherRewrites?: readonly {
+      readonly paragraph: number;
+      readonly newText: string;
+    }[];
     readonly selectionSheets?: string[];
-    readonly refinerSheets?: string[];
+    readonly asked?: AskedSheet[];
   },
 ): SyntheticClient {
   return {
@@ -133,8 +191,8 @@ function scriptedRefiner(
       // Scripted reply for the stage.
       if ((stage !== 'refine_report') && (selectionSheets !== undefined))
         selectionSheets.push(JSON.stringify(request.messages,),);
-      if ((stage === 'refine_report') && (refinerSheets !== undefined))
-        refinerSheets.push(JSON.stringify(request.messages,),);
+      if (asked !== undefined)
+        asked.push(askedSheetOf({ request, },),);
       /**
        Replacement this particular rewriter returns.
        */
@@ -154,6 +212,7 @@ function scriptedRefiner(
               paragraph,
               newText: modelText,
             },
+            ...furtherRewrites,
           ],
         }
         : {
@@ -179,6 +238,17 @@ function scriptedRefiner(
 
  @param client - scripted client
 
+ @param identityContext - declared names and handles, when a case hands any in
+
+ @param referenceContext - what the pages the original cites say, when a
+ case hands any in
+
+ @param repairedText - slice the stage refines, the fixture's unless a case
+ brings its own
+
+ @param logger - logger the stage writes to, the file's unless a case reads
+ what the stage logged
+
  @returns Stage result
 
  @example
@@ -191,13 +261,17 @@ async function runFixture(
   {
     identityContext,
     referenceContext,
+    repairedText = REPAIRED_TEXT,
+    logger = l,
   }: {
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly repairedText?: string;
+    readonly logger?: Logger;
   } = {},
 ) {
-  /** Envelopes and definitions of the fixture. */
-  const slice = fixtureSlice();
+  /** Envelopes and definitions of the slice. */
+  const slice = deriveRefinableEnvelopes({ document: parseDocument({ text: repairedText, },), },);
   return runRefineStage({
     declaredNames: [],
     mode: { kind: 'comparative', },
@@ -206,14 +280,14 @@ async function runFixture(
     refinerModelIds: REFINERS,
     judgeModelIds: JUDGES,
     sourceText: SOURCE_TEXT,
-    repairedText: REPAIRED_TEXT,
+    repairedText,
     envelopes: slice.envelopes,
     definitions: slice.definitions,
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
-    l,
+    l: logger,
   },);
 }
 
@@ -289,69 +363,166 @@ await describe({
         },),
 
         it({
-          name: 'CARRIES the identity and reference contexts onto the rewriter and selection sheets, '
-            + 'and none where none was handed in',
+          name: 'CARRIES the identity context under the DECLARED NAMES heading and the reference context '
+            + 'under the CITED REFERENCES heading onto the rewriter\'s sheet and each of the four judges\' '
+            + 'sheets',
           fn: async () => {
             /**
-             Sheets the rewriter and the selectors were asked with.
+             Declared identity the case hands in.
              */
-            const refinerSheets: string[] = [];
-            const selectionSheets: string[] = [];
-            await runFixture(scriptedRefiner({
-              newText: SMOOTH_TEXT,
-              ballot: 1,
-              refinerSheets,
-              selectionSheets,
-            },), {
-              identityContext: 'The translator signs as 喵工作室.',
-              referenceContext: 'Cat naps are documented in the glossary.',
-            },);
-            for (const sheets of [refinerSheets, selectionSheets,]) {
-              for (const text of ['喵工作室', 'Cat naps are documented in the glossary.',])
-                expect(sheets.some(function carries(sheet,) {
-                  return sheet.includes(text,);
-                },),).toBe(true,);
-            }
+            const identityContext = 'The translator signs as 喵工作室.';
             /**
-             Sheets the same flow collects with no context in.
+             Cited reference the case hands in.
              */
-            const plain: string[] = [];
+            const referenceContext = 'Cat naps are documented in the glossary.';
+            /**
+             Exchanges the stage asked, in order.
+             */
+            const asked: AskedSheet[] = [];
             await runFixture(scriptedRefiner({
               newText: SMOOTH_TEXT,
               ballot: 1,
-              refinerSheets: plain,
-            },),);
-            expect(plain.some(function carriesEither(sheet,) {
-              return sheet.includes('喵工作室',);
-            },),).toBe(false,);
+              asked,
+            },), {
+              identityContext,
+              referenceContext,
+            },);
+            for (
+              const text of [
+                DECLARED_NAMES_HEADING,
+                identityContext,
+                CITED_REFERENCES_HEADING,
+                referenceContext,
+              ]
+            ) {
+              expect(stagesCarrying({
+                asked,
+                text,
+              },),).toEqual(STAGES_OF_A_JUDGED_REWRITE,);
+            }
           },
         },),
 
         it({
-          name: 'DROPS a rewrite naming a paragraph the envelopes do not carry, keeping the repaired text',
+          name: 'PRINTS neither the DECLARED NAMES nor the CITED REFERENCES heading on the rewriter\'s '
+            + 'sheet or any of the four judges\' sheets where no context was handed in',
           fn: async () => {
-            /** Run where the rewrite names an envelope the plan lacks. */
+            /**
+             Exchanges the same run asked with no context in.
+             */
+            const asked: AskedSheet[] = [];
+            await runFixture(scriptedRefiner({
+              newText: SMOOTH_TEXT,
+              ballot: 1,
+              asked,
+            },),);
+            expect(stagesAsked({ asked, },),).toEqual(STAGES_OF_A_JUDGED_REWRITE,);
+            for (const heading of [DECLARED_NAMES_HEADING, CITED_REFERENCES_HEADING,]) {
+              expect(stagesCarrying({
+                asked,
+                text: heading,
+              },),).toEqual([],);
+            }
+          },
+        },),
+
+        it({
+          name: 'DROPS a rewrite naming a paragraph the sheet never showed and says so: the findings name '
+            + 'the refiner and the paragraph number, the repaired text stands, and no round is judged',
+          fn: async () => {
+            /** Run where the rewrite names paragraph 99 of a one-paragraph sheet. */
             const result = await runFixture(scriptedRefiner({
               newText: SMOOTH_TEXT,
               ballot: 1,
               paragraph: 99,
             },),);
-            expect(result.changed,).toBe(false,);
-            expect(result.refinedText,).toBe(REPAIRED_TEXT,);
+            expect(result,).toEqual({
+              refinedText: REPAIRED_TEXT,
+              changed: false,
+              contributors: [],
+              heard: REFINERS,
+              rounds: [],
+              findings: [
+                `${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-unknown-paragraph (99)`,
+                'refine-candidates (1/1 heard, 0 proposing)',
+              ],
+            },);
           },
         },),
 
         it({
-          name: 'KEEPS the repaired text when the rewrite is the text itself, since the patch applied '
-            + 'nothing',
+          name: 'NAMES each rewrite the resolver dropped beside the one that ships: a second rewrite of '
+            + 'the same paragraph and one naming a paragraph the sheet never showed are in the findings '
+            + 'of the stage that selected the first',
           fn: async () => {
+            /**
+             Run whose refiner rewrites paragraph 1, rewrites it again, and
+             names a paragraph 7 the one-paragraph sheet lacks.
+             */
+            const result = await runFixture(scriptedRefiner({
+              newText: SMOOTH_TEXT,
+              ballot: 1,
+              furtherRewrites: [
+                {
+                  paragraph: 1,
+                  newText: `${SMOOTH_TEXT} She naps after.`,
+                },
+                {
+                  paragraph: 7,
+                  newText: SMOOTH_TEXT,
+                },
+              ],
+            },),);
+            expect(result.findings,).toEqual([
+              `${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-duplicate-paragraph (1)`,
+              `${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-unknown-paragraph (7)`,
+              'refine-candidates (1/1 heard, 1 proposing)',
+              `select-self-vote (${SEAT_HYPER_OPENROUTER_VISION_EDITOR})`,
+              'refine-selected (weight 3.5 of 4 ballots)',
+            ],);
+            expect(result.refinedText,).toBe(SMOOTH_TEXT,);
+          },
+        },),
+
+        it({
+          name: 'KEEPS the repaired text when the rewrite is the paragraph as it stands, the refiner '
+            + 'counting as heard and not proposing: the atom gate logs no refusal of it, where it logs one '
+            + 'of a rewrite that drops a number, so what drops it is the patch applying nothing',
+          fn: async () => {
+            /**
+             Lines the stage logs for a rewrite the atom gate refuses, the
+             control showing the gate's refusal is a line this logger keeps.
+             */
+            const refused = capturingLoggerPair();
+            await runFixture(scriptedRefiner({
+              newText: `${SMOOTH_TEXT} She was young that year.`,
+              ballot: 1,
+            },), {
+              repairedText: `${REPAIRED_TEXT} She was 17 that year.`,
+              logger: refused.logger,
+            },);
+            expect(linesNamingTheRefiner({ lines: refused.lines, },),).toEqual([
+              `[runRefineStage] ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: protected atom count changed (1 to 0)`,
+            ],);
+
+            /**
+             Lines the stage logs for a rewrite that writes the paragraph back.
+             */
+            const unchanged = capturingLoggerPair();
             /** Run where the rewrite writes the base back unchanged. */
             const result = await runFixture(scriptedRefiner({
               newText: REPAIRED_TEXT,
               ballot: 1,
-            },),);
-            expect(result.changed,).toBe(false,);
-            expect(result.refinedText,).toBe(REPAIRED_TEXT,);
+            },), { logger: unchanged.logger, },);
+            expect(linesNamingTheRefiner({ lines: unchanged.lines, },),).toEqual([],);
+            expect(result,).toEqual({
+              refinedText: REPAIRED_TEXT,
+              changed: false,
+              contributors: [],
+              heard: REFINERS,
+              rounds: [],
+              findings: ['refine-candidates (1/1 heard, 0 proposing)',],
+            },);
           },
         },),
 

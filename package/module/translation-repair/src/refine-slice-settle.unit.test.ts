@@ -1,6 +1,7 @@
 /**
  Tests that the naturalness lane's slice settler does not stop on the critics'
- non-translation votes (ledger L15).
+ non-translation votes (ledger L15), and that a rewrite ships only past a
+ recheck its checkers were heard on (ledger L11).
 
  WHY THIS FILE WAS WRONG. It was written on 2026-08-24 to defend an early
  return that deleting left the whole suite green, on the reading that a slice
@@ -17,6 +18,13 @@
  reaching a model observable; a slice standing as non-translation must reach
  it exactly as the same slice without the ruling does.
 
+ THE SCRIPTED CASES RUN THE WHOLE FLOW against a client that answers each
+ stage by the name of its structured-output constraint, with a reply that
+ stage's own wire guard accepts, and each asserts the settlement's findings
+ whole, so a stage the script failed to answer shows as a lost voice in the
+ case that ran it. The recheck gate's own verdicts, round by round, are in
+ `refine-recheck.unit.test.ts`.
+
  Fixtures are cat-themed invention. No corpus content appears here.
 
  @module
@@ -30,38 +38,44 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  EMPTY_INTRODUCED_DEFECT_REPORT,
-  messageText,
   settleRefinedSlice,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkRepairOutcome,
   type RepairModels,
+  type ResolutionVerdict,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import {
+  type AskedSheet,
+  askedSheetOf,
+  CITED_REFERENCES_HEADING,
+  DECLARED_NAMES_HEADING,
+  stagesAsked,
+  stagesCarrying,
+} from './asked-sheets.test-fixture.ts';
+import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import {
+  CHECKERS,
+  everyCheckerSays,
+  readingsInSeatOrder,
+  REPAIRED_TEXT,
+  REWRITTEN_TEXT,
+  SOURCE_TEXT,
+  SUNBATHING_ISSUE,
+  sunbathingOutcome,
+} from './sunbathing-recheck.test-fixture.ts';
 
 /**
  Logger for the settler under test.
  */
 const l = tagged({ tag: 'refine-slice-settle-test', },);
-
-/**
- Repaired slice text, one long single-line paragraph so the lane finds it
- eligible and would reach a rewriter.
- */
-const REPAIRED_TEXT =
-  'The cat is doing the sunbathing on the windowsill in every afternoon, and when the light is moving across the floor she is following it without any hurry at all.';
-
-/**
- Original this slice was repaired against.
- */
-const SOURCE_TEXT = '猫猫每天下午都在窗台上晒太阳。';
 
 /**
  Message the refusing client throws with, so a case can tell its own refusal
@@ -95,11 +109,102 @@ const MODELS: RepairModels = {
     SEAT_SYNTHETIC_VISION_WITHHELD,
   ],
   refinerModelIds: REFINERS,
-  checkerModelIds: [
-    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-    SEAT_SYNTHETIC_VISION_WITHHELD,
-  ],
+  checkerModelIds: CHECKERS,
 };
+
+/**
+ Structured-output name of the rewriter's exchange, which is how the scripted
+ client and a case tell the stages apart.
+ */
+const REFINER_STAGE = 'refine_report';
+
+/**
+ Structured-output name of a selection judge's exchange.
+ */
+const JUDGE_STAGE = 'candidate_ballot';
+
+/**
+ Structured-output name of a recheck checker's exchange.
+ */
+const CHECKER_STAGE = 'resolution_report';
+
+/**
+ Structured-output name of a damage prober's exchange.
+ */
+const PROBER_STAGE = 'introduced_defect_report';
+
+/**
+ Stages a scripted run asks when the slice carries no accepted issue, one
+ entry per exchange: the one refiner, the three judges, and the three probers.
+ No checker is asked, since the recheck buys no round for a slice with
+ nothing to rule on.
+ */
+const STAGES_WITHOUT_RECHECK: readonly string[] = [
+  REFINER_STAGE,
+  JUDGE_STAGE,
+  JUDGE_STAGE,
+  JUDGE_STAGE,
+  PROBER_STAGE,
+  PROBER_STAGE,
+  PROBER_STAGE,
+];
+
+/**
+ Stages a scripted run asks when the slice carries the open issue and every
+ stage is heard: the three checkers rule between the judges and the probers.
+ */
+const STAGES_WITH_RECHECK: readonly string[] = [
+  REFINER_STAGE,
+  JUDGE_STAGE,
+  JUDGE_STAGE,
+  JUDGE_STAGE,
+  CHECKER_STAGE,
+  CHECKER_STAGE,
+  CHECKER_STAGE,
+  PROBER_STAGE,
+  PROBER_STAGE,
+  PROBER_STAGE,
+];
+
+/**
+ Findings every scripted run leaves before its recheck: the one refiner heard
+ and proposing, its own ballot discounted, and its rewrite selected.
+ */
+const SELECTED_FINDINGS: readonly string[] = [
+  'refine-candidates (1/1 heard, 1 proposing)',
+  `select-self-vote (${REFINER})`,
+  'refine-selected (weight 2.5 of 3 ballots)',
+];
+
+/**
+ Heading the damage probe's sheet prints over the neighbouring original.
+ */
+const NEARBY_ORIGINAL_HEADING = 'NEARBY ORIGINAL, CONTEXT ONLY';
+
+/**
+ Heading the damage probe's sheet prints over the neighbouring archive text.
+ */
+const NEARBY_TRANSLATION_HEADING = 'NEARBY EXISTING TRANSLATION, CONTEXT ONLY';
+
+/**
+ Declared identity a case hands in.
+ */
+const IDENTITY_CONTEXT = 'The translator signs as 喵工作室.';
+
+/**
+ Cited reference a case hands in.
+ */
+const REFERENCE_CONTEXT = 'Cat naps are documented in the glossary.';
+
+/**
+ Original of the neighbouring slice a case hands in.
+ */
+const NEIGHBOUR_SOURCE = '邻猫每天下午都在窗台上晒太阳。';
+
+/**
+ Archive English of that neighbouring slice.
+ */
+const NEIGHBOUR_INCUMBENT = 'The neighbouring cat naps there too.';
 
 /**
  Client that throws on any exchange, so reaching a model is observable.
@@ -121,13 +226,39 @@ const REFUSING_CLIENT: SyntheticClient = {
 };
 
 /**
- Client that scripts every stage the settle asks and records the sheet of
- every call, so a case can read what the flow asked in order.
+ Client that answers every stage the settle flow asks and records each
+ exchange's stage and sheet, so a case can read what the flow asked in order.
+
+ SCRIPTED BY STAGE, each stage getting the reply its own wire guard accepts:
+ the rewriter one rewrite of the one paragraph, a judge a ballot for it, a
+ prober a report raising no claim, and a checker its verdict on the one
+ issue. A checker given no verdict sends an empty report, which the checker
+ stage's guard refuses (ledger L8), so the stage never hears that checker. A
+ reply its stage refuses comes back as a schema mismatch, as a provider's
+ would, and shows as a lost voice in the findings every scripted case
+ asserts whole.
+
+ @param asked - sink receiving each exchange in the order the flow asked
+
+ @param checkerVerdicts - verdict each checker casts on the one issue, by
+ model id; a checker it leaves out is never heard
+
+ @returns Client usable by the settle flow
+
+ @example
+ ```ts
+ const client = scriptedSettleClient({ asked: [], },);
+ ```
  */
-function scriptedSettleClient({ asked, worseTally = false, }: {
-  readonly asked: string[];
-  readonly worseTally?: boolean;
-},): SyntheticClient {
+function scriptedSettleClient(
+  {
+    asked,
+    checkerVerdicts = new Map<RosterModelId, ResolutionVerdict>(),
+  }: {
+    readonly asked: AskedSheet[];
+    readonly checkerVerdicts?: ReadonlyMap<RosterModelId, ResolutionVerdict>;
+  },
+): SyntheticClient {
   return {
     chatText(): never {
       throw new Error(CLIENT_WAS_REACHED,);
@@ -136,46 +267,65 @@ function scriptedSettleClient({ asked, worseTally = false, }: {
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       Last message, the sheet the stage composes.
+       Stage asking and the sheet it composed.
        */
-      const last = request.messages.at(-1,);
-      asked.push((last === undefined) ? '' : messageText({ message: last, },));
+      const exchange = askedSheetOf({ request, },);
+      asked.push(exchange,);
       /**
-       Replies this call's guard accepts, tried in the flow's order.
+       Verdict this checker casts, absent for a checker never heard and for
+       every other stage's models.
        */
-      const candidates: readonly unknown[] = [
-        {
-          rewrites: [{
-            paragraph: 1,
-            newText: `${REPAIRED_TEXT} Rewritten for flow.`,
-          },],
-        },
-        {
-          best: 1,
-          reason: 'scripted',
-        },
-        ...(worseTally
-          ? [{
-            checks: [{
-              issue: 1,
-              verdict: 'worse',
+      const verdict = checkerVerdicts.get(request.modelId,);
+      /**
+       Reply each stage's own wire guard accepts, by stage name.
+       */
+      const replies: ReadonlyMap<string, unknown> = new Map<string, unknown>([
+        [
+          REFINER_STAGE,
+          {
+            rewrites: [{
+              paragraph: 1,
+              newText: REWRITTEN_TEXT,
             },],
-          },]
-          : []),
-        EMPTY_INTRODUCED_DEFECT_REPORT,
-      ];
-      for (const candidate of candidates) {
-        if (request.validate(candidate,))
-          return {
-            kind: 'ok',
-            value: candidate as ValueT,
-            rawText: JSON.stringify(candidate,),
-          };
-      }
+          },
+        ],
+        [
+          JUDGE_STAGE,
+          {
+            best: 1,
+            reason: 'scripted',
+          },
+        ],
+        [
+          CHECKER_STAGE,
+          {
+            checks: (verdict === undefined)
+              ? []
+              : [{
+                issue: 1,
+                verdict,
+              },],
+          },
+        ],
+        [
+          PROBER_STAGE,
+          { checks: [], },
+        ],
+      ],);
+      /**
+       Reply scripted for the stage asking.
+       */
+      const reply = replies.get(exchange.stage,);
+      if (request.validate(reply,))
+        return {
+          kind: 'ok',
+          value: reply,
+          rawText: JSON.stringify(reply,),
+        };
       return {
         kind: 'schema-mismatch',
         rawText: '',
-        detail: 'no scripted reply validated',
+        detail: `the ${exchange.stage} guard refused the scripted reply`,
       };
     },
     quotas(): never {
@@ -185,53 +335,21 @@ function scriptedSettleClient({ asked, worseTally = false, }: {
 }
 
 /**
- Builds one settled accuracy outcome, standing as a translation or not.
-
- @param nonTranslationStanding - whether the critics' non-translation ruling
- survived contradiction, which is the one field these cases differ on
-
- @returns Outcome the lane would refine
-
- @example
- ```ts
- const outcome = settledOutcome({ nonTranslationStanding: true, },);
- ```
- */
-function settledOutcome(
-  { nonTranslationStanding, }: { readonly nonTranslationStanding: boolean; },
-): ChunkRepairOutcome {
-  return {
-    sliceIndex: 0,
-    repairedText: REPAIRED_TEXT,
-    changed: false,
-    issues: [],
-    resolvedIssueIds: [],
-    candidateResolvedIssueIds: [],
-    checkerReadings: {},
-    recheckReadings: {},
-    repairRegions: [],
-    authorship: {
-      perIssue: {},
-      everyIssue: [],
-    },
-    accuracyPatchSelected: false,
-    refined: false,
-    rounds: [],
-    droppedDeclaredNames: [],
-    nonTranslationVotes: nonTranslationStanding ? 2 : 0,
-    nonTranslationContradicted: false,
-    nonTranslationStanding,
-    heardCritics: 1,
-    heardCriticIds: [],
-    claimAttributions: [],
-    findings: [],
-  };
-}
-
-/**
- Settles one slice against the refusing client.
+ Settles one slice, against the refusing client unless a case scripts one.
 
  @param nonTranslationStanding - whether this slice stands as non-translation
+
+ @param client - client the flow asks, the refusing one by default
+
+ @param neighbouringSourceText - original of the passages either side
+
+ @param neighbouringIncumbentText - archive English of those passages
+
+ @param identityContext - declared names and handles
+
+ @param referenceContext - what the pages the original cites say
+
+ @param issues - issues the accuracy lane settled for the slice
 
  @returns What the lane settled on
 
@@ -262,7 +380,7 @@ async function settleWith(
   return await settleRefinedSlice({
     client,
     outcome: {
-      ...settledOutcome({ nonTranslationStanding, },),
+      ...sunbathingOutcome({ nonTranslationStanding, },),
       ...(issues === undefined ? {} : { issues, }),
     },
     sourceText: SOURCE_TEXT,
@@ -321,123 +439,319 @@ await describe({
     },),
 
     it({
-      name: 'CARRIES the neighbouring slice\'s source and incumbent onto the sheet it asks, so a rewrite '
-        + 'dropping repetition reads against its neighbour',
+      name: 'CARRIES the neighbouring slice\'s source and incumbent onto the three damage probers\' sheets '
+        + 'and no other stage\'s, each under its NEARBY heading, so a rewrite dropping repetition reads '
+        + 'against its neighbour, and ships the rewrite every stage was heard on',
       fn: async () => {
         /**
-         Sheets the flow asked, in order.
+         Exchanges the flow asked, in order.
          */
-        const asked: string[] = [];
-        await settleWith({
+        const asked: AskedSheet[] = [];
+        /**
+         Settlement of a slice with a neighbour on each side.
+         */
+        const settled = await settleWith({
           nonTranslationStanding: true,
           client: scriptedSettleClient({ asked, },),
-          neighbouringSourceText: '邻猫每天下午都在窗台上晒太阳。',
-          neighbouringIncumbentText: 'The neighbouring cat naps there too.',
+          neighbouringSourceText: NEIGHBOUR_SOURCE,
+          neighbouringIncumbentText: NEIGHBOUR_INCUMBENT,
         },);
-        expect(asked.some(function carriesNeighbour(sheet,) {
-          return sheet.includes('邻猫每天下午都在窗台上晒太阳。',)
-            && sheet.includes('The neighbouring cat naps there too.',);
-        },),).toBe(true,);
+        for (
+          const text of [
+            NEARBY_ORIGINAL_HEADING,
+            NEIGHBOUR_SOURCE,
+            NEARBY_TRANSLATION_HEADING,
+            NEIGHBOUR_INCUMBENT,
+          ]
+        ) {
+          expect(stagesCarrying({
+            asked,
+            text,
+          },),).toEqual([
+            PROBER_STAGE,
+            PROBER_STAGE,
+            PROBER_STAGE,
+          ],);
+        }
+        expect(settled.findings,).toEqual(SELECTED_FINDINGS,);
+        expect(settled.outcome.refined,).toBe(true,);
+        // The slice stands as non-translation, and the rewrite still ships
+        // under its refiner's name (ledger L15).
+        expect(settled.refinedBy,).toEqual(REFINERS,);
       },
     },),
 
     it({
-      name: 'CARRIES no neighbour onto the sheet when the slice stands alone, the spreads staying absent',
+      name: 'PRINTS neither NEARBY heading on any sheet of a slice that stands alone, the three damage '
+        + 'probers\' sheets among them',
       fn: async () => {
         /**
-         Sheets the flow asked with no neighbour handed in.
+         Exchanges the flow asked with no neighbour handed in.
          */
-        const asked: string[] = [];
-        await settleWith({
+        const asked: AskedSheet[] = [];
+        /**
+         Settlement of a slice with no neighbour.
+         */
+        const settled = await settleWith({
           nonTranslationStanding: true,
           client: scriptedSettleClient({ asked, },),
         },);
-        expect(asked.length,).toBeGreaterThan(0,);
-        expect(asked.some(function carriesNeighbour(sheet,) {
-          return sheet.includes('邻猫每天下午都在窗台上晒太阳。',);
-        },),).toBe(false,);
+        expect(stagesAsked({ asked, },),).toEqual(STAGES_WITHOUT_RECHECK,);
+        for (const heading of [NEARBY_ORIGINAL_HEADING, NEARBY_TRANSLATION_HEADING,]) {
+          expect(stagesCarrying({
+            asked,
+            text: heading,
+          },),).toEqual([],);
+        }
+        expect(settled.findings,).toEqual(SELECTED_FINDINGS,);
       },
     },),
 
     it({
-      name: 'CARRIES the identity and reference contexts onto the sheets it asks, and none where none '
-        + 'was handed in',
+      name: 'CARRIES the identity context under the DECLARED NAMES heading onto the sheets of all four '
+        + 'stages, the three recheck checkers\' among them (ledger L14), and the reference context under '
+        + 'the CITED REFERENCES heading onto the rewriter\'s, the judges\' and the checkers\' sheets, the '
+        + 'damage probers\' sheets taking no reference',
       fn: async () => {
         /**
-         Sheets the flow asked with both contexts in.
+         Exchanges the flow asked with both contexts in.
          */
-        const asked: string[] = [];
-        await settleWith({
-          nonTranslationStanding: true,
-          client: scriptedSettleClient({ asked, },),
-          identityContext: 'The translator signs as 喵工作室.',
-          referenceContext: 'Cat naps are documented in the glossary.',
-        },);
-        expect(asked.some(function carriesBoth(sheet,) {
-          return sheet.includes('喵工作室',)
-            && sheet.includes('Cat naps are documented in the glossary.',);
-        },),).toBe(true,);
+        const asked: AskedSheet[] = [];
         /**
-         Sheets the same flow collects with no context in.
+         Settlement of a slice with an open issue, so the recheck asks its
+         checkers, every one of them answering.
          */
-        const plain: string[] = [];
-        await settleWith({
+        const settled = await settleWith({
           nonTranslationStanding: true,
-          client: scriptedSettleClient({ asked: plain, },),
+          client: scriptedSettleClient({
+            asked,
+            checkerVerdicts: everyCheckerSays({ verdict: 'not-fixed', },),
+          },),
+          issues: [SUNBATHING_ISSUE,],
+          identityContext: IDENTITY_CONTEXT,
+          referenceContext: REFERENCE_CONTEXT,
         },);
-        expect(plain.some(function carriesEither(sheet,) {
-          return sheet.includes('喵工作室',)
-            || sheet.includes('Cat naps are documented in the glossary.',);
-        },),).toBe(false,);
+        for (const text of [DECLARED_NAMES_HEADING, IDENTITY_CONTEXT,]) {
+          expect(stagesCarrying({
+            asked,
+            text,
+          },),).toEqual(STAGES_WITH_RECHECK,);
+        }
+        for (const text of [CITED_REFERENCES_HEADING, REFERENCE_CONTEXT,]) {
+          expect(stagesCarrying({
+            asked,
+            text,
+          },),).toEqual([
+            REFINER_STAGE,
+            JUDGE_STAGE,
+            JUDGE_STAGE,
+            JUDGE_STAGE,
+            CHECKER_STAGE,
+            CHECKER_STAGE,
+            CHECKER_STAGE,
+          ],);
+        }
+        expect(settled.findings,).toEqual([
+          ...SELECTED_FINDINGS,
+          'refine-recheck-passed (1 issue)',
+        ],);
       },
     },),
 
     it({
-      name: 'COUNTS an open issue no checker tally names as not worsened, and rolls back only where a '
-        + 'tally says a checker found it worse',
+      name: 'PRINTS neither the DECLARED NAMES nor the CITED REFERENCES heading on any sheet of the four '
+        + 'stages where no context was handed in',
       fn: async () => {
         /**
-         Accepted issue the rewrite left open.
+         Exchanges the same flow asked with no context in.
          */
-        const issues = [{
-          issueId: 'issue/1',
-          status: 'accepted',
-          severity: 'minor',
-          claims: [],
-          tallies: {},
-        },] as unknown as ChunkRepairOutcome['issues'];
+        const asked: AskedSheet[] = [];
         /**
-         Recheck whose checkers named nothing: the tally reads zero worse.
+         Settlement of the slice with the open issue and no context.
          */
-        const quiet = await settleWith({
+        const settled = await settleWith({
+          nonTranslationStanding: true,
+          client: scriptedSettleClient({
+            asked,
+            checkerVerdicts: everyCheckerSays({ verdict: 'not-fixed', },),
+          },),
+          issues: [SUNBATHING_ISSUE,],
+        },);
+        expect(stagesAsked({ asked, },),).toEqual(STAGES_WITH_RECHECK,);
+        for (const heading of [DECLARED_NAMES_HEADING, CITED_REFERENCES_HEADING,]) {
+          expect(stagesCarrying({
+            asked,
+            text: heading,
+          },),).toEqual([],);
+        }
+        expect(settled.findings,).toEqual([
+          ...SELECTED_FINDINGS,
+          'refine-recheck-passed (1 issue)',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'ROLLS BACK a rewrite whose recheck heard none of its three checkers: the findings carry the '
+        + 'checker stage\'s three lost voices and its unmet quorum and name the round unheard, the open '
+        + 'issue\'s reading holds no ballot, and no prober is asked about a rewrite that does not ship '
+        + '(ledger L11)',
+      fn: async () => {
+        /**
+         Exchanges the flow asked.
+         */
+        const asked: AskedSheet[] = [];
+        /**
+         Settlement of a round in which every checker sent an empty report.
+         */
+        const settled = await settleWith({
           nonTranslationStanding: false,
-          client: scriptedSettleClient({ asked: [], },),
-          issues,
-          identityContext: 'The translator signs as 喵工作室.',
-          referenceContext: 'Cat naps are documented in the glossary.',
+          client: scriptedSettleClient({ asked, },),
+          issues: [SUNBATHING_ISSUE,],
         },);
-        expect(quiet.findings
-          .some(function passed(finding,) {
-            return finding.startsWith('refine-recheck-passed',);
-          },),).toBe(true,);
+        expect(settled.findings,).toEqual([
+          ...SELECTED_FINDINGS,
+          `stage-voice-lost (checker ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER})`,
+          `stage-voice-lost (checker ${SEAT_SYNTHETIC_VISION_WITHHELD})`,
+          `stage-voice-lost (checker ${SEAT_SYNTHETIC_TEXT_EVERYWHERE})`,
+          'stage-quorum-unmet (checker 0/3)',
+          'refine-recheck-unheard (0 of 3 checkers heard)',
+        ],);
+        expect(readingsInSeatOrder({ readings: settled.outcome.recheckReadings, },),).toEqual({
+          [SUNBATHING_ISSUE.issueId]: {
+            ballots: [],
+            configuredCheckers: 3,
+            tally: {
+              fixed: 0,
+              notFixed: 0,
+              worse: 0,
+              resolved: false,
+              regressed: false,
+            },
+          },
+        },);
+        expect(settled.outcome.refined,).toBe(false,);
+        expect(settled.outcome.repairedText,).toBe(REPAIRED_TEXT,);
+        expect(settled.refinedBy,).toEqual([],);
+        // Each checker is asked once and, its empty report unreadable, once
+        // more in the gather's recovery round; the flow ends there.
+        expect(stagesAsked({ asked, },),).toEqual([
+          REFINER_STAGE,
+          JUDGE_STAGE,
+          JUDGE_STAGE,
+          JUDGE_STAGE,
+          CHECKER_STAGE,
+          CHECKER_STAGE,
+          CHECKER_STAGE,
+          CHECKER_STAGE,
+          CHECKER_STAGE,
+          CHECKER_STAGE,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'SHIPS a rewrite whose recheck every checker answered not-fixed on the open issue, under '
+        + 'refine-recheck-passed and with the three ballots in the issue\'s reading',
+      fn: async () => {
         /**
-         Recheck whose checkers named the issue worse.
+         Settlement of a round in which every checker found the open issue as
+         it stood.
          */
-        const loud = await settleWith({
+        const settled = await settleWith({
           nonTranslationStanding: false,
           client: scriptedSettleClient({
             asked: [],
-            worseTally: true,
+            checkerVerdicts: everyCheckerSays({ verdict: 'not-fixed', },),
           },),
-          issues,
-          identityContext: 'The translator signs as 喵工作室.',
-          referenceContext: 'Cat naps are documented in the glossary.',
+          issues: [SUNBATHING_ISSUE,],
         },);
-        expect(loud.findings
-          .some(function rolledBack(finding,) {
-            return finding.startsWith('refine-rolled-back',)
-              && finding.includes('issue/1',);
-          },),).toBe(true,);
+        expect(settled.findings,).toEqual([
+          ...SELECTED_FINDINGS,
+          'refine-recheck-passed (1 issue)',
+        ],);
+        expect(readingsInSeatOrder({ readings: settled.outcome.recheckReadings, },),).toEqual({
+          [SUNBATHING_ISSUE.issueId]: {
+            ballots: CHECKERS.map(function toBallot(modelId,) {
+              return {
+                modelId,
+                verdict: 'not-fixed',
+                wroteTheText: false,
+              };
+            },),
+            configuredCheckers: 3,
+            tally: {
+              fixed: 0,
+              notFixed: 3,
+              worse: 0,
+              resolved: false,
+              regressed: false,
+            },
+          },
+        },);
+        expect(settled.outcome.refined,).toBe(true,);
+        expect(settled.outcome.repairedText,).toBe(REWRITTEN_TEXT,);
+        expect(settled.refinedBy,).toEqual(REFINERS,);
+      },
+    },),
+
+    it({
+      name: 'ROLLS BACK a rewrite one checker of three found worse on the open issue, naming the issue, '
+        + 'though the other two answered not-fixed',
+      fn: async () => {
+        /**
+         Settlement of a round with one worse ballot beside two not-fixed.
+         */
+        const settled = await settleWith({
+          nonTranslationStanding: false,
+          client: scriptedSettleClient({
+            asked: [],
+            checkerVerdicts: new Map<RosterModelId, ResolutionVerdict>([
+              ...everyCheckerSays({ verdict: 'not-fixed', },),
+              [
+                SEAT_SYNTHETIC_VISION_WITHHELD,
+                'worse',
+              ],
+            ],),
+          },),
+          issues: [SUNBATHING_ISSUE,],
+        },);
+        expect(settled.findings,).toEqual([
+          ...SELECTED_FINDINGS,
+          `refine-rolled-back (${SUNBATHING_ISSUE.issueId})`,
+        ],);
+        expect(readingsInSeatOrder({ readings: settled.outcome.recheckReadings, },),).toEqual({
+          [SUNBATHING_ISSUE.issueId]: {
+            ballots: [
+              {
+                modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                verdict: 'not-fixed',
+                wroteTheText: false,
+              },
+              {
+                modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+                verdict: 'worse',
+                wroteTheText: false,
+              },
+              {
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                verdict: 'not-fixed',
+                wroteTheText: false,
+              },
+            ],
+            configuredCheckers: 3,
+            tally: {
+              fixed: 0,
+              notFixed: 2,
+              worse: 1,
+              resolved: false,
+              regressed: false,
+            },
+          },
+        },);
+        expect(settled.outcome.refined,).toBe(false,);
+        expect(settled.outcome.repairedText,).toBe(REPAIRED_TEXT,);
+        expect(settled.refinedBy,).toEqual([],);
       },
     },),
   ],
