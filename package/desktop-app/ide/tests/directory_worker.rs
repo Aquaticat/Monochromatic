@@ -1,11 +1,14 @@
 //! Bounded background reads update only current tree requests in disposable workspaces.
 
-/// The consumer combines the read-only workspace, UI-thread tree, and background reader.
-use ide_app::{directory_worker::DirectoryWorker, file_tree::FileTree, workspace::Workspace};
 /// Expected reader failures remain ordinary results in this test helper.
 use anyhow::Result;
+/// The consumer combines the read-only workspace, UI-thread tree, and background reader.
+use ide_app::{directory_worker::DirectoryWorker, file_tree::FileTree, workspace::Workspace};
 /// Filesystem fixtures are private; worker waits have an explicit deadline.
-use std::{fs, time::{Duration, Instant}};
+use std::{
+    fs,
+    time::{Duration, Instant},
+};
 
 /// Wait for one bounded reply; idle polls never block the caller.
 fn finish(worker: &mut DirectoryWorker, tree: &mut FileTree) -> Result<bool> {
@@ -23,7 +26,10 @@ fn finish(worker: &mut DirectoryWorker, tree: &mut FileTree) -> Result<bool> {
         if !worker.is_busy() {
             return Ok(changed);
         }
-        assert!(start.elapsed() < Duration::from_secs(3), "directory worker did not reply");
+        assert!(
+            start.elapsed() < Duration::from_secs(3),
+            "directory worker did not reply"
+        );
         std::thread::sleep(Duration::from_millis(2));
     }
     return Ok(false);
@@ -36,7 +42,9 @@ fn reader_bounds_requests_and_preserves_snapshot_order() {
     fs::write(fixture.path().join("猫.rs"), "source").expect("source fixture");
     fs::write(fixture.path().join(".hidden"), "hidden").expect("hidden fixture");
     let workspace = Workspace::new(fixture.path()).expect("workspace");
-    let expected = workspace.list(workspace.root()).expect("reference snapshot");
+    let expected = workspace
+        .list(workspace.root())
+        .expect("reference snapshot");
     // Copy the native root before moving the workspace into its owned worker thread.
     let root = workspace.root().to_path_buf();
     let mut tree = FileTree::new(&root);
@@ -45,11 +53,19 @@ fn reader_bounds_requests_and_preserves_snapshot_order() {
     assert!(!worker.poll(&mut tree).expect("idle poll"));
     assert!(worker.request(&mut tree, &root).expect("first request"));
     assert!(worker.is_busy());
-    assert!(!worker.request(&mut tree, &root).expect("bounded second request"));
+    assert!(
+        !worker
+            .request(&mut tree, &root)
+            .expect("bounded second request")
+    );
     assert!(tree.missing_listings().is_empty());
     assert!(finish(&mut worker, &mut tree).expect("first reply still current"));
     // Consume the visible rows and compare their exact native entries, not lossy display strings.
-    let actual: Vec<_> = tree.rows().into_iter().map(|row| return row.entry).collect();
+    let actual: Vec<_> = tree
+        .rows()
+        .into_iter()
+        .map(|row| return row.entry)
+        .collect();
     assert_eq!(actual, expected);
     assert!(!worker.is_busy());
 }
@@ -85,7 +101,9 @@ fn reader_failure_retains_snapshot_and_recovers() {
     assert!(finish(&mut worker, &mut tree).expect("initial reply"));
     fs::remove_file(path.join("old.rs")).expect("external fixture removal");
     fs::remove_dir(&path).expect("external directory removal");
-    worker.request(&mut tree, &root).expect("missing directory request");
+    worker
+        .request(&mut tree, &root)
+        .expect("missing directory request");
     assert!(finish(&mut worker, &mut tree).is_err());
     assert!(!worker.is_busy());
     assert_eq!(tree.rows()[0].entry.name, "old.rs");
@@ -105,7 +123,9 @@ fn workspace_boundary_rejects_foreign_tree_paths() {
     let foreign = Workspace::new(outside.path()).expect("outside root");
     let mut tree = FileTree::new(foreign.root());
     let mut worker = DirectoryWorker::new(workspace).expect("directory worker");
-    worker.request(&mut tree, foreign.root()).expect("queued foreign root");
+    worker
+        .request(&mut tree, foreign.root())
+        .expect("queued foreign root");
     assert!(finish(&mut worker, &mut tree).is_err());
     assert!(tree.rows().is_empty());
     assert!(!worker.is_busy());
@@ -122,7 +142,11 @@ fn invalid_admission_and_shutdown_do_not_leave_background_work() {
     let mut worker = DirectoryWorker::new(workspace.clone()).expect("directory worker");
     assert!(worker.request(&mut tree, &root.join("unknown")).is_err());
     assert!(!worker.is_busy());
-    assert!(worker.request(&mut tree, &root).expect("request before shutdown"));
+    assert!(
+        worker
+            .request(&mut tree, &root)
+            .expect("request before shutdown")
+    );
     // Drop closes requests and joins even while the sole response may remain unread.
     drop(worker);
     drop(DirectoryWorker::new(workspace).expect("idle reader"));

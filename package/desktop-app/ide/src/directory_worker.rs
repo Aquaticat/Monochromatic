@@ -1,7 +1,10 @@
 //! One bounded directory read at a time, with opaque tree-request identity carried across the thread.
 
 /// Tree state remains on the caller thread; only requests and owned snapshots cross the channel.
-use crate::{file_tree::{DirectoryRequest, FileTree}, workspace::{DirectoryEntry, Workspace}};
+use crate::{
+    file_tree::{DirectoryRequest, FileTree},
+    workspace::{DirectoryEntry, Workspace},
+};
 /// Thread startup and unexpected disconnects remain actionable errors.
 use anyhow::{Context, Result, bail};
 /// What: Bounded channels transfer messages; JoinHandle owns worker shutdown; Path borrows the requested name.
@@ -11,7 +14,11 @@ use anyhow::{Context, Result, bail};
 /// ```ts
 /// const reader = new Worker('directory-reader'); // one outstanding request, including unread replies
 /// ```
-use std::{path::Path, sync::mpsc::{Receiver, SyncSender, TryRecvError, sync_channel}, thread::{self, JoinHandle}};
+use std::{
+    path::Path,
+    sync::mpsc::{Receiver, SyncSender, TryRecvError, sync_channel},
+    thread::{self, JoinHandle},
+};
 
 /// Private reply preserves the exact request identity, not merely equal directory path text.
 struct Reply {
@@ -86,8 +93,11 @@ impl DirectoryWorker {
         // ```ts
         // const worker = startWorker(() => run(workspace, requests, replies));
         // ```
-        let worker = thread::Builder::new().name("ide-directory-reader".to_string())
-            .spawn(move || { run(workspace, request_receiver, reply_sender); })
+        let worker = thread::Builder::new()
+            .name("ide-directory-reader".to_string())
+            .spawn(move || {
+                run(workspace, request_receiver, reply_sender);
+            })
             .context("Cannot start the directory reader")?;
         // What: Some stores owned endpoints; Ok returns the successfully started reader.
         // Why: Drop later takes each owner exactly once to close and join the thread in order.
@@ -96,7 +106,12 @@ impl DirectoryWorker {
         // ```ts
         // return { requests: requestSender, replies: replyReceiver, busy: false, thread: worker };
         // ```
-        return Ok(Self { requests: Some(request_sender), replies: reply_receiver, busy: false, thread: Some(worker) });
+        return Ok(Self {
+            requests: Some(request_sender),
+            replies: reply_receiver,
+            busy: false,
+            thread: Some(worker),
+        });
     }
 
     /// Return false while busy, without creating or superseding any tree request.
@@ -105,7 +120,10 @@ impl DirectoryWorker {
             return Ok(false);
         }
         // Borrow the sender before changing tree state; a closed reader cannot leave a pending token.
-        let sender = self.requests.as_ref().context("Directory reader is closed")?;
+        let sender = self
+            .requests
+            .as_ref()
+            .context("Directory reader is closed")?;
         let request = tree.begin_listing(directory)?;
         // What: clone shares the request identity while retaining a local owner for send-failure cleanup.
         // Why: A rejected send releases its tree slot rather than leaving an indefinitely loading directory.
@@ -116,9 +134,13 @@ impl DirectoryWorker {
         // ```
         if let Err(error) = sender.try_send(request.clone()) {
             tracing::error!(%error, path = %directory.display(), "cannot send directory request");
-            return tree.complete_listing(&request, Err(anyhow::anyhow!(
-                "Cannot send a read request for {}: {error}; restart the application", directory.display()
-            )));
+            return tree.complete_listing(
+                &request,
+                Err(anyhow::anyhow!(
+                    "Cannot send a read request for {}: {error}; restart the application",
+                    directory.display()
+                )),
+            );
         }
         self.busy = true;
         return Ok(true);
@@ -132,9 +154,13 @@ impl DirectoryWorker {
                 self.busy = false;
                 return tree.complete_listing(&reply.request, reply.result);
             }
-            Err(TryRecvError::Empty) => { return Ok(false); }
+            Err(TryRecvError::Empty) => {
+                return Ok(false);
+            }
             Err(TryRecvError::Disconnected) => {
-                bail!("Directory reader stopped unexpectedly; restart the application to read project directories");
+                bail!(
+                    "Directory reader stopped unexpectedly; restart the application to read project directories"
+                );
             }
         }
     }
@@ -152,7 +178,9 @@ impl Drop for DirectoryWorker {
         // Taking the sender drops its channel endpoint at the statement boundary.
         self.requests.take();
         // Extract the optional join owner; absence means there is no thread left to stop.
-        let Some(worker) = self.thread.take() else { return; };
+        let Some(worker) = self.thread.take() else {
+            return;
+        };
         if let Err(error) = worker.join() {
             tracing::error!(?error, "directory reader panicked during shutdown");
         }

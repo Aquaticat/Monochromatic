@@ -136,7 +136,9 @@ impl FileTree {
         });
         // Detached requests cannot become current again if the same directory name is later recreated.
         self.pending.retain(|path, _request| {
-            return !path.ancestors().any(|parent| return removed.contains(parent));
+            return !path
+                .ancestors()
+                .any(|parent| return removed.contains(parent));
         });
         // A synchronous snapshot also supersedes any older in-flight read of this directory.
         self.pending.remove(directory);

@@ -36,8 +36,14 @@ impl FileTree {
             // ```ts
             // if (this.entry(directory)?.isDirectory !== true) throw new Error('Not a known directory');
             // ```
-            if !self.entry(directory).is_some_and(|entry| return entry.is_directory) {
-                bail!("Cannot request a listing for unknown or non-directory tree entry {}", directory.display());
+            if !self
+                .entry(directory)
+                .is_some_and(|entry| return entry.is_directory)
+            {
+                bail!(
+                    "Cannot request a listing for unknown or non-directory tree entry {}",
+                    directory.display()
+                );
             }
         }
         // What: Arc::new owns the copied native path; clones share that allocation rather than its identity changing.
@@ -47,9 +53,12 @@ impl FileTree {
         // ```ts
         // const request = { path: directory, identity: {} };
         // ```
-        let request = DirectoryRequest { path: Arc::new(directory.to_path_buf()) };
+        let request = DirectoryRequest {
+            path: Arc::new(directory.to_path_buf()),
+        };
         // Clone the token's shared owner while returning another owner to the worker.
-        self.pending.insert(directory.to_path_buf(), request.clone());
+        self.pending
+            .insert(directory.to_path_buf(), request.clone());
         tracing::debug!(path = %directory.display(), "started tree directory request");
         // What: Ok returns the prepared request; Err would carry a rejected operation.
         // Why: Request creation does not imply any directory bytes have been read yet.
