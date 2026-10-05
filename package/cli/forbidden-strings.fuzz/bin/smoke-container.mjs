@@ -17,7 +17,7 @@ async function main() {
     '-dict=dictionary/forbidden-strings.dict',
   ];
   const effectiveCommand = clippy
-    ? ['cargo', 'clippy', '--offline', '--locked', '--all-targets', '--', '-D', 'warnings'] : command;
+    ? ['cargo', 'clippy', '--offline', '--locked', '--all-targets', '--', '--deny', 'warnings'] : command;
   const fixture = await snapshot({ command: effectiveCommand, name: clippy ? 'fuzz-clippy' : 'embedding-fuzz', toolchain: true, tool: clippy ? undefined : 'cargo-fuzz', fuzzing: true });
   let container;
   let evidencePreserved = false;

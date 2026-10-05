@@ -11,7 +11,7 @@ async function main() {
     throw new ScannerVerificationError('Only --clippy or --release is accepted.');
   const clippy = options[0] === '--clippy';
   const command = clippy
-    ? ['cargo', 'clippy', '--offline', '--locked', '--all-targets', '--all-features', '--', '-D', 'warnings']
+    ? ['cargo', 'clippy', '--offline', '--locked', '--all-targets', '--all-features', '--', '--deny', 'warnings']
     : ['cargo', 'test', '--offline', '--locked', '--all-targets', '--all-features', '--', '--test-threads=1'];
   if (options[0] === '--release') command.splice(2, 0, '--release');
   const fixture = await snapshot({ command, name: clippy ? 'clippy' : options[0] === '--release' ? 'release-test' : 'test', toolchain: clippy });

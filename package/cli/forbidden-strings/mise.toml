@@ -67,7 +67,7 @@ run = "cargo check --features fuzzing"
 
 [tasks."lint:clippy"]
 description = "Run clippy over the lib, bins, tests, and benches"
-run = "cargo clippy --release --all-targets -- -D warnings"
+run = "cargo clippy --release --all-targets -- --deny warnings"
 
 [tasks."format:clippy"]
 description = "Apply clippy's machine-applicable suggestions in place"

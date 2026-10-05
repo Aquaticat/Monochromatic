@@ -27,7 +27,7 @@ run = "cargo clippy --fix --allow-dirty --allow-staged --all-targets"
 
 [tasks."lint:clippy"]
 description = "Run Clippy over every Rust target with warnings denied"
-run = "cargo clippy --release --all-targets -- -D warnings"
+run = "cargo clippy --release --all-targets -- --deny warnings"
 
 [tasks.list]
 description = "List all fuzz targets"
