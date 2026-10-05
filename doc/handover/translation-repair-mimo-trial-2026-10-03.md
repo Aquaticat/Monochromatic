@@ -683,6 +683,23 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  01:18 UTC:
+  the next batch's baseline census taken at commit `abb99ceb7`:
+  `census written to ~/.cache/translation-repair/coverage/census-cLOz3U/census.json`
+  (`~/temp/agent/mimo-trial/census-81.log`),
+  `library source: 100 files, 150 stretches over 350 lines, 4 functions never called`.
+  The ranking's first nine clusters carry documented-left arms
+  or the attribution quirk's records.
+  The next actionable cluster is `corpus-run/publish`
+  with 3 stretches over 2 lines in 1 file
+  (`publish-fixed.ts:320`,
+  `321`),
+  then the ranking's next.
+  This line lands in the trial-log commit that follows `abb99ceb7`.
+  Next:
+  the `corpus-run/publish` batch.
+
+- 2026-10-05,
   01:00 UTC:
   the next batch's baseline census taken at commit `455622520`:
   `census written to ~/.cache/translation-repair/coverage/census-2aJKLC/census.json`
