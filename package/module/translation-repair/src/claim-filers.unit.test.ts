@@ -21,6 +21,7 @@ import {
   attachClaimFilers,
   claimFilersOf,
   describeClaimFiling,
+  panelClause,
   describeIssueFiling,
   type AdjudicatedIssue,
   type ClaimAttribution,
@@ -165,6 +166,60 @@ await describe({
             filedBy: { [LONE_CLAIM_ID]: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,], },
           },
         ],);
+      },
+    },),
+
+    it({
+      name: 'ATTACHES the filers where the record names them and LEAVES the issue as it stands where no '
+        + 'claim is on record',
+      fn: async () => {
+        /**
+         Issues whose member claims the filers may or may not name.
+         */
+        const named = attachClaimFilers({
+          issues: [{
+            claims: [{ claimId: 'claim/nap', },],
+          },] as unknown as Parameters<typeof attachClaimFilers>[0]['issues'],
+          filers: { 'claim/nap': ['minimax-m3',], },
+        },);
+        expect('filedBy' in (named[0] ?? {}),).toBe(true,);
+
+        const unnamed = attachClaimFilers({
+          issues: [{
+            claims: [{ claimId: 'claim/nap', },],
+          },] as unknown as Parameters<typeof attachClaimFilers>[0]['issues'],
+          filers: {},
+        },);
+        expect('filedBy' in (unnamed[0] ?? {}),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'NAMES the panel where it cast ballots and says none on record where it cast none or the '
+        + 'issue carries no reading',
+      fn: async () => {
+        const full = panelClause({
+          claimId: 'claim/nap',
+          issue: {
+            readings: {
+              'claim/nap': { ballots: [{ panelistId: 'p1', vote: 'yes', },], },
+            },
+          } as unknown as Parameters<typeof panelClause>[0]['issue'],
+        },);
+        const empty = panelClause({
+          claimId: 'claim/nap',
+          issue: {
+            readings: {
+              'claim/nap': { ballots: [], },
+            },
+          } as unknown as Parameters<typeof panelClause>[0]['issue'],
+        },);
+        const none = panelClause({
+          claimId: 'claim/nap',
+          issue: { readings: {}, } as unknown as Parameters<typeof panelClause>[0]['issue'],
+        },);
+        expect(empty,).toBe(none,);
+        expect(full,).not.toBe(empty,);
       },
     },),
   ],

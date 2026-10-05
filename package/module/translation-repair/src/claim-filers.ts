@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { panelClause, } from './claim-panel-voters.ts';
@@ -250,7 +251,10 @@ export function attachClaimFilers(
       ] {
         return [
           member.claimId,
-          filers[member.claimId] ?? [],
+          /**
+           Filers of this claim, present since the filter kept the claim.
+           */
+          nonNullishOrThrow(filers[member.claimId],),
         ];
       },),);
     /**
