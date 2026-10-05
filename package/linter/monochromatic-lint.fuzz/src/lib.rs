@@ -6,6 +6,9 @@
 //! // Shared property assertions, called by both unit tests and fuzz targets.
 //! ```
 
+/// Counted Markdown/MDX rules and raw-source edit safety controls.
+pub mod markdown;
+
 /// Semantic explicit-type property controls.
 pub mod explicit_types;
 /// Fixed in-memory workspace initialization for semantic properties.

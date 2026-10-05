@@ -4,7 +4,8 @@ Coverage-guided checks for the unified linter's native boundaries.
 Targets cover JSONC configuration validation,
 ordered merging,
 the Rust anonymous-function rule,
-and semantic explicit-type checking.
+semantic explicit-type checking,
+and the implemented Markdown/MDX rules.
 
 The merge target reuses the repository's structured JSONC generator.
 The configuration target combines raw syntax mutation with always-valid generated rule settings.
@@ -18,6 +19,14 @@ The semantic target initializes a fixed in-memory Rust crate,
 submits generated/raw source only through the production session's source-overlay API,
 and checks independent violation counts plus restoration after changed input.
 Arbitrary bytes never enter the fixture metadata interpreter.
+The Markdown target runs independently counted source fragments with LF,
+CRLF,
+and bare CR in both Markdown and MDX modes,
+then checks arbitrary UTF-8.
+It checks original-byte diagnostic/edit boundaries and reparses accepted fixed output.
+The existing nonempty-to-empty rewrite refusal remains an explicit allowed error.
+The raw parser path may reject malformed input with a typed processing failure.
+Fuzz-only process deadlines do not add a production parser timeout.
 
 Generator unit tests verify that successful validation,
 merging,
