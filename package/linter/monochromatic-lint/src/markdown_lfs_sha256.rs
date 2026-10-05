@@ -167,20 +167,23 @@ fn compress(state: &mut [u32; 8], block: &[u8]) {
 /// ```
 pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
     let mut state: [u32; 8] = INITIAL;
-    // Whole blocks come straight from the input without copying.
-    let whole: usize = bytes.len() / 64 * 64;
-    // What: `chunks_exact(64)` hands out consecutive borrowed 64-byte slices of the whole-block prefix.
-    // Why: The slices come from the standard library, so there is no hand-stepped offset whose mutation could spin.
+    // What: `as_chunks::<64>()` splits the input into a borrowed list of whole 64-byte arrays, `&[[u8; 64]]`,
+    // and the borrowed remainder shorter than one block, `&[u8]`; `::<64>` names the block length.
+    // Why: Whole blocks come straight from the input without copying, and the standard library computes
+    // both parts, so there is no hand-stepped offset whose mutation could spin and no boundary arithmetic.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // for (let offset = 0; offset < whole; offset += 64) compress(state, bytes.subarray(offset, offset + 64));
+    // const whole = bytes.length - (bytes.length % 64);
+    // const blocks = range(0, whole, 64).map((offset) => bytes.subarray(offset, offset + 64));
+    // const rest = bytes.subarray(whole);
     // ```
-    for block in bytes[..whole].chunks_exact(64) {
+    let (blocks, rest): (&[[u8; 64]], &[u8]) = bytes.as_chunks::<64>();
+    // Each `&[u8; 64]` block is passed where a `&[u8]` slice is expected; Rust converts the reference itself.
+    for block in blocks {
         compress(&mut state, block);
     }
     // The tail holds the remaining bytes, the 0x80 marker, zero padding and the 64-bit bit length.
-    let rest: &[u8] = &bytes[whole..];
     let mut tail: [u8; 128] = [0; 128];
     tail[..rest.len()].copy_from_slice(rest);
     tail[rest.len()] = 0x80;
