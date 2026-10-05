@@ -24,6 +24,9 @@ export component ProjectTree inherits Rectangle {
     callback navigate(string, int);
     callback shortcut(string, bool, bool, bool);
     private property <length> row-height: 48px;
+    // Prototype selected-ink B: white ink on the blue selection fill in both schemes, as the source view
+    // already draws selected text. The palette's selection ink is black in the dark scheme.
+    private property <brush> selected-ink: #ffffff;
     private property <int> first-visible: max(0, floor(-view.content-y / root.row-height) - 1);
     background: Palette.background;
     forward-focus: tree-focus;
@@ -107,7 +110,7 @@ export component ProjectTree inherits Rectangle {
                     font-size: 14px;
                     horizontal-alignment: center;
                     vertical-alignment: center;
-                    color: entry.selected ? Palette.selection-foreground : Palette.foreground;
+                    color: entry.selected ? root.selected-ink : Palette.foreground;
                 }
                 Text {
                     x: 32px + entry.depth * 16px;
@@ -116,7 +119,7 @@ export component ProjectTree inherits Rectangle {
                     text: entry.label;
                     font-size: 14px;
                     font-weight: entry.selected || entry.expanded ? 600 : 400;
-                    color: entry.selected ? Palette.selection-foreground : Palette.foreground;
+                    color: entry.selected ? root.selected-ink : Palette.foreground;
                     vertical-alignment: center;
                     overflow: elide;
                 }

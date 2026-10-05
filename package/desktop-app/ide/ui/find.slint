@@ -1,45 +1,6 @@
 // Transient in-file find. Native code owns match positions and identity; this markup only edits the find text.
 import { LineEdit, Palette } from "std-widgets.slint";
 
-// Prototype find-buttons B: a 48px pointer button drawn with a vector glyph, because system fonts are isolated.
-// It never takes keyboard focus, so a click leaves the caret in the find text.
-// States use two channels each: idle has a faint boundary; hover adds a fill and full-ink boundary;
-// press adds a heavier fill and a 2px boundary; disabled drops the boundary and dims the glyph.
-component FindButton inherits Rectangle {
-    in property <string> label;
-    in property <string> glyph-commands;
-    in property <bool> enabled: true;
-    callback clicked;
-    min-width: 48px;
-    max-width: 48px;
-    min-height: 48px;
-    max-height: 48px;
-    border-radius: 4px;
-    background: !root.enabled ? transparent
-        : (touch.pressed ? Palette.foreground.with-alpha(0.16) : (touch.has-hover ? Palette.foreground.with-alpha(0.08) : transparent));
-    border-width: !root.enabled ? 0px : (touch.pressed ? 2px : 1px);
-    border-color: Palette.foreground.with-alpha(touch.has-hover || touch.pressed ? 1 : 0.3);
-    accessible-role: button;
-    accessible-label: root.label;
-    accessible-enabled: root.enabled;
-    accessible-action-default => { if root.enabled { root.clicked(); } }
-
-    Path {
-        width: 16px;
-        height: 16px;
-        viewbox-width: 16;
-        viewbox-height: 16;
-        commands: root.glyph-commands;
-        stroke: Palette.foreground;
-        stroke-width: 1.5px;
-        opacity: root.enabled ? 1 : 0.38;
-    }
-    touch := TouchArea {
-        enabled: root.enabled;
-        clicked => { root.clicked(); }
-    }
-}
-
 export component FindBar inherits Rectangle {
     in property <bool> open;
     in property <string> status;
@@ -52,10 +13,7 @@ export component FindBar inherits Rectangle {
     out property <length> bar-height: root.row-height + (root.error-message == "" ? 0px : error.preferred-height + 8px);
     callback edited(string);
     callback navigate(int);
-    callback dismiss;
     callback shortcut(string, bool, bool, bool);
-    // Previous and next act only while the find text has matches to move between.
-    private property <bool> can-navigate: root.query != "" && !root.no-match && root.error-message == "";
     public function focus-query() {
         input.focus();
         input.select-all();
@@ -123,28 +81,6 @@ export component FindBar inherits Rectangle {
                 horizontal-alignment: right;
                 accessible-role: text;
                 accessible-label: root.status-detail;
-            }
-            // Browser find bars put previous, next, and close after the match count, in this order.
-            HorizontalLayout {
-                horizontal-stretch: 0;
-                spacing: 4px;
-                FindButton {
-                    label: "Previous match";
-                    glyph-commands: "M 4 10 L 8 6 L 12 10";
-                    enabled: root.can-navigate;
-                    clicked => { root.navigate(-1); }
-                }
-                FindButton {
-                    label: "Next match";
-                    glyph-commands: "M 4 6 L 8 10 L 12 6";
-                    enabled: root.can-navigate;
-                    clicked => { root.navigate(1); }
-                }
-                FindButton {
-                    label: "Close find";
-                    glyph-commands: "M 4 4 L 12 12 M 12 4 L 4 12";
-                    clicked => { root.dismiss(); }
-                }
             }
         }
         error := Text {
