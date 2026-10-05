@@ -22,6 +22,9 @@ if (!Number.isInteger(runs) || runs < 1) throw new Error('runs must be a positiv
 // Another package directory, for example `git archive` of an older commit, measured with this checkout's test.
 const other = process.env.usage_package ? realpathSync(process.env.usage_package) : undefined;
 if (other && (!other.startsWith(realpathSync(privateRoot) + sep) || !existsSync(join(other, 'Cargo.toml')))) throw new Error('Package copy must be a crate directory below ' + privateRoot);
+// Name part of the ignored native measurement tests to run; other measurements print their own JSON lines.
+const filter = process.env.usage_filter ?? 'refresh_latency';
+if (!/^[a-z_]+$/.test(filter)) throw new Error('filter must be a test name part of lowercase letters and underscores');
 const artifact = mkdtempSync(join(privateRoot, 'ide-refresh-latency-'));
 const source = join(artifact, 'package');
 const origin = process.cwd();
@@ -52,7 +55,7 @@ for (let run = 1; run <= runs; run++) {
     '--env', 'SLINT_BACKEND=headless', '--env', 'SLINT_MCP_PORT=0', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
     'localhost/monochromatic/ide',
     'cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide',
-    '--run-ignored', 'only', '--no-capture', '--filter-expr', 'test(refresh_latency)',
+    '--run-ignored', 'only', '--no-capture', '--filter-expr', 'test(' + filter + ')',
   ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   const output = (result.stdout ?? '') + (result.stderr ?? '');
   writeFileSync(join(artifact, 'run-' + run + '.log'), output);
@@ -61,9 +64,10 @@ for (let run = 1; run <= runs; run++) {
   for (const line of output.split('\n')) {
     if (line.startsWith('{"case":')) results.push({ run, ...JSON.parse(line) });
   }
-  writeFileSync(join(artifact, 'results.json'), JSON.stringify({ package: other ?? origin, results }, null, 2));
+  writeFileSync(join(artifact, 'results.json'), JSON.stringify({ package: other ?? origin, filter, results }, null, 2));
   for (const item of results.filter(entry => entry.run === run)) {
-    console.log([run, item.case, 'expanded=' + item.expanded, 'median=' + item.median_ms, 'p90=' + item.p90_ms, 'max=' + item.max_ms].join(' '));
+    if (item.median_ms === undefined) console.log(JSON.stringify(item));
+    else console.log([run, item.case, 'expanded=' + item.expanded, 'median=' + item.median_ms, 'p90=' + item.p90_ms, 'max=' + item.max_ms].join(' '));
   }
 }
 console.log('Refresh latency results: ' + join(artifact, 'results.json'));

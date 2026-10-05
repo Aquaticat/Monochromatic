@@ -315,8 +315,22 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[runs]" default="3" help="Repeated runs of the same build, for run-to-run spread"
 arg "[package]" help="Measure this crate directory below the private agent scratch root instead of the working tree, with the current latency test injected"
+arg "[filter]" default="refresh_latency" help="Name part of the ignored native measurement tests to run, for example write_wait_pause"
 '''
 run = "node bin/inspect-refresh-latency.mjs"
+
+[tasks."inspect:idle-cost"]
+description = "Measure the idle IDE's CPU time, read system calls, and listings with expanded folders, at the shipped safety sweep and a comparison interval"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root, for the chosen profile"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[profile]" default="debug" help="Cargo profile to build and measure: debug or release"
+arg "[compare]" default="10" help="Safety sweep of the comparison build, in whole seconds"
+arg "[folders]" default="1,12,100" help="Comma-separated counts of expanded folders"
+arg "[seconds]" default="60" help="Length of each measured interval; at least three safety sweeps of the slower build"
+arg "[runs]" default="3" help="Runs per build and folder count, for run-to-run spread"
+'''
+run = "node bin/inspect-idle-cost.mjs"
 
 [tasks."inspect:search-accessibility"]
 description = "Verify accepted search landmarks and rejected dialog role declarations in disposable markup"
