@@ -407,6 +407,48 @@ and the same fixtures unconfined as the guard control.
  and edit-refusal guards in a disposable copy
 and checks that their named tests fail.
 
+`inspect:language-lifecycle` opens a file,
+sends one hover,
+closes,
+and lets the worker shut down against the same real confined servers.
+It fails on any ERROR-level record,
+on bare shutdown error text such as `context canceled`,
+and on any leftover process.
+Its second part ends the application process with `SIGKILL`
+and records which server and sandbox processes remain after 0, 1, 5, and 10 seconds.
+The quiet-shutdown checks fail at present, for causes outside this package:
+`helix-lsp` logs server standard-error lines,
+the end of that stream,
+and error responses at ERROR
+(`doc/troubleshooting/helix-lsp-transport-error-level-records.md`);
+the TypeScript 7 server reports its own exit as `context canceled`
+(`doc/troubleshooting/typescript-7-lsp-exit-context-canceled.md`);
+and rust-analyzer warns about a user configuration file that does not exist
+(`doc/troubleshooting/rust-analyzer-notify-missing-user-config.md`).
+`tests/language/quiet.rs` is the scripted-server form in the container suite:
+the enforced test allows `helix-lsp`'s end-of-stream record and nothing else at ERROR,
+and the ignored strict test is the acceptance test for whichever handling is adopted.
+`inspect:language-lifecycle-guards` observes both in a disposable copy,
+together with the worker's shutdown request,
+its wait for servers to end,
+and its reaping.
+
+When its handle is dropped,
+the worker sends `shutdown` and `exit` to every server,
+waits up to one second for the processes to end,
+and drops its runtime, which kills every server that is left.
+It then waits, for at most two more seconds,
+until the kernel lists no child process of the worker thread (`src/language/reap.rs`),
+so an ended server is not left in the process table as a zombie.
+`lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns` covers a server
+that ignores `exit` and the end of its input (`IDE_SCRIPTED_LINGER=1`).
+A killed process that the kernel needs more than two seconds to end,
+which was seen in measurements where processes stalled for seconds,
+stays a zombie until the application exits.
+`inspect:language-reap-rate` counts leftover processes by kind over many lifetimes,
+with the reaping and with the fixed 50 ms pause it replaced;
+`doc/troubleshooting/tokio-dropped-child-zombie-after-last-park.md` has the source trace and the measurements.
+
 ## Language navigation
 
 In the source view,
@@ -527,9 +569,11 @@ Each note names the reason and the remedy:
   followed,
   while the server reports work in progress,
   by the advice to press the key again when it finishes;
+- a server that was not started because it could not be confined:
+  `typescript-native was not started, so go to definition is not available for this file:`
+  followed by the cause and, last, the remedy the launch policy names;
 - a server that cannot follow external changes,
   a failed start,
-  a launch the policy refused,
   a server root outside the project,
   and a file outside the project with no running server of its language;
 - a file without a recognized language or without a configured server;

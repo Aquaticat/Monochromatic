@@ -34,6 +34,10 @@ mod policy;
 #[path = "language/lifecycle.rs"]
 mod lifecycle;
 
+/// What a clean open, request, close, and shutdown leave in the log and the process table.
+#[path = "language/quiet.rs"]
+mod quiet;
+
 /// Working directory and enclosing-tree root handling.
 #[path = "language/roots.rs"]
 mod roots;

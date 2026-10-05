@@ -84,9 +84,8 @@ fn refused_launch_is_explained_with_its_reason() {
     definition(&reader);
     eventually("the refused launch was not explained", || {
         let text = popup(&reader);
-        return text.starts_with("scripted-ls was not started because its launch was refused:")
-            && text.contains("simulated refusal")
-            && text.ends_with("Language features stay off for this file.");
+        return text
+            == "scripted-ls was not started, so go to definition is not available for this file: simulated refusal.";
     });
     assert!(reader.window.get_language_popup_note());
     assert!(reader.window.get_source_has_focus());

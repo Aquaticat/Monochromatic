@@ -75,6 +75,9 @@ mod request;
 /// Server-to-client traffic.
 mod traffic;
 
+/// The wait until every server process the worker started has been reaped.
+mod reap;
+
 /// The worker thread and its loop.
 mod worker;
 
