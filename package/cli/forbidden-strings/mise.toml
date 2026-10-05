@@ -73,6 +73,13 @@ run = "cargo check --features fuzzing"
 description = "Run clippy over the lib, bins, tests, and benches"
 run = "cargo clippy --release --all-targets -- --deny warnings"
 
+[tasks."lint:clippy:windows"]
+description = "Type-check and lint every target, including Windows-only test code, for x86_64-pc-windows-gnu with warnings denied"
+# Clippy only checks, so no Windows linker or MinGW is needed; the host toolchain needs
+# `rustup target add x86_64-pc-windows-gnu`. This catches Windows compile errors that the
+# Linux gates cannot see, but runs no test: native behavior still needs a Windows run.
+run = "cargo clippy --locked --all-targets --all-features --target x86_64-pc-windows-gnu -- --deny warnings"
+
 [tasks."format:clippy"]
 description = "Apply clippy's machine-applicable suggestions in place"
 run = "cargo clippy --fix --allow-dirty --allow-staged"
