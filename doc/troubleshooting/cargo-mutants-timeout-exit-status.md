@@ -505,7 +505,9 @@ Open, not measured:
 
 - The whole upstream integration suite was not run,
   and no test runs a timing-out tree through the command line with `--accept=timeout`
-  (upstream's own hang tests are `#[ignore]`);
+  (upstream's own test that lets a mutant hang,
+  `mutants_causing_tests_to_hang_are_stopped_by_manual_timeout`,
+  is `#[ignore]`);
   the nine cases cover that path outside the test suite.
 
 The clone,
@@ -514,12 +516,90 @@ the image is `localhost/cargo-mutants-accept-prototype:v27.1.0`.
 
 ### Comment draft
 
-Not written yet.
+Do not post as-is.
+Posting on #545 is an external action that needs the user's authorization,
+and the bracketed sentence in the draft is for the user to complete.
+
 The thread already contains the request,
-the design and the step list,
-so a comment is additive only if it carries the verified patch.
-Without the prototype there is nothing to add to #545,
-and posting anything there needs the user's authorization first.
+the design and the step list.
+What this draft adds is the verified patch,
+the places where the step list needed a different choice,
+and a workaround for loop counters that the thread does not mention.
+The patch goes inside the `<details>` block when posting:
+paste the contents of [cargo-mutants-timeout-exit-status.patch](cargo-mutants-timeout-exit-status.patch).
+No pull request is drafted,
+because a second user offered on 2026-07-03 to own the change.
+
+~~~md
+I tried the step list from this thread against v27.1.0 (8ab1dc7) to see whether it holds together.
+It does. The patch is at the end of this comment.
+I have not opened a pull request because @jmriesen offered to own the change.
+
+### What the patch does
+
+- Adds `--accept` (comma-separated or repeated) and an `accept` key in `.cargo/mutants.toml`,
+  with the values `timeout` and `missed`.
+  Command-line and config values are combined, like the other list options since 27.0.0.
+- `LabOutcome::exit_code` takes `&Options` and skips the timeout branch or the missed branch
+  when that outcome is accepted.
+  Nothing else changes: outcomes are still printed, counted in the summary line and written to `mutants.out`.
+- Adds unit tests for option parsing, config parsing and `exit_code`,
+  one CLI test (`--accept=missed` on `testdata/factorial`),
+  a section in the exit codes page of the book, a pointer from the timeouts page, and a NEWS entry.
+
+### Where it differs from the step list
+
+- The value type is a new two-variant enum rather than `SummaryOutcome`.
+  The other four `SummaryOutcome` values cannot cause a failing exit code,
+  and its serialized names are part of the JSON output,
+  so reusing it would either accept values that do nothing or need a second set of names.
+- There is no CLI test for the timeout case,
+  because the existing test that lets a mutant hang
+  (`mutants_causing_tests_to_hang_are_stopped_by_manual_timeout`) is `#[ignore]`d.
+  Unit tests of `exit_code` cover that branch.
+- The summary line still says "N timeouts".
+  The question earlier in this thread about wording is untouched.
+
+### What was run
+
+rustc 1.97.0, in a container without network,
+on a small crate whose loop counter mutant (`index += 1` replaced by `index *= 1`) hangs,
+and a variant with an untested function:
+
+- v27.1.0 unpatched, timeout only: exit 3.
+- Patched, timeout only, no option: exit 3.
+- Patched, timeout only, `--accept=timeout`: exit 0.
+- Patched, timeout and missed, `--accept=timeout`: exit 2.
+- Patched, timeout and missed, `--accept=timeout,missed`: exit 0.
+- Patched, timeout only, `accept = ["timeout"]` in the config file: exit 0.
+- Patched, timeout and missed, `--accept=missed`: exit 3.
+
+`cargo fmt --check` passes.
+The 9 added unit tests and the added CLI test pass.
+`build_dir::test::fail_to_overwrite` and `build_dir::test::fail_to_overwrite_dir_permission_denied`
+fail in that container with and without the patch (it runs as root),
+and clippy 0.1.97 with `-D warnings` reports the same 6 `useless_borrows_in_formatting` errors
+in `src/mutant.rs` and `src/output.rs` with and without the patch.
+The full integration suite was not run.
+
+### A workaround that needs no change
+
+For hand-stepped loop counters specifically,
+`--exclude-re 'replace \+= with \*='` and `--exclude-re 'replace -= with /='`
+remove the two replacements that leave a counter in place,
+while `+=` replaced by `-=` still tests the same statement.
+That is what I use in the meantime.
+
+The patch and this comment were written with an AI coding assistant, which also ran the checks listed here.
+[State what you reviewed yourself before posting.]
+
+<details>
+<summary>Patch against v27.1.0</summary>
+
+(paste the patch here inside a `diff` code fence)
+
+</details>
+~~~
 
 [issue-545]: https://github.com/sourcefrog/cargo-mutants/issues/545
 [issue-499]: https://github.com/sourcefrog/cargo-mutants/issues/499

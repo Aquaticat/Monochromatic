@@ -747,8 +747,32 @@ Still open:
 the linter's three campaigns and the wrapper campaign must each be rerun to 0 missed and 0 timeouts
 on the final trees;
 the delegates own those runs.
-The troubleshooting entry's upstream check requires a prototype of the option upstream issue 545 describes;
-it is not run yet.
+
+The troubleshooting entry's upstream check required a prototype of the option upstream issue 545 describes.
+The main session wrote it against `v27.1.0` in a disposable clone
+(`doc/troubleshooting/cargo-mutants-timeout-exit-status.patch`, `b7918044f`, results `61565a1a4`):
+`--accept` and an `accept` configuration key with the values `timeout` and `missed`.
+In a container without network,
+an unpatched build exits 3 on a crate with one timing-out mutant,
+and the patched build exits 0 with timeouts accepted,
+2 when a missed mutant remains,
+and 0 with both accepted or with the configuration key.
+The format check passes;
+the two unit tests and six Clippy errors that fail on the patched tree fail identically on the unpatched tree.
+The full upstream integration suite was not run.
+Nothing is posted upstream:
+the entry keeps a comment draft for issue 545,
+and posting it is the user's decision.
+
+#### Third API session limit
+
+All five running delegates stopped on the API session limit at about 17:20 on 2026-10-05
+and were resumed from their transcripts at 18:51.
+No container was running at that point,
+so each was told to judge its interrupted campaign from the evidence directory rather than assume it finished.
+The mvm delegate had about 27 modified and 4 new files uncommitted;
+it was told to commit before each next step.
+The open-decision brief existed only as an untracked file.
 
 #### Scanner Windows baseline and prefix confirmation
 
@@ -937,9 +961,9 @@ that is verification, not a decision for the user.
   and MSVC is unexercised.
 - [ ] Mutation gates exit 0: every linter scope and the wrapper campaign rerun on the final trees
   with the two excluded replacement kinds, 0 missed and 0 timeouts.
-- [ ] cargo-mutants upstream check: prototype the option from upstream issue 545
-  and record it in `doc/troubleshooting/cargo-mutants-timeout-exit-status.md`;
-  posting anything upstream needs the user's authorization.
+- [x] cargo-mutants upstream check: the option from upstream issue 545 is prototyped and verified
+  (`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`, section `Prototype`).
+- [ ] Ask the user whether to post the comment draft on upstream issue 545.
 - [ ] Rust cli-git configuration, Git resolution/argv, static policies, and management commands.
   Configuration, Git resolution and forwarding, the management skeleton,
   the command parser and the rule cores are merged on `main` (`7d103c174`, see `Resumption 2026-10-05`).
