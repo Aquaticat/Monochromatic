@@ -4,6 +4,8 @@ import { ProjectTree, TreeEntry } from "tree.slint";
 import { SidebarDivider } from "divider.slint";
 import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
+import { LanguagePopup } from "hover.slint";
+import { ReferenceList, ReferenceEntry } from "references.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -92,6 +94,41 @@ export component AppWindow inherits Window {
     callback find-dismiss;
     public function focus-find() { find-bar.focus-query(); }
 
+    // Language navigation. Native code owns requests, results, and every dismissal.
+    // One popup beside one source line shows hover content or a note about a request that could not be done.
+    in property <string> language-popup-text;
+    in property <bool> language-popup-note;
+    // The anchoring character: logical x from the start of the text, and its zero-based source line.
+    in property <float> language-anchor-x;
+    in property <int> language-anchor-line;
+    out property <bool> language-popup-has-pointer: language-popup.pointer-inside;
+    out property <bool> language-popup-below: language-popup.placed-below;
+    out property <length> language-popup-y: language-popup.y;
+    out property <length> language-popup-height: language-popup.height;
+    // Top of the anchoring line in window coordinates; the popup and the list never cover that line.
+    out property <length> language-anchor-top: code-focus.absolute-position.y + root.language-anchor-line * root.line-height + scroll.content-y;
+    private property <length> language-anchor-left: code-focus.absolute-position.x + root.gutter-width + root.language-anchor-x * 1px + scroll.content-x;
+    in-out property <bool> references-open;
+    in property <string> references-title;
+    in property <[ReferenceEntry]> references-entries;
+    in-out property <int> references-selected: 0;
+    out property <bool> references-has-focus: reference-list.list-has-focus;
+    out property <length> references-y: reference-list.y;
+    out property <length> references-height: reference-list.height;
+    out property <bool> language-surface-open: root.language-popup-text != "" || root.references-open;
+    // A file outside the project, opened from a definition, is marked beside its path.
+    in property <bool> file-outside-project;
+    callback definition-request;
+    callback hover-request;
+    callback definition-at-pointer(int, float);
+    callback pointer-moved(int, float);
+    callback pointer-exited;
+    callback language-dismiss;
+    callback references-choose(int);
+    callback references-dismiss;
+    public function focus-references() { reference-list.focus-list(); }
+    public function reset-references-scroll() { reference-list.reset-scroll(); }
+
     in property <bool> source-available: true;
     in property <image> source-image;
     in property <[SourceSelection]> source-selections;
@@ -162,8 +199,14 @@ export component AppWindow inherits Window {
         focus-on-click: false;
         capture-key-pressed(event) => {
             root.shortcut-observed(event.text, true);
-            if event.modifiers.control && !event.modifiers.shift && !event.modifiers.alt && (event.text == "f" || event.text == "F") {
+            // The location list is modal like the search overlay: Ctrl+F waits until it is closed.
+            if event.modifiers.control && !event.modifiers.shift && !event.modifiers.alt && (event.text == "f" || event.text == "F") && !root.references-open {
                 root.find-request();
+                return accept;
+            }
+            // Language surfaces sit above the find bar, so Escape closes them first.
+            if event.text == Key.Escape && root.language-surface-open && !root.search-open {
+                root.language-dismiss();
                 return accept;
             }
             // The modal search overlay is the topmost surface while open and handles its own Escape.
@@ -218,14 +261,39 @@ export component AppWindow inherits Window {
             spacing: 0px;
             Rectangle {
                 height: 32px;
-                Text {
-                    x: 12px;
-                    width: parent.width - 24px;
-                    height: parent.height;
-                    text: root.file-label;
-                    color: Palette.foreground;
-                    vertical-alignment: center;
-                    overflow: elide;
+                HorizontalLayout {
+                    padding-left: 12px;
+                    padding-right: 12px;
+                    spacing: 8px;
+                    // Shown only for a file outside the project: a bounded label, never a permanent badge.
+                    if root.file-outside-project: VerticalLayout {
+                        horizontal-stretch: 0;
+                        alignment: center;
+                        Rectangle {
+                            height: 22px;
+                            border-width: 1px;
+                            border-color: Palette.foreground;
+                            border-radius: 4px;
+                            HorizontalLayout {
+                                padding-left: 6px;
+                                padding-right: 6px;
+                                Text {
+                                    text: "Outside project";
+                                    color: Palette.foreground;
+                                    font-weight: 600;
+                                    font-size: 12px;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                    Text {
+                        horizontal-stretch: 1;
+                        text: root.file-label;
+                        color: Palette.foreground;
+                        vertical-alignment: center;
+                        overflow: elide;
+                    }
                 }
             }
 
@@ -247,6 +315,12 @@ export component AppWindow inherits Window {
                         root.copy-selection();
                     } else if event.modifiers.control && (event.text == "a" || event.text == "A") {
                         root.select-all-request();
+                    } else if event.modifiers.control && !event.modifiers.shift && !event.modifiers.alt && (event.text == "b" || event.text == "B") {
+                        // editord's go to definition, which lists references when the caret is at the definition.
+                        root.definition-request();
+                    } else if event.modifiers.control && !event.modifiers.shift && !event.modifiers.alt && (event.text == "q" || event.text == "Q") {
+                        // JetBrains' Quick Documentation key: hover information for the caret.
+                        root.hover-request();
                     } else {
                         root.tree-shortcut(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
                         root.key-input(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
@@ -345,7 +419,19 @@ export component AppWindow inherits Window {
                                 root.pointer-press(floor(self.mouse-y / root.line-height),
                                     max(0, (self.mouse-x - root.gutter-width) / 1px),
                                     event.modifiers.shift);
+                                // Ctrl+click asks for the definition of the character under the pointer.
+                                if event.modifiers.control && !event.modifiers.shift && !event.modifiers.alt {
+                                    root.definition-at-pointer(floor(self.mouse-y / root.line-height),
+                                        (self.mouse-x - root.gutter-width) / 1px);
+                                }
+                            } else if event.kind == PointerEventKind.move && !self.pressed {
+                                // A resting pointer asks for hover information; x is negative over the line numbers.
+                                root.pointer-moved(floor(self.mouse-y / root.line-height),
+                                    (self.mouse-x - root.gutter-width) / 1px);
                             }
+                        }
+                        changed has-hover => {
+                            if !self.has-hover { root.pointer-exited(); }
                         }
                         moved => {
                             // Only a drag with the left button extends; other buttons never started a selection.
@@ -377,6 +463,34 @@ export component AppWindow inherits Window {
                 font-weight: 600;
                 wrap: word-wrap;
             }
+        }
+    }
+    language-popup := LanguagePopup {
+        text: root.language-popup-text;
+        note: root.language-popup-note;
+        anchor-x: root.language-anchor-left;
+        anchor-top: root.language-anchor-top;
+        anchor-bottom: root.language-anchor-top + root.line-height;
+        area-width: root.width;
+        area-height: root.height;
+    }
+    // The location list closes on an outside click, like the search overlay, but without dimming.
+    Rectangle {
+        visible: root.references-open;
+        width: parent.width;
+        height: parent.height;
+        TouchArea { width: parent.width; height: parent.height; clicked => { root.references-dismiss(); } }
+        reference-list := ReferenceList {
+            entries: root.references-entries;
+            title: root.references-title;
+            selected-row <=> root.references-selected;
+            anchor-x: root.language-anchor-left;
+            anchor-top: root.language-anchor-top;
+            anchor-bottom: root.language-anchor-top + root.line-height;
+            area-width: root.width;
+            area-height: root.height;
+            choose(index) => { root.references-choose(index); }
+            dismiss => { root.references-dismiss(); }
         }
     }
     Rectangle {

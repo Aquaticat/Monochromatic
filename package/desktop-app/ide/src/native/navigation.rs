@@ -35,8 +35,11 @@ mod search;
 /// Nonblocking reply consumption and bounded directory refresh scheduling.
 mod tick;
 
-/// All tree interaction stays on the native event-loop thread.
-struct Navigation {
+/// Language targets in other files open through the same latest-request-wins path as tree rows.
+pub(super) use open::request_jump;
+
+/// All tree interaction stays on the native event-loop thread; its fields stay private to navigation.
+pub(super) struct Navigation {
     /// Sole canonical root, also used for visible project context.
     workspace: Workspace,
     /// Cached directory snapshots and expansion/request state.
@@ -73,6 +76,24 @@ pub(super) fn bind(
     source: &Rc<RefCell<State>>,
     workspace: Workspace,
 ) -> Result<Timer> {
+    // `map` keeps only the timer; callers that open no language targets need no navigation handle.
+    return bind_shared(window, source, workspace).map(|(timer, _navigation)| return timer);
+}
+
+/// What: Start navigation and also return its shared state. `(Timer, Rc<RefCell<Navigation>>)`
+///       is a pair: the polling timer and the state the timer and callbacks share.
+/// Why: The Language module opens definition and reference targets through this state, so they
+///      get history, tree reveal, and the latest-request-wins rule of every other open.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function bindShared(window, source, workspace): [Timer, { current: Navigation }]
+/// ```
+pub(super) fn bind_shared(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    workspace: Workspace,
+) -> Result<(Timer, Rc<RefCell<Navigation>>)> {
     // What: clone owns the initial file identity without keeping a UI borrow alive through callbacks.
     // Why: History records only the already successful startup open, not pending requests.
     //
@@ -123,10 +144,11 @@ pub(super) fn bind(
     let timer = Timer::default();
     let active_source = Rc::clone(source);
     let weak_window = window.as_weak();
+    let shared = Rc::clone(&navigation);
     timer.start(TimerMode::Repeated, Duration::from_millis(20), move || {
         if let Some(active) = weak_window.upgrade() {
             tick::update(&active, &active_source, &navigation);
         }
     });
-    return Ok(timer);
+    return Ok((timer, shared));
 }

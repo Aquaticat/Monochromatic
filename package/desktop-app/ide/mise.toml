@@ -115,6 +115,8 @@ description = "Exercise native window events and fonts in process-isolated headl
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
+// Language navigation tests start the scripted language server from beside the test binary.
+runCargo(['build', '--features', 'slint/mcp', '--bin', 'ide-scripted-lsp'])
 runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide'])
 """
 
@@ -336,7 +338,7 @@ console.log(JSON.stringify(record, null, 2))
 
 [tasks."lint:slint"]
 description = "Check the native UI declaration"
-run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/divider.slint"]
+run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/divider.slint", "slint-viewer --check ui/hover.slint", "slint-viewer --check ui/references.slint"]
 
 [tasks.lint]
 run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rust", "mise run //package/desktop-app/ide:lint:slint"]
