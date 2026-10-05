@@ -39,9 +39,20 @@ fn removal_edit(context: &MarkdownSource, id: u32) -> Edit {
     // Copy the parser's original-source range instead of using normalized string lengths.
     let (start, mut end): (usize, usize) = context.offsets(id);
     // Find the line's beginning without interpreting container syntax as ordinary indentation.
-    let mut line_start: usize = start;
-    while line_start > 0 && bytes[line_start - 1] != b'\n' && bytes[line_start - 1] != b'\r' {
-        line_start -= 1;
+    // Zero stands for a definition on the first line, where no earlier line ending exists.
+    let mut line_start: usize = 0;
+    // What: `rfind(['\n', '\r'])` is the standard reverse search for the nearest LF or CR before the
+    // definition; `Some(ending)` carries that byte offset and `None` means the definition is on the first line.
+    // Why: A library search has no hand-stepped index, so no mutation of a step can make this scan spin.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const ending = Math.max(source.lastIndexOf('\n', start - 1), source.lastIndexOf('\r', start - 1));
+    // if (ending !== -1) lineStart = ending + 1;
+    // ```
+    if let Some(ending) = context.source[..start].rfind(['\n', '\r']) {
+        // Both line-ending characters are one byte, so the line begins directly after the match.
+        line_start = ending + 1;
     }
     // Empty prefixes are safe; non-whitespace prefixes keep their physical line separate.
     let mut standalone: bool = true;

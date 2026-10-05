@@ -57,12 +57,24 @@ fn suffix_start(written: &str, count: usize) -> Option<usize> {
         let last: u8 = *bytes.get(end.checked_sub(1)?)?;
         if last == b'.' || last == b':' {
             let mut start: usize = end - 1;
-            let mut slash_start: usize = start;
+            // Each backslash directly before the punctuation flips whether that punctuation is escaped.
+            // A flag, not a run length, holds the parity; walking backwards stops at the text's first byte by itself.
             let mut escaped: bool = false;
-            while slash_start > 0 && bytes[slash_start - 1] == b'\\' {
+            // What: `bytes[..start].iter().rev()` borrows the bytes before the punctuation and visits them
+            // from the nearest one backwards; `&u8` items are read through `*byte`.
+            // Why: The reversed walk has no hand-stepped index, so no mutation of a step can make it spin.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // for (const byte of bytes.slice(0, start).reverse()) { if (byte !== BACKSLASH) break; escaped = !escaped; }
+            // ```
+            for byte in bytes[..start].iter().rev() {
+                if *byte != b'\\' {
+                    break;
+                }
                 escaped = !escaped;
-                slash_start -= 1;
             }
+            // An escaped punctuation character is spelled with its backslash, which leaves with it.
             if escaped {
                 start -= 1;
             }

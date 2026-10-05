@@ -79,3 +79,21 @@ fn suffix_mapping_rejects_incomplete_or_unrelated_entities() {
     assert!(!punctuation_entity("#Xnothex"));
     assert!(!punctuation_entity("unknown"));
 }
+
+/// Backslash runs that reach the text's first byte still decide whether the punctuation is escaped.
+/// An odd run escapes it, so its last backslash leaves with it; an even run is literal backslashes that stay.
+#[test]
+fn escape_runs_reaching_the_text_start_decide_the_suffix() {
+    // Each tuple is (authored text, punctuation count, expected suffix start); usize offsets are byte positions.
+    for (written, count, expected) in [
+        (".", 1, 0),
+        ("\\.", 1, 0),
+        ("\\\\.", 1, 2),
+        ("\\\\\\:", 1, 2),
+        ("\\.\\:", 2, 0),
+        ("a\\\\\\.", 1, 3),
+    ] {
+        // Some(expected) is the mapped suffix start; None would mean no safe edit exists.
+        assert_eq!(suffix_start(written, count), Some(expected), "{written}");
+    }
+}
