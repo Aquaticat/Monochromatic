@@ -93,7 +93,6 @@ export component AppWindow inherits Window {
         spacing: 0px;
         project-tree := ProjectTree {
             visible: root.project-visible;
-            width: root.project-visible ? 256px : 0px;
             min-width: root.project-visible ? 256px : 0px;
             max-width: root.project-visible ? 256px : 0px;
             entries: root.tree-entries;

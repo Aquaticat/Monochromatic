@@ -3,14 +3,12 @@
 /// Snapshots share immutable rope chunks; replies carry only prepared changes.
 use crate::{
     document::{Document, Reload},
-    file_reload::read_reload,
     source_style::SourceStyles,
     syntax::SyntaxEngine,
+    workspace::Workspace,
 };
 /// Preserve worker-start, request, and unexpected-disconnect diagnostics.
 use anyhow::{Context, Result, bail};
-/// Classification reads the same immutable rope snapshot as correspondence.
-use helix_core::Rope;
 /// What: Channels transfer owned messages between threads; capacity one bounds queued work.
 /// Why: UI input remains independent of filesystem reads and Helix diff computation.
 ///
@@ -19,7 +17,7 @@ use helix_core::Rope;
 /// const worker = new Worker('source-reader'); // messages are owned snapshots
 /// ```
 use std::{
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::mpsc::{Receiver, SyncSender, TryRecvError, sync_channel},
     thread::{self, JoinHandle},
 };
@@ -48,16 +46,26 @@ pub struct SyntaxReply {
 pub struct ReloadReply {
     /// File-open generation that requested this work.
     pub generation: u64,
+    /// Resolved project-open target or the existing refresh target; absent after resolution failure.
+    pub resolved_path: Option<PathBuf>,
     /// Prepared change or unchanged result; failure leaves displayed source intact.
     pub result: Result<Option<Reload>>,
     /// Present for changed source and explicitly requested unchanged-source classification.
     pub syntax: Option<SyntaxReply>,
 }
 
+/// Queue envelope keeps project resolution on the worker without changing existing reload requests.
+struct QueuedRead {
+    /// Source snapshot and file-open identity.
+    request: ReloadRequest,
+    /// Present only for a new project-relative open; ordinary refreshes retain their accepted path.
+    workspace: Option<Workspace>,
+}
+
 /// UI-owned worker handle with at most one requested or unread reply.
 pub struct ReloadWorker {
     /// Option permits closing the request channel before joining during Drop.
-    requests: Option<SyncSender<ReloadRequest>>,
+    requests: Option<SyncSender<QueuedRead>>,
     /// The UI polls this receiver without blocking.
     replies: Receiver<ReloadReply>,
     /// Includes both executing work and an unread response.
@@ -66,20 +74,8 @@ pub struct ReloadWorker {
     thread: Option<JoinHandle<()>>,
 }
 
-/// Prepare classifications without making a syntax failure discard readable disk text.
-fn classify(engine: &Result<SyntaxEngine>, path: &Path, text: &Rope, revision: u64) -> SyntaxReply {
-    let result = match engine {
-        Ok(active) => active.highlight(path, text),
-        Err(error) => Err(anyhow::anyhow!(
-            "Cannot initialize highlighting for {}: {error:#}",
-            path.display()
-        )),
-    };
-    return SyntaxReply { revision, result };
-}
-
 /// Own the blocking receive loop entirely outside UI state.
-fn run(requests: Receiver<ReloadRequest>, replies: SyncSender<ReloadReply>) {
+fn run(requests: Receiver<QueuedRead>, replies: SyncSender<ReloadReply>) {
     let syntax = SyntaxEngine::new();
     loop {
         // What: match extracts either an owned job or the expected closed-channel condition.
@@ -96,28 +92,8 @@ fn run(requests: Receiver<ReloadRequest>, replies: SyncSender<ReloadReply>) {
                 return;
             }
         };
-        let result = read_reload(&request.snapshot, &request.path);
-        let classified = match &result {
-            Ok(Some(reload)) => Some(classify(
-                &syntax,
-                &request.path,
-                reload.text(),
-                request.snapshot.revision() + 1,
-            )),
-            Ok(None) if request.highlight_unchanged => Some(classify(
-                &syntax,
-                &request.path,
-                request.snapshot.text(),
-                request.snapshot.revision(),
-            )),
-            // Read failures retain their original result; unchanged accepted syntax needs no repeat parse.
-            _ => None,
-        };
-        let reply = ReloadReply {
-            generation: request.generation,
-            result,
-            syntax: classified,
-        };
+        // Resolve new project opens and classify source using the same reusable syntax engine.
+        let reply = crate::reload_read::prepare(request.request, request.workspace, &syntax);
         if let Err(error) = replies.send(reply) {
             tracing::debug!(%error, "source reload worker reply receiver closed");
             return;
@@ -159,8 +135,20 @@ impl ReloadWorker {
         });
     }
 
-    /// Return false while a job or unread response already occupies the worker.
+    /// Refresh an already accepted source path; false means the worker still owns earlier work.
     pub fn request(&mut self, request: ReloadRequest) -> Result<bool> {
+        // None retains the existing accepted target rather than adding another project-path lookup.
+        return self.send(QueuedRead { request, workspace: None });
+    }
+
+    /// Resolve a new tree/search open inside its explicit workspace on the background thread.
+    pub fn request_project(&mut self, workspace: Workspace, request: ReloadRequest) -> Result<bool> {
+        // Some transfers the read-only boundary with this request; no path resolution runs on the UI thread.
+        return self.send(QueuedRead { request, workspace: Some(workspace) });
+    }
+
+    /// Admit at most one executing job or unread response regardless of the source-read mode.
+    fn send(&mut self, request: QueuedRead) -> Result<bool> {
         if self.busy {
             return Ok(false);
         }
