@@ -22,9 +22,12 @@ and confirmed on native Windows on 2026-10-05.
 `Windows baseline follow-up` records the confirmation,
 the triage of every Windows baseline failure,
 and the pathname-only mutation campaign.
-The Windows suite is not green:
-two tests that block the cache root with a regular file fail there,
-pending a human decision on the warning reason such a root should report.
+At the last Windows run the suite was not green:
+two tests that block the cache root with a regular file failed there.
+The decision on those came on 2026-10-05 and the tests now assert each platform's reason
+(`Follow-up decisions applied`).
+The changed Windows assertions have not yet run on Windows,
+so the Windows suite has not been observed green.
 
 ## Requirements preserved
 
@@ -280,7 +283,7 @@ the integration target compiles,
 five of the six failing tests pass,
 and the sixth,
 with one integration test that had never compiled,
-awaits a human decision.
+was decided afterwards (`Follow-up decisions applied`).
 
 ### Target and toolchain
 
@@ -870,10 +873,14 @@ Outcome:
 - Every test target compiles on Windows and the whole suite runs there with no filter.
 - Five of the six recorded baseline failures were tests assuming Unix paths and are fixed in the tests;
   no production defect was found in them.
-- The Windows suite is not green.
-  The sixth recorded failure and one integration test that had never compiled fail for one cause,
-  and that cause needs the human's decision
+- The Windows suite was not green at its last run.
+  The sixth recorded failure and one integration test that had never compiled failed for one cause,
+  which needed the human's decision
   (`Reason reported for a cache root blocked by a regular file`).
+  The decision,
+  option A,
+  is applied in `Follow-up decisions applied`;
+  its Windows assertions await their first Windows run.
 - The prefix fix is confirmed on native Windows,
   with failing positive controls on the same guest.
 - The pathname mutation scope leaves two survivors on Linux,
@@ -1188,8 +1195,10 @@ and the five navigation-spelled forms of `Confirmed mechanism`;
   `Missing` is "Expected content-addressed artifact did not exist",
   `Unreadable` is "Existing artifact could not be read completely",
   and `CacheRootUnavailable` is "Per-user cache root could not be resolved or used".
-  Neither source nor tests were changed for these two;
+  Neither source nor tests were changed for these two during the Windows run;
   `Reason reported for a cache root blocked by a regular file` lists the options.
+  Option A was chosen afterwards and the two tests were changed in `aaf4c08e7`
+  (`Follow-up decisions applied`).
 
 ### Prefix-fix confirmation
 
@@ -1451,13 +1460,58 @@ The container runs,
 not those,
 are the evidence.
 
+#### Gates after the follow-up decisions
+
+On the tree at `703a1c21d`,
+which holds both changes of `Follow-up decisions applied`,
+all through the package's tasks:
+
+- `test:container`:
+  `test-ugiNUM`,
+  snapshot `861844a851d48c9fd6b8dc9fc344fcddfc53f0ae8c3a21b2c7ac9dcafed6b6eb`,
+  image `sha256:6969865cad07c1b987a4bb570d6e99df659fb5c30cbfb611d7c67f592918a9e2`,
+  exit `0`:
+  182 library,
+  4 executable unit,
+  2 embedding,
+  2 public cache-warning,
+  40 CLI integration,
+  and 8 pathname tests passed,
+  none failed,
+  ignored,
+  or filtered.
+  Both changed tests passed.
+- `lint:clippy:container`:
+  `clippy-37qD2W`,
+  the same snapshot,
+  image `sha256:5440f9e8cad307874df6683490b99c754cdc892d4f5f066b2200b2ddb436b84d`,
+  exit `0` with no warning.
+- `lint:clippy:windows`:
+  exit `0`.
+  It compiles the `#[cfg(windows)]` definition of `blocked_root_reason` and both tests that call it;
+  it runs neither.
+- `lint:rust`:
+  exit `0` with no finding.
+- `verify:evidence`:
+  no difference for `test-ugiNUM`,
+  `clippy-37qD2W`,
+  and `pathname-mutation-list-kVfzW5`.
+  Earlier directories now also differ in the three test files `aaf4c08e7` changed or added,
+  so `windows-baseline-phA1vT` reports four differences.
+
 ### Decisions left after the Windows baseline follow-up
 
 #### Reason reported for a cache root blocked by a regular file
 
-This needs the human's decision.
-Two tests fail on Windows because of it,
-and they are the only failures left there:
+Decided on 2026-10-05:
+option A.
+The main agent relayed it as the human's decision,
+and `Follow-up decisions applied` records the change.
+The question and the options as they stood follow.
+
+This needed the human's decision.
+Two tests failed on Windows because of it,
+and they were the only failures left there:
 `public_warning_paths_preserve_scan_results_without_emitting_terminal_json` (`blocked` mode)
 and `cache_write_failure_keeps_scan_correct`.
 On both platforms the scan result stays correct and a `write-failed` warning follows;
@@ -1549,10 +1603,123 @@ but findings then name directories outside the repository.
 No change was made;
 whether Windows arguments should be normalized before the comparison is a product choice.
 
+### Follow-up decisions applied
+
+The main agent relayed two decisions as the human's on 2026-10-05,
+after the Windows run and its teardown.
+No virtual machine was started for them.
+
+#### Option A for the blocked cache root
+
+The scanner's behavior is unchanged.
+`aaf4c08e7` makes the two tests assert the reason the platform reports:
+
+- `tests/support/blocked_root.rs` is a new module both suites include.
+  Its `blocked_root_reason` returns `unreadable` under `#[cfg(unix)]` and `missing` under `#[cfg(windows)]`;
+  a target that is neither fails to compile instead of asserting an unmeasured reason.
+- `warning_consumer_probe` in `tests/embedding_warnings.rs` uses it for the `blocked` mode's first reason.
+  Its other assertions are unchanged:
+  the `compile-from-text` recovery,
+  exactly two warnings,
+  the second being `write-failed` with `continue-with-compiled-rules`,
+  and the content finding.
+- `cache_write_failure_keeps_scan_correct` in `tests/integration.rs` uses it for the first reason
+  and now prints stderr when that assertion fails.
+  Its exit status,
+  `write-failed`,
+  and finding-line assertions are unchanged.
+
+Grounding of the Unix value beyond Linux,
+where it is measured:
+POSIX.1-2024 lists `ENOTDIR` for `stat` when
+"a component of the path prefix names an existing file that is neither a directory
+nor a symbolic link to a directory",
+and `library/std/src/sys/io/error/unix.rs` in the installed `nightly-2026-09-22` source
+maps `ENOTDIR` to `NotADirectory`.
+No Unix target other than Linux was run.
+The Windows value rests on the `s2` run and the probe:
+the same source's `sys/io/error/windows.rs` maps `ERROR_PATH_NOT_FOUND`,
+the measured OS error `3`,
+to `NotFound`.
+
+The Windows assertions have not themselves run on Windows.
+What `s2` measured there:
+
+- The embedding consumer's first warning reason was `missing`.
+- The CLI exited `1` and its stderr lacked `"reason":"unreadable"`.
+
+What it did not measure,
+because each test stopped at its first failing assertion:
+
+- The CLI's stderr containing `"reason":"missing"`.
+- On either path,
+  the warning count,
+  the `write-failed` warning,
+  the recovery tokens,
+  and the finding after the blocked read.
+  The probe's `create_dir_all` under the blocker failing with `AlreadyExists` supports `write-failed`,
+  as an inference from `prepare_directories` in `src/runtime_cache/publish.rs`.
+
+So the next Windows run must include both tests,
+unfiltered,
+and only then can the Windows suite be called green.
+Its mutation campaign should also drop the two Windows-only `--skip` filters for these tests.
+
+On Linux,
+with the Unix value planted as `missing` in a scratch copy,
+both tests fail,
+showing `unreadable` as the actual reason;
+so the changed assertions still discriminate the two tokens.
+The README's cache section now states the platform difference and its cause (`40fb4cdef`).
+
+#### Two operator mutations never tried
+
+`703a1c21d` passes `--exclude-re` twice to `cargo-mutants` in every scope of `bin/mutate-container.mjs`,
+each regex its own argument:
+`replace \+= with \*=` and `replace -= with /=`.
+This is the human's decision for handling mutation timeouts.
+They accepted that those two kinds are never tried;
+`+=` with `-=` stays active.
+It supersedes,
+for these two kinds only,
+this document's earlier statements that no mutant is excluded.
+
+`cd1b9d1db` first gave the runner a `--list` flag,
+which appends `cargo-mutants`' own `--list` to the unchanged campaign arguments in the same container fixture.
+The pathname scope was listed before and after the exclusion:
+
+- Before:
+  `pathname-mutation-list-vTmRVj`,
+  57 names,
+  identical to the names of the campaign `pathname-mutation-N02NWa`.
+- After:
+  `pathname-mutation-list-kVfzW5`,
+  54 names.
+  Its manifest shows the four added arguments as separate elements.
+- Three names disappear and none appears:
+  `src/path_name_bytes.rs:59:19: replace += with *= in count_prefix_parts`,
+  `src/path_scan.rs:150:18: replace += with *= in scan_normalized_records`,
+  and `src/path_scan.rs:142:30: replace -= with /= in scan_normalized_records`.
+  That is two of the first kind and one of the second.
+- The three `+=` with `-=` and `-=` with `+=` mutants at the same positions remain listed.
+
+No campaign was run with the exclusion.
+In the three retained pathname campaigns,
+two on Linux and one on Windows,
+all three now-excluded mutants were caught and none timed out.
+A pathname campaign would now test 54 mutants;
+the 57-mutant counts recorded in this document predate the exclusion.
+The other scopes were not listed.
+
+#### Gates after both changes
+
+`Gates after the follow-up decisions` in `Linux verification of the final tree` records them.
+
 ### Repeating the Windows run
 
-The Windows baseline is not green,
-so these steps reproduce a run with exactly two expected failures until the blocked-root decision lands.
+At the last Windows run the baseline was not green.
+The steps reproduce that run;
+step 7 states what it measured and what the tree after `aaf4c08e7` should show instead.
 Every step was executed as written on 2026-10-05.
 The scratch drivers that implement them are retained in the evidence directory named in
 `Evidence of the Windows baseline follow-up`;
@@ -1612,8 +1779,11 @@ they name this run's domain and need that name changed.
 7.  With `CARGO_PROFILE_DEV_DEBUG=0` and `CARGO_INCREMENTAL=0`,
     run `cargo test --locked --all-features --all-targets --no-fail-fast -- --test-threads=1`
     in the scanner directory.
-    Expected at `fe805727c`:
+    Measured at `fe805727c`:
     exit `101` with 232 of 234 tests passing and only the two blocked-cache-root tests failing.
+    Expected from `aaf4c08e7` on,
+    not yet observed:
+    exit `0` with all 234 passing.
 8.  Run the positive control:
     replace the body of `prefix_parts` in `src/path_name_bytes.rs` with `1`,
     rerun step 7,
@@ -1664,11 +1834,12 @@ Both happened in this run and neither reached the recorded results.
 This is a proposal,
 not a workflow;
 none was added.
-A Windows gate cannot pass today,
-because two tests fail on unmutated source until the blocked-root decision is made.
+No Windows run has exited `0` yet:
+the blocked-root decision is applied,
+but its Windows assertions have not run.
 
-- A decision on `Reason reported for a cache root blocked by a regular file`,
-  then a Windows suite that exits `0`.
+- One Windows run of the suite that exits `0` at `aaf4c08e7` or later,
+  with its positive control.
 - A Windows runner with the scanner's Rust toolchain,
   Git on `PATH` for `all_mode_skips_configured_rules_file`,
   and network access for `cargo fetch --locked`.
@@ -1761,6 +1932,8 @@ and none for `test-g2VM7D`,
 and `pathname-mutation-N02NWa`.
 It reports two for `pathname-mutation-xxqPFq` and `test-kA3nVK`,
 the two test files `fe805727c` changed after those runs.
+Those counts are as of `c925e8187`;
+`Gates after the follow-up decisions` gives the later ones.
 Only compiled inputs were sent to the guest,
 the same file set as in `Evidence and provenance`;
 no home-directory content or credential was served.
@@ -1917,6 +2090,11 @@ Major scoped commits:
   and repository-relative name tests.
 - `11f20de74`: the `lint:clippy:windows` task.
 - `c5d3d04ea`: README entries for the pathname mutation scope and the `lint:clippy:windows` task.
+- `cd1b9d1db`: the mutation runner's `--list` flag.
+- `aaf4c08e7`: the platform's blocked-cache-root reason in the two tests,
+  with `tests/support/blocked_root.rs`.
+- `40fb4cdef`: README statement of that platform difference.
+- `703a1c21d`: the two operator mutations excluded by the human's decision.
 - `e3cdee512`,
   `f7362e0d7`,
   and later `docs(handover)` commits:
@@ -1931,7 +2109,10 @@ retained mutant classifications,
 source inventories,
 and the findings in `Windows-native follow-up` and `Windows baseline follow-up` before any production cutover.
 The scoped Linux queue needed no human response.
-The Windows baseline does:
-the Windows suite stays at two failing tests until the human decides
+The Windows baseline needed one,
 `Reason reported for a cache root blocked by a regular file`,
-and `Decisions left after the Windows baseline follow-up` lists two further choices that block nothing.
+which was decided as option A on 2026-10-05 and applied.
+What remains is a Windows run:
+the two changed tests have not run there,
+so the Windows suite has not been observed green.
+`Decisions left after the Windows baseline follow-up` lists two further choices that block nothing.
