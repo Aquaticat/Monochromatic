@@ -311,6 +311,11 @@ OPA:
  "(Recommended)" on top label;
  full ranking with adjacent-pair reasons in surrounding prose.
 
+QRX:
+ Asking for decisions:
+ batch them in the question tool and re-explain each item's context in plain words;
+ never rely on the user recalling earlier messages.
+
 YKZ:
  Before ranking several options:
  widen to plausible alternatives (with their libraries and repo incumbents);

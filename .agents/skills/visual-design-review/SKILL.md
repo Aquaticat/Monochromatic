@@ -33,6 +33,13 @@ HFM:
  ranking,
  final free-text field.
 
+QVS:
+ UI decisions:
+ before asking,
+ show built screenshots of every option,
+ committed as local repository files,
+ never only in a network-hosted page.
+
 RVC:
  After a decision,
  review shows only the active design;
