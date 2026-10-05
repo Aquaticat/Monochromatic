@@ -211,3 +211,17 @@ fn line_range_includes_the_terminator_when_there_is_one() {
     );
     assert_eq!(line("", 0), (0, 0));
 }
+
+/// Only LF and CRLF end a line of the document; a lone carriage return stays inside its line.
+#[test]
+fn lone_carriage_return_is_not_a_line_break() {
+    // a(0) CR(1) b(2) LF(3) c(4).
+    let source = "a\rb\nc";
+    assert_eq!(
+        Rope::from_str(source).len_lines(),
+        2,
+        "a lone carriage return split the line"
+    );
+    assert_eq!(step(source, 0, Motion::LineEnd), 3);
+    assert_eq!(line(source, 1), (0, 4));
+}

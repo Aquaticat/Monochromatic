@@ -44,7 +44,7 @@ const cases = [
   { name: 'grapheme-snap', file: 'src/shaped_row.rs', before: 'return self.source_start + self.snapped(proposed, x * scale);', after: 'return self.source_start + proposed;', integration: 'reading_boundaries', test: 'every_pixel_hits_the_nearest_grapheme_boundary', failure: 'hit inside a grapheme' },
   { name: 'terminator-mark', file: 'src/shaped_text.rs', before: 'if start <= row_end && end > row_end {', after: 'if false {', integration: 'reading_boundaries', test: 'selected_terminators_are_copied_and_marked', failure: 'terminator mark' },
   // Vertical movement: the remembered column belongs to one caret position, and the text ends stop the caret.
-  { name: 'stale-column', file: 'src/vertical_motion.rs', before: '&& column.head == head', after: '&& true', integration: 'vertical_motion', test: 'stale_preferred_column_is_ignored', failure: 'a column remembered for another caret position moved the caret' },
+  { name: 'stale-column', file: 'src/vertical_motion.rs', before: '        && column.head == head\n', after: '        && true\n', integration: 'vertical_motion', test: 'stale_preferred_column_is_ignored', failure: 'a column remembered for another caret position moved the caret' },
   { name: 'first-line-stop', file: 'src/vertical_motion.rs', before: 'if rows < 0 && row == 0 {', after: 'if false {', integration: 'vertical_motion', test: 'first_and_last_line_stop_at_the_ends_of_text', failure: equality },
   { name: 'last-line-stop', file: 'src/vertical_motion.rs', before: 'if rows > 0 && row == last {', after: 'if false {', integration: 'vertical_motion', test: 'first_and_last_line_stop_at_the_ends_of_text', failure: 'a last line without terminator ends at the end of text' },
   // Word units stay on their line.
