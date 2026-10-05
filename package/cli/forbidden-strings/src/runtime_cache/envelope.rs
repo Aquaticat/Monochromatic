@@ -175,8 +175,8 @@ pub(super) fn encode(
     output.extend_from_slice(&digest_bytes(digest));
     let payload_start = output.len();
     output.extend_from_slice(&rule_count.to_le_bytes());
-    for name in compiled.names() {
-        if let Some(name) = name {
+    for optional_name in compiled.names() {
+        if let Some(name) = optional_name {
             let name_length = u32::try_from(name.len()).map_err(|_| return EnvelopeError::Invalid)?;
             if name_length > MAX_RULE_NAME_BYTES || !valid_rule_name(name) {
                 return Err(EnvelopeError::Invalid);
@@ -238,20 +238,20 @@ pub(super) fn decode(
     if u64::try_from(bytes.len()).map_err(|_| return EnvelopeError::Invalid)? > MAX_ARTIFACT_BYTES {
         return Err(EnvelopeError::Invalid);
     }
-    let mut cursor = Cursor::new(bytes);
-    if cursor.take(MAGIC.len())? != MAGIC {
+    let mut header_cursor = Cursor::new(bytes);
+    if header_cursor.take(MAGIC.len())? != MAGIC {
         return Err(EnvelopeError::Invalid);
     }
-    if cursor.read_u32()? != SCHEMA_VERSION {
+    if header_cursor.read_u32()? != SCHEMA_VERSION {
         return Err(EnvelopeError::Incompatible);
     }
-    if cursor.read_identity()? != scanner_version() || cursor.read_identity()? != platform_identity() {
+    if header_cursor.read_identity()? != scanner_version() || header_cursor.read_identity()? != platform_identity() {
         return Err(EnvelopeError::Incompatible);
     }
-    if cursor.take(32)? != digest_bytes(expected_digest) {
+    if header_cursor.take(32)? != digest_bytes(expected_digest) {
         return Err(EnvelopeError::SourceMismatch);
     }
-    let payload_start = cursor.position;
+    let payload_start = header_cursor.position;
     let payload_end = bytes.len().checked_sub(32).ok_or(EnvelopeError::Invalid)?;
     if payload_end < payload_start {
         return Err(EnvelopeError::Invalid);

@@ -933,7 +933,7 @@ pub fn run_cli_from_env() -> Result<i32> {
             });
             let pathname = path_scan::scan_path(&logical, &loaded);
             let mut findings = pathname.findings;
-            let content = match read_with_binary_check(p) {
+            let content_result = match read_with_binary_check(p) {
                 Ok(c) => Some(c),
                 Err(e) => {
                     findings.push(format!("{}: read error: {}", pathname.display, e));
@@ -953,7 +953,7 @@ pub fn run_cli_from_env() -> Result<i32> {
             // ```ts
             // return scanFile(p, content, loaded);
             // ```
-            if let Some(content) = content {
+            if let Some(content) = content_result {
                 findings.extend(frx_scan::scan_file(&pathname.display, &content, &loaded));
             }
             // An opaque operand index lets policy clients recover candidate

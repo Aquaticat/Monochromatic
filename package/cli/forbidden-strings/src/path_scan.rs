@@ -57,7 +57,7 @@ pub(crate) fn repository_root() -> Option<std::path::PathBuf> {
 /// pathname segments. Lexical normalization removes navigation markers without
 /// following symlinks: the selected link name, not its target, must be scanned.
 pub(crate) fn logical_path(path: &str, root: Option<&Path>) -> String {
-    let Some(root) = root else {
+    let Some(repository) = root else {
         return path.to_string();
     };
     let input = Path::new(path);
@@ -77,7 +77,7 @@ pub(crate) fn logical_path(path: &str, root: Option<&Path>) -> String {
             normalized.push(part.as_os_str());
         }
     }
-    if let Ok(relative) = normalized.strip_prefix(root)
+    if let Ok(relative) = normalized.strip_prefix(repository)
         && let Some(name) = relative.to_str() {
             return name.to_string();
         }
