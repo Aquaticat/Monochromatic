@@ -39,7 +39,7 @@ and are not used by anything recorded here.
 
 ## Decisions by the human on 2026-10-05
 
-The coordinating agent relayed four decisions as made by the human on 2026-10-05.
+The coordinating agent relayed five decisions as made by the human on 2026-10-05.
 They are recorded as decided,
 not as open to veto.
 
@@ -93,6 +93,30 @@ instead of stepping an index:
 `global_layout` in `global_arguments.rs`,
 and `parse_direct` in `management_arguments.rs`.
 None of the modules added by this delegation steps a loop index by hand.
+
+### The failure code of a policy that could not finish follows its cause
+
+A shipped policy that could not finish reports `content-unavailable`
+when a candidate's bytes or a repository fact could not be read,
+and `policy-incomplete` when the policy's own machinery failed:
+its rules file could not be loaded,
+its linter could not start,
+or it hit an internal error.
+`plugin-threw` is not carried over,
+and no other code is added.
+
+Commit `090c147e7` adds `PolicyIncomplete` to `diagnostics::EngineFailureCode`
+with the wire spelling `policy-incomplete`,
+a doc comment stating the rule,
+and the spelling test.
+No path in the engine reports it yet:
+the only failure of a ported policy is a repository fact that could not be read,
+which is `content-unavailable`.
+The optional-policy phase is its first user.
+The engine seam for it is `policy_engine::PolicyOutcome`,
+whose `Failed` outcome the stage reports as `content-unavailable`;
+a policy whose machinery can fail needs a second failing outcome there
+and one more arm in `run_policy_stage`.
 
 ## Gate results
 
@@ -428,6 +452,12 @@ The incumbent recovers dead transactions and interrupted worktree copies before 
 The native executable forwards a read-only command without looking,
 because the fast path reads neither configuration nor leftover state.
 A read-only command changes nothing a recovery would protect.
+The research brief `cli-git-rust-open-decisions.md`,
+section "Recovery before read-only commands",
+reads the spec as requiring recovery there too once recovery is ported.
+That conflicts with this fast path.
+The coordinating agent will put it to the human with the questions of the transactions phase;
+nothing here was changed for it.
 
 #### Post-command output
 
@@ -663,6 +693,9 @@ With an empty object and no file behaving identically,
 the native gate applies whenever a policy with the `manual-push` trigger is enabled.
 `final-newline` is such a policy and is on by default,
 so in this phase a real push is refused in every repository unless that policy is off or escaped.
+The research brief [`cli-git-rust-open-decisions.md`](../planning/cli-git-rust-open-decisions.md),
+section "The manual-push gate without a configuration file",
+reads the evidence the same way and lists the choice as settled by it.
 
 ### Controls on commands without a ported option table
 
@@ -691,13 +724,14 @@ Recorded under "Leftover durable state".
 
 Recorded under "An inherited lease".
 
-### Engine failure codes
+### Engine failure of a fixed transform
 
-A policy whose repository fact could not be read ends the pass with `content-unavailable`;
-a fixed transform in the same situation ends it with `core-incomplete`.
+A fixed transform whose repository fact could not be read ends the pass with `core-incomplete`.
+The code of a policy that could not finish is decided;
+see "The failure code of a policy that could not finish follows its cause".
 Finding validation is by construction:
 a `PolicyFinding` cannot hold an unknown code or a path outside its type,
-so `policy-incomplete` and `plugin-threw` are not emitted.
+so no code is needed for an invalid finding.
 
 ### require-root inside the Git directory
 
@@ -1054,6 +1088,8 @@ In order:
 - `e0042aeda`: the command word and region read in one place, and the tool-cache test.
 - `37d362484`: single-body platform functions, the loop-free bounded read,
   the shared command split and the Windows type-check task.
+- `4133d2900`: a task that runs the repository's Rust linter over the native source.
+- `090c147e7`: the `policy-incomplete` failure code.
 
 ## Superseded passages elsewhere
 
