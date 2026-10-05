@@ -264,7 +264,10 @@ impl Session {
         let uri = params["textDocument"]["uri"].as_str().unwrap_or("");
         let version = &params["textDocument"]["version"];
         if method == "exit" {
-            std::process::exit(0);
+            // A lingering server stays; the client then has to kill it.
+            if !self.script.linger {
+                std::process::exit(0);
+            }
         } else if method == "textDocument/didOpen" {
             let text = params["textDocument"]["text"].as_str().unwrap_or("");
             self.documents.insert(uri.to_string(), text.to_string());
@@ -340,6 +343,19 @@ pub fn run(script: Script) -> io::Result<()> {
                 };
                 session.wire.resolve(id.as_u64().unwrap_or(0), reply);
             }
+        }
+    }
+    // What: `loop` without a condition repeats forever; `thread::sleep` pauses this thread.
+    // Why: A lingering server outlives the end of its input, as a stuck server would, until it
+    //      is killed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (script.linger) for (;;) await sleep(3_600_000);
+    // ```
+    if session.script.linger {
+        loop {
+            thread::sleep(Duration::from_secs(3600));
         }
     }
     // `Ok(())` reports success without a value.

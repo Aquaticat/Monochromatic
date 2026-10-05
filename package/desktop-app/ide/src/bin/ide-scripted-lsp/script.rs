@@ -126,6 +126,9 @@ pub struct Script {
     pub definition: Option<Value>,
     /// When present, the references answer is exactly this result; absent keeps the fixed failure.
     pub references: Option<Value>,
+    /// Ignore `exit` and stay alive after the client closed standard input, so that only a
+    /// kill ends the process.
+    pub linger: bool,
 }
 
 /// What: Decode the JSON text of one variable. `Option<Value>` is nothing when the variable is
@@ -232,6 +235,7 @@ impl Script {
             report,
             definition: json("DEFINITION"),
             references: json("REFERENCES"),
+            linger: read("LINGER", "0") == "1",
         };
     }
 

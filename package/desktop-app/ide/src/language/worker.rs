@@ -7,8 +7,8 @@
 
 /// The registry is assembled in code on this thread, never from project or user configuration.
 use super::config::{LanguageSetup, Languages};
-/// The steps a command or event is dispatched to.
-use super::{attach, lifecycle, request, session::Session, traffic};
+/// The steps a command or event is dispatched to, and the wait that ends the thread.
+use super::{attach, lifecycle, reap, request, session::Session, traffic};
 /// Latest-value results the worker publishes.
 use super::{diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot, status::LanguageStatus};
 /// Commands and one-shot replies.
@@ -61,8 +61,12 @@ use tokio::sync::{mpsc, watch};
 /// Longest wait for servers to exit after `shutdown` and `exit` were sent, as Helix allows on quit.
 const SHUTDOWN_GRACE: Duration = Duration::from_secs(1);
 
-/// Pause that lets the runtime reap server processes it had to kill.
-const REAP_PAUSE: Duration = Duration::from_millis(50);
+/// Longest wait, after every remaining server was killed, until the kernel has ended and the
+/// thread has reaped them. The wait ends as soon as none is left, which is at once when every
+/// server ended by itself. Measured with sixteen sessions sharing two processors: a killed
+/// server took up to 1.5 s to be gone, and the fixed 50 ms pause this replaces was too short in
+/// 81 of 1200 shutdowns.
+const REAP_GRACE: Duration = Duration::from_secs(2);
 
 /// What: Everything the interface thread can ask for. An `enum` with data is a tagged union.
 /// Why: One queue of owned messages is the only thing that crosses the thread boundary inward.
@@ -280,13 +284,15 @@ impl Worker {
 
     /// What: Stop every server: send `shutdown` and `exit` without waiting for answers, wait up
     ///       to `SHUTDOWN_GRACE` for the processes to end, then drop the registry, which kills
-    ///       whatever is left. `mut self` takes the worker by value, so it is gone afterwards.
+    ///       the servers it still held. `mut self` takes the worker by value, so it is gone
+    ///       afterwards.
     /// Why: Waiting for the synthetic `exit` of each server lets well-behaved servers end by
-    ///      themselves and be reaped; a slow or stuck server cannot hold the window open.
+    ///      themselves; a slow or stuck server cannot hold the window open. Reaping what was
+    ///      killed is the thread's last step, after this runtime is gone (`reap.rs`).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// async shutdown() { for (const client of clients) client.forceShutdown(); await exitsOrTimeout(1000); }
+    /// async shutdown() { for (const client of clients) client.forceShutdown(); await exitsOrTimeout(1000); dropEverything(); }
     /// ```
     async fn shutdown(mut self) {
         // `iter_clients()` lends every client; `cloned().collect()` copies the shared pointers into a list.
@@ -324,7 +330,6 @@ impl Worker {
         // Dropping the session and the registry releases every client; helix-lsp kills on drop.
         drop(self.session);
         drop(self.registry);
-        tokio::time::sleep(REAP_PAUSE).await;
     }
 }
 
@@ -437,6 +442,17 @@ pub(super) fn spawn(
                 };
                 run(worker, commands, internal_receiver).await;
             });
+            // What: `drop` ends the runtime now: every task still on it is dropped, and with the
+            //       tasks the last handles of server processes, which kills those processes.
+            // Why: helix-lsp keeps a client alive inside the task that awaits `initialize`; only
+            //      dropping the runtime releases it. Reaping must come after this, not before.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // eventLoop.close(); // cancels every pending task
+            // ```
+            drop(runtime);
+            reap::finish(REAP_GRACE);
         })
         .context("Cannot start the language worker");
 }

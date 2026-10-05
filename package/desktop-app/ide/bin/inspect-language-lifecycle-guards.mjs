@@ -3,6 +3,7 @@
 // - the strict acceptance test fails on unmodified sources, with helix-lsp's end-of-stream record;
 // - the enforced test fails when a server writes one line to standard error, and when the worker no
 //   longer asks servers to shut down or no longer waits for them to end;
+// - the kill test fails when the worker thread ends without reaping the server it killed;
 // - optionally, with a disposable helix clone: the strict test passes once helix-lsp's standard-error
 //   reader treats the end of the stream as its response reader does, and fails again without that change.
 import { spawnSync } from 'node:child_process';
@@ -43,6 +44,7 @@ const replaceOne = (text, before, after) => {
 };
 const enforced = 'quiet::clean_lifetime_logs_no_error_besides_the_helix_end_of_stream_record';
 const strict = 'quiet::clean_lifetime_logs_no_error_level_record';
+const killed = 'lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns';
 const endOfStream = 'helix_lsp::transport: scripted-ls err: <- StreamClosed';
 const results = [];
 // Run one test in the bounded container and compare the outcome with `expect`: 'pass', or the texts a failure must contain.
@@ -87,10 +89,14 @@ if (only !== 'helix') {
     { name: 'no-shutdown-request', file: 'src/language/worker.rs', before: 'client.force_shutdown();', after: '', failure: ['the server was not asked to shut down'] },
     // The worker asks, then drops the registry without waiting for the processes to end.
     { name: 'no-wait-for-exit', file: 'src/language/worker.rs', before: 'while running > 0 {', after: 'while false {', failure: ['the server was not asked to shut down'] },
+    // The worker thread ends right after its runtime, without reaping the server it had to kill.
+    { name: 'no-reap-after-kill', test: killed, file: 'src/language/worker.rs', before: 'reap::finish(REAP_GRACE);', after: '', failure: ['a child process was left when the drop returned', "'Z'"] },
   ];
+  run('baseline-killed', killed, 'pass');
   for (const item of cases) {
-    mutated(join(source, item.file), item.before, item.after, () => run(item.name + '-removed', enforced, item.failure));
-    run(item.name + '-restored', enforced, 'pass');
+    const test = item.test ?? enforced;
+    mutated(join(source, item.file), item.before, item.after, () => run(item.name + '-removed', test, item.failure));
+    run(item.name + '-restored', test, 'pass');
   }
 }
 
