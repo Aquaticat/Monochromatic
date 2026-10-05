@@ -401,6 +401,88 @@ a fuzz campaign longer than the smoke,
 and a file-size limit (the incumbent skips files over 5 MiB).
 Commit `a4b2f08dc` is scoped `docs(handover)` but also changes both package READMEs.
 
+**Linter Markdown and constant-slot mutation survivors**:
+dispositioned on branch `test/linter-mutation-survivors` (head `4fa031de1`),
+evidence in [`unified-linter-mutation-survivors.md`](unified-linter-mutation-survivors.md).
+Several survivors were redundant guards or hand-stepped index arithmetic;
+those were restructured (slice scans, `rfind`, a parity flag) rather than excluded,
+and the non-equivalent ones gained controls.
+Scoped reruns against test image `f1ccc6b562a7aed6507b6d19af275edb33d2da0b727c692d44f5e9cf41c94111`
+(source `1e257034b`; the gate before them passed 217 tests and Clippy):
+
+- constant-slot scope (`mutation-yE1SL2`):
+  14 mutants, 12 caught, 0 missed, 2 unviable;
+- parent-lookup scope (`mutation-BmlHMt`):
+  4 mutants, 4 caught;
+- Markdown scope (`mutation-BX2JYq`):
+  424 mutants, 394 caught, 0 missed, 26 unviable, 4 timeouts, so the task still exits 3.
+
+The 4 timeouts:
+`markdown_definitions.rs:44` and `markdown_punctuation.rs:64` still use hand-stepped loops,
+and the two `MarkdownSource::parent` replacements make every ancestor walk spin
+(the parent-lookup scope catches those two in under a second).
+Main-session choice, open to veto:
+bound ancestor walks by the arena's node count so a cycle becomes a typed error,
+instead of adding a mutant exclusion to the Markdown scope.
+That and the two loops are queued.
+The delegate also noted that cargo-mutants 27.1.0 needs `-- -- a b` to pass two test filters,
+and that the unscoped suite's 139 seconds leave about 41 seconds of margin under the 180-second mutant timeout.
+
+**Processor mutation survivors**:
+dispositioned on branch `test/linter-processor-survivors`,
+evidence in [`unified-linter-processor-survivors.md`](unified-linter-processor-survivors.md)
+and `package/linter/monochromatic-lint/target/verification/processor-survivors-mutation-w00nRd`.
+All 52 missed mutants were planted by hand from their recorded spans;
+49 failed under the new exact-position, margin, refusal-text and whole-text tests.
+The other 3 sat on code the parsers cannot reach
+(a carriage return after a lexed line comment, and a fence whose decoded lines outnumber its authored lines),
+and that code was removed.
+Rerun after the changes,
+over test image `48f1112dda8a331248860032ba641dc900154d87f7522225c829826d5e5cb126`
+(228 tests and Clippy passed first):
+374 mutants,
+348 caught,
+0 missed,
+24 unviable,
+2 timeouts.
+No processor defect was found on unmutated input,
+but one test gap mattered:
+the refusal of an insertion between `\r` and `\n` in a `///` line was the only guard against
+turning `/// Alpha.\r\n` into `/// Alpha.\rX\n`,
+and no test pinned which refusal fired.
+It is now pinned.
+
+**Integration of both survivor branches**:
+landed on `main` at `7e10fefd0` and pushed.
+The main session cherry-picked 18 commits from `test/linter-mutation-survivors`
+and 8 from `test/linter-processor-survivors` (excluding their shared `9be97dce4`, applied once)
+onto a branch in the linked worktree `.claude/worktrees/integrate-linter`.
+The only conflict was two tasks appended at the end of the package `mise.toml`;
+both were kept.
+Gates on the integrated tree, image tag `integrate-linter`:
+the first 18 commits passed 349 library and 10 executable tests and Clippy (286 seconds),
+and all 26 passed 374 library and 10 executable tests and Clippy with no warnings (351 seconds).
+`main` moved twice during landing,
+so the branch was rebased onto it;
+`package/linter`, `package/rust-module/jsonc-edit` and `clippy.toml` were verified byte-identical
+to the gated head before the fast-forward.
+The other sessions' commits in between touched only unrelated packages.
+Creating the integration branch inside an existing worktree was refused by the `branch-worktree-only` policy,
+which requires `git worktree add -b`.
+
+Choices the main session settled, open to veto:
+
+- The 2 processor timeouts (`processors_docs.rs` and `processors_lines.rs`, both `+=` to `*=` on a zero counter)
+  are restructured so no mutation can spin,
+  the same treatment as the Markdown loops,
+  rather than counting exit 3 as a pass in the mutation runner.
+  Queued with the Markdown timeouts.
+- The test that calls the internal `host_range` function directly stays:
+  no input through `VirtualSource` reaches the guard it pins,
+  and the guard stays as defense against future callers.
+- The fence line-count simplification stays,
+  because the repository removes provably redundant code instead of recording mutant exclusions.
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
