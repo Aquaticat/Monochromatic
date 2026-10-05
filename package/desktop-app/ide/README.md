@@ -19,7 +19,9 @@ and the next implementation action.
 - [x] Native tree,
   asynchronous file switching,
   and recent-file reveal.
-  Sidebar resizing and event-driven directory invalidation remain parity work.
+  The sidebar is resizable;
+  see [Sidebar width](#sidebar-width).
+  Event-driven directory invalidation remains parity work.
 - [x] Combined path/content search.
 - [x] In-file find.
   Plain literal,
@@ -47,6 +49,69 @@ Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
 
 [listview]: ../../../doc/troubleshooting/slint-listview-random-seek-offset.md
 [find-matching]: ../../../doc/planning/slint-ide-find-matching.md
+
+## Sidebar width
+
+Drag the divider between the tree and the source to resize the tree.
+The width starts at 256 px,
+stays between 160 px and the window width minus the divider and a 240 px source column,
+and lasts for the session only.
+A window too narrow for the chosen width shows the tree narrower,
+down to 160 px,
+and restores the chosen width when the window widens again.
+Double-clicking the divider does nothing.
+
+The divider is reachable with Tab between the tree and the source.
+Left and Right change the width by 16 px,
+Home and End go to the narrowest and widest width,
+and Ctrl+0 through Ctrl+9 still switch files.
+Accessibility tools see a horizontal `slider` named `Sidebar width`
+with its value,
+bounds,
+step,
+and increment,
+decrement,
+and set-value actions;
+Slint 1.18.1 has no splitter or separator role.
+A pointer press never takes keyboard focus.
+
+The idle divider is a faint 1 px line.
+Hover shows the column-resize cursor and a 3 px line in stronger ink;
+a drag keeps the 3 px line in full ink;
+keyboard focus adds a boundary around the whole divider.
+
+### Divider hit area
+
+The divider is its own 48 px layout cell between the tree and the source,
+and its pointer area is exactly that cell.
+It never overlaps tree rows,
+the tree scrollbar,
+or source text,
+so the last tree pixel and the first source pixel keep their own clicks.
+The cost is 47 px of permanent spacing beside the 1 px line.
+
+### Differences from editord
+
+editord's `<file-tree>` starts at `16rem`,
+which is the same 256 px default,
+and is resized through the browser's `resize: inline` grip
+(`package-paused/desktop-daemon/editord/src/client/file-tree/file-tree.styles.ts`).
+Its styles declare no minimum or maximum width,
+and its client has no double-click handling for the tree width.
+This package keeps the default and the session-only width,
+replaces the browser grip with a full-height divider,
+and adds the 160 px minimum,
+the 240 px source minimum,
+and keyboard adjustment.
+
+### Sidebar checks
+
+`test:native` drives the divider with real pointer and key events,
+including clicks on the pixels on both sides of it at the default,
+narrowest,
+and widest widths.
+`inspect:sidebar-guards` removes each width bound in a disposable copy
+and checks that its named test fails.
 
 ## Combined search
 
