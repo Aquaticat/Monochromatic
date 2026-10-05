@@ -25,6 +25,11 @@ path = "src/native/main.rs"
 name = "native_binary"
 path = "src/native/binary_tests.rs"
 
+# A consumer of the candidate and scanner layers that can reach only the library's public interface.
+[[test]]
+name = "native_candidates"
+path = "src/native/candidate_consumer_tests.rs"
+
 [dependencies]
 # Both native tools use the already adopted comment-preserving JSONC foundation.
 monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }
