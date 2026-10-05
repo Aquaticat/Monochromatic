@@ -2437,6 +2437,9 @@ so the page is empty until that is designed.
 The Fold placement of the page remains adopted from D50,
 D51 and existing Settings behaviour,
 not separately accepted.
+The human also said that an empty page needs no study,
+so no native study of the empty page is built;
+the withdrawn two-row study is kept as a record and is not replaced.
 No production implementation is authorized by this record.
 
 ## Pending after the theme picks (2026-09-04)
