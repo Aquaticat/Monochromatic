@@ -20,7 +20,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type RenderingAuditCategory,
+  RENDERING_AUDIT_CATEGORIES,
   type RenderingAuditFindingWire,
   quotesRequired,
   screenRenderingAudit,
@@ -46,6 +46,30 @@ const DROPPED_WORD_LIMIT = 32;
  Length of a single token that overruns that bound.
  */
 const OVERLONG_LENGTH = 40;
+
+/**
+ Sides a category rests on when only the original can be quoted for it.
+ */
+const ORIGINAL_ALONE = {
+  needsSource: true,
+  needsCandidate: false,
+} as const;
+
+/**
+ Sides a category rests on when only the candidate can be quoted for it.
+ */
+const CANDIDATE_ALONE = {
+  needsSource: false,
+  needsCandidate: true,
+} as const;
+
+/**
+ Sides a category rests on when both texts state the thing that changed.
+ */
+const BOTH_SIDES = {
+  needsSource: true,
+  needsCandidate: true,
+} as const;
 
 /**
  Fields a case may replace on the sound finding.
@@ -321,18 +345,73 @@ await describe({
         expect(screened.dropped,).toEqual([],);
       },
     },),
-    it({
-      name: 'REFUSES a category no anchoring rule names, so one added to the vocabulary and forgotten there '
-        + 'is caught instead of quietly treated as paired (ledger T8, the rendering cluster)',
-      fn: async () => {
-        /**
-         Category the vocabulary does not name, cast past its type to reach the
-         rule mapping.
-         */
-        const forgotten = 'meow-unlisted' as RenderingAuditCategory;
-        expect(() => quotesRequired({ category: forgotten, },),)
-          .toThrow('belongs to no anchoring rule',);
-      },
+    describe({
+      name: quotesRequired.name,
+      children: [
+        it({
+          name: 'RESTS every category of the vocabulary on the sides its anchoring rule names: an omission '
+            + 'on the original alone, an unsupported addition on the candidate alone, each of the rest on both',
+          fn: async () => {
+            // EVERY CATEGORY THE VOCABULARY HOLDS IS ASKED, so a category added
+            // there and given no anchoring rule fails here, by the rule's own
+            // refusal, before any run meets it.
+            expect(RENDERING_AUDIT_CATEGORIES.map(function sidesOf(category,): readonly [
+              string,
+              ReturnType<typeof quotesRequired>,
+            ] {
+              return [
+                category,
+                quotesRequired({ category, },),
+              ];
+            },),).toEqual([
+              [
+                'omission',
+                ORIGINAL_ALONE,
+              ],
+              [
+                'unsupported-addition',
+                CANDIDATE_ALONE,
+              ],
+              [
+                'altered-actor',
+                BOTH_SIDES,
+              ],
+              [
+                'altered-referent',
+                BOTH_SIDES,
+              ],
+              [
+                'altered-polarity',
+                BOTH_SIDES,
+              ],
+              [
+                'altered-modality',
+                BOTH_SIDES,
+              ],
+              [
+                'altered-time',
+                BOTH_SIDES,
+              ],
+              [
+                'altered-number',
+                BOTH_SIDES,
+              ],
+              [
+                'altered-relation',
+                BOTH_SIDES,
+              ],
+              [
+                'altered-identity',
+                BOTH_SIDES,
+              ],
+              [
+                'broken-structure',
+                BOTH_SIDES,
+              ],
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);

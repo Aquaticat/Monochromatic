@@ -329,8 +329,9 @@ await describe({
         },),
 
         it({
-          name: 'THROWS the shared HTTP failure class on a non-success /credits reply too, so the budget '
-            + 'layer reads one failure class off both endpoints (ledger T8, the openrouter cluster)',
+          name: 'THROWS the shared HTTP failure class on a non-success /credits reply too, naming the '
+            + 'endpoint, the status and the body, so the budget layer reads one failure class off both '
+            + 'endpoints',
           fn: async () => {
             /**
              Client whose credits endpoint answers a server error.
@@ -356,7 +357,8 @@ await describe({
             } catch (error) {
               thrown = error;
             }
-            expect(thrown instanceof SyntheticHttpError,).toBe(true,);
+            expect(thrown,).toBeInstanceOf(SyntheticHttpError,);
+            expect(String(thrown,),).toBe('SyntheticHttpError: OpenRouter /credits returned HTTP 500: oops',);
             expect((thrown as SyntheticHttpError).status,).toBe(500,);
           },
         },),
@@ -458,11 +460,29 @@ await describe({
         },),
 
         it({
-          name: 'ARMS a deadline where the caller sets one and passes a caller maxAnswerChars on, with the '
-            + 'answer read back under both (ledger T8, the openrouter cluster)',
+          name: 'HANDS the transport a deadline signal of its own and the caller\'s maxAnswerChars where the '
+            + 'caller sets both, and the caller\'s own signal with no answer bound where the caller sets '
+            + 'neither, the answer read back either way',
           fn: async () => {
-            const { client, } = recordedClient({},);
-            const reply = await client.chatText({
+            const { client, exchanges, } = recordedClient({},);
+            /**
+             Answer to a call that sets neither knob, asked first so its
+             exchange is the first the transport records.
+             */
+            const bare = await client.chatText({
+              modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+              messages: [
+                {
+                  role: 'user',
+                  content: 'Where does the cat sleep?',
+                },
+              ],
+              signal: SIGNAL,
+            },);
+            /**
+             Answer to a call that sets a deadline and an answer bound.
+             */
+            const knobbed = await client.chatText({
               modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
               messages: [
                 {
@@ -473,29 +493,41 @@ await describe({
               signal: SIGNAL,
               exchangeTimeoutMs: 5_000,
               maxAnswerChars: 1_000,
-              responseFormat: {
-                type: 'json_schema',
-                json_schema: {
-                  name: 'nap_spot',
-                  schema: {
-                    type: 'object',
-                    required: ['spot',],
-                    properties: {
-                      spot: {
-                        type: 'string',
-                      },
-                    },
-                  },
-                },
-              },
             },);
-            expect(reply.text,).toBe('{"spot": "windowsill"}',);
+
+            /**
+             What each call put on the wire, in the order the calls were made.
+             */
+            const [
+              bareExchange,
+              knobbedExchange,
+            ] = exchanges;
+            if ((bareExchange === undefined) || (knobbedExchange === undefined))
+              throw new Error('two calls were made and the transport recorded fewer than two exchanges',);
+            expect({
+              answer: bare.text,
+              carriesAnswerBound: 'maxAnswerChars' in bareExchange,
+              signalIsTheCallers: bareExchange.signal === SIGNAL,
+            },).toEqual({
+              answer: '{"spot": "windowsill"}',
+              carriesAnswerBound: false,
+              signalIsTheCallers: true,
+            },);
+            expect({
+              answer: knobbed.text,
+              maxAnswerChars: knobbedExchange.maxAnswerChars,
+              signalIsTheCallers: knobbedExchange.signal === SIGNAL,
+            },).toEqual({
+              answer: '{"spot": "windowsill"}',
+              maxAnswerChars: 1_000,
+              signalIsTheCallers: false,
+            },);
           },
         },),
 
         it({
           name: 'CARRIES costUsd, endpoint and cachedTokens onto the spend fields only where the wire '
-            + 'sent them, dropping an unreported one (ledger T8, the openrouter cluster)',
+            + 'sent them, dropping an unreported one',
           fn: async () => {
             expect(reportedSpendFieldsOf({
               cost: 0.5,
@@ -605,7 +637,7 @@ await describe({
       children: [
         it({
           name: 'MOVES the run meter by the cost the wire reported and never by a stream that reported '
-            + 'none, so a total reads only what the gateway charged (ledger T8, the openrouter cluster)',
+            + 'none, so a total reads only what the gateway charged',
           fn: async () => {
             resetRunSpend();
             /**
@@ -691,6 +723,101 @@ await describe({
               signal: SIGNAL,
             },);
             expect(runSpendUsd({ provider: 'openrouter', },),).toBeCloseTo(0.5, 12,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'a completed call writes what the wire reported onto its spend line',
+      // ONE CASE AT A TIME: the case diverts `console.info`, a process global.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'WRITES the cost, the endpoint and the cached prompt tokens the stream reported onto the '
+            + 'spend line of a completed call',
+          fn: async () => {
+            /**
+             Stream whose last chunk reports a cost and cached prompt tokens,
+             every chunk naming the endpoint that served it.
+             */
+            const reporting = [
+              chunkOf({
+                delta: {
+                  content: '{"spot": "windowsill"}',
+                },
+              },),
+              chunkOf({
+                delta: {
+                  content: '',
+                },
+                rest: {
+                  usage: {
+                    prompt_tokens: 342,
+                    completion_tokens: 400,
+                    total_tokens: 742,
+                    cost: 0.5,
+                    is_byok: false,
+                    prompt_tokens_details: {
+                      cached_tokens: 128,
+                    },
+                  },
+                },
+              },),
+              'data: [DONE]\n\n',
+            ].join('',);
+            const { client, } = recordedClient({
+              reply: {
+                status: 200,
+                bodyText: reporting,
+              },
+            },);
+
+            /**
+             Lines `console.info` received.
+             */
+            const lines: string[] = [];
+            /**
+             `console.info` as it was, put back once the call returns.
+             */
+            const informed = console.info;
+            console.info = (...parts: readonly unknown[]) => {
+              lines.push(parts.map(String,)
+                .join(' ',),);
+            };
+            {
+              await using restore = {
+                [Symbol.asyncDispose]: async () => {
+                  console.info = informed;
+                },
+              };
+              await client.chatText({
+                modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+                messages: [
+                  {
+                    role: 'user',
+                    content: 'Where does the cat sleep?',
+                  },
+                ],
+                signal: SIGNAL,
+              },);
+            }
+
+            /**
+             Each spend line from its marker on, the logger's own prefix
+             (level, clock time, tags) left off.
+             */
+            const spent = lines
+              .filter(function isSpend(line,): boolean {
+                return line.includes(' SPEND ',);
+              },)
+              .map(function fromMarker(line,): string {
+                return line.slice(line.indexOf('SPEND ',),);
+              },);
+            expect(spent,).toEqual([
+              'SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=342 completion=400 cost=0.5 '
+              + 'endpoint=Inceptron cached=128',
+            ],);
           },
         },),
       ],

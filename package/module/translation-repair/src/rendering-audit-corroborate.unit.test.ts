@@ -184,6 +184,75 @@ const ONE_TO_TWO = claimOf({
   candidateFocus: 'two cats sleep on the bookshelf',
 },);
 
+/**
+ Builds one screened omission of the denial: the original side anchored the
+ way the screen anchors it and the candidate side unused, the one shape the
+ screen hands on for a category that rests on the original alone.
+
+ @param modelId - voice making the claim
+
+ @param reason - what the voice says the span amounts to
+
+ @returns Claim in the shape the matcher reads
+
+ @example
+ ```ts
+ const claim = denialLeftOutBy({ modelId: SEAT_HYPER_VISION, reason: 'the denial is gone', },);
+ ```
+ */
+function denialLeftOutBy(
+  {
+    modelId,
+    reason,
+  }: {
+    readonly modelId: RosterModelId;
+    readonly reason: string;
+  },
+): AuditMemberClaim {
+  /**
+   Where the denial sits in the original.
+   */
+  const source = anchorLocatedSpan({
+    text: SOURCE_TEXT,
+    locator: '她们不吃罐头',
+    focus: '不',
+    side: 'source',
+  },);
+
+  if (!source.anchored)
+    throw new Error(`fixture claim did not anchor, so the case would prove nothing: ${JSON.stringify(source,)}`,);
+
+  return {
+    modelId,
+    finding: {
+      category: 'omission',
+      source: {
+        kind: 'anchored',
+        locator: source.locator,
+        focus: source.focus,
+      },
+      candidate: { kind: 'unused', },
+      reason,
+    },
+  };
+}
+
+/**
+ First voice's claim that the rendering left the denial out.
+ */
+const DENIAL_LEFT_OUT_A = denialLeftOutBy({
+  modelId: SEAT_HYPER_VISION,
+  reason: 'the rendering leaves the denial out',
+},);
+
+/**
+ Second voice's claim about the same denial, in its own words.
+ */
+const DENIAL_LEFT_OUT_B = denialLeftOutBy({
+  modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  reason: 'the denial is missing from the rendering',
+},);
+
 await describe({
   name: '',
   concurrency: 1,
@@ -433,6 +502,87 @@ await describe({
             ).toEqual([],);
           },
         },),
+        it({
+          name: 'READS two one-sided claims naming one defect as one opinion confirmed, since the side the '
+            + 'category does not use is one absence rather than a position',
+          fn: async () => {
+            expect(
+              corroborate({
+                claims: [
+                  DENIAL_LEFT_OUT_A,
+                  DENIAL_LEFT_OUT_B,
+                ],
+              },),
+            ).toEqual([
+              {
+                category: 'omission',
+                source: DENIAL_LEFT_OUT_A.finding
+                  .source,
+                candidate: { kind: 'unused', },
+                voices: 2,
+                members: [
+                  DENIAL_LEFT_OUT_A,
+                  DENIAL_LEFT_OUT_B,
+                ],
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'ORDERS the defects by the voices behind them, most agreed first',
+          fn: async () => {
+            /**
+             Third voice locating the two cats that became three.
+             */
+            const thirdVoice = claimOf({
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              category: 'altered-number',
+              sourceLocator: COUNT_SENTENCE_SOURCE,
+              sourceFocus: '两',
+              candidateLocator: COUNT_SENTENCE_CANDIDATE,
+              candidateFocus: 'three',
+            },);
+
+            // THE TWO-VOICE DEFECT ARRIVES FIRST, so an answer left in arrival
+            // order would lead with it.
+            expect(
+              corroborate({
+                claims: [
+                  DENIAL_LEFT_OUT_A,
+                  DENIAL_LEFT_OUT_B,
+                  TWO_TO_THREE_A,
+                  TWO_TO_THREE_B,
+                  thirdVoice,
+                ],
+              },),
+            ).toEqual([
+              {
+                category: 'altered-number',
+                source: TWO_TO_THREE_A.finding
+                  .source,
+                candidate: TWO_TO_THREE_A.finding
+                  .candidate,
+                voices: 3,
+                members: [
+                  TWO_TO_THREE_A,
+                  TWO_TO_THREE_B,
+                  thirdVoice,
+                ],
+              },
+              {
+                category: 'omission',
+                source: DENIAL_LEFT_OUT_A.finding
+                  .source,
+                candidate: { kind: 'unused', },
+                voices: 2,
+                members: [
+                  DENIAL_LEFT_OUT_A,
+                  DENIAL_LEFT_OUT_B,
+                ],
+              },
+            ],);
+          },
+        },),
       ],
     },),
 
@@ -582,374 +732,103 @@ await describe({
           },
         },),
         it({
-          name: 'READS two one-sided claims naming one defect as one opinion confirmed, since the side the '
-            + 'category does not use is one absence rather than a position (ledger T8, the rendering '
-            + 'cluster)',
-          fn: async () => {
-            /**
-             Span both voices name, the candidate side of the category unused.
-             */
-            const span = {
-              text: 'cat',
-              start: 0,
-              end: 3,
-            } as const;
-
-            /**
-             Two voices naming one dropped denial.
-             */
-            const claims: readonly AuditMemberClaim[] = [
-              {
-                modelId: SEAT_HYPER_VISION,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the rendering leaves the denial out',
-                },
-              },
-              {
-                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the denial is missing from the rendering',
-                },
-              },
-            ];
-            const defects = corroborate({ claims, },);
-            expect(defects.length,).toBe(1,);
-            expect(defects[0]?.voices,).toBe(2,);
-          },
-        },),
-        it({
-          name: 'READS nothing shared on a side one claim leaves unused and the other spans, so the two do '
-            + 'not corroborate (ledger T8, the rendering cluster)',
-          fn: async () => {
-            /**
-             Span both voices name on the original side.
-             */
-            const span = {
-              text: 'cat',
-              start: 0,
-              end: 3,
-            } as const;
-
-            /**
-             One voice with the candidate side unused beside one spanning it.
-             */
-            const claims: readonly AuditMemberClaim[] = [
-              {
-                modelId: SEAT_HYPER_VISION,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the rendering leaves the denial out',
-                },
-              },
-              {
-                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  reason: 'the rendering asserts where the original denies',
-                },
-              },
-            ];
-            expect(corroborateByOverlap({ claims, },),).toEqual([],);
-          },
-        },),
-        it({
           name: 'READS two claims leaving the same side unused as agreeing about it, since the absence they '
-            + 'share is the same absence (ledger T8, the rendering cluster)',
+            + 'share is the same absence',
           fn: async () => {
-            /**
-             Span both voices name, the candidate side of the category unused.
-             */
-            const span = {
-              text: 'cat',
-              start: 0,
-              end: 3,
-            } as const;
-
-            /**
-             Two voices naming one dropped denial.
-             */
-            const claims: readonly AuditMemberClaim[] = [
+            // THE MEMBERS READ SECOND VOICE FIRST: each claim seeds a group, both
+            // groups hold the same two claims, and the group the later seed grew
+            // replaces the earlier one under the membership the two share.
+            expect(
+              corroborateByOverlap({
+                claims: [
+                  DENIAL_LEFT_OUT_A,
+                  DENIAL_LEFT_OUT_B,
+                ],
+              },),
+            ).toEqual([
               {
-                modelId: SEAT_HYPER_VISION,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the rendering leaves the denial out',
-                },
+                category: 'omission',
+                voices: 2,
+                members: [
+                  DENIAL_LEFT_OUT_B,
+                  DENIAL_LEFT_OUT_A,
+                ],
               },
-              {
-                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the denial is missing from the rendering',
-                },
-              },
-            ];
-            const agreements = corroborateByOverlap({ claims, },);
-            expect(agreements.length,).toBe(1,);
-            expect(agreements[0]?.voices,).toBe(2,);
+            ],);
           },
         },),
+      ],
+    },),
+
+    describe({
+      name: nearMisses.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
         it({
-          name: 'ORDERS the defects by the voices behind them, most agreed first (ledger T8, the rendering '
-            + 'cluster)',
+          name: 'READS two claims of one voice as one opinion rather than a near miss, since filing two '
+            + 'findings about one sentence is what atomicity asks for, where the same two claims from two '
+            + 'voices are an overlapping near miss',
           fn: async () => {
             /**
-             Span the two-voice defect names.
+             The denial named a second way, on both sides, by the voice that
+             also filed it as left out.
              */
-            const span = {
-              text: 'cat',
-              start: 0,
-              end: 3,
-            } as const;
+            const polarityBySameVoice = claimOf({
+              modelId: SEAT_HYPER_VISION,
+              category: 'altered-polarity',
+              sourceLocator: '她们不吃罐头',
+              sourceFocus: '不吃',
+              candidateLocator: 'They eat canned food',
+              candidateFocus: 'eat',
+            },);
 
             /**
-             Two claims naming one defect and three naming another.
+             The same second claim, filed by another voice.
              */
-            const claims: readonly AuditMemberClaim[] = [
+            const polarityByAnotherVoice = claimOf({
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              category: 'altered-polarity',
+              sourceLocator: '她们不吃罐头',
+              sourceFocus: '不吃',
+              candidateLocator: 'They eat canned food',
+              candidateFocus: 'eat',
+            },);
+            expect(
+              nearMisses({
+                claims: [
+                  DENIAL_LEFT_OUT_A,
+                  polarityBySameVoice,
+                ],
+              },),
+            ).toEqual([],);
+            expect(
+              nearMisses({
+                claims: [
+                  DENIAL_LEFT_OUT_A,
+                  polarityByAnotherVoice,
+                ],
+              },),
+            ).toEqual([
               {
-                modelId: SEAT_HYPER_VISION,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the rendering leaves the denial out',
-                },
+                kind: 'overlapping-focus',
+                left: DENIAL_LEFT_OUT_A,
+                right: polarityByAnotherVoice,
               },
-              {
-                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the denial is missing from the rendering',
-                },
-              },
-              {
-                modelId: SEAT_HYPER_VISION,
-                finding: {
-                  category: 'altered-number',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  reason: 'the count changed',
-                },
-              },
-              {
-                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-                finding: {
-                  category: 'altered-number',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  reason: 'the count is wrong',
-                },
-              },
-              {
-                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                finding: {
-                  category: 'altered-number',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  reason: 'the number was rewritten',
-                },
-              },
-            ];
-            expect(corroborate({ claims, },).map(function category(defect,): string {
-              return defect.category;
-            },),).toEqual([
-              'altered-number',
-              'omission',
             ],);
           },
         },),
         it({
-          name: 'READS two claims of one voice as one opinion rather than a near miss, since filing two '
-            + 'findings about one sentence is what atomicity asks for (ledger T8, the rendering cluster)',
-          fn: async () => {
-            /**
-             Span both claims name.
-             */
-            const span = {
-              text: 'cat',
-              start: 0,
-              end: 3,
-            } as const;
-
-            /**
-             One voice naming two defects at one span.
-             */
-            const claims: readonly AuditMemberClaim[] = [
-              {
-                modelId: SEAT_HYPER_VISION,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the rendering leaves the denial out',
-                },
-              },
-              {
-                modelId: SEAT_HYPER_VISION,
-                finding: {
-                  category: 'altered-number',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  reason: 'the count changed too',
-                },
-              },
-            ];
-            expect(nearMisses({ claims, },),).toEqual([],);
-          },
-        },),
-        it({
           name: 'READS two voices naming one defect as agreement rather than a near miss, since the same '
-            + 'claim twice is confirmation and nothing to reconcile (ledger T8, the rendering cluster)',
+            + 'claim twice is confirmation and nothing to reconcile',
           fn: async () => {
-            /**
-             Span both claims name.
-             */
-            const span = {
-              text: 'cat',
-              start: 0,
-              end: 3,
-            } as const;
-
-            /**
-             Two voices naming one defect in the same words.
-             */
-            const claims: readonly AuditMemberClaim[] = [
-              {
-                modelId: SEAT_HYPER_VISION,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the rendering leaves the denial out',
-                },
-              },
-              {
-                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-                finding: {
-                  category: 'omission',
-                  source: {
-                    kind: 'anchored',
-                    locator: span,
-                    focus: span,
-                  },
-                  candidate: {
-                    kind: 'unused',
-                  },
-                  reason: 'the rendering leaves the denial out',
-                },
-              },
-            ];
-            expect(nearMisses({ claims, },),).toEqual([],);
+            expect(
+              nearMisses({
+                claims: [
+                  DENIAL_LEFT_OUT_A,
+                  DENIAL_LEFT_OUT_B,
+                ],
+              },),
+            ).toEqual([],);
           },
         },),
       ],

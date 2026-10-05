@@ -218,7 +218,7 @@ await describe({
       children: [
         it({
           name: 'READS a measured ratio as itself and FALLS BACK to the median of the measured card '
-            + 'ratios where a card carries none (ledger T8, the openrouter cluster)',
+            + 'ratios where a card carries none',
           fn: async () => {
             /**
              Measured ratios the roster's cards carry, least first.
