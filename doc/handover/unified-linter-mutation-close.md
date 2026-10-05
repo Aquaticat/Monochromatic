@@ -47,26 +47,12 @@ mutants of those two kinds are never tried.
 and `-=` replaced by `+=`,
 still test every counter.
 
-### Why the tool cannot be told to tolerate a timeout
+### Cause and cost
 
-Read in the cargo-mutants source at tag `v27.1.0`,
-the installed version:
-
-- `src/outcome.rs:118` returns the timeout exit status whenever any mutant timed out,
-  before it considers missed mutants,
-  and no option changes that.
-- `src/visit.rs:594` hard-codes the replacements of `+=` as `-=` and `*=`;
-  two lines further down, `-=` becomes `+=` and `/=`.
-- `src/options.rs:479` (`allows_mutant`) matches the `--exclude-re` set compiled at `src/options.rs:352`
-  against the mutant's name with its line and column,
-  the text `--list` prints.
-
-`x += 1` replaced by `x *= 1`,
-and `x -= 1` replaced by `x /= 1`,
-leave the counter unchanged.
-A loop whose only progress is that step then never ends,
-the test binary runs into the 180 second per-mutant limit,
-and the campaign exits 3 whatever else it found.
+[`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`](../troubleshooting/cargo-mutants-timeout-exit-status.md)
+documents why cargo-mutants 27.1.0 exits 3 whenever any mutant times out,
+why these two replacements stall a loop counter,
+and what excluding them costs.
 
 ### Measured effect
 
@@ -219,6 +205,63 @@ position and no fix.
 `ancestor_walks_reach_the_root_from_the_deepest_possible_node` is the positive control for the bound:
 in `*__a__*` every node lies on one path,
 so the deepest text node needs exactly as many passes as the document has nodes.
+
+### `MarkdownSource::children`: bounded descendant walks
+
+The first final round found a seventh timeout that no earlier campaign had recorded as one:
+`src/markdown_source.rs:278:9: replace MarkdownSource::children -> &[u32] with Vec::leak(vec![0])`
+(`mutation-CUW7ek`).
+With every node's child list replaced by the root,
+`text_content` and `text_nodes` popped a node and pushed the same child again without end.
+
+The judgement that this is a real stall and not a slow host
+comes from comparing each mutant's test phase with the unmutated baseline of the same run:
+
+- In `mutation-CUW7ek` the baseline's test phase took 0.4 seconds and this mutant's ran the full 180 seconds,
+  with two tests reported as running for over 60 seconds.
+- The earlier Markdown runs had recorded the same mutant as caught,
+  but not by an assertion.
+  Each call of the mutated accessor leaks one small list (`Vec::leak`),
+  and the test binary was killed with signal 9 after 11.7 seconds in `mutation-6Cgoi0`,
+  which fits the container's 2 GiB memory limit;
+  the kill reason itself was not read from the container.
+  Its sibling `Vec::leak(vec![1])` was killed the same way in both runs,
+  after 15.4 and 9.1 seconds.
+- Whether the kill or the 180 second limit comes first depends on how fast the host leaks memory.
+  The main session measured a load average of 40 to 66 on 16 cores during this round.
+
+A mutant that is caught only when memory runs out first is a timeout waiting for a slower host,
+so both are treated as timeouts.
+They are function-body replacements,
+which the two excluded kinds do not cover,
+so the fix is in code and extends the choice made for ancestor walks,
+open to the same veto:
+
+- `MarkdownSource::subtree` is the only descendant walk.
+  It returns a node followed by its descendants in source order,
+  and runs over the fixed range `0..=parents.len()`:
+  one pass per node of the document,
+  plus the pass that finds nothing waiting.
+  A walk that needs more has a cycle in the child index and returns `MarkdownError` with the starting node's offset.
+- `text_content` and `text_nodes` read that list and return `Result`.
+- `markdown/no-duplicate-heading`,
+  `markdown/no-trailing-punctuation` and `markdown/no-emphasis-as-heading`,
+  the three rules that read text below a node,
+  report the error as one `core/processing-failure` finding
+  through the same helper as the ancestry rules,
+  renamed from `ancestry_failure` to `structure_failure`.
+  The public rule signatures are again unchanged.
+- The other callers of `children` read one level and walk nothing.
+
+`a_child_index_cycle_is_a_typed_error_and_a_processing_failure` plants two cycles in a built document
+(the heading and the emphasis each become their own first child),
+then requires the exact error from `subtree`,
+`text_content` and `text_nodes`,
+and exactly one processing failure from each of the three rules.
+`descendant_walks_cover_the_whole_document_from_the_root` is the positive control for the bound:
+the root's subtree is every node of the document,
+equal to the validated traversal order,
+so the walk needs every pass the range allows.
 
 ### `processors_docs.rs`: doc-comment runs
 
@@ -608,7 +651,17 @@ No mutant so far exposed a defect on unmutated input:
 no wrong exit status,
 lost finding,
 corrupting fix or unbounded work in the released code.
-The survivors were test gaps and one redundant struct update.
+The survivors were test gaps,
+one redundant struct update,
+one redundant comment skip,
+and three interchangeable operators in the hash.
+
+What the campaigns did expose is unbounded work under mutation.
+The ancestor and descendant walks trusted their accessors to describe a tree,
+so a mutated accessor made them run until the per-mutant limit or the memory limit stopped them.
+Both walks are now bounded and report a typed error;
+on a document built by `MarkdownSource::new` neither error can occur,
+because `traversal` validates the child graph first.
 
 One platform risk follows from the stack calibration and was not measured.
 With `--concurrency 1`,
@@ -680,7 +733,8 @@ Its per-mutant logs name the test that failed under each mutant the first run mi
   an unnamed worker thread.
 - `replace <= with > in process_plans`:
   the test binary aborted with
-  `thread 'run_workers::tests::workers_parse_nesting_deeper_than_a_default_thread_stack_holds' has overflowed its stack`.
+  `has overflowed its stack` for the thread named
+  `run_workers::tests::workers_parse_nesting_deeper_than_a_default_thread_stack_holds`.
 - The redundant struct update in `check_rust_root` is gone,
   and its mutant is no longer generated.
 
@@ -689,9 +743,47 @@ so that all three final results come from the same runner and the same image.
 
 ### Round 1
 
-Running against the gate 5 image with the two patterns:
-`campaign-processors-files-final-1.log` (`mutation-Ij89RQ`, 355 mutants),
-then `campaign-markdown-final-1.log` if the processor campaign exits 0.
+Against the gate 5 image,
+with the two patterns.
+The round does not count:
+its Markdown campaign timed out on one mutant.
+
+- Processor campaign,
+  `mutation-Ij89RQ` (`campaign-processors-files-final-1.log`):
+  355 mutants,
+  330 caught,
+  0 missed,
+  25 unviable,
+  0 timeouts,
+  exit status 0.
+  The baseline built in 156 seconds and tested in 1.4 seconds;
+  no mutant's test phase reached 20 seconds,
+  and none ended by a signal.
+  This is the first campaign over the restructured `units`,
+  `joins_run` and `physical_lines`,
+  and it left no survivor.
+- Markdown campaign,
+  `mutation-CUW7ek` (`campaign-markdown-final-1.log`):
+  739 mutants,
+  694 caught,
+  0 missed,
+  44 unviable,
+  1 timeout,
+  exit status 3.
+  All 8 survivors of the first Markdown run are caught.
+  The timeout is the `MarkdownSource::children` replacement
+  described under `MarkdownSource::children: bounded descendant walks`.
+
+### Round 2
+
+After the bounded descendant walk:
+a new gate,
+then the executable and Markdown campaigns,
+then the processor campaign if both exit 0,
+all against the image that gate builds.
+The processor campaign reruns because `processors_fences.rs` parses through `MarkdownSource`,
+whose source changed.
+Results are pending.
 
 ## Remaining
 
@@ -722,4 +814,19 @@ The whole library suite took 183.94 seconds in one gate run and 107.20 seconds i
 on unchanged tests.
 The unscoped `mutation` task would record some mutants as timeouts on a loaded host.
 Every scope here filters the suite,
-so none of them is affected.
+so none of them runs the whole suite per mutant.
+
+### Margin of the executable scope on a loaded host
+
+The executable scope's tests start child processes,
+and their duration follows host load.
+In `mutation-eGKI9C` the unmutated baseline's test phase took 2.0 seconds,
+and five caught mutants took 30 to 67 seconds
+(`run_json.rs:72:43` the longest at 67.1 seconds,
+then `run_failure.rs:78:25` at 51.9 seconds),
+none of them a loop:
+each ended with ordinary failed assertions.
+That is a factor of 2.7 below the 180 second limit at the load of that run.
+A timeout in this scope should be read against the baseline of its own run
+and the test named as still running in the mutant's log
+before it is treated as a stall.
