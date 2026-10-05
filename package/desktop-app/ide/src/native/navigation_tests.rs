@@ -5,7 +5,7 @@ use super::{AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_vie
 /// Reading positions and canonical project identity remain independent of UI labels.
 use ide_app::{document::ReadingPosition, workspace::Workspace};
 /// Headless snapshots use the real window and system-time timer processing.
-use slint::{ComponentHandle, SharedString, platform::update_timers_and_animations};
+use slint::{ComponentHandle, Model, SharedString, platform::update_timers_and_animations};
 /// Fixtures and waits are bounded, while UI ownership remains single-threaded.
 use std::{cell::RefCell, fs, rc::Rc, time::{Duration, Instant}};
 
