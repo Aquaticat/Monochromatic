@@ -8,7 +8,8 @@ the missing piece is an option to accept timeouts,
 which upstream issue [#545][issue-545] already requests.
 The user chose to exclude two replacement kinds by name in every mutation runner
 and to reshape the remaining loops.
-`Upstream filing decision` records the open prototype step.
+`Upstream filing decision` records the prototype of that option
+and the comment that carries it on the upstream issue.
 
 ## Symptom
 
@@ -528,18 +529,26 @@ the image is `localhost/cargo-mutants-accept-prototype:v27.1.0`.
 
 ### Comment draft
 
-All six constraints hold,
-so the draft is fileable once the user authorizes posting and completes its bracketed sentence.
-Posting on #545 is an external action;
-the main session does not take it unasked.
+Posted on 2026-10-05,
+after the user chose "Post a comment" over keeping it local or opening a pull request:
+<https://github.com/sourcefrog/cargo-mutants/issues/545#issuecomment-6005242222>.
+The issue,
+upstream `main` and the open pull requests were rechecked immediately before posting and were unchanged.
+The posted text is this draft with its bracketed sentence removed
+(the user gave no review statement,
+so the comment claims none),
+with the semantic line breaks joined,
+because GitHub renders a newline inside a comment paragraph as a line break,
+and with the patch inside the `<details>` block in a four-tilde `diff` fence.
+The rendered comment was fetched back and shows its four headings and the collapsed patch.
 
 The thread already contains the request,
 the design and the step list.
 What this draft adds is the verified patch,
 the places where the step list needed a different choice,
 and a workaround for loop counters that the thread does not mention.
-The patch goes inside the `<details>` block when posting:
-paste the contents of [cargo-mutants-timeout-exit-status.patch](cargo-mutants-timeout-exit-status.patch).
+The patch that went inside the `<details>` block is
+[cargo-mutants-timeout-exit-status.patch](cargo-mutants-timeout-exit-status.patch).
 No pull request is drafted,
 because a second user offered on 2026-07-03 to own the change.
 

@@ -207,14 +207,11 @@ Running at the last update of this document:
   the main session merges the branch after its gate.
   Evidence: `doc/handover/cli-git-native-candidates.md` on that branch.
 - mvm on a Flatpak-only libvirt host (main checkout, `package/cli/mvm`).
-- Open-decision brief (documentation only):
-  `doc/planning/cli-git-rust-open-decisions.md`,
-  built from the behavior ledger's `Open questions`,
-  separating what evidence settles from what the user must choose,
-  grouped by the phase each choice blocks.
 
 The scanner Windows follow-up delegate has reported;
 see `Scanner Windows baseline and prefix confirmation`.
+The open-decision delegate has reported;
+see `Open-decision brief`.
 The main session ran the cargo-mutants option prototype itself;
 see `Mutation timeouts and the cargo-mutants exit status`.
 
@@ -760,9 +757,51 @@ and 0 with both accepted or with the configuration key.
 The format check passes;
 the two unit tests and six Clippy errors that fail on the patched tree fail identically on the unpatched tree.
 The full upstream integration suite was not run.
-Nothing is posted upstream:
-the entry keeps a comment draft for issue 545,
-and posting it is the user's decision.
+The 26 upstream integration tests that cover help, completions, configuration and options also pass.
+On the user's decision the patch was posted as a comment on issue 545;
+see `User decisions 2026-10-05`.
+
+#### Open-decision brief
+
+`doc/planning/cli-git-rust-open-decisions.md` (`07bc2f24b`) works through every item of the behavior ledger's
+`Open questions`,
+plus choices the delegate found outside that list.
+Its `Verdict summary` separates the two outcomes.
+
+Thirteen items are settled by evidence and are adopted unless the user vetoes them;
+the section `Settled by evidence` lists each with its determining source.
+Two of them have consequences worth the user's attention:
+
+- The manual-push gate applies without a configuration file,
+  which follows from "`{}` and no file behave identically".
+  In a repository with no configuration,
+  each real push then gains a dry-run negotiation with the remote.
+  The native code already behaves this way.
+- The spec requires recovery to run before read-only commands once recovery is ported,
+  while the engine delegate's read-only fast path deliberately does nothing extra.
+  That conflict is not settled here;
+  it goes to the user with the transactions-phase questions.
+
+Twenty-two items need the user,
+in the batches of the brief's `Question batches` section.
+The optional-policies batch is answered (see `User decisions 2026-10-05`).
+Still to ask:
+the transactions phase (nine questions in three batches)
+and cutover (ten questions in three batches).
+
+Findings from the brief that are not questions:
+
+- A `commit` reached through an alias bypasses the commit rules.
+  Measured with the installed incumbent in a disposable repository:
+  `git commit -a -m direct` is rejected with `commit-only/all-flag`,
+  and `git -c alias.c=commit c -a -m aliased` creates the commit.
+  The native executable reproduces it.
+  Whether to resolve aliases is one of the transactions-phase questions.
+- This host's `/usr/bin/git` is 2.55.0 and the newest upstream tag is `v2.56.0`,
+  so any run-time check for the supported Git fails here until Git is upgraded.
+- The ledger's citations into the native source are stale by a few lines,
+  and its `Open questions` still lists the three items decided earlier;
+  the brief re-cites at native commit `4bef275e6`.
 
 #### Third API session limit
 
@@ -908,8 +947,35 @@ Asked through the question tool, with context restated, as rule `QRX` requires.
   The user accepted the difference rather than mapping either platform onto the other;
   the tests and the README state it.
 
-The three wrapper decisions were sent to the engine delegate, which owns the affected modules,
+- The scanner's private rules file is named by a `rulesFile` option in `cli-git.config.jsonc` first,
+  then by `FORBIDDEN_STRINGS_RULES`,
+  then by the default file.
+  The user chose this over keeping the variable alone (silent built-in-only scan when it is absent)
+  and over configuration alone.
+  Implemented in the optional-policies phase;
+  this repository's translated configuration must then set `rulesFile`.
+- The failure code of a shipped policy that could not finish is chosen by cause:
+  `content-unavailable` when repository content or a fact could not be read,
+  `policy-incomplete` when the policy's own machinery failed.
+  `plugin-threw` is not carried over and no code is added.
+  The engine delegate adds `policy-incomplete` to the native code set.
+- The dependent-version bump ends with one implementation, in the native wrapper:
+  the release task calls `git cli-git fix` for that policy
+  and the TypeScript planning code is deleted at cutover.
+  Before that,
+  both entry points must be shown to give the same result on the release workflow's input,
+  and the release workflow must be able to build or fetch the native executable.
+- The cargo-mutants prototype is posted as a comment on upstream issue 545
+  (the user chose a comment over a pull request and over keeping it local):
+  <https://github.com/sourcefrog/cargo-mutants/issues/545#issuecomment-6005242222>.
+
+The no-config, repository-root and legacy-config decisions were sent to the engine delegate,
+which owns the affected modules,
 to implement with tests before building further on those defaults.
+The failure-code decision went to the engine delegate as well,
+and the failure-code and rules-file decisions to the candidate-layer delegate,
+whose scanner adapter they describe;
+neither changes that branch's scope.
 The engine delegate landed the optional-policy and legacy-config decisions as `329de1b97`.
 
 ### User correction: no vetting decision gate
@@ -963,13 +1029,11 @@ that is verification, not a decision for the user.
   with the two excluded replacement kinds, 0 missed and 0 timeouts.
 - [x] cargo-mutants upstream check: the option from upstream issue 545 is prototyped and verified
   (`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`, section `Prototype`).
-- [ ] Ask the user whether to post the comment draft on upstream issue 545.
-  Held on purpose for the next question batch,
-  which the open-decision brief feeds:
-  a question blocks the main session until it is answered,
-  and five delegates are reporting to it.
-  Ask it with that batch,
-  or alone as soon as no delegate is running.
+- [x] The user chose to post the cargo-mutants prototype as a comment on upstream issue 545; it is posted.
+- [ ] Ask the user the transactions-phase and cutover questions from
+  `doc/planning/cli-git-rust-open-decisions.md`, section `Question batches`,
+  before the phase each batch blocks starts.
+  Add the recovery-versus-fast-path conflict to the transactions batch.
 - [ ] Rust cli-git configuration, Git resolution/argv, static policies, and management commands.
   Configuration, Git resolution and forwarding, the management skeleton,
   the command parser and the rule cores are merged on `main` (`7d103c174`, see `Resumption 2026-10-05`).
