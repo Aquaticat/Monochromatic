@@ -155,16 +155,26 @@ the control measured 244px wide and 131px high within it at 390dpi.
 This is a real text-fit failure,
 not failed touch delivery or accepted visual evidence.
 The probe stopped before cover checks and before the complete cohort.
-Recorded-setting restoration and owner shutdown were started immediately.
+Recorded settings were restored exactly;
+the owner exited `0` and its matching container/QEMU were absent.
 
 The first native draft supplied 12dp horizontal button content padding.
 That value is not specified by D26 or scan-F's source,
 whose control has no horizontal padding declaration.
 The separate playback-mode control's 12dp floor must not be silently
 promoted into a scan-control requirement.
-The next step is to distinguish width from height overflow and measure the
-accepted fixed-width control at its actual source padding,
-without shrinking text or claiming a fix from source alone.
+Prototype `25a954117` retains the rejected padding as an explicit same-APK
+diagnostic control and defaults to scan-F's source padding.
+It logs constrained text size,
+intrinsic width and width/height overflow separately.
+The complete unit task and build passed;
+APK SHA-256 is
+`c06ec80240e41641fee1fdec79313a8294b9595544740145f4fa6f2b1f77ddf1`.
+Repeated Android lint still has the inherited errors and no new scan-file
+finding.
+A separate owned visit must reproduce the 12dp rejection and prove the
+source-padding result with unchanged outer slots.
+No fix or universal fit is claimed from the code change alone.
 Authored completion removes the row at the next composition;
 this introduces no production dwell-time or animation requirement.
 The separator preserves scan-F's existing `border-top` rather than adding
