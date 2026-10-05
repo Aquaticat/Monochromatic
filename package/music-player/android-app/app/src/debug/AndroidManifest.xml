@@ -9,6 +9,7 @@
     <activity android:name='.FirstRunAccessActivity' android:exported='true' />
     <activity android:name='.LightFeedbackActivity' android:exported='true' />
     <activity android:name='.TrackMenuActivity' android:exported='true' />
+    <activity android:name='.ScanIndicatorActivity' android:exported='true' />
     <!-- Do not restore or start inherited WorkManager jobs in the isolated host. -->
     <provider android:name='androidx.startup.InitializationProvider'
       android:authorities='${applicationId}.androidx-startup'>
