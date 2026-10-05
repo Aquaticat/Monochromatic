@@ -271,6 +271,10 @@ All runs are `lifecycle::dropping_the_worker_leaves_no_child_process`, one test 
 Sixteen test processes at a time on two processors:
 
 - Before: 34 of 600 runs failed in one measurement and 55 of 600 in another, every one with a zombie.
+  A measurement before these reported 1 of 600 and is discarded:
+  a quoting mistake in the measuring script made all 600 runs write the same log and the same failure marker
+  (`ide-language-verify-zombie-baseline-contended-0r07T4/runs/` holds one `.log` and one `.failed`),
+  so its count says only that at least one run failed.
 - After, in a probe build whose bound was ten seconds: 0 of 600 failed.
   Its 1200 shutdowns waited a median of 0 ms until no child was listed,
   more than 50 ms in 81 of them,
