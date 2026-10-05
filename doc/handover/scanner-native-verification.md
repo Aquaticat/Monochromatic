@@ -2095,6 +2095,7 @@ Major scoped commits:
   with `tests/support/blocked_root.rs`.
 - `40fb4cdef`: README statement of that platform difference.
 - `703a1c21d`: the two operator mutations excluded by the human's decision.
+- `047c60c40`: README statement of those exclusions and of the `--list` flag.
 - `e3cdee512`,
   `f7362e0d7`,
   and later `docs(handover)` commits:
