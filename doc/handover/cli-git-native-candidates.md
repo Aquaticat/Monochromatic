@@ -607,7 +607,68 @@ the tags are this worktree's own.
   `scanner_run.rs`,
   `scanner_selection.rs`.
 
-MUTATION-PENDING
+### Results
+
+Across the three campaigns cargo-mutants generated 147 mutants:
+114 were caught,
+33 did not compile,
+none was missed and none timed out.
+There was no survivor to disposition,
+no mutant was excluded,
+and no source or test changed after the campaigns.
+Every campaign exited with status 0 and noticed all five planted guard removals first.
+
+- Tag `candidates`,
+  evidence `package/git-policy/cli/target/verification/native-mutation-oRwTOn`:
+  84 mutants,
+  73 caught,
+  11 did not compile.
+  `candidate_batch.rs` 36 caught and 5 not compiled,
+  `candidate_record.rs` 21 and 4,
+  `candidate_object.rs` 15 and 2,
+  `candidate_error.rs` 1 and 0.
+  Unmutated baseline:
+  2.2 seconds to build,
+  62.3 seconds to test.
+- Tag `candidates-b`,
+  evidence `native-mutation-qkwQPV`:
+  39 mutants,
+  22 caught,
+  17 did not compile.
+  `candidate_reader.rs` 4 caught and 7 not compiled,
+  `candidate_store.rs` 16 and 7,
+  `candidate_version.rs` 2 and 3.
+  Unmutated baseline:
+  0.2 seconds to build,
+  67.5 seconds to test.
+- Tag `candidates-c`,
+  evidence `native-mutation-2k2Nnt`:
+  24 mutants,
+  19 caught,
+  5 did not compile.
+  `scanner_adapter.rs` 2 caught and 3 not compiled,
+  `scanner_run.rs` 3 and 1,
+  `scanner_selection.rs` 14 and 1.
+  Unmutated baseline:
+  0.2 seconds to build,
+  67.2 seconds to test.
+
+### Margin to the test bound
+
+The host was shared,
+so the unmutated suite took 62 to 68 seconds against the 90-second bound.
+The slowest test run of any mutant took 81.3 seconds and ended in a failing test,
+so it was caught,
+not timed out.
+A mutant that no test notices has to pass the whole suite,
+which on this host took about as long as the baseline;
+the margin was about 22 seconds.
+`timeout.txt` and `missed.txt` are empty in all three campaigns,
+so nothing here rests on a timeout.
+A rerun on a busier host can turn caught mutants into timeouts;
+compare each with the `Unmutated baseline` line of the same run before reading it as a hang.
+
+MUTATION-UNVIABLE-PENDING
 
 ## Fuzzing
 
