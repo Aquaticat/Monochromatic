@@ -229,6 +229,28 @@ fn missing_bubblewrap_refuses_with_the_remedy() {
 }
 
 #[test]
+fn project_or_state_where_the_sandbox_replaces_the_directory_refuses() {
+    let mut under_tmp = request("rust-analyzer", &[]);
+    under_tmp.project_root = PathBuf::from("/tmp/project");
+    let reason = confine_with(&under_tmp, "/nonexistent/bwrap")
+        .expect_err("a project below /tmp was accepted");
+    assert!(reason.contains("is below /tmp"), "{reason}");
+    assert!(reason.contains("Open the project from"), "{reason}");
+    let mut beside = request("rust-analyzer", &[]);
+    beside.project_root = PathBuf::from("/tmpfoo/project");
+    let other = confine_with(&beside, "/nonexistent/bwrap").expect_err("bubblewrap is missing");
+    assert!(
+        other.contains("is not installed"),
+        "a sibling of /tmp was taken for /tmp: {other}"
+    );
+    let mut state_in_run = request("rust-analyzer", &[]);
+    state_in_run.state_root = Some(PathBuf::from("/run/user/1000/cache"));
+    let refused = confine_with(&state_in_run, "/bin/sh")
+        .expect_err("a state directory below /run was accepted");
+    assert!(refused.contains("is below /run"), "{refused}");
+}
+
+#[test]
 fn missing_state_root_refuses_before_anything_runs() {
     let mut without_state = request("rust-analyzer", &[]);
     without_state.state_root = None;

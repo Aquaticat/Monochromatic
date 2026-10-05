@@ -12,6 +12,8 @@ mod session;
 
 /// Failures name the operation that failed.
 use anyhow::{Context, Result, bail};
+/// The production setup and the unconfined control setup.
+use ide_app::language::config::LanguageSetup;
 /// What: `Deserialize` lets the serde library decode JSON into these records.
 /// Why: A typed plan rejects a malformed step instead of guessing.
 ///
@@ -111,6 +113,12 @@ pub enum Step {
 struct Plan {
     /// Root of a disposable project.
     project: PathBuf,
+    /// Run servers without confinement; only for guard controls on disposable projects.
+    #[serde(default)]
+    unconfined: bool,
+    /// Extra definitions in Helix `languages.toml` syntax, for example probe variables.
+    #[serde(default)]
+    extra_languages: Option<String>,
     /// Steps in order.
     steps: Vec<Step>,
 }
@@ -154,7 +162,14 @@ fn main() -> Result<()> {
         ))
         .with_writer(std::io::stderr)
         .init();
-    let mut session = session::Session::new(&project)?;
+    // The production setup confines every server; a plan may ask for the unconfined control.
+    let mut setup = if plan.unconfined {
+        LanguageSetup::unconfined()
+    } else {
+        LanguageSetup::default()
+    };
+    setup.extra_languages = plan.extra_languages.clone();
+    let mut session = session::Session::new(&project, setup)?;
     // `enumerate` pairs each step with its position, for the printed record.
     for (number, step) in plan.steps.iter().enumerate() {
         session.run(number, step)?;

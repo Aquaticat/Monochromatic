@@ -294,6 +294,10 @@ impl Session {
 pub fn run(script: Script) -> io::Result<()> {
     // `as_deref()` turns `Option<PathBuf>` into `Option<&Path>` without copying.
     let wire = Arc::new(Wire::new(script.report.as_deref())?);
+    if let Ok(writes) = std::env::var("IDE_SCRIPTED_AUDIT") {
+        // Recorded before anything else, so a sandbox audit exists even if the session fails.
+        wire.record(json!({ "audit": crate::audit::audit(&writes) }));
+    }
     wire.record(json!({ "started": { "cwd": std::env::current_dir()?.display().to_string(), "pid": std::process::id() } }));
     let mut session = Session {
         script,

@@ -5,6 +5,8 @@
 //! the server definition's `environment` table. It never writes anything except the report file
 //! a test names, and that file lives in the test's own temporary directory.
 
+/// What the server can see and change from inside a sandbox.
+mod audit;
 /// Text mirroring and position arithmetic in the advertised column unit.
 mod document;
 /// Message framing on standard input and output, plus the report file.

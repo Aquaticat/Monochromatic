@@ -77,6 +77,14 @@ fn settings() -> Value {
 /// }
 /// ```
 pub(super) fn apply(configuration: &mut Configuration, root: &Path) {
+    // Variables an application-supplied definition of this server adds are kept, for example
+    // probe markers in acceptance tests; command, arguments, and settings are always replaced.
+    let environment = configuration
+        .language_server
+        .get(SERVER)
+        .map_or(HashMap::new(), |existing| {
+            return existing.environment.clone();
+        });
     configuration.language_server.insert(
         // `to_string` copies the constant into an owned `String` the table keeps.
         SERVER.to_string(),
@@ -84,7 +92,7 @@ pub(super) fn apply(configuration: &mut Configuration, root: &Path) {
             // `to_string_lossy` renders the path as text; availability is checked on the real path.
             command: root.join(LAUNCHER).to_string_lossy().into_owned(),
             args: vec!["--lsp".to_string(), "--stdio".to_string()],
-            environment: HashMap::new(),
+            environment,
             // `Some(...)` is the "value present" variant of `Option`.
             config: Some(settings()),
             // Helix's default request timeout, in seconds.
