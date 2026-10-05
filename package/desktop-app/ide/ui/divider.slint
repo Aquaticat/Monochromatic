@@ -6,7 +6,6 @@ export component SidebarDivider inherits Rectangle {
     in property <length> value;
     in property <length> minimum;
     in property <length> maximum;
-    in property <bool> enabled: true;
     out property <bool> has-focus: keys.has-focus;
     // The owner clamps the requested width; this component never stores one.
     callback resize(length);
@@ -19,7 +18,6 @@ export component SidebarDivider inherits Rectangle {
     accessible-role: slider;
     accessible-label: "Sidebar width";
     accessible-orientation: horizontal;
-    accessible-enabled: root.enabled;
     accessible-value: root.value / 1px;
     accessible-value-minimum: root.minimum / 1px;
     accessible-value-maximum: root.maximum / 1px;
@@ -52,7 +50,6 @@ export component SidebarDivider inherits Rectangle {
         private property <length> press-value;
         width: parent.width;
         height: parent.height;
-        enabled: root.enabled;
         mouse-cursor: col-resize;
         pointer-event(event) => {
             if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
@@ -71,7 +68,6 @@ export component SidebarDivider inherits Rectangle {
     keys := FocusScope {
         width: 0px;
         height: 0px;
-        enabled: root.enabled;
         key-pressed(event) => {
             if event.modifiers.control {
                 root.shortcut(event.text, true, event.modifiers.shift, event.modifiers.alt);

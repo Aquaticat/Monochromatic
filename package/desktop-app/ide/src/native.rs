@@ -72,6 +72,18 @@ mod search_pointer_tests;
 /// Combined search exercises native key capture, real ripgrep, scope, and source-line navigation.
 #[cfg(test)]
 mod search_tests;
+/// Tree rows and source text beside the sidebar divider keep their own clicks at every width.
+#[cfg(test)]
+mod sidebar_adjacent_tests;
+/// The sidebar divider is a Tab stop adjusted by keys, and absent without a project.
+#[cfg(test)]
+mod sidebar_keyboard_tests;
+/// Source repaint, window resizing, the find bar, and the search overlay beside a resized sidebar.
+#[cfg(test)]
+mod sidebar_layout_tests;
+/// Real pointer drags on the sidebar divider resize within both bounds.
+#[cfg(test)]
+mod sidebar_tests;
 /// Source typography reaches the actual image and selection bindings.
 #[cfg(test)]
 mod source_font_tests;
