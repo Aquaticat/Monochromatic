@@ -36,6 +36,14 @@ import {
 // the same address, because that difference changes nothing a reader can
 // follow.
 //
+// THE EMPTY STRING IS NO DESTINATION. A link written with nothing between its
+// parentheses names nowhere a reader could follow, so neither side carries
+// one for it and no page owes it; recorded, it compared equal to every other
+// destination the trimming emptied, and `traceDroppedDestinations` found it in
+// every slice, the shipped text included, since every text holds the empty
+// string. A destination that carries something never reads as the empty
+// string (`trimDestination`).
+//
 // THE SITE'S OWN GRAMMAR IS NOT THIS ONE. The corpus repo compiles a page with
 // MDX 3 and remark-math after rewriting HTML comments into JSX comments
 // (`scripts/build.ts`, `scripts/mdx.ts` there); reconciling the
@@ -274,15 +282,25 @@ function firstStopper({ url, }: { readonly url: string; },): number {
 
 /**
  Destination as a reader would follow it: cut at the first stopper, trailing
- sentence punctuation shed.
+ sentence punctuation shed, or as written where that would leave nothing.
 
  A GFM autolink literal runs until whitespace, so in Chinese prose it swallows
  the full-width comma or stop after the address; the scanner never does, and
  the two readers must agree on the address or the union counts one link twice.
 
+ A DESTINATION THE CUT AND THE SHED WOULD EMPTY STANDS AS WRITTEN. The cut and
+ the shed exist for an address that prose ran into, and such an address opens
+ with its scheme, which neither touches. What they would empty is a tree
+ destination made of sentence punctuation (`.`, `..`, `?`) or opening on a
+ stopper, which the scanner never reads, so no agreement with it is at stake;
+ a reader follows those as written. Emptied, the current directory, its
+ parent and a link with no destination all read as one empty string, and a
+ page that kept one of them compared equal to a source that carried another.
+
  @param url - destination as the tree or the scan produced it
 
- @returns Destination ending where a reader's address ends
+ @returns Destination ending where a reader's address ends, empty only for
+ an empty destination
 
  @example
  ```ts
@@ -301,16 +319,17 @@ function trimDestination({ url, }: { readonly url: string; },): string {
       );
     }
   }
-  return '';
+  return url;
 }
 
 /**
- Link, image and definition destinations off the tree the pipeline parses.
+ Link, image and definition destinations off the tree the pipeline parses,
+ an empty destination left out.
 
  @param text - page or source text, front matter included
 
- @returns Destinations in document order, and the downgrade finding when the
- strict grammar refused the body
+ @returns Destinations in document order, none of them empty, and the
+ downgrade finding when the strict grammar refused the body
 
  @example
  ```ts
@@ -364,8 +383,17 @@ export function markdownDestinations(
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
     if ((node.type === 'link')
       || (node.type === 'image')
-      || (node.type === 'definition'))
-      urls.push(trimDestination({ url: node.url, },),);
+      || (node.type === 'definition')) {
+      /**
+       Where this node leads, empty only where it was written with no
+       destination.
+       */
+      const destination = trimDestination({ url: node.url, },);
+      // AN EMPTY DESTINATION IS NOT READ: it names nowhere a reader could
+      // follow, so no page owes it.
+      if (destination !== '')
+        urls.push(destination,);
+    }
     if ('children' in node) {
       /**
        Children in document order, pushed reversed so the first is visited first.
