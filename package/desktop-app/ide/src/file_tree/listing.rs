@@ -61,7 +61,8 @@ fn validate(directory: &Path, entries: &[DirectoryEntry]) -> Result<()> {
 
 /// Apply snapshots without performing I/O or treating the presentation model as security confinement.
 impl FileTree {
-    /// Replace a known directory atomically; removed or reclassified subtrees lose stale caches.
+    /// Replace a synchronous snapshot atomically; asynchronous readers must use complete_listing's token check.
+    /// Removed or reclassified subtrees lose stale caches and pending reads.
     pub fn apply_listing(&mut self, directory: &Path, entries: Vec<DirectoryEntry>) -> Result<()> {
         if directory != self.root {
             // What: if-let extracts a borrowed entry when its parent snapshot still contains it.
@@ -133,6 +134,12 @@ impl FileTree {
                 .ancestors()
                 .any(|parent| return removed.contains(parent));
         });
+        // Detached requests cannot become current again if the same directory name is later recreated.
+        self.pending.retain(|path, _request| {
+            return !path.ancestors().any(|parent| return removed.contains(parent));
+        });
+        // A synchronous snapshot also supersedes any older in-flight read of this directory.
+        self.pending.remove(directory);
         tracing::debug!(path = %directory.display(), entries = entries.len(), "applied tree directory snapshot");
         // Copy only the directory key; move the already ordered entries into the cache.
         self.directories.insert(directory.to_path_buf(), entries);

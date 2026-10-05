@@ -15,10 +15,13 @@ use anyhow::{Result, bail};
 use std::{
     collections::{BTreeMap, BTreeSet},
     path::{Path, PathBuf},
+    sync::Arc,
 };
 
 /// Validate and replace individual directory snapshots without performing I/O.
 mod listing;
+/// Opaque request identity prevents stale directory replies from overwriting newer snapshots.
+mod requests;
 /// Flatten only visible entries and identify missing expanded-directory snapshots.
 mod rows;
 
@@ -39,6 +42,19 @@ pub struct TreeRow {
     pub expanded: bool,
 }
 
+/// What: Arc shares an immutable path allocation across the UI and worker, unlike thread-local Rc.
+/// Why: Allocation identity distinguishes repeated reads without a counter that can wrap or be reused.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type DirectoryRequest = { readonly identity: object; readonly path: string };
+/// ```
+#[derive(Clone, Debug)]
+pub struct DirectoryRequest {
+    /// Private allocation identity and native path cannot be rewritten by a reply consumer.
+    path: Arc<PathBuf>,
+}
+
 /// Cached snapshots and expansion state for a single canonical Workspace root.
 #[derive(Debug)]
 pub struct FileTree {
@@ -48,6 +64,8 @@ pub struct FileTree {
     directories: BTreeMap<PathBuf, Vec<DirectoryEntry>>,
     /// Collapsing an ancestor retains descendant expansion until that subtree is removed.
     expanded: BTreeSet<PathBuf>,
+    /// Latest request for each directory; replacements supersede older in-flight copies.
+    pending: BTreeMap<PathBuf, DirectoryRequest>,
 }
 
 /// Tree state transitions never read files or block the UI on directory enumeration.
@@ -81,6 +99,7 @@ impl FileTree {
             root: owned_root,
             directories: BTreeMap::new(),
             expanded,
+            pending: BTreeMap::new(),
         };
     }
 

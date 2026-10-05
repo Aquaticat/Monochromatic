@@ -68,13 +68,20 @@ impl FileTree {
     /// Request only expanded directories reachable through currently visible snapshots.
     pub fn missing_listings(&self) -> Vec<PathBuf> {
         if !self.directories.contains_key(&self.root) {
+            if self.pending.contains_key(&self.root) {
+                // The root read already occupies a request slot, so do not enqueue it again.
+                return Vec::new();
+            }
             // Copy the root into one owned request instead of returning a reference to mutable tree state.
             return vec![self.root.clone()];
         }
         // Collect native paths without issuing I/O from the presentation model.
         let mut missing = Vec::new();
         for row in self.rows() {
-            if row.expanded && !self.directories.contains_key(&row.entry.path) {
+            if row.expanded
+                && !self.directories.contains_key(&row.entry.path)
+                && !self.pending.contains_key(&row.entry.path)
+            {
                 missing.push(row.entry.path);
             }
         }
