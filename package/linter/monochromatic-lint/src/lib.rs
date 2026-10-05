@@ -43,12 +43,12 @@ pub mod diagnostic;
 /// Internal all-or-nothing grouped source edits.
 #[doc(hidden)]
 pub mod edits;
-/// Bounded cycle-aware fixpoint execution over exact source snapshots.
-#[doc(hidden)]
-pub mod fix_loop;
 /// Native source-file discovery with explicit ignore and failure boundaries.
 #[doc(hidden)]
 pub mod file_discovery;
+/// Bounded cycle-aware fixpoint execution over exact source snapshots.
+#[doc(hidden)]
+pub mod fix_loop;
 /// Prose fix boundary that must not create new Markdown block syntax.
 mod markdown_block_start;
 /// Byte-addressed prose break points and abbreviation exclusions.
@@ -170,3 +170,25 @@ mod rust_workspace_tests;
 /// Shared consumer-level regressions for the initial Markdown rule ports.
 #[cfg(test)]
 mod markdown_basic_tests;
+
+/// Deep embedded-source extraction and original-host projection seam.
+#[doc(hidden)]
+pub mod processors;
+/// Syntax checking that excludes processor-generated scaffolding.
+mod processors_check;
+/// Authored native Rustdoc discovery and prefix preservation.
+mod processors_docs;
+/// Native Markdown/MDX Rust-fence discovery.
+mod processors_fences;
+/// Exact physical-line copying shared by processor adapters.
+mod processors_lines;
+/// Immutable processor source and mapping records.
+mod processors_model;
+/// Hidden-line and synthetic-main doctest preparation.
+mod processors_prepare;
+/// Atomic grouped fixes with native container re-extraction.
+mod processors_projection;
+/// Byte-safe processor group validation and source reconstruction.
+mod processors_rewrite;
+/// Composed authored positions and original-host column conventions.
+mod processors_spans;
