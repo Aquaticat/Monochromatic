@@ -16,8 +16,8 @@ The read-only workspace model's five tests and the lazy tree model's eight tests
 Opaque directory-request identities now fence replies;
 `proc_36aa` passed all fifteen tree/request tests and scoped Rust lint.
 `DirectoryWorker` now performs bounded background reads with admission before token creation;
-its integration tests are running.
-Next bind native rows/file switching.
+`proc_ab5d` passed all twenty tree/request/worker tests plus scoped Rust lint.
+Next bind native rows/file switching after formatting and the new identity/admission guard controls.
 The procedural-macro and variable-font paths now both pass native font isolation.
 Continue annotations and language intelligence after workspace navigation.
 Actual TypeScript/Rust syntax is now wired and the highlighted native screenshot was inspected.
