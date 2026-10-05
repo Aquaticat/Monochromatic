@@ -305,7 +305,8 @@ fn divider_drag_resizes_and_stops_at_both_bounds() {
     window.hide().expect("close sidebar window");
 }
 
-/// A press without movement, a right-button drag, and a drag while the tree has focus change nothing else.
+/// A click or double-click without movement, a right-button drag, and a drag while the tree has focus
+/// change nothing else.
 #[test]
 fn divider_ignores_plain_clicks_and_other_buttons_and_keeps_keyboard_focus() {
     let shared = fixture(60);
@@ -319,6 +320,18 @@ fn divider_ignores_plain_clicks_and_other_buttons_and_keeps_keyboard_focus() {
         window.get_sidebar_width(),
         256.0,
         "a click without movement resized the sidebar"
+    );
+    // Slint counts a second press within 500 ms and 10 px of the first as a repeat, so two presses
+    // with no frame between them are a double-click (`i-slint-core` 1.18.1 `input.rs` `check_repeat`).
+    press(window, line, DRAG_Y, PointerEventButton::Left);
+    release(window, line, DRAG_Y, PointerEventButton::Left);
+    press(window, line, DRAG_Y, PointerEventButton::Left);
+    release(window, line, DRAG_Y, PointerEventButton::Left);
+    settle(window);
+    assert_eq!(
+        window.get_sidebar_width(),
+        256.0,
+        "a double-click on the divider resized the sidebar"
     );
     assert_eq!(
         shared.activated.get(),
