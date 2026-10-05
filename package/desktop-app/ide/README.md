@@ -493,7 +493,8 @@ A note has three channels that set it apart from hover content:
 a heavier weight,
 the interface typeface,
 and a bar along its leading edge.
-Assistive technologies announce notes assertively and hover content politely.
+Notes are declared as an assertive live region and hover content as a polite one;
+announcement by a screen reader was not tested.
 A note closes like hover content,
 and a new action replaces it.
 A resting pointer never shows a note;
@@ -600,7 +601,7 @@ Deliberate differences:
   and an empty answer for a new character closes it instead of leaving the previous content.
 - Notes stay until dismissed instead of disappearing after 2 seconds,
   name a remedy,
-  and are announced by assistive technologies.
+  and are declared as a live region for assistive technologies.
 - Several definitions are listed;
   editord's server keeps only the first.
 - The list has a title,
