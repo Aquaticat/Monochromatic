@@ -42,13 +42,13 @@ fn activate(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Na
 fn navigate(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Navigation, key: &str, index: i32) {
     if index < 0 { return; }
     let Some(row) = navigation.rows.get(index as usize).cloned() else { return; };
-    if key == SharedString::from(slint::platform::Key::RightArrow) {
+    if SharedString::from(slint::platform::Key::RightArrow) == key {
         if row.entry.is_directory && !row.expanded {
             activate(window, source, navigation, index);
         } else if navigation.rows.get(index as usize + 1).is_some_and(|next| return next.depth > row.depth) {
             window.invoke_reveal_tree(index + 1);
         }
-    } else if key == SharedString::from(slint::platform::Key::LeftArrow) {
+    } else if SharedString::from(slint::platform::Key::LeftArrow) == key {
         if row.entry.is_directory && row.expanded {
             activate(window, source, navigation, index);
         } else {
