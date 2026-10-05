@@ -12,8 +12,8 @@ The application remains an incomplete source-view gate.
 Current boundary:
 continue workspace tree/search/navigation after the verified font fixes.
 The read-only workspace model is committed and its five tests passed.
-Repeat native font isolation after the recent Slint procedural-macro integration change,
-then continue annotations and language intelligence.
+The procedural-macro and variable-font paths now both pass native font isolation.
+Continue annotations and language intelligence after workspace navigation.
 Actual TypeScript/Rust syntax is now wired and the highlighted native screenshot was inspected.
 The simplified UI,
 nested clipboard,
@@ -424,21 +424,26 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
-- `proc_0d4b`,
-  `ide-variable-font-full-checks`,
-  runs the full suite,
-  Clippy,
-  and build after variable/italic asset replacement.
+- `proc_0d4b` passed the full library/integration suite after variable-font replacement,
+  then exposed owned-name comparison lint findings in the new workspace tests.
+  Those findings were fixed.
+  `proc_e7bd` subsequently passed Clippy,
+  Rust documentation/line budgets,
+  and the native build.
 - `proc_8ed6` passed both native headless tests under nextest:
   idle DPI changes and real widget variable-weight/italic pixel changes.
   Plain cargo test initially failed because Slint's global platform was initialized on another test thread;
   native tests now use process isolation.
-- `proc_ed8c`,
-  `ide-macro-font-isolation-check`,
-  is running the pre-variable dark fixture at
-  `/tmp/monochromatic-ide-native-4JdC4Q/control.sock`.
-  Its macro-path font isolation and complete embedded-font bytes were verified,
-  but a fresh native run is needed for the variable assets.
+- `proc_e46e`,
+  `ide-variable-native-isolation`,
+  is the current variable-font dark fixture at
+  `/tmp/monochromatic-ide-native-m6zNtt/control.sock`.
+  MCP is port 9318.
+  All four complete variable/italic font byte sequences were found in the binary.
+  Isolated fontconfig resolves Inter Variable and JetBrains Mono to Adwaita Mono externally.
+  The native middle-character ligature copy and screenshot probe passes;
+  `/tmp/monochromatic-ide-native-m6zNtt/ligature-dark.png` was inspected.
+- `proc_ed8c` is stopped after the pre-variable macro-path verification.
 
 - `proc_f89f`,
   `ide-workspace-model-tests`,
