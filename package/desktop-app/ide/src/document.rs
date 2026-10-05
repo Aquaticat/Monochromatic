@@ -1,13 +1,13 @@
 //! Versioned read-only text and edit correspondence; no filesystem writes.
 
-/// What: Import Helix's text rope, diff transaction, and position association.
+/// What: Import Helix's text rope, diff transaction, its change set, and position association.
 /// Why: Reuse the inspected edit model instead of matching selected strings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { Rope, compareRopes, Assoc } from 'helix-core';
+/// import { Rope, compareRopes, Assoc, type ChangeSet } from 'helix-core';
 /// ```
-use helix_core::{Assoc, Rope, Transaction, diff::compare_ropes};
+use helix_core::{Assoc, ChangeSet, Rope, Transaction, diff::compare_ropes};
 
 /// What: A copyable reading-position record. usize is an address-sized index,
 /// unlike signed i32/i64 or fixed-width u32/u64.
@@ -32,11 +32,13 @@ pub struct ReadingPosition {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Reload = { base: number; text: Rope; changes: Transaction };
+/// type Reload = { base: number; previous: Rope; text: Rope; changes: Transaction };
 /// ```
 pub struct Reload {
     /// Version used when computing the correspondence.
     base: u64,
+    /// Text of the base version; a rope clone shares its chunks instead of copying characters.
+    previous: Rope,
     /// Authoritative replacement text read from disk.
     text: Rope,
     /// Mapping from the displayed base revision to this replacement.
@@ -48,6 +50,26 @@ impl Reload {
     /// Lend replacement text without applying it or exposing mutation.
     pub fn text(&self) -> &Rope {
         return &self.text;
+    }
+
+    /// Lend the base text the change set applies to, so language servers can be told what was replaced.
+    pub fn previous_text(&self) -> &Rope {
+        return &self.previous;
+    }
+
+    /// Lend the edit list from the base text to the replacement, in character offsets.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// get changes(): Readonly<ChangeSet> { return this.transaction.changes; }
+    /// ```
+    pub fn changes(&self) -> &ChangeSet {
+        return self.changes.changes();
+    }
+
+    /// Read the document revision this reload was computed from.
+    pub fn base_revision(&self) -> u64 {
+        return self.base;
     }
 }
 
@@ -166,6 +188,8 @@ impl Document {
         let changes = compare_ropes(&self.text, &text);
         return Reload {
             base: self.revision,
+            // A rope clone copies a small handle; the document keeps its text until the reload is applied.
+            previous: self.text.clone(),
             text,
             changes,
         };

@@ -63,6 +63,9 @@ pub mod syntax;
 /// User-facing parser diagnostics distinguish limits from missing assets.
 mod syntax_error;
 
+/// Language-server feature paths run on one worker thread and are polled; server edits are refused.
+pub mod language;
+
 /// Partial ligature selection clips foreground against source selection geometry.
 mod selection_paint;
 
