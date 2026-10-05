@@ -23,21 +23,24 @@ const DETAIL: &str = "Markdown pipe tables force each row onto one line; prefer 
 fn cell_content(written: &str) -> &str {
     // Borrow a narrower source view; no normalized parser text replaces inline Markdown spelling.
     let content: &str = written.strip_prefix('|').unwrap_or(written);
-    if !content.ends_with('|') {
+    // None means no final pipe was written; Some carries the text before the candidate closing delimiter.
+    let Some(body): Option<&str> = content.strip_suffix('|') else {
         return content;
+    };
+    // Each backslash directly before the candidate flips whether that pipe is escaped content.
+    // A flag, not a run length, holds the parity; walking backwards stops at the cell's first byte by itself.
+    let mut escaped: bool = false;
+    for byte in body.bytes().rev() {
+        if byte != b'\\' {
+            break;
+        }
+        escaped = !escaped;
     }
-    // Count only the backslash run directly before the candidate closing delimiter.
-    let bytes: &[u8] = content.as_bytes();
-    let pipe: usize = bytes.len() - 1;
-    let mut before: usize = pipe;
-    while before > 0 && bytes[before - 1] == b'\\' {
-        before -= 1;
-    }
-    if (pipe - before) % 2 == 1 {
+    if escaped {
         return content;
     }
     // The final pipe is syntax rather than escaped content.
-    return &content[..pipe];
+    return body;
 }
 
 /// Append a row's cells using only fixed element/attribute names and escaped text.

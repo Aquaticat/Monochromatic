@@ -78,6 +78,33 @@ fn header_only_tables_and_escaped_terminal_pipes_are_preserved() {
     assert_eq!(cell_content(""), "");
 }
 
+/// The backslash run may reach the cell's first byte, and an empty delimited cell has no run at all.
+#[test]
+fn escape_runs_reaching_the_cell_start_decide_the_final_pipe() {
+    // One or three backslashes escape the pipe; two leave it as the closing delimiter.
+    assert_eq!(cell_content("\\|"), "\\|");
+    assert_eq!(cell_content("|\\|"), "\\|");
+    assert_eq!(cell_content("\\\\\\|"), "\\\\\\|");
+    assert_eq!(cell_content("\\\\|"), "\\\\");
+    assert_eq!(cell_content("||"), "");
+    assert_eq!(cell_content("|"), "");
+    assert_eq!(cell_content("a|"), "a");
+}
+
+/// Rows without outer delimiters keep a final escaped pipe as cell text, also when it is the whole cell.
+#[test]
+fn parsed_cells_ending_in_escaped_pipes_keep_their_text() {
+    assert_eq!(
+        fixed("A | B\n--- | ---\n\\| | x \\|\n1 |\\|\n", false),
+        concat!(
+            "<table>\n<thead>\n<tr>\n<th>A</th>\n<th>B</th>\n</tr>\n</thead>\n<tbody>\n",
+            "<tr>\n<td>|</td>\n<td>x |</td>\n</tr>\n",
+            "<tr>\n<td>1</td>\n<td>|</td>\n</tr>\n",
+            "</tbody>\n</table>\n",
+        )
+    );
+}
+
 /// The emitted HTML must not contain literal attacker-controlled tags, quotes or MDX expressions.
 #[test]
 fn converted_text_cannot_introduce_markup_or_mdx_expressions() {
