@@ -15,11 +15,29 @@ pub mod source_style;
 /// Session-local Ctrl+digit history with editord's promotion semantics.
 pub mod recent;
 
-/// Tab expansion retains exact source/display correspondence.
+/// Tab projection retains exact source/display correspondence.
 pub mod text_projection;
+
+/// Pixel tab stops at multiples of two space advances, independent of the preceding script.
+pub mod tab_stop;
+
+/// Two-pass shaping that widens each tab's stand-in space to its stop.
+mod tab_layout;
+
+/// One shaped row with its caret, hit-test, and range geometry.
+pub mod shaped_row;
 
 /// Shared shaping for mixed-script source rows, caret, and hit testing.
 pub mod shaped_text;
+
+/// Grapheme, word, line, and document caret movement over source characters.
+pub mod caret_motion;
+
+/// Up, Down, and page movement by shaped pixel position with a remembered column.
+pub mod vertical_motion;
+
+/// Click counting and unit-wise drag extension for pointer selection.
+pub mod pointer_selection;
 
 /// Pixel painting consumes the same shaped geometry as reading interaction.
 pub mod text_raster;
