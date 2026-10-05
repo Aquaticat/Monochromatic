@@ -800,14 +800,56 @@ That is a Podman failure under concurrent use,
 not a test result,
 and the campaign was started again.
 
-Results are pending for every campaign at the time of this commit:
+Two campaigns started side by side at that load ended at the unmutated baseline,
+one with a baseline test time of 91 seconds against the limit of 90
+(evidence `native-mutation-Pnugm6`),
+the other with four binary-level tests failing on
+"the command hit the 5-second bound"
+(evidence `native-mutation-xzWpxt`).
+Neither is a result.
+Both were started again when the load had fallen.
 
-- `config_loading.rs`,
-  `global_arguments.rs`,
-  `management_arguments.rs`:
-  94 mutants,
-  evidence `native-mutation-Gqhv1V`,
-  running.
+### Reading a result under load
+
+The binary-level tests bound every wrapped command to 5 seconds,
+and a loaded host trips that bound without any defect.
+A mutant whose only failing test failed on that bound was not caught by a test:
+it was caught by the load.
+Each campaign's report is therefore read twice:
+cargo-mutants' own summary,
+and a pass over every caught mutant's log that sets aside the mutants whose failing tests all failed on the bound.
+The pass was checked against the full campaign recorded in `cli-git-native-foundation.md`,
+whose counts it reproduces.
+
+### The three rewritten loops
+
+Evidence `native-mutation-Gqhv1V`,
+against the gate image of commit `3836299a7`:
+94 mutants,
+88 reported caught,
+6 unviable,
+0 missed
+and 0 timeouts.
+The earlier full campaign had 9 timeouts in these three files.
+None remains:
+the excluded kinds are not tried,
+and the three `replace += with -=` mutants no longer exist,
+because the loops no longer step an index.
+
+The second reading found one mutant caught only by the bound:
+`replace || with &&` on the `MissingValue` test in `classify_config_loading`.
+It was a real survivor.
+Before this delegation a binary-level test killed it,
+because a global option error reached the classifier.
+Now the lifecycle forwards every invocation without a subcommand before it classifies,
+so only the classifier's own unit tests could kill it,
+and none of them covered an option error.
+Commit `24cfeaaee` adds `config_loading::tests::global_option_errors_keep_the_fast_path`.
+Planting the mutant fails that test and no other unit test;
+with the source restored it passes.
+
+### Results still pending
+
 - `wrapper_controls.rs`,
   `wrapper_invocation.rs`,
   `command_worktree.rs`,
@@ -816,7 +858,7 @@ Results are pending for every campaign at the time of this commit:
   `git_builtins.rs`,
   `unported.rs`,
   `action.rs`:
-  evidence `native-mutation-Pnugm6`,
+  84 mutants,
   running.
 - `policy_engine.rs`,
   `policy_convergence.rs`,
@@ -824,27 +866,22 @@ Results are pending for every campaign at the time of this commit:
   `policy_transforms.rs`,
   `policy_pass.rs`,
   `wrapped_command.rs`:
-  evidence `native-mutation-xzWpxt`,
   running.
 - `repository_location.rs`,
   `repository_facts.rs`,
   `rule_branch_worktree.rs`,
   `rule_linked_worktree.rs`,
   `rule_add_explicit.rs`,
-  `pending_state.rs`,
+  `git_metadata.rs`:
+  running.
+- `pending_state.rs`,
   `refusal_frontier.rs`,
   `entry.rs`,
   `management.rs`,
   `invocation_config.rs`,
   `config_schema.rs`,
-  `config_policies.rs`,
-  `git_metadata.rs`:
+  `config_policies.rs`:
   not started.
-
-The host ran at a load average of 41 to 67 on 16 processors while these campaigns ran,
-from other work.
-The unmutated baseline took 52 seconds of test time against a fixed limit of 90,
-so a timeout in these results may be load and is rerun before it is classified.
 
 ## Fuzzing
 
@@ -888,7 +925,22 @@ recorded under "Status-format options make a commit a dry run".
 
 ### Smoke campaign
 
-`mise run //package/git-policy/cli.fuzz:smoke` has not run for the new target at the time of this commit.
+`mise run //package/git-policy/cli.fuzz:smoke` on the tree of commit `d8adb6015`:
+AddressSanitizer targets,
+30 seconds each,
+in the bounded container.
+Every target exited 0
+(evidence `package/git-policy/cli.fuzz/target/verification/campaign-PeWOk0`):
+
+- `global_arguments`: 834,636 executions.
+- `config_loading`: 268,902 executions.
+- `config_schema`: 29,924 executions.
+- `wrapper_controls`: 41,774 executions.
+
+The new target is slower per execution than the argument targets
+because each execution runs the whole lifecycle twice and removal three times.
+Thirty seconds is a smoke run,
+not a campaign.
 
 ## Commits
 
@@ -904,6 +956,7 @@ In order:
 - `3836299a7`: the lifecycle, the refusal frontier and direct commands.
 - `d8adb6015`: the fuzz target and the status-format commit control.
 - `4bef275e6`: removal of a helper only tests called.
+- `24cfeaaee`: the classifier test that kills the surviving mutant.
 
 ## Superseded passages elsewhere
 
