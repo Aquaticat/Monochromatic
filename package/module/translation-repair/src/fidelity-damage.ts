@@ -138,10 +138,10 @@ function anchorSentence({ text, }: { readonly text: string; },): string {
 
  @param cleanText - slice English as the archive holds it
 
- @param needle - sentence to remove, the seed's pick unless a case supplies
- one the splice cannot find, which is the unchanged refusal's only trigger
-
  @returns Damaged twin and what it cost, or why none could be built
+
+ @throws Error when the splice leaves the text unchanged, which a sentence
+ drawn from that text cannot do
 
  @example
  ```ts
@@ -149,14 +149,12 @@ function anchorSentence({ text, }: { readonly text: string; },): string {
  ```
  */
 export function deleteOneSentence(
-  {
-    cleanText,
-    needle = anchorSentence({ text: cleanText, },),
-  }: {
-    readonly cleanText: string;
-    readonly needle?: string;
-  },
+  { cleanText, }: { readonly cleanText: string; },
 ): DamageAttempt {
+  /**
+   Sentence to remove.
+   */
+  const needle = anchorSentence({ text: cleanText, },);
   if (needle === '')
     return {
       kind: 'undamageable',
@@ -176,11 +174,17 @@ export function deleteOneSentence(
     text: cleanText,
     needle,
   },);
+
+  // LOUD RATHER THAN REPORTED AS UNDAMAGEABLE. `anchorSentence` draws the
+  // needle from this very text and `spliceOutSentence` returns its input only
+  // for a needle the text lacks, so an unchanged twin means one of the two
+  // broke; calling the slice undamageable would file that under slices too
+  // short to damage (ledger M113).
   if (damagedText === cleanText)
-    return {
-      kind: 'undamageable',
-      reason: 'deletion left the text unchanged',
-    };
+    throw new Error(
+      'unreachable: a deletion that left the text unchanged, though the sentence removed was drawn from '
+        + 'that text',
+    );
   if (damagedText.trim() === '')
     return {
       kind: 'undamageable',
@@ -211,9 +215,6 @@ export function deleteOneSentence(
  @param donorTexts - English of other slices of the same document, FURTHEST
  FIRST, of which the first usable one donates
 
- @param anchor - sentence to splice after, the seed's pick unless a case
- supplies one the splice cannot find, which applySeededErrors refuses
-
  @returns Damaged twin and what it cost, or why none could be built
 
  @example
@@ -225,11 +226,9 @@ export function insertBorrowedSentence(
   {
     cleanText,
     donorTexts,
-    anchor = anchorSentence({ text: cleanText, },),
   }: {
     readonly cleanText: string;
     readonly donorTexts: readonly string[];
-    readonly anchor?: string;
   },
 ): DamageAttempt {
   /**
@@ -270,9 +269,13 @@ export function insertBorrowedSentence(
       reason: 'no other slice offers a sentence this one does not already carry',
     };
 
-  // THE SPLICE POINT, which must occur exactly once. A case supplies a
-  // sentence the splice cannot find, which applySeededErrors refuses to
-  // leave half-applied.
+  /**
+   Sentence the borrowed one is placed after, which must occur exactly once
+   for the splice point to be defined. Drawn from this very text, so
+   `applySeededErrors` finds it, and the splice it makes adds the borrowed
+   sentence, so the twin it returns always differs from the clean text.
+   */
+  const anchor = anchorSentence({ text: cleanText, },);
   if (anchor === '')
     return {
       kind: 'undamageable',

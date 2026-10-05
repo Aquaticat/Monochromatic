@@ -96,24 +96,9 @@ export type RenderingAuditSpanAnchor = {
 };
 
 /**
- The real canonicalization: punctuation variants folded and sole line breaks
- read as spaces.
-
- @param input - text to fold
-
- @returns Folded text carrying the same number of UTF-16 units as the input
- */
-function foldCanonical(input: string,): string {
-  return collapseSoftLineBreaks({ text: normalizePunctuation({ text: input, },), },);
-}
-
-/**
  One text in the broadest form the anchoring accepts.
 
  @param text - text to canonicalize
-
- @param fold - folding to apply, the real canonicalization unless a case
- supplies one that breaks the length invariant this guards
 
  @returns Same text with punctuation variants folded and sole line breaks read
  as spaces
@@ -126,19 +111,11 @@ function foldCanonical(input: string,): string {
  const canonical = canonicalize({ text: quote, },);
  ```
  */
-function canonicalize(
-  {
-    text,
-    fold = foldCanonical,
-  }: {
-    readonly text: string;
-    readonly fold?: (input: string,) => string;
-  },
-): string {
+function canonicalize({ text, }: { readonly text: string; },): string {
   /**
    Text with both maps applied.
    */
-  const folded = fold(text,);
+  const folded = collapseSoftLineBreaks({ text: normalizePunctuation({ text, },), },);
 
   // THE LENGTH INVARIANT, CHECKED RATHER THAN TRUSTED. Both maps replace one
   // UTF-16 unit with one, which is what lets an offset found in the canonical
@@ -222,9 +199,6 @@ function locateUnique(
 
  @param side - which side this is, for the refusal wording
 
- @param fold - folding to canonicalize with, the real one unless a case
- supplies one that breaks the length invariant
-
  @returns Both spans as the text holds them, or why nothing was located
 
  @example
@@ -238,30 +212,22 @@ export function anchorLocatedSpan(
     locator,
     focus,
     side,
-    fold = foldCanonical,
   }: {
     readonly text: string;
     readonly locator: string;
     readonly focus: string;
     readonly side: string;
-    readonly fold?: (input: string,) => string;
   },
 ): RenderingAuditSpanAnchor {
   /**
    Text in the form quotes are matched against.
    */
-  const haystack = canonicalize({
-    text,
-    fold,
-  },);
+  const haystack = canonicalize({ text, },);
 
   /**
    Locator in the same form.
    */
-  const locatorNeedle = canonicalize({
-    text: locator,
-    fold,
-  },);
+  const locatorNeedle = canonicalize({ text: locator, },);
 
   if (locatorNeedle === '') {
     return {
@@ -295,10 +261,7 @@ export function anchorLocatedSpan(
   /**
    Focus in canonical form.
    */
-  const focusNeedle = canonicalize({
-    text: focus,
-    fold,
-  },);
+  const focusNeedle = canonicalize({ text: focus, },);
 
   if (focusNeedle === '') {
     return {

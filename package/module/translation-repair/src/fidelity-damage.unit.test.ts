@@ -137,19 +137,6 @@ await describe({
           },
         },),
         it({
-          name: 'REFUSES a deletion whose sentence the text does not carry, since an unchanged twin is '
-            + 'not damage (ledger T8, the fidelity cluster)',
-          fn: async () => {
-            expect(deleteOneSentence({
-              cleanText: CLEAN_TEXT,
-              needle: 'A sentence this slice does not carry.',
-            },),).toEqual({
-              kind: 'undamageable',
-              reason: 'deletion left the text unchanged',
-            },);
-          },
-        },),
-        it({
           name: 'REFUSES a deletion that would leave the slice empty, which is a shape no translation '
             + 'takes (ledger T8, the fidelity cluster)',
           fn: async () => {
@@ -239,17 +226,6 @@ await describe({
               kind: 'undamageable',
               reason: 'no sentence long enough and unique enough to splice after',
             },);
-          },
-        },),
-        it({
-          name: 'REFUSES an insertion whose splice point the text does not carry, where applySeededErrors '
-            + 'refuses to leave it half-applied (ledger T8, the fidelity cluster)',
-          fn: async () => {
-            expect(() => insertBorrowedSentence({
-              cleanText: CLEAN_TEXT,
-              donorTexts: [DONOR_TEXT,],
-              anchor: 'A sentence this slice does not carry.',
-            },),).toThrow('needle absent from current text',);
           },
         },),
       ],
