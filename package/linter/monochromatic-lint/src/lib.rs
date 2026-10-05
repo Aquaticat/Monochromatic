@@ -75,6 +75,11 @@ mod markdown_positions;
 /// Heading punctuation checks with complete source escape/entity edits.
 #[doc(hidden)]
 pub mod markdown_punctuation;
+/// Paragraph/container ancestry for add-only prose fixes.
+mod markdown_prose_context;
+/// Add-only prose line breaks with token, delimiter and block guards.
+#[doc(hidden)]
+pub mod markdown_semantic_breaks;
 /// Internal native Markdown/MDX parser interface.
 #[doc(hidden)]
 pub mod markdown_source;

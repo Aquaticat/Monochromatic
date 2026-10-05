@@ -70,7 +70,7 @@ fn conversion_respects_container_and_written_form_boundaries() {
 #[test]
 fn header_only_tables_and_escaped_terminal_pipes_are_preserved() {
     assert_eq!(
-        fixed("A | B\n- | -\n", false),
+        fixed("A | B\n--- | ---\n", false),
         "<table>\n<thead>\n<tr>\n<th>A</th>\n<th>B</th>\n</tr>\n</thead>\n</table>\n"
     );
     assert_eq!(cell_content("|a\\|"), "a\\|");
