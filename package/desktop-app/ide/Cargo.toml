@@ -22,6 +22,8 @@ gui = []
 
 [dependencies]
 anyhow = "1"
+# Ripgrep JSON encodes non-UTF-8 paths and source lines as base64 rather than replacing their bytes.
+base64 = "0.23"
 clap = { version = "4", features = ["derive"] }
 # Keep all Helix crates on one revision: their internal interfaces and runtime
 # grammar/query configuration form one integration, not independent releases.
