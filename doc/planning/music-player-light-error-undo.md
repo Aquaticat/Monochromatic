@@ -134,6 +134,14 @@ CPU or renderer cause.
 The plain `system-images/android-36/default/x86_64` image is being acquired
 as a separate control without Google apps.
 The Google API36 guest is restored/stopped before that control boots.
+Its first restoration read exceeded the command bound after emitting the
+correct AVD name;
+partial stdout was not counted as completed restoration.
+The inspected `adb shell -x` path completed a direct identity read,
+so recovery uses that transport with exact field read-back rather than
+trusting remote exit status alone.
+The plain AOSP API36 image revision `2` is now installed;
+provisioning uses a separate new guest and tool home.
 
 ## Independently verifiable queue
 
