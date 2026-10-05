@@ -56,7 +56,9 @@ pub(super) fn start(window: &AppWindow, navigation: &mut Navigation) -> Result<(
         .directory
         .clone()
         .unwrap_or_else(|| return navigation.workspace.root().to_path_buf());
-    search.return_tree = window.get_tree_has_focus();
+    if !window.get_search_open() {
+        search.return_tree = window.get_tree_has_focus();
+    }
     let relative = search
         .scope
         .strip_prefix(navigation.workspace.root())

@@ -61,6 +61,33 @@ async fn cancellation_interrupts_silent_pipes_and_reaps_the_child() {
     );
 }
 
+/// EOF must not turn the final process wait into an uncancellable join.
+#[tokio::test]
+async fn cancellation_after_stdout_eof_still_reaps_the_running_child() {
+    let fixture = tempfile::tempdir().expect("disposable search root");
+    let cancellation = SearchCancellation::new();
+    let signal = cancellation.subscribe();
+    let mut closed_output = Command::new("true").stdout(Stdio::piped()).spawn().expect("EOF pipe owner");
+    closed_output.wait().await.expect("close the pipe writer");
+    let mut child = sleeper().spawn().expect("running child after stdout EOF");
+    let pid = child.id().expect("running pid");
+    // An already closed writer exercises EOF without unsafe descriptor mutation or a shell script.
+    child.stdout = closed_output.stdout.take();
+    let output = tokio::time::timeout(Duration::from_secs(3), async {
+        let (result, ()) = tokio::join!(
+            consume(child, fixture.path(), "eof", Stream::Paths, &cancellation, signal),
+            async {
+                tokio::time::sleep(Duration::from_millis(20)).await;
+                assert!(std::path::Path::new(&format!("/proc/{pid}")).exists(), "child exited before the cancellation control");
+                cancellation.cancel();
+            }
+        );
+        return result;
+    }).await.expect("EOF must retain cancellation during process wait").expect("process cleanup");
+    assert!(output.is_none());
+    assert!(!std::path::Path::new(&format!("/proc/{pid}")).exists(), "EOF child was not reaped");
+}
+
 /// A signal cancelled before startup prevents even an invalid executable from being spawned.
 #[tokio::test]
 async fn pre_cancelled_search_skips_process_start_and_live_spawn_errors_are_visible() {

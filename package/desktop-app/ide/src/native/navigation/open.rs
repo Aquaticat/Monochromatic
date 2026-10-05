@@ -41,7 +41,7 @@ pub(super) fn request_at(
             line::reveal(window, source, target);
         }
         render(window, source);
-        window.invoke_focus_source();
+        if !window.get_search_open() { window.invoke_focus_source(); }
         return Ok(());
     }
     navigation.opener.request(path)?;
@@ -109,7 +109,7 @@ pub(super) fn apply(
     }
     render(window, source);
     present::update(window, source, navigation);
-    window.invoke_focus_source();
+    if !window.get_search_open() { window.invoke_focus_source(); }
     tracing::info!(path = %path.display(), changed, "project source open presented");
     return Ok(());
 }
