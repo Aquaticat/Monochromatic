@@ -1,7 +1,5 @@
 // Transient combined search. Native code owns query generations and native-path result identities.
-import { ScrollView, Palette } from "std-widgets.slint";
-// Prototype clear-icon B: the search query uses an input without the toolkit's clear icon.
-import { PlainInput } from "plain-input.slint";
+import { LineEdit, ScrollView, Palette } from "std-widgets.slint";
 
 export struct SearchEntry {
     path: string,
@@ -65,7 +63,7 @@ export component ProjectSearch inherits Rectangle {
                 overflow: elide;
                 vertical-alignment: center;
             }
-            input := PlainInput {
+            input := LineEdit {
                 min-width: 48px;
                 min-height: 48px;
                 max-height: 48px;

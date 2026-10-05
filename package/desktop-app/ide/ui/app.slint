@@ -368,6 +368,8 @@ export component AppWindow inherits Window {
                 error-message: root.find-error;
                 edited(text) => { root.find-edited(text); }
                 navigate(delta) => { root.find-navigate(delta); }
+                // Prototype find-buttons B: the close button takes the same path as Escape.
+                dismiss => { root.find-dismiss(); }
                 shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
             }
 
