@@ -57,9 +57,11 @@ D26 scan-F study and verified 32-view viewer at
 `questions/scan-indicator.html`,
 without real analysis,
 revised consent defaults or a scan-policy ballot.
-`doc/planning/music-player-light-settings.md` starts the D11 Settings-pane
-study with its source audit;
-no native Settings evidence exists yet.
+`doc/planning/music-player-light-settings.md` records the completed D11
+Settings-pane study and verified 32-view viewer at
+`questions/settings-pane.html`,
+without stored preferences,
+a template entry or a Settings-template ballot.
 The template editor design remains an independent queue item.
 Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
@@ -541,10 +543,15 @@ new IME work and native accessibility acceptance.
   longer detail directs users to Android logs.
   Feedback must not resize the player.
   Its native light/dark overlay study is complete (11d).
-- **OPEN:**
-  the Settings pane is the remaining light surface not yet drawn (11d).
-  The context menu,
-  first-run prompt and scan bar now have their own inspected native studies.
+- Every light surface in the original queue now has its own inspected native
+  study (11d):
+  the context menu,
+  first-run prompt,
+  scan bar and Settings pane.
+  The Settings placement on the Fold was adopted from D50,
+  D51 and existing Settings behaviour,
+  not separately chosen;
+  its viewer says how to object.
 - D10 no-system-library/declined-source states now have built design evidence.
   `evidence/first-run-access-boundaries.md` records the scoped authored
   native study and `questions/first-run-access.html` is verified evidence,
@@ -1132,8 +1139,17 @@ Native Pause/Resume and authored progress/completion checks are recorded
 separately in `evidence/scan-indicator-boundaries.md`,
 with the inspected cover ellipsis and large-text Resume clearance stated
 as observations.
-The Settings pane remains to be drawn in light;
-do not credit other studies as evidence for that surface.
+D11's Settings pane now has its own 32-view light/dark native publication
+in `questions/settings-pane.html`.
+Row toggles,
+the Back target,
+system Back and the return to an unchanged player are recorded separately
+in `evidence/settings-pane-boundaries.md`.
+The 200% text scroll,
+the orphaned `off` and the narrowed left browser are stated as observations.
+Whether the third row reflects a D27 first-run answer,
+and whether the closing sentence survives D81's template entry,
+stay with the 11e design round.
 
 ### 11e. Custom display templating: Settings requirement settled, details open
 

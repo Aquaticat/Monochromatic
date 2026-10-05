@@ -94,8 +94,24 @@ Recorded native settings were restored and owned runtimes are absent.
 Real analysis,
 native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
-The Settings pane is the remaining light surface;
-its template editor is a separate design problem under D81.
+The [Settings viewer](questions/settings-pane.html) presents 32 freshly
+inspected native views of D11's accepted pane across both panels,
+themes and text scales,
+with the closed player and an end-of-column view wherever the column scrolls.
+[Its evidence boundary](evidence/settings-pane-boundaries.md) records the
+adopted Fold placement,
+the first build that inspection rejected,
+native row toggles,
+both Back paths and an offline replay of those inputs.
+At 200% text the column scrolls on both panels,
+and on the unfolded panel `Resume where I left off` leaves `off` alone on
+its second line;
+the viewer states both rather than deciding them.
+Real preferences,
+native accessibility and Firefox acceptance are not claimed;
+full Android lint still has inherited failures.
+D81's template editor remains a separate design problem;
+no light surface from the original queue is left undrawn.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds

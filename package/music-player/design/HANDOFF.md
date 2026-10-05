@@ -12,99 +12,74 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
-## Settings pane study in progress (2026-10-05, stopped at a usage limit)
+## Handoff: Settings pane publication complete (2026-10-05)
 
-Purpose: tell the next session exactly where the D11 Settings study stands.
-The plan is `doc/planning/music-player-light-settings.md`.
+Purpose:
+tell the next session what the D11 Settings study left behind and what
+remains of the light-surface queue.
+The plan is `doc/planning/music-player-light-settings.md`;
+the scope and limits are in `evidence/settings-pane-boundaries.md`.
 
 ### What is done
 
-The first owned native visit ran on APK `40d0b0e4…` and passed every measured rule,
-its input checks,
-exact restoration,
-owner exit `0` and runtime absence.
-Fresh inspection then rejected that build:
-dark header glyph and title,
-and the retained deck title and transport buttons,
-drew black on the dark page,
-and separators were a pixel different across the fold connector.
-Prototype `483f16cdd` fixes all three.
-Its unit task,
-build and Android lint passed;
-lint keeps the same inherited errors and names no Settings file.
-The current APK SHA-256 is
+`questions/settings-pane.html` presents 32 freshly inspected native views of
+D11's three switch rows and closing sentence:
+both Fold panels,
+light and dark,
+100% and 200% text,
+the closed player,
+both switch scenes and an end-of-column view wherever the column scrolls.
+The artifact is prototype `483f16cdd4c0bda6269ae2e4666732db6407ce75`,
+APK SHA-256
 `85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50`.
 
-`settings-pane.mjs`,
-`settings-pane-test.mjs`,
-`questions/settings-pane.template.html` and the `settings-pane` tasks are
-committed but cannot run yet:
-`questions/evidence/settings-pane-witnesses.json` and its images are not
-published.
-A rehearsal on a disposable copy of the first cohort passed with 101 rules,
-137 rejected inputs and every single-rule deletion noticed by name.
-Rules and cases added after that rehearsal are not yet rehearsed:
-`search-evidence-digest`,
-`title-contrast-pixels`,
-`back-contrast-pixels` and `left-half-search`.
+Row toggles,
+the Back target,
+one authored reopen and system Back passed in all eight environments,
+each returning to an unchanged player,
+and were replayed offline from 90 retained captures.
+The guest's recorded fields were restored,
+the owner exited `0` and no matching runtime remains.
+The viewer's 105 rules,
+142 rejected consumer inputs,
+per-rule deletion proofs,
+publication preflights and four-context offline Chromium checks passed;
+`questions/evidence/settings-pane-review-verification.json` binds them.
+`verify-first-run-final-documents.ts` checks this artifact too.
 
-### Native visits on the fixed APK
+The first build drew the dark header and deck text black;
+fresh inspection rejected it,
+and the viewer's pixel rules now reject those images by name.
+A second visit failed on a short `podman inspect` bound under host load and
+supplied no evidence.
 
-The second owned visit installed the fixed APK and reached the app,
-then failed before its first capture:
-a 15 s bound on `podman inspect` expired while host load was near 50.
-It restored the recorded guest fields exactly,
-its owner exited `0` and no container or emulator process remained.
-It captured nothing,
-so it supplies no evidence.
-The bound is now 120 s,
-and a timed-out or failed inspection now reads as unknown rather than absent,
-so it can no longer pass the runtime-absence check.
+### What the human may want to look at
 
-A third visit is running from the same APK.
-Private scratch state is under `~/temp/agent/settings-pane-native-private`,
-in `study-third` and `runtime-third`.
-Its driver restores the recorded guest fields,
-stops the guest and verifies runtime absence whether or not a stage fails.
-First check `runtime-third/visit-output.log` for the closing marker,
-then `restoration.json`,
-`owner-exit.json` and `runtime-absence.json`.
-If any is missing,
-confirm no `music-player-settings-pane-fold` container or matching emulator
-process remains before anything else.
+The Fold placement was adopted from D50,
+D51 and existing Settings behaviour,
+not separately chosen;
+the viewer's optional observations box is the way to object.
+At 200% text the column scrolls on both panels,
+`Resume where I left off` leaves `off` alone on its second line on the inner
+panel,
+the last visible line sits under the gesture handle until scrolled,
+and the 24dp Back arrow reads small beside the title.
+None of these was turned into a ballot.
 
-### Next actions, in order
+### What remains
 
-- Run `prepare-settings-pane-crops.ts`,
-  `make-settings-pane-inspection-pairs.ts` and
-  `replay-settings-pane-records.ts` from `~/temp/agent` on the second visit.
-- Inspect every light/dark pair afresh.
-  Confirm the dark header,
-  the dark deck title and the separators are now right.
-- Rehearse the builder with `dry-run-settings-pane-viewer.ts`,
-  then with its `proofs` argument.
-  `left-half-search` expects the retained left half to match the published
-  Search images within a shade tolerance;
-  on the first build only the deck title and transport region differed.
-- Still unwritten:
-  the inspection-binding record,
-  the publisher with its preflight controls,
-  the four-context browser verification,
-  the review-verification digest,
-  the boundary document and the doc-verifier extension.
-  Mirror the scan-indicator scripts of the same names.
-
-### Findings to carry to the human, not to turn into ballots
-
-At 200% text the Settings column scrolls on both panels.
-On the unfolded panel the closing sentence is hidden until scrolled;
-on the cover its first lines show and run under the system navigation area.
-Opening Settings narrows the left folder browser as the Search page does.
-The placement itself follows D50,
-D51 and existing Settings behaviour;
-it was adopted,
-not separately chosen,
-and the viewer says how to object.
+Every light surface in the original queue now has its own inspected native
+study.
+The next design item is D81's template editor (`open-questions.md` 11e):
+its fields,
+grammar,
+editor controls,
+preview and validation are undesigned and need the human's direction before
+anything is built.
+Two Settings questions wait for that round:
+whether the third row reflects a D27 first-run answer,
+and whether the closing sentence survives a template entry.
+No production implementation is authorized.
 
 ## Handoff: scan-F publication complete, Settings pane next
 

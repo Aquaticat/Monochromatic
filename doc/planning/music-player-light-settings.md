@@ -162,13 +162,13 @@ not a verbal question.
   without persistence or production wiring.
 - [x] Build an isolated native host using the accepted player and the
   proposed Fold placement.
-- [ ] Measure light/dark fit on both panels at 100% and 200% text,
+- [x] Measure light/dark fit on both panels at 100% and 200% text,
   including the long supporting lines and both switch positions.
   Preserve the 48dp layout floor.
-- [ ] Exercise native switch toggles,
+- [x] Exercise native switch toggles,
   the Back control and system Back.
   Verify the return to an unchanged player.
-- [ ] Publish freshly inspected,
+- [x] Publish freshly inspected,
   sanitized and exact-artifact-bound evidence and verify its offline viewer.
 
 ## Isolated preparation and verification
@@ -283,7 +283,7 @@ those rules reject it by name:
 the left half first,
 then the dark title and Back arrow once that rule is removed.
 
-## Boundaries and next action
+## Boundaries
 
 Use only authored switch state.
 No preference is persisted,
@@ -298,8 +298,42 @@ Original AVDs remain untouched.
 Every visit records original settings before mutation,
 restores those exact fields and verifies owner shutdown and runtime absence.
 
-The next action is the second owned native visit on APK `85e4a208…`:
-capture and measure both panels,
-themes and text scales,
-exercise the switches and both Back paths,
-then inspect every capture afresh before any publication.
+## Inputs, publication and completion
+
+Row toggles,
+the Back target,
+one authored reopen and system Back passed in all eight environments.
+Each toggle changed pixels only inside its own row and toggling back
+restored the app pixels exactly;
+both Back paths returned to a player identical in geometry and app pixels
+to a freshly launched one,
+and the host was created once.
+The 90 retained input captures were replayed offline and reproduced every
+field of the live manifest.
+Recorded guest fields were restored,
+the owner exited `0` and no matching runtime remains.
+
+`questions/evidence/settings-pane-witnesses.json`,
+its 32 PNGs,
+`questions/evidence/settings-pane-native-verification.json` and
+`questions/settings-pane.html` are published.
+Seven changed publisher inputs were rejected before any public write.
+The viewer's 105 rules each have at least one rejected consumer input among
+142 and a deletion proof;
+its pixel rules decode PNGs in process,
+matching ImageMagick byte for byte on all 36 images they read.
+Four offline Chromium contexts passed with no axe violations,
+and all sixteen screenshots were inspected.
+`questions/evidence/settings-pane-review-verification.json` binds the
+viewer,
+builder,
+test and evidence digests;
+`evidence/settings-pane-boundaries.md` holds the scope.
+
+This Settings item is complete within its declared design/debug scope.
+Every light surface in the original queue now has its own inspected native
+study.
+D81's template editor (`open-questions.md` 11e) is the next design item and
+needs the human's direction;
+whether the third row reflects a D27 answer and whether the closing sentence
+survives a template entry wait for that round.
