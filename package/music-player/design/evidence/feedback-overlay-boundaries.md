@@ -149,7 +149,15 @@ Public images must be inspected,
 remove the system-status strip,
 retain exact application RGB and use opaque PNGs with essential chunks only.
 
-Native visits use only `Fold_No_Hardware_Probe` under 6 GiB/2 CPU caps.
+The human authorized fresh Pixel 9 Pro Fold AVD provisioning and alternate
+system-image acquisition after the reused guest remained unreliable.
+Native visits now use separately owned fresh AVDs under 6 GiB/2 CPU caps;
+the retired probe and original user AVD are not reset or overwritten.
+A fresh API37 guest passed the pre-app baseline and inner lifecycle checks,
+but a later cover cold-start check rejected a System UI ANR.
+An API36 Google APIs guest is provisioned as a separate comparison.
+Image selection is not a proved root cause,
+and results from different images are not interchangeable.
 Each bounded stage restores and reads back the recorded original fields,
 then requests graceful shutdown.
 Separate base-state/override configuration equality is not claimed unless
