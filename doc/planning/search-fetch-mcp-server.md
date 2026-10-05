@@ -187,11 +187,14 @@ Live OpenCodeReview verification (the one real host from Q9):
 
 - Both new packages ship `private: true` so nothing enters the publish pipeline unasked;
   the category siblings are publishable, and publishing stays an open offer.
-- `mcp-stdio/src/tool-schema.ts` carried a misplaced lint suppression;
-  relocated to the documented disable/enable form so the package lint reaches zero.
-- `package/pi-plugin/search-fetch` keeps 9 pre-existing type errors
-  (`tools.unit.test.ts` ctx fixtures, `mise.verify-extension.ts` fake ExtensionAPI),
-  verified identical on pristine HEAD and left to the migration owner.
+- The pre-existing lint debt is fixed in code, not suppressed:
+  `tools.unit.test.ts` now drives execute through `extension-tool-context-fixture.ts`,
+  a complete typed `ExtensionToolContext` double (real `ModelRegistry` over offline stores,
+  throwing getters where no value exists);
+  `mise.verify-extension.ts`'s fake `ExtensionAPI` implements its seven missing members;
+  `mcp/stdio`'s `strictArguments` builds its prototype-free entries with a
+  `{ __proto__: null, ...entries }` literal, which keeps the generic type without assertions.
+  The plugin and `mcp/stdio` both reach zero lint findings.
 - The blocklist error text keeps its `pi-search-fetch` wording on both surfaces for parity.
 - Multi-package commits crash the `mono/dependent-version-bump` policy plugin;
   worked around with per-package commits, recorded in
