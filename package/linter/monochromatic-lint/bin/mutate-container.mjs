@@ -37,10 +37,11 @@ function podman({ args, capture = false, allowFailure = false }) {
 /** Build and run the tool over an immutable input image, then retain its complete report. */
 async function main() {
   const options = process.argv.slice(2);
-  if (options.length > 1 || (options.length === 1 && options[0] !== '--rust-style' && options[0] !== '--markdown'))
-    throw new VerificationError('Only --rust-style or --markdown is accepted.');
+  if (options.length > 1 || (options.length === 1 && !['--rust-style', '--markdown', '--processors'].includes(options[0])))
+    throw new VerificationError('Only --rust-style, --markdown or --processors is accepted.');
   const rustStyle = options[0] === '--rust-style';
   const markdown = options[0] === '--markdown';
+  const processors = options[0] === '--processors';
   const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-mutation-'));
   const evidenceRoot = join(process.cwd(), 'target', 'verification');
   await mkdir(evidenceRoot, { recursive: true });
@@ -69,6 +70,9 @@ async function main() {
     // This is scoped evidence, not a replacement for full-rule mutation. The baseline still runs.
     if (markdown)
       command.push('--file', 'src/markdown_*.rs', '--cargo-test-arg=markdown');
+    // Every processor module, not only the planted guard removals of the mutation:processors task.
+    if (processors)
+      command.push('--file', 'src/processors*.rs', '--cargo-test-arg=processors');
     await writeFile(join(context, 'Containerfile'), [
       '# The tested image ID binds this campaign to an exact source snapshot.',
       `FROM ${base}`,
