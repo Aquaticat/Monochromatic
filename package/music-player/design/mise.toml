@@ -434,7 +434,7 @@ dir = "{{config_root}}"
 run = "node first-run-access.mjs build"
 
 [tasks."lint:first-run:access"]
-description = "Validate the exact first-run evidence review, native hashes and no-policy-ballot boundary"
+description = "Validate the first-run evidence review, its image geometry, drawn text and no-policy-ballot boundary"
 dir = "{{config_root}}"
 run = "node first-run-access.mjs validate"
 

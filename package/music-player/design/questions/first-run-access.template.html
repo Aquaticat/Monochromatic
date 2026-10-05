@@ -65,7 +65,8 @@ dialog h2 { margin-block-start: 0; }
 <h1>Getting to music without a working system source</h1>
 <p>Purpose: inspect the first-run access and no-audio states under D10/D27. An available system music library
 opens automatically; when no source is open or device-wide access was declined, the primary route remains
-<strong>Open a folder</strong>, with in-app Settings available. Analysis is a separate design choice after a library opens.</p>
+<strong>Open a folder</strong>, with in-app Settings available. True-peak analysis is automatic and not optional (D84), so these
+states offer no choice about analysis; where a state explains analysis, it only says that it happens.</p>
 <p class="note">Every state is authored debug input, not real discovery or permission evaluation. The two no-audio
 states assume an explicitly complete read of their named scope. A partial, failed or unread source cannot justify
 those claims. Zero eligible audio in a source does not mean the device or folder has no files.</p>
@@ -91,19 +92,22 @@ bottom navigation remains. Logical dp uses the measured 390dpi density, not your
 the existing production list API does not supply equivalent complete/partial/failure status.</p>
 <div class="gallery">
 <figure data-scene="declined"><h3>Device-wide access declined</h3><button type="button" class="preview-button"><img alt="Authored native first-run state with device-wide music access not granted and Open a folder plus Settings"><span>Open native device-wide access declined</span></button><figcaption></figcaption></figure>
-<figure data-scene="not-opened"><h3>No source opened</h3><button type="button" class="preview-button"><img alt="Authored native first-run state with no source open and an explanation of the folder browser and optional analysis"><span>Open native no source opened</span></button><figcaption></figcaption></figure>
+<figure data-scene="not-opened"><h3>No source opened</h3><button type="button" class="preview-button"><img alt="Authored native first-run state with no source open and an explanation of the folder browser and automatic analysis"><span>Open native no source opened</span></button><figcaption></figcaption></figure>
 <figure data-scene="system-no-audio"><h3>Complete system scope with no eligible audio</h3><button type="button" class="preview-button"><img alt="Authored complete device music library enumeration with no eligible audio, not proof that no music exists on the device"><span>Open native complete system scope with no eligible audio</span></button><figcaption></figcaption></figure>
 <figure data-scene="folder-no-audio"><h3>Complete chosen-folder scope with no eligible audio</h3><button type="button" class="preview-button"><img alt="Authored complete chosen-folder enumeration without supported audio, with another folder explicitly changing source"><span>Open native complete chosen-folder scope with no eligible audio</span></button><figcaption></figcaption></figure>
 </div>
 </section>
-<details id="scrolled-details"><summary>Inspect the separately captured 200% final-content witnesses</summary>
-<p id="scroll-note">Choose inner panel and 200% native text to inspect the no-source view after a bounded visual scroll.
-It shows the complete final analysis paragraph after content movement, while the heading is partly cropped.
-Initial semantic clipping does not prove that glyphs were missing; no visible-ink recovery claim is made. The declined-access and cover
-post-swipe attempts showed no observed app-pixel or body-coordinate movement; they are not scrolling witnesses. They do not establish
-TalkBack traversal, recovery actions or universal scrolling. A repeated screenshot without changed app pixels fails
-publication verification.</p><div class="gallery">
-<figure data-scene="not-opened" data-position="scrolled"><h3>No source: final explanation</h3><button type="button" class="preview-button"><img alt="Authored no-source state after visual scrolling to the end of the analysis explanation"><span>Open native no source: final explanation</span></button><figcaption></figcaption></figure>
+<details id="scrolled-details"><summary>Inspect the views kept after dragging the content up</summary>
+<p id="scroll-note">After each first view the content was dragged upward until its pixels stopped changing. Where the
+content moved, the view at rest is kept here; where nothing moved, no second view exists and none is shown.
+A kept view needs both changed app pixels and a displaced body text. An unmoved state is not evidence that a gesture
+was delivered or that the state cannot scroll. These views do not establish TalkBack traversal, recovery actions or
+scrolling in general.</p>
+<p id="scroll-status" role="status"></p><div class="gallery">
+<figure data-scene="declined" data-position="scrolled"><h3>Device-wide access declined: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored declined-access state at rest after the content was dragged up"><span>Open native device-wide access declined at rest after dragging</span></button><figcaption></figcaption></figure>
+<figure data-scene="not-opened" data-position="scrolled"><h3>No source opened: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored no-source state at rest after the content was dragged up"><span>Open native no source opened at rest after dragging</span></button><figcaption></figcaption></figure>
+<figure data-scene="system-no-audio" data-position="scrolled"><h3>Complete system scope: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored complete system-scope state at rest after the content was dragged up"><span>Open native complete system scope at rest after dragging</span></button><figcaption></figcaption></figure>
+<figure data-scene="folder-no-audio" data-position="scrolled"><h3>Complete chosen-folder scope: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored complete chosen-folder state at rest after the content was dragged up"><span>Open native complete chosen-folder scope at rest after dragging</span></button><figcaption></figcaption></figure>
 </div></details>
 <details><summary>Read source and implementation boundaries</summary>
 <p>The host extends ComponentActivity, not MainActivity. The merged debug manifest disables the production
@@ -115,7 +119,8 @@ before the fixture is accepted for capture. Those tests do not implement product
 findings. This review does not pick a recovery owner, widen a chosen folder, adopt template defaults or change Search.</p>
 <p>Static fit and source inspection establish neither real picker/Settings completion nor accessibility focus,
 speech, action-bound or contrast acceptance. All raw status-bearing images, hierarchies and logs remain private.
-The inspected published app-area crops retain exact RGB, opacity, dimensions, essential PNG chunks and hashes.</p>
+The inspected published app-area crops retain exact RGB, opacity, dimensions and only essential PNG chunks.
+No digest is recorded or compared (D88).</p>
 </details>
 <fieldset><legend>Optional evidence observations</legend><label for="final-notes">Observed wrapping, clipping or missing evidence</label>
 <textarea id="final-notes" name="notes" placeholder="Optional observations only; no policy answer is required."></textarea></fieldset>
@@ -147,25 +152,30 @@ function imageKey(figure) {
 function metadata(image) {
   return image.width + ' × ' + image.height + ' retained px · ' + (image.width / (image.density / 160)).toFixed(1) +
     ' × ' + (image.height / (image.density / 160)).toFixed(1) + ' logical dp · source density ' + image.density +
-    'dpi · ' + image.file + ' · SHA-256 ' + image.hash;
+    'dpi · ' + image.file;
 }
 function render() {
   document.getElementById('environment').textContent = state.panel + ' panel · ' + state.fontScale * 100 +
     '% native text · ' + selectedScheme() + ' native images. Thumbnail size is not native font scale.';
+  let moved = 0;
   for (const figure of document.querySelectorAll('figure[data-scene]')) {
-    const intentionallyAbsent = figure.dataset.position === 'scrolled' &&
-      (state.fontScale !== 2 || state.panel !== 'inner');
-    figure.hidden = intentionallyAbsent;
-    if (intentionallyAbsent) continue;
     const image = images[imageKey(figure)];
+    // An end view exists only where the content moved; the builder has checked that against each drag record.
+    const unmoved = figure.dataset.position === 'scrolled' && !image;
+    figure.hidden = unmoved;
+    if (unmoved) continue;
     if (!image) throw new Error('Required native witness is absent: ' + imageKey(figure));
+    if (figure.dataset.position === 'scrolled') moved += 1;
     const element = figure.querySelector('img');
     element.src = image.source;
     element.width = image.width;
     element.height = image.height;
     figure.querySelector('figcaption').textContent = metadata(image) +
-      (figure.dataset.position === 'scrolled' ? ' · separately captured after one visual scroll' : ' · initial viewport');
+      (figure.dataset.position === 'scrolled' ? ' · at rest after dragging the content up' : ' · initial viewport');
   }
+  document.getElementById('scroll-status').textContent = moved === 0 ?
+    'Under the selected panel, text size and theme no state moved when dragged, so no second view exists.' :
+    'Under the selected panel, text size and theme ' + moved + ' of 4 states moved when dragged.';
 }
 function resizePreview() {
   if (!state.preview) throw new Error('No native witness is open.');
