@@ -42,6 +42,7 @@ import {
   readDriftOptIn,
 } from './pass-generation-guard.ts';
 import { RUN_OUTSIDE_READS, } from './pass-outside-reads.ts';
+import { RUN_PICTURE_SOURCES, } from './pass-visual-evidence.ts';
 import { assertResumableSchemaGeneration, } from './pass-schema-guard.ts';
 import {
   entriesFinishedThisRun,
@@ -639,6 +640,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
             hardCapMs: HARD_CAP_MS,
             baseSignal: neverAbort,
             outsideReads: RUN_OUTSIDE_READS,
+            pictureSources: RUN_PICTURE_SOURCES,
           },);
         },
       },);

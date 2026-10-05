@@ -1,4 +1,7 @@
-import type { GateShipped, } from '../consolidate-gate-stage.ts';
+import {
+  type GateShipped,
+  settleGateBallots,
+} from '../consolidate-gate-stage.ts';
 import type {
   ConsolidationSettlement,
   ConsolidationTerminal,
@@ -45,6 +48,18 @@ type WrittenTerminal = {
    leaves before the gate and the settlement carries none.
    */
   readonly gate: GateShipped | 'not-asked';
+
+  /**
+   What the settlement's `demoted` flag reads on this way out: the wrap
+   erased the difference on `wrap-erased-difference` and on no other.
+   */
+  readonly demoted: boolean;
+
+  /**
+   Whether the settlement's `rewrapped` flag may be true on this way out:
+   only a consolidation the stage ships, or erases, passes through the wrap.
+   */
+  readonly mayRewrap: boolean;
 };
 
 /**
@@ -67,34 +82,50 @@ const SETTLEMENT_TERMINALS: readonly WrittenTerminal[] = [
   {
     terminal: 'incumbent-only',
     gate: 'not-asked',
+    demoted: false,
+    mayRewrap: false,
   },
   {
     terminal: 'no-standing-text',
     gate: 'not-asked',
+    demoted: false,
+    mayRewrap: false,
   },
   {
     terminal: 'slate-endorsed-standing',
     gate: 'not-asked',
+    demoted: false,
+    mayRewrap: false,
   },
   {
     terminal: 'slate-unjudged-standing',
     gate: 'not-asked',
+    demoted: false,
+    mayRewrap: false,
   },
   {
     terminal: 'slate-declined-standing',
     gate: 'not-asked',
+    demoted: false,
+    mayRewrap: false,
   },
   {
     terminal: 'gate-kept-standing',
     gate: 'standing',
+    demoted: false,
+    mayRewrap: false,
   },
   {
     terminal: 'wrap-erased-difference',
     gate: 'consolidated',
+    demoted: true,
+    mayRewrap: true,
   },
   {
     terminal: 'consolidated',
     gate: 'consolidated',
+    demoted: false,
+    mayRewrap: true,
   },
 ];
 
@@ -185,6 +216,12 @@ function isSlateFloor(value: unknown,): boolean {
  a store that required the key would refuse every floored slice. Whether
  absence is right for the settlement in hand is `gateFitsTerminal`'s question.
 
+ THE CHOICE IS RECOMPUTED FROM THE BALLOTS. The stage settles `choice` with
+ `settleGateBallots` over the ballots it stores and rewrites only `ships`
+ afterwards, so a stored choice its own ballots do not give was not written by
+ the stage. `choice` and `ships` are not compared: a forfeit standing ships
+ the consolidation over a standing or neither choice.
+
  @param value - parsed cache entry
 
  @returns Whether it is a readable gate outcome or absent
@@ -208,6 +245,7 @@ function isGateOutcomeOrAbsent(value: unknown,): boolean {
     && ((value.ships === 'consolidated') || (value.ships === 'standing'))
     && Array.isArray(ballots,)
     && ballots.every(isGateBallot,)
+    && (value.choice === settleGateBallots({ ballots, },))
     && ((typeof value.usable) === 'number')
     && (value.usable === ballots.length)
     && Array.isArray(value.findings,);
@@ -251,6 +289,46 @@ function gateFitsTerminal(
   if (written === 'not-asked')
     return gate === undefined;
   return isJsonRecord(gate,) && (gate.ships === written);
+}
+
+/**
+ Whether the wrap flags are the ones the stage writes beside a terminal.
+
+ THE FLAGS ARE REPORTED, NOT RE-DERIVED. The artifact states `demoted` and
+ `rewrapped` as facts about the slice, and each is a function of the way out:
+ the wrap erases a difference only on `wrap-erased-difference`, and a wrap
+ reaches a settlement only where a consolidation ships or is erased. A record
+ where they disagree with its terminal is a record the stage did not write.
+
+ @param written - what the stage writes beside the entry's terminal
+
+ @param rewrapped - `rewrapped` field of a parsed cache entry, unchecked
+
+ @param demoted - `demoted` field of a parsed cache entry, unchecked
+
+ @returns Whether both are booleans and agree with the terminal
+
+ @example
+ ```ts
+ const fits = wrapFlagsFitTerminal({ written, rewrapped: parsed.rewrapped, demoted: parsed.demoted, },);
+ ```
+ */
+function wrapFlagsFitTerminal(
+  {
+    written,
+    rewrapped,
+    demoted,
+  }: {
+    readonly written: WrittenTerminal;
+    readonly rewrapped: unknown;
+    readonly demoted: unknown;
+  },
+): boolean {
+  if (demoted !== written.demoted)
+    return false;
+  if (rewrapped === false)
+    return true;
+  return (rewrapped === true) && written.mayRewrap;
 }
 
 /**
@@ -314,8 +392,14 @@ function isConsolidationSettlement(value: unknown,): value is ConsolidationSettl
       gate: value.gate,
       written: named.gate,
     },)
-    && ((typeof value.rewrapped) === 'boolean')
-    && ((typeof value.demoted) === 'boolean')
+    && wrapFlagsFitTerminal({
+      written: named,
+      rewrapped: value.rewrapped,
+      demoted: value.demoted,
+    },)
+    // NEVER PERSISTED: `consolidationWorthResuming` refuses an archive-kept
+    // settlement, and its mark is what makes the archive ship.
+    && (value.archiveKept === undefined)
     && Array.isArray(findings,)
     && findings.every(function isText(finding,): boolean {
       return (typeof finding) === 'string';

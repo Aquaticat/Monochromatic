@@ -6,10 +6,11 @@ import {
 import type { SyntheticClient, } from './chat-contract.ts';
 import { wordForCount, } from './count-word.ts';
 import {
+  askDeterministicReader,
   type OcrReading,
-  solidCharacters,
 } from './image-ocr.ts';
 import { readPastRefusal, } from './image-reading-past-refusal.ts';
+import { solidCharacters, } from './image-reading-sense.ts';
 import {
   type ImageReading,
   isTransientReadingReason,
@@ -306,8 +307,9 @@ export function isResumableReading({ reading, }: { readonly reading: PairedReadi
 
  @throws {@link DOMException} when `signal` aborts, since a run told to stop
  must not settle a document on the readings that beat the stop. Every other
- failure a reader raises is contained as an unavailable reading for that
- reader alone
+ failure a reader raises, the deterministic reader and each model alike, is
+ contained: a model reader as an unavailable reading for that reader alone, the
+ deterministic reader as an unavailable gate, after which the models are asked
 
  @example
  ```ts
@@ -365,10 +367,12 @@ export async function readImagePair(
    WHAT IT IS RELIABLE AT IS PRESENCE, six of six against the models in both
    directions, which is the question worth asking first.
    */
-  const ocr = await readOcr({
+  const ocr = await askDeterministicReader({
+    readOcr,
     bytes,
     assetName,
-    l,
+    signal,
+    l: rl,
   },);
   if (ocr.kind === 'no-text') {
     rl.info(

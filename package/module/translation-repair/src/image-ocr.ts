@@ -17,11 +17,15 @@ import {
 import { isAsciiAlphanumeric, } from './ascii-letters.ts';
 import { wordForCount, } from './count-word.ts';
 import { extensionOf, } from './image-asset.ts';
-import { MIN_READING_CHARS, } from './image-reading-sense.ts';
+import {
+  MIN_READING_CHARS,
+  solidCharacters,
+} from './image-reading-sense.ts';
 import {
   isMissingPathError,
   rethrowUnlessMissingPath,
 } from './missing-path-error.ts';
+import type { OcrReader, } from './image-reading-pair.ts';
 import { refusalText, } from './refusal-text.ts';
 
 //region Image OCR
@@ -287,34 +291,6 @@ async function scratchDirectory(): Promise<ScratchDirectory> {
       );
     },
   };
-}
-
-/**
- Counts what is left of a text once whitespace is dropped.
-
- A LINEAR SCAN rather than a pattern, per `RG1`: the rule is "characters that
- are not whitespace", which a scan states directly in one pass and cannot
- backtrack.
-
- @param text - what OCR returned
-
- @returns How many non-whitespace characters it holds
-
- @example
- ```ts
- const count = solidCharacters({ text: 'a b', },);
- ```
- */
-export function solidCharacters({ text, }: { readonly text: string; },): number {
-  /**
-   Characters counted so far.
-   */
-  let count = 0;
-
-  for (const character of text)
-    if (character.trim() !== '')
-      count += 1;
-  return count;
 }
 
 // THE SCRATCH NAMES ARE FIXED, AND NO TWO OF THEM CAN BE ONE FILE. Three files
@@ -794,6 +770,76 @@ export function ocrReaderOver(
       runProgram,
     },);
   };
+}
+
+/**
+ Asks the deterministic reader about a picture, answering a reader that
+ rejects with its own unavailable reading.
+
+ CONTAINED FOR THE SAME REASON A MODEL READER IS. The deterministic reader
+ documents some failures as raised (a scratch directory that cannot be made, a
+ copy that cannot be written), each a broken machine for that reader's own
+ caller; for this pair a reading is evidence and never a gate, so one picture's
+ failure to be pre-screened must not end the entry. The models are then asked
+ as they are where the tools are not installed.
+
+ @param readOcr - deterministic reader to ask
+
+ @param bytes - picture as read from disk
+
+ @param assetName - its file name, which carries the media type
+
+ @param signal - abort that must travel rather than be absorbed
+
+ @param l - pair logger, told when the reader failed
+
+ @returns What the reader made of the picture, or `unavailable` with reason
+ `ocr-failed` when it rejected
+
+ @throws {@link DOMException} when `signal` aborted by the time the reader
+ rejected, since a stop is not a failure to absorb
+
+ @example
+ ```ts
+ const ocr = await askDeterministicReader({ readOcr, bytes, assetName, signal, l, },);
+ ```
+ */
+export async function askDeterministicReader(
+  {
+    readOcr,
+    bytes,
+    assetName,
+    signal,
+    l,
+  }: {
+    readonly readOcr: OcrReader;
+    readonly bytes: Uint8Array;
+    readonly assetName: string;
+    readonly signal: AbortSignal;
+    readonly l: Logger;
+  },
+): Promise<OcrReading> {
+  try {
+    return await readOcr({
+      bytes,
+      assetName,
+      l,
+    },);
+  }
+  catch (error) {
+    // A STOP THAT KILLED THE READER IS NOT ITS FAILURE. Whatever the reader
+    // raised, a signal already aborted means the run was told to stop.
+    signal.throwIfAborted();
+    l.warn(
+      `${assetName}: the deterministic reader failed outright, so the models are asked without its gate (${
+        String(error,)
+      })`,
+    );
+    return {
+      kind: 'unavailable',
+      reason: 'ocr-failed',
+    };
+  }
 }
 
 //endregion Image OCR

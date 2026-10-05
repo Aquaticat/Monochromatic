@@ -57,8 +57,13 @@ export type PassPictureSources = {
  THE ONE PLACE THE REAL PROGRAM RUNNER IS NAMED. `readImageWithOcr` requires
  its runner of every caller (ledger M70), so nothing beneath this constant
  starts a program a test did not hand it.
+
+ NAMED ONCE, WHERE THE PASS IS ASSEMBLED (`corpus-pass.ts`), and REQUIRED of
+ every function between there and the reading (ledger M70, M113): a default
+ here was the production value, and a test that left the seam out read the
+ pictures from the corpus and ran the real programs.
  */
-const RUN_PICTURE_SOURCES: PassPictureSources = {
+export const RUN_PICTURE_SOURCES: PassPictureSources = {
   gather: gatherEntryPictures,
   readOcr: ocrReaderOver({ runProgram: runInstalledProgram, },),
 };
@@ -93,8 +98,9 @@ const RUN_PICTURE_SOURCES: PassPictureSources = {
  runs on (ledger X12); required, as the one caller (`readSeatedPictures`)
  always passes it and its entry map (ledger T8)
 
- @param pictureSources - where bytes and OCR text come from, the run's own
- when absent
+ @param pictureSources - where bytes and OCR text come from: `RUN_PICTURE_SOURCES`
+ in a run, stand-ins in a test. Required, so that leaving it out is a type
+ error rather than a reading from the corpus through the real programs
 
  @returns Corroborated or reviewed no-text evidence by asset
 
@@ -103,7 +109,7 @@ const RUN_PICTURE_SOURCES: PassPictureSources = {
 
  @example
  ```ts
- const readings = await readPassVisualEvidence({ client, slices, pin, entryId, readerModelIds, cache, signal, perCallTimeoutMs, l, priorReadings, beforePicture, });
+ const readings = await readPassVisualEvidence({ client, slices, pin, entryId, readerModelIds, cache, signal, perCallTimeoutMs, l, priorReadings, beforePicture, pictureSources: RUN_PICTURE_SOURCES, });
  ```
  */
 export async function readPassVisualEvidence(
@@ -120,7 +126,7 @@ export async function readPassVisualEvidence(
     visualEvidenceReader,
     priorReadings,
     beforePicture,
-    pictureSources = RUN_PICTURE_SOURCES,
+    pictureSources,
   }: {
     readonly client: SyntheticClient;
     readonly slices: readonly ChunkPair[];
@@ -134,7 +140,7 @@ export async function readPassVisualEvidence(
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
     readonly priorReadings: ReadonlyMap<string, PairedReading>;
     readonly beforePicture: () => Promise<PictureReaderSeating>;
-    readonly pictureSources?: PassPictureSources;
+    readonly pictureSources: PassPictureSources;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**

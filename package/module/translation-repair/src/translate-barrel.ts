@@ -219,6 +219,7 @@ export {
 export {
   readingMakesSense,
   type ReadingVerdict,
+  solidCharacters,
 } from './image-reading-sense.ts';
 export {
   latinWords,
@@ -229,7 +230,6 @@ export {
 export {
   type OcrReading,
   readImageWithOcr,
-  solidCharacters,
 } from './image-ocr.ts';
 export {
   type ImageReading,

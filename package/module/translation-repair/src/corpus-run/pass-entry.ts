@@ -34,7 +34,10 @@ import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
 import { createPassPictureReader, } from './pass-seated-pictures.ts';
 import type { PassOutsideReads, } from './pass-outside-reads.ts';
-import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
+import type {
+  PassPictureSources,
+  PassVisualEvidenceReader,
+} from './pass-visual-evidence.ts';
 import {
   openEntryCaches,
   retireSettledEntryCache,
@@ -93,6 +96,8 @@ import { runPassLanes, } from './pass-lanes.ts';
 
  @param outsideReads - what preparation reads from outside the pipeline
 
+ @param pictureSources - where the entry's picture bytes and their OCR text come from
+
  @returns Whether an artifact was written
 
  @example
@@ -114,6 +119,7 @@ async function runEntryPipeline(
     baseSignal,
     overlap,
     outsideReads,
+    pictureSources,
     visualEvidenceReader,
   }: {
     readonly client: RunClient;
@@ -128,6 +134,7 @@ async function runEntryPipeline(
     readonly baseSignal: AbortSignal;
     readonly overlap: number;
     readonly outsideReads: PassOutsideReads;
+    readonly pictureSources: PassPictureSources;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
   },
 ): Promise<EntryOutcome> {
@@ -203,6 +210,7 @@ async function runEntryPipeline(
       cache: readingCache,
       signal: deadline.callSignal,
       l: tagged({ tag: entry.id, },),
+      pictureSources,
       ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
     },);
 
@@ -535,6 +543,12 @@ async function runEntryPipeline(
  readers down itself, so its unit test prepared every entry through the key
  the suite inherits, the real caches and the corpus clone (ledger M68)
 
+ @param pictureSources - where the entry's picture bytes and their OCR text
+ come from: `RUN_PICTURE_SOURCES` in a run, a test's own in a test. REQUIRED,
+ as `outsideReads` is: an entry that names pictures and runs without the
+ evidence seam would otherwise read them from the corpus through the real
+ programs (ledger M70, M113)
+
  @throws StatedRefusalError before entry work when overlap environment value
  is invalid launch configuration
 
@@ -542,7 +556,7 @@ async function runEntryPipeline(
 
  @example
  ```ts
- const outcome = await settleEntry({ client, entry, artifactsDir, publishDir, declinedDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, outsideReads: RUN_OUTSIDE_READS, },);
+ const outcome = await settleEntry({ client, entry, artifactsDir, publishDir, declinedDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, outsideReads: RUN_OUTSIDE_READS, pictureSources: RUN_PICTURE_SOURCES, },);
  ```
  */
 export async function settleEntry(
@@ -558,6 +572,7 @@ export async function settleEntry(
     hardCapMs,
     baseSignal,
     outsideReads,
+    pictureSources,
     visualEvidenceReader,
   }: {
     readonly client: RunClient;
@@ -571,6 +586,7 @@ export async function settleEntry(
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
     readonly outsideReads: PassOutsideReads;
+    readonly pictureSources: PassPictureSources;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
   },
 ): Promise<EntryOutcome> {
@@ -604,6 +620,7 @@ export async function settleEntry(
     baseSignal,
     overlap,
     outsideReads,
+    pictureSources,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
   },);
   if (outcome.kind !== 'settled') {

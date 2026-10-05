@@ -41,12 +41,50 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { carriesWord, } from './word-bounds.ts';
 
 /**
- Shortest reading worth having, in characters after trimming.
+ Shortest reading worth having, in solid characters: non-whitespace code
+ points, counted by `solidCharacters`.
 
  An image nobody could read comes back as an apology or as nothing, and both
  are shorter than any transcript.
+
+ ONE LINE, ONE COUNT. A model's reading and the deterministic reader's text
+ are both held to this line by `solidCharacters` and by nothing else, so a
+ picture is never short by one measure and long by the other: inner whitespace
+ adds nothing to a reading, and an astral character (two UTF-16 units) is one.
  */
 export const MIN_READING_CHARS = 16;
+
+/**
+ Counts what is left of a text once whitespace is dropped.
+
+ A LINEAR SCAN rather than a pattern, per `RG1`: the rule is "characters that
+ are not whitespace", which a scan states directly in one pass and cannot
+ backtrack. It walks code points, so an astral character counts once.
+
+ THE COUNT `MIN_READING_CHARS` IS MEASURED IN, beside the constant for that
+ reason: the reading screen here and the deterministic reader's presence line
+ in `image-ocr.ts` ask the same question of the same count.
+
+ @param text - what a reader returned
+
+ @returns How many non-whitespace characters it holds
+
+ @example
+ ```ts
+ const count = solidCharacters({ text: 'a b', },);
+ ```
+ */
+export function solidCharacters({ text, }: { readonly text: string; },): number {
+  /**
+   Characters counted so far.
+   */
+  let count = 0;
+
+  for (const character of text)
+    if (character.trim() !== '')
+      count += 1;
+  return count;
+}
 
 /**
  How much of a reading is examined for a refusal.
@@ -170,7 +208,7 @@ export function readingMakesSense(
     };
   }
 
-  if (trimmed.length < MIN_READING_CHARS) {
+  if (solidCharacters({ text: trimmed, },) < MIN_READING_CHARS) {
     // A short reply that negates something is an apology fragment ("I can't.",
     // "None."), which says nothing about the picture; one that negates nothing
     // is what a picture with a hull number or a date on it produces. Nothing at

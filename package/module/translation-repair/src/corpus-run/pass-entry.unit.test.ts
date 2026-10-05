@@ -54,6 +54,7 @@ import {
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+import { NO_PICTURE_SOURCES, } from './pass-picture-sources.test-fixture.ts';
 
 /**
  Built pipeline these fixtures claim to have run under.
@@ -1191,6 +1192,7 @@ await describe({
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
             outsideReads: NO_OUTSIDE_READS,
+            pictureSources: NO_PICTURE_SOURCES,
             hardCapMs: 60_000,
             baseSignal: new AbortController().signal,
           },);
@@ -1219,6 +1221,7 @@ await describe({
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
             outsideReads: NO_OUTSIDE_READS,
+            pictureSources: NO_PICTURE_SOURCES,
             hardCapMs: 60_000,
             baseSignal: new AbortController().signal,
           },);
@@ -1257,6 +1260,16 @@ await describe({
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
               outsideReads: NO_OUTSIDE_READS,
+              // A GATHERER THAT FINDS NO BYTES, which is the case under test:
+              // the entry names a picture and no file for it exists where it
+              // would be read. Left to the corpus, this case read the pinned
+              // checkout and ran the real programs (ledger M113).
+              pictureSources: {
+                ...NO_PICTURE_SOURCES,
+                gather: async function gatherNothing(): Promise<Map<string, Uint8Array>> {
+                  return new Map();
+                },
+              },
               hardCapMs: 60_000,
               baseSignal: new AbortController().signal,
             },);
@@ -1302,6 +1315,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
           visualEvidenceReader: async function pictureEvidence() {
@@ -1346,6 +1360,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
           visualEvidenceReader: async function reviewedVisualEvidence() {
@@ -1389,6 +1404,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1562,6 +1578,7 @@ await describe({
               return [];
             },
           },
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1603,6 +1620,7 @@ await describe({
               return CITED_REFERENCE;
             },
           },
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1667,6 +1685,7 @@ await describe({
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
               outsideReads: NO_OUTSIDE_READS,
+              pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: 60_000,
               baseSignal: new AbortController().signal,
             },);
@@ -1752,6 +1771,7 @@ await describe({
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
               outsideReads: NO_OUTSIDE_READS,
+              pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: 60_000,
               baseSignal: new AbortController().signal,
             },);
@@ -1837,6 +1857,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1906,6 +1927,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1939,6 +1961,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1998,6 +2021,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2034,6 +2058,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2089,6 +2114,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2134,6 +2160,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2162,6 +2189,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2212,6 +2240,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2257,6 +2286,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2301,6 +2331,7 @@ await describe({
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
               outsideReads: NO_OUTSIDE_READS,
+              pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: 60_000,
               baseSignal: new AbortController().signal,
             },);
@@ -2338,6 +2369,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2373,6 +2405,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2406,6 +2439,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2457,6 +2491,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2488,6 +2523,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2561,6 +2597,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2587,6 +2624,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: controller.signal,
         },);
@@ -2636,6 +2674,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2668,6 +2707,7 @@ await describe({
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
               outsideReads: NO_OUTSIDE_READS,
+              pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: 60_000,
               baseSignal: new AbortController().signal,
             },);
@@ -2771,6 +2811,7 @@ await describe({
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);

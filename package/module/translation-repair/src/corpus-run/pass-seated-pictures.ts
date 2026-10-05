@@ -54,9 +54,11 @@ import { readJudgeSeats, } from './run-seats-read.ts';
  empty before the entry's first reading; required, since the one caller
  ({@link createPassPictureReader}) always holds the entry's map (ledger T8)
 
- @param pictureSources - where bytes and OCR text come from, the run's own
- when absent; a test hands stand-ins to drive the readers' re-seat hook
- (ledger X14)
+ @param pictureSources - where bytes and OCR text come from:
+ `RUN_PICTURE_SOURCES` in a run, stand-ins in a test, which also drive the
+ readers' re-seat hook (ledger X14). Required, so that leaving it out is a type
+ error rather than a reading from the corpus through the real programs
+ (ledger M70, M113)
 
  @returns Corroborated or reviewed no-text evidence by asset
 
@@ -65,7 +67,7 @@ import { readJudgeSeats, } from './run-seats-read.ts';
 
  @example
  ```ts
- const readings = await readSeatedPictures({ client, slices, entryId, cache, signal, l, priorReadings, },);
+ const readings = await readSeatedPictures({ client, slices, entryId, cache, signal, l, priorReadings, pictureSources, },);
  ```
  */
 export async function readSeatedPictures(
@@ -88,7 +90,7 @@ export async function readSeatedPictures(
     readonly l: Logger;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
     readonly priorReadings: ReadonlyMap<string, PairedReading>;
-    readonly pictureSources?: PassPictureSources;
+    readonly pictureSources: PassPictureSources;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**
@@ -112,7 +114,7 @@ export async function readSeatedPictures(
     l,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
     priorReadings,
-    ...((pictureSources === undefined) ? {} : { pictureSources, }),
+    pictureSources,
     // EVERY PICTURE RE-SEATS UNDER A HOLD (ledger X12,
     // `pass-pictures-reseat.ts`), with a memo per call, since each call
     // already reads the seats afresh.
@@ -138,7 +140,7 @@ export async function readSeatedPictures(
 
  @example
  ```ts
- const readPictures = createPassPictureReader({ client, entryId, cache, signal, l, });
+ const readPictures = createPassPictureReader({ client, entryId, cache, signal, l, pictureSources, });
  ```
  */
 export function createPassPictureReader(
