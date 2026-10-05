@@ -3,6 +3,10 @@
 # shares one channel. mise still applies that toolchain to tasks run in this
 # directory; cargo-fuzz needs the nightly it provides.
 
+[tasks."smoke:embedding:container"]
+description = "Fuzz native embedding snapshots with ASan in a mount-free offline 2 GiB / 2 CPU container"
+run = "node bin/smoke-container.mjs"
+
 [tasks.test]
 description = "cargo nextest run --lib (unit tests for the structured generator)"
 # Scoped to `--lib`: the library target hosts the generator unit tests

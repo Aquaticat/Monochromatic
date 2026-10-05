@@ -225,21 +225,26 @@ pub fn load_from_text(text: &str) -> std::result::Result<LoadedRules, crate::Loa
     })
 }
 
+/// Compile cache-free hybrid rules through the production matcher for fuzz/embedding controls.
+#[cfg(any(test, feature = "fuzzing"))]
+pub(crate) fn hybrid_from_text(text: &str) -> Result<LoadedRules> {
+    // RuntimeRules owns both literal and regex subsets; errors retain their fixed redacted reasons.
+    let compiled: RuntimeRules = RuntimeRules::compile(text).map_err(|error| return anyhow!(error))?;
+    // Copy non-secret identities before moving the compiled matcher into the owning set.
+    let names: Vec<Option<String>> = compiled.names().to_vec();
+    return Ok(LoadedRules {
+        sets: vec![ScanSet { matcher: ScanMatcher::Runtime(compiled), base: 0, names }],
+        cache_warnings: Vec::new(),
+    });
+}
+
 /// Constructs a cache-free hybrid matcher for pathname unit tests.
 ///
 /// These tests must never read or publish artifacts in a user's runtime cache.
 #[cfg(test)]
 pub(crate) fn test_rules(text: &str) -> LoadedRules {
-    let compiled = RuntimeRules::compile(text).expect("compile pathname test rules");
-    let names = compiled.names().to_vec();
-    return LoadedRules {
-        sets: vec![ScanSet {
-            matcher: ScanMatcher::Runtime(compiled),
-            base: 0,
-            names,
-        }],
-        cache_warnings: Vec::new(),
-    };
+    // Extract only test-fixture success; production callers receive the redacted Result instead.
+    return hybrid_from_text(text).expect("compile pathname test rules");
 }
 
 /// Registers the loader precedence and offset tests (sidecar, lint-exempt).

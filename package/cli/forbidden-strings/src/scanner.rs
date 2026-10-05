@@ -93,6 +93,14 @@ impl Scanner {
     }
 }
 
+/// Compile a cache-free scanner through the production hybrid matcher without filesystem or environment state.
+#[cfg(feature = "fuzzing")]
+pub fn scanner_from_text_for_fuzzing(text: &str) -> Result<Scanner> {
+    // Propagate the existing redacted compiler failure; never construct a partial scanner.
+    let loaded: LoadedRules = crate::frx_load::hybrid_from_text(text)?;
+    return Ok(Scanner { loaded });
+}
+
 /// Embedded-consumer controls use cache-free, disposable rule fixtures.
 #[cfg(test)]
 #[path = "scanner_tests.rs"]

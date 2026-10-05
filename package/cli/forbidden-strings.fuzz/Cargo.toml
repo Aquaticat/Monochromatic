@@ -84,6 +84,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "fuzz_embedding"
+path = "fuzz_targets/fuzz_embedding.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "fuzz_cache_envelope"
 path = "fuzz_targets/fuzz_cache_envelope.rs"
 test = false

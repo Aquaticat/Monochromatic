@@ -49,6 +49,9 @@ pub use forbidden_regex::RegexSet;
 /// targets can drive the strict loader and scan path without touching the filesystem.
 pub use crate::frx_load::{load, load_from_text, LoadedRules};
 
+/// Expose the exact snapshot scanner with a cache-free production hybrid loader for the embedding target.
+pub use crate::scanner::scanner_from_text_for_fuzzing;
+
 /// Re-exports the per-file line scan entry point.
 ///
 /// `scan_file` splits a file's bytes into lines and runs each loaded set under the
