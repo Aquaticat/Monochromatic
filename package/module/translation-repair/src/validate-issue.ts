@@ -30,7 +30,8 @@ export type AnchorTarget = {
   readonly text: string;
 
   /**
-   Block nodes with ids, absolute offsets, and content hashes.
+   Block nodes with ids, absolute offsets, and content hashes. No two share
+   an id: validation refuses a document where a span's id names two.
    */
   readonly nodes: readonly DocumentNode[];
 };
@@ -98,6 +99,9 @@ export type AnchorRejection = {
 
  @returns Empty when span holds; exactly one rejection otherwise
 
+ @throws {@link Error} when the document holds more than one node under the
+ id the span names, which is a defect of the document and not of the claim
+
  @example
  ```ts
  const rejections = validateSpanAnchor({ span, spanIndex: 0, documents, },);
@@ -152,13 +156,25 @@ function validateSpanAnchor(
   const document = documents[span.side];
 
   /**
-   Node the span claims to live in, when it exists.
+   Node the span claims to live in, when it exists, and a second node under
+   the same id, which no parsed document holds.
    */
-  const node = document
+  const [
+    node,
+    repeat,
+  ] = document
     .nodes
-    .find(function byId(candidate,) {
+    .filter(function byId(candidate,) {
       return candidate.id === span.nodeId;
     },);
+
+  // A search stopping at the first node of an id would check the span against
+  // a node it was not built on, and call a sound span stale.
+  if (repeat !== undefined) {
+    throw new Error(
+      `unreachable: the ${span.side} document holds more than one node under the id ${span.nodeId}, though parseDocument numbers its blocks, so no document it returns repeats an id`,
+    );
+  }
 
   if (node === undefined) {
     return [{
@@ -225,6 +241,9 @@ function validateSpanAnchor(
  @param documents - current pair anchors must hold against
 
  @returns Rejections in span order; empty when claim anchors hold
+
+ @throws {@link Error} when a document holds more than one node under an id
+ a span names, which is a defect of the document and not of the claim
 
  @example
  ```ts
