@@ -37,10 +37,12 @@ function podman({ args, capture = false, allowFailure = false }) {
 /** Build and run the tool over an immutable input image, then retain its complete report. */
 async function main() {
   const options = process.argv.slice(2);
-  if (options.length > 1 || (options.length === 1 && !['--rust-style', '--markdown', '--processors', '--inferred-constants'].includes(options[0])))
-    throw new VerificationError('Only --rust-style, --markdown, --processors or --inferred-constants is accepted.');
+  const scopes = ['--rust-style', '--markdown', '--markdown-parent', '--processors', '--inferred-constants'];
+  if (options.length > 1 || (options.length === 1 && !scopes.includes(options[0])))
+    throw new VerificationError(`Only one of ${scopes.join(', ')} is accepted.`);
   const rustStyle = options[0] === '--rust-style';
   const markdown = options[0] === '--markdown';
+  const markdownParent = options[0] === '--markdown-parent';
   const processors = options[0] === '--processors';
   const inferredConstants = options[0] === '--inferred-constants';
   const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-mutation-'));
@@ -71,6 +73,10 @@ async function main() {
     // This is scoped evidence, not a replacement for full-rule mutation. The baseline still runs.
     if (markdown)
       command.push('--file', 'src/markdown_*.rs', '--cargo-test-arg=markdown');
+    // Replacing the parent lookup with a constant makes every ancestor walk spin, so the Markdown scope can only
+    // report those mutants as timeouts. This scope runs the one control that never walks, where they fail at once.
+    if (markdownParent)
+      command.push('--file', 'src/markdown_source.rs', '--re', 'MarkdownSource::parent', '--cargo-test-arg=parents_mirror_child_edges_and_stop_at_the_root');
     // Every processor module, not only the planted guard removals of the mutation:processors task.
     if (processors)
       command.push('--file', 'src/processors*.rs', '--cargo-test-arg=processors');
