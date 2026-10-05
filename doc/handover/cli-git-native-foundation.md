@@ -700,17 +700,24 @@ The rate at the gate's 2 threads was not measured.
 
 The first full campaign ran before the fix,
 and its result was inflated by this failure:
-three mutants it counted as caught were missed or timed out on the fixed tree.
-One of them is equivalent,
-so a spurious failure is the only way it could have been caught.
+two mutants it counted as caught were missed on the fixed tree,
+and neither can be caught by a correct control run
+(one is equivalent,
+the other changes a value no control pinned).
+A third,
+the `read_up_to` mutant described under "Timeouts",
+runs close to the 90-second bound,
+so its result varies with timing rather than with this failure.
 
 ### Full campaign on the fixed tree
 
 Sources of commit `de15ea3ea`,
 gate image `15bd4395ea94c2f2cde8cc7957baf037ee7d0c7054c91633ff318172b8bd1a8a`.
 Of 513 mutants
-(5 fewer than before,
-because `policy_descriptor` lost its index),
+(5 fewer than before:
+comparing the two `mutants.json` lists shows that only the `<` and `+=` mutants
+of the removed loop in `policy_descriptor` are gone,
+and every other difference is a shifted line number),
 429 were caught,
 56 did not compile,
 11 were missed,
@@ -825,7 +832,7 @@ and 29,590;
 evidence `campaign-j0BpUV`.
 
 On the final tree
-(commit `6c2af1b34`,
+(commit `1d14906ad`,
 after the registry and fixture changes in the subject)
 the smoke campaign reported 975,367,
 359,412,
