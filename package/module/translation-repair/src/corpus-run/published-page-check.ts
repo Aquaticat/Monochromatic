@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ParsedArchiveText, } from './artifact-two-lane-read-contract.ts';
 import {
   type WouldShipSlice,
@@ -176,7 +178,7 @@ function sliceDelta(
   /**
    Characters the archive held there, none at an anchor.
    */
-  const held = (incumbentBySlice.get(slice.sliceIndex,) ?? '').length;
+  const held = (nonNullishOrThrow(incumbentBySlice.get(slice.sliceIndex,),)).length;
 
   /**
    What this slice would carry, or that it carries nothing.
@@ -193,7 +195,7 @@ function sliceDelta(
    character the page then lost.
    */
   const ships = matchSpanEdges({
-    replaced: incumbentBySlice.get(slice.sliceIndex,) ?? '',
+    replaced: nonNullishOrThrow(incumbentBySlice.get(slice.sliceIndex,),),
     text: reading.text,
   },)
     .length;
@@ -233,7 +235,7 @@ function filledAnAnchor(
   if (reading.kind !== 'wording')
     return false;
 
-  return (incumbentBySlice.get(slice.sliceIndex,) ?? '') === '';
+  return nonNullishOrThrow(incumbentBySlice.get(slice.sliceIndex,),) === '';
 }
 
 /**
@@ -548,8 +550,10 @@ export function refusePageThatDisagrees(
 
   if (!pageWeightRefutes({ weight, },))
     return;
+  // `pageWeightRefutes` returns false for an unweighable weight, so the check
+  // above has already returned; the throw exists to narrow the types.
   if (weight.kind === 'unweighable')
-    return;
+    throw new Error('unreachable: an unweighable weight cannot refute',);
 
   throw new PublishedPageDisagreesError({
     entryId,

@@ -940,5 +940,47 @@ await describe({
         expect(refusal,).toBeDefined();
       },
     },),
+
+    it({
+      name: 'SAYS THE FLOOR CAVEAT where a filled anchor makes the expectation a floor, and not where '
+        + 'the two sides compare outright',
+      fn: async () => {
+        /**
+         Refusal over a slice the archive held nothing under, and one over a
+         plain wording change; each page carries what its slice ships so the
+         weight check is the one that refuses.
+         */
+        const filledAnchor = artifactOver([{ incumbent: '', ships: FIRST_NAP, },],);
+        const caveatError = (function read(): unknown {
+          try {
+            refusePageThatDisagrees({
+              artifact: filledAnchor,
+              archive: { kind: 'stored', text: ARCHIVE_PAGE, },
+              pageText: FIRST_NAP,
+              entryId: 'Mittens',
+            },);
+            return undefined;
+          } catch (error) {
+            return error;
+          }
+        })();
+        expect(String(caveatError,),).toContain('filled anchor makes a floor',);
+
+        const plainError = (function read(): unknown {
+          try {
+            refusePageThatDisagrees({
+              artifact: artifactOver(ONE_SWAP,),
+              archive: { kind: 'stored', text: ARCHIVE_PAGE, },
+              pageText: FIRST_NAP,
+              entryId: 'Mittens',
+            },);
+            return undefined;
+          } catch (error) {
+            return error;
+          }
+        })();
+        expect(String(plainError,),).not.toContain('filled anchor makes a floor',);
+      },
+    },),
   ],
 },);
