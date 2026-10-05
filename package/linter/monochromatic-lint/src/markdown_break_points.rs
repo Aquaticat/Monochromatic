@@ -84,24 +84,18 @@ pub(crate) fn break_offsets(slice: &str, trailing: &str, paragraph_tail: bool) -
             continue;
         }
         // All break points are ASCII, so their next byte is also a character boundary.
-        let mut after: usize = index + 1;
-        while let Some(next) = slice[after..].chars().next() {
-            if !closing(next) {
-                break;
-            }
-            after += next.len_utf8();
-        }
-        let following: Option<char> = if after < slice.len() {
-            slice[after..].chars().next()
-        } else {
-            trailing.chars().next()
-        };
-        if !separator(following) || !needs_break(&slice[after..], trailing, paragraph_tail) {
+        // The standard trim passes every closing delimiter by calling the named test; no offset is stepped by hand.
+        let tail: &str = slice[index + 1..].trim_start_matches(closing);
+        let after: usize = slice.len() - tail.len();
+        // The next written character may lie past this text node, so the paragraph's following source continues the tail.
+        let following: Option<char> = tail.chars().chain(trailing.chars()).next();
+        if !separator(following) || !needs_break(tail, trailing, paragraph_tail) {
             continue;
         }
         if character == '.' {
             // A preceding dot marks the final dot of an ellipsis; abbreviation patterns have bounded length.
-            if index > 0 && slice.as_bytes()[index - 1] == b'.' {
+            // A node that begins with its break point has an empty prefix, which simply ends with nothing.
+            if slice[..index].ends_with('.') {
                 continue;
             }
             if abbreviation_at(slice, index + 1) {
