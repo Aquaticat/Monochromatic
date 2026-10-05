@@ -120,9 +120,19 @@ export component ProjectTree inherits Rectangle {
                 }
                 // The layout row enforces 48px minima; input stays exactly inside those same bounds.
                 row-touch := TouchArea {
+                    private property <int> pressed-index: -1;
+                    private property <[TreeEntry]> pressed-entries;
                     width: parent.width;
                     height: parent.height;
+                    pointer-event(event) => {
+                        if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
+                            self.pressed-index = index;
+                            self.pressed-entries = root.entries;
+                        }
+                    }
                     clicked => {
+                        // Scrolling can reuse this input item for another row before release.
+                        if self.pressed-index != index || self.pressed-entries != root.entries { return; }
                         tree-focus.focus();
                         root.focused-row = index;
                         root.activate(index);
