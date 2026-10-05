@@ -166,6 +166,16 @@ quotations are the user's words.
   "I'm approving the notify crate w/o vetting.
   I trust it."
   This approval covers the `notify` crate itself.
+- File-watching timing,
+  decided after the agent's measurements:
+  the safety re-read of everything shown runs every 1 s
+  (the user typed "Every 1s" instead of the offered 10 s,
+  paced,
+  and 30 s);
+  two notified re-reads of one item stay at least 100 ms apart;
+  a file that is still being written is read after 50 ms without further writes,
+  at most 100 ms after the first
+  (instead of the 150 and 250 ms the agent took from editord and the old polling interval).
 - Moving between outputs with different scaling is verified end to end:
   the nested test compositor gains runtime output scaling first.
 - The nested test compositor's private D-Bus session must not activate services from host service definitions.
@@ -259,7 +269,7 @@ with frames in `package/desktop-app/ide/design/screenshots/2026-10-05-ui-batch-2
   the hit-area definition (rule `HZA`),
   and the per-element exception rule (rule `TXE`).
   The agent added rules `HZP` and `HZK` and a worked example beside them;
-  those additions are open to the user's veto.
+  the user kept all three when asked.
 - Declined:
   a reference-parity rule,
   a CLI `--help` rule,

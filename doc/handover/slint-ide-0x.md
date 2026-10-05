@@ -317,14 +317,34 @@ each owned by one subagent:
   and the failure rate before and after;
   the test's wait must not be lengthened to hide it.
 - Event-driven tree and displayed-file refresh with the user-approved `notify` crate:
-  the agent finished on branch `feat/ide-tree-watch` at `096fbf574`
-  (9 commits on `48a1b5756`,
-  worktree `.claude/worktrees/ide-tree-watch`);
-  the coordinating session merged it on `integrate/ide-language-core`
-  (additive conflicts in `mise.toml` and `src/native.rs`)
-  and the gate on that merge was running when this was written.
-  Not on `main` until the item "Completed in this fan-out" says so.
-  The agent's measured results and open points:
+  landed on `main` as merge `732384e4b`
+  (branch `feat/ide-tree-watch` through `096fbf574`,
+  9 commits on `48a1b5756`,
+  merged on `integrate/ide-language-core` as `aab809c54`
+  with additive conflicts in `mise.toml` and `src/native.rs`).
+  Gate at `aab809c54`
+  (IDE tree `b35830353a255f96dd4754d9f0836bb359201a1b`):
+  lint;
+  88 passing library and integration result lines with none failed;
+  87 of 87 native tests with the two ignored latency measurements skipped.
+  Still in flight:
+  the user chose a 1 s safety sweep and a 50 ms quiet,
+  100 ms limit write wait,
+  and kept the 100 ms gap;
+  `main` still has the 10 s sweep and the 150 and 250 ms waits.
+  The watch agent applies the new values on `feat/ide-tree-watch`
+  (worktree `.claude/worktrees/ide-tree-watch`),
+  with a log-once rule for failed watches,
+  idle cost measured at 1,
+  12,
+  and 100 expanded folders,
+  and a fresh latency run;
+  merge its new commits after it reports.
+  The 30 watch guard controls were observed on the branch;
+  a rerun on the merged tree was started with the cache `~/temp/agent/ide-watch-guard-cache-20261005`
+  and its result is not recorded here yet.
+  The agent's measured results and open points,
+  taken with the 10 s sweep and the 150 and 250 ms waits:
   - `notify` 8.2.0 with default features off;
     the code names `notify::INotifyWatcher`,
     so no polling backend can be selected.
@@ -365,11 +385,15 @@ each owned by one subagent:
     43 of 43 native tests with the two ignored latency measurements skipped,
     lint;
     nested-session frames for both schemes in `~/temp/agent/ide-tree-watch-20261005/native-evidence-final/`.
-  - Chosen values open to the user's veto:
+  - Values the agent chose,
+    since decided by the user as stated in this item:
     the 10 s sweep,
     a 100 ms gap between notified rereads of one item
     (added beyond the brief so a busy folder is not reread every tick),
     and the 150 ms quiet and 250 ms limit before reading a file that is still being written.
+  - Still open,
+    to be asked with built screenshots:
+    whether reaching the watch limit shows a visible message or stays log only.
   - Not exercised end to end:
     an unavailable watcher (inotify instance limit) and `fs.inotify.max_user_watches` exhaustion;
     both are logged at WARN and fall back to the timers,
@@ -398,6 +422,20 @@ each owned by one subagent:
   the search list,
   and the references list,
   and frames of the applied result under `package/desktop-app/ide/design/screenshots/`.
+- Release packaging and the consumer-boundary check of the packaged application
+  in the worktree `.claude/worktrees/ide-package`
+  on branch `feat/ide-package`
+  (MCP ports 9414 and 9415),
+  based on `aab809c54`:
+  what a runnable artifact means from sibling precedent and Helix's runtime lookup,
+  a release build task,
+  a self-contained directory that runs without `HELIX_RUNTIME` and the source tree,
+  a check of that artifact in the nested compositor against disposable TypeScript and Rust projects,
+  and the scale-change latency in release and debug builds.
+  Desktop entry,
+  icon,
+  installer,
+  and install location are left as questions for the user.
 - Landing a branch that conflicts with `main`:
   merge it with `git merge --no-ff` in `.claude/worktrees/ide-integrate`,
   resolve once,
