@@ -153,7 +153,10 @@ fn a_parent_index_cycle_is_a_typed_error_and_a_processing_failure() {
     let text: u32 = only(&document, MdastNodeType::Text);
     // Positive control: the intact index climbs text, emphasis, paragraph, root.
     assert_eq!(document.ancestors(text), Ok(vec![emphasis, paragraph, 0]));
-    assert_eq!(document.has_ancestor(text, MdastNodeType::Paragraph), Ok(true));
+    assert_eq!(
+        document.has_ancestor(text, MdastNodeType::Paragraph),
+        Ok(true)
+    );
     // Corrupt the derived index: the paragraph's parent becomes the emphasis inside it.
     // `as usize` widens the u32 id to the index type a Vec takes.
     document.parents[paragraph as usize] = emphasis;
