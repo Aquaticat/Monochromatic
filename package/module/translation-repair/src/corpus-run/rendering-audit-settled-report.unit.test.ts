@@ -589,8 +589,8 @@ await describe({
         },),
 
         it({
-          name: 'COUNTS ONE UNVERIFIABLE SLOT in the singular, since the phrase opens a sentence a '
-            + 'reader follows',
+          name: 'COUNTS ONE UNVERIFIABLE SLOT in the singular and TWO in the plural, since the phrase opens a '
+            + 'sentence a reader follows',
           fn: async (ctx) => {
             using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 

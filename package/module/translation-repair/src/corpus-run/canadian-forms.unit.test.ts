@@ -461,15 +461,17 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES a month-first date whose year the read refuses, and REWRITES a day-first date with a '
-        + 'year, its sentence comma taken only where the sentence runs on',
+      name: 'LEAVES a month-first date whose year the read refuses, ordinal suffix and all, and REWRITES a '
+        + 'year-first date month first, closing its year with a comma only where the sentence runs on',
       fn: async () => {
+        // The suffix is what the refusal keeps: read with that year, the date
+        // would lose its "rd" and keep the five-digit year beside it.
         expect([
-          rewritten({ text: 'May 3 20233 by the window, the cat napped.', },),
+          rewritten({ text: 'May 3rd 20233 by the window, the cat napped.', },),
           rewritten({ text: 'The cat was born on 2026 May 3rd in a box.', },),
           rewritten({ text: 'The cat was born on 2026 May 3rd.', },),
         ],).toEqual([
-          'May 3 20233 by the window, the cat napped.',
+          'May 3rd 20233 by the window, the cat napped.',
           'The cat was born on May 3, 2026, in a box.',
           'The cat was born on May 3, 2026.',
         ],);

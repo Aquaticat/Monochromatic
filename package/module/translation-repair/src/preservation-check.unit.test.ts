@@ -221,7 +221,15 @@ await describe({
           licensedQuotes: ['and often shared her opinions loudly', '',],
         },);
 
-        expect(verdict.preserved,).toBe(true,);
+        // The three residual tokens are the content words the non-empty quote
+        // leaves unlicensed; an empty quote split like any other would blank
+        // them too, and the gate would pass with nothing left to measure.
+        expect(verdict,).toEqual({
+          preserved: true,
+          lostDistinctive: [],
+          lossFraction: 0,
+          residualTokens: 3,
+        },);
       },
     },),
   ],

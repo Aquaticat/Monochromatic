@@ -233,6 +233,10 @@ await describe({
           caught = error;
         }
         expect(caught instanceof StreamOverrunError,).toBe(true,);
+        expect(String(caught,),).toBe(
+          'StreamOverrunError: hf:whiskers: ended a call that exceeded its content bound, 48 characters on the '
+            + 'content channel against a bound of 10',
+        );
       },
     },),
     it({
@@ -282,6 +286,10 @@ await describe({
           caught = error;
         }
         expect(caught instanceof StreamOverrunError,).toBe(true,);
+        expect(String(caught,),).toBe(
+          'StreamOverrunError: hf:whiskers: ended a call that exceeded its content bound, 24 characters on the '
+            + 'content channel against a bound of 10',
+        );
         /**
          The same body with no wire named: the default scanner reads no
          answer character of it, so the same bound never trips.

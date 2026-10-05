@@ -15,6 +15,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -195,6 +196,36 @@ await describe({
             expect(comparison.aliases,).toHaveLength(0,);
           },
         },),
+
+        it({
+          name: 'CLAIMS an underlying model under either spelling, so an alias onto one already seated is a '
+            + 'second seat rather than a new voice',
+          fn: async () => {
+            // Neither catalog id is served under its own spelling, so both are
+            // missing, and each served model is one the catalog seats: the
+            // catalog spells one with the `hf:` prefix and one without.
+            expect(compareCatalog({
+              served: [{
+                id: 'glm-5.3-seat',
+                huggingFaceId: 'zai-org/GLM-5.3-Flash',
+              }, {
+                id: 'mao-1-seat',
+                huggingFaceId: 'cats/Mao-1',
+              },],
+              catalog: ['hf:zai-org/GLM-5.3-Flash', 'cats/Mao-1',],
+            },),).toEqual({
+              unlisted: [],
+              aliases: [{
+                id: 'glm-5.3-seat',
+                huggingFaceId: 'zai-org/GLM-5.3-Flash',
+              }, {
+                id: 'mao-1-seat',
+                huggingFaceId: 'cats/Mao-1',
+              },],
+              missing: ['hf:zai-org/GLM-5.3-Flash', 'cats/Mao-1',],
+            },);
+          },
+        },),
       ],
     },),
 
@@ -258,66 +289,74 @@ await describe({
             },).toThrow();
           },
         },),
+
+        it({
+          name: 'REFUSES a models body that is no object and an entry that is no object, naming where, since '
+            + 'nothing there names a served model',
+          fn: async () => {
+            /**
+             What the read throws for a body that is a number.
+             */
+            const bodyRefusal = caught(function readsBody(): void {
+              decodeModelList({ body: 5, },);
+            },);
+            expect(bodyRefusal,).toBeInstanceOf(ArtifactParseError,);
+            expect(String(bodyRefusal,),).toBe('ArtifactParseError: artifact parse failed at models: expected an object.',);
+            /**
+             What the read throws for an entry that is a number.
+             */
+            const entryRefusal = caught(function readsEntry(): void {
+              decodeModelList({ body: { data: [5,], }, },);
+            },);
+            expect(entryRefusal,).toBeInstanceOf(ArtifactParseError,);
+            expect(String(entryRefusal,),).toBe(
+              'ArtifactParseError: artifact parse failed at models.data[]: expected an object.',
+            );
+          },
+        },),
       ],
     },),
 
-    it({
-      name: 'REFUSES a models body that is no object and an entry that is no object, since nothing there '
-        + 'names a served model',
-      fn: async () => {
-        expect(function readsBody(): void {
-          decodeModelList({ body: 5, },);
-        },).toThrow(ArtifactParseError,);
-        expect(function readsEntry(): void {
-          decodeModelList({ body: { data: [5,], }, },);
-        },).toThrow(ArtifactParseError,);
-      },
-    },),
-
-    it({
-      name: 'CLAIMS an underlying model under either spelling, so an alias onto one already seated is a '
-        + 'second seat rather than a new voice',
-      fn: async () => {
-        const comparison = compareCatalog({
-          served: [{
-            id: 'glm-5.3-seat',
-            huggingFaceId: 'zai-org/GLM-5.3-Flash',
-          }, {
-            id: 'mao-1-seat',
-            huggingFaceId: 'cats/Mao-1',
-          },],
-          catalog: ['hf:zai-org/GLM-5.3-Flash', 'cats/Mao-1',],
-        },);
-        expect(comparison.aliases,).toHaveLength(2,);
-      },
-    },),
-
-    it({
-      name: 'REPORTS the owner blocklist under both spellings and the unlisted models it does not block',
-      fn: async () => {
-        const comparison = compareCatalog({
-          served: [{
-            id: 'qwen3.8-max',
-            huggingFaceId: 'qwen/qwen3.8-max',
-          }, {
-            id: 'glm-5.2-seat',
-            huggingFaceId: 'zai-org/GLM-5.2',
-          }, {
-            id: 'mao-1',
-            huggingFaceId: 'cats/Mao-1',
-          }, {
-            id: 'glm-5.3-second',
-            huggingFaceId: 'zai-org/GLM-5.3-Flash',
-          },],
-          catalog: ['cats/Mao-2', 'hf:zai-org/GLM-5.3-Flash',],
-        },);
-        const report = formatCatalogReport({ comparison, },);
-        expect(report,).toContain('BLOCKED by owner: absurd cost in money',);
-        expect(report,).toContain('BLOCKED by owner: too outdated',);
-        expect(report,).toContain('  mao-1  (cats/Mao-1)',);
-        expect(report,).toContain('loses a voice to a 404',);
-        expect(report,).toContain('ALIASES onto models already seated: 1',);
-      },
+    describe({
+      name: formatCatalogReport.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REPORTS the owner blocklist under both spellings, the unlisted model it does not block, the '
+            + 'catalog ids the provider dropped and the alias, line for line',
+          fn: async () => {
+            const comparison = compareCatalog({
+              served: [{
+                id: 'qwen3.8-max',
+                huggingFaceId: 'qwen/qwen3.8-max',
+              }, {
+                id: 'glm-5.2-seat',
+                huggingFaceId: 'zai-org/GLM-5.2',
+              }, {
+                id: 'mao-1',
+                huggingFaceId: 'cats/Mao-1',
+              }, {
+                id: 'glm-5.3-second',
+                huggingFaceId: 'zai-org/GLM-5.3-Flash',
+              },],
+              catalog: ['cats/Mao-2', 'hf:zai-org/GLM-5.3-Flash',],
+            },);
+            // The unblocked model's line ends at its spelling: a blocked one
+            // carries the same opening and then its reason.
+            expect(formatCatalogReport({ comparison, },),).toBe([
+              'MISSING from the provider but still in the catalog: 2',
+              '  cats/Mao-2  <- every call on this loses a voice to a 404',
+              '  hf:zai-org/GLM-5.3-Flash  <- every call on this loses a voice to a 404',
+              'UNLISTED distinct models the provider serves: 3',
+              '  qwen3.8-max  (qwen/qwen3.8-max)  BLOCKED by owner: absurd cost in money',
+              '  glm-5.2-seat  (zai-org/GLM-5.2)  BLOCKED by owner: too outdated',
+              '  mao-1  (cats/Mao-1)',
+              'ALIASES onto models already seated: 1',
+              '  glm-5.3-second -> zai-org/GLM-5.3-Flash',
+            ].join('\n',),);
+          },
+        },),
+      ],
     },),
   ],
 },);

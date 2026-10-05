@@ -212,6 +212,32 @@ await describe({
             expect(items,).toHaveLength(1,);
           },
         },),
+
+        it({
+          name: 'READS THE WHOLE REST as the answer when no legend bounds it, its verdict letter and every '
+            + 'word of its note',
+          fn: async () => {
+            expect(parseGradedSheet({ text: '### 1. grade: Y, the cat naps on the sill', },),).toEqual([{
+              index: 1,
+              verdict: 'real-defect',
+              note: 'the cat naps on the sill',
+            },],);
+          },
+        },),
+
+        it({
+          name: 'READS A DUPLICATE verdict where the answer opens with the word, keeping the note the grader '
+            + 'wrote',
+          fn: async () => {
+            expect(parseGradedSheet({
+              text: catSheet({ answers: ['Duplicate: the same page twice',], },),
+            },),).toEqual([{
+              index: 1,
+              verdict: 'duplicate',
+              note: 'Duplicate: the same page twice',
+            },],);
+          },
+        },),
       ],
     },),
 
@@ -238,6 +264,32 @@ await describe({
             expect(tally.scored,).toBe(3,);
             expect(tally.realDefects,).toBe(2,);
             expect(tally.unscored,).toEqual([4,],);
+          },
+        },),
+
+        it({
+          name: 'LISTS THE DUPLICATE INDICES beside the rates and leaves them out of every denominator, since a '
+            + 'duplicate row is one opinion counted once',
+          fn: async () => {
+            /**
+             One real defect and the same defect graded again at the next position.
+             */
+            const human: readonly GradedItem[] = [{
+              index: 1,
+              verdict: 'real-defect',
+              note: '',
+            }, {
+              index: 2,
+              verdict: 'duplicate',
+              note: 'the same page twice',
+            },];
+            expect(scoreGradedPrecision({ human, },),).toEqual({
+              scored: 1,
+              realDefects: 1,
+              unscored: [],
+              duplicates: [2,],
+              gradeable: 1,
+            },);
           },
         },),
       ],
@@ -315,6 +367,36 @@ await describe({
             }
           },
         },),
+
+        it({
+          name: 'REFUSES a pre-grade whose verdict is no string as a stated refusal naming its position, since '
+            + 'nothing there names a verdict the grader gave',
+          fn: async () => {
+            expect(statedRefusalMessage({
+              read: function readsNumericVerdict(): void {
+                parsePreGrades({ text: '[{"index": 1, "verdict": 42}]', },);
+              },
+            },),).toBe('pre-grade 1 carries a verdict outside the vocabulary',);
+          },
+        },),
+
+        it({
+          name: 'READS a pre-grade marking its item a duplicate, since a blind grader meets the same repeated '
+            + 'defects the sheet reader marks and a file saying so must not be refused whole',
+          fn: async () => {
+            expect(parsePreGrades({
+              text: JSON.stringify([{
+                index: 1,
+                verdict: 'duplicate',
+                note: 'the same nap as item 3',
+              },],),
+            },),).toEqual([{
+              index: 1,
+              verdict: 'duplicate',
+              note: 'the same nap as item 3',
+            },],);
+          },
+        },),
       ],
     },),
 
@@ -353,6 +435,36 @@ await describe({
             expect(tally.disagreed,).toEqual([2,],);
             // The declined item is reported, never silently folded into agreement.
             expect(tally.unscored,).toEqual([4,],);
+          },
+        },),
+
+        it({
+          name: 'NAMES a pre-grade\'s duplicate on an item the human scored as a disagreement, and leaves out an '
+            + 'item the human marked duplicate whatever the pre-grade said',
+          fn: async () => {
+            expect(scoreGradeAgreement({
+              agent: catPreGrades({
+                verdicts: [
+                  'duplicate',
+                  'duplicate',
+                  'real-defect',
+                ],
+              },),
+              human: parseGradedSheet({
+                text: catSheet({
+                  answers: [
+                    '[Y]',
+                    'Duplicate: the same nap as item 1',
+                    '[Y]',
+                  ],
+                },),
+              },),
+            },),).toEqual({
+              compared: 2,
+              agreed: 1,
+              disagreed: [1,],
+              unscored: [],
+            },);
           },
         },),
 
@@ -486,57 +598,6 @@ await describe({
           },
         },),
       ],
-    },),
-
-    it({
-      name: 'READS THE WHOLE REST when no legend bounds the answer',
-      fn: async () => {
-        /**
-         A heading whose answer no legend bounds.
-         */
-        const unbounded = parseGradedSheet({ text: '### 1. grade: Y', },);
-        expect(unbounded[0]?.verdict,).toBe('real-defect',);
-      },
-    },),
-
-    it({
-      name: 'READS A DUPLICATE verdict where the answer opens with the word, keeping the note the grader '
-        + 'wrote',
-      fn: async () => {
-        const items = parseGradedSheet({
-          text: catSheet({ answers: ['Duplicate: the same page twice',], },),
-        },);
-        expect(items[0]?.verdict,).toBe('duplicate',);
-      },
-    },),
-
-    it({
-      name: 'READS NO VERDICT from a pre-grade whose verdict is no string, since nothing there names a '
-        + 'verdict the grader gave',
-      fn: async () => {
-        expect(function refusesTheVocabulary(): void {
-          parsePreGrades({ text: '[{"index": 1, "verdict": 42}]', },);
-        },).toThrow('outside the vocabulary',);
-      },
-    },),
-
-    it({
-      name: 'LISTS THE DUPLICATE INDICES beside the rates, since a duplicate row is one opinion counted '
-        + 'once',
-      fn: async () => {
-        const tally = scoreGradedPrecision({
-          human: [{
-            index: 1,
-            verdict: 'real-defect',
-            note: '',
-          }, {
-            index: 2,
-            verdict: 'duplicate',
-            note: 'the same page twice',
-          },] as unknown as readonly GradedItem[],
-        },);
-        expect(tally.duplicates,).toEqual([2,],);
-      },
     },),
   ],
 },);

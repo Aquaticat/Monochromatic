@@ -18,6 +18,7 @@ import {
   type PipelineDigest,
   preparationIdentity,
   type PreparedDocumentPair,
+  type SettledArtifact,
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
 
@@ -203,6 +204,54 @@ function keptLanes(
 }
 
 /**
+ A settled artifact over a preparation, as the builder returns it, carrying
+ the contest and consolidation records the caller states.
+
+ @param prepared - preparation the artifact records
+
+ @param entryId - entry the artifact settles
+
+ @param laneSelection - contest record, stated because the builder takes any
+ the artifact schema allows while a pass writes only one
+
+ @param consolidation - consolidation record, stated for the same reason
+
+ @returns The artifact object, unserialized
+
+ @example
+ ```ts
+ const artifact = settledArtifactOver({ prepared, entryId: 'CatEntry1', laneSelection: { kind: 'pending-human-decision', }, consolidation: { kind: 'not-run', }, },);
+ ```
+ */
+export function settledArtifactOver(
+  {
+    prepared,
+    entryId,
+    laneSelection,
+    consolidation,
+  }: {
+    readonly prepared: PreparedDocumentPair;
+    readonly entryId: string;
+    readonly laneSelection: Parameters<typeof buildSettledTwoLaneArtifact>[0]['laneSelection'];
+    readonly consolidation: Parameters<typeof buildSettledTwoLaneArtifact>[0]['consolidation'];
+  },
+): SettledArtifact {
+  return buildSettledTwoLaneArtifact({
+    pageAssembly: NO_PAGE_ASSEMBLY,
+    entryId,
+    tip: 'a'.repeat(COMMIT_HEX_LENGTH,),
+    pipelineDigest: FIXTURE_DIGEST,
+    corpusSha: 'b'.repeat(COMMIT_HEX_LENGTH,),
+    callConfig: { perCallTimeoutMs: 600_000, },
+    durationMs: 1_234,
+    prepared,
+    lanes: keptLanes({ prepared, },),
+    laneSelection,
+    consolidation,
+  },);
+}
+
+/**
  A settled artifact over a preparation, as the bytes a file on disk carries.
 
  @param prepared - preparation the artifact records
@@ -228,16 +277,9 @@ export function settledArtifactText(
   /**
    The artifact as the builder writes it.
    */
-  const built = buildSettledTwoLaneArtifact({
-    pageAssembly: NO_PAGE_ASSEMBLY,
-    entryId,
-    tip: 'a'.repeat(COMMIT_HEX_LENGTH,),
-    pipelineDigest: FIXTURE_DIGEST,
-    corpusSha: 'b'.repeat(COMMIT_HEX_LENGTH,),
-    callConfig: { perCallTimeoutMs: 600_000, },
-    durationMs: 1_234,
+  const built = settledArtifactOver({
     prepared,
-    lanes: keptLanes({ prepared, },),
+    entryId,
     laneSelection: { kind: 'pending-human-decision', },
     consolidation: { kind: 'not-run', },
   },);

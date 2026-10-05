@@ -11,6 +11,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  caught,
   describe,
   expect,
   it,
@@ -21,6 +22,7 @@ import {
   floorReach,
   NaturalnessCompletenessError,
   polishConsolidation,
+  prepareDocumentPair,
   reviewParagraphsOf,
   unflooredFinding,
   type ChatJsonOutcome,
@@ -28,6 +30,7 @@ import {
   type SettledArtifact,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { settledArtifactOver, } from './corpus-run/settled-artifact.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -335,14 +338,12 @@ const CONFIG = {
 
 /**
  Wraps one polish record in the minimal artifact the completeness guard reads,
- with the deciding stages replaceable where a case needs another standing.
+ with the contest record replaceable where a case needs a slice of another
+ syntax.
 
  @param polish - settled polish record as the pipeline would persist it
 
  @param selection - lane contest record, contested over slice 1 by default
-
- @param consolidation - consolidation record, settled over slice 1 carrying the
- polish by default
 
  @returns Artifact whose consolidated body slice carries that polish
 
@@ -366,7 +367,17 @@ function artifactCarrying(
         usable: 2,
       },],
     },
-    consolidation = {
+  }: {
+    readonly polish: unknown;
+    readonly selection?: unknown;
+  },
+): SettledArtifact {
+  // Serialization round-trip first, because persistence writes JSON and the
+  // guard must accept what a resumed run would read back.
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- JSON semantics are the point: persistence writes JSON, so undefined-valued keys must drop and a non-serializable field must fail here, both of which structuredClone would hide.
+  return JSON.parse(JSON.stringify({
+    laneSelection: selection,
+    consolidation: {
       kind: 'settled',
       slices: [{
         sliceIndex: 1,
@@ -379,18 +390,6 @@ function artifactCarrying(
         polish,
       },],
     },
-  }: {
-    readonly polish: unknown;
-    readonly selection?: unknown;
-    readonly consolidation?: unknown;
-  },
-): SettledArtifact {
-  // Serialization round-trip first, because persistence writes JSON and the
-  // guard must accept what a resumed run would read back.
-  // oxlint-disable-next-line unicorn/prefer-structured-clone -- JSON semantics are the point: persistence writes JSON, so undefined-valued keys must drop and a non-serializable field must fail here, both of which structuredClone would hide.
-  return JSON.parse(JSON.stringify({
-    laneSelection: selection,
-    consolidation,
   },),) as SettledArtifact;
 }
 
@@ -809,34 +808,31 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES NOTHING when the contest never ran and consolidation never ran, since nothing was '
-        + 'asked of final naturalness (ledger T8, the corpus-run/final cluster)',
+      name: 'THROWS THE INVARIANT, naming both records, on an artifact whose contest or consolidation '
+        + 'never ran, since the one writer persistence is handed records both as run',
       fn: async () => {
-        assertFinalNaturalnessComplete({
-          artifact: artifactCarrying({
-            polish: undefined,
-            selection: {
-              kind: 'pending-human-decision',
-            },
-            consolidation: {
-              kind: 'not-run',
-            },
-          },),
+        /**
+         One-slice cat page every pairing is built over.
+         */
+        const prepared = prepareDocumentPair({
+          sourceText: '猫在睡觉。',
+          targetText: 'The cat naps.',
         },);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a contested body slice when consolidation never ran, which proves final naturalness '
-        + 'never ran over it (ledger T8, the corpus-run/final cluster)',
-      fn: async () => {
-        expect(() => assertFinalNaturalnessComplete({
-          artifact: artifactCarrying({
-            polish: undefined,
-            selection: {
+        /**
+         Each pairing the builder takes and no pass writes. The contested one
+         carries a body slice, the record once refused as a slice short of
+         the naturalness floor.
+         */
+        const pairings = [
+          {
+            laneSelection: { kind: 'pending-human-decision', },
+            consolidation: { kind: 'not-run', },
+          },
+          {
+            laneSelection: {
               kind: 'contested',
               slices: [{
-                sliceIndex: 7,
+                sliceIndex: 0,
                 verdict: {
                   kind: 'lane-won',
                   lane: 'translate',
@@ -845,65 +841,49 @@ await describe({
                 usable: 2,
               },],
             },
+            consolidation: { kind: 'not-run', },
+          },
+          {
+            laneSelection: { kind: 'pending-human-decision', },
             consolidation: {
-              kind: 'not-run',
+              kind: 'settled',
+              slices: [],
             },
-          },),
-        },),).toThrow(NaturalnessCompletenessError,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES NOTHING for contested front matter when consolidation never ran, syntax-bearing '
-        + 'front matter being exempt (ledger T8, the corpus-run/final cluster)',
-      fn: async () => {
-        assertFinalNaturalnessComplete({
-          artifact: artifactCarrying({
-            polish: undefined,
-            selection: {
-              kind: 'contested',
-              slices: [{
-                sliceIndex: 7,
-                verdict: {
-                  kind: 'lane-won',
-                  lane: 'translate',
-                },
-                ballots: [],
-                usable: 2,
-                eligibility: {
-                  syntax: 'front-matter',
-                },
-              },],
-            },
-            consolidation: {
-              kind: 'not-run',
-            },
-          },),
-        },);
-      },
-    },),
-
-    it({
-      name: 'READS no syntax exemptions when the contest never ran, so the polish record alone decides '
-        + '(ledger T8, the corpus-run/final cluster)',
-      fn: async () => {
-        assertFinalNaturalnessComplete({
-          artifact: artifactCarrying({
-            polish: {
-              kind: 'not-run',
-              reason: 'unsafe-baseline',
-            },
-            selection: {
-              kind: 'pending-human-decision',
-            },
-          },),
-        },);
+          },
+        ] as const;
+        expect(pairings.map(function refusalOf(
+          {
+            laneSelection,
+            consolidation,
+          },
+        ): string {
+          return String(caught(function persists(): void {
+            assertFinalNaturalnessComplete({
+              artifact: settledArtifactOver({
+                prepared,
+                entryId: 'Whiskers',
+                laneSelection,
+                consolidation,
+              },),
+            },);
+          },),);
+        },),).toEqual([
+          'Error: unreachable: the artifact handed to persistence records its contest as '
+            + 'pending-human-decision and its consolidation as not-run, though settledEntryArtifact, its one '
+            + 'writer, records them as contested and settled',
+          'Error: unreachable: the artifact handed to persistence records its contest as contested and its '
+            + 'consolidation as not-run, though settledEntryArtifact, its one writer, records them as '
+            + 'contested and settled',
+          'Error: unreachable: the artifact handed to persistence records its contest as '
+            + 'pending-human-decision and its consolidation as settled, though settledEntryArtifact, its one '
+            + 'writer, records them as contested and settled',
+        ],);
       },
     },),
 
     it({
       name: 'ACCEPTS a front-matter slice whose polish records the front-matter skip, and REFUSES the '
-        + 'same slice under any other record (ledger T8, the corpus-run/final cluster)',
+        + 'same slice under the unsafe-baseline skip a body slice ships with',
       fn: async () => {
         /**
          Contested slice carrying front matter.
@@ -932,33 +912,48 @@ await describe({
             selection,
           },),
         },);
-        expect(() => assertFinalNaturalnessComplete({
-          artifact: artifactCarrying({
-            polish: {
-              kind: 'not-run',
-              reason: 'not-configured',
-            },
-            selection,
-          },),
-        },),).toThrow(NaturalnessCompletenessError,);
+        /**
+         What the guard throws for the same slice under the skip a body slice
+         ships with, so only the front-matter rule can refuse it.
+         */
+        const refusal = caught(function persistsUnsafeBaseline(): void {
+          assertFinalNaturalnessComplete({
+            artifact: artifactCarrying({
+              polish: {
+                kind: 'not-run',
+                reason: 'unsafe-baseline',
+              },
+              selection,
+            },),
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(NaturalnessCompletenessError,);
+        expect(String(refusal,),).toBe('NaturalnessCompletenessError: slice 1 did not meet absolute naturalness floor',);
       },
     },),
 
     it({
       name: 'REFUSES a settled polish carrying no review record, since nothing proves a reviewer read '
-        + 'the body slice (ledger T8, the corpus-run/final cluster)',
+        + 'the body slice',
       fn: async () => {
-        expect(() => assertFinalNaturalnessComplete({
-          artifact: artifactCarrying({
-            polish: {
-              kind: 'settled',
-              baseText: 'The cat naps.',
-              proposedText: 'The cat is napping.',
-              text: 'The cat is napping.',
-              changed: true,
-            },
-          },),
-        },),).toThrow(NaturalnessCompletenessError,);
+        /**
+         What the guard throws for a settled polish no reviewer record backs.
+         */
+        const refusal = caught(function persistsUnreviewed(): void {
+          assertFinalNaturalnessComplete({
+            artifact: artifactCarrying({
+              polish: {
+                kind: 'settled',
+                baseText: 'The cat naps.',
+                proposedText: 'The cat is napping.',
+                text: 'The cat is napping.',
+                changed: true,
+              },
+            },),
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(NaturalnessCompletenessError,);
+        expect(String(refusal,),).toBe('NaturalnessCompletenessError: slice 1 did not meet absolute naturalness floor',);
       },
     },),
 

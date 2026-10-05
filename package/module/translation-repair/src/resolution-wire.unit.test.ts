@@ -131,6 +131,26 @@ await describe({
             },),
           ],
         },),
+        describe({
+          name: isResolutionReportWire.name,
+          children: [
+            it({
+              name: 'REFUSES a reply that is no object, a check that is no object, and a check whose issue is a '
+                + 'numeric string the whole-number test alone would pass, since nothing there binds a verdict '
+                + 'to an issue',
+              fn: async () => {
+                expect(isResolutionReportWire(5,),).toBe(false,);
+                expect(isResolutionReportWire({ checks: [5,], },),).toBe(false,);
+                // A string the remainder operator reads as the number one, so
+                // only the number check refuses it: "one" would fail the
+                // whole-number test as well.
+                expect(isResolutionReportWire({
+                  checks: [{ issue: '1', verdict: 'fixed', },],
+                },),).toBe(false,);
+              },
+            },),
+          ],
+        },),
       ],
     },),
 
@@ -150,18 +170,6 @@ await describe({
           },
         },),
       ],
-    },),
-
-    it({
-      name: 'REFUSES a reply that is no object, a check that is no object, and a check whose issue is no '
-        + 'number, since nothing there binds a verdict to an issue',
-      fn: async () => {
-        expect(isResolutionReportWire(5,),).toBe(false,);
-        expect(isResolutionReportWire({ checks: [5,], },),).toBe(false,);
-        expect(isResolutionReportWire({
-          checks: [{ issue: 'one', verdict: 'fixed', },],
-        },),).toBe(false,);
-      },
     },),
   ],
 },);
