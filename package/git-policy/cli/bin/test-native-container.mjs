@@ -134,8 +134,9 @@ async function main() {
     [
       `FROM ${base}`,
       'COPY package /work/package',
-      'COPY vendor /work/vendor',
-      'COPY cargo-config /work/.cargo',
+      // Some crate archives carry files only their owner may read, so the tester must own the vendored copy.
+      'COPY --chown=1000:1000 vendor /work/vendor',
+      'COPY --chown=1000:1000 cargo-config /work/.cargo',
       'COPY clippy.toml /work/clippy.toml',
       'RUN ["mkdir", "--parents", "/home/tester/.cargo"]',
       'RUN ["chown", "--recursive", "1000:1000", "/work/package", "/home/tester"]',
