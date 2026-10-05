@@ -122,6 +122,19 @@ using the same emulator binary,
 renderer,
 APK and 6GiB/2CPU limits.
 
+The API36 Google APIs guest also passed its bounded pre-app focus/crash-log
+samples,
+then a cover frame exposed a Pixel Launcher ANR.
+The event buffer identifies Google Play services startup/broadcast ANRs
+and a launcher `NotificationListener` service timeout of `20565ms`
+before the debug APK's activity launch.
+That locates observed failures in startup work,
+not an isolated image,
+CPU or renderer cause.
+The plain `system-images/android-36/default/x86_64` image is being acquired
+as a separate control without Google apps.
+The Google API36 guest is restored/stopped before that control boots.
+
 ## Independently verifiable queue
 
 - [x] Inspect the accepted dark error/toast candidates,
