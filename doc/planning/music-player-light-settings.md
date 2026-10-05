@@ -239,8 +239,49 @@ The current APK SHA-256 is
 `85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50`.
 The first visit's captures are superseded and stay private;
 they are not publication inputs.
-A second visit must capture,
-measure and inspect this build.
+
+## Visits on the fixed build
+
+A second visit installed the fixed APK,
+then failed before its first capture:
+a 15 s bound on `podman inspect` expired under a host load near 50.
+It restored every recorded field,
+its owner exited `0`,
+and it supplies no evidence.
+That bound is now 120 s,
+and a failed or timed-out inspection reads as unknown,
+never as an absent runtime.
+
+The third visit captured all 32 views:
+both panels,
+light and dark,
+100% and 200% text,
+the closed player,
+both switch scenes and an end-of-column view wherever the column scrolls.
+Every measured rule passed,
+and the geometry matches the first build exactly.
+The column scrolls only at 200% text:
+787 physical pixels on the unfolded panel and 318 on the cover.
+
+Fresh inspection of all 16 light/dark pairs found the dark header and deck
+text legible and the separators uniform across the connector.
+It also records four observations:
+at 200% text on the unfolded panel `Resume where I left off` leaves `off`
+alone on its second line;
+at the start of a scrolling column the last visible line runs under the
+gesture handle;
+opening Settings narrows the left folder browser exactly as the Search page
+does;
+and the 24dp Back arrow reads small beside the 200% title.
+
+The viewer builder now re-measures three things from the embedded images:
+header text contrast,
+drawn switch positions,
+and the retained left half against the published Search images.
+Run on the first build's crops,
+those rules reject it by name:
+the left half first,
+then the dark title and Back arrow once that rule is removed.
 
 ## Boundaries and next action
 

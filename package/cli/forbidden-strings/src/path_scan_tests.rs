@@ -158,3 +158,19 @@ fn windows_volume_prefix_is_not_name_segment() {
     let drive_relative = scan_path("C:VAULTTOKEN_LONG.txt", &loaded);
     assert_eq!(drive_relative.findings, vec!["C\\x3a/[REDACTED]:name:1 rule=0"]);
 }
+
+/// Native Windows device-namespace prefixes are skipped exactly, so the following name is scanned.
+#[test]
+#[cfg(windows)]
+fn windows_device_namespace_prefix_is_not_name_segment() {
+    let loaded = load_rules("VAULTTOKEN_LONG\n");
+    let port = scan_path("\\\\.\\COM1\\VAULTTOKEN_LONG\\clean.txt", &loaded);
+    assert_eq!(port.findings, vec!["//./COM1/[REDACTED]/clean.txt:name:1 rule=0"]);
+    let volume = scan_path("\\\\.\\C:\\VAULTTOKEN_LONG\\clean.txt", &loaded);
+    assert_eq!(volume.findings, vec!["//./C\\x3a/[REDACTED]/clean.txt:name:1 rule=0"]);
+    let pipe = scan_path("\\\\.\\pipe\\VAULTTOKEN_LONG.with.dots", &loaded);
+    assert_eq!(pipe.findings, vec!["//./pipe/[REDACTED]:name:1 rule=0"]);
+    let clean = scan_path("\\\\.\\COM1\\clean\\clean.txt", &loaded);
+    assert_eq!(clean.display, "//./COM1/clean/clean.txt");
+    assert!(clean.findings.is_empty());
+}

@@ -16,7 +16,7 @@ pub(crate) fn normalized_path(path: &Path) -> Vec<u8> {
 }
 
 /// Normalize bytes with explicit target separator semantics so Windows branches are testable on Unix.
-fn normalize_bytes(native: &[u8], windows: bool) -> Vec<u8> {
+pub(crate) fn normalize_bytes(native: &[u8], windows: bool) -> Vec<u8> {
     // Vec owns a normalized copy; the caller's native bytes remain unchanged.
     let mut bytes: Vec<u8> = native.to_vec();
     if windows {
@@ -41,7 +41,7 @@ pub(crate) fn prefix_parts(path: &Path) -> usize {
 }
 
 /// Count all parts of an already identified native volume prefix without requiring that platform's Path parser.
-fn count_prefix_parts(prefix: &[u8]) -> usize {
+pub(crate) fn count_prefix_parts(prefix: &[u8]) -> usize {
     let mut count: usize = 0;
     let mut in_component: bool = false;
     // Iterate borrowed bytes once; both native Windows separators terminate a prefix part.

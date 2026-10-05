@@ -36,6 +36,18 @@ fn prefix_parts_count_nonempty_runs_with_both_separators() {
     assert_eq!(count_prefix_parts(b""), 0);
 }
 
+/// Prefix parts spelled like navigation markers still count, because the scan consumes them as prefix.
+#[test]
+fn prefix_parts_count_navigation_spellings_and_device_markers() {
+    // br"..." keeps backslashes literal; each slice is the raw native prefix std returns for that form.
+    assert_eq!(count_prefix_parts(br"\\.\COM1"), 2);
+    assert_eq!(count_prefix_parts(br"\\.\C:"), 2);
+    assert_eq!(count_prefix_parts(br"\\.\"), 1);
+    assert_eq!(count_prefix_parts(br"\\.\.."), 2);
+    assert_eq!(count_prefix_parts(br"\\server\.."), 2);
+    assert_eq!(count_prefix_parts(br"\\?\a/./b"), 4);
+}
+
 /// Invalid bytes, backslashes, control characters and protocol colons have distinguishable safe spellings.
 #[test]
 fn display_encoding_keeps_adversarial_native_bytes_distinct() {

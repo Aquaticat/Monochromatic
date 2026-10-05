@@ -176,3 +176,8 @@ pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
 #[cfg(test)]
 #[path = "path_scan_tests.rs"]
 mod tests;
+
+/// Target-independent Windows prefix forms drive production normalization, counting and scanning together.
+#[cfg(test)]
+#[path = "path_scan_prefix_tests.rs"]
+mod prefix_tests;

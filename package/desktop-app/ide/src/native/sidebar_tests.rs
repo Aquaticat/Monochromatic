@@ -267,14 +267,14 @@ fn divider_drag_resizes_and_stops_at_both_bounds() {
     motion(window, 5000.0, DRAG_Y);
     settle(window);
     assert_eq!(
-        window.get_sidebar_width(),
-        maximum,
-        "the sidebar must stop where the source keeps its minimum width"
-    );
-    assert_eq!(
         window.get_sidebar_requested_width(),
         maximum,
         "a drag stored a width above the maximum"
+    );
+    assert_eq!(
+        window.get_sidebar_width(),
+        maximum,
+        "the sidebar must stop where the source keeps its minimum width"
     );
     motion(window, line + 50.0, DRAG_Y);
     settle(window);
@@ -286,14 +286,14 @@ fn divider_drag_resizes_and_stops_at_both_bounds() {
     motion(window, -4000.0, DRAG_Y);
     settle(window);
     assert_eq!(
-        window.get_sidebar_width(),
-        MINIMUM,
-        "the sidebar must stop at its minimum"
-    );
-    assert_eq!(
         window.get_sidebar_requested_width(),
         MINIMUM,
         "a drag stored a width below the minimum"
+    );
+    assert_eq!(
+        window.get_sidebar_width(),
+        MINIMUM,
+        "the sidebar must stop at its minimum"
     );
     release(window, -4000.0, DRAG_Y, PointerEventButton::Left);
     settle(window);
