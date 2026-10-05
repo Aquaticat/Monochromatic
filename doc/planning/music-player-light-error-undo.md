@@ -166,6 +166,23 @@ retains rejected frame/window/log evidence on a focus mismatch.
 Each native stage restores original fields and requests graceful shutdown
 in its cleanup path.
 No rejected preflight is counted as a fit or lifecycle witness.
+The retained diagnostic visit showed System UI owning an ANR window while
+`dumpsys activity lastanr` said no ANR had occurred since boot.
+Both observations are retained without treating the latter as proof of
+absence.
+The authored app logged entry and E2 root/viewport layout,
+but that does not establish app health or a System UI root cause.
+Console shutdown was accepted after recorded fields were restored;
+that owner later ended with status `137` and shutdown diagnostics,
+so a clean exit is not claimed.
+Matching-runtime absence was verified separately.
+
+One targeted preflight now uses the independently proven local gRPC touch
+bridge for the fresh hierarchy's named System UI close action,
+rediscovering current metadata and port rather than reusing a PID/token.
+It requires subsequent window settling and stable owned focus.
+If that bridge cannot establish a usable runtime,
+retain the native-verification blocker rather than repeating blind boots.
 The owned runtime is restored/stopped before the next bounded visit,
 rather than left near its measured 6 GiB memory ceiling.
 Same-scene player-geometry equality needs a changing-geometry positive
