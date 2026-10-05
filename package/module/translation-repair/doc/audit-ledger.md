@@ -22657,6 +22657,142 @@ Recurrence:
 a marked class names what refused,
 and for a file repaired by hand that is the file.
 
+### B168: the persistence guard passed an artifact nothing reviewed, and four cases kept the branch that did it
+
+Red in `8f0d7dd6f`,
+fixed in `2e02fbd4e`.
+
+Found on 2026-10-05 (UTC)
+by the second review of the trial's added cases (its finding 3).
+`assertFinalNaturalnessComplete` (`corpus-run/final-naturalness-completeness.ts`)
+opened with a branch for a consolidation that never ran:
+it returned without a word where the contest had not run either,
+refused a contested body slice as short of the naturalness floor,
+and passed contested front matter.
+Its syntax map carried an empty arm for a contest that never ran.
+No pass builds any of those pairings:
+`persistSettledEntry` is the guard's one caller,
+`pass-entry.ts` hands it only the result of `settledPageArtifact`,
+and `settledEntryArtifact` writes `laneSelection` as `contested` and `consolidation` as `settled`,
+literals that `buildSettledTwoLaneArtifact` copies unchanged.
+The trial's four cases reached the branch through the cast in `artifactCarrying`,
+and one pinned the silent pass:
+an artifact whose contest and consolidation never ran,
+so with no body slice reviewed,
+was accepted,
+against a TSDoc saying every absent review other than the two named exemptions fails closed.
+
+The fix:
+any pairing other than a contested selection over a settled consolidation throws,
+its message opening `unreachable:` and naming both records found and the writer that records them otherwise;
+the syntax map reads the contested slices with no second arm.
+Narrowing `SettledArtifact` to the one pairing was measured first and set aside
+(the fixing agent's measurement):
+`buildSettledTwoLaneArtifact` takes the whole unions,
+and with its parameters narrowed twenty-eight type errors follow
+in five test files and one fixture that build pending artifacts for the readers.
+One case replaces the four:
+it builds each of the three other pairings through `buildSettledTwoLaneArtifact`,
+with no cast,
+and asserts the three whole messages.
+The front-matter case refuses under `unsafe-baseline`,
+the skip a body slice ships with,
+so only the front-matter rule can be what refused;
+it and the absent-review case assert the class and the whole message.
+
+The same pairing stood in a neighbouring file's fixture.
+`declinedArtifact` in `corpus-run/pass-readiness-boundaries.unit.test.ts` built it by cast,
+and its case went red under the fix (the fixing agent's measurement);
+the fixture now records a settled consolidation whose slice carries no polish,
+which the guard refuses with the error the case asserts.
+
+Open to the owner's veto:
+the throw in place of a narrowed type.
+
+The same review's other findings changed test files only,
+merged in `8f0d7dd6f` and green before the fix and after it:
+
+- `preservation-check.unit.test.ts` asserts the whole verdict for an empty licensed quote,
+  where the old assertion held with the guard deleted;
+- `corpus-run/probe-relabel-control.unit.test.ts` had two cases that passed under three of four mutants of the gatherer;
+  it now holds one case for each of the four rules,
+  its header states them as the code has them,
+  and its dog fixtures are cat fixtures;
+- `corpus-run/canadian-forms.unit.test.ts` refuses a year with its ordinal suffix,
+  an input the refusal alone leaves unchanged;
+- `coverage-wire.unit.test.ts` refuses two replies under a coverage degree that exists,
+  and accepts the reply carrying all three fields;
+- `corpus-run/model-catalog-compare.unit.test.ts` asserts the report line for line,
+  the whole comparison,
+  and both parse refusals whole;
+- `grade-sheet-read.unit.test.ts`,
+  `model-card-derive.unit.test.ts`,
+  `synthetic-quota.unit.test.ts`,
+  `synthetic-transport.unit.test.ts` and `resolution-wire.unit.test.ts`
+  assert whole values and whole messages where they asserted a fragment or a class,
+  and the last feeds a numeric string that the whole-number test alone would pass.
+
+Each rewritten assertion fails under the deletion it names
+(the fixing agent's mutant runs,
+the gatherer's on rebuilt bundles and the others on type-stripped copies of the source).
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B169: a pre-grade marking a duplicate had its whole file refused
+
+Red in `8f0d7dd6f`,
+fixed in `2e02fbd4e`.
+
+Found on 2026-10-05 (UTC)
+by the second review of the trial's added cases (a production observation beside its finding 17).
+`KNOWN_VERDICTS` (`grade-agreement.ts`) listed the verdicts a recorded pre-grade may carry,
+documented as exactly the verdicts a sheet reader produces.
+The list was written in `9ebe41cee` (2026-08-06);
+`duplicate` joined `GradeVerdict` in `52fea9e82` (2026-08-12) and the list never gained it,
+its `satisfies` clause checking that each listed verdict exists and not that every verdict is listed.
+So `parsePreGrades` refused a file holding `"verdict": "duplicate"`
+with `pre-grade 1 carries a verdict outside the vocabulary`.
+A blind pre-grader does meet such items:
+round three's annotated in its notes the same seven repeats the grader marked.
+No code writes the file;
+an agent writes it by hand,
+and `parsePreGrades`,
+called by `score-agreement`,
+is its one reader.
+
+The fix:
+the vocabulary is a record keyed by `GradeVerdict`,
+so the compiler refuses a verdict the sheet reader gains and the vocabulary lacks,
+and `duplicate` is in it.
+`scoreGradeAgreement` is unchanged,
+and its TSDoc says what it already did:
+an item the human marked duplicate or declined is out of the denominator whatever the pre-grade said,
+and a pre-grade's `duplicate` or `unscored` on an item the human scored is a disagreement named in `disagreed`,
+so a pre-grader cannot shrink the denominator of the rate that decides whether it may filter a later round.
+The red case reads a pre-grade marking a duplicate back whole;
+a second case pins the counting over a three-item sheet.
+
+Open to the owner's veto:
+counting such a pre-grade as a disagreement,
+where leaving the item out of `compared` and reporting it in a field of its own was the other way.
+
+Open:
+the other values of this package that must name every member of a type declared apart from them.
+A search for membership lists read through a string-array cast found eight;
+seven define their union,
+which therefore cannot gain a member the list lacks,
+and `METER_STATES` (`corpus-run/meter-sample-read.ts`) does not,
+though it names every member `MeterState` has today.
+Lists typed `readonly` over a union declared elsewhere,
+and sets built from such lists,
+have not been read against their unions.
+
+Prevention:
+`mistake-prevention.md`,
+"Lists that must name every member of a type".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

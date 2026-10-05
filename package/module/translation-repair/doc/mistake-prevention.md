@@ -2956,6 +2956,10 @@ a catch widened to wrap a fault of the process as a corpus refusal (ledger B156)
 and a check cut in half so that another would run,
 which moved a heading beside broken definitions to `unparseable` (ledger B157).
 
+Four cases were added to cover a branch of the persistence guard that no pass reaches,
+each building its artifact by cast,
+and one of them pinned an artifact nothing had reviewed passing unrefused (ledger B168).
+
 The rule:
 a state no input produces is refused out loud,
 with `throw new Error('unreachable: <what was found and why it cannot occur>',)`
@@ -3101,3 +3105,29 @@ and asset names with a traversal,
 a space and a 300-letter extension.
 No scan finds a derived name beside a fixed one;
 a new writer of scratch files is reviewed against this rule.
+
+## Lists that must name every member of a type
+
+What happened:
+`KNOWN_VERDICTS` listed the verdicts a pre-grade file may carry,
+checked with `satisfies readonly GradeVerdict[]`.
+The union gained `duplicate` six days after the list was written.
+The clause checks that each listed member exists and not that every member is listed,
+so nothing failed,
+and a file carrying the new verdict was refused whole (ledger B169).
+
+The rule:
+a value meant to name every member of a union is keyed by the union
+(a record whose key type is the union),
+or the union is derived from the value,
+or the members are read by a `switch` that ends in a `never` assertion,
+so the compiler refuses a member the value lacks.
+A list that is a deliberate subset says in its TSDoc which members it leaves out and why.
+An array typed or checked as `readonly Union[]` proves membership only.
+
+What enforces it:
+the compiler,
+for `KNOWN_VERDICTS`.
+No scan finds a list typed by a union declared apart from it,
+and the package's other such lists have not been read against their unions (ledger B169,
+"Open").
