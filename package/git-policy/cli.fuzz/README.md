@@ -46,6 +46,19 @@ both loading decisions,
 and non-default accepted configurations,
 so an invariant that is never reached cannot pass unnoticed.
 
+`mise run //package/git-policy/cli.fuzz:test:planted` proves the invariants can fail.
+It copies the subject and this package to a temporary directory,
+plants one defect at a time
+(a mutating `branch` letter accepted as presentation,
+a bare `git` skipping configuration,
+an unconsumed global option value,
+`warn` read as `error`,
+a rejected `landing` section),
+and requires a generator control to fail for each.
+Results are retained under `target/verification/planted-*`.
+Removing a flag from a mutation list alone is not a usable plant:
+unlisted `branch` and `tag` flags already require configuration.
+
 The `fuzz_target!` input looks like a closure signature but is macro input grammar.
 
 ## Campaigns
