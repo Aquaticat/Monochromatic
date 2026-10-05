@@ -340,7 +340,9 @@ const confinedTs = tsCase('ts7-confined', false);
   const state = stateOf(project, 'typescript-native');
   const documents = probeDocuments(join(state, 'cache'));
   const launcher = documents.find(document => document.who === 'ts7-launcher');
-  const allowedNames = ['PATH', 'HOME', 'USER', 'LOGNAME', 'LANG', 'LC_ALL', 'LC_CTYPE', 'LC_MESSAGES', 'TZ', 'CARGO_HOME', 'RUSTUP_HOME', 'RUSTUP_TOOLCHAIN', 'XDG_CACHE_HOME', 'npm_config_cache'];
+  // The allowlist, the redirects, and PWD, which bubblewrap itself sets to the working directory after
+  // clearing the environment (measured: `bwrap ... --clearenv -- /usr/bin/env` prints only PWD).
+  const allowedNames = ['PATH', 'HOME', 'USER', 'LOGNAME', 'LANG', 'LC_ALL', 'LC_CTYPE', 'LC_MESSAGES', 'TZ', 'CARGO_HOME', 'RUSTUP_HOME', 'RUSTUP_TOOLCHAIN', 'XDG_CACHE_HOME', 'npm_config_cache', 'PWD'];
   const unexpectedNames = (launcher?.environment ?? []).filter(name => !allowedNames.includes(name) && !name.startsWith('IDE_PROBE_') && name !== 'IDE_LANGUAGE_SESSION');
   const violations = probeVerdicts(documents);
   record('ts7-confined', [
@@ -417,7 +419,7 @@ const scriptedPlan = scriptedPlanFor(scriptedProject);
   writeFileSync(blocked, 'not a directory\n');
   const outcome = run('fail-closed-state', scriptedPlan, { env: { XDG_CACHE_HOME: blocked } });
   record('fail-closed-state', [
-    ['the server was refused, not started', outcome.statuses.includes('LaunchRefused') && outcome.statuses.includes('cannot create')],
+    ['the server was refused with the cause and remedy', outcome.statuses.includes('LaunchRefused') && outcome.statuses.includes('cannot create') && outcome.statuses.includes('restart the application')],
     ['no process carrying the session marker remains', marked(scriptedMarker).length === 0],
   ]);
 }
