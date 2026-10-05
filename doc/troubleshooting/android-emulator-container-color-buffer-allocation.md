@@ -296,6 +296,72 @@ A fresh bounded visit retains the granted owned identity for the remaining
 native controls and explicit original-settings restoration/read-back;
 its startup snapshot remains separate from the restoration target.
 
+## Separate fresh-guest startup and capture-transport observations
+
+A fresh API37 guest and container-native Ubuntu libraries did not isolate
+one universal failure cause.
+The [Xvfb PID 1 readiness boundary](xvfb-run-container-init.md)
+prevented the first native-library attempt from launching QEMU at all.
+Adding the verified init configuration passed that boundary;
+a later SwiftShader attempt still ended on `SIGSEGV` before readiness.
+ANGLE/SwiftShader booted but a cover capture rejected a launcher ANR.
+The host-renderer request with a render node exposed actually reported
+`llvmpipe (LLVM 20.1.2, 256 bits)`,
+not hardware acceleration.
+That configuration completed the cover lifecycle controls.
+It also had a later cold-start System UI failure,
+so it is not recorded as a general crash/ANR fix.
+
+A separate no-input startup observation recorded 23 samples through guest
+uptime `135.65` seconds.
+No debug-app launch,
+settings write or touch was issued during that interval.
+The full retained event buffer contains process-start records but no
+music-player process entry.
+It reports:
+
+```text
+# API37 event buffer; process identifiers omitted.
+am_anr: com.android.systemui, executing service com.android.systemui/.keyguard.KeyguardService, waited 20023ms
+```
+
+Other image packages also failed startup or broadcast deadlines.
+The System UI ANR window subsequently owned focus.
+These events separate the observed startup failure from feedback scene
+changes;
+they do not identify a CPU,
+memory,
+image or library cause.
+A short run of clean focus samples was not sufficient readiness evidence.
+The same guest was retained,
+the named startup dialog was closed once through ADB,
+and verified application focus preceded capture.
+
+Later acquisition interruptions were `spawnSync podman ETIMEDOUT`,
+including a hierarchy dump and a filtered log read.
+Completed records were retained;
+timed-out dumps were not accepted as fresh hierarchy evidence.
+Process inspection found no remaining dump/read command,
+and the guest still answered `device`.
+A client entering only the owned container's user/network namespaces
+connected to its existing ADB server without per-command OCI execution:
+
+```bash
+# Owned disposable runtime only; no host/original-AVD server is selected.
+nsenter --target "${owned_container_pid}" --user --net \
+  "${HOME}/Android/Sdk/platform-tools/adb" -s emulator-5582 get-state
+```
+
+The actual capture wrapper pins the generated runtime home and clears
+inherited ADB vendor-key/server overrides.
+The emulator retains its 6 GiB/2 CPU cgroup;
+the namespace client is not an emulator restart or cap increase.
+The remaining cover poses completed through that bridge.
+This is a verified alternative client route,
+not proof that Podman's internals caused every observed timeout.
+The 48 held images remain separate from automatic-expiry and native-action
+results.
+
 ## What does not work
 
 - Treating the feature-override attempt's lock fatal as a graphics result.
