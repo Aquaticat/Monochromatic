@@ -7,6 +7,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -193,14 +194,26 @@ await describe({
       },
     },),
     it({
-      name: 'REPORTS NOTHING when the contest has not run, since nothing stands on its verdict',
+      name: 'REFUSES an artifact whose contest has not run, since settledEntryArtifact records every contest it '
+        + 'hands persistence and nothing stands on a verdict that was never reached',
       fn: async () => {
-        expect(finalSelectionFindings({
-          artifact: {
-            ...sourceWith({ verdict: { kind: 'settled-neither', archive: 'declined', }, },),
-            laneSelection: { kind: 'pending-human-decision', },
-          },
-        },),).toEqual([],);
+        /**
+         What reading an artifact with a pending contest throws.
+         */
+        const refusal = caught(function act(): unknown {
+          return finalSelectionFindings({
+            artifact: {
+              ...sourceWith({ verdict: { kind: 'settled-neither', archive: 'declined', }, },),
+              laneSelection: { kind: 'pending-human-decision', },
+            },
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(Error,);
+        expect(String(refusal,),).toBe(
+          'Error: unreachable: the artifact handed to persistence records its contest as pending-human-decision, '
+            + 'though settledEntryArtifact, its one writer, records it as contested',
+        );
       },
     },),
     it({

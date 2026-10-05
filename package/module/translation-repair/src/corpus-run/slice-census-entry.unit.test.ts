@@ -146,6 +146,101 @@ const SHORT_TARGET_PAGE = [
 ].join('\n',);
 
 /**
+ Original page with one short section, whose translation has one block to
+ pair with it.
+ */
+const ONE_BLOCK_SOURCE_PAGE = [
+  '---',
+  'name: 小猫-whiskers',
+  '---',
+  '',
+  '## 朋友们的话',
+  '',
+  '大家都说它是一只很温柔的猫。',
+  '',
+].join('\n',);
+
+/**
+ Translation of that section's one block, 39 characters.
+ */
+const GENTLE_CAT_BLOCK = 'Everyone says she is a very gentle cat.';
+
+/**
+ Paragraph the translation adds that the original never wrote, 44
+ characters.
+ */
+const ADDED_SHORT_BLOCK = 'The kitten watched the garden birds all day.';
+
+/**
+ Paragraph the translation adds that the original never wrote, 227
+ characters.
+ */
+const ADDED_LONG_BLOCK = 'The kitten watched the garden birds all day, and when the sun went down behind the old stable it padded '
+  + 'across the warm tiles to the kitchen door, sat beside the empty bowl, and told everyone who would listen how '
+  + 'hungry it was.';
+
+/**
+ Builds the translation of the one-block section with a paragraph added
+ after the block it renders.
+
+ @param added - paragraph the translation adds
+
+ @returns Translation page
+
+ @example
+ ```ts
+ const page = onePlusAddedPage({ added: ADDED_SHORT_BLOCK, },);
+ ```
+ */
+function onePlusAddedPage({ added, }: { readonly added: string; },): string {
+  return [
+    '---',
+    'name: Whiskers',
+    '---',
+    '',
+    '## What her friends say',
+    '',
+    GENTLE_CAT_BLOCK,
+    '',
+    added,
+    '',
+  ].join('\n',);
+}
+
+/**
+ Row the census reads off a section whose recorded pairing places the
+ original on the first paragraph and the added paragraph on nothing.
+
+ @returns Block pairing recipe naming the heading and the one paragraph
+
+ @example
+ ```ts
+ const recipe = recipeNamingOneBlock();
+ ```
+ */
+function recipeNamingOneBlock(): {
+  readonly blockPairings: ReadonlyMap<number, readonly { readonly source: number; readonly target: number; }[]>;
+  readonly unrecorded: readonly ['sectionPairing',];
+} {
+  return {
+    blockPairings: new Map([[
+      0,
+      [
+        {
+          source: 0,
+          target: 0,
+        },
+        {
+          source: 1,
+          target: 1,
+        },
+      ],
+    ],],),
+    unrecorded: ['sectionPairing',],
+  };
+}
+
+/**
  Builds a throwaway corpus-shaped repository holding one entry.
 
  @param targetPage - translation to commit beside the original, which decides
@@ -305,6 +400,7 @@ await describe({
         const paired = {
           entryId: ENTRY_ID,
           carve: 'deterministic',
+          pairingRefusal: '',
           sliceSourceChars: [
             15,
             26,
@@ -529,6 +625,132 @@ await describe({
         // The declined block has to leave the slice, or the recipe reached
         // subdivision as nothing.
         expect(settledChars,).toBeLessThan(baselineChars ?? 0,);
+      },
+    },),
+    it({
+      name: 'COUNTS the translation block a recorded pairing leaves unclaimed as target-only at its own size, '
+        + 'which the deterministic aligner reads as no block left over',
+      fn: async () => {
+        await using corpus = await throwawayCorpus({
+          sourcePage: BLOCKY_SOURCE_PAGE,
+          targetPage: BLOCKY_TARGET_PAGE,
+        },);
+
+        expect(await censusEntry({
+          entryId: ENTRY_ID,
+          pin: corpus.pin,
+          recipe: {
+            blockPairings: new Map([[
+              0,
+              [
+                {
+                  source: 0,
+                  target: 0,
+                },
+                {
+                  source: 1,
+                  target: 1,
+                },
+                {
+                  source: 2,
+                  target: 2,
+                },
+                {
+                  source: 3,
+                  target: 2,
+                },
+              ],
+            ],],),
+            unrecorded: ['sectionPairing',],
+          },
+        },),).toEqual({
+          entryId: ENTRY_ID,
+          carve: 'settled-partial',
+          pairingRefusal: '',
+          sliceSourceChars: [44,],
+          sliceTargetChars: [84,],
+          unpairedSourceSections: 0,
+          unpairedSourceChars: 0,
+          unpairedTargetSections: 0,
+          unpairedTargetChars: 0,
+          targetOnlyBlocks: 1,
+          targetOnlyChars: 39,
+          targetOnlyBlockChars: [39,],
+        },);
+      },
+    },),
+    it({
+      name: 'SIZES an added paragraph by its own characters under a recorded pairing, for a short and for a long one',
+      fn: async () => {
+        await using shortCorpus = await throwawayCorpus({
+          sourcePage: ONE_BLOCK_SOURCE_PAGE,
+          targetPage: onePlusAddedPage({ added: ADDED_SHORT_BLOCK, },),
+        },);
+        await using longCorpus = await throwawayCorpus({
+          sourcePage: ONE_BLOCK_SOURCE_PAGE,
+          targetPage: onePlusAddedPage({ added: ADDED_LONG_BLOCK, },),
+        },);
+
+        /**
+         Rows read under the recorded pairing, short and long.
+         */
+        const recorded = [
+          await censusEntry({
+            entryId: ENTRY_ID,
+            pin: shortCorpus.pin,
+            recipe: recipeNamingOneBlock(),
+          },),
+          await censusEntry({
+            entryId: ENTRY_ID,
+            pin: longCorpus.pin,
+            recipe: recipeNamingOneBlock(),
+          },),
+        ].map(function addedColumn(row,): readonly number[] {
+          return row.targetOnlyBlockChars;
+        },);
+        expect(recorded,).toEqual([
+          [44,],
+          [227,],
+        ],);
+      },
+    },),
+    it({
+      name: 'ANSWERS a settled row set aside in the refusal\'s words where the recorded block pairing names a '
+        + 'translation block the carved text lacks, and measures every section by the deterministic aligner',
+      fn: async () => {
+        await using corpus = await throwawayCorpus({
+          sourcePage: BLOCKY_SOURCE_PAGE,
+          targetPage: BLOCKY_TARGET_PAGE,
+        },);
+
+        expect(await censusEntry({
+          entryId: ENTRY_ID,
+          pin: corpus.pin,
+          recipe: {
+            blockPairings: new Map([[
+              0,
+              [{
+                source: 0,
+                target: 5,
+              },],
+            ],],),
+            unrecorded: ['sectionPairing',],
+          },
+        },),).toEqual({
+          entryId: ENTRY_ID,
+          carve: 'settled-moved',
+          pairingRefusal: 'the recorded block pairing does not fit the text carved (pairing names translation '
+            + 'block 5, and there are 4), so every section\'s blocks were carved by the deterministic aligner',
+          sliceSourceChars: [44,],
+          sliceTargetChars: [125,],
+          unpairedSourceSections: 0,
+          unpairedSourceChars: 0,
+          unpairedTargetSections: 0,
+          unpairedTargetChars: 0,
+          targetOnlyBlocks: 0,
+          targetOnlyChars: 0,
+          targetOnlyBlockChars: [],
+        },);
       },
     },),
     it({

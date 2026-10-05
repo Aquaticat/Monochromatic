@@ -35,6 +35,7 @@ import {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
   type ModelTransport,
+  requireWholeAnthropicMessage,
   retryAfterMsOf,
   StreamCutShortError,
   StreamDegenerateError,
@@ -170,6 +171,70 @@ const TRUNCATED_REPLY: TransportReply = {
 function requireDone(reply: TransportReply,): void {
   if ((reply.status === 200) && (!reply.bodyText.includes('[DONE]',)))
     throw new Error('stream ended without its [DONE] terminator',);
+}
+
+/**
+ Builds a success-status Messages body that ends in one error event and then
+ its terminator.
+
+ @param errorType - type the error event names
+
+ @returns Reply a stream answered 200 with
+
+ @example
+ ```ts
+ const reply = errorEventReply({ errorType: 'invalid_request_error', },);
+ ```
+ */
+function errorEventReply({ errorType, }: { readonly errorType: string; },): TransportReply {
+  return {
+    status: 200,
+    bodyText: `data: ${JSON.stringify({ type: 'error', error: { type: errorType, message: 'Napping', }, },)}\n\n`
+      + `data: ${JSON.stringify({ type: 'message_stop', },)}\n\n`,
+  };
+}
+
+/**
+ Runs the ladder over a stream that answers 200 with one error event and its
+ terminator, every attempt, checking each reply as a Messages client does.
+
+ @param errorType - type the error event names
+
+ @param calls - shared counter of attempts made
+
+ @returns What the ladder threw, or that it returned
+
+ @example
+ ```ts
+ const outcome = await ladderOutcome({ errorType: 'overloaded_error', calls, },);
+ ```
+ */
+async function ladderOutcome(
+  {
+    errorType,
+    calls,
+  }: {
+    readonly errorType: string;
+    readonly calls: { count: number; };
+  },
+): Promise<unknown> {
+  try {
+    await exchangeWithRetry({
+      transport: scriptedTransport({
+        script: [errorEventReply({ errorType, },),],
+        calls,
+      },),
+      exchange: exchangeWith({ signal: new AbortController().signal, },),
+      policy: FAST_POLICY,
+      verify: function verify(reply,): void {
+        requireWholeAnthropicMessage({ bodyText: reply.bodyText, },);
+      },
+    },);
+    return 'returned';
+  }
+  catch (error) {
+    return error;
+  }
 }
 
 /**
@@ -699,6 +764,42 @@ await describe({
             ).toStrictEqual(OK_REPLY,);
             expect(calls.count,).toBe(2,);
             expect(DEFAULT_RETRY_POLICY.limit,).toBeGreaterThan(0,);
+          },
+        },),
+
+        it({
+          name: 'ENDS THE LADDER AT ONCE on an error event naming a request the provider refuses, and RETRIES one '
+            + 'naming a failure that may pass, as the same refusals are met over plain HTTP',
+          fn: async () => {
+            /**
+             Attempt counter for each refusal.
+             */
+            const permanentCalls = { count: 0, };
+            const transientCalls = { count: 0, };
+
+            /**
+             What the ladder threw for the refused request.
+             */
+            const refused = await ladderOutcome({
+              errorType: 'invalid_request_error',
+              calls: permanentCalls,
+            },);
+            await ladderOutcome({
+              errorType: 'overloaded_error',
+              calls: transientCalls,
+            },);
+
+            expect(
+              [
+                permanentCalls.count,
+                transientCalls.count,
+                (refused instanceof SyntheticHttpError) ? refused.status : refused,
+              ],
+            ).toEqual([
+              1,
+              FAST_POLICY.limit + 1,
+              400,
+            ],);
           },
         },),
 

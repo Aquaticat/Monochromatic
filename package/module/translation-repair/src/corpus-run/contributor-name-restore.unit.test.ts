@@ -62,6 +62,15 @@ const TWO_SECTIONS = pair({
 });
 
 /**
+ A section whose archive signs with a handle that holds a colon.
+ */
+const COLON_HANDLE = pair({
+  sliceIndex: 4,
+  source: '### 其三：猫猫\n\n它睡了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 17 日</p>',
+  target: '### Mao: Cat\n\nIt sleeps.\n\n> <p style="text-align: end;">——Mao: Cat, December 17, 2024</p>',
+});
+
+/**
  Finding the pass writes when it restores the archive's handle into the
  heading `### Three: Cat Cat` of slice 0.
  */
@@ -94,6 +103,47 @@ await describe({
           .toBe('### Three: Maomao\n\nIt sleeps.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',);
         expect(restored.restored.length,).toBe(1,);
         expect(restored.findings.length,).toBe(2,);
+      },
+    },),
+    it({
+      name: 'RESTORES a handle that holds a colon into its heading and its signature once, and LEAVES a heading '
+        + 'and a signature that already carry it, since the heading\'s prefix ends at its first colon',
+      fn: async () => {
+        /**
+         Pass over a page that translated the handle word for word in both
+         places.
+         */
+        const respelt = restoreContributorNames({
+          slices: [COLON_HANDLE,],
+          replacements: [{
+            sliceIndex: 4,
+            replacementText:
+              '### Three: Cat Cat\n\nIt sleeps.\n\n> <p style="text-align: end;">—Cat Cat, December 17, 2024</p>',
+          },],
+        },);
+        /**
+         Pass over a page that already writes the handle in both places.
+         */
+        const carried = restoreContributorNames({
+          slices: [COLON_HANDLE,],
+          replacements: [{
+            sliceIndex: 4,
+            replacementText:
+              '### Three: Mao: Cat\n\nIt sleeps.\n\n> <p style="text-align: end;">—Mao: Cat, December 17, 2024</p>',
+          },],
+        },);
+        expect([
+          respelt.replacements[0]
+            ?.replacementText,
+          respelt.findings.length,
+          carried.restored,
+          carried.findings,
+        ],).toEqual([
+          '### Three: Mao: Cat\n\nIt sleeps.\n\n> <p style="text-align: end;">—Mao: Cat, December 17, 2024</p>',
+          2,
+          [],
+          [],
+        ],);
       },
     },),
     it({

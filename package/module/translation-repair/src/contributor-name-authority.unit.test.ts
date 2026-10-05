@@ -132,6 +132,59 @@ await describe({
         },),
 
         it({
+          name: 'READS the label of a reference link, full, collapsed or shortcut, as the name it shows when the text '
+            + 'defines its reference, and the whole markup as the text it shows when it does not',
+          fn: async () => {
+            /**
+             Definitions the page carries for the three spellings.
+             */
+            const definitions = '[w]: https://example.test/whisker\n[Pebble]: https://example.test/pebble\n'
+              + '[Tab by]: https://example.test/tabby';
+            expect([
+              archiveContributorNameForms({
+                text: `Contributors for this entry: [Whisker][w], [Tab by][], [Pebble]\n\n${definitions}`,
+              },),
+              archiveContributorNameForms({
+                text: 'Contributors for this entry: [Whisker][w], [Pebble]',
+              },),
+            ],).toEqual([
+              [
+                'Whisker',
+                'Tab by',
+                'Pebble',
+              ],
+              [
+                '[Whisker][w]',
+                '[Pebble]',
+              ],
+            ],);
+          },
+        },),
+
+        it({
+          name: 'READS the label of a full reference link off the parse where its reference label holds an escaped '
+            + 'bracket, an escaped mark or an entity, whose written length is not the length the parser reports '
+            + 'for it',
+          fn: async () => {
+            expect([
+              archiveContributorNameForms({
+                text: 'Contributors for this entry: [Whisker][a\\]b]\n\n[a\\]b]: https://example.test/whisker',
+              },),
+              archiveContributorNameForms({
+                text: 'Contributors for this entry: [Mitten][m\\*n]\n\n[m\\*n]: https://example.test/mitten',
+              },),
+              archiveContributorNameForms({
+                text: 'Contributors for this entry: [Pebble][p&amp;q]\n\n[p&amp;q]: https://example.test/pebble',
+              },),
+            ],).toEqual([
+              ['Whisker',],
+              ['Mitten',],
+              ['Pebble',],
+            ],);
+          },
+        },),
+
+        it({
           name: 'IGNORES ORDINARY PROSE carrying same words away from line start',
           fn: async () => {
             expect(archiveContributorNameForms({
