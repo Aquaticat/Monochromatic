@@ -13,6 +13,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -20,6 +21,7 @@ import {
 
 import {
   type ChunkPair,
+  listItemExtent,
   restoreListSpread,
 } from '../../dist/final/node/index.mjs';
 import { pair, } from './title-reference.test-fixture.ts';
@@ -215,6 +217,56 @@ await describe({
           restored: [],
           findings: [],
         },);
+      },
+    },),
+    it({
+      name: 'READS the offsets a parsed list item carries, and REFUSES an item with none instead of dropping its '
+        + 'list, which would move every later list\'s position',
+      fn: async () => {
+        /**
+         Item as the parser builds it, positioned.
+         */
+        const positioned = listItemExtent({
+          item: {
+            type: 'listItem',
+            spread: false,
+            children: [],
+            position: {
+              start: {
+                line: 1,
+                column: 1,
+                offset: 0,
+              },
+              end: {
+                line: 1,
+                column: 9,
+                offset: 8,
+              },
+            },
+          },
+        },);
+        expect(positioned,).toEqual({
+          start: 0,
+          end: 8,
+        },);
+
+        /**
+         What reading an item without positions throws.
+         */
+        const refusal = caught(function act(): unknown {
+          return listItemExtent({
+            item: {
+              type: 'listItem',
+              spread: false,
+              children: [],
+            },
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(Error,);
+        expect(String(refusal,),).toBe(
+          'Error: unreachable: a parsed list item carries no start or end offset, though the parser sets a position '
+            + 'on every node it builds, so skipping it would drop its whole list and move every later list',
+        );
       },
     },),
   ],

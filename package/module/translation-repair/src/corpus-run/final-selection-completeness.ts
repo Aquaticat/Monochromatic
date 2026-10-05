@@ -39,6 +39,10 @@ function archiveWasEndorsed(
 
  @returns One finding per slice standing without endorsement, empty when none
 
+ @throws Error when the artifact records its contest as other than contested,
+ which no persisted artifact does: `settledEntryArtifact` writes the kind as a
+ literal
+
  @example
  ```ts
  const findings = finalSelectionFindings({ artifact, });
@@ -63,12 +67,21 @@ export function finalSelectionFindings(
    */
   const { laneSelection, } = artifact;
 
+  // LOUD RATHER THAN READ AS NOTHING TO REPORT. `persistSettledEntry` is the
+  // one caller, and the pass hands it only what `settledEntryArtifact` writes,
+  // a contested selection. An artifact whose contest never ran stands on no
+  // verdict, so reading it as having no unendorsed slice would pass it as
+  // reviewed.
+  if (laneSelection.kind !== 'contested')
+    throw new Error(
+      `unreachable: the artifact handed to persistence records its contest as ${laneSelection.kind}, though `
+        + 'settledEntryArtifact, its one writer, records it as contested',
+    );
+
   /**
-   Contest records, absent when contest has not run.
+   Contest records, one per slice the contest ran over.
    */
-  const contests = (laneSelection.kind === 'contested')
-    ? laneSelection.slices
-    : [];
+  const contests = laneSelection.slices;
 
   /**
    Consolidation and optional polish records final reading derives from.

@@ -393,32 +393,4 @@ export function colonAt({ title, }: { readonly title: string; },): number {
   return earliest;
 }
 
-/**
- Position of the last colon in a title, or -1.
-
- @param title - heading title
-
- @returns Index of the last fullwidth or ASCII colon
-
- @example
- ```ts
- lastColonAt({ title: 'Part 3: Snowy', },); // 6
- ```
- */
-export function lastColonAt({ title, }: { readonly title: string; },): number {
-  /**
-   Latest colon found so far, -1 for none.
-   */
-  let latest = -1;
-  for (const colon of COLONS) {
-    /**
-     Where this colon last stands.
-     */
-    const at = title.lastIndexOf(colon,);
-    if (at > latest)
-      latest = at;
-  }
-  return latest;
-}
-
 //endregion Heading colons

@@ -12,6 +12,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -20,6 +21,8 @@ import {
 import {
   MalformedCompletionError,
   requireWholeAnthropicMessage,
+  StreamErrorEventError,
+  SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -174,6 +177,62 @@ await describe({
         },);
         expect(refusal.includes('error event (overloaded_error)',),).toBe(true,);
         expect(refusal.includes('Napping',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES an error event naming a request the provider refuses as the HTTP status that refusal carries '
+        + 'outside a stream, naming the type and nothing of the body, for each documented type',
+      fn: async () => {
+        /**
+         Documented refusal types with the status each carries over HTTP.
+         */
+        const documented = [
+          ['invalid_request_error', 400,],
+          ['authentication_error', 401,],
+          ['billing_error', 402,],
+          ['permission_error', 403,],
+          ['not_found_error', 404,],
+          ['request_too_large', 413,],
+        ] as const;
+        /**
+         What each type's body is refused with.
+         */
+        const refusals = documented.map(function refusalFor([errorType,],): unknown {
+          return caught(function act(): unknown {
+            return requireWholeAnthropicMessage({
+              bodyText: OPENING
+                + frameOf({
+                  body: {
+                    type: 'error',
+                    error: {
+                      type: errorType,
+                      message: 'Napping',
+                    },
+                  },
+                },)
+                + TERMINATOR_FRAME,
+            },);
+          },);
+        },);
+        expect(refusals.map(function classOf(refusal,): unknown {
+          return [
+            refusal instanceof StreamErrorEventError,
+            refusal instanceof SyntheticHttpError,
+            (refusal instanceof SyntheticHttpError) ? refusal.status : 0,
+          ];
+        },),).toEqual(documented.map(function expectedFor([, status,],): unknown {
+          return [
+            true,
+            true,
+            status,
+          ];
+        },),);
+        expect(String(refusals[0],),).toBe(
+          'StreamErrorEventError: Anthropic Messages stream carried an error event of type invalid_request_error, '
+            + 'a refusal of the request itself that repeating it would meet again; it arrived under a success '
+            + 'status and is reported with the status 400 the same refusal carries outside a stream',
+        );
       },
     },),
 

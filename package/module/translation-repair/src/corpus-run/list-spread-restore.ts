@@ -1,4 +1,7 @@
-import type { Root, } from 'mdast';
+import type {
+  ListItem,
+  Root,
+} from 'mdast';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
@@ -145,6 +148,53 @@ function gapLineEndings(
 }
 
 /**
+ Offsets of a parsed list item's first and last character.
+
+ EVERY NODE THE PARSER BUILDS CARRIES POSITIONS, so an item without them is
+ no input a parse produces. `mdast-util-from-markdown` sets `position.start`
+ when it enters a node and `position.end` when it leaves it
+ (`lib/index.js`, `enter` and `exit`), and a read of every list item of the
+ 184 pinned pages and of 13 hand-built lists found none without. Skipping the
+ item, and with it the whole list, would move every later list's position
+ and let a page pass with a list the archive's spacing was never applied to.
+
+ @param item - one item of a parsed list
+
+ @returns Offsets of the item's first and last character
+
+ @throws Error when the item carries no start or end offset
+
+ @example
+ ```ts
+ const extent = listItemExtent({ item, },);
+ ```
+ */
+export function listItemExtent({ item, }: { readonly item: DeepReadonlyData<ListItem>; },): ItemGap {
+  /**
+   Item's first offset.
+   */
+  const start = item.position
+    ?.start
+    .offset;
+
+  /**
+   Item's last offset.
+   */
+  const end = item.position
+    ?.end
+    .offset;
+  if ((start === undefined) || (end === undefined))
+    throw new Error(
+      'unreachable: a parsed list item carries no start or end offset, though the parser sets a position on every '
+        + 'node it builds, so skipping it would drop its whole list and move every later list',
+    );
+  return {
+    start,
+    end,
+  };
+}
+
+/**
  Reads the top-level lists of a slice's text.
 
  @param text - slice text, folded to LF
@@ -173,30 +223,9 @@ function readLists({ text, }: { readonly text: string; },): readonly ListSpacing
        Offsets of each item's first and last character.
        */
       const extents = listItems
-        .flatMap(function extentOf(item,): readonly ItemGap[] {
-          /**
-           Item's first offset.
-           */
-          const start = item.position
-            ?.start
-            .offset;
-          /**
-           Item's last offset.
-           */
-          const end = item.position
-            ?.end
-            .offset;
-          if ((start === undefined) || (end === undefined))
-            return [];
-          return [
-            {
-              start,
-              end,
-            },
-          ];
+        .map(function extentOf(item,): ItemGap {
+          return listItemExtent({ item, },);
         },);
-      if (extents.length !== listItems.length)
-        return [];
       /**
        Gaps from each item's end to the next item's start.
        */

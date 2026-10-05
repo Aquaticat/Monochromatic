@@ -2,7 +2,10 @@ import { isAsciiLowerLetter, } from './ascii-letters.ts';
 import { contextRoot, } from './log-context.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
-import { MalformedCompletionError, } from './completion-shape.ts';
+import {
+  MalformedCompletionError,
+  SyntheticHttpError,
+} from './completion-shape.ts';
 import { ssePayloadOf, } from './sse-data-line.ts';
 
 /**
@@ -206,6 +209,138 @@ function errorTypeOf(
 }
 
 /**
+ Bad Request.
+ */
+const HTTP_BAD_REQUEST = 400;
+
+/**
+ Unauthorized.
+ */
+const HTTP_UNAUTHORIZED = 401;
+
+/**
+ Payment Required.
+ */
+const HTTP_PAYMENT_REQUIRED = 402;
+
+/**
+ Forbidden.
+ */
+const HTTP_FORBIDDEN = 403;
+
+/**
+ Not Found.
+ */
+const HTTP_NOT_FOUND = 404;
+
+/**
+ Content Too Large.
+ */
+const HTTP_CONTENT_TOO_LARGE = 413;
+
+/**
+ Error types the provider documents for a request it refuses, with the HTTP
+ status each carries outside a stream (the errors page, "HTTP errors",
+ platform.claude.com/docs/en/api/errors). A request refused for what it holds
+ is refused again however often it is sent, so an error event of one of these
+ types ends the attempt as the same refusal over plain HTTP does: the retry
+ ladder returns a 4xx status unretried.
+
+ NOT HERE, so retried as before: `rate_limit_error` (429), `api_error` (500),
+ `timeout_error` (504) and `overloaded_error` (529), which the documentation
+ describes as transient, a type it adds later or one that names none this
+ package can read, and `conflict_error` (409), whose retry succeeds once the
+ conflicting change is gone.
+ */
+const REFUSED_REQUEST_STATUS: ReadonlyMap<string, number> = new Map([
+  [
+    'invalid_request_error',
+    HTTP_BAD_REQUEST,
+  ],
+  [
+    'authentication_error',
+    HTTP_UNAUTHORIZED,
+  ],
+  [
+    'billing_error',
+    HTTP_PAYMENT_REQUIRED,
+  ],
+  [
+    'permission_error',
+    HTTP_FORBIDDEN,
+  ],
+  [
+    'not_found_error',
+    HTTP_NOT_FOUND,
+  ],
+  [
+    'request_too_large',
+    HTTP_CONTENT_TOO_LARGE,
+  ],
+],);
+
+/**
+ Raised when a success-status Messages stream carried an error event naming a
+ request the provider refuses, which no retry changes.
+
+ THE HTTP REFUSAL IT STANDS FOR: a subclass of {@link SyntheticHttpError}
+ carrying the status the same refusal has outside a stream, so a caller
+ branching on the status (a 402 holds the provider out) reads it as it reads
+ the plain HTTP one, and the retry ladder, which returns a non-retryable
+ status unretried, ends the attempt on it.
+
+ @example
+ ```ts
+ throw new StreamErrorEventError({ errorType: 'invalid_request_error', status: 400, },);
+ ```
+ */
+export class StreamErrorEventError extends SyntheticHttpError {
+  /**
+   Declares this message safe to forward: it names a documented error type and
+   a status, never the provider's text.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Error type the event named, one of the documented refusal types.
+   */
+  readonly errorType: string;
+
+  /**
+   Names the refusal the stream carried.
+
+   @param errorType - documented refusal type the error event named
+
+   @param status - status the same refusal carries outside a stream
+
+   @example
+   ```ts
+   new StreamErrorEventError({ errorType: 'billing_error', status: 402, },);
+   ```
+   */
+  public constructor(
+    {
+      errorType,
+      status,
+    }: {
+      readonly errorType: string;
+      readonly status: number;
+    },
+  ) {
+    super({
+      status,
+      bodyText: '',
+      excerpt: 'withheld',
+      summary: `Anthropic Messages stream carried an error event of type ${errorType}, a refusal of the request `
+        + 'itself that repeating it would meet again; it arrived under a success status and is reported with the '
+        + `status ${String(status,)} the same refusal carries outside a stream`,
+    },);
+    this.name = 'StreamErrorEventError';
+    this.errorType = errorType;
+  }
+}
+
+/**
  Refuses a body whose event stream did not end the way a whole message does:
  with a `message_stop` frame, and with no error event anywhere in it.
 
@@ -229,9 +364,10 @@ function errorTypeOf(
  AN ERROR EVENT REFUSES THE MESSAGE even when a terminator follows it, and
  the refusal names its type. The provider said why it stopped; calling that
  a cut connection sent a reader to the network. Refused here, it is retried
- like a cut stream, which suits an overloaded or internal error; a request
- the provider called invalid is retried too, and that waste is left open in
- the ledger.
+ like a cut stream, which suits an overloaded or internal error. An error
+ event naming a request the provider refuses (`REFUSED_REQUEST_STATUS`) is
+ a {@link StreamErrorEventError} instead, carrying the status the same
+ refusal has over plain HTTP, which the retry ladder does not retry.
 
  ONLY THE ENDING IS READ. A frame elsewhere in the body that does not parse
  is the fold's to refuse, after the ladder: a body whose terminator arrived
@@ -242,7 +378,9 @@ function errorTypeOf(
 
  @param bodyText - whole drained body, as the transport returned it
 
- @throws {@link MalformedCompletionError} when an error event arrived or the terminator never did
+ @throws {@link StreamErrorEventError} when an error event names a request the provider refuses
+
+ @throws {@link MalformedCompletionError} when any other error event arrived or the terminator never did
 
  @example
  ```ts
@@ -296,9 +434,22 @@ export function requireWholeAnthropicMessage(
   },);
 
   if (failure !== undefined) {
+    /**
+     Type the error event named, or that it named none a refusal may repeat.
+     */
+    const errorType = errorTypeOf({ frame: failure, },);
+    /**
+     Status the same refusal carries over plain HTTP, when the type names one.
+     */
+    const refusedStatus = REFUSED_REQUEST_STATUS.get(errorType,);
+    if (refusedStatus !== undefined)
+      throw new StreamErrorEventError({
+        errorType,
+        status: refusedStatus,
+      },);
     throw new MalformedCompletionError({
       wireFormat: 'anthropic',
-      detail: `stream carried an error event (${errorTypeOf({ frame: failure, },)})`,
+      detail: `stream carried an error event (${errorType})`,
     },);
   }
   if (!kinds.includes(TERMINATOR,)) {

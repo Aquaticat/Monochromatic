@@ -1,4 +1,18 @@
+import type { Nodes, } from 'mdast';
+
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { findDroppedDeclaredNames, } from './declared-name-survival.ts';
+import { contextRoot, } from './log-context.ts';
+import {
+  parseMarkdownBody,
+  requireMarkdownRefusal,
+} from './parse-mdx.ts';
+
+/**
+ Logger root for the contributor name reader.
+ */
+const l = contextRoot({ tag: 'translation-repair', },);
 
 //region Contributor name authority
 
@@ -78,10 +92,135 @@ function splitContributorForms(
 }
 
 /**
+ The markup of every reference link a text defines, with the label it shows.
+
+ ONLY THE PARSE CAN TELL whether `[Whisker][w]` shows as a link: the grammar
+ makes a reference a link only where the document defines it, and leaves the
+ whole markup as text otherwise. So the text is parsed once, the markup of
+ each `linkReference` it holds is read off its own offsets and its label off
+ the offsets of its link text; a token that is not among them reads as the
+ text it shows.
+
+ @param text - complete text the contributor tokens were read from, which
+ holds the definitions
+
+ @returns Label shown by each reference link's markup as written; empty when
+ the text holds no `[` or cannot be parsed
+
+ @example
+ ```ts
+ const labels = referenceLinkLabels({ text: 'Mika, [Neko][n]\n\n[n]: https://example.test', },);
+ ```
+ */
+function referenceLinkLabels({ text, }: { readonly text: string; },): ReadonlyMap<string, string> {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: referenceLinkLabels.name,
+    l,
+  },);
+  /**
+   Markup and label of each reference link found.
+   */
+  const labels = new Map<string, string>();
+  if (!text.includes('[',))
+    return labels;
+  try {
+    /**
+     Nodes still to visit, so a deep tree is walked without recursion.
+     */
+    const pending: Nodes[] = [parseMarkdownBody({ body: text, },),];
+    for (
+      let node = pending.pop();
+      node !== undefined;
+      node = pending.pop()
+    ) {
+      if ('children' in node)
+        pending.push(...node.children,);
+      if (node.type !== 'linkReference')
+        continue;
+      /**
+       Where the markup stands in the text.
+       */
+      const start = node.position
+        ?.start
+        .offset;
+      /**
+       Where the markup ends in the text.
+       */
+      const end = node.position
+        ?.end
+        .offset;
+      if ((start === undefined) || (end === undefined))
+        throw new Error(
+          'unreachable: a parsed reference link carries no start or end offset, though the parser sets a position '
+            + 'on every node it builds',
+        );
+      /**
+       Markup as written.
+       */
+      const markup = text.slice(
+        start,
+        end,
+      );
+      /**
+       Last inline node of the link text, absent for a link text of nothing.
+       */
+      const lastInline = node.children
+        .at(-1,);
+      // THE LINK TEXT ENDS WHERE ITS LAST INLINE NODE ENDS, read off the parse
+      // like the markup. Counting back from the markup's end by the length of
+      // `node.label` read `Whisker]` out of `[Whisker][a\]b]` and
+      // `Whisker][w&` out of `[Whisker][w&amp;x]`: the parser reports a
+      // reference label with its escapes and entities decoded, so its length
+      // is not the length written.
+      /**
+       Where the link text ends in the text, just past the opening bracket for
+       a link text of nothing.
+       */
+      const textEnd = (lastInline === undefined)
+        ? start + 1
+        : lastInline.position
+          ?.end
+          .offset;
+      if (textEnd === undefined)
+        throw new Error(
+          'unreachable: an inline node of a parsed reference link carries no end offset, though the parser sets a '
+            + 'position on every node it builds',
+        );
+      labels.set(
+        markup,
+        text
+          .slice(
+            start + 1,
+            textEnd,
+          )
+          .trim(),
+      );
+    }
+  }
+  catch (error) {
+    // A text nested past the parser's stack is read as defining no reference,
+    // which is what a reader of the plain tokens saw before this one.
+    /**
+     Why the parser gave up.
+     */
+    const { message, } = requireMarkdownRefusal({ error, },);
+    rl.debug(`reference links not read, the text did not parse: ${message}`,);
+    return new Map<string, string>();
+  }
+  return labels;
+}
+
+/**
  Reads visible identity from one contributor token while retaining plain
  unlinked forms and role notes.
 
  @param token - one top-level contributor token
+
+ @param references - label each reference link of the text shows, by its
+ markup as written
 
  @returns Visible target-authoritative form without the spaces around it,
  empty for an empty token or a link label empty or only spaces, which shows a
@@ -89,10 +228,18 @@ function splitContributorForms(
 
  @example
  ```ts
- const form = contributorForm({ token: '[Neko](https://example.test)', });
+ const form = contributorForm({ token: '[Neko](https://example.test)', references: new Map(), });
  ```
  */
-function contributorForm({ token, }: { readonly token: string; },): string {
+function contributorForm(
+  {
+    token,
+    references,
+  }: {
+    readonly token: string;
+    readonly references: ReadonlyMap<string, string>;
+  },
+): string {
   /**
    Token without delimiter-adjacent spacing or list marker.
    */
@@ -110,6 +257,13 @@ function contributorForm({ token, }: { readonly token: string; },): string {
     : trimmed;
   if (!unmarked.startsWith('[',))
     return unmarked;
+  // A reference link shows its label where the text defines it.
+  /**
+   Label the token shows as a reference link, when it is one.
+   */
+  const referenceLabel = references.get(unmarked,);
+  if (referenceLabel !== undefined)
+    return referenceLabel;
   /**
    Boundary between visible label and link destination.
    */
@@ -256,6 +410,10 @@ export function archiveContributorNameForms(
       return names !== '';
     },);
   /**
+   Reference links the text defines, which only a parse can tell from text.
+   */
+  const references = referenceLinkLabels({ text, },);
+  /**
    Visible identities without repeated declarations.
    */
   const forms = new Set(suffixes
@@ -263,7 +421,10 @@ export function archiveContributorNameForms(
       return splitContributorForms({ text: suffix, });
     },)
     .map(function visible(token,): string {
-      return contributorForm({ token, });
+      return contributorForm({
+        token,
+        references,
+      },);
     },)
     .filter(function nonempty(form,): boolean {
       return form !== '';

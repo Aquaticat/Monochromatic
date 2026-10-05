@@ -3,7 +3,6 @@ import type { SliceReplacement, } from '../splice-slices.ts';
 import {
   colonAt,
   isHeadingLine,
-  lastColonAt,
   pageTextBySlice,
   pageTextOf,
   slicesInOrder,
@@ -192,11 +191,17 @@ function restoreHeading(
    Marks and title as the page wrote them.
    */
   const page = splitHeading({ line, },);
+  // THE PREFIX ENDS AT THE FIRST COLON, as `titleNames` reads the original:
+  // the original's prefix holds no colon, since its first colon is where the
+  // name begins, while the name itself may hold colons (a handle can). A page
+  // that writes a name with a colon after its prefix kept the rest of the
+  // title as the name, so cutting at the last colon wrote that name's own
+  // first half into the prefix and the rendering after it again.
   /**
-   Where the page title's last colon stands, kept with its prefix when the
+   Where the page title's first colon stands, kept with its prefix when the
    original heading also carries one; -1 to write the rendering alone.
    */
-  const colon = (colonAt({ title, },) === (-1)) ? -1 : lastColonAt({ title: page.title, },);
+  const colon = (colonAt({ title, },) === (-1)) ? -1 : colonAt({ title: page.title, },);
   /**
    Page title as written.
    */

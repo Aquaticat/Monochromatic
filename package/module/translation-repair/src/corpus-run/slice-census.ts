@@ -210,6 +210,10 @@ async function main(): Promise<void> {
       rows,
       carve: 'settled-partial',
     },),
+    moved: countCarve({
+      rows,
+      carve: 'settled-moved',
+    },),
     deterministic: countCarve({
       rows,
       carve: 'deterministic',
@@ -229,7 +233,11 @@ async function main(): Promise<void> {
       },)
     } with a complete recipe, ${
       String(carved.partial,)
-    } settled with a defaulted half, ${String(carved.deterministic,)} deterministic baseline (${
+    } settled with a defaulted half, ${
+      String(carved.moved,)
+    } settled with a recorded block pairing that does not fit the text, carved by the deterministic aligner, ${
+      String(carved.deterministic,)
+    } deterministic baseline (${
       String(legacy.length,)
     } of those hold a legacy artifact)`,
   );

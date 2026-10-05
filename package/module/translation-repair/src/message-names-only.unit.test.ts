@@ -167,6 +167,7 @@ const MARKED_CLASSES: readonly string[] = [
   'StatedRefusalError',
   'StreamBoundError',
   'StreamDegenerateError',
+  'StreamErrorEventError',
   'StreamOverrunError',
   'StreamStalledError',
   'SyntheticModelNotServedError',
@@ -285,7 +286,8 @@ const NAMED_PARTS: Record<string, string> = {
   'measured': 'meter states and hold durations, composed by the caller from two booleans and two numbers',
   'dir': 'directory path',
   'endpoint': 'upstream display name as the gateway spelled it, the same field the SPEND line prints, or the word unnamed',
-  'errorType': 'gateway failure kind read off its metadata, or the word unnamed',
+  'errorType': 'gateway failure kind read off its metadata, or the word unnamed; in StreamErrorEventError, a documented '
+    + 'provider error type from a closed list this package holds',
   'distinctRatio.toFixed(RATIO_DIGITS,)': 'ratio this process computed',
   'duplicated.join(\', \',)': 'model ids from the catalog',
   'disagreementSentence({ disagreement, },)': 'slice indices and character counts, composed from numbers alone',

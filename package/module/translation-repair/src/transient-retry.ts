@@ -396,6 +396,14 @@ async function attemptExchange(
     if (isStreamBoundCut({ error, },))
       throw error;
 
+    // NOR IS A REFUSAL THE PROVIDER STATED IN THE STREAM. A thrown
+    // `SyntheticHttpError` whose status no reply is retried on is the refusal
+    // a reply of that status would be (a request it declined for what it
+    // holds), which the ladder already returns unretried; retrying it here
+    // spends every remaining attempt on the same answer.
+    if ((error instanceof SyntheticHttpError) && (!RETRYABLE_STATUSES.has(error.status,)))
+      throw error;
+
     return {
       replied: false,
       thrown: Error.isError(error,)

@@ -1508,6 +1508,10 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SENTINEL,
   },
+  'corpus-run/slice-census-entry.ts#censusEntry': {
+    tests: 1,
+    why: SENTINEL,
+  },
   'corpus-run/slice-cost-report.ts#main': {
     tests: 1,
     why: SETTING,
