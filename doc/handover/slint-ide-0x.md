@@ -71,6 +71,12 @@ Next read `third_party/blink/renderer/core/editing/finder/find_buffer.cc`
 at browser tag `149.0.7827.54`,
 then follow the actual string-search implementation before choosing a native matching engine;
 ordinary case-insensitive regex matching has not been shown equivalent.
+The pinned source trace and expanded measured corpus are recorded in
+[the find matching plan](../planning/slint-ide-find-matching.md).
+`inspect:find-regex` now measures the already adopted Helix regex engine against that corpus.
+No new matching dependency is adopted.
+Browser matching fidelity follows the existing reference instruction;
+it is not being sent back to the user as a rubber-stamp question.
 
 Historical navigation verification:
 The read-only workspace model's five tests and the lazy tree model's eight tests pass.
