@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -47,6 +48,24 @@ function reject({ input, diagnostic }) {
 }
 try {
   positive();
+  const differentInset = structuredClone(manifest);
+  const resized = differentInset.witnesses[0];
+  const imagePath = join(evidence, resized.file);
+  const originalPng = readFileSync(imagePath);
+  const inputPath = join(fixture, 'inset-positive-source.png');
+  writeFileSync(inputPath, originalPng);
+  resized.applicationRoot[1]++;
+  resized.cropPixels.y++;
+  resized.cropPixels.height--;
+  const crop = spawnSync('magick', ['-limit', 'thread', '2', '-limit', 'memory', '256MiB', inputPath,
+    '-crop', `${resized.cropPixels.width}x${resized.cropPixels.height}+0+1`, '+repage', '-strip',
+    '-define', 'png:exclude-chunks=all', 'PNG24:' + imagePath], { encoding: 'utf8' });
+  if (crop.status !== 0) throw new Error('Synthetic inset fixture failed: ' + crop.stderr);
+  resized.sha256 = createHash('sha256').update(readFileSync(imagePath)).digest('hex');
+  writeFileSync(join(evidence, manifestName), JSON.stringify(differentInset));
+  positive();
+  writeFileSync(imagePath, originalPng);
+  writeFileSync(join(evidence, manifestName), JSON.stringify(manifest));
   const badHash = structuredClone(manifest);
   badHash.witnesses[0].sha256 = '0'.repeat(64);
   reject({ input: badHash, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
