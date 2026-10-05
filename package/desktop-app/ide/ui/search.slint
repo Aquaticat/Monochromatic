@@ -20,7 +20,7 @@ export component ProjectSearch inherits Rectangle {
     background: Palette.background;
     border-width: 1px;
     border-color: Palette.foreground;
-    accessible-role: dialog;
+    accessible-role: search;
     accessible-label: "Search files and contents";
     forward-focus: input;
     public function focus-query() { input.focus(); }
@@ -36,6 +36,9 @@ export component ProjectSearch inherits Rectangle {
             results.content-y = results.visible-height - (root.selected-row + 1) * root.row-height;
         }
     }
+
+    // Consume clicks in panel padding instead of forwarding them to the outside-dismiss layer.
+    TouchArea { width: parent.width; height: parent.height; }
 
     // Capture result-navigation keys before the native line edit consumes them.
     FocusScope {

@@ -1,7 +1,7 @@
 //! File-open success is the only boundary that replaces displayed source or promotes history.
 
 /// Native source state and tree presentation share one event-loop thread.
-use super::{AppWindow, Navigation, State, present};
+use super::{AppWindow, Navigation, State, line, present};
 /// Reuse the same revision-aware classification application as external reloads.
 use crate::native::{reload::apply_syntax, render};
 /// Identity exhaustion reports an error rather than reusing an obsolete file generation.
@@ -20,16 +20,30 @@ pub(super) fn request(
     navigation: &mut Navigation,
     path: PathBuf,
 ) -> Result<()> {
+    return request_at(window, source, navigation, path, None);
+}
+
+/// A content result's line stays attached to the newest request, including contained canonical aliases.
+pub(super) fn request_at(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    navigation: &mut Navigation,
+    path: PathBuf,
+    target_line: Option<usize>,
+) -> Result<()> {
+    navigation.pending_line = None;
     if source.borrow().file_path.as_ref() == Some(&path) {
         navigation.opener.cancel()?;
         navigation.reveal = Some(path);
         source.borrow_mut().navigation_error = None;
         present::update(window, source, navigation);
+        if let Some(target) = target_line { line::reveal(window, source, target); }
         render(window, source);
         window.invoke_focus_source();
         return Ok(());
     }
     navigation.opener.request(path)?;
+    navigation.pending_line = target_line;
     // A new intent clears the previous open diagnostic, not the old document or its own refresh errors.
     source.borrow_mut().navigation_error = None;
     render(window, source);
@@ -88,6 +102,7 @@ pub(super) fn apply(
         window.set_total_lines(lines as i32);
         window.invoke_reset_source_scroll();
     }
+    if let Some(target) = navigation.pending_line.take() { line::reveal(window, source, target); }
     render(window, source);
     present::update(window, source, navigation);
     window.invoke_focus_source();

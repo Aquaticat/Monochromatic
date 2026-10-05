@@ -1,7 +1,7 @@
 //! Nonblocking navigation replies and lazy directory refresh scheduling.
 
 /// Toolkit callbacks retain only UI-thread owners and immutable worker replies.
-use super::{AppWindow, Navigation, State, open, present};
+use super::{AppWindow, Navigation, State, open, present, search};
 /// Queue failures remain actionable diagnostics with their affected directory path.
 use anyhow::Result;
 /// Timed retry/refresh bounds avoid reading an inaccessible folder on every UI tick.
@@ -108,6 +108,7 @@ pub(super) fn update(
 ) {
     let mut navigation = shared.borrow_mut();
     let changed = directory_reply(&mut navigation);
+    search::update(window, &mut navigation.search);
     if navigation.opener.has_pending() {
         match navigation.opener.poll() {
             Ok(Some(opened)) => {
@@ -117,6 +118,7 @@ pub(super) fn update(
             }
             Ok(None) => {}
             Err(error) => {
+                navigation.pending_line = None;
                 open::failed(
                     window,
                     source,

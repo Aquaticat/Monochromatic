@@ -24,6 +24,10 @@ use std::{
 
 /// Click, directory-navigation, and Ctrl+digit bindings.
 mod actions;
+/// Content results set a reading position only after their file is successfully available.
+mod line;
+/// Transient combined search shares project and file-open ownership.
+mod search;
 /// Successful opens replace source atomically without losing the prior document on errors.
 mod open;
 /// Visible row presentation and ancestor expansion for reveal.
@@ -51,6 +55,10 @@ struct Navigation {
     directory_error: Option<(PathBuf, String)>,
     /// Background source opens retain only the latest requested target.
     opener: FileOpener,
+    /// Optional search line belongs to the latest file-open intent, never an older reply.
+    pending_line: Option<usize>,
+    /// Transient search worker and input state remain window-local.
+    search: search::Search,
     /// Current flat rows preserve paths independently of their lossy display labels.
     rows: Vec<TreeRow>,
     /// Ten session-local promoted file slots.
@@ -81,6 +89,7 @@ pub(super) fn bind(
     let reader = DirectoryWorker::new(workspace.clone())?;
     let opener = FileOpener::new(workspace.clone())?;
     let tree = FileTree::new(workspace.root());
+    let search = search::Search::new(workspace.clone())?;
     // Keep the full path available to accessibility while showing the distinguishing project name.
     let project_path = workspace.root().display().to_string();
     let project_label = if let Some(name) = workspace.root().file_name() {
@@ -94,6 +103,8 @@ pub(super) fn bind(
         tree,
         reader,
         opener,
+        pending_line: None,
+        search,
         recent,
         reader_available: true,
         rows: Vec::new(),
@@ -107,6 +118,7 @@ pub(super) fn bind(
     window.set_project_path(SharedString::from(project_path));
     window.set_project_visible(true);
     actions::bind(window, source, &navigation);
+    search::bind(window, source, &navigation);
     // The timer and callback owners retain navigation until window shutdown; Drop joins both readers.
     let timer = Timer::default();
     let active_source = Rc::clone(source);
