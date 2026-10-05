@@ -127,9 +127,7 @@ impl ShapedRow {
         // const cursor = Cursor.fromPoint(this.layout, x * scale, this.layout.height / 2);
         // ```
         let cursor = Cursor::from_point(&self.layout, x * scale, self.layout.height() / 2.0);
-        let index = cursor
-            .index()
-            .min(self.projection.byte_to_source.len() - 1);
+        let index = cursor.index().min(self.projection.byte_to_source.len() - 1);
         let proposed = self.projection.byte_to_source[index];
         return self.source_start + self.snapped(proposed, x * scale);
     }

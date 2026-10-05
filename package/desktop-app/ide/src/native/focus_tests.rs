@@ -1,9 +1,9 @@
 //! Tab and Shift+Tab move between the tree, the source view, and the open find bar; typing never edits source.
 
-/// The complete reader fixture and real key-event helpers shared with the find tests.
-use super::find_tests::{chord, key, reader, type_text};
 /// The production window whose focus state is read back.
 use super::AppWindow;
+/// The complete reader fixture and real key-event helpers shared with the find tests.
+use super::find_tests::{chord, key, reader, type_text};
 /// What: `Key` names toolkit special keys; converting one into text yields the encoded key string.
 /// Why: Tests dispatch the same encoded keys that the seat delivers.
 ///

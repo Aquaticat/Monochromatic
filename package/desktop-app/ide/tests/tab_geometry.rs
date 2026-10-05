@@ -165,7 +165,11 @@ fn hit_selection_and_copy_treat_a_tab_as_one_source_character() {
     );
     assert_eq!(row.hit(stop * 2.0 + advance * 0.25, 1.0), 3);
     assert_eq!(row.hit(stop * 2.0 + advance * 0.75, 1.0), 4);
-    assert_eq!(row.hit(10_000.0, 1.0), 4, "far right is the end of the line");
+    assert_eq!(
+        row.hit(10_000.0, 1.0),
+        4,
+        "far right is the end of the line"
+    );
     let rectangles = view.range(2, 3);
     assert_eq!(rectangles.len(), 1);
     assert!(

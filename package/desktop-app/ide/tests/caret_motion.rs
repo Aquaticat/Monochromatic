@@ -158,7 +158,11 @@ fn word_range_prefers_a_word_and_stays_on_its_line() {
         "a word wins over the punctuation after it"
     );
     assert_eq!(word(source, 16), (13, 16));
-    assert_eq!(word(source, 17), (17, 19), "a run of CJK letters is one word");
+    assert_eq!(
+        word(source, 17),
+        (17, 19),
+        "a run of CJK letters is one word"
+    );
     assert_eq!(
         word(source, 20),
         (20, 23),
