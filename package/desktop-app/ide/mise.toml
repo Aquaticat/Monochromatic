@@ -341,6 +341,15 @@ runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
 execFileSync('node', ['bin/inspect-language.mjs'], { stdio: 'inherit' })
 """
 
+[tasks."inspect:language-guards"]
+description = "Remove Language fencing, readiness, and edit-refusal guards only in a disposable copy and observe named regression failures"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[only]" help="Comma-separated guard names to run; default is every guard"
+'''
+run = "node bin/inspect-language-guards.mjs"
+
 [tasks.mcp]
 depends = ["runtime"]
 description = "Build and run the source-view gate with native headless UI inspection"
