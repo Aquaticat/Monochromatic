@@ -69,15 +69,17 @@ Literal newline queries do match literal newlines;
 empty patterns do not match.
 The probe's `Window.find` path is non-standard and is not itself proof of every Chrome toolbar behavior.
 `proc_be99` completed Chromium finder-directory discovery.
-Next read `third_party/blink/renderer/core/editing/finder/find_buffer.cc`
-at browser tag `149.0.7827.54`,
-then follow the actual string-search implementation before choosing a native matching engine;
-ordinary case-insensitive regex matching has not been shown equivalent.
 The pinned source trace and expanded measured corpus are recorded in
 [the find matching plan](../planning/slint-ide-find-matching.md).
 No new matching dependency is adopted.
-Browser matching fidelity follows the existing reference instruction;
-it is not a question to send back to the user.
+
+The matcher is settled.
+An earlier version of this handover called browser matching fidelity a settled requirement
+that must not be sent back to the user.
+That was an agent inference and is withdrawn:
+on 2026-10-05 the user asked why a find matcher needs vetting when it is just substring matching.
+In-file find uses plain literal case-insensitive substring matching with the existing `regex` dependency.
+The technology-vetting run and the editord line-DOM probe are dropped.
 
 The incumbent gap is measured, not assumed.
 `inspect:find-regex` (`proc_6c18`) runs the already adopted Helix `regex` engine
@@ -97,46 +99,60 @@ single-quote,
 double-quote,
 soft-hyphen,
 and combining-mark-only.
-Ordinary regex matching therefore cannot satisfy the reference semantics.
+Those 13 cases are accepted as documented deliberate differences from editord's browser find.
 
 ### Handoff state
 
-Working tree is clean at `f897750b7`.
-No background process,
-native compositor,
-MCP port,
-or browser session remains running.
+Claude Opus resumed the queue on 2026-10-05 from `e81b01c42`
+and fanned the work out to in-process subagents at the user's request.
 Unrelated concurrent commits from other sessions sit in the same history;
 leave them alone and stage only explicit task paths.
 
-Next actions, in order:
+Proportionality rule from the user's correction:
+editord is a familiar reference,
+not an exact contract.
+Do not chase a reference's incidental engine semantics,
+and do not start a technology-vetting run,
+when a plain conventional solution with existing dependencies meets the stated scope.
 
-1. Probe editord's real one-div-per-line DOM (`editor-pane-dom.ts`,
-   `white-space: pre-wrap` at `editor-pane.styles.ts:64`)
-   for multiline query behavior.
-   The captured corpus uses a `<pre>` element,
-   so multiline semantics are still unmeasured.
-2. Run the choosing-technology vetting workflow for the in-file matcher:
-   candidate ledger,
-   hard gates,
-   equal-depth validation,
-   then scoring.
-   Existing tools first.
-   The incumbent Helix regex is a named approximation candidate
-   with the 13 differences above;
-   any ICU-collation candidate must be cloned and audited before ranking.
-   Do not adopt or edit `Cargo.toml` before the vet report completes.
-3. Implement the native find bar and worker with the selected matcher,
-   keeping match ranges generation-tagged across file reload and navigation.
-4. Continue the remaining queue:
-   annotations/inlay layout,
-   LSP feature paths,
-   sidebar resizing,
-   event-driven directory invalidation,
-   full measured language runtime,
-   project-write confinement,
-   live system-theme change,
-   and physical-output DPI migration.
+Work in flight,
+each owned by one subagent:
+
+- In-file find implementation in the main worktree:
+  find bar,
+  worker,
+  match painting,
+  stale-result fencing,
+  headless and nested-compositor verification,
+  guard-removal controls.
+  This agent is the only one editing Rust and Slint sources in the main worktree.
+- Full measured Helix runtime language coverage in the separate worktree
+  `/var/home/user/worktrees/ide-runtime-languages`
+  on branch `feat/ide-runtime-languages`,
+  created from `cd54f8b64`.
+  Its commits are cherry-picked onto `main` by the coordinating session;
+  its planning record is `doc/planning/slint-ide-runtime-languages.md`.
+- Language-server project-write confinement,
+  measured on disposable fixtures with mechanisms the host already has;
+  result in `doc/planning/slint-ide-write-confinement.md`.
+- A compiled `helix-lsp` integration spike for the five feature paths against real TypeScript and Rust servers;
+  result in `doc/planning/slint-ide-language-intelligence.md`.
+
+Claude Code's built-in worktree isolation for subagents failed here:
+the local `WorktreeCreate` hook in `.claude/settings.local.json` runs `cctt`,
+which returned no worktree path.
+The runtime worktree was created with `git worktree add` instead.
+
+Queue after the in-flight work:
+
+1. Annotations and inlay layout,
+   then the LSP feature paths in the app,
+   following the spike and confinement results.
+2. Sidebar resizing and event-driven directory invalidation.
+3. Live system-theme change and physical-output DPI migration.
+4. Remaining source-view keyboard navigation,
+   tab-width parity,
+   and the final package gates.
 
 Do not restart technology selection for the IDE architecture:
 Helix reuse and the standalone Rust/Slint design are approved.
@@ -269,9 +285,11 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
 - [x] Implement native tree, file switching, and recent-file reveal/badges.
 - [x] Implement combined path/content search and verify it in dark/light native sessions.
 - [ ] Implement in-file find.
-  Browser reference semantics are measured and traced to ICU collation search;
-  the incumbent regex differs on 13 of 29 cases.
-  Matcher vetting and the native find UI remain.
+  Matching is plain literal case-insensitive substring matching with the existing `regex` dependency;
+  the 13 of 29 captured cases where Chrome's ICU collation search differs are deliberate differences.
+  The native find bar,
+  worker,
+  and match painting are in progress.
 - [ ] Implement runtime syntax and language-server paths:
   definition,
   references,

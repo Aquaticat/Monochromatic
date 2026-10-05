@@ -1,17 +1,45 @@
 # Slint IDE in-file find matching
 
+## Decision
+
+On 2026-10-05 the user questioned the planned matcher vetting:
+"why would we need to vet a find matcher? Isn't it just substring match?"
+In-file find therefore uses plain literal,
+case-insensitive substring matching with the `regex` crate that `helix-core` already re-exports.
+No new matching dependency is adopted,
+and no technology-vetting run is needed for it.
+
+Reproducing Chrome's ICU collation search is not a goal.
+The earlier text in this plan treated browser matching fidelity as a settled requirement;
+that was an agent inference from "editord's Ctrl+F is the browser's find",
+not a user instruction,
+and it is withdrawn.
+The accepted scope calls editord a familiar behavioral reference,
+not an exhaustive compatibility contract.
+
+The measured browser corpus stays as the record of this deliberate difference:
+the cases listed under "Comparison result" are the ones where the native find
+intentionally behaves differently from editord's browser find.
+The planned probe of editord's one-div-per-line DOM is dropped,
+because it only mattered for reproducing the browser's cross-line behavior.
+
 ## Scope
 
 In-file find is already part of the accepted read-only IDE scope.
 The reference is editord's browser-provided Ctrl+F behavior,
 not another regular-expression search surface.
-Browser matching semantics are adopted under that existing instruction;
-no new matching dependency has been selected or adopted.
+The find bar follows ordinary find conventions:
+Ctrl+F,
+incremental matching,
+Enter and Shift+Enter with wrap-around,
+a match count,
+and Esc to close.
 
 The native implementation must keep original source positions and copy bytes,
 reject stale results after file navigation or external reload,
 and perform no project mutation.
-Any deliberate mismatch needs a named conformance case and explanation.
+Every deliberate difference from the browser reference is named in
+`package/desktop-app/ide/README.md`.
 
 ## Measured reference
 
@@ -129,17 +157,23 @@ They differ on 13 cases:
 Conclusion:
 literal escaping plus Unicode case folding does not reproduce
 Chrome's ICU collation search.
-The matcher must be selected through the technology-vetting workflow
-before any `Cargo.toml` change.
+Under the "Decision" section that gap is accepted:
+these cases are the documented deliberate differences,
+and `tests/find_reference.rs` pins the exact differing set so a behavior change is noticed.
 
 ## Next verification
 
 - [x] Run `inspect:find-regex` to measure the existing Helix regex engine
   against the captured corpus.
   Result recorded in “Comparison result”.
-- [ ] Probe editord's one-div-per-line structure (`editor-pane-dom.ts`,
-  `white-space: pre-wrap`) before treating multiline queries as accepted
-  native behavior.
-- [ ] Freeze candidate discovery and run the technology-vetting workflow
-  before recommending another matching dependency.
-- [ ] Keep UI and worker design independent of any unadopted matcher choice.
+- [x] Decide the matcher:
+  plain literal case-insensitive substring matching,
+  per the "Decision" section.
+  The editord line-DOM probe and the technology-vetting run are dropped.
+- [ ] Implement the native find bar,
+  worker,
+  and match painting,
+  with match ranges tagged by file generation,
+  content revision,
+  and query identity.
+- [ ] Record the browser-find differences in `package/desktop-app/ide/README.md`.

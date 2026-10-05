@@ -53,9 +53,13 @@ and resumption details are in [the handover][handover].
   Seven guard-removal controls fail as intended and pass after restoration;
   whole-model pointer cancellation is tested separately as a Slint lifecycle behavior.
 - [ ] In-file find.
-  Reference behavior is measured in Chrome 149.0.7827.54 and traced to ICU collation search;
-  the incumbent Helix regex differs on 13 of 29 captured cases.
-  Matcher vetting and the native find UI remain;
+  The user settled the matcher on 2026-10-05:
+  plain literal case-insensitive substring matching with the existing `regex` dependency,
+  no vetting run.
+  Chrome's ICU collation folding (13 of 29 captured cases) is a recorded deliberate difference.
+  The native find bar,
+  worker,
+  and match painting are in progress;
   see [the find matching plan](slint-ide-find-matching.md).
 - [ ] Complete tree parity:
   resizable sidebar and event-driven directory invalidation beyond the current bounded polling implementation.
@@ -379,10 +383,13 @@ and prevents treating a regular static font screenshot as complete typography su
 ## Next action
 
 Combined path/content search is complete and verified in dark and light native sessions.
-In-file find is next:
-its browser reference semantics are measured and traced to ICU collation search,
-the incumbent regex differs on 13 of 29 captured cases,
-and matcher vetting must finish before any dependency change.
+In-file find is being implemented with plain literal case-insensitive substring matching;
+the matcher vetting run was dropped at the user's direction on 2026-10-05.
+In parallel,
+the full measured Helix runtime inventory,
+language-server write confinement,
+and a compiled `helix-lsp` integration spike are in progress,
+each recorded in [the handover][handover].
 The tree and file-switching paths now work through actual native input.
 The initial syntax slice is implemented;
 annotations and language intelligence follow the remaining reader navigation features.
