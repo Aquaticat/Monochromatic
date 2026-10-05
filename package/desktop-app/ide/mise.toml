@@ -336,6 +336,25 @@ arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
 run = "node bin/inspect-annotation-guards.mjs"
 
+[tasks."inspect:watch-guards"]
+description = "Remove change-watch and reread-schedule guards only in a disposable copy and observe named regression failures"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[only]" help="Comma-separated guard names to run; default is every guard"
+'''
+run = "node bin/inspect-watch-guards.mjs"
+
+[tasks."inspect:refresh-latency"]
+description = "Time external writes until the tree rows and displayed source change, in a disposable package copy"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[runs]" default="3" help="Repeated runs of the same build, for run-to-run spread"
+arg "[package]" help="Measure this crate directory below the private agent scratch root instead of the working tree, with the current latency test injected"
+'''
+run = "node bin/inspect-refresh-latency.mjs"
+
 [tasks."inspect:search-accessibility"]
 description = "Verify accepted search landmarks and rejected dialog role declarations in disposable markup"
 shell = "node --input-type=module-typescript -e"
