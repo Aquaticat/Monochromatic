@@ -67,6 +67,11 @@ description = "Mutate native Markdown modules against their tests after full con
 depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --markdown"
 
+[tasks."mutation:processors:files"]
+description = "Mutate every processor module against the processor tests after full container tests and Clippy"
+depends = ["lint:container"]
+run = "node bin/mutate-container.mjs --processors"
+
 [tasks."mutation:list:markdown"]
 description = "Inspect the Markdown mutant scope without mutating or building source"
 run = "cargo mutants --list --no-config --file 'src/markdown_*.rs'"
