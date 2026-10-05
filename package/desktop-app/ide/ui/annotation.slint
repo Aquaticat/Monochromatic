@@ -10,7 +10,8 @@ export struct SourceMarker {
     severity: int,
 }
 
-// Severity inks per scheme: the fluent system critical, caution, and attention colors, and a neutral gray.
+// Severity inks per scheme: the WinUI system critical and caution fill colors, the fluent accent pair this
+// toolkit style uses for information, and a neutral gray.
 // Each reaches at least 5:1 against the scheme's background, so letters on them and underlines in them stay legible.
 export global AnnotationInk {
     out property <bool> dark: Palette.color-scheme == ColorScheme.dark;

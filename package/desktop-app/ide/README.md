@@ -479,11 +479,12 @@ and lists at most eight problems.
 The same text starts the source view's accessible description.
 Hints are not exposed to accessibility tools and never appear in the source text they read.
 
-Severity inks are the fluent system critical,
-caution,
-and attention colors,
-and a neutral gray,
-with a light and a dark value each.
+Severity inks have a light and a dark value each:
+the WinUI system critical and caution fill colors for errors and warnings
+(`SystemFillColorCritical` and `SystemFillColorCaution` in `microsoft/microsoft-ui-xaml`,
+`controls/dev/CommonStyles/Common_themeresources_any.xaml`),
+the accent pair of Slint's fluent style for information,
+and a neutral gray for hints.
 Measured on rendered frames (`marks_and_hints_render_in_both_schemes_with_measured_contrast`),
 the error marker reaches 5.42:1 against the light background and 8.39:1 against the dark one,
 its letter the same against the marker,
