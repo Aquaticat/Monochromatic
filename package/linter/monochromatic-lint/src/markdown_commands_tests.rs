@@ -80,7 +80,9 @@ fn fences_after_other_content_keep_absolute_prompt_offsets() {
         assert_eq!((fix.edits[1].start, fix.edits[1].end), (second, second + 2));
         assert_eq!(
             apply_fixes(source.as_str(), &[fix]).expect("apply").source,
-            format!("🚀 intro{newline}{newline}```шелл{newline}pwd{newline}ls{newline}```{newline}")
+            format!(
+                "🚀 intro{newline}{newline}```шелл{newline}pwd{newline}ls{newline}```{newline}"
+            )
         );
     }
 }
