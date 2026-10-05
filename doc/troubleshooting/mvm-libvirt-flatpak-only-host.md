@@ -13,8 +13,10 @@ tests
 and the real runs on this host are in `doc/handover/mvm-flatpak-libvirt.md`.
 
 The `mvm` MCP server runs a built artifact in a long-lived process.
-It has the fix only after it is rebuilt and reloaded,
-and its tools were not exercised;
+It was rebuilt,
+and a scratch client exercised the rebuilt server's tools,
+but each running Claude Code session still holds a server process with the old code,
+so the tools as a session calls them were not exercised;
 see section `What the human must do for the MCP server` of that handover.
 
 ## Symptom
