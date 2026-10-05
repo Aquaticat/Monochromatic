@@ -409,7 +409,7 @@ dir = "{{config_root}}"
 run = "node search-filename-comparison.mjs build"
 
 [tasks."lint:search:filename-comparison"]
-description = "Validate exact filename evidence review content, native hashes and absence of policy voting"
+description = "Validate exact filename evidence review content, native image dimensions and absence of policy voting"
 dir = "{{config_root}}"
 run = "node search-filename-comparison.mjs validate"
 
@@ -454,7 +454,7 @@ dir = "{{config_root}}"
 run = "node feedback-overlay.mjs validate"
 
 [tasks."test:feedback:overlay"]
-description = "Exercise overlay hash, cohort, hold, acquisition and no-ballot guards in disposable copies"
+description = "Exercise overlay cohort, hold, acquisition and no-ballot guards in disposable copies"
 dir = "{{config_root}}"
 run = "node feedback-overlay-test.mjs"
 
