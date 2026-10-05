@@ -425,6 +425,43 @@ await describe({
           },
         },),
         it({
+          name: 'KEEPS READING A DOCUMENT WHOSE DETERMINISTIC READER REJECTS, so the models read the picture '
+            + 'without its gate and the reading is remembered, rather than the rejection ending the entry',
+          fn: async () => {
+            const { client, asked, } = agreeingClient();
+            const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
+
+            /**
+             Deterministic reader that rejects, as a scratch device with no space does.
+             */
+            async function rejecting(): Promise<never> {
+              throw new Error('no space left on the scratch device',);
+            }
+
+            /**
+             Readings under a deterministic reader that rejects.
+             */
+            const readings = await readDocumentPictures({
+              readOcr: rejecting,
+              client,
+              slices: [sliceOf({
+                text: showing({ assetName: 'noticeboard.webp', },),
+                sliceIndex: 0,
+              },),],
+              assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
+              readerModelIds: READERS,
+              cache,
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            expect(asked.length,).toBe(2,);
+            expect(readings.get('noticeboard.webp',)?.kind,).toBe('corroborated',);
+            expect(persisted.length,).toBe(1,);
+          },
+        },),
+        it({
           name: 'READS ONE PICTURE ONCE HOWEVER MANY SLICES NAME IT, which is the arithmetic that '
             + 'makes this affordable: a picture travels to its slice and to both neighbours, so '
             + 'gathering per slice would send the same asset three times',

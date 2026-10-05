@@ -17,10 +17,23 @@
  documentation says: the recorded null is about ballots rather than about how
  they were rolled up.
 
- NO NETWORK. One scripted answer serves every round: full coverage, quoting a
- sentence really present, so the standing verdict carries, its evidence can be
- located and cut, and the answer after the cut is identical to the answer
- before it. That is a wire blind to damage, spelled out.
+ NO NETWORK. Three kinds of scripted client stand in for the roster.
+
+ The blind client (`coverageControlClient`, from the shared fixture) answers
+ every round with full coverage, quoting a sentence really present, so the
+ standing verdict carries, its evidence can be located and cut, and the answer
+ after the cut is identical to the answer before it. That is a wire blind to
+ damage, spelled out.
+
+ The sheet-reading client (`sheetReadingClient`) answers each round by what
+ the sheet carries: full coverage quoting the sentence while the judged
+ rendering is on the sheet, none with an empty quote when it is not. One
+ condition makes it follow the quoted sentence alone, a wire that sees the
+ targeted damage and nothing else; the other makes it follow the whole page,
+ a wire that sees any cut.
+
+ The denying client answers every round that the passage is not carried at
+ all, so the undamaged verdict never claims the passage.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 

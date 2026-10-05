@@ -125,6 +125,14 @@ async function missing(): Promise<{
 }
 
 /**
+ Deterministic reader that rejects, standing in for a machine fault such as a
+ scratch device with no space left.
+ */
+async function rejecting(): Promise<never> {
+  throw new Error('no space left on the scratch device',);
+}
+
+/**
  Bytes standing in for a picture, whose content no rule here reads.
 
  @param length - how many bytes picture occupies
@@ -666,6 +674,134 @@ await describe({
                 return entry.includes('reader-failed',);
               },).length,).toBe(2,);
             expect(paired.transient,).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'CONTAINS A DETERMINISTIC READER THAT REJECTS, asks both models without its gate, and warns '
+            + 'naming the picture and the failure, rather than ending the entry for a reading nothing '
+            + 'downstream requires',
+          fn: async () => {
+            const { client, asked, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+              },
+            },);
+
+            /**
+             Lines the pair logged while the deterministic reader failed.
+             */
+            const lines: string[] = [];
+
+            /**
+             What the roster made of a picture whose deterministic reader rejected.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: rejecting,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l: levelCapturingLogger({ lines, },),
+            },);
+
+            expect(asked.length,).toBe(2,);
+            expect(paired.kind,).toBe('corroborated',);
+            expect(lines.filter(function fromPair(line,): boolean {
+              return line.startsWith('warn [readImagePair]',);
+            },),).toStrictEqual([
+              'warn [readImagePair] noticeboard.webp: the deterministic reader failed outright, so the models '
+              + 'are asked without its gate (Error: no space left on the scratch device)',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'NAMES A DETERMINISTIC READER THAT REJECTED UNAVAILABLE AS ocr-failed in a textless '
+            + 'confirmation, recording no count of characters it never read',
+          fn: async () => {
+            const { client, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image.',
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read any text in this image.',
+              },
+            },);
+
+            /**
+             What the roster made of a picture whose deterministic reader rejected.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: rejecting,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            expect(paired,).toStrictEqual({
+              kind: 'no-text',
+              deterministicUnavailable: 'ocr-failed',
+              confirmedBy: READERS,
+            },);
+          },
+        },),
+
+        it({
+          name: 'FORWARDS AN ABORT THAT ARRIVES WHILE THE DETERMINISTIC READER RUNS, rather than absorbing it '
+            + 'as that reader\'s failure and asking the models on a run told to stop',
+          fn: async () => {
+            const { client, asked, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+              },
+            },);
+
+            /**
+             Stop that lands while the deterministic reader is running.
+             */
+            const stopping = new AbortController();
+
+            /**
+             Deterministic reader the stop interrupts: it rejects as a decoder
+             killed by the stop would.
+             */
+            async function interrupted(): Promise<never> {
+              stopping.abort();
+              throw new Error('decoder killed by the stop',);
+            }
+
+            /**
+             Name of whatever escaped, or what the call returned instead.
+             */
+            let escaped = 'nothing thrown';
+            try {
+              /**
+               What the roster made of a picture a run stopped while reading.
+               */
+              const paired = await readImagePair({
+                client,
+                readOcr: interrupted,
+                readerModelIds: READERS,
+                bytes: bytesOf({ length: 64, },),
+                assetName: 'noticeboard.webp',
+                signal: stopping.signal,
+                perCallTimeoutMs: 30_000,
+                l,
+              },);
+              escaped = `returned ${paired.kind}`;
+            } catch (error) {
+              escaped = Error.isError(error,) ? error.name : String(error,);
+            }
+
+            expect(escaped,).toBe('AbortError',);
+            expect(asked.length,).toBe(0,);
           },
         },),
 

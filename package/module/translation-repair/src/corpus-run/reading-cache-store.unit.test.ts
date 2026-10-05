@@ -329,15 +329,30 @@ await describe({
         + '`reader-failed` is a real way one READER fails and not a way the PAIR ends, so '
         + 'a record carrying it was written by something that confused the two',
       fn: async () => {
+      // THE RECORD SAYS IT IS NOT TRANSIENT, as a stable verdict does, so the
+      // guard's closing line passes it and the reason is the one field that
+      // can refuse it; the same record under a reason the pair ends at is
+      // resumed.
       expect(
         (await roundTrip({
           record: {
             kind: 'unavailable',
             reason: 'reader-failed',
             perReader: [ 'the call was lost', ],
+            transient: false,
           },
         },)).has(KEY,),
       ).toBe(false,);
+      expect(
+        (await roundTrip({
+          record: {
+            kind: 'unavailable',
+            reason: 'one-reader-only',
+            perReader: [ 'the call was lost', ],
+            transient: false,
+          },
+        },)).has(KEY,),
+      ).toBe(true,);
       },
     },),
     it({
@@ -345,6 +360,10 @@ await describe({
         + 'optional field is checked when present rather than waved through for being '
         + 'optional',
       fn: async () => {
+      // THE RECORD SAYS IT IS NOT TRANSIENT, as a stable verdict does, so the
+      // guard's closing line passes it and the kept readings are the one
+      // field that can refuse it; the same record with readings that name
+      // their model is resumed.
       expect(
         (await roundTrip({
           record: {
@@ -355,9 +374,24 @@ await describe({
               '',
             ],
             readings: [ 'a tabby beside a bowl', ],
+            transient: false,
           },
         },)).has(KEY,),
       ).toBe(false,);
+      expect(
+        (await roundTrip({
+          record: {
+            kind: 'unavailable',
+            reason: 'readers-disagree',
+            perReader: [
+              '',
+              '',
+            ],
+            readings: [ { modelId: 'whiskers/reader-a', text: 'a tabby beside a bowl', }, ],
+            transient: false,
+          },
+        },)).has(KEY,),
+      ).toBe(true,);
       },
     },),
     it({

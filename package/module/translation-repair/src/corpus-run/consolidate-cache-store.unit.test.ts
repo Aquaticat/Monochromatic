@@ -296,6 +296,33 @@ async function resumedByTerminal(
   );
 }
 
+/**
+ Writes each named settlement into a store of its own and reports which a
+ fresh store resumes.
+
+ @param settlements - values to persist, keyed by what each one breaks or keeps
+
+ @returns Whether each was resumed, under the same names
+
+ @example
+ ```ts
+ const resumed = await roundTripEach({ settlements: { 'standing choice over consolidated ballots': settlement, }, },);
+ ```
+ */
+async function roundTripEach(
+  { settlements, }: { readonly settlements: Readonly<Record<string, unknown>>; },
+): Promise<Record<string, boolean>> {
+  return Object.fromEntries(
+    await Promise.all(Object.entries(settlements,)
+      .map(async function toEntry([name, settlement,],): Promise<[string, boolean,]> {
+        return [
+          name,
+          await roundTrip({ settlement, },),
+        ];
+      },),),
+  );
+}
+
 await describe({
   name: openConsolidateCache.name,
   children: [
@@ -660,6 +687,156 @@ await describe({
           'wrap-erased-difference': false,
           'gate-kept-standing': false,
         },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A GATE WHOSE CHOICE ITS OWN BALLOTS DO NOT GIVE, since the stage settles the choice from '
+        + 'the ballots it stores and nothing rewrites it afterwards: a file naming a choice no count of its '
+        + 'ballots reaches is a verdict nobody can recompute',
+      fn: async () => {
+        expect(await roundTripEach({
+          settlements: {
+            'standing choice over two consolidated ballots': {
+              ...CAT_SETTLEMENT,
+              gate: {
+                ...CAT_SETTLEMENT.gate,
+                choice: 'standing',
+              },
+            },
+            'consolidated choice over two standing ballots': {
+              ...KEPT_SETTLEMENT,
+              gate: {
+                ...KEPT_SETTLEMENT.gate,
+                choice: 'consolidated',
+              },
+            },
+            'neither choice over two consolidated ballots': {
+              ...CAT_SETTLEMENT,
+              gate: {
+                ...CAT_SETTLEMENT.gate,
+                choice: 'neither',
+              },
+            },
+            'consolidated choice over a split pair of ballots': {
+              ...CAT_SETTLEMENT,
+              gate: {
+                ...CAT_SETTLEMENT.gate,
+                ballots: [CAT_BALLOT, STANDING_BALLOT,],
+              },
+            },
+          },
+        },),).toEqual({
+          'standing choice over two consolidated ballots': false,
+          'consolidated choice over two standing ballots': false,
+          'neither choice over two consolidated ballots': false,
+          'consolidated choice over a split pair of ballots': false,
+        },);
+      },
+    },),
+
+    it({
+      name: 'RESUMES A GATE WHOSE CHOICE ITS BALLOTS GIVE EVEN WHERE THE CHOICE AND WHAT SHIPS DIFFER, which '
+        + 'is a split pair settling on neither beside a kept standing text, and a standing choice shipping '
+        + 'the consolidation because the standing was forfeit',
+      fn: async () => {
+        expect(await roundTripEach({
+          settlements: {
+            'split pair settling on neither': {
+              ...KEPT_SETTLEMENT,
+              gate: {
+                ...KEPT_SETTLEMENT.gate,
+                choice: 'neither',
+                ballots: [CAT_BALLOT, STANDING_BALLOT,],
+              },
+            },
+            'standing choice over a forfeit standing': {
+              ...CAT_SETTLEMENT,
+              gate: {
+                ...CAT_SETTLEMENT.gate,
+                choice: 'standing',
+                ballots: [STANDING_BALLOT, STANDING_BALLOT,],
+              },
+            },
+          },
+        },),).toEqual({
+          'split pair settling on neither': true,
+          'standing choice over a forfeit standing': true,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A DEMOTED FLAG THAT DISAGREES WITH ITS TERMINAL, since the stage records a demotion only '
+        + 'as the terminal wrap-erased-difference and the artifact reports the flag: demoted beside any other '
+        + 'terminal, or the erased difference with no demotion, is a record the stage did not write',
+      fn: async () => {
+        expect(await roundTripEach({
+          settlements: {
+            'consolidated demoted': {
+              ...CAT_SETTLEMENT,
+              demoted: true,
+            },
+            'kept standing demoted': {
+              ...KEPT_SETTLEMENT,
+              demoted: true,
+            },
+            'floored demoted': {
+              ...FLOORED_SETTLEMENT,
+              demoted: true,
+            },
+            'erased difference not demoted': {
+              ...ERASED_SETTLEMENT,
+              demoted: false,
+            },
+          },
+        },),).toEqual({
+          'consolidated demoted': false,
+          'kept standing demoted': false,
+          'floored demoted': false,
+          'erased difference not demoted': false,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A REWRAP BESIDE A TERMINAL THAT NEVER WRAPS, and resumes a consolidation that was not '
+        + 'rewrapped, since the stage wraps only a consolidation it ships or erases and the artifact '
+        + 'reports the flag',
+      fn: async () => {
+        expect(await roundTripEach({
+          settlements: {
+            'kept standing rewrapped': {
+              ...KEPT_SETTLEMENT,
+              rewrapped: true,
+            },
+            'floored rewrapped': {
+              ...FLOORED_SETTLEMENT,
+              rewrapped: true,
+            },
+            'consolidated not rewrapped': {
+              ...CAT_SETTLEMENT,
+              rewrapped: false,
+            },
+          },
+        },),).toEqual({
+          'kept standing rewrapped': false,
+          'floored rewrapped': false,
+          'consolidated not rewrapped': true,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SETTLEMENT MARKED ARCHIVE-KEPT, since the stage never persists one: the mark is what '
+        + 'makes the archive ship, so a copy found on disk was written by something else',
+      fn: async () => {
+        expect(await roundTrip({
+          settlement: {
+            ...CAT_SETTLEMENT,
+            archiveKept: true,
+          },
+        },),).toBe(false,);
       },
     },),
 

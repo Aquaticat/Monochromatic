@@ -26,6 +26,7 @@ import {
 
 import {
   readingMakesSense,
+  solidCharacters,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -70,6 +71,47 @@ await describe({
         if (verdict.kind !== 'refused')
           throw new Error('refused by construction',);
         expect(verdict.clause,).toBe('too-short',);
+      },
+    },),
+
+    it({
+      name: 'MEASURES THE TRANSCRIPT LINE IN NON-WHITESPACE CODE POINTS, the count the deterministic reader '
+        + 'draws its own line on, so a reading of fifteen astral characters or of fifteen letters spaced '
+        + 'apart is short and one of sixteen is usable, whatever its length in UTF-16 units',
+      fn: async () => {
+        /**
+         Readings of fifteen and of sixteen solid characters, each written
+         compactly, as astral characters (two UTF-16 units each) and spaced
+         apart (whitespace counted by length and not by this line).
+         */
+        const readings = {
+          astralFifteen: '🐱'.repeat(15,),
+          astralSixteen: '🐱'.repeat(16,),
+          spacedFifteen: 'ab cd ef gh ij kl mn o',
+          spacedSixteen: 'ab cd ef gh ij kl mn op',
+        };
+        expect({
+          astralFifteen: readingMakesSense({ reading: readings.astralFifteen, },).kind,
+          astralSixteen: readingMakesSense({ reading: readings.astralSixteen, },).kind,
+          spacedFifteen: readingMakesSense({ reading: readings.spacedFifteen, },).kind,
+          spacedSixteen: readingMakesSense({ reading: readings.spacedSixteen, },).kind,
+        },).toEqual({
+          astralFifteen: 'short',
+          astralSixteen: 'usable',
+          spacedFifteen: 'short',
+          spacedSixteen: 'usable',
+        },);
+        expect({
+          astralFifteen: solidCharacters({ text: readings.astralFifteen, },),
+          astralSixteen: solidCharacters({ text: readings.astralSixteen, },),
+          spacedFifteen: solidCharacters({ text: readings.spacedFifteen, },),
+          spacedSixteen: solidCharacters({ text: readings.spacedSixteen, },),
+        },).toEqual({
+          astralFifteen: 15,
+          astralSixteen: 16,
+          spacedFifteen: 15,
+          spacedSixteen: 16,
+        },);
       },
     },),
 
