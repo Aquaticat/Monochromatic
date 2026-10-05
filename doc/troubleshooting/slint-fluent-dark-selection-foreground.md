@@ -438,7 +438,10 @@ Tradeoffs:
 
 ## Upstream filing decision
 
-`.out-of-scope/` was inspected and has no Slint entry.
+`.out-of-scope/` was inspected.
+Its only Slint mention (`cargo-workspace.md:18`) concerns container builds,
+not upstream tracking,
+so no exemption applies.
 
 Duplicate search on 2026-10-05,
 open and closed,
