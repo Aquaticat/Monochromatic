@@ -12,7 +12,7 @@ the options are in "Proposed fixes".
 
 Every `mvm` libvirt operation fails before it reaches a virtual machine.
 The `mvm` MCP tool `list_vms` failed twice with this message,
-recorded in `doc/handover/scanner-native-verification.md:465`:
+recorded in the `Host bridges` section of `doc/handover/scanner-native-verification.md`:
 
 ```text
 Command failed: virsh --connect 'qemu:///session' list --all
@@ -34,7 +34,7 @@ Neither the message nor the printed stack says that `virsh` was not found.
 
 With `virsh` bridged,
 creating a VM failed next,
-recorded in `doc/handover/scanner-native-verification.md:473`:
+recorded in the same section:
 
 ```text
 Unable to find a satisfying virtiofsd

@@ -177,6 +177,14 @@ Tradeoffs:
 
 - The copied scanner is the main checkout's build as of the copy,
   not a build of the worktree's own scanner source.
+- A subagent starts in the parent session's current shell directory,
+  not the repository root.
+  On 2026-10-05 a subagent briefed for the main checkout reported that its environment named
+  `.claude/worktrees/integrate-linter`,
+  because the parent's last command had run there;
+  it followed its brief's absolute paths and worked in the main checkout.
+  Return the parent's shell to the intended directory before launching,
+  and give every brief absolute paths.
 
 - The subagent's session still starts in the main checkout.
   It must pin every shell command to the worktree and use absolute paths under it;

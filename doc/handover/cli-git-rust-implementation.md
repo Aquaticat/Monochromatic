@@ -483,6 +483,33 @@ Choices the main session settled, open to veto:
 - The fence line-count simplification stays,
   because the repository removes provably redundant code instead of recording mutant exclusions.
 
+**Scanner device-namespace fail-open**:
+fixed on `main` (`833483171`),
+detail in `doc/handover/scanner-native-verification.md`.
+The cause was broader than the Windows run reported:
+any Windows prefix part spelled `.` or `..`,
+or an empty device name,
+was displayed but not counted off,
+so the first real name after the prefix escaped scanning.
+Failing forms included `\\.\COM1\<name>`, `\\.\..\<name>`, `\\server\..\<name>`, and `\\?\UNC\..\share\<name>`,
+so the earlier statement that verbatim forms were unaffected was wrong.
+The scan now counts one prefix part per non-empty component before classifying `.` and `..` as navigation,
+matching how `count_prefix_parts` defines a part.
+13 new target-independent tests failed before the fix and pass after;
+8 controls passed both times.
+Final tree:
+`test:container` passed 180 library, 4 binary-unit, 2 embedding, 2 cache-warning, 40 CLI and 8 pathname tests,
+and Clippy was clean
+(images `sha256:9c1d8dbb303da6872c0413f16b1150f968ca48beb336effd5b36c3312cf9f393`
+and `sha256:167b707f83ff9e89580ad4fce5a391ec3a566b1edd2563e31cdd64ed841ad06f`).
+Still open:
+native Windows confirmation at a snapshot containing the fix,
+a mutation rerun over `path_scan.rs` (no task scopes the pathname files),
+and the `#[cfg(windows)]` test, which has never been compiled.
+`lint:rust` reports 8 older `require-rustdoc` findings in `load_request.rs`, `process_boundary.rs` and `scanner.rs`.
+A concurrent session's commit `8fdbbded9` (`test(desktop-app-ide): ...`) swept in the 17 pre-fix tests;
+the delegate posted a corrective commit comment on it rather than amending.
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
@@ -524,7 +551,8 @@ that is verification, not a decision for the user.
 - [x] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
 - [x] Forbidden-strings structured embedding interface and standalone parity.
   The two Windows-native survivors are caught on Windows (GNU ABI, differential against a red baseline).
-- [ ] Scanner on Windows: device-namespace pathnames fail open;
+- [ ] Scanner on Windows: the prefix fail-open is fixed and tested on Linux (`833483171`)
+  but not yet confirmed on Windows;
   the Windows baseline has a non-compiling integration target and six failing tests;
   MSVC is unexercised.
 - [ ] Rust cli-git configuration, Git resolution/argv, static policies, and management commands.
