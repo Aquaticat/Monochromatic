@@ -1,5 +1,114 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Relevance canary and native hook diagnostics
+
+### Symptoms and separate failures
+
+The Pi 1.0.2 private relevance-hook worker `proc_6478` exited successfully.
+Its verifier rejected the copied stdout constants of five sessions and ten requests.
+The actual persisted result contained one session and four local requests.
+The source discrepancy is explicit:
+
+```javascript
+// Private contract/collector/relevance-before-request-sdk-v3/probe.mjs:139, retained faulty summary
+console.log(JSON.stringify({complete:true,SDKAgentSessions:5,localWireRequests:10,semanticAttempts:0,nativeReads:[4]}));
+```
+
+Read-only reconciliation `proc_e53e` checked the incorrect stdout exactly,
+then verified actual counts from the completed result and persistence artifacts.
+It also verified source hashes,
+empty worker stderr,
+disposal,
+and question counts `[205, 0, 1, 0]`.
+No successful SDK worker was replayed to fix its summary.
+
+Do not merge this reporting error with the prior fixture failures:
+`proc_f2a7` retained an unrelated 10,000ms synthetic clock offset into its second run;
+`proc_e353` reported the cached view's creation-time question count on warm operations.
+The corrected preprocessor reads the current operation's sender instead:
+
+```javascript
+// Private contract/lifecycle/rule-relevance-preprocessor-v2/boundary.mjs:35
+const requestedRuleIds=transport?.record?.originalQuestionIDs??Object.freeze([]);
+```
+
+The later real relevance canary succeeded,
+including warm and restarted-owner reuse,
+as verified by `proc_f465`.
+Its separate outer metadata checker printed:
+
+```text
+# Outer source/namespace checker, after its completion record
+logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify
+```
+
+The worker and immediate controller had empty stderr.
+This diagnostic does not describe a Jev response failure or a tool-judgment deadline.
+
+### Logger source path and verified workaround
+
+`package/git/executable/src/resolve-real-git.ts:10` imports the incumbent tagged logger.
+Its default Node sink order places the asynchronous file sink at index 3:
+
+```typescript
+// package/module/logger/src/default-sinks.node.ts:38
+return [
+  createConsoleSink(),
+  createSessionStorageSink(),
+  createLocalStorageSink(),
+  createFileSink(),
+];
+```
+
+`package/module/logger/src/create-logger.ts:351` starts each verification under a deadline:
+
+```typescript
+// package/module/logger/src/create-logger.ts:358
+available: await withHostTimeout({
+  label: `sink ${entryIndex} verify`,
+  ms: verifyTimeoutMs,
+  promise: entry.sink
+    .verify(),
+},),
+```
+
+The file sink awaits filesystem operations in `package/module/logger/src/sink/file.ts:169`.
+The outer checker then synchronously waited for its child while logger startup could still be pending.
+`proc_6308` isolated this mechanism on Node 26.10.0 with disposable homes and log directories:
+blocking for 5,200ms after initiating the default logger reproduced the exact diagnostic;
+awaiting `logger.flush()` before the same blocking child produced empty stderr.
+Neither control contacted a provider or started an SDK session.
+
+```javascript
+// Private contract/collector/relevance-launcher-logger-controls/probe.mjs:10, consumer-side ordering remedy
+if(mode==='drained')await logger.flush();
+```
+
+The workaround waits for incumbent sink verification and queued logging before blocking.
+It does not filter stderr or remove logging.
+Its tradeoff is waiting for the logger's bounded flush lifecycle;
+it does not guarantee a failing filesystem sink becomes available.
+The paid canary and its consumed launcher remain historical artifacts,
+not targets for replay.
+
+### Rejected remedies and upstream filing decision
+
+Do not rewrite retained stdout,
+reset consumed namespaces,
+suppress the logger diagnostic,
+or repeat the paid relevance request to repair launcher reporting.
+These are owned fixture,
+accounting,
+and consumer lifecycle issues,
+not demonstrated Pi or Gateway bugs.
+Upstream fault is not established;
+upstream fixability,
+support,
+contribution acceptance,
+and willingness are therefore not grounds for a filing.
+The consumer-side lifecycle remedy is prototyped and checked locally.
+No upstream issue or comment is warranted by these observations.
+
 ## SDK 1.0.2 update retires installed 1.0.0 paths
 
 A background Pi update removed the installed 1.0.0 package paths used by the completed private fixtures.

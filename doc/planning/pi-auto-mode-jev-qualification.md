@@ -49,6 +49,24 @@ representative workload averages,
 and relevance accuracy remain unestablished by this interface canary.
 No paid replay is needed to inspect these retained estimates.
 
+A post-collection authored reference diagnostic,
+`proc_2dfd`,
+compared 13 permission/safety/prerequisite rules and 12 presentation/code-style rules
+without another provider call.
+The 80/20 band produced 20 correct classifications and five unresolved;
+90/10 produced 14 correct and 11 unresolved;
+95/05 produced one correct and 24 unresolved.
+No decided classification contradicted this subset's authored reference.
+These are diagnostic bands,
+not adopted thresholds or held-out accuracy results.
+The references were authored after collection,
+and initial scores outside the subset were visible during schema inspection.
+
+Notably,
+`LN7` received relevance `0.53` despite explicitly requiring approval to loosen lint rules.
+A relevance cutoff that simply drops everything below a high positive threshold would lose this restriction.
+The current implementation retains uncertain rules and admits no exclusions.
+
 ## Batched instruction-meaning encoding diagnostic
 
 `proc_51ef` verified a fixed four-request study of the unchanged
