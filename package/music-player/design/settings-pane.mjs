@@ -370,6 +370,8 @@ ${scrollSentence}
 Rows are ${range(normal.flatMap(item => item.heights))} physical pixels high at 100% text
 and ${range(large.flatMap(item => item.heights))} at 200%, against a 117 pixel floor;
 no row title, supporting line or closing sentence reports overflow.
+Row titles take at most ${Math.max(...normal.flatMap(item => item.capture.rows.map(row => row.titleLines)))} line at 100% text
+and ${Math.max(...large.flatMap(item => item.capture.rows.map(row => row.titleLines)))} at 200%.
 Supporting lines wrap to at most ${Math.max(...normal.flatMap(item => item.capture.rows.map(row => row.supportingLines)))} lines at 100%
 and ${Math.max(...large.flatMap(item => item.capture.rows.map(row => row.supportingLines)))} at 200%.
 Neither a switch position nor the theme changes any measured rectangle.</p>`;
@@ -394,7 +396,7 @@ if (process.argv[2] === 'build') {
   need({ rule: 'output-current', holds: readFileSync(output, 'utf8') === html, detail: 'output differs from its template and evidence' });
   for (const marker of ['color-scheme: light dark', 'D11 is settled; no new preference ballot',
     'Every switch position is authored debug state', 'it was not separately chosen', 'id="inspection-findings"',
-    'settles nothing about how the two relate', 'id="provenance"', 'No production implementation is authorized', 'id="final-notes"',
+    'settles nothing about how the two relate', 'Also read by eye', 'id="provenance"', 'No production implementation is authorized', 'id="final-notes"',
     'Native pixels', 'Reset 100% dp']) {
     need({ rule: 'required-statement', holds: html.includes(marker), detail: 'review is missing ' + marker });
   }
