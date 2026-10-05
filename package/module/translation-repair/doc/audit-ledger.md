@@ -7003,6 +7003,30 @@ The reach census (`~/temp/agent/mimo-trial/reach-reading.log`)
 reads `ran 3, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The sixty-fourth cluster of that census,
+`nudged`,
+against `census-GHsN0h` at `ec7cbfed3`:
+3 line stretches over `nudged-reask.ts`
+(`b487f4d02`).
+Landed:
+the second answer returned where it is usable
+and the first where both fail,
+the cases asserting the outcomes.
+Left:
+the two log fallbacks
+(`147`,
+`153`,
+the servedBy-absent interpolation
+the census's attribution leaves cold
+for the fifth instance of the pattern)
+and the abort rethrow
+(`159`,
+whose re-ask shape resolved rather than rethrew
+in the fixture).
+The reach census (`~/temp/agent/mimo-trial/reach-nudged.log`)
+reads `ran 0, still cold 3`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

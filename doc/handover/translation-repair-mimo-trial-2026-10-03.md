@@ -682,6 +682,27 @@ and after any correction or decision inside it,
 naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
+- 2026-10-05,
+  00:06 UTC:
+  the T8 `nudged` batch closed with commit `b487f4d02`:
+  3 line stretches over `nudged-reask.ts`,
+  the re-ask outcomes cased,
+  the two log fallbacks and the abort rethrow left documented
+  (the attribution quirk's fifth instance
+  and the fixture's re-ask shape resolving).
+  Counts at the close:
+  the full suite 1,564 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-nudged-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-nudged-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `b487f4d02`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `photo` cluster
+  (the ranking's next at `census-GHsN0h`).
+
 - 2026-10-04,
   23:56 UTC:
   the next batch's baseline census taken at commit `d4894fb60`:
