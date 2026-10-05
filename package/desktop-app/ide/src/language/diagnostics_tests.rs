@@ -1,6 +1,7 @@
 //! Diagnostics versioning, the unversioned freshness hold, invalidation, and aggregation, without a server.
 
-use super::{DiagnosticStore, Freshness, PushVerdict, Severity};
+use super::store::PushVerdict;
+use super::{DiagnosticStore, Freshness, Severity};
 use crate::language::identity::{DocumentStamp, ServerIdentity};
 use helix_core::Rope;
 use helix_lsp::{OffsetEncoding, lsp};

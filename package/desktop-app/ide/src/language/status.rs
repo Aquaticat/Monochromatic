@@ -18,7 +18,8 @@ use std::path::PathBuf;
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type ServerState =
-///   | { kind: 'missingExecutable'; reason: string } | { kind: 'starting' } | { kind: 'ready' }
+///   | { kind: 'missingExecutable'; reason: string } | { kind: 'launchRefused'; reason: string }
+///   | { kind: 'starting' } | { kind: 'ready' }
 ///   | { kind: 'failedToStart'; reason: string } | { kind: 'unsynchronized' } | { kind: 'exited' }
 ///   | { kind: 'rootOutsideProject'; root: string } | { kind: 'wrongWorkingDirectory'; directory: string }
 ///   | { kind: 'notStarted'; reason: string };
@@ -28,6 +29,11 @@ pub enum ServerState {
     /// The server's real program is not installed, or the project has no usable copy of it.
     MissingExecutable {
         /// Which program was looked for and where.
+        reason: String,
+    },
+    /// The launch policy could not produce a safe launch; nothing was spawned in its place.
+    LaunchRefused {
+        /// What the policy or the launch preparation reported.
         reason: String,
     },
     /// The process runs but has not answered `initialize`; no request may be sent yet.
