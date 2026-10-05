@@ -407,7 +407,10 @@ Access date for all URLs and API calls: 2026-10-05. Clone path for all `path:lin
   microsoft/mimalloc submodule, fetched at revs `02a2f5df9d7d46d30263b83832eebeeab62dc5fe` and
   `d4881d338125e1cb7c47ba4cfb398d6f7c0c8d45` per the fetch log), plus mold's own `build.rs` and
   `cli/build.rs` (cc compiles `c/mold-wrapper.c` and `c/lto-message.c`; `git` embeds the commit
-  hash at build time).
+  hash at build time). The clone's own `.cargo/config.toml` carries a single documented flag
+  (`[target.'cfg(target_arch = "loongarch64")'] rustflags = ["-Ccode-model=medium"]`, needed
+  because the cc crate otherwise compiles C with the normal code model whose direct calls reach
+  only ±128 MiB); it does not affect x86_64 builds.
 - Source quality indicators: `rustfmt.toml` present; workspace-wide edition 2024,
   `rust-version = 1.95`; release profile `panic = "abort"`; unsafe usage concentrated in
   `src/lto.rs` (69 matches, LLVM plugin C API), `src/elf.rs` (27), `src/symbol.rs` (25),
@@ -429,9 +432,11 @@ Access date for all URLs and API calls: 2026-10-05. Clone path for all `path:lin
   Source: clone `.github/workflows/ci.yml`, `install-test-deps.sh`,
   `.github/workflows/install-extras.sh` (pinned cross-toolchain and Intel SDE downloads for
   CET tests). Status: pass; strong breadth.
-- Fuzzing: absent. `rg -iln 'fuzz|oss-fuzz|afl|libfuzzer'` over the clone (excluding .git) found
-  no fuzzing infrastructure, and `google/oss-fuzz/projects/mold` returns 404. Reported inline as
-  required. Compensating evidence: ASan/TSan/MSan CI jobs, the bounds-checked Rust rewrite, and
+- Fuzzing and mutation testing: absent. `rg -iln 'fuzz|oss-fuzz|afl|libfuzzer'` over the clone
+  (excluding .git) found no fuzzing infrastructure, `google/oss-fuzz/projects/mold` returns 404,
+  and no mutation-testing configuration or tooling exists in the clone or its CI (a `mutants`
+  search is empty; there is no `.cargo/mutants.toml`). Reported inline as required.
+  Compensating evidence: ASan/TSan/MSan CI jobs, the bounds-checked Rust rewrite, and
   pre-release Gentoo-wide differential rebuilds against GNU ld (README "Stability"; v3.0.0 notes).
 - CI status at the pinned tag: `gh run list` shows CI, "Build & attach tarballs on tag push", and
   "Build native tarballs" all `completed/success` for branch `v3.0.0` on 2026-10-05T07:13Z, and
