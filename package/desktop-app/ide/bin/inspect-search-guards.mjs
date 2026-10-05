@@ -29,6 +29,7 @@ const replaceOne = (text, before, after, occurrence = 0) => {
 };
 const cases = [
   { name: 'reply-generation', file: 'src/search_worker.rs', before: 'if current.generation == self.generation {', after: 'if true {', test: 'unread_reply_identity_must_equal_the_current_generation', failure: 'a stale reply crossed the current generation boundary' },
+  { name: 'result-count-limit', file: 'src/search_collect.rs', before: 'if hits.len() == maximum {', after: 'if false {', integration: 'search_worker', test: 'both_result_streams_stop_at_their_approved_caps', failure: 'assertion `left == right` failed' },
   { name: 'record-limit', file: 'src/search_io.rs', before: 'if bytes.len() > MAX_SEARCH_RECORD {', after: 'if false {', test: 'exact_record_limit_has_an_observed_boundary', failure: 'record(&mut rejected' },
   { name: 'scope-containment', file: 'src/search_worker/request.rs', before: 'workspace.resolve(selected)?', after: 'fs::canonicalize(workspace.root().join(selected))?', integration: 'search_scope', test: 'invalid_scope_is_an_error_and_a_later_valid_scope_recovers', failure: 'result.results.paths.is_err()' },
   { name: 'eof-cancellation', file: 'src/search_process.rs', alter: text => {
