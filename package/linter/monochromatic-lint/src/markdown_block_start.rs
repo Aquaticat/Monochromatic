@@ -23,14 +23,12 @@ fn boundary(byte: Option<u8>) -> bool {
 /// function startsBlockConstruct(source, at): boolean;
 /// ```
 pub(crate) fn starts_block_construct(source: &str, at: usize) -> bool {
-    // Borrow the original bytes; offsets remain UTF-8 boundaries supplied by the text scanner.
-    let bytes: &[u8] = source.as_bytes();
-    let mut start: usize = at;
-    while start < bytes.len() && (bytes[start] == b' ' || bytes[start] == b'\t') {
-        start += 1;
-    }
+    // The text scanner supplies a UTF-8 boundary inside the source, so this slice cannot split a character.
+    // The standard trim drops the horizontal spacing before a candidate marker; no index is stepped by hand.
+    // Bytes (u8, not char) suffice afterwards because every Markdown marker is ASCII.
+    let line: &[u8] = source[at..].trim_start_matches([' ', '\t']).as_bytes();
     // A missing/empty next line cannot introduce a block.
-    let Some(first): Option<u8> = bytes.get(start).copied() else {
+    let Some(first): Option<u8> = line.first().copied() else {
         return false;
     };
     // Newline bytes match no marker or digit branch and reach the ordinary false result.
@@ -38,12 +36,15 @@ pub(crate) fn starts_block_construct(source: &str, at: usize) -> bool {
         return true;
     }
     // Count the first written marker's run; non-ASCII leading bytes never match the ASCII marker catalog.
-    let mut end: usize = start;
-    while end < bytes.len() && bytes[end] == first {
-        end += 1;
+    // Walking the slice ends at its last byte whatever happens to the counter, unlike a hand-stepped index.
+    let mut width: usize = 0;
+    for byte in line {
+        if *byte != first {
+            break;
+        }
+        width += 1;
     }
-    let width: usize = end - start;
-    let after: Option<u8> = bytes.get(end).copied();
+    let after: Option<u8> = line.get(width).copied();
     if first == b'#' && width <= 6 && boundary(after) {
         return true;
     }
@@ -55,31 +56,32 @@ pub(crate) fn starts_block_construct(source: &str, at: usize) -> bool {
     }
     if first == b'-' || first == b'=' || first == b'_' || first == b'*' {
         // Uniform rule lines contain no further prose break points, so this scan cannot repeat per punctuation.
-        let mut cursor: usize = end;
-        while cursor < bytes.len() {
-            let current: u8 = bytes[cursor];
-            if current == b'\n' || current == b'\r' {
+        for current in &line[width..] {
+            if *current == b'\n' || *current == b'\r' {
                 return true;
             }
-            if current != first && current != b' ' && current != b'\t' {
+            if *current != first && *current != b' ' && *current != b'\t' {
                 return false;
             }
-            cursor += 1;
         }
         return true;
     }
     // An ordered marker needs digits, a delimiter and a separating boundary.
-    let mut digit_end: usize = start;
-    while digit_end < bytes.len() && bytes[digit_end].is_ascii_digit() {
-        digit_end += 1;
+    let mut digits: usize = 0;
+    for byte in line {
+        if !byte.is_ascii_digit() {
+            break;
+        }
+        digits += 1;
     }
-    if digit_end == start {
+    // Without digits the first byte would be read as the delimiter, so a leading '.' or ')' is not a marker.
+    if digits == 0 {
         return false;
     }
-    let Some(delimiter): Option<u8> = bytes.get(digit_end).copied() else {
+    let Some(delimiter): Option<u8> = line.get(digits).copied() else {
         return false;
     };
-    return (delimiter == b'.' || delimiter == b')') && boundary(bytes.get(digit_end + 1).copied());
+    return (delimiter == b'.' || delimiter == b')') && boundary(line.get(digits + 1).copied());
 }
 
 /// Verify both block starters and lookalike prose without requiring a complete Markdown parse.
@@ -137,6 +139,8 @@ mod tests {
             " 12word",
             " 12.x",
             " 123",
+            " . next",
+            " ) next",
             " ordinary",
             " 🚀",
         ] {
