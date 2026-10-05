@@ -291,6 +291,53 @@ and does not describe coverage of these modules.
 Disposition is queued for a delegate in the linked worktree `.claude/worktrees/linter-processor-survivors`
 (branch `test/linter-processor-survivors`, based on `9be97dce4`).
 
+**Scanner Windows-native verification**:
+the two retained survivors at `package/cli/forbidden-strings/src/path_name_bytes.rs:36` are caught on native Windows
+by the existing test `path_scan::tests::windows_volume_prefix_is_not_name_segment`.
+Detail and evidence:
+`doc/handover/scanner-native-verification.md`, section `Windows-native follow-up` (commit `0fa9f3761`),
+and `package/cli/forbidden-strings/target/verification/windows-native-8Wo0tM`.
+Target:
+Windows Server 2025 evaluation build 10.0.26100.1742,
+`rustc` 1.97.0,
+`x86_64-pc-windows-gnu`,
+built and tested inside a disposable 4 vCPU / 8 GiB virtual machine that was destroyed afterwards.
+A positive-control mutant failed 14 tests.
+
+Limits of that closure:
+
+- Only the GNU ABI ran;
+  the published binaries are MSVC.
+- The unmutated Windows baseline is not green.
+  `tests/integration.rs` does not compile on Windows (Unix-only permission APIs),
+  and six tests fail for causes not established,
+  so the result is differential:
+  each mutant adds exactly one failing test to the baseline's set.
+- One manual run on one snapshot, not a recurring gate.
+
+New defect found by that run, not fixed:
+device-namespace pathnames fail open on Windows.
+`\\.\COM1\<forbidden name>\clean.txt` produced no finding and no masking.
+The main session confirmed the mechanism by reading the source:
+`count_prefix_parts` (`src/path_name_bytes.rs:44`) counts the `.` of `\\.\` as a prefix part,
+while `src/path_scan.rs:129` treats a `.` component as navigation and continues without consuming a prefix part,
+so the remaining prefix skips swallow the first real name.
+Drive, UNC, and `\\?\` forms behaved correctly.
+Proposed, awaiting the user:
+fix it with target-independent tests that run on Linux,
+with Windows confirmation later.
+
+Host notes from that run:
+
+- The `mvm` MCP tools did not work on this host:
+  `virsh` and `qemu-img` exist only inside the `org.virt_manager.virt-manager` Flatpak,
+  and no `virtiofsd` is available,
+  so the delegate drove the `mvm` CLI through scratch shims and moved files over loopback HTTP.
+  A troubleshooting entry for this is not written yet.
+- The Windows template's evaluation license had lapsed.
+  The delegate ran `slmgr.vbs /rearm` on the disposable overlay only;
+  the template is unchanged.
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
@@ -329,7 +376,10 @@ that is verification, not a decision for the user.
   executable orchestration, stdin/fix/output/exit integration, and consumer migration remain.
 - [x] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
 - [x] Forbidden-strings structured embedding interface and standalone parity.
-  Windows-native mutation verification remains open.
+  The two Windows-native survivors are caught on Windows (GNU ABI, differential against a red baseline).
+- [ ] Scanner on Windows: device-namespace pathnames fail open;
+  the Windows baseline has a non-compiling integration target and six failing tests;
+  MSVC is unexercised.
 - [ ] Rust cli-git configuration, Git resolution/argv, static policies, and management commands.
   Native global-argument and lazy-config foundations are in and pass tests and Clippy (`2680f7cb6`);
   configuration, Git resolution and forwarding, the command parser and rule cores are delegated
