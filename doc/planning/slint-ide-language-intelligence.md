@@ -660,6 +660,28 @@ Each state occurred in the spike and is observable as follows.
   A over B because it keeps the complete diagnostics the server offers.
   B over C because C shows a result that silently disappears.
 
+### Adopted on 2026-10-05
+
+The coordinating session adopted option A for all three,
+because the accepted scope already determines each answer.
+The TypeScript choice was reported to the user as open to veto.
+
+- TypeScript server: option A.
+  The scope requires actual TypeScript feature paths,
+  option B needs a new dependency,
+  and option C cannot pass the gate.
+  A project without its own TypeScript 7 server shows the missing-executable state.
+- Targets outside the project root: option A.
+  [The implementation plan](slint-ide-implementation.md) already says a local dependency definition
+  opens without creating another project root.
+- `didSave` after an external reload: option A.
+  Disk is authoritative,
+  so the notification is truthful.
+  The `cargo check` it triggers must write only to private state,
+  which is the subject of [the write confinement plan](slint-ide-write-confinement.md).
+  Until confinement is wired in,
+  real servers run only against disposable projects.
+
 ## Proposed module layout
 
 All under `package/desktop-app/ide/src/`, each within the existing line budgets,
