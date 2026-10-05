@@ -43,15 +43,15 @@ and resumption details are in [the handover][handover].
   annotations,
   remaining keyboard navigation,
   and complete lint/geometry coverage are still pending.
-- [ ] Live workspace tree and combined path/content search,
-  in-file find,
-  file switching,
-  and native Ctrl+0 through Ctrl+9 reveal/badges.
-  The tested session-local history module exists but is not yet bound to navigation.
-  `Workspace` reads contained directory snapshots;
-  `FileTree` now models lazy expansion and visible rows without filesystem I/O.
-  Its eight tests and scoped lint pass;
-  background directory generations and native bindings remain next.
+- [x] Native workspace tree,
+  asynchronous file switching,
+  and Ctrl+0 through Ctrl+9 promotion/reveal/badges.
+  Headless native callbacks and actual nested Wayland input pass,
+  including failed-open retention and long-distance reveal.
+- [ ] Combined path/content search.
+- [ ] In-file find.
+- [ ] Complete tree parity:
+  resizable sidebar and event-driven directory invalidation beyond the current bounded polling implementation.
 - [ ] Required language-intelligence feature paths and synchronization.
 - [ ] Measured Helix-supported runtime languages and project-write confinement.
 - [ ] Light mode and live system-theme changes through the private appearance portal.
@@ -371,10 +371,11 @@ and prevents treating a regular static font screenshot as complete typography su
 
 ## Next action
 
-Connect the tested lazy tree model to generation-fenced background directory reads,
-then bind native file switching and recent-file navigation.
+Finish the outstanding guard-removal controls and final navigation verification,
+then implement combined path/content search and in-file find.
+The tree and file-switching paths now work through actual native input.
 The initial syntax slice is implemented;
-annotations and language intelligence follow workspace navigation.
+annotations and language intelligence follow the remaining reader navigation features.
 The native source/clipboard/reload checks do not establish completion of the whole application.
 
 [handover]: ../handover/slint-ide-0x.md

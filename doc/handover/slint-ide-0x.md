@@ -7,7 +7,7 @@ The user confirmed [the scope][scope] and [the approach][plan],
 then authorized implementation.
 A checkpoint is not a pause:
 continue the queue without asking the user to say “continue”.
-The application remains an incomplete source-view gate.
+The application remains an incomplete read-only workspace reader.
 
 Current boundary:
 continue workspace tree/search/navigation after the verified font fixes.
@@ -23,8 +23,10 @@ and Ctrl+digit promotion/reveal are now bound.
 Native callback tests and scoped lint pass in `proc_ee8d`.
 Actual nested Wayland mouse/keyboard/clipboard navigation checks pass in
 `/tmp/monochromatic-ide-native-bOrX20/interaction.mjs` and `edge-probe.mjs`.
-Next verify off-screen reveal and Tab traversal,
-finish the remaining guard controls/formatting,
+Off-screen reveal,
+Tab/Shift+Tab traversal,
+and clicks on windowed rows now pass in the light native probe.
+Finish the remaining guard controls/formatting,
 then continue combined search and in-file find.
 New identity/admission and file-open-generation guard controls remain to be exercised in the disposable copy.
 The procedural-macro and variable-font paths now both pass native font isolation.
@@ -190,7 +192,10 @@ The selection screenshot was inspected.
 
 `src/recent.rs` implements ten unique push-to-front slots and exact Ctrl+digit decoding.
 Its four tests pass.
-It is not yet wired to file switching or the native tree.
+It is now wired to native file switching,
+slot badges,
+ancestor expansion,
+and reveal.
 
 `src/text_projection.rs` preserves source/display correspondence through expanded tabs.
 `src/shaped_text.rs` uses Parley 0.11 layouts for glyph advances,
@@ -238,12 +243,11 @@ A hidden `TextInput` is only a clipboard bridge,
 not a second text layout.
 
 Unfinished surfaces:
-no tree,
-search,
-find,
-file switching,
+combined search,
+in-file find,
 LSP,
-or write confinement exists yet.
+and subprocess project-write confinement.
+Native tree and file switching are now implemented.
 Up/down,
 PageUp/PageDown,
 and focus navigation remain incomplete.
@@ -438,6 +442,42 @@ Copy is keyboard-only.
 Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
+
+- `proc_81e8`,
+  `ide-fixed-row-tree-native-proof`,
+  is the active light-mode probe at port 9319,
+  socket `/tmp/monochromatic-ide-native-D6RbFJ/control.sock`.
+  Its `interaction.mjs`,
+  `focus-reveal.mjs`,
+  and `windowed-click.mjs` pass genuine seat input and independent clipboard reads.
+  `tree-offscreen-reveal-light.png` was inspected.
+  This process predates the final pressed-row/model click guard;
+  restart before that guard's final native smoke check.
+- Slint ListView's large-jump branch discarded the within-row offset:
+  row 43 had bottom 672px in a 628px viewport.
+  The native regression failed in `proc_88bc`.
+  The tree now uses native `ScrollView` with bounded fixed-row windowing,
+  retaining exact offsets and native scrolling physics.
+  The corresponding viewport test passed in `proc_d499`.
+- Windowed row reuse exposed a genuine pointer-release identity regression in `proc_6bed`.
+  The input item now remembers the pressed row index and model identity;
+  stale releases do not activate a different row.
+  All ten native tests passed in `proc_1d2a`.
+- The upstream layout investigation,
+  runnable isolated harness,
+  tested prototype patch,
+  and additive comment draft are in
+  `doc/troubleshooting/slint-listview-random-seek-offset.md` and its sidecars.
+  No upstream message was posted and no dependency was patched.
+  Original-source controls failed in `proc_2f24`;
+  the completed prototype passed five control groups in `proc_3830`.
+- `proc_2879` is running observed-failing identity,
+  directory admission,
+  source-open ordering,
+  and runtime build-boundary guards in the disposable copy at
+  `/home/user/temp/agent/ide-tree-guard-zlIbRv/package`.
+  Evidence will be `navigation-results.json` beside that copy.
+- `proc_1542` passed 91 library/integration tests and the complete package lint before the final windowing changes.
 
 - `proc_3806`,
   `ide-native-tree-seat-controls`,
@@ -756,7 +796,7 @@ Collapsing a folder dismisses its folder-scoped diagnostic;
 re-expansion requests it again.
 Canonical inside symlink aliases select and badge the real target row rather than creating duplicate history slots.
 Successful file opens focus the source view;
-Tab traversal back to the tree is implemented but still needs physical-input verification.
+Tab traversal back to the tree and Shift+Tab back to source pass with native seat input.
 Both readers close their input and join on shutdown;
 a filesystem operation that never returns can therefore delay shutdown.
 Cancellation invalidates replies,

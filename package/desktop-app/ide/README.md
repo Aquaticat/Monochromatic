@@ -15,7 +15,11 @@ and the next implementation action.
   font fidelity,
   and native external-change correspondence pass;
   annotations and remaining keyboard navigation are pending.
-- [ ] Live workspace tree and search.
+- [x] Native tree,
+  asynchronous file switching,
+  and recent-file reveal.
+  Sidebar resizing and event-driven directory invalidation remain parity work.
+- [ ] Combined path/content search and in-file find.
 - [ ] Required language-intelligence feature paths.
 - [ ] Measured Helix-supported language inventory and private server state.
 - [ ] Native interaction tests and behavior-difference documentation.
@@ -29,11 +33,14 @@ not the shell's working directory.
 `--help` and `--version` exit before filesystem or native-display startup.
 The executable no longer substitutes example source when no file is selected.
 
-The native tree and file-switching bindings are implemented;
-consumer-boundary navigation checks are in progress.
+Native tree and file switching pass callback tests and real nested Wayland input checks.
+Long-distance reveal uses fixed-row windowing over native `ScrollView`;
+see the [ListView investigation][listview].
 Directory reads and later source opens run in bounded background workers.
 Failed opens retain the displayed source and do not enter recent-file history.
 Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
+
+[listview]: ../../../doc/troubleshooting/slint-listview-random-seek-offset.md
 
 ## Fonts and appearance
 
