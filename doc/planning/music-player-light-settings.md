@@ -380,8 +380,33 @@ It restored every recorded field,
 its owner exited `0`,
 no matching runtime remained,
 and it supplies no evidence.
-The shared hierarchy helper is unchanged;
-a fifth visit repeats the run.
+The shared hierarchy helper is unchanged.
+
+A fifth visit captured all 12 inner views,
+then stopped at the cover's first 200% capture:
+the host was created twice in one process,
+4.5 s apart,
+because a configuration change from the environment step reached the app
+after its launch.
+The one-creation guard refused that capture.
+Its restoration then failed on a 15 s `podman inspect` bound in
+`restore-stop-fresh-fold.ts`,
+the same bound that ended the second visit;
+that bound is now 120 s,
+and the restoration was rerun by hand.
+It restored every recorded field,
+the owner exited `0` and no matching runtime remained.
+Every launch is now watched for 8 s and relaunched,
+at most twice,
+if it is created again;
+each capture records the attempts its launch used.
+A sixth visit repeats the run.
+
+The fifth visit's inner cohort shows two rows fit without scrolling at both
+text sizes:
+the last row ends at 748px at 100% and 1483px at 200%,
+above a root bottom of 2074px,
+and the divider between rows measures 2px.
 
 The viewer builder now expects two rows,
 reads the column end from the last row and the measured divider between the
