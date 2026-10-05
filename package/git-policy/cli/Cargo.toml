@@ -8,6 +8,7 @@ readme = "README.md"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
 # First crates.io publication requires separate approval; the TypeScript executable remains active meanwhile.
 publish = false
+homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/git-policy/cli"
 
 [lib]
 name = "git_policy_cli"
