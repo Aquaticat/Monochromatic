@@ -197,7 +197,9 @@ Push and pull read and write the guest's own files through the QEMU guest agent:
   A push is therefore slow where each `virsh` call is slow,
   as it is through the Flatpak;
   measured rates are in `doc/handover/mvm-flatpak-libvirt.md` in the repository root.
-- A chunk whose call gets no answer is sent again at the same position.
+- A chunk whose call gets no answer is sent again at the same position,
+  for as long as the domain runs and the agent's silence lasts less than five minutes.
+  A guest under load can leave the agent silent for minutes.
   When a push stops midway,
   the error says how many bytes arrived,
   and the guest file is incomplete until the push is repeated.
@@ -221,6 +223,15 @@ Push and pull read and write the guest's own files through the QEMU guest agent:
 - A status request that the guest agent does not answer is asked again.
   mvm gives up when the domain is gone or when requests stay unanswered for five minutes.
 - A command a signal ended reports exit status 128 plus the signal number.
+- One result may hold about 3 MiB of standard output and standard error together,
+  because libvirt hands over at most 4194304 characters per answer.
+  A command with more output fails with an error saying so,
+  and its output and exit status are lost;
+  redirect large output to a file in the guest and fetch it with `mvm pull`.
+- On a Windows guest the command runs in PowerShell,
+  which reports status 1 when the last program it ran failed,
+  whatever that program's own status was.
+  End the command with `; exit $LASTEXITCODE` to get the program's status.
 - `mvm create` returns once the new VM's guest agent answers,
   and waits up to five minutes for that.
   After a reboot inside the guest,
