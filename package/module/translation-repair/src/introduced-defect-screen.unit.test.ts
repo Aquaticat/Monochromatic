@@ -232,6 +232,52 @@ await describe({
         },),
 
         it({
+          name: 'READS A SIDE THAT SHOWS A READER NOTHING AS NO ANCHOR (ledgers B40 and B128): a claim is '
+            + 'judged on its one visible side where the other holds only a zero-width space or a Hangul '
+            + 'filler, and two sides that show nothing anchor on nothing',
+          fn: async () => {
+            /**
+             Verdicts for a claim of added wording and one of dropped wording,
+             the other side of each holding only one invisible character.
+             */
+            const verdicts = [
+              '\u{200B}',
+              '\u{3164}',
+            ].map(function screened(invisible,) {
+              return [
+                screenEvidence({
+                  evidence: 'The cat sleeps.',
+                  omittedText: invisible,
+                  region: REGION,
+                },),
+                screenEvidence({
+                  evidence: invisible,
+                  omittedText: 'and she wakes at dusk',
+                  region: REGION,
+                },),
+              ];
+            },);
+            expect(verdicts,).toEqual([
+              [
+                'corroborated',
+                'removal-corroborated',
+              ],
+              [
+                'corroborated',
+                'removal-corroborated',
+              ],
+            ],);
+            expect(
+              screenEvidence({
+                evidence: '\u{200B}',
+                omittedText: '\u{3164}',
+                region: REGION,
+              },),
+            ).toBe('unanchored',);
+          },
+        },),
+
+        it({
           name: 'proves a deletion that emptied its region entirely, the case a '
             + 'forward-only screen could never have anchored',
           fn: async () => {
@@ -337,31 +383,106 @@ await describe({
         },),
 
         it({
-          name: 'KEEPS a corroborated claim whose quoted side flattens to nothing out of the prior-issue '
-            + 'dismissal, since wording that is nothing restates nothing',
+          name: 'DISMISSES a claim whose evidence restates an accepted issue where its omitted side is only '
+            + 'spaces, and KEEPS the same claim where its evidence restates none (ledger B128)',
           fn: async () => {
-            const [tally,] = screenIntroducedDefects({
+            /**
+             One prober's claim of added damage, its omitted side padded with
+             spaces: the differential reads that side as no anchor and
+             corroborates the claim on its evidence.
+             */
+            const ballots = {
+              'hf:cat/one': [catCheck({
+                verdict: 'introduced-defect',
+                evidence: 'cat sleeps',
+                omittedText: '   ',
+              },),],
+            };
+
+            /**
+             The claim as the screen keeps it, short of its admissibility.
+             */
+            const kept = {
+              modelId: 'hf:cat/one',
+              category: 'omission',
+              severity: 'major',
+              evidence: 'cat sleeps',
+              omittedText: '   ',
+              reason: 'the second clause is gone',
+            };
+
+            /**
+             Every count of a region no claim was counted under.
+             */
+            const quiet = {
+              envelopeId: 'envelope/nap',
+              issueIds: ['adjudicated/nap',],
+              corroborated: 0,
+              removalCorroborated: 0,
+              contradicted: 0,
+              unanchored: 0,
+              preExisting: 0,
+              noneFound: 0,
+              uncertain: 0,
+            };
+            expect(screenIntroducedDefects({
               regions: [REGION,],
-              ballots: {
-                'hf:cat/one': [catCheck({
-                  verdict: 'introduced-defect',
-                  evidence: 'cat sleeps',
-                  omittedText: '   ',
-                },),],
-              },
-              issues: [{
-                issueId: 'issue/1',
-                status: 'accepted',
-                severity: 'minor',
-                claims: [{
-                  quote: 'the cat sleeps',
-                },],
-                tallies: {},
-              },] as unknown as AdjudicatedIssue[],
+              ballots,
+              issues: [catIssue({ quotedText: 'the cat sleeps', },),],
+            },),).toEqual([{
+              ...quiet,
+              preExisting: 1,
+              claims: [{
+                ...kept,
+                admissibility: 'pre-existing',
+              },],
+            },],);
+            expect(screenIntroducedDefects({
+              regions: [REGION,],
+              ballots,
+              issues: [catIssue({ quotedText: 'she wakes at dusk', },),],
+            },),).toEqual([{
+              ...quiet,
+              corroborated: 1,
+              claims: [{
+                ...kept,
+                admissibility: 'corroborated',
+              },],
+            },],);
+          },
+        },),
+
+        it({
+          name: 'DISMISSES a claim whose evidence restates an accepted issue where its omitted side holds '
+            + 'only a zero-width space or a Hangul filler (ledgers B40 and B128)',
+          fn: async () => {
+            /**
+             What the screen makes of the claim under each invisible omitted
+             side.
+             */
+            const admissibilities = [
+              '\u{200B}',
+              '\u{3164}',
+            ].map(function screened(invisible,) {
+              const [tally,] = screenIntroducedDefects({
+                regions: [REGION,],
+                ballots: {
+                  'hf:cat/one': [catCheck({
+                    verdict: 'introduced-defect',
+                    evidence: 'cat sleeps',
+                    omittedText: invisible,
+                  },),],
+                },
+                issues: [catIssue({ quotedText: 'the cat sleeps', },),],
+              },);
+              return tally?.claims.map(function toAdmissibility(claim,) {
+                return claim.admissibility;
+              },);
             },);
-            expect(tally?.corroborated,).toBe(1,);
-            expect(tally?.claims,).toHaveLength(1,);
-            expect(tally?.claims[0]?.admissibility,).toBe('corroborated',);
+            expect(admissibilities,).toEqual([
+              ['pre-existing',],
+              ['pre-existing',],
+            ],);
           },
         },),
 

@@ -27,6 +27,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -34,6 +35,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ClaimAdmissibility,
   formatVerifyManifest,
   formatVerifySheet,
   orderBlind,
@@ -105,6 +107,7 @@ function verifyItem(
     readonly claims: readonly {
       readonly evidence: string;
       readonly omittedText: string;
+      readonly admissibility: ClaimAdmissibility;
     }[];
   },
 ): VerifyItem {
@@ -128,6 +131,7 @@ function verifyItem(
       {
         evidence,
         omittedText,
+        admissibility,
       },
     ) {
       return {
@@ -137,7 +141,7 @@ function verifyItem(
         evidence,
         omittedText,
         reason: 'the original says nothing of the sort',
-        admissibility: 'corroborated' as const,
+        admissibility,
       };
     },),
   };
@@ -479,6 +483,7 @@ await describe({
                     {
                       evidence: ADDED_WORDING,
                       omittedText: '',
+                      admissibility: 'corroborated',
                     },
                   ],
                 },),
@@ -506,8 +511,9 @@ await describe({
                   kind: FIRST_PARTITION,
                   claims: [
                     {
-                      evidence: ADDED_WORDING,
+                      evidence: '',
                       omittedText: DROPPED_WORDING,
+                      admissibility: 'removal-corroborated',
                     },
                   ],
                 },),
@@ -517,6 +523,126 @@ await describe({
             expect(sheet.includes('wording the edit DROPPED',),).toBe(true,);
             expect(sheet.includes(DROPPED_WORDING,),).toBe(true,);
             expect(sheet.includes('wording the edit ADDED or altered',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'NAMES a claim the screen corroborated on its evidence as added and quotes that evidence, '
+            + 'where its omitted side is only spaces, and one corroborated on its omitted side as dropped, '
+            + 'where its evidence is only spaces (ledger B128)',
+          fn: async () => {
+            /**
+             The reviewer's block on a sheet of one item carrying one claim.
+
+             @param claim - the claim's two sides and what the screen made of it
+
+             @returns Lines from the reviewer's opening to the grading rule
+
+             @example
+             ```ts
+             const block = reviewerBlock({ evidence: 'a', omittedText: ' ', admissibility: 'corroborated', },);
+             ```
+             */
+            function reviewerBlock(
+              claim: {
+                readonly evidence: string;
+                readonly omittedText: string;
+                readonly admissibility: ClaimAdmissibility;
+              },
+            ): string {
+              /**
+               Sheet built from the one claimed item.
+               */
+              const sheet = formatVerifySheet({
+                items: [
+                  verifyItem({
+                    entryId: 'whiskers',
+                    envelopeId: 'lone',
+                    kind: FIRST_PARTITION,
+                    claims: [claim,],
+                  },),
+                ],
+              },);
+              return sheet.slice(
+                sheet.indexOf('An automated reviewer says',),
+                sheet.indexOf('Y if the edit lost',),
+              );
+            }
+            expect(reviewerBlock({
+              evidence: ADDED_WORDING,
+              omittedText: '   ',
+              admissibility: 'corroborated',
+            },),).toBe([
+              'An automated reviewer says the edit introduced a defect:',
+              '',
+              '-   Says the edit introduced: meaning-changed',
+              '-   Quotes this as wording the edit ADDED or altered:',
+              '',
+              '```text',
+              ADDED_WORDING,
+              '```',
+              '',
+              '-   Its reason:',
+              '',
+              '```text',
+              'the original says nothing of the sort',
+              '```',
+              '',
+              '',
+            ].join('\n',),);
+            expect(reviewerBlock({
+              evidence: '   ',
+              omittedText: DROPPED_WORDING,
+              admissibility: 'removal-corroborated',
+            },),).toBe([
+              'An automated reviewer says the edit introduced a defect:',
+              '',
+              '-   Says the edit introduced: meaning-changed',
+              '-   Quotes this as wording the edit DROPPED:',
+              '',
+              '```text',
+              DROPPED_WORDING,
+              '```',
+              '',
+              '-   Its reason:',
+              '',
+              '```text',
+              'the original says nothing of the sort',
+              '```',
+              '',
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
+          name: 'REFUSES a claim the screen did not corroborate, since a sheet prints only claims with one '
+            + 'anchored side to quote',
+          fn: async () => {
+            /**
+             What formatting a sheet with an unanchored claim throws.
+             */
+            const refusal = caught(function act(): unknown {
+              return formatVerifySheet({
+                items: [
+                  verifyItem({
+                    entryId: 'whiskers',
+                    envelopeId: 'lone',
+                    kind: FIRST_PARTITION,
+                    claims: [
+                      {
+                        evidence: ADDED_WORDING,
+                        omittedText: DROPPED_WORDING,
+                        admissibility: 'unanchored',
+                      },
+                    ],
+                  },),
+                ],
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(Error,);
+            expect(String(refusal,),).toBe(
+              'Error: unreachable: a claim the screen read as unanchored on a sheet, though the probe hands '
+                + 'a sheet only claims the screen corroborated, each with one anchored side to quote',
+            );
           },
         },),
       ],
@@ -575,6 +701,7 @@ await describe({
                     {
                       evidence: ADDED_WORDING,
                       omittedText: '',
+                      admissibility: 'corroborated',
                     },
                   ],
                 },),
