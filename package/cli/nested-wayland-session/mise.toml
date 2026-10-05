@@ -565,13 +565,8 @@ const client = async () => {
     const bytes = readFileSync(join(evidence, name + '.png'))
     return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)]
   }
-  // The green channel of a few points in the last frame of a short BMP recording.
-  const greens = async (name, points) => {
-    const directory = join(evidence, 'frames-' + name)
-    mkdirSync(directory)
-    assert.equal(await control(socketPath, 'record ' + directory + ' 20 bmp'), 'ok')
-    await wait(400)
-    assert.match(await control(socketPath, 'record stop'), /^ok captured=/)
+  // The green channel of a few points in the last frame recorded into a directory.
+  const lastFrameGreens = (directory, points) => {
     const bytes = readFileSync(join(directory, readdirSync(directory).sort().at(-1)))
     const offset = bytes.readUInt32LE(10)
     const width = bytes.readInt32LE(18)
@@ -579,9 +574,18 @@ const client = async () => {
     assert.equal(bytes.readUInt16LE(28), 32, 'recorded frames are 32-bit')
     // A positive height stores rows bottom-up; the green byte is second in either channel order.
     return points.map(([x, y]) => {
-      const row = height > 0 ? height - 1 - y : y
+      const row = height > 0 ? Math.abs(height) - 1 - y : y
       return bytes[offset + (row * width + x) * 4 + 1]
     })
+  }
+  // The same points in the last frame of a short BMP recording made now.
+  const greens = async (name, points) => {
+    const directory = join(evidence, 'frames-' + name)
+    mkdirSync(directory)
+    assert.equal(await control(socketPath, 'record ' + directory + ' 20 bmp'), 'ok')
+    await wait(400)
+    assert.match(await control(socketPath, 'record stop'), /^ok captured=/)
+    return lastFrameGreens(directory, points)
   }
   // Physical size the protocol prescribes: logical size times scale, rounded half away from zero.
   const physical = scale => [Math.round(logical.width * scale), Math.round(logical.height * scale)]
@@ -635,10 +639,34 @@ const client = async () => {
       assert.match(await control(socketPath, 'scale'), /^err scale requires a value/)
       // A switch changes only the scale: the client reported no new logical size across four switches.
       assert.deepEqual(reported('size-seen').slice(sizesBefore), [], 'a scale switch resized the client')
+      // A switch while recording: the frames after it must already have the new size, and the
+      // last one the client's full drawing; nothing swaps the window while a recording runs.
+      const during = join(evidence, 'frames-during-switch')
+      mkdirSync(during)
+      assert.equal(await control(socketPath, 'record ' + during + ' 20 bmp'), 'ok')
+      // Let the recorder draw a few frames first: a window back buffer drawn into since its last
+      // swap keeps its size, which is how a capture of the window itself went wrong.
+      await wait(300)
+      assert.equal(await control(socketPath, 'scale 2'), 'ok changed')
+      await until('Slint to apply scale 2 while recording', () => near(scales().at(-1) ?? 0, 2))
+      await wait(settle)
+      assert.match(await control(socketPath, 'record stop'), /^ok captured=/)
+      const lastDuring = readFileSync(join(during, readdirSync(during).sort().at(-1)))
+      const [duringWidth, duringHeight] = physical(2)
+      const recordedWidth = lastDuring.readInt32LE(18)
+      const recordedHeight = Math.abs(lastDuring.readInt32LE(22))
+      assert(recordedWidth >= duringWidth && recordedWidth <= duringWidth + 3, 'recorded width ' + recordedWidth + ' after a switch while recording')
+      assert(recordedHeight >= duringHeight && recordedHeight <= duringHeight + 3, 'recorded height ' + recordedHeight + ' after a switch while recording')
+      const [duringYellow, duringBlue, duringCorner] = lastFrameGreens(during, [
+        [duringWidth / 2 - 3, duringHeight / 2 - 3], [duringWidth / 2 + 3, duringHeight / 2 + 3], [duringWidth - 3, duringHeight - 3],
+      ])
+      assert(duringYellow > 150 && duringBlue > 50 && duringBlue < 90 && duringCorner > 50 && duringCorner < 90,
+        'frame recorded after a switch while recording: greens ' + [duringYellow, duringBlue, duringCorner])
+      console.log('switch while recording: last frame ' + duringWidth + 'x' + duringHeight + ', greens '
+        + [duringYellow, duringBlue, duringCorner].join('/'))
+      await check(2, 'scale-2-again')
       // Positive control for that size detector, and resize at a scale other than 1: the logical
       // size changes at once and the framebuffer follows at the current scale.
-      assert.equal(await control(socketPath, 'scale 2'), 'ok changed')
-      await check(2, 'scale-2-again')
       logical.width = 600
       logical.height = 340
       assert.equal(await control(socketPath, 'resize 600 340'), 'ok')
