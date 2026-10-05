@@ -70,7 +70,8 @@ pub(crate) fn fences(parent: &Arc<Mapping>, rustdoc: bool) -> Result<Vec<Mapping
         let lines = physical_lines(written);
         let decoded: &str = parsed.text(data.value);
         let decoded_lines = physical_lines(decoded);
-        if decoded_lines.len() + 1 > lines.len() {
+        // The opening fence line is authored but never decoded, so authored lines must outnumber decoded ones.
+        if decoded_lines.len() >= lines.len() {
             return Err(parent.error("Native fence payload has no exact physical-line mapping."));
         }
         for (index, expected) in decoded_lines.iter().enumerate() {
