@@ -269,7 +269,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-control-
       String(notCarried.length,)
     } because the roster never called them covered, ${
       String(refusals.length - notCarried.length,)
-    } because the spans the roster anchored on were the whole page`,
+    } because what the roster anchored on was the whole page`,
   );
 
   if (notCarried.length > 0)
