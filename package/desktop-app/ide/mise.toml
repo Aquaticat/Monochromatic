@@ -423,7 +423,7 @@ depends = ["runtime"]
 description = "Run the IDE in the repo compositor with isolated theme and font configuration"
 usage = '''
 arg "[scheme]" default="dark" help="Private system appearance: dark or light"
-arg "[fixture]" default="basic" help="Source fixture: basic, scroll, or syntax"
+arg "[fixture]" default="basic" help="Source fixture: basic, scroll, syntax, or annotations (injected inlay hints and diagnostics)"
 '''
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -434,7 +434,7 @@ const { join, resolve } = await import('node:path')
 const scheme = process.env.usage_scheme ?? 'dark'
 const fixture = process.env.usage_fixture ?? 'basic'
 if (scheme !== 'dark' && scheme !== 'light') { throw new Error('scheme must be dark or light') }
-if (!['basic', 'scroll', 'syntax'].includes(fixture)) { throw new Error('fixture must be basic, scroll, or syntax') }
+if (!['basic', 'scroll', 'syntax', 'annotations'].includes(fixture)) { throw new Error('fixture must be basic, scroll, syntax, or annotations') }
 runCargo(['build', '--features', 'slint/mcp'])
 const scratch = mkdtempSync(join(tmpdir(), 'monochromatic-ide-native-'))
 for (const name of ['config', 'cache', 'data']) { mkdirSync(join(scratch, name)) }
@@ -470,6 +470,44 @@ const lines = fixture === 'syntax' ? [
   'describe(猫);',
 ] : ['I am a big cat.', 'Select text and use the native Copy action.', '猫 and é are grapheme test cases.']
 if (fixture === 'scroll') { for (let index = 0; index < 200; index++) { lines.push('Line ' + String(index + 4) + ': smooth pixel scrolling, 猫 and Latin.') } }
+// The annotations fixture: hints and diagnostics are injected from a file through the debug-only inspection path,
+// over a tab, CJK, a combining mark, a ligature, overlapping ranges, a multi-line range, and a point at a line end.
+if (fixture === 'annotations') {
+  const tab = String.fromCharCode(9)
+  const accent = 'e' + String.fromCharCode(0x301)
+  lines.splice(0, lines.length,
+    'const label = "héllo 😀"; const total = area(2, 3);',
+    'const count: number = "not a number";',
+    tab + 'const 猫 = ' + accent + ' !== x;',
+    'function area(width: number, height: number): number {',
+    '  return width * height;',
+    '}')
+  const text = lines.join(String.fromCharCode(10))
+  const at = (needle, within = 0) => { const index = text.indexOf(needle); if (index < 0) { throw new Error('fixture lacks ' + needle) } return [...text.slice(0, index)].length + within }
+  const annotations = {
+    hints: [
+      { position: at('label', 5), label: ': string' },
+      { position: at('total', 5), label: ': number' },
+      { position: at('area(2', 5), label: 'width:' },
+      { position: at('2, 3)', 3), label: 'height:' },
+      { position: at('猫', 1), label: ': boolean' },
+    ],
+    diagnostics: [
+      { source: 'ts', start: at('area(2'), end: at('area(2', 10), severity: 'error', code: '2448', message: "Block-scoped variable 'area' used before its declaration." },
+      { source: 'eslint', start: at('area(2'), end: at('area(2', 10), severity: 'hint', code: 'prefer-const', message: 'Call result could be inlined.' },
+      { source: 'ts', start: at('"not a number"'), end: at('"not a number"', 14), severity: 'error', code: '2322', message: "Type 'string' is not assignable to type 'number'." },
+      { source: 'ts', start: at('"not a number";', 15), end: at('"not a number";', 15), severity: 'information', code: '80001', message: 'A point at the end of the line.' },
+      { source: 'ts', start: at('猫'), end: at('猫', 1), severity: 'warning', code: '6133', message: "'猫' is declared but its value is never read." },
+      { source: 'eslint', start: at(accent), end: at('x;', 1), severity: 'information', code: 'eqeqeq', message: 'Comparison of an accented letter.' },
+      { source: 'eslint', start: at('!=='), end: at('!==', 3), severity: 'hint', code: 'no-ligature', message: 'Strict inequality.' },
+      { source: 'ts', start: at('x;'), end: at('function', 8), severity: 'warning', message: 'This range crosses a line end and has no code.' },
+    ],
+  }
+  const annotationFile = join(scratch, 'annotations.json')
+  writeFileSync(annotationFile, JSON.stringify(annotations, null, 2))
+  env.IDE_INSPECT_ANNOTATIONS = annotationFile
+  console.error('IDE_INSPECT_ANNOTATIONS=' + annotationFile)
+}
 writeFileSync(sourceFile, lines.join(String.fromCharCode(10)))
 console.error('IDE_NATIVE_SOCKET=' + socket)
 console.error('IDE_NATIVE_FIXTURE=' + sourceFile)
