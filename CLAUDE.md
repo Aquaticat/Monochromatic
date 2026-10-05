@@ -704,13 +704,12 @@ CM2:
  `shell = "node --input-type=module-typescript -e"` only for logic.
 
 WC2:
- file-enforcer generates root files (`CLAUDE.md`,
- `mise.toml`,
- ...):
- check `file-enforcer.config.ts` before editing root config;
+ file-enforcer manages root files (`CLAUDE.md`,
+ ...) and package `Cargo.toml`:
+ check `file-enforcer.config.ts` before editing or adding one;
  if managed,
  edit its source,
- run file-enforcer,
+ run it,
  commit output as-is.
 
 ### Simplification
