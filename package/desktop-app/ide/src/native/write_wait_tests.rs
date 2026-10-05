@@ -9,7 +9,7 @@ use super::{AppWindow, navigation_tests::wait_until, render};
 /// Reading positions, and the shipped write-wait intervals named in the measurement output.
 use ide_app::{
     document::ReadingPosition,
-    refresh_policy::{WRITE_QUIET, WRITE_WAIT_LIMIT},
+    refresh_policy::{REREAD_GAP, WRITE_QUIET, WRITE_WAIT_LIMIT},
 };
 /// Real headless timers drive the same refresh timers as the shipped event loop;
 /// `ComponentHandle` provides `hide` on the generated window.
@@ -34,9 +34,10 @@ const OLD: &str = "I am a big cat\n";
 /// Text the save writes; the selection corresponds to `was a`.
 const NEW: &str = "I was a big cat, but now I am a human!\n";
 
-/// How long the writer leaves the file unfinished in the asserting tests: below the 50 ms quiet period
-/// by 20 ms, so a stalled test thread does not turn a correct wait into a read.
-const PAUSE: Duration = Duration::from_millis(30);
+/// How long the writer leaves the file unfinished in the asserting tests: below the 50 ms quiet period,
+/// and long enough for two 20 ms native ticks, so a read that did not wait happens during the pause.
+/// Timers run only inside the pause, so a stalled test thread cannot stretch the wait they observe.
+const PAUSE: Duration = Duration::from_millis(40);
 
 /// Record the window's source text when it differs from every text recorded so far.
 fn note(window: &AppWindow, seen: &mut Vec<String>) {
@@ -81,9 +82,16 @@ fn until_text(window: &AppWindow, target: &str, seen: &mut Vec<String>) {
     }
 }
 
+/// Run native timers until the gap between notified rereads has passed since the last read.
+/// After it, only the write wait can hold back the read of a notification that follows.
+fn rest(window: &AppWindow) {
+    let mut ignored = Vec::new();
+    watch_texts(window, REREAD_GAP + Duration::from_millis(50), &mut ignored);
+}
+
 /// Put `OLD` on disk by atomic replace, after a marker text, waiting until the window shows each.
-/// The read that shows `OLD` restarts the 1 s sweep clock, so the save that follows right away cannot
-/// coincide with a sweep read.
+/// The read that shows `OLD` restarts the 1 s sweep clock, so the save that follows within a few
+/// hundred milliseconds cannot coincide with a sweep read.
 fn baseline(window: &AppWindow, displayed: &Path) {
     for text in ["marker\n", OLD] {
         let staged = displayed.with_extension("tmp");
@@ -93,6 +101,7 @@ fn baseline(window: &AppWindow, displayed: &Path) {
             return window.get_source_text() == text;
         });
     }
+    rest(window);
 }
 
 /// An in-place save (truncate, part of the text, a pause, the rest, close) is shown only when finished,
@@ -137,6 +146,8 @@ fn native_source_does_not_show_an_in_place_save_before_it_finishes() {
 
 /// A save that deletes the file and writes it again is shown only when the new file is finished:
 /// neither the missing file nor the empty new file replaces the displayed text.
+/// The new file is created after the missing file was read and the reread gap has passed, so only
+/// the write wait keeps the empty file from being read.
 #[test]
 fn native_source_does_not_show_a_deleted_file_before_its_rewrite_finishes() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -155,7 +166,7 @@ fn native_source_does_not_show_a_deleted_file_before_its_rewrite_finishes() {
     render(&window, &state);
     let mut seen = Vec::new();
     fs::remove_file(&displayed).expect("delete before rewriting");
-    watch_texts(&window, PAUSE, &mut seen);
+    watch_texts(&window, REREAD_GAP + Duration::from_millis(50), &mut seen);
     let mut file = File::create(&displayed).expect("create the new file");
     watch_texts(&window, PAUSE, &mut seen);
     file.write_all(NEW.as_bytes()).expect("write the new file");
