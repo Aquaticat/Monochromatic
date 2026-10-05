@@ -375,9 +375,9 @@ with a `/bin/sh` shell for custom images.
 - **Console access** uses `virsh console` with auto-login on ttyS0 (no SSH or keys needed)
 - **Networking** uses QEMU user-mode networking (SLIRP) for outbound internet access
 - **Connection** uses `qemu:///session` so no root privileges or polkit prompts are needed
-- **Host tools** `virsh` and `qemu-img` run as described in [Host tools](#host-tools)
-- **File transfer** uses a virtiofs shared directory,
-  or the guest agent on hosts without `virtiofsd`
+- `virsh` and `qemu-img` run as described in [Host tools](#host-tools)
+- Files move through a virtiofs shared directory,
+  or through the guest agent on hosts without `virtiofsd`
 - All VM names are prefixed with `mvm-` in libvirt to avoid collisions
 
 ## VM defaults
