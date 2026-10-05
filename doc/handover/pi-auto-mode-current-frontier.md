@@ -79,10 +79,32 @@ and verified awaiting the incumbent logger's `flush()` before blocking.
 The paid canary was not replayed.
 See [staging diagnostics](../troubleshooting/pi-sdk-staging.md#relevance-canary-and-native-hook-diagnostics).
 
+The retained-score diagnostic `proc_2dfd` used a post-collection authored subset,
+not a held-out accuracy study.
+`LN7` scored `0.53` and remains included.
+The current guard must not discard uncertain rules merely because they fail a high positive threshold.
+
+Original action-time candidate selection also passed its native consumer,
+`proc_1bd1`:
+all 205 indexed handles stayed owned by the original judgment,
+copied handles were refused,
+and selection after evidence closure was refused.
+The fixture used one session,
+two local main requests,
+one fake guard request,
+and two independently authorized reads.
+`proc_fa56` verified foreign/copy rejection,
+source invalidation that restoration cannot revive,
+and the exact enumeration-freshness omission witness.
+An empty index still does not establish complete governing-source coverage.
+
 Next:
-evaluate the retained relevance estimates against explicit references,
-qualify exclusions before selecting a cutoff,
-and continue rule-based action assessment through the existing original-judgment boundary.
+rebase the existing original claim-to-answer evidence handoff onto this candidate-aware judgment,
+then verify provenance and post-close dependency checks without another paid model request.
+Do not promote retained estimates,
+candidate enumeration,
+or source designation into missing policy premises.
+Semantic relevance qualification and exclusion-cutoff adoption remain separate.
 The accepted direction does not authorize production cutoff adoption,
 installed-plugin cutover,
 or cached action permission.
