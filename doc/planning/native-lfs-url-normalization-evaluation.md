@@ -207,10 +207,11 @@ This is the scratch reference the measurements ran against,
 verbatim
 (SHA-256 `9abdd10ed5ff8017f9348d450499b1d70edf9cf1d30eab1fbc37e83b938ff045`).
 It is a reference,
-not product code:
-it was compiled with the host's `rustc 1.100.0-nightly`,
-not in the package's Rust 1.97 image,
-and it was not checked against the package's Clippy configuration,
+not product code.
+It was compiled with the host's `rustc 1.100.0-nightly` for the differential runs,
+and once more with `rustc 1.97.0` for the fixture alone,
+as recorded under `Evidence limits`.
+It was not checked against the package's Clippy configuration,
 documentation conventions,
 or logging rules.
 The variant order and the `fixture_name` strings are the contract;
@@ -945,9 +946,19 @@ whatever the outcome of decoding it.
   which is an observation from its source,
   not a measurement.
 - **Reference toolchain**.
-  The Rust reference was compiled with `rustc 1.100.0-nightly` on the host.
-  It was not built in the package's Rust 1.97 image
-  and not checked with the package's Clippy configuration.
+  The differential runs used the Rust reference compiled with `rustc 1.100.0-nightly` on the host.
+  The same source was also compiled offline with `rustc 1.97.0`
+  in a container from the supplied image `localhost/monochromatic-semantic-rust-src:1.97.0`
+  (`84f24e75017a7d8afa1c69e51c52f37e7d8d644cd2597a01f4732ad0b386dc20`),
+  run with no network,
+  2 GiB of memory,
+  2 CPUs,
+  and a limit of 128 processes;
+  that build passed all 868 `bases` cases,
+  and a deliberately corrupted result line was reported as a failure.
+  The wider differential runs were not repeated with that build.
+  The reference was not checked with the package's Clippy configuration,
+  and whether that image matches the toolchain the package builds with was not verified.
 - **Differential evidence is not a proof**.
   Equality on acceptance rests on the corpora listed under `Measurements`
   and on reading the host conversion,
