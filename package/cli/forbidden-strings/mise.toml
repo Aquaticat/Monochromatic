@@ -6,6 +6,10 @@ run = "cargo fetch --locked"
 description = "Run all-target/all-feature Clippy with warnings denied in the bounded offline scanner snapshot"
 run = "node bin/test-container.mjs --clippy"
 
+[tasks."test:release:container"]
+description = "Verify the actual release scanner and all-feature embedding consumers inside the bounded snapshot"
+run = "node bin/test-container.mjs --release"
+
 [tasks."test:guards:container"]
 description = "Prove real executable and public-loader panic guards with passing and disabled disposable variants"
 run = "node bin/guard-container.mjs"
