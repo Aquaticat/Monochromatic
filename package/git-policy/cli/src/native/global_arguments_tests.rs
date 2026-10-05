@@ -14,7 +14,9 @@ use std::process::Command;
 /// Own a fixture vector without changing any supplied argument's spelling.
 fn arguments(values: &[&str]) -> Vec<OsString> {
     let mut result: Vec<OsString> = Vec::<OsString>::new();
-    for value in values { result.push(OsString::from(value)); }
+    for value in values {
+        result.push(OsString::from(value));
+    }
     return result;
 }
 
@@ -23,13 +25,31 @@ fn arguments(values: &[&str]) -> Vec<OsString> {
 fn preserves_complete_global_prefixes_and_values() {
     for (values, expected) in [
         (vec!["-C", "", "-C", "link/..", "-c", "x.y=-h", "status"], 6),
-        (vec!["--config-env", "x.y=ENV", "--attr-source=HEAD", "show", "-C"], 3),
+        (
+            vec![
+                "--config-env",
+                "x.y=ENV",
+                "--attr-source=HEAD",
+                "show",
+                "-C",
+            ],
+            3,
+        ),
         (vec!["--git-dir", "-h", "status"], 2),
-        (vec!["--no-pager", "--no-advice", "--exec-path=/tools", "log"], 3),
+        (
+            vec!["--no-pager", "--no-advice", "--exec-path=/tools", "log"],
+            3,
+        ),
     ] {
         let input: Vec<OsString> = arguments(values.as_slice());
         let snapshot: Vec<OsString> = input.clone();
-        assert_eq!(global_layout(input.as_slice()), GlobalLayout { prefix_len: expected, outcome: GlobalOutcome::Command });
+        assert_eq!(
+            global_layout(input.as_slice()),
+            GlobalLayout {
+                prefix_len: expected,
+                outcome: GlobalOutcome::Command
+            }
+        );
         assert_eq!(input, snapshot);
     }
 }
@@ -37,37 +57,90 @@ fn preserves_complete_global_prefixes_and_values() {
 /// Native query flags terminate before later tokens can be mistaken for commands.
 #[test]
 fn query_and_missing_value_boundaries_are_distinct() {
-    for flag in ["--help", "-h", "--version", "-v", "--exec-path", "--exec-path-extra", "--html-path", "--man-path", "--info-path", "--list-cmds=parseopt"] {
+    for flag in [
+        "--help",
+        "-h",
+        "--version",
+        "-v",
+        "--exec-path",
+        "--exec-path-extra",
+        "--html-path",
+        "--man-path",
+        "--info-path",
+        "--list-cmds=parseopt",
+    ] {
         let input: Vec<OsString> = arguments(&[flag, "commit"]);
-        assert_eq!(global_layout(input.as_slice()).outcome, GlobalOutcome::Query, "{flag}");
+        assert_eq!(
+            global_layout(input.as_slice()).outcome,
+            GlobalOutcome::Query,
+            "{flag}"
+        );
     }
-    for flag in ["-C", "-c", "--config-env", "--attr-source", "--git-dir", "--namespace", "--work-tree", "--shallow-file"] {
-        assert_eq!(global_layout(arguments(&[flag]).as_slice()).outcome, GlobalOutcome::MissingValue);
+    for flag in [
+        "-C",
+        "-c",
+        "--config-env",
+        "--attr-source",
+        "--git-dir",
+        "--namespace",
+        "--work-tree",
+        "--shallow-file",
+    ] {
+        assert_eq!(
+            global_layout(arguments(&[flag]).as_slice()).outcome,
+            GlobalOutcome::MissingValue
+        );
     }
     assert_eq!(global_layout(&[]).outcome, GlobalOutcome::NoCommand);
-    assert_eq!(global_layout(arguments(&["--bare"]).as_slice()).prefix_len, 1);
+    assert_eq!(
+        global_layout(arguments(&["--bare"]).as_slice()).prefix_len,
+        1
+    );
 }
 
 /// Old or invented global spellings are left to Git, not accepted through compatibility heuristics.
 #[test]
 fn unsupported_globals_do_not_gain_a_wrapper_interpretation() {
-    for flag in ["--", "--super-prefix", "-C/tmp", "-cx.y=z", "--shallow-file=shallow", "--future-flag"] {
-        assert_eq!(global_layout(arguments(&[flag, "status"]).as_slice()).outcome, GlobalOutcome::InvalidOption, "{flag}");
+    for flag in [
+        "--",
+        "--super-prefix",
+        "-C/tmp",
+        "-cx.y=z",
+        "--shallow-file=shallow",
+        "--future-flag",
+    ] {
+        assert_eq!(
+            global_layout(arguments(&[flag, "status"]).as_slice()).outcome,
+            GlobalOutcome::InvalidOption,
+            "{flag}"
+        );
     }
 }
 
 /// The selected native Git executable confirms representative query and error forms.
 #[test]
 fn native_git_256_controls_confirm_the_option_boundary() {
-    let version = Command::new("/usr/bin/git").arg("--version").output().expect("Git fixture");
+    let version = Command::new("/usr/bin/git")
+        .arg("--version")
+        .output()
+        .expect("Git fixture");
     assert!(version.status.success());
     assert_eq!(version.stdout, b"git version 2.56.0\n");
-    let query = Command::new("/usr/bin/git").arg("--exec-path-extra").output().expect("native prefix query");
+    let query = Command::new("/usr/bin/git")
+        .arg("--exec-path-extra")
+        .output()
+        .expect("native prefix query");
     assert!(query.status.success());
     for flag in ["-C/tmp", "--super-prefix", "--shallow-file=unused"] {
-        let rejected = Command::new("/usr/bin/git").args([flag, "status"]).output().expect("native option error");
+        let rejected = Command::new("/usr/bin/git")
+            .args([flag, "status"])
+            .output()
+            .expect("native option error");
         assert!(!rejected.status.success(), "{flag}");
-        assert!(String::from_utf8_lossy(&rejected.stderr).contains("unknown option"), "{flag}");
+        assert!(
+            String::from_utf8_lossy(&rejected.stderr).contains("unknown option"),
+            "{flag}"
+        );
     }
 }
 
@@ -76,7 +149,11 @@ fn native_git_256_controls_confirm_the_option_boundary() {
 #[test]
 fn native_non_utf8_values_remain_opaque() {
     use std::os::unix::ffi::OsStringExt;
-    let input: Vec<OsString> = vec![OsString::from("-C"), OsString::from_vec(b"folder-\xff".to_vec()), OsString::from("status")];
+    let input: Vec<OsString> = vec![
+        OsString::from("-C"),
+        OsString::from_vec(b"folder-\xff".to_vec()),
+        OsString::from("status"),
+    ];
     let snapshot: Vec<OsString> = input.clone();
     assert_eq!(global_layout(input.as_slice()).prefix_len, 2);
     assert_eq!(input, snapshot);

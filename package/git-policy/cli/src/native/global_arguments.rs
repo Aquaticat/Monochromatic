@@ -35,21 +35,41 @@ pub struct GlobalLayout {
 
 /// Complete separated-value globals accepted by Git 2.56.0 git.c::handle_options.
 const VALUE_OPTIONS: &[&[u8]] = &[
-    b"-C", b"-c", b"--git-dir", b"--work-tree", b"--namespace", b"--config-env",
-    b"--shallow-file", b"--attr-source",
+    b"-C",
+    b"-c",
+    b"--git-dir",
+    b"--work-tree",
+    b"--namespace",
+    b"--config-env",
+    b"--shallow-file",
+    b"--attr-source",
 ];
 
 /// Complete no-value globals accepted by that same release, not a cross-version fallback list.
 const FLAG_OPTIONS: &[&[u8]] = &[
-    b"-p", b"--paginate", b"-P", b"--no-pager", b"--no-lazy-fetch",
-    b"--no-replace-objects", b"--bare", b"--literal-pathspecs", b"--no-literal-pathspecs",
-    b"--glob-pathspecs", b"--noglob-pathspecs", b"--icase-pathspecs", b"--no-optional-locks",
+    b"-p",
+    b"--paginate",
+    b"-P",
+    b"--no-pager",
+    b"--no-lazy-fetch",
+    b"--no-replace-objects",
+    b"--bare",
+    b"--literal-pathspecs",
+    b"--no-literal-pathspecs",
+    b"--glob-pathspecs",
+    b"--noglob-pathspecs",
+    b"--icase-pathspecs",
+    b"--no-optional-locks",
     b"--no-advice",
 ];
 
 /// Inline-value forms explicitly recognized by the native release.
 const INLINE_OPTIONS: &[&[u8]] = &[
-    b"--git-dir=", b"--work-tree=", b"--namespace=", b"--config-env=", b"--attr-source=",
+    b"--git-dir=",
+    b"--work-tree=",
+    b"--namespace=",
+    b"--config-env=",
+    b"--attr-source=",
 ];
 
 /// What: Find a command/query/error boundary with one forward scan.
@@ -67,24 +87,45 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
         // Borrow native encoded bytes solely to recognize Git's ASCII option syntax.
         let argument: &[u8] = arguments[index].as_encoded_bytes();
         if !argument.starts_with(b"-") {
-            return GlobalLayout { prefix_len: index, outcome: GlobalOutcome::Command };
+            return GlobalLayout {
+                prefix_len: index,
+                outcome: GlobalOutcome::Command,
+            };
         }
-        if [b"--help".as_slice(), b"-h", b"--version", b"-v", b"--html-path", b"--man-path", b"--info-path"].contains(&argument)
+        if [
+            b"--help".as_slice(),
+            b"-h",
+            b"--version",
+            b"-v",
+            b"--html-path",
+            b"--man-path",
+            b"--info-path",
+        ]
+        .contains(&argument)
             || argument.starts_with(b"--list-cmds=")
         {
-            return GlobalLayout { prefix_len: index, outcome: GlobalOutcome::Query };
+            return GlobalLayout {
+                prefix_len: index,
+                outcome: GlobalOutcome::Query,
+            };
         }
         // Git's own prefix branch treats every --exec-path suffix except '=' as a query.
         if let Some(remainder) = argument.strip_prefix(b"--exec-path") {
             if remainder.first() != Some(&b'=') {
-                return GlobalLayout { prefix_len: index, outcome: GlobalOutcome::Query };
+                return GlobalLayout {
+                    prefix_len: index,
+                    outcome: GlobalOutcome::Query,
+                };
             }
             index += 1;
             continue;
         }
         if VALUE_OPTIONS.contains(&argument) {
             if index + 1 == arguments.len() {
-                return GlobalLayout { prefix_len: index, outcome: GlobalOutcome::MissingValue };
+                return GlobalLayout {
+                    prefix_len: index,
+                    outcome: GlobalOutcome::MissingValue,
+                };
             }
             index += 2;
             continue;
@@ -104,9 +145,15 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
             index += 1;
             continue;
         }
-        return GlobalLayout { prefix_len: index, outcome: GlobalOutcome::InvalidOption };
+        return GlobalLayout {
+            prefix_len: index,
+            outcome: GlobalOutcome::InvalidOption,
+        };
     }
-    return GlobalLayout { prefix_len: arguments.len(), outcome: GlobalOutcome::NoCommand };
+    return GlobalLayout {
+        prefix_len: arguments.len(),
+        outcome: GlobalOutcome::NoCommand,
+    };
 }
 
 /// Boundary controls include real Git probes and native non-UTF-8 arguments.

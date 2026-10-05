@@ -1,3 +1,7 @@
+[tasks."native:test:container"]
+description = "Run native wrapper tests and Clippy in bounded Git 2.56.0 containers"
+run = "node bin/test-native-container.mjs"
+
 [tasks."native:lock"]
 description = "Generate the standalone native wrapper Cargo lockfile"
 run = "cargo generate-lockfile --offline"
