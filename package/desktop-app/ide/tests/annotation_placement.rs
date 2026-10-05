@@ -236,9 +236,15 @@ fn inline_hint_changes_where_down_lands() {
     let shown = Document::new(&widened);
     let painted = shaper.row(&shown, 0, 1.0);
     let target = shaper.row(&document, 1, 1.0);
-    let length = above.chars().count();
     let mut differing = 0;
-    for position in 0..=length {
+    // What: `enumerate` pairs each source boundary with its index in the widened line; `*widened_at` reads it.
+    // Why: The caret stands on source boundary `position`, painted at the widened index.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // map.forEach((widenedAt, position) => { ... });
+    // ```
+    for (position, widened_at) in map.iter().enumerate() {
         let mut moving = Document::new(&text);
         // What: `ReadingPosition { .. }` builds the collapsed caret record the production key handler moves.
         // Why: `vertical` reads the caret from the document, as it does for a real key press.
@@ -255,13 +261,13 @@ fn inline_hint_changes_where_down_lands() {
         // `None` means no remembered column: the aim is the caret's own x on hint-free geometry.
         let plain = vertical(&mut shaper, &moving, 1.0, 1, None).head;
         // With inline hints the aim is the painted caret x, which includes every label before it.
-        let aim = painted.caret_x(map[position], 1.0);
+        let aim = painted.caret_x(*widened_at, 1.0);
         let inline = target.hit(aim, 1.0);
         if plain != inline {
             differing += 1;
         }
     }
-    let total = length + 1;
+    let total = map.len();
     println!(
         "placement vertical: {differing} of {total} caret positions land elsewhere with the hint inline"
     );

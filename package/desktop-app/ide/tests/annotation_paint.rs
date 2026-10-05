@@ -74,9 +74,16 @@ fn inked(pixels: &SourcePixels, x: usize, y: usize, ink: [u8; 4]) -> bool {
     if alpha < 96 {
         return false;
     }
-    for channel in 0..3 {
+    // What: `iter().take(3).enumerate()` walks red, green, and blue with their index; `*expected` reads the byte.
+    // Why: Alpha is compared separately; only the color channels are unpremultiplied.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // ink.slice(0, 3).forEach((expected, channel) => { ... });
+    // ```
+    for (channel, expected) in ink.iter().take(3).enumerate() {
         let straight = u32::from(pixels.bytes[offset + channel]) * 255 / alpha;
-        if straight.abs_diff(u32::from(ink[channel])) > 16 {
+        if straight.abs_diff(u32::from(*expected)) > 16 {
             return false;
         }
     }

@@ -159,19 +159,19 @@ fn hint_window_follows_rows_and_line_ends() {
         None,
     );
     let first = annotations.visible(SHOWN, &text, 0, 1);
-    let texts: Vec<&str> = first
+    let first_texts: Vec<&str> = first
         .labels
         .iter()
         .map(|label| return label.text.as_str())
         .collect();
-    assert_eq!(texts, [": i32", "end-of-line-0"]);
+    assert_eq!(first_texts, [": i32", "end-of-line-0"]);
     let middle = annotations.visible(SHOWN, &text, 1, 3);
-    let texts: Vec<&str> = middle
+    let middle_texts: Vec<&str> = middle
         .labels
         .iter()
         .map(|label| return label.text.as_str())
         .collect();
-    assert_eq!(texts, ["start-of-line-1"]);
+    assert_eq!(middle_texts, ["start-of-line-1"]);
     let last = annotations.visible(SHOWN, &text, 4, 5);
     assert_eq!(last.labels.len(), 1);
     assert_eq!(last.labels[0].position, 38);
