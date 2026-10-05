@@ -22,8 +22,8 @@ pub const PROJECT_MOUNT: &str = "--ro-bind";
 /// listed and read-only with it).
 pub const REPLACED_LOCATIONS: [&str; 3] = ["/tmp", "/run", "/dev"];
 
-/// The process file system. It is mounted fresh inside, nothing a user creates can lie below it
-/// (`mkdir` there fails), and bubblewrap cannot create a mount point in it.
+/// The process file system. It is mounted fresh inside, and nothing a user creates can lie below
+/// it (measured: `mkdir /proc/x` fails with "No such file or directory").
 pub const PROCESS_FILE_SYSTEM: &str = "/proc";
 
 /// What: The replaced location a path lies in, if any. `Path::starts_with` compares whole

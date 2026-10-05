@@ -124,9 +124,9 @@ pub fn default_state_root() -> Option<PathBuf> {
 }
 
 /// What: Refuse a path below `/proc`. `what` names the path and `remedy` the fix in the message.
-/// Why: No directory a user creates can lie there, the sandbox mounts a fresh process file
-///      system, and bubblewrap cannot create a mount point in it; every other location works,
-///      because the project and private state are bound again after the replacements.
+/// Why: No directory a user creates can lie there, and the sandbox mounts a fresh process file
+///      system; every other location works, because the project and private state are bound
+///      again after the replacements.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
