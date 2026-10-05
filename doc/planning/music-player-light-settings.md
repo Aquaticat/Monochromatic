@@ -369,6 +369,20 @@ The APK SHA-256 is
 `5f3a23911f2a5c32859a78e533704298bfb5afa042cf968f4fc82691ef35e9ab`.
 Android lint keeps the five inherited errors and reports no Settings finding.
 
+A fourth visit,
+the first on this build,
+failed before its first capture.
+The guest raised a startup `Application Not Responding` dialog,
+as it did on the third visit,
+and killed the hierarchy dump the bootstrap uses to find its close action
+(remote exit status 137).
+It restored every recorded field,
+its owner exited `0`,
+no matching runtime remained,
+and it supplies no evidence.
+The shared hierarchy helper is unchanged;
+a fifth visit repeats the run.
+
 The viewer builder now expects two rows,
 reads the column end from the last row and the measured divider between the
 rows,
