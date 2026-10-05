@@ -84,9 +84,15 @@ impl Default for LanguageSetup {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) enum Unavailable {
     /// The server's own program was not found, or the project's copy is unusable.
-    Missing(String),
+    Missing(
+        /// Which program was looked for and what the remedy is.
+        String,
+    ),
     /// The launch policy refused; nothing is spawned instead.
-    Refused(String),
+    Refused(
+        /// What the launch policy reported.
+        String,
+    ),
 }
 
 /// What the registry remembers about one server definition besides what Helix holds.

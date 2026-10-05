@@ -35,7 +35,10 @@ use std::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TargetRefusal {
     /// The address is not a `file` address, for example `untitled:` or `jdt:`.
-    UnsupportedScheme(String),
+    UnsupportedScheme(
+        /// The scheme the server used.
+        String,
+    ),
     /// A `file` address that cannot be turned into a local path.
     NotALocalPath,
     /// The path does not exist or cannot be resolved.
@@ -79,11 +82,20 @@ impl fmt::Display for TargetRefusal {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Classified {
     /// Canonical path below the project root.
-    InsideProject(PathBuf),
+    InsideProject(
+        /// Resolved path of the file.
+        PathBuf,
+    ),
     /// Canonical path of an existing file elsewhere, such as a toolchain's standard library.
-    OutsideProject(PathBuf),
+    OutsideProject(
+        /// Resolved path of the file.
+        PathBuf,
+    ),
     /// Never read and never opened.
-    Refused(TargetRefusal),
+    Refused(
+        /// Why the address cannot be opened.
+        TargetRefusal,
+    ),
 }
 
 /// What: Classify one address against the canonical project root. `&lsp::Url` and `&Path` lend

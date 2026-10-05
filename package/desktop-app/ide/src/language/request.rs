@@ -3,16 +3,14 @@
 //! Every request captures a ticket: the stamp, the text, the column unit, and the server
 //! process it was sent to. The answer is converted against that ticket, never against later state.
 
-/// Exited servers are started again by an explicit position request.
-use super::attach;
 /// Hint windows and the latest-value snapshot.
 use super::hints::{HintWindow, HintsSnapshot, InlayHint, request_lines};
 /// Identities captured in every ticket.
 use super::identity::{DocumentStamp, ServerIdentity};
 /// Offsets become server positions only through the shared converter.
 use super::position::{to_lsp_position, to_lsp_range};
-/// Replies and their outcomes.
-use super::reply::{LanguageReply, PositionRequest, RequestFailure, RequestKind, RequestOutcome};
+/// The three position requests.
+use super::reply::RequestKind;
 /// Session state and configured feature exclusions.
 use super::session::{Session, allowed};
 /// Servers that could not follow a reload are not asked about positions.
@@ -41,10 +39,16 @@ use helix_lsp::{OffsetEncoding, lsp};
 /// ```
 use std::{future::Future, path::PathBuf, pin::Pin};
 
-/// Converting answers and classifying failures.
+/// Classifying failures, retrying, and storing or replying.
 mod answer;
+/// Converting answers against the ticket's text.
+mod convert;
+/// Routing position requests and their retries.
+mod route;
 /// The worker loop hands finished requests to this function.
 pub(super) use answer::finish;
+/// The worker loop hands position requests and due retries to these functions.
+pub(super) use route::{position, retry};
 
 /// What a ticket asks for.
 ///
@@ -56,7 +60,10 @@ pub(super) use answer::finish;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Ask {
     /// Definition, references, or hover at a character offset.
-    Position(RequestKind),
+    Position(
+        /// Which of the three position requests.
+        RequestKind,
+    ),
     /// Inlay hints for a line range.
     Hints {
         /// First requested line.
@@ -108,15 +115,30 @@ pub(super) struct Ticket {
 /// ```
 pub(super) enum Payload {
     /// Answer to `textDocument/definition`.
-    Definition(helix_lsp::Result<Option<lsp::GotoDefinitionResponse>>),
+    Definition(
+        /// Locations, `null`, or the request error.
+        helix_lsp::Result<Option<lsp::GotoDefinitionResponse>>,
+    ),
     /// Answer to `textDocument/references`.
-    References(helix_lsp::Result<Option<Vec<lsp::Location>>>),
+    References(
+        /// Locations, `null`, or the request error.
+        helix_lsp::Result<Option<Vec<lsp::Location>>>,
+    ),
     /// Answer to `textDocument/hover`.
-    Hover(helix_lsp::Result<Option<lsp::Hover>>),
+    Hover(
+        /// Hover content, `null`, or the request error.
+        helix_lsp::Result<Option<lsp::Hover>>,
+    ),
     /// Answer to `textDocument/inlayHint`.
-    Hints(helix_lsp::Result<Option<Vec<lsp::InlayHint>>>),
+    Hints(
+        /// Hints, `null`, or the request error.
+        helix_lsp::Result<Option<Vec<lsp::InlayHint>>>,
+    ),
     /// Answer to `textDocument/diagnostic`.
-    Pull(helix_lsp::Result<lsp::DocumentDiagnosticReportResult>),
+    Pull(
+        /// A diagnostic report or the request error.
+        helix_lsp::Result<lsp::DocumentDiagnosticReportResult>,
+    ),
 }
 
 /// A finished request: its ticket and what the server said.
@@ -310,80 +332,6 @@ fn dispatch(
     return Sent::Spawned;
 }
 
-/// What: Route one position request to every server that serves the displayed document.
-/// Why: States that exist before any wire traffic are replied at once: no server, still
-///      starting, out of sync, unsupported. Each asked server answers on its own later.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// async function position(worker: Worker, number: number, request: PositionRequest): Promise<void>
-/// ```
-pub(super) async fn position(worker: &mut Worker, number: u64, request: PositionRequest) {
-    if worker.session.stamp() != Some(request.stamp) {
-        tracing::debug!(
-            ?request,
-            "dropped a request for text that is no longer displayed"
-        );
-        return;
-    }
-    if attach::revive(worker).await {
-        tracing::info!("started exited language servers again for an explicit request");
-    }
-    let in_bounds = worker
-        .session
-        .document
-        .as_ref()
-        .is_some_and(|document| return request.position <= document.text.len_chars());
-    // `Vec::new()` creates an empty growable list for the replies that need no wire traffic.
-    let mut immediate: Vec<(Option<ServerIdentity>, RequestOutcome)> = Vec::new();
-    let mut spawned = 0;
-    if !in_bounds {
-        let failure =
-            RequestFailure::Other("the position is outside the displayed text".to_string());
-        immediate.push((None, RequestOutcome::Failed(failure)));
-    } else {
-        for index in 0..worker.session.servers.len() {
-            if !worker.session.servers[index].attached {
-                continue;
-            }
-            let server = Some(worker.session.servers[index].identity.clone());
-            let sent = dispatch(
-                worker,
-                index,
-                number,
-                Ask::Position(request.kind),
-                request.position,
-                0,
-            );
-            match sent {
-                Sent::Spawned => spawned += 1,
-                Sent::Starting => immediate.push((server, RequestOutcome::Starting)),
-                Sent::Unsynchronized => immediate.push((server, RequestOutcome::Unsynchronized)),
-                Sent::Unsupported => immediate.push((server, RequestOutcome::Unsupported)),
-                Sent::Skipped => {}
-            }
-        }
-        if spawned == 0 && immediate.is_empty() {
-            immediate.push((None, RequestOutcome::NoServer));
-        }
-    }
-    if spawned > 0 {
-        worker.session.pending.push((number, spawned));
-    }
-    for (server, outcome) in immediate {
-        worker.outputs.reply(LanguageReply {
-            request: number,
-            stamp: request.stamp,
-            server,
-            kind: request.kind,
-            position: request.position,
-            remaining: spawned,
-            outcome,
-        });
-    }
-    return;
-}
-
 /// Ask one server for diagnostics of the displayed document, if it offers pull diagnostics.
 pub(super) fn pull_diagnostics(worker: &mut Worker, index: usize, attempt: u32) {
     // The outcome needs no reply: an unsupported or unready server simply contributes nothing.
@@ -429,46 +377,6 @@ pub(super) fn window(worker: &mut Worker, stamp: DocumentStamp, window: HintWind
         if worker.session.servers[index].attached {
             hints(worker, index, 0);
         }
-    }
-}
-
-/// What: Send a superseded request again, if its text is still displayed and its server still runs.
-/// Why: A server answers `-32801` or `-32800` when its own state moved under the request; the
-///      same question is then valid a moment later.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function retry(worker: Worker, ticket: Ticket): void
-/// ```
-pub(super) fn retry(worker: &mut Worker, ticket: Ticket) {
-    let current = worker.session.stamp() == Some(ticket.stamp);
-    let record = worker.session.index_of_identity(&ticket.server);
-    let sent = match (current, record) {
-        (true, Some(index)) => dispatch(
-            worker,
-            index,
-            ticket.number,
-            ticket.ask,
-            ticket.position,
-            ticket.attempt,
-        ),
-        _ => Sent::Skipped,
-    };
-    if matches!(sent, Sent::Spawned) {
-        return;
-    }
-    // Only a position request has someone waiting for a reply.
-    if let Ask::Position(kind) = ticket.ask {
-        let remaining = worker.session.answered(ticket.number);
-        worker.outputs.reply(LanguageReply {
-            request: ticket.number,
-            stamp: ticket.stamp,
-            server: Some(ticket.server),
-            kind,
-            position: ticket.position,
-            remaining,
-            outcome: RequestOutcome::Superseded,
-        });
     }
 }
 

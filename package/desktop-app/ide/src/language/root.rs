@@ -29,9 +29,15 @@ use std::path::{Path, PathBuf};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) enum RootRefusal {
     /// The directory Helix resolves roots from neither is nor contains the project root.
-    WrongWorkingDirectory(PathBuf),
+    WrongWorkingDirectory(
+        /// The directory Helix resolves roots from.
+        PathBuf,
+    ),
     /// Helix would root the server at this directory, which is outside the project.
-    OutsideProject(PathBuf),
+    OutsideProject(
+        /// The directory that would have become the server's root.
+        PathBuf,
+    ),
 }
 
 /// What: The project root in two spellings. `PathBuf` owns its path.

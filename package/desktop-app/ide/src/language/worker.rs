@@ -75,9 +75,15 @@ const REAP_PAUSE: Duration = Duration::from_millis(50);
 /// ```
 pub(super) enum Command {
     /// A file was displayed.
-    Open(DocumentOpen),
+    Open(
+        /// Path, text, and stamp of the displayed file.
+        DocumentOpen,
+    ),
     /// The displayed file was reloaded from disk.
-    Reload(DocumentReload),
+    Reload(
+        /// Both texts and the edits between them.
+        DocumentReload,
+    ),
     /// No file is displayed any more.
     Close,
     /// One position request with the number its replies will carry.
@@ -107,12 +113,21 @@ pub(super) enum Command {
 /// ```
 pub(super) enum Internal {
     /// A starting server's time to answer `initialize` ran out.
-    StartDeadline(LanguageServerId),
+    StartDeadline(
+        /// helix-lsp key of the server that was starting.
+        LanguageServerId,
+    ),
     /// The fixed delay of a diagnostics hold passed.
-    HoldExpired(u64),
+    HoldExpired(
+        /// Number of the reload that opened the hold.
+        u64,
+    ),
     /// A superseded request should be sent again. `Box` stores the large value on the heap so
     /// every variant stays small.
-    Retry(Box<request::Ticket>),
+    Retry(
+        /// The request to send again, with its attempt count already raised.
+        Box<request::Ticket>,
+    ),
 }
 
 /// The sending ends of every channel the interface thread polls.
