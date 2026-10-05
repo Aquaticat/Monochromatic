@@ -332,7 +332,7 @@ including reload,
 ## Language module
 
 The headless core in `src/language` drives Helix's language-server client on one worker thread.
-It is not wired into the window yet.
+[Language navigation](#language-navigation) wires it into the window.
 The native layer owns one `LanguageWorker`:
 it sends `open`, `reload`, `close`, `request`, and `request_hints` without waiting,
 and polls `try_take_status`, `try_take_reply`, `try_take_diagnostics`, and `try_take_hints` from a timer.
@@ -354,6 +354,234 @@ one child process per session.
 against real TypeScript and Rust servers on disposable projects.
 `inspect:language-guards` removes the fencing, readiness, and edit-refusal guards in a disposable copy
 and checks that their named tests fail.
+
+## Language navigation
+
+In the source view,
+Ctrl+B goes to the definition of the symbol at the caret,
+and at the definition itself it finds the symbol's references.
+Ctrl+click goes to the definition of the character under the pointer.
+Ctrl+Q shows hover information for the caret,
+and a pointer resting 350 ms on one character shows it for that character.
+Nothing of this is visible until it is used:
+there is no status bar and no language indicator.
+
+### Definitions and references
+
+One target is opened directly.
+In the displayed file the caret moves to the start of the target,
+and the target's line is centered when it was out of view.
+Another project file opens through the ordinary file open,
+so it enters Ctrl+0 to Ctrl+9 history,
+gets its tree badge,
+and is revealed in the tree.
+A file outside the project opens read-only,
+with a bordered `Outside project` label before its path in the file label;
+it gets no tree row,
+no history slot,
+and no project root of its own,
+and Ctrl+0 returns to the last project file.
+
+Several targets are listed beside the caret line,
+below it when there is room and above it otherwise,
+so the list never covers that line.
+The list's title counts them,
+for example `3 references` or `2 definitions`,
+and each row shows the project-relative path and the one-based line,
+or the server's address for a location that cannot be opened.
+Outside-project rows say `Outside project`
+and unopenable rows say `Cannot open`.
+The list takes keyboard focus:
+Up and Down move the selection and wrap,
+Enter or a click opens the selected location,
+Escape or a click outside closes the list,
+and every way of closing returns focus to the source view.
+Tab stays in the list and Ctrl+F waits until it is closed,
+as with the search overlay.
+Rows are 48 px tall;
+the selected row has the selection fill,
+a heavier weight,
+and a boundary.
+Accessibility tools see a `list` named by the title,
+with `list-item` rows that report their selection and open on their default action.
+
+A location the server names but the reader cannot open,
+such as an `untitled:` or `jdt:` address or a missing file,
+is explained instead of opened,
+for example `Cannot open file:///gone.rs: the file does not exist.`
+
+### Hover
+
+Hover content is shown as plain text in JetBrains Mono in a popup beside its line:
+below it when it fits,
+above it otherwise,
+and on the roomier side with a scrolling body when neither fits,
+so the popup never covers the hovered line.
+It is at most 640 px or 60% of the window wide and 320 px tall.
+Markdown code-fence lines are dropped,
+runs of blank lines collapse,
+and content longer than 8,000 characters is cut with an ellipsis line.
+
+The popup closes on Escape,
+on any caret movement,
+on scrolling,
+on a reload of the file,
+on a file switch,
+and when the search overlay opens.
+A pointer hover also closes when the pointer leaves both the source view and the popup,
+so the pointer can move into the popup to scroll it,
+and when the pointer rests over no character,
+such as past the end of a line,
+on a blank line,
+or over the line numbers.
+Resting over no character asks the server nothing.
+
+### Notes
+
+When an action the user asked for cannot be done,
+a note appears in the same popup beside the line it was asked about.
+A note has three channels that set it apart from hover content:
+a heavier weight,
+the interface typeface,
+and a bar along its leading edge.
+Assistive technologies announce notes assertively and hover content politely.
+A note closes like hover content,
+and a new action replaces it.
+A resting pointer never shows a note;
+its failures are only logged.
+
+Each note names the reason and the remedy:
+
+- a server still starting:
+  `scripted-ls is still starting (Indexing). Press Ctrl+B again in a moment.`,
+  with the server's progress title when it reports one;
+- a missing server program,
+  with the reason the Language module reports,
+  which for TypeScript names the project dependency to install,
+  followed by `After installing it, press Ctrl+B again.`;
+- a feature the server does not offer:
+  `scripted-ls does not offer go to definition.`;
+- a failed request,
+  with the server's error code and message,
+  a timeout,
+  or a server that stopped while answering,
+  each with the key to try again;
+- a request the server set aside because its analysis kept changing;
+- an empty answer:
+  `No definition found.`,
+  `No usages found.`,
+  or `No hover information at this position.`;
+- a server that cannot follow external changes,
+  a failed start,
+  a launch the policy refused,
+  a server root outside the project,
+  and a file outside the project with no running server of its language;
+- a file without a recognized language or without a configured server;
+- an answer overtaken by a reload of the same file:
+  `The file changed on disk before the hover information arrived. Press Ctrl+Q again.`;
+- language support that could not start or stopped,
+  with the reason and the need to restart the application.
+
+The Language module re-resolves server programs and starts failed servers only when a file is displayed.
+When the latest status shows a missing program,
+a failed start,
+an unsynchronized server,
+or an outside-project file without a ready server,
+and no server is ready,
+an explicit action first displays the file to the worker again,
+so the remedy "press Ctrl+B again" works without switching files.
+
+### Stale results
+
+The handle's fence advances only when an open or reload command was queued,
+so the window checks every reply again before applying it:
+the reply must carry the number of the request the window waits for,
+of the same kind,
+and both the reply and the request must describe the displayed file generation and revision.
+A request is sent only after the worker holds the displayed text,
+because the worker drops a request for other text without replying;
+a waiting request whose text is no longer displayed is dropped,
+and on a reload of the same file the note asks to try again.
+The popup and the list close when the displayed text changes,
+and a language target waiting for its file is dropped by any later open.
+Pointer hover and key actions use separate request slots,
+so hovering never replaces a pending Ctrl+B.
+
+### Synchronization and annotations
+
+The window tells the worker about each displayed file,
+and about each accepted external reload with the copy taken before `Document::apply_reload` consumed it;
+a command the queue cannot take is sent again on the next 20 ms tick.
+The visible lines are reported for inlay hints once they stayed the same for 200 ms,
+a chosen value,
+and at once for newly displayed text.
+Accepted hint and diagnostic snapshots are stored in `State::annotations`
+and read with `Annotations::hints` and `Annotations::diagnostics`,
+which hand a snapshot out only for the stamp of the text being drawn;
+this section's code does not draw them.
+At window close the worker is dropped after the window is gone,
+which waits up to about a second for servers to exit.
+
+### Differences from editord
+
+editord's language client is in `package-paused/desktop-daemon/editord/src/client/app/`.
+Ctrl+B,
+Ctrl+click,
+the references fallback,
+opening a single reference directly,
+`path:line` rows,
+wrapping Up and Down,
+Enter,
+Escape,
+and the 350 ms pointer rest follow it.
+Deliberate differences:
+
+- Ctrl+Q shows hover information for the caret.
+  editord has no keyboard hover;
+  Ctrl+Q is the Quick Documentation key of the JetBrains keymap editord's other keys come from.
+- Hover content drops Markdown fence lines;
+  editord shows the raw text through `textContent`,
+  fences included.
+- The hover popup sits beside the hovered line at the hovered character,
+  not 8 px below the pointer,
+  and an empty answer for a new character closes it instead of leaving the previous content.
+- Notes stay until dismissed instead of disappearing after 2 seconds,
+  name a remedy,
+  and are announced by assistive technologies.
+- Several definitions are listed;
+  editord's server keeps only the first.
+- The list has a title,
+  48 px rows,
+  click to open,
+  and modal focus;
+  editord's popover has none of these.
+- A reload or a file switch closes the popup and the list.
+- A file outside the project gets no history slot.
+- There is no Find Usages key besides Ctrl+B at the definition,
+  no back navigation after a jump,
+  and no indication while a request is pending.
+
+### Language navigation checks
+
+`test:native` builds the scripted server `ide-scripted-lsp`,
+then drives every path with real window key and pointer events:
+definitions in the same file,
+another project file,
+and outside the project,
+the references list with its keys,
+outside click,
+and focus return,
+unopenable targets,
+hover by key and by the resting pointer with its placement and dismissals,
+each server-state note,
+answers overtaken by a reload and by a file switch,
+a worker that could not start,
+and closing while a request is pending.
+`IDE_SCRIPTED_DEFINITION` and `IDE_SCRIPTED_REFERENCES` give the scripted server's answers as JSON.
+`inspect:language-navigation-guards` removes each native guard in a disposable copy
+and checks that its named test fails.
+`inspect:native` takes `IDE_NATIVE_PROJECT` and `IDE_NATIVE_FILE`
+to open a disposable project below the system temporary directory instead of its generated fixture.
 
 ## Fonts and appearance
 

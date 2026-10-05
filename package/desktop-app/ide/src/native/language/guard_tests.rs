@@ -1,15 +1,19 @@
 //! The window's reply checks on fabricated replies: request identity and displayed text.
 
-/// The checks under test and the request record they compare against.
+/// The checks under test, the request record they compare against, and the snapshot store.
 use super::{
-    Action, Pending,
+    Action, Annotations, Pending,
     guard::{Verdict, verdict},
 };
-/// Replies and identities as the worker produces them.
+/// Replies, identities, and snapshots as the worker produces them.
 use ide_app::language::{
+    diagnostics::DiagnosticsSnapshot,
+    hints::HintsSnapshot,
     identity::{DocumentStamp, ServerIdentity},
     reply::{LanguageReply, RequestKind, RequestOutcome},
 };
+/// Snapshots arrive behind shared pointers.
+use std::sync::Arc;
 
 /// A hover request numbered 7 for file 3, revision 2.
 fn waiting() -> Pending {
@@ -101,4 +105,52 @@ fn reply_about_text_no_longer_displayed_is_not_applied() {
         Verdict::OtherText,
         "a reply for the previous file was applied after a file switch"
     );
+}
+
+/// Snapshots are stored only for the displayed text and handed out only for the stamp asked with.
+#[test]
+fn snapshots_for_other_text_are_not_stored_or_handed_out() {
+    let displayed = DocumentStamp {
+        file: 3,
+        revision: 2,
+    };
+    let older = DocumentStamp {
+        file: 3,
+        revision: 1,
+    };
+    let hints = |stamp| {
+        return Arc::new(HintsSnapshot {
+            stamp,
+            first_line: 0,
+            last_line: 1,
+            hints: Vec::new(),
+        });
+    };
+    let diagnostics = |stamp| {
+        return Arc::new(DiagnosticsSnapshot {
+            stamp,
+            groups: Vec::new(),
+        });
+    };
+    let mut store = Annotations::default();
+    assert!(
+        !store.accept_hints(displayed, hints(older)),
+        "hints for an earlier revision were stored"
+    );
+    assert!(
+        !store.accept_diagnostics(displayed, diagnostics(older)),
+        "diagnostics for an earlier revision were stored"
+    );
+    assert!(store.accept_hints(older, hints(older)));
+    assert!(store.accept_diagnostics(older, diagnostics(older)));
+    assert!(
+        store.hints(displayed).is_none(),
+        "hints for an earlier revision were handed out"
+    );
+    assert!(
+        store.diagnostics(displayed).is_none(),
+        "diagnostics for an earlier revision were handed out"
+    );
+    assert!(store.hints(older).is_some());
+    assert!(store.diagnostics(older).is_some());
 }
