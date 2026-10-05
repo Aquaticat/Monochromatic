@@ -210,3 +210,37 @@ fn project_boundary_and_source_kind_failures_do_not_produce_documents() {
         assert!(!opener.has_pending());
     }
 }
+
+/// An outside-project language target opens read-only and is marked; a later project open replaces it.
+#[test]
+fn outside_target_opens_marked_and_a_later_project_open_wins() {
+    let fixture = tempfile::tempdir().expect("disposable parent");
+    let project = fixture.path().join("project");
+    fs::create_dir(&project).expect("project directory");
+    let outside = fixture.path().join("library.rs");
+    fs::write(&outside, "pub fn library() {}\n").expect("outside fixture");
+    fs::write(project.join("main.rs"), "fn main() {}\n").expect("project fixture");
+    let workspace = Workspace::new(&project).expect("workspace");
+    let mut opener = FileOpener::new(workspace).expect("file opener");
+    let canonical = outside.canonicalize().expect("canonical outside path");
+    opener
+        .request_outside(canonical.clone())
+        .expect("outside request");
+    let opened = finish(&mut opener)
+        .expect("outside read succeeds")
+        .expect("outside document");
+    assert!(opened.outside_project);
+    assert_eq!(opened.path, canonical);
+    assert_eq!(opened.document.text().to_string(), "pub fn library() {}\n");
+    opener
+        .request_outside(canonical)
+        .expect("second outside request");
+    opener
+        .request(PathBuf::from("main.rs"))
+        .expect("project request replaces the outside one");
+    let replaced = finish(&mut opener)
+        .expect("project read succeeds")
+        .expect("project document");
+    assert!(!replaced.outside_project);
+    assert_eq!(replaced.document.text().to_string(), "fn main() {}\n");
+}

@@ -14,6 +14,8 @@ use anyhow::Result;
 use ide_app::reload_worker::{ReloadReply, ReloadRequest, ReloadWorker, SyntaxReply};
 /// Reset source classifications without mutating a snapshot shared with the previous frame.
 use ide_app::source_style::SourceStyles;
+/// An accepted reload is copied for the Language module before the document consumes it.
+use ide_app::language::sync::DocumentReload;
 /// Timer callbacks and weak window references belong to the toolkit event loop.
 use slint::{ComponentHandle, Timer, TimerMode};
 /// Rc/RefCell stay UI-local; Instant schedules reads without changing wall-clock state.
@@ -90,9 +92,14 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
     let mut redraw = current.file_error.is_some();
     let mut mapped_viewport = None;
     if let Some(reload) = update {
+        // Language servers need both texts and the edits between them, which `apply_reload`
+        // consumes; the copy is handed over only when the document accepted the reload.
+        let language_reload = DocumentReload::from_reload(current.file_generation, &reload);
         if !current.document.apply_reload(reload) {
             return;
         }
+        // Only the latest is kept: the worker recomputes the edits when it missed a revision.
+        current.language_reload = Some(language_reload);
         let position = current.document.position();
         let first = current.document.text().char_to_line(position.viewport);
         let lines = current.document.text().len_lines();
