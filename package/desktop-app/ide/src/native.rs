@@ -18,6 +18,8 @@ mod ui {
 use anyhow::{Context, bail};
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
+/// The displayed file is reread on change notifications, or on the old timer while unwatched.
+use ide_app::refresh_policy::SourceRefresh;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
@@ -71,6 +73,9 @@ mod navigation_tests;
 /// Real pointer events select by character, word, and line, extend with Shift, and drag without panning.
 #[cfg(test)]
 mod pointer_tests;
+/// External-write-to-window timings for the tree and the displayed source; ignored by default.
+#[cfg(test)]
+mod refresh_latency_tests;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
@@ -157,6 +162,8 @@ struct State {
     frame_stamp: Option<FrameStamp>,
     /// Accepted in-file matches; painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
+    /// When to reread the displayed file: on change notifications, or on a timer while unwatched.
+    refresh: SourceRefresh,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
@@ -183,6 +190,7 @@ impl State {
             presented_revision: None,
             frame_stamp: None,
             find: None,
+            refresh: SourceRefresh::default(),
         };
     }
 }

@@ -119,20 +119,14 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
     }
 }
 
-/// Poll completed work on the UI thread; schedule disk reads at 250 ms intervals.
+/// Poll completed work on the UI thread; start a disk read when `State::refresh` says one is due:
+/// on a change notification for the displayed file, every 250 ms while its directory is unwatched,
+/// or on the safety sweep. Missing highlighting is requested without waiting.
 /// The returned timer owns the worker and must remain alive until the window closes.
 pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Timer> {
     let mut worker = ReloadWorker::new()?;
     let state = Rc::clone(shared);
     let weak = window.as_weak();
-    // What: None represents no submitted request yet, rather than a fabricated timestamp.
-    // Why: The first poll checks disk immediately, then applies the configured interval.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let lastRequest: number | undefined;
-    // ```
-    let mut last_request: Option<Instant> = None;
     let timer = Timer::default();
     timer.start(TimerMode::Repeated, Duration::from_millis(20), move || {
         let Some(active_window) = weak.upgrade() else {
@@ -148,23 +142,25 @@ pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Ti
                 return;
             }
         }
-        if last_request.is_some_and(|last| return last.elapsed() < Duration::from_millis(250)) {
-            return;
-        }
+        let now = Instant::now();
         let current = state.borrow();
         let Some(path) = &current.file_path else {
             return;
         };
+        let highlight = current.syntax_revision != Some(current.document.revision());
+        if !highlight && !current.refresh.due(now) {
+            return;
+        }
         let requested = worker.request(ReloadRequest {
             path: path.clone(),
             snapshot: current.document.clone(),
             generation: current.file_generation,
-            highlight_unchanged: current.syntax_revision != Some(current.document.revision()),
+            highlight_unchanged: highlight,
         });
         drop(current);
         match requested {
             Ok(true) => {
-                last_request = Some(Instant::now());
+                state.borrow_mut().refresh.requested(now);
             }
             Ok(false) => {}
             Err(error) => {

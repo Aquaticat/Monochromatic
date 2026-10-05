@@ -81,6 +81,12 @@ pub mod file_tree;
 /// Bounded background directory reads apply only current tree-request replies.
 pub mod directory_worker;
 
+/// inotify notifications for shown directories and the displayed file, reported as invalidations only.
+pub mod change_watch;
+
+/// When to reread: on notifications, on today's timers while unwatched, and on a slow safety sweep.
+pub mod refresh_policy;
+
 /// Startup argument grammar is independent of filesystem and native display initialization.
 pub mod cli;
 
