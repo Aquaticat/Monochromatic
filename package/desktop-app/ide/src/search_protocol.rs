@@ -45,14 +45,26 @@ impl TextOrBytes {
     }
 }
 
-/// The envelope separates match records from begin/end/context/statistics metadata.
+/// What: Serde selects a closed variant from type and decodes its data directly.
+/// Why: Metadata is skipped without allocation, while duplicate match fields remain detectable.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Event = { type: 'match'; data: ContentMatch } | { type: MetadataKind; data: unknown };
+/// ```
 #[derive(Deserialize)]
-struct Event {
-    /// Serde maps the JSON type discriminant to a non-keyword Rust field.
-    #[serde(rename = "type")]
-    kind: String,
-    /// Match data is validated only for an actual match event.
-    data: serde_json::Value,
+#[serde(tag = "type", content = "data", rename_all = "lowercase")]
+enum Event {
+    /// A matching line carries validated path and source metadata.
+    Match(Match),
+    /// File-start metadata does not become a result.
+    Begin(serde::de::IgnoredAny),
+    /// File-end metadata does not become a result.
+    End(serde::de::IgnoredAny),
+    /// Context was not requested and does not become a content match.
+    Context(serde::de::IgnoredAny),
+    /// Aggregate counters do not become a result.
+    Summary(serde::de::IgnoredAny),
 }
 
 /// Match fields used by the reader; other ripgrep offsets/statistics remain forward-compatible metadata.
@@ -97,13 +109,10 @@ pub fn filename(root: &Path, record: &[u8]) -> Result<PathBuf> {
 /// Decode one JSON record; expected metadata has no content result, while unknown or malformed events are errors.
 pub fn content(root: &Path, record: &[u8]) -> Result<Option<SearchHit>> {
     let event: Event = serde_json::from_slice(record).context("Cannot decode ripgrep JSON record")?;
-    if event.kind != "match" {
-        if matches!(event.kind.as_str(), "begin" | "end" | "context" | "summary") {
-            return Ok(None);
-        }
-        bail!("Unknown ripgrep JSON event {:?} for project {}", event.kind, root.display());
-    }
-    let matched: Match = serde_json::from_value(event.data).context("Invalid ripgrep match record")?;
+    let matched = match event {
+        Event::Match(matched) => matched,
+        Event::Begin(_) | Event::End(_) | Event::Context(_) | Event::Summary(_) => { return Ok(None); }
+    };
     if matched.line_number == 0 {
         bail!("Ripgrep returned a zero source line for project {}", root.display());
     }

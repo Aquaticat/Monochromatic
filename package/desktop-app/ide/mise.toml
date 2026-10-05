@@ -111,6 +111,14 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--test', 'font_features', '--test', 'inter_features', '--test', 'variable_fonts', '--', '--nocapture'])
 """
 
+[tasks."test:search"]
+description = "Check native ripgrep records and editord-compatible filename matching"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'search_protocol'])
+"""
+
 [tasks."test:reader-lifecycle"]
 description = "Exercise real disconnected reader channels without crashing worker threads"
 shell = "node --input-type=module-typescript -e"
