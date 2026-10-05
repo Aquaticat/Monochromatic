@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "scope": "Freshly inspected authored native scan-indicator states and their offline viewer, not a new ballot, real analysis progress or native accessibility acceptance.",
-  "htmlSha256": "bbdebac9ef13f48aa68df020020c102ecab41dee28387aeb357b5ad002010641",
-  "templateSha256": "0dc74d7963cf85d85557112ccd519d1bd49fd3ca9376f7836cd991acf67d0621",
-  "builderSha256": "440babf09d33f21e84ed208b684d9ad8e784a74d7727795abbdfc982fbe4d920",
-  "consumerTestSha256": "1fff8722fd0bf2a3b5ae7b38b67ee9f2ffe4eefd15b8eaba36d5395f5ee6059d",
+  "htmlSha256": "8d296c4370a2be69ac67dcc9eee11bb696092a849506c6e5d9555fe64248e0a1",
+  "templateSha256": "73b8990424fd954bdfb5ca2093a7790986e0de8a486e82b7adb0fe221c2a3f0e",
+  "builderSha256": "34121b549b77b233b3f610d58a84e1dc115978b238993fcc7fd125711e2be23e",
+  "consumerTestSha256": "71be44741e8adf730e4e6074fa9bd3b47cc19c5fc1bcb14daf9e16cf5c8bfe2b",
   "manifestSha256": "aa672a8dd2bd41198f71b5087c3eb3acb4a9c4925db108128086781bb9176e75",
   "nativeVerificationSha256": "1660e8e43b7dd10a2383ef92156b38f73c01952c0f08bb105e88c19907d61be2",
   "browserCliVersion": "0.38.1",
@@ -98,16 +98,32 @@
   "noPolicyVotes": true,
   "consoleErrors": 0,
   "renderedFindingsChecked": true,
+  "renderedProvenanceChecked": true,
   "limits": "All distinct previews opened in the first desktop/light interaction pass; availability, status notes, observations and representative modal/zoom/pan controls exercised in all four contexts. Axe audits are closed-page only, not native acceptance.",
   "browsersClosed": true,
   "ownedRuntimeAbsenceVerified": true,
   "productionSourceAndAcceptedSearchReviewUnchanged": true,
-  "guardReportSha256": {
-    "positive": "1dd90507324152edb96b78631ee47f1aad7d607ff2d387d9b3079b31ec6b8043",
-    "restored": "1dd90507324152edb96b78631ee47f1aad7d607ff2d387d9b3079b31ec6b8043",
-    "without-exact-cohort": "b15bf4f02d7fa70267158be56ffdac75d3349a94bee05c944952466c1c9a20f5",
-    "without-authored-state": "1abddc91aff2992345c8c26476d5b4d2abb6909e67e91dcd065851422c153bcf",
-    "without-ellipsis-binding": "131b11dfeed8a1bd2bf8848233efa31bea40b2cc6e41c6a2acf2645abd7a02d7"
+  "guardRemovalProofs": {
+    "rulesDeclared": 87,
+    "rulesDeletedAndNoticed": 87,
+    "positiveAndRestored": "Scan-indicator consumer: 86 rules, 106 rejected inputs, escaping and positive controls passed.",
+    "outcomes": {
+      "accepted": 69,
+      "caughtByAnotherCheck": 18
+    },
+    "reportSha256": "b34259e5952c00f31a9760477149a2719c2a0022486d4fa3ae827fe07653a851"
+  },
+  "independentReview": {
+    "reviewer": "A separate read-only agent session that was given the builder, test and template without this session's conclusions.",
+    "findings": [
+      "string font scales and array panels passed coerced comparisons",
+      "bytes after the PNG end chunk were accepted",
+      "bar, player and viewport geometry was not tied to the crop",
+      "unquoted radio inputs, required selects and CSS imports passed the ballot and offline patterns",
+      "thirteen guard deletions left the consumer test passing",
+      "two findings statements and one provenance statement claimed more than the checks enforced"
+    ],
+    "resolution": "One named rule per line with strict types, PNG structure and geometry rules, label clearance re-measured from the embedded images at validation, findings limited to validated data, embedded provenance, and a deletion proof for every rule."
   },
   "publicationPreflight": {
     "fixtures": [
@@ -166,11 +182,11 @@
   "rendererScreenshotsInspected": [
     {
       "file": "review-1440-light.png",
-      "sha256": "f6b8d58e68444e5b600cfb353813bb34fa278b94944fff1f9d8683a6edca3e5e"
+      "sha256": "11d1d7fb79aa6466513fb12f507dcb78ed3aeee2eb6a306d3d476e1fa0c91a5b"
     },
     {
       "file": "review-1440-dark.png",
-      "sha256": "7acfdd82bcd0144e1a3fe38b9a6c9d91efc7c5fd5f535c8ba6ca55a2a9cd3e82"
+      "sha256": "e8f683c3bf5e1c9cfec6ce251d9c9ae726a184e718090f650d078d1d03ce590b"
     },
     {
       "file": "review-390-light.png",
@@ -197,6 +213,22 @@
       "sha256": "134fe5f8b71e70294486c4ae559cc6d61c30126d415538d701621ac0010adbfc"
     },
     {
+      "file": "boundary-1440-light.png",
+      "sha256": "6b1b2cdafd7ea8fcdd3c9f58c220b1eb638906ef6da98339d3f7da8c3ca22e91"
+    },
+    {
+      "file": "boundary-1440-dark.png",
+      "sha256": "a71086b1addd4536a7a3bcfb07dea6f3c6430e2692c9a4bfb2a6e9277e57e0f4"
+    },
+    {
+      "file": "boundary-390-light.png",
+      "sha256": "67b74a3a2487187db0a81488df877a607fb260ff9afd3f2e65a4dff2964c4014"
+    },
+    {
+      "file": "boundary-390-dark.png",
+      "sha256": "debe0cb5ae97e484b8a00f619802b0180bf94e9b73f446dadd8ac3880d95cd4a"
+    },
+    {
       "file": "modal-1440-light.png",
       "sha256": "ee078f9e74068ccec60991418506707afec5038efe5242aa8f1a809d80b48ed8"
     },
@@ -217,6 +249,8 @@
     "Closed-page axe checks only; no open-dialog, Firefox ESR140 or native accessibility acceptance.",
     "Every progress value, start and completion is authored debug input; no real analysis, worker pause, cache write or playback occurs.",
     "Layout overflow flags and rendered-pixel clearance are not glyph metrics or acceptance of the Resume label at 200% text.",
+    "Status readings are read by eye and bound by hash; only label clearance is re-measured from the embedded pixels.",
+    "Measured rectangles are checked for mutual consistency and against the crop, not re-derived from the device.",
     "Synthetic changed-inset and changed-witness fixtures are validation controls, not extra Android captures.",
     "Full Android lint retains five inherited errors, 65 warnings and two hints."
   ]
