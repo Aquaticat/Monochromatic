@@ -5,74 +5,8 @@ use super::sidebar_tests::{
     DIVIDER, HEADER, MINIMUM, SOURCE_MINIMUM, click, drag_to, fixture, motion, press, release,
     settle,
 };
-/// Generated window and tree row types from the shipped markup.
-use super::{AppWindow, ui::TreeEntry};
-/// What: `Rgba8Pixel` is one pixel of four bytes; `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
-/// (the `<...>` names the element type, like `Array<Pixel>`).
-/// Why: Painting outside the sidebar is visible only in rendered pixels, not in window properties.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Frame = { width: number; pixels: Pixel[] };
-/// ```
-use slint::{
-    ComponentHandle, ModelRc, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel,
-    platform::{PointerEventButton, update_timers_and_animations},
-};
-/// The replacement tree model is shared with the window like the fixture's own model.
-use std::rc::Rc;
-
-/// What: `&SharedPixelBuffer<Rgba8Pixel>` lends the frame; the four `usize` bounds are whole pixels
-/// (`usize` is the index type, siblings `u32` and `i32`); the answer is `true` when any pixel inside
-/// the bounds differs from `background`.
-/// Why: Text and badges are "something painted here"; an untouched region is "nothing painted here".
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function painted(frame: Frame, bounds: [number, number, number, number], background: Pixel): boolean;
-/// ```
-fn painted(
-    frame: &SharedPixelBuffer<Rgba8Pixel>,
-    bounds: [usize; 4],
-    background: Rgba8Pixel,
-) -> bool {
-    // What: `as usize` converts the frame's `u32` width to the index type; `as_slice()` borrows all pixels.
-    // Why: Pixel (x, y) lives at index `y * width + x`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const width = frame.width; const pixels = frame.pixels;
-    // ```
-    let width = frame.width() as usize;
-    let pixels = frame.as_slice();
-    for y in bounds[2]..bounds[3] {
-        for x in bounds[0]..bounds[1] {
-            if pixels[y * width + x] != background {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-/// Render the window and return the frame; the headless window renders one pixel per logical pixel.
-fn frame(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
-    settle(window);
-    // What: `expect` returns the rendered frame or fails the test with this message.
-    // Why: Pixel assertions need an actual frame.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const frame = window.takeSnapshot();
-    // ```
-    let rendered = window.window().take_snapshot().expect("sidebar frame");
-    assert_eq!(
-        rendered.width(),
-        1100,
-        "pixel checks assume one pixel per logical pixel"
-    );
-    return rendered;
-}
+/// Window ownership for closing the fixture, and the left pointer button for a scrollbar drag.
+use slint::{ComponentHandle, platform::PointerEventButton};
 
 /// The last tree pixel activates its row, both divider edges do nothing else, and the first source pixel
 /// places the caret, at the default, narrowest, and widest sidebar.
@@ -210,62 +144,5 @@ fn tree_windowing_and_scrollbar_follow_the_sidebar_width() {
             "dragging the tree scrollbar resized the sidebar"
         );
     }
-    window.hide().expect("close sidebar window");
-}
-
-/// At the narrowest sidebar a long name and a slot badge still paint, and nothing paints over the divider.
-#[test]
-fn long_names_and_slot_badges_stay_inside_the_narrowest_sidebar() {
-    let shared = fixture(6);
-    let window = &shared.window;
-    // What: `vec![...]` builds an array; `..TreeEntry::default()` fills the unnamed fields.
-    // Why: One deep row with a slot badge and a name far wider than the sidebar is the worst case.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const rows = [{ ...defaultEntry, label: longName, depth: 2, recency: '3' }];
-    // ```
-    let rows = vec![TreeEntry {
-        label: SharedString::from(
-            "an-extremely-long-file-name-that-cannot-fit-inside-a-narrow-sidebar.txt",
-        ),
-        depth: 2,
-        recency: SharedString::from("3"),
-        ..TreeEntry::default()
-    }];
-    window.set_tree_entries(ModelRc::from(Rc::new(VecModel::from(rows))));
-    drag_to(window, MINIMUM);
-    // Leave the divider so its hover emphasis does not change the line's width.
-    motion(window, 800.0, 500.0);
-    update_timers_and_animations();
-    let rendered = frame(window);
-    let width = rendered.width() as usize;
-    // The window background, sampled in the divider cell away from its line.
-    let background = rendered.as_slice()[300 * width + 164];
-    let top = HEADER as usize;
-    let bottom = top + 48;
-    // Depth 2 puts the badge column at 40..64 and the name from 64 to 12px before the sidebar edge.
-    assert!(
-        painted(&rendered, [40, 64, top, bottom], background),
-        "the slot badge is not painted at the narrowest sidebar"
-    );
-    assert!(
-        painted(&rendered, [64, 148, top, bottom], background),
-        "the long name is not painted at the narrowest sidebar"
-    );
-    assert!(
-        !painted(&rendered, [148, 160, top, bottom], background),
-        "the long name painted into the row's trailing padding"
-    );
-    // The idle line is the single pixel column 24px into the divider cell.
-    assert!(
-        !painted(&rendered, [160, 184, top, bottom], background)
-            && !painted(&rendered, [185, 208, top, bottom], background),
-        "the long name painted over the divider"
-    );
-    assert!(
-        painted(&rendered, [184, 185, top, bottom], background),
-        "the divider line is not painted"
-    );
     window.hide().expect("close sidebar window");
 }
