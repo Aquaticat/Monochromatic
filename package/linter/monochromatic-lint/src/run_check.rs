@@ -122,12 +122,10 @@ impl<'run> HostChecker<'run> {
                 }
             }
         }
-        let syntax_only: RustRuleSettings = RustRuleSettings {
-            explicit_types: None,
-            ..settings.clone()
-        };
+        // `check_syntax_rules` reads only the three syntax selections and never the semantic one,
+        // so the full settings pass through unchanged.
         let parsed: RustSource = RustSource::new(self.plan.display.clone(), String::from(source));
-        findings.extend(check_syntax_rules(&parsed, &syntax_only));
+        findings.extend(check_syntax_rules(&parsed, settings));
     }
 
     /// What: Prepare the LFS rule's context for a parsed document, when that rule is selected.
