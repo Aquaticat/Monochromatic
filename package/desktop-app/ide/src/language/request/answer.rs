@@ -96,12 +96,11 @@ fn replied(
         Err(error) => match classify_error(&error) {
             Failure::Failed(failure) => RequestOutcome::Failed(failure),
             Failure::Superseded => {
-                if worker.session.stamp() != Some(ticket.stamp) {
-                    tracing::debug!(server = %ticket.server.name, "dropped a superseded answer for text that is no longer displayed");
-                    worker.session.answered(ticket.number);
-                    return;
-                }
-                if ticket.attempt < MAX_RETRIES {
+                // Only a request for the displayed text is worth asking again. One for older text
+                // is replied as superseded with its old stamp, and the interface fence drops it
+                // like every other stale result, so stale handling stays in one place.
+                let current = worker.session.stamp() == Some(ticket.stamp);
+                if current && ticket.attempt < MAX_RETRIES {
                     let mut again = ticket;
                     again.attempt += 1;
                     worker.timer(RETRY_DELAY, Internal::Retry(Box::new(again)));

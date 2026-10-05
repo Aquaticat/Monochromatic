@@ -333,6 +333,47 @@ fn reply_overtaken_by_a_reload_or_file_switch_is_dropped() {
     );
 }
 
+/// A `-32801` answer for text that was reloaded meanwhile is not retried; the fence drops it as stale.
+#[test]
+fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "requests::superseded_answer_for_reloaded_text_is_dropped_by_the_fence",
+            support::standard,
+        );
+        return;
+    };
+    let definitions = support::scripted(
+        &root,
+        &[("HOVER", "modified"), ("HOVER_DELAY_MS", "400")],
+        3,
+    );
+    let mut probe = Probe::new(&root, definitions);
+    probe.open(&root.join("main.scripted"), SOURCE);
+    probe.until_ready();
+    let overtaken = probe.request(RequestKind::Hover, 3);
+    probe.reload("changed text\n");
+    probe.until("the superseded answer to be dropped as stale", |seen| {
+        return seen.worker.fence_counts().stale_revision == 1;
+    });
+    assert!(
+        !probe
+            .replies
+            .iter()
+            .any(|reply| return reply.request == overtaken),
+        "a superseded answer for reloaded text reached the interface"
+    );
+    std::thread::sleep(std::time::Duration::from_millis(600));
+    let hovers = support::received(&support::report(&root))
+        .iter()
+        .filter(|method| return method.as_str() == "textDocument/hover")
+        .count();
+    assert_eq!(
+        hovers, 1,
+        "a request for text that is no longer displayed was retried"
+    );
+}
+
 /// Hints are shaped for drawing, tagged with their text, and asked for again after a reload.
 #[test]
 fn inlay_hints_are_shaped_and_follow_reloads() {
