@@ -60,15 +60,16 @@ fn jsdoc_grammar_paints_types_inside_documentation_comments() {
     );
 }
 
-/// The format-arguments grammar classifies placeholder names inside Rust formatting macros.
+/// The format-arguments grammar classifies the format type inside Rust formatting macros.
+/// The placeholder name would prove nothing: Rust itself paints the same word at its binding.
 #[test]
-fn format_args_grammar_paints_placeholders_inside_rust_macros() {
+fn format_args_grammar_paints_format_types_inside_rust_macros() {
     assert_reads_as(
         "/project/src/main.rs",
-        "fn main() { let cat = 1; println!(\"{cat}\"); }\n",
+        "fn main() { let cat = 1; println!(\"{cat:?}\"); }\n",
         "rust",
-        "variable",
-        "cat",
+        "special",
+        "?",
     );
 }
 
