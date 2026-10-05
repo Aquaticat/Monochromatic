@@ -736,6 +736,12 @@ including the executable boundary;
 only the pre-existing shipped-corpus compiler conformance tests are omitted from repeated mutant executions.
 Normal container suites run those tests too.
 No mutation branch is excluded to remove a survivor.
+By a decision of 2026-10-05 about mutation timeouts,
+two operator replacements are never tried in any scope:
+`+=` with `*=`,
+and `-=` with `/=`.
+`+=` with `-=` stays active.
+Appending `-- --list` to a mutation task prints the mutants its scope would test.
 The pathname scope mutates only `src/path_scan.rs` and `src/path_name_bytes.rs` with the same suite.
 It exits nonzero on Linux,
 because two `prefix_parts` mutants can differ only on a Windows target.
