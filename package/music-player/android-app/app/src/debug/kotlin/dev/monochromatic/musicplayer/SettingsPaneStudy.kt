@@ -91,7 +91,7 @@ internal fun SettingsPaneStudy(state: SettingsPaneState, opened: Boolean, onEven
     // ```
     LaunchedEffect(opened, state) {
         onMeasure("SettingsPane.composed:opened=$opened:strip=${state.stripCommonPrefixes}:" +
-            "resume=${state.resumeWhereLeftOff}:analyse=${state.analyseInBackground}")
+            "resume=${state.resumeWhereLeftOff}")
     }
     // What: BackHandler intercepts the system Back gesture only while its `enabled` flag is true.
     // Why: System Back returns from the page to the player; with the page closed it is not intercepted.

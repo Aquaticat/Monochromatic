@@ -24,7 +24,7 @@ package dev.monochromatic.musicplayer
 internal fun settingsPaneEvent(state: SettingsPaneState, event: String): SettingsPaneState {
     if (event == "toggle:strip-common-prefixes") return state.copy(stripCommonPrefixes = !state.stripCommonPrefixes)
     if (event == "toggle:resume-where-left-off") return state.copy(resumeWhereLeftOff = !state.resumeWhereLeftOff)
-    if (event == "toggle:analyse-in-background") return state.copy(analyseInBackground = !state.analyseInBackground)
+    // D84 removed the analysis row, so its former toggle falls through to the rejection with any other name.
     throw IllegalArgumentException("Unknown authored Settings event: $event")
 }
 //endregion

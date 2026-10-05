@@ -92,8 +92,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * What: A composable draws the whole page: status spacer, header, separator, three switch rows and
- * the closing paragraph. `Dp` is a density-independent distance; `Color` is an opaque colour value.
+ * What: A composable draws the whole page: status spacer, header, separator and the switch rows.
+ * D85 dropped settings-a's closing paragraph. `Dp` is a density-independent distance; `Color` is an
+ * opaque colour value.
  * `startSafe` and `endSafe` are the horizontal insets that keep text clear of the fold connector.
  * Why: The same pane serves the cover's full-width page and the inner panel's right half; only the
  * caller-supplied insets differ, so no row is redrawn per panel.
@@ -130,7 +131,7 @@ internal fun SettingsPane(state: SettingsPaneState, onEvent: (String) -> Unit, o
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // <Column><StatusSpacer/><Header/><Divider/><ScrollColumn>{rows}<Closing/></ScrollColumn></Column>
+    // <Column><StatusSpacer/><Header/><Divider/><ScrollColumn>{rows}</ScrollColumn></Column>
     // ```
     Column(modifier = modifier.fillMaxSize().background(pageColor).settingsPaneMeasure("pane", onMeasure)) {
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
@@ -144,15 +145,6 @@ internal fun SettingsPane(state: SettingsPaneState, onEvent: (String) -> Unit, o
                     startSafe = startSafe, endSafe = endSafe)
                 HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
             }
-            Text(text = settingsPaneClosing(),
-                modifier = Modifier.fillMaxWidth()
-                    .padding(start = startSafe, end = endSafe, top = 22.dp, bottom = 22.dp)
-                    .settingsPaneMeasure("closing", onMeasure),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                onTextLayout = { layout ->
-                    onMeasure("SettingsPane.text:closing:lines=${layout.lineCount},overflow=${layout.hasVisualOverflow}")
-                })
         }
     }
 }
