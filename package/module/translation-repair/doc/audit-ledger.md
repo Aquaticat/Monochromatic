@@ -7345,15 +7345,21 @@ The empty-pairing refusal (158)
 now has its case
 (an empty source side yields no paired step
 and no source-only step to stop earlier).
-LEFT with the cause named:
+The four spans first left open
+with the cause "the aligner's `continuesPairing`
+emission rules unmapped"
+were then covered anyway,
+and that cause was itself unverified:
+`declinedTargetBlocks` takes its steps as an argument,
+so hand-built steps suffice.
+Their fixtures need a `paired` step
+(the no-pairing guard returns early)
+and the plain and continuation steps
+must name different indices
+(the claimed set would exclude the plain one otherwise).
+All four spans are covered:
 the rendering-continues machinery
-(105,
-106 to 109,
-111)
-and the claiming walk's source-only arm
-(172 to 173)
-need the aligner's `continuesPairing` emission rules
-mapped first.
+and the claiming walk's source-only arm.
 Two scan slips in the edit
 (a TSDoc before a `return`,
 a position word in its comment)

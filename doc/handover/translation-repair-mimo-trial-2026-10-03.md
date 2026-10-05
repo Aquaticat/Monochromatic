@@ -683,6 +683,47 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  05:17 UTC:
+  `declined` is FULLY COVERED
+  (the ledger's
+  `DECLINED RE-VERIFICATION` paragraph,
+  corrected in place):
+  the four spans first left open
+  with the cause "the aligner's emission rules unmapped"
+  were covered with hand-built steps,
+  and that cause was itself unverified
+  (`declinedTargetBlocks` takes its steps
+  as an argument).
+  The whole file reads COVERED
+  in the run's own census byte spans.
+  Gates at the close:
+  1,564 [PASS] and no [FAIL],
+  35 source scans and no [FAIL].
+
+  Pattern this round confirmed again:
+  every cause I wrote for a cold line
+  before running the byte-level check
+  turned out wrong or incomplete,
+  and the byte spans plus the code reads
+  settled each one.
+
+  Next:
+  the left-open list in the ranking's order:
+  `corpus-run/runs` (3),
+  `transient` (3),
+  `artifact` (2),
+  `corpus-run/cache` (2),
+  `corpus-run/name`,
+  `edit`,
+  and the `model-card-derive` data-invariant guard
+  (its cause named and confirmed).
+  Each takes the byte-level method:
+  read the run's own census spans,
+  slice the coverage chunk at those offsets,
+  then read the code path
+  before writing any fixture.
+
+- 2026-10-05,
   05:10 UTC:
   `declined` re-verified
   (the ledger's
