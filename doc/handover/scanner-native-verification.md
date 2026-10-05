@@ -820,6 +820,85 @@ The scratch drivers are retained in the evidence directory.
 - Triage of the non-compiling integration target and the six failing baseline tests.
 - Whether to add a recurring Windows test job once the baseline is green.
 
+`Windows baseline follow-up` takes up these three items.
+
+## Windows baseline follow-up
+
+### Purpose
+
+This follow-up makes the scanner's test suite compile and run on native Windows,
+triages every Windows baseline failure,
+confirms the device-namespace prefix fix on native Windows,
+and mutates the pathname files on their own.
+It is in progress;
+each subsection records a finished step.
+
+### Linux-side changes
+
+- `ea62f2558` makes `tests/integration.rs` compile for Windows.
+  `read_error_surfaces_as_hit_and_nonzero_exit` is now `#[cfg(unix)]`,
+  unchanged otherwise,
+  because mode bits are a Unix permission model.
+  The new `#[cfg(windows)]` test `windows_locked_file_read_error_surfaces_as_hit`
+  holds the target open with share mode 0 while the scanner runs,
+  so the scanner's own open fails with a sharing violation,
+  and asserts a non-zero exit and `locked.txt: read error` on stderr.
+  The README's "Read errors" list names such a file that cannot be opened.
+- `16b52146e` adds rustdoc to the eight undocumented `use` lines.
+  `lint:rust` now exits `0` with no finding.
+- `3b85b4269` adds a `--pathname` scope to `bin/mutate-container.mjs`,
+  mutating only `src/path_scan.rs` and `src/path_name_bytes.rs`
+  with the same baseline,
+  arguments,
+  and consumer suite as the other scopes,
+  and the task `test:mutation:pathname:container`.
+
+The `x86_64-pc-windows-gnu` standard library was added to the host's `nightly-2026-09-22` toolchain
+(`rustup target add`),
+so Windows-only test code can be type-checked on Linux.
+`cargo check --all-targets --all-features --target x86_64-pc-windows-gnu` passes on `ea62f2558`.
+As a positive control,
+the same check on a scratch copy holding the previous `tests/integration.rs`
+reports exactly the errors the earlier Windows run recorded:
+`` error[E0433]: cannot find `unix` in `os` `` and two `E0599` errors for `from_mode`.
+
+### Pathname mutation scope on Linux
+
+`test:mutation:pathname:container` tested 57 mutants in 12 minutes:
+51 caught,
+2 missed,
+4 unviable,
+and no timeouts.
+The unmutated baseline passed.
+`cargo-mutants` exited `2` because mutants survived,
+so the task failed as designed rather than reporting green.
+
+Evidence is `package/cli/forbidden-strings/target/verification/pathname-mutation-xxqPFq`.
+Snapshot is `ac3fe2d101dde4ecc237dc798e51f260a13cecdf357429d45e5ffbe21d6183e1`.
+Image is `sha256:e1e58fe4e4c43c209c798cf6aad70f92c880340a1236b07cca51711695458b03`.
+
+The two missed mutants are the retained Windows-only survivors,
+needing the Windows run:
+
+- `src/path_name_bytes.rs:36:5: replace prefix_parts -> usize with 0`.
+- `src/path_name_bytes.rs:36:8: delete ! in prefix_parts`.
+
+Source evidence of their Linux equivalence:
+`prefix_parts` returns `0` at its first line when `cfg!(windows)` is false;
+with the `!` deleted it falls through to `path.components().next()`,
+and the Unix path parser never yields `Component::Prefix`,
+so it returns `0` again.
+
+Every mutant of the reordered component loop in `scan_normalized_records` was caught,
+including the prefix-skip comparison and decrement,
+the navigation-marker comparisons after it,
+and the name counter.
+The unviable mutants are compiler rejections:
+`E0277` for the `Default::default()` replacements of `scan_path_records`,
+`scan_normalized_records`,
+and `scan_path`,
+and `` `||` operators are not supported in let chain conditions `` for `logical_path`.
+
 ## Matcher-state audit
 
 Reuse is not inferred solely from `&self`.
