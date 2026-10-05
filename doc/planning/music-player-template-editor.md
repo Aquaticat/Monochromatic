@@ -12,9 +12,9 @@ fallback behavior,
 other row-type coverage and title customization undesigned.
 The human named KWGT (Kustom Widget Maker) as precedent on 2026-10-05.
 This note lists what KWGT's formula language and formula editor do,
-so the human can say which of those features the player omits.
-It records observations and one open question.
-It decides nothing and authorizes no production implementation.
+and records which of those features the player keeps and omits.
+The human answered that question on 2026-10-05 (D89).
+No production implementation is authorized.
 
 ## What is already settled
 
@@ -213,101 +213,74 @@ and KWGT does not show:
 Those are design questions for later in this round,
 not answered by KWGT.
 
-## Open question: which KWGT features does the player omit
+## Answer: which KWGT features the player keeps and omits
 
-Each entry is something KWGT does.
-The recommendation is the agent's and decides nothing.
+The note first put each KWGT feature to the human with a recommendation.
+On 2026-10-05 the human answered:
+"I'll go with your recommendations with what to omit and keep."
+D89 records it.
+Where the recommendation was to keep or to omit,
+that is now decided.
+Where the note made no recommendation and said the choice was the human's,
+the answer decides nothing;
+those entries are listed under `Still open`.
 
-### Language
+### Kept
 
-- Literal text with formulas between `$` signs.
-  Recommendation:
-  keep.
-- Field functions with a mode word,
-  such as `mi(title)`.
-  Recommendation:
-  keep the idea,
+- Literal text with formulas between a pair of delimiters;
+  text outside the pair is shown as written.
+- Field functions that take a mode word,
+  in the manner of `mi(title)`,
   with the player's own fields.
 - Nested calls and formatting functions,
-  such as `tf(mi(len), mm:ss)`.
-  Recommendation:
-  keep.
-- Text conversion (`tc`):
-  case,
-  cut,
-  ellipsis,
-  pad,
-  split,
-  regular-expression replace.
-  Recommendation:
-  keep case and cut;
-  ask about the rest.
-- Conditions:
-  `if`,
-  comparisons,
-  `&`,
-  `|`,
-  `~=`.
-  Recommendation:
-  keep `if` and comparisons,
-  because a row needs a way to say what to show when a field is empty.
-- Arithmetic.
-  Recommendation:
-  omit unless a use appears.
+  in the manner of `tf(mi(len), mm:ss)`.
+- Text conversion for case and for cutting to a length.
+- `if` and comparisons,
+  so a row can say what to show when a field has no value.
+- A live preview that changes with every keystroke.
+- Signature and argument help while the caret is inside a call.
+- Error lines that name the function and the problem;
+  their wording and marking follow the player's own error design.
+- A field list that inserts at the caret.
+
+### Omitted
+
+- Arithmetic,
+  unless a use appears.
 - Global variables.
-  Recommendation:
-  omit.
-- BB-code markup for colour,
+- Markup for colour,
   bold,
-  italic and the like.
-  Recommendation:
-  omit,
+  italic and the like,
   because D35 gives the supporting line one neutral role.
 - Functions for weather,
   battery,
   network,
   calendar,
   notifications and web content.
-  Recommendation:
-  omit.
-
-### Editor
-
-- Live preview on every keystroke.
-  Recommendation:
-  keep.
-- Stand-in sample values in the preview.
-  Recommendation:
-  ask;
-  the player could preview with a real track from the open library instead.
-- Signature and argument help while typing.
-  Recommendation:
-  keep.
-- Red error lines naming the function and the problem.
-  Recommendation:
-  keep the naming;
-  the wording and marking follow the player's own error design.
-- No error for a formula left open.
-  Recommendation:
-  omit;
-  report it.
-- Example list by family,
-  tap to append,
-  long press to replace.
-  Recommendation:
-  keep a field list that inserts at the caret;
-  ask about ready-made examples.
+- Silence about a formula left open;
+  the player reports it.
 - Saved favourite formulas.
-  Recommendation:
-  omit.
 - The button row for markup,
   colour and the globe.
-  Recommendation:
-  omit with their language features.
-- An explicit `Save` button.
-  Recommendation:
-  ask;
-  the alternative is applying as typed with a reset to default.
+
+### Still open
+
+The note recommended nothing here,
+so the human's answer does not settle these.
+They are to be shown as built variants in the editor study,
+not asked in words.
+
+- The rest of text conversion:
+  ellipsis,
+  padding,
+  splitting and regular-expression replace.
+- Regular-expression match (`~=`) and combining conditions with `&` and `|`.
+- What the preview shows:
+  stand-in sample values as in KWGT,
+  or a real track from the open library.
+- Whether ready-made examples are offered beside the field list.
+- Whether an edit applies as typed with a way back to the default,
+  or only on an explicit save.
 
 ## Not decided here
 
@@ -318,6 +291,6 @@ The recommendation is the agent's and decides nothing.
 - Fallback when a field is empty or a template is invalid.
 - The editor's layout on the Fold's inner and cover panels.
 
-Once the omissions are answered,
-the next step is a built Compose study of the editor on the Fold,
-shown in a verified review form.
+The next step is a built Compose study of the editor on the Fold,
+shown in a verified review form,
+with the entries under `Still open` as variants.

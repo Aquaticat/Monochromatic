@@ -2480,6 +2480,70 @@ Under the widest reading of the human's words those are locks too.
 Removing them is asked of the human,
 not done.
 
+### D89. The template language and editor follow KWGT, with stated omissions (2026-10-05)
+
+The human named KWGT (Kustom Widget Maker) as precedent for D81's template
+editor and had it run first-hand in a throwaway emulator.
+`doc/planning/music-player-template-editor.md` lists what KWGT's formula
+language and editor do,
+with a recommendation to keep or omit each.
+The human answered:
+"I'll go with your recommendations with what to omit and keep."
+
+Kept:
+
+- literal text with formulas between a pair of delimiters;
+- field functions that take a mode word,
+  with the player's own fields;
+- nested calls and formatting functions;
+- text conversion for case and for cutting to a length;
+- `if` and comparisons,
+  so a row can say what to show when a field has no value;
+- a live preview on every keystroke;
+- signature and argument help while typing;
+- error lines that name the function and the problem;
+- a field list that inserts at the caret.
+
+Omitted:
+
+- arithmetic,
+  unless a use appears;
+- global variables;
+- markup for colour,
+  bold,
+  italic and the like;
+- functions for weather,
+  battery,
+  network,
+  calendar,
+  notifications and web content;
+- silence about a formula left open,
+  which the player reports instead;
+- saved favourite formulas;
+- the button row for markup,
+  colour and the globe.
+
+Not decided by this answer,
+because the note recommended nothing there:
+the rest of text conversion,
+regular-expression match and combined conditions,
+whether the preview uses stand-in values or a real track,
+whether ready-made examples are offered,
+and whether an edit applies as typed or on an explicit save.
+Those go to the built editor study as variants.
+
+Also undecided:
+the field inventory and names,
+which row types get templates,
+default templates,
+fallback for an empty field or an invalid template,
+the exact delimiter and function spelling,
+and the editor's layout on the Fold.
+D81's limits stand:
+title customization is not implied,
+and D77's visible distinction before activation remains required.
+No production implementation is authorized by this record.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

@@ -1179,6 +1179,21 @@ Default templates and their interaction with required visible distinction
 need a dedicated design round.
 Do not replace this requirement with a fixed supporting-text policy vote.
 
+That round opened on 2026-10-05.
+The human named KWGT as precedent,
+and D89 records which of its language and editor features the player keeps
+and omits;
+`doc/planning/music-player-template-editor.md` holds the observations.
+Still open after D89:
+the field inventory,
+row-type coverage,
+defaults,
+fallback,
+exact spelling of the grammar,
+the editor's layout on the Fold,
+and the entries that note lists under `Still open`.
+The next step is a built editor study on the Fold in a verified review form.
+
 ## 12. Existing-screen refinement, 3B settled and accepted
 
 The active round stays within the accepted screenshot.
