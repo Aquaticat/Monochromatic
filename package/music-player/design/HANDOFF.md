@@ -52,55 +52,104 @@ This section is newer than `Handoff: two-row Settings publication complete (2026
   leaning to no for features obscure in a music player.
   D90 records the picks.
 
+### Done after those answers
+
+The first-run study is rebuilt and republished.
+`questions/first-run-access.html` shows 32 first views of prototype
+`61e2cf7764f627d40a77bdf6039143e229ad36ea`,
+says that analysis is automatic and not optional,
+and no longer offers a choice to analyse.
+With the shorter text nothing scrolls,
+so the first publication's two scrolled images are gone.
+The captures span two emulator boots.
+Build,
+validation,
+the consumer test,
+three guard-removal proofs and a four-context offline browser check passed.
+`evidence/first-run-access-boundaries.md` holds the scope and limits.
+
+No builder compares a digest any more.
+The scan-indicator builder now has 82 rules and 102 rejected inputs,
+the Settings builder 94 and 130;
+both tests pass and no built page changed.
+Counts given in older sections of this file are those of the publications.
+Pages still print a digest computed from each embedded image and the
+commit and APK digest that produced the captures.
+Those are statements,
+and nothing is checked against them.
+
+The withdrawn Settings viewer was rechecked after its withdrawal notice:
+build,
+validation,
+consumer test,
+one guard-removal proof and a four-context browser check passed,
+and its review record carries the recheck.
+`README.md`,
+`evidence/settings-pane-boundaries.md` and the Settings plan mark the
+study withdrawn.
+The Settings item is closed.
+
+`template-reference.mjs` states what a template yields under D89 and D90,
+with 96 passing cases (`test:template-reference`).
+It is design evidence for the editor study,
+not the player's parser.
+
 ### Unfinished
 
-The first-run rebuild has no captures.
-The prototype copy is corrected (prototype commit `61e2cf776`,
-APK SHA-256 `c6d6e9b38faee5895881b87cf055343d9904f4ab4d9b765aeecfdbd10f68521b`),
-and its fixture tests pass.
-The eighth emulator visit ran twice and kept nothing:
-under a host load between 50 and 100 the system raised
-`Pixel Launcher isn't responding` over the study each time,
-and answering `Wait` did not clear it within four attempts per scene.
-The capture refused correctly.
-`questions/first-run-access.html` therefore still shows the withdrawn sentence.
+The editor study is not built.
+`doc/planning/music-player-template-editor.md` holds the agent's proposal
+under `Editor study: the agent's proposal`:
+one template for the track row's supporting line,
+KWGT's spelling,
+the field list,
+the default template and the states to capture.
+The human was told this in chat and had not objected when this was written;
+that is not an acceptance.
+Still to do:
+the debug Compose host and fixture in the prototype worktree,
+its unit tests and mutants,
+the captures,
+the viewer with its builder and test,
+and the review form.
 
-The withdrawn Settings viewer rebuilt and validated unchanged.
-Its consumer test was started and its result was not read;
-its browser check was not rerun after the withdrawal notice,
-and its review record still describes the page before the notice.
-`README.md` and `evidence/settings-pane-boundaries.md` still present the
-two-row study as current.
-
-The editor study is not started.
-Production `Track` holds only `uri` and `displayPath`;
-where the row gets duration and true peak was not yet traced,
-and the field inventory must come from what the app has.
+Production has a duration only for the current track
+(`PlaybackSnapshot.durationMs`) and draws no supporting line,
+so the study previews a line the app cannot fill for every row yet.
 
 ### For the next emulator visit
 
-- Build one debug APK holding both the first-run host and the new editor host,
-  and capture both in one boot.
-- The first reading of `font_scale` must be `1.0`.
-  The sixth visit's crash recovery left `2.0` on disk,
-  and the seventh and eighth visits recorded `2.0` as their baseline.
-  The eighth visit restored to the first visit's baseline and now asks the
-  guest to write pending data before the console kill.
-  Whether that persists is unproven until a boot reads it.
-- `podman` answered `database is locked` while other work held its database,
-  which cost the eighth visit its automatic restoration.
-  `restore-stop-fresh-fold.ts` now finds the container's first process from
-  the process list when `podman` does not answer,
-  and `fold-direct.ts` reaches the guest the same way.
-- `run-settings-pane-visit.ts resume <stage>` runs a stage on a guest that is
+- The emulator crashed twice on 2026-10-05 with a segmentation fault,
+  both times under heavy host load.
+  First-run captures now collect in one cohort folder,
+  `settings-pane-native-private/first-run-cohort`,
+  and a later boot continues from the first missing state.
+  Give the editor capture the same shape.
+- After a crash,
+  follow
+  `doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`:
+  check for owners,
+  then move the lock files to a backup.
+  Write `crashed-before-restoration.json` in that visit's runtime folder
+  so the next preparation accepts the missing restoration.
+- Run each visit with `FOLD_RESTORE_BASELINE` naming
+  `runtime-first/initial-settings.json`,
+  so a boot that starts from a crash's leftover text size still ends at 100%.
+  The restore step asks the guest to write pending data before the console kill;
+  one later boot confirmed the restored value.
+- `podman` answered `database is locked` while other work held its database.
+  `restore-stop-fresh-fold.ts` falls back to the process list,
+  and `fold-direct.ts` reaches a running guest the same way.
+  See `doc/troubleshooting/podman-database-locked-under-concurrent-use.md`.
+- A system `isn't responding` dialog can cover a study under load;
+  the first-run capture detects it,
+  answers `Wait` and repeats the state within a bound.
+  See `doc/troubleshooting/android-emulator-not-responding-dialog-under-host-load.md`.
+- `run-settings-pane-visit.ts resume <stage>` runs a stage on a guest
   already bootstrapped in the same boot.
-- The driver's leftover-emulator check now includes the study's ports.
-- Hiding system error dialogs through the `hide_error_dialogs` global setting
-  is an untested idea for the launcher dialog,
-  not a verified remedy.
-- The scratch publishers for review records still write page digests,
-  and `verify-first-run-final-documents.ts` still fails on a digest mismatch.
-  Write the next publication without either.
+- Publish review records the way `publish-first-run-rebuild-review.ts` does,
+  with no digest.
+  The older scratch publishers and verifiers that wrote or compared digests
+  now stop at once and say so.
 
 ## Handoff: two-row Settings publication complete (2026-10-05)
 
