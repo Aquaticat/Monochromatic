@@ -74,10 +74,12 @@ async function main() {
     // Every processor module, not only the planted guard removals of the mutation:processors task.
     if (processors)
       command.push('--file', 'src/processors*.rs', '--cargo-test-arg=processors');
-    // Two test-binary filters, so they follow the final `--`: the resolver's own slot controls and the semantic
-    // conformance suite that reaches it. The whole suite took 139 seconds here, too close to the 180 second limit.
+    // Two test-binary filters: the resolver's own slot controls and the semantic conformance suite that reaches it.
+    // The whole suite took 139 seconds here, too close to the 180 second limit.
+    // cargo-mutants copies everything after its own `--` into the `cargo test` command line, where Cargo accepts
+    // one test name only; the second `--` hands both names to the test binary, which accepts several.
     if (inferredConstants)
-      command.push('--file', 'src/rust_inferred_constants.rs', '--', 'rust_inferred_constants', 'rust_explicit_types');
+      command.push('--file', 'src/rust_inferred_constants.rs', '--', '--', 'rust_inferred_constants', 'rust_explicit_types');
     await writeFile(join(context, 'Containerfile'), [
       '# The tested image ID binds this campaign to an exact source snapshot.',
       `FROM ${base}`,
