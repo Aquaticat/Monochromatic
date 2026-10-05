@@ -1,5 +1,6 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
 import { Palette } from "std-widgets.slint";
+import { ProjectTree, TreeEntry } from "tree.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -21,6 +22,21 @@ export component AppWindow inherits Window {
     background: Palette.background;
     default-font-family: "Inter Variable";
     forward-focus: code-focus;
+
+    in property <bool> project-visible;
+    in property <[TreeEntry]> tree-entries;
+    in property <string> project-label;
+    in property <string> tree-error;
+    in-out property <int> tree-focused-row: -1;
+    callback tree-activate(int);
+    callback tree-navigate(string, int);
+    callback tree-shortcut(string, bool, bool, bool);
+    public function reveal-tree(index: int) { project-tree.reveal(index); }
+    public function focus-source() { code-focus.focus(); }
+    public function reset-source-scroll() {
+        scroll.content-x = 0px;
+        scroll.content-y = 0px;
+    }
 
     in property <image> source-image;
     in property <[SourceSelection]> source-selections;
@@ -73,8 +89,28 @@ export component AppWindow inherits Window {
         text: root.selected-text;
     }
 
-    VerticalLayout {
+    HorizontalLayout {
         spacing: 0px;
+        project-tree := ProjectTree {
+            visible: root.project-visible;
+            width: root.project-visible ? 256px : 0px;
+            min-width: root.project-visible ? 256px : 0px;
+            max-width: root.project-visible ? 256px : 0px;
+            entries: root.tree-entries;
+            project-label: root.project-label;
+            error-message: root.tree-error;
+            focused-row <=> root.tree-focused-row;
+            activate(index) => { root.tree-activate(index); }
+            navigate(key, index) => { root.tree-navigate(key, index); }
+            shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
+        }
+        Rectangle {
+            width: root.project-visible ? 1px : 0px;
+            background: Palette.foreground;
+            opacity: 0.2;
+        }
+        VerticalLayout {
+            spacing: 0px;
         Rectangle {
             height: 32px;
             Text {
@@ -189,6 +225,7 @@ export component AppWindow inherits Window {
             color: Palette.foreground;
             font-weight: 600;
             wrap: word-wrap;
+        }
         }
     }
 }

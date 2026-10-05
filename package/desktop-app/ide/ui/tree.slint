@@ -105,9 +105,8 @@ export component ProjectTree inherits Rectangle {
                     vertical-alignment: center;
                     overflow: elide;
                 }
+                // The layout row enforces 48px minima; input stays exactly inside those same bounds.
                 row-touch := TouchArea {
-                    min-width: 48px;
-                    min-height: 48px;
                     width: parent.width;
                     height: parent.height;
                     clicked => {
