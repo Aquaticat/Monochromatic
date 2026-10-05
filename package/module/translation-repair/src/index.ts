@@ -179,6 +179,9 @@ export {
   stripThinkBlock,
 } from './model-content.ts';
 export {
+  reaskElsewhereNudged,
+} from './nudged-reask.ts';
+export {
   FALSE_START_WINDOW,
   parseAnswerJson,
   readJsonPastFalseStart,
