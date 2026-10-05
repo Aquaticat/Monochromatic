@@ -683,6 +683,41 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  04:22 UTC:
+  the next batch's baseline census taken at commit `744aa0d40`:
+  `census written to ~/.cache/translation-repair/coverage/census-DJtsdw/census.json`
+  (`~/temp/agent/mimo-trial/census-final.log` of this round),
+  `library source: 92 files, 127 stretches over 320 lines, 4 functions never called`.
+  The re-verification closed 15 stretches
+  (the counting is in the ledger's
+  `RE-VERIFICATION COMPLETE` paragraph).
+  Largest clusters by stretches then lines:
+  `corpus-run/published` leads with 5 stretches over 6 lines
+  in 2 files,
+  `declined` with 4 over 6 in 1,
+  `corpus-run/runs` with 3 over 9 in 2.
+  The ranking's leaders still carry left-open claims
+  whose reasons were never byte-verified
+  (`corpus-run/published`'s incumbent-map fallbacks,
+  `declined`'s shape reasons,
+  `corpus-run/runs`' unconstructible claims,
+  `transient`'s abort siblings,
+  `corpus-run/name`'s comma arm,
+  `edit`'s single-name join),
+  and the method standard applies to them all.
+  This line lands in the trial-log commit that follows `744aa0d40`.
+  Next:
+  re-verify `corpus-run/published`
+  (`published-page-check.ts` 179,
+  196,
+  236
+  and `published-page-disagreement.ts` 99 to 100,
+  552)
+  with the byte-level method,
+  then the rest of the left-open list
+  in the ranking's order.
+
+- 2026-10-05,
   04:10 UTC:
   the re-verification is COMPLETE
   and recorded in the ledger
