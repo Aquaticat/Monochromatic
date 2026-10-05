@@ -3,7 +3,7 @@
 /// The same project boundary will serve tree and search navigation.
 use ide_app::workspace::Workspace;
 /// Native names and Unix symlinks exercise paths without UI-string normalization.
-use std::{ffi::OsString, fs, os::unix::fs::symlink, path::Path};
+use std::{fs, os::unix::fs::symlink, path::Path};
 
 /// Hidden entries and native names retain filesystem enumeration order and accurate directory kinds.
 #[test]
@@ -17,12 +17,12 @@ fn listing_matches_dirents_and_refreshes_from_disk() {
         .map(|entry| return entry.expect("reference entry").file_name()).collect::<Vec<_>>();
     let first = project.list(Path::new(".")).expect("initial listing");
     assert_eq!(first.iter().map(|entry| return entry.name.clone()).collect::<Vec<_>>(), expected);
-    assert!(first.iter().any(|entry| return entry.name == OsString::from("src") && entry.is_directory));
-    assert!(first.iter().any(|entry| return entry.name == OsString::from(".hidden")));
+    assert!(first.iter().any(|entry| return entry.name == "src" && entry.is_directory));
+    assert!(first.iter().any(|entry| return entry.name == ".hidden"));
     fs::write(fixture.path().join("new.rs"), "fn main() {}").expect("external new file");
     let second = project.list(Path::new(".")).expect("fresh listing");
     assert_eq!(second.len(), first.len() + 1);
-    assert!(second.iter().any(|entry| return entry.name == OsString::from("new.rs")));
+    assert!(second.iter().any(|entry| return entry.name == "new.rs"));
 }
 
 /// Relative paths use the project root, with valid parent segments allowed inside it.
@@ -65,7 +65,7 @@ fn symbolic_links_do_not_bypass_project_boundary() {
     assert!(project.list(Path::new("escape")).is_err());
     assert!(project.list(Path::new("alias")).expect("contained explicit alias").is_empty());
     let entries = project.list(Path::new(".")).expect("root entries");
-    assert!(!entries.iter().find(|entry| return entry.name == OsString::from("alias")).expect("link entry").is_directory);
+    assert!(!entries.iter().find(|entry| return entry.name == "alias").expect("link entry").is_directory);
 }
 
 /// Missing paths, file roots, and listing a file report failures rather than empty directories.
