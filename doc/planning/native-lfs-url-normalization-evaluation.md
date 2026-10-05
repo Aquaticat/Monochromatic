@@ -196,6 +196,30 @@ it is disclosed rather than included in an unqualified no-delegation claim.
 The review prompted corrections to the scope description, workflow-necessity claim,
 and unproven interactive recovery path.
 
+## Verification status
+
+This planning record is committed evidence, but **rendered Markdown verification remains blocked**.
+It is not a rendering-verified deliverable.
+The delegate inspected the installed micromark 4.0.3 manifest, entry point, type declarations,
+and parser/preprocessor/compiler command boundaries before preparing a private renderer task.
+The task would read only this document and installed package files in a read-only,
+network-disabled Node container bounded to 2 GiB, 2 CPUs, and 64 processes.
+It would not write or lock audit reports and was separate from the rejected report-writing helper.
+
+The guardrail rejected the task-configuration write
+`/home/user/temp/agent/native-lfs-doc-render-2026-10-05/mise.toml`, stating:
+
+> This writes an executable task configuration outside the repository
+
+It also stated that the delegated scope did not clearly authorize adding that external configuration
+and that no approval UI was available.
+A separate `propose_trust` request for private scratch mise tasks for bounded Markdown rendering returned:
+
+> Rejected: no interactive UI available.
+
+That action was not retried or rephrased, and the renderer was not executed.
+Neither blocker establishes a defect in the document renderer or any candidate URL parser.
+
 ## Response required from the main agent
 
 This record is a blocker return, not an adoption request.
