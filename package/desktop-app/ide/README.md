@@ -369,11 +369,18 @@ Each server writes only its private state,
 which also holds its private `/tmp`,
  caches,
  and cargo output.
-Without bubblewrap or user namespaces,
-or for a project below `/tmp`,
+The state root is resolved through symbolic links first
+and must lie neither inside the project nor above it.
+After the sandbox replaces `/tmp`,
  `/run`,
- `/dev`,
- or `/proc`,
+ and `/dev`,
+the project is bound again read-only at its own path
+and at Helix's working-directory spelling when that lies below one of them,
+so projects below `/tmp` or `/run/media/<user>` work.
+`PROJECT_MOUNT` in `src/language/confine/project.rs` is the one switch a later write mode changes.
+Without bubblewrap or user namespaces,
+for a project or state root below `/proc`,
+or for state inside or above the project,
 the server shows the launch-refused state with the cause and remedy;
 nothing falls back to an unconfined launch.
 `LanguageSetup::unconfined()` exists only for tests and guard controls on disposable projects.
