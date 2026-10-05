@@ -24,6 +24,8 @@ use ide_app::find_navigation::FindResults;
 use ide_app::language::{
     HELIX_LOG_DIRECTIVE, LanguageWorker, enter_project_directory, sync::DocumentReload,
 };
+/// The displayed file is reread on change notifications, or on the old timer while unwatched.
+use ide_app::refresh_policy::SourceRefresh;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
@@ -90,6 +92,9 @@ mod navigation_tests;
 /// Real pointer events select by character, word, and line, extend with Shift, and drag without panning.
 #[cfg(test)]
 mod pointer_tests;
+/// External-write-to-window timings for the tree and the displayed source; ignored by default.
+#[cfg(test)]
+mod refresh_latency_tests;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
@@ -132,6 +137,9 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// External changes reach the tree and source through inotify notifications, faster than polling could.
+#[cfg(test)]
+mod watch_tests;
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.
@@ -188,6 +196,8 @@ struct State {
     outside_project: bool,
     /// Where the caret goes once the file of a language target is installed.
     pending_jump: Option<language::Jump>,
+    /// When to reread the displayed file: on change notifications, or on a timer while unwatched.
+    refresh: SourceRefresh,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
@@ -218,6 +228,7 @@ impl State {
             annotations: Annotations::default(),
             outside_project: false,
             pending_jump: None,
+            refresh: SourceRefresh::default(),
         };
     }
 }

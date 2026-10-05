@@ -1,7 +1,7 @@
 //! Tree labels are presentation only; row actions retain original native path identities.
 
 /// Tree binding state is UI-local and remains separate from source reading state.
-use super::{AppWindow, Navigation, State};
+use super::{AppWindow, Navigation, State, watch};
 /// Generated row values feed the toolkit's virtualized ListView.
 use crate::native::ui::TreeEntry;
 /// Owned row models survive beyond the presentation call without borrowing native state.
@@ -45,6 +45,8 @@ fn expand_reveal(navigation: &mut Navigation) {
 pub(super) fn update(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     expand_reveal(navigation);
     navigation.rows = navigation.tree.rows();
+    // Expansion, collapse, and file switches all pass here, so the watch set follows what is shown.
+    watch::show(source, navigation);
     let selected = source.borrow().file_path.clone();
     let mut model = Vec::new();
     let mut reveal_index = None;
