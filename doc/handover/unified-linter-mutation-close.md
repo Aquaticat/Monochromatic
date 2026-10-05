@@ -10,14 +10,128 @@ This handover removes the timeouts that kept the Markdown and processor campaign
 runs the first campaign over the executable's own modules,
 and reruns the Markdown and processor campaigns on the final snapshot.
 
-Inspect `Timeouts removed` first,
-because it changes production code and adds one error path.
-Then read `Defects found` and `Remaining`.
+Inspect `Excluded mutation kinds` first,
+because it changes what every campaign measures.
+Then inspect `Timeouts removed`,
+because it changes production code and adds one error path,
+and read `Defects found` and `Remaining`.
 Respond with a veto of a named change or disposition,
 or with the next scope to mutate.
 
 This document is in progress;
 sections without results say so.
+
+## Excluded mutation kinds
+
+### Decision
+
+The main session relayed this on 2026-10-05 as the human's decision,
+while the first final round was running:
+mutation timeouts are resolved by skipping two kinds of mutation in the tool,
+and code changes only where that does not cover a timeout.
+Every cargo-mutants invocation of this package now passes both patterns,
+each as its own `--exclude-re` argument:
+
+- `replace \+= with \*=`
+- `replace -= with /=`
+
+They are in `bin/mutate-container.mjs` for every scope,
+in the inline `mutation:processors` task,
+and in the `mutation:list:*` tasks,
+so that a listing shows exactly what a campaign tries.
+The fuzz sidecar does not invoke cargo-mutants.
+
+The tradeoff the decision accepts:
+mutants of those two kinds are never tried.
+`+=` replaced by `-=`,
+and `-=` replaced by `+=`,
+still test every counter.
+
+### Why the tool cannot be told to tolerate a timeout
+
+Read in the cargo-mutants source at tag `v27.1.0`,
+the installed version:
+
+- `src/outcome.rs:118` returns the timeout exit status whenever any mutant timed out,
+  before it considers missed mutants,
+  and no option changes that.
+- `src/visit.rs:594` hard-codes the replacements of `+=` as `-=` and `*=`;
+  two lines further down, `-=` becomes `+=` and `/=`.
+- `src/options.rs:479` (`allows_mutant`) matches the `--exclude-re` set compiled at `src/options.rs:352`
+  against the mutant's name with its line and column,
+  the text `--list` prints.
+
+`x += 1` replaced by `x *= 1`,
+and `x -= 1` replaced by `x /= 1`,
+leave the counter unchanged.
+A loop whose only progress is that step then never ends,
+the test binary runs into the 180 second per-mutant limit,
+and the campaign exits 3 whatever else it found.
+
+### Measured effect
+
+`cargo mutants --list --no-config` at 27.1.0,
+with and without the two patterns,
+on the source of the gate 5 snapshot.
+In every scope the mutants that disappear are exactly those whose names contain one of the two replacements,
+and no other mutant appears or disappears.
+
+- Executable scope:
+  189 before,
+  184 after
+  (5 of `+=` to `*=`).
+- Markdown scope:
+  750 before,
+  739 after
+  (10 of `+=` to `*=`,
+  1 of `-=` to `/=`).
+- Processor scope:
+  366 before,
+  355 after
+  (11 of `+=` to `*=`).
+- Constant-slot scope:
+  14 before,
+  12 after
+  (2 of `+=` to `*=`).
+- Parent-lookup scope and anonymous-function scope:
+  4 and 3,
+  unchanged.
+- Unscoped:
+  1,672 before,
+  1,640 after
+  (31 of `+=` to `*=`,
+  1 of `-=` to `/=`).
+
+The `mutation:list:executable` and `mutation:list:markdown` tasks print 184 and 739 mutants.
+The same number of `+=` to `-=` and `-=` to `+=` mutants remains in each scope as was removed:
+5,
+11,
+11 and 2.
+
+### What it covers here
+
+The decision covers four of the six recorded timeouts:
+`markdown_definitions.rs:44` and `markdown_punctuation.rs:64` (both `-=` to `/=`),
+and `processors_docs.rs:222` and `processors_lines.rs:45` (both `+=` to `*=`).
+The two constant replacements of `MarkdownSource::parent` are not of those kinds
+and are fixed in code,
+under `Timeouts removed`.
+
+All four loops had already been restructured,
+committed and gated when the decision arrived,
+and they stay as they are:
+the decision says not to revert committed work.
+On this source the exclusion is therefore not what removes those timeouts.
+Before it,
+every mutant of the two kinds was caught by a failing test:
+5 of 5 in the executable scope (`mutation-hQ4LIa`)
+and 11 of 11 in the Markdown scope (`mutation-6Cgoi0`).
+On the source before the restructuring the same kinds gave 9 caught and 2 timeouts in the Markdown scope
+(`mutation-BX2JYq`)
+and 15 caught and 2 timeouts in the processor scope (`processor-survivors-mutation-w00nRd`).
+What the exclusion buys from here on is that a hand-stepped loop added later cannot turn a campaign into exit 3;
+what it costs is that those mutants are no longer tried,
+including the ones a test would catch.
 
 ## Timeouts removed
 
@@ -32,6 +146,8 @@ Each loop now walks a slice,
 calls a standard search,
 or runs over a fixed range,
 so termination no longer depends on a statement a mutant can change.
+The loop restructuring in this section was done before the decision under `Excluded mutation kinds`;
+of its subsections only the bounded ancestor walk is still required by that decision.
 
 ### `markdown_definitions.rs`: definition line start
 
@@ -463,7 +579,7 @@ The rerun under `Final campaigns` is the proof for each killing test.
   and both operators then agree,
   also after the changed operator precedence of the replaced text.
   Nothing here is redundant code that could be deleted,
-  and the instructions for this work allow no mutant exclusion,
+  and the two excluded mutation kinds do not cover an operator inside an expression,
   so both functions are respelled so that no operator is interchangeable:
   `choose` is `z ^ (x & (y ^ z))` and `majority` is `y ^ ((x ^ y) & (y ^ z))`.
   A scratch truth-table check found that each of the 14 operator replacements cargo-mutants can make
