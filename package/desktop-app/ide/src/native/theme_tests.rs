@@ -48,7 +48,7 @@ const GUTTER: usize = 56;
 const FIND_BAR: usize = 56;
 
 /// Apply a system color scheme exactly where the portal watcher applies it, then run change handlers.
-fn switch(window: &AppWindow, scheme: ColorScheme) {
+pub(super) fn switch(window: &AppWindow, scheme: ColorScheme) {
     // What: `from_pub` borrows the toolkit's internal window behind the public handle; `context()`
     // borrows the process-wide toolkit context that every window reads its color scheme from.
     // Why: This is the one value `Palette.color-scheme` follows.
@@ -64,7 +64,7 @@ fn switch(window: &AppWindow, scheme: ColorScheme) {
 }
 
 /// Copy a toolkit color into the four bytes the source raster uses.
-fn rgba(color: Color) -> [u8; 4] {
+pub(super) fn rgba(color: Color) -> [u8; 4] {
     return [color.red(), color.green(), color.blue(), color.alpha()];
 }
 
@@ -136,7 +136,7 @@ fn lightness(pixel: Rgba8Pixel) -> f32 {
 }
 
 /// Mean, darkest, and lightest pixel of a window region given as `[left, right, top, bottom]`.
-fn region(frame: &SharedPixelBuffer<Rgba8Pixel>, bounds: [usize; 4]) -> (f32, f32, f32) {
+pub(super) fn region(frame: &SharedPixelBuffer<Rgba8Pixel>, bounds: [usize; 4]) -> (f32, f32, f32) {
     let width = frame.width() as usize;
     let mut total = 0.0;
     let mut darkest: f32 = 1.0;

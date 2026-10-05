@@ -61,7 +61,7 @@ fn painted(
 }
 
 /// One pixel of the frame at whole-pixel coordinates.
-fn pixel(frame: &SharedPixelBuffer<Rgba8Pixel>, x: usize, y: usize) -> Rgba8Pixel {
+pub(super) fn pixel(frame: &SharedPixelBuffer<Rgba8Pixel>, x: usize, y: usize) -> Rgba8Pixel {
     return frame.as_slice()[y * frame.width() as usize + x];
 }
 
@@ -96,7 +96,7 @@ fn columns(
 }
 
 /// Render the window and return the frame; the headless window renders one pixel per logical pixel.
-fn frame(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
+pub(super) fn frame(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
     settle(window);
     // What: `expect` returns the rendered frame or fails the test with this message.
     // Why: Pixel assertions need an actual frame.
