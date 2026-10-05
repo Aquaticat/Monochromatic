@@ -198,6 +198,32 @@ await describe({
           },
         },),
         it({
+          name: 'REFUSES A CENSUS FILE CUT SHORT as its own refusal saying it is not JSON, naming the file and quoting '
+            + 'none of its text, where the parser\'s refusal reached the command as a fault in the command',
+          fn: async () => {
+            const refusal = caught(function readsCutShort() {
+              readBaselineCensus({
+                path: '/tmp/census.json',
+                text: JSON.stringify({
+                  format: CENSUS_FORMAT,
+                  head: 'abc',
+                  clean: true,
+                  stretches: [STRETCH,],
+                },)
+                  .slice(
+                    0,
+                    40,
+                  ),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(CensusBaselineError,);
+            expect(String(refusal,),).toBe(
+              'CensusBaselineError: baseline /tmp/census.json does not read as a census this command wrote: it is '
+              + 'not JSON',
+            );
+          },
+        },),
+        it({
           name: 'REFUSES A CENSUS NAMING NO COMMIT, one not saying whether its tree matched it, and one taken with '
             + 'uncommitted changes: a later reading tells an edited source by comparing the tree with that commit, '
             + 'and a census of uncommitted code has lines no commit holds',

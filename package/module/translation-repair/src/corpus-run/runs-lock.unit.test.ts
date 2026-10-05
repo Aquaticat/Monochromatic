@@ -12,6 +12,7 @@
  @module
  */
 
+import { spawnSync, } from 'node:child_process';
 import {
   chmod,
   mkdir,
@@ -20,6 +21,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { pathToFileURL, } from 'node:url';
 
 import {
   DEFAULT_CONCURRENCY,
@@ -530,6 +532,116 @@ await describe({
             if (winners[0]?.status === 'fulfilled')
               await winners[0].value[Symbol.asyncDispose]();
             expect(await readdir(runsDir,),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'REFUSES A STARTER THAT ARRIVES WHILE THE FIRST IS STILL CLAIMING, so one pass holds the directory, '
+            + 'where a starter arriving between the lock\'s creation and its text read the empty lock as unreadable, '
+            + 'took it over, and both passes went on holding the directory',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            /**
+             Directory both starters compete for, apart from the child's
+             working directory, where its logger may keep a file.
+             */
+            const runsDir = join(
+              scratch.path,
+              'runs',
+            );
+            /**
+             Built package the child imports.
+             */
+            const apiUrl = pathToFileURL(join(
+              import.meta.dirname,
+              '..',
+              '..',
+              'dist',
+              'final',
+              'node',
+              'index.mjs',
+            ),).href;
+            // The child replaces the two filesystem calls a claim can make on the
+            // lock's own name, an exclusive `open` and a `link` onto it, so the
+            // second starter runs to its end inside the first starter's claim:
+            // after an exclusive create and before the write that follows it, or
+            // before a link. No seam of the module is used; `interleaved` says the
+            // second starter ran there at all.
+            const program = `
+import files from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
+const runsDir = ${JSON.stringify(runsDir,)};
+const lockPath = ${JSON.stringify(join(runsDir, 'pass.lock',),)};
+const api = await import(${JSON.stringify(apiUrl,)});
+const state = { armed: true, interleaved: false, second: 'never started', secondLock: undefined };
+async function secondStarter() {
+  state.armed = false;
+  state.interleaved = true;
+  try {
+    state.secondLock = await api.lockRunsDir({ runsDir });
+    state.second = 'acquired';
+  } catch (error) {
+    state.second = 'refused by ' + error.name;
+  }
+}
+const originalOpen = files.open;
+const originalLink = files.link;
+files.open = async function openThenSecond(path, flags, mode) {
+  const handle = await originalOpen(path, flags, mode);
+  if (state.armed && (path === lockPath) && (flags === 'wx')) await secondStarter();
+  return handle;
+};
+files.link = async function secondThenLink(existing, target) {
+  if (state.armed && (target === lockPath)) await secondStarter();
+  return await originalLink(existing, target);
+};
+syncBuiltinESMExports();
+let first = 'never started';
+let firstLock;
+try {
+  firstLock = await api.lockRunsDir({ runsDir });
+  first = 'acquired';
+} catch (error) {
+  first = 'refused by ' + error.name;
+}
+await firstLock?.[Symbol.asyncDispose]();
+await state.secondLock?.[Symbol.asyncDispose]();
+console.log('LOCK_INTERLEAVE ' + JSON.stringify({ interleaved: state.interleaved, first, second: state.second, left: await files.readdir(runsDir) }));
+`;
+            /**
+             The child's run.
+             */
+            const done = spawnSync(
+              process.execPath,
+              ['--input-type=module', '--eval', program,],
+              {
+                cwd: scratch.path,
+                encoding: 'utf8',
+              },
+            );
+            /**
+             Marker the child's one report line starts with.
+             */
+            const marker = 'LOCK_INTERLEAVE ';
+            /**
+             That line, among whatever the package's logger printed.
+             */
+            const line = done.stdout
+              .split('\n',)
+              .find(function isReport(text,): boolean {
+                return text.startsWith(marker,);
+              },);
+            if (line === undefined)
+              throw new Error(`the child printed no report (status ${String(done.status,)}): ${done.stderr}`,);
+            /**
+             What the child reported, as parsed.
+             */
+            const reported: unknown = JSON.parse(line.slice(marker.length,),);
+            expect(reported,).toEqual({
+              interleaved: true,
+              first: 'refused by RunsDirectoryBusyError',
+              second: 'acquired',
+              left: [],
+            },);
           },
         },),
       ],

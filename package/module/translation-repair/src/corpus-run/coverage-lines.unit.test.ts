@@ -13,6 +13,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -162,6 +163,27 @@ await describe({
                 text,
               },),).toThrow(SourceMapFileError,);
             }
+          },
+        },),
+        it({
+          name: 'REFUSES A MAP CUT SHORT as its own refusal saying it is not JSON, naming the file and quoting none of '
+            + 'its text, where the parser\'s refusal reached the census as a fault in the command',
+          fn: async () => {
+            const refusal = caught(function readsCutShortMap() {
+              readSourceMap({
+                path: 'nap.mjs.map',
+                text: mapText({ source: '../../../src/nap.ts', },)
+                  .slice(
+                    0,
+                    30,
+                  ),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(SourceMapFileError,);
+            expect(String(refusal,),).toBe(
+              'SourceMapFileError: source map nap.mjs.map does not read as a version 3 map: it is not JSON; build '
+              + 'with the coverage config, which writes one beside every chunk',
+            );
           },
         },),
         it({

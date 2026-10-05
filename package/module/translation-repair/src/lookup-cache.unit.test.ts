@@ -44,7 +44,10 @@ import {
   workTitleLookupLines,
   writeCachedLookup,
 } from '../dist/final/node/index.mjs';
-import { directoryRefusalText, } from './cache-file-refusal.test-fixture.ts';
+import {
+  directoryRefusalMessage,
+  directoryRefusalText,
+} from './cache-file-refusal.test-fixture.ts';
 import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
 import { warnLinesDuring, } from './console-warn-lines.test-fixture.ts';
 import { rejectionOf, } from './rejecting-call.test-fixture.ts';
@@ -322,7 +325,7 @@ await describe({
             },),).toEqual([],);
             expect(asked,).toEqual([],);
             expect(logged,).toEqual([
-              `[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: ${directoryRefusalText({ path, },)}`,
+              `[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: ${directoryRefusalMessage({ path, },)}`,
               '[workTitleLookupLines] 1 work title looked up, 0 lines',
             ],);
           },

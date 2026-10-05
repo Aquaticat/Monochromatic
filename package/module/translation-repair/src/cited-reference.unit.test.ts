@@ -643,6 +643,42 @@ await describe({
           },
         },),
         it({
+          name: 'LOGS A PAGE IT COULD NOT FETCH BY THE FAILURE\'S CLASS ALONE where the failure does not declare its '
+            + 'message free of quoted text, so a contents body that is not JSON never reaches the log, where the '
+            + 'parser\'s message quoted its opening',
+          fn: async () => {
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            await using scratch = await scratchDir({ prefix: 'reference-block-prose-', },);
+            /**
+             Transport answering a body that is not JSON.
+
+             @returns Prose where the endpoint writes JSON
+             */
+            async function proseAnswer(): Promise<Response> {
+              return new Response(
+                'Mittens chased the red dot down the hall',
+                { status: 200, },
+              );
+            }
+            expect(await citedReferenceBlock({
+              sourceText: `见 ${POST_URL}`,
+              apiKey: 'whisker-key',
+              dir: scratch.path,
+              signal: SIGNAL,
+              fetchFn: proseAnswer,
+              now: () => NOW,
+              logger,
+            },),).toBe(`- reference 1 ${POST_URL}: could not be fetched`,);
+            expect(logged,).toEqual([
+              `[citedReferenceBlock] reference 1 ${POST_URL} could not be fetched: refused by SyntaxError`,
+              '[citedReferenceBlock] REFERENCES cited=1 cached=0 bought=1',
+            ],);
+          },
+        },),
+        it({
           name: 'READS a page the cache already holds without asking the transport, BUYS only the one it lacks, '
             + 'and says which was which on its lines',
           fn: async () => {

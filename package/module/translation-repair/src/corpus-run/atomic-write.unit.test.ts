@@ -13,6 +13,7 @@
  */
 
 import {
+  mkdir,
   readdir,
   readFile,
   writeFile,
@@ -26,6 +27,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { writeFileAtomic, } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 await describe({
@@ -144,6 +146,108 @@ await describe({
           path,
           'utf8',
         ),).toBe(text,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES NOTHING BESIDE THE PATH when the rename is refused, a directory standing where the file '
+        + 'belongs, and rejects with the rename\'s own refusal, where the whole temporary file stayed in the '
+        + 'directory for every later listing to step over',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'atomic-write-', },);
+        const dir = scratch.path;
+
+        /**
+         Path the artifact takes, a directory standing there.
+         */
+        const path = join(
+          dir,
+          'Mittens.json',
+        );
+        await mkdir(path,);
+
+        /**
+         What the write rejected with.
+         */
+        const refusal = await rejectionOf(async function overADirectory(): Promise<void> {
+          await writeFileAtomic({
+            path,
+            text: '{"id":"Mittens"}\n',
+          },);
+        },);
+
+        // Read by code, call and destination: its message names the temporary
+        // file, whose name no caller is given.
+        expect((Error.isError(refusal,) && ('code' in refusal) && ('syscall' in refusal) && ('dest' in refusal))
+          ? {
+            code: refusal.code,
+            syscall: refusal.syscall,
+            dest: refusal.dest,
+          }
+          : refusal,).toEqual({
+          code: 'EISDIR',
+          syscall: 'rename',
+          dest: path,
+        },);
+        expect(await readdir(dir,),).toEqual(['Mittens.json',],);
+      },
+    },),
+
+    it({
+      name: 'LANDS BOTH OF TWO WRITES OF ONE PATH STARTED AT ONCE in one process, one text whole at the path and '
+        + 'nothing beside it, where the two shared one temporary file, so the later rename found it gone and '
+        + 'the bytes of the two could interleave',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'atomic-write-', },);
+        const dir = scratch.path;
+
+        /**
+         Path both writes take.
+         */
+        const path = join(
+          dir,
+          'Pepper.json',
+        );
+
+        /**
+         The two texts, of different lengths so an interleave would show.
+         */
+        const texts = [
+          `${JSON.stringify({
+            id: 'Pepper',
+            naps: Array.from(
+              { length: 4_000, },
+              function napAt(_unused, index,): number {
+                return index;
+              },
+            ),
+          },)}\n`,
+          '{"id":"Pepper"}\n',
+        ];
+
+        /**
+         How each write settled.
+         */
+        const settled = await Promise.allSettled(texts.map(async function write(text,): Promise<void> {
+          await writeFileAtomic({
+            path,
+            text,
+          },);
+        },),);
+
+        /**
+         What the path holds once both settled.
+         */
+        const landed = await readFile(
+          path,
+          'utf8',
+        );
+
+        expect(settled.map(function statusOf(outcome,): string {
+          return outcome.status;
+        },),).toEqual(['fulfilled', 'fulfilled',],);
+        expect(texts.includes(landed,),).toBe(true,);
+        expect(await readdir(dir,),).toEqual(['Pepper.json',],);
       },
     },),
   ],

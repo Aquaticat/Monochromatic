@@ -10,6 +10,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -138,6 +139,30 @@ await describe({
                 bundleUrlPrefix: PREFIX,
               },),).toThrow(CoverageFileError,);
             }
+          },
+        },),
+        it({
+          name: 'REFUSES A COVERAGE FILE CUT SHORT as its own refusal saying it is not JSON, naming the file and '
+            + 'quoting none of its text, where the parser\'s refusal reached the census as a fault in the command',
+          fn: async () => {
+            const refusal = caught(function readsCutShortCoverage() {
+              bundleScriptsOf({
+                path: 'coverage-1.json',
+                text: JSON.stringify({ result: [{
+                  url: `${PREFIX}nap.mjs`,
+                  functions: [],
+                },], },)
+                  .slice(
+                    0,
+                    35,
+                  ),
+                bundleUrlPrefix: PREFIX,
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(CoverageFileError,);
+            expect(String(refusal,),).toBe(
+              'CoverageFileError: coverage file coverage-1.json does not read as V8 writes one: it is not JSON',
+            );
           },
         },),
         it({

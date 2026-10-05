@@ -216,8 +216,9 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES A LINE THAT WILL NOT READ, naming its number, rather than summing the file as if '
-            + 'the money were unspent',
+          name: 'REFUSES A LINE THAT WILL NOT READ, naming the ledger file and the line\'s number, rather than summing '
+            + 'the file as if the money were unspent, where the refusal named the line and not the file a variable '
+            + 'can move',
           fn: async () => {
             await inScratch(async function body(dir,) {
               /**
@@ -255,7 +256,10 @@ await describe({
                   },
                 );
               expect(thrown,).toBeInstanceOf(BedrockLedgerShapeError,);
-              expect((thrown as Error).message,).toContain('line 2',);
+              expect(String(thrown,),).toBe(
+                `BedrockLedgerShapeError: Bedrock spend ledger ${path} line 2 violated expectations: not valid JSON `
+                + '(SyntaxError)',
+              );
             },);
           },
         },),
@@ -371,6 +375,19 @@ await describe({
                 },
               ];
               /**
+               Ledger file holding only one broken line, by that line's place in the list.
+
+               @param index - place of the line in the list
+
+               @returns Path of its ledger file
+               */
+              function ledgerPathOf(index: number,): string {
+                return join(
+                  dir,
+                  `bedrock-spend-${String(index,)}.jsonl`,
+                );
+              }
+              /**
                Refusal each broken line's read gives, by its message.
                */
               const refusals = await Promise.all(broken.map(async function readBroken(
@@ -380,10 +397,7 @@ await describe({
                 /**
                  Ledger file holding only this line.
                  */
-                const path = join(
-                  dir,
-                  `bedrock-spend-${String(index,)}.jsonl`,
-                );
+                const path = ledgerPathOf(index,);
                 await writeFile(
                   path,
                   `${JSON.stringify(line,)}\n`,
@@ -407,8 +421,11 @@ await describe({
                   );
                 return (thrown instanceof BedrockLedgerShapeError) ? thrown.message : 'not a ledger shape refusal';
               },),);
-              expect(refusals,).toEqual(broken.map(function expected({ detail, },): string {
-                return `Bedrock spend ledger line 1 violated expectations: ${detail}`;
+              expect(refusals,).toEqual(broken.map(function expected(
+                { detail, },
+                index,
+              ): string {
+                return `Bedrock spend ledger ${ledgerPathOf(index,)} line 1 violated expectations: ${detail}`;
               },),);
 
               /**

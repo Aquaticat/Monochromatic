@@ -35,6 +35,7 @@ import {
   WorkTitleLookupError,
   writeCachedLookup,
 } from '../dist/final/node/index.mjs';
+import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
@@ -517,6 +518,42 @@ await describe({
               logger: l,
             },),).toEqual([],);
             expect(calls.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'LOGS A FAILED LOOKUP BY ITS CLASS ALONE where the failure does not declare its message free of quoted '
+            + 'text, so a search body that is not JSON never reaches the log, where the parser\'s message quoted '
+            + 'its opening',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'work-title-lookup-', },);
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            /**
+             Transport answering a body that is not JSON.
+
+             @returns Prose where the endpoint writes JSON
+             */
+            async function proseBody(): Promise<Response> {
+              return new Response(
+                'Pepper purred on the warm windowsill all afternoon',
+                { status: 200, },
+              );
+            }
+            expect(await workTitleLookupLines({
+              sourceText: '她读《猫的午睡》。',
+              apiKey: 'test-key',
+              dir: scratch.path,
+              signal: SIGNAL,
+              fetchFn: proseBody,
+              now: () => NOW,
+              logger,
+            },),).toEqual([],);
+            expect(logged,).toEqual([
+              '[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: refused by SyntaxError',
+              '[workTitleLookupLines] 1 work title looked up, 0 lines',
+            ],);
           },
         },),
       ],

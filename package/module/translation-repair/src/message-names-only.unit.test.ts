@@ -305,7 +305,9 @@ const NAMED_PARTS: Record<string, string> = {
     'noun agreeing with a count, both forms authored here',
   'wordForCount({ count: census.total, one: \'was\', many: \'were\', },)':
     'verb agreeing with a count, both forms authored here',
-  'failure': 'name of the failure class a JSON read raised',
+  'failure': 'filesystem code a file read raised where it carries one, otherwise the class name of what the read or '
+    + 'a JSON parse raised, or errorName\'s fixed phrase for a thrown value with no class (failureName, errorName); '
+    + 'never a message',
   'filesystemCode': 'filesystem code a directory listing raised (ENOTDIR, EACCES), or the class name where there is none',
   'fault': 'authored phrase naming which roster rule was broken',
   'field': 'field name',
