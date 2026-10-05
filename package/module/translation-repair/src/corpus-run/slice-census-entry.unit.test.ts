@@ -290,22 +290,66 @@ await describe({
       },
     },),
     it({
-      name: 'COUNTS the blocks the translation carries and the source does not, so an added section is '
-        + 'measured as what it added',
+      name: 'COUNTS one target-only block, at its own size, where the translation closes its last section with '
+        + 'a short paragraph the original never wrote, and counts none where the two carry the same blocks',
       fn: async () => {
         await using corpus = await throwawayCorpus({
-          targetPage: `${FULL_TARGET_PAGE}\n\nAn extra paragraph the source never wrote.\n`,
+          targetPage: `${FULL_TARGET_PAGE}\nMeow.\n`,
         },);
+        await using control = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);
 
         /**
-         What the census made of that entry.
+         What the census reads off the control, whose translation carries
+         every block of the original and no more.
          */
-        const row = await censusEntry({
+        const paired = {
           entryId: ENTRY_ID,
-          pin: corpus.pin,
-        },);
-
-        expect(JSON.stringify(row,),).toContain('targetOnly',);
+          carve: 'deterministic',
+          sliceSourceChars: [
+            15,
+            26,
+            24,
+          ],
+          unpairedSourceSections: 0,
+          unpairedSourceChars: 0,
+          unpairedTargetSections: 0,
+          unpairedTargetChars: 0,
+        };
+        expect([
+          await censusEntry({
+            entryId: ENTRY_ID,
+            pin: corpus.pin,
+          },),
+          await censusEntry({
+            entryId: ENTRY_ID,
+            pin: control.pin,
+          },),
+        ],).toEqual([
+          {
+            ...paired,
+            // The added paragraph rides in the last slice, seven characters
+            // with the blank line before it.
+            sliceTargetChars: [
+              47,
+              94,
+              71,
+            ],
+            targetOnlyBlocks: 1,
+            targetOnlyChars: 5,
+            targetOnlyBlockChars: [5,],
+          },
+          {
+            ...paired,
+            sliceTargetChars: [
+              47,
+              94,
+              64,
+            ],
+            targetOnlyBlocks: 0,
+            targetOnlyChars: 0,
+            targetOnlyBlockChars: [],
+          },
+        ],);
       },
     },),
     it({

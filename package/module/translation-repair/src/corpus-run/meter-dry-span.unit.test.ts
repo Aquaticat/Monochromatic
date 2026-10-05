@@ -242,6 +242,37 @@ await describe({
             expect(longestDrySpan({ spans: [], },),).toBe('no-outage',);
           },
         },),
+
+        it({
+          name: 'keeps the first outage where a later one is shorter',
+          fn: async () => {
+            /**
+             An outage three readings confirm, open at the start of the
+             record, then one a single reading caught, open at its end.
+             */
+            const spans = drySpans({
+              series: seriesFor({
+                samples: minuteByMinute({
+                  states: [
+                    'dry',
+                    'dry',
+                    'dry',
+                    'wet',
+                    'dry',
+                  ],
+                },),
+                provider: 'synthetic',
+              },),
+            },);
+            expect(longestDrySpan({ spans, },),).toEqual({
+              confirmedMs: 2 * MINUTE,
+              openBefore: true,
+              openAfter: false,
+              firstAt: 0,
+              lastAt: 2 * MINUTE,
+            },);
+          },
+        },),
       ],
     },),
 
@@ -291,9 +322,16 @@ await describe({
             expect(dutyCycle({ counts, },),).toBe('none-answered',);
           },
         },),
+      ],
+    },),
+
+    describe({
+      name: seriesFor.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
         it({
           name: 'reads no state for a provider a sample predates, since a record from before it existed '
-            + 'says nothing about it (ledger T8, the corpus-run/meter cluster)',
+            + 'says nothing about it',
           fn: async () => {
             expect(seriesFor({
               samples: minuteByMinute({
@@ -304,30 +342,6 @@ await describe({
               },),
               provider: 'bedrock',
             },),).toEqual([],);
-          },
-        },),
-        it({
-          name: 'reports the longest outage across several rather than the first (ledger T8, the '
-            + 'corpus-run/meter cluster)',
-          fn: async () => {
-            /**
-             Spans closing one three-sample outage and one single-sample one.
-             */
-            const spans = drySpans({
-              series: seriesFor({
-                samples: minuteByMinute({
-                  states: [
-                    'dry',
-                    'dry',
-                    'dry',
-                    'wet',
-                    'dry',
-                  ],
-                },),
-                provider: 'synthetic',
-              },),
-            },);
-            expect(longestDrySpan({ spans, },),).toBe(spans[0],);
           },
         },),
       ],

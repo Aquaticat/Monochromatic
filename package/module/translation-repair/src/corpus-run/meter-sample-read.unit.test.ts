@@ -216,7 +216,7 @@ await describe({
         },),
         it({
           name: 'SKIPS a record whose field carries no meter state even when a later field repeats the '
-            + 'name, since the first reading is absent (ledger T8, the corpus-run/meter cluster)',
+            + 'name, since the first reading is absent',
           fn: async () => {
             expect(readMeterLine({
               line: '[info] [2026-08-24T18:17:35.383Z] [translation-repair] [takeReading] '
@@ -225,8 +225,7 @@ await describe({
           },
         },),
         it({
-          name: 'counts no level out of a field carrying no separator, since it names no reading '
-            + '(ledger T8, the corpus-run/meter cluster)',
+          name: 'counts no level out of a field carrying no separator, since it names no reading',
           fn: async () => {
             expect(readMeterLine({
               line: '[info] [2026-08-24T18:17:35.383Z] [translation-repair] [takeReading] '
@@ -253,18 +252,21 @@ await describe({
           },
         },),
         it({
-          name: 'skips a record whose prefix holds no bracketed timestamp, in each shape a broken '
-            + 'prefix takes (ledger T8, the corpus-run/meter cluster)',
+          name: 'skips a record carrying both states whose prefix holds no bracketed timestamp, in each shape '
+            + 'a broken prefix takes: no bracket at all, a level bracket with none after it, and a second bracket '
+            + 'never closed',
           fn: async () => {
-            expect(readMeterLine({
-              line: 'nostamp METERS synthetic=wet',
-            },),).toBe('skipped',);
-            expect(readMeterLine({
-              line: 'x] y METERS synthetic=wet',
-            },),).toBe('skipped',);
-            expect(readMeterLine({
-              line: 'x] [y METERS synthetic=wet',
-            },),).toBe('skipped',);
+            expect([
+              'nostamp METERS synthetic=wet hyper=dry',
+              'x] y METERS synthetic=wet hyper=dry',
+              'x] [y METERS synthetic=wet hyper=dry',
+            ].map(function readingOf(line,) {
+              return readMeterLine({ line, },);
+            },),).toEqual([
+              'skipped',
+              'skipped',
+              'skipped',
+            ],);
           },
         },),
       ],

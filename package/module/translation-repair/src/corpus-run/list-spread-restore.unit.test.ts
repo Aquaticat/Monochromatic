@@ -46,7 +46,7 @@ const SLICES: readonly ChunkPair[] = [
   },),
   pair({
     sliceIndex: 3,
-    source: '1. 猫\n\n2. 狗',
+    source: '1. 猫\n\n2. 小猫',
     target: '',
   },),
 ];
@@ -92,13 +92,30 @@ await describe({
             },
           ],
         },);
-        expect(textsOf({ rows: restored.replacements, },),).toEqual([
-          '1. The cat naps.\n\n2. The cat eats a fish.\n\n3. The cat mews.',
-          '- Paws\n- A tail',
-        ],);
-        expect(restored.restored.length,).toBe(2,);
-        expect(restored.findings.join('\n',),).toContain('list-spread-restored (slice 0:',);
-        expect(restored.findings.join('\n',),).toContain('list-spread-restored (slice 1:',);
+        /**
+         Both rows as the pass leaves them: the first list loosened, the
+         second tightened.
+         */
+        const respaced = [
+          {
+            sliceIndex: 0,
+            replacementText: '1. The cat naps.\n\n2. The cat eats a fish.\n\n3. The cat mews.',
+          },
+          {
+            sliceIndex: 1,
+            replacementText: '- Paws\n- A tail',
+          },
+        ];
+        expect(restored,).toEqual({
+          replacements: respaced,
+          restored: respaced,
+          findings: [
+            'list-spread-restored (slice 0: list 0 of 3 items from tight to loose; the archive writes this list '
+              + 'with a blank line between its items)',
+            'list-spread-restored (slice 1: list 0 of 2 items from loose to tight; the archive writes this list '
+              + 'without a blank line between its items)',
+          ],
+        },);
       },
     },),
     it({
@@ -122,7 +139,7 @@ await describe({
           },
           {
             sliceIndex: 3,
-            replacementText: '1. Cat\n2. Dog',
+            replacementText: '1. Cat\n2. Kitten',
           },
         ];
         /**
@@ -162,12 +179,18 @@ await describe({
       name: 'LEAVES A SINGLE-ITEM LIST ALONE, since a list of one carries no gap whose spacing could '
         + 'differ',
       fn: async () => {
-        const restored = restoreListSpread({
+        /**
+         The one row the page writes, a list of one item.
+         */
+        const replacements = [{ sliceIndex: 0, replacementText: '- A cat.', },];
+        expect(restoreListSpread({
           slices: [pair({ sliceIndex: 0, source: '- 猫', target: '- A cat.', },),],
-          replacements: [{ sliceIndex: 0, replacementText: '- A cat.', },],
+          replacements,
+        },),).toEqual({
+          replacements,
+          restored: [],
+          findings: [],
         },);
-        expect(restored.restored,).toEqual([],);
-        expect(textsOf({ rows: restored.replacements, },),).toEqual(['- A cat.',],);
       },
     },),
 
@@ -175,16 +198,23 @@ await describe({
       name: 'LEAVES A SLICE WHOSE LIST COUNTS DIFFER between the text it replaces and the replacement, '
         + 'pairing them across that gap would respace the wrong list',
       fn: async () => {
-        const restored = restoreListSpread({
+        /**
+         The one row the page writes: one loose list, where the archive
+         writes two tight ones around a paragraph.
+         */
+        const replacements = [{ sliceIndex: 0, replacementText: '- A cat.\n\n- A kitten.', },];
+        expect(restoreListSpread({
           slices: [pair({
             sliceIndex: 0,
-            source: '- 猫\n- 狗',
-            target: '- A cat.\n- A dog.\n\nSome prose.\n\n- A bird.',
+            source: '- 猫\n- 小猫',
+            target: '- A cat.\n- A kitten.\n\nSome prose.\n\n- A bird.',
           },),],
-          replacements: [{ sliceIndex: 0, replacementText: '- A cat.\n\n- A dog.', },],
+          replacements,
+        },),).toEqual({
+          replacements,
+          restored: [],
+          findings: [],
         },);
-        expect(restored.restored,).toEqual([],);
-        expect(textsOf({ rows: restored.replacements, },),).toEqual(['- A cat.\n\n- A dog.',],);
       },
     },),
   ],

@@ -635,7 +635,11 @@ await describe({
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
             },);
-            expect(reading.verification.kind,).toBe('refused',);
+            expect(reading.verification,).toEqual({
+              kind: 'refused',
+              detail: 'artifact parse failed at mittens.preparation.sourceChars: expected 104, which is what this '
+                + 'preparation measures, rather than 105.',
+            },);
           },
         },),
 

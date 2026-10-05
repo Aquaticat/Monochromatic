@@ -205,7 +205,7 @@ await describe({
     },),
     it({
       name: 'REPORTS NOTHING for a contested slice whose archive says nothing, since there is no standing '
-        + 'to judge (ledger T8, the corpus-run/final cluster)',
+        + 'to judge',
       fn: async () => {
         /**
          Source whose contested slice names an empty archive.
@@ -270,7 +270,7 @@ await describe({
     },),
     it({
       name: 'REPORTS NOTHING for polish that rewrote an already consolidated slice, which is fresh '
-        + 'wording rather than archive fallback (ledger T8, the corpus-run/final cluster)',
+        + 'wording rather than archive fallback',
       fn: async () => {
         expect(finalSelectionFindings({
           artifact: {
@@ -284,14 +284,15 @@ await describe({
                 sliceIndex: 0,
                 terminal: 'consolidated',
                 shipped: {
-                  kind: 'unchanged',
+                  kind: 'consolidated',
+                  text: 'The cat sleeps.',
                 },
                 rewrapped: false,
                 demoted: false,
                 verdicts: [],
                 polish: {
                   kind: 'settled',
-                  baseText: ARCHIVE,
+                  baseText: 'The cat sleeps.',
                   proposedText: 'The cat rested.',
                   text: 'The cat rested.',
                   changed: true,

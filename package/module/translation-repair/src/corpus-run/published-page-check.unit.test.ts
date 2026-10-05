@@ -11,6 +11,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -556,6 +557,63 @@ await describe({
             },),).toBe(true,);
           },
         },),
+
+        it({
+          name:
+            'SUBTRACTS WHAT THE ARCHIVE HELD UNDER A SLICE THAT SHIPS NOTHING, so the page a correct publish '
+            + 'writes over it weighs exactly what is expected, and the wording scan counts that slice silent',
+          fn: async () => {
+            /**
+             First slice swapped for a longer wording, second slice emptied.
+             */
+            const artifact = artifactOver([
+              {
+                incumbent: OLD_NAP,
+                ships: FIRST_NAP,
+              },
+              {
+                incumbent: OLD_PERCH,
+                ships: '',
+              },
+            ],);
+
+            /**
+             Page a correct publish writes: the first wording swapped, the
+             second removed.
+             */
+            const page = ARCHIVE_TWO_SLICES
+              .replace(
+                OLD_NAP,
+                FIRST_NAP,
+              )
+              .replace(
+                OLD_PERCH,
+                '',
+              );
+
+            expect(pageWeighsWhatItShould({
+              artifact,
+              archive: {
+                kind: 'stored',
+                text: ARCHIVE_TWO_SLICES,
+              },
+              pageText: page,
+            },),).toEqual({
+              kind: 'weighed',
+              expected: 92,
+              actual: 92,
+              exact: true,
+            },);
+            expect(pageCarriesEveryWording({
+              artifact,
+              pageText: page,
+            },),).toEqual({
+              wordings: 1,
+              silentSlices: 1,
+              missing: [],
+            },);
+          },
+        },),
       ],
     },),
 
@@ -763,6 +821,59 @@ await describe({
             },).not.toThrow();
           },
         },),
+
+        it({
+          name:
+            'SAYS A FILLED ANCHOR MAKES THE EXPECTATION A FLOOR in the refusal of a page shorter than that '
+            + 'floor, and says no such thing where no anchor was filled and the two sides compare outright',
+          fn: async () => {
+            /**
+             Refusal of a page holding the inserted wording and nothing of
+             the archive around it.
+             */
+            const underFloor = caught(function publishOverFilledAnchor(): void {
+              refusePageThatDisagrees({
+                artifact: artifactOver([{
+                  incumbent: '',
+                  ships: FIRST_NAP,
+                },],),
+                archive: {
+                  kind: 'stored',
+                  text: ARCHIVE_PAGE,
+                },
+                pageText: FIRST_NAP,
+                entryId: 'Mittens',
+              },);
+            },);
+            expect(underFloor,).toBeInstanceOf(PublishedPageDisagreesError,);
+            expect(String(underFloor,),).toBe(
+              'PublishedPageDisagreesError: Mittens: page is -116 characters off the 152 the archive plus every '
+                + 'slice change comes to, which a filled anchor makes a floor rather than an equality. Text no '
+                + 'slice decided on was lost or added',
+            );
+
+            /**
+             Refusal of the same page where the wording replaced archive
+             wording, so no anchor was filled.
+             */
+            const unequal = caught(function publishOverOneSwap(): void {
+              refusePageThatDisagrees({
+                artifact: artifactOver(ONE_SWAP,),
+                archive: {
+                  kind: 'stored',
+                  text: ARCHIVE_PAGE,
+                },
+                pageText: FIRST_NAP,
+                entryId: 'Mittens',
+              },);
+            },);
+            expect(unequal,).toBeInstanceOf(PublishedPageDisagreesError,);
+            expect(String(unequal,),).toBe(
+              'PublishedPageDisagreesError: Mittens: page is -95 characters off the 131 the archive plus every '
+                + 'slice change comes to. Text no slice decided on was lost or added',
+            );
+          },
+        },),
       ],
     },),
 
@@ -891,96 +1002,6 @@ await describe({
           },
         },),
       ],
-    },),
-
-    it({
-      name: 'WEIGHS A SLICE THE ARCHIVE HELD NOTHING UNDER as nothing held, the artifact shipping more '
-        + 'slices than the stored archive carried',
-      fn: async () => {
-        /**
-         Artifact shipping a wording slice and an anchor slice where the
-         stored archive carries one slice.
-         */
-        const artifact = artifactOver([{ incumbent: OLD_NAP, ships: FIRST_NAP, }, {
-          incumbent: OLD_PERCH,
-          ships: '',
-        },],);
-        const weight = pageWeighsWhatItShould({
-          artifact,
-          archive: { kind: 'stored', text: ARCHIVE_PAGE, },
-          pageText: SWAPPED_PAGE,
-        },);
-        expect(weight.kind,).not.toBe('unweighable',);
-        pageCarriesEveryWording({ artifact, pageText: SWAPPED_PAGE, },);
-      },
-    },),
-
-    it({
-      name: 'SAYS THE FLOOR CAVEAT where a filled anchor makes the expectation a floor rather than an '
-        + 'equality',
-      fn: async () => {
-        /**
-         Refusal over an artifact shipping two slices where the stored
-         archive carried one: the second slice fills an anchor (the archive
-         held nothing there), so the length check is a floor.
-         */
-        const refusal = (function read(): unknown {
-          try {
-            refusePageThatDisagrees({
-              artifact: artifactOver(TWO_SWAPS,),
-              archive: { kind: 'stored', text: ARCHIVE_PAGE, },
-              pageText: ARCHIVE_PAGE,
-              entryId: 'Mittens',
-            },);
-            return undefined;
-          } catch (error) {
-            return error;
-          }
-        })();
-        expect(refusal,).toBeDefined();
-      },
-    },),
-
-    it({
-      name: 'SAYS THE FLOOR CAVEAT where a filled anchor makes the expectation a floor, and not where '
-        + 'the two sides compare outright',
-      fn: async () => {
-        /**
-         Refusal over a slice the archive held nothing under, and one over a
-         plain wording change; each page carries what its slice ships so the
-         weight check is the one that refuses.
-         */
-        const filledAnchor = artifactOver([{ incumbent: '', ships: FIRST_NAP, },],);
-        const caveatError = (function read(): unknown {
-          try {
-            refusePageThatDisagrees({
-              artifact: filledAnchor,
-              archive: { kind: 'stored', text: ARCHIVE_PAGE, },
-              pageText: FIRST_NAP,
-              entryId: 'Mittens',
-            },);
-            return undefined;
-          } catch (error) {
-            return error;
-          }
-        })();
-        expect(String(caveatError,),).toContain('filled anchor makes a floor',);
-
-        const plainError = (function read(): unknown {
-          try {
-            refusePageThatDisagrees({
-              artifact: artifactOver(ONE_SWAP,),
-              archive: { kind: 'stored', text: ARCHIVE_PAGE, },
-              pageText: FIRST_NAP,
-              entryId: 'Mittens',
-            },);
-            return undefined;
-          } catch (error) {
-            return error;
-          }
-        })();
-        expect(String(plainError,),).not.toContain('filled anchor makes a floor',);
-      },
     },),
   ],
 },);
