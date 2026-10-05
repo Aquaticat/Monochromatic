@@ -28,7 +28,12 @@ fn directory_reply(navigation: &mut Navigation) -> bool {
                 navigation.reader_available = false;
             }
             let path = navigation.reading.take().unwrap_or_else(|| return navigation.workspace.root().to_path_buf());
-            let message = format!("{error:#}. The last directory snapshot is retained. Restore access to this directory or restart the application.");
+            let retained = if navigation.tree.has_listing(&path) {
+                "The last directory snapshot is retained."
+            } else {
+                "No directory snapshot is available."
+            };
+            let message = format!("{error:#}. {retained} Restore access to this directory or restart the application.");
             if navigation.directory_error.as_ref() == Some(&(path.clone(), message.clone())) { return false; }
             tracing::warn!(path = %path.display(), %error, "project directory read failed");
             navigation.directory_error = Some((path, message));

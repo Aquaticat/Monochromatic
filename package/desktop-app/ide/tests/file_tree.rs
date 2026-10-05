@@ -168,8 +168,10 @@ fn directory_to_file_replacement_discards_expansion_and_cache() {
 fn empty_root_and_unknown_entries_remain_distinct() {
     let root = Path::new("/project");
     let mut tree = FileTree::new(root);
+    assert!(!tree.has_listing(root));
     tree.apply_listing(root, vec![])
         .expect("empty root snapshot");
+    assert!(tree.has_listing(root));
     assert!(tree.rows().is_empty());
     assert!(tree.missing_listings().is_empty());
     assert!(tree.toggle(root).is_err());

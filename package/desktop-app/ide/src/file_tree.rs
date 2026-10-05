@@ -103,6 +103,11 @@ impl FileTree {
         };
     }
 
+    /// Distinguish an empty loaded directory from one whose initial read has never succeeded.
+    pub fn has_listing(&self, directory: &Path) -> bool {
+        return self.directories.contains_key(directory);
+    }
+
     /// Borrow a known entry from its parent's snapshot, including collapsed descendants.
     fn entry(&self, path: &Path) -> Option<&DirectoryEntry> {
         // What: ? returns None when the optional parent or snapshot is absent.

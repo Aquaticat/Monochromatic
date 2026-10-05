@@ -43,6 +43,30 @@ fn missing_reveal_keeps_the_existing_model_until_tree_changes() {
     window.hide().expect("close window");
 }
 
+/// A root lost before its first read must not claim that a previous snapshot exists.
+#[test]
+fn initial_directory_failure_reports_absent_snapshot_and_recovers() {
+    let fixture = tempfile::tempdir().expect("disposable project parent");
+    let root = fixture.path().join("project");
+    fs::create_dir(&root).expect("initial directory");
+    let workspace = Workspace::new(&root).expect("workspace");
+    fs::remove_dir(&root).expect("directory disappears before first listing");
+    let window = AppWindow::new().expect("native window");
+    let source = Rc::new(RefCell::new(State::new("", None)));
+    window.set_source_available(false);
+    bind_viewport(&window, &source);
+    bind_appearance(&window, &source);
+    let _navigation = navigation::bind(&window, &source, workspace).expect("navigation");
+    window.show().expect("show window");
+    wait_until(|| return !window.get_tree_error().is_empty());
+    assert!(window.get_tree_error().contains("No directory snapshot is available"));
+    assert!(!window.get_tree_error().contains("last directory snapshot is retained"));
+    fs::create_dir(&root).expect("restore project directory");
+    fs::write(root.join("new.txt"), "new source").expect("restored directory entry");
+    wait_until(|| return row(&window, "new.txt").is_some() && window.get_tree_error().is_empty());
+    window.hide().expect("close window");
+}
+
 /// Inside symlink aliases converge on the canonical row without resetting an already displayed document.
 #[test]
 fn contained_alias_open_preserves_current_selection_and_stops_reveal_updates() {
