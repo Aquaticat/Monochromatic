@@ -145,9 +145,13 @@ fn request_to_an_exited_process_is_a_reader_failure() {
     let error: CandidateError = subject
         .blob(&parse_object_id(&[b'a'; 40]).expect("name"))
         .expect_err("exited process");
+    // Which step notices is not fixed: the write fails once the pipe has no reader, but a child
+    // another test thread is starting can hold an inherited copy of the pipe for a moment, and
+    // then the write succeeds and the read finds the stream ended. Both are the same failure.
     assert_eq!(error.failure, CandidateFailure::ReaderEnded);
     assert!(
-        error.message.contains("stopped accepting requests"),
+        error.message.contains("stopped accepting requests")
+            || error.message.contains("ended before answering a request"),
         "{error}"
     );
     assert!(subject.pipes.is_none());
