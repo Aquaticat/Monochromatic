@@ -17,8 +17,9 @@ a read-only survey on 2026-10-05.
 Line numbers are as of commit `cd54f8b64`.
 The incumbent TypeScript under `package/git-policy/cli/src` (outside `src/native`)
 and `package/git-policy/cli/SPEC.md` last changed in `cf2bf70d2` (2026-09-26).
-The native Rust files last changed in `2680f7cb6`.
-`doc/handover/cli-git-rust-implementation.md` changed during the survey,
+The native Rust files are cited as of `df25471a9`,
+which landed during the survey and added the configuration and registry modules.
+`doc/handover/cli-git-rust-implementation.md` also changed during the survey,
 so it is cited by section name.
 
 Path convention:
@@ -51,8 +52,17 @@ Each responsibility records these points:
   A retired entry cites the planning text that retires it.
 - Rust owner:
   a module under `package/git-policy/cli/src/native/`.
-  Only `global_arguments.rs` and `config_loading.rs` exist;
-  every other name is a proposal for the owning delegate to confirm.
+  At `df25471a9` these modules exist:
+  `global_arguments.rs`,
+  `config_loading.rs`,
+  `config_error.rs`,
+  `config_file.rs`,
+  `config_parse.rs`,
+  `config_policies.rs`,
+  `config_schema.rs`,
+  `config_values.rs`,
+  and `policy_registry.rs`.
+  Every other name is marked "proposed" and is for the owning delegate to confirm.
 - Consumer-level test:
   what is run and what is observed.
   "Standard fixture" means the built native `git` executable,
@@ -65,11 +75,10 @@ Each responsibility records these points:
   `in progress`,
   or `implemented`.
   "In progress" means the `Resumption 2026-10-05` section of `doc/handover/cli-git-rust-implementation.md`
-  delegates the area;
-  at `40436cd01` `src/native/` held only `lib.rs`,
-  `global_arguments.rs`,
-  `config_loading.rs`,
-  and their test files.
+  delegates the area and no module for it exists at `df25471a9`.
+  "Implemented" means a library module with unit tests exists.
+  No native executable exists at `df25471a9` (`src/native/lib.rs:1`),
+  so no consumer-level test in this ledger has run.
 
 ## Measured size
 
@@ -226,7 +235,7 @@ code lines only.
   through the native `git` and through `/usr/bin/git`;
   observe identical exit status and output.
 - Native state:
-  implemented as a library function (`src/native/global_arguments.rs:98-164`).
+  implemented as a library function (`src/native/global_arguments.rs:83-157`).
   Evidence:
   5 unit tests in `src/native/global_arguments_tests.rs`,
   part of the 9 tests and Clippy pass of `mise run //package/git-policy/cli:native:test:container`
@@ -265,7 +274,7 @@ code lines only.
   then run `git status` and `git add -- a.txt`;
   observe that `status` succeeds and `add` exits `2` with a `config-invalid` event.
 - Native state:
-  implemented as a library function (`src/native/config_loading.rs:236-257`).
+  implemented as a library function (`src/native/config_loading.rs:210-229`).
   Evidence:
   4 unit tests in `src/native/config_loading_tests.rs`,
   in the same recorded 9-test and Clippy pass.
@@ -564,13 +573,19 @@ code lines only.
   The rewrite scope lines 110 to 115 record the user's selection of JSONC.
 - Rust owner:
   none for discovery of executable files;
-  the migration diagnostic is listed under "Responsibilities the plan adds".
+  `config_file.rs` owns the migration diagnostic,
+  listed under "Responsibilities the plan adds".
 - Consumer-level test:
   in the standard fixture,
   leave only `cli-git.config.ts` in the repository root and run `git add -- a.txt`;
   observe the migration diagnostic and that no TypeScript ran.
 - Native state:
-  absent.
+  implemented for the diagnostic as a library function:
+  `load_repository_config` (`src/native/config_file.rs:260-310`) returns the `migration_required` error (`124-136`)
+  when only a legacy file exists.
+  Evidence:
+  13 unit tests in `src/native/config_file_tests.rs`;
+  no gate run for `df25471a9` is recorded in a handover document.
 
 ### Configuration value validation
 
@@ -601,8 +616,12 @@ code lines only.
   The plugin and trust keys are retired;
   see "Plugin registration" and "Trust consent protocol".
 - Rust owner:
-  the JSONC configuration module owned by the native foundation delegate
-  (`configuration.rs` proposed).
+  `config_file.rs`,
+  `config_parse.rs`,
+  `config_policies.rs`,
+  `config_values.rs`,
+  `config_schema.rs`,
+  and `config_error.rs` (exist).
 - Consumer-level test:
   in the standard fixture,
   run `git add -- a.txt` once per invalid document:
@@ -614,7 +633,23 @@ code lines only.
   observe exit `2` and one `config-invalid` event each,
   before any policy runs.
 - Native state:
-  in progress.
+  implemented as library modules.
+  `load_repository_config` (`src/native/config_file.rs:260-310`) reads only `cli-git.config.jsonc`
+  at a given repository root (`41`),
+  refuses more than 1 MiB (`61`),
+  and `parse_config` (`src/native/config_parse.rs:154-198`) accepts the top-level keys `policies`,
+  `hooks`,
+  `indexLock`,
+  and `landing` (`39`).
+  Typed options exist for two policies:
+  `builtin_rules` for forbidden-strings,
+  and `rules` and `exclude` for Markdown autofix (`src/native/config_schema.rs:75-93`).
+  Evidence:
+  38 unit tests in `config_file_tests.rs`,
+  `config_parse_tests.rs`,
+  and `config_values_tests.rs`;
+  no gate run for `df25471a9` is recorded in a handover document.
+  Nothing emits a `config-invalid` event yet.
 
 ### Concurrency configuration
 
@@ -635,7 +670,7 @@ code lines only.
   retained.
   The implementation plan line 57 names "existing concurrency controls" as typed settings.
 - Rust owner:
-  the JSONC configuration module (`configuration.rs` proposed).
+  `config_parse.rs` and `config_schema.rs` (exist).
 - Consumer-level test:
   in the standard fixture,
   set each key to a valid value,
@@ -646,7 +681,13 @@ code lines only.
   and an unknown nested key;
   observe acceptance or a `config-invalid` exit `2` as `SPEC.md:770-774` lists.
 - Native state:
-  in progress.
+  implemented as library code:
+  `apply_concurrency` (`src/native/config_parse.rs:85-150`)
+  and the defaults `1000` and `1` (`src/native/config_schema.rs:26-29`,
+  `122-167`).
+  Evidence:
+  the unit tests named under "Configuration value validation";
+  no recorded gate run.
 
 ### Plugin registration
 
@@ -671,13 +712,21 @@ code lines only.
   and lines 103 to 106 fix the registry to shipped policies.
   The rewrite scope lines 113 to 115 record the user's rejection of a generic external-policy extension.
 - Rust owner:
-  none.
+  `config_parse.rs` (exists),
+  for the rejection.
 - Consumer-level test:
   in the standard fixture,
   write a JSONC document with a `plugins` key;
-  observe a `config-invalid` exit `2` naming the unknown key.
+  observe a `config-invalid` exit `2` naming the retired key.
 - Native state:
-  absent.
+  implemented as library code:
+  `unknown_top_level_key` (`src/native/config_parse.rs:49-63`) returns a specific message
+  for `plugins` and for `trust`.
+  The native registry keeps this repository's namespaced names as fixed policy names:
+  `markdown/autofix`,
+  `mono/forbidden-root-context`,
+  `mono/dependent-version-bump`,
+  and `security/forbidden-strings` (`src/native/policy_registry.rs:95-160`).
 
 ## Trust subsystem
 
@@ -1196,13 +1245,21 @@ and lines 295 to 297
   retained as a fixed typed registry of shipped policies with stable ordering
   (implementation plan lines 103 to 106).
 - Rust owner:
-  `policy_registry.rs` (proposed).
+  `policy_registry.rs` (exists) for the table;
+  `policy_engine.rs` (proposed) for execution.
 - Consumer-level test:
   in the standard fixture,
   make one command violate two policies and pass `--cli-git-keep-going`;
   observe the findings in registry order with increasing `sequence`.
 - Native state:
-  absent.
+  implemented for the table only:
+  `POLICY_REGISTRY` (`src/native/policy_registry.rs:95-160`) lists nine policies in the incumbent order,
+  built-ins first.
+  It records no triggers.
+  Evidence:
+  4 unit tests in `src/native/policy_registry_tests.rs`;
+  no recorded gate run.
+  Execution is absent.
 
 ### Severities, defaults, and unsafe warnings
 
@@ -1231,7 +1288,7 @@ and lines 295 to 297
   The implementation plan lines 68 to 69 let repository settings disable policies
   or change permitted severities without consent.
 - Rust owner:
-  `policy_registry.rs` (proposed).
+  `policy_registry.rs` and `config_policies.rs` (exist).
 - Consumer-level test:
   in the standard fixture,
   set `add-explicit` to `warn` and run `git add .`;
@@ -1239,7 +1296,15 @@ and lines 295 to 297
   a `configuration-warning` with code `warn-unsafe`,
   and that Git staged the files.
 - Native state:
-  absent.
+  implemented as data:
+  each `PolicyDescriptor` holds `default_severity` and `warn_safe`
+  (`src/native/policy_registry.rs:69-160`).
+  The five built-ins carry the incumbent defaults.
+  The four optional policies default to `Off` there,
+  while the incumbent runs a registered plugin's policy at the policy's own default
+  (`src/policy-engine/policy-stage.ts:145`);
+  see "Open questions".
+  No event is emitted yet.
 
 ### Stage execution and stopping
 
@@ -2094,8 +2159,11 @@ and lines 295 to 297
   triggers `pre-forward`,
   `direct-check`,
   and `direct-fix` (`247-258`).
-  The root configuration does not list it,
-  so it runs at its default severity.
+  The root configuration registers the plugin but does not list this policy (`cli-git.config.ts:22-58`),
+  so it runs at its default severity `error`.
+  The native registry gives it the default `Off` (`src/native/policy_registry.rs:146-152`),
+  so a translated configuration that omits it would stop the policy;
+  see "Open questions".
 - Spec:
   `SPEC.md:531-532`,
   `607-623`,
@@ -3706,3 +3774,830 @@ Native state is absent for every entry.
   and the commits present locally only.
 - Native state:
   absent.
+
+## Logging and diagnostics
+
+### Tagged debug logging
+
+- Behavior:
+  production code logs through tagged loggers from `@monochromatic-dev/module-logger`,
+  rooted at the tag `cli-git` (`src/bin.ts:54`).
+  96 non-test source files call `tagged(` 192 times,
+  and 90 files hold 215 `debug`,
+  `info`,
+  `warn`,
+  or `error` calls
+  (`rg --count-matches` over `src`,
+  excluding tests,
+  fixtures,
+  and `native`).
+  The console sink prints debug records when `MONOCHROMATIC_VERBOSE=true`
+  or when `process.argv` contains `--verbose`
+  (`package/module/logger/src/sink/console.ts:55-77`).
+- Spec:
+  `SPEC.md:1586` (debug logs must not corrupt the selected JSONL stream),
+  `1478`.
+- Consumers:
+  developers and agents diagnosing a wrapper decision.
+- Status:
+  retained.
+  The implementation plan line 260 lists diagnostics in the first native slice.
+- Rust owner:
+  `diagnostics.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run a blocked command with verbose diagnostics enabled and capture stderr;
+  observe that every line is either one complete JSONL event or one diagnostic line,
+  never an interleaved fragment,
+  and that stdout holds only Git's output.
+- Native state:
+  absent.
+
+### Human diagnostics
+
+- Behavior:
+  expected rejections carry a message that names the input,
+  the reason,
+  and each way forward,
+  for example `src/rule/require-root.ts:182-186`,
+  `src/rule/commit-only.ts:38-51`,
+  `108-115`,
+  and `src/policy-engine/add-explicit-check.ts:124-132`.
+  Human lines outside JSONL go to stderr through `console`:
+  management usage (`src/management.ts:150`,
+  `172`,
+  `190`,
+  `196`),
+  auto-push notes (`src/auto-push.ts:85-86`,
+  `130`,
+  `488-489`),
+  worktree-copy summaries and failures (`src/worktree-copy/lifecycle.ts:172`;
+  `src/bin.ts:444`,
+  `451`),
+  lock waiter lines (`src/index-lock/index-lock-evidence.ts:588-604`),
+  and uncaught error messages (`src/bin.ts:458`).
+  Raw `console` calls appear in 9 non-test source files,
+  two of them host-evidence programs
+  (`rg --count-matches 'console\.(log|error|warn|info)\(' src`,
+  excluding tests,
+  fixtures,
+  and `native`).
+- Spec:
+  `SPEC.md:1016-1018`,
+  `1066-1067`,
+  `3430`,
+  `1156-1161`.
+- Consumers:
+  humans and agents acting on a rejection.
+- Status:
+  retained.
+- Rust owner:
+  `diagnostics.rs` (proposed),
+  with message text owned by each rule module.
+- Consumer-level test:
+  in the standard fixture,
+  trigger each rejection and compare the message with the accepted text fixture;
+  observe that each names the affected input and every remedy.
+- Native state:
+  absent.
+
+## Platform-specific behavior
+
+The implementation plan lines 300 to 303 keep the existing Linux,
+macOS,
+and Windows consumer coverage,
+and line 338 keeps native macOS and Windows jobs for their filesystem and process contracts.
+Trust-only platform code (`src/trust/registry-io.ts`,
+`src/trust/account-root.ts`,
+`src/trust/candidate.ts`) retires with the trust subsystem.
+
+### Linux
+
+- Behavior:
+  process-birth identity and exited-state detection read `/proc/<pid>/stat`
+  (`src/policy-engine/commit-transaction-process-identity.ts:12-70`,
+  `133-134`);
+  process start time uses start ticks and `/proc/uptime` (`src/index-lock/process-start-time.ts:29`,
+  `355-360`);
+  open lock holders are found through `/proc/<pid>/fd` (`src/index-lock/index-lock-evidence.ts:324-328`);
+  the hook dispatcher repeats the liveness check (`src/hook-dispatch/hook-dispatch-program.ts:69-84`);
+  common Git paths are `/usr/bin/git` and `/usr/local/bin/git`
+  (`package/git/executable/src/platform-paths.ts:10-13`).
+- Spec:
+  `SPEC.md:3358-3370`,
+  `3406-3424`.
+- Consumers:
+  the development host,
+  every container harness,
+  and every CI job that runs the wrapper.
+- Status:
+  retained.
+- Rust owner:
+  `process_identity.rs` and `index_lock_evidence.rs` (proposed).
+- Consumer-level test:
+  the standard fixture runs on Linux;
+  the zombie-owner and open-descriptor cases under "Locks" are the platform cases.
+- Native state:
+  absent.
+
+### macOS
+
+- Behavior:
+  birth identity and start time come from `ps -o lstart= -p <pid>`
+  (`src/policy-engine/commit-transaction-process-identity.ts:135-145`;
+  `src/index-lock/process-start-time.ts:361-362`;
+  `src/hook-dispatch/hook-dispatch-program.ts:85-88`);
+  open holders come from `lsof` (`src/index-lock/index-lock-holders-darwin.ts:335-372`),
+  spawned only while a foreign lock is present;
+  common Git paths add `/opt/homebrew/bin/git` and `/opt/local/bin/git`
+  (`package/git/executable/src/platform-paths.ts:18-22`).
+- Spec:
+  `SPEC.md:3411-3424`.
+- Consumers:
+  macOS developers;
+  the `trust` job of `.github/workflows/cli-git-trust.yml:189-232` is the only macOS CI job,
+  and it runs trust and filesystem-identity tests only.
+- Status:
+  retained.
+- Rust owner:
+  `process_identity.rs` and `index_lock_evidence.rs` (proposed).
+- Consumer-level test:
+  on a macOS host,
+  run the owner-lock,
+  foreign `index.lock`,
+  and concurrent-commit cases with the native `git`;
+  observe the same outcomes as on Linux.
+- Native state:
+  absent.
+
+### Windows
+
+- Behavior:
+  real-Git lookup follows `PATHEXT` and compares candidates case-insensitively
+  (`package/git/executable/src/resolve-real-git.ts:31`,
+  `78-123`),
+  with Program Files and `LOCALAPPDATA` install roots
+  (`package/git/executable/src/platform-paths.ts:27`,
+  `51-92`)
+  and backslash shim markers (`package/git/executable/src/self-shim.ts:149-154`).
+  Birth identity and start time come from a PowerShell `Get-Process` call
+  (`src/policy-engine/commit-transaction-process-identity.ts:146-157`;
+  `src/index-lock/process-start-time.ts:363-364`);
+  open holders come from a Restart Manager query run through PowerShell
+  (`src/index-lock/index-lock-holders-win32.ts:26-187`),
+  never a `DELETE`-access probe.
+  The shadow repository shares directories as junctions and copies shared files
+  (`src/shadow-repository/shadow-links.ts:96-125`).
+  Directory sync is skipped (`src/worktree-copy/journal.ts:217-219`;
+  `src/worktree-copy/install-log.ts:255-257`).
+  The hook shim's shebang form is pending verification on Windows (`SPEC.md:2460-2462`).
+- Spec:
+  `SPEC.md:3417-3423`,
+  `2460-2462`;
+  `doc/decision/cli-git-concurrent-commits.md:475-478`.
+- Consumers:
+  Windows developers;
+  the `trust` job of `.github/workflows/cli-git-trust.yml:189-232` is the only Windows CI job.
+- Status:
+  retained.
+- Rust owner:
+  `git_resolution.rs`,
+  `process_identity.rs`,
+  `index_lock_evidence.rs`,
+  `shadow_repository.rs`,
+  and `hook_dispatch.rs` (proposed).
+- Consumer-level test:
+  on a Windows host,
+  run an ordinary commit with a hookdir hook,
+  two concurrent commits,
+  a foreign `index.lock` held by Git for Windows,
+  and a `git worktree add` from a linked worktree;
+  observe the outcomes of the Linux cases.
+- Native state:
+  absent.
+
+## Harnesses and verification
+
+### TypeScript unit suites
+
+- Behavior:
+  110 `*.unit.test.ts` files under `src`,
+  run by the `test:unit` task (`package/git-policy/cli/mise.toml:81-82`).
+  Many exercise the built artifact through the internal test exports.
+- Spec:
+  `SPEC.md:3620-3907` lists the required disposable fixtures.
+- Consumers:
+  local development;
+  `.github/workflows/cli-git-trust.yml:180-184` runs two of the files at each supported Node floor,
+  and lines 221 to 228 run three trust files on three operating systems.
+- Status:
+  retired with the TypeScript implementation
+  (implementation plan lines 295 to 297).
+  The fixture catalog of `SPEC.md:3620-3907` stays the list the native tests must cover
+  (lines 304 to 316).
+- Rust owner:
+  each native module's tests,
+  and the container suite for consumer behavior.
+- Consumer-level test:
+  not applicable;
+  this entry is itself verification.
+- Native state:
+  51 `#[test]` functions exist under `src/native/` at `df25471a9`.
+
+### Built-artifact fixtures
+
+- Behavior:
+  53 files under `src/trust/fixture`,
+  consumer programs and their helpers,
+  install the packed tarball in a disposable project and drive the built `git` shim.
+  `test:built:trust` runs `built-trust-consumer.ts` in a bounded `podman` container
+  (`package/git-policy/cli/mise.toml:100-131`).
+- Spec:
+  `SPEC.md:4254-4283`.
+- Consumers:
+  local release verification.
+  No CI workflow runs the task
+  (`rg "built:trust|e2e|shadow|worktree-copy|concurrent" .github --hidden --no-ignore` matches nothing for them).
+- Status:
+  retired with the JavaScript artifact
+  (implementation plan lines 295 to 297).
+  Their non-trust cases feed the native container tests.
+- Rust owner:
+  the native container suite.
+- Consumer-level test:
+  not applicable.
+- Native state:
+  absent.
+
+### Container end-to-end suite
+
+- Behavior:
+  `e2e/` holds a seeded concurrent-commit suite:
+  a commit-shape trace mined from this repository's history (`e2e/commit-shape-trace.json`),
+  a scenario catalog (`e2e/scenario-catalog-fixture.ts`),
+  and invariant checks (`e2e/invariant-fixture.ts`,
+  `e2e/leftover-fixture.ts`).
+  The image builds Git 2.39.5,
+  2.40.0,
+  and 2.55.0 (`e2e/concurrent-commits.Containerfile`).
+  Tasks:
+  `e2e:concurrent:trace`,
+  `test:e2e:concurrent:image`,
+  and `test:e2e:concurrent` (`package/git-policy/cli/mise.toml:273-358`),
+  the last with 2 GiB,
+  2 CPUs,
+  and no network.
+  `e2e/README.md:445-460` records 38 scenarios per Git version and three passing seeds.
+- Spec:
+  `SPEC.md:3909-3988`.
+- Consumers:
+  local verification before a merge.
+  No CI workflow runs it.
+- Status:
+  retained.
+  The implementation plan lines 289 to 291 reuse the existing scenarios against the Rust executable,
+  adapting the driver;
+  line 300 replaces the multi-version Git fixture with the exact latest stable release.
+- Rust owner:
+  the adapted driver under `e2e/`,
+  outside `src/native/`.
+- Consumer-level test:
+  run every seed-1,
+  seed-2,
+  and seed-3 scenario against the native executable on Git 2.56.0;
+  observe every invariant of `SPEC.md:3973-3988`.
+- Native state:
+  absent.
+
+### Performance harnesses
+
+- Behavior:
+  `perf:lifecycle-latency` measures paired wrapper and direct-Git samples per scenario
+  and enforces budgets (`package/git-policy/cli/mise.toml:137-200`;
+  `perf/lifecycle-latency-contracts.ts:212-231`,
+  with a 2,000 ms ceiling).
+  `perf:concurrent-commits` measures throughput,
+  lock holds,
+  and lost races (`package/git-policy/cli/mise.toml:202-271`).
+  `perf/manual-push-latency-benchmark.ts` measures the manual-push gate.
+  Recorded results are the JSON files under `perf/`.
+- Spec:
+  `SPEC.md:4089-4252`.
+- Consumers:
+  `.github/workflows/cli-git-performance.yml:70-114` runs the lifecycle benchmark when the package version changes
+  and uploads the raw samples.
+- Status:
+  retained as an acceptance check
+  (implementation plan lines 318 to 322).
+  The trust scenarios `strict-mjs`,
+  `strict-typescript`,
+  and `relaxed-rebuild` retire with the trust subsystem.
+  The rewrite scope lines 91 to 96 state that no numeric acceptance budget is settled for the new design.
+- Rust owner:
+  the harness under `perf/`,
+  outside `src/native/`.
+- Consumer-level test:
+  run the lifecycle scenarios against the release native artifact with a positive control per scenario;
+  observe wrapper-added medians and p95 beside the direct-Git baseline,
+  with local processing reported apart from push latency.
+- Native state:
+  absent.
+
+### CI workflows
+
+- Behavior:
+  `.github/workflows/cli-git-trust.yml` checks the Node runtime policy,
+  builds and tests at each Node floor,
+  and runs trust suites on Linux,
+  macOS,
+  and Windows.
+  `.github/workflows/cli-git-performance.yml` runs the lifecycle benchmark on a version bump.
+  `.github/workflows/final-newline.yml:38-39` runs `src/trust/fixture/final-newline-workflow.ts`,
+  an isolated direct check of the final-newline policy.
+  `.github/workflows/forbidden-strings.yml` runs the released scanner on changed files,
+  independent of the wrapper.
+- Spec:
+  `SPEC.md:4059`,
+  `4279-4281`.
+- Consumers:
+  pull requests and pushes to `main`.
+- Status:
+  retained for the final-newline check,
+  the performance job,
+  and the independent scanner job;
+  the Node-runtime and trust jobs retire with their subjects.
+  The implementation plan line 436 lists CI among the things updated together at cutover.
+- Rust owner:
+  none;
+  workflow files.
+- Consumer-level test:
+  after cutover,
+  each retained workflow passes on a pull request that uses the native executable.
+- Native state:
+  absent.
+
+## Maintenance utilities
+
+### hk Git-config cleanup
+
+- Behavior:
+  `cleanupHkGitConfig` (`src/maintenance/hk-config-cleanup.ts:56-157`) removes only keys beginning with `hook.hk-`
+  from explicitly chosen Git configuration scopes.
+  The command entry is `src/maintenance/hk-config-cleanup-command.ts`;
+  it resolves real Git through `@monochromatic-dev/git-executable`.
+- Spec:
+  no `SPEC.md` section states it;
+  `doc/runbook/remove-retired-hk-git-config.md` is the procedure.
+- Consumers:
+  the root task `cleanup:hk-git-config` (`mise.toml:655-661`)
+  and the fixture task `test:hk-config-cleanup` (`package/git-policy/cli/mise.toml:133-135`).
+  The npm package excludes `src/maintenance` (`package/git-policy/cli/package.json:24`).
+- Status:
+  retained as a repository task outside the wrapper executable.
+  The implementation plan does not name it;
+  see "Open questions".
+- Rust owner:
+  none proposed.
+- Consumer-level test:
+  the existing disposable-scope fixture,
+  run against whichever implementation remains.
+- Native state:
+  absent.
+
+## Consumers
+
+One list of who reaches the wrapper,
+by route.
+
+- Installed-bin wiring:
+  root `package.json:36` depends on `@monochromatic-dev/git-policy-cli`;
+  the package manager writes `node_modules/.bin/git`,
+  a shell shim that starts Node on `dist/final/node/index.mjs`;
+  root `mise.toml:1252-1253` puts `node_modules/.bin` first on `PATH`,
+  and line 1269 adds the package's own `node_modules/.bin`.
+- Repository configuration:
+  `cli-git.config.ts`.
+- Root mise tasks:
+  `cleanup:hk-git-config` (`mise.toml:655-661`);
+  `changeset:version`,
+  which calls `//package/git-policy/repository:bump:dependents` (`mise.toml:1193-1197`);
+  the `FORBIDDEN_STRINGS_RULES` environment entry (`mise.toml:1321-1327`).
+- Package mise tasks:
+  `package/git-policy/cli/mise.toml`
+  (`run`,
+  `build`,
+  `lint*`,
+  `test:unit`,
+  `verify:supported-runtime`,
+  `pack:npm`,
+  `test:built:trust`,
+  `test:hk-config-cleanup`,
+  `perf:*`,
+  `e2e:*`,
+  `test:e2e:*`,
+  and the native tasks at lines 1 to 19).
+- file-enforcer:
+  the optional-policy mirrors (`file-enforcer.config.ts:2260-2322`)
+  and the generated scanner rules file (`2258`).
+- CI workflows:
+  `cli-git-trust.yml`,
+  `cli-git-performance.yml`,
+  `final-newline.yml`.
+- Hooks:
+  repository Git hooks run under the wrapper's dispatcher during commits;
+  no repository file registers a Git hook that calls the wrapper
+  (the hk configuration was removed,
+  `doc/handover/cli-git-policies-platform.md` section "Retirement checkpoint on 2026-07-11").
+- Other packages:
+  `package/git/executable` (the resolver the wrapper uses and that must recognize it);
+  `package/pi-plugin/auto-mode/src/git-worktree-read-allowlist.ts` (uses that resolver);
+  `package/git-policy/api`,
+  `package/git-policy/repository`,
+  `package/git-policy/forbidden-strings`,
+  and `package/git-policy/markdown-lint` (policy sources mirrored into the wrapper);
+  `package/cli/forbidden-strings` (the scanner);
+  `package/cli/markdown-lint` (the Markdown command);
+  `package/config/pnpr/config.yaml:76-80` (private-registry publishing list);
+  `.changeset/config.json:21`.
+- Agent tooling:
+  agent shells reach the wrapper through `PATH`.
+  `AGENTS.md` rules CLG,
+  CPN,
+  APG,
+  APQ,
+  GCE,
+  and GCA describe working with its guards and auto-push.
+  `rg --hidden --no-ignore --glob '!**/worktrees/**' "cli-git|git-policy" .claude` matches nothing,
+  so no agent hook or skill there names the wrapper.
+
+## Responsibilities the plan adds
+
+These have no incumbent behavior and are not counted in the status tally.
+
+- JSONC configuration loading from repository-root `cli-git.config.jsonc`
+  through `package/rust-module/jsonc-edit` (implementation plan lines 55 to 61).
+  Native state:
+  implemented as library modules (`src/native/config_file.rs`,
+  `src/native/config_parse.rs`).
+- Legacy configuration migration diagnostic (lines 440 to 443).
+  Native state:
+  implemented as library code.
+  `load_repository_config` fails when only a legacy file exists (`src/native/config_file.rs:273-277`)
+  and returns the legacy paths for a notice when both exist (`146-153`,
+  `298-303`).
+- Retired trust-command explanation (line 444).
+  Native state:
+  in progress.
+- Unsupported-environment failure for a Git without required behavior (lines 22 to 25 and 235 to 237).
+  Native state:
+  absent.
+- In-process scanner linkage with the standalone scanner routed through the same core (lines 128 to 152).
+  Native state:
+  the scanner side is implemented (`doc/handover/scanner-native-verification.md`);
+  the wrapper side is absent.
+- First-party linter selection and a one-rule temporary JSONC configuration for the Markdown policy
+  (lines 181 to 189).
+  Native state:
+  absent.
+- Native launcher,
+  installed-bin wiring,
+  and native-wrapper recognition in the TypeScript resolver (lines 425 to 434).
+  Native state:
+  absent.
+- Container,
+  mutation,
+  and fuzz gates,
+  with a sibling fuzz package (lines 324 to 419).
+  Native state:
+  the bounded container runner exists
+  (`bin/test-native-container.mjs`,
+  `bin/build-git-test-image.mjs`,
+  `package/git-policy/cli/mise.toml:1-19`);
+  the mutation runner and fuzz package are in progress.
+- Rollback:
+  the previous executable stays available until native installation and recovery checks pass (line 446).
+
+## Spec and code disagreements
+
+Both sides are recorded;
+none is resolved here.
+Items marked "by reading" were derived from the cited source lines
+and were not observed at the consumer boundary in this survey.
+
+- Built-in order and IDs:
+  `SPEC.md:1237-1241` and the `BuiltInPolicyId` type at `SPEC.md:233-237` list four built-ins;
+  `SPEC.md:3995-3999`,
+  `src/policy-engine/built-ins.ts:21-27`,
+  and `src/api/config-types.ts:59-64` list five,
+  with `final-newline` last.
+- Patch target revision:
+  `SPEC.md:582` makes `revision` being `ABSENT_GIT_VALUE` a condition of a valid patch,
+  and `SPEC.md:373` calls a candidate with that value mutable.
+  The code gives commit candidates their blob ID as `revision`
+  (`src/policy-engine/commit-transaction-candidates.ts:185`),
+  throws when a patch target's revision is the absent symbol
+  (`src/policy-engine/final-newline-policy.ts:62-63`),
+  and requires the patch's `index` header to name that revision
+  (`src/policy-engine/commit-transaction-patch.ts:103-105`,
+  `164`).
+- Post-commit candidates:
+  `SPEC.md:1085` says `candidates()` enumerates the landed commit's complete recursive tree.
+  The code supplies only the paths the landed commit changed,
+  through `git diff-tree --root --no-commit-id -r -z -m`
+  (`src/policy-engine/post-commit-facts.ts:119-154`).
+  `doc/handover/cli-git-policies-platform.md`,
+  section "Release-readiness checkpoint on 2026-07-11",
+  records the restriction to the landed delta as intended.
+- Event sequence (by reading):
+  `SPEC.md:1306` says `sequence` starts at `0` for each invocation and increases by one in emission order.
+  Each engine run numbers from `0` (`src/policy-engine/engine.ts:298`),
+  and one invocation can write several batches:
+  pre-forward (`src/bin.ts:277-280`),
+  manual push (`336-339`;
+  `src/policy-engine/manual-push-lifecycle.ts:236`),
+  and post-commit (`412-415`;
+  `src/policy-engine/post-commit-lifecycle.ts:140-153`,
+  `177-190`).
+  A commit with a pre-forward event and a post-commit event therefore repeats `sequence` `0`.
+- Canonical command facts (by reading):
+  `SPEC.md:784-785` says `effectiveCwd` is canonicalized and `repositoryRoot` is the canonical real-Git top level.
+  `parseGlobalOptions` resolves `-C` lexically without `realpath` (`src/parse-global-options.ts:68-83`),
+  and the engine uses `effectiveCwd` as `repositoryRoot` when no lifecycle supplies one
+  (`src/policy-engine/engine.ts:115`).
+- Finding validation:
+  `SPEC.md:564-574` requires kebab-case codes and a location inside the candidate's byte length.
+  `findingsAreValid` checks only non-empty `code` and `message` (`src/policy-engine/policy-stage.ts:60-71`),
+  and `rg "byteStart|byteEnd" src` outside tests matches only the type declaration and the event copy
+  (`src/api/policy-types.ts:183-193`;
+  `src/policy-engine/events.ts:417-418`).
+- Policy cancellation:
+  `SPEC.md:383-385` says cancellation uses `context.signal`.
+  The engine passes the signal of a fresh `AbortController` that nothing aborts
+  (`src/policy-engine/engine.ts:119`),
+  and the wrapper installs no signal handler.
+- Management usage text:
+  `SPEC.md:808-811` requires exactly one of `--all` or `-- <pathspec>...`.
+  The usage text prints both as optional (`src/management-parser.ts:22-28`);
+  the enforcement matches the spec (`src/management.ts:189-192`).
+- Shipped plugin exports:
+  `SPEC.md:71-73` names `repositoryPolicyPlugin` and,
+  conditionally on issue #354,
+  `forbiddenStringsPlugin`.
+  `src/authoring.ts:28-52` exports both unconditionally and also `markdownLintPlugin`.
+- Recovery failure code:
+  `SPEC.md:3526-3528` says malformed transaction state fails closed and names no code.
+  `src/bin.ts:432-438` reports it as `content-unavailable`,
+  while `SPEC.md:1457` also defines `transaction-failed`.
+- Planning text against the spec:
+  `doc/planning/cli-git-concurrent-commits.md:347-353` says a private ref under `refs/cli-git/`
+  protects pending commits.
+  `SPEC.md:2184-2191` and `doc/decision/cli-git-concurrent-commits.md:482-483` say no such ref exists
+  and the shadow object store protects them.
+- Windows verification:
+  `doc/decision/cli-git-concurrent-commits.md:475-478` says Windows verification of the shadow links runs in CI.
+  The only Windows job runs trust and filesystem-identity tests (`.github/workflows/cli-git-trust.yml:189-232`).
+- Incumbent against native global options:
+  the incumbent skips a value after `--super-prefix` and has no entry for `--config-env` or `--shallow-file`
+  (`src/parse-global-options.ts:12-20`),
+  treats every unknown dash-led token as a flag (`166-174`),
+  and short-circuits only on `--version`,
+  `-v`,
+  `--help`,
+  and `-h` (`25-30`).
+  The native table has `--config-env` and `--shallow-file`,
+  no `--super-prefix` (`src/native/global_arguments.rs:37-46`),
+  reports an unknown option as `InvalidOption` (`149-152`),
+  and also treats `--html-path`,
+  `--man-path`,
+  `--info-path`,
+  `--list-cmds=`,
+  and a bare `--exec-path` as queries (`95-120`).
+  By reading,
+  the incumbent takes the value of a separated `--config-env <name>=<var>` as the subcommand.
+- Incumbent against native classification:
+  the incumbent's mutating `branch` long flags omit `--delete-merged`,
+  `--set-upstream`,
+  and `--create-reflog`,
+  and its short letters omit `u` and `t`
+  (`src/trust/command-classification.ts:49-69`);
+  the native table includes them (`src/native/config_loading.rs:54-68`,
+  `179`).
+  The incumbent ignores unknown long options when classifying `branch` and `tag`
+  (`src/trust/command-classification.ts:222-238`);
+  the native classifier loads configuration for them (`src/native/config_loading.rs:167-168`).
+
+## Incumbent defects and stale comments
+
+Recorded for the port,
+not fixed.
+
+- Stale parser-library comments:
+  43 mentions of "optique" remain in 14 files under `src`
+  (`rg --count-matches --ignore-case optique src --glob '!src/native/**'`),
+  for example `src/escape-hatch.ts:55-58`,
+  `src/rule/atomic-push.ts:28`,
+  and `src/rule/commit-only.ts:181`.
+  The package no longer depends on it (`package/git-policy/cli/package.json:50-59`),
+  and `src/management-parser.ts:2` says the grammar replaced that facade.
+- `README.md:1185-1190` tells authors to add rules to a `RULES` array in `src/index.ts`;
+  `src/index.ts:1-41` has no such array.
+- The version banner lists eight behaviors by hand and omits `final-newline`
+  (`src/post-command-output.ts:89-92`).
+- `src/policy-engine/engine.ts:2` and `41` still call the module a first slice with a built-in-only schema,
+  and the message at `235` says "Unknown built-in policy ID" for any unknown ID,
+  plugin IDs included.
+- Recursion over linear input:
+  `walkGlobalOptions` (`src/parse-global-options.ts:101-181`)
+  and `filterFlagEscapeHatch` (`src/escape-hatch.ts:178-227`) recurse once per argument.
+- Three pinned Git versions describe one grammar:
+  classification fixtures target Git 2.54.0 (`src/trust/command-classification.ts:4`),
+  the built-in command table comes from Git 2.55.0 (`src/git-builtin-commands.ts:2`),
+  and the native tables target Git 2.56.0 (`src/native/global_arguments.rs:1`).
+- Newline-delimited parsing of `git rev-parse` output:
+  `parseIdentityMetadata` splits on LF (`src/git-worktree-identity.ts:248-254`),
+  so by reading a Git directory path that contains LF is misparsed.
+- Duplicate constants:
+  `ref-updated.json` and `index-installed` are declared in both
+  `src/policy-engine/commit-transaction-journal.ts:19-23`
+  and `src/policy-engine/commit-transaction-journal-states.ts:40-45`;
+  `journal.json` in both `src/policy-engine/commit-transaction-recovery-journaled.ts:60`
+  and `src/policy-engine/commit-transaction-recovery-landing.ts:81`.
+- Verbose logging is tied to a Git argument:
+  the logger enables verbose output when `process.argv` contains `--verbose`
+  (`package/module/logger/src/sink/console.ts:69-77`),
+  so by reading `git commit --verbose` also turns on wrapper debug lines on stderr.
+- A Git child ended by a signal exits `1` (`src/bin.ts:454-456`),
+  not a status that names the signal.
+- The tool-cache allowlist has no platform branch
+  (`src/allowed-worktree-dirs.ts:60-88`):
+  it derives one cache location from `UV_CACHE_DIR`,
+  `XDG_CACHE_HOME`,
+  or `<home>/.cache`.
+- `SPEC.md:2460-2462` leaves the hook shim's shebang form on Windows,
+  and for an executable path with spaces,
+  pending verification.
+- `doc/handover/cli-git-concurrent-commits.md` keeps a "Next actions" list (lines 341 to 364)
+  of steps its own "Landed" section (lines 5 to 52) reports as done.
+- Retained code depends on the trust directory:
+  17 non-trust files import `src/trust/registry-io.ts` for private-file helpers,
+  and `src/bin.ts:35`,
+  `44` import classification and concurrency defaults from `src/trust/`.
+- No CI workflow runs the transaction,
+  lock,
+  worktree-copy,
+  or end-to-end suites,
+  and none runs any retained wrapper behavior on macOS or Windows
+  (`rg "e2e|built:trust|test:unit|shadow|worktree-copy|concurrent" .github --hidden --no-ignore`
+  matches only the two-file `test:unit` step of the Linux `supported-runtime` job
+  and unrelated fuzz workflows).
+
+## Open questions
+
+The planning documents do not determine these.
+Each names the text that stops short.
+
+- Fixed policy names and optional-policy defaults.
+  The implementation plan lines 55 to 61 require unknown policy IDs to be errors
+  but name no IDs or defaults.
+  The native registry keeps `markdown/`,
+  `mono/`,
+  and `security/` prefixes and defaults the four optional policies to `Off`
+  (`src/native/policy_registry.rs:95-160`).
+  The incumbent runs `mono/dependent-version-bump` at `error` without listing it.
+  Should the optional policies default to their incumbent severities,
+  and are these the accepted names?
+- Policy option surface.
+  The rewrite scope lines 126 to 131 forbid `executable` and `command`.
+  Nothing states which other options stay.
+  The native schema keeps `builtinRules`,
+  `rules`,
+  and `exclude` (`src/native/config_schema.rs:75-93`).
+  Does `FORBIDDEN_STRINGS_RULES` remain the way to name the rules file?
+- Configuration root.
+  The plan says "repository-root" (line 55).
+  The incumbent uses the nearest Git marker above the effective directory
+  (`src/trust/config-discovery.ts:110-131`),
+  which is a linked worktree's own root and ignores `--git-dir` and `--work-tree`.
+  Which root does the native wrapper pass to `load_repository_config`,
+  and what happens in a bare repository?
+- Legacy configuration during the rollback window.
+  The plan line 446 keeps the previous executable available,
+  which needs `cli-git.config.ts`,
+  while lines 440 to 443 require a migration diagnostic.
+  The native loader reports a legacy file beside a JSONC file on every load
+  (`src/native/config_file.rs:146-153`).
+  Is a notice on every configuration-loading command intended while both wrappers are installed?
+- Retired trust commands.
+  The plan line 444 says they explain the retirement.
+  It does not give the exit status,
+  the stream,
+  or whether `git cli-git status` keeps its name for another purpose.
+- Signals.
+  The plan lines 84 to 91 port "signals" without stating the contract.
+  The incumbent has no handler and maps a signaled Git to exit `1`.
+  Should the native wrapper forward signals to the child,
+  and which exit status reports a signaled child?
+- Event sequence numbering.
+  The spec and the code disagree (see "Spec and code disagreements").
+  The plan lines 315 to 316 make the accepted behavior the oracle.
+  Does the native wrapper number events once per invocation?
+- Non-UTF-8 paths in events and journals.
+  The plan lines 47 to 49 preserve argument bytes and path representations.
+  JSONL events carry paths as JSON strings (`SPEC.md:1337`),
+  and `captured.json` stores Latin-1 decoded path bytes (`SPEC.md:3138-3139`).
+  The encoding of a non-UTF-8 path in an event is not stated.
+- Engine failure codes that lose their source.
+  `plugin-threw`,
+  `policy-incomplete`,
+  `config-untrusted`,
+  `config-changed`,
+  `trust-consent-unavailable`,
+  and `trust-failed` (`src/policy-engine/events.ts:88-103`) describe plugins and trust.
+  Which code reports a failed built-in policy,
+  such as a scanner error?
+- Hook dispatcher and generated hooks without Node.
+  The shim and the manual-push probe hook are generated Node programs
+  (`src/hook-dispatch/hook-dispatch-program.ts:27`;
+  `src/policy-engine/manual-push-hook.ts:344-405`).
+  The plan lines 425 to 426 remove Node from the launch path.
+  The native form of these hook entries,
+  and its Windows form,
+  is not stated.
+- Lock and journal interoperability across versions.
+  The plan lines 228 to 233 keep formats where practical with cross-version fixtures.
+  Birth-identity strings are built from `ps` and PowerShell output
+  (`src/policy-engine/commit-transaction-process-identity.ts:135-157`).
+  Must the native wrapper produce identical strings so each version judges the other's locks correctly?
+- Legacy single-journal directory.
+  The incumbent still recovers `cli-git-transaction` (`SPEC.md:2145-2146`).
+  The plan forbids silently discarding old state (lines 230 to 233)
+  but does not say whether this older format is ported or reported.
+- Unsupported Git detection.
+  The plan lines 22 to 25 support the latest stable release and forbid a network query at run time,
+  and lines 235 to 237 require an unsupported-environment failure.
+  When is the check made,
+  and is it a version comparison or a behavior probe?
+- Post-command output.
+  The plan does not mention the version banner or the status note.
+  Does the native wrapper keep adding a line to `git --version` output?
+- Tool-cache allowlist.
+  It is compiled in and Linux-shaped.
+  The plan does not say whether it stays compiled in,
+  moves to JSONC,
+  or gains other platforms.
+- Test phase markers.
+  The reused end-to-end scenarios need `CLI_GIT_TEST_ONLY_PHASE_SIGNAL`.
+  The plan does not say whether the release executable carries the markers
+  or a separate test build does.
+- macOS and Windows coverage.
+  The plan lines 300 to 303 keep existing coverage,
+  which today is trust-only on those systems.
+  Which native tests run there?
+- TypeScript utilities beside the wrapper.
+  `cleanup:hk-git-config` and `//package/git-policy/repository:bump:dependents` are TypeScript tasks.
+  The second shares planning code with the dependent-version policy.
+  Do they stay TypeScript,
+  leaving two implementations of the bump plan?
+- Verbose diagnostics switch.
+  The incumbent switch is `MONOCHROMATIC_VERBOSE` or a `--verbose` argument.
+  The native switch is not stated.
+- Performance acceptance.
+  The rewrite scope lines 91 to 96 say no numeric budget is settled,
+  while `SPEC.md:4038` and `perf/lifecycle-latency-contracts.ts:212` hold a 2,000 ms ceiling.
+  Which numbers gate the native artifact?
+- Markdown policy without the linter.
+  The plan lines 181 to 189 select the coordinated installation's linter.
+  The behavior when that binary is missing is not stated.
+
+## Related documents
+
+- `doc/decision/cli-git-rust-rewrite.md`:
+  the accepted decision.
+- `doc/planning/cli-git-rust-rewrite.md`:
+  scope,
+  settled interview requirements,
+  and the installed-wrapper baseline.
+- `doc/planning/cli-git-rust-implementation.md`:
+  module responsibilities,
+  sequence,
+  verification gates,
+  and cutover.
+- `doc/handover/cli-git-rust-implementation.md`:
+  execution state and delegations.
+- `doc/decision/cli-git-policies-platform.md` and `doc/handover/cli-git-policies-platform.md`:
+  the policy platform and its checkpoints.
+- `doc/decision/cli-git-concurrent-commits.md`,
+  `doc/planning/cli-git-concurrent-commits.md`,
+  and `doc/handover/cli-git-concurrent-commits.md`:
+  concurrent commits.
+- `doc/planning/cli-git-policy-added-paths.md`:
+  policies that add paths to a commit.
+- `doc/planning/cli-git-noninteractive-trust-ux.md`:
+  trust diagnostics,
+  retired with the trust subsystem.
+- `doc/handover/cli-git-cac-migration.md`:
+  why the package owns its argument parser.
+- `package/git-policy/cli/doc/concurrent-commits-implementation-plan.md`:
+  the incumbent code map.
+- `doc/planning/unified-linter-coverage-ledger.md`:
+  the linter ledger this document is modeled on.
