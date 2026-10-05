@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /** Compare retained manifests with current compiled inputs and summarize exact terminal evidence. */
 import { createHash } from 'node:crypto';
-import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { run } from './container-snapshot.mjs';
 import { join, resolve } from 'node:path';
 
 /** Enumerate both sides of the copied source/build/test input set, including newly added current files. */
@@ -66,6 +67,21 @@ async function main() {
   const guarded = records.filter(record => record.endings['control.json'].variant === 'protected' && record.endings['control.json'].expected)
     .sort((first, second) => second.timestamp.localeCompare(first.timestamp))[0];
   const guardComparisons = [];
+  const mainSources = new Map();
+  const extraction = join(roots[0], 'guard-source-comparison');
+  await mkdir(extraction, { recursive: true });
+  async function nativeMain(record) {
+    if (mainSources.has(record.image)) return mainSources.get(record.image);
+    const container = run({ command: 'podman', args: ['create', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128', record.image], capture: true }).stdout.trim();
+    const destination = join(extraction, `${container}.main.rs`);
+    try {
+      run({ command: 'podman', args: ['cp', `${container}:/work/package/cli/forbidden-strings/src/main.rs`, destination], capture: true });
+      const source = await readFile(destination, 'utf8');
+      mainSources.set(record.image, source);
+      return source;
+    } finally { run({ command: 'podman', args: ['rm', container], capture: true }); }
+  }
+  const testRegistration = '\n/// Process-isolated filter controls do not alter production startup or the embedding host\'s environment.\n#[cfg(test)]\n#[path = "main_logging_tests.rs"]\nmod logging_tests;\n';
   if (guarded) {
     for (const record of records) {
       if (!record.directory.includes('/guard-without-') || !record.endings['control.json'].expected) continue;
@@ -73,7 +89,14 @@ async function main() {
       const second = new Map(record.sources.filter(source => !source.path.includes('/bin/') && !source.path.endsWith('/mise.toml')).map(source => [source.path, source.sha256]));
       const paths = new Set([...first.keys(), ...second.keys()]);
       const differences = [...paths].filter(path => first.get(path) !== second.get(path));
-      const comparison = { protected: guarded.directory, disabled: record.directory, differences };
+      let mainDifferenceOnlyTestRegistration;
+      if (differences.includes('package/cli/forbidden-strings/src/main.rs') && record.endings['control.json'].variant !== 'without-output-hook') {
+        const original = await nativeMain(guarded);
+        const disabled = await nativeMain(record);
+        mainDifferenceOnlyTestRegistration = original.replace(testRegistration, '') === disabled.replace(testRegistration, '');
+        if (!mainDifferenceOnlyTestRegistration) throw new Error(`Unexpected main implementation difference in ${record.directory}.`);
+      }
+      const comparison = { protected: guarded.directory, disabled: record.directory, differences, mainDifferenceOnlyTestRegistration };
       guardComparisons.push(comparison);
       console.log(`Guard input comparison ${record.directory}: ${differences.join(', ')}`);
     }
