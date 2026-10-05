@@ -81,10 +81,13 @@ Until refresh is usable,
 keep affected rules unresolved/included rather than reuse stale exclusions.
 Record maintenance inference costs separately and include them when evaluating workload cost.
 
-### Response-contract question
+### Accepted one-call classification contract
 
-The intended one-request behavior is clear.
-A literal single question returning an arbitrary subset still needs a compatible answer contract.
+The user clarified:
+“Sorry,
+one API call.”
+Use one batched request with a relevance question for each changed or context-affected rule.
+No subset-output interface or model switch is needed.
 
 The current public Gateway System One source,
 `apps/gateway/src/systemone/systemone.ts` in `theopenco/llmgateway`,
@@ -97,13 +100,11 @@ Those probabilities are not independent relevance scores for a set of rules.
 This source was fetched from the repository's current `main` branch,
 rather than inferred from the existing binary adapter.
 
-The recommended fit to the approved Jev path is one batched request containing independent relevance questions
-for the changed rules.
-It preserves per-rule uncertainty and the existing typed contract,
-but it is not literally one subset-valued question.
-A literal subset-returning question would require a separately qualified response path.
-Clarify that distinction before implementing the classifier contract;
-no model switch or new private-data route is adopted here.
+The accepted request shape preserves per-rule uncertainty and the existing typed Jev contract.
+Implement the private incremental cache and its source-bound refresh path.
+No production threshold,
+new private-data route,
+or installed-plugin cutover is selected by this clarification.
 
 ### Required checks
 
@@ -125,7 +126,6 @@ no model switch or new private-data route is adopted here.
 The incremental relevance-cache direction refines this earlier all-rule proposal.
 Keep the all-rule form as a comparison or conservative fallback,
 not a requirement to repeat static relevance classification for every action.
-
 
 The user proposed parsing `AGENTS.md` into one question per rule.
 This is a proposed next baseline,
