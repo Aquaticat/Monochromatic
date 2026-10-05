@@ -12,7 +12,7 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
-## Current design queue: light error/Undo publication complete
+## Current design queue: light track-menu publication complete
 
 The filename evidence and its configurable-support correction are complete.
 The human directed continued work rather than another status-only stop.
@@ -68,10 +68,25 @@ this is not Firefox ESR140 or native accessibility acceptance.
 The final guest's recorded fields were restored and the owner exited `0`;
 matching native/browser containers and QEMU are absent.
 No new preference ballot is waiting.
-`doc/planning/music-player-light-context-menu.md` starts the next independent
-surface with the accepted D7 action list and an executable-source audit.
-The remaining light surfaces are the context menu,
-Settings and scan bar;
+`doc/planning/music-player-light-context-menu.md` records the completed D7
+menu study with its accepted action list and single-line ellipsized heading.
+`questions/track-menu.html` presents 24 freshly inspected current-artifact
+poses across both panels,
+themes and text scales.
+All seven debug intents passed in every environment,
+along with tap/long-press separation,
+Back/outside dismissal,
+unchanged player geometry/app pixels and distinct duplicate-name targets.
+The guest's recorded fields were restored,
+its owner exited `0` and the matching native runtime is absent.
+Viewer guard proofs and four-context offline Chromium checks passed;
+Firefox and native accessibility remain outside that evidence.
+Full Android lint retains five inherited errors,
+65 warnings and two hints;
+the new row's modifier warnings are gone.
+`evidence/track-menu-boundaries.md` keeps these scopes explicit.
+The remaining light surfaces are Settings and the scan bar;
+continue with the independent scan-indicator study.
 D81's Settings-template requirement remains settled while its editor details
 are a separate design problem.
 

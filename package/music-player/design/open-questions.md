@@ -49,9 +49,11 @@ the completed first-run/no-library queue is in
 The whole-map keyboard proposal is verified without new accepted defaults.
 `doc/planning/music-player-light-error-undo.md` records the completed D83
 state-family study and inspected offline publication.
-`doc/planning/music-player-light-context-menu.md` continues the queue with
-D7's accepted track actions,
+`doc/planning/music-player-light-context-menu.md` records the completed D7
+study and verified 24-pose viewer at `questions/track-menu.html`,
 without production callbacks or a replacement action-list ballot.
+Settings/template editor design and the scan indicator remain independent
+queue items.
 Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
@@ -1116,9 +1118,11 @@ D83's error/Undo overlays also have a completed light/dark study:
 with native expiry and action results recorded separately.
 The layout-reserving error bar is superseded,
 not still awaiting a light version.
-The Settings pane,
-context menu and scan bar remain to be drawn in light;
-do not credit the cover or overlay studies as evidence for those surfaces.
+D7's track menu now has its own 24-pose light/dark native publication in
+`questions/track-menu.html`,
+with seven action intents and input/dismissal checks recorded separately.
+The Settings pane and scan bar remain to be drawn in light;
+do not credit other studies as evidence for those surfaces.
 
 ### 11e. Custom display templating: Settings requirement settled, details open
 

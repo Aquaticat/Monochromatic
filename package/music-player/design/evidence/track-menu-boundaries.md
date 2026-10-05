@@ -126,12 +126,30 @@ publishing `questions/evidence/track-menu-witnesses.json` and its PNGs.
 `questions/evidence/track-menu-native-verification.json` records exact
 contexts,
 operation limits and geometry replay.
-The prepared consumer requires exact cohort membership,
+The verified consumer requires exact cohort membership,
 measured crop bounds,
 actual runtime provenance,
 heading behavior and native-input evidence.
-Final viewer verification remains in progress;
-no new preference answer is required.
+The [offline viewer](../questions/track-menu.html) and its build/validation,
+consumer tests and exact-cohort/native-input guard-removal proofs passed.
+The [verification record](../questions/evidence/track-menu-review-verification.json)
+binds exact viewer,
+manifest and native-result digests.
+Four offline Chromium desktop/mobile light/dark contexts exercised all
+24 previews,
+environment combinations,
+optional blank observations,
+inert adversarial notes,
+stale-reply invalidation and modal zoom/pan/reset/focus.
+All distinct previews were opened in the first desktop/light pass;
+representative modal controls were separately exercised in every context.
+The eight resulting review/modal screenshots were inspected.
+Each closed-page axe audit had 22 passes,
+40 inapplicable checks and no violations or incomplete results.
+Open-dialog axe,
+Firefox ESR140 and native accessibility acceptance were not exercised.
+The browser closed and its owned container is absent.
+No new preference answer is required.
 
 ## Privacy and restoration
 

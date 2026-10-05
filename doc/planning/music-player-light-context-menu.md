@@ -198,8 +198,22 @@ Every current full-region pair was opened and inspected independently,
 then bound to the current APK/source and crop hashes.
 The rejected transfer record is retained as resolved by fresh inspection,
 not erased or converted into an equality claim.
-Current PNGs and scoped native verification are published;
-the offline viewer and final consumer verification remain in progress.
+Current PNGs,
+scoped native verification and `questions/track-menu.html` are published.
+The viewer build and exact validation passed.
+Consumer positives,
+fresh exact-cohort/native-input guard removals and restored positives passed.
+Four offline Chromium contexts decoded and opened all 24 images,
+exercised every environment combination,
+optional observations,
+inert notes,
+stale-reply invalidation and modal zoom/pan/reset/focus.
+All eight browser review/modal screenshots were inspected.
+Closed-page axe checks report zero violations or incomplete results;
+open-dialog,
+Firefox ESR140 and native accessibility acceptance remain untested.
+`track-menu-review-verification.json` binds the viewer and evidence digests.
+The owned browser container is absent after browser closure.
 Disposable publication controls rejected a changed inspection hash,
 changed restoration and missing action context before any public write.
 
@@ -215,7 +229,7 @@ changed restoration and missing action context before any public write.
   themes and 100%/200% text.
   If content exceeds a viewport,
   prove access to it rather than shrinking layout floors.
-- [ ] Publish only inspected,
+- [x] Publish only inspected,
   sanitized and exact-artifact-bound evidence with explicit action limits.
 
 ## Boundaries
@@ -236,5 +250,7 @@ The successful D83 runtime bridge is reusable infrastructure,
 not a claim that cold-start system failures are fixed.
 
 No new preference question is established by this initial audit.
-The next action is offline consumer verification and publication closure,
-not a colour ballot or production implementation.
+This menu item is complete within its declared design/debug scope.
+Continue the independent light-surface queue with the scan indicator;
+Settings/template editor design remains separate.
+No colour ballot or production implementation follows from this completion.

@@ -62,6 +62,22 @@ held images are not timing evidence.
 The guest's recorded settings were restored and its owner exited cleanly.
 The consumer passed scoped tests and four-context Chromium checks,
 not Firefox ESR140 or native accessibility acceptance.
+D7's light track-menu continuation is also complete.
+The [menu viewer](questions/track-menu.html) presents 24 freshly inspected
+native poses with the accepted actions and one-line ellipsized heading.
+[Its evidence boundary](evidence/track-menu-boundaries.md) records all seven
+debug intents across both panels,
+themes and text scales,
+input ownership,
+dismissal and unchanged-player checks.
+The viewer's tests,
+guard-removal proofs and four-context offline Chromium checks passed.
+Recorded native settings were restored and owned runtimes are absent.
+Real operations,
+native accessibility and Firefox acceptance are not claimed;
+full Android lint still has inherited failures.
+Settings/template editor design and the scan indicator remain independent
+queue items.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds
