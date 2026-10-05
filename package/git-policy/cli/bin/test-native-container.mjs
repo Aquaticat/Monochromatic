@@ -1,45 +1,131 @@
 #!/usr/bin/env node
 /** Verify native wrapper modules against the selected real Git in an isolated source snapshot. */
-import { spawnSync } from 'node:child_process';
-import { cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+// The bin scripts sit outside the package tsconfig's include list, so type-aware lint checks them in an inferred
+// program that loads no ambient Node types; this reference loads them, so `process` and `node:` imports stay typed
+// in this file on its own instead of depending on a sibling module that carries the same reference.
+/// <reference types="node" />
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  mkdtempDisposable,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import {
+  join,
+  resolve,
+} from 'node:path';
+
+import {
+  NativeVerificationError,
+  runCommand,
+} from './native-verification-process.mjs';
 
 /** Concurrent worktrees set GIT_POLICY_NATIVE_IMAGE_TAG so one snapshot never runs another's image. */
-const testImage = `localhost/git-policy-native-test:${process.env.GIT_POLICY_NATIVE_IMAGE_TAG ?? 'development'}`;
+const imageTag = process.env
+  .GIT_POLICY_NATIVE_IMAGE_TAG
+  ?? 'development';
+/** Source snapshot image this gate builds, tests, and lints. */
+const testImage = `localhost/git-policy-native-test:${imageTag}`;
 
-/** Failed setup or execution cannot masquerade as native verification. */
-class NativeVerificationError extends Error {}
+/**
+ Copy the native crate and its path dependency into the build context.
+ Copies run concurrently, and every copy settles before this returns or throws,
+ so removing the context afterwards never races an in-flight copy.
 
-/** Run complete argument arrays with no shell interpretation. */
-function run({ command, args, capture = false }) {
-  const result = spawnSync(command, args, {
-    cwd: process.cwd(), encoding: 'utf8',
-    stdio: capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
-    maxBuffer: 16 * 1024 * 1024,
+ @param {{ context: string }} request - build context directory receiving the repository-shaped snapshot
+ */
+async function copySourceSnapshot({ context }) {
+  const subject = join(
+    context,
+    'package/git-policy/cli',
+  );
+  const dependency = join(
+    context,
+    'package/rust-module/jsonc-edit',
+  );
+  const entries = [
+    ...[
+      'Cargo.toml',
+      'Cargo.lock',
+      'README.md',
+      'src/native',
+    ].map(function crateEntry(name) {
+      return {
+        from: resolve(name),
+        to: join(
+          subject,
+          name,
+        ),
+      };
+    }),
+    ...[
+      'Cargo.toml',
+      'Cargo.lock',
+      'src',
+      'fixtures',
+    ].map(function dependencyEntry(name) {
+      return {
+        from: resolve(
+          '../../rust-module/jsonc-edit',
+          name,
+        ),
+        to: join(
+          dependency,
+          name,
+        ),
+      };
+    }),
+    {
+      from: resolve('../../../clippy.toml'),
+      to: join(
+        context,
+        'clippy.toml',
+      ),
+    },
+  ];
+  const copies = await Promise.allSettled(entries.map(function copyEntry(entry) {
+    return cp(
+      entry.from,
+      entry.to,
+      { recursive: true },
+    );
+  }));
+  const failures = copies.filter(function isRejected(copy) {
+    return copy.status === 'rejected';
   });
-  if (result.error) throw new NativeVerificationError('Native verification command could not start.', { cause: result.error });
-  if (result.status !== 0) throw new NativeVerificationError(`${command} ${args[0]} exited ${result.status}: ${result.stderr ?? ''}`);
-  return result.stdout ?? '';
+  if (failures.length > 0)
+    throw new NativeVerificationError(
+      `Copying ${String(failures.length)} source snapshot entries into ${context} failed.`,
+      { cause: failures },
+    );
 }
 
 /** Build one mount-free source image, then run tests and Clippy against that exact image identity. */
 async function main() {
-  const context = await mkdtemp(join(tmpdir(), 'cli-git-native-test-'));
+  await using context = await mkdtempDisposable(join(
+    tmpdir(),
+    'cli-git-native-test-',
+  ));
   const evidenceRoot = resolve('target/verification');
-  await mkdir(evidenceRoot, { recursive: true });
-  const evidence = await mkdtemp(join(evidenceRoot, 'native-'));
+  await mkdir(
+    evidenceRoot,
+    { recursive: true },
+  );
+  const evidence = await mkdtemp(join(
+    evidenceRoot,
+    'native-',
+  ));
   // The audited Git 2.56.0 image is the rewrite's selected native consumer baseline.
   const base = '6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a';
-  try {
-    const subject = join(context, 'package/git-policy/cli');
-    for (const name of ['Cargo.toml', 'Cargo.lock', 'README.md'])
-      await cp(resolve(name), join(subject, name));
-    await cp(resolve('src/native'), join(subject, 'src/native'), { recursive: true });
-    for (const name of ['Cargo.toml', 'Cargo.lock', 'src', 'fixtures'])
-      await cp(resolve('../../rust-module/jsonc-edit', name), join(context, 'package/rust-module/jsonc-edit', name), { recursive: true });
-    await cp(resolve('../../../clippy.toml'), join(context, 'clippy.toml'));
-    await writeFile(join(context, 'Containerfile'), [
+  await copySourceSnapshot({ context: context.path });
+  await writeFile(
+    join(
+      context.path,
+      'Containerfile',
+    ),
+    [
       `FROM ${base}`,
       'COPY package /work/package',
       'COPY clippy.toml /work/clippy.toml',
@@ -50,24 +136,115 @@ async function main() {
       'WORKDIR /work/package/git-policy/cli',
       'CMD ["cargo", "test", "--offline", "--locked", "--all-targets", "--", "--test-threads=2"]',
       '',
-    ].join('\n'));
-    run({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', testImage, context] });
-    const image = run({ command: 'podman', args: ['image', 'inspect', testImage, '--format', '{{.Id}}'], capture: true }).trim();
-    const limits = ['--rm', '--init', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128'];
-    await writeFile(join(evidence, 'manifest.json'), JSON.stringify({ base, image, limits, user: '1000:1000' }, null, 2) + '\n');
-    console.log(`Native wrapper verification evidence: ${evidence}`);
-    run({ command: 'podman', args: ['run', ...limits, image] });
-    const compiler = run({ command: 'rustc', args: ['--print', 'sysroot'], capture: true }).trim();
-    run({ command: 'podman', args: [
-      'run', ...limits, '--security-opt', 'label=disable', '--volume', `${compiler}:/toolchain:ro`,
-      '--env', 'PATH=/toolchain/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-      '--env', 'RUSTC=/toolchain/bin/rustc', '--env', 'RUSTDOC=/toolchain/bin/rustdoc',
-      image, '/toolchain/bin/cargo', 'clippy', '--offline', '--locked', '--all-targets', '--', '-D', 'warnings',
-    ] });
-    await writeFile(join(evidence, 'passed.json'), JSON.stringify({ tests: true, clippy: true }) + '\n');
-  } finally {
-    await rm(context, { recursive: true, force: true });
-  }
+    ].join('\n'),
+  );
+  await runCommand({
+    command: 'podman',
+    args: [
+      'build',
+      '--network=none',
+      '--http-proxy=false',
+      '--pull=never',
+      '--memory=2g',
+      '--cpu-period=100000',
+      '--cpu-quota=200000',
+      '--tag',
+      testImage,
+      context.path,
+    ],
+  });
+  const inspected = await runCommand({
+    command: 'podman',
+    args: [
+      'image',
+      'inspect',
+      testImage,
+      '--format',
+      '{{.Id}}',
+    ],
+    capture: true,
+  });
+  const image = inspected.stdout
+    .trim();
+  const limits = [
+    '--rm',
+    '--init',
+    '--network=none',
+    '--memory=2g',
+    '--cpus=2',
+    '--pids-limit=128',
+  ];
+  await writeFile(
+    join(
+      evidence,
+      'manifest.json',
+    ),
+    `${JSON.stringify(
+      {
+        base,
+        image,
+        limits,
+        user: '1000:1000',
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  console.log(`Native wrapper verification evidence: ${evidence}`);
+  await runCommand({
+    command: 'podman',
+    args: [
+      'run',
+      ...limits,
+      image,
+    ],
+  });
+  const sysroot = await runCommand({
+    command: 'rustc',
+    args: [
+      '--print',
+      'sysroot',
+    ],
+    capture: true,
+  });
+  const compiler = sysroot.stdout
+    .trim();
+  await runCommand({
+    command: 'podman',
+    args: [
+      'run',
+      ...limits,
+      '--security-opt',
+      'label=disable',
+      '--volume',
+      `${compiler}:/toolchain:ro`,
+      '--env',
+      'PATH=/toolchain/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+      '--env',
+      'RUSTC=/toolchain/bin/rustc',
+      '--env',
+      'RUSTDOC=/toolchain/bin/rustdoc',
+      image,
+      '/toolchain/bin/cargo',
+      'clippy',
+      '--offline',
+      '--locked',
+      '--all-targets',
+      '--',
+      '-D',
+      'warnings',
+    ],
+  });
+  await writeFile(
+    join(
+      evidence,
+      'passed.json',
+    ),
+    `${JSON.stringify({
+      tests: true,
+      clippy: true,
+    })}\n`,
+  );
 }
 
 await main();
