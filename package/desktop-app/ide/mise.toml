@@ -259,7 +259,10 @@ run = "node bin/inspect-search-guards.mjs"
 
 [tasks."inspect:find-guards"]
 description = "Remove in-file find guards only in a disposable copy and observe named regression failures"
-usage = 'arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"'
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+'''
 run = "node bin/inspect-find-guards.mjs"
 
 [tasks."inspect:search-accessibility"]

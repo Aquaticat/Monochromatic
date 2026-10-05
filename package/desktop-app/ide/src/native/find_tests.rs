@@ -225,12 +225,12 @@ fn native_find_opens_types_steps_wraps_reveals_and_closes() {
     assert!(!window.get_selection_is_match());
     assert_eq!(window.get_find_status(), "");
     settle();
-    assert_eq!(
-        window.get_source_matches().row_count(),
-        0,
+    assert!(
+        window.get_find_status() == ""
+            && !window.get_selection_is_match()
+            && window.get_source_matches().row_count() == 0,
         "highlights returned after closing"
     );
-    assert_eq!(window.get_find_status(), "");
     assert_eq!(
         window.get_selected_text(),
         "Needle",
