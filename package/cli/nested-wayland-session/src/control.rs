@@ -22,15 +22,11 @@ use std::{
     sync::mpsc::{sync_channel, SyncSender},
 };
 
-/// What:     Grouped `use` of the calloop channel (cross-thread source) and loop handle,
-///           plus winit's `PhysicalSize` for the resize request.
-/// Why:      Register the channel as an event source and request a window resize.
-use smithay::reexports::{
-    calloop::{
-        channel::{channel, Event, Sender},
-        LoopHandle,
-    },
-    winit::dpi::PhysicalSize,
+/// What:     Grouped `use` of the calloop channel (cross-thread source) and loop handle.
+/// Why:      Register the channel as an event source on the main loop.
+use smithay::reexports::calloop::{
+    channel::{channel, Event, Sender},
+    LoopHandle,
 };
 
 /// What:     `use anyhow::{Context, Result};`. Error helpers.
@@ -349,10 +345,14 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             return Response::Ok
         }
         Command::Resize { width, height } => {
-            // What:     `resize(state, width, height);`. Request the window resize.
-            // Why:      Change the nested screen size.
-            resize(state, width, height);
-            return Response::Ok
+            // What:     `screen::resize(state, width, height)`. Apply the new logical size.
+            // Why:      Change the nested screen size at once, keeping the output scale.
+            return crate::screen::resize(state, width, height);
+        }
+        Command::Scale(scale) => {
+            // What:     `screen::switch_scale(state, scale)`. Apply the new output scale.
+            // Why:      Keep the logical size so the client sees a scale change, not a resize.
+            return crate::screen::switch_scale(state, scale);
         }
         Command::DropFile { path, x, y } => {
             // What:     `match dnd::drop_file(state, &path, x, y) { Ok(()) => Response::Ok,
@@ -415,21 +415,4 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             return Response::Ok;
         }
     }
-}
-
-/// Request that the nested winit window (and thus the output) resize.
-///
-/// What:     `fn resize(state: &mut Compositor, width: i32, height: i32)`. Asks winit for a
-///           new inner size; the actual `WinitEvent::Resized` follows and updates the
-///           output.
-/// Why:      A control command should be able to change the screen size mid-test.
-fn resize(state: &mut Compositor, width: i32, height: i32) {
-    // What:     `let _ = state.backend.window().request_inner_size(PhysicalSize::new(width
-    //           as u32, height as u32));`. Request the resize; discard the returned optional
-    //           immediate size. The parent compositor may honour or ignore it.
-    // Why:      Best-effort resize; the resulting `Resized` event does the real update.
-    let _ = state
-        .backend
-        .window()
-        .request_inner_size(PhysicalSize::new(width as u32, height as u32));
 }

@@ -4,6 +4,8 @@
 use std::path::PathBuf;
 /// Existing private-portal appearance values.
 use crate::appearance_portal::ColorSchemePreference;
+/// Validated output scale shared with the runtime `scale` verb.
+use crate::screen_geometry::OutputScale;
 
 /// Validated program configuration parsed from the command line.
 ///
@@ -42,18 +44,25 @@ pub struct Config {
     ///           just hosts the app; when present, it binds a socket there.
     pub control_socket: Option<PathBuf>,
 
-    /// Initial nested-screen width in physical pixels.
+    /// Initial nested-screen width in logical pixels (physical pixels at scale 1).
     ///
     /// What:     `pub width: i32`. Signed 32-bit integer to match Smithay geometry.
-    /// Why:      Sets the winit window's initial inner size, which becomes the
-    ///           output resolution the hosted app fills.
+    /// Why:      The hosted app is configured with this width; the framebuffer and
+    ///           screenshots are this width times `scale`.
     pub width: i32,
 
-    /// Initial nested-screen height in physical pixels.
+    /// Initial nested-screen height in logical pixels (physical pixels at scale 1).
     ///
     /// What:     `pub height: i32`. Signed 32-bit integer to match Smithay geometry.
-    /// Why:      Pairs with `width` for the initial output size.
+    /// Why:      Pairs with `width` for the initial logical screen size.
     pub height: i32,
+
+    /// Initial output scale every hosted surface is told to render at (`--scale`).
+    ///
+    /// What:     `pub scale: OutputScale`. A validated whole number of 120ths.
+    /// Why:      Lets a session start at a fractional or integer scale; the `scale` control
+    ///           command changes it later.
+    pub scale: OutputScale,
 
     /// Optional isolated portal color scheme for hosted client.
     ///

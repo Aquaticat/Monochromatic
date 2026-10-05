@@ -18,6 +18,8 @@ use std::path::PathBuf;
 use anyhow::{Context, Result};
 /// Existing private-portal values are unchanged.
 use crate::appearance_portal::ColorSchemePreference;
+/// Validated output scale produced by the `--scale` value parser.
+use crate::screen_geometry::OutputScale;
 
 /// Parse arguments excluding the executable name without starting application work.
 ///
@@ -52,6 +54,8 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
     // ```
     let matches = command::command().try_get_matches_from(argv)?;
     let dimensions = matches.get_one::<(i32, i32)>("size").context("validated size is missing")?;
+    // copied takes the small Copy value out of clap's matches; the option has a default.
+    let scale = matches.get_one::<OutputScale>("scale").copied().context("validated scale is missing")?;
     let mut child_command = Vec::new();
     let child_values = matches.get_many::<String>("command").context("validated client command is missing")?;
     for value in child_values {
@@ -90,6 +94,7 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
         control_socket,
         width: dimensions.0,
         height: dimensions.1,
+        scale,
         color_scheme,
         isolate: matches.get_flag("isolate"),
         app_cpu_quota,

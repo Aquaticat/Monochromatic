@@ -18,7 +18,6 @@ use smithay::{
     desktop::{
         find_popup_root_surface, get_popup_toplevel_coords, PopupKind, PopupManager, Space, Window,
     },
-    output::Output,
     reexports::{
         wayland_protocols::xdg::shell::server::xdg_toplevel,
         wayland_server::protocol::{wl_seat, wl_surface::WlSurface},
@@ -42,31 +41,24 @@ use smithay::{
 /// ```
 use crate::state::Compositor;
 
-/// Configure one toplevel to fill the output: set fullscreen + activated + the
-/// output size as its pending size.
+/// The logical screen size the toplevel is configured with.
+use crate::screen_geometry::ScreenGeometry;
+
+/// Configure one toplevel to fill the screen: set fullscreen + activated + the
+/// logical screen size as its pending size.
 ///
-/// What:     `fn set_fullscreen(surface: &ToplevelSurface, output: &Output)`. Private
-///           helper borrowing the toplevel and output read-only.
+/// What:     `fn set_fullscreen(surface: &ToplevelSurface, geometry: ScreenGeometry)`.
+///           Private helper borrowing the toplevel; the geometry is a small copied value.
 /// Why:      Both the initial map and every resize need the same "fill the screen"
-///           configuration, so it lives in one place.
+///           configuration, so it lives in one place. The size is the logical one: the
+///           output mode is physical, which at scale 2 would configure the client twice too
+///           large and put every logical click in the wrong place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function setFullscreen(surface, output) { ... }
+/// function setFullscreen(surface, geometry) { ... }
 /// ```
-fn set_fullscreen(surface: &ToplevelSurface, output: &Output) {
-    // What:     `let size = output.current_mode().map(|m| m.size).unwrap_or_default();`.
-    //           `current_mode()` returns `Option<Mode>`; `.map(|m| m.size)` pulls the
-    //           `Size<i32, Physical>` when present; `.unwrap_or_default()` substitutes a
-    //           zero size if the output has no mode yet.
-    // Why:      The size the window should fill is the output's current resolution.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const size = output.currentMode()?.size ?? { w: 0, h: 0 };
-    // ```
-    let size = output.current_mode().map(|m| return m.size).unwrap_or_default();
-
+fn set_fullscreen(surface: &ToplevelSurface, geometry: ScreenGeometry) {
     // What:     `surface.with_pending_state(|state| { ... });`. Runs the closure with a
     //           mutable borrow of the toplevel's not-yet-sent configure state.
     // Why:      Stage the fullscreen flags and size so the next `send_configure` carries
@@ -87,18 +79,17 @@ fn set_fullscreen(surface: &ToplevelSurface, output: &Output) {
         // Why:      Slint renders active styling and starts drawing when activated.
         state.states.set(xdg_toplevel::State::Activated);
 
-        // What:     `state.size = Some((size.w, size.h).into());`. Sets the pending
-        //           size. `(size.w, size.h)` is an `(i32, i32)` tuple; `.into()`
-        //           converts it into `Size<i32, Logical>` (the type `state.size`
-        //           expects). `Some(...)` marks the size as specified.
-        // Why:      Ask the client to draw exactly the output's pixel dimensions (scale
-        //           is 1, so logical equals physical here).
+        // What:     `state.size = Some((w, h).into());`. Sets the pending size. The
+        //           `(i32, i32)` tuple `.into()` converts into `Size<i32, Logical>` (the
+        //           type `state.size` expects). `Some(...)` marks the size as specified.
+        // Why:      Ask the client for the logical screen size; the client multiplies
+        //           it by the fractional scale to size its buffer.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // state.size = { w: size.w, h: size.h };
+        // state.size = { w: geometry.logicalWidth, h: geometry.logicalHeight };
         // ```
-        state.size = Some((size.w, size.h).into());
+        state.size = Some((geometry.logical_width, geometry.logical_height).into());
     });
 }
 
@@ -118,9 +109,8 @@ pub fn reconfigure_fullscreen(state: &mut Compositor) {
     //           .filter_map(|w| w.toplevel().cloned()).collect();`. `filter_map` keeps
     //           only windows that have a toplevel, cloning each; `.collect()` gathers
     //           them into an owned `Vec`.
-    // Why:      Collect first so we no longer borrow `state.space` while calling
-    //           `set_fullscreen` (which borrows `state.output`), avoiding an
-    //           overlapping-borrow error.
+    // Why:      Collect first so we no longer borrow `state.space` while sending
+    //           configures, avoiding an overlapping-borrow error.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -136,9 +126,9 @@ pub fn reconfigure_fullscreen(state: &mut Compositor) {
     //           turn (`&toplevels` iterates references).
     // Why:      Reconfigure and notify each window.
     for toplevel in &toplevels {
-        // What:     `set_fullscreen(toplevel, &state.output);`. Stage the new size.
-        // Why:      Update the pending configure to the new output size.
-        set_fullscreen(toplevel, &state.output);
+        // What:     `set_fullscreen(toplevel, state.screen.geometry);`. Stage the new size.
+        // Why:      Update the pending configure to the new logical screen size.
+        set_fullscreen(toplevel, state.screen.geometry);
 
         // What:     `toplevel.send_configure();`. Send the staged configure to the client.
         // Why:      Deliver the new size so the app redraws.
@@ -171,10 +161,10 @@ impl XdgShellHandler for Compositor {
         //           `surface` is consumed.
         let wl_surface = surface.wl_surface().clone();
 
-        // What:     `set_fullscreen(&surface, &self.output);`. Stage the fullscreen
+        // What:     `set_fullscreen(&surface, self.screen.geometry);`. Stage the fullscreen
         //           configure on the new toplevel.
-        // Why:      The first configure (sent on first commit) will carry fullscreen size.
-        set_fullscreen(&surface, &self.output);
+        // Why:      The first configure (sent on first commit) will carry the logical size.
+        set_fullscreen(&surface, self.screen.geometry);
 
         // What:     `let window = Window::new_wayland_window(surface);`. Wrap the
         //           toplevel in a desktop `Window`, consuming `surface`.

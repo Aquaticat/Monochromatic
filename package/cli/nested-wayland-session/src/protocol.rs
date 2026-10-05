@@ -32,6 +32,19 @@ mod wheel;
 #[path = "protocol_color_scheme.rs"]
 mod color_scheme;
 
+/// Runtime output-scale parsing shares the startup option's value grammar.
+#[path = "protocol_scale.rs"]
+mod scale;
+
+/// What:     Import the output-scale value a `scale` request carries.
+/// Why:      The command holds the parsed, validated scale, never the raw text.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { type OutputScale } from "./screen_geometry";
+/// ```
+use crate::screen_geometry::OutputScale;
+
 /// Which pointer button a click uses.
 ///
 /// What:     `pub enum PointerButton { Left, Right, Middle }`. A closed set of three
@@ -124,6 +137,7 @@ pub enum KeyAction {
 ///   | { kind: "resize"; width: number; height: number }
 ///   | { kind: "dropFile"; path: string; x?: number; y?: number }
 ///   | { kind: "colorScheme"; preference: "dark" | "light" }
+///   | { kind: "scale"; scale: OutputScale }
 ///   | { kind: "quit" };
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -167,11 +181,11 @@ pub enum Command {
         /// Text to type verbatim.
         String,
     ),
-    /// Resize the nested screen.
+    /// Resize the nested screen, keeping the output scale.
     Resize {
-        /// New width in pixels.
+        /// New width in logical pixels; the framebuffer is this times the scale.
         width: i32,
-        /// New height in pixels.
+        /// New height in logical pixels; the framebuffer is this times the scale.
         height: i32,
     },
     /// Originate a compositor-side file drag toward the hosted app (inbound DnD test).
@@ -198,6 +212,11 @@ pub enum Command {
     ColorScheme(
         /// Appearance value the private portal serves from now on.
         ColorSchemePreference,
+    ),
+    /// Change the output scale while keeping the logical screen size.
+    Scale(
+        /// Scale every hosted surface is told to render at from now on.
+        OutputScale,
     ),
     /// Stop the compositor.
     Quit,
@@ -338,6 +357,7 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         "drop-file" => return parse_drop_file(&mut tokens),
         "record" => return parse_record(&mut tokens),
         "color-scheme" => return color_scheme::parse(&mut tokens),
+        "scale" => return scale::parse(&mut tokens),
         other => return Err(format!("unknown command: {other}")),
     }
 }

@@ -2,6 +2,8 @@
 
 /// Exercise the production parser and its preserved public configuration.
 use super::*;
+/// The startup scale shares its value type with the runtime `scale` verb.
+use crate::screen_geometry::OutputScale;
 
 /// Build owned parser arguments from borrowed test literals.
 fn args(values: &[&str]) -> Vec<String> {
@@ -48,6 +50,33 @@ fn defaults_are_preserved() {
     assert_eq!(config.app_cpu_quota, None);
     assert_eq!(config.app_cpu_weight, None);
     assert!(!config.isolate);
+    assert_eq!(config.scale, OutputScale::ONE);
+}
+
+/// The startup scale accepts the runtime verb's values in both option spellings.
+#[test]
+fn scale_option_accepts_integer_and_fractional_values() {
+    let fractional = parse_args(&args(&["--scale", "1.25", "app"])).unwrap();
+    assert_eq!(fractional.scale.per_120(), 150);
+    let joined = parse_args(&args(&["--scale=2", "--size", "800x600", "app"])).unwrap();
+    assert_eq!(joined.scale.per_120(), 240);
+    // The size stays logical; the scale does not multiply it here.
+    assert_eq!((joined.width, joined.height), (800, 600));
+    let last = parse_args(&args(&["--scale", "2", "--scale", "1.5", "app"])).unwrap();
+    assert_eq!(last.scale.per_120(), 180);
+}
+
+/// Invalid startup scales fail before compositor startup and name the option.
+#[test]
+fn invalid_scales_are_rejected() {
+    // The joined spelling hands even "-1" to the value parser instead of clap's flag lookup.
+    for value in ["0", "1.333", "3.5", "-1", "NaN", "two", ""] {
+        let joined = format!("--scale={value}");
+        let error = parse_args(&args(&[joined.as_str(), "app"])).err().expect(value);
+        assert!(error.to_string().contains("--scale"), "{value:?}: {error}");
+    }
+    assert!(parse_args(&args(&["--scale", "-1", "app"])).is_err());
+    assert!(parse_args(&args(&["--scale"])).is_err());
 }
 
 /// Parent options retain their accepted values and existing field types.

@@ -10,6 +10,8 @@
 use clap::{Arg, ArgAction, Command};
 /// Typed value parsers preserve u32 limits and the existing size validator.
 use clap::builder::{RangedU64ValueParser, ValueParser};
+/// The output-scale grammar shared with the runtime `scale` verb.
+use crate::screen_geometry::OutputScale;
 
 /// Construct the CLI independently of process arguments or a display server.
 pub(super) fn command() -> Command {
@@ -40,9 +42,26 @@ pub(super) fn command() -> Command {
     let mut size = Arg::new("size");
     size = size.long("size").value_name("WIDTHxHEIGHT");
     size = size.default_value("1280x720");
-    size = size.help("Initial nested-screen size in physical pixels");
+    size = size.help("Initial nested-screen size in logical pixels; screenshots are this times --scale");
     size = size.value_parser(ValueParser::new(super::size::parse_size));
     command = command.arg(size);
+
+    let mut scale = Arg::new("scale");
+    scale = scale.long("scale").value_name("SCALE");
+    scale = scale.default_value("1");
+    scale = scale.help(
+        "Initial output scale, 0.5 to 3 in steps of 1/120 (such as 1, 1.25, 1.5, 2); \
+         the scale control command changes it while the child runs"
+    );
+    // What: ValueParser::new wraps a plain function that returns Result<OutputScale, String>.
+    // Why: The startup option and the runtime verb share one grammar and one message.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // scale.valueParser(OutputScale.parse);
+    // ```
+    scale = scale.value_parser(ValueParser::new(OutputScale::parse));
+    command = command.arg(scale);
 
     let mut scheme = Arg::new("color-scheme");
     scheme = scheme.long("color-scheme").value_name("SCHEME");

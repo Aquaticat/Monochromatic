@@ -103,6 +103,12 @@ pub mod protocol;
 /// End-of-dispatch delivery must not depend on a visible rendering window.
 pub mod protocol_flush;
 
+/// Logical size and output scale as plain numbers, tested without a display.
+pub mod screen_geometry;
+
+/// Applying the nested screen's size and scale to the window, output, and hosted surfaces.
+pub mod screen;
+
 /// What:     `pub mod screenshot;`. Declares the framebuffer-readback module.
 /// Why:      Renders a frame and encodes it as a PNG.
 ///

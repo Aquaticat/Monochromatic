@@ -33,6 +33,9 @@ use crate::appearance_portal::AppearancePortal;
 /// Stall bookkeeping that keeps the hosted client drawing while the parent is silent.
 use crate::frame_pacing::FramePacing;
 
+/// The logical screen size and output scale, and the globals that tell clients the scale.
+use crate::{screen::ScreenState, screen_geometry::ScreenGeometry};
+
 /// What:     A grouped `use` of Smithay items. Each path names a type used below; the
 ///           braces just avoid repeating the common `smithay::...` prefix.
 /// Why:      Bring the compositor building blocks into scope.
@@ -175,6 +178,13 @@ pub struct Compositor {
     /// Why:      Resizing changes its mode; rendering and frame callbacks reference it.
     pub output: Output,
 
+    /// The logical screen size and output scale, plus the globals that carry the scale.
+    ///
+    /// What:     `pub screen: ScreenState`.
+    /// Why:      The `scale` and `resize` commands and the toplevel configure read the logical
+    ///           size and scale from here; the output mode holds only the physical framebuffer.
+    pub screen: ScreenState,
+
     /// The winit graphics backend: the nested window plus its GLES/EGL renderer.
     ///
     /// What:     `pub backend: WinitGraphicsBackend<GlesRenderer>`. Parameterised by
@@ -280,7 +290,7 @@ pub struct Compositor {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type BackendPieces = { backend; output; dmabufState; dmabufGlobal; dmabufFeedback };
+/// type BackendPieces = { backend; output; dmabufState; dmabufGlobal; dmabufFeedback; geometry };
 /// ```
 pub struct BackendPieces {
     /// The winit backend (window + GLES renderer).
@@ -293,6 +303,8 @@ pub struct BackendPieces {
     pub dmabuf_global: DmabufGlobal,
     /// The dmabuf v4 feedback, or `None` for v3.
     pub dmabuf_feedback: Option<DmabufFeedback>,
+    /// The starting logical size and scale the window and output were built for.
+    pub geometry: ScreenGeometry,
 }
 
 /// Constructors and helpers for the compositor state.
@@ -372,6 +384,8 @@ impl Compositor {
         let data_device_state = DataDeviceState::new::<Self>(&dh);
         // Lend the nested display handle; clipboard protocols use its existing seat storage.
         let clipboard = ClipboardProtocols::new(&dh);
+        // Register the fractional-scale and viewporter globals with the starting geometry.
+        let screen = ScreenState::new(&dh, pieces.geometry);
 
         // What:     `PopupManager::default()`. Builds an empty popup tracker.
         // Why:      Ready to track any popups the app opens.
@@ -460,6 +474,7 @@ impl Compositor {
             popups,
             seat,
             output: pieces.output,
+            screen,
             backend: pieces.backend,
             damage_tracker,
             dmabuf_state: pieces.dmabuf_state,

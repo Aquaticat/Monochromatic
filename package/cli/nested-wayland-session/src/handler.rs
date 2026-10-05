@@ -36,6 +36,9 @@ pub mod dmabuf;
 /// Nested-only clipboard manager protocols share the existing seat selection.
 pub mod clipboard;
 
+/// Fractional-scale and viewporter handlers tell new surfaces the output scale.
+pub mod scale;
+
 /// What:     Grouped `use` of the seat, output, data-device, and delegate items.
 /// Why:      Bring the traits and macros the impls below need into scope.
 ///

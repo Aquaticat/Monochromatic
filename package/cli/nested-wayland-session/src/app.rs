@@ -5,17 +5,16 @@
 //! subsystem (backend, state, child, rendering, per-event handling) lives in its own
 //! module, and this file only connects them and owns the event loop.
 
-/// What:     Grouped `use` of the winit event enum, the output mode / damage tracker, the
+/// What:     Grouped `use` of the shared-memory import trait, the winit event enum, the
 ///           event loop, and the display.
 /// Why:      `run` and `handle_winit_event` reference these.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { WinitEvent, Mode, OutputDamageTracker, EventLoop, Display } from "smithay";
+/// import { ImportMemWl, WinitEvent, EventLoop, Display } from "smithay";
 /// ```
 use smithay::{
-    backend::{renderer::damage::OutputDamageTracker, renderer::ImportMemWl, winit::WinitEvent},
-    output::Mode,
+    backend::{renderer::ImportMemWl, winit::WinitEvent},
     reexports::{
         calloop::EventLoop,
         wayland_server::Display,
@@ -35,11 +34,10 @@ use anyhow::{Context, Result};
 /// ```
 use crate::{
     appearance_portal::AppearancePortal,
-    backend::{init_backend, OUTPUT_REFRESH_MHZ},
+    backend::init_backend,
     child::{register_exit_poll, spawn_child},
     cli::Config,
     control,
-    handler::xdg_shell::reconfigure_fullscreen,
     render::redraw,
     state::Compositor,
     systemd::Isolation,
@@ -214,33 +212,13 @@ fn handle_winit_event(event: WinitEvent, state: &mut Compositor) {
     // Why:      React to the parent window being resized or closed, and to redraw ticks.
     match event {
         WinitEvent::Resized { size, .. } => {
-            // What:     `let mode = Mode { size, refresh: OUTPUT_REFRESH_MHZ };`. Build a
-            //           new output mode at the new size.
-            // Why:      The nested screen resized; update its advertised resolution.
-            let mode = Mode {
-                size,
-                refresh: OUTPUT_REFRESH_MHZ,
-            };
-
-            // What:     `state.output.change_current_state(Some(mode), None, None, None);`.
-            //           Apply the new mode; keep transform, scale, and position unchanged.
-            // Why:      Make the new resolution current.
-            state.output.change_current_state(Some(mode), None, None, None);
-
-            // What:     `state.output.set_preferred(mode);`. Mark it preferred.
-            // Why:      Clients prefer this mode when choosing a size.
-            state.output.set_preferred(mode);
-
-            // What:     `state.damage_tracker = OutputDamageTracker::from_output(
-            //           &state.output);`. Replace the damage tracker with one sized to the
-            //           new output.
-            // Why:      The old tracker's dimensions no longer match the framebuffer.
-            state.damage_tracker = OutputDamageTracker::from_output(&state.output);
-
-            // What:     `reconfigure_fullscreen(state);`. Tell every hosted window to
-            //           redraw at the new fullscreen size.
-            // Why:      Keep the app filling the resized screen.
-            reconfigure_fullscreen(state);
+            // What:     `WinitEvent::Resized { size, .. }` binds the new framebuffer size and
+            //           ignores the other field (`..`), the parent output's scale.
+            // Why:      The parent changed the nested window's size. `parent_resized` keeps
+            //           the logical size through the parent's rounding and follows a real
+            //           change at the current nested scale. The parent's own scale is never
+            //           adopted, so the nested scale stays what `--scale` and `scale` set.
+            crate::screen::parent_resized(state, size);
         }
         WinitEvent::Redraw => {
             // What:     `redraw(state);`. Composite and present one frame.
