@@ -17,6 +17,35 @@ Answers are given in the chat and then recorded in `doc/handover/slint-ide-0x.md
 
 ## Index
 
+### 2026-10-05 annotations as built
+
+- Screenshots: `screenshots/2026-10-05-annotations-as-built/`
+- Status: a record of shipped behavior, not a question.
+  The scope delegates inlay hint placement to the agent's evidence;
+  the reasons are in the package README section "Inlay hints and diagnostics".
+  The user can still veto any of it.
+
+What the frames show,
+from the `inspect:native <scheme> annotations` scene with injected hints and diagnostics
+on branch `feat/ide-lsp-annotations` at `112dbd955`:
+
+- `lines-dark-zoom.png` and `lines-light-zoom.png`:
+  the first source lines enlarged.
+  Inlay hints sit in boxes after the end of their line,
+  in source order;
+  a lettered severity marker (`E`, `W`) follows the text of a line where a diagnostic starts;
+  each diagnostic is underlined in a style that differs by severity.
+- `window-dark.png` and `window-light.png`:
+  the whole window with the same annotations.
+- `caret-card-dark.png` and `caret-card-light.png`:
+  the caret inside an underlined range,
+  with the card that lists the problems at the caret.
+
+Known cost of the end-of-line placement,
+visible on line 1:
+several hints on one line are told apart only by their order.
+The tree's selected row and the wide divider gutter in these frames predate the UI batch 2 answers.
+
 ### 2026-10-05 UI batch 2
 
 - Page: [`questions/2026-10-05-ui-batch-2.html`](questions/2026-10-05-ui-batch-2.html)
