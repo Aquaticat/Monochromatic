@@ -364,3 +364,7 @@ const child = spawn('podman', [
 const [code] = await once(child, 'exit')
 if (code !== 0) throw new Error(`concurrent e2e container exited with ${String(code)}`)
 '''
+
+[tasks."native:lock:scanner"]
+description = "Seed the native wrapper lockfile from the linked scanner's lockfile, then let Cargo add only the wrapper's own packages, so both lock the same registry versions"
+run = ["cp ../../cli/forbidden-strings/Cargo.lock Cargo.lock", "cargo update --workspace --offline"]
