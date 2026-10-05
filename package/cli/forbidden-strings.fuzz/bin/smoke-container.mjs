@@ -15,19 +15,22 @@ async function main() {
   ];
   const fixture = await snapshot({ command, name: 'embedding-fuzz', toolchain: true, tool: 'cargo-fuzz', fuzzing: true });
   let container;
+  let evidencePreserved = false;
   try {
     container = run({ command: 'podman', args: ['create', ...fixture.limits, fixture.image], capture: true }).stdout.trim();
-    const result = run({ command: 'podman', args: ['start', '--attach', container], allowFailure: true });
+    const result = run({ command: 'podman', args: ['start', '--attach', container], allowFailure: true, transcript: fixture.evidence });
     const copied = {};
     for (const directory of ['seed/fuzz_embedding', 'artifacts']) {
       const copy = run({ command: 'podman', args: ['cp', `${container}:/work/package/cli/forbidden-strings.fuzz/${directory}`, join(fixture.evidence, directory === 'artifacts' ? 'artifacts' : 'corpus')], capture: true, allowFailure: true });
       copied[directory] = { status: copy.status, stderr: copy.stderr };
     }
+    evidencePreserved = copied['seed/fuzz_embedding'].status === 0 && copied.artifacts.status === 0;
     await writeFile(join(fixture.evidence, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal, copied }, null, 2) + '\n');
-    if (result.status !== 0 || copied['seed/fuzz_embedding'].status !== 0)
+    if (result.status !== 0 || !evidencePreserved)
       throw new ScannerVerificationError(`Embedding fuzzing exited ${result.status}; inspect ${fixture.evidence}.`);
   } finally {
-    if (container) run({ command: 'podman', args: ['rm', '--force', container], capture: true });
+    if (container && evidencePreserved) run({ command: 'podman', args: ['rm', '--force', container], capture: true });
+    else if (container) console.error(`Fuzz evidence retrieval failed; disposable container retained for recovery: ${container}`);
     await rm(fixture.context, { recursive: true, force: true });
   }
 }

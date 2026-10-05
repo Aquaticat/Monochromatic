@@ -1,0 +1,46 @@
+//! Disposable fixture consumer; never compiled into the published scanner.
+use forbidden_strings::{Scanner, ScanFinding};
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
+
+fn command(mode: &str) -> Output {
+    return Command::new(env!("CARGO_BIN_EXE_forbidden-strings"))
+        .arg(mode).output().expect("fixture executable");
+}
+
+#[test]
+fn standalone_faults_have_real_exit_two_and_redacted_output() {
+    for mode in ["fixture-startup-panic", "fixture-worker-panic"] {
+        let output: Output = command(mode);
+        assert_eq!(output.status.code(), Some(2), "actual CLI exit must be two");
+        assert!(output.stdout.is_empty());
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert_eq!(stderr, "forbidden-strings: scanner operation panicked; no complete scan result is available.\n");
+        assert!(!stderr.contains("SYNTHETIC_PRIVATE"));
+    }
+    let help: Output = command("--help");
+    assert!(help.status.success());
+    assert!(String::from_utf8_lossy(&help.stdout).contains("Usage:"));
+}
+
+fn host_hook(_information: &std::panic::PanicHookInfo<'_>) {
+    eprintln!("fixture-host-hook-called");
+}
+
+#[test]
+fn public_loader_discards_partial_rules_and_preserves_host_hook() {
+    std::panic::set_hook(Box::new(host_hook));
+    let root: PathBuf = PathBuf::from(std::env::var_os("SCANNER_GUARD_HOME").expect("disposable home"));
+    let fault: PathBuf = root.join("fixture-load-panic");
+    std::fs::write(&fault, "PARTIAL_FIXTURE_LONG\n").expect("fault rules");
+    let error = match Scanner::load(fault.as_path(), true, true) {
+        Ok(_) => panic!("partial ruleset must not be returned"),
+        Err(failure) => failure,
+    };
+    assert_eq!(error.to_string(), "Forbidden-strings rule loading panicked; no rule set was accepted.");
+    let healthy: PathBuf = root.join("healthy");
+    std::fs::write(&healthy, "HEALTHY_FIXTURE_LONG\n").expect("healthy rules");
+    let scanner: Scanner = Scanner::load(healthy.as_path(), false, true).expect("recovered same-thread load");
+    assert_eq!(scanner.scan(8, Path::new("safe"), b"HEALTHY_FIXTURE_LONG").findings,
+        vec![ScanFinding::Content { line: 1, rule: String::from("0") }]);
+}

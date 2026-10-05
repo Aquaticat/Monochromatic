@@ -23,15 +23,18 @@ async function main() {
   ]) command.push('--file', `src/${file}`);
   const fixture = await snapshot({ command, name: 'mutation', tool: 'cargo-mutants' });
   let container;
+  let reportPreserved = false;
   try {
     container = run({ command: 'podman', args: ['create', ...fixture.limits, fixture.image], capture: true }).stdout.trim();
-    const result = run({ command: 'podman', args: ['start', '--attach', container], allowFailure: true });
+    const result = run({ command: 'podman', args: ['start', '--attach', container], allowFailure: true, transcript: fixture.evidence });
     const report = run({ command: 'podman', args: ['cp', `${container}:/work/mutation-report/.`, fixture.evidence], capture: true, allowFailure: true });
+    reportPreserved = report.status === 0;
     await writeFile(join(fixture.evidence, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal, reportCopied: report.status === 0, reportCopyError: report.stderr }, null, 2) + '\n');
     if (result.status !== 0 || report.status !== 0)
       throw new ScannerVerificationError(`Mutation exited ${result.status}; report-copy status ${report.status}; inspect ${fixture.evidence}.`);
   } finally {
-    if (container) run({ command: 'podman', args: ['rm', '--force', container], capture: true });
+    if (container && reportPreserved) run({ command: 'podman', args: ['rm', '--force', container], capture: true });
+    else if (container) console.error(`Report retrieval failed; disposable container retained for recovery: ${container}`);
     await rm(fixture.context, { recursive: true, force: true });
   }
 }

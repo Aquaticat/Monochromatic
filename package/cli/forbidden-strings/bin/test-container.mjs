@@ -15,7 +15,7 @@ async function main() {
     : ['cargo', 'test', '--offline', '--locked', '--all-targets', '--', '--test-threads=1'];
   const fixture = await snapshot({ command, name: clippy ? 'clippy' : 'test', toolchain: clippy });
   try {
-    const result = run({ command: 'podman', args: ['run', '--rm', ...fixture.limits, fixture.image], allowFailure: true });
+    const result = run({ command: 'podman', args: ['run', '--rm', ...fixture.limits, fixture.image], allowFailure: true, transcript: fixture.evidence });
     await writeFile(join(fixture.evidence, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal }) + '\n');
     if (result.status !== 0) throw new ScannerVerificationError(`Verification exited ${result.status}; inspect ${fixture.evidence}.`);
   } finally {

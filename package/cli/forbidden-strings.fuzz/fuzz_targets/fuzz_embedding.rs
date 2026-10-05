@@ -64,6 +64,29 @@ fn content_findings(report: &CandidateScan) -> Vec<ScanFinding> {
     return records;
 }
 
+/// Independently enumerate native Unix pathname findings, rejecting failures for these valid fixed matchers.
+fn name_findings(input: &[u8]) -> Vec<ScanFinding> {
+    // Line-breaking names intentionally fail closed before any component matching occurs.
+    if input.contains(&b'\n') || input.contains(&b'\r') {
+        return vec![ScanFinding::PathnameLineBreak];
+    }
+    let mut findings: Vec<ScanFinding> = Vec::new();
+    let mut position: usize = 0;
+    for component in input.split(|byte| return *byte == b'/') {
+        if component.is_empty() || component == b"." || component == b".." {
+            continue;
+        }
+        position += 1;
+        // The independent byte-search oracle supplies rule names, never the scanner's result.
+        for finding in expected(component) {
+            if let ScanFinding::Content { rule, .. } = finding {
+                findings.push(ScanFinding::Name { component: position, rule });
+            }
+        }
+    }
+    return findings;
+}
+
 /// Exercise public scan, native bytes, redaction, independent content semantics and state reuse.
 fn verify(input: &[u8]) {
     let scanner: &Scanner = SCANNER.get_or_init(scanner);
@@ -72,6 +95,9 @@ fn verify(input: &[u8]) {
     assert_eq!(positive.display_path, "[REDACTED]/[REDACTED]");
     assert_eq!(content_findings(&positive), expected(b"EMBEDDED_NEEDLE_LONG\nRX42\n"));
     assert_eq!(positive.findings.len(), 4);
+    // Protocol and invalid-UTF-8 positive controls pin preserved safe names independently of arbitrary input.
+    let safe_native: PathBuf = PathBuf::from(OsString::from_vec(b"safe/\xffa:b\\c\t".to_vec()));
+    assert_eq!(scanner.scan(18, safe_native.as_path(), b"").display_path, "safe/\\xffa\\x3ab\\\\c\\u{9}");
     // Native path bytes remain arbitrary, including invalid UTF-8 and protocol delimiters.
     let path: PathBuf = PathBuf::from(OsString::from_vec(input.to_vec()));
     let report: CandidateScan = scanner.scan(input.len(), path.as_path(), input);
@@ -79,7 +105,10 @@ fn verify(input: &[u8]) {
     let prefix: &[u8] = &input[..input.len().min(PROBE)];
     let checked: &[u8] = if prefix.contains(&0) { prefix } else { input };
     assert_eq!(report.scanned_bytes, checked.len());
-    assert_eq!(content_findings(&report), expected(checked));
+    let mut complete_expected: Vec<ScanFinding> = name_findings(input);
+    complete_expected.extend(expected(checked));
+    // Compare every variant: an input-specific EngineError must fail fuzzing, not vanish in a content-only filter.
+    assert_eq!(report.findings, complete_expected);
     assert!(!report.display_path.contains('\n'));
     assert!(!report.display_path.contains('\r'));
     assert!(!report.display_path.contains("EMBEDDED_NEEDLE_LONG"));
