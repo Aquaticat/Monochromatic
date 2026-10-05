@@ -220,6 +220,10 @@ function parseStrictly({ text, }: { readonly text: string; },): ParseAttempt {
 
  @returns Ordered atoms, or the reason the paragraph was refused
 
+ @throws Error when the text read alone is one paragraph and the parse with
+ the definitions leads with another block, which the blank line between them
+ rules out
+
  @example
  ```ts
  const inspection = inspectParagraph({ text: paragraph, definitions, },);
@@ -243,18 +247,21 @@ export function inspectParagraph(
       kind: 'rejected',
       reason: 'unparseable',
     };
-  /**
-   Whole structure the paragraph-alone parse holds: one block exactly,
-   whose kind the leading-block check reads off the definitions parse.
-   */
-  const aloneCount = alone.root
-    .children
-    .length;
-  if (aloneCount !== 1)
+  if (
+    (alone.root
+      .children
+      .length
+      !== 1)
+    || (alone.root
+      .children[0]
+      ?.type
+      !== 'paragraph')
+  ) {
     return {
       kind: 'rejected',
       reason: 'not-one-paragraph',
     };
+  }
 
   /**
    The same paragraph with definitions in scope, so its references resolve.
@@ -269,15 +276,18 @@ export function inspectParagraph(
     };
 
   /**
-   Leading block, which the structure check already proved is the paragraph.
+   Leading block, which the structure check already proved is the paragraph:
+   the definitions follow it after a blank line, and a blank line ends a
+   paragraph, so nothing appended can change what its first block is.
    */
   const [block,] = parsed.root
     .children;
   if ((block === undefined) || (block.type !== 'paragraph'))
-    return {
-      kind: 'rejected',
-      reason: 'not-one-paragraph',
-    };
+    throw new Error(
+      `unreachable: a text that parsed alone as one paragraph led with ${
+        block?.type ?? 'no block'
+      } once the definitions were appended after a blank line, which ends a paragraph before them`,
+    );
 
   /**
    Inline nodes still to visit, held as a stack so the walk stays iterative

@@ -2,7 +2,6 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { wordForCount, } from './count-word.ts';
@@ -184,6 +183,26 @@ export type PairedReading = {
    ask them; absent when no model was asked.
    */
   readonly confirmedBy?: readonly RosterModelId[];
+} | {
+  /**
+   The readers confirmed the picture carries no text where the deterministic
+   reader could not read it at all.
+
+   NO COUNT, BECAUSE NONE WAS TAKEN. A count of zero here would state a reading
+   the deterministic reader never made, and would read exactly like a clean
+   nothing, which a missing tool is not.
+   */
+  readonly kind: 'no-text';
+
+  /**
+   Why the deterministic reader could not read the picture.
+   */
+  readonly deterministicUnavailable: Extract<OcrReading, { readonly kind: 'unavailable'; }>['reason'];
+
+  /**
+   Readers that confirmed it, the only witnesses this verdict has.
+   */
+  readonly confirmedBy: readonly RosterModelId[];
 } | {
   /**
    No reading may be used, for a reason a finding can name.
@@ -432,12 +451,23 @@ export async function readImagePair(
 
     /**
      Reader whose exchange threw, taken by position because a rejected
-     settlement carries no label of its own. The roster check is
-     `nonNullishOrThrow`'s: the capability gate answers every unnamed slot
-     with a reading before any exchange, so no rejected ask arrives at an
-     unnamed position (ledger T8, 2026-10-04).
+     settlement carries no label of its own. Present at every position:
+     `settled` is the roster mapped one ask per slot, so the settlement at
+     `index` is the ask the slot at `index` made.
      */
-    const modelId = nonNullishOrThrow(readerModelIds[index],);
+    const modelId = readerModelIds[index];
+    if (modelId === undefined)
+      throw new Error(
+        `unreachable: readImagePair settled ${String(settled.length,)} ${
+          wordForCount({
+            count: settled.length,
+            one: 'reader',
+            many: 'readers',
+          },)
+        } for ${assetName} and then could not name the one at index ${
+          String(index,)
+        }, though each settlement is the ask the roster slot at its own index made`,
+      );
     rl.warn(
       `${assetName}: ${modelId} failed outright, so it contributes no reading (${
         String(result.reason,)
@@ -497,31 +527,47 @@ export async function readImagePair(
   },);
   if ((readings.length < 2) && (littleText.length >= 2)) {
     /**
+     The readers' confirmation, as the log states it whatever the
+     deterministic reader made of the picture.
+     */
+    const confirmation = `${assetName}: ${String(littleText.length,)} of ${String(readerModelIds.length,)} ${
+      wordForCount({
+        count: readerModelIds.length,
+        one: 'reader',
+        many: 'readers',
+      },)
+    } ${
+      wordForCount({
+        count: littleText.length,
+        one: 'reports',
+        many: 'report',
+      },)
+    } little or no text (${littleText.join(', ',)}), so the picture is confirmed textless`;
+
+    // A DETERMINISTIC READER THAT COULD NOT RUN TOOK NO COUNT, so the verdict
+    // and the log name it unavailable with its reason: a zero here would read
+    // exactly like a picture it had found bare, which a missing tool is not.
+    if (ocr.kind === 'unavailable') {
+      rl.info(`${confirmation} where the deterministic reader was unavailable (${ocr.reason})`,);
+      return {
+        kind: 'no-text',
+        deterministicUnavailable: ocr.reason,
+        confirmedBy: littleText,
+      };
+    }
+
+    /**
      What the deterministic reader had found, which the readers now overrule.
      */
-    const characters = (ocr.kind === 'read') ? solidCharacters({ text: ocr.text, },) : 0;
+    const characters = solidCharacters({ text: ocr.text, },);
     rl.info(
-      `${assetName}: ${String(littleText.length,)} of ${String(readerModelIds.length,)} ${
+      `${confirmation} past the deterministic reader's ${String(characters,)} ${
         wordForCount({
-          count: readerModelIds.length,
-          one: 'reader',
-          many: 'readers',
+          count: characters,
+          one: 'character',
+          many: 'characters',
         },)
-      } ${
-        wordForCount({
-          count: littleText.length,
-          one: 'reports',
-          many: 'report',
-        },)
-      } little or `
-        + `no text (${littleText.join(', ',)}), so the picture is confirmed textless past the deterministic `
-        + `reader's ${String(characters,)} ${
-          wordForCount({
-            count: characters,
-            one: 'character',
-            many: 'characters',
-          },)
-        }`,
+      }`,
     );
     return {
       kind: 'no-text',

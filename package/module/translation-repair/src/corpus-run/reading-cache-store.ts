@@ -94,9 +94,31 @@ function isPairedReading(value: unknown,): value is PairedReading {
 
   // The count is checked rather than assumed, because it is what separates a
   // picture with nothing on it from one whose few characters fell below the
-  // line, and a record missing it cannot say which it was.
-  if (value.kind === 'no-text')
-    return (typeof value.characters) === 'number';
+  // line, and a record missing it cannot say which it was. A deterministic
+  // reader that could not run took no count; that record names why instead,
+  // and the readers whose confirmation is then the whole verdict.
+  if (value.kind === 'no-text') {
+    if ((typeof value.characters) === 'number')
+      return true;
+    /**
+     Reasons the deterministic reader can be unavailable for.
+     */
+    const unavailable: readonly string[] = [
+      'undecodable',
+      'ocr-tool-missing',
+      'ocr-failed',
+    ];
+    if ((typeof value.deterministicUnavailable) !== 'string')
+      return false;
+    if (!unavailable.includes(value.deterministicUnavailable,))
+      return false;
+    if (!Array.isArray(value.confirmedBy,))
+      return false;
+    return value.confirmedBy
+      .every(function named(one,): boolean {
+        return (typeof one) === 'string';
+      },);
+  }
 
   if (value.kind !== 'unavailable')
     return false;
