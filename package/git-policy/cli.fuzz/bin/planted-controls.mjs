@@ -27,6 +27,15 @@ const inputs = [
   'package/rust-module/jsonc-edit/Cargo.lock',
   'package/rust-module/jsonc-edit/src',
   'package/rust-module/jsonc-edit/fixtures',
+  // The subject links the scanner; `build.rs` and `data` hold the embedded baseline its library compiles in.
+  'package/cli/forbidden-strings/Cargo.toml',
+  'package/cli/forbidden-strings/Cargo.lock',
+  'package/cli/forbidden-strings/build.rs',
+  'package/cli/forbidden-strings/src',
+  'package/cli/forbidden-strings/data',
+  'package/rust-module/forbidden-regex/Cargo.toml',
+  'package/rust-module/forbidden-regex/Cargo.lock',
+  'package/rust-module/forbidden-regex/src',
 ];
 
 /**
@@ -71,6 +80,19 @@ const plants = [
     edits: [{
       from: 'key == "hooks" || key == "indexLock" || key == "landing"',
       to: 'key == "hooks" || key == "indexLock"',
+    }],
+  },
+  {
+    name: 'object content past its declared size is accepted',
+    file: 'package/git-policy/cli/src/native/candidate_batch.rs',
+    edits: [{ from: "if terminator[0] != b'\\n' {", to: 'if false {' }],
+  },
+  {
+    name: 'an object reply for another object is accepted',
+    file: 'package/git-policy/cli/src/native/candidate_batch.rs',
+    edits: [{
+      from: 'if requested.is_some() && requested.as_ref() != Some(&object) {',
+      to: 'if false {',
     }],
   },
 ];

@@ -16,3 +16,6 @@ pub mod arguments;
 
 /// Generated configuration documents and the schema invariants.
 pub mod configuration;
+
+/// Generated `git cat-file --batch` replies and the reply-reading invariants.
+pub mod batch;
