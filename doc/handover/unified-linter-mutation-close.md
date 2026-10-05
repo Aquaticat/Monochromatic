@@ -1,0 +1,187 @@
+# Unified-linter mutation close
+
+## Purpose and how to respond
+
+Mutation testing is a release acceptance gate for the native linter in `package/linter/monochromatic-lint`:
+a surviving non-equivalent mutant needs a stronger test,
+an equivalent or unreachable one needs evidence,
+and a campaign that exits nonzero is not a passing gate.
+This handover removes the timeouts that kept the Markdown and processor campaigns exiting 3,
+runs the first campaign over the executable's own modules,
+and reruns the Markdown and processor campaigns on the final snapshot.
+
+Inspect `Timeouts removed` first,
+because it changes production code and adds one error path.
+Then read `Defects found` and `Remaining`.
+Respond with a veto of a named change or disposition,
+or with the next scope to mutate.
+
+This document is in progress;
+sections without results say so.
+
+## Timeouts removed
+
+Every timeout had one cause:
+a loop whose only progress was a step that cargo-mutants can replace.
+`+=` replaced by `*=` multiplies a zero counter by one,
+and a constant replacement of `MarkdownSource::parent` makes a node its own ancestor,
+so the loop never ends and the test binary runs into the 180 second per-mutant limit.
+cargo-mutants 27.1.0 exits 3 for any timeout,
+so no campaign containing such a loop can pass.
+Each loop now walks a slice,
+calls a standard search,
+or runs over a fixed range,
+so termination no longer depends on a statement a mutant can change.
+
+### `markdown_definitions.rs`: definition line start
+
+`removal_edit` walked backwards one byte at a time to find the line start
+(`replace -= with /= in removal_edit` timed out in `mutation-p3QH2L` and `mutation-BX2JYq`).
+It now takes `rfind(['\n', '\r'])` over the source before the definition,
+the same shape as `continuation_prefix` in `markdown_prose_context.rs`.
+`standalone_definitions_do_not_leave_line_fragments` already deletes an indented definition on a later line
+in LF,
+CRLF and bare CR,
+so both mutants of the remaining `ending + 1` fail it:
+the copied prefix would start at the line ending and the definition would no longer count as standalone.
+
+### `markdown_punctuation.rs`: escaped heading punctuation
+
+`suffix_start` counted the backslashes before a trailing period or colon with a hand-stepped index
+(`replace -= with /= in suffix_start` timed out in both Markdown campaigns).
+It now flips an `escaped` flag while walking the bytes before the punctuation in reverse,
+the same shape as `cell_content` in `markdown_tables.rs`.
+The new control `escape_runs_reaching_the_text_start_decide_the_suffix` covers runs of one,
+two and three backslashes that reach the text's first byte,
+two escaped characters in a row,
+and a run after a letter.
+
+### `MarkdownSource::parent`: bounded ancestor walks
+
+Both constant replacements of `MarkdownSource::parent` timed out in every Markdown campaign,
+because `has_ancestor` and `paragraph_for` climbed until `parent` returned `None`.
+The main session chose,
+open to veto,
+to bound ancestor walks so that a cycle becomes a typed error,
+rather than exclude the two mutants.
+
+- `MarkdownSource::ancestors` is the only ancestor walk.
+  It returns the ancestors nearest first,
+  and runs over the fixed range `0..parents.len()`:
+  a node at depth d needs d + 1 passes and d is at most one less than the node count,
+  so a tree always finishes inside the range,
+  and a walk that does not is a cycle.
+  It then returns `MarkdownError` with the starting node's offset.
+- `has_ancestor` returns `Result<bool, MarkdownError>`.
+  `paragraph_for` and `delimiter_tail` in `markdown_prose_context.rs` now read one ancestor list
+  that `semantic_line_breaks` takes once per text node,
+  so they cannot fail separately.
+- `markdown/semantic-line-breaks` and `markdown/no-emphasis-as-heading`,
+  the two rules that walk ancestors,
+  report the error as one `core/processing-failure` finding
+  whose message starts with the rule code and `could not check this file:`,
+  built by the new `ancestry_failure` in `markdown_finding.rs` through `run_failure::processing_failure`.
+  That is the same pattern as `resolution_failure` in `rust_type_diagnostic.rs`.
+  The public rule signatures are unchanged,
+  so dispatch and the fuzz sidecar did not change.
+- `markdown_tables.rs` reads one parent and walks nothing,
+  so it still calls `parent` directly.
+
+A corrupted arena cannot reach these walks:
+`traversal` rejects a cyclic child graph before any parent index exists,
+which `child_graph_rejects_duplicate_invalid_and_cyclic_ids` already tests.
+The only place a cycle can appear is the derived parent index,
+through a later change to `traversal` or a mutated accessor.
+`a_parent_index_cycle_is_a_typed_error_and_a_processing_failure` in `markdown_traversal_tests.rs`
+plants one there (the paragraph's parent becomes the emphasis inside it),
+then requires the exact error message and offset from `ancestors` and `has_ancestor`,
+and exactly one processing failure from each rule,
+with its code,
+severity,
+message,
+position and no fix.
+`ancestor_walks_reach_the_root_from_the_deepest_possible_node` is the positive control for the bound:
+in `*__a__*` every node lies on one path,
+so the deepest text node needs exactly as many passes as the document has nodes.
+
+### `processors_docs.rs`: doc-comment runs
+
+`docs` grouped adjacent line comments with an inner `while` that advanced `index`
+(`replace += with *= in docs` timed out in `mutation-exJwfB` and `processor-survivors-mutation-w00nRd`).
+Grouping is now a separate step:
+`units` walks the fixed range `1..=comments.len()`
+and closes a unit wherever the named predicate `joins_run` says the next comment does not continue it.
+`joins_run` keeps every condition of the old loop:
+the same prefix,
+a whitespace-only gap,
+exactly one line ending,
+and never a block comment.
+The refusal for a line comment after code still applies to a run's first comment only;
+later members follow a newline-only gap,
+so the check could never fire for them.
+
+No test had two adjacent block docs or a changed line prefix on the next line,
+so `processors_keep_adjacent_blocks_and_changed_prefixes_in_separate_virtual_files`
+compares the exact virtual names and texts for adjacent `/** */` blocks,
+`//!` followed by `///`,
+and `///` followed by `/** */`,
+with a two-line `///` run as the positive control.
+
+### `processors_lines.rs`: physical lines
+
+`physical_lines` advanced a cursor by hand
+(`replace += with *= in physical_lines` timed out in the same two processor campaigns).
+It is now one `enumerate` pass:
+a CR directly followed by LF is skipped,
+and the LF that closes a CRLF pair finds its CR with `bytes[start..index].ends_with(b"\r")`,
+which needs no index guard.
+A bare CR always closes its own line,
+so only a CRLF pair can leave a CR at the end of the current line.
+
+### Loops pre-empted in the executable's modules
+
+Three loops in files the executable added had the same shape.
+`cargo mutants --list --no-config` on the source at `878f79d48` generates
+`replace += with *= in relative_from` at `src/run_paths.rs:119:16`,
+`replace += with *= in relative_link` at `src/markdown_lfs_target.rs:217:16`,
+and `replace += with *= in sha256_hex` at `src/markdown_lfs_sha256.rs:175:16`.
+Each multiplies a counter or offset that starts at zero,
+so the loop condition never changes.
+They were restructured before any campaign reached them,
+so no campaign observed them as timeouts:
+the two shared-prefix counts walk zipped component pairs and stop at the first difference,
+and the hash splits its input with `as_chunks::<64>()`,
+which returns the whole blocks and the remainder together
+and removes the `bytes.len() / 64 * 64` arithmetic.
+A first version used `chunks_exact(64)`,
+which container Clippy denies (`clippy::chunks_exact_to_as_chunks`).
+
+### Gate on the restructured source
+
+Every run used `MONOCHROMATIC_LINT_IMAGE_TAG=mutation-close`,
+mount-free and network-disabled containers,
+2 GiB of memory,
+2 CPUs and 128 processes.
+Logs are in `package/linter/monochromatic-lint/target/verification/`.
+
+- `gate-mutation-close-1.log`:
+  378 library and 10 executable tests passed,
+  then Clippy failed on `chunks_exact` in `markdown_lfs_sha256.rs`.
+  The library suite took 183.94 seconds in that run.
+- `gate-mutation-close-2.log`,
+  after the `as_chunks` change:
+  378 library tests passed in 107.20 seconds,
+  10 executable tests passed,
+  and Clippy with `-D warnings` finished with no finding.
+  Test image `f357522ebe2b80d79a5858b5768305f54ba2241629b0d7587184243bcd7633c6`,
+  source tree `a3b3491e423bddea5877825ccaacfe573af7248a`.
+
+The two library-suite durations differ by 77 seconds on unchanged tests,
+from load on the shared host.
+The larger one is over the 180 second per-mutant limit,
+so an unscoped campaign could record timeouts that are only a slow host.
+
+`lint:rust` (the incumbent Rust linter) reports no code-line budget finding
+and 84 `builtin(require-rustdoc)` findings,
+one fewer than the 85 recorded before this work;
+none is on an item added here.
