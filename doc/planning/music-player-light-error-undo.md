@@ -160,6 +160,24 @@ The harness now uses those measured identifiers and the supported `state`
 command for this image.
 That rejected command is a harness portability error,
 not evidence of another AOSP ANR or failed app layout.
+The subsequent AOSP inner-panel held-pose probe passed.
+However,
+neither a supported closed-state request nor the emulator's `fold` command
+exposed a `1080x2424` cover display in this stock image:
+SurfaceFlinger still listed only the `2076x2152` primary display.
+That is a bounded observed configuration gap,
+not a claim that every AOSP setup cannot support a cover display.
+Its recorded fields were restored and the runtime exited cleanly.
+
+The next controlled change keeps the fresh API37 AVD,
+APK,
+SwiftShader mode and caps,
+but uses the browser-test container's native Ubuntu libraries and Xvfb
+instead of mounting the host `/usr` into Fedora.
+The emulator launcher version and in-container KVM availability probes
+passed before this visit.
+This tests the runtime library environment;
+it does not identify a defective library or change the product design.
 
 ## Independently verifiable queue
 
