@@ -5513,6 +5513,7 @@ reached through an optional `fold` a case supplies
 (no text breaks the maps themselves:
 a probe over 12 shapes including a CRLF pair,
 an astral character and CJK punctuation found none).
+B178 deleted the cast case for one that asks the rule about every category of the vocabulary.
 The reach census (`~/temp/agent/mimo-trial/reach-rendering2.log`)
 reads `still cold 0, cold since then 0, not loaded 0`
 and every edited source "loaded it and left 0 cold stretches".
@@ -5654,6 +5655,9 @@ one case pins the field combinations,
 one meter pair proves the wiring
 (a bare stream leaves the meter flat,
 a costed one moves it 0.5).
+B179 found the reason untrue:
+`reportSpend` logs that spend line,
+and a case now reads the endpoint and the cached tokens off it.
 The reach census found three more to settle (`b3cfd5637`):
 the record guard's skip arm in `openrouter-chunk-scan.ts` was unreachable,
 a `startsWith('{')` gate dropping every input that could fail the guard
@@ -22338,7 +22342,9 @@ and the 279 Markdown files of the pinned corpus read the same before and after,
 none holding an unpositioned node,
 so no cached decision moves.
 
-Open:
+Open when this entry was written,
+closed in B181 and B182,
+with what B182 leaves open:
 an angle autolink under the plain grammar still reads a marker shape in its URL,
 since its text starts after the `<` and `isAutolinkLiteral` does not take it for a literal;
 and `footnoteMentions` scans raw text,
@@ -22632,6 +22638,8 @@ and `CacheFileUnreadableError` still logs its filesystem code and path.
 `WorkTitleLookupError` and `CitedReferenceFetchError` forward a message and cannot be marked,
 so their status code now logs as the class name alone;
 a field or a marked sentence of their own would bring it back.
+B180 marks both classes,
+and the status is logged again.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -23073,6 +23081,330 @@ No pinned page links the site root:
 Recurrence:
 `mistake-prevention.md`,
 "Defaults that stand in for an input".
+
+### B176: the corroboration's two empty-group refusals had lost their words
+
+Fixed in `6d60ce1a2`,
+with no red case,
+since no input reaches the throw.
+
+Found on 2026-10-05 (UTC),
+reading the MiMo trial's production diff once the trial was merged.
+`corroborate` and `corroborateByOverlap` (`rendering-audit-corroborate.ts`) each read the first member of a group
+behind a `RenderingAuditInvariantError` that named the group and why it cannot be empty,
+and the trial's T8 change (`18f0b3a85`) replaced both with `nonNullishOrThrow(members.at(0,),)`,
+whose whole message is `Expected non-nullish value, got undefined`.
+No claim list reaches either:
+`corroborate` opens every group with the claim it is keyed on,
+and `corroborateByOverlap` grows every group from its seed.
+
+The fix:
+both throws are back with their class and their words,
+and each function's TSDoc names the refusal.
+No case drives them,
+since no input builds an empty group;
+`stretchReadingOf` reads both as invariant throws,
+where it reads the `nonNullishOrThrow` line as cold (the fixing agent's probe).
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B177: the substitute break floor took lists of different lengths without a word
+
+Fixed in `6d60ce1a2`,
+with no red case,
+since no input reaches the throw.
+
+Found on 2026-10-05 (UTC),
+reading the same diff.
+`substituteBreakFindings` (`source-only-breaks.ts`) takes each side as two parallel lists,
+block shapes and break counts,
+and read a count at a block's index with `?? 0`,
+which the trial's T8 change (`250da1333`) made `nonNullishOrThrow`.
+The proof the trial gave holds for production:
+`readSliceSkeleton` reads both lists off one parse's top-level blocks,
+and `validateTranslatedSlice` is the one caller.
+But the conversion refused only some broken inputs and named none.
+On the file as it stood at `7f069adc9` (the fixing agent's run of it),
+a break list one entry long on either side returned no finding,
+a break list one entry short returned no finding where the uncounted block was of a kind the page holds,
+and otherwise threw `Expected non-nullish value, got undefined`.
+
+The fix:
+the function refuses each side at its entry where the two lists differ in length,
+with a throw whose message opens `unreachable:` and names the side.
+No case drives it:
+the function is not exported,
+and 40,009 seeded texts through `readSliceSkeleton` gave no skeleton whose lists differ
+(the fixing agent's measurement).
+The 55 test files that reach the function through `validateTranslatedSlice` print no failure.
+
+Open to the owner's veto:
+the entry check itself,
+where the trial's three reads alone already refuse every input production builds.
+
+The same reading left the trial's other edits to these modules standing,
+each on the fixing agent's evidence.
+Five string reads in `preservation-tokens.ts`,
+one in `retry-stated-wait.ts` and one split read in `rendering-audit-screen.ts`
+are bounded by their own string's length:
+60,016 texts through each reader threw nothing,
+where a control read one past the end threw 7,594 times.
+The branch removed from `benchRotation` (`stage-fanout-window.ts`) rests on `ChatMessage.content` being a string,
+with no cast in production code.
+The two OpenRouter extractions return what the inline code at `28303c42a` returned,
+over 280 and 14 inputs.
+The package index exports 28 more value names than at `28303c42a` and none fewer,
+and no added name is imported by nothing.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone":
+when a fallback becomes a refusal,
+the inputs the fallback covered are refused at the function's entry,
+in words.
+
+### B178: trial cases on the audit and the OpenRouter client that could not fail, or ran on claims no screen builds
+
+Changed in `96ef8323e`,
+a commit of test files alone.
+
+Found on 2026-10-05 (UTC)
+by the first and fourth reviews of the trial's added cases
+(the first review's findings 5 and 14,
+the fourth's F14 and its notes on weak assertions and test seams).
+In `rendering-audit-corroborate.unit.test.ts`,
+one case paired an omission that spans the candidate with one that leaves it unused,
+a pair `screenRenderingAudit` cannot hand on,
+and named a guard no input can tell from its absence:
+with the guard cut out of the built `intersects`,
+every case of the file still passes.
+Two cases read a length and a voice count where the whole result is knowable,
+and the trial's six cases sat in one suite and repeated one claims literal five times.
+In `rendering-audit-screen.unit.test.ts`,
+a case reached `quotesRequired`'s invariant throw with a category cast past its type
+and claimed to catch a category added to the vocabulary and forgotten in the rule,
+which a made-up word cannot do.
+In `openrouter-client.unit.test.ts`,
+the case named for the deadline and `maxAnswerChars` asserted the answer alone,
+and the `/credits` refusal was read by class and status.
+
+The fix:
+the impossible pair and the cast case are deleted.
+`quotesRequired` keeps its export behind a case that asks it for every member of `RENDERING_AUDIT_CATEGORIES`
+and asserts the whole table,
+so a list added to the vocabulary without the rule fails there.
+The corroboration cases assert whole results over one fixture anchored on the file's own texts,
+each in the suite of the function it tests.
+The knob case asserts,
+for a call with both knobs and a call with neither,
+the answer bound on the exchange and whether its signal is the caller's;
+the refusal case asserts the class and the whole message.
+Eleven mutants of the built package,
+one per thing a case names,
+each fail the case that names it (the fixing agent's runs).
+
+Open to the owner's veto:
+the both-unused overlap case pins the member order the build returns,
+second voice first,
+where `corroborate` keeps arrival order and nothing reads either.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B179: nothing asserted the endpoint and the cached tokens on a completed call's spend line
+
+Changed in `96ef8323e`,
+a commit of test files alone.
+
+Found on 2026-10-05 (UTC),
+checking the fourth review's note on `reportedSpendFieldsOf`.
+The trial cut the three conditional spreads of `chatText` (`openrouter-client.ts`) into an exported helper and cased the helper,
+on the reason,
+recorded under T8,
+that the cached field's only observable is a spend line `chatText` discards.
+The line is logged by `reportSpend`,
+and `client-log-context.unit.test.ts` already reads such lines off `console.info`.
+With `chatText` handing the helper no endpoint,
+or no cached count,
+`openrouter-client.unit.test.ts` printed no failure;
+only the cost was held,
+by the meter cases.
+The extraction itself changes nothing:
+280 combinations of the three readings give the same fields as the inline code at `28303c42a`.
+
+The fix:
+a case reads the spend line a completed call writes for a stream reporting a cost,
+an endpoint and cached prompt tokens,
+and asserts it whole.
+Each of the three mutants now fails it (the fixing agent's runs).
+The helper and its case stay.
+
+Recurrence:
+`mistake-prevention.md`,
+"Claims without their evidence":
+"the only observable" is a claim to measure,
+by looking for a test that already observes the thing.
+
+### B180: two lookups logged their failure by class name alone, losing the HTTP status
+
+Red in `e3c217fb0`,
+fixed in `ab11a69d6`.
+
+Found on 2026-10-05 (UTC),
+as the item ledger B166 left open.
+`WorkTitleLookupError` (`work-title-search.ts`) and `CitedReferenceFetchError` (`cited-reference-fetch.ts`)
+forwarded a `message` that held the endpoint's body,
+so they could not carry `messageNamesOnly`,
+and `workTitleLookupLines` and `citedReferenceBlock` log `refusalText` of what they catch:
+a 401 from the search endpoint and a 429 from the contents endpoint both logged `refused by` and the class name,
+with no status.
+
+The fix:
+both classes take a `detail` phrase each throw site authors,
+declare `messageNamesOnly`,
+and build `search ${detail}` and `contents ${detail}`;
+the non-2xx throw hands them `responded` and the status,
+and no longer reads the response body or repeats the query or the url,
+which the lookups' own log lines still name.
+Both names joined `MARKED_CLASSES`;
+`detail` and `String(status,)` were already named parts.
+Each lookup's test file asserts the whole logged line for a refused answer with a prose body.
+
+Open to the owner's veto:
+the thrown message no longer carries the query or the url,
+which only the lookups' own log lines now name.
+
+Open:
+a `fetch` that rejects,
+for a name that does not resolve or a connection reset,
+still logs as `refused by TypeError`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries":
+a class that cannot be marked loses its status in every log line that goes through `refusalText`,
+so a class a log line must explain is built from named parts.
+
+### B181: the footnote graph read a marker shape in the URL of an angle autolink
+
+Red in `e3c217fb0`,
+fixed in `ab11a69d6`.
+
+Found on 2026-10-05 (UTC),
+as an item ledger B159 left open.
+`<https://cat.example/[^9]x>` on a page the strict grammar refuses,
+so `parseDocument` reads it under the plain grammar,
+produced a gfm reference `9` and an `unresolved-reference` finding,
+since the link's span starts at the `<`,
+one character before its text,
+and `isAutolinkLiteral` takes only a link whose first child starts with it.
+
+The fix:
+`isAngleAutolink` (`footnote-unpositioned-runs.ts`) takes a positioned link whose raw starts at `<`,
+and the graph treats it as a tokenized literal:
+full-width markers in its span are read,
+a GFM shape in its URL is not,
+and its children are not descended.
+The marker reader (`activeFootnoteMarkers`) is strict-only,
+and the strict grammar refuses every angle autolink,
+so it never meets one and is unchanged
+(the fixing agent's probes;
+that the refusal is the strict parser's is its inference).
+A link with a label is told apart by its `[`;
+a case pins a marker in a label beside an angle autolink.
+
+Open to the owner's veto:
+the raw `<` as what tells an angle autolink,
+where its child's span and its `url` were the other way.
+
+Recurrence:
+none new;
+`mistake-prevention.md`,
+"Structure read off the parse",
+already names the rule that a walk says which node shapes it reads.
+
+### B182: a footnote marker shape inside a link's URL counted as a mention
+
+Red in `e3c217fb0`,
+fixed in `ab11a69d6`.
+
+Found on 2026-10-05 (UTC),
+as an item ledger B159 left open.
+`footnoteMentions` scanned raw text,
+so `[^9]` in `https://cat.example/[^9]x`,
+`[a](https://cat.example/[^9]x)` or `<https://cat.example/[^9]x>` counted as a reference to note 9.
+`suspectsFor` (`assembly-integrity.ts`) compares counts of one scanner and was unaffected,
+while `droppedMarkerFindings`,
+`definitionLeakFindings`,
+`definesIdentifier` and `labelsOf` read the mentions of an original alone,
+so a candidate that dropped or rewrote the link was told to keep a marker the page never had.
+
+The fix:
+`urlSpansOf` (`footnote-url-spans.ts`) finds the spans of inline destinations,
+angle autolinks and bare literals (`http://` or `https://` or `www.`) in one linear pass
+that stops each scan at whitespace or `<`,
+and `footnoteMentions` drops GFM hits inside them;
+a full-width marker in a URL still counts,
+as the graph counts it.
+A marker in a link label or beside a URL still counts.
+The scan stays lexical because the module reads fragments and does not parse them;
+a marker in a code span or a reference definition's destination still counts and is not part of this finding.
+
+Open,
+found by the lead's probes of the build of `ab11a69d6` against the footnote graph,
+28 invented texts of which 5 differ.
+The span reader begins a bare literal only after whitespace or one of four characters,
+where the installed parser begins an `http` or `https` literal after any character that is no ASCII letter;
+so a marker shape in a URL that follows a Han character,
+a digit or a full stop is still counted.
+Whitespace before an inline destination hides the destination from the reader.
+A scheme followed by no domain character is read as a literal,
+and so is a URL-shaped run inside a link label;
+in both the parse reads the marker as a reference,
+so the scan drops a mention the graph counts,
+which is the direction the guards reading mentions cannot afford.
+Whether any page at the corpus pin holds a marker shape inside a URL was not measured.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a raw scan that feeds a guard names the contexts it skips,
+and a context the graph skips is skipped here too.
+
+### B183: an unreadable census baseline reached the command as the read's own error
+
+Fixed in `ab11a69d6`,
+its cases in the same commit,
+since they call the reader the fix adds.
+
+Found on 2026-10-05 (UTC)
+by the agent that fixed B163,
+under its other observations.
+`runCoverageCensus` (`corpus-run/coverage-census.ts`) read each `--baseline` file with `readFile`,
+so a path that is not there or is a directory raised Node's `ENOENT` or `EISDIR` error unchanged,
+with no refusal that names the baseline.
+
+The fix:
+`readBaselineFile` (`corpus-run/coverage-census-input.ts`) reads the file and hands its text to `readBaselineCensus`,
+and a failed read throws `CensusBaselineError` naming the path and the filesystem code (`it could not be read (ENOENT)`),
+with the failure as `cause`;
+`runCoverageCensus` calls it.
+Cases read a missing path and a directory under a scratch folder;
+before the fix the same reads raised `ENOENT` and `EISDIR` (the fixing agent's red run).
+
+Open:
+`reportingRefusals` (`corpus-run/cli-refusal.ts`) still prints a `CensusBaselineError`
+followed by the fault-in-the-command lines and a stack,
+as it did for the not-JSON refusal of B163,
+though a baseline named wrongly is the operator's mistake and no fault of the command.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back":
+a command that reads a file the operator names refuses an unreadable one by name before it spends a suite.
 
 ## Process mistakes in this audit
 

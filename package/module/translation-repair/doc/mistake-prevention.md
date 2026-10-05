@@ -170,6 +170,12 @@ and a store guard that checked a settlement's fields one by one and never two th
 A scripted client is shown heard by each stage it serves before a case built on it counts,
 and an expectation for a parse-dependent result is written off the printed tree.
 
+Trial cases named a guard no input can tell from its absence,
+reached an invariant throw through a cast,
+and asserted an answer alone under a name for two knobs (ledger B178).
+A case is shown to fail with the thing it names taken out of the build,
+before its name is believed.
+
 The rule:
 a red guard is read case by case before the fix,
 and each case must fail for the reason its name gives;
@@ -349,6 +355,12 @@ so the same six stretches in a renamed bundle read as not loaded at every census
 and each batch record explained them by hand (B105);
 a veto-open call refused an exponent in a provider's price on the ground that the fixtures write none,
 and a stored catalogue writes one (M91).
+
+A field's only observable was said to be a line the code discards,
+and the line was logged all along,
+read by a test in another file (ledger B179).
+A claim that nothing can observe a value is measured,
+by looking for a test that already observes it.
 
 The rule:
 every number,
@@ -1700,6 +1712,13 @@ A caught value reaches a log line through `refusalText`,
 and a marked class names what refused,
 which for a file repaired by hand is the file.
 
+Two lookup errors forwarded a message that could hold a provider body,
+so they could not be marked,
+and every log line that went through `refusalText` named their class alone,
+the HTTP status lost (ledger B180).
+A class a log line must explain is built from named parts,
+so that it can be marked.
+
 The rule:
 a marked class writes its sentence itself,
 from counts,
@@ -2116,6 +2135,16 @@ the autolink-literal transform rebuilds without one,
 so the document parse ended on such a page (ledger B159).
 A walk that reads positions off phrasing nodes names which node types it reads
 and refuses the rest loudly.
+
+The footnote graph read a marker shape in the URL of an angle autolink (ledger B181),
+and the mention scan counted one in any URL (ledger B182).
+The lexical reader B182 added to skip URLs was then probed against the graph,
+and disagreed with the parse in both directions:
+where a bare literal may begin,
+what a link label holds,
+whether whitespace may stand before a destination.
+A lexical stand-in for a parse is checked against the parse over a table of shapes before it is trusted,
+and where the two can still differ it errs toward the side its guard can afford.
 
 The rule:
 a question about what a passage's blocks are
@@ -2984,6 +3013,13 @@ and one of them pinned an artifact nothing had reviewed passing unrefused (ledge
 A walk reader checked each step's blocks and never that every block had a step,
 so a walk leaving one unnamed grouped its section to nothing (ledger B172).
 
+Two named invariant throws of the rendering audit's corroboration had been flattened to `nonNullishOrThrow` (ledger B176).
+A fallback on a list read at another list's index was turned into the same unnamed refusal,
+which refused only some of the inputs the fallback had covered (ledger B177).
+When a fallback becomes a refusal,
+the inputs the fallback covered are refused at the function's entry,
+in words.
+
 The rule:
 a state no input produces is refused out loud,
 with `throw new Error('unreachable: <what was found and why it cannot occur>',)`
@@ -3085,6 +3121,11 @@ so a record naming a block its section lacks ended the run with a missing-value 
 A record read back is read against what it is about to be used on,
 by the check a fresh answer goes through,
 and one that does not fit is a miss said on a warning.
+
+A command read a file its operator names with a bare read,
+so a path that is not there raised the read's own error (ledger B183).
+A command refuses an unreadable input file by name,
+before it spends a suite on it.
 
 The rule:
 a file this package writes and a later run parses is written through `writeFileAtomic`.
