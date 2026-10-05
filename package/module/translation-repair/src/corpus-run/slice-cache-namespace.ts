@@ -2,7 +2,6 @@ import {
   mkdir,
   readFile,
   rm,
-  writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -450,18 +449,23 @@ export async function openNamespacedCache<ValueT,>(
       namespace,
       cached,
     },);
+    // Written after the discard, so the marker always describes what this
+    // lane now holds, and written ONLY WHEN IT DOES NOT ALREADY NAME THIS
+    // GENERATION. A marker cut short reads as a mismatch on the next open,
+    // which discards every slice this lane holds here, and a restamp in place
+    // truncates the marker before it writes, so a write the disk then refuses
+    // leaves it empty. Restamped only where this open has just discarded, the
+    // marker is at risk only while the lane holds nothing to lose; the restamp
+    // is atomic all the same, like the slices, so a refused write leaves the
+    // earlier marker whole.
+    await writeFileAtomic({
+      path: join(
+        dir,
+        namespace.marker,
+      ),
+      text: `${generation}\n`,
+    },);
   }
-
-  // Written after any discard, so the marker always describes what this lane
-  // now holds. A torn write reads as a mismatch on the next open, which
-  // discards rather than resumes, so the failure direction is safe.
-  await writeFile(
-    join(
-      dir,
-      namespace.marker,
-    ),
-    `${generation}\n`,
-  );
 
   return {
     resumed,
