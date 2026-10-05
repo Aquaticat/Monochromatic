@@ -642,6 +642,19 @@ unless a fuzz path is named.
   image `sha256:9270213fb34e7d73af29f3f029033abd0bee97f07a38fe89693e3ddc367cbb95`,
   exit `0` with no warning.
 - After the fix,
+  `test:container` on the same fixed tree before the test split:
+  `test-nUgm3V`,
+  snapshot `b2736ad4c2925e1afa9592700f2de8929af20ccc6eeceae265704889ec295ac8`,
+  image `sha256:8cffcf36eee5b78652ef269a43883f66d54608baf3f69bcbcc8f546996d99f18`,
+  exit `0`:
+  176 library,
+  4 executable unit tests in `src/main.rs`,
+  2 embedding,
+  2 public cache-warning,
+  40 CLI integration,
+  and 8 pathname tests passed,
+  with none failed or ignored.
+- After the fix,
   `smoke:embedding:container` in the fuzz sidecar:
   `package/cli/forbidden-strings.fuzz/target/verification/embedding-fuzz-HWNmVN`,
   snapshot `08fce78006d3b4ccb619345108503177d6631ed26dabac245cfa230c88a7672b`,
