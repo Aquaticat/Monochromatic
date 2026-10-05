@@ -198,3 +198,16 @@ pub mod candidate_version;
 
 /// Per-invocation listing, lazy bytes and invalidation of candidate versions.
 pub mod candidate_store;
+
+/// The linked forbidden-strings scanner: one load per invocation, typed redacted findings.
+pub mod scanner_adapter;
+
+/// Rules-file precedence and which candidates the scanner is given.
+pub mod scanner_selection;
+
+/// One scan pass over a candidate version's exact bytes.
+pub mod scanner_run;
+
+/// Process isolation and rule fixtures for scanner controls; never in the release build.
+#[cfg(test)]
+mod scanner_test_support;
