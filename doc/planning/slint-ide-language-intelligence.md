@@ -101,7 +101,8 @@ Decisions that are not mine to make are collected in "Decisions for the coordina
 - Shutdown: `Editor::close_language_servers` (`helix-view/src/editor.rs:2440`).
 - Workspace trust before starting servers (`helix-view/src/editor.rs:1831`).
   The application loads only the built-in configuration, never a project `.helix/languages.toml`,
-  so no project-supplied command runs.
+  so no project-supplied command runs, unless Option A under "TypeScript server" is adopted,
+  whose launcher is a file in the project's `node_modules`.
   Starting a server on a project still runs project code (see "Open risks").
 
 ### Runtime requirements
@@ -413,9 +414,11 @@ it reduces the window for stale display and does not claim to close it.
 - rust-analyzer returned string labels with `kind` 1 (type) and 2 (parameter):
   `: &str`, `: u32`, `width:`, `height:`, `: String`, with explicit `paddingLeft` and `paddingRight` booleans.
   Type hints carried `textEdits`.
-- TypeScript native returned nothing until the client answered `workspace/configuration` for section `typescript`
-  with VS Code style keys
-  (`inlayHints.parameterNames.enabled = "all"`, `inlayHints.variableTypes.enabled = true`, and so on).
+- TypeScript native returned nothing until the server's settings table held VS Code style keys
+  under `typescript.inlayHints`
+  (`parameterNames.enabled = "all"`, `variableTypes.enabled = true`, and so on).
+  The same table is sent as `initializationOptions`, as `workspace/didChangeConfiguration`,
+  and as the `workspace/configuration` reply; the spike did not isolate which of the three the server reads.
   The keys from Helix's `typescript-language-server` table (`includeInlayParameterNameHints`, ...) produced no hints.
   With the right keys it returned label parts: `: string`, `name:`, `: number`, `...values:`, `...data:`.
   Parameter parts carried a `location`.
