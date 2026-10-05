@@ -1011,7 +1011,12 @@ Executed after the final recommendation commit (filled in that commit's follow-u
   `~/temp/agent/mold-dist/mold-3.0.0-x86_64-linux.tar.gz` with its extracted tree, the driver
   scripts `phase-e.mjs` and `phase-e2.mjs`, and the process logs under `/tmp/pi-processes-CDjjpP/`.
 - Lock released: `~/temp/agent/technology-vet-locks/var-home-user-Monochromatic-doc-audit-tech-mold-linker-vet-2026-10-05.md.lock`.
-- {{CLEANUP_STATUS}}
+- All steps executed 2026-10-05 after the recommendation commit: worktree removed
+  (`git worktree remove --force`; it no longer appears in `git worktree list`), the committed
+  image and volume removed (`podman rmi localhost/mold-eval:v3.0.0-deps-n2`,
+  `podman volume rm mold-eval-root`), scratch directories removed, and `podman ps -a` lists no
+  mold-eval containers. The base image `registry.fedoraproject.org/fedora:44` is retained as a
+  standard cached base. The report lock is released immediately after this record commits.
 
 ## Open items
 
