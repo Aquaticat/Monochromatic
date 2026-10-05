@@ -84,13 +84,18 @@ fn mutating_long(name: &[u8], branch: bool) -> bool {
 
 /// Classify branch/tag forms conservatively while distinguishing inline-optional and separated values.
 fn mixed_command(arguments: &[OsString], branch: bool) -> ConfigLoading {
-    let mut index: usize = 0;
     let mut listing: bool = false;
     let mut positional: bool = false;
     let mut after_separator: bool = false;
-    while index < arguments.len() {
-        let token: &[u8] = arguments[index].as_encoded_bytes();
-        index += 1;
+    // True while the token being visited is the separated value of the filter before it.
+    let mut is_value: bool = false;
+    // Visiting each argument once with its position cannot loop forever, unlike a hand-stepped index.
+    for (index, argument) in arguments.iter().enumerate() {
+        if is_value {
+            is_value = false;
+            continue;
+        }
+        let token: &[u8] = argument.as_encoded_bytes();
         if after_separator {
             positional = true;
             continue;
@@ -135,7 +140,7 @@ fn mixed_command(arguments: &[OsString], branch: bool) -> ConfigLoading {
             .contains(&name)
             {
                 if assignment.is_none() {
-                    if index == arguments.len() {
+                    if index + 1 == arguments.len() {
                         // Last-argument defaults are inspection filters; missing required format/sort is left to Git.
                         return if name == b"--format" || name == b"--sort" {
                             ConfigLoading::Required
@@ -143,7 +148,7 @@ fn mixed_command(arguments: &[OsString], branch: bool) -> ConfigLoading {
                             ConfigLoading::Skip
                         };
                     }
-                    index += 1;
+                    is_value = true;
                 }
                 if ![b"--format".as_slice(), b"--sort"].contains(&name) {
                     listing = true;

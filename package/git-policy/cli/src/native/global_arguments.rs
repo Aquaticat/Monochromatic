@@ -81,11 +81,17 @@ const INLINE_OPTIONS: &[&[u8]] = &[
 /// function globalLayout(nativeArgs): { prefixLen: number; outcome: GlobalOutcome };
 /// ```
 pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
-    // usize indexes the argument vector without forcing fixed-width or signed conversions.
-    let mut index: usize = 0;
-    while index < arguments.len() {
+    // True while the token being visited is the value of the separated-value option before it.
+    let mut is_value: bool = false;
+    // `.iter().enumerate()` visits every argument once with its position, so the scan
+    // always ends: there is no hand-stepped index that a mistake could leave standing still.
+    for (index, token) in arguments.iter().enumerate() {
+        if is_value {
+            is_value = false;
+            continue;
+        }
         // Borrow native encoded bytes solely to recognize Git's ASCII option syntax.
-        let argument: &[u8] = arguments[index].as_encoded_bytes();
+        let argument: &[u8] = token.as_encoded_bytes();
         if !argument.starts_with(b"-") {
             return GlobalLayout {
                 prefix_len: index,
@@ -117,7 +123,6 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
                     outcome: GlobalOutcome::Query,
                 };
             }
-            index += 1;
             continue;
         }
         if VALUE_OPTIONS.contains(&argument) {
@@ -127,11 +132,10 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
                     outcome: GlobalOutcome::MissingValue,
                 };
             }
-            index += 2;
+            is_value = true;
             continue;
         }
         if FLAG_OPTIONS.contains(&argument) {
-            index += 1;
             continue;
         }
         let mut inline: bool = false;
@@ -142,7 +146,6 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
             }
         }
         if inline {
-            index += 1;
             continue;
         }
         return GlobalLayout {
