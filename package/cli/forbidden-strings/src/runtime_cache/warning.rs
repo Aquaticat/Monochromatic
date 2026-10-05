@@ -23,7 +23,7 @@ pub(crate) enum CacheWarningReason {
 
 /// One valid cache-warning record storing only fixed protocol tokens.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) struct CacheWarning {
+pub struct CacheWarning {
     /// Closed reason token.
     reason: &'static str,
     /// Closed recovery token paired by constructor.
@@ -32,6 +32,16 @@ pub(crate) struct CacheWarning {
 
 /// Cache-warning constructors and fixed-token rendering.
 impl CacheWarning {
+    /// Read the fixed reason token without parsing its terminal JSON representation.
+    pub fn reason(&self) -> &'static str {
+        return self.reason;
+    }
+
+    /// Read the fixed recovery token paired with this warning by the existing constructors.
+    pub fn recovery(&self) -> &'static str {
+        return self.recovery;
+    }
+
     /// Builds a warning for condition recovered by compiling authoritative text.
     pub(crate) fn compile_from_text(reason: CacheWarningReason) -> Self {
         return Self {

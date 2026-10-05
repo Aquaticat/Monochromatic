@@ -39,6 +39,12 @@ mod frx_scan;
 mod scan_finding;
 /// Public findings contain only source locations and non-secret rule identities.
 pub use scan_finding::ScanFinding;
+/// In-process candidate snapshots reuse the standalone scan core and redaction rules.
+mod scanner;
+/// Embedded consumers identify candidates independently of redacted display labels.
+pub use scanner::{CandidateScan, Scanner};
+/// Fixed-token cache warnings remain structured for embedded event reporting.
+pub use runtime_cache::CacheWarning;
 /// Registers component-level pathname matching and masked display labels.
 mod path_scan;
 /// Registers runtime cache envelope, path, warning, and publication implementation.

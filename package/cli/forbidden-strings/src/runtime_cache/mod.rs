@@ -30,7 +30,7 @@ use path::{
 /// Imports complete artifact IO operations.
 use publish::{publish_artifact, read_artifact, ArtifactReadError};
 /// Re-exports warning value for loaded-rules output.
-pub(crate) use warning::CacheWarning;
+pub use warning::CacheWarning;
 /// Imports closed warning reason values.
 use warning::CacheWarningReason;
 
