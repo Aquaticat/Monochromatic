@@ -136,9 +136,11 @@ The user preapproves Helix-owned components and waives a broad dependency-select
 Inspect relevant integration behavior and comply with the licenses of reused code.
 Do not import Helix's modal interaction model or whole editor merely to reuse its internals.
 
-Inlay placement is delegated to the agent:
+Inlay placement was delegated to the agent:
 choose the implementation supported by evidence,
 not an assumed presentation preference.
+The user ended that delegation on 2026-10-05 after seeing the built result;
+the placement is now the one recorded under "Interface decisions (inlay hints)".
 
 ## Decisions of 2026-10-05
 
@@ -253,6 +255,30 @@ with frames in `package/desktop-app/ide/design/screenshots/2026-10-05-ui-batch-2
   the combined-search list,
   and the references list draw white text on the blue selection fill in both schemes (option B),
   the same rule as selected source text.
+
+### Interface decisions (inlay hints)
+
+The agent had placed hints in boxes after the end of their code line,
+because that placement moves no source text
+(frames in `package/desktop-app/ide/design/screenshots/2026-10-05-annotations-as-built/`).
+The user rejected it:
+"On inlay hints:
+Do not show them inline.
+Show them on another virtual line,
+like what editord does."
+
+- Inlay hints go on virtual rows above their code line,
+  each hint above the position it annotates,
+  as `package-paused/desktop-daemon/editord/src/client/inlay/line.ts` packs them.
+- The known cost is accepted with that decision:
+  hinted lines are taller,
+  so rows beneath move when hints arrive.
+  The implementation limits that movement and measures what remains.
+- Not decided by this answer,
+  and to be asked with built screenshots:
+  whether diagnostic messages also get always-visible rows above the line as in editord,
+  the look of the hint row,
+  and whether labels are shortened as editord shortens them.
 
 ### Agent rule decisions
 

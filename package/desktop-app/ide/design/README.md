@@ -20,10 +20,11 @@ Answers are given in the chat and then recorded in `doc/handover/slint-ide-0x.md
 ### 2026-10-05 annotations as built
 
 - Screenshots: `screenshots/2026-10-05-annotations-as-built/`
-- Status: a record of shipped behavior, not a question.
-  The scope delegates inlay hint placement to the agent's evidence;
-  the reasons are in the package README section "Inlay hints and diagnostics".
-  The user can still veto any of it.
+- Status: history.
+  The user saw these frames and rejected the end-of-line hint placement on 2026-10-05:
+  hints move to virtual rows above the code line,
+  like editord.
+  Diagnostic marks and the caret card are unchanged by that answer.
 
 What the frames show,
 from the `inspect:native <scheme> annotations` scene with injected hints and diagnostics

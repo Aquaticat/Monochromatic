@@ -523,6 +523,28 @@ each owned by one subagent:
   while the coordinating session ran commands there.
   Keep every coordinator command pinned with `cd /var/home/user/Monochromatic` or `git -C`,
   and tell agents to pin theirs.
+- Inlay hint placement,
+  decided by the user on 2026-10-05 and not started yet:
+  hints move from boxes after the line end to virtual rows above the code line,
+  like editord;
+  the scope record has the user's words under "Interface decisions (inlay hints)".
+  The worktree `.claude/worktrees/ide-hint-rows` on branch `feat/ide-hint-rows` is provisioned
+  (MCP ports 9424 and 9425),
+  and the agent's complete brief is kept at `~/temp/agent/ide-gate-logs-20261005/agent-w-hint-rows-brief.md`.
+  The harness runs at most five agents at once
+  (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`),
+  and all five slots were in use;
+  start this agent with that brief when one finishes.
+  Its second phase produces the comparison frames for UI batch 3:
+  hint row look,
+  label shortening,
+  and diagnostic rows.
+- Session-limit recovery at 18:50 on 2026-10-05:
+  all five agents had been cut off;
+  their worktrees held the work described in the next item,
+  partly uncommitted,
+  and each was resumed from its transcript with its measured state.
+  One orphaned private `dbus-daemon` of a dead nested session (started 16:34) was stopped by process id.
 - Usage-limit stop at about 16:45 on 2026-10-05:
   the coordinating session reached its usage limit while five agents were running.
   Each works in its own worktree and commits as it goes;
