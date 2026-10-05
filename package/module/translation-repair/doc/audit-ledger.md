@@ -18487,7 +18487,8 @@ Calls made here are open to veto:
   reads the same scope;
 - an error event is retried as a cut stream is.
 
-Open:
+Open when this entry was written,
+closed in B202:
 an error the provider calls `invalid_request_error` is retried as an overloaded one is,
 spending attempts that cannot succeed.
 
@@ -22062,6 +22063,7 @@ and `gateFitsTerminal` refuses a record where the two disagree;
 a refused record is bought again.
 Other couplings the stage keeps and the store does not check are listed in the fix wave's report,
 `settleGateBallots` against the stored `choice` first among them.
+B187 refuses four of them and says why it leaves the rest.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -22865,7 +22867,8 @@ every section's blocks are carved by the deterministic aligner once one pairing 
 since the refusal names no section
 and a pairing that misses one section says the text parsed otherwise than the run's.
 
-Open:
+Open when this entry was written,
+closed in B196:
 `slice-census-entry.ts` converts a recipe's pairings itself and catches nothing,
 so the slice census still stops on such an artifact.
 
@@ -23405,6 +23408,1236 @@ Recurrence:
 `mistake-prevention.md`,
 "Files a later run reads back":
 a command that reads a file the operator names refuses an unreadable one by name before it spends a suite.
+
+### B184: a deterministic picture reader that rejected ended the entry
+
+Red in `7f99edb6a`,
+fixed in `17646f215`.
+
+Found on 2026-10-05 (UTC)
+by the agent that fixed B148,
+reading the reading pair's contract.
+`readImagePair` (`image-reading-pair.ts`) says every reader failure but an abort is contained,
+and awaited `readOcr` with no `try`;
+`readDocumentPictures` (`document-readings.ts`) awaited the pair with no `try`.
+A deterministic reader that rejects,
+for a scratch directory that cannot be made or a scratch device with no space,
+ended the pair,
+the picture stage and the entry,
+for a reading nothing downstream requires.
+The red run printed the reader's own error,
+`Error: no space left on the scratch device`,
+out of the pair and out of `readDocumentPictures`,
+and an abort arriving while that reader ran came out as an `Error` where an `AbortError` was expected.
+
+The fix:
+`askDeterministicReader` (`image-ocr.ts`) answers a rejection with `unavailable` and the reason `ocr-failed`,
+with a warning that names the picture,
+so the models are asked as they are where the tools are not installed;
+where the signal has aborted it rethrows first,
+since a stop is not a failure to absorb.
+`readDocumentPictures` is unchanged:
+its `@throws` is true once the pair contains the rejection.
+
+The whole suite ran on `17646f215` in a side checkout:
+1,604 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 35 source scans passing.
+
+Open to the owner's veto:
+every rejection of that reader but an abort is contained,
+a machine fault included,
+where the other way rethrows an error carrying a system code such as `ENOSPC` or `EACCES`;
+the fixing agent judged an entry lost to one full device worse than one picture read without its gate.
+The helper lives in `image-ocr.ts`,
+with a type-only import cycle to `image-reading-pair.ts`,
+on the agent's reasons:
+the pair's file passed its line cap with the helper in it,
+and a module of its own would have needed a test file of its own.
+
+Open:
+the new warning logs the caught value with `String(error)`,
+as the reader's own failure line in the same file does,
+where the package's rule for a logged failure is `refusalText`;
+a census of such lines is owed.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation".
+
+### B185: the picture sources defaulted to the corpus and the real programs
+
+Fixed in `17646f215`,
+with no red case:
+the change makes a parameter required,
+and the type check named the one call that left it out (the fixing agent's run).
+
+Found on 2026-10-05 (UTC)
+by the agent that replaced the `ocrTool` seam (ledger M113),
+among the seams it saw and did not fix.
+`readPassVisualEvidence` (`corpus-run/pass-visual-evidence.ts`) defaulted `pictureSources` to `RUN_PICTURE_SOURCES`,
+and `readSeatedPictures` (`corpus-run/pass-seated-pictures.ts`) took it optionally,
+so a test that left it out read pictures from the pinned corpus and ran the real programs.
+One did:
+the case of `corpus-run/pass-entry.unit.test.ts` that stops an entry on a picture with no reviewed evidence
+reached `readCorpusBytes` against the pinned checkout for an invented entry,
+and with a refusing stand-in handed in it ended `resumable-failure` where it had ended `stopped`
+(the fixing agent's runs).
+
+The fix:
+`pictureSources` is required in `readPassVisualEvidence`,
+`readSeatedPictures`,
+`createPassPictureReader`,
+`runEntryPipeline` and `settleEntry`,
+as `outsideReads` is;
+`RUN_PICTURE_SOURCES` is named once,
+where `corpus-pass.ts` calls `settleEntry`.
+Tests pass `NO_PICTURE_SOURCES` (`corpus-run/pass-picture-sources.test-fixture.ts`),
+whose gatherer and reader reject with a message naming the seam,
+and the case that stops an entry hands in a gatherer that finds no bytes,
+which is what it is about.
+
+Open to the owner's veto:
+the seam runs through `settleEntry`,
+which 31 lines of its test file now hand it,
+where the other way folds it into `PassOutsideReads`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B186: one reading floor was measured in two counts
+
+Red in `7f99edb6a`,
+fixed in `17646f215`.
+
+Found on 2026-10-05 (UTC)
+by the same agent's report.
+`readingMakesSense` (`image-reading-sense.ts`) compared a model's trimmed reading,
+in UTF-16 units with its inner whitespace counted,
+against `MIN_READING_CHARS`,
+while `solidCharacters` counted non-whitespace code points against the same constant for the deterministic reader.
+Fifteen astral characters,
+30 units,
+and fifteen letters spaced apart,
+22 or 29 units,
+were `usable` as a model's reading and `no-text` as the deterministic reader's
+(the fixing agent's probe of its build before the fix).
+
+The fix:
+the reading screen asks `solidCharacters` of the trimmed reading,
+and `solidCharacters` lives beside the constant in `image-reading-sense.ts`,
+exported from there by `translate-barrel.ts`.
+The rule is stricter only:
+a reading that was `usable` can become `short`,
+and none goes the other way.
+
+No cache version moved.
+The agent's reading of the code,
+with no run made:
+the picture store and every slice cache are stamped with the digest of the built files,
+which this change alters,
+so no reading stored under the old count is resumed.
+
+Open to the owner's veto:
+the count moved to the constant's file,
+where the other way keeps it in `image-ocr.ts` behind a value import cycle.
+
+Open:
+`image-reading-stage.ts` still logs a reading's length in UTF-16 units,
+a number that can read larger than the count the verdict used.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text by code point".
+
+### B187: the consolidate store resumed a choice, two flags and a mark the stage never writes
+
+Red in `7f99edb6a`,
+fixed in `17646f215`.
+
+Found on 2026-10-05 (UTC),
+as the couplings ledger B151 left listed.
+`isConsolidationSettlement` (`corpus-run/consolidate-cache-store.ts`) checked a stored gate's `choice` against nothing,
+though the stage settles it from the stored ballots with `settleGateBallots`
+and `shipPastForfeitStanding` rewrites only `ships`.
+It resumed `demoted` beside any terminal,
+where every writer sets it on `wrap-erased-difference` alone;
+`rewrapped` beside a terminal that never wraps;
+and a settlement marked `archiveKept`,
+which `consolidationWorthResuming` never persists
+(each the fixing agent's reading of the writers).
+
+The fix:
+the store refuses each of the four.
+The table of terminals carries the `demoted` flag each one writes and whether it may rewrap,
+`wrapFlagsFitTerminal` reads them,
+and a stored `choice` must be what `settleGateBallots` gives for the stored ballots.
+A control case keeps a choice that differs from what ships resumable,
+since a forfeit standing ships the consolidation over a `standing` or `neither` choice.
+
+Not refused,
+on the fixing agent's reasons:
+`choice` against `ships`,
+which is no coupling;
+the presence of `decided`,
+which the guard documents as unchecked;
+and the floor against the terminal,
+or its valid models against the verdicts,
+which change neither what ships nor what the artifact says of the gate
+and were not proved against every writer.
+
+Open to the owner's veto:
+the four refusals themselves,
+of which the `rewrapped` and `archiveKept` ones carry the least.
+
+Open:
+a gate whose `usable` count is short of `CONSOLIDATE_GATE_QUORUM` is still resumed,
+though the stage never persists one,
+since the store's own comment documents a gate that heard nobody as valid
+and the agent did not trace which cases rest on it.
+No settlement written by the real stage was driven through the new rules end to end:
+they rest on a reading of the writers and on unit round trips.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B188: two reading-cache cases refused their records for a reason they did not name
+
+Changed in `7f99edb6a`,
+a commit of test files alone.
+
+Found on 2026-10-05 (UTC)
+by the agent that fixed B149 to B153.
+Two cases of `corpus-run/reading-cache-store.unit.test.ts`,
+older than the trial,
+built an unavailable record without `transient: false`,
+so the closing check of `isPairedReading` refused each whatever field it named,
+and each stayed green with its own guard removed.
+
+The fix:
+each record has one cause,
+the reason `reader-failed` or readings that are strings,
+and each case also resumes the same record with that field valid.
+With the reason guard removed the first case fails,
+and with the readings guard removed the second does
+(the fixing agent's runs,
+the source restored each time).
+
+The module TSDoc of `corpus-run/coverage-control-vote-change.unit.test.ts` said one scripted answer served every round,
+where the file holds three scripted clients:
+the blind client,
+the sheet-reading client with its two conditions,
+and the denying client.
+It says so now;
+nothing else in that file changed.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B189: quotes and spans that show a reader nothing were anchored
+
+Red in `806039cb1`,
+fixed in `2b789a4ae`.
+
+Found on 2026-10-05 (UTC)
+by a census of every blankness test in the package's production source,
+after B128.
+The fixing agent read the 25 wire modules field by field,
+swept the source for the comparisons,
+and ran a syntax-tree pass that found 397 tests of blankness at its base.
+It fixed 20 sites,
+recorded here and in B190 to B194,
+and held the rest,
+each with why its question is another one (B195).
+Each fixed site tested a text a model wrote by a comparison with the empty string,
+a trimmed comparison or a length,
+where the package's one question is `rendersAsNothing`.
+
+`locateQuote` (`locate-quote.ts`) refused a quote only when it was the empty string,
+so a critic's quote of one ideographic space anchored on the one such space a source held.
+`anchorLocatedSpan` (`rendering-audit-anchor.ts`) compared the canonical locator and focus with the empty string,
+so a focus of one space anchored inside its locator.
+`readSide` (`rendering-audit-screen.ts`) decided again whether a side quoted anything,
+by the same comparison on the raw text,
+so an omission whose unused candidate side held `U+200B` was dropped as `forbidden-side-quote (candidate)`.
+`quoteIsIn`,
+`mergedAttestations` and `attestedDetailsOverlapping` (`reference-attest-match.ts`)
+searched for a quote without asking whether it showed anything,
+so an item quoting `U+200B` on both sides verified against texts holding that character.
+
+The fix:
+each asks `rendersAsNothing` of the text the model sent.
+Every case of this entry and of B190 to B194 hands its field spaces,
+`U+200B` and `U+3164`,
+written as escapes,
+and asserts the whole result an empty field gets.
+The red run printed a failure for each of 27 cases in 23 files.
+
+The whole suite ran on `2b789a4ae` in a side checkout:
+1,605 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 36 source scans passing.
+
+No cache version moved,
+for this entry or for B190 to B194.
+The cache account audit of 2026-10-05 (UTC) found 13,714 slice-cache records,
+the newest written 2026-09-27T04:26Z,
+with every cache version set since then,
+so no stored record exists under a current version.
+Whether any stored reply ever carried such text was not measured.
+
+Open to the owner's veto:
+padding on a rendering-audit claim's unused side is read as empty and the claim kept,
+where the other way goes on dropping the claim.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text that shows nothing";
+`readSide` beside the anchor is also a second reader of one emptiness,
+under "Two layers reading one refusal".
+
+### B190: a reading, a finding, a title, a category and a replacement that show nothing counted as said
+
+Red in `806039cb1`,
+fixed in `2b789a4ae`.
+
+Found on 2026-10-05 (UTC) by the same census.
+`readingMakesSense` (`image-reading-sense.ts`) asked whether a picture reading was blank only through its length floor,
+so sixteen Hangul fillers,
+or forty zero-width spaces,
+read `usable`.
+The naturalness review's wire guard (`absolute-naturalness-review-wire.ts`) took a `problem` of `U+200B` as a finding.
+`mostGiven` (`page-title-lexicon-stage.ts`) counted a seat's rendering of `U+200B` as a voice,
+so two such seats outvoted one seat rendering the title in words.
+`repair-damage-evidence.ts` named a prober's category of `U+3164` as itself,
+where an empty one is named `unspecified`,
+and `repair-sheet.ts` showed an editor's replacement of `U+200B` as text,
+where an empty one is said to be a deletion.
+
+The fix:
+each asks `rendersAsNothing`.
+The reading is refused `too-short` before its characters are counted.
+That file was merged by hand,
+since B186 had changed the same lines after the agent's base:
+the screen asks whether the reading shows anything and then asks `solidCharacters`.
+
+Open to the owner's veto:
+a long reading of invisible characters is refused under the existing `too-short` clause,
+where the other way gives it a clause of its own;
+and the repair sheet says a replacement that shows nothing was a deletion.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text that shows nothing".
+
+### B191: an archive block revision that shows nothing shipped as wording
+
+Red in `806039cb1`,
+fixed in `2b789a4ae`.
+
+Found on 2026-10-05 (UTC) by the same census.
+The archive block review's `replacementText` spells a removal as the empty string.
+`runArchiveBlockReviewStage` (`archive-block-review-stage.ts`) never asked whether a revision showed anything,
+and `revisionShapeFindings` (`archive-revision-shape.ts`) asked only whether it was empty,
+so a revision of `U+200B` or `U+3164` passed the shape floor and reached the selectors as revised text,
+while one of three spaces was withheld as holding no block
+(the fixing agent's probe).
+
+The fix:
+the stage reads a revision that shows a reader nothing as the empty removal,
+once,
+and every later reader
+(`archive-replacement-candidates.ts`,
+`corpus-run/archive-block-repair.ts`,
+`archive-block-selection-evidence.ts`)
+reads what was decided.
+The shape floor throws `unreachable:` on a revision that is blank and not empty.
+One assertion went with it:
+that a revision of three spaces is withheld,
+which `f9babaec4` had pinned as the behaviour it found.
+
+Open to the owner's veto:
+a revision that shows nothing is the removal an empty one spells,
+where the other way withholds it as the shape floor withheld three spaces.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal":
+the blankness scan holds the three raw readers,
+each on the reason that it reads the decided value.
+
+### B192: transport fields that show nothing counted as present
+
+Red in `806039cb1`,
+fixed in `2b789a4ae`.
+
+Found on 2026-10-05 (UTC) by the same census.
+`extractAnthropicCompletion` (`anthropic-completion.ts`) returned tool arguments of spaces and `U+200B`
+in place of the prose answer beside them.
+`extractStreamedCompletion` (`stream-completion.ts`) kept a refusal channel of `U+3164` as a refusal,
+and `readJsonOutcome` (`chat-json-outcome.ts`) chose the raw text by whether the reply's text was the empty string,
+two readers of one emptiness.
+
+The fix:
+all three ask `rendersAsNothing`.
+A voice formerly lost to such a reply is heard now,
+which no cache key reads.
+
+Open to the owner's veto:
+a refusal channel or tool arguments that show nothing count as absent.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text that shows nothing".
+
+### B193: pieces of a candidate or a record that show nothing read as worded
+
+Red in `806039cb1`,
+fixed in `2b789a4ae`.
+
+Found on 2026-10-05 (UTC) by the same census.
+`isWorded` (`translate-unwrapped-link.ts`) took a link whose words were `U+200B` as worded.
+`fencedLabel` (`translate-sheet-leak.ts`) took `U+3164` between two fence runs as a label.
+`composeInsertion` (`insertion-separator.ts`) opened a paragraph for a fragment of `U+200B`.
+`assertWordingCoherent` (`wording-coherence.ts`) passed a decided text of `U+200B`
+at a place the archive never translated,
+though `assertAbsentSliceFilled` refuses it where the record is built.
+The coverage control (`corpus-run/coverage-control.ts`) compared a roster's spans,
+and the text its cut left,
+with the empty string,
+and asked a second round about a page the cut had left as one line break.
+
+The fix:
+each asks `rendersAsNothing`,
+the coverage control at all three of its tests.
+
+Two of these are floors of cached stages:
+the link floor refuses more and the fence floor accepts more,
+for a candidate carrying invisible-only text in that one place.
+No version moved,
+on the audit named in B189.
+
+Open to the owner's veto:
+`assertWordingCoherent` refuses a record of an older build
+that holds an invisible decided text at a place the archive never translated,
+where it passed one.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text that shows nothing".
+
+### B194: the page assembly took invisible text for a rendering
+
+Red in `806039cb1`,
+fixed in `2b789a4ae`.
+
+Found on 2026-10-05 (UTC) by the same census,
+on its second reading.
+The page text of a slice is the replacement a lane wrote where there is one,
+and the archive's own text otherwise (`corpus-run/assembly-page-text.ts`),
+so the assembly passes read model wording;
+the census first classed page text as parsed text and missed them.
+`renderedHeadings` (`corpus-run/title-reference-unify.ts`) took a heading of `U+200B` or `U+3164`
+as the title's English,
+and every reference to the title was rewritten to that character,
+with a `title-reference-unified` finding.
+`nameAuthorities` (`corpus-run/contributor-name-authorities.ts`) took a signature of the same
+as the signer's rendering,
+and the restore wrote it over the name in the heading naming the signer.
+`appearancesIn` (`corpus-run/handle-gloss-place.ts`) took a parenthesis holding a space or `U+200B` as a gloss.
+
+The fix:
+each asks `rendersAsNothing`.
+A signer whose page rendering shows nothing falls to the pinyin reading,
+which the restore writes into the heading and the signature.
+
+Open to the owner's veto:
+`readSignature` (`corpus-run/attribution-line.ts`) still reads a name span of invisible characters as a signature,
+so the restore has a place to write the signer;
+read as unsigned,
+the line would stay nameless.
+
+Open,
+seen by the agent and outside this family:
+a candidate that signs with an invisible name passes the signer floor (`translate-signer-handle.ts`),
+which the restore now repairs at assembly;
+invisible characters count toward the four code points `archive-block-evidence.ts` asks of a source quote;
+and `nameAuthorities` takes the archive's signature name with no blank test,
+which is parsed text and was left.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text that shows nothing":
+a census that classes a text as parsed first reads where the text comes from.
+
+### B195: no scan held the rule that blankness is asked of `rendersAsNothing`
+
+Added in `2b789a4ae`.
+
+Found on 2026-10-05 (UTC) by the same census:
+"Text that shows nothing" rested on habit and review,
+which let B128 and the twenty sites of B189 to B194 through.
+
+`src/blank-text-tests.unit.test.ts`,
+which `source-scans` runs,
+reads every production file's syntax tree for a comparison with the empty string,
+written as a string or an empty template,
+either way round;
+the length of a trimmed text,
+or of a name its function declares from one,
+compared with anything;
+the length of a name annotated as a string compared with zero or asked whether it is less than one;
+and any of those tested for truth.
+Sites are keyed by file and nearest enclosing named function or class,
+with a count,
+and compared whole against a held list,
+so a new function,
+a second test in a listed function
+and a stale entry each fail;
+every held key carries why its question is another one.
+The list held 297 keys at the agent's base and 298 at `2b789a4ae`,
+where the lead corrected it for code that had landed since.
+
+That it can fail
+(the fixing agent's runs):
+on a scratch copy seeded three ways it named each seed,
+and on the source without the fixes it named 17 of the 20 fixed sites.
+The three it did not name:
+the reading's length floor,
+where the fix puts a question ahead of a comparison that stays;
+the review stage,
+which never asked;
+and the gloss reader,
+where an offset comparison stood for an empty span.
+Out of its reach,
+as its module doc says:
+the length or truth of a string no annotation names,
+a constant holding the empty string,
+a blank needle handed to a search,
+a length floor on text that was never trimmed,
+and a trimming helper whose result another function compares.
+
+Open:
+one held key is a known gap,
+`introduced-defect-screen.ts#isUsable`,
+which keeps a prior quote of one invisible character;
+the file was another change's,
+and fixing it removes the key.
+
+Open to the owner's veto:
+the scan is broad,
+with a long held list,
+where a narrower one would hold fewer keys and see less.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text that shows nothing",
+whose enforcement paragraph names the scan.
+
+### B196: the slice census stopped on a recorded pairing its text did not fit
+
+Red in `6f61ba5dd`,
+fixed in `72f5be638`.
+
+Found on 2026-10-05 (UTC),
+as the item ledger B170 left open.
+`censusEntry` (`corpus-run/slice-census-entry.ts`) converted a settled recipe's block pairings itself
+and caught nothing,
+so an artifact recording a pairing that names a translation block past its section
+ended the census with `BlockPairingError: pairing names translation block 5, and there are 4`,
+where `rebuildPreparation` answers the same artifact as `moved`.
+
+The fix:
+`censusEntry` measures through `measureCarve`,
+which catches the refusal through `requireBlockPairingRefusal`,
+warns,
+and measures every section by the deterministic aligner,
+as the rebuild carves the same artifact.
+The row reads `carve: 'settled-moved'`,
+its `pairingRefusal` holds the sentence the rebuild gives,
+and the `CENSUS carve:` line of `corpus-run/slice-census.ts` counts such rows.
+The blankness scan holds one more key,
+for the empty `pairingRefusal` a row carries when nothing was refused.
+
+The whole suite ran on `72f5be638` in a side checkout:
+1,605 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 36 source scans passing.
+No cache version moved,
+for this entry or for B197 to B202,
+on the audit named in B189.
+
+Open to the owner's veto:
+every section's pairing is set aside once one is refused,
+as the rebuild does;
+and the row keeps `carve` as one word beside a separate `pairingRefusal`,
+two fields that must agree,
+where the other way makes the carve an object carrying its refusal.
+
+Open:
+the sentence is worded in two places,
+here and in `rebuildPreparation`,
+until one shares it with the other.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation".
+
+### B197: a settled census row counted its added blocks by another carve than the one that sliced it
+
+Red in `6f61ba5dd`,
+fixed in `72f5be638`.
+
+Found on 2026-10-05 (UTC),
+as two items ledger M113 left open.
+`censusEntry` counted translation-only blocks with `alignBlocks` even under a settled recipe,
+so a settled row was sliced by the recorded pairing and counted by the deterministic aligner.
+A fixture whose pairing declines the last translation block sliced it out,
+84 characters against a baseline of 125,
+and counted no such block.
+The same column read 39 for an added paragraph of 44 characters and for one of 227.
+
+M113 recorded a cause for that reading off the source:
+that `estimateExpansion` divides a section's whole translation by its whole original,
+so an added block raises the length expected of every rendering.
+Measured by the fixing agent,
+the cause holds in part.
+In a section of five blocks,
+forcing the clean expansion changes which block is left over for an addition of 213 characters
+and not for one of 42,
+which is a near tie in length between neighbouring blocks;
+in a section of one original block the column reads the original's own rendering,
+39 characters,
+whatever was added.
+
+The fix:
+the count reads the steps that sliced the section,
+`blockPairingToSteps` where the recipe holds a pairing for it and `alignBlocks` otherwise,
+and a block a pairing renders for an original is not counted.
+Under a recorded pairing the column reads 44 and 227;
+a deterministic row still reads the aligner's leftover.
+
+Open to the owner's veto:
+`estimateExpansion` and the aligner are unchanged.
+Estimating the expansion from the whole entry recovered an invented added block more often when it was long
+and less often when it was short
+(the fixing agent's probe over 145 sections of the pin,
+1,434 insertions at each size:
+1,279 recovered against 1,190 at 213 characters,
+and 1,231 against 1,265 at 42),
+and it would move alignments on every page.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a figure describing a carve is read off the steps that made the carve.
+
+### B198: a rendering that holds a colon was written twice into its heading
+
+Red in `6f61ba5dd`,
+fixed in `72f5be638`.
+
+Found on 2026-10-05 (UTC),
+as an item ledger M113 left open.
+`restoreHeading` (`corpus-run/contributor-name-restore.ts`) cut the page title at its last colon to find the prefix,
+so `### Three: Mao: Cat` with the rendering `Mao: Cat` read `Three: Mao:` as the prefix and `Cat` as the name,
+and wrote `### Three: Mao: Mao: Cat` with a restore reported.
+
+The fix:
+the prefix ends at the page title's first colon,
+as `titleNames` reads the original,
+whose prefix holds no colon while its name may.
+`lastColonAt` (`corpus-run/assembly-page-text.ts`) had no reader left and is gone.
+`restoreSignature` reads its name by offsets and has no such shape;
+the case holds a signature as its control.
+
+No page changes
+(the fixing agent's count over the pin):
+none of 251 original headings and none of 251 archive headings holds more than one colon,
+and none of 24 signature names holds any.
+
+Open to the owner's veto:
+a page prefix that itself holds a colon is read as part of the name,
+where the other way takes any colon whose suffix already carries the rendering.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text":
+a cut at a delimiter is a first or a last match on a key nothing makes unique.
+
+### B199: an artifact whose contest never ran read as nothing to report
+
+Red in `6f61ba5dd`,
+fixed in `72f5be638`.
+
+Found on 2026-10-05 (UTC),
+as an item ledger M113 left open.
+`finalSelectionFindings` (`corpus-run/final-selection-completeness.ts`) read a lane selection that was not `contested`
+as an empty list of contests.
+No production input reaches that arm:
+`pass-entry-persist.ts` holds the function's one caller,
+`settledEntryArtifact` writes the kind as a literal,
+and `assertFinalNaturalnessComplete` already refuses the same state out loud (ledger B168).
+
+The fix:
+the arm throws,
+its message opening `unreachable:` and naming the kind found and the writer that records it as contested.
+The case that asserted the empty list asserts the whole message.
+
+Open:
+the sibling arm of the same function,
+for a consolidation that never ran,
+has the same shape and was left,
+since every fixture default of its test file builds that state.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B200: a parsed list item without offsets dropped its whole list without a word
+
+Fixed in `72f5be638`,
+its case in the same commit,
+since it calls the reader the fix adds.
+
+Found on 2026-10-05 (UTC),
+as an item ledger M113 left open.
+`readLists` (`corpus-run/list-spread-restore.ts`) returned no list at all when one item carried no start or end offset,
+which would move every later list's position in the slice.
+The installed parser sets a position on every node it builds
+(`mdast-util-from-markdown` 2.0.3,
+`enter` and `exit` in its `lib/index.js`),
+and none of 54 list items on the 184 pinned pages,
+nor of 31 on 13 invented lists,
+lacked one
+(the fixing agent's reading and counts).
+
+The fix:
+`listItemExtent` reads an item's offsets and throws `unreachable:` for an item with none;
+it is exported through the barrel so that its case can hand it an item built without a position.
+No input reached the old arm,
+so the case had no red run on it:
+on the tree of `6f61ba5dd` it failed on the missing export.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B201: a reference link in a contributor form read as markup where the text defines it
+
+Red in `6f61ba5dd`,
+fixed in `72f5be638`.
+
+Found on 2026-10-05 (UTC)
+by the agent that fixed B154,
+among what it left.
+`contributorForm` (`contributor-name-authority.ts`) read `[Whisker][w]` as the whole markup,
+whether or not the text defined `w`.
+Only the parse tells:
+a reference shows as a link where the document defines it,
+and as literal text where it does not.
+
+The fix:
+`archiveContributorNameForms` parses its text once when it holds `[`
+and reads each reference link,
+full,
+collapsed or shortcut,
+as the label it shows;
+a reference with no definition keeps its markup,
+which is what the page shows.
+
+The fixing agent's version read the label by arithmetic:
+it counted back from the end of the markup by the length the parser reports for the reference's own label.
+That length is of the decoded label,
+not of what is written,
+so a reference label holding an escape or an entity moved the cut.
+The lead's probe of the agent's build read `Whisker]` out of `[Whisker][a\]b]` and out of `[Whisker][w\*x]`,
+and `Whisker][w&` out of `[Whisker][w&amp;x]`
+(`merge-w35/probe-reference-label.mjs` in the audit's scratch folder,
+with a log for each build).
+The label is read off the parse now:
+it ends where the link text's last inline node ends,
+and a node with no end offset throws `unreachable:`.
+The lead's red case holds the three shapes.
+
+No form changes at the pin
+(the fixing agent's count):
+the 92 archive pages hold no reference link.
+
+Open to the owner's veto:
+a text the parser cannot take,
+nested past its stack,
+is read as defining no reference,
+with a debug line;
+and the lead's replacement of the agent's label arithmetic.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+an offset inside a node is read off its children,
+never worked out from the length of a decoded value.
+
+### B202: a request the provider refused in a stream's error event was retried
+
+Red in `6f61ba5dd`,
+fixed in `72f5be638`.
+
+Found on 2026-10-05 (UTC),
+as the item ledger B87 left open.
+An Anthropic stream's error event naming a type the provider documents for a refused request
+was refused as a `MalformedCompletionError` and retried on the ladder,
+spending every attempt on a request the provider refuses again,
+where the same refusal over plain HTTP is returned unretried,
+400 being no retryable status.
+A scripted 200 stream carrying an `invalid_request_error` event drew 3 transport calls where 1 was expected.
+
+The fix:
+`requireWholeAnthropicMessage` (`anthropic-whole-message.ts`) throws `StreamErrorEventError`,
+a marked `SyntheticHttpError` that carries the status the refusal has over plain HTTP and names the type alone,
+with nothing of the provider's body;
+`attemptExchange` (`transient-retry.ts`) rethrows a thrown `SyntheticHttpError` whose status is not retryable.
+The types read as refused,
+by the provider's errors page as the fixing agent read it:
+`invalid_request_error` (400),
+`authentication_error` (401),
+`billing_error` (402),
+`permission_error` (403),
+`not_found_error` (404)
+and `request_too_large` (413).
+A `billing_error` so carries 402,
+which the provider-budget branches read as they read the plain one.
+Retried as before:
+`rate_limit_error`,
+`api_error`,
+`timeout_error`,
+`overloaded_error`,
+a type the package does not know
+and an event that names none.
+The class joined the inventory of marked classes,
+its `errorType` a named part from a closed list this package holds.
+
+Not read by the agent:
+the provider's page on streaming,
+whose section on error events it could not open in its session;
+the frame's shape rests on the errors page,
+on ledger B87 and on the cases the file already held.
+
+Open to the owner's veto:
+`conflict_error` (409) stays retried,
+since its documentation says to resolve the conflict and then retry.
+
+Open:
+`InStreamProviderError` (`openrouter-stream-error.ts`) carrying a 4xx code still rides the ladder,
+and the Bedrock reader names no error event in its stream end.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal":
+a refusal means the same on the ladder whichever channel it arrived by.
+
+### B203: a title a voice answers twice was read by its first rendering without a word
+
+Red in `49e3b8dfd`,
+fixed in `21f2ec369`.
+
+Found on 2026-10-05 (UTC)
+by a census of every lookup in the package's production source that takes the first match of a key,
+after B129.
+The fixing agent read 403 lines of `find`,
+`findIndex`,
+`findLast`,
+`indexOf`,
+`new Map(` and `Object.fromEntries(` calls in 238 files,
+each with its function,
+and two shapes that pattern misses:
+maps built from typed pairs,
+8 of 142 typed constructions,
+and maps filled by `set` in a loop,
+161 sites in 111 files,
+read once with no note kept for each.
+By its decisions,
+9 of the 403 lines were fixed,
+117 stand with what makes each key unique,
+11 are described and left,
+15 sit in files that were another change's,
+and 251 ask another question
+(a scan of a string,
+a membership test,
+an ordered preference,
+a merge of equal values).
+The defects are this entry and B204 to B210,
+two of them found in the shapes the pattern misses.
+Out of the census's reach:
+a first match written as a loop with an early return,
+a record built by computed-key assignment or by spreading inside a fold,
+and test files.
+
+`settlePageTitles` (`page-title-lexicon-stage.ts`) searched each voice's reply
+for the first entry numbered for a title.
+`isPageTitleLexiconWire` admits any list of numbered renderings,
+so nothing makes a number unique in a reply:
+a voice answering one title twice had its second rendering passed over,
+and a number the sheet never listed was passed over the same way,
+neither with a finding.
+
+The fix:
+`resolvePageTitleAnswers` (`page-title-lexicon-wire.ts`) reads a reply once,
+keeps the first rendering for each title,
+and returns `duplicate-title-rendering` and `title-index-out-of-range` findings,
+which the stage reports under the voice's model id,
+as `resolvePanelBallot` does for a panel ballot.
+No settled title changes:
+the first entry for a listed number is the one the search always took.
+
+The whole suite ran on `21f2ec369` in a side checkout:
+1,606 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 36 source scans passing.
+No cache version moved,
+for this entry or for B204 to B210:
+no stored record exists under a current version (the audit named in B189),
+and by the agent's measurements no decision moves at the pin.
+
+Open to the owner's veto:
+a voice's first rendering is kept and a finding written,
+where the other way drops the voice or the title;
+and the `title-index-out-of-range` finding,
+one step past the family,
+which fell out of the same loop.
+
+Open,
+described by the agent and left,
+each a first match on a key nothing makes unique;
+a follow-up is owed:
+
+- `corpus-run/title-reference-link.ts`:
+  a title linked twice in one slice has its second link's rendering never located,
+  so the pass leaves that link as written;
+- `bilingual-pair-bound.ts`:
+  the bound compares the blocks around the first line carrying a pair's wording,
+  so a refrain's second block is never compared;
+- `archive-revision-footnotes.ts`:
+  a block is located by the first place its text stands on the page;
+- `panel-stage.ts`:
+  ballots are keyed by model id against a roster nothing holds distinct for the panel,
+  the critics or the page title bench,
+  as it is held for editors and checkers;
+- `corpus-run/artifact-two-lane-read-naturalness-confirmation.ts`:
+  a stored confirmation is bound to the first decisive round carrying its candidate;
+- `corpus-run/probe-relabel-artifact.ts`:
+  tallies are keyed by envelope id from a stored record the reader does not check;
+- `corpus-run/probe-relabel-case.ts` and `corpus-run/probe-relabel-control.ts`:
+  the first slice carrying a region's replaced text is taken;
+- `corpus-run/window-trial-report.ts`:
+  a later ledger row for an arm replaces an older one;
+- `corpus-run/rendering-audit-settled-repeat.ts`:
+  a second run's rows are keyed by subject from a file the reader casts and does not check;
+- `grade-agreement.ts`,
+  in a file that was another change's:
+  a pre-grade file naming one position twice and carrying one row too many passes both checks,
+  and the later verdict for that position is scored;
+- `introduced-defect-screen.ts`,
+  likewise:
+  a prober answering one region twice with two verdicts is counted by the first,
+  with no finding.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B204: every link to an href was given the archive's last text for it
+
+Red in `49e3b8dfd`,
+fixed in `21f2ec369`.
+
+Found on 2026-10-05 (UTC) by the same census,
+reading the maps built from typed pairs.
+`linkedTextPairs` (`page-name-glossary.ts`) keyed the archive's link texts by href,
+and a map built from pairs keeps the last pair for a key.
+An href names no one link:
+a page can link one destination under a name in one sentence and under other words in another,
+and every link of the original to that href then read the archive's last text for it as its rendering.
+
+The fix:
+`renderedLinks` (`page-name-link-rendering.ts`,
+a module of its own with its own test file,
+since the glossary file was near its line cap)
+gives a link the archive's one text for its href where there is one,
+the archive's link at the same place where both documents link the href equally often,
+and no pairing where the counts differ,
+the rule ledger B59 gave `corpus-run/title-reference-link.ts`.
+A mutant putting the last text back failed the new module's place case and its count case
+(the fixing agent's run).
+
+No page changes
+(the fixing agent's measurements at the pin):
+none of 92 archive pages links one href under more than one text,
+and the builds before and after the fix write the same 395 glossary lines over the 92 pairs.
+A pin that adds such a page could move a cached decision.
+
+Open to the owner's veto:
+a link whose rendering cannot be read gets no glossary line,
+and its title is left to the page title lexicon,
+where the other way keeps the first or the last text.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B205: a claim's proposers were taken from the last chunk that names it
+
+Red in `49e3b8dfd`,
+fixed in `21f2ec369`.
+
+Found on 2026-10-05 (UTC) by the same census,
+reading the maps filled by `set` in a loop.
+`buildCrosscheckCensus` (`corpus-run/judge-crosscheck.ts`) set a claim's proposers
+at each chunk of an entry's slice critics,
+so where two chunks carry one claim id the last chunk's list replaced the others,
+and an author from another chunk could be seated as a judge of its own claim.
+`indexProposers` (`corpus-run/attribution-report.ts`) merges such chunks,
+and its comment says why.
+
+The fix:
+the proposers are merged across chunks,
+each model once,
+in the order first met.
+
+Whether two chunks can carry one claim id was not proved:
+the fix rests on that comment and on being harmless,
+and over 226 stored artifact files holding 21,572 attributions
+no claim id stands in more than one chunk of an entry
+(the fixing agent's measurement,
+with a control it had to flag).
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B206: a stored page assembly was read by the first row naming a slice
+
+Red in `49e3b8dfd`,
+fixed in `21f2ec369`.
+
+Found on 2026-10-05 (UTC) by the same census.
+`pageAssemblyOverrideAt` (`corpus-run/artifact-two-lane-page-assembly.ts`) takes the first trimmed row naming a slice,
+and `parsePageAssembly` admitted a file holding two.
+The writer cannot write two:
+`guardPageAssembly` composes the guard's trims,
+one per slice by the splice,
+with the rows of a map keyed by slice.
+A file edited by hand or written by another build could,
+and the reader answered with whichever row stood first.
+
+The fix:
+`parsePageAssembly` refuses the second row,
+`expected one row per slice; slice N appears more than once`,
+in the words `parseConsolidation` uses for its slices.
+`withdrawn` is left alone:
+it is read by membership,
+where a repeat changes no answer.
+
+No stored file is refused
+(the fixing agent's measurement):
+of 212 stored sections holding 221 trimmed rows,
+none names a slice twice.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B207: the delivery ledger keyed trimmed texts by slice without the check its two index lists have
+
+Red in `49e3b8dfd`,
+fixed in `21f2ec369`.
+
+Found on 2026-10-05 (UTC) by the same census.
+`buildSliceDelivery` (`slice-delivery.ts`) refuses a shipped or a withdrawn index named twice,
+checked against the arrays because a set forgets the repeat,
+and built a map of trimmed texts by slice with no such check,
+so of two trimmed replacements for one slice the later would have been the text the ledger reports.
+Its callers pass the assembly guard's trims,
+which the splice holds to one per slice,
+so no run reaches it;
+the signature admits any list.
+
+The fix:
+a second trimmed replacement for a slice is the fault `trim-repeats`
+(`slice-delivery-fault.ts`),
+worded `slice N carries more than one trimmed replacement, so which text the document holds there cannot be read`.
+
+Open to the owner's veto:
+the fault is a kind of its own,
+where the other way widens the set name the two sibling repeats share,
+which a third fault also carries and could then word wrongly;
+and the refusal stands where uniqueness is proved in another file,
+neither by type nor by the lines beside it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B208: a roster card was printed from the first row a listing carries under an id
+
+Red in `49e3b8dfd`,
+fixed in `21f2ec369`.
+
+Found on 2026-10-05 (UTC) by the same census.
+`listingRowFor` (`corpus-run/roster-card-render.ts`) took the first row of a provider's listing carrying the served id.
+A listing is a provider's reply,
+and nothing in it makes an id name one row:
+the card would describe whichever the provider listed first.
+
+The fix:
+every row under the id is read;
+rows that say the same are one answer,
+and rows that differ are a `StatedRefusalError` naming the id the operator typed and nothing from the listing.
+The one caller is the `roster-card` command,
+which states its other refusals the same way.
+
+Open to the owner's veto:
+rows that say the same count as one answer,
+where the other way refuses any repeat.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B209: three readers of the package's own log lines settled a repeated field by order
+
+Red in `49e3b8dfd`,
+fixed in `21f2ec369`.
+
+Found on 2026-10-05 (UTC) by the same census.
+`reportSpend`,
+`takeReading` and `armSliceCost` each write a field once,
+so a line naming one twice is two records run together or a line cut and resumed.
+`namedFields` (`corpus-run/spend-read.ts`) and `fieldsOf` (`slice-cost-read.ts`) kept the later value,
+the second by its own TSDoc,
+and `fieldValue` (`corpus-run/meter-sample-read.ts`) read the first:
+each returned one clean record out of two.
+
+The fix:
+`readSpendLine` answers `'unreadable'`,
+`readMeterLine` answers `'skipped'`,
+for a repeated state or level,
+and `readSliceCosts` drops the line and names each repeated field,
+each module's own value for a record that will not read.
+The meter's check is asked once both required states have read,
+so that an older case about an absent first reading keeps passing for the reason its name gives;
+the agent's reviewer caught a first placement that made it pass for the new reason.
+
+No report over a stored log changes
+(the fixing agent's measurement over 1,928 stored run logs,
+the builds before and after the fix side by side,
+with a control):
+922,240 `SPEND` records and 32,751 `METERS` records read alike,
+and of 292,458 `SLICE-COST` lines the 9 that read differently are test output.
+
+Open to the owner's veto:
+a damaged record is a hole,
+where the other way reads its first or its last value.
+
+Recurrence:
+`mistake-prevention.md`,
+"Readers of the package's own log lines".
+
+### B210: a tag attribute was restored from the first of two the archive's tag names
+
+Red in `49e3b8dfd`,
+fixed in `21f2ec369`.
+
+Found on 2026-10-05 (UTC) by the same census.
+`attributeRewrites` (`corpus-run/jsx-attribute-restore.ts`) took the archive tag's first attribute of a name
+and wrote its value over the bench's.
+The archive's tag is text a person wrote,
+and where it names an attribute twice,
+which value a reader sees depends on what renders the tag.
+
+The fix:
+such an attribute is left as the bench wrote it,
+and the tag's other attributes are restored as before.
+
+No page changes
+(the fixing agent's count at the pin):
+of 118 archive tags,
+none names an attribute twice.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B211: trial cases in seven files that could not fail on what they named
+
+Changed in `bbed06b87`,
+a commit of test files alone.
+
+Found on 2026-10-05 (UTC)
+by the fourth review of the trial's added cases.
+No production file changed:
+
+- `corpus-run/name-gloss-restore.unit.test.ts`:
+  both cases were refused before the line shape was read,
+  since the archive carried the name once and the shipped text never carried it,
+  and the comma case asserted that two lengths were at least zero;
+  each now has a fixture the line shape decides and a control that restores,
+  with the restored row and the finding whole;
+- `nudged-reask.unit.test.ts`:
+  typed fixtures replace casts,
+  the path where both answers fail returns a value the second answer cannot be mistaken for,
+  and new cases hold a usable first answer,
+  which buys no second ask,
+  and the request the second ask receives,
+  the nudge last and the first provider excluded;
+- `provider-router.unit.test.ts`:
+  the last-refusal case answered 503,
+  which is no budget refusal,
+  and so stopped at the first provider;
+  it now refuses on budget at both providers and asserts the last refusal whole,
+  and a new case holds a failure that is no budget refusal rethrown at once;
+- `restoration-judge.unit.test.ts`:
+  the whole judgments record,
+  where `votes` shows the ballot that named one seed only;
+- `hyper-client.unit.test.ts`:
+  the answer-length knob and the replaced signal are read off the recorded exchange,
+  not searched for in a JSON string;
+- `corpus-name-index.unit.test.ts`:
+  the class,
+  the whole message and the kind;
+- `corpus-run/tag-attributes.unit.test.ts`:
+  whole readings where it asserted mapped names,
+  and the batch tag is gone from six case names.
+
+Each changed or added case failed against a mutation of the production line it names
+(the fixing agent's runs,
+the mutants restored).
+Its one stated gap:
+the unclosed-quote half of the first name-gloss case cannot fail on one guard alone,
+since two guards refuse that line.
+The commit was not gated alone.
+The whole suite next ran two commits on,
+on `cf50117c5` in a side checkout:
+1,607 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 36 source scans passing.
+
+Open to the owner's veto:
+the 503 case stands beside the older 500 case and does not replace it;
+and the `hyper-client` case asserts that the signal was replaced,
+not how long the deadline is,
+which the wire does not show.
+
+Open:
+two older `refine-wire` cases use a dog sentence as fixture text,
+an older `corpus-name-index` case asserts mapped names,
+and an older `provider-router` case asserts the class alone.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
 
 ## Process mistakes in this audit
 
@@ -24806,7 +26039,8 @@ a paired step naming the fourth:
 `{"runs":[],"sealedSourceIds":[]}` on the build of `7f069adc9`);
 decided and fixed as B138.
 
-Open,
+Open when this entry was written,
+closed in B197 to B200,
 found by the agent that wrote `f3b0d5db3`:
 the slice census sizes an added block by the block the aligner left over,
 so an added paragraph of 42 or of 213 characters reads as 39,
@@ -25055,6 +26289,57 @@ and T8's rule that a span no runtime value can reach is removed as dead code is 
 a span that guards an invariant is not dead code.
 `mistake-prevention.md`,
 "Guards a census wants gone".
+
+### M116: three more shell commands chained with `;`
+
+Status:
+happened 2026-10-05 (UTC),
+three times in one session,
+after M107 had recorded four the same day;
+every step only read,
+so no file was changed by them.
+A listing piped to a search and chained to a count (`ls … | rg … ; wc …`),
+a count chained to a search of the same file (`rg --count … ; rg …`),
+and a patch check chained to its statistics (`git apply --check … ; git apply --numstat …`).
+Each second step ran whatever the first returned,
+so the last call would have printed a patch's statistics beside a check that had failed.
+Prevention:
+M1 and M107 stand as written,
+and recording the slip has not stopped it,
+as M1 says;
+one call holds one check,
+or at most three steps joined by `&&`,
+and two checks whose results are both wanted go in two calls of one parallel batch.
+`mistake-prevention.md`,
+"Shell commands".
+
+### M117: a line-range `sed --in-place` aimed by a count off a print that had lost a line
+
+Status:
+happened 2026-10-05 (UTC),
+while merging the footnote mention fix on the main checkout,
+seen in the next read and repaired before any commit.
+To replace two lines of a TSDoc in `footnote-mentions.ts`,
+the lines were printed with `sed --quiet` and without their numbers,
+against M93's prevention,
+and counted from the range's first address.
+The print opened on a blank line,
+which the tool's output trimmed,
+so the count started on the wrong line,
+and `sed --in-place '202,203c\…'` replaced lines other than the two meant.
+The block was repaired with the Read tool and one Edit.
+M93 records line numbers worked out and not read;
+here they were read,
+off output that no longer matched the file line for line.
+Prevention:
+a replacement of more than one line is a Read and an Edit,
+which match by text and fail where the text is not there.
+Where `sed --in-place` is used,
+each printed line carries its own number from the file,
+by M93's form or by `cat --number <file> | sed --quiet 'A,Bp'`,
+never a count from the range's start.
+`mistake-prevention.md`,
+"Lint and edits".
 
 ### M79: a coverage census measuring compressed code
 
@@ -26325,6 +27610,25 @@ not only its script:
 print the markup and a length,
 or a hash,
 for any text a page wrote.
+
+Superseded in part on 2026-10-05 (UTC),
+when the owner ruled:
+"I've allowed you to handle PII. The corpus is public."
+The lead's reading,
+open to the owner's veto:
+a probe need not mask corpus page text,
+and a doc may quote it where the quotation helps.
+What stands:
+credentials and raw provider requests and replies stay private,
+so a run log,
+which carries provider replies,
+is still searched by its line tags or its JSON keys;
+the corpus stays out of the repository,
+since it is unlicensed;
+unit fixtures stay invented;
+and a session transcript is still neither searched nor quoted,
+since it holds more than the corpus,
+so an entry is still found in the pinned clone.
 
 ### M35: a teardown that kept what only its consumers read, and an audit that listed the sites it saw
 

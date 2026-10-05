@@ -74,6 +74,9 @@ a command ran in the same batch as the write it read,
 and ran a stale file of the same name (M51).
 A transcript census found 9,324 of 22,058 calls breaking the rule after it took its current wording,
 and the rule itself misread as three `&&` rather than three steps (M1).
+The slip recurred after every record of it,
+four times and then three more on 2026-10-05 (UTC) alone (ledger M107,
+M116).
 
 The rule:
 a Bash call holds at most three steps joined by `&&`,
@@ -175,6 +178,14 @@ reached an invariant throw through a cast,
 and asserted an answer alone under a name for two knobs (ledger B178).
 A case is shown to fail with the thing it names taken out of the build,
 before its name is believed.
+
+The consolidate store still resumed a gate whose choice its own ballots do not give,
+and flags no writer sets beside their terminal (ledger B187).
+Two reading-cache cases built records that a closing check refused whatever field they named (ledger B188),
+and trial cases in seven files were refused before the line they named was read,
+or answered a status that never reached the throw they named (ledger B211).
+A refusal case hands in a record with one cause,
+and resumes the same record with that cause mended.
 
 The rule:
 a red guard is read case by case before the fix,
@@ -310,11 +321,24 @@ the coverage build is not minified,
 and a claim that a transform's error runs only one way is tested by measuring once without the transform.
 A generated list's line count is printed before anything consumes it.
 A probe's output goes outside the tree it searches.
-Corpus text is never printed:
-a probe prints ids,
+Corpus page text may be printed since 2026-10-05 (UTC),
+when the owner ruled,
+"I've allowed you to handle PII. The corpus is public."
+Until then a probe printed ids,
 indices,
 counts,
-code points and markup.
+code points and markup alone (M36).
+The lead's reading of the ruling,
+open to the owner's veto:
+a probe need not mask corpus page text,
+and a doc may quote it where the quotation helps;
+credentials and raw provider requests and replies stay private,
+a run log's lines of model reasoning among them;
+the corpus stays out of the repository,
+since it is unlicensed;
+unit fixtures stay invented;
+and a session transcript is still neither searched nor quoted,
+since it holds more than the corpus.
 
 What enforces it:
 habit,
@@ -680,6 +704,12 @@ and its cases run scripted programs (ledger M113).
 A program on the machine is an outside read like the corpus,
 and its runner is a required parameter.
 
+The picture sources still defaulted to the corpus and the real programs
+in the functions that hand them to that reader,
+and one case read the pinned checkout for an invented entry (ledger B185).
+A default is looked for at every function that hands a seam on,
+not only where the seam is first read.
+
 The rule:
 before a test drives a production entry point,
 list what that entry point reads outside the process
@@ -720,6 +750,10 @@ the type checker:
 `runPassPreparation`,
 `runEntryPipeline` and `settleEntry` require `outsideReads`,
 and tests pass `NO_OUTSIDE_READS` (`corpus-run/pass-outside-reads.test-fixture.ts`);
+`readPassVisualEvidence`,
+`readSeatedPictures`,
+`runEntryPipeline` and `settleEntry` require `pictureSources`,
+and tests pass `NO_PICTURE_SOURCES` (`corpus-run/pass-picture-sources.test-fixture.ts`);
 `configureProviders`,
 `runClientFrom` and `assertRequiredProvidersReady` require `env` and `transport`;
 `outsideReadsFrom` requires the environment,
@@ -929,6 +963,13 @@ and a sort of document words compared UTF-16 units (ledger B95).
 That fix left 40 argument-less sorts in production source,
 and four comparators written `left < right ? -1 : 1`,
 which order by UTF-16 unit and never answer zero for equal keys (ledger B122).
+
+One floor was compared with two counts,
+a model's reading in UTF-16 units with its spaces
+and the deterministic reader's in non-whitespace code points,
+so one text was usable as a model's reading and no text as the deterministic reader's (ledger B186).
+A constant is compared with one count,
+defined beside it.
 
 The rule:
 text is ordered with `compareCodePoints` from `code-points.ts`,
@@ -1315,7 +1356,9 @@ though `.editorconfig` forbids it,
 since no configured check enforces that for TypeScript (ledger B119);
 and a commit made on its named tests alone,
 its message putting the lint off to a change that then went to agents,
-shipped a lint warning to the twelve agent checkouts made from it (ledger M114).
+shipped a lint warning to the twelve agent checkouts made from it (ledger M114);
+and a line range for an in-place edit was counted off a print whose first line the tool had trimmed,
+so the edit replaced the wrong lines of a TSDoc (ledger M117).
 
 The rule:
 read a region with the Read tool before editing it.
@@ -1366,6 +1409,10 @@ A line-range `sed --in-place` names one file,
 since it applies the range to every file it is given (M71),
 and takes its line numbers from `rg --line-number '' <file> | sed --quiet 'A,Bp'` just before the edit,
 read again after any insertion higher in the file (M93).
+A replacement of more than one line is a Read and an Edit,
+which fail where the text is not there;
+a number for `sed` is printed beside its line,
+never counted from a range's start (M117).
 Lint's summary is read with `rg 'Found [0-9]+ warnings?'`,
 beside the findings list,
 each a check on the other (M95).
@@ -1719,6 +1766,11 @@ the HTTP status lost (ledger B180).
 A class a log line must explain is built from named parts,
 so that it can be marked.
 
+A stream's error event naming a refused request is thrown as a marked class
+that names the provider's documented error type,
+from a closed list this package holds,
+and nothing of the event's body (ledger B202).
+
 The rule:
 a marked class writes its sentence itself,
 from counts,
@@ -1945,6 +1997,14 @@ A refusal added inside a step is followed to every caller of the operation the s
 and where that operation already answers a misfit as data,
 the new refusal becomes that answer.
 
+A reading pair's contract said every reader failure but an abort is contained,
+and its deterministic reader was awaited with no catch,
+so a full scratch device ended the entry (ledger B184).
+The slice census converted a recorded pairing itself
+and stopped on the refusal the rebuild answers as `moved` (ledger B196).
+A contract that says a failure is contained is read against every await inside it,
+and an instrument that walks every artifact answers a misfit as the operation it mirrors does.
+
 The rule:
 a step that can refuse on input a page can carry refuses as its sibling refusals do,
 leaving the steps that held applied,
@@ -2044,6 +2104,14 @@ The docs of the two backstops said no such text could reach them.
 The introduced-defect screen asked whether a claim's side was blank of trimmed text,
 so a one-sided claim with a zero-width space or a Hangul filler on its other side
 read as anchored both ways and was set aside as a wire fault (ledger B128).
+A census of every blankness test in the production source then found twenty more sites:
+quotes anchored on a character no reader sees,
+fields counted as said,
+an archive block revision of one invisible character shipped as wording,
+transport fields read as present,
+and page-assembly passes taking an invisible heading or signature for a rendering
+(ledger B189 to B194).
+The census first classed page text as parsed text and missed the page passes.
 
 The rule:
 whether text a model wrote shows a reader anything is asked of `rendersAsNothing` (`renders-as-nothing.ts`),
@@ -2055,6 +2123,8 @@ and a check that also folds or tidies the text asks it of the bytes that ship.
 a parsed value's edges,
 a setting,
 one character's class.
+Text read off the assembled page is a lane's wording wherever a lane replaced the slice,
+and is asked the same question.
 A test of such a check carries an invisible character `trim()` keeps
 (`U+200B`)
 and one no fold removes
@@ -2062,14 +2132,32 @@ and one no fold removes
 spelled as escapes.
 
 What enforces it:
-habit and review;
+`blank-text-tests.unit.test.ts`,
+which `source-scans` runs (ledger B195),
+fails on a production comparison with the empty string,
+written as a string or an empty template;
+on the length of a trimmed text,
+or of a name its function declares from one,
+compared with anything;
+on the length of a name annotated as a string compared with zero or asked whether it is less than one;
+and on any of those tested for truth,
+outside a held list keyed `file#enclosing function`,
+each key carrying its count of tests and why its question is another one,
+so a new function,
+a second test in a listed function
+and a stale entry each fail.
 `renders-as-nothing.unit.test.ts` pins the reading,
 and each check's invisible-only case fails if it returns to `trim()`
 (the screen's is "READS A SIDE THAT SHOWS A READER NOTHING AS NO ANCHOR").
-No scan finds the old shape:
-a check can store a trimmed value in one statement and compare it in another,
-as the panel ballot's did,
-which a token scan does not follow.
+Out of the scan's reach,
+and left to each site's case and to review:
+the length or truth of a string no annotation names,
+a constant holding the empty string,
+a blank needle handed to a search,
+a length floor on text that was never trimmed,
+an offset comparison standing for an empty span,
+a trimming helper whose result another function compares,
+and a stage that never asks.
 
 ## Records of more than one round
 
@@ -2145,6 +2233,15 @@ what a link label holds,
 whether whitespace may stand before a destination.
 A lexical stand-in for a parse is checked against the parse over a table of shapes before it is trusted,
 and where the two can still differ it errs toward the side its guard can afford.
+
+A contributor form shaped like a reference link read as its markup whether or not the text defined the reference,
+and the first fix found the label's end from the length the parser reports for the reference's own label,
+which is decoded and not what is written (ledger B201).
+Whether a reference shows as a link is asked of the parse,
+and an offset inside a node is read off its children's positions.
+The slice census sliced a settled row by its recorded pairing
+and counted its added blocks by the deterministic aligner (ledger B197).
+A figure describing a carve is read off the steps that made the carve.
 
 The rule:
 a question about what a passage's blocks are
@@ -2521,6 +2618,18 @@ A lookup took the first node carrying an id,
 on the unstated assumption that ids are unique,
 and a document repeating an id had a sound span checked against the wrong node
 and rejected as stale (ledger B129).
+A census of every first-match lookup in the production source found eight more:
+a voice's second rendering of one title passed over (ledger B203),
+an href keyed to the archive's last text for it (ledger B204),
+a claim's proposers taken from the last chunk naming it (ledger B205),
+a stored page assembly and a provider's listing read by their first row under a key (ledger B206,
+B208),
+trimmed texts keyed by slice beside two index lists that were checked (ledger B207),
+three log readers settling a repeated field by order (ledger B209),
+and an attribute restored from the first of two a tag names (ledger B210).
+A heading cut at its last colon wrote a name holding a colon twice (ledger B198).
+The census's search pattern missed maps built from typed pairs and maps filled by `set` in a loop,
+where two of the eight stood.
 
 The rule:
 a table looked up by text is a `ReadonlyMap`,
@@ -2547,6 +2656,9 @@ a file,
 or a caller the signature lets build anything,
 the lookup gathers every match and says what two mean,
 in the refusal form its module already uses.
+A cut at a delimiter is such a lookup too,
+and a census of them reads maps built from typed pairs and maps filled by `set` in a loop
+beside the calls.
 
 What enforces it:
 `text-keyed-tables.unit.test.ts`,
@@ -2560,8 +2672,11 @@ by annotation or by a cast)
 whose value is an object literal at a module's top or `{}` anywhere,
 or that is written through a computed key;
 the red cases in each site's test file hold the inherited names.
-`validate-issue.unit.test.ts` and `critic-wire.unit.test.ts` hold a document repeating an id;
-first-match lookups elsewhere are held by habit and review.
+`validate-issue.unit.test.ts` and `critic-wire.unit.test.ts` hold a document repeating an id,
+and each site of ledger B203 to B210 holds its repeat in its own test file;
+first-match lookups elsewhere are held by habit and review,
+the sites that census described and left among them (ledger B203,
+"Open").
 Out of the scan's reach,
 and read once by a typed census recorded in ledger B77:
 a table built by `Object.fromEntries` or handed back from a function and then read by text,
@@ -2703,6 +2818,13 @@ and give each reader the old and the new spelling,
 since run logs written before the change stay on disk.
 Reader fixtures are built by calling the writer,
 not by copying its template.
+
+Three readers settled a field written twice by order,
+two keeping the later value and one the first,
+though each writer writes a field once,
+so two records run together read as one clean record (ledger B209).
+A reader says what a repeated field means,
+with its module's own value for a record that will not read.
 
 What enforces it:
 `run-timing.unit.test.ts` holds a fixture line for each round shape and the completion line,
@@ -2850,6 +2972,16 @@ the quote compared with the accepted issues and the grading sheet's direction,
 decided again by whether the raw omitted text was empty,
 so a claim padded with spaces was counted as introduced damage and shown to a grader as dropped wording
 (ledger B128).
+The blankness census found the shape three more times:
+a rendering-audit claim's side decided blank by two readers,
+a reply's emptiness by two transport readers,
+and an archive block revision's by a stage that never asked and a floor that asked another way
+(ledger B189,
+B191,
+B192).
+And a refusal the provider states in a stream's error event was retried,
+where the same refusal as an HTTP status is returned at once (ledger B202):
+the ladder now reads both as one refusal.
 
 The rule:
 where one event is read by two layers,
@@ -3019,6 +3151,11 @@ which refused only some of the inputs the fallback had covered (ledger B177).
 When a fallback becomes a refusal,
 the inputs the fallback covered are refused at the function's entry,
 in words.
+
+Two arms answered without a word for a state no input produces:
+a lane selection that was never contested read as nothing to report (ledger B199),
+and a parsed list item with no offsets dropped its whole list (ledger B200).
+Each is an `unreachable:` throw now.
 
 The rule:
 a state no input produces is refused out loud,
