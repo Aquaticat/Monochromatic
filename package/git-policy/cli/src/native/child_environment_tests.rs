@@ -1,0 +1,350 @@
+//! What: Controls for the Git child environment additions, checked against real Git.
+//! Why: The overlay must append after exactly the entries Git 2.56.0 reads and must
+//!      never change what Git reports for a caller's malformed variables.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // expect(lockfilePidOverlay([])).toEqual([['GIT_CONFIG_COUNT', '1'], ...]);
+//! ```
+
+/// Import the functions under test and native string types.
+use super::{
+    COUNT_VARIABLE, FORWARD_TARGET_VARIABLE, child_environment_overlay, environment_value,
+    lockfile_pid_overlay, parse_config_count,
+};
+use std::ffi::{OsStr, OsString};
+use std::path::Path;
+use std::process::Command;
+
+/// Build an owned environment list from text pairs.
+fn environment(pairs: &[(&str, &str)]) -> Vec<(OsString, OsString)> {
+    let mut result: Vec<(OsString, OsString)> = Vec::<(OsString, OsString)>::new();
+    for (name, value) in pairs {
+        result.push((OsString::from(name), OsString::from(value)));
+    }
+    return result;
+}
+
+/// The three variables appended at one index.
+fn appended(index: u64) -> Vec<(OsString, OsString)> {
+    return environment(&[
+        (COUNT_VARIABLE, (index + 1).to_string().as_str()),
+        (
+            format!("GIT_CONFIG_KEY_{index}").as_str(),
+            "core.lockfilePid",
+        ),
+        (format!("GIT_CONFIG_VALUE_{index}").as_str(), "true"),
+    ]);
+}
+
+/// Lookup follows `getenv`: exact name, first entry wins, absence is distinct from empty.
+#[test]
+fn environment_lookup_matches_getenv() {
+    let pairs: Vec<(OsString, OsString)> = environment(&[
+        ("A", "first"),
+        ("A", "second"),
+        ("EMPTY", ""),
+        ("a", "lowercase"),
+    ]);
+    assert_eq!(
+        environment_value(pairs.as_slice(), "A"),
+        Some(OsString::from("first"))
+    );
+    assert_eq!(
+        environment_value(pairs.as_slice(), "EMPTY"),
+        Some(OsString::new())
+    );
+    assert_eq!(
+        environment_value(pairs.as_slice(), "a"),
+        Some(OsString::from("lowercase"))
+    );
+    assert_eq!(environment_value(pairs.as_slice(), "B"), None);
+    assert_eq!(environment_value(pairs.as_slice(), ""), None);
+}
+
+/// Accepted spellings convert to their count.
+#[test]
+fn config_count_accepts_what_strtoul_and_git_accept() {
+    for (value, expected) in [
+        ("", 0),
+        ("0", 0),
+        ("7", 7),
+        ("007", 7),
+        (" 2", 2),
+        ("\t\n\x0b\x0c\r 3", 3),
+        ("+4", 4),
+        (" +5", 5),
+        ("-0", 0),
+        ("2147483647", 2_147_483_647),
+    ] {
+        assert_eq!(
+            parse_config_count(OsStr::new(value)),
+            Some(expected),
+            "{value:?}"
+        );
+    }
+}
+
+/// Every spelling Git reports as bogus or too large is rejected.
+#[test]
+fn config_count_rejects_what_git_rejects() {
+    for value in [
+        " ",
+        "+",
+        "-",
+        "x",
+        "1x",
+        "2 ",
+        "1.5",
+        "0x10",
+        "+-1",
+        "- 1",
+        "1 2",
+        "-1",
+        "-2147483648",
+        "2147483648",
+        "4294967296",
+        "18446744073709551615",
+        "18446744073709551616",
+        "99999999999999999999999999",
+        "\u{a0}1",
+        "\u{661}",
+    ] {
+        assert_eq!(parse_config_count(OsStr::new(value)), None, "{value:?}");
+    }
+}
+
+/// Real Git 2.56.0 accepts and rejects exactly the same count spellings.
+#[test]
+fn native_git_agrees_on_count_validity() {
+    for value in [
+        "",
+        "0",
+        "1",
+        " 1",
+        "+1",
+        "-0",
+        "007",
+        "\t2",
+        "-1",
+        "1x",
+        "2 ",
+        " ",
+        "+",
+        "x",
+        "1.5",
+        "0x10",
+        "2147483647",
+        "2147483648",
+        "99999999999999999999999999",
+    ] {
+        let output = Command::new("/usr/bin/git")
+            .env_clear()
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .env("GIT_CONFIG_GLOBAL", "/nonexistent-global-config")
+            .env(COUNT_VARIABLE, value)
+            .args(["config", "--get", "core.lockfilepid"])
+            .current_dir("/")
+            .output()
+            .expect("native Git count probe");
+        let stderr: String = String::from_utf8_lossy(&output.stderr).into_owned();
+        let git_accepts: bool =
+            !stderr.contains("bogus count") && !stderr.contains("too many entries");
+        assert_eq!(
+            parse_config_count(OsStr::new(value)).is_some(),
+            git_accepts,
+            "{value:?}: {stderr}"
+        );
+    }
+}
+
+/// With no numbered configuration the entry is appended at index zero.
+#[test]
+fn overlay_appends_after_existing_entries() {
+    assert_eq!(lockfile_pid_overlay(&[]), appended(0));
+    assert_eq!(
+        lockfile_pid_overlay(environment(&[(COUNT_VARIABLE, "")]).as_slice()),
+        appended(0)
+    );
+    assert_eq!(
+        lockfile_pid_overlay(
+            environment(&[
+                (COUNT_VARIABLE, " 2"),
+                ("GIT_CONFIG_KEY_0", "user.name"),
+                ("GIT_CONFIG_VALUE_0", "A"),
+                ("GIT_CONFIG_KEY_1", "core.lockfilePid"),
+                ("GIT_CONFIG_VALUE_1", "false"),
+            ])
+            .as_slice()
+        ),
+        appended(2)
+    );
+}
+
+/// A last entry that already reads true, in any key or value case, adds nothing.
+#[test]
+fn overlay_is_idempotent_when_the_last_entry_is_true() {
+    for (key, value) in [
+        ("core.lockfilePid", "true"),
+        ("CORE.LOCKFILEPID", "TRUE"),
+        ("core.lockfilepid", "Yes"),
+        ("Core.LockfilePid", "on"),
+        ("core.lockfilePid", "1"),
+    ] {
+        let pairs: Vec<(OsString, OsString)> = environment(&[
+            (COUNT_VARIABLE, "2"),
+            ("GIT_CONFIG_KEY_0", "core.lockfilePid"),
+            ("GIT_CONFIG_VALUE_0", "false"),
+            ("GIT_CONFIG_KEY_1", key),
+            ("GIT_CONFIG_VALUE_1", value),
+        ]);
+        assert_eq!(
+            lockfile_pid_overlay(pairs.as_slice()),
+            Vec::<(OsString, OsString)>::new(),
+            "{key}={value}"
+        );
+    }
+    let nested: Vec<(OsString, OsString)> = appended(0);
+    assert_eq!(
+        lockfile_pid_overlay(nested.as_slice()),
+        Vec::<(OsString, OsString)>::new()
+    );
+}
+
+/// Only the last matching entry decides; other keys and non-true spellings do not suppress the append.
+#[test]
+fn overlay_appends_when_the_effective_entry_is_not_true() {
+    for (first, last) in [
+        ("true", "false"),
+        ("true", "no"),
+        ("true", "0"),
+        ("true", ""),
+        ("true", "truthy"),
+        ("true", "2"),
+    ] {
+        let pairs: Vec<(OsString, OsString)> = environment(&[
+            (COUNT_VARIABLE, "2"),
+            ("GIT_CONFIG_KEY_0", "core.lockfilePid"),
+            ("GIT_CONFIG_VALUE_0", first),
+            ("GIT_CONFIG_KEY_1", "core.lockfilePid"),
+            ("GIT_CONFIG_VALUE_1", last),
+        ]);
+        assert_eq!(
+            lockfile_pid_overlay(pairs.as_slice()),
+            appended(2),
+            "{last:?}"
+        );
+    }
+    let other_key: Vec<(OsString, OsString)> = environment(&[
+        (COUNT_VARIABLE, "1"),
+        ("GIT_CONFIG_KEY_0", "core.lockfilePidX"),
+        ("GIT_CONFIG_VALUE_0", "true"),
+    ]);
+    assert_eq!(lockfile_pid_overlay(other_key.as_slice()), appended(1));
+    // An entry beyond the declared count is not read by Git and must not count.
+    let beyond: Vec<(OsString, OsString)> = environment(&[
+        (COUNT_VARIABLE, "0"),
+        ("GIT_CONFIG_KEY_0", "core.lockfilePid"),
+        ("GIT_CONFIG_VALUE_0", "true"),
+    ]);
+    assert_eq!(lockfile_pid_overlay(beyond.as_slice()), appended(0));
+}
+
+/// Values Git itself rejects are left for Git to report: nothing is added.
+#[test]
+fn overlay_leaves_malformed_numbered_configuration_untouched() {
+    for pairs in [
+        environment(&[(COUNT_VARIABLE, "x")]),
+        environment(&[(COUNT_VARIABLE, "-1")]),
+        environment(&[(COUNT_VARIABLE, "2147483648")]),
+        // Declared entries that are missing make Git fail with "missing config key/value".
+        environment(&[(COUNT_VARIABLE, "1")]),
+        environment(&[(COUNT_VARIABLE, "1"), ("GIT_CONFIG_KEY_0", "a.b")]),
+        environment(&[(COUNT_VARIABLE, "1"), ("GIT_CONFIG_VALUE_0", "v")]),
+        environment(&[
+            (COUNT_VARIABLE, "2147483647"),
+            ("GIT_CONFIG_KEY_0", "core.lockfilePid"),
+            ("GIT_CONFIG_VALUE_0", "false"),
+        ]),
+    ] {
+        assert_eq!(
+            lockfile_pid_overlay(pairs.as_slice()),
+            Vec::<(OsString, OsString)>::new(),
+            "{pairs:?}"
+        );
+    }
+}
+
+/// The complete overlay ends with the forward-target marker carrying the exact path bytes.
+#[test]
+fn child_overlay_adds_the_forward_target_marker() {
+    let overlay: Vec<(OsString, OsString)> =
+        child_environment_overlay(&[], Path::new("/usr/bin/git"));
+    let mut expected: Vec<(OsString, OsString)> = appended(0);
+    expected.push((
+        OsString::from(FORWARD_TARGET_VARIABLE),
+        OsString::from("/usr/bin/git"),
+    ));
+    assert_eq!(overlay, expected);
+    let already_true: Vec<(OsString, OsString)> = appended(0);
+    assert_eq!(
+        child_environment_overlay(already_true.as_slice(), Path::new("relative/git")),
+        vec![(
+            OsString::from(FORWARD_TARGET_VARIABLE),
+            OsString::from("relative/git")
+        )]
+    );
+}
+
+/// A non-UTF-8 real-Git path is carried into the marker without any decoding.
+#[cfg(unix)]
+#[test]
+fn forward_target_marker_preserves_non_utf8_paths() {
+    use std::os::unix::ffi::OsStringExt;
+    let raw: OsString = OsString::from_vec(b"/opt/g\xff/git".to_vec());
+    let overlay: Vec<(OsString, OsString)> =
+        child_environment_overlay(appended(0).as_slice(), Path::new(&raw));
+    assert_eq!(
+        overlay,
+        vec![(OsString::from(FORWARD_TARGET_VARIABLE), raw)]
+    );
+}
+
+/// Real Git applies the overlay, and an explicit caller `-c` still wins over it.
+#[test]
+fn native_git_reads_the_overlay_and_explicit_configuration_wins() {
+    let inherited: Vec<(OsString, OsString)> = environment(&[
+        (COUNT_VARIABLE, "1"),
+        ("GIT_CONFIG_KEY_0", "core.lockfilePid"),
+        ("GIT_CONFIG_VALUE_0", "false"),
+    ]);
+    let overlay: Vec<(OsString, OsString)> = lockfile_pid_overlay(inherited.as_slice());
+    for (extra, expected) in [
+        (Vec::<&str>::new(), "true\n"),
+        (vec!["-c", "core.lockfilePid=false"], "false\n"),
+    ] {
+        let mut command: Command = Command::new("/usr/bin/git");
+        command
+            .env_clear()
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .env("GIT_CONFIG_GLOBAL", "/nonexistent-global-config")
+            .current_dir("/");
+        for (name, value) in &inherited {
+            command.env(name, value);
+        }
+        for (name, value) in &overlay {
+            command.env(name, value);
+        }
+        let output = command
+            .args(extra)
+            .args(["config", "--get", "core.lockfilepid"])
+            .output()
+            .expect("native Git overlay probe");
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(String::from_utf8_lossy(&output.stdout), expected);
+    }
+}

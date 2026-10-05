@@ -6,6 +6,9 @@
 //! // Internal modules used by the forthcoming native entry point and consumer verification.
 //! ```
 
+/// Variables added to every real-Git child: lock PID injection and the forward-target marker.
+pub mod child_environment;
+
 /// The one failure type for rejected configuration content or files.
 pub mod config_error;
 
@@ -27,8 +30,36 @@ pub mod config_schema;
 /// Key-naming typed readers over parsed JSONC values.
 mod config_values;
 
+/// Worktree target classification for worktree-enforcing policies.
+pub mod effective_target;
+
+/// The per-invocation decision the thin executable performs.
+pub mod entry;
+
+/// Removal of wrapper-only escape-hatch flags before forwarding.
+pub mod escape_hatch;
+
+/// Starting real Git with unchanged arguments, streams and exit status.
+pub mod forwarding;
+
+/// Captured read-only real-Git queries over raw bytes.
+pub mod git_metadata;
+
 /// Git 2.56.0 global-argument boundaries over unchanged operating-system strings.
 pub mod global_arguments;
 
 /// The fixed registry of shipped policies.
 pub mod policy_registry;
+
+/// PATH resolution of the real Git executable.
+pub mod real_git;
+
+/// Wrapper self-exclusion for one PATH candidate.
+pub mod real_git_candidate;
+
+/// Disposable fixtures shared by unit tests; never part of the release executable.
+#[cfg(test)]
+mod test_support;
+
+/// Repository and worktree identity as reported by real Git.
+pub mod worktree_identity;

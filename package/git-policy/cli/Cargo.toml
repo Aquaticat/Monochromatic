@@ -13,6 +13,17 @@ publish = false
 name = "git_policy_cli"
 path = "src/native/lib.rs"
 
+# The artifact is deliberately not named `git`: a `target/*/git` on PATH would shadow Git by accident.
+# Installation wiring gives the executable its `git` name at cutover.
+[[bin]]
+name = "cli-git-native"
+path = "src/native/main.rs"
+
+# Consumer-level controls that start the built executable against real Git.
+[[test]]
+name = "native_binary"
+path = "src/native/binary_tests.rs"
+
 [dependencies]
 # Both native tools use the already adopted comment-preserving JSONC foundation.
 monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }

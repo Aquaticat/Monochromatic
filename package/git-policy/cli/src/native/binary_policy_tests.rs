@@ -1,0 +1,235 @@
+//! What: Configuration and fail-closed controls through the built executable.
+//! Why: Commands that could change a repository must not reach Git while policy
+//!      execution is missing, configuration errors must stop them first, and
+//!      inspection commands must never read configuration at all.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // expect(run(wrappedGit, ['add', 'file']).status).toBe(2); expect(staged()).toEqual([]);
+//! ```
+
+/// Import the shared fixtures and bounded process helpers.
+use super::support::{
+    Fixture, Observed, direct, fixture, git, observe, remove, repository, wrapped,
+};
+use std::ffi::OsStr;
+use std::path::{Path, PathBuf};
+
+/// The only configuration file the native wrapper reads.
+const CONFIG_FILE_NAME: &str = "cli-git.config.jsonc";
+
+/// Run a wrapped command in a repository and return what the caller saw.
+fn run_wrapped(fixture: &Fixture, repo: &Path, arguments: &[&str]) -> Observed {
+    return observe(wrapped(fixture).current_dir(repo).args(arguments), b"");
+}
+
+/// Real Git's porcelain status of a repository, as raw bytes.
+fn status(fixture: &Fixture, repo: &Path) -> Vec<u8> {
+    return git(
+        fixture,
+        repo,
+        &["status", "--porcelain=v1", "--untracked-files=all"],
+    )
+    .stdout;
+}
+
+/// Repository-changing commands stop with exit status 2 and leave the repository untouched.
+#[test]
+fn repository_changing_commands_are_not_run() {
+    let fixture: Fixture = fixture("fail-closed");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    std::fs::write(repo.join("file.txt"), b"content\n").expect("file");
+    let before: Vec<u8> = status(&fixture, repo.as_path());
+    assert_eq!(before, b"?? file.txt\n");
+    let head_before: Vec<u8> = git(&fixture, repo.as_path(), &["rev-parse", "HEAD"]).stdout;
+    for (arguments, subcommand) in [
+        (vec!["add", "file.txt"], "add"),
+        (
+            vec!["commit", "--allow-empty", "--message=blocked"],
+            "commit",
+        ),
+        (vec!["branch", "created"], "branch"),
+        (vec!["tag", "v1"], "tag"),
+        (vec!["config", "user.name", "Changed"], "config"),
+        (vec!["-c", "alias.st=status", "st"], "st"),
+        (vec!["update-ref", "refs/heads/moved", "HEAD"], "update-ref"),
+    ] {
+        let observed: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        assert_eq!(
+            observed,
+            Observed {
+                code: Some(2),
+                stdout: Vec::<u8>::new(),
+                stderr: format!(
+                    "cli-git: policy execution is not implemented in this native development \
+                     executable, so git {subcommand} was not run. Repository-changing commands \
+                     still require the installed cli-git.\n"
+                )
+                .into_bytes(),
+            },
+            "{arguments:?}"
+        );
+    }
+    assert_eq!(status(&fixture, repo.as_path()), before);
+    assert_eq!(
+        git(&fixture, repo.as_path(), &["rev-parse", "HEAD"]).stdout,
+        head_before
+    );
+    assert_eq!(
+        git(
+            &fixture,
+            repo.as_path(),
+            &["for-each-ref", "--format=%(refname)"]
+        )
+        .stdout,
+        b"refs/heads/main\n"
+    );
+    remove(&fixture);
+}
+
+/// Invalid, legacy and unknown-key configuration stops a changing command with the key or file named.
+#[test]
+fn configuration_errors_stop_before_git() {
+    let fixture: Fixture = fixture("config-errors");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    std::fs::write(repo.join("file.txt"), b"content\n").expect("file");
+    let source: PathBuf = repo.join(CONFIG_FILE_NAME);
+    for (content, fragment) in [
+        (
+            r#"{ "plugins": {} }"#,
+            "Configuration key plugins is retired",
+        ),
+        (r#"{ "unknown": 1 }"#, "Unknown configuration key: unknown."),
+        (
+            r#"{ "policies": { "no-such-policy": "error" } }"#,
+            "Unknown policy ID: no-such-policy.",
+        ),
+        (
+            r#"{ "hooks": {}, "hooks": {} }"#,
+            "Configuration key hooks is defined more than once",
+        ),
+        (
+            r#"{ "policies": { "final-newline": "fatal" } }"#,
+            "Configuration key policies.final-newline has an invalid severity \"fatal\"",
+        ),
+        (
+            r#"{ "landing": { "reserveAfterLostRaces": 0 } }"#,
+            "Configuration key landing.reserveAfterLostRaces must be a whole number from 1",
+        ),
+        (
+            r#"{ "policies": { "security/forbidden-strings": ["error", { "executable": "./x" }] } }"#,
+            "Configuration key policies.security/forbidden-strings[1].executable is retired",
+        ),
+        (
+            r#"{ "policies": null }"#,
+            "Configuration key policies must not be null",
+        ),
+        ("export default {};", "JSONC syntax error at byte 0"),
+    ] {
+        std::fs::write(&source, content).expect("write configuration");
+        let observed: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "file.txt"]);
+        let stderr: String = String::from_utf8_lossy(&observed.stderr).into_owned();
+        assert_eq!(observed.code, Some(2), "{content}");
+        assert_eq!(observed.stdout, Vec::<u8>::new(), "{content}");
+        assert!(
+            stderr.starts_with(format!("cli-git: {}: ", source.display()).as_str()),
+            "{content}\n  got: {stderr}"
+        );
+        assert!(stderr.contains(fragment), "{content}\n  got: {stderr}");
+        assert!(
+            !stderr.contains("not implemented"),
+            "{content}\n  got: {stderr}"
+        );
+    }
+    // A legacy file alone: the migration diagnostic, and the legacy file is never executed.
+    std::fs::remove_file(&source).expect("remove JSONC");
+    std::fs::write(
+        repo.join("cli-git.config.mjs"),
+        "import { writeFileSync } from 'node:fs'; writeFileSync('executed', ''); export default {};\n",
+    )
+    .expect("legacy configuration");
+    let legacy: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "file.txt"]);
+    let legacy_stderr: String = String::from_utf8_lossy(&legacy.stderr).into_owned();
+    assert_eq!(legacy.code, Some(2));
+    assert!(
+        legacy_stderr.starts_with(
+            format!(
+                "cli-git: Legacy configuration {} is not executed or read by the native cli-git.",
+                repo.join("cli-git.config.mjs").display()
+            )
+            .as_str()
+        ),
+        "{legacy_stderr}"
+    );
+    assert!(!repo.join("executed").exists());
+    assert!(!fixture.root.join("executed").exists());
+    assert_eq!(
+        status(&fixture, repo.as_path()),
+        b"?? cli-git.config.mjs\n?? file.txt\n"
+    );
+    remove(&fixture);
+}
+
+/// Inspection commands are identical to real Git even beside invalid and legacy configuration.
+#[test]
+fn inspection_commands_never_read_configuration() {
+    let fixture: Fixture = fixture("fast-path");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    std::fs::write(repo.join(CONFIG_FILE_NAME), "this is not JSONC").expect("invalid");
+    std::fs::write(
+        repo.join("cli-git.config.ts"),
+        "throw new Error('executed');\n",
+    )
+    .expect("legacy");
+    for arguments in [
+        vec!["status", "--porcelain=v1"],
+        vec!["log", "--oneline"],
+        vec!["rev-parse", "--show-toplevel"],
+        vec!["branch", "--list"],
+        vec!["tag", "--list"],
+        vec!["--version"],
+    ] {
+        let through_wrapper: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        let through_git: Observed = observe(
+            direct(&fixture)
+                .current_dir(&repo)
+                .args(arguments.as_slice()),
+            b"",
+        );
+        assert_eq!(through_git.code, Some(0), "{arguments:?}");
+        assert_eq!(through_wrapper, through_git, "{arguments:?}");
+    }
+    remove(&fixture);
+}
+
+/// A valid configuration with a legacy file beside it reports the legacy file, then stops as usual.
+#[test]
+fn legacy_file_beside_jsonc_is_reported() {
+    let fixture: Fixture = fixture("legacy-notice");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        r#"{ "policies": { "mono/dependent-version-bump": "off" } }"#,
+    )
+    .expect("valid configuration");
+    std::fs::write(repo.join("cli-git.config.ts"), "export default {};\n").expect("legacy");
+    let observed: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "anything"]);
+    assert_eq!(
+        observed,
+        Observed {
+            code: Some(2),
+            stdout: Vec::<u8>::new(),
+            stderr: format!(
+                "cli-git: Legacy configuration {} is ignored: {} is authoritative for the native \
+                 cli-git. Remove the legacy file once no TypeScript cli-git reads it.\n\
+                 cli-git: policy execution is not implemented in this native development \
+                 executable, so git add was not run. Repository-changing commands still require \
+                 the installed cli-git.\n",
+                repo.join("cli-git.config.ts").display(),
+                repo.join(CONFIG_FILE_NAME).display()
+            )
+            .into_bytes(),
+        }
+    );
+    remove(&fixture);
+}
