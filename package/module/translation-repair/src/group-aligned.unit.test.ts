@@ -14,6 +14,10 @@
  once, and the module's own stated exception, an entirely one-sided section,
  is asserted as the exception it is.
 
+ A walk handed over whole is read off `groupNodesSealed` itself: its whole
+ result where the walk is well formed, and its refusal where a step names a
+ block its side lacks, which once grouped a section to nothing.
+
  Fixtures go through `parseDocument`, so the nodes carry the offsets and text
  the aligner really scores on rather than offsets I chose to make a case pass.
  Cat-themed invention throughout.
@@ -23,6 +27,7 @@
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -31,8 +36,10 @@ import {
 
 import {
   type AlignedRun,
+  type AlignmentStep,
   blockPairingToSteps,
   type DocumentNode,
+  groupNodesSealed,
   parseDocument,
 } from '../dist/final/node/index.mjs';
 import { groupWithNothingSealed, } from './group-aligned.test-fixture.ts';
@@ -215,6 +222,55 @@ function groupUnderPairing(
 }
 
 //endregion Roster-pairing disposal
+
+//region Supplied walks
+// What the grouper makes of a walk handed to it whole, which is how a roster's
+// pairing reaches it once `blockPairingToSteps` has converted it.
+
+/**
+ Two originals, the smallest pair a walk can both pair and leave unplaced.
+ */
+const TWO_SOURCE_TEXT = '猫睡了。\n\n猫醒了。\n';
+
+/**
+ One translation, fourteen characters long.
+ */
+const ONE_TARGET_TEXT = 'The cat slept.\n';
+
+/**
+ Why the grouper holds a step that names a block its side lacks to be
+ unreachable, as its refusal words it after the step, the block and the count.
+ */
+const WALK_INVARIANT = ', though alignBlocks walks these very blocks and blockPairingToSteps refuses a pairing '
+  + 'that names a block its side lacks';
+
+/**
+ What the grouper throws for a walk over the two originals and the one
+ translation, as text.
+
+ @param steps - walk handed to the grouper
+
+ @returns Refusal's class and whole message
+
+ @example
+ ```ts
+ const refusal = walkRefusal({ steps: [{ kind: 'paired', sourceIndex: 0, targetIndex: 3, },], },);
+ ```
+ */
+function walkRefusal({ steps, }: { readonly steps: readonly AlignmentStep[]; },): string {
+  return String(caught(function groupsTheWalk(): unknown {
+    return groupNodesSealed({
+      sourceNodes: blocksOf({ text: TWO_SOURCE_TEXT, },),
+      targetNodes: blocksOf({ text: ONE_TARGET_TEXT, },),
+      sourceBudget: WIDE_BUDGET,
+      targetBudget: WIDE_BUDGET,
+      steps,
+      sealed: new Set<string>(),
+    },);
+  },),);
+}
+
+//endregion Supplied walks
 
 await describe({
   name: '',
@@ -933,6 +989,149 @@ await describe({
               sourceNodes,
               targetNodes,
             },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${groupNodesSealed.name} reading a supplied walk`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'GROUPS a well-formed supplied walk into a paired run and an insertion written after the '
+            + 'last rendered block, with nothing sealed',
+          fn: async () => {
+            /**
+             Original blocks.
+             */
+            const sourceNodes = blocksOf({ text: TWO_SOURCE_TEXT, },);
+
+            /**
+             Translation blocks.
+             */
+            const targetNodes = blocksOf({ text: ONE_TARGET_TEXT, },);
+
+            expect(groupNodesSealed({
+              sourceNodes,
+              targetNodes,
+              sourceBudget: WIDE_BUDGET,
+              targetBudget: WIDE_BUDGET,
+              steps: [
+                {
+                  kind: 'paired',
+                  sourceIndex: 0,
+                  targetIndex: 0,
+                },
+                {
+                  kind: 'source-only',
+                  sourceIndex: 1,
+                },
+              ],
+              sealed: new Set<string>(),
+            },),).toEqual({
+              runs: [
+                {
+                  kind: 'paired',
+                  sourceRun: [ nonNullishOrThrow(sourceNodes[0],), ],
+                  targetRun: [ nonNullishOrThrow(targetNodes[0],), ],
+                },
+                {
+                  kind: 'insertion',
+                  sourceRun: [ nonNullishOrThrow(sourceNodes[1],), ],
+                  // Where the one translation block ends, fourteen characters in.
+                  targetOffset: 14,
+                },
+              ],
+              sealedSourceIds: new Set<string>(),
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a supplied walk whose step names a translation block the section lacks, in the same '
+            + 'words for a paired step alone, a paired step before an unplaced original and a '
+            + 'translation-only step',
+          fn: async () => {
+            // THE FIRST OF THESE GROUPED TO NOTHING, SILENTLY: the missing block
+            // was filtered out of its step, the run it left held an original and
+            // no translation, and the merger found no settled run to fold it into.
+            expect(walkRefusal({
+              steps: [
+                {
+                  kind: 'paired',
+                  sourceIndex: 0,
+                  targetIndex: 3,
+                },
+              ],
+            },),).toBe(`Error: unreachable: walk step 0 names translation block 3, and there are 1${WALK_INVARIANT}`,);
+            expect(walkRefusal({
+              steps: [
+                {
+                  kind: 'source-only',
+                  sourceIndex: 0,
+                },
+                {
+                  kind: 'paired',
+                  sourceIndex: 1,
+                  targetIndex: 3,
+                },
+              ],
+            },),).toBe(`Error: unreachable: walk step 1 names translation block 3, and there are 1${WALK_INVARIANT}`,);
+            expect(walkRefusal({
+              steps: [
+                {
+                  kind: 'paired',
+                  sourceIndex: 0,
+                  targetIndex: 0,
+                },
+                {
+                  kind: 'source-only',
+                  sourceIndex: 1,
+                  continuesPairing: true,
+                },
+                {
+                  kind: 'target-only',
+                  targetIndex: 4,
+                },
+              ],
+            },),).toBe(`Error: unreachable: walk step 2 names translation block 4, and there are 1${WALK_INVARIANT}`,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a supplied walk whose step names an original block the section lacks, in the same '
+            + 'words for a paired step and an original-only step',
+          fn: async () => {
+            expect(walkRefusal({
+              steps: [
+                {
+                  kind: 'paired',
+                  sourceIndex: 5,
+                  targetIndex: 0,
+                },
+              ],
+            },),).toBe(`Error: unreachable: walk step 0 names original block 5, and there are 2${WALK_INVARIANT}`,);
+            // THIS ONE GROUPED TO AN INSERTION OF NO BLOCKS, a run the slicing
+            // cannot cut a span from.
+            expect(walkRefusal({
+              steps: [
+                {
+                  kind: 'paired',
+                  sourceIndex: 0,
+                  targetIndex: 0,
+                },
+                {
+                  kind: 'source-only',
+                  sourceIndex: 1,
+                  continuesPairing: true,
+                },
+                {
+                  kind: 'source-only',
+                  sourceIndex: 9,
+                },
+              ],
+            },),).toBe(`Error: unreachable: walk step 2 names original block 9, and there are 2${WALK_INVARIANT}`,);
           },
         },),
       ],

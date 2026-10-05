@@ -11,11 +11,15 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { blockPairingToSteps, } from '../dist/final/node/index.mjs';
+import {
+  BlockPairingError,
+  blockPairingToSteps,
+} from '../dist/final/node/index.mjs';
 
 /**
  Counts how often each index appears on one side of the steps.
@@ -414,6 +418,80 @@ await describe({
           { kind: 'source-only', sourceIndex: 1, },
           { kind: 'paired', sourceIndex: 2, targetIndex: 1, },
         ],);
+      },
+    },),
+    it({
+      name: 'REFUSES a pairing that names a translation block past the last one, with the block and the count',
+      fn: async () => {
+        // A STORED PAIRING REACHES HERE UNCHECKED AGAINST ITS BLOCKS: an
+        // artifact's recipe is read for shape and order, and carved over a
+        // text whose section may hold fewer blocks than the pairing names.
+        // Converted, the step named a block nobody has, the grouper dropped
+        // it, and the original it paired joined whichever block stood beside
+        // it.
+        const refusal = caught(function convertsPastTheTargets(): unknown {
+          return blockPairingToSteps({
+            pairs: [{ source: 0, target: 3, },],
+            sourceCount: 2,
+            targetCount: 1,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(BlockPairingError,);
+        expect(String(refusal,),).toBe('BlockPairingError: pairing names translation block 3, and there are 1',);
+      },
+    },),
+    it({
+      name: 'REFUSES a pairing that names an original block past the last one, with the block and the count',
+      fn: async () => {
+        const refusal = caught(function convertsPastTheOriginals(): unknown {
+          return blockPairingToSteps({
+            pairs: [
+              { source: 0, target: 0, },
+              { source: 5, target: 0, },
+            ],
+            sourceCount: 2,
+            targetCount: 1,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(BlockPairingError,);
+        expect(String(refusal,),).toBe('BlockPairingError: pairing names original block 5, and there are 2',);
+      },
+    },),
+    it({
+      name: 'REFUSES a negative block and a fractional one on either side, which name no block at all',
+      fn: async () => {
+        const negativeTarget = caught(function convertsANegativeTarget(): unknown {
+          return blockPairingToSteps({
+            pairs: [{ source: 0, target: -1, },],
+            sourceCount: 2,
+            targetCount: 1,
+          },);
+        },);
+        expect(String(negativeTarget,),).toBe('BlockPairingError: pairing names translation block -1, and there are 1',);
+        const negativeSource = caught(function convertsANegativeSource(): unknown {
+          return blockPairingToSteps({
+            pairs: [{ source: -1, target: 0, },],
+            sourceCount: 2,
+            targetCount: 1,
+          },);
+        },);
+        expect(String(negativeSource,),).toBe('BlockPairingError: pairing names original block -1, and there are 2',);
+        const fractionalTarget = caught(function convertsAFractionalTarget(): unknown {
+          return blockPairingToSteps({
+            pairs: [{ source: 0, target: 0.5, },],
+            sourceCount: 2,
+            targetCount: 1,
+          },);
+        },);
+        expect(String(fractionalTarget,),).toBe('BlockPairingError: pairing names translation block 0.5, and there are 1',);
+        const fractionalSource = caught(function convertsAFractionalSource(): unknown {
+          return blockPairingToSteps({
+            pairs: [{ source: 0.5, target: 0, },],
+            sourceCount: 2,
+            targetCount: 1,
+          },);
+        },);
+        expect(String(fractionalSource,),).toBe('BlockPairingError: pairing names original block 0.5, and there are 2',);
       },
     },),
   ],
