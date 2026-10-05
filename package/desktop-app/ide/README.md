@@ -21,7 +21,8 @@ and the next implementation action.
   Sidebar resizing and event-driven directory invalidation remain parity work.
 - [x] Combined path/content search.
 - [x] In-file find.
-  Plain literal, case-insensitive matching with a transient find bar;
+  Plain literal,
+       case-insensitive matching with a transient find bar;
   see [In-file find](#in-file-find).
 - [ ] Required language-intelligence feature paths.
 - [ ] Measured Helix-supported language inventory and private server state.
@@ -74,14 +75,21 @@ preprocessors,
 and archive decompression are disabled.
 Canonical scope validation is not an OS-enforced filesystem sandbox.
 Native dark/light input and clipboard probes verify result opening and content-line navigation.
-Headless tests cover late replies, close cancellation, pending-open focus, and result-model pointer lifetime.
+Headless tests cover late replies,
+ close cancellation,
+ pending-open focus,
+ and result-model pointer lifetime.
 
 ## In-file find
 
 Ctrl+F opens a find bar under the source view and focuses its input with the previous find text selected.
 The bar exists only while finding;
-it has no previous, next, or close buttons,
-because Enter, Shift+Enter, and Escape cover those actions for a bar that only the keyboard can open.
+it has no previous,
+ next,
+ or close buttons,
+because Enter,
+ Shift+Enter,
+ and Escape cover those actions for a bar that only the keyboard can open.
 Matching is incremental while typing.
 Enter selects the next match and Shift+Enter the previous one,
 wrapping at the ends of the file.
@@ -125,7 +133,9 @@ in `tests/fixture/browser-find.json` and pins the exact set of differing cases,
 so an accidental change of matching behavior fails the suite:
 
 - `canonical-accent` and `plain-accent`:
-  composed, decomposed, and unaccented letters do not match each other.
+  composed,
+   decomposed,
+   and unaccented letters do not match each other.
 - `case-expansion`:
   `STRASSE` does not match `Straße`.
 - `compatibility-ligature`:
@@ -134,8 +144,12 @@ so an accidental change of matching behavior fails the suite:
   `i` does not match `İ`.
 - `nbsp-as-space`:
   an ordinary space does not match a no-break space.
-- `kana-script`, `kana-width`, and `kana-composed`:
-  kana script, width, and voicing marks are not folded.
+- `kana-script`,
+   `kana-width`,
+   and `kana-composed`:
+  kana script,
+   width,
+   and voicing marks are not folded.
 - `single-quote` and `double-quote`:
   straight quotes do not match curly quotes.
 - `soft-hyphen`:
@@ -151,7 +165,9 @@ and the active match is the reading selection while the bar is still open.
 ### Find behavior decisions
 
 - The active match is the reading selection.
-  Typing, Enter, and Shift+Enter set the selection to a match,
+  Typing,
+   Enter,
+   and Shift+Enter set the selection to a match,
   so Ctrl+C in the source view copies its original text
   and the last active match stays selected after Escape.
   A selection that is not exactly one match leaves no active match.
@@ -159,7 +175,9 @@ and the active match is the reading selection while the bar is still open.
   so extending the find text keeps the current match while it still matches.
   Enter continues after the selection end;
   Shift+Enter continues before the selection start.
-- Only typing, Enter, and Shift+Enter move the selection.
+- Only typing,
+   Enter,
+   and Shift+Enter move the selection.
   Reopening the bar,
   an external reload,
   and a file switch recompute the highlights and the count without moving it.
@@ -189,7 +207,8 @@ and the active match is the reading selection while the bar is still open.
 - Revealing a match keeps the scroll offsets when the match is already visible.
   Otherwise its line is centered,
   and a column outside the view is placed 48 px from the left edge of the text.
-  The offsets are assigned directly, without easing.
+  The offsets are assigned directly,
+   without easing.
 - The find text is one line;
   the toolkit input replaces pasted line breaks with spaces.
 - The find input is the toolkit `LineEdit`,
@@ -233,9 +252,15 @@ even though only the native rectangles read the matches.
   a reply that differs in any of them is discarded.
 - Only matches inside the materialized rows and the horizontal raster tile become native rectangles.
 
-`test:find` covers the matcher, navigation, worker, painting, and the pinned browser differences.
+`test:find` covers the matcher,
+ navigation,
+ worker,
+ painting,
+ and the pinned browser differences.
 `test:native` drives the bar through real window key events,
-including reload, file switch, and the search overlay.
+including reload,
+ file switch,
+ and the search overlay.
 `inspect:find-guards` removes each guard in a disposable copy and checks that its named test fails.
 
 ## Fonts and appearance
