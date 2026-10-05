@@ -138,6 +138,8 @@ export component AppWindow inherits Window {
             accessible-description: "Select text and press Ctrl+C to copy.";
 
             key-pressed(event) => {
+                // Let the toolkit traverse between the tree and read-only source instead of swallowing Tab.
+                if event.text == Key.Tab { return reject; }
                 if event.modifiers.control && (event.text == "c" || event.text == "C") {
                     root.copy-selection();
                 } else if event.modifiers.control && (event.text == "a" || event.text == "A") {
