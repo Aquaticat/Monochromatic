@@ -26,6 +26,7 @@ export component AppWindow inherits Window {
     in property <bool> project-visible;
     in property <[TreeEntry]> tree-entries;
     in property <string> project-label;
+    in property <string> project-path;
     in property <string> tree-error;
     in-out property <int> tree-focused-row: -1;
     callback tree-activate(int);
@@ -99,6 +100,7 @@ export component AppWindow inherits Window {
             max-width: root.project-visible ? 256px : 0px;
             entries: root.tree-entries;
             project-label: root.project-label;
+            project-path: root.project-path;
             error-message: root.tree-error;
             focused-row <=> root.tree-focused-row;
             activate(index) => { root.tree-activate(index); }

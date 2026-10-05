@@ -66,13 +66,21 @@ pub(super) fn bind(window: &AppWindow, source: &Rc<RefCell<State>>, workspace: W
     let reader = DirectoryWorker::new(workspace.clone())?;
     let opener = FileOpener::new(workspace.clone())?;
     let tree = FileTree::new(workspace.root());
+    // Keep the full path available to accessibility while showing the distinguishing project name.
+    let project_path = workspace.root().display().to_string();
+    let project_label = if let Some(name) = workspace.root().file_name() {
+        name.to_string_lossy().into_owned()
+    } else {
+        project_path.clone()
+    };
     // Rc/RefCell shares checked mutable UI ownership; workers never receive this shared object.
     let navigation = Rc::new(RefCell::new(Navigation {
         workspace, tree, reader, opener, recent, reader_available: true,
         rows: Vec::new(), reading: None, last_read: None, refresh_index: 0,
         directory_error: None, reveal: initial,
     }));
-    window.set_project_label(SharedString::from(navigation.borrow().workspace.root().display().to_string()));
+    window.set_project_label(SharedString::from(project_label));
+    window.set_project_path(SharedString::from(project_path));
     window.set_project_visible(true);
     actions::bind(window, source, &navigation);
     // The timer and callback owners retain navigation until window shutdown; Drop joins both readers.

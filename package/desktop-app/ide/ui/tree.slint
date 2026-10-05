@@ -13,6 +13,7 @@ export struct TreeEntry {
 export component ProjectTree inherits Rectangle {
     in property <[TreeEntry]> entries;
     in property <string> project-label;
+    in property <string> project-path;
     in property <string> error-message;
     in-out property <int> focused-row: -1;
     callback activate(int);
@@ -23,6 +24,7 @@ export component ProjectTree inherits Rectangle {
     forward-focus: tree-focus;
     accessible-role: navigation;
     accessible-label: "Project files";
+    accessible-description: root.project-path;
 
     public function reveal(index: int) {
         if index < 0 || index >= root.entries.length { return; }
