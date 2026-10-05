@@ -4,6 +4,28 @@ import { createHash } from 'node:crypto';
 import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
+/** Enumerate both sides of the copied source/build/test input set, including newly added current files. */
+async function currentInputs({ repository, fuzzing }) {
+  const scanner = 'package/cli/forbidden-strings';
+  const engine = 'package/rust-module/forbidden-regex';
+  const pending = ['clippy.toml', 'forbidden-strings.append.txt',
+    ...['Cargo.toml', 'Cargo.lock', 'build.rs', 'src', 'tests', 'data'].map(file => `${scanner}/${file}`),
+    ...['Cargo.toml', 'Cargo.lock', 'src'].map(file => `${engine}/${file}`)];
+  if (fuzzing) pending.push(...['Cargo.toml', 'Cargo.lock', 'src', 'fuzz_targets', 'seed', 'dictionary'].map(file => `${scanner}.fuzz/${file}`));
+  const inputs = new Map();
+  while (pending.length !== 0) {
+    const path = pending.pop();
+    const absolute = join(repository, path);
+    if ((await stat(absolute)).isDirectory()) {
+      for (const name of await readdir(absolute)) pending.push(`${path}/${name}`);
+    } else {
+      const bytes = await readFile(absolute);
+      inputs.set(path, createHash('sha256').update(bytes).digest('hex'));
+    }
+  }
+  return inputs;
+}
+
 /** Report every mismatch rather than treating a Git HEAD as source-snapshot proof. */
 async function main() {
   const repository = resolve(import.meta.dirname, '../../../..');
@@ -19,14 +41,17 @@ async function main() {
       catch (error) { console.log(`No readable manifest in ${directory}: ${error.message}`); continue; }
       if (!manifest.sources) continue;
       const differences = [];
+      const inputs = await currentInputs({ repository, fuzzing: manifest.sources.some(source => source.path.startsWith('package/cli/forbidden-strings.fuzz/')) });
+      const testedPaths = new Set();
       for (const source of manifest.sources) {
         // Task scripts/docs do not enter Cargo's artifact. Guard-injected source intentionally differs and remains separately labeled.
         if (source.path.includes('/bin/') || source.path.endsWith('/mise.toml')) continue;
-        let bytes;
-        try { bytes = await readFile(join(repository, source.path)); }
-        catch (error) { console.log(`Snapshot-only source ${source.path}: ${error.message}`); }
-        const current = bytes === undefined ? undefined : createHash('sha256').update(bytes).digest('hex');
+        testedPaths.add(source.path);
+        const current = inputs.get(source.path);
         if (source.sha256 !== current) differences.push({ path: source.path, tested: source.sha256, current });
+      }
+      for (const [path, current] of inputs) {
+        if (!testedPaths.has(path)) differences.push({ path, current, addedAfterSnapshot: true });
       }
       const endings = {};
       for (const file of ['exit.json', 'control.json', 'mutants.out/outcomes.json']) {
