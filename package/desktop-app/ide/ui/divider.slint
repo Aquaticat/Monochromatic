@@ -36,14 +36,26 @@ export component SidebarDivider inherits Rectangle {
         border-width: 1px;
         border-color: Palette.foreground;
     }
-    // Hover and drag change weight and ink together with the resize cursor.
-    // Prototype divider-gap C: the line sits on the cell's tree-side edge, so the gap reads as source margin.
+    // Prototype divider-gap D: the faint line stays, and a Material 3 style drag handle marks the cell as a
+    // control (androidx DragHandleTokens: 4 by 48 idle, 12 by 52 pressed or dragged, fully rounded).
     Rectangle {
-        x: 0px;
-        width: root.emphasized ? 3px : 1px;
+        x: 24px;
+        width: 1px;
         height: parent.height;
         background: Palette.foreground;
-        opacity: grip.pressed || keys.has-focus ? 1 : (grip.has-hover ? 0.6 : 0.2);
+        opacity: 0.2;
+    }
+    // Hover, focus, and drag change the handle's weight and ink together with the resize cursor.
+    Rectangle {
+        private property <length> handle-width: grip.pressed ? 12px : (root.emphasized ? 8px : 4px);
+        private property <length> handle-height: grip.pressed ? 52px : 48px;
+        x: (parent.width - self.handle-width) / 2;
+        y: (parent.height - self.handle-height) / 2;
+        width: self.handle-width;
+        height: self.handle-height;
+        border-radius: self.handle-width / 2;
+        background: Palette.foreground;
+        opacity: grip.pressed || keys.has-focus ? 1 : (grip.has-hover ? 0.8 : 0.45);
     }
     // The layout cell owns the 48px minimum; input stays exactly inside those same bounds.
     grip := TouchArea {
