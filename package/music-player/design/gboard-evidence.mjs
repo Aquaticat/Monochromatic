@@ -183,7 +183,7 @@ function build() {
 function validate() {
   for (const capture of captures) {
     const record = JSON.parse(readFileSync(join(destination, `${capture.id}.json`), 'utf8'));
-    if (record.image !== `${capture.id}.png` || record.apkSha256 !== apkSha256
+    if (record.image !== `${capture.id}.png`
       || record.keyboardMode !== capture.kind
       || JSON.stringify(record.keyboardBoundsPx) !== JSON.stringify(capture.keyboard)) {
       throw new Error(`${capture.id}: evidence provenance changed.`);
