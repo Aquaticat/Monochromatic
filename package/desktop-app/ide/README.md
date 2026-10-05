@@ -14,7 +14,8 @@ and the next implementation action.
   initial real syntax,
   font fidelity,
   and native external-change correspondence pass;
-  annotations and remaining keyboard navigation are pending.
+  the reading keys are listed under [Source view keys](#source-view-keys);
+  annotations are pending.
 - [x] Native tree,
   asynchronous file switching,
   and recent-file reveal.
@@ -282,6 +283,132 @@ Inter's normal Slint UI request currently retains the optical-axis default,
 not automatic optical sizing.
 Idle DPI changes are covered by a native headless window-event regression.
 Live system-theme change and physical-output scale migration remain to be verified.
+
+## Source view keys
+
+The source view is read-only:
+typing,
+deleting,
+and pasting are ignored.
+Keys follow ordinary desktop text-view conventions.
+Every movement key also has a Shift form that extends the selection from its anchor.
+
+- Left and Right move by one grapheme,
+  so a combining sequence,
+  a joined emoji,
+  and a CRLF pair are each one step.
+  Without Shift they first collapse a selection to the side they point at.
+- Ctrl+Left moves to the start of the current or previous word,
+  Ctrl+Right to the end of the current or next word.
+  A word is a run of letters of any script,
+  digits,
+  and underscores;
+  a run of punctuation is a stop of its own.
+- Home and End move to the start of the line and to its end before the terminator.
+  Ctrl+Home and Ctrl+End move to the start and the end of the text.
+- Up and Down move by one line and aim for the horizontal pixel position
+  where the run of vertical movements started,
+  so a short or empty line does not pull the caret to the left for the lines after it.
+  A horizontal key or a click names a new position to aim for.
+  Up on the first line moves to the start of the text,
+  Down on the last line to its end.
+- PageUp and PageDown move the caret and the view by the whole lines in view.
+- Ctrl+A selects everything,
+  and Ctrl+C copies the selection as original source text.
+- Tab and Shift+Tab move keyboard focus between the tree,
+  the source view,
+  and the find input while the find bar is open,
+  in that order.
+
+Every caret key scrolls the view by the smallest amount that shows the caret.
+The target of Up,
+Down,
+and the page keys is found by shaped pixel position,
+not by counting characters,
+so wide glyphs,
+tabs,
+combining marks,
+and ligatures land where the eye expects.
+
+### Pointer selection
+
+A click places the caret at the nearest grapheme boundary.
+A double click selects a word,
+a punctuation run,
+or a run of blanks;
+a triple click selects the line with its terminator.
+Shift+click extends from the anchor.
+A drag extends by the unit of its press and scrolls when it passes an edge of the view.
+A selected line terminator is shown as a mark after the line's text,
+so a selected empty line stays visible.
+Mouse drags never pan the view;
+the wheel and touch scroll it.
+
+### Tab stops
+
+A tab ends at the next tab stop.
+Stops lie at multiples of two space advances of the source font,
+measured in pixels from the start of the line.
+That is the CSS rule behind editord's `tab-size: 2`,
+including its clause that a tab narrower than half a space runs on to the following stop.
+Because stops are pixel positions,
+a tab after a CJK glyph ends where a tab after Latin text ends,
+although the fallback font's glyph is not two Latin cells wide.
+Caret,
+selection,
+hit testing,
+and find rectangles treat a tab as one character,
+and copying yields the source tab.
+
+### Line endings
+
+LF and CRLF end a line.
+End stops before a CRLF pair,
+Right steps over it as one unit,
+and a selection across it copies the original pair.
+The last line needs no terminator.
+
+### Selected text ink
+
+Selected text is drawn in white while white reaches a contrast ratio of 3:1 against the selection fill,
+and in black on a lighter fill.
+The toolkit's fluent palette keeps the fill `#0078D4` in both color schemes
+but pairs it with black ink in the dark scheme.
+Black on that fill has a WCAG 2 ratio of 4.64 and white of 4.53,
+so the ratio alone does not separate them;
+the light ink is the readable one on a saturated mid-tone,
+and it is what the light scheme always showed.
+
+### Deliberate differences from editord's editor
+
+editord leaves caret movement and selection to the browser's `contenteditable` handling.
+This view implements the conventions of this section itself
+and was not compared key by key with that engine.
+
+- Words are runs of one character class,
+  not dictionary segments:
+  a run of CJK letters is one word.
+- Ctrl+Up,
+  Ctrl+Down,
+  Ctrl+PageUp,
+  Ctrl+PageDown,
+  and Alt combinations are unbound.
+- The page keys move by the whole lines in view without an overlapping line.
+- A drag past an edge of the view scrolls only while the pointer moves;
+  no timer keeps scrolling under a resting pointer.
+- Long lines are not wrapped,
+  while editord wraps them,
+  so Up and Down move by source lines.
+- Selected text is drawn in one ink instead of keeping its syntax colors.
+
+`test`,
+`test:native`,
+and `inspect:source-guards` cover these rules:
+library tests for movement,
+tab stops,
+and boundaries,
+headless native tests that drive real window key and pointer events,
+and guard-removal controls in a disposable copy.
 
 ## Current reader behavior
 
