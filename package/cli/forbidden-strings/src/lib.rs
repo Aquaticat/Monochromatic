@@ -39,6 +39,8 @@ mod frx_scan;
 mod scan_finding;
 /// Public findings contain only source locations and non-secret rule identities.
 pub use scan_finding::ScanFinding;
+/// Thread-isolated named-callback boundary for embedded rule loading.
+mod load_request;
 /// In-process candidate snapshots reuse the standalone scan core and redaction rules.
 mod scanner;
 /// Embedded consumers identify candidates independently of redacted display labels.

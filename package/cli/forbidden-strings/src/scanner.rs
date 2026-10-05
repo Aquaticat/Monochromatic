@@ -7,10 +7,12 @@
 //! ```
 
 /// Import the existing loader, content matcher, pathname masker and redacted result model.
-use crate::frx_load::{self, LoadedRules};
+use crate::frx_load::LoadedRules;
+/// The loader's named unwind boundary returns no partial ruleset after a panic.
+use crate::load_request;
 use crate::frx_scan::scan_content;
 use crate::path_scan::{PathScanRecords, scan_path_records};
-use crate::{BUILTIN_NAMES, BUILTIN_PRECOMPILED, BIN_PROBE_SIZE, ScanFinding};
+use crate::{BIN_PROBE_SIZE, ScanFinding};
 /// Import the incumbent load-error channel and fixed-token cache diagnostics.
 use anyhow::Result;
 use crate::runtime_cache::CacheWarning;
@@ -37,6 +39,10 @@ pub struct CandidateScan {
 }
 
 /// One loaded ruleset reused across candidate snapshots.
+///
+/// Embedding hosts must use panic=unwind and configure payload-free panic output before spawning workers.
+/// The library catches load/matcher unwinds but deliberately does not replace process-wide hooks;
+/// Rust invokes the host's hook before an unwind can be caught.
 pub struct Scanner {
     /// The incumbent loader retains hybrid runtime rules, embedded baseline and cache warnings.
     loaded: LoadedRules,
@@ -53,7 +59,7 @@ impl Scanner {
     /// ```
     pub fn load(runtime_rules_path: &Path, builtin_rules: bool, explicit: bool) -> Result<Scanner> {
         // Propagate the loader's existing redacted failure instead of accepting an incomplete ruleset.
-        let loaded: LoadedRules = frx_load::load(runtime_rules_path, builtin_rules, explicit, BUILTIN_PRECOMPILED, BUILTIN_NAMES)?;
+        let loaded: LoadedRules = load_request::load(runtime_rules_path, builtin_rules, explicit)?;
         return Ok(Scanner { loaded });
     }
 
