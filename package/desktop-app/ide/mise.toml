@@ -156,6 +156,36 @@ runCargo(['clippy', '--all-targets', '--', '--deny', 'warnings'])
 description = "Check source-line budget and Rust documentation"
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
+[tasks."inspect:layout-constraints"]
+description = "Check accepted and rejected Slint sizing declarations using disposable markup"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { mkdtempSync, writeFileSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { spawnSync } = await import('node:child_process')
+const directory = mkdtempSync(join(tmpdir(), 'ide-layout-constraints-'))
+const cases = [
+  { name: 'fixed-plus-min', body: 'HorizontalLayout { Rectangle { width: 256px; min-width: 256px; } }', diagnostic: "Cannot specify both 'width' and 'min-width'" },
+  { name: 'touch-fixed-plus-min', body: 'TouchArea { width: 48px; min-width: 48px; }', diagnostic: "Cannot specify both 'width' and 'min-width'" },
+  { name: 'equal-min-max', body: 'HorizontalLayout { Rectangle { min-width: 256px; max-width: 256px; } }' },
+  { name: 'bounded-row-touch', body: 'HorizontalLayout { Rectangle { min-width: 48px; min-height: 48px; TouchArea { width: parent.width; height: parent.height; } } }' },
+]
+const results = []
+for (const item of cases) {
+  const file = join(directory, item.name + '.slint')
+  writeFileSync(file, 'export component Case inherits Window { ' + item.body + ' }')
+  const result = spawnSync('slint-viewer', ['--check', file], { encoding: 'utf8' })
+  if (result.error) throw result.error
+  const stderr = result.stderr ?? ''
+  const matches = item.diagnostic ? result.status !== 0 && stderr.includes(item.diagnostic) : result.status === 0
+  if (!matches) throw new Error('Unexpected Slint result for ' + item.name + ': ' + stderr)
+  results.push({ name: item.name, exit: result.status, stderr })
+}
+writeFileSync(join(directory, 'results.json'), JSON.stringify(results, null, 2))
+console.log(JSON.stringify({ directory, results }, null, 2))
+"""
+
 [tasks."lint:slint"]
 description = "Check the native UI declaration"
 run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint"]
