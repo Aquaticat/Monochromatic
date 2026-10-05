@@ -39,6 +39,7 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -440,11 +441,11 @@ await describe({
             },);
 
             expect(asked.length,).toBe(2,);
-            expect(paired.kind,).toBe('no-text',);
-            if (paired.kind !== 'no-text')
-              throw new Error('no-text by construction',);
-            expect(paired.characters,).toBe(11,);
-            expect(paired.confirmedBy,).toStrictEqual(READERS,);
+            expect(paired,).toStrictEqual({
+              kind: 'no-text',
+              characters: 11,
+              confirmedBy: READERS,
+            },);
             expect(isResumableReading({ reading: paired, },),).toBe(true,);
           },
         },),
@@ -820,10 +821,10 @@ await describe({
 
             // The gate, which is the whole point: nothing was asked.
             expect(asked.length,).toBe(0,);
-            expect(paired.kind,).toBe('no-text',);
-            if (paired.kind !== 'no-text')
-              throw new Error('no-text by construction',);
-            expect(paired.characters,).toBe(3,);
+            expect(paired,).toStrictEqual({
+              kind: 'no-text',
+              characters: 3,
+            },);
           },
         },),
 
@@ -856,6 +857,82 @@ await describe({
 
             expect(asked.length,).toBe(2,);
             expect(paired.kind,).toBe('corroborated',);
+          },
+        },),
+
+        it({
+          name: 'STATES THE DETERMINISTIC READER\'S COUNT in a textless confirmation where it read text, and NAMES '
+            + 'IT UNAVAILABLE WITH ITS REASON where it could not run, recording no count of characters it never read',
+          fn: async () => {
+            /**
+             Client whose two readers both report little text.
+             */
+            const { client, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image.',
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read any text in this image.',
+              },
+            },);
+
+            /**
+             Lines logged where the deterministic reader read words off the picture.
+             */
+            const counted: string[] = [];
+            await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l: levelCapturingLogger({ lines: counted, },),
+            },);
+
+            /**
+             Lines logged where the deterministic reader could not run.
+             */
+            const unread: string[] = [];
+
+            /**
+             What the roster made of the picture the deterministic reader never read.
+             */
+            const confirmed = await readImagePair({
+              client,
+              readOcr: missing,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l: levelCapturingLogger({ lines: unread, },),
+            },);
+
+            expect(confirmed,).toStrictEqual({
+              kind: 'no-text',
+              deterministicUnavailable: 'ocr-tool-missing',
+              confirmedBy: READERS,
+            },);
+            expect([
+              counted,
+              unread,
+            ].map(function pairLines(lines,): readonly string[] {
+              return lines.filter(function fromPair(line,): boolean {
+                return line.includes('[readImagePair]',);
+              },);
+            },),).toStrictEqual([
+              [
+                `info [readImagePair] noticeboard.webp: 2 of 2 readers report little or no text (${
+                  READERS.join(', ',)
+                }), so the picture is confirmed textless past the deterministic reader's 11 characters`,
+              ],
+              [
+                `info [readImagePair] noticeboard.webp: 2 of 2 readers report little or no text (${
+                  READERS.join(', ',)
+                }), so the picture is confirmed textless where the deterministic reader was unavailable `
+                  + '(ocr-tool-missing)',
+              ],
+            ],);
           },
         },),
       ],
@@ -912,56 +989,6 @@ await describe({
           },
         },),
       ],
-    },),
-
-    it({
-      name: 'COUNTS the deterministic reading into the textless confirmation where it found text, and '
-        + 'zero where it found none',
-      fn: async () => {
-        /**
-         Client whose two readers both report little text.
-         */
-        const { client, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image.',
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read any text in this image.',
-          },
-        },);
-        /**
-         Picture the deterministic reader read words off.
-         */
-        const read = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-        expect(read.kind,).toBe('no-text',);
-        if (read.kind !== 'no-text')
-          throw new Error('no-text by construction',);
-        expect(read.characters,).toBe(11,);
-        /**
-         The same picture where the deterministic reader found nothing.
-         */
-        const lost = await readImagePair({
-          client,
-          readOcr: async () => ({ kind: 'unavailable', reason: 'undecodable', }),
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-        expect(lost.kind,).toBe('no-text',);
-        if (lost.kind !== 'no-text')
-          throw new Error('no-text by construction',);
-        expect(lost.characters,).toBe(0,);
-      },
     },),
   ],
 },);

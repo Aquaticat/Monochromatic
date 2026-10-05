@@ -179,7 +179,7 @@ await describe({
 
         it({
           name: 'reads an image url and a resolved reference as protected atoms, '
-            + 'each carrying its destination',
+            + 'the image carrying its destination and the reference its label',
           fn: async () => {
             expect(atomTokens(
               'See ![the cat](https://example.invalid/cat.png) and [the essay][a] now.',
@@ -241,6 +241,20 @@ await describe({
             expect(inspection.kind === 'rejected' ? inspection.reason : '',).toBe(
               'not-one-paragraph',
             );
+          },
+        },),
+
+        it({
+          name: 'refuses one heading as not one paragraph beside definitions the strict grammar rejects, '
+            + 'since the structure is read off the paragraph alone and nothing appended to it decides it',
+          fn: async () => {
+            expect(inspectParagraph({
+              text: '# Heading',
+              definitions: '<div>',
+            },),).toEqual({
+              kind: 'rejected',
+              reason: 'not-one-paragraph',
+            },);
           },
         },),
       ],
@@ -327,13 +341,13 @@ await describe({
           name: 'refuses a rewrite whose base is not inspectable at all, naming which '
             + 'side failed',
           fn: async () => {
-            /** Base arriving as one heading. */
-            const verdict = gateParagraphRewrite({
+            expect(gateParagraphRewrite({
               base: '# Heading',
               candidate: 'The cat naps in the sun and the bowl stays full all afternoon.',
+            },),).toEqual({
+              kind: 'refused',
+              detail: 'base paragraph not inspectable (not-one-paragraph)',
             },);
-            expect(verdict.kind,).toBe('refused',);
-            expect(verdict.kind === 'refused' ? verdict.detail : '',).toContain('base paragraph not inspectable',);
           },
         },),
       ],

@@ -218,15 +218,34 @@ await describe({
         },),
 
         it({
-          name: 'CHECKS THE PAGE BOUNDS where one was given, faulting a rendering carrying the pair\'s '
-            + 'English more times than the page does',
+          name: 'CHECKS THE PAGE BOUND where one was given, faulting a rendering whose block holding the pair\'s '
+            + 'English carries more lines than the page\'s block holding it, and finds nothing without the page',
           fn: async () => {
+            /**
+             Original quoting a line in Chinese with its own English beside it.
+             */
+            const sourceText = '> 愿每只猫都能找到属于它的阳光。\n> May every cat find a sunbeam.';
+            /**
+             Rendering carrying the pair as two lines, a second wording above the original's English.
+             */
+            const candidateText = '> May every cat find its own sunshine.\n> May every cat find a sunbeam.';
             expect(compareLineCounts({
               lineStructured: true,
-              sourceText: '猫住在北方的小村。\nÅ',
-              candidateText: 'Å. The cat lived in a small northern village.\nÅ. The cat lived in a small northern village.',
-              pageText: '猫住在北方的小村。\nÅ\n\n正文继续。',
-            },).length,).toBeGreaterThan(0,);
+              sourceText,
+              candidateText,
+              pageText: '> May every cat find a sunbeam.',
+            },),).toEqual([
+              'This slice is LINE-STRUCTURED and the ORIGINAL gives the line `May every cat find a sunbeam.` twice, '
+                + 'once in Chinese and once in English directly beside it; that pair is ONE line whose English is '
+                + 'already its rendering, and the EXISTING TRANSLATION carries the block holding it as 1 line. '
+                + 'Yours carries 2. Drop the second rendering of the pair (the Chinese line, or a second English '
+                + 'wording of it), keeping the wording you chose elsewhere.',
+            ],);
+            expect(compareLineCounts({
+              lineStructured: true,
+              sourceText,
+              candidateText,
+            },),).toEqual([],);
           },
         },),
 
@@ -238,7 +257,11 @@ await describe({
               lineStructured: true,
               sourceText: '猫住在北方的小村。\n12345',
               candidateText: 'The cat lived in a small northern village. 12345',
-            },).length,).toBeGreaterThan(0,);
+            },),).toEqual([
+              'This slice is LINE-STRUCTURED: every line stands as its own unit, so your rendering owes one line '
+                + 'per line of the ORIGINAL and may never merge two into one. Yours carries 1 line of content where '
+                + 'the ORIGINAL has 2. Put back the line breaks you merged, keeping the wording you chose.',
+            ],);
           },
         },),
 

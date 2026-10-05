@@ -236,6 +236,61 @@ await describe({
       },
     },),
     it({
+      name: 'RESUMES a no-text verdict two readers confirmed where the deterministic reader could not run, '
+        + 'which names why in place of a count it never took, so the picture is not asked of every reader '
+        + 'again on every run',
+      fn: async () => {
+      /**
+       A photograph of a cat on a machine with no OCR reader installed.
+       */
+      const record = {
+        kind: 'no-text',
+        deterministicUnavailable: 'ocr-tool-missing',
+        confirmedBy: [
+          'whiskers/reader-a',
+          'whiskers/reader-b',
+        ],
+      };
+
+      expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
+      },
+    },),
+    it({
+      name: 'REFUSES a no-text record whose deterministic reader was unavailable for a reason that reader '
+        + 'never gives',
+      fn: async () => {
+      expect((await roundTrip({
+        record: {
+          kind: 'no-text',
+          deterministicUnavailable: 'nap-time',
+          confirmedBy: [
+            'whiskers/reader-a',
+            'whiskers/reader-b',
+          ],
+        },
+      },)).has(KEY,),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'REFUSES a no-text record whose deterministic reader was unavailable and that names no readers '
+        + 'confirming it, or readers that are not names, since that confirmation is then the whole verdict',
+      fn: async () => {
+      expect((await roundTrip({
+        record: {
+          kind: 'no-text',
+          deterministicUnavailable: 'ocr-failed',
+        },
+      },)).has(KEY,),).toBe(false,);
+      expect((await roundTrip({
+        record: {
+          kind: 'no-text',
+          deterministicUnavailable: 'ocr-failed',
+          confirmedBy: [5,],
+        },
+      },)).has(KEY,),).toBe(false,);
+      },
+    },),
+    it({
       name: 'REFUSES a corroborated record carrying no overlap, so a record written before '
         + 'agreement was measured cannot resume as though it had been',
       fn: async () => {

@@ -46,11 +46,11 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES both edits when two lose the same key and none writes it, since nothing says '
-            + 'which loss the other answered',
+          name: 'REFUSES both edits when two lose the same key and one sibling writes it, since nothing says '
+            + 'which loss the sibling answered, and keeps the sibling',
           fn: async () => {
             /**
-             Two edits losing the same tag.
+             Two edits losing the same tag and a third writing it once.
              */
             const deltas: readonly MarkupDelta[] = [
               {
@@ -61,20 +61,12 @@ await describe({
                 unexcused: [{ kind: 'tag', value: '<br />', },],
                 gained: [],
               },
+              {
+                unexcused: [],
+                gained: [{ kind: 'tag', value: '<br />', },],
+              },
             ];
-            expect(settleMarkupMoves({ deltas, },),).toEqual([['tag'], ['tag']],);
-          },
-        },),
-
-        it({
-          name: 'KEEPS an edit whose loss it writes itself',
-          fn: async () => {
-            expect(settleMarkupMoves({
-              deltas: [{
-                unexcused: [{ kind: 'inline-code', value: '`c`', },],
-                gained: [{ kind: 'inline-code', value: '`c`', },],
-              },],
-            },),).toEqual([[]],);
+            expect(settleMarkupMoves({ deltas, },),).toEqual([['tag',], ['tag',], [],],);
           },
         },),
       ],
@@ -84,19 +76,12 @@ await describe({
       name: markupSourceKeys.name,
       children: [
         it({
-          name: 'READS the keys of the atoms a source text carries',
+          name: 'READS the key of each atom a source text carries, its kind and its value joined by a NUL',
           fn: async () => {
-            /**
-             Keys of the source's one tag and one code span.
-             */
-            const keys = [...markupSourceKeys({ sourceText: 'a `c` <br />', },),];
-            expect(keys.length,).toBe(2,);
-            expect(keys.some(function namesCode(key,) {
-              return key.includes('`c`',);
-            },),).toBe(true,);
-            expect(keys.some(function namesTag(key,) {
-              return key.includes('<br />',);
-            },),).toBe(true,);
+            expect([...markupSourceKeys({ sourceText: 'a `c` <br />', },),],).toEqual([
+              'inline-code\u0000`c`',
+              'tag\u0000<br />',
+            ],);
           },
         },),
       ],

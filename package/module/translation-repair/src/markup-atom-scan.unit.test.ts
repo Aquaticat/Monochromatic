@@ -57,10 +57,11 @@ const CASES: readonly ScanCase[] = [
     atoms: [],
   },
   {
-    name: 'keeps an escaped close inside an expression literal, so the expression closes on the real one',
-    text: '{a\\}b}',
+    name: 'keeps an escaped close inside an expression\'s quoted string, so the expression closes on the real '
+      + 'one',
+    text: '{"a\\}b"}',
     atoms: [
-      { kind: 'mdx-expression', value: '{a\\}b}', },
+      { kind: 'mdx-expression', value: '{"a\\}b"}', },
     ],
   },
   {
