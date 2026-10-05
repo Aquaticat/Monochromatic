@@ -298,3 +298,69 @@ fn identical_snapshots_are_recognized_by_identity() {
     assert!(!annotations.holds(&None, &problem_snapshot));
     assert!(Annotations::default().holds(&None, &None));
 }
+
+/// The Language poll's entry points store only snapshots of the displayed text, hand them out only for that
+/// text, keep what was held when a snapshot is refused, and index accepted diagnostics for painting.
+#[test]
+fn accepting_stores_only_snapshots_of_the_displayed_text() {
+    let text = Rope::from(TEXT);
+    let older = DocumentStamp {
+        file: 3,
+        revision: 6,
+    };
+    let unwrapped = |snapshot: Option<Arc<HintsSnapshot>>| return snapshot.expect("hint snapshot");
+    let problems = |stamp, message: &str| {
+        return diagnostics(
+            stamp,
+            vec![("rustc", vec![problem(4, 5, Some(Severity::Error), message)])],
+        )
+        .expect("diagnostics snapshot");
+    };
+    let mut store = Annotations::default();
+    assert!(
+        !store.accept_hints(SHOWN, unwrapped(hints(older, vec![hint(5, ": old")]))),
+        "hints for an earlier revision were stored"
+    );
+    assert!(
+        !store.accept_diagnostics(SHOWN, problems(older, "old")),
+        "diagnostics for an earlier revision were stored"
+    );
+    assert!(store.hints(SHOWN).is_none() && store.diagnostics(SHOWN).is_none());
+    assert!(store.accept_hints(SHOWN, unwrapped(hints(SHOWN, vec![hint(5, ": i32")]))));
+    assert!(store.accept_diagnostics(SHOWN, problems(SHOWN, "current")));
+    assert!(
+        store.hints(older).is_none(),
+        "hints were handed out for another revision"
+    );
+    assert!(
+        store.diagnostics(older).is_none(),
+        "diagnostics were handed out for another revision"
+    );
+    assert_eq!(store.hints(SHOWN).expect("held hints").hints.len(), 1);
+    assert_eq!(
+        store
+            .diagnostics(SHOWN)
+            .expect("held diagnostics")
+            .groups
+            .len(),
+        1
+    );
+    // Accepted diagnostics are indexed: the frame and the caret find them.
+    let shown = store.visible(SHOWN, &text, 0, 5);
+    assert_eq!(shown.labels.len(), 1);
+    assert_eq!(
+        shown.marks.len(),
+        1,
+        "accepted diagnostics were not indexed"
+    );
+    assert_eq!(store.at(SHOWN, 4)[0].message, "current");
+    // A refused snapshot leaves the held ones, and their index, in place.
+    assert!(!store.accept_diagnostics(SHOWN, problems(older, "late")));
+    assert!(!store.accept_hints(SHOWN, unwrapped(hints(older, Vec::new()))));
+    assert_eq!(store.at(SHOWN, 4)[0].message, "current");
+    assert_eq!(store.visible(SHOWN, &text, 0, 5).labels.len(), 1);
+    // A newer accepted snapshot replaces the index.
+    assert!(store.accept_diagnostics(SHOWN, problems(SHOWN, "replaced")));
+    assert_eq!(store.at(SHOWN, 4).len(), 1);
+    assert_eq!(store.at(SHOWN, 4)[0].message, "replaced");
+}

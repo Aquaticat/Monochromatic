@@ -139,7 +139,7 @@ pub struct Visible {
 /// type Annotations = { hints?: HintsSnapshot; diagnostics?: DiagnosticsSnapshot;
 ///                      problems: Problem[]; reach: number[] };
 /// ```
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Annotations {
     /// Latest hints, painted only while their stamp names the displayed text.
     hints: Option<Arc<HintsSnapshot>>,
@@ -164,6 +164,58 @@ fn shown(severity: Option<Severity>) -> Severity {
     return severity.unwrap_or(Severity::Warning);
 }
 
+/// What: Flatten every group of `diagnostics` into one list ordered by start, then end, with the furthest end so
+///       far beside it; `Option<&DiagnosticsSnapshot>` lends a snapshot or nothing; the answer is a pair (tuple).
+/// Why: Groups arrive per source, so their union is sorted once per snapshot instead of on every frame.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function indexed(diagnostics?: DiagnosticsSnapshot): [Problem[], number[]];
+/// ```
+fn indexed(diagnostics: Option<&DiagnosticsSnapshot>) -> (Vec<Problem>, Vec<usize>) {
+    let mut problems = Vec::new();
+    // What: `if let Some(snapshot) = diagnostics` runs only when a snapshot is present.
+    // Why: Absent diagnostics leave the index empty.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (diagnostics) { for (const group of diagnostics.groups) ... }
+    // ```
+    if let Some(snapshot) = diagnostics {
+        for group in &snapshot.groups {
+            for item in &group.items {
+                problems.push(Problem {
+                    mark: Mark {
+                        start: item.start,
+                        // A range the server sent backwards still marks its characters.
+                        end: item.end.max(item.start),
+                        severity: shown(item.severity),
+                    },
+                    // `clone` copies the text so the index owns it independently of the snapshot.
+                    source: group.source.clone(),
+                    code: item.code.clone(),
+                    message: item.message.clone(),
+                });
+            }
+        }
+    }
+    // What: `sort_by_key` orders by the pair `(start, end)`; `|problem|` is a closure parameter.
+    // Why: Window and caret searches binary-search by start.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // problems.sort((a, b) => a.mark.start - b.mark.start || a.mark.end - b.mark.end);
+    // ```
+    problems.sort_by_key(|problem| return (problem.mark.start, problem.mark.end));
+    let mut reach = Vec::new();
+    let mut furthest = 0;
+    for problem in &problems {
+        furthest = furthest.max(problem.mark.end);
+        reach.push(furthest);
+    }
+    return (problems, reach);
+}
+
 /// Build, query, and replace the annotation inputs of the displayed file.
 impl Annotations {
     /// What: Keep both snapshots and index every diagnostic once. `Option<Arc<...>>` parameters are moved in.
@@ -177,52 +229,80 @@ impl Annotations {
         hints: Option<Arc<HintsSnapshot>>,
         diagnostics: Option<Arc<DiagnosticsSnapshot>>,
     ) -> Self {
-        let mut problems = Vec::new();
-        // What: `if let Some(snapshot) = &diagnostics` borrows the snapshot when one is present.
-        // Why: Absent diagnostics leave the index empty.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (diagnostics) { for (const group of diagnostics.groups) ... }
-        // ```
-        if let Some(snapshot) = &diagnostics {
-            for group in &snapshot.groups {
-                for item in &group.items {
-                    problems.push(Problem {
-                        mark: Mark {
-                            start: item.start,
-                            // A range the server sent backwards still marks its characters.
-                            end: item.end.max(item.start),
-                            severity: shown(item.severity),
-                        },
-                        // `clone` copies the text so the index owns it independently of the snapshot.
-                        source: group.source.clone(),
-                        code: item.code.clone(),
-                        message: item.message.clone(),
-                    });
-                }
-            }
-        }
-        // What: `sort_by_key` orders by the pair `(start, end)`; `|problem|` is a closure parameter.
-        // Why: Window and caret searches binary-search by start.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // problems.sort((a, b) => a.mark.start - b.mark.start || a.mark.end - b.mark.end);
-        // ```
-        problems.sort_by_key(|problem| return (problem.mark.start, problem.mark.end));
-        let mut reach = Vec::new();
-        let mut furthest = 0;
-        for problem in &problems {
-            furthest = furthest.max(problem.mark.end);
-            reach.push(furthest);
-        }
+        // `as_deref` lends the snapshot inside the shared pointer, or nothing.
+        let (problems, reach) = indexed(diagnostics.as_deref());
         return Self {
             hints,
             diagnostics,
             problems,
             reach,
         };
+    }
+
+    /// What: Store hints that describe `displayed`; a snapshot for any other text is refused, the held hints
+    ///       stay, and the answer is `false`. `Arc<HintsSnapshot>` is moved in.
+    /// Why: This is the Language poll's entry point: hints and diagnostics arrive independently, and only a
+    ///      snapshot of the displayed file generation and revision may replace what is shown.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// acceptHints(displayed: DocumentStamp, snapshot: HintsSnapshot): boolean;
+    /// ```
+    pub fn accept_hints(&mut self, displayed: DocumentStamp, snapshot: Arc<HintsSnapshot>) -> bool {
+        if snapshot.stamp != displayed {
+            return false;
+        }
+        // `Some(...)` stores the snapshot as the present value.
+        self.hints = Some(snapshot);
+        return true;
+    }
+
+    /// What: Store diagnostics that describe `displayed` and index them; a snapshot for any other text is
+    ///       refused, the held diagnostics stay, and the answer is `false`.
+    /// Why: The index is rebuilt once per accepted snapshot, never per frame.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// acceptDiagnostics(displayed: DocumentStamp, snapshot: DiagnosticsSnapshot): boolean;
+    /// ```
+    pub fn accept_diagnostics(
+        &mut self,
+        displayed: DocumentStamp,
+        snapshot: Arc<DiagnosticsSnapshot>,
+    ) -> bool {
+        if snapshot.stamp != displayed {
+            return false;
+        }
+        // `&snapshot` lends the snapshot behind the shared pointer to the indexing pass.
+        let (problems, reach) = indexed(Some(&snapshot));
+        self.problems = problems;
+        self.reach = reach;
+        self.diagnostics = Some(snapshot);
+        return true;
+    }
+
+    /// What: The held hints while they describe `displayed`, otherwise nothing; `Option<&HintsSnapshot>` lends
+    ///       the snapshot without copying it.
+    /// Why: Readers other than the renderer, such as logging, ask with the stamp of the displayed text.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// hints(displayed: DocumentStamp): HintsSnapshot | undefined;
+    /// ```
+    pub fn hints(&self, displayed: DocumentStamp) -> Option<&HintsSnapshot> {
+        // `filter` keeps the lent snapshot only when the closure accepts it.
+        return self
+            .hints
+            .as_deref()
+            .filter(|held| return held.stamp == displayed);
+    }
+
+    /// The held diagnostics while they describe `displayed`, otherwise nothing.
+    pub fn diagnostics(&self, displayed: DocumentStamp) -> Option<&DiagnosticsSnapshot> {
+        return self
+            .diagnostics
+            .as_deref()
+            .filter(|held| return held.stamp == displayed);
     }
 
     /// What: Whether these exact snapshots are already held; `Arc::ptr_eq` compares identities, not contents.

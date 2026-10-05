@@ -1,5 +1,17 @@
 //! Inlay hints and diagnostics enter the window here. The renderer paints only snapshots stamped with the
 //! displayed file generation and revision, and only their part inside the materialized rows.
+//!
+//! Snapshots live in `State::annotations`, an `ide_app::annotation::Annotations`. There are two ways in:
+//!
+//! - A poll that already holds the state mutably stores each polled snapshot with
+//!   `current.annotations.accept_hints(displayed, snapshot)` or `accept_diagnostics(displayed, snapshot)`,
+//!   and calls `render` once after releasing the state when either answered `true`.
+//!   Accepting draws nothing by itself.
+//! - [`set_annotations`] replaces both snapshots at once and renders; tests and the inspection path use it.
+//!
+//! Either way the render takes the visible part, and the frame stamp repaints the source image only when that
+//! part or its inks changed. Reloads and file switches need no call: a held snapshot stops matching the
+//! displayed stamp and is no longer painted.
 
 /// The parent's state, its rendering entry point, and the generated marker and box rows.
 use super::{
@@ -34,9 +46,9 @@ use std::{cell::RefCell, rc::Rc, sync::Arc};
 /// ```
 const CARD_PROBLEMS: usize = 8;
 
-/// What: Install the latest hint and diagnostic snapshots; `Option<Arc<...>>` is a shared snapshot or nothing.
+/// What: Replace both snapshots at once and render; `Option<Arc<...>>` is a shared snapshot or nothing.
 ///       Snapshots for another file generation or revision are kept but never painted.
-/// Why: This is the one input the Language integration calls after polling. Handing back the same snapshots
+/// Why: Tests and the inspection path install a complete set in one call. Handing back the same snapshots
 ///      does nothing; a change repaints only when the visible annotations differ, which the frame stamp decides.
 ///
 /// In TS you'd write (pseudocode):

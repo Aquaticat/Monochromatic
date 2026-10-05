@@ -361,10 +361,17 @@ and checks that their named tests fail.
 
 The source view draws inlay hints and the displayed file's diagnostics from the Language module's
 `HintsSnapshot` and `DiagnosticsSnapshot`.
-The native layer installs the latest snapshots with
+The window state keeps them in `State::annotations`,
+an `ide_app::annotation::Annotations` (`src/annotation.rs`).
+A language poll stores each polled snapshot with `accept_hints(displayed, snapshot)`
+or `accept_diagnostics(displayed, snapshot)`,
+which refuse a snapshot of any other text,
+and renders once when either accepted;
+accepting draws nothing by itself.
 `annotate::set_annotations(window, state, hints, diagnostics)` in `src/native/annotate.rs`,
-both arguments `Option<Arc<...>>`.
-Nothing calls it from a running language server yet;
+both arguments `Option<Arc<...>>`,
+replaces both and renders.
+Nothing calls either from a running language server yet;
 tests and the inspection path below inject snapshots directly.
 
 A snapshot is painted only while its stamp names the displayed text:
@@ -414,7 +421,8 @@ using the hints real servers returned in the `inspect:language` run of the Langu
   Up and Down aim at a pixel x,
   and 15 of 24 caret positions of a hinted line landed on another source position.
 - Hint rows above the line,
-  editord's placement (`::before` blocks in `src/client/inlay/styles.ts`),
+  editord's placement
+  (`::before` blocks in `package-paused/desktop-daemon/editord/src/client/inlay/styles.ts`),
   make hinted lines taller,
   so every row below moves down by a whole row per hinted line above it,
   again whenever hints arrive late.
@@ -501,6 +509,14 @@ Hint labels past the widest line extend the scroll range.
 Debug builds started with `IDE_INSPECT_ANNOTATIONS` naming a JSON file install that file's hints and diagnostics
 for the initially displayed text (`src/native/inspect.rs`),
 for nested-compositor frames without a language server.
+`inspect:native dark annotations` and `inspect:native light annotations` write such a file for a fixture
+with a tab,
+CJK,
+a combining mark,
+a ligature,
+overlapping ranges,
+a range over a line end,
+and a point at a line end.
 Release builds do not contain this path,
 and without the variable it does nothing.
 

@@ -1,8 +1,6 @@
 //! Injected hint and diagnostic snapshots through real key and pointer events: reading geometry, copying,
 //! and find rectangles are unchanged, the caret card follows the caret, and stale snapshots disappear.
 
-/// The production window.
-use super::AppWindow;
 /// The production setter and the stamp of the displayed text.
 use super::annotate::{displayed, set_annotations};
 /// Anchor and head of the reading selection.
@@ -11,6 +9,8 @@ use super::caret_tests::position;
 use super::find_tests::{Reader, chord, eventually, key, reader, status_for, type_text};
 /// Bounded waits and tree-row lookup shared with the navigation tests.
 use super::navigation_tests::{row, wait_until};
+/// The production window.
+use super::{AppWindow, render};
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::language::{
     diagnostics::{Diagnostic, DiagnosticsSnapshot, Freshness, Severity, SourceGroup},
@@ -373,5 +373,80 @@ fn stale_snapshots_disappear_after_reload_and_file_switch() {
         window.get_hint_boxes().row_count(),
         0,
         "hints of the previous file were painted"
+    );
+}
+
+/// The Language poll's path: snapshots accepted into the state's store, hints and diagnostics independently,
+/// show after one render, and a snapshot for other text is refused and changes nothing.
+#[test]
+fn accepted_snapshots_show_after_one_render() {
+    let fixture = tempfile::tempdir().expect("disposable accept project");
+    fs::write(fixture.path().join("main.rs"), FIXTURE).expect("accept fixture");
+    let reader = reader(fixture.path(), "main.rs");
+    let window = &reader.window;
+    let stamp = displayed(&reader.source.borrow());
+    let (hints, diagnostics) = snapshots(stamp);
+    let stale = DocumentStamp {
+        file: stamp.file,
+        revision: stamp.revision + 1,
+    };
+    let (stale_hints, stale_diagnostics) = snapshots(stale);
+    // What: `borrow_mut` lends the state for writing, as the poll holds it while accepting.
+    // Why: The store's answer tells the poll whether a render is needed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const accepted = state.current.annotations.acceptHints(stamp, hints);
+    // ```
+    let refused = reader
+        .source
+        .borrow_mut()
+        .annotations
+        .accept_hints(stamp, stale_hints.expect("stale hints"));
+    assert!(!refused, "hints for another revision were accepted");
+    let accepted_hints = reader
+        .source
+        .borrow_mut()
+        .annotations
+        .accept_hints(stamp, hints.expect("hints"));
+    assert!(accepted_hints);
+    assert_eq!(
+        window.get_hint_boxes().row_count(),
+        0,
+        "accepting must not draw before the render the poll requests"
+    );
+    render(window, &reader.source);
+    assert_eq!(
+        window.get_hint_boxes().row_count(),
+        3,
+        "accepted hints were not drawn"
+    );
+    assert_eq!(window.get_source_markers().row_count(), 0);
+    let accepted_diagnostics = reader
+        .source
+        .borrow_mut()
+        .annotations
+        .accept_diagnostics(stamp, diagnostics.expect("diagnostics"));
+    assert!(accepted_diagnostics);
+    render(window, &reader.source);
+    assert!(
+        window.get_source_markers().row_count() >= 3,
+        "accepted diagnostics were not drawn"
+    );
+    assert_eq!(
+        window.get_hint_boxes().row_count(),
+        3,
+        "accepting diagnostics dropped the hints"
+    );
+    let late = reader
+        .source
+        .borrow_mut()
+        .annotations
+        .accept_diagnostics(stamp, stale_diagnostics.expect("stale diagnostics"));
+    assert!(!late, "diagnostics for another revision were accepted");
+    render(window, &reader.source);
+    assert!(
+        window.get_source_markers().row_count() >= 3,
+        "a refused snapshot removed the marks"
     );
 }
