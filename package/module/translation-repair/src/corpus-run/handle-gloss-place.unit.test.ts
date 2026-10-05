@@ -274,32 +274,93 @@ await describe({
     },),
 
     it({
-      name: 'PLACES NO GLOSS where the parenthesis is unclosed or holds a line end, and NONE where the '
-        + 'handle sits inside a word',
+      name: 'LEAVES an appearance whose parenthesis is no gloss as its writer left it, writing no gloss before '
+        + 'that parenthesis and stripping none from the signature under it: a heading whose parenthesis only a '
+        + 'later line closes, one whose parenthesis is empty, and one whose parenthesis never closes in its '
+        + 'slice while another slice carries the gloss',
       fn: async () => {
         /**
-         Passes over an unclosed parenthesis and a handle embedded in a word.
+         Signature carrying the handle's gloss, well formed.
          */
-        const unclosed = placeHandleGlosses({
-          slices: [HEADED,],
-          replacements: [{
-            sliceIndex: 0,
-            replacementText: '### Ten: Jinmao (Brocade Cat\n\nIt woke.\n\n'
-              + '<p style="text-align: end;">——Jinmao (Brocade Cat), February 10, 2025</p>',
-          },],
-        },);
-        expect(bySlice({ replacements: unclosed.replacements, },).get(0,),).toContain(
+        const glossedSignature = '<p style="text-align: end;">——Jinmao (Brocade Cat), February 10, 2025</p>';
+        /**
+         Rows of one slice whose heading opens a parenthesis its own line
+         never closes, and of one whose heading carries an empty one.
+         */
+        const pages = [
           '### Ten: Jinmao (Brocade Cat',
-        );
-        const embedded = placeHandleGlosses({
-          slices: [HEADED,],
-          replacements: [{
+          '### Ten: Jinmao ()',
+        ].map(function pageUnder(heading,) {
+          return [{
             sliceIndex: 0,
-            replacementText: '### Ten: xJinmao\n\nIt woke.\n\n'
-              + '<p style="text-align: end;">——Jinmao (Brocade Cat), February 10, 2025</p>',
-          },],
+            replacementText: `${heading}\n\nIt woke.\n\n${glossedSignature}`,
+          },];
         },);
-        expect(bySlice({ replacements: embedded.replacements, },).get(0,),).toContain('### Ten: xJinmao',);
+        expect(pages.map(function placedOver(replacements,) {
+          return placeHandleGlosses({
+            slices: [HEADED,],
+            replacements,
+          },);
+        },),).toEqual(pages.map(function untouched(replacements,) {
+          return {
+            replacements,
+            restored: [],
+            findings: [],
+          };
+        },),);
+
+        /**
+         Rows of two slices: the first ends inside its heading's
+         parenthesis, the second signs with the gloss.
+         */
+        const acrossSlices = [
+          {
+            sliceIndex: 0,
+            replacementText: '### Ten: Jinmao (Brocade Cat\n\nIt woke.',
+          },
+          {
+            sliceIndex: 1,
+            replacementText: `It woke again.\n\n${glossedSignature}`,
+          },
+        ];
+        expect(placeHandleGlosses({
+          slices: [
+            HEADED,
+            pair({
+              sliceIndex: 1,
+              source: '它又醒了。\n\n<p style="text-align: end;">——锦猫, 2025 年 2 月 10 日</p>',
+              target: '',
+            },),
+          ],
+          replacements: acrossSlices,
+        },),).toEqual({
+          replacements: acrossSlices,
+          restored: [],
+          findings: [],
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS a handle standing inside a longer word as no appearance: a heading writing it after another '
+        + 'letter takes no gloss, and the signature, the handle\'s one appearance, keeps its own',
+      fn: async () => {
+        /**
+         Rows of one slice whose heading runs a letter into the handle.
+         */
+        const replacements = [{
+          sliceIndex: 0,
+          replacementText: '### Ten: xJinmao\n\nIt woke.\n\n'
+            + '<p style="text-align: end;">——Jinmao (Brocade Cat), February 10, 2025</p>',
+        },];
+        expect(placeHandleGlosses({
+          slices: [HEADED,],
+          replacements,
+        },),).toEqual({
+          replacements,
+          restored: [],
+          findings: [],
+        },);
       },
     },),
   ],
