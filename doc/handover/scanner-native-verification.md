@@ -864,8 +864,22 @@ This follow-up makes the scanner's test suite compile and run on native Windows,
 triages every Windows baseline failure,
 confirms the device-namespace prefix fix on native Windows,
 and mutates the pathname files on their own.
-It is in progress;
-each subsection records a finished step.
+
+Outcome:
+
+- Every test target compiles on Windows and the whole suite runs there with no filter.
+- Five of the six recorded baseline failures were tests assuming Unix paths and are fixed in the tests;
+  no production defect was found in them.
+- The Windows suite is not green.
+  The sixth recorded failure and one integration test that had never compiled fail for one cause,
+  and that cause needs the human's decision
+  (`Reason reported for a cache root blocked by a regular file`).
+- The prefix fix is confirmed on native Windows,
+  with failing positive controls on the same guest.
+- The pathname mutation scope leaves two survivors on Linux,
+  both caught on Windows,
+  where no mutant of the scope survives.
+- The virtual machine was destroyed and every daemon and server started for the run was stopped.
 
 ### Linux-side changes
 
@@ -932,6 +946,18 @@ The unviable mutants are compiler rejections:
 `scan_normalized_records`,
 and `scan_path`,
 and `` `||` operators are not supported in let chain conditions `` for `logical_path`.
+
+That campaign ran before `fe805727c` changed two test files,
+one of which holds the test that kills the `logical_path` mutants.
+The campaign was therefore repeated on the final tree:
+`pathname-mutation-N02NWa`,
+snapshot `50920f5bb0079aaf5c55327d9384229fa51093dab9b61cc3d7050d8967935d58`,
+image `sha256:6927cfce3f638491f1cbcc2c4f5b669ff1aef3d7e0f167af7c2f39f30b09f254`.
+It tested the same 57 mutants in 10 minutes with identical outcome lists:
+51 caught,
+the same 2 missed,
+the same 4 unviable,
+and no timeouts.
 
 ### Windows virtual machine and bridges
 
@@ -1332,6 +1358,27 @@ or timed out.
 Afterwards the guest's `src/path_scan.rs` and `src/path_name_bytes.rs` hashed to the snapshot's values,
 so the in-place mutation left the tree unmutated.
 
+Then the whole scope,
+without `--re`:
+57 mutants tested in 12 minutes,
+53 caught,
+none missed,
+4 unviable,
+and no timeouts.
+The unmutated baseline passed and `cargo-mutants` exited `0`.
+The 57 mutant names are the same as in the Linux campaign `pathname-mutation-xxqPFq`.
+The caught set is the Linux caught set plus the two Linux survivors,
+and the 4 unviable mutants are the same compiler rejections.
+Both source hashes matched the snapshot again afterwards.
+
+So over the pathname files,
+no mutant survives on both platforms:
+Linux misses only the two that cannot differ on a non-Windows target,
+and Windows catches those two with its `#[cfg(windows)]` prefix tests.
+This holds for the GNU ABI target and the four skipped tests listed here;
+it is one manual run,
+not a recurring gate.
+
 ### Linux verification of the final tree
 
 All through the package's tasks,
@@ -1647,6 +1694,77 @@ because two tests fail on unmutated source until the blocked-root decision is ma
 - On Linux runners,
   `lint:clippy:windows` as a cheap earlier gate for Windows compile errors.
 
+### Teardown
+
+- `mvm --verbose --backend libvirt destroy wbase-20261005` through the shims exited `0`.
+  It ran `virsh destroy` and `virsh undefine --remove-all-storage`,
+  which removed the overlay disk,
+  and removed `~/.local/share/mvm/vms/wbase-20261005`.
+  `virsh list --all` afterwards lists only the six domains that existed before the run.
+- The file server was stopped by process ID;
+  nothing listens on port 18432.
+  Its log shows 13 requests,
+  all from host loopback:
+  the two snapshot archives,
+  the variant,
+  probe,
+  and restore files,
+  and two refused requests made from the host to test the server.
+- The session `virtqemud` was stopped by process ID.
+  Libvirt had spawned `virtlogd` and `virtstoraged` in the same Flatpak sandbox,
+  each with a 120-second idle timeout;
+  both were stopped too,
+  and no virt-manager Flatpak instance remains.
+- `template-windows.qcow2` has the SHA-256 and modification time it had before the run.
+
+### Evidence of the Windows baseline follow-up
+
+Evidence is `package/cli/forbidden-strings/target/verification/windows-baseline-phA1vT`.
+
+- `manifest.json` lists the 128 files of snapshot `s2` with their hashes,
+  each variant's hash,
+  the earlier snapshot `s1`,
+  the target,
+  toolchain,
+  VM bounds,
+  bridges,
+  exact commands,
+  skipped tests,
+  and teardown facts.
+- `control.json` holds the expected observations beside each campaign's exit code,
+  per-target counts,
+  and failing tests.
+- `logs/` holds the complete guest output of every provisioning step,
+  campaign,
+  probe,
+  and control,
+  the file server's request log,
+  and the stale guest-agent record.
+- `reports/s2-line36` and `reports/s2-full` hold the unpacked `cargo-mutants` reports from the guest,
+  each archive checked against the hash the guest printed.
+- The `.diff` files are the hand-applied variants.
+- The scratch drivers are `prepare.mjs`,
+  `serve.mjs`,
+  `agent.mjs`,
+  `drive.mjs`,
+  `sequence.mjs`,
+  `collect.mjs`,
+  `resume-mutants.mjs`,
+  `extract-report.mjs`,
+  and `retain.mjs`.
+
+`verify:evidence` reports one difference for this directory,
+`clippy.toml`,
+which was not sent because Clippy did not run in the guest,
+and none for `test-g2VM7D`,
+`clippy-wuZQ0I`,
+and `pathname-mutation-N02NWa`.
+It reports two for `pathname-mutation-xxqPFq` and `test-kA3nVK`,
+the two test files `fe805727c` changed after those runs.
+Only compiled inputs were sent to the guest,
+the same file set as in `Evidence and provenance`;
+no home-directory content or credential was served.
+
 ## Matcher-state audit
 
 Reuse is not inferred solely from `&self`.
@@ -1798,6 +1916,7 @@ Major scoped commits:
   artifact-layout,
   and repository-relative name tests.
 - `11f20de74`: the `lint:clippy:windows` task.
+- `c5d3d04ea`: README entries for the pathname mutation scope and the `lint:clippy:windows` task.
 - `e3cdee512`,
   `f7362e0d7`,
   and later `docs(handover)` commits:
