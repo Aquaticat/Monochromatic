@@ -153,6 +153,32 @@ fn fence_language_fixes_preserve_opener_shape() {
     );
 }
 
+/// Native fenced spans start at the marker, not at indentation or enclosing container text.
+#[test]
+fn fence_spans_preserve_native_marker_boundaries() {
+    for (source, start, expected) in [
+        ("~~~\nx\n~~~\n", 0, "~~~text\nx\n~~~\n"),
+        ("  ~~~\nx\n  ~~~\n", 2, "  ~~~text\nx\n  ~~~\n"),
+        ("> ~~~\n> x\n> ~~~\n", 2, "> ~~~text\n> x\n> ~~~\n"),
+        ("- ~~~\n  x\n  ~~~\n", 2, "- ~~~text\n  x\n  ~~~\n"),
+        ("🚀\n\n   ~~~\nx\n   ~~~\n", 9, "🚀\n\n   ~~~text\nx\n   ~~~\n"),
+    ] {
+        let context: MarkdownSource = document(source, false);
+        let mut code_nodes: usize = 0;
+        for id in context.visible_nodes() {
+            if context.kind(*id) != satteri_ast::mdast::MdastNodeType::Code {
+                continue;
+            }
+            code_nodes += 1;
+            assert_eq!(context.offsets(*id).0, start);
+            assert!(context.slice(*id).starts_with("~~~"));
+        }
+        assert_eq!(code_nodes, 1);
+        let findings: Vec<Diagnostic> = fenced_code_language(&context, Severity::Error, false);
+        assert_eq!(fixed(source, &findings), expected);
+    }
+}
+
 /// Plain-text collection does not import image alt text into heading/emphasis semantics.
 #[test]
 fn collected_heading_text_matches_the_incumbent_helper() {

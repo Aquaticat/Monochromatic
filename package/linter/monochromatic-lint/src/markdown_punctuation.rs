@@ -6,13 +6,13 @@
 //! // Find the decoded punctuation suffix, then map each suffix character back to its authored bytes.
 //! ```
 
-/// Import native text decoding and heading kinds.
-use satteri_ast::mdast::{MdastNodeType, decode_string_ref_data};
 /// Import the existing diagnostic and localized edit boundaries.
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::Edit;
 use crate::markdown_finding::finding;
 use crate::markdown_source::MarkdownSource;
+/// Import native text decoding and heading kinds.
+use satteri_ast::mdast::{MdastNodeType, decode_string_ref_data};
 
 /// Count only the configured ASCII punctuation suffix.
 fn trailing_count(value: &str) -> usize {
@@ -48,6 +48,8 @@ fn punctuation_entity(entity: &str) -> bool {
 }
 
 /// Locate the authored suffix without leaving a dangling escape or half an entity.
+/// Each successful step consumes the suffix it scanned; the first failed scan returns immediately.
+/// Therefore source bytes are scanned a bounded number of times, including backslash runs.
 fn suffix_start(written: &str, count: usize) -> Option<usize> {
     let bytes: &[u8] = written.as_bytes();
     let mut end: usize = bytes.len();
@@ -77,6 +79,26 @@ fn suffix_start(written: &str, count: usize) -> Option<usize> {
     return Some(end);
 }
 
+/// What: Build one optional deletion after finding its complete authored suffix.
+/// Why: Unmappable spellings keep their diagnostic but never receive a guessed edit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function punctuationEdit(written, count, start, end): Edit | undefined;
+/// ```
+fn punctuation_edit(written: &str, count: usize, start: usize, end: usize) -> Option<Edit> {
+    // What: The question mark returns None immediately when the suffix has no verified mapping.
+    // Why: Successful mappings can construct their edit without a capturing callback.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const relative = suffixStart(written, count); if (relative === undefined) return undefined;
+    // ```
+    let relative: usize = suffix_start(written, count)?;
+    // Return an owned edit only for a complete mapping; the empty string requests deletion.
+    return Some(Edit { start: start + relative, end, replacement: String::new() });
+}
+
 /// Report heading punctuation while keeping the original heading and inline delimiters intact.
 pub fn no_trailing_punctuation(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
     let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
@@ -95,15 +117,14 @@ pub fn no_trailing_punctuation(context: &MarkdownSource, severity: Severity) -> 
         }
         let (start, end): (usize, usize) = context.offsets(*last);
         let written: &str = context.slice(*last);
-        let edit: Option<Edit> = if let Some(relative) = suffix_start(written, count) {
-            Some(Edit { start: start + relative, end, replacement: String::new() })
-        } else {
-            // An unsupported representation remains a finding, not a guessed destructive edit.
-            None
-        };
+        let edit: Option<Edit> = punctuation_edit(written, count, start, end);
         findings.push(finding(
-            context, *id, "markdown/no-trailing-punctuation", severity,
-            String::from("Heading ends with punctuation; remove the trailing punctuation."), edit,
+            context,
+            *id,
+            "markdown/no-trailing-punctuation",
+            severity,
+            String::from("Heading ends with punctuation; remove the trailing punctuation."),
+            edit,
         ));
     }
     return findings;

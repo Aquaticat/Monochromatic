@@ -13,7 +13,9 @@ use crate::markdown_source::MarkdownSource;
 
 /// Check an authored source through the native parser.
 fn check(source: &str, mdx: bool) -> Vec<Diagnostic> {
-    let context: MarkdownSource = MarkdownSource::new(String::from("input.md"), String::from(source), mdx).expect("fixture parses");
+    let context: MarkdownSource =
+        MarkdownSource::new(String::from("input.md"), String::from(source), mdx)
+            .expect("fixture parses");
     return no_duplicate_heading(&context, Severity::Warn);
 }
 
@@ -24,7 +26,10 @@ fn repeated_siblings_are_reported() {
     assert_eq!(findings.len(), 2);
     assert_eq!(findings[0].labels[0].span.line, 5);
     assert_eq!(findings[1].labels[0].span.line, 7);
-    assert_eq!(findings[0].message, "Duplicate heading \"Child\" among sibling headings.");
+    assert_eq!(
+        findings[0].message,
+        "Duplicate heading \"Child\" among sibling headings."
+    );
     assert_eq!(findings[0].severity, Severity::Warn);
     assert!(findings[0].fix.is_none());
 }
@@ -35,8 +40,12 @@ fn scope_and_rendered_text_match_the_existing_policy() {
     assert!(check("# One\n\n## Child\n\n# Two\n\n## Child\n", false).is_empty());
     assert!(check("# Name\n\n## Name\n\n## name\n", false).is_empty());
     assert_eq!(check("# Title\n\n# **Title**\n", false).len(), 1);
+    assert_eq!(check("# ab\n\n# a**b**\n", false).len(), 1);
     // Textual parent identity, not physical parent-node identity, is the accepted incumbent scope.
-    assert_eq!(check("# Same\n\n## Child\n\n# Same\n\n## Child\n", false).len(), 2);
+    assert_eq!(
+        check("# Same\n\n## Child\n\n# Same\n\n## Child\n", false).len(),
+        2
+    );
     assert!(check("plain\n", false).is_empty());
 }
 
@@ -44,5 +53,11 @@ fn scope_and_rendered_text_match_the_existing_policy() {
 #[test]
 fn structural_keys_and_visible_traversal_are_not_string_heuristics() {
     assert!(check("# [a]\n\n## b\n\n# a\n\n## [b]\n", false).is_empty());
-    assert!(check("<Box>\n\n# Hidden\n\n# Hidden\n\n</Box>\n\n# Visible\n", true).is_empty());
+    assert!(
+        check(
+            "<Box>\n\n# Hidden\n\n# Hidden\n\n</Box>\n\n# Visible\n",
+            true
+        )
+        .is_empty()
+    );
 }
