@@ -128,6 +128,14 @@ not another policy ballot.
 
 Publication is still pending native controls,
 image inspection and offline browser verification.
+The earlier fixed-pane diagnostic cohort showed native expiry and manual
+completion with unchanged application geometry;
+its corrected offline pixel comparison retained `3743106` identical
+application pixels outside notices/shadows in each tested transition.
+That is not final E2-artifact acceptance.
+Native startup dialogs,
+readiness errors and mismatched evidence scopes remain rejected attempts,
+not images to relabel as successful captures.
 The [continuation plan](../../../../doc/planning/music-player-light-error-undo.md)
 records current terminal outcomes and the next authorized step.
 
