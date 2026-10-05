@@ -302,7 +302,8 @@ export class DecisionReplyShapeError extends Error {
    @param detail - which documented field was absent or mistyped
 
    @param cause - what the parse threw, carried for the chain and kept out of
-   the message, which names nothing the reply held
+   the message, which names nothing the reply held; absent for a refusal
+   nothing threw before
 
    @example
    ```ts
@@ -320,7 +321,11 @@ export class DecisionReplyShapeError extends Error {
   ) {
     super(
       `decisions reply is not the documented shape: ${detail}`,
-      { cause, },
+      // Conditional spread keeps cause absent when none was supplied, rather
+      // than an own cause that is undefined.
+      ...(cause === undefined
+        ? []
+        : [{ cause, },]),
     );
     this.name = 'DecisionReplyShapeError';
   }
@@ -388,7 +393,7 @@ export function readDecisionReplyBody({ bodyText, }: { readonly bodyText: string
    */
   const { answers, } = parsed;
   if (!isJsonRecord(answers,))
-    throw new DecisionReplyShapeError({ detail: 'answers missing', },);
+    throw new DecisionReplyShapeError({ detail: (answers === undefined) ? 'answers missing' : 'answers is not an object', },);
 
   /**
    Each answer checked against the documented shapes.
@@ -414,7 +419,7 @@ export function readDecisionReplyBody({ bodyText, }: { readonly bodyText: string
    */
   const { model, } = parsed;
   if ((typeof model) !== 'string')
-    throw new DecisionReplyShapeError({ detail: 'model missing', },);
+    throw new DecisionReplyShapeError({ detail: (model === undefined) ? 'model missing' : 'model is not a string', },);
 
   /**
    Usage block, absent when the endpoint sent none.

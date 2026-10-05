@@ -83,7 +83,9 @@ function splitContributorForms(
 
  @param token - one top-level contributor token
 
- @returns Visible target-authoritative form, empty for empty token or empty link label, which shows a reader nothing
+ @returns Visible target-authoritative form without the spaces around it,
+ empty for an empty token or a link label empty or only spaces, which shows a
+ reader nothing
 
  @example
  ```ts
@@ -96,12 +98,15 @@ function contributorForm({ token, }: { readonly token: string; },): string {
    */
   const trimmed = token.trim();
   /**
-   Form without optional Markdown unordered-list marker.
+   Form without optional Markdown unordered-list marker, nor the further
+   spaces a marker may stand before its item with.
    */
   const unmarked = (trimmed.startsWith('- ',)
     || trimmed.startsWith('* ',)
     || trimmed.startsWith('+ ',))
-    ? trimmed.slice(2,)
+    ? trimmed
+      .slice(2,)
+      .trimStart()
     : trimmed;
   if (!unmarked.startsWith('[',))
     return unmarked;
@@ -111,10 +116,13 @@ function contributorForm({ token, }: { readonly token: string; },): string {
   const labelEnd = unmarked.indexOf('](',);
   if (labelEnd === (-1))
     return unmarked;
-  return unmarked.slice(
-    1,
-    labelEnd,
-  );
+  // The label as a reader sees it: spaces inside the brackets show nothing.
+  return unmarked
+    .slice(
+      1,
+      labelEnd,
+    )
+    .trim();
 }
 
 /**

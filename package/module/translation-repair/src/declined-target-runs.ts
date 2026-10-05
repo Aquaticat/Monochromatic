@@ -188,9 +188,10 @@ export function declinedTargetBlocks(
         && (!insideRendering.has(step.targetIndex,));
     },)
     .flatMap(function toNode(step,): readonly DocumentNode[] {
-      // Block the step names; the isDeclined filter keeps only target-only
-      // steps and the alignment indexes this very node list, so the read is
-      // present.
+      // Block the step names. Every production path checks each step against
+      // the block lists first (ledger B138): `blockPairingToSteps` refuses a
+      // pair naming a block its side lacks, and `walkIntoRuns` reads each
+      // step's blocks through `blockAtStep` before it asks for declines.
       return [nonNullishOrThrow(targetNodes[step.targetIndex],),];
     },);
 }

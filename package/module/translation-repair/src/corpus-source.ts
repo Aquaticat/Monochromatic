@@ -2,7 +2,7 @@ import { execFile, } from 'node:child_process';
 import { promisify, } from 'node:util';
 
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
-import spawn from 'nano-spawn';
+import spawn, { SubprocessError, } from 'nano-spawn';
 
 import {
   CORPUS_GIT_FLAGS,
@@ -267,7 +267,12 @@ export function isMissingCorpusObject(error: unknown,): error is CorpusReadError
 
  @returns Captured stdout
 
- @throws {@link CorpusReadError} when git exits non-zero
+ @throws {@link CorpusReadError} when the git subprocess fails: a non-zero
+ exit, a signal, or a spawn the system refused
+
+ @throws Whatever the subprocess layer's preparation of the call throws,
+ unchanged: a fault of this process, such as a working directory removed
+ under it, and no fact about the corpus
 
  @example
  ```ts
@@ -308,15 +313,24 @@ async function gitOutput(
     return stdout;
   }
   catch (error) {
-    // EVERY THROWABLE THIS CALL SEES IS A SUBPROCESS FAILURE: nano-spawn
-    // funnels each one through its result.js getErrorInstance, which wraps
-    // it as SubprocessError (exit codes, signals, spawn failures and stream
-    // errors alike; its one raw escape, an options.input stdin.end throw,
-    // this call never reaches), and a probe on the built package found no
-    // input arriving here as anything else
-    // (~/temp/agent/mimo-trial/corpus-rethrow-probe.mjs). The kind field
-    // keeps the distinction callers read: `missing-object` where git says
-    // the object is absent, `other` everywhere else.
+    // ONLY A FAILURE OF THE SUBPROCESS IS A CORPUS READ FAILURE. nano-spawn
+    // (2.1.0, `source/spawn.js` and `source/result.js`) hands every failure
+    // of the child to its caller as `SubprocessError`: an exit code, a
+    // signal, a spawn the system refused, a stream error. Its preparation of
+    // the call throws raw, before any child exists and inside this `try`
+    // since `spawn` throws synchronously: `source/options.js` resolves the
+    // working directory through `process.cwd()`, which throws `ENOENT` once
+    // the directory this process stands in is removed, and
+    // `source/context.js` throws a `TypeError` for a command part that is no
+    // string. Those are faults of this process, and the advice a
+    // `CorpusReadError` gives, to check the clone and the pin, would misname
+    // them, so they propagate as themselves. The `corpus-source.unit.test.ts`
+    // case on a working directory removed under the process holds this. The
+    // kind field keeps the distinction callers read: `missing-object` where
+    // git says the object is absent, `other` for every other subprocess
+    // failure.
+    if (!(error instanceof SubprocessError))
+      throw error;
     throw new CorpusReadError({
       detail,
       cause: error,
