@@ -1,7 +1,7 @@
-import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { inflateSync } from 'node:zlib';
 
 //region Rule helper and pinned artifact, not a stored preference or a working setting
 const questions = join(process.cwd(), 'questions');
@@ -255,11 +255,67 @@ for (const item of opened) {
 // On the 52dp-wide Material switch the handle is centred 16dp from the leading edge when off and
 // 36dp when on; 4dp from that edge is track in both positions. On the vertical centre line, the
 // handle centre whose colour differs from the track by more than 24 of 255 in a channel holds the handle.
-// Decoded RGB bytes of one image region, or null when the image does not hold the whole region.
+// Decodes an 8-bit, non-interlaced RGB PNG in process: inflate the joined image-data chunks, then
+// undo each scanline's filter (PNG specification section 9). Any other format returns null, so a
+// rule reading it fails rather than guessing. Spawning a decoder per image dominated validation time.
+function paeth({ left, up, upLeft }) {
+  const estimate = left + up - upLeft;
+  const toLeft = Math.abs(estimate - left);
+  const toUp = Math.abs(estimate - up);
+  const toUpLeft = Math.abs(estimate - upLeft);
+  if (toLeft <= toUp && toLeft <= toUpLeft) return left;
+  return toUp <= toUpLeft ? up : upLeft;
+}
+function decodeRgb(png) {
+  if (png.length < 33 || png[24] !== 8 || png[25] !== 2 || png[26] !== 0 || png[27] !== 0 || png[28] !== 0) return null;
+  const width = png.readUInt32BE(16);
+  const height = png.readUInt32BE(20);
+  const parts = [];
+  for (let offset = 8; offset + 12 <= png.length;) {
+    const length = png.readUInt32BE(offset);
+    if (png.subarray(offset + 4, offset + 8).toString('ascii') === 'IDAT') parts.push(png.subarray(offset + 8, offset + 8 + length));
+    offset += 12 + length;
+  }
+  const raw = inflateSync(Buffer.concat(parts));
+  const stride = width * 3;
+  if (raw.length !== height * (stride + 1)) return null;
+  const rgb = Buffer.alloc(height * stride);
+  for (let row = 0; row < height; row++) {
+    const filter = raw[row * (stride + 1)];
+    const source = row * (stride + 1) + 1;
+    const target = row * stride;
+    for (let x = 0; x < stride; x++) {
+      const left = x >= 3 ? rgb[target + x - 3] : 0;
+      const up = row > 0 ? rgb[target - stride + x] : 0;
+      const upLeft = row > 0 && x >= 3 ? rgb[target - stride + x - 3] : 0;
+      let predicted;
+      if (filter === 0) predicted = 0;
+      else if (filter === 1) predicted = left;
+      else if (filter === 2) predicted = up;
+      else if (filter === 3) predicted = (left + up) >> 1;
+      else if (filter === 4) predicted = paeth({ left, up, upLeft });
+      else return null;
+      rgb[target + x] = (raw[source + x] + predicted) & 255;
+    }
+  }
+  return { width, height, rgb };
+}
+// Each embedded image is decoded once; every region below is sliced from that copy.
+const decodedImages = new Map();
+function decoded(file) {
+  if (!decodedImages.has(file)) decodedImages.set(file, decodeRgb(readFileSync(join(evidence, file))));
+  return decodedImages.get(file);
+}
+// RGB bytes of one image region, or null when the image does not hold the whole region.
 function imageRegion({ file, left, top, width, height }) {
-  const rgb = execFileSync('magick', ['-limit', 'thread', '2', '-limit', 'memory', '256MiB', join(evidence, file),
-    '-crop', `${width}x${height}+${left}+${top}`, '+repage', '-depth', '8', 'rgb:-'], { maxBuffer: 24 * 1024 * 1024 });
-  return rgb.length === width * height * 3 ? rgb : null;
+  const image = decoded(file);
+  if (image === null || left < 0 || top < 0 || left + width > image.width || top + height > image.height) return null;
+  const region = Buffer.alloc(width * height * 3);
+  for (let row = 0; row < height; row++) {
+    const start = ((top + row) * image.width + left) * 3;
+    image.rgb.copy(region, row * width * 3, start, start + width * 3);
+  }
+  return region;
 }
 // The same region addressed by a measured screenshot rectangle, moved into the cropped image.
 function measuredRegion({ capture, rectangle: bounds }) {
@@ -330,7 +386,7 @@ function leftHalfDifference(capture) {
   if (settings === null || search === null) return Number.POSITIVE_INFINITY;
   let differing = 0;
   for (let offset = 0; offset < settings.length; offset += 3) {
-    if ([0, 1, 2].some(channel => Math.abs(settings[offset + channel] - search[offset + channel]) > 24)) differing++;
+    if (Math.abs(settings[offset] - search[offset]) > 24 || Math.abs(settings[offset + 1] - search[offset + 1]) > 24 || Math.abs(settings[offset + 2] - search[offset + 2]) > 24) differing++;
   }
   return differing;
 }
