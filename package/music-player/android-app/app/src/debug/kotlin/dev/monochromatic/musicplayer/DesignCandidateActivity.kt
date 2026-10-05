@@ -433,13 +433,6 @@ private data class CandidatePalette(
     val rowDividers: Boolean,
 )
 
-/** Static row model used only by the non-functional design prototype. */
-private data class PrototypeTrack(
-    val title: String,
-    val duration: String,
-    val peak: String,
-)
-
 /**
  * What:     `usesAcceptedUnfoldedTreatment` is a typed Kotlin extension function on strings.
  * Why:      Theme candidates must inherit settled layout,
@@ -781,7 +774,9 @@ private fun Modifier.accessibilityTraversalGroup(candidate: String, area: String
 /** Renders two equal 414dp panes around Material's centered 24dp expanded-layout spacer. */
 @Composable
 private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null,
-    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier) {
+    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier,
+    trackInputs: List<PrototypeTrack> = prototypePlayerTracks,
+    trackInteraction: ((Int, PrototypeTrack) -> Modifier)? = null) {
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -821,6 +816,8 @@ private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette, onSe
             onSearch = onSearch,
             omittedTitles = omittedTitles,
             trackViewportModifier = trackViewportModifier,
+            trackInputs = trackInputs,
+            trackInteraction = trackInteraction,
         )
     }
 }
@@ -893,19 +890,11 @@ private fun CoverStudy(candidate: String, palette: CandidatePalette) {
 /** Keeps the closed cover's track list identical in the static and interactive studies. */
 @Composable
 private fun CoverTrackList(modifier: Modifier, candidate: String, palette: CandidatePalette,
-    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier) {
+    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier,
+    trackInputs: List<PrototypeTrack> = prototypePlayerTracks,
+    trackInteraction: ((Int, PrototypeTrack) -> Modifier)? = null) {
     Column(modifier = modifier.then(trackViewportModifier).background(palette.tracks).verticalScroll(rememberScrollState())) {
-        val tracks = listOf(
-            PrototypeTrack("Another Xronixle", "4:35", "−1.2 dBTP"),
-            PrototypeTrack("Burning Aquamarine", "5:12", "−0.8 dBTP"),
-            PrototypeTrack("Dokuhebi", "4:01", "−1.4 dBTP"),
-            PrototypeTrack("ENÛMA∇ELIŠ", "9:47", "−0.3 dBTP"),
-            PrototypeTrack("Ghost", "3:22", "−1.1 dBTP"),
-            PrototypeTrack("Hyperflux", "4:44", "−0.9 dBTP"),
-            PrototypeTrack("Idol Corruption", "5:31", "−0.6 dBTP"),
-            PrototypeTrack("KillerToy", "4:12", "−1.0 dBTP"),
-            PrototypeTrack("Nacreous Snowmelt", "6:03", "−0.7 dBTP"),
-        )
+        val tracks = trackInputs
         for (index in tracks.indices) {
             // What: !in tests non-membership in an authored read-only List<String>.
             // Why: Omit only named fixture rows, never infer file state from this layout.
@@ -915,7 +904,8 @@ private fun CoverTrackList(modifier: Modifier, candidate: String, palette: Candi
             // if (!omittedTitles.includes(tracks[index].title)) renderTrack(tracks[index]);
             // ```
             if (tracks[index].title !in omittedTitles) {
-                TrackRow(index = index, track = tracks[index], candidate = candidate, palette = palette)
+                TrackRow(index = index, track = tracks[index], candidate = candidate, palette = palette,
+                    interactionModifier = trackInteraction?.invoke(index, tracks[index]))
             }
         }
     }
@@ -924,7 +914,9 @@ private fun CoverTrackList(modifier: Modifier, candidate: String, palette: Candi
 /** Exercises the persistent P4 trigger through opening, Back, and same-folder selection. */
 @Composable
 private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null,
-    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier) {
+    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier,
+    trackInputs: List<PrototypeTrack> = prototypePlayerTracks,
+    trackInteraction: ((Int, PrototypeTrack) -> Modifier)? = null) {
     // This study does not switch the library: selecting a name only tests dismissal and focus.
     var pickerOpen by remember { mutableStateOf(false) }
     val triggerFocusRequester = remember { FocusRequester() }
@@ -952,7 +944,8 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
             }
         } else {
             CoverTrackList(modifier = Modifier.weight(1f), candidate = candidate, palette = palette,
-                omittedTitles = omittedTitles, trackViewportModifier = trackViewportModifier)
+                omittedTitles = omittedTitles, trackViewportModifier = trackViewportModifier,
+                trackInputs = trackInputs, trackInteraction = trackInteraction)
         }
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(palette.sectionDivider))
         TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = candidate, palette = palette, deckHeightCap = false)
@@ -964,6 +957,8 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
  *      playback controls, track list and Search action.
  *      Optional authored omissions and a viewport modifier affect only an explicitly owned debug study;
  *      default calls retain every row and add no measurement hook or storage operation.
+ *      A debug interaction factory receives the original source index and actual authored row.
+ *      It replaces the default click modifier rather than stacking competing input owners.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -973,7 +968,9 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
 @Composable
 internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (() -> Unit)?,
     e2InformationStartInset: Dp = 0.dp, omittedTitles: List<String> = emptyList(),
-    trackViewportModifier: Modifier = Modifier) {
+    trackViewportModifier: Modifier = Modifier,
+    trackInputs: List<PrototypeTrack> = prototypePlayerTracks,
+    trackInteraction: ((Int, PrototypeTrack) -> Modifier)? = null) {
     val palette = paletteFor(
         candidate = if (isCover) {
             if (light) "cover-picker-p4-light" else "cover-picker-p4"
@@ -989,6 +986,8 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (()
             onSearch = onSearch,
             omittedTitles = omittedTitles,
             trackViewportModifier = trackViewportModifier,
+            trackInputs = trackInputs,
+            trackInteraction = trackInteraction,
         )
     } else if (e2InformationStartInset > 0.dp) {
         // What: Fill both half-screen surfaces while shifting only the right title and track text.
@@ -1013,11 +1012,14 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (()
                 informationStartInset = e2InformationStartInset,
                 omittedTitles = omittedTitles,
                 trackViewportModifier = trackViewportModifier,
+                trackInputs = trackInputs,
+                trackInteraction = trackInteraction,
             )
         }
     } else {
         FullUnfoldedStudy(candidate = "dark-stable-wallpaper-dynamic", palette = palette, onSearch = onSearch,
-            omittedTitles = omittedTitles, trackViewportModifier = trackViewportModifier)
+            omittedTitles = omittedTitles, trackViewportModifier = trackViewportModifier,
+            trackInputs = trackInputs, trackInteraction = trackInteraction)
     }
 }
 
@@ -2088,7 +2090,9 @@ private fun ModeControl(modifier: Modifier) {
 @Composable
 private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidatePalette,
     onSearch: (() -> Unit)? = null, informationStartInset: Dp = 0.dp,
-    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier) {
+    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier,
+    trackInputs: List<PrototypeTrack> = prototypePlayerTracks,
+    trackInteraction: ((Int, PrototypeTrack) -> Modifier)? = null) {
     Box(modifier = modifier.fillMaxSize().background(color = palette.tracks)) {
         Row(modifier = Modifier.fillMaxSize()) {
             if (palette.paneDivider) {
@@ -2126,17 +2130,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
                     ),
                     windowInsets = WindowInsets(0, 0, 0, 0),
                 )
-                val tracks = listOf(
-                    PrototypeTrack("Another Xronixle", "4:35", "−1.2 dBTP"),
-                    PrototypeTrack("Burning Aquamarine", "5:12", "−0.8 dBTP"),
-                    PrototypeTrack("Dokuhebi", "4:01", "−1.4 dBTP"),
-                    PrototypeTrack("ENÛMA∇ELIŠ", "9:47", "−0.3 dBTP"),
-                    PrototypeTrack("Ghost", "3:22", "−1.1 dBTP"),
-                    PrototypeTrack("Hyperflux", "4:44", "−0.9 dBTP"),
-                    PrototypeTrack("Idol Corruption", "5:31", "−0.6 dBTP"),
-                    PrototypeTrack("KillerToy", "4:12", "−1.0 dBTP"),
-                    PrototypeTrack("Nacreous Snowmelt", "6:03", "−0.7 dBTP"),
-                )
+                val tracks = trackInputs
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -2153,6 +2147,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
                             candidate = candidate,
                             palette = palette,
                             informationStartInset = informationStartInset,
+                            interactionModifier = trackInteraction?.invoke(index, tracks[index]),
                         )
                     }
                 }
@@ -2172,7 +2167,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
 @Suppress("DEPRECATION")
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette,
-    informationStartInset: Dp = 0.dp) {
+    informationStartInset: Dp = 0.dp, interactionModifier: Modifier? = null) {
     val playing = index == 0
     val currentTrackCue = if (candidate.startsWith("a11y-") || candidate.startsWith("dark-") || candidate.startsWith("cover-")) {
         "container"
@@ -2304,7 +2299,8 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             .fillMaxWidth()
             .heightIn(min = 72.dp)
             .then(currentRowOutline)
-            .clickable(role = Role.Button, onClick = {})
+            // A supplied debug modifier owns both tap and long-press; null retains the prior click behavior.
+            .then(interactionModifier ?: Modifier.clickable(role = Role.Button, onClick = {}))
             .then(trackSemanticsModifier),
     )
     if (palette.rowDividers) {
