@@ -2,6 +2,10 @@
 description = "Fetch the existing locked dependency archives before offline container verification"
 run = "cargo fetch --locked"
 
+[tasks."lint:clippy:container"]
+description = "Run all-target/all-feature Clippy with warnings denied in the bounded offline scanner snapshot"
+run = "node bin/test-container.mjs --clippy"
+
 [tasks."test:container"]
 description = "Run binary and embedded scanner tests unprivileged with Git 2.56.0 in a bounded mount-free container"
 run = "node bin/test-container.mjs"

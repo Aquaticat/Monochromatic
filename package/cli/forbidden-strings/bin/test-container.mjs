@@ -22,7 +22,12 @@ function run({ command, args, capture = false }) {
 
 /** Build one immutable source snapshot and run real binary/library consumer tests with no host state. */
 async function main() {
-  if (process.argv.length !== 2) throw new ScannerVerificationError('This verification task accepts no arguments.');
+  const options = process.argv.slice(2);
+  if (options.length > 1 || (options.length === 1 && options[0] !== '--clippy'))
+    throw new ScannerVerificationError('Only --clippy is accepted.');
+  const command = options[0] === '--clippy'
+    ? ['cargo', 'clippy', '--offline', '--locked', '--all-targets', '--all-features', '--', '-D', 'warnings']
+    : ['cargo', 'test', '--offline', '--locked', '--all-targets', '--', '--test-threads=1'];
   const context = await mkdtemp(join(tmpdir(), 'forbidden-strings-test-'));
   const evidenceRoot = resolve('target/verification');
   await mkdir(evidenceRoot, { recursive: true });
@@ -61,7 +66,7 @@ async function main() {
       'USER 1000:1000',
       'WORKDIR /work/package/cli/forbidden-strings',
       // Serial in-process tests preserve existing test fixtures that alter process-global panic hooks.
-      'CMD ["cargo", "test", "--offline", "--locked", "--all-targets", "--", "--test-threads=1"]',
+      `CMD ${JSON.stringify(command)}`,
       '',
     ].join('\n'));
     run({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', imageTag, context] });
@@ -69,7 +74,7 @@ async function main() {
     const limits = ['--rm', '--init', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128', '--ulimit', 'nofile=4096:4096'];
     const version = run({ command: 'podman', args: ['run', ...limits, image, '/usr/bin/git', '--version'], capture: true }).trim();
     if (version !== 'git version 2.56.0') throw new ScannerVerificationError(`Wrong Git in scanner fixture: ${version}`);
-    await writeFile(join(evidence, 'manifest.json'), JSON.stringify({ base, image, version, limits, user: '1000:1000', tests: 'cargo test --offline --locked --all-targets -- --test-threads=1' }, null, 2) + '\n');
+    await writeFile(join(evidence, 'manifest.json'), JSON.stringify({ base, image, version, limits, user: '1000:1000', command }, null, 2) + '\n');
     console.log(`Scanner verification evidence: ${evidence}`);
     run({ command: 'podman', args: ['run', ...limits, image] });
     await writeFile(join(evidence, 'passed.json'), JSON.stringify({ tests: true }) + '\n');
