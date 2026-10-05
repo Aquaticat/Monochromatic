@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { defaultTemplate, errorLines, evaluateTemplate, fields, functions, helpAt, parseTemplate } from './template-reference.mjs';
 
 //region Fixture tracks: one analysed, one not yet analysed, one with nothing but a path
-const analysed = { title: 'Another Xronixle', file: 'かめりあ(Camellia) - Another Xronixle', ext: 'flac', folder: 'Camellia', path: 'Camellia/かめりあ(Camellia) - Another Xronixle.flac', len: 275, peak: '-0.3' };
+const analysed = { title: 'Another Xronixle', file: 'かめりあ(Camellia) - Another Xronixle', ext: 'flac', folder: 'Camellia', path: 'Camellia/かめりあ(Camellia) - Another Xronixle.flac', len: 275, peak: '\u22120.3' };
 const waiting = { ...analysed, title: 'Exit This Earth\'s Atomosphere', peak: undefined };
 const bare = { title: 'x', file: 'x', ext: 'mp3', folder: '', path: 'x.mp3', len: undefined, peak: undefined };
 let cases = 0;
@@ -23,7 +23,7 @@ function refuses({ text, track = analysed, lines }) {
 //region Text, fields and the default line
 shows({ text: '', track: analysed, expected: '' });
 shows({ text: 'plain text, no formula', track: analysed, expected: 'plain text, no formula' });
-shows({ text: defaultTemplate, track: analysed, expected: '4:35 · -0.3 dBTP' });
+shows({ text: defaultTemplate, track: analysed, expected: '4:35 · \u22120.3 dBTP' });
 shows({ text: defaultTemplate, track: waiting, expected: '4:35' });
 shows({ text: defaultTemplate, track: bare, expected: '' });
 for (const field of fields) shows({ text: '[$mi(' + field.mode + ')$]', track: analysed, expected: '[' + String(analysed[field.mode]) + ']' });
@@ -74,6 +74,8 @@ shows({ text: '$if(0, yes, no)$', track: analysed, expected: 'no' });
 shows({ text: '$if(1, yes, no)$', track: analysed, expected: 'yes' });
 shows({ text: '$if(mi(peak) > -1, hot, fine)$', track: analysed, expected: 'hot' });
 shows({ text: '$if(mi(peak) > -1, hot, fine)$', track: waiting, expected: 'fine' });
+shows({ text: '$if(mi(peak) > -1, hot, fine)$', track: { ...analysed, peak: '\u22121.2' }, expected: 'fine' });
+shows({ text: '$if(mi(peak) = -0.3, same, different)$', track: analysed, expected: 'same' });
 shows({ text: '$if(mi(len) >= 275, long, short)$', track: analysed, expected: 'long' });
 shows({ text: '$if(mi(len) < 275, short, long)$', track: analysed, expected: 'long' });
 shows({ text: '$if(mi(len) <= 275, short, long)$', track: analysed, expected: 'short' });

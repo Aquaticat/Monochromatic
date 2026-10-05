@@ -511,7 +511,7 @@ run = ["node first-run-scroll-evidence-test.mjs", "node first-run-access-test.mj
 [tasks."test:template-reference"]
 description = "Exercise the design reference for the supporting-text template language: fields, formats, conditions, error lines and typing help"
 dir = "{{config_root}}"
-run = "node template-reference-test.mjs"
+run = ["node template-reference-test.mjs", "node template-editor-scenes-test.mjs"]
 
 [tasks."build:search:ranking"]
 description = "Rebuild the archived D/P and M/F/T comparison from sanitized native captures"

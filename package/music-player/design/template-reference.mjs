@@ -12,7 +12,7 @@ export const fields = [
   { mode: 'folder', label: 'Folder', description: 'The folder that holds the file.' },
   { mode: 'path', label: 'Path', description: 'The path from the library root.' },
   { mode: 'len', label: 'Duration', description: 'The duration in seconds; tf formats it.' },
-  { mode: 'peak', label: 'True peak', description: 'The true peak in dBTP, or nothing before the file is analysed.' },
+  { mode: 'peak', label: 'True peak', description: 'The true peak in dBTP with one decimal and a real minus sign, or nothing before the file is analysed.' },
 ];
 
 /** Functions with the signature and argument help the editor shows while the caret is inside a call. */
@@ -163,7 +163,8 @@ function asText(value) {
   return String(value);
 }
 function asNumber(value) {
-  const text = asText(value).trim();
+  // The player writes a true peak with a real minus sign (U+2212), as the accepted rows do; it still compares as a number.
+  const text = asText(value).trim().replaceAll('\u2212', '-');
   const number = Number(text);
   return text === '' || !Number.isFinite(number) ? undefined : number;
 }
