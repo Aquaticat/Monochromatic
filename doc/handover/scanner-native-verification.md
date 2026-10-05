@@ -566,8 +566,15 @@ Failed before the fix and pass after it:
 - `non_utf8_name_after_prefix`:
   the WTF-8 bytes of an unpaired surrogate after `\\.\COM1`,
   the non-UTF-8 form a Windows `OsStr` can hold.
-- `navigation_spelled_prefix_parts_are_consumed`:
-  the five inputs in `Confirmed mechanism`.
+- One test for each input in `Confirmed mechanism`:
+  `device_name_spelled_parent_marker_is_prefix`,
+  `empty_device_name_prefix_is_one_part`,
+  `unc_share_spelled_parent_marker_is_prefix`,
+  `verbatim_prefix_with_current_marker_run_is_prefix`,
+  and `verbatim_unc_server_spelled_parent_marker_is_prefix`.
+  They began as one combined test,
+  which stopped at its first input before the fix;
+  commit `38cb30dff` split them so a separate pre-fix run could show each input failing.
 
 Passed before and after,
 as controls for prefix forms the Windows run already found correct:
@@ -815,6 +822,10 @@ Major scoped commits:
 - `c2a901e91`: per-operation hook observations and sidecar Clippy.
 - `54a343dda`: verified long-form Clippy flags.
 - `aa3f8ea6a` and `f069f6576`: final interface docs and source comparison refinement.
+- `8fdbbded9`: the device-namespace prefix tests,
+  committed inside a concurrent `desktop-app-ide` commit whose message does not mention them.
+- `833483171`: prefix parts consumed before navigation classification.
+- `c2c629313`: README statement that Windows prefix parts are not name segments.
 
 Both READMEs and this evidence document are rendered through the installed CommonMark HTML-tree pipeline.
 Trees and readable rendered text remain in `target/verification/docs`.
