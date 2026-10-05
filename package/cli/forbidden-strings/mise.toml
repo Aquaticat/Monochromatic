@@ -6,6 +6,10 @@ run = "cargo fetch --locked"
 description = "Run all-target/all-feature Clippy with warnings denied in the bounded offline scanner snapshot"
 run = "node bin/test-container.mjs --clippy"
 
+[tasks."test:mutation:container"]
+description = "Mutation-test embedding owners in a bounded mount-free snapshot, retaining every outcome"
+run = "node bin/mutate-container.mjs"
+
 [tasks."test:container"]
 description = "Run binary and embedded scanner tests unprivileged with Git 2.56.0 in a bounded mount-free container"
 run = "node bin/test-container.mjs"
