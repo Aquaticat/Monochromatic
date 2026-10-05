@@ -1,7 +1,7 @@
 //! The confined launch's exact command lines, settings overrides, state naming, and refusals.
 
 use super::recipe::{confined_settings, recipe};
-use super::{confine_with, state_directory};
+use super::{confine_with, private_state, state_directory};
 use crate::language::launch::LaunchRequest;
 use serde_json::json;
 use std::{collections::HashMap, path::Path, path::PathBuf};
@@ -18,6 +18,7 @@ fn request(server: &str, environment: &[(&str, &str)]) -> LaunchRequest {
         environment: variables,
         settings: Some(json!({ "kept": true })),
         project_root: PathBuf::from("/work/project"),
+        project_spellings: Vec::new(),
         state_root: Some(PathBuf::from("/state")),
     };
 }
@@ -65,6 +66,9 @@ fn rust_analyzer_gets_the_adopted_recipe_with_cargo_redirects() {
         "--bind",
         "/state/project-0/rust-analyzer",
         "/state/project-0/rust-analyzer",
+        "--ro-bind",
+        "/work/project",
+        "/work/project",
         "--clearenv",
         "--setenv",
         "CARGO_BUILD_BUILD_DIR",
@@ -229,25 +233,57 @@ fn missing_bubblewrap_refuses_with_the_remedy() {
 }
 
 #[test]
-fn project_or_state_where_the_sandbox_replaces_the_directory_refuses() {
+fn only_paths_below_proc_refuse() {
     let mut under_tmp = request("rust-analyzer", &[]);
     under_tmp.project_root = PathBuf::from("/tmp/project");
-    let reason = confine_with(&under_tmp, "/nonexistent/bwrap")
-        .expect_err("a project below /tmp was accepted");
-    assert!(reason.contains("is below /tmp"), "{reason}");
-    assert!(reason.contains("Open the project from"), "{reason}");
-    let mut beside = request("rust-analyzer", &[]);
-    beside.project_root = PathBuf::from("/tmpfoo/project");
-    let other = confine_with(&beside, "/nonexistent/bwrap").expect_err("bubblewrap is missing");
+    under_tmp.project_spellings = vec![PathBuf::from("/run/media/someone/project")];
+    let missing =
+        confine_with(&under_tmp, "/nonexistent/bwrap").expect_err("bubblewrap is missing");
     assert!(
-        other.contains("is not installed"),
-        "a sibling of /tmp was taken for /tmp: {other}"
+        missing.contains("is not installed"),
+        "a project below /tmp or /run was refused for its location: {missing}"
     );
-    let mut state_in_run = request("rust-analyzer", &[]);
-    state_in_run.state_root = Some(PathBuf::from("/run/user/1000/cache"));
-    let refused = confine_with(&state_in_run, "/bin/sh")
-        .expect_err("a state directory below /run was accepted");
-    assert!(refused.contains("is below /run"), "{refused}");
+    let mut in_proc = request("rust-analyzer", &[]);
+    in_proc.project_root = PathBuf::from("/proc/1/cwd");
+    let reason = confine_with(&in_proc, "/nonexistent/bwrap").expect_err("/proc was accepted");
+    assert!(reason.contains("is below /proc"), "{reason}");
+    assert!(reason.contains("Open the project from"), "{reason}");
+    let mut spelled = request("rust-analyzer", &[]);
+    spelled.project_spellings = vec![PathBuf::from("/proc/self/cwd")];
+    let spelling = confine_with(&spelled, "/nonexistent/bwrap").expect_err("/proc was accepted");
+    assert!(spelling.contains("project spelling"), "{spelling}");
+    let mut state_in_proc = request("rust-analyzer", &[]);
+    state_in_proc.state_root = Some(PathBuf::from("/proc/self/cache"));
+    let refused = private_state(&state_in_proc).expect_err("state below /proc was accepted");
+    assert!(refused.contains("is below /proc"), "{refused}");
+    assert!(refused.contains("restart the application"), "{refused}");
+}
+
+#[test]
+fn state_root_is_resolved_before_it_is_checked_and_bound() {
+    let project = tempfile::tempdir().expect("project");
+    let elsewhere = tempfile::tempdir().expect("elsewhere");
+    let links = tempfile::tempdir().expect("links");
+    let project_root = project.path().canonicalize().expect("canonical project");
+    let target = elsewhere.path().canonicalize().expect("canonical target");
+    std::os::unix::fs::symlink(&target, links.path().join("away")).expect("link away");
+    std::os::unix::fs::symlink(&project_root, links.path().join("inside")).expect("link inside");
+    let mut linked = request("rust-analyzer", &[]);
+    linked.project_root = project_root.clone();
+    linked.state_root = Some(links.path().join("away").join("cache"));
+    let state = private_state(&linked).expect("a linked state root outside the project");
+    assert!(
+        state.starts_with(target.join("cache")),
+        "the state directory kept the link spelling: {state:?}"
+    );
+    linked.state_root = Some(links.path().join("inside").join("cache"));
+    let reason = private_state(&linked).expect_err("state inside the project through a link");
+    assert!(reason.contains("inside the project"), "{reason}");
+    assert!(reason.contains("restart the application"), "{reason}");
+    linked.state_root = Some(links.path().join("away"));
+    linked.project_root = target.join("nested");
+    let ancestor = private_state(&linked).expect_err("state containing the project");
+    assert!(ancestor.contains("contains the project"), "{ancestor}");
 }
 
 #[test]

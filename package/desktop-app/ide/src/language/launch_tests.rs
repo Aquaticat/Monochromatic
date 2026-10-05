@@ -38,6 +38,7 @@ fn default_policy_spawns_the_resolved_program_unchanged() {
         environment: HashMap::from([("KEY".to_string(), "value".to_string())]),
         settings: Some(serde_json::json!({ "flag": true })),
         project_root: PathBuf::from("/project"),
+        project_spellings: Vec::new(),
         state_root: None,
     };
     let launch = launch_directly(&request).expect("default policy never refuses a Unicode path");
