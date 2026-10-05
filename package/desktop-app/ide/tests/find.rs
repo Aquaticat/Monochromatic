@@ -99,7 +99,7 @@ fn whitespace_and_line_terminators_are_literal() {
     assert_eq!(pairs("a  b a b", " b"), [(2, 4), (6, 8)]);
 }
 
-/// A match after a tab keeps its source positions while display text expands the tab.
+/// A match after a tab keeps its source positions while display text stands one space in for the tab.
 #[test]
 fn tab_expansion_preserves_match_correspondence() {
     let line = "\ta\tneedle";
@@ -109,9 +109,10 @@ fn tab_expansion_preserves_match_correspondence() {
     let end = projection.source_to_byte[9];
     assert_eq!(&projection.text[start..end], "needle");
     assert_eq!(pairs(line, "\t"), [(0, 1), (2, 3)]);
+    // The tab's pixel width is the shaper's business; the projection gives it exactly one display byte.
     assert_eq!(
         projection.source_to_byte[1] - projection.source_to_byte[0],
-        4
+        1
     );
 }
 
