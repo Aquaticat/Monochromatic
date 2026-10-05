@@ -59,11 +59,27 @@ async function main() {
         catch (error) { endings[file] = { unavailable: error.message }; }
       }
       const timestamp = (await stat(manifestPath)).mtime.toISOString();
-      records.push({ directory, timestamp, image: manifest.image, sourceSha256: manifest.sourceSha256, command: manifest.command, differences, endings });
+      records.push({ directory, timestamp, image: manifest.image, sourceSha256: manifest.sourceSha256, command: manifest.command, sources: manifest.sources, differences, endings });
       console.log(`${entry.name}: ${differences.length} compiled-input differences; ${endings['exit.json'].status ?? endings['control.json'].status ?? 'no terminal status'}`);
     }
   }
+  const guarded = records.filter(record => record.endings['control.json'].variant === 'protected' && record.endings['control.json'].expected)
+    .sort((first, second) => second.timestamp.localeCompare(first.timestamp))[0];
+  const guardComparisons = [];
+  if (guarded) {
+    for (const record of records) {
+      if (!record.directory.includes('/guard-without-') || !record.endings['control.json'].expected) continue;
+      const first = new Map(guarded.sources.filter(source => !source.path.includes('/bin/') && !source.path.endsWith('/mise.toml')).map(source => [source.path, source.sha256]));
+      const second = new Map(record.sources.filter(source => !source.path.includes('/bin/') && !source.path.endsWith('/mise.toml')).map(source => [source.path, source.sha256]));
+      const paths = new Set([...first.keys(), ...second.keys()]);
+      const differences = [...paths].filter(path => first.get(path) !== second.get(path));
+      const comparison = { protected: guarded.directory, disabled: record.directory, differences };
+      guardComparisons.push(comparison);
+      console.log(`Guard input comparison ${record.directory}: ${differences.join(', ')}`);
+    }
+  }
   await writeFile(join(roots[0], 'reconciliation.json'), JSON.stringify(records, null, 2) + '\n');
+  await writeFile(join(roots[0], 'guard-input-comparisons.json'), JSON.stringify(guardComparisons, null, 2) + '\n');
 }
 
 await main();

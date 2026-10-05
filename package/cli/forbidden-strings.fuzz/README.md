@@ -55,7 +55,8 @@ The targets share a single tuned dictionary at
  fuzz invocations pass both as libFuzzer corpus dirs with scratch first,
  so new discoveries land only in scratch.
 
-- **`fuzz_literal_roundtrip`** -- syntax-boundary transformer.
+### `fuzz_literal_roundtrip`: syntax-boundary transformer
+
    Drives the real `escape_literal` over arbitrary strings and compiles its
   output as a single-pattern `RegexSet`:
    the escaped pattern must compile,
@@ -70,7 +71,8 @@ The targets share a single tuned dictionary at
    metacharacters,
   escape-sequence lookalikes,
    newlines) are always exercised.
-- **`fuzz_scan_format`** -- columnless output contract.
+### `fuzz_scan_format`: columnless output contract
+
    Loads a generated two-form ruleset and scans a generated multi-line buffer,
    asserting every finding is exactly `PATH:LINE rule=N` (or the fail-closed
   `PATH: engine error`),
@@ -78,7 +80,8 @@ The targets share a single tuned dictionary at
    findings arrive line-ascending,
    and no content byte leaks into the finding (redaction is structural:
    the formatter interpolates only the fixed path and two integers).
-- **`fuzz_ruleset_scan_invariants`** -- strict loader plus scan invariants.
+### `fuzz_ruleset_scan_invariants`: strict loader plus scan invariants
+
    Drives `load_from_text` and `scan_file` over a generated ruleset and buffer:
    a rejected flag fails the load closed,
    `m`/`x` are no-ops,
@@ -86,7 +89,8 @@ The targets share a single tuned dictionary at
   the flag policy every process),
    and reversing the rule order renumbers ids but never changes which positions
   match (rule-order invariance).
-- **`fuzz_embedding`**: exact native snapshots.
+### `fuzz_embedding`: exact native snapshots
+
   Drives the public scanner over arbitrary Unix pathname bytes and content snapshots.
   Independent fixed-rule byte searches predict every content and pathname finding,
   including binary-prefix cutoffs.
@@ -97,7 +101,8 @@ The targets share a single tuned dictionary at
   Committed seeds place NUL at either side of the 8192-byte boundary
   and place a literal across the cutoff.
   This target is Unix-only and deliberately does not exercise filesystem cache loading.
-- **`fuzz_cache_envelope`** -- hostile compiled-artifact framing.
+### `fuzz_cache_envelope`: hostile compiled-artifact framing
+
   Drives the scanner-owned runtime cache decoder with arbitrary artifact bytes and
   arbitrary authoritative source bytes.
   Every malformed magic value,
@@ -136,6 +141,7 @@ Run the embedding task through its owning container runner:
 ```sh
 # package/cli/forbidden-strings.fuzz/mise.toml
 mise run //package/cli/forbidden-strings.fuzz:smoke:embedding:container
+mise run //package/cli/forbidden-strings.fuzz:lint:clippy:container
 ```
 
 The runner bakes source,
@@ -161,6 +167,7 @@ corpus,
 and artifacts remain under `target/verification/embedding-fuzz-*`.
 Failed evidence retrieval retains the disposable container.
 
+The sidecar's all-target Clippy gate also runs in that mount-free environment.
 Other existing fuzz tasks still require a bounded container or builder VM;
 the embedding task does not claim coverage of every other target.
 See [native scanner verification](../../../doc/handover/scanner-native-verification.md)

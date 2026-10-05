@@ -656,8 +656,9 @@ The Rust library now exposes `Scanner`,
 `CandidateScan`,
 `ScanFinding`,
 and fixed-token `CacheWarning` accessors for the native cli-git rewrite.
-The adapter is undergoing verification;
-production cli-git still uses its existing scanner integration.
+Linux verification and retained platform limitations are recorded in
+[the native scanner evidence](../../../doc/handover/scanner-native-verification.md).
+These package tasks do not perform a cli-git production cutover.
 
 `Scanner::load` reuses the current runtime-rule cache,
 compiler,
@@ -711,7 +712,9 @@ mise run //package/cli/forbidden-strings:test:release:container
 mise run //package/cli/forbidden-strings:lint:clippy:container
 mise run //package/cli/forbidden-strings:test:mutation:container
 mise run //package/cli/forbidden-strings:test:guards:container
+mise run //package/cli/forbidden-strings:test:guards:observe:container
 mise run //package/cli/forbidden-strings.fuzz:smoke:embedding:container
+mise run //package/cli/forbidden-strings.fuzz:lint:clippy:container
 mise run //package/cli/forbidden-strings:verify:markdown
 ```
 
@@ -733,15 +736,18 @@ A repository `HEAD` in a manifest is context,
 not a substitute for the copied-byte inventory.
 A failed evidence copy retains its disposable container for recovery.
 
-The panic task injects startup,
+The panic tasks inject startup,
 worker,
-and partial-load faults only into disposable copied source.
+partial-load,
+and post-match faults only into disposable copied source.
 Protected tests must pass;
 removing each output/control-flow guard must make the same consumer test fail after rebuilding.
+Independent observations count the host hook after each public operation,
+verify both startup and worker cases without short-circuiting,
+and drive actual parallel CLI content/name fault paths.
 Windows separator/counting policy is exercised with explicit target semantics on Linux;
 Windows's native volume-prefix parser still requires a Windows host.
-See [native scanner verification](../../../doc/handover/scanner-native-verification.md)
-for exact results,
+See the native scanner evidence for exact results,
 source snapshots,
 commits,
 and retained survivor limitations.
