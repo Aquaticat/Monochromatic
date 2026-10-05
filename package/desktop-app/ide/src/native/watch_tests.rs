@@ -130,6 +130,13 @@ fn native_source_follows_atomic_replace_and_delete_then_recreate() {
     fs::write(&displayed, "I am a big cat.\n").expect("displayed source");
     let (window, state, _timers) = open(fixture.path(), &displayed);
     super::navigation_tests::wait_until(|| return state.borrow().refresh.is_watched());
+    // Let the startup reads (first read, highlighting, the new watch's extra read) finish,
+    // so only a change notification can explain the next read.
+    let settled = Instant::now();
+    while settled.elapsed() < Duration::from_millis(300) {
+        update_timers_and_animations();
+        std::thread::sleep(Duration::from_millis(2));
+    }
     let replace = |text: &str| {
         let staged = folder.join(".view.txt.tmp");
         fs::write(&staged, text).expect("staged replacement");

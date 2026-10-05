@@ -97,6 +97,8 @@ struct Watches {
     failed: BTreeSet<PathBuf>,
     /// The UI's latest desired set.
     desired: BTreeSet<PathBuf>,
+    /// The displayed file as of the previous wake, to notice a switch to another file.
+    file: Option<PathBuf>,
 }
 
 /// Apply one wake's worth of requests; returns false when the UI handle is closing.
@@ -125,6 +127,10 @@ fn apply(
     if let Some(next) = desired {
         watches.desired = next;
     }
+    // The handler reports only the file named in the shared state, so a change made to a newly
+    // displayed file before the switch reached that state went unrecorded.
+    let switched = file.is_some() && file != watches.file;
+    watches.file = file.clone();
     if retry {
         watches.failed.clear();
     }
@@ -179,8 +185,9 @@ fn apply(
         published.pending.everything = true;
     }
     // A new watch can miss changes made before it existed, so its directory is read once more.
+    // The same holds for a newly displayed file in a directory that was already watched.
     let parent = file.as_deref().and_then(Path::parent);
-    if parent.is_some_and(|directory| return established.contains(directory)) {
+    if switched || parent.is_some_and(|directory| return established.contains(directory)) {
         published.pending.source = Some(SourceChange::Settled);
     }
     published.pending.directories.extend(established);
@@ -220,6 +227,7 @@ pub(super) fn run(
         active: BTreeSet::new(),
         failed: BTreeSet::new(),
         desired: BTreeSet::new(),
+        file: None,
     };
     loop {
         if let Err(error) = wakes.recv() {

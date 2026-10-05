@@ -548,7 +548,9 @@ A burst of notifications for one folder becomes one pending reread,
 with at most one more after a read already under way.
 The IDE's own opens and reads of watched paths are not changes and are ignored.
 A new watch rereads its folder once more,
-because a change can land between the first listing and the watch.
+because a change can land between the first listing and the watch;
+a newly displayed file is read once more for the same reason.
+A permission change on a watched folder rereads that folder.
 
 For the displayed file,
 a closed write,

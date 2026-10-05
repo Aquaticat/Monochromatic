@@ -185,6 +185,12 @@ pub(super) fn record(
                 guard.pending.directories.insert(owned);
             }
         }
+        // A permission change on a watched folder decides whether it can still be listed.
+        if let Reaction::Content(_) = reaction
+            && guard.watched.contains(path)
+        {
+            guard.pending.directories.insert(path.clone());
+        }
         // What: `as_deref` turns `Option<PathBuf>` into `Option<&Path>` so it compares with the borrowed `path`.
         // Why: Only the displayed file's own events refresh the source; the latest event wins.
         //

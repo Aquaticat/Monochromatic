@@ -4,6 +4,14 @@
 use super::support::{arrive, kernel_watches, not_watching, quiet, set, settle, start, watching};
 /// The watcher under test.
 use ide_app::change_watch::ChangeWatcher;
+/// What: `PermissionsExt` adds `from_mode`, the Unix way to build permission bits from an octal number.
+/// Why: A mode change on a watched folder is one of the reported changes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { chmodSync } from 'node:fs';
+/// ```
+use std::os::unix::fs::PermissionsExt;
 /// Fixture writes and renames happen through the ordinary filesystem API.
 use std::{fs, path::Path};
 
@@ -49,6 +57,28 @@ fn created_renamed_and_removed_entries_invalidate_their_folder() {
     });
     expect_report(&mut watcher, &folder, "a created folder", || {
         fs::create_dir(folder.join("nested")).expect("create folder");
+    });
+}
+
+/// A permission change on a watched folder reports that folder, because it decides whether it can be listed.
+#[test]
+fn a_permission_change_on_a_watched_folder_reports_it() {
+    let fixture = tempfile::tempdir().expect("disposable project");
+    let (mut watcher, workspace) = start(fixture.path());
+    let root = workspace.root().to_path_buf();
+    let folder = root.join("folder");
+    fs::create_dir(&folder).expect("fixture folder");
+    watcher.watch_only(&set(&[&root, &folder]), None);
+    settle(&mut watcher, &[&root, &folder]);
+    expect_report(&mut watcher, &folder, "a permission change", || {
+        // What: `Permissions::from_mode(0o700)` builds Unix permission bits; `0o` marks an octal literal.
+        // Why: Any mode change makes inotify report an attribute event for the folder itself.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // chmodSync(folder, 0o700);
+        // ```
+        fs::set_permissions(&folder, fs::Permissions::from_mode(0o700)).expect("change mode");
     });
 }
 
@@ -108,6 +138,60 @@ fn a_new_watch_reports_its_folder_and_the_displayed_file_once() {
         },
     );
     assert!(watching(&second, &folder));
+}
+
+/// Switching the displayed file inside an already watched folder reports the new file once:
+/// a change made to it before the switch reached the watcher was not recorded.
+#[test]
+fn a_newly_displayed_file_in_a_watched_folder_is_reported_once() {
+    let fixture = tempfile::tempdir().expect("disposable project");
+    let (mut watcher, workspace) = start(fixture.path());
+    let root = workspace.root().to_path_buf();
+    let first = root.join("first.txt");
+    let second = root.join("second.txt");
+    fs::write(&first, "first").expect("first file");
+    fs::write(&second, "second").expect("second file");
+    watcher.watch_only(&set(&[&root]), Some(&first));
+    settle(&mut watcher, &[&root]);
+    watcher.watch_only(&set(&[&root]), Some(&second));
+    arrive(&mut watcher, "the newly displayed file", |record| {
+        return record.source.is_some();
+    });
+    // Positive control for the silence that follows: nothing else reports the file again.
+    let silent = quiet(&mut watcher);
+    assert_eq!(
+        silent.source, None,
+        "the displayed file was reported again without a change"
+    );
+}
+
+/// A displayed file whose folder watch succeeds only on a retry is reported when that watch starts.
+#[test]
+fn a_displayed_file_is_reported_when_its_retried_folder_watch_starts() {
+    let fixture = tempfile::tempdir().expect("disposable project");
+    let (mut watcher, workspace) = start(fixture.path());
+    let root = workspace.root().to_path_buf();
+    let folder = root.join("later");
+    let file = folder.join("view.txt");
+    watcher.watch_only(&set(&[&root]), Some(&file));
+    arrive(
+        &mut watcher,
+        "the failed watch of a missing folder",
+        |record| {
+            return record.everything && watching(record, &root);
+        },
+    );
+    fs::create_dir(&folder).expect("create the folder");
+    fs::write(&file, "view").expect("create the displayed file");
+    quiet(&mut watcher);
+    watcher.retry();
+    arrive(
+        &mut watcher,
+        "the displayed file after its folder's retried watch",
+        |record| {
+            return watching(record, &folder) && record.source.is_some();
+        },
+    );
 }
 
 /// Collapsing a folder removes its kernel watch; showing it again adds one back.
