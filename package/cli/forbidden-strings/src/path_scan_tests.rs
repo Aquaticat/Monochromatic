@@ -94,15 +94,27 @@ fn navigation_markers_are_not_segments() {
     assert_eq!(hit.findings, vec!["../[REDACTED]/a.txt:name:1 rule=0"]);
 }
 
-/// A repo-local absolute positional file is named by its repository-relative path.
+/// A repo-local absolute positional file is named by its repository-relative path in native spelling.
+///
+/// Each root is paired with a file path built from that root: the canonical root,
+/// which Windows spells with a `\\?\` verbatim prefix,
+/// and the plain temporary directory, the non-verbatim form Windows `current_dir` reports.
+/// The relative name is native (`nested\test.txt` on Windows), and the pathname scan displays it with `/` everywhere.
 #[test]
 fn absolute_path_under_root_uses_relative_name() {
-    let dir = std::env::temp_dir().join(format!("name-root-{}", std::process::id()));
+    let loaded = load_rules("VAULTTOKEN_LONG\n");
+    let dir: std::path::PathBuf = std::env::temp_dir().join(format!("name-root-{}", std::process::id()));
     std::fs::create_dir_all(dir.join("nested")).expect("create path fixture");
-    let file = dir.join("nested/test.txt");
-    std::fs::write(&file, "clean").expect("write path fixture");
-    let root = std::fs::canonicalize(&dir).expect("canonical root");
-    assert_eq!(logical_path(file.to_str().expect("utf8 path"), Some(&root)), "nested/test.txt");
+    std::fs::write(dir.join("nested").join("test.txt"), "clean").expect("write path fixture");
+    let canonical: std::path::PathBuf = std::fs::canonicalize(&dir).expect("canonical root");
+    // Joining with the host separator gives the expected native relative spelling on every platform.
+    let expected: std::path::PathBuf = std::path::Path::new("nested").join("test.txt");
+    for root in [canonical.as_path(), dir.as_path()] {
+        let file: std::path::PathBuf = root.join("nested").join("test.txt");
+        let logical: String = logical_path(file.to_str().expect("utf8 path"), Some(root));
+        assert_eq!(logical.as_str(), expected.to_str().expect("utf8 expected name"), "root {root:?}");
+        assert_eq!(scan_path(&logical, &loaded).display, "nested/test.txt", "root {root:?}");
+    }
     std::fs::remove_dir_all(&dir).expect("remove path fixture");
 }
 
