@@ -8,16 +8,20 @@
 //! ```
 
 /// Import configuration loading, matching and typed rule selection.
-use crate::config_error::ConfigError;
-use crate::config_lookup::{ConfigurationSource, discover_configuration, load_configuration_at};
-use crate::config_match::{FileConfiguration, PreparedConfiguration, prepare_configuration};
-use crate::markdown_rule_settings::{MarkdownRuleSettings, markdown_rule_settings};
-use crate::run_paths::{Language, absolute_normal, display_name, language_of, relative_from};
-use crate::rust_rule_settings::{RustRuleSettings, rust_rule_settings};
+use crate::{
+    config_error::ConfigError,
+    config_lookup::{ConfigurationSource, discover_configuration, load_configuration_at},
+    config_match::{FileConfiguration, PreparedConfiguration, prepare_configuration},
+    markdown_rule_settings::{MarkdownRuleSettings, markdown_rule_settings},
+    run_paths::{Language, absolute_normal, display_name, language_of, relative_from},
+    rust_rule_settings::{RustRuleSettings, rust_rule_settings},
+};
 /// Import an ordered map and shared immutable ownership for configurations used by many files.
-use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::{
+    collections::BTreeMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 /// What: The rules selected for a host file itself, already typed for its language.
 /// Why: A host with no matching block still has its embedded virtual files checked, so "no root
@@ -32,9 +36,15 @@ pub enum RootRules {
     /// No configuration block selects the host file.
     None,
     /// Rules for a `.rs` host.
-    Rust(RustRuleSettings),
+    Rust {
+        /// Typed selection of the Rust rules.
+        settings: RustRuleSettings,
+    },
     /// Rules for a `.md` or `.mdx` host.
-    Markdown(MarkdownRuleSettings),
+    Markdown {
+        /// Typed selection of the Markdown rules.
+        settings: MarkdownRuleSettings,
+    },
 }
 
 /// What: Everything a worker needs to lint one file, with no further setup that can fail.
@@ -70,7 +80,7 @@ pub struct FilePlan {
 impl FilePlan {
     /// True only for a Rust host whose own rules select `rust/require-explicit-types`.
     pub fn needs_semantic_engine(&self) -> bool {
-        if let RootRules::Rust(settings) = &self.root {
+        if let RootRules::Rust { settings } = &self.root {
             return settings.explicit_types.is_some();
         }
         return false;
@@ -87,7 +97,10 @@ impl FilePlan {
 /// ```
 pub enum Planned {
     /// The file is linted under this plan.
-    Lint(Box<FilePlan>),
+    Lint {
+        /// The complete plan; `Box` keeps this enum small next to its field-less variants.
+        plan: Box<FilePlan>,
+    },
     /// An ignores-only block removes the file from linting entirely.
     Ignored,
     /// No configuration file exists in the file's directory or any ancestor.
@@ -219,20 +232,26 @@ impl ConfigStore {
             FileConfiguration::Unconfigured => RootRules::None,
             FileConfiguration::Configured { rules } => {
                 if language == Language::Rust {
-                    RootRules::Rust(rust_rule_settings(&rules)?)
+                    RootRules::Rust {
+                        settings: rust_rule_settings(&rules)?,
+                    }
                 } else {
-                    RootRules::Markdown(markdown_rule_settings(&rules)?)
+                    RootRules::Markdown {
+                        settings: markdown_rule_settings(&rules)?,
+                    }
                 }
             }
         };
-        return Ok(Planned::Lint(Box::new(FilePlan {
-            display: display_name(&absolute, &self.cwd),
-            absolute,
-            relative,
-            language,
-            config,
-            root,
-        })));
+        return Ok(Planned::Lint {
+            plan: Box::new(FilePlan {
+                display: display_name(&absolute, &self.cwd),
+                absolute,
+                relative,
+                language,
+                config,
+                root,
+            }),
+        });
     }
 }
 

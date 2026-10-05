@@ -9,16 +9,18 @@
 //! ```
 
 /// Import the command grammar, the injected-environment runner and output model.
-use crate::cli_options::CliOptions;
-use crate::run_command::{PROGRAM, run_command};
-use crate::run_failure::panic_text;
-use crate::run_output::RunOutput;
+use crate::{
+    cli_options::CliOptions, run_command::run_command, run_failure::panic_text,
+    run_finish::PROGRAM, run_output::RunOutput,
+};
 /// Import the argument parser trait that provides `parse`.
 use clap::Parser;
 /// Import stream writing and panic containment.
-use std::io::{ErrorKind, Write};
-use std::panic::{AssertUnwindSafe, PanicHookInfo, catch_unwind};
-use std::path::PathBuf;
+use std::{
+    io::{ErrorKind, Write},
+    panic::{PanicHookInfo, catch_unwind},
+    path::PathBuf,
+};
 
 /// What: A panic hook that prints nothing.
 /// Why: The default hook writes a message to standard error for every panic, including ones this
@@ -54,14 +56,21 @@ fn emit(stream: &mut dyn Write, text: &str) -> bool {
     }
 }
 
-/// What: Run with the real working directory and standard input.
-/// Why: An unreadable working directory is a setup error with status 2, like any other.
+/// What: Parse the real command line and run it with the real working directory and standard input.
+/// Why: The argument parser prints help, version and usage errors itself and exits with 0 or 2.
+/// This function takes no arguments, so it can be handed to `catch_unwind` by name, without a closure.
+/// An unreadable working directory is a setup error with status 2, like any other.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function runInEnvironment(options: CliOptions): RunOutput;
+/// function parseAndRun(): RunOutput;
 /// ```
-fn run_in_environment(options: &CliOptions) -> RunOutput {
+fn parse_and_run() -> RunOutput {
+    let options: CliOptions = CliOptions::parse();
+    if !options.debug {
+        // Box::new moves the function pointer to the heap, as the hook API requires an owned callable.
+        std::panic::set_hook(Box::new(silent_hook));
+    }
     let cwd: PathBuf = match std::env::current_dir() {
         Ok(directory) => directory,
         Err(error) => {
@@ -73,12 +82,11 @@ fn run_in_environment(options: &CliOptions) -> RunOutput {
         }
     };
     let mut stdin: std::io::StdinLock<'static> = std::io::stdin().lock();
-    return run_command(options, &cwd, &mut stdin);
+    return run_command(&options, &cwd, &mut stdin);
 }
 
-/// What: Parse the real command line, run it, write both streams and return the exit status.
-/// Why: The argument parser prints help, version and usage errors itself and exits with 0 or 2.
-/// A panic that escapes per-file containment is reported as an internal error with status 2,
+/// What: Run the program, write both streams and return the exit status.
+/// Why: A panic that escapes per-file containment is reported as an internal error with status 2,
 /// never as a bare runtime abort.
 ///
 /// In TS you'd write (pseudocode):
@@ -86,14 +94,7 @@ fn run_in_environment(options: &CliOptions) -> RunOutput {
 /// function runProcess(): number;
 /// ```
 pub fn run_process() -> u8 {
-    let options: CliOptions = CliOptions::parse();
-    if !options.debug {
-        // Box::new moves the function pointer to the heap, as the hook API requires an owned callable.
-        std::panic::set_hook(Box::new(silent_hook));
-    }
-    // The closure only forwards to the named `run_in_environment`.
-    let attempt: Result<RunOutput, Box<dyn std::any::Any + Send>> =
-        catch_unwind(AssertUnwindSafe(|| return run_in_environment(&options)));
+    let attempt: Result<RunOutput, Box<dyn std::any::Any + Send>> = catch_unwind(parse_and_run);
     let output: RunOutput = match attempt {
         Ok(value) => value,
         Err(payload) => RunOutput {

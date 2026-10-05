@@ -9,210 +9,28 @@
 //! ```
 
 /// Import the command grammar and its collaborators.
-use crate::cli_options::CliOptions;
-use crate::diagnostic::Diagnostic;
-use crate::file_discovery::DiscoveryOptions;
-use crate::path_inputs::collect_inputs;
-use crate::run_file::{FileOutcome, SourceOutcome};
-use crate::run_lfs::LfsRepos;
-use crate::run_modes::{SetupError, init_configuration, print_configuration, rules_listing};
-use crate::run_output::{OutputOptions, RunOutput, run_output};
-use crate::run_paths::{display_name, language_of};
-use crate::run_plan::{ConfigStore, FilePlan, Planned};
-use crate::run_workers::{contained_source, process_plans};
-use crate::rust_file_engine::RustFileEngine;
-use crate::rust_workspace::WorkspacePreparation;
+use crate::{
+    cli_options::CliOptions,
+    config_lookup::CONFIG_NAME,
+    diagnostic::Diagnostic,
+    file_discovery::DiscoveryOptions,
+    path_inputs::collect_inputs,
+    run_file::FileOutcome,
+    run_finish::{PROGRAM, engine, finish},
+    run_lfs::LfsRepos,
+    run_modes::{SetupError, init_configuration, print_configuration, rules_listing},
+    run_output::RunOutput,
+    run_paths::display_name,
+    run_plan::{ConfigStore, FilePlan, Planned},
+    run_stdin::run_stdin,
+    run_workers::process_plans,
+    rust_file_engine::RustFileEngine,
+};
 /// Import the reader trait for standard input and native paths.
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
-
-/// What: The prefix of every non-finding line this program writes to standard error.
-/// Why: A consumer can separate program messages from JSONL records by this prefix.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const PROGRAM = 'monochromatic-lint';
-/// ```
-pub const PROGRAM: &str = "monochromatic-lint";
-
-/// What: Discard semantic-workspace progress messages.
-/// Why: The engine takes a plain function pointer; without `--debug` progress is not shown.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function silentProgress(_message: string): void {}
-/// ```
-fn silent_progress(_message: String) {}
-
-/// What: Write semantic-workspace progress to standard error as it happens.
-/// Why: Loading a Cargo workspace can take a while; `--debug` shows that it is working.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function debugProgress(message: string): void { console.error(`monochromatic-lint: debug: ${message}`); }
-/// ```
-fn debug_progress(message: String) {
-    // A closed standard error has nowhere left to report its own failure, so the result is unused.
-    let _unreportable: std::io::Result<()> =
-        writeln!(std::io::stderr(), "{PROGRAM}: debug: {message}");
-}
-
-/// What: Render collected debug notes as prefixed standard-error lines.
-/// Why: Debug information stays off standard output, which carries only JSONL or fixed source.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function debugLines(notes: string[]): string;
-/// ```
-fn debug_lines(notes: &[String]) -> String {
-    let mut output: String = String::new();
-    for note in notes {
-        output.push_str(format!("{PROGRAM}: debug: {note}\n").as_str());
-    }
-    return output;
-}
-
-/// What: Collect the output controls from the command options.
-/// Why: Quiet, silent and the warning limit affect display and exit status only, never linting.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function outputOptions(options: CliOptions): OutputOptions;
-/// ```
-fn output_options(options: &CliOptions) -> OutputOptions {
-    return OutputOptions {
-        quiet: options.quiet,
-        silent: options.silent,
-        max_warnings: options.max_warnings,
-    };
-}
-
-/// What: Route findings and add debug notes to standard error when requested.
-/// Why: Every lint mode ends the same way; only the presence of fixed standard-input source differs.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function finish(options, findings, fixedStdin, notes): RunOutput;
-/// ```
-fn finish(
-    options: &CliOptions,
-    findings: &[Diagnostic],
-    fixed_stdin: Option<&str>,
-    notes: &[String],
-) -> Result<RunOutput, SetupError> {
-    let mut output: RunOutput = match run_output(findings, fixed_stdin, output_options(options)) {
-        Ok(routed) => routed,
-        Err(error) => return Err(SetupError::from_display(&error)),
-    };
-    if options.debug {
-        output.stderr.push_str(debug_lines(notes).as_str());
-    }
-    return Ok(output);
-}
-
-/// What: Create the invocation's semantic engine without opening any workspace.
-/// Why: A workspace is loaded only when a selected rule needs it. Source-only preparation never
-/// runs build scripts; no command-line option requests generated-source preparation yet.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function engine(debug: boolean): RustFileEngine;
-/// ```
-fn engine(debug: bool) -> RustFileEngine {
-    if debug {
-        return RustFileEngine::new(WorkspacePreparation::SourceOnly, debug_progress);
-    }
-    return RustFileEngine::new(WorkspacePreparation::SourceOnly, silent_progress);
-}
-
-/// What: Lint one source read from standard input as if it lived at `--stdin-filename`.
-/// Why: The caller owns the bytes it commits: no file is read for content or written. With
-/// `--fix` the (possibly unchanged) source goes to standard output and findings to standard error.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function runStdin(options, store, stdin): RunOutput;
-/// ```
-fn run_stdin(
-    options: &CliOptions,
-    store: &mut ConfigStore,
-    stdin: &mut dyn Read,
-) -> Result<RunOutput, SetupError> {
-    let filename: &Path = options
-        .stdin_filename
-        .as_deref()
-        .expect("the command grammar requires --stdin-filename with --stdin");
-    if language_of(filename).is_none() {
-        return Err(SetupError {
-            message: format!(
-                "Standard input filename {} must end in .rs, .md or .mdx.",
-                filename.display()
-            ),
-        });
-    }
-    let mut bytes: Vec<u8> = Vec::<u8>::new();
-    if let Err(error) = stdin.read_to_end(&mut bytes) {
-        return Err(SetupError {
-            message: format!("Cannot read standard input: {error}."),
-        });
-    }
-    let source: String = match String::from_utf8(bytes) {
-        Ok(text) => text,
-        Err(error) => {
-            return Err(SetupError {
-                message: format!(
-                    "Standard input is not valid UTF-8 (first invalid byte at offset {}).",
-                    error.utf8_error().valid_up_to()
-                ),
-            });
-        }
-    };
-    let planned: Planned = match store.plan(filename) {
-        Ok(value) => value,
-        Err(error) => return Err(SetupError::from_display(&error)),
-    };
-    let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
-    let mut notes: Vec<String> = Vec::<String>::new();
-    let mut result: String = source.clone();
-    match planned {
-        Planned::Lint(plan) => {
-            let lfs: LfsRepos = LfsRepos::new();
-            let mut semantic: RustFileEngine = engine(options.debug);
-            let outcome: SourceOutcome = contained_source(
-                &plan,
-                source.as_str(),
-                options.fix,
-                &lfs,
-                Some(&mut semantic),
-            );
-            findings = outcome.findings;
-            notes = outcome.notes;
-            if let Some(fixed) = outcome.fixed {
-                result = fixed;
-            }
-        }
-        Planned::Ignored => notes.push(format!("{}: ignored by configuration", filename.display())),
-        Planned::NoConfiguration => {
-            return Err(SetupError {
-                message: format!(
-                    "No {} governs standard input filename {}. Create one with --init or pass --config.",
-                    crate::config_lookup::CONFIG_NAME,
-                    filename.display()
-                ),
-            });
-        }
-        Planned::Unsupported => {}
-    }
-    if options.fix {
-        return finish(
-            options,
-            findings.as_slice(),
-            Some(result.as_str()),
-            notes.as_slice(),
-        );
-    }
-    return finish(options, findings.as_slice(), None, notes.as_slice());
-}
+use std::{
+    io::Read,
+    path::{Path, PathBuf},
+};
 
 /// What: Plan every discovered file, separating lintable plans from skipped inputs.
 /// Why: All configuration errors surface here, before any file is linted or rewritten.
@@ -236,7 +54,7 @@ fn plan_files(
             Err(error) => return Err(SetupError::from_display(&error)),
         };
         match planned {
-            Planned::Lint(plan) => plans.push(*plan),
+            Planned::Lint { plan } => plans.push(*plan),
             Planned::Ignored => {
                 notes.push(format!(
                     "{}: ignored by configuration",
@@ -295,7 +113,7 @@ fn run_paths(
         return Err(SetupError {
             message: format!(
                 "No {} was found for any of the {} input file(s). Create one with --init or pass --config.",
-                crate::config_lookup::CONFIG_NAME,
+                CONFIG_NAME,
                 files.len()
             ),
         });

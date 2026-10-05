@@ -9,12 +9,14 @@
 //! ```
 
 /// Import file handles and the write trait that provides `write_all`.
-use std::ffi::OsString;
-use std::fs::{File, Metadata, OpenOptions};
-use std::io::Write;
-use std::path::{Path, PathBuf};
 /// Import a counter that several threads can advance without a lock.
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::{
+    ffi::OsString,
+    fs::{File, Metadata, OpenOptions},
+    io::Write,
+    path::{Path, PathBuf},
+    sync::atomic::{AtomicU64, Ordering},
+};
 
 /// What: A process-wide sequence for temporary file names.
 /// Why: Process id plus sequence keeps concurrent workers, and concurrent processes, from choosing
@@ -78,7 +80,7 @@ fn create_temporary(temporary: &Path) -> Result<File, WriteError> {
     options.write(true).create_new(true);
     #[cfg(unix)]
     {
-        // The extension trait adds the Unix-only `mode` setting to OpenOptions.
+        /// Import the extension trait that adds the Unix-only `mode` setting to `OpenOptions`.
         use std::os::unix::fs::OpenOptionsExt;
         options.mode(0o600);
     }

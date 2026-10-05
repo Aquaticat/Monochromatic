@@ -9,17 +9,21 @@
 //! ```
 
 /// Import repository discovery, exclusion and per-file preparation.
-use crate::markdown_lfs_config::LfsConfigError;
-use crate::markdown_lfs_context::{
-    LfsImageContext, LfsImageRepo, discover_lfs_image_repo, find_lfs_repo_root, is_excluded,
-    prepare_lfs_image_context,
+use crate::{
+    markdown_lfs_config::LfsConfigError,
+    markdown_lfs_context::{
+        LfsImageContext, LfsImageRepo, discover_lfs_image_repo, find_lfs_repo_root, is_excluded,
+        prepare_lfs_image_context,
+    },
+    markdown_rule_settings::LfsSetting,
+    markdown_source::MarkdownSource,
 };
-use crate::markdown_rule_settings::LfsSetting;
-use crate::markdown_source::MarkdownSource;
 /// Import an ordered map, shared ownership (`Arc`, usable across threads unlike `Rc`) and a lock.
-use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::{
+    collections::BTreeMap,
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex, MutexGuard},
+};
 
 /// What: A discovery outcome kept for the rest of the run, including a failed one.
 /// Why: A repository whose endpoint cannot be used fails every file the same way without being re-read.

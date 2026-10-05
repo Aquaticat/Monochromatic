@@ -9,11 +9,12 @@
 //! ```
 
 /// Import lexical normalization and the processor's language tag.
-use crate::markdown_lfs_target::lexical_normal;
-use crate::processors::ProcessorLanguage;
+use crate::{markdown_lfs_target::lexical_normal, processors::ProcessorLanguage};
 /// Import native path types; `OsStr` compares extension bytes without lossy conversion.
-use std::ffi::{OsStr, OsString};
-use std::path::{Component, Path, PathBuf};
+use std::{
+    ffi::{OsStr, OsString},
+    path::{Component, Path, PathBuf},
+};
 
 /// What: The language a file's extension selects.
 /// Why: `.rs` is Rust, `.md` is Markdown and `.mdx` is MDX; nothing else is linted.

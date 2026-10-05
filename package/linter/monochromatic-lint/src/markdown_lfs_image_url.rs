@@ -11,24 +11,28 @@
 //! ```
 
 /// Import the shared finding model and a single localized replacement.
-use crate::diagnostic::{Diagnostic, Severity};
-use crate::edits::Edit;
 /// Import the common node-anchored finding builder and the parsed document.
-use crate::markdown_finding::finding;
-use crate::markdown_lfs_context::{LfsImageContext, LfsImageTarget};
-use crate::markdown_lfs_target::{
-    ObjectUrlParts, apply_segments, object_url_parts, relative_link, relative_target_path,
-};
-use crate::markdown_source::MarkdownSource;
 /// Import the shared ECMAScript trim predicate for whitespace after a destination marker.
-use crate::markdown_table_text::trim_space;
+use crate::{
+    diagnostic::{Diagnostic, Severity},
+    edits::Edit,
+    markdown_finding::finding,
+    markdown_lfs_context::{LfsImageContext, LfsImageTarget},
+    markdown_lfs_target::{
+        ObjectUrlParts, apply_segments, object_url_parts, relative_link, relative_target_path,
+    },
+    markdown_source::MarkdownSource,
+    markdown_table_text::trim_space,
+};
 /// Import typed payload decoders; identifiers are already normalized by the parser.
 use satteri_ast::mdast::{
     DefinitionData, MdastNodeType, decode_definition_data, decode_image_data, decode_reference_data,
 };
 /// Import an ordered set of owned identifiers.
-use std::collections::BTreeSet;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::BTreeSet,
+    path::{Path, PathBuf},
+};
 
 /// What: This rule's identifier in configuration and JSONL `code`.
 /// Why: One spelling is shared by every finding the rule emits.

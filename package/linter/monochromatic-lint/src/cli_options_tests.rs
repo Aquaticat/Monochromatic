@@ -115,6 +115,13 @@ fn help_and_version_remain_available_without_setup() {
     let help: clap::Error = parse(&["--help"]).expect_err("help request");
     assert_eq!(help.kind(), clap::error::ErrorKind::DisplayHelp);
     assert!(help.to_string().contains("--stdin-filename"));
+    // Help is written for the person running the command, not copied from source documentation.
+    assert!(
+        help.to_string()
+            .starts_with("Lint Rust, Markdown and MDX with repository-owned policies.\n\nUsage: monochromatic-lint [OPTIONS] [PATH]...")
+    );
+    assert!(!help.to_string().contains("In TS you'd write"));
+    assert!(!help.to_string().contains("What:"));
     let version: clap::Error = parse(&["--version"]).expect_err("version request");
     assert_eq!(version.kind(), clap::error::ErrorKind::DisplayVersion);
 }

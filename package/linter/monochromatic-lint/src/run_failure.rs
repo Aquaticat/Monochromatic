@@ -8,10 +8,12 @@
 //! ```
 
 /// Import the finding model and both languages' position conventions.
-use crate::diagnostic::{Diagnostic, Severity, Span};
-use crate::markdown_positions::MarkdownPositions;
-use crate::processors::ProcessorError;
-use crate::run_paths::Language;
+use crate::{
+    diagnostic::{Diagnostic, Severity, Span},
+    markdown_positions::MarkdownPositions,
+    processors::ProcessorError,
+    run_paths::Language,
+};
 
 /// What: The code of a finding that reports incomplete processing.
 /// Why: Parse failures, MDX errors, caught panics, unreadable inputs and unavailable semantic

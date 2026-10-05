@@ -7,8 +7,7 @@
 //! ```
 
 /// Import the shared ECMAScript trim and the digest that defines a smudged file's id.
-use crate::markdown_lfs_config::js_trim;
-use crate::markdown_lfs_sha256::sha256_hex;
+use crate::{markdown_lfs_config::js_trim, markdown_lfs_sha256::sha256_hex};
 
 /// What: The first line of every git-lfs pointer file.
 /// Why: Only text starting with this exact header is read as a pointer.

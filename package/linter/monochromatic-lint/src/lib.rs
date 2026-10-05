@@ -141,6 +141,12 @@ pub mod run_failure;
 /// Per-file read, bounded fix loop and atomic rewrite.
 #[doc(hidden)]
 pub mod run_file;
+/// Output controls, debug notes and semantic-engine creation shared by every lint mode.
+#[doc(hidden)]
+pub mod run_finish;
+/// Strict JSON rendering of an effective configuration.
+#[doc(hidden)]
+pub mod run_json;
 /// Per-run sharing of LFS repository facts.
 #[doc(hidden)]
 pub mod run_lfs;
@@ -159,6 +165,8 @@ pub mod run_plan;
 /// Real arguments, streams and exit status.
 #[doc(hidden)]
 pub mod run_process;
+/// Standard-input linting and fixing.
+mod run_stdin;
 /// Bounded worker threads with per-file panic containment.
 #[doc(hidden)]
 pub mod run_workers;

@@ -142,7 +142,13 @@ fn effective_configuration_distinguishes_its_four_states() {
     let mut store: ConfigStore = ConfigStore::new(root, None).expect("store");
     let configured_text: String =
         print_configuration(&mut store, root, Path::new("src/a.rs")).expect("print");
-    assert!(configured_text.ends_with('\n'));
+    assert!(configured_text.ends_with("}\n"));
+    // The document is strict JSON: a parser that rejects trailing commas and comments accepts it.
+    let strict: serde_json::Value =
+        serde_json::from_str::<serde_json::Value>(configured_text.as_str()).expect("strict JSON");
+    assert_eq!(strict["rules"]["rust/max-lines"]["severity"], "warn");
+    assert_eq!(strict["rules"]["rust/max-lines"]["max"], 300);
+    assert_eq!(strict["state"], "configured");
     let configured: JsoncValue = parse_jsonc(configured_text.as_str()).expect("parses");
     assert_eq!(member(&configured, "state").as_deref(), Some("configured"));
     assert_eq!(

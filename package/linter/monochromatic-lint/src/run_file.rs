@@ -8,14 +8,16 @@
 //! ```
 
 /// Import the finding model, the fix loop and the per-snapshot checker.
-use crate::diagnostic::Diagnostic;
-use crate::fix_loop::{FixedSource, fix_source};
-use crate::run_check::HostChecker;
-use crate::run_failure::{file_start, fix_refused, processing_failure};
-use crate::run_lfs::LfsRepos;
-use crate::run_plan::FilePlan;
-use crate::run_write::{WriteError, write_atomically};
-use crate::rust_file_engine::RustFileEngine;
+use crate::{
+    diagnostic::Diagnostic,
+    fix_loop::{FixedSource, fix_source},
+    run_check::HostChecker,
+    run_failure::{file_start, fix_refused, processing_failure},
+    run_lfs::LfsRepos,
+    run_plan::FilePlan,
+    run_write::{WriteError, write_atomically},
+    rust_file_engine::RustFileEngine,
+};
 /// Import ordering for the stable per-file sort of findings.
 use std::cmp::Ordering;
 

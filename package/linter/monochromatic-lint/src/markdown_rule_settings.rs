@@ -8,13 +8,15 @@
 //! ```
 
 /// Import the existing schema readers and validation; no second configuration grammar is added.
-use crate::config_data::{key_text, strings, text, validate_data};
-use crate::config_error::ConfigError;
-use crate::configuration_rules::validate_rules;
 /// Import the diagnostic severity, which intentionally has no Off variant.
-use crate::diagnostic::Severity;
 /// Import the gitignore-syntax matcher the `exclude` option compiles to.
-use crate::markdown_lfs_patterns::PathPatterns;
+use crate::{
+    config_data::{key_text, strings, text, validate_data},
+    config_error::ConfigError,
+    configuration_rules::validate_rules,
+    diagnostic::Severity,
+    markdown_lfs_patterns::PathPatterns,
+};
 /// Import the exact JSONC representation.
 use monochromatic_jsonc_edit::JsoncValue;
 

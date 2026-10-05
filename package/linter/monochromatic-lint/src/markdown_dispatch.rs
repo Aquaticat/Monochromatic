@@ -8,21 +8,23 @@
 //! ```
 
 /// Import owned findings and every shipped Markdown check.
-use crate::diagnostic::Diagnostic;
-use crate::markdown_code::fenced_code_language;
-use crate::markdown_commands::commands_show_output;
-use crate::markdown_definitions::reference_definitions;
-use crate::markdown_duplicate_headings::no_duplicate_heading;
-use crate::markdown_headings::{heading_increment, no_emphasis_as_heading, single_h1};
-use crate::markdown_lfs_context::LfsImageContext;
-use crate::markdown_lfs_image_url::lfs_image_url;
-use crate::markdown_links::{link_image_style, no_bare_urls};
-use crate::markdown_punctuation::no_trailing_punctuation;
-use crate::markdown_rule_settings::MarkdownRuleSettings;
-use crate::markdown_semantic_breaks::semantic_line_breaks;
 /// Borrow the already parsed document instead of reparsing per rule.
-use crate::markdown_source::MarkdownSource;
-use crate::markdown_tables::no_pipe_tables;
+use crate::{
+    diagnostic::Diagnostic,
+    markdown_code::fenced_code_language,
+    markdown_commands::commands_show_output,
+    markdown_definitions::reference_definitions,
+    markdown_duplicate_headings::no_duplicate_heading,
+    markdown_headings::{heading_increment, no_emphasis_as_heading, single_h1},
+    markdown_lfs_context::LfsImageContext,
+    markdown_lfs_image_url::lfs_image_url,
+    markdown_links::{link_image_style, no_bare_urls},
+    markdown_punctuation::no_trailing_punctuation,
+    markdown_rule_settings::MarkdownRuleSettings,
+    markdown_semantic_breaks::semantic_line_breaks,
+    markdown_source::MarkdownSource,
+    markdown_tables::no_pipe_tables,
+};
 
 /// What: Collect findings from every selected rule, in fixed registry order.
 /// Why: `rustdoc` switches the fence-language fix to `rust`, because an unlabeled fence inside

@@ -10,9 +10,11 @@
 
 /// Import the shared ECMAScript trim so attribute lines split as the incumbent splits them.
 use crate::markdown_lfs_config::js_trim;
-/// Import the walker family's gitignore compiler, already a dependency of file discovery.
-use ignore::Match;
-use ignore::gitignore::{Gitignore, GitignoreBuilder};
+/// Import the walker family's gitignore compiler and match outcome, already a dependency of file discovery.
+use ignore::{
+    Match,
+    gitignore::{Gitignore, GitignoreBuilder},
+};
 
 /// What: A rejected pattern, naming its text and the compiler's reason.
 /// Why: A pattern that cannot compile must not silently match nothing.

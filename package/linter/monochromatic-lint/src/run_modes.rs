@@ -8,20 +8,26 @@
 //! ```
 
 /// Import configuration matching, the lookup store and the registry of shipped rule identifiers.
-use crate::config_error::ConfigError;
-use crate::config_lookup::CONFIG_NAME;
-use crate::config_match::{FileConfiguration, PreparedConfiguration};
-use crate::configuration_rules::RULE_IDS;
-use crate::run_paths::{absolute_normal, display_name, relative_from};
-use crate::run_plan::ConfigStore;
-/// Import the JSONC value model and its emitter, so printed configuration is always parseable.
-use monochromatic_jsonc_edit::{JsoncEntry, JsoncKey, JsoncValue, emit_jsonc_value};
+use crate::{
+    config_error::ConfigError,
+    config_lookup::CONFIG_NAME,
+    config_match::{FileConfiguration, PreparedConfiguration},
+    configuration_rules::RULE_IDS,
+    run_json::strict_json,
+    run_paths::{absolute_normal, display_name, relative_from},
+    run_plan::ConfigStore,
+};
+/// Import the JSONC value model that carries merged rules into the printed document.
+use monochromatic_jsonc_edit::{JsoncEntry, JsoncKey, JsoncValue};
+/// Import the field encoder that renders one rule description as a JSON object.
 use serde::Serialize;
 /// Import exclusive file creation and native paths.
-use std::fs::OpenOptions;
-use std::io::Write;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::{
+    fs::OpenOptions,
+    io::Write,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 /// What: A failure that stops the run before or instead of linting, reported with exit status 2.
 /// Why: Usage, configuration and discovery errors are not findings about a source file.
@@ -283,7 +289,8 @@ fn member(key: &str, value: &str) -> JsoncEntry {
 
 /// What: Print the effective configuration for one real or virtual path, without linting it.
 /// Why: The answer distinguishes four states: no configuration file, ignored, matched by no
-/// block, and configured with the merged rules shown.
+/// block, and configured with the merged rules shown. The document is strict JSON, so tools that
+/// reject trailing commas and comments can read it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -317,11 +324,7 @@ pub fn print_configuration(
     } else {
         entries.push(member("state", "no-configuration"));
     }
-    let mut output: String = emit_jsonc_value(&JsoncValue::record(entries));
-    if !output.ends_with('\n') {
-        output.push('\n');
-    }
-    return Ok(output);
+    return Ok(strict_json(&JsoncValue::record(entries)));
 }
 
 /// Listing, starter and effective-configuration controls stay outside release artifacts.

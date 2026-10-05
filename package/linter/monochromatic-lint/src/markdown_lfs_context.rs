@@ -8,22 +8,27 @@
 //! ```
 
 /// Import configuration reads, the tracked-path matcher, object ids and destination classification.
-use crate::markdown_lfs_config::{
-    LFS_CONFIG_FILENAME, LfsConfigError, read_lfs_object_base, read_optional_text,
+/// Import the parsed document whose images and definitions name candidate paths.
+use crate::{
+    markdown_lfs_config::{
+        LFS_CONFIG_FILENAME, LfsConfigError, read_lfs_object_base, read_optional_text,
+    },
+    markdown_lfs_oid::lfs_oid_of_bytes,
+    markdown_lfs_patterns::{PathPatterns, lfs_tracked_patterns},
+    markdown_lfs_target::{
+        apply_segments, lexical_normal, object_url_parts, relative_target_path, repo_relative,
+    },
+    markdown_source::MarkdownSource,
 };
-use crate::markdown_lfs_oid::lfs_oid_of_bytes;
-use crate::markdown_lfs_patterns::{PathPatterns, lfs_tracked_patterns};
-use crate::markdown_lfs_target::{
-    apply_segments, lexical_normal, object_url_parts, relative_target_path, repo_relative,
-};
-/// Import the parsed document and its typed image and definition payloads.
-use crate::markdown_source::MarkdownSource;
+/// Import node kinds and the typed image and definition payload decoders.
 use satteri_ast::mdast::{MdastNodeType, decode_definition_data, decode_image_data};
 /// Import an ordered map (deterministic iteration) and a lock for the shared per-run cache.
-use std::collections::BTreeMap;
-use std::io::ErrorKind;
-use std::path::{Path, PathBuf};
-use std::sync::{Mutex, MutexGuard};
+use std::{
+    collections::BTreeMap,
+    io::ErrorKind,
+    path::{Path, PathBuf},
+    sync::{Mutex, MutexGuard},
+};
 
 /// What: The file name git reads for path attributes.
 /// Why: Only the repository root's file is consulted, as in the incumbent.

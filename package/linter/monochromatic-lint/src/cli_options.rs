@@ -23,7 +23,9 @@ use std::path::PathBuf;
 #[command(
     name = "monochromatic-lint",
     version,
-    about = "Lint Rust, Markdown and MDX with repository-owned policies."
+    about = "Lint Rust, Markdown and MDX with repository-owned policies.",
+    // Without this, the parser would print this struct's source documentation as the long help text.
+    long_about = None
 )]
 pub struct CliOptions {
     /// Literal paths or path globs; execution supplies '.' only when this list is empty outside stdin mode.

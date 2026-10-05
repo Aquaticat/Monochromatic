@@ -282,3 +282,7 @@ const result = spawnSync('podman', [
 if (result.error) throw result.error;
 if (result.status !== 0) throw new Error('Processor snapshot Clippy failed: ' + result.status);
 '''
+
+[tasks.run]
+description = "Run the debug build of monochromatic-lint from this package directory (pass paths and flags after --)"
+run = "cargo run --quiet --bin monochromatic-lint --"

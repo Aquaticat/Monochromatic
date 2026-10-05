@@ -9,27 +9,31 @@
 //! ```
 
 /// Import the configuration outcome for virtual paths and the finding and fix models.
-use crate::config_match::FileConfiguration;
-use crate::diagnostic::Diagnostic;
-use crate::edits::FixError;
-use crate::fix_loop::SourceChecker;
 /// Import Markdown parsing, typed selection and dispatch.
-use crate::markdown_dispatch::check_markdown_rules;
-use crate::markdown_lfs_context::LfsImageContext;
-use crate::markdown_rule_settings::{MarkdownRuleSettings, markdown_rule_settings};
-use crate::markdown_source::MarkdownSource;
 /// Import the processor seam; virtual findings arrive or are projected in host coordinates.
-use crate::processors::{ProcessorLanguage, VirtualSource, extract};
-use crate::run_failure::{host_span, processing_failure, processor_failure};
-use crate::run_lfs::LfsRepos;
-use crate::run_paths::{Language, logical_path};
-use crate::run_plan::{FilePlan, RootRules};
 /// Import Rust syntax dispatch, the semantic engine and typed selection.
-use crate::rust_dispatch::check_syntax_rules;
-use crate::rust_file_engine::RustFileEngine;
-use crate::rust_rule_settings::{RustRuleSettings, rust_rule_settings};
-use crate::rust_source::RustSource;
+use crate::{
+    config_match::FileConfiguration,
+    diagnostic::Diagnostic,
+    edits::FixError,
+    fix_loop::SourceChecker,
+    markdown_dispatch::check_markdown_rules,
+    markdown_lfs_context::LfsImageContext,
+    markdown_rule_settings::{MarkdownRuleSettings, markdown_rule_settings},
+    markdown_source::MarkdownSource,
+    processors::{ProcessorLanguage, VirtualSource, extract},
+    run_failure::{host_span, processing_failure, processor_failure},
+    run_lfs::LfsRepos,
+    run_paths::{Language, logical_path},
+    run_plan::{FilePlan, RootRules},
+    rust_dispatch::check_syntax_rules,
+    rust_file_engine::RustFileEngine,
+    rust_rule_settings::{RustRuleSettings, rust_rule_settings},
+    rust_source::RustSource,
+};
+/// Import the JSONC value that carries a virtual file's resolved rules.
 use monochromatic_jsonc_edit::JsoncValue;
+/// Import owned native paths for virtual logical names.
 use std::path::PathBuf;
 
 /// What: A per-file checking session the fix loop can call once per source snapshot.
@@ -359,11 +363,11 @@ impl HostChecker<'_> {
         let plan: &FilePlan = self.plan;
         let parsed: bool = match &plan.root {
             RootRules::None => true,
-            RootRules::Rust(settings) => {
+            RootRules::Rust { settings } => {
                 self.check_rust_root(source, settings, &mut findings);
                 true
             }
-            RootRules::Markdown(settings) => {
+            RootRules::Markdown { settings } => {
                 self.check_markdown_root(source, settings, &mut findings)
             }
         };

@@ -18,7 +18,7 @@ use std::path::{Path, PathBuf};
 /// Plan a path and require a lint plan.
 fn lint(store: &mut ConfigStore, path: &str) -> FilePlan {
     match store.plan(Path::new(path)).expect("planning succeeds") {
-        Planned::Lint(plan) => return *plan,
+        Planned::Lint { plan } => return *plan,
         _ => panic!("{path} must be planned for linting"),
     }
 }
@@ -45,7 +45,10 @@ fn the_nearest_configuration_governs_alone() {
     assert_eq!(outer.relative, PathBuf::from("top/src/a.rs"));
     assert_eq!(outer.language, Language::Rust);
     assert_eq!(outer.config.base, root);
-    let RootRules::Rust(outer_rules) = outer.root else {
+    let RootRules::Rust {
+        settings: outer_rules,
+    } = outer.root
+    else {
         panic!("Rust rules expected");
     };
     assert_eq!(outer_rules.rustdoc, Some(Severity::Error));
@@ -56,7 +59,10 @@ fn the_nearest_configuration_governs_alone() {
     assert_eq!(inner.display, "nested/src/a.rs");
     assert_eq!(inner.relative, PathBuf::from("src/a.rs"));
     assert_eq!(inner.config.base, root.join("nested"));
-    let RootRules::Rust(inner_rules) = inner.root else {
+    let RootRules::Rust {
+        settings: inner_rules,
+    } = inner.root
+    else {
         panic!("Rust rules expected");
     };
     assert_eq!(inner_rules.no_anonymous_functions, Some(Severity::Warn));
@@ -120,7 +126,7 @@ fn an_explicit_configuration_resolves_against_the_working_directory() {
     assert_eq!(plan.config.path, explicit);
     assert_eq!(plan.config.base, work);
     assert_eq!(plan.relative, PathBuf::from("doc/a.md"));
-    let RootRules::Markdown(rules) = plan.root else {
+    let RootRules::Markdown { settings: rules } = plan.root else {
         panic!("Markdown rules expected");
     };
     assert_eq!(rules.single_h1, Some(Severity::Warn));
@@ -137,7 +143,7 @@ fn an_explicit_configuration_resolves_against_the_working_directory() {
         ConfigStore::new(&work, Some(Path::new("../elsewhere/rules.jsonc"))).expect("store");
     assert!(matches!(
         relative.plan(Path::new("doc/a.md")).expect("planning"),
-        Planned::Lint(_)
+        Planned::Lint { .. }
     ));
 }
 
@@ -171,7 +177,7 @@ fn skipped_inputs_are_classified() {
     ));
     let mdx: FilePlan = lint(&mut store, "doc/a.mdx");
     assert_eq!(mdx.language, Language::Mdx);
-    assert!(matches!(mdx.root, RootRules::Markdown(_)));
+    assert!(matches!(mdx.root, RootRules::Markdown { .. }));
     assert!(!mdx.needs_semantic_engine());
     let markdown: FilePlan = lint(&mut store, "doc/a.md");
     assert_eq!(markdown.language, Language::Markdown);

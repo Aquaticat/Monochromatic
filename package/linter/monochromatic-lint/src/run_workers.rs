@@ -9,18 +9,22 @@
 //! ```
 
 /// Import per-file processing, its outcome and the plan model.
-use crate::run_failure::{file_start, panic_text, processing_failure};
-use crate::run_file::{FileOutcome, SourceOutcome, Writer, process_file_with, process_source};
-use crate::run_lfs::LfsRepos;
-use crate::run_plan::FilePlan;
-use crate::run_write::write_atomically;
-use crate::rust_file_engine::RustFileEngine;
+use crate::{
+    run_failure::{file_start, panic_text, processing_failure},
+    run_file::{FileOutcome, SourceOutcome, Writer, process_file_with, process_source},
+    run_lfs::LfsRepos,
+    run_plan::FilePlan,
+    run_write::write_atomically,
+    rust_file_engine::RustFileEngine,
+};
 /// Import unwind containment; `AssertUnwindSafe` states that a caught panic leaves no state we reuse unsafely.
-use std::panic::{AssertUnwindSafe, catch_unwind};
 /// Import a shared counter workers advance to claim the next file.
-use std::sync::atomic::{AtomicUsize, Ordering};
 /// Import scoped threads, which may borrow data owned by the spawning function.
-use std::thread::{Builder, Scope, ScopedJoinHandle};
+use std::{
+    panic::{AssertUnwindSafe, catch_unwind},
+    sync::atomic::{AtomicUsize, Ordering},
+    thread::{Builder, Scope, ScopedJoinHandle},
+};
 
 /// What: Stack size for worker threads, in bytes.
 /// Why: Spawned threads default to a smaller stack than the main thread; parsers recurse on

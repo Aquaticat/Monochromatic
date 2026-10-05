@@ -25,6 +25,12 @@ path = "src/lib.rs"
 name = "monochromatic-lint"
 path = "src/main.rs"
 
+# Black-box tests that run the built executable; kept beside the source so the container
+# snapshot, which copies only src and fixtures, includes them.
+[[test]]
+name = "binary"
+path = "src/binary_tests.rs"
+
 [dependencies]
 # Reuse the repository's comment-preserving parser and exact-number value model.
 monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }

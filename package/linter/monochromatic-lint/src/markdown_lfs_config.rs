@@ -8,12 +8,13 @@
 //! ```
 
 /// Import the single endpoint normalizer; no other code turns an endpoint into an object base.
-use crate::markdown_lfs_endpoint::{LfsUrlRejection, lfs_object_base};
 /// Import ECMAScript's trim set, which differs from Rust's `str::trim` (it includes U+FEFF, excludes U+0085).
-use crate::markdown_table_text::trim_space;
+use crate::{
+    markdown_lfs_endpoint::{LfsUrlRejection, lfs_object_base},
+    markdown_table_text::trim_space,
+};
 /// Import native paths and I/O error classification.
-use std::io::ErrorKind;
-use std::path::Path;
+use std::{io::ErrorKind, path::Path};
 
 /// What: The file name git-lfs reads for repository-level configuration.
 /// Why: Its directory is also the repository root every object path is relative to.

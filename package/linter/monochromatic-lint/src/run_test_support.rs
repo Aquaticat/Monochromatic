@@ -8,14 +8,19 @@
 //! ```
 
 /// Import the production command grammar, runner, planner and output model.
-use crate::cli_options::CliOptions;
-use crate::run_command::run_command;
-use crate::run_output::RunOutput;
-use crate::run_plan::{ConfigStore, FilePlan, Planned};
-/// Import the argument parser trait and native argument and path storage.
+use crate::{
+    cli_options::CliOptions,
+    run_command::run_command,
+    run_output::RunOutput,
+    run_plan::{ConfigStore, FilePlan, Planned},
+};
+/// Import the argument parser trait that provides `try_parse_from`.
 use clap::Parser;
-use std::ffi::OsString;
-use std::path::{Path, PathBuf};
+/// Import native argument and path storage.
+use std::{
+    ffi::OsString,
+    path::{Path, PathBuf},
+};
 
 /// The configuration file name, repeated here so fixtures do not depend on lookup internals.
 pub(crate) const CONFIG: &str = "monochromatic-lint.config.jsonc";
@@ -102,7 +107,7 @@ pub(crate) fn codes(text: &str) -> Vec<String> {
 pub(crate) fn plan(cwd: &Path, relative: &str) -> FilePlan {
     let mut store: ConfigStore = ConfigStore::new(cwd, None).expect("store");
     match store.plan(Path::new(relative)).expect("planning succeeds") {
-        Planned::Lint(planned) => return *planned,
+        Planned::Lint { plan: planned } => return *planned,
         Planned::Ignored => panic!("{relative} is ignored by the fixture configuration"),
         Planned::NoConfiguration => panic!("{relative} has no fixture configuration"),
         Planned::Unsupported => panic!("{relative} has an unsupported extension"),
