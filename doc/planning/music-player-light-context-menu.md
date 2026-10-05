@@ -100,7 +100,32 @@ The two icon tests cover every accepted vector mapping and unknown input;
 a fresh fallback-icon mutant fails the intended rejection test,
 followed by restoration and the complete unit task.
 The native APK build passed.
-No native menu fit or activation result is claimed yet.
+The retained APK SHA-256 is
+`f58c8967e2796076f413728e45e9b08c1e541f4b7460c369762f063b2d059689`.
+Its merged manifest disables production activity/services and removes
+WorkManager auto-initialization.
+The next owned visit pins the exact native-library container image and
+starts its ADB server inside the 6 GiB/2 CPU cgroup.
+An explicit numeric-loopback client refuses to spawn a missing server;
+the disposable positive/negative control and source boundary are recorded
+in `doc/troubleshooting/android-emulator-console-token-container-home.md`.
+
+The first update install rejected incompatible debug signatures.
+The previously installed package was checked against the exact retained
+D83 APK hash before resetting only that owned debug installation.
+Original settings and old artifacts were preserved,
+and the new APK then installed and passed digest read-back.
+
+The first capture guards had two harness assumptions wrong:
+this package dump reports `appId`,
+and the Compose popup title is localized as `Pop-Up Window`,
+not the guessed `PopupWindow:` prefix.
+The retained windows already showed the intended activity and owned popup.
+The corrected guard checks user-0 UID/package,
+`APPLICATION_SUB_PANEL` kind and the `TrackMenuActivity` parent;
+retained positive and wrong-owner/window-kind controls pass.
+Those initial rejections are not native menu activation failures.
+The corrected gesture/dismissal probe is still in progress.
 
 ## Independently verifiable queue
 
