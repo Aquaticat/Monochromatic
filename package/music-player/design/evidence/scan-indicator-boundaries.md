@@ -233,6 +233,10 @@ at least one per rule,
 and checks HTML escaping behind the rule that normally hides it.
 Each of the 86 rules and the escape was deleted once in a disposable copy;
 the test failed on that rule by name every time.
+Those counts are the publication's.
+D88 (2026-10-05) removed the builder's digest rules,
+which leaves 82 rules and 102 rejected inputs;
+the test passed again and the built page did not change.
 The [review verification record](../questions/evidence/scan-indicator-review-verification.json)
 records that check of the viewer,
 builder,

@@ -12,9 +12,13 @@ and the human said an empty page needs no study.
 The viewer carries a withdrawal notice,
 and everything from `Purpose and accepted pane` on is kept as the record of
 what was built and checked.
-D88 rules out the builder's digest checks.
+D88 removed the builder's digest rules on the same day.
 The rule and rejected-input counts given in this document are those of the
-publication and do not describe the builder once those checks are gone.
+publication.
+The builder now has 94 rules and its consumer test rejects 130 changed inputs;
+both passed on the withdrawn page,
+as did a four-context offline browser check,
+and the review record carries that recheck.
 
 ## Purpose and accepted pane
 

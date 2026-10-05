@@ -952,7 +952,9 @@ of decisions.md.
   so the four answers no longer apply.
   When analysis runs is still open,
   and the first-run study's sentence `After opening a library, choose whether to analyse it.`
-  now contradicts D84.
+  contradicted D84.
+  The study was rebuilt without it on 2026-10-05;
+  `evidence/first-run-access-boundaries.md` describes the rebuilt study.
 
 ## 9. Smaller loose ends
 

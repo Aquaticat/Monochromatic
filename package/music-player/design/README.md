@@ -29,8 +29,13 @@ Read these files in order:
 The first-run/no-library study is in
 [`evidence/first-run-access-boundaries.md`](evidence/first-run-access-boundaries.md).
 Its [verified offline review](questions/first-run-access.html) presents
-32 initial and two separately proven content-movement witnesses,
+32 first views,
 not a policy ballot.
+The study was rebuilt on 2026-10-05 after D84 made true-peak analysis
+automatic:
+its explanation no longer ends with a choice to analyse,
+and with the shorter text nothing scrolls,
+so it has no second views.
 The source states are authored inputs,
 not production permission/discovery evaluation or recovery acceptance.
 The owned native runtime was stopped after restoring its recorded fields.

@@ -1,105 +1,125 @@
 {
-  "schema": 1,
-  "scope": "Authored native first-run state evidence and offline review controls. No policy ballot, production discovery, permissions, recovery, playback, consent implementation or native accessibility acceptance.",
-  "browserCliVersion": "0.38.1",
-  "browserEngine": "Chromium; Firefox ESR 140 not exercised",
-  "resourceBounds": {
-    "memoryGiB": 2,
-    "cpu": 2
+  "schema": 2,
+  "scope": "Consumer verification of the rebuilt first-run evidence review. It verifies this page and its checks, not source recovery, production behaviour or native accessibility.",
+  "verified": "2026-10-05",
+  "supersedes": "The record of the first publication, whose page ended its explanation with a choice to analyse that D84 withdrew.",
+  "noDigests": "This record holds no digest of the page, template, builder, test, manifest or any report. Nothing is locked by hash (D88); later edits to those files are allowed and are not covered by this record.",
+  "build": {
+    "task": "//package/music-player/design:verify:first-run:access",
+    "result": "Built offline first-run state evidence with 32 inspected native views, 0 of them end views; validated."
   },
-  "offline": true,
-  "imagesDecodedAndOpened": 34,
-  "contexts": [
+  "consumerTest": {
+    "task": "//package/music-player/design:test:first-run:access",
+    "result": "First-run review consumer: positive, 13 rejected manifests, a synthetic end view, ballot, withdrawn-sentence and changed-output checks passed."
+  },
+  "guardRemovalProofs": [
     {
-      "width": 1440,
-      "height": 1000,
-      "mode": "light",
-      "axeCounts": {
-        "inapplicable": 40,
-        "incomplete": 0,
-        "passes": 22,
-        "violations": 0
-      },
-      "optionalObservations": true,
-      "inertNotes": true,
-      "staleReplyInvalidation": true,
-      "modalZoomPanResetFocus": true,
-      "availabilityCombinationsExercised": true,
-      "overflow": false
+      "removed": "without-withdrawn-text",
+      "testThenFailedOn": "offers the withdrawn analysis choice"
     },
     {
-      "width": 1440,
-      "height": 1000,
-      "mode": "dark",
-      "axeCounts": {
-        "inapplicable": 40,
-        "incomplete": 0,
-        "passes": 22,
-        "violations": 0
-      },
-      "optionalObservations": true,
-      "inertNotes": true,
-      "staleReplyInvalidation": true,
-      "modalZoomPanResetFocus": true,
-      "availabilityCombinationsExercised": true,
-      "overflow": false
+      "removed": "without-cohort",
+      "testThenFailedOn": "requires every authored state under every condition"
     },
     {
-      "width": 390,
-      "height": 844,
-      "mode": "light",
-      "axeCounts": {
-        "inapplicable": 40,
-        "incomplete": 0,
-        "passes": 22,
-        "violations": 0
-      },
-      "optionalObservations": true,
-      "inertNotes": true,
-      "staleReplyInvalidation": true,
-      "modalZoomPanResetFocus": true,
-      "availabilityCombinationsExercised": true,
-      "overflow": false
-    },
-    {
-      "width": 390,
-      "height": 844,
-      "mode": "dark",
-      "axeCounts": {
-        "inapplicable": 40,
-        "incomplete": 0,
-        "passes": 22,
-        "violations": 0
-      },
-      "optionalObservations": true,
-      "inertNotes": true,
-      "staleReplyInvalidation": true,
-      "modalZoomPanResetFocus": true,
-      "availabilityCombinationsExercised": true,
-      "overflow": false
+      "removed": "without-drag-outcome",
+      "testThenFailedOn": "end view and the recorded drag outcome disagree"
     }
   ],
-  "noPolicyVotes": true,
-  "consoleErrors": 0,
-  "browsersClosed": true,
-  "nativeRecordedFieldsRestored": {
-    "fontScale": "1.0",
-    "nightMode": "Night mode: no",
-    "panelState": "2",
-    "accessibilityEnabled": "0",
-    "enabledAccessibilityServices": "null",
-    "stayOnWhilePluggedIn": "1"
+  "browser": {
+    "engine": "Chromium, offline, in a container bounded to 2 GiB of memory and 2 CPUs",
+    "imagesEmbedded": 32,
+    "imagesDecodedAndOpened": 32,
+    "contexts": [
+      {
+        "width": 1440,
+        "height": 1000,
+        "mode": "light",
+        "axeCounts": {
+          "inapplicable": 40,
+          "incomplete": 0,
+          "passes": 22,
+          "violations": 0
+        },
+        "followsSystemTheme": true,
+        "optionalObservations": true,
+        "inertNotes": true,
+        "staleReplyInvalidation": true,
+        "modalZoomPanResetFocus": true,
+        "shownViewsMatchCohort": true,
+        "overflow": false
+      },
+      {
+        "width": 1440,
+        "height": 1000,
+        "mode": "dark",
+        "axeCounts": {
+          "inapplicable": 40,
+          "incomplete": 0,
+          "passes": 22,
+          "violations": 0
+        },
+        "followsSystemTheme": true,
+        "optionalObservations": true,
+        "inertNotes": true,
+        "staleReplyInvalidation": true,
+        "modalZoomPanResetFocus": true,
+        "shownViewsMatchCohort": true,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "mode": "light",
+        "axeCounts": {
+          "inapplicable": 40,
+          "incomplete": 0,
+          "passes": 22,
+          "violations": 0
+        },
+        "followsSystemTheme": true,
+        "optionalObservations": true,
+        "inertNotes": true,
+        "staleReplyInvalidation": true,
+        "modalZoomPanResetFocus": true,
+        "shownViewsMatchCohort": true,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "mode": "dark",
+        "axeCounts": {
+          "inapplicable": 40,
+          "incomplete": 0,
+          "passes": 22,
+          "violations": 0
+        },
+        "followsSystemTheme": true,
+        "optionalObservations": true,
+        "inertNotes": true,
+        "staleReplyInvalidation": true,
+        "modalZoomPanResetFocus": true,
+        "shownViewsMatchCohort": true,
+        "overflow": false
+      }
+    ],
+    "consoleErrors": 0,
+    "renderedStatements": [
+      "True-peak analysis is automatic and not optional (D84)",
+      "offer no choice about analysis",
+      "No digest is recorded or compared (D88)"
+    ],
+    "renderedAbsent": [
+      "choose whether to analyse",
+      "SHA-256"
+    ],
+    "screenshotsLookedAt": [
+      "review-1440-light.png",
+      "details-390-dark.png"
+    ],
+    "limits": "Every embedded view was opened once in the first context; controls, observations, drag status and one modal were exercised in all four contexts. Axe audits are of the closed page only, not native acceptance. Firefox and an open-dialog accessibility audit were not run."
   },
-  "separateDeviceBaseAndOverrideRestorationProven": false,
-  "ownedRuntimeAbsenceVerified": true,
-  "productionSourceAndAcceptedSearchReviewUnchanged": true,
-  "verificationLimits": [
-    "All distinct previews opened in first desktop/light interaction pass; separate availability, observations and representative modal/zoom/pan controls exercised in all four contexts. Axe audits are closed-page only, not native acceptance.",
-    "Axe audits were performed with the image dialog closed; no open-dialog audit is claimed.",
-    "Image modal tests use explicit center scrolling before trusted native clicks; initial implicit scrolling missed a partially visible target.",
-    "Synthetic scroll-signal guard tests are not native gesture tests.",
-    "No absent source-status API is implemented by authored complete/partial flags.",
-    "Restoration compares the fresh recorded fields, not separately retained base/override configuration."
-  ],
-  "pageDigestsRemoved": "Digests of the page, template, builder, test, manifest, native result, preflight and guard reports were removed from this record on 2026-10-05: nothing is locked by hash, and a recorded digest is never a reason to leave a page uncorrected. This record describes the check made when it was written; later edits to those files are allowed and are not covered by it."
+  "visualInspection": "All 32 published views were read in full as light and dark pairs before publication; one view shows no gesture handle and the manifest says so.",
+  "ownedBrowserContainerAbsent": true
 }

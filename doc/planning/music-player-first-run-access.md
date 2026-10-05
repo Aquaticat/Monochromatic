@@ -245,6 +245,43 @@ revision from `open-questions.md` section 6,
 not a notification matrix or binding-by-binding questionnaire.
 Production shortcuts and live playback remain unauthorized.
 
+## Rebuild after D84 (2026-10-05)
+
+D84 made true-peak analysis automatic and not optional,
+which the published explanation contradicted with
+`After opening a library, choose whether to analyse it.`
+The human authorized a rebuild and ruled that nothing is locked by hash (D88).
+
+Prototype `61e2cf7764f627d40a77bdf6039143e229ad36ea` changes only that
+paragraph,
+which now reads
+`True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs.`
+The wording is study copy that no decision chose.
+Its fixture tests and guard-removal mutants passed again.
+
+The rebuilt cohort has 32 first views and no second views:
+with the shorter text nothing scrolls on either panel at either text size.
+Two readings agree on that,
+the drag outcome and the hierarchy's scrolling mark,
+and the first publication's one moved state shows that the mark can appear.
+The captures span two emulator boots because the first ended in a
+segmentation fault;
+each view names its visit.
+All views were inspected in full,
+and one shows no gesture handle in the navigation strip.
+
+The viewer,
+its builder and its test were rewritten to derive the cohort from the
+captures and to compare no digest.
+Build,
+validation,
+the consumer test,
+three guard-removal proofs and a four-context offline browser check passed.
+`package/music-player/design/evidence/first-run-access-boundaries.md`
+holds the scope and limits.
+Everything this plan says about 34 published frames and two scroll
+witnesses describes the first publication.
+
 ## Continuation correction
 
 Completing the filename correction should have advanced the authorized

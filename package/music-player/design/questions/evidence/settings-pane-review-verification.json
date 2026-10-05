@@ -247,5 +247,13 @@
     "Synthetic changed-inset and changed-witness fixtures are validation controls, not extra Android captures.",
     "Full Android lint retains five inherited errors; no finding names a Settings study file."
   ],
-  "pageDigestsRemoved": "Digests of the page, template, builder, test, manifest, native result, preflight and guard reports were removed from this record on 2026-10-05: nothing is locked by hash, and a recorded digest is never a reason to leave a page uncorrected. This record describes the check made when it was written; later edits to those files are allowed and are not covered by it."
+  "pageDigestsRemoved": "Digests of the page, template, builder, test, manifest, native result, preflight and guard reports were removed from this record on 2026-10-05: nothing is locked by hash, and a recorded digest is never a reason to leave a page uncorrected. This record describes the check made when it was written; later edits to those files are allowed and are not covered by it.",
+  "recheckOf20261005": {
+    "why": "D86 withdrew the two-row pane and the page gained a withdrawal notice; D88 then removed the builder's digest rules. Everything else in this record describes the check made at publication.",
+    "build": "Rebuilt and validated; the built page equals the committed page.",
+    "consumerTest": "Settings-pane consumer: 94 rules, 130 rejected inputs, script encoding and positive controls passed.",
+    "guardRemovalProof": "With the required-statement rule deleted, the test failed with: Expected Settings-pane rejection absent: required-statement; got acceptance.",
+    "browser": "Offline Chromium in a container bounded to 2 GiB and 2 CPUs: 24 images decoded and opened, four contexts (desktop and phone width, light and dark), zero axe violations or incomplete checks, no console errors. The dark desktop screenshot was looked at and shows the withdrawal notice.",
+    "ownedBrowserContainerAbsent": true
+  }
 }

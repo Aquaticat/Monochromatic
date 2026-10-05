@@ -246,5 +246,10 @@
     "Synthetic changed-inset and changed-witness fixtures are validation controls, not extra Android captures.",
     "Full Android lint retains five inherited errors, 65 warnings and two hints."
   ],
-  "pageDigestsRemoved": "Digests of the page, template, builder, test, manifest, native result, preflight and guard reports were removed from this record on 2026-10-05: nothing is locked by hash, and a recorded digest is never a reason to leave a page uncorrected. This record describes the check made when it was written; later edits to those files are allowed and are not covered by it."
+  "pageDigestsRemoved": "Digests of the page, template, builder, test, manifest, native result, preflight and guard reports were removed from this record on 2026-10-05: nothing is locked by hash, and a recorded digest is never a reason to leave a page uncorrected. This record describes the check made when it was written; later edits to those files are allowed and are not covered by it.",
+  "recheckOf20261005": {
+    "why": "D88 removed the builder's digest rules. Everything else in this record describes the check made at publication.",
+    "consumerTest": "Scan-indicator consumer: 82 rules, 102 rejected inputs, escaping and positive controls passed.",
+    "build": "The built page is unchanged by the removal."
+  }
 }
