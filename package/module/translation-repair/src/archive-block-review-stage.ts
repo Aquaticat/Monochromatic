@@ -27,7 +27,11 @@ import {
 } from './archive-block-review-wire.ts';
 import { decideBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { gatherStageVoices, } from './stage-quorum.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
+import {
+  gatherStageVoices,
+  type HeardVoice,
+} from './stage-quorum.ts';
 import { reachableQuorum, } from './stage-reachable-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
@@ -168,9 +172,35 @@ export async function runArchiveBlockReviewStage(
     l: reviewLog,
   },);
   /**
+   Replies as the review reads them. A replacement that shows a reader
+   nothing is the removal the wire spells as an empty replacement, and it is
+   read as that removal once, here, so the shape floor, the slate's
+   rendering, the selectors' evidence and the page splice all read what was
+   decided rather than each asking an empty-string comparison of the raw
+   reply (ledger B40; "Two layers reading one refusal" in
+   `doc/mistake-prevention.md`). Asked that way, a revision of one zero-width
+   space passed the shape floor as a paragraph, reached the selectors as text
+   and shipped, and a revision of spaces was withheld as one of no blocks.
+   */
+  const voices = gather.voices
+    .map(function asRead(voice,): HeardVoice<ArchiveBlockReviewWire> {
+      if (!rendersAsNothing({
+        text: voice.value
+          .replacementText,
+      },))
+        return voice;
+      return {
+        ...voice,
+        value: {
+          ...voice.value,
+          replacementText: '',
+        },
+      };
+    },);
+  /**
    Replies whose claimed source support exists verbatim.
    */
-  const anchoredVoices = gather.voices
+  const anchoredVoices = voices
     .filter(function supportIsAnchored(voice,): boolean {
     if (voice.value
       .disposition
@@ -216,13 +246,13 @@ export async function runArchiveBlockReviewStage(
     ...priorFindings,
     ...gather.findings,
     ...withheld,
-    ...gather.voices
+    ...voices
       .map(function recordFinding(voice,): string {
       return voice.value
         .finding;
     },),
     ...(anchoredVoices.length
-      === gather.voices
+      === voices
       .length ? [] : ['archive review discarded uncorroborated retention claim',]),
   ],),];
   // AN UNHEARD ROSTER IS AN OUTAGE; AN UNANCHORED ONE IS A VERDICT. Only the

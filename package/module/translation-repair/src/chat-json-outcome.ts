@@ -13,6 +13,7 @@ import {
   stripThinkBlock,
 } from './model-content.ts';
 import { detectRefusalShape, } from './refusal.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Chat json outcome
 // HOW A REPLY BECOMES AN OUTCOME, for every provider rather than for one.
@@ -182,12 +183,14 @@ export function readJsonOutcome<ValueT,>(
    */
   const usageSpread = usageSpreadOf({ reply, },);
 
-  // The API's own refusal field outranks every content heuristic.
+  // The API's own refusal field outranks every content heuristic. Its text
+  // stands for content that shows a reader nothing (ledger B40), so the record
+  // keeps the words the model wrote rather than its padding.
   if (reply.refusal !== undefined) {
     rl.debug(`${modelId}: refusal-shaped (api-refusal-field)`,);
     return {
       kind: 'refusal-shaped',
-      rawText: (reply.text === '') ? reply.refusal : reply.text,
+      rawText: rendersAsNothing({ text: reply.text, },) ? reply.refusal : reply.text,
       marker: 'api-refusal-field',
       ...usageSpread,
     };

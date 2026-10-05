@@ -2,6 +2,7 @@ import { wordForCount, } from './count-word.ts';
 import { foldedLine, } from './entry-notes.ts';
 import { normalizePunctuation, } from './quote-normalize.ts';
 import type { AttestationItemWire, } from './reference-attest-wire.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Reference attestation matching
@@ -103,12 +104,18 @@ export type VerifiedAttestation = {
 /**
  Whether one quote is found, whitespace ignored, inside one text.
 
+ A QUOTE THAT SHOWS A READER NOTHING QUOTES NO WORDS, asked of
+ `rendersAsNothing` (ledger B40). Compaction removes whitespace and keeps
+ every invisible character that is not whitespace, so a quote of one
+ zero-width space or Hangul filler compacted to that character and was found
+ in any archive or cited page holding one, verifying a detail of no words.
+
  @param quote - words to find
 
  @param text - text to find them in
 
- @returns Whether the compacted quote is non-empty and a substring of the
- compacted text
+ @returns Whether the quote shows a reader something and, compacted, is a
+ substring of the compacted text
 
  @example
  ```ts
@@ -125,12 +132,13 @@ export function quoteIsIn(
     readonly text: string;
   },
 ): boolean {
+  if (rendersAsNothing({ text: quote, },))
+    return false;
   /**
-   Quote without its whitespace.
+   Quote without its whitespace, never empty for a quote that shows
+   something.
    */
   const compact = compacted({ text: quote, },);
-  if (compact === '')
-    return false;
   return compacted({ text, },)
     .includes(compact,);
 }
@@ -163,9 +171,11 @@ type PlacedAttestation = VerifiedAttestation & {
 
  @returns Details in archive order
 
- @throws {@link Error} when an item's archive quote is empty or absent from
- `archiveText`, which `quoteIsIn` refuses, so such an item was never verified
- against this archive and placing it anywhere would invent its position
+ @throws {@link Error} when an item's archive quote shows a reader nothing or
+ is absent from `archiveText`, which `quoteIsIn` refuses, so such an item was
+ never verified against this archive and placing it anywhere would invent its
+ position; asked as `quoteIsIn` asks it, so the two never disagree about a
+ quote of invisible characters
 
  @example
  ```ts
@@ -204,7 +214,10 @@ export function mergedAttestations(
        this same archive text under this same fold, so it is always there.
        */
       const start = folded.indexOf(quote,);
-      if ((quote === '') || (start === NOT_FOUND)) {
+      if (rendersAsNothing({
+        text: entry.item
+          .archiveQuote,
+      },) || (start === NOT_FOUND)) {
         /**
          Reference the item cites, to name it in the message.
          */
@@ -212,7 +225,7 @@ export function mergedAttestations(
         throw new Error(
           `unreachable: an attestation from ${entry.modelId} citing reference ${
             String(reference,)
-          }, whose archive quote is empty or absent from the archive text it is merged against, `
+          }, whose archive quote shows a reader nothing or is absent from the archive text it is merged against, `
             + 'was never verified against that text',
         );
       }
@@ -336,12 +349,15 @@ export function attestedDetailsOverlapping(
     readonly details: readonly AttestedDetail[];
   },
 ): readonly AttestedDetail[] {
+  // A claim quote showing a reader nothing overlaps nothing, asked as
+  // `quoteIsIn` asks it (ledger B40): compacted, one zero-width space sat
+  // inside any attested quote holding one and was read as overlapping it.
+  if (rendersAsNothing({ text: quote, },))
+    return [];
   /**
    Compacted claim quote.
    */
   const claimQuote = compacted({ text: quote, },);
-  if (claimQuote === '')
-    return [];
   /**
    Compacted text the spans are placed in.
    */

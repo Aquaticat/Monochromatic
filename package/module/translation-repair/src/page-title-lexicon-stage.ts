@@ -15,6 +15,7 @@ import {
 } from './page-title-lexicon-wire.ts';
 import type { RepeatedTitleSpan, } from './page-title-spans.ts';
 import { straightenQuotes, } from './quote-normalize.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -169,6 +170,11 @@ function comparisonKey({ rendering, }: { readonly rendering: string; },): string
 /**
  The rendering most voices gave one title, the earliest seat breaking a tie.
 
+ A RENDERING THAT SHOWS A READER NOTHING IS NONE, asked of `rendersAsNothing`
+ (ledger B40): asked of an empty-string comparison after the trim, two seats
+ answering a zero-width space outvoted the one seat answering in words, and
+ the title settled on a rendering no reader sees.
+
  @param answers - each voice's rendering of the title, in roster order, empty
  for a voice that gave none
 
@@ -190,7 +196,7 @@ function mostGiven(
    */
   const tally = answers
     .filter(function given(answer,): boolean {
-      return answer !== '';
+      return !rendersAsNothing({ text: answer, },);
     },)
     .reduce(
       function count(

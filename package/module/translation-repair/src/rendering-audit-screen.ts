@@ -17,6 +17,7 @@ import {
   type RenderingAuditVerdict,
   SOURCE_ONLY_CATEGORIES,
 } from './rendering-audit-wire.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Rendering audit screen
 // What survives of one auditor's answer once its quotes are checked against the
@@ -228,7 +229,11 @@ function readSide(
     // A QUOTE HERE IS A CONTRADICTION, not a stray field to ignore: this
     // category says the side holds nothing to point at, and the claim points at
     // something anyway, so one of the two is wrong and neither can be trusted.
-    if ((locator !== '') || (focus !== ''))
+    // A field that shows a reader nothing quotes nothing, whatever its bytes,
+    // and is the empty field the wire asks for here: asked of an empty-string
+    // comparison, a space or a zero-width space a model put in the unused
+    // field dropped a one-sided claim as two-sided (ledgers B40 and B128).
+    if ((!rendersAsNothing({ text: locator, },)) || (!rendersAsNothing({ text: focus, },)))
       return { dropped: `forbidden-side-quote (${side})`, };
 
     return { kind: 'unused', };

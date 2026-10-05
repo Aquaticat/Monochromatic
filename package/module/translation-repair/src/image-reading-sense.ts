@@ -208,13 +208,23 @@ export function readingMakesSense(
     };
   }
 
+  // NOTHING AT ALL IS NO READING, however many characters carry it, and
+  // nothing includes invisible characters `trim()` keeps (ledger B40). Asked
+  // before the count: asked only under the transcript line, sixteen Hangul
+  // fillers or forty zero-width spaces reached the line and were usable,
+  // since `solidCharacters` leaves out whitespace alone.
+  if (rendersAsNothing({ text: trimmed, },)) {
+    return {
+      kind: 'refused',
+      clause: 'too-short',
+    };
+  }
+
   if (solidCharacters({ text: trimmed, },) < MIN_READING_CHARS) {
     // A short reply that negates something is an apology fragment ("I can't.",
     // "None."), which says nothing about the picture; one that negates nothing
-    // is what a picture with a hull number or a date on it produces. Nothing at
-    // all is neither, and nothing includes invisible characters `trim()` keeps
-    // (ledger B40).
-    if (rendersAsNothing({ text: trimmed, },) || negatesSomething({ reading: trimmed, },)) {
+    // is what a picture with a hull number or a date on it produces.
+    if (negatesSomething({ reading: trimmed, },)) {
       return {
         kind: 'refused',
         clause: 'too-short',

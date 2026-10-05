@@ -15,6 +15,7 @@ import {
   type ExtractedCompletion,
   MalformedCompletionError,
 } from './completion-shape.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { ssePayloadOf, } from './sse-data-line.ts';
 
 /**
@@ -636,7 +637,15 @@ export function extractAnthropicCompletion(
   // and lost the voice, and a Hyper-only seat has no other stack for a second
   // opinion. The prose is set aside and its size logged, never its
   // content.
-  if ((toolAnswer !== '') && (prose !== ''))
+  //
+  // ARGUMENTS THAT SHOW A READER NOTHING ARE NONE (ledger B40): asked of an
+  // empty-string comparison, a tool call carrying only spaces or a zero-width
+  // space was handed to the schema reader in place of a prose answer.
+  /**
+   Whether the tool call carried an answer.
+   */
+  const toolAnswered = !rendersAsNothing({ text: toolAnswer, },);
+  if (toolAnswered && (prose !== ''))
     rl.info(
       `tool answer kept, ${String(prose.length,)} ${
         wordForCount({
@@ -648,7 +657,7 @@ export function extractAnthropicCompletion(
     );
 
   return {
-    text: (toolAnswer === '') ? prose : toolAnswer,
+    text: toolAnswered ? toolAnswer : prose,
     ...((stopReason === '') ? {} : { finishReason: stopReason, }),
     ...usageOf({
       counts: fold,

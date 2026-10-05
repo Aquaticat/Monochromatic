@@ -9,6 +9,7 @@ import {
   handleReading,
   withoutGloss,
 } from './handle-reading.ts';
+import { rendersAsNothing, } from '../renders-as-nothing.ts';
 
 //region Contributor name authorities
 // WHICH RENDERING A SIGNER TAKES, decided once per page for the contributor
@@ -80,8 +81,8 @@ function alignedSignature(
 /**
  Authority per name the original signs: the archive's aligned signature,
  else the page's own aligned signature where it renders the name in
- something other than Han, else the handle's pinyin reading (class
- eighty-three).
+ something a reader sees other than Han, else the handle's pinyin reading
+ (class eighty-three).
 
  @param slices - prepared pairs in slice order
 
@@ -156,13 +157,19 @@ export function nameAuthorities(
       },);
       /**
        Page's rendering as the authority, empty where the page has none at
-       this position or left the handle in Han.
+       this position.
        */
       const rendered = (page === undefined) ? '' : withoutGloss({ rendering: page.name, },);
       /**
-       Whether the page's rendering stands as the authority.
+       Whether the page's rendering stands as the authority: it shows a
+       reader something, and none of it is Han.
+
+       WHAT SHOWS A READER NOTHING RENDERS NO ONE (ledger B40). The page text
+       is what a lane wrote, and asked of an empty-string comparison a
+       signature of one zero-width space or Hangul filler became the signer's
+       rendering, which the restore then wrote over the heading naming them.
        */
-      const pageRenders = (rendered !== '') && (!carriesHan({ text: rendered, },));
+      const pageRenders = (!rendersAsNothing({ text: rendered, },)) && (!carriesHan({ text: rendered, },));
       if (pageRenders) {
         authorities.set(
           name,

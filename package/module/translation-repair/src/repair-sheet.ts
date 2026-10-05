@@ -1,4 +1,5 @@
 import { fenceForMarkdown, } from './markdown-fence.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { SHIPPED_DISPOSITION, } from './repair-record.ts';
 import type {
   GradableRepair,
@@ -60,6 +61,11 @@ const DISPOSITION_NOTES: ReadonlyMap<string, string> = new Map([
  Renders one replaced region, disclosing when the same edit serves other
  accepted issues so a shared replacement is never read as this issue's own.
 
+ A replacement that shows a reader nothing is told as the deletion it is to
+ the grader, asked of `rendersAsNothing` (ledger B40): asked of an
+ empty-string comparison, an editor's replacement of spaces or of one Hangul
+ filler was fenced as written text the grader would see as an empty box.
+
  @param region - replaced region
 
  @param issueId - issue this sheet item is about
@@ -114,7 +120,7 @@ function renderRegion(
         '- before, the text that was replaced:',
         fenceForMarkdown({ text: region.before, },),
       ]),
-    ...(region.editorAfter === ''
+    ...(rendersAsNothing({ text: region.editorAfter, },)
       ? ['- after: (nothing; the text above was DELETED rather than rewritten)',]
       : [
         '- after, what the pipeline wrote:',

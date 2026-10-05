@@ -10,6 +10,7 @@ import {
 } from './assembly-page-text.ts';
 import { nameAuthorities, } from './contributor-name-authorities.ts';
 import { continuesLatinWord, } from '../latin-letters.ts';
+import { rendersAsNothing, } from '../renders-as-nothing.ts';
 
 //region Handle gloss place
 // CLASS EIGHTY-EIGHT (XingZ624, 2026-09-23). The house rule (class
@@ -100,8 +101,8 @@ function continuesWord({ character, }: { readonly character: string; },): boolea
 /**
  Every whole-word appearance of a rendering in one slice's text that the
  pass may write at, with the gloss each carries. An appearance followed by a
- parenthesis that is no gloss (empty, unclosed on its line, or holding
- markup) is left out, so the pass writes nothing there.
+ parenthesis that is no gloss (empty or showing a reader nothing, unclosed on
+ its line, or holding markup) is left out, so the pass writes nothing there.
 
  @param sliceIndex - slice whose text is read
 
@@ -184,18 +185,27 @@ function appearancesIn(
     );
     /**
      Whether the parenthetical is a gloss: closed on the same line, with
-     something inside.
+     something inside a reader sees. What a reader sees is asked of
+     `rendersAsNothing` (ledger B40): asked of the parenthesis's length, a
+     heading's `( )` or a zero-width space in parentheses was read as the
+     handle's gloss, and the well-formed gloss on its signature was stripped.
      */
     const isGloss = (close !== (-1))
-      && (close > (past + GLOSS_OPEN.length))
       && (!text.slice(
         past,
         close,
       )
-        .includes('\n',));
+        .includes('\n',))
+      && (!rendersAsNothing({
+        text: text.slice(
+          past + GLOSS_OPEN.length,
+          close,
+        ),
+      },));
     // A parenthesis that is no gloss leaves its appearance as the writer
-    // left it, neither the first nor a later one: empty, never closed, or
-    // closed only by a mark on a later line. Read as an appearance with no
+    // left it, neither the first nor a later one: empty or showing a reader
+    // nothing, never closed, or closed only by a mark on a later line. Read
+    // as an appearance with no
     // gloss, a first one took the handle's gloss in front of the parenthesis
     // it already opened (`### Ten: Jinmao (Brocade Cat) (Brocade Cat`), and
     // the signature under it, whose gloss was well formed, lost its own. The

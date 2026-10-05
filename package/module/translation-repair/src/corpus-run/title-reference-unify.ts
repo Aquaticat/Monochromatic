@@ -3,6 +3,7 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import { wordForCount, } from '../count-word.ts';
 import { isHanOnly, } from '../han-only-text.ts';
 import { straightenQuotes, } from '../quote-normalize.ts';
+import { rendersAsNothing, } from '../renders-as-nothing.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { withoutHtmlComments, } from '../translate-address-drop.ts';
 import {
@@ -150,7 +151,11 @@ function renderedHeadings(
         rendering: nonNullishOrThrow(rendered[at],),
         title,
       },);
-      if (rendering === '')
+      // A RENDERING THAT SHOWS A READER NOTHING IS NONE (ledger B40): the page
+      // text is what a lane wrote, and asked of an empty-string comparison a
+      // heading of one zero-width space or Hangul filler was taken for the
+      // title's English and written over every reference to it.
+      if (rendersAsNothing({ text: rendering, },))
         return;
       // A rendering still in Han, the title itself among them, is no English
       // to unify with.

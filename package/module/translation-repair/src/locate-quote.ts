@@ -13,6 +13,7 @@ import {
   continuesLatinWord,
   isLatinWordCharacter,
 } from './latin-letters.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Quote location
 // Deterministic evidence anchoring: find a critic's quote in the document,
@@ -241,6 +242,11 @@ function needlePreview(
  wrapping happen to be, because a model's own punctuation and line breaks do
  not say which occurrence it read.
 
+ A QUOTE THAT SHOWS A READER NOTHING IS EMPTY, asked of `rendersAsNothing`
+ (ledger B40), not of an empty-string comparison: a quote of one ideographic
+ space, zero-width space or Hangul filler that the document holds once
+ anchored a critic's claim on a character no reader sees.
+
  @param document - side being searched
 
  @param side - which side the anchors belong to
@@ -265,7 +271,7 @@ export function locateQuote(
     readonly quote: string;
   },
 ): QuoteLocation {
-  if (quote === '') {
+  if (rendersAsNothing({ text: quote, },)) {
     return {
       located: false,
       reason: `empty-quote (${side})`,

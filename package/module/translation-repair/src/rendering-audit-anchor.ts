@@ -3,6 +3,7 @@ import {
   normalizePunctuation,
 } from './quote-normalize.ts';
 import { RenderingAuditInvariantError, } from './rendering-audit-invariant.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Rendering audit anchoring
 // Where in a document one claimed defect actually is, as an interval rather
@@ -191,6 +192,12 @@ function locateUnique(
 /**
  Locates one claim's locator and focus in the text it names.
 
+ A SPAN THAT SHOWS A READER NOTHING IS EMPTY, asked of `rendersAsNothing`
+ (ledger B40) rather than of an empty-string comparison: a locator of one
+ ideographic space the text held once, or a focus of the one space or
+ zero-width space inside its locator, anchored a claim on a character no
+ reader sees.
+
  @param text - side the claim names
 
  @param locator - span identifying which occurrence is meant
@@ -229,7 +236,7 @@ export function anchorLocatedSpan(
    */
   const locatorNeedle = canonicalize({ text: locator, },);
 
-  if (locatorNeedle === '') {
+  if (rendersAsNothing({ text: locator, },)) {
     return {
       anchored: false,
       reason: `empty-locator (${side})`,
@@ -263,7 +270,7 @@ export function anchorLocatedSpan(
    */
   const focusNeedle = canonicalize({ text: focus, },);
 
-  if (focusNeedle === '') {
+  if (rendersAsNothing({ text: focus, },)) {
     return {
       anchored: false,
       reason: `empty-focus (${side})`,

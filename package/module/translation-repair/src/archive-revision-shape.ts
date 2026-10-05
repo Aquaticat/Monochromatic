@@ -1,4 +1,5 @@
 import { wordForCount, } from './count-word.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import {
   type BlockShape,
   readSliceSkeleton,
@@ -123,9 +124,14 @@ function quotedPassageRevisionFindings(
 
  @param blockText - archive block under review
 
- @param replacementText - revision as it would ship
+ @param replacementText - revision as it would ship, empty for a removal
 
  @returns Findings withholding the revision, empty when it may stand
+
+ @throws {@link Error} when the revision shows a reader nothing and is not
+ empty, since the review stage reads such a revision as the empty removal
+ before any revision reaches this check, and a second reading here would
+ hold it to a shape the removal does not have
 
  @example
  ```ts
@@ -146,6 +152,12 @@ export function revisionShapeFindings(
   // A REMOVAL IS A SHAPE OF ITS OWN the review allows.
   if (replacementText === '')
     return [];
+  if (rendersAsNothing({ text: replacementText, },)) {
+    throw new Error(
+      `unreachable: ${modelId}'s revision shows a reader nothing and is not empty, though the review stage reads `
+        + 'such a revision as the empty removal before the slate is built',
+    );
+  }
   /**
    Shape of the block under review.
    */

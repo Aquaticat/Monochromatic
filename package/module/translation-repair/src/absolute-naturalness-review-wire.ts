@@ -5,6 +5,7 @@ import { HOUSE_FORM_CORRECTIONS, } from './house-form-corrections.ts';
 import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { foldSoftBreaks, } from './soft-break-fold.ts';
 
 //region Absolute naturalness review wire
@@ -187,7 +188,10 @@ export function isAbsoluteNaturalnessReviewWire(
         return false;
       if ((typeof problem) !== 'string')
         return false;
-      return problem !== '';
+      // A problem showing a reader nothing names no defect, invisible
+      // characters `trim()` keeps among it (ledger B40); asked of an
+      // empty-string comparison, a finding of one zero-width space passed.
+      return !rendersAsNothing({ text: problem, },);
     },))
     return false;
   if (!('reason' in value))

@@ -10,6 +10,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 import { ssePayloadOf, } from './sse-data-line.ts';
 
@@ -265,8 +266,11 @@ export function extractStreamedCompletion(
 
   return {
     text,
-    // Conditional spreads keep absent channels absent.
-    ...(refusal === ''
+    // Conditional spreads keep absent channels absent. A refusal that shows a
+    // reader nothing refused nothing (ledger B40): present, it is read as the
+    // API's refusal ahead of every answer, so refusal deltas of spaces or a
+    // zero-width space beside a JSON answer cost the voice.
+    ...(rendersAsNothing({ text: refusal, },)
       ? {}
       : { refusal, }),
     ...(lastUsage === undefined

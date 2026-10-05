@@ -4,6 +4,7 @@ import {
 } from './page-name-glossary.ts';
 import { parseMarkdownBody, } from './parse-mdx.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import {
   readSliceSkeleton,
   walkAtoms,
@@ -21,8 +22,8 @@ import {
 // href, the rest dropped outright, which the destination floor refuses), so
 // the floor refuses no archive text.
 //
-// A WORDED LINK is `[words](href)` whose words are neither empty nor the href
-// itself. Where the original carries more worded links under an href than the
+// A WORDED LINK is `[words](href)` whose words show a reader something and
+// are not the href itself. Where the original carries more worded links under an href than the
 // rendering does while the rendering still carries the href, the link was
 // unwrapped. Silent where the rendering drops the href outright: that is the
 // destination floor's finding, not this one's.
@@ -46,9 +47,15 @@ import {
 /**
  Whether a link carries words of its own rather than its destination.
 
+ WORDS ARE WHAT A READER SEES, asked of `rendersAsNothing` (ledger B40): asked
+ of the trimmed text against the empty string, a rendering that wrote the
+ title as plain words beside a link of one zero-width space or Hangul filler
+ kept a worded link by count and passed the floor unwrapped.
+
  @param link - link as scanned
 
- @returns True where the link text is neither empty nor the href
+ @returns True where the link text shows a reader something and is not the
+ href
 
  @example
  ```ts
@@ -56,8 +63,11 @@ import {
  ```
  */
 function isWorded({ link, }: { readonly link: Link; },): boolean {
+  if (rendersAsNothing({ text: link.text, },))
+    return false;
   /**
-   Link text without surrounding space.
+   Link text without surrounding space, for the comparison with the
+   destination.
    */
   const words = link.text
     .trim();
@@ -66,7 +76,7 @@ function isWorded({ link, }: { readonly link: Link; },): boolean {
    */
   const destination = link.href
     .trim();
-  return (words !== '') && (words !== destination);
+  return words !== destination;
 }
 
 /**

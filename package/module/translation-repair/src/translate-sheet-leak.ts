@@ -2,6 +2,7 @@ import {
   FENCE_CHARACTER,
   PROMPT_FENCE_MIN,
 } from './prompt-fence.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Sheet evidence copied into a candidate
 // MEASURED ON MIO27 (2026-09-17): of 68 translate slate candidates, four
@@ -100,9 +101,15 @@ function fenceRunAtEnd({ line, }: { readonly line: string; },): number {
  The label of a fenced header line: a run of fence characters, a label, and
  another run, each run at least the sheets' shortest fence.
 
+ A LABEL IS WORDS A READER SEES, asked of `rendersAsNothing` (ledger B40):
+ asked of the trimmed text against the empty string, two fence runs around
+ one zero-width space or Hangul filler were refused as a sheet block whose
+ label the finding printed as nothing, where two runs around spaces passed.
+
  @param line - one line of a candidate
 
- @returns The label, or none for any other line
+ @returns The label, or none for any other line and for a label that shows a
+ reader nothing
 
  @example
  ```ts
@@ -136,7 +143,7 @@ function fencedLabel({ line, }: { readonly line: string; },): readonly string[] 
     trimmed.length - closing,
   )
     .trim();
-  return (label === '') ? [] : [label,];
+  return rendersAsNothing({ text: label, },) ? [] : [label,];
 }
 
 /**

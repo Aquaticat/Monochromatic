@@ -1,3 +1,5 @@
+import { rendersAsNothing, } from './renders-as-nothing.ts';
+
 //region Insertion separator
 // The whitespace nobody owns.
 //
@@ -187,6 +189,11 @@ export function fragmentBody(
 /**
  Builds the text to write at one insertion boundary.
 
+ A FRAGMENT THAT SHOWS A READER NOTHING WRITES NOTHING, asked of
+ `rendersAsNothing` (ledger B40): asked of an empty-string comparison, a
+ fragment of one zero-width space or Hangul filler opened a paragraph of its
+ own at the boundary, with separators around a block no reader sees.
+
  @param fragments - what the lanes produced for the slices anchored here, in
  document order
 
@@ -227,9 +234,11 @@ export function composeInsertion(
       return fragmentBody({ fragment, },);
     },)
     .filter(function saysSomething(text,): boolean {
-      return text !== '';
+      return !rendersAsNothing({ text, },);
     },)
     .join(eol.repeat(BLOCK_SEPARATOR_LINES,),);
+  // No fragment said anything: every one was filtered out, and the join of
+  // none is the empty string exactly.
   if (body === '')
     return '';
 

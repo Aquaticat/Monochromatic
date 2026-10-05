@@ -6,6 +6,7 @@ import { wordForCount, } from '../count-word.ts';
 import { runCoverageStage, } from '../coverage-stage.ts';
 import type { CoverageVerdict, } from '../coverage-verdict.ts';
 import { parseDocument, } from '../parse-document.ts';
+import { rendersAsNothing, } from '../renders-as-nothing.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { AnchorTarget, } from '../validate-issue.ts';
 import { decoyCut, } from './coverage-control-decoy.ts';
@@ -259,6 +260,11 @@ export type CoverageControlResult = {
  document. A caller that has to tell them apart checks that its spans are
  present before it cuts, as `tryCase` does.
 
+ A SPAN THAT SHOWS A READER NOTHING IS NO SPAN, asked of `rendersAsNothing`
+ (ledger B40) as an empty one is: cut as a span, one space took every space
+ of the document with it, and a zero-width space or a Hangul filler counted
+ as rendering deleted where no reader saw any.
+
  @internal
 
  @param text - document to cut from
@@ -291,7 +297,7 @@ export function withoutSpans(
    */
   const ordered = spans
     .filter(function isCuttable(span,): boolean {
-      return span !== '';
+      return !rendersAsNothing({ text: span, },);
     },)
     .toSorted(function longestFirst(
       left,
@@ -413,11 +419,12 @@ async function tryCase(
    `evidence` with the document's own text from the first anchor of each such
    claim to its last. The document it was handed is this translation
    (`runCoverageStage` passes it through), and an anchor is a located quote's
-   share of one block, which `locateQuote` never makes from an empty quote.
+   share of one block, which `locateQuote` never makes from a quote that
+   shows a reader nothing. Blank here is asked as `withoutSpans` asks it.
    */
   const everySpanPresent = (evidence.length > 0)
     && evidence.every(function isPresent(span,): boolean {
-      return (span !== '') && standingText.includes(span,);
+      return (!rendersAsNothing({ text: span, },)) && standingText.includes(span,);
     },);
   if (!everySpanPresent)
     throw new Error(
@@ -434,11 +441,15 @@ async function tryCase(
     spans: evidence,
   },);
 
-  // BLANK HERE MEANS EVERY CHARACTER WENT. `withoutSpans` answers blank for a
-  // document no span was present in as well, which `everySpanPresent` has
-  // ruled out, so this is a page the anchored spans covered whole: nothing of
-  // it remains to ask the roster about a second time.
-  if (damagedText === '')
+  // BLANK HERE MEANS EVERY CHARACTER A READER SEES WENT. `withoutSpans` answers
+  // blank for a document no span was present in as well, which
+  // `everySpanPresent` has ruled out, so this is a page the anchored spans
+  // covered whole: nothing of it remains to ask the roster about a second
+  // time. What remains is asked of `rendersAsNothing` (ledger B40), since a
+  // page ends in a line break no span covers: asked of an empty-string
+  // comparison, a one-sentence page whose sentence the roster quoted left
+  // `\n`, and the roster was asked a second round about it.
+  if (rendersAsNothing({ text: damagedText, },))
     return {
       where: probe.where,
       reason: 'cut-left-nothing',

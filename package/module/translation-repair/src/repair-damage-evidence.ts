@@ -1,4 +1,5 @@
 import type { RegionDefectTally, } from './introduced-defect-screen.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Repair damage evidence
 // WHAT THE LANE CONTEST IS SHOWN of the introduced-defect probe: the
@@ -125,9 +126,11 @@ function claimLine(
   },
 ): string {
   /**
-   Category as written, or a placeholder when the prober gave none.
+   Category as written, or a placeholder when the prober gave none: a
+   category showing a reader nothing is none (ledger B40), where an
+   empty-string comparison printed it to the judges as `[ ]`.
    */
-  const kind = (category === '') ? 'unspecified' : category;
+  const kind = rendersAsNothing({ text: category, },) ? 'unspecified' : category;
   return `- ${modelId} [${kind}] on the ${stage} quotes "${evidence}": ${reason}`;
 }
 

@@ -1,4 +1,5 @@
 import type { LaneSliceText, } from './lane-slice-text.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Wording coherence
 // The rule tying a lane's OUTCOME to the archive's own state at the same slice.
@@ -115,7 +116,7 @@ export class WordingCoherenceError extends Error {
 
  @throws {@link WordingCoherenceError} when the lane falls back on an
  incumbent that does not exist, reports a passage the archive translates as
- unfilled, or claims a decision that filled a gap with nothing
+ unfilled, or claims a decision that filled a gap with nothing a reader sees
 
  @example
  ```ts
@@ -172,9 +173,15 @@ export function assertWordingCoherent(
   // wording is empty and so is the archive, so the document carries the gap it
   // had; calling that a decision credits the lane with filling a passage it
   // left exactly as it found it.
+  //
+  // EMPTY IS WHAT SHOWS A READER NOTHING, asked as the translate lane asks it
+  // where it builds the record (`assertAbsentSliceFilled`, ledger B40), so
+  // the two never disagree: asked here of an empty-string comparison, a
+  // decision of one zero-width space or Hangul filler read from a caller or
+  // from disk passed as a passage filled.
   if ((outcome.kind === 'decided')
     && (incumbentKind === 'absent')
-    && (outcome.acceptedText === '')) {
+    && rendersAsNothing({ text: outcome.acceptedText, },)) {
     throw new WordingCoherenceError({
       sliceIndex,
       fault: 'empty-decision-without-archive',
