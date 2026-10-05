@@ -86,6 +86,17 @@ The targets share a single tuned dictionary at
   the flag policy every process),
    and reversing the rule order renumbers ids but never changes which positions
   match (rule-order invariance).
+- **`fuzz_embedding`**: exact native snapshots.
+  Drives the public scanner over arbitrary Unix pathname bytes and content snapshots.
+  Independent fixed-rule byte searches predict every content and pathname finding,
+  including binary-prefix cutoffs.
+  Unexpected `EngineError` records fail the oracle rather than being filtered away.
+  Positive controls cover both hybrid matcher subsets,
+  safe display encoding,
+  and matching-component redaction.
+  Committed seeds place NUL at either side of the 8192-byte boundary
+  and place a literal across the cutoff.
+  This target is Unix-only and deliberately does not exercise filesystem cache loading.
 - **`fuzz_cache_envelope`** -- hostile compiled-artifact framing.
   Drives the scanner-owned runtime cache decoder with arbitrary artifact bytes and
   arbitrary authoritative source bytes.
@@ -118,29 +129,42 @@ mise run //package/cli/forbidden-strings.fuzz:smoke
 mise run //package/cli/forbidden-strings.fuzz:run fuzz_literal_roundtrip -- -max_total_time=120
 ```
 
-## Bounded-container wrapper (resource-exhaustion rule)
+## Bounded embedding campaign
 
-The repo's resource-exhaustion-isolation policy applies:
- every fuzz command must run inside a memory-and-CPU-bounded container.
- Past authorisation does not transfer;
- each heavy run requires the wrapper.
+Run the embedding task through its owning container runner:
 
-```bash
-podman run \
-  --memory=2g \
-  --cpus=2 \
-  --rm \
-  -v "$PWD":/work \
-  -w /work \
-  <rust-nightly-image> \
-  mise run //package/cli/forbidden-strings.fuzz:smoke
+```sh
+# package/cli/forbidden-strings.fuzz/mise.toml
+mise run //package/cli/forbidden-strings.fuzz:smoke:embedding:container
 ```
 
-The image needs nightly Rust,
- cargo-fuzz,
- and clang.
- A local builder VM (`mvm`) is the recommended alternative when a prebuilt image
-isn't handy.
+The runner bakes source,
+committed seeds,
+vendored locked dependencies,
+the installed nightly compiler,
+and `cargo-fuzz` into an immutable image.
+It runs without network or host mounts as user `1000:1000`,
+with 2 GiB memory,
+2 CPUs,
+and 128 PIDs.
+AddressSanitizer is explicit.
+The campaign uses a 120-second budget,
+20,000-byte maximum input,
+10-second per-input timeout,
+and 1536 MiB libFuzzer RSS limit.
+Exact commands,
+source hashes,
+image IDs,
+transcripts,
+exit status,
+corpus,
+and artifacts remain under `target/verification/embedding-fuzz-*`.
+Failed evidence retrieval retains the disposable container.
+
+Other existing fuzz tasks still require a bounded container or builder VM;
+the embedding task does not claim coverage of every other target.
+See [native scanner verification](../../../doc/handover/scanner-native-verification.md)
+for exact campaign results and limitations.
 
 ## Corpus and artifact policy
 

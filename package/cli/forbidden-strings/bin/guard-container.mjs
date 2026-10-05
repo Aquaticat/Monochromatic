@@ -30,8 +30,12 @@ async function inject({ context, scanner, variant }) {
   await writeFile(mainPath, main);
   const loadPath = join(root, 'src/frx_load.rs');
   const load = await readFile(loadPath, 'utf8');
-  await writeFile(loadPath, replace({ source: load, oldText: '    if builtin_rules {',
-    newText: '    if native_path.file_name() == Some(std::ffi::OsStr::new("fixture-load-panic")) { panic!("SYNTHETIC_PRIVATE_PARTIAL_RULES"); }\n    if builtin_rules {' }));
+  let faultedLoad = replace({ source: load, oldText: '    if builtin_rules {',
+    newText: '    if native_path.file_name() == Some(std::ffi::OsStr::new("fixture-load-panic")) { panic!("SYNTHETIC_PRIVATE_PARTIAL_RULES"); }\n    if builtin_rules {' });
+  faultedLoad = replace({ source: faultedLoad,
+    oldText: 'Self::Runtime(rules) => return rules.line_matches(buf, starts),',
+    newText: 'Self::Runtime(rules) => { let pairs = rules.line_matches(buf, starts); if buf.starts_with(b"FIXTURE_PRIVATE_FAULT") { panic!("SYNTHETIC_PRIVATE_MATCHER"); } return pairs; },' });
+  await writeFile(loadPath, faultedLoad);
   if (variant === 'without-process-catch') {
     const path = join(root, 'src/process_boundary.rs');
     await writeFile(path, replace({ source: await readFile(path, 'utf8'),
@@ -42,6 +46,11 @@ async function inject({ context, scanner, variant }) {
     await writeFile(path, replace({ source: await readFile(path, 'utf8'),
       oldText: 'std::panic::catch_unwind(operation)', newText: 'Ok::<Result<LoadedRules>, ()>(operation())' }));
   }
+  if (variant === 'without-content-catch' || variant === 'without-name-catch') {
+    const path = join(root, 'src', variant === 'without-content-catch' ? 'frx_scan.rs' : 'path_scan.rs');
+    await writeFile(path, replace({ source: await readFile(path, 'utf8'),
+      oldText: 'catch_unwind(matcher)', newText: 'Ok::<Vec<(usize, usize)>, ()>(matcher())' }));
+  }
   const test = await readFile(join(import.meta.dirname, 'guard-fixture.rs.txt'));
   await writeFile(join(root, 'tests/panic_contract.rs'), test);
 }
@@ -49,7 +58,7 @@ async function inject({ context, scanner, variant }) {
 /** Every disabled variant must fail the previously passing assertion, not merely fail compilation. */
 async function main() {
   if (process.argv.length !== 2) throw new ScannerVerificationError('This task accepts no arguments.');
-  for (const variant of ['protected', 'without-output-hook', 'without-process-catch', 'without-load-catch']) {
+  for (const variant of ['protected', 'without-output-hook', 'without-process-catch', 'without-load-catch', 'without-content-catch', 'without-name-catch']) {
     const fixture = await snapshot({ name: `guard-${variant}`,
       command: ['cargo', 'test', '--offline', '--locked', '--test', 'panic_contract', '--', '--nocapture', '--test-threads=1'],
       transform: async ({ context, scanner }) => await inject({ context, scanner, variant }),
@@ -61,12 +70,14 @@ async function main() {
       const stdout = await readFile(join(fixture.evidence, 'stdout.log'), 'utf8');
       const stderr = await readFile(join(fixture.evidence, 'stderr.log'), 'utf8');
       const output = stdout + stderr;
-      const protectedPass = result.status === 0 && stdout.includes('2 passed') && stderr.includes('fixture-host-hook-called');
+      const protectedPass = result.status === 0 && stdout.includes('3 passed') && stderr.includes('fixture-host-hook-called');
       const disabledFailure = result.status === 101 && stdout.includes('FAILED') && output.includes('test result: FAILED');
       let expected = variant === 'protected' ? protectedPass : disabledFailure;
       if (variant === 'without-output-hook') expected = expected && output.includes('SYNTHETIC_PRIVATE_STARTUP');
       if (variant === 'without-process-catch') expected = expected && output.includes('actual CLI exit must be two');
       if (variant === 'without-load-catch') expected = expected && stdout.includes('public_loader_discards_partial_rules_and_preserves_host_hook ... FAILED');
+      if (variant === 'without-content-catch' || variant === 'without-name-catch')
+        expected = expected && stdout.includes('public_scan_catches_faults_without_retaining_partial_hits ... FAILED');
       await writeFile(join(fixture.evidence, 'control.json'), JSON.stringify({ variant, status: result.status, expected, protectedPass, disabledFailure }, null, 2) + '\n');
       if (!expected) throw new ScannerVerificationError(`Panic control did not prove the expected boundary: ${variant}; inspect ${fixture.evidence}.`);
     } finally {

@@ -112,6 +112,27 @@ The revised fuzzer compares every finding variant,
 uses a native pathname byte oracle,
 and includes explicit safe-display controls.
 
+The initial mutation campaign (`mutation-D4eD13`) completed with 134 mutants:
+91 caught,
+23 missed,
+18 unviable,
+and 2 timeouts.
+All reports and per-mutant logs were copied.
+Its feature-gated code ran without the feature enabled,
+so the next campaign enables all features.
+Pure Windows separator/prefix-counting helpers and supplied-prefix scan controls now execute those policy branches on Linux.
+A direct source-revalidation test covers changed and missing authoritative text.
+None of the missed branches was excluded.
+
+The initial ASan campaign (`embedding-fuzz-P0HOh1`) completed 332,829 runs in 121 seconds.
+It predates the all-variant oracle strengthening and is not final evidence for that strengthened target.
+
+The first disposable guard fixture passed public partial-load recovery,
+but its standalone help assertion expected `Usage:` instead of the scanner's actual `USAGE:`.
+The fixture assertion was corrected from the existing binary contract tests.
+This was a test expectation error,
+not a production scanner failure.
+
 Current work queue:
 
 - Finish container tests and inspect exact results.

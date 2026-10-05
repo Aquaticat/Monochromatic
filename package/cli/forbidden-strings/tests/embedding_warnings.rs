@@ -16,8 +16,8 @@ fn artifact(root: &Path) -> PathBuf {
     // A Vec work stack walks bounded fixture directories without recursive call depth.
     let mut pending: Vec<PathBuf> = vec![root.to_path_buf()];
     while let Some(directory) = pending.pop() {
-        for entry in std::fs::read_dir(directory).expect("fixture cache directory") {
-            let entry = entry.expect("fixture cache entry");
+        for outcome in std::fs::read_dir(directory).expect("fixture cache directory") {
+            let entry = outcome.expect("fixture cache entry");
             let path: PathBuf = entry.path();
             if path.is_dir() { pending.push(path); }
             else if path.file_name() == Some(std::ffi::OsStr::new("rules.bin")) { return path; }

@@ -29,8 +29,7 @@ secret without exposure on public CI logs.
 
 ## What's different
 
-- **Native binary startup.
-  ** Rust with `lto = true`,
+- **Native binary startup.** Rust with `lto = true`,
    `codegen-units = 1`,
    `opt-level = 3`,
   `panic = "unwind"`,
@@ -41,13 +40,11 @@ secret without exposure on public CI logs.
   later invocations reload compact exact-literal groups plus regex-only engine bytes and rebuild one Aho-Corasick
   matcher,
   which meets the measured sub-100 ms pre-commit budget.
-- **Linear-time matching.
-  ** The engine is derivative and product based with no
+- **Linear-time matching.** The engine is derivative and product based with no
   backtracking,
    so no rule combination can exhibit catastrophic-backtracking behaviour.
   A set-level SIMD prefilter lets clean lines skip per-rule work.
-- **Set-algebra rules.
-  ** Intersection `A & B` and complement `~(A)` are first-class in
+- **Set-algebra rules.** Intersection `A & B` and complement `~(A)` are first-class in
   the dialect,
    so "match X but not Y" needs no lookaround.
    PCRE-family engines
@@ -58,8 +55,7 @@ secret without exposure on public CI logs.
    their workaround is
   per-rule allowlists,
    which scale badly.
-- **Sensitive rules can live out-of-band.
-  ** The committed baseline holds non-sensitive
+- **Sensitive rules can live out-of-band.** The committed baseline holds non-sensitive
   rules;
    the gitignored appendix and the CI-only `FORBIDDEN_STRINGS_LIST` secret hold
   sensitive rules.
@@ -98,8 +94,7 @@ secret without exposure on public CI logs.
   cannot apply rule X only to YAML files.
 - **Per-rule allowlists**.
    No way to say "rule X but skip when it matches in path Y".
-- **No streaming or stdin input.
-  ** Files only;
+- **No streaming or stdin input.** Files only;
    the walker enumerates from disk.
 
 If you need any of those,
@@ -394,9 +389,7 @@ The engine is always in multiline and verbose mode,
 ones those two modes already imply:
 
 - `m` (multiline) and `x` (verbose) are accepted as no-ops and dropped.
-- **Any other flag letter is a hard,
-   fail-closed load error.
-  ** Silently dropping an `i` or
+- **Any other flag letter is a hard, fail-closed load error.** Silently dropping an `i` or
   an `s` would change match semantics (case folding,
    dot-matches-newline),
    so the loader
@@ -570,10 +563,7 @@ PATH:name:SEGMENT rule=<token>
   `COL_START..COL_END` segment appears.
 - One content finding is emitted per `(line, rule)` pair; one name finding per
   `(segment, rule)` pair.
-- **The matched substring,
-   the line content,
-   and the rule pattern are never printed.
-  **
+- **The matched substring, the line content, and the rule pattern are never printed.**
   Only the path,
    line number,
    and rule identity token appear,
@@ -586,15 +576,13 @@ PATH:name:SEGMENT rule=<token>
 
 Two synthetic findings keep the scan fail-closed:
 
-- **Read errors.
-  ** A file that cannot be opened (broken symlink,
+- **Read errors.** A file that cannot be opened (broken symlink,
    permission denied,
    deleted
   during scan) produces `PATH: read error: <reason>` on stderr and counts toward the
   exit-1 total.
    A secret-scanning gate must not pass silently on a file it could not inspect.
-- **Engine errors.
-  ** If the matcher panics on a file,
+- **Engine errors.** If the matcher panics on a file,
    the `catch_unwind` boundary in
   `scan_one_set` (`src/frx_scan.rs`) catches it and emits `PATH: engine error`,
    again
@@ -631,16 +619,14 @@ The redaction guarantee is what lets a rule body itself be a secret.
  Two boundaries carry
 it:
 
-- **Load path.
-  ** Rule compilation reports only `LoadError` (`src/rule/frx/error.rs`),
+- **Load path.** Rule compilation reports only `LoadError` (`src/rule/frx/error.rs`),
    whose
   every variant is an opaque index plus the engine's static reason;
    no pattern bytes reach
   a diagnostic.
    The compiler builds through `RegexSet::new` / `RegexSet::from_bytes`,
   neither of which logs the pattern.
-- **Scan path.
-  ** Content findings use `PATH:LINE rule=N` in `src/frx_scan.rs`;
+- **Scan path.** Content findings use `PATH:LINE rule=N` in `src/frx_scan.rs`;
    name findings use `PATH:name:SEGMENT rule=N` in `src/path_scan.rs`.
    The matched content and line text are never included.
    A name matching any rule is masked in the shared pathname before either finding is formatted.
@@ -692,11 +678,73 @@ The adapter accepts native `Path` values for rule files and logical candidate na
 Pathname components are matched as native bytes;
 unmatched non-UTF-8 bytes are escaped only for display,
 and matching components remain fully masked.
-Public loader/consumer controls use a separate process with disposable home/cache state.
-Verification of these additions,
-panic-hook stderr redaction,
-and the full container/mutation/fuzz gates remain pending.
+Public loader/consumer controls use separate processes with disposable home/cache state.
+The library catches loading and matcher unwinds without changing the process-wide panic hook.
+Embedding hosts must configure payload-free panic output before creating workers,
+and their effective Cargo profile must use `panic = "unwind"`.
+A dependency profile cannot impose that strategy on its consumer.
+A hook controls panic output;
+a separate catch boundary determines failure findings or loader errors.
+
+The standalone executable owns its output-omitting hook and final exit-2 unwind boundary.
+It does not print panic payloads,
+thread names,
+or caller locations.
+No production environment variable enables fault injection.
 This is not a production-cutover announcement.
+
+## Scanner verification
+
+Owning tasks run against immutable copied-source images with Git 2.56.0,
+no host mounts,
+no network,
+user `1000:1000`,
+2 GiB memory,
+2 CPUs,
+and 128 PIDs.
+They do not replace installed production binaries.
+
+```sh
+# package/cli/forbidden-strings/mise.toml
+mise run //package/cli/forbidden-strings:test:container
+mise run //package/cli/forbidden-strings:test:release:container
+mise run //package/cli/forbidden-strings:lint:clippy:container
+mise run //package/cli/forbidden-strings:test:mutation:container
+mise run //package/cli/forbidden-strings:test:guards:container
+mise run //package/cli/forbidden-strings.fuzz:smoke:embedding:container
+mise run //package/cli/forbidden-strings:verify:markdown
+```
+
+Tests and Clippy enable all features.
+Mutation covers embedding owners,
+including the executable boundary;
+only the pre-existing shipped-corpus compiler conformance tests are omitted from repeated mutant executions.
+Normal container suites run those tests too.
+No mutation branch is excluded to remove a survivor.
+
+Evidence under `target/verification/` contains per-file source hashes,
+immutable image IDs,
+commands,
+tool metadata,
+transcripts,
+exit statuses,
+and complete mutation reports or fuzz corpus/artifacts.
+A repository `HEAD` in a manifest is context,
+not a substitute for the copied-byte inventory.
+A failed evidence copy retains its disposable container for recovery.
+
+The panic task injects startup,
+worker,
+and partial-load faults only into disposable copied source.
+Protected tests must pass;
+removing each output/control-flow guard must make the same consumer test fail after rebuilding.
+Windows separator/counting policy is exercised with explicit target semantics on Linux;
+Windows's native volume-prefix parser still requires a Windows host.
+See [native scanner verification](../../../doc/handover/scanner-native-verification.md)
+for exact results,
+source snapshots,
+commits,
+and retained survivor limitations.
 
 ## Integration
 
@@ -739,8 +787,7 @@ Pull-request and merge-queue jobs scan changed files relative to `origin/main`;
 
 ## Walker behaviour
 
-- **`--all` semantics.
-  ** Walks the working tree via `ignore::WalkBuilder` in `src/walk.rs`:
+- **`--all` semantics.** Walks the working tree via `ignore::WalkBuilder` in `src/walk.rs`:
   `.hidden(false)` (dotfiles like `.github/`,
    `.npmrc` ARE scanned),
    `.ignore(false)` (the
@@ -750,19 +797,15 @@ Pull-request and merge-queue jobs scan changed files relative to `origin/main`;
   `.gitignore` (`git add -f`) are recovered via an in-process `gix-index` read of
   `.git/index`;
    no git subprocess.
-- **`.git/` and `.jj/` skipped.
-  ** Internal VCS state is never scanned.
-- **Symlinks NOT followed.
-  ** `WalkBuilder`'s default `follow_links` is false;
+- **`.git/` and `.jj/` skipped.** Internal VCS state is never scanned.
+- **Symlinks NOT followed.** `WalkBuilder`'s default `follow_links` is false;
    symlinked
   directories are not descended,
    symlinked files surface as a read-error synthetic hit on a
   broken target.
-- **Non-UTF-8 paths silently dropped.
-  ** Index entries that are not valid UTF-8 are excluded
+- **Non-UTF-8 paths silently dropped.** Index entries that are not valid UTF-8 are excluded
   from the walk.
-- **Binary-file 8 KiB tail cap.
-  ** Files whose first 8 KiB contains a NUL byte are scanned
+- **Binary-file 8 KiB tail cap.** Files whose first 8 KiB contains a NUL byte are scanned
   only in the first 8 KiB.
    The leading window always runs,
    so secrets there fire;
@@ -770,8 +813,7 @@ Pull-request and merge-queue jobs scan changed files relative to `origin/main`;
   past 8 KiB is skipped.
    Constant `BIN_PROBE_SIZE` and `read_with_binary_check` in
   `src/lib.rs`.
-- **Self-skip set.
-  ** During `--all`,
+- **Self-skip set.** During `--all`,
    canonical paths are auto-skipped so rule bodies do not
   self-match:
    the materialised rules file (whatever `--rules` / env var / default resolves
@@ -838,34 +880,29 @@ commands,
 
 ## Architecture
 
-- **Two-form loader.
-  ** `src/rule/frx` owns the rule-file format and preserves whether each rule was written as a bare literal or an
+- **Two-form loader.** `src/rule/frx` owns the rule-file format and preserves whether each rule was written as a bare literal or an
   explicit regex.
   Bare literals still escape into the verbose dialect for the public engine compiler;
   runtime scanning instead retains their exact bytes.
   `/PATTERN/FLAGS` lines and multiline tail sections remain restricted regex rules,
   validated under their original global rule ids.
-- **Hybrid runtime matcher.
-  ** `src/runtime_matcher.rs` de-duplicates exact literals into one overlapping Aho-Corasick matcher and compiles only
+- **Hybrid runtime matcher.** `src/runtime_matcher.rs` de-duplicates exact literals into one overlapping Aho-Corasick matcher and compiles only
   explicit regex rules into `RegexSet`.
   Both subset-local outputs map back to original ids,
   sort,
   and de-duplicate before finding attribution.
-- **Content-addressed runtime cache.
-  ** `src/runtime_cache/` hashes exact authoritative text,
+- **Content-addressed runtime cache.** `src/runtime_cache/` hashes exact authoritative text,
   selects a scanner-version and platform partition,
   validates scanner-owned envelope metadata,
   rebuilds the literal matcher from compact groups,
   and decodes optional regex-only engine bytes.
   Scan-time repair and `compile-rules` share the same atomic publisher.
-- **Line-based batch scan.
-  ** `src/frx_scan.rs` splits each file's bytes into lines once and hands the buffer plus line-start offsets through a
+- **Line-based batch scan.** `src/frx_scan.rs` splits each file's bytes into lines once and hands the buffer plus line-start offsets through a
   common matcher interface.
   Runtime sets merge Aho-Corasick and regex-subset ids;
   the built-in baseline retains `RegexSet::line_matches`.
   Each set runs under a `catch_unwind` boundary so a matcher fault fails closed as a synthetic finding.
-- **Build-time baseline precompilation.
-  ** `build.rs` compiles `data/builtin-rules.txt` through the engine once at build time and serializes it
+- **Build-time baseline precompilation.** `build.rs` compiles `data/builtin-rules.txt` through the engine once at build time and serializes it
   (`to_bytes`);
   `lib.rs` embeds the blob with `include_bytes!` and the loader rebuilds it via the validating
   `from_bytes`,
@@ -875,21 +912,18 @@ commands,
   so `Cargo.toml` sets `build-override` `opt-level = 3` for the release and dev profiles,
   and the engine builds the baseline's rules on one worker thread per core
   (see [the Cargo build-override write-up](../../../doc/troubleshooting/cargo-build-override-opt-level.md)).
-- **Concurrent load and walk.
-  ** Rule loading and `--all` file walking run concurrently via
+- **Concurrent load and walk.** Rule loading and `--all` file walking run concurrently via
   `rayon::join` (they share no state);
    files then fan out across the rayon thread pool for
   the parallel scan.
-- **`ignore` crate walker + in-process gix-index union.
-  ** `--all` uses `ignore::WalkBuilder`
+- **`ignore` crate walker + in-process gix-index union.** `--all` uses `ignore::WalkBuilder`
   (honouring `.gitignore`,
    `.git/info/exclude`,
    and global excludes) and unions the result
   with an in-process `gix_index::File` read of `.git/index` so `git add -f` files are still
   discovered.
    See `src/walk.rs`.
-- **Bundled `data/betterleaks-default-config.toml`.
-  ** Upstream-vendored provenance for the
+- **Bundled `data/betterleaks-default-config.toml`.** Upstream-vendored provenance for the
   betterleaks port;
    the embedded baseline is derived from it,
    and
