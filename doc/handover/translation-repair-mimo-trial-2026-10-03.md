@@ -683,6 +683,25 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  00:38 UTC:
+  the next batch's baseline census taken at commit `40af0f949`:
+  `census written to ~/.cache/translation-repair/coverage/census-TXnKot/census.json`
+  (`~/temp/agent/mimo-trial/census-78.log`),
+  `library source: 101 files, 153 stretches over 353 lines, 4 functions never called`.
+  The ranking's first seven clusters carry documented-left arms
+  or the attribution quirk's records.
+  The next actionable cluster is `resolution`
+  with 3 stretches over 3 lines in 1 file
+  (`resolution-wire.ts:321`,
+  `328`,
+  `348`),
+  then `claim`,
+  `corpus-run/canadian`.
+  This line lands in the trial-log commit that follows `40af0f949`.
+  Next:
+  the `resolution` batch.
+
+- 2026-10-05,
   00:31 UTC:
   the T8 `photo` batch closed with commits `8284b4b4f`,
   `b5cae5d8a`:
