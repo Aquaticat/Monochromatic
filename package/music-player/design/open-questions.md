@@ -57,7 +57,10 @@ D26 scan-F study and verified 32-view viewer at
 `questions/scan-indicator.html`,
 without real analysis,
 revised consent defaults or a scan-policy ballot.
-Settings/template editor design remains an independent queue item.
+`doc/planning/music-player-light-settings.md` starts the D11 Settings-pane
+study with its source audit;
+no native Settings evidence exists yet.
+The template editor design remains an independent queue item.
 Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects

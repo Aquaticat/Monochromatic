@@ -156,24 +156,32 @@ Both are observations of D26's fixed 100dp control and single-line status.
 The human has not been asked to decide anything about them.
 
 What to inspect first for the next item:
+`doc/planning/music-player-light-settings.md`,
+which holds the completed source audit,
+the constraints from D49 to D51 and E2,
+the interactions the audit cannot settle and the remaining queue;
 D11 in `decisions.md`,
 which selects candidate settings-a;
-section 11d and 11e of `open-questions.md`;
 and `doc/planning/music-player-light-scan-indicator.md` as the pattern for
-a source audit,
-isolated native host,
+an isolated native host,
 fit study and publication.
 
 What remains:
 carry D11's accepted Settings pane into the current Fold player and its
-light/dark schemes,
-starting with an executable-source audit and a plan under `doc/planning/`.
+light/dark schemes.
+The source audit is done.
+Production Settings is a page-control chooser,
+not D11's three rows.
+The proposed placement to build follows D51:
+Settings on the right of the inner panel with the browser and deck kept,
+and one full-width destination on the cover.
 Keep D81's template editor out of that fit study;
 its fields,
 grammar and controls are undesigned and need the human.
 
 How to respond:
-continue the queue directly with the Settings source audit.
+continue the queue directly with the MD3 switch re-check,
+then the authored Settings fixture and isolated native host.
 Do not reopen the scan padding question,
 re-run scan capture,
 or offer Settings-template or scan-policy ballots.
