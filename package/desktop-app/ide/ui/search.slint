@@ -1,0 +1,145 @@
+// Transient combined search. Native code owns query generations and native-path result identities.
+import { LineEdit, ScrollView, Palette } from "std-widgets.slint";
+
+export struct SearchEntry {
+    path: string,
+    detail: string,
+    preview: string,
+}
+
+export component ProjectSearch inherits Rectangle {
+    in property <[SearchEntry]> entries;
+    in property <string> scope-label;
+    in property <string> error-message;
+    in property <bool> busy;
+    in-out property <string> query;
+    in-out property <int> selected-row: -1;
+    callback edited(string);
+    callback choose(int);
+    callback dismiss;
+    background: Palette.background;
+    border-width: 1px;
+    border-color: Palette.foreground;
+    accessible-role: dialog;
+    accessible-label: "Search files and contents";
+    forward-focus: input;
+    public function focus-query() { input.focus(); }
+    public function reset-scroll() { results.content-y = 0px; }
+    private property <length> row-height: 64px;
+
+    function move-selection(delta: int) {
+        if root.entries.length == 0 { return; }
+        root.selected-row = mod(root.selected-row + delta + root.entries.length, root.entries.length);
+        if results.content-y + root.selected-row * root.row-height < 0px {
+            results.content-y = -root.selected-row * root.row-height;
+        } else if results.content-y + (root.selected-row + 1) * root.row-height > results.visible-height {
+            results.content-y = results.visible-height - (root.selected-row + 1) * root.row-height;
+        }
+    }
+
+    // Capture result-navigation keys before the native line edit consumes them.
+    FocusScope {
+        width: parent.width;
+        height: parent.height;
+        capture-key-pressed(event) => {
+            if event.text == Key.Escape { root.dismiss(); return accept; }
+            if event.text == Key.Tab { return accept; }
+            if event.text == Key.DownArrow { root.move-selection(1); return accept; }
+            if event.text == Key.UpArrow { root.move-selection(-1); return accept; }
+            if event.text == Key.Return { root.choose(root.selected-row); return accept; }
+            reject
+        }
+        VerticalLayout {
+            padding: 12px;
+            spacing: 8px;
+            Text {
+                height: 28px;
+                text: "Search · " + root.scope-label;
+                color: Palette.foreground;
+                font-weight: 600;
+                overflow: elide;
+                vertical-alignment: center;
+            }
+            input := LineEdit {
+                min-width: 48px;
+                min-height: 48px;
+                max-height: 48px;
+                text <=> root.query;
+                placeholder-text: "Files and contents · % for contents only";
+                accessible-label: "Search query";
+                edited(text) => { root.edited(text); }
+            }
+            if root.busy || (root.query != "" && root.entries.length == 0 && root.error-message == ""): Text {
+                text: root.busy ? "Searching…" : "No results";
+                color: Palette.foreground;
+                font-weight: 600;
+            }
+            if root.error-message != "": ScrollView {
+                max-height: 96px;
+                content-width: self.visible-width;
+                Text {
+                    width: parent.visible-width;
+                    text: root.error-message;
+                    color: Palette.foreground;
+                    font-weight: 600;
+                    wrap: word-wrap;
+                }
+            }
+            results := ScrollView {
+                vertical-stretch: 1;
+                content-width: self.visible-width;
+                content-height: max(self.visible-height, root.entries.length * root.row-height);
+                accessible-role: list;
+                accessible-label: "Search results";
+                accessible-item-count: root.entries.length;
+                // At most 50 rows exist. No virtual row can redirect a held click to a newly bound item.
+                for entry[index] in root.entries: Rectangle {
+                    y: index * root.row-height;
+                    width: max(48px, results.visible-width);
+                    height: root.row-height;
+                    private property <bool> selected: index == root.selected-row;
+                    background: selected ? Palette.selection-background : transparent;
+                    border-width: selected ? 1px : 0px;
+                    border-color: Palette.foreground;
+                    accessible-role: list-item;
+                    accessible-label: entry.path;
+                    accessible-description: entry.detail + " " + entry.preview;
+                    accessible-item-selected: selected;
+                    accessible-item-selectable: true;
+                    accessible-item-index: index;
+                    accessible-action-default => { root.choose(index); }
+                    Text {
+                        x: 8px;
+                        y: 6px;
+                        width: parent.width - 16px;
+                        height: 24px;
+                        text: entry.path;
+                        color: parent.selected ? Palette.selection-foreground : Palette.foreground;
+                        font-weight: parent.selected ? 600 : 400;
+                        overflow: elide;
+                    }
+                    Text {
+                        x: 8px;
+                        y: 32px;
+                        width: parent.width - 16px;
+                        height: 24px;
+                        text: entry.detail + (entry.preview == "" ? "" : " · " + entry.preview);
+                        color: parent.selected ? Palette.selection-foreground : Palette.foreground;
+                        overflow: elide;
+                    }
+                    TouchArea {
+                        width: parent.width;
+                        height: parent.height;
+                        private property <[SearchEntry]> pressed-entries;
+                        pointer-event(event) => {
+                            if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
+                                self.pressed-entries = root.entries;
+                            }
+                        }
+                        clicked => { if self.pressed-entries == root.entries { root.choose(index); } }
+                    }
+                }
+            }
+        }
+    }
+}

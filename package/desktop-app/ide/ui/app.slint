@@ -1,6 +1,7 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
 import { Palette } from "std-widgets.slint";
 import { ProjectTree, TreeEntry } from "tree.slint";
+import { ProjectSearch, SearchEntry } from "search.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -32,6 +33,7 @@ export component AppWindow inherits Window {
     out property <length> tree-scroll-y: project-tree.scroll-y;
     out property <length> tree-viewport-height: project-tree.viewport-height;
     callback tree-activate(int);
+    callback tree-user-focus(int);
     callback tree-navigate(string, int);
     callback tree-shortcut(string, bool, bool, bool);
     public function reveal-tree(index: int) { project-tree.reveal(index); }
@@ -40,6 +42,24 @@ export component AppWindow inherits Window {
     public function reset-source-scroll() {
         scroll.content-x = 0px;
         scroll.content-y = 0px;
+    }
+
+    in-out property <bool> search-open;
+    in-out property <string> search-query;
+    in-out property <int> search-selected: -1;
+    in property <[SearchEntry]> search-entries;
+    in property <string> search-scope;
+    in property <string> search-error;
+    in property <bool> search-busy;
+    callback shortcut-observed(string, bool) -> bool;
+    callback search-edited(string);
+    callback search-choose(int);
+    callback search-dismiss;
+    public function focus-search() { search-panel.focus-query(); }
+    public function reset-search-scroll() { search-panel.reset-scroll(); }
+    public function reveal-source-line(line: int) {
+        scroll.content-x = 0px;
+        scroll.content-y = -min(max(0, line) * root.line-height, max(0px, scroll.content-height - scroll.height));
     }
 
     in property <bool> source-available: true;
@@ -94,6 +114,18 @@ export component AppWindow inherits Window {
         text: root.selected-text;
     }
 
+    // Capture observes source, tree, and search input without swallowing their ordinary key behavior.
+    FocusScope {
+        width: parent.width;
+        height: parent.height;
+        capture-key-pressed(event) => {
+            root.shortcut-observed(event.text, true);
+            reject
+        }
+        capture-key-released(event) => {
+            if root.shortcut-observed(event.text, false) { return accept; }
+            reject
+        }
     HorizontalLayout {
         spacing: 0px;
         project-tree := ProjectTree {
@@ -106,6 +138,7 @@ export component AppWindow inherits Window {
             error-message: root.tree-error;
             focused-row <=> root.tree-focused-row;
             activate(index) => { root.tree-activate(index); }
+            user-focus(index) => { root.tree-user-focus(index); }
             navigate(key, index) => { root.tree-navigate(key, index); }
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
@@ -236,5 +269,28 @@ export component AppWindow inherits Window {
                 wrap: word-wrap;
             }
         }
+    }
+    Rectangle {
+        visible: root.search-open;
+        width: parent.width;
+        height: parent.height;
+        Rectangle { width: parent.width; height: parent.height; background: Palette.foreground; opacity: 0.18; }
+        TouchArea { width: parent.width; height: parent.height; clicked => { root.search-dismiss(); } }
+        search-panel := ProjectSearch {
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            width: min(800px, parent.width - 32px);
+            height: min(560px, parent.height - 32px);
+            entries: root.search-entries;
+            query <=> root.search-query;
+            selected-row <=> root.search-selected;
+            scope-label: root.search-scope;
+            error-message: root.search-error;
+            busy: root.search-busy;
+            edited(text) => { root.search-edited(text); }
+            choose(index) => { root.search-choose(index); }
+            dismiss => { root.search-dismiss(); }
+        }
+    }
     }
 }

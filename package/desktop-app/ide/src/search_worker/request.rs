@@ -39,7 +39,8 @@ pub(super) async fn run(workspace: &Workspace, request: &Request) -> Option<Sear
             // const results = await search(root, request);
             // if (results === undefined) return undefined;
             // ```
-            let results = search_process::search(&root, &request.query, &request.cancellation).await?;
+            let results =
+                search_process::search(&root, &request.query, &request.cancellation).await?;
             (root, results)
         }
         Err(error) => {

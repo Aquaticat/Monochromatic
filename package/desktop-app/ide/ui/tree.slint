@@ -19,6 +19,7 @@ export component ProjectTree inherits Rectangle {
     out property <length> scroll-y: view.content-y;
     out property <length> viewport-height: view.visible-height;
     callback activate(int);
+    callback user-focus(int);
     callback navigate(string, int);
     callback shortcut(string, bool, bool, bool);
     private property <length> row-height: 48px;
@@ -135,6 +136,7 @@ export component ProjectTree inherits Rectangle {
                         if self.pressed-index != index || self.pressed-entries != root.entries { return; }
                         tree-focus.focus();
                         root.focused-row = index;
+                        root.user-focus(index);
                         root.activate(index);
                     }
                 }
@@ -170,12 +172,15 @@ export component ProjectTree inherits Rectangle {
                 root.reveal(min(root.entries.length - 1,
                     root.focused-row + max(1, floor(view.visible-height / root.row-height))));
             } else if event.text == Key.Return || event.text == Key.Space {
+                root.user-focus(root.focused-row);
                 root.activate(root.focused-row);
+                return accept;
             } else if event.text == Key.LeftArrow || event.text == Key.RightArrow {
                 root.navigate(event.text, root.focused-row);
             } else {
                 return reject;
             }
+            root.user-focus(root.focused-row);
             accept
         }
     }
