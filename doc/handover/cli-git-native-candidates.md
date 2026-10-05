@@ -54,6 +54,8 @@ Oldest first:
 - `ab9339a50` draft of this document
 - `c2690ad39` run one policy pass through the public candidate and scanner interface
 - `a815718f4` pin the declared-size check against a source that grows after reporting its end
+- `7483bef30` update of this document
+- `d34761d35` compile the test targets while the gate image is built
 
 The commit message of `2d2f4c7e4` states wrong counts;
 a corrective commit comment is on GitHub.
@@ -482,10 +484,19 @@ and the first gate run stopped because the tester could not read it.
 
 The memory bound was not raised and compiler jobs were not lowered;
 the build was never killed.
-The container build of the test targets takes about 2 to 3 minutes with the scanner
-(125 seconds in one run,
-183 and 193 seconds in runs that shared the host with other builds),
-where the wrapper alone took seconds.
+The container build of the test targets took 125 seconds with the scanner in one run,
+between 183 and 301 seconds in runs that shared the host with other sessions' builds,
+and 3.51 seconds for the wrapper alone in the baseline run.
+
+Every container started from the gate image used to compile from nothing:
+the gate's test run,
+each of the mutation runner's five planted controls,
+and the mutation baseline,
+which the runner bounds at 300 seconds per build.
+Commit `d34761d35` adds one build step to the image
+(`cargo test --offline --locked --all-targets --no-run`),
+so those containers rebuild only what changed.
+The Clippy run uses the mounted host toolchain and still compiles for itself.
 
 ## Gate results
 
@@ -542,6 +553,11 @@ failed ones included.
   The host's load average was above 70 with other sessions' containers,
   and the unit tests took 147.55 seconds where an unloaded run took 6.03.
   Evidence `native-81pAf1`.
+- `a815718f4`,
+  before the image build step existed:
+  stopped by hand while the image was being built,
+  because the runner was about to change.
+  It produced no result.
 - GATE-FINAL-PENDING
 
 ## Mutation testing
@@ -623,7 +639,24 @@ while other sessions were running containers on the host.
 Three leftover containers of this worktree's run image were removed by hand.
 Evidence `package/git-policy/cli.fuzz/target/verification/campaign-xNWDLy`.
 
-SMOKE-PENDING
+The second run,
+on the sources of `a815718f4`,
+exited with status 0:
+
+- `global_arguments`: 971,930 executions, exit status 0.
+- `config_loading`: 363,596 executions, exit status 0.
+- `config_schema`: 19,909 executions, exit status 0.
+- `batch_reply`: 89,225 executions in 31 seconds, exit status 0,
+  684 inputs added to the corpus,
+  no crash artifact,
+  peak resident memory 483 MiB.
+
+Evidence `package/git-policy/cli.fuzz/target/verification/campaign-zPxrE8`;
+its manifest records base image `62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884`.
+The execution counts of the first three targets differ from the first run by more than a factor of two;
+both runs shared the host with other sessions,
+so the counts say the targets ran,
+not how fast they are.
 
 ## Public API for the optional-policy phase
 
@@ -731,8 +764,12 @@ each is additive.
   one import,
   `...scannerSnapshotEntries({ context })` in the copy list,
   one `await vendorLockedDependencies({ context: context.path })`,
-  and two `COPY --chown=1000:1000` lines for `vendor` and `cargo-config`.
-  Commits `975260fc9` and `d2d8860be`.
+  two `COPY --chown=1000:1000` lines for `vendor` and `cargo-config`,
+  and one `RUN ["cargo", "test", "--offline", "--locked", "--all-targets", "--no-run"]` line
+  after `WORKDIR`,
+  described under "Gate snapshot and vendoring".
+  Commits `975260fc9`,
+  `d2d8860be` and `d34761d35`.
 - `package/git-policy/cli/bin/native-scanner-snapshot.mjs`:
   new,
   holding those two helpers so the runner stays under the 300-line limit of its Oxlint configuration.
