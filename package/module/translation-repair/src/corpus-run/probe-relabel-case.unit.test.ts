@@ -35,7 +35,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { mkdir, writeFile, } from 'node:fs/promises';
-import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -294,23 +293,68 @@ await describe({
             );
             await mkdir(join(runs.path, 'artifacts',), { recursive: true, },);
             using pointed = runsDirPointedAt({ path: runs.path, },);
+            /**
+             Where the artifact of the drawn entry sits.
+             */
+            const artifactPath = join(runs.path, 'artifacts', 'Kitten.json',);
+            /**
+             Pin naming a clone that does not exist, so a case that reached
+             the corpus read would be refused there and read no page.
+             */
+            const pin = {
+              cloneDir: join(runs.path, 'no-clone-here',),
+              commitSha: 'deadbeef',
+            };
+            // THE DAMAGED POSITION DRAWS `adjudicated/never`, and the entry
+            // settled a record under the other id only, so the gatherer
+            // compares the two ids and finds no match.
             await writeFile(
-              join(runs.path, 'artifacts', 'Kitten.json',),
+              artifactPath,
               JSON.stringify({
                 id: 'Kitten',
                 status: 'settled',
-                issues: [],
+                issues: [{
+                  issue: {
+                    issueId: 'adjudicated/naps',
+                    status: 'accepted',
+                    severity: 'major',
+                    claims: [],
+                  },
+                },],
               },),
               'utf8',
             );
-            const gathered = await gatherRelabelCases({
+            expect(await gatherRelabelCases({
               manifestPath,
-              pin: {
-                cloneDir: join(homedir(), 'one-among-us/data',),
-                commitSha: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
-              },
-            },);
-            expect(gathered.length,).toBe(0,);
+              pin,
+            },),).toEqual([],);
+            // THE CONTROL: with the drawn id settled, the gatherer goes on to
+            // the page, which the absent clone refuses. So the empty answer
+            // came from the id comparison and from nothing before it.
+            await writeFile(
+              artifactPath,
+              JSON.stringify({
+                id: 'Kitten',
+                status: 'settled',
+                issues: [{
+                  issue: {
+                    issueId: 'adjudicated/never',
+                    status: 'accepted',
+                    severity: 'major',
+                    claims: [],
+                  },
+                },],
+              },),
+              'utf8',
+            );
+            await expect(gatherRelabelCases({
+              manifestPath,
+              pin,
+            },),).rejects
+              .toThrow(
+                'corpus read failed for deadbeef:people/Kitten/page.md (other); check that the clone exists and '
+                  + 'the pinned commit is present.',
+              );
           },
         },),
       ],

@@ -165,6 +165,15 @@ await describe({
       name: 'REFUSES a reply that is no object, a judgment that is no object, and a reference that is no '
         + 'number, since nothing there binds a judgment to a seed',
       fn: async () => {
+        // NULL AND A NUMERAL IN QUOTES ARE THE VALUES THE GUARDS ARE FOR: a
+        // number or a word is refused by the checks behind them anyway, a
+        // field read off null throws, and `'1'` passes every arithmetic
+        // check a number would.
+        expect(isRestorationJudgeWire(null,),).toBe(false,);
+        expect(isRestorationJudgeWire({ judgments: [null,], },),).toBe(false,);
+        expect(isRestorationJudgeWire({
+          judgments: [{ reference: '1', verdict: 'restored', },],
+        },),).toBe(false,);
         expect(isRestorationJudgeWire(5,),).toBe(false,);
         expect(isRestorationJudgeWire({ judgments: [5,], },),).toBe(false,);
         expect(isRestorationJudgeWire({
@@ -174,10 +183,10 @@ await describe({
     },),
 
     it({
-      name: 'FINDS A DUPLICATE JUDGMENT where two judgments name one reference, since one seed gets one '
-        + 'verdict',
+      name: 'FINDS A DUPLICATE JUDGMENT where two judgments name one reference and KEEPS THE FIRST, since '
+        + 'one seed gets one verdict',
       fn: async () => {
-        const resolved = resolveRestorationJudgment({
+        expect(resolveRestorationJudgment({
           wire: {
             judgments: [{
               reference: 1,
@@ -188,8 +197,10 @@ await describe({
             },],
           },
           seedIds: ['seed/omission-0',],
+        },),).toEqual({
+          verdicts: { 'seed/omission-0': 'restored', },
+          findings: ['duplicate-judgment (1)',],
         },);
-        expect(resolved.findings,).toContain('duplicate-judgment (1)',);
       },
     },),
   ],

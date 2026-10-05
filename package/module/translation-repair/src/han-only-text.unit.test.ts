@@ -73,11 +73,12 @@ await describe({
 
     it({
       name: 'READS AN EMPTY STRING as no character at all, and CARRIES an ASCII letter where one is in '
-        + 'the range',
+        + 'the range and not where the text\'s one letter stands outside it',
       fn: async () => {
         expect(isHanCharacter({ character: '', },),).toBe(false,);
         expect(carriesAsciiLetter({ text: '猫a猫', from: 0, to: 3, },),).toBe(true,);
         expect(carriesAsciiLetter({ text: '猫猫猫', from: 0, to: 3, },),).toBe(false,);
+        expect(carriesAsciiLetter({ text: 'a猫猫', from: 1, to: 3, },),).toBe(false,);
       },
     },),
   ],

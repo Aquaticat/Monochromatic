@@ -953,7 +953,10 @@ await describe({
       name: 'WRAPS a thrown value that is no Error into one, so the retry outcome always carries a failure '
         + 'the caller can read',
       fn: async () => {
-        await expect(exchangeWithRetry({
+        /**
+         Exchange over a transport that throws a bare string.
+         */
+        const attempt = exchangeWithRetry({
           transport: async function transport(): Promise<TransportReply> {
             // A thrown value that is no Error, as a hostile transport might.
             // Typed `unknown` so the throw carries no literal the lint reads
@@ -963,7 +966,11 @@ await describe({
           },
           exchange: exchangeWith({ signal: new AbortController().signal, },),
           policy: FAST_POLICY,
-        },),).rejects.toThrow('the cat knocked the cable',);
+        },);
+        // THE CLASS FIRST: the message matcher reads a bare string's own
+        // text, so the string rejected unwrapped would satisfy it alone.
+        await expect(attempt,).rejects.toThrow(Error,);
+        await expect(attempt,).rejects.toThrow('the cat knocked the cable',);
       },
     },),
   ],

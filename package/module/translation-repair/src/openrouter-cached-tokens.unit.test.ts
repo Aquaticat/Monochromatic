@@ -54,7 +54,7 @@ await describe({
     },),
     it({
       name: 'SKIPS a chunk that is not a record and a cache count that is not a safe integer, since '
-        + 'neither states a count (ledger T8, the openrouter cluster)',
+        + 'neither states a count, and KEEPS the count a chunk before them stated (ledger T8)',
       fn: async () => {
         expect(openRouterCachedTokensOf({
           bodyText: 'data: 5\n\ndata: [DONE]\n\n',
@@ -62,6 +62,15 @@ await describe({
         expect(openRouterCachedTokensOf({
           bodyText: 'data: {"usage":{"prompt_tokens_details":{"cached_tokens":1.5}}}\n\ndata: [DONE]\n\n',
         },),).toBe('unreported',);
+        // BOTH SKIPS IN ONE STREAM, behind a count that must survive them: a
+        // reader taking the last chunk's field whatever it held would answer
+        // with the fraction, and one stopping at the bare number with nothing.
+        expect(openRouterCachedTokensOf({
+          bodyText: 'data: {"usage":{"prompt_tokens_details":{"cached_tokens":3072}}}\n\n'
+            + 'data: 5\n\n'
+            + 'data: {"usage":{"prompt_tokens_details":{"cached_tokens":1.5}}}\n\n'
+            + 'data: [DONE]\n\n',
+        },),).toBe(3072,);
       },
     },),
   ],

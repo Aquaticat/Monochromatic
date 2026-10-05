@@ -165,6 +165,15 @@ function scriptedClient(
  @param quorumOver - wider bench the quorum is taken over, absent for the
  seats asked
 
+ @param maxAnswerChars - answer cap handed to every request, absent for none
+
+ @param graceMs - how long a round waits for stragglers, 50 ms unless a case
+ says otherwise, so a seat that never answers holds no case for the
+ production grace or for whatever the environment sets it to
+
+ @param productionGrace - hands the rounds no grace at all, so they take
+ production's own; only for a bench whose every seat answers at once
+
  @returns Outcomes, the quorum closed on and the seats counted out of reach,
  plus the seats asked in call order
 
@@ -179,13 +188,15 @@ async function runBench(
     fanOut,
     quorumOver,
     maxAnswerChars,
-    graceMs,
+    graceMs = 50,
+    productionGrace = false,
   }: {
     readonly script: Parameters<typeof scriptedClient>[0];
     readonly fanOut?: 'window' | 'whole-bench';
     readonly quorumOver?: number;
     readonly maxAnswerChars?: number;
     readonly graceMs?: number;
+    readonly productionGrace?: boolean;
   },
 ) {
   const { client, asked, requests, } = scriptedClient(script,);
@@ -203,7 +214,7 @@ async function runBench(
     validate: isMeowReply,
     stage: 'meow',
     l,
-    ...((graceMs === undefined) ? {} : { graceMs, }),
+    ...(productionGrace ? {} : { graceMs, }),
     ...((fanOut === undefined) ? {} : { fanOut, }),
     ...((quorumOver === undefined) ? {} : { quorumOver, }),
     ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
@@ -230,7 +241,7 @@ await describe({
   children: [
     it({
       name: 'CARRIES the maxAnswerChars knob on every request when the caller sets one, and carries no '
-        + 'such field when it does not',
+        + 'such field when it does not, on a healthy bench taking production\'s own grace',
       fn: async () => {
         /**
          Runs with the knob and without it, and reads both request shapes.
@@ -238,18 +249,34 @@ await describe({
         const withKnob = await runBench({
           script: { failsOnce: [], failsAlways: [], unreadable: [], },
           maxAnswerChars: 500,
-          graceMs: 50,
         },);
         const withoutKnob = await runBench({
           script: { failsOnce: [], failsAlways: [], unreadable: [], },
+          productionGrace: true,
         },);
-        expect(withKnob.requests.length,).toBeGreaterThan(0,);
-        expect(withKnob.requests.every(function carries(request,): boolean {
-          return request.maxAnswerChars === 500;
-        },),).toBe(true,);
-        expect(withoutKnob.requests.every(function omits(request,): boolean {
-          return request.maxAnswerChars === undefined;
-        },),).toBe(true,);
+        /**
+         Requests a healthy bench makes: its first window and no more.
+         */
+        const windowSize = firstRoundWindow({ benchSize: BENCH.length, },);
+        expect(withKnob.requests.map(function capOf(request,): unknown {
+          return request.maxAnswerChars;
+        },),).toEqual(Array.from(
+          { length: windowSize, },
+          function cap(): number {
+            return 500;
+          },
+        ),);
+        expect(withoutKnob.requests.map(function carriesCap(request,): boolean {
+          return Object.hasOwn(
+            request,
+            'maxAnswerChars',
+          );
+        },),).toEqual(Array.from(
+          { length: windowSize, },
+          function absent(): boolean {
+            return false;
+          },
+        ),);
       },
     },),
     it({

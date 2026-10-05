@@ -167,11 +167,11 @@ await describe({
     },),
 
     it({
-      name: 'READS NO VOICES from a unit line carrying no heard pair, since nothing there says who '
-        + 'answered',
+      name: 'READS NO VOICES from a unit line whose heard count has no asked count beside it, since '
+        + 'nothing there says how many were asked',
       fn: async () => {
         expect(summarizeStageRoster({
-          entries: [['refine-candidates (voices unheard),',],],
+          entries: [['refine-candidates (voices heard),',],],
           stage: 'refine',
         },),).toEqual({
           offered: 0,
