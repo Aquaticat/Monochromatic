@@ -20,6 +20,21 @@ and the next implementation action.
 - [ ] Measured Helix-supported language inventory and private server state.
 - [ ] Native interaction tests and behavior-difference documentation.
 
+## Project startup
+
+Run `monochromatic-ide PROJECT` for one explicit local root,
+or `monochromatic-ide PROJECT --file FILE` to initially display a file inside it.
+Relative `FILE` paths start at `PROJECT`,
+not the shell's working directory.
+`--help` and `--version` exit before filesystem or native-display startup.
+The executable no longer substitutes example source when no file is selected.
+
+The native tree and file-switching bindings are implemented;
+consumer-boundary navigation checks are in progress.
+Directory reads and later source opens run in bounded background workers.
+Failed opens retain the displayed source and do not enter recent-file history.
+Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
+
 ## Fonts and appearance
 
 Official variable roman and real italic fonts for JetBrains Mono and Inter are bundled under `asset/font`

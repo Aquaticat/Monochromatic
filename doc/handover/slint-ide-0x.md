@@ -17,7 +17,13 @@ Opaque directory-request identities now fence replies;
 `proc_36aa` passed all fifteen tree/request tests and scoped Rust lint.
 `DirectoryWorker` now performs bounded background reads with admission before token creation;
 `proc_ab5d` passed all twenty tree/request/worker tests plus scoped Rust lint.
-Next bind native rows/file switching after formatting and the new identity/admission guard controls.
+Native tree rows,
+file switching,
+and Ctrl+digit promotion/reveal are now bound.
+`proc_ba75` is running native consumer tests and scoped lint.
+Next inspect the results,
+then run the actual nested compositor click/keyboard/clipboard checks.
+New identity/admission and file-open-generation guard controls remain to be exercised in the disposable copy.
 The procedural-macro and variable-font paths now both pass native font isolation.
 Continue annotations and language intelligence after workspace navigation.
 Actual TypeScript/Rust syntax is now wired and the highlighted native screenshot was inspected.
@@ -430,6 +436,21 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
+- `proc_ba75`,
+  `ide-native-navigation-consumer-tests`,
+  runs the real window callbacks for file switching,
+  Ctrl+0 reading-state preservation,
+  Ctrl+1 alternation,
+  ancestor reveal,
+  and failed-open retention through external refresh.
+- `proc_d93e` passed the background file-opening tests.
+- `proc_ead2` passed CLI parsing,
+  real executable help/version/usage exits,
+  and scoped Rust lint.
+  Startup is now `monochromatic-ide PROJECT [--file FILE]`;
+  native inspection tasks pass an explicit disposable project.
+- `proc_247b` passed the full pre-opener suite and package lint after directory-reader integration.
+
 - `proc_0d4b` passed the full library/integration suite after variable-font replacement,
   then exposed owned-name comparison lint findings in the new workspace tests.
   Those findings were fixed.
@@ -649,7 +670,31 @@ Asynchronous callers must use `complete_listing` rather than the synchronous `ap
 `DirectoryWorker` admits at most one read or unread reply,
 never blocks UI polling,
 and closes input before joining its thread on shutdown.
-The native tree UI and file-switching path remain unwired.
+The native tree now uses `ui/tree.slint` plus `src/native/navigation/` bindings.
+It retains native paths behind lossy display labels,
+shows recent-file slot badges,
+and expands/reveals ancestors after successful opens.
+Rows have 48px minimum dimensions;
+expanded folders use both arrow direction and font weight,
+and the displayed file uses selection background and weight.
+The current sidebar is fixed at 256px;
+resizing parity remains unimplemented.
+
+`FileOpener` reuses `ReloadWorker` for project-relative resolution,
+read/diff,
+and syntax on its reader thread.
+Only the latest requested open can install a document;
+failed opens retain the old source and do not promote history.
+The ordinary displayed-file refresh worker continues independently.
+`navigation_error` remains separate from `file_error`,
+so successful refresh of the old file cannot erase an unrelated failed-open diagnostic.
+
+Directory refresh currently round-robins visible expanded folders at 500ms intervals,
+with missing lazy snapshots taking priority.
+This is polling,
+not filesystem watcher integration;
+refresh latency grows with the number of expanded directories.
+No event-driven latency guarantee is claimed.
 
 Observed-failing guard checks passed in `proc_1d30`:
 removing snapshot validation,
