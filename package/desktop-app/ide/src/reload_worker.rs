@@ -179,8 +179,11 @@ impl ReloadWorker {
                 return Ok(None);
             }
             Err(TryRecvError::Disconnected) => {
+                // Release admission state before reporting terminal transport failure to the UI.
+                self.busy = false;
+                self.requests.take();
                 bail!(
-                    "Source reload worker stopped unexpectedly; reopen the file or restart the application"
+                    "Source reader stopped unexpectedly; restart the application to resume reading and refreshing files"
                 );
             }
         }

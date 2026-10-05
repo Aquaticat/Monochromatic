@@ -98,8 +98,16 @@ impl FileOpener {
 
     /// Return only the latest successful open; current errors propagate while stale failures are logged and discarded.
     pub fn poll(&mut self) -> Result<Option<OpenedFile>> {
+        // A stopped transport must release the waiting target as well as the worker's own busy slot.
+        let completed = match self.worker.try_take() {
+            Ok(reply) => reply,
+            Err(error) => {
+                self.pending = None;
+                return Err(error);
+            }
+        };
         // Lend no mutable document state to the worker while consuming its completed reply.
-        if let Some(reply) = self.worker.try_take()? {
+        if let Some(reply) = completed {
             if reply.generation == self.generation {
                 return Ok(Some(opened(reply)?));
             }
