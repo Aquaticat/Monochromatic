@@ -94,9 +94,7 @@ fn state(action: Action, row: &ServerStatus) -> Option<String> {
             "Language servers cannot start because the working directory {} does not contain the project. Restart the application.",
             directory.display()
         )),
-        ServerState::NotStarted { reason } => {
-            Some(format!("{server} was not started: {reason}."))
-        }
+        ServerState::NotStarted { reason } => Some(format!("{server} was not started: {reason}.")),
         ServerState::Starting => Some(format!(
             "{server} is still starting. Try again in a moment."
         )),

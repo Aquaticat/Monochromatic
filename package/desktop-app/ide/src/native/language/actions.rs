@@ -31,7 +31,10 @@ fn start(
     position: usize,
 ) {
     if !window.get_source_available() || source.borrow().file_path.is_none() {
-        tracing::debug!(?action, "ignored a language action without a displayed file");
+        tracing::debug!(
+            ?action,
+            "ignored a language action without a displayed file"
+        );
         return;
     }
     language.shown = surface::dismiss(window, &language.shown, "a new language action started");
@@ -46,7 +49,10 @@ fn start(
         return;
     }
     if message::needs_reopen(&language.status) {
-        tracing::info!(?action, "displaying the file again so its servers are resolved and started anew");
+        tracing::info!(
+            ?action,
+            "displaying the file again so its servers are resolved and started anew"
+        );
         language.reopen = true;
     }
     let stamp = surface::displayed(&source.borrow());
@@ -102,7 +108,9 @@ fn bind_caret(
             return;
         };
         let head = state.borrow().document.position().head;
-        with(&shared, |current| start(&window, &state, current, action, head));
+        with(&shared, |current| {
+            start(&window, &state, current, action, head)
+        });
     };
     if action == Action::Hover {
         owner.on_hover_request(callback);
@@ -126,7 +134,13 @@ fn bind_pointer(owner: &AppWindow, source: &Rc<RefCell<State>>, language: &Rc<Re
             return;
         };
         with(&click_language, |current| {
-            start(&window, &click_state, current, Action::PointerDefinition, character);
+            start(
+                &window,
+                &click_state,
+                current,
+                Action::PointerDefinition,
+                character,
+            );
         });
     });
     let move_state = Rc::clone(source);

@@ -75,10 +75,16 @@ fn each_outcome_names_its_reason_and_remedy() {
         "Find references failed: scripted-ls answered with error -32603: broken. Press Ctrl+B"
     ));
     let timeout = RequestOutcome::Failed(RequestFailure::Timeout);
-    assert!(single(Action::Hover, timeout, &ready).contains("did not answer in time. Press Ctrl+Q"));
     assert!(
-        single(Action::PointerDefinition, RequestOutcome::Superseded, &ready)
-            .ends_with("Press Ctrl+click to try again.")
+        single(Action::Hover, timeout, &ready).contains("did not answer in time. Press Ctrl+Q")
+    );
+    assert!(
+        single(
+            Action::PointerDefinition,
+            RequestOutcome::Superseded,
+            &ready
+        )
+        .ends_with("Press Ctrl+click to try again.")
     );
     assert!(
         single(Action::Definition, RequestOutcome::Unsynchronized, &ready)
@@ -106,11 +112,15 @@ fn no_server_is_explained_by_the_status() {
         "No language is recognized for this file, so hover information is not available here."
     );
     let unconfigured = status(DocumentState::NoServerConfigured, None);
-    assert!(single(Action::Definition, RequestOutcome::NoServer, &unconfigured)
-        .starts_with("The scripted language has no language server here"));
+    assert!(
+        single(Action::Definition, RequestOutcome::NoServer, &unconfigured)
+            .starts_with("The scripted language has no language server here")
+    );
     let outside = status(DocumentState::OutsideProject, None);
-    assert!(single(Action::Definition, RequestOutcome::NoServer, &outside)
-        .starts_with("This file is outside the project, and no scripted language server"));
+    assert!(
+        single(Action::Definition, RequestOutcome::NoServer, &outside)
+            .starts_with("This file is outside the project, and no scripted language server")
+    );
     assert!(message::needs_reopen(&outside));
     let refused = status(
         DocumentState::Attached,
@@ -118,8 +128,10 @@ fn no_server_is_explained_by_the_status() {
             root: PathBuf::from("/enclosing"),
         }),
     );
-    assert!(single(Action::Definition, RequestOutcome::NoServer, &refused)
-        .contains("would treat /enclosing, which is outside this project, as its workspace"));
+    assert!(
+        single(Action::Definition, RequestOutcome::NoServer, &refused)
+            .contains("would treat /enclosing, which is outside this project, as its workspace")
+    );
     let failed = status(
         DocumentState::Attached,
         Some(ServerState::FailedToStart {
@@ -150,7 +162,8 @@ fn the_most_telling_answer_is_explained() {
 #[test]
 fn hover_markdown_is_shown_as_plain_text_without_fences() {
     let markdown = HoverText {
-        text: "```rust\npub fn area(width: u32) -> u32\n```\n\n\n\n---\nMultiply *width*.\n".to_string(),
+        text: "```rust\npub fn area(width: u32) -> u32\n```\n\n\n\n---\nMultiply *width*.\n"
+            .to_string(),
         markdown: true,
         range: None,
     };

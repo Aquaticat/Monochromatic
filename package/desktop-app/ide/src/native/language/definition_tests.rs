@@ -2,8 +2,8 @@
 
 /// Fixtures and real key and pointer events.
 use super::test_support::{
-    LanguageReader, address, caret, caret_x, click, control_click, definition, definitions,
-    eventually, escape, head, location, point, project, reader, ready,
+    LanguageReader, address, caret, caret_x, click, control_click, definition, definitions, escape,
+    eventually, head, location, point, project, reader, ready,
 };
 /// Key events for the list and a tree-row lookup shared with the navigation tests.
 use crate::native::{find_tests::key, navigation_tests::row};
@@ -34,7 +34,11 @@ fn label(reader: &LanguageReader, index: usize) -> String {
 fn badge(reader: &LanguageReader, name: &str) -> String {
     let index = row(&reader.window, name).expect("tree row") as usize;
     let rows = reader.window.get_tree_entries();
-    return rows.row_data(index).expect("tree entry").recency.to_string();
+    return rows
+        .row_data(index)
+        .expect("tree entry")
+        .recency
+        .to_string();
 }
 
 /// A definition in the displayed file moves the caret there and scrolls it into view.
@@ -43,7 +47,11 @@ fn definition_in_the_same_file_moves_the_caret_and_reveals_it() {
     let fixture = project(&[("main.scripted", &numbered())]);
     let main = address(&fixture.root.join("main.scripted"));
     let answer = format!("[{}]", location(&main, 100, 5, 8));
-    let reader = reader(&fixture, "main.scripted", definitions(&[("DEFINITION", &answer)], None));
+    let reader = reader(
+        &fixture,
+        "main.scripted",
+        definitions(&[("DEFINITION", &answer)], None),
+    );
     ready(&reader);
     definition(&reader);
     eventually("the caret did not reach the definition", || {
@@ -51,7 +59,10 @@ fn definition_in_the_same_file_moves_the_caret_and_reveals_it() {
     });
     let top = -reader.window.get_scroll_y();
     let bottom = top + reader.window.get_viewport_height();
-    assert!(top <= 100.0 * 24.0 && 101.0 * 24.0 <= bottom, "line 100 is not in view: {top}..{bottom}");
+    assert!(
+        top <= 100.0 * 24.0 && 101.0 * 24.0 <= bottom,
+        "line 100 is not in view: {top}..{bottom}"
+    );
     assert!(reader.window.get_source_has_focus());
     assert_eq!(reader.window.get_language_popup_text(), "");
 }
@@ -60,7 +71,10 @@ fn definition_in_the_same_file_moves_the_caret_and_reveals_it() {
 #[test]
 fn definition_at_the_caret_lists_references_and_enter_opens_the_chosen_one() {
     let other_text = "first\n  second line\n";
-    let fixture = project(&[("main.scripted", &numbered()), ("nested/other.scripted", other_text)]);
+    let fixture = project(&[
+        ("main.scripted", &numbered()),
+        ("nested/other.scripted", other_text),
+    ]);
     let main = address(&fixture.root.join("main.scripted"));
     let other = address(&fixture.root.join("nested/other.scripted"));
     let answer = format!("[{}]", location(&main, 0, 0, 4));
@@ -70,12 +84,19 @@ fn definition_at_the_caret_lists_references_and_enter_opens_the_chosen_one() {
         location(&other, 1, 2, 8),
         location(&main, 50, 5, 8)
     );
-    let languages = definitions(&[("DEFINITION", &answer), ("REFERENCES", &references)], None);
+    let languages = definitions(
+        &[("DEFINITION", &answer), ("REFERENCES", &references)],
+        None,
+    );
     let reader = reader(&fixture, "main.scripted", languages);
     ready(&reader);
-    eventually("the tree did not show the file", || return row(&reader.window, "main.scripted").is_some());
+    eventually("the tree did not show the file", || {
+        return row(&reader.window, "main.scripted").is_some();
+    });
     definition(&reader);
-    eventually("the references list did not open", || return reader.window.get_references_open());
+    eventually("the references list did not open", || {
+        return reader.window.get_references_open();
+    });
     assert_eq!(reader.window.get_references_title(), "3 references");
     assert_eq!(label(&reader, 0), "main.scripted:1");
     assert_eq!(label(&reader, 1), "nested/other.scripted:2");
@@ -93,10 +114,13 @@ fn definition_at_the_caret_lists_references_and_enter_opens_the_chosen_one() {
     assert_eq!(reader.window.get_references_selected(), 1);
     key(&reader.window, Key::Return);
     eventually("the chosen reference's file did not open", || {
-        return reader.source.borrow().file_path.as_deref() == Some(&fixture.root.join("nested/other.scripted"));
+        return reader.source.borrow().file_path.as_deref()
+            == Some(&fixture.root.join("nested/other.scripted"));
     });
     assert!(!reader.window.get_references_open());
-    eventually("the caret did not reach the reference", || return head(&reader) == 8);
+    eventually("the caret did not reach the reference", || {
+        return head(&reader) == 8;
+    });
     eventually("the tree did not reveal the reference's file", || {
         return row(&reader.window, "other.scripted").is_some();
     });
@@ -108,19 +132,32 @@ fn definition_at_the_caret_lists_references_and_enter_opens_the_chosen_one() {
 /// Ctrl+click asks for the definition under the pointer, without the references fallback.
 #[test]
 fn control_click_opens_a_definition_in_another_project_file() {
-    let fixture = project(&[("main.scripted", &numbered()), ("nested/other.scripted", "first\n  second line\n")]);
+    let fixture = project(&[
+        ("main.scripted", &numbered()),
+        ("nested/other.scripted", "first\n  second line\n"),
+    ]);
     let other = address(&fixture.root.join("nested/other.scripted"));
     let answer = format!("[{}]", location(&other, 1, 2, 8));
-    let reader = reader(&fixture, "main.scripted", definitions(&[("DEFINITION", &answer)], None));
+    let reader = reader(
+        &fixture,
+        "main.scripted",
+        definitions(&[("DEFINITION", &answer)], None),
+    );
     ready(&reader);
-    eventually("the tree did not show the file", || return row(&reader.window, "main.scripted").is_some());
+    eventually("the tree did not show the file", || {
+        return row(&reader.window, "main.scripted").is_some();
+    });
     let x = caret_x(&reader, at(3, 6)) + 2.0;
     control_click(&reader.window, point(&reader.window, 3, x));
     eventually("Ctrl+click did not open the definition's file", || {
         return reader.window.get_source_text() == "first\n  second line\n";
     });
-    eventually("the caret did not reach the definition", || return head(&reader) == 8);
-    eventually("the tree did not reveal the file", || return row(&reader.window, "other.scripted").is_some());
+    eventually("the caret did not reach the definition", || {
+        return head(&reader) == 8;
+    });
+    eventually("the tree did not reveal the file", || {
+        return row(&reader.window, "other.scripted").is_some();
+    });
     assert_eq!(badge(&reader, "other.scripted"), "0");
 }
 
@@ -131,21 +168,45 @@ fn outside_project_definition_opens_marked_without_tree_reveal_or_history() {
     let library = fixture.outside.join("library.scripted");
     std::fs::write(&library, "pub library\n").expect("outside fixture");
     let answer = format!("[{}]", location(&address(&library), 0, 4, 11));
-    let reader = reader(&fixture, "main.scripted", definitions(&[("DEFINITION", &answer)], None));
+    let reader = reader(
+        &fixture,
+        "main.scripted",
+        definitions(&[("DEFINITION", &answer)], None),
+    );
     ready(&reader);
-    eventually("the tree did not show the file", || return row(&reader.window, "main.scripted").is_some());
+    eventually("the tree did not show the file", || {
+        return row(&reader.window, "main.scripted").is_some();
+    });
     definition(&reader);
-    eventually("the outside file did not open", || return reader.window.get_source_text() == "pub library\n");
+    eventually("the outside file did not open", || {
+        return reader.window.get_source_text() == "pub library\n";
+    });
     assert!(reader.window.get_file_outside_project());
-    assert_eq!(reader.window.get_file_label(), SharedString::from(library.display().to_string()));
-    eventually("the caret did not reach the outside target", || return head(&reader) == 4);
-    assert_eq!(badge(&reader, "main.scripted"), "0", "the outside file entered the history");
+    assert_eq!(
+        reader.window.get_file_label(),
+        SharedString::from(library.display().to_string())
+    );
+    eventually("the caret did not reach the outside target", || {
+        return head(&reader) == 4;
+    });
+    assert_eq!(
+        badge(&reader, "main.scripted"),
+        "0",
+        "the outside file entered the history"
+    );
     let rows = reader.window.get_tree_entries();
     for index in 0..rows.row_count() {
-        assert!(!rows.row_data(index).expect("tree entry").selected, "a tree row is selected");
+        assert!(
+            !rows.row_data(index).expect("tree entry").selected,
+            "a tree row is selected"
+        );
     }
-    reader.window.invoke_tree_shortcut(SharedString::from("0"), true, false, false);
-    eventually("Ctrl+0 did not return to the project file", || return !reader.window.get_file_outside_project());
+    reader
+        .window
+        .invoke_tree_shortcut(SharedString::from("0"), true, false, false);
+    eventually("Ctrl+0 did not return to the project file", || {
+        return !reader.window.get_file_outside_project();
+    });
     assert!(reader.window.get_source_text().starts_with("line 000"));
 }
 
@@ -156,22 +217,37 @@ fn several_definitions_are_listed_and_closing_returns_focus_to_the_source() {
     let library = fixture.outside.join("library.scripted");
     std::fs::write(&library, "pub library\n").expect("outside fixture");
     let main = address(&fixture.root.join("main.scripted"));
-    let answer = format!("[{},{}]", location(&main, 2, 0, 4), location(&address(&library), 0, 0, 3));
-    let reader = reader(&fixture, "main.scripted", definitions(&[("DEFINITION", &answer)], None));
+    let answer = format!(
+        "[{},{}]",
+        location(&main, 2, 0, 4),
+        location(&address(&library), 0, 0, 3)
+    );
+    let reader = reader(
+        &fixture,
+        "main.scripted",
+        definitions(&[("DEFINITION", &answer)], None),
+    );
     ready(&reader);
     caret(&reader, at(10, 2));
     definition(&reader);
-    eventually("the definitions list did not open", || return reader.window.get_references_open());
+    eventually("the definitions list did not open", || {
+        return reader.window.get_references_open();
+    });
     assert_eq!(reader.window.get_references_title(), "2 definitions");
     assert_eq!(label(&reader, 0), "main.scripted:3");
     let rows = reader.window.get_references_entries();
-    assert_eq!(rows.row_data(1).expect("outside row").detail, "Outside project");
+    assert_eq!(
+        rows.row_data(1).expect("outside row").detail,
+        "Outside project"
+    );
     escape(&reader);
     assert!(!reader.window.get_references_open());
     assert!(reader.window.get_source_has_focus());
     assert_eq!(head(&reader), at(10, 2));
     definition(&reader);
-    eventually("the definitions list did not open again", || return reader.window.get_references_open());
+    eventually("the definitions list did not open again", || {
+        return reader.window.get_references_open();
+    });
     click(&reader.window, LogicalPosition::new(100.0, 400.0));
     assert!(!reader.window.get_references_open());
     assert!(reader.window.get_source_has_focus());
@@ -183,11 +259,25 @@ fn unavailable_targets_explain_why_they_cannot_be_opened() {
     let fixture = project(&[("main.scripted", &numbered())]);
     let missing = location("file:///definitely/missing/file.scripted", 0, 0, 1);
     let answer = format!("[{},{}]", location("untitled:Untitled-1", 0, 0, 1), missing);
-    let reader = reader(&fixture, "main.scripted", definitions(&[("DEFINITION", &answer)], None));
+    let reader = reader(
+        &fixture,
+        "main.scripted",
+        definitions(&[("DEFINITION", &answer)], None),
+    );
     ready(&reader);
     definition(&reader);
-    eventually("the definitions list did not open", || return reader.window.get_references_open());
-    assert_eq!(reader.window.get_references_entries().row_data(0).expect("row").detail, "Cannot open");
+    eventually("the definitions list did not open", || {
+        return reader.window.get_references_open();
+    });
+    assert_eq!(
+        reader
+            .window
+            .get_references_entries()
+            .row_data(0)
+            .expect("row")
+            .detail,
+        "Cannot open"
+    );
     key(&reader.window, Key::DownArrow);
     key(&reader.window, Key::Return);
     assert!(!reader.window.get_references_open());
@@ -202,9 +292,15 @@ fn unavailable_targets_explain_why_they_cannot_be_opened() {
 /// A later open intent drops a language target still waiting for its file.
 #[test]
 fn a_later_open_drops_a_waiting_definition_target() {
-    let fixture = project(&[("main.scripted", &numbered()), ("b.scripted", "b0\nb1\nb2\n"), ("c.scripted", "c0 c1\n")]);
+    let fixture = project(&[
+        ("main.scripted", &numbered()),
+        ("b.scripted", "b0\nb1\nb2\n"),
+        ("c.scripted", "c0 c1\n"),
+    ]);
     let reader = reader(&fixture, "main.scripted", definitions(&[], None));
-    eventually("the tree did not show the files", || return row(&reader.window, "c.scripted").is_some());
+    eventually("the tree did not show the files", || {
+        return row(&reader.window, "c.scripted").is_some();
+    });
     // The state a definition answer leaves while its file `b` is still being read.
     reader.source.borrow_mut().pending_jump = Some(super::Jump {
         path: fixture.root.join("b.scripted"),
@@ -212,8 +308,16 @@ fn a_later_open_drops_a_waiting_definition_target() {
         line: 0,
         range: Some((3, 4)),
     });
-    reader.window.invoke_tree_activate(row(&reader.window, "c.scripted").expect("c row"));
-    eventually("the chosen file did not open", || return reader.window.get_source_text() == "c0 c1\n");
-    assert_eq!(head(&reader), 0, "a dropped definition target moved the caret in another file");
+    reader
+        .window
+        .invoke_tree_activate(row(&reader.window, "c.scripted").expect("c row"));
+    eventually("the chosen file did not open", || {
+        return reader.window.get_source_text() == "c0 c1\n";
+    });
+    assert_eq!(
+        head(&reader),
+        0,
+        "a dropped definition target moved the caret in another file"
+    );
     assert!(reader.source.borrow().pending_jump.is_none());
 }

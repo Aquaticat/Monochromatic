@@ -226,7 +226,9 @@ pub(super) fn stale(
     let now = origin(window, state);
     let (opened, pointer) = match shown {
         Shown::Nothing => return None,
-        Shown::Popup { origin, pointer, .. } => (*origin, *pointer),
+        Shown::Popup {
+            origin, pointer, ..
+        } => (*origin, *pointer),
         Shown::List { origin, .. } => (*origin, false),
     };
     // Another file or a reload of this one: positions of the surface no longer describe the text.
