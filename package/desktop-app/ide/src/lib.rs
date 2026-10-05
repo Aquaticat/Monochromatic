@@ -48,6 +48,9 @@ mod selection_paint;
 /// One local project boundary exposes directory snapshots without mutation operations.
 pub mod workspace;
 
+/// Lazy tree rows and expansion state consume background directory snapshots without I/O.
+pub mod file_tree;
+
 /// Unmodified variable and real italic font assets with stable source-font identities.
 pub mod font_asset;
 
