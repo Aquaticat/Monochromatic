@@ -93,6 +93,13 @@ fn the_nearest_regular_configuration_file_marks_the_root() {
         find_lfs_repo_root(&root.join("r/sub/absent/deeper")).expect("search"),
         Some(root.join("r/sub"))
     );
+    // A start path below a regular file cannot hold a configuration. The operating system answers
+    // "not a directory" there, not "not found", and the search walks past it instead of failing.
+    std::fs::write(root.join("r/sub/blocker"), "").expect("regular file");
+    assert_eq!(
+        find_lfs_repo_root(&root.join("r/sub/blocker/deeper")).expect("search past a file"),
+        Some(root.join("r/sub"))
+    );
 }
 
 /// Without a configuration, or with one that declares no endpoint, the rule has no repository.
