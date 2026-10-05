@@ -153,7 +153,30 @@ the retained eight-line record fails the current heading assertion.
 This is an actual prior-artifact negative,
 not a new source-mutation claim.
 The corrected study uses a separate private evidence directory.
-The full native action/context matrix and publication remain incomplete.
+That artifact completed all 24 native menu poses with every action
+initially visible,
+including lower-row and long-title contexts.
+The native action matrix also passed:
+each accepted intent at every panel/theme/font context,
+plain tap without menu opening,
+outside dismissal without a leaked row tap,
+unchanged app pixels/geometry and distinct duplicate-name targets.
+The guest was exactly restored and stopped;
+all sanitized pairs were visually inspected.
+
+Full Android lint then reported five inherited errors:
+`MissingSuperCall` in the three old debug IMEs and `NewApi` in the prior
+Search inset experiment.
+It also identified `ModifierParameter` warnings introduced by the new
+nullable row modifier.
+Those conventions require an outermost `modifier`,
+first among optional parameters and defaulting to `Modifier`.
+Prototype `d1d19dfed` moves the sole input owner to that standard boundary;
+unrelated IME/Search code and lint rules are not changed.
+The updated source is being built and re-verified rather than claiming
+native equivalence from inspection.
+The inspected `a23f02c5` captures retain their original APK/source identity.
+Final publication remains incomplete.
 
 ## Independently verifiable queue
 
