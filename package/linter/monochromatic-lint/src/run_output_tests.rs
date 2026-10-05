@@ -93,17 +93,28 @@ fn display_filtering_does_not_change_accounting() {
 #[test]
 fn clean_stdin_and_silent_warning_limits_preserve_status() {
     let source: &str = "unchanged\r\n";
-    let clean: RunOutput = run_output(&[], Some(source), OutputOptions::default()).expect("clean stdin");
+    let clean: RunOutput =
+        run_output(&[], Some(source), OutputOptions::default()).expect("clean stdin");
     assert_eq!(clean.stdout, source);
     assert_eq!(clean.stderr, "");
     assert_eq!(clean.exit_code, 0);
-    let options: OutputOptions = OutputOptions { silent: true, max_warnings: Some(0), ..OutputOptions::default() };
-    let hidden: RunOutput = run_output(&[finding(Severity::Warn)], None, options).expect("hidden warning");
+    let options: OutputOptions = OutputOptions {
+        silent: true,
+        max_warnings: Some(0),
+        ..OutputOptions::default()
+    };
+    let hidden: RunOutput =
+        run_output(&[finding(Severity::Warn)], None, options).expect("hidden warning");
     assert_eq!(hidden.stdout, "");
     assert_eq!(hidden.exit_code, 1);
     let mut incomplete: Diagnostic = finding(Severity::Warn);
     incomplete.processing_failure = true;
-    assert_eq!(run_output(&[incomplete], None, options).expect("incomplete warning").exit_code, 2);
+    assert_eq!(
+        run_output(&[incomplete], None, options)
+            .expect("incomplete warning")
+            .exit_code,
+        2
+    );
 }
 
 /// Unavailable semantic coverage is a processing failure even when output is silent.

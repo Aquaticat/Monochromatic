@@ -61,7 +61,10 @@ fn heading_increment_accepts_adjacent_depths_and_equal_siblings() {
         "# One\n\n# Peer\n",
     ] {
         let context: MarkdownSource = document(source, false);
-        assert!(heading_increment(&context, Severity::Error).is_empty(), "{source}");
+        assert!(
+            heading_increment(&context, Severity::Error).is_empty(),
+            "{source}"
+        );
     }
 }
 

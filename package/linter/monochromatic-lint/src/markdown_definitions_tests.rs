@@ -15,7 +15,9 @@ use crate::markdown_source::MarkdownSource;
 /// Parse an actual Markdown fixture before checking definitions.
 fn check(source: &str) -> Vec<Diagnostic> {
     // Own filename/source strings so the parsed context retains them for the rule call.
-    let context: MarkdownSource = MarkdownSource::new(String::from("references.md"), String::from(source), false).expect("fixture");
+    let context: MarkdownSource =
+        MarkdownSource::new(String::from("references.md"), String::from(source), false)
+            .expect("fixture");
     // Borrow the parsed context while collecting owned findings.
     return reference_definitions(&context, Severity::Warn);
 }
@@ -31,18 +33,30 @@ fn fixed(source: &str) -> String {
         }
     }
     // The fixture must satisfy production edit validation; failed validation fails the test.
-    return apply_fixes(source, fixes.as_slice()).expect("validated edits").source;
+    return apply_fixes(source, fixes.as_slice())
+        .expect("validated edits")
+        .source;
 }
 
 /// Used definitions retain their first target; unused repeats remain unused rather than duplicate.
 #[test]
 fn reference_classification_preserves_messages_and_targets() {
-    let source: &str = "See [docs][ref].\n\n[ref]: /first\n[unused]: /other\n[ref]: /second\n[unused]: /last\n";
+    let source: &str =
+        "See [docs][ref].\n\n[ref]: /first\n[unused]: /other\n[ref]: /second\n[unused]: /last\n";
     let findings: Vec<Diagnostic> = check(source);
     assert_eq!(findings.len(), 3);
-    assert_eq!(findings[0].message, "Unused reference definition \"unused\".");
-    assert_eq!(findings[1].message, "Duplicate reference definition \"ref\".");
-    assert_eq!(findings[2].message, "Unused reference definition \"unused\".");
+    assert_eq!(
+        findings[0].message,
+        "Unused reference definition \"unused\"."
+    );
+    assert_eq!(
+        findings[1].message,
+        "Duplicate reference definition \"ref\"."
+    );
+    assert_eq!(
+        findings[2].message,
+        "Unused reference definition \"unused\"."
+    );
     assert_eq!(findings[0].severity, Severity::Warn);
     assert_eq!(findings[0].labels[0].span.line, 4);
     let output: String = fixed(source);
@@ -70,8 +84,12 @@ fn parser_identity_and_comment_exemption_are_preserved() {
 #[test]
 fn standalone_definitions_do_not_leave_line_fragments() {
     for newline in ["\n", "\r\n", "\r"] {
-        let source: String = format!("Title{newline}{newline}  [unused]: /target{newline}# Next{newline}");
-        assert_eq!(fixed(source.as_str()), format!("Title{newline}{newline}# Next{newline}"));
+        let source: String =
+            format!("Title{newline}{newline}  [unused]: /target{newline}# Next{newline}");
+        assert_eq!(
+            fixed(source.as_str()),
+            format!("Title{newline}{newline}# Next{newline}")
+        );
     }
     assert_eq!(fixed("Title\n\n[unused]: /target"), "Title\n\n");
 }

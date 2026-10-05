@@ -63,8 +63,8 @@ depends = ["test:rust-style"]
 run = "node bin/mutate-container.mjs --rust-style"
 
 [tasks."mutation:markdown"]
-description = "Mutate native Markdown modules against their tests after a full-suite container baseline"
-depends = ["test:container"]
+description = "Mutate native Markdown modules against their tests after full container tests and Clippy"
+depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --markdown"
 
 [tasks."mutation:list:markdown"]

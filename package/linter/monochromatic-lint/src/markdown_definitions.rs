@@ -14,7 +14,9 @@ use crate::edits::Edit;
 use crate::markdown_finding::finding;
 use crate::markdown_source::MarkdownSource;
 /// Import typed payload decoders; identifiers are already normalized by the parser.
-use satteri_ast::mdast::{DefinitionData, MdastNodeType, ReferenceData, decode_definition_data, decode_reference_data};
+use satteri_ast::mdast::{
+    DefinitionData, MdastNodeType, ReferenceData, decode_definition_data, decode_reference_data,
+};
 /// What: BTreeSet keeps unique owned String values, unlike Vec which would need repeated linear scans.
 /// Why: Owned String identifiers avoid carrying borrowed &str lifetimes between traversal passes.
 ///
@@ -51,7 +53,11 @@ fn removal_edit(context: &MarkdownSource, id: u32) -> Edit {
     }
     if !standalone {
         // The empty owned String deletes only the definition, not its container prefix or newline.
-        return Edit { start, end, replacement: String::new() };
+        return Edit {
+            start,
+            end,
+            replacement: String::new(),
+        };
     }
     // Consume complete original line endings, including a CRLF pair rather than half of it.
     if end < bytes.len() && bytes[end] == b'\r' {
@@ -61,7 +67,11 @@ fn removal_edit(context: &MarkdownSource, id: u32) -> Edit {
         end += 1;
     }
     // Standalone indentation belongs to the removed line, not the following line.
-    return Edit { start: line_start, end, replacement: String::new() };
+    return Edit {
+        start: line_start,
+        end,
+        replacement: String::new(),
+    };
 }
 
 /// What: Return findings for unused definitions and later definitions of a used identifier.
@@ -112,7 +122,10 @@ pub fn reference_definitions(context: &MarkdownSource, severity: Severity) -> Ve
         }
         // Some carries a verified edit; the shared builder groups it atomically with this finding.
         findings.push(finding(
-            context, id, "markdown/link-image-reference-definitions", severity,
+            context,
+            id,
+            "markdown/link-image-reference-definitions",
+            severity,
             format!("{reason} reference definition \"{identifier}\"."),
             Some(removal_edit(context, id)),
         ));
