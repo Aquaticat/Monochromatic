@@ -1,0 +1,86 @@
+import { spawnSync } from 'node:child_process';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+//region Consumer verification uses disposable copies, never changes inspected publication evidence
+const root = process.cwd();
+const fixture = mkdtempSync(join(tmpdir(), 'feedback-overlay-review-'));
+const evidence = join(fixture, 'questions', 'evidence');
+mkdirSync(evidence, { recursive: true });
+const manifestName = 'feedback-overlay-witnesses.json';
+const manifest = JSON.parse(readFileSync(join(root, 'questions', 'evidence', manifestName), 'utf8'));
+for (const file of [manifestName, ...manifest.witnesses.map(item => item.file)]) {
+  copyFileSync(join(root, 'questions', 'evidence', file), join(evidence, file));
+}
+const templatePath = join(fixture, 'questions', 'feedback-overlay.template.html');
+copyFileSync(join(root, 'questions', 'feedback-overlay.template.html'), templatePath);
+const builder = join(fixture, 'feedback-overlay.mjs');
+copyFileSync(join(root, 'feedback-overlay.mjs'), builder);
+const mutation = process.argv[2];
+if (mutation !== undefined && mutation !== 'without-exact-cohort' && mutation !== 'without-hold') {
+  throw new Error('Unknown overlay consumer test mutation.');
+}
+if (mutation !== undefined) {
+  const source = readFileSync(builder, 'utf8');
+  const guard = mutation === 'without-hold' ? 'capture.held !== true || ' :
+    `if (JSON.stringify(Object.keys(images).sort()) !== JSON.stringify(expected.sort())) {\n  throw new Error('Overlay review requires exact panel, scene, theme and scale combinations.');\n}`;
+  if (source.split(guard).length !== 2) throw new Error('Exact overlay guard mutation target absent.');
+  writeFileSync(builder, source.replace(guard, ''));
+}
+function invoke(command) {
+  return spawnSync(process.execPath, [builder, command], { cwd: fixture, encoding: 'utf8', maxBuffer: 2 * 1024 * 1024 });
+}
+function positive() {
+  for (const command of ['build', 'validate']) {
+    const run = invoke(command);
+    if (run.status !== 0) throw new Error('Positive overlay consumer failed: ' + run.stderr);
+  }
+}
+function reject({ input, diagnostic }) {
+  writeFileSync(join(evidence, manifestName), JSON.stringify(input));
+  const run = invoke('build');
+  if (run.status === 0 || !run.stderr.includes(diagnostic)) {
+    throw new Error('Expected overlay rejection absent: ' + diagnostic);
+  }
+  writeFileSync(join(evidence, manifestName), JSON.stringify(manifest));
+}
+try {
+  positive();
+  const badHash = structuredClone(manifest);
+  badHash.witnesses[0].sha256 = '0'.repeat(64);
+  reject({ input: badHash, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
+  const badPath = structuredClone(manifest);
+  badPath.witnesses[0].file = '../outside.png';
+  reject({ input: badPath, diagnostic: 'outside the evidence boundary' });
+  const mismatched = structuredClone(manifest);
+  mismatched.witnesses[0].scene = 'mismatch';
+  reject({ input: mismatched, diagnostic: 'filename and metadata disagree' });
+  const missing = structuredClone(manifest);
+  const target = missing.witnesses[0];
+  const original = target.file;
+  target.scene = 'unplanned';
+  target.file = `feedback-overlay-${target.panel}-unplanned-${target.scheme}-s${target.fontScale * 100}.png`;
+  copyFileSync(join(evidence, original), join(evidence, target.file));
+  reject({ input: missing, diagnostic: 'exact panel, scene, theme and scale combinations' });
+  const missingHold = structuredClone(manifest);
+  missingHold.witnesses[0].held = false;
+  reject({ input: missingHold, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
+  const unknownAcquisition = structuredClone(manifest);
+  unknownAcquisition.witnesses[0].freshHierarchyValidated = false;
+  reject({ input: unknownAcquisition, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
+  const template = readFileSync(templatePath, 'utf8');
+  writeFileSync(templatePath, template.replace('<form id="review-form">', '<form id="review-form"><input type="radio" name="policy">'));
+  if (invoke('build').status !== 0) throw new Error('Ballot fixture did not build.');
+  const ballot = invoke('validate');
+  if (ballot.status === 0 || !ballot.stderr.includes('not a policy ballot')) throw new Error('Unexpected policy ballot accepted.');
+  writeFileSync(templatePath, template);
+  positive();
+  const output = join(fixture, 'questions', 'feedback-overlay.html');
+  writeFileSync(output, readFileSync(output, 'utf8').replace('Design evidence only.', 'Changed output.'));
+  if (invoke('validate').status === 0) throw new Error('Changed overlay artifact accepted.');
+  console.log('Overlay review positive, hash, path, metadata, exact cohort, hold, acquisition, ballot and output controls passed.');
+} finally {
+  rmSync(fixture, { recursive: true, force: true });
+}
+//endregion

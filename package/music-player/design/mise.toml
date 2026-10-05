@@ -443,6 +443,21 @@ description = "Build first-run state review before validating its exact committe
 dir = "{{config_root}}"
 run = ["node first-run-access.mjs build", "node first-run-access.mjs validate"]
 
+[tasks."build:feedback:overlay"]
+description = "Build the D83 evidence viewer from exact inspected held native poses"
+dir = "{{config_root}}"
+run = "node feedback-overlay.mjs build"
+
+[tasks."lint:feedback:overlay"]
+description = "Validate exact offline feedback evidence and authored-hold boundaries"
+dir = "{{config_root}}"
+run = "node feedback-overlay.mjs validate"
+
+[tasks."test:feedback:overlay"]
+description = "Exercise overlay hash, cohort, hold, acquisition and no-ballot guards in disposable copies"
+dir = "{{config_root}}"
+run = "node feedback-overlay-test.mjs"
+
 [tasks."test:first-run:access"]
 description = "Exercise first-run review image, metadata, cohort and ballot guards in disposable fixtures"
 dir = "{{config_root}}"
