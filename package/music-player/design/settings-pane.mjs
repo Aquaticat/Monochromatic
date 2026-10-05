@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 //region Rule helper and pinned artifact, not a stored preference or a working setting
@@ -342,9 +342,16 @@ function range(values) {
   const high = Math.max(...values);
   return low === high ? String(low) : `${low} to ${high}`;
 }
+// Names the panels and text scales a set of views covers, for example `the cover and inner panels at 200% text`.
 function conditions(items) {
-  const names = [...new Set(items.map(item => `${item.capture.panel} at ${item.capture.fontScale * 100}%`))].sort();
-  return names.length === 0 ? 'no condition' : names.join(' and ');
+  const scales = [...new Set(items.map(item => item.capture.fontScale))].sort();
+  return scales.map(scale => {
+    const panels = [...new Set(items.filter(item => item.capture.fontScale === scale).map(item => item.capture.panel))].sort();
+    return `the ${panels.join(' and ')} panel${panels.length > 1 ? 's' : ''} at ${scale * 100}% text`;
+  }).join(' and ');
+}
+function sameConditions(first, second) {
+  return conditions(first) === conditions(second);
 }
 const starts = opened.filter(item => item.capture.position === 'start');
 const scrolling = starts.filter(item => item.capture.scrollMaxPixels > 0);
@@ -353,8 +360,10 @@ const normal = starts.filter(item => item.capture.fontScale === 1);
 const large = starts.filter(item => item.capture.fontScale === 2);
 const scrollSentence = scrolling.length === 0
   ? 'The whole column, closing sentence included, fits without scrolling in every condition.'
-  : `The column scrolls on the ${conditions(scrolling)} text scale, by ${range(scrolling.map(item => item.capture.scrollMaxPixels))} physical pixels; ` +
-    (hiddenClosing.length === 0 ? 'the closing sentence is still wholly shown before scrolling.' : `on the ${conditions(hiddenClosing)} text scale the closing sentence is not wholly shown until the column is scrolled.`) +
+  : `On ${conditions(scrolling)} the column scrolls, by ${range(scrolling.map(item => item.capture.scrollMaxPixels))} physical pixels; ` +
+    (hiddenClosing.length === 0 ? 'its closing sentence is still wholly shown before scrolling.'
+      : sameConditions(hiddenClosing, scrolling) ? 'there the closing sentence is not wholly shown until the column is scrolled.'
+        : `on ${conditions(hiddenClosing)} the closing sentence is not wholly shown until the column is scrolled.`) +
     ' Everywhere else the whole column fits.';
 const findings = `<p id="inspection-findings" class="note">Inspection and measurement found this.
 ${scrollSentence}
@@ -401,7 +410,8 @@ if (process.argv[2] === 'build') {
   const fields = (html.match(/<textarea\b/gi) ?? []).length === 2 && (html.match(/<select\b/gi) ?? []).length === 3;
   need({ rule: 'observation-fields-only', holds: fields, detail: 'review must keep one observation field, one prepared reply and three viewing selects' });
   for (const pinned of Object.values(searchEvidence)) {
-    const current = createHash('sha256').update(readFileSync(join(evidence, pinned.file))).digest('hex');
+    const path = join(evidence, pinned.file);
+    const current = existsSync(path) ? createHash('sha256').update(readFileSync(path)).digest('hex') : 'absent';
     need({ rule: 'search-evidence-digest', holds: current === pinned.sha256, detail: `${pinned.file}: published Search evidence differs from its pinned digest` });
   }
   for (const item of opened) {

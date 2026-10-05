@@ -213,6 +213,7 @@ const cases = [
   { rule: 'switch-position-pixels', phase: 'validate', at: fits, image: () => evidenceBytes(other) },
   { rule: 'switch-position-pixels', phase: 'validate', at: fits, image: () => evidenceBytes({ panel: 'inner', view: 'closed', scale: 1, position: 'none' }) },
   { rule: 'search-evidence-digest', phase: 'validate', evidenceFile: { name: searchFiles[0], change: bytes => Buffer.concat([bytes, Buffer.from([0])]) } },
+  { rule: 'search-evidence-digest', phase: 'validate', evidenceFile: { name: searchFiles[3], remove: true } },
   // Empty header ground pasted over the title, then over the Back glyph: every rectangle still holds, the ink does not.
   { rule: 'title-contrast-pixels', phase: 'validate', at: fits, image: (bytes, path) => paste({ path, from: '1700+54', size: '300x69', to: '1269+54' }) },
   { rule: 'back-contrast-pixels', phase: 'validate', at: fits, image: (bytes, path) => paste({ path, from: '1700+30', size: '117x117', to: '1132+30' }) },
@@ -244,7 +245,8 @@ function runCase(testCase) {
     const path = join(evidence, testCase.evidenceFile.name);
     const original = readFileSync(path);
     undo.push(() => writeFileSync(path, original));
-    writeFileSync(path, testCase.evidenceFile.change(original));
+    if (testCase.evidenceFile.remove) rmSync(path);
+    else writeFileSync(path, testCase.evidenceFile.change(original));
   }
   if (testCase.template) {
     const changed = testCase.template(template);
