@@ -163,6 +163,11 @@ pub fn named_key(name: &str) -> Option<u32> {
     //           characters. Alternatives (`|`) accept common spellings.
     // Why:      Accept both symbolic names and bare characters.
     match name {
+        // Linux evdev modifier codes let press/release shortcuts stay on this compositor's isolated seat.
+        "ctrl" => return Some(29),
+        "shift" => return Some(42),
+        "alt" => return Some(56),
+        "meta" => return Some(125),
         "enter" | "return" => return Some(28),
         "escape" | "esc" => return Some(1),
         "tab" => return Some(15),
