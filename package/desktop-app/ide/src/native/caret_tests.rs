@@ -64,6 +64,8 @@ fn horizontal_keys_move_by_grapheme_word_line_and_document_and_extend_with_shift
     assert_eq!(position(&reader), (1, 1), "Right");
     chord(window, Key::Shift, Key::RightArrow);
     assert_eq!(position(&reader), (1, 2), "Shift+Right extends");
+    // Two selected characters tell a collapse to the start apart from one step left of the head.
+    chord(window, Key::Shift, Key::RightArrow);
     key(window, Key::LeftArrow);
     assert_eq!(
         position(&reader),

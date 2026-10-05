@@ -162,5 +162,6 @@ pub fn extended(
     if start < origin.0 {
         return (origin.1, start);
     }
-    return (origin.0, end.max(origin.1));
+    // Units never overlap partially, so a unit that does not start before the pressed one ends at or after it.
+    return (origin.0, end);
 }

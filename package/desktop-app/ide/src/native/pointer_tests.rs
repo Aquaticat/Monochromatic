@@ -189,6 +189,13 @@ fn shift_click_extends_the_selection_from_its_anchor() {
         text: Key::Shift.into(),
     });
     assert_eq!(window.get_selected_text(), "pha be");
+    // The first plain click was at this very point moments ago; the Shift+clicks in between ended that count.
+    click(window, point(window, 0, caret_x(&reader, 8) + 1.0));
+    assert_eq!(
+        position(&reader),
+        (8, 8),
+        "a plain click after Shift+click must be a single click"
+    );
     window.hide().expect("close pointer window");
 }
 
@@ -245,6 +252,25 @@ fn drag_selects_text_by_characters_and_by_words_without_panning() {
     );
     release(window, alpha);
     assert_eq!(window.get_selected_text(), "alpha beta");
+    // Only the left button selects: a drag with the middle button leaves the selection alone.
+    window.window().dispatch_event(WindowEvent::PointerPressed {
+        position: start,
+        button: PointerEventButton::Middle,
+    });
+    window
+        .window()
+        .dispatch_event(WindowEvent::PointerMoved { position: target });
+    window
+        .window()
+        .dispatch_event(WindowEvent::PointerReleased {
+            position: target,
+            button: PointerEventButton::Middle,
+        });
+    assert_eq!(
+        position(&reader),
+        (10, 0),
+        "a drag with the middle button changed the selection"
+    );
     assert_eq!(window.get_source_text(), text.as_str());
     window.hide().expect("close pointer window");
 }
