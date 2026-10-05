@@ -907,6 +907,79 @@ fn rules_init_print_config_and_debug_modes() {
     assert_eq!(fixture.read("a.md"), "# Title.\n");
 }
 
+/// `--debug` streams semantic-workspace progress to standard error while a workspace loads, and a run without
+/// it prints nothing there. An unparsable `Cargo.toml` makes the load fail after its first progress message,
+/// so both runs end quickly with the same single processing finding and status 2.
+#[test]
+fn debug_streams_workspace_progress_and_plain_runs_stay_silent() {
+    let fixture: Fixture = Fixture::new();
+    fixture.write(
+        CONFIG,
+        r#"[{ "files": ["**/*.rs"], "rules": { "rust/require-explicit-types": { "severity": "error" } } }]"#,
+    );
+    fixture.write("Cargo.toml", "[package\n");
+    fixture.write("src/lib.rs", "//! Library.\n");
+    let debug: Run = run(&fixture.path, &["--debug", "src/lib.rs"], b"");
+    assert_eq!(debug.status, 2, "{}", debug.stderr);
+    assert!(
+        debug
+            .stderr
+            .contains("monochromatic-lint: debug: discovering sysroot\n"),
+        "{}",
+        debug.stderr
+    );
+    let plain: Run = run(&fixture.path, &["src/lib.rs"], b"");
+    assert_eq!((plain.status, plain.stderr.as_str()), (2, ""));
+    assert_eq!(plain.stdout, debug.stdout);
+    assert_eq!(
+        located(plain.stdout.as_str()),
+        ["src/lib.rs core/processing-failure 1 1"]
+    );
+}
+
+/// A write failure other than a closed pipe exits 2 whichever stream failed, instead of the findings' status.
+/// `/dev/full` refuses every write with "no space left on device".
+#[test]
+fn a_failing_output_stream_exits_two() {
+    let fixture: Fixture = Fixture::new();
+    fixture.write(CONFIG, RULES);
+    fixture.write("a.md", "# Title.\n");
+    let baseline: Run = run(&fixture.path, &[], b"");
+    assert_eq!((baseline.status, baseline.stderr.as_str()), (1, ""));
+    // Standard output fails; standard error stays empty because nothing else had to be said.
+    let full_stdout: std::fs::File = std::fs::File::options()
+        .write(true)
+        .open("/dev/full")
+        .expect("open /dev/full");
+    let stdout_failed: Output = Command::new(BINARY)
+        .current_dir(&fixture.path)
+        .stdin(Stdio::null())
+        .stdout(Stdio::from(full_stdout))
+        .stderr(Stdio::piped())
+        .output()
+        .expect("run the built executable");
+    assert_eq!(stdout_failed.status.code(), Some(2));
+    assert!(stdout_failed.stderr.is_empty());
+    // Standard error fails while `--debug` writes its notes there; the findings still reach standard output.
+    let full_stderr: std::fs::File = std::fs::File::options()
+        .write(true)
+        .open("/dev/full")
+        .expect("open /dev/full");
+    let stderr_failed: Output = Command::new(BINARY)
+        .arg("--debug")
+        .current_dir(&fixture.path)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::from(full_stderr))
+        .output()
+        .expect("run the built executable");
+    assert_eq!(stderr_failed.status.code(), Some(2));
+    assert_eq!(
+        String::from_utf8(stderr_failed.stdout).expect("UTF-8"),
+        baseline.stdout
+    );
+}
+
 /// Output is the same at every concurrency limit, and a reader that closes the pipe early causes no error output.
 #[test]
 fn concurrency_and_closed_pipes_do_not_change_results() {

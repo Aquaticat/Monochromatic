@@ -179,6 +179,37 @@ fn in_memory_processing_passes_ordinary_outcomes_through() {
     assert!(outcome.findings.is_empty());
 }
 
+/// Worker threads get the main thread's usual 8 MiB stack, so nesting that a default 2 MiB thread
+/// stack cannot hold still parses there. The Rust parser recurses once per parenthesis: in the bounded
+/// container the debug executable needed more than 3 MiB and at most 4 MiB of main-thread stack for
+/// this depth (`ulimit -s` 3072 KiB overflowed, 4096 KiB passed). A smaller worker stack, or running
+/// these files on this 2 MiB test thread instead of on workers, overflows and aborts the test binary.
+#[test]
+fn workers_parse_nesting_deeper_than_a_default_thread_stack_holds() {
+    let fixture: Fixture = Fixture::new();
+    write(&fixture.path, CONFIG, ALL_RULES);
+    // Documented items and one nested expression, so a completed check has no finding at all.
+    let nested: String = format!(
+        "//! Nested expression.\n\n/// Entry point.\nfn main() {{\n    let x: u32 = {}1{};\n}}\n",
+        "(".repeat(1200),
+        ")".repeat(1200)
+    );
+    let mut plans: Vec<FilePlan> = Vec::<FilePlan>::new();
+    // Two files at a limit of two start two workers; one file would stay on this thread.
+    for name in ["a.rs", "b.rs"] {
+        write(&fixture.path, name, nested.as_str());
+        plans.push(plan(&fixture.path, name));
+    }
+    let lfs: LfsRepos = LfsRepos::new();
+    let mut semantic: RustFileEngine = engine();
+    let outcomes: Vec<FileOutcome> = process_plans(plans.as_slice(), false, &lfs, 2, &mut semantic);
+    assert_eq!(outcomes.len(), 2);
+    for outcome in &outcomes {
+        assert_eq!(outcome.findings, Vec::new());
+        assert!(!outcome.written);
+    }
+}
+
 /// A writer that panics, standing in for a defect inside per-file processing.
 fn panicking_writer(_path: &std::path::Path, _contents: &[u8]) -> Result<(), WriteError> {
     panic!("writer exploded");

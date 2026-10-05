@@ -187,6 +187,25 @@ each owned by one subagent:
   behind a setter that takes `HintsSnapshot` and `DiagnosticsSnapshot`;
   that agent owns the inlay placement decision the scope delegates.
   The coordinating session connects the navigation branch's snapshot accessor to this setter after both land.
+- Event-driven tree and displayed-file refresh with the user-approved `notify` crate
+  in the worktree `.claude/worktrees/ide-tree-watch`
+  on branch `feat/ide-tree-watch`
+  (MCP ports 9388 and 9389),
+  replacing round-robin directory polling and the 250 ms file read loop,
+  with reconciliation on watcher errors,
+  overflow,
+  and a slow safety reconcile.
+- UI option screenshots for the user's pending UI questions
+  (divider gutter,
+  divider Tab stop,
+  find-input clear icon,
+  find-bar buttons),
+  built as throwaway variants on branch `prototype/ide-ui-variants`
+  in `.claude/worktrees/ide-ui-variants`
+  (MCP ports 9378 and 9379);
+  the record lands on `main` in `package/desktop-app/ide/design/`,
+  local files only,
+  and the questions are asked after it exists.
 - Integration order constraint:
   the production launch policy stays the identity policy until the bubblewrap leg lands,
   so neither language branch is integrated onto `main` before it;
@@ -506,16 +525,22 @@ Queue after the in-flight work:
    then the navigation and annotation branches,
    then connect hints and diagnostics snapshots to the renderer,
    and verify all five language feature paths in the nested compositor against disposable projects.
-2. Event-driven directory invalidation stays on bounded polling
-   unless an existing dependency already provides file watching,
-   per the proportionality rule.
-   Measured on 2026-10-05:
-   none of the 646 packages in `package/desktop-app/ide/Cargo.lock` is a watcher
-   (`notify`,
-   `inotify`,
-   or similar),
-   so event-driven refresh needs a new dependency;
-   that question went to the user.
+2. Nested compositor runtime output scaling and closing private-bus service activation,
+   both decided by the user on 2026-10-05
+   (`doc/decision/slint-ide-0x-scope.md`,
+   "Decisions of 2026-10-05"),
+   then the IDE's scale migration verified end to end.
+   Queued because this session's subagent limit is five concurrent agents;
+   the full brief is in the coordinating session's history and must be reissued:
+   work in `package/cli/nested-wayland-session` on `main`,
+   startup option plus runtime control command for integer and fractional scale,
+   tests observed failing first,
+   a `slint-viewer` end-to-end check,
+   then `inspect:native` with scale 1,
+   2,
+   1.25,
+   1 without editing the IDE,
+   and a private `dbus-daemon` configuration with no service directories.
 3. Confirm the two find flakes are gone with repeated native runs on the final `main`.
    `native_find_paints_visible_matches_only_and_reveals_far_columns` failed 3 of 8 runs on unmodified `8995633b0`
    because the query `n` also yields its `1/301` count;
