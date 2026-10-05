@@ -90,6 +90,14 @@ fresh guest with recorded-settings restoration in the wrapper's cleanup
 path.
 The alternative API36 guest remains separately provisioned for comparison;
 no additional emulator is run concurrently with this native control.
+The fresh guest reports different stock system insets from the retired
+probe:
+the focused cover frame's measured application root begins at `59px`,
+not the old `152px` crop boundary.
+Sanitization and same-scene pixel comparison must use the freshly measured
+root,
+not silently reuse the old status-strip size or crop app content away.
+Physical panel size and density still match the official profile.
 
 ## Independently verifiable queue
 
