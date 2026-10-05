@@ -134,6 +134,27 @@ each owned by one subagent:
   focus traversal,
   and the dark-mode selection ink
   (selected text is dark on blue in the dark theme).
+- Branch heads at 11:48 on 2026-10-05,
+  all committed with clean worktrees:
+  `feat/ide-sidebar-resize` at `4e0907962` (6 commits),
+  `feat/ide-source-keys` at `b59b15b59` (8 commits),
+  `feat/ide-language-core` at `652d383dd` (7 commits).
+  All three agents were cut off by an API session limit at about 11:10
+  and resumed at 11:48 from their transcripts.
+  If this session ends,
+  integrate each branch with `git cherry-pick main..<branch>` one branch at a time,
+  running `:test`,
+  `:test:native`,
+  and `:lint` between branches.
+  Files touched by more than one branch:
+  `mise.toml`,
+  `src/lib.rs`,
+  `src/native.rs`,
+  `ui/app.slint`
+  (and `README.md` additions);
+  resolve them additively.
+  Guard-removal proofs are taken on branch state;
+  rerun every `inspect:*-guards` task once on the final `main`.
 - No agent edits the IDE crate in the main worktree now.
   `main` is the integration point:
   the coordinating session cherry-picks each branch and reruns the suite.
@@ -278,6 +299,12 @@ Completed in this fan-out:
   and a possible frame with the new palette over the old source image.
   The compositor has no runtime output scaling,
   so physical-output DPI migration is covered only by the headless scale-factor test.
+  Residual risk found by that leg:
+  the private D-Bus daemon attempts service activation from host service files
+  (a hosted `slint-viewer` triggered `org.a11y.Bus` activation,
+  which failed with `Permission denied`);
+  nothing reached the host bus,
+  and a private daemon configuration without service directories would close it.
 
 Known constraints from the spike that the native wiring must honor:
 `Registry` derives the LSP root from the process working directory;
