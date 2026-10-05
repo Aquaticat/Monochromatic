@@ -48,16 +48,13 @@ fn opened(reply: ReloadReply) -> Result<OpenedFile> {
     // ```ts
     // if (update !== undefined && !document.applyReload(update)) throw new Error('Mismatched base');
     // ```
-    if let Some(reload) = update {
-        if !document.apply_reload(reload) {
-            bail!("Cannot install opened source {}: its base revision does not match", path.display());
-        }
+    // A let-chain combines optional extraction and its boolean rejection condition without another nested block.
+    if let Some(reload) = update && !document.apply_reload(reload) {
+        bail!("Cannot install opened source {}: its base revision does not match", path.display());
     }
     document.select(ReadingPosition { anchor: 0, head: 0, viewport: 0 });
-    if let Some(syntax) = &reply.syntax {
-        if syntax.revision != document.revision() {
-            bail!("Cannot install opened source {}: its classification revision does not match", path.display());
-        }
+    if let Some(syntax) = &reply.syntax && syntax.revision != document.revision() {
+        bail!("Cannot install opened source {}: its classification revision does not match", path.display());
     }
     // Ok transfers the completed reading state without copying the source into another text representation.
     return Ok(OpenedFile { path, document, syntax: reply.syntax });

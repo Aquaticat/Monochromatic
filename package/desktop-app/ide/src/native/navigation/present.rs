@@ -23,11 +23,10 @@ fn expand_reveal(navigation: &mut Navigation) {
         let rows = navigation.tree.rows();
         let Some(row) = rows.iter().find(|row| return row.entry.path == ancestor) else { break; };
         if !row.entry.is_directory { break; }
-        if !row.expanded {
-            if let Err(error) = navigation.tree.toggle(ancestor) {
-                tracing::warn!(%error, path = %ancestor.display(), "cannot expand reveal ancestor");
-                break;
-            }
+        // A let-chain enters the error branch only when expansion was needed and that operation failed.
+        if !row.expanded && let Err(error) = navigation.tree.toggle(ancestor) {
+            tracing::warn!(%error, path = %ancestor.display(), "cannot expand reveal ancestor");
+            break;
         }
     }
 }
