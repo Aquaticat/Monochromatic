@@ -31,7 +31,7 @@ and answer the network question under "Open decisions for the coordinator".
   one private state directory and a private `/tmp` writable,
   `/run` hidden,
   and,
-   per server,
+   where the server tolerates it,
    its own process-id namespace.
 - Put the wrapper in the Helix `command`,
   the recipe plus the original command in `args`,
@@ -565,24 +565,42 @@ Rust runs use the build-script child probe;
 - `unshare` (`unshare-rust`):
    all requests correct;
    tree identical.
+  Both TypeScript servers (`unshare-ts`,
+   `unshare-ts7`) answered the hover and definition,
+  then exited through their client-process watchdog;
+   tree identical.
 - systemd,
    default properties (`systemd-rust`,
-   `systemd-ts`):
+   `systemd-ts`,
+   `systemd-ts7`):
    requests correct;
   tree not identical,
    `ESCAPED_VIA_SYSTEMD_*` added.
 - systemd,
-   extended properties (`systemd-rust-best`):
+   extended properties (`systemd-rust-best`,
+   rust-analyzer only):
    requests correct;
    tree identical.
 - Podman (`podman-rust`):
    requests correct;
    tree identical.
+  Both TypeScript servers (`podman-ts`,
+   `podman-ts7`) answered,
+   then exited through the watchdog;
+   tree identical.
 - Landlock (`landlock-rust`,
-   `landlock-ts`):
+   `landlock-ts`,
+   `landlock-ts7`):
    requests correct;
   tree not identical,
    `ESCAPED_VIA_SYSTEMD_*` added and `victim-meta.txt` mode and time changed.
+- Not every combination was run.
+  The redirect,
+   lock-file,
+   toolchain,
+   registry-dependency,
+   type-acquisition,
+   and real-server kill variants ran under bubblewrap only.
 
 ### Write and escape probes
 
@@ -758,7 +776,10 @@ With real servers:
   and exited 5.2 s after start (`bwrap-ts7`).
 - rust-analyzer ran normally in a process-id namespace.
 - The same failure appeared under `unshare` and podman,
-   which also create a process-id namespace.
+   which also create a process-id namespace
+  (`unshare-ts`,
+   `podman-ts`;
+   `unshare-ts7` at 5.3 s and `podman-ts7` at 5.5 s with the same message).
 - Without a process-id namespace the user namespace still denied `/proc/<pid>/root` and `/proc/<pid>/environ`.
 
 ### Launch overhead
@@ -1337,6 +1358,10 @@ node matrix.mjs base-rust bwrap-rust-final bwrap-rust landlock-rust systemd-rust
  so the variant scripts run after it.
 `template/rs-dep/Cargo.lock` was copied from the enumeration run `enum-rust-dep`.
 The podman run needs `RUSTUP_HOME` and `CARGO_HOME` passed through `extraEnv`.
+The runs `landlock-ts7`,
+`systemd-ts7`,
+`unshare-ts7`,
+and `podman-ts7` use the options of `bwrap-ts7-final` without its `mech` entry.
 
 ### Script excerpts
 
