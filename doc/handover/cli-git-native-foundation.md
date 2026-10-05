@@ -137,6 +137,75 @@ Test image
 `16f09e939ecefa1a500520d1b4ed0d9745e1f373305101cbb02743dcb1fc212a`;
 evidence `package/git-policy/cli/target/verification/native-dtC4QT`.
 
+### Runners under the Oxlint configuration
+
+Commits `6bc2f15f3` and `9b99e49f3` rewrote `bin/test-native-container.mjs` and `bin/mutate-native-container.mjs`
+so that they pass the repository Oxlint configuration with no errors and no warnings.
+`bin/native-verification-process.mjs` now holds the shared `runCommand`,
+`createContainer`,
+and `NativeVerificationError`;
+`bin/native-planted-controls.mjs` holds the planted-control phase,
+split out because the mutation runner otherwise exceeds the 300-line `max-lines` limit.
+Commands,
+argument arrays,
+container bounds,
+the `GIT_POLICY_NATIVE_IMAGE_TAG` override,
+and evidence files are unchanged.
+
+- `spawnSync` became `spawn`.
+  Captured output keeps a bound per stream that stops the command and fails the step.
+  The bound is now 64 MiB for both runners;
+  the test runner's `maxBuffer` was 16 MiB,
+  which its captured commands (`podman image inspect` and `rustc --print sysroot`) never approach.
+- `try`/`finally` became `await using` over `mkdtempDisposable` and over a container handle
+  whose disposal runs `podman rm --force`,
+  in the same order as before:
+  the container first,
+  then the build context.
+- The image-ID,
+  container-ID,
+  and `--file` scope regexes became linear scans.
+  A scratch comparison against the former regexes over 400017 generated inputs found no difference.
+- The test runner copies its source snapshot concurrently
+  and waits for every copy to settle before it can throw,
+  so cleanup never races an in-flight copy.
+- Planted controls still run one container at a time,
+  through an async generator consumed with `for await`.
+- Each file carries `/// <reference types="node" />`.
+  `bin` is outside the package `tsconfig.json` include list,
+  so type-aware Oxlint checks these files in an inferred program without Node types;
+  without the reference,
+  `process` and every `node:` import resolve to the error type.
+
+The gate on the former scripts and on the rewrite,
+over the same source fingerprint,
+both passed 322 unit tests,
+21 binary-level tests,
+and Clippy,
+and both built test image `e357067e614b11aa4eaaf8eb2d6f8ef519828a2325d8d99d751dc836a69b3cc5`.
+Evidence `package/git-policy/cli/target/verification/native-NU20Ff` (former)
+and `package/git-policy/cli/target/verification/native-lZbioV` (rewrite);
+their `manifest.json` and `passed.json` are byte-identical.
+
+Failure controls,
+all leaving no temporary directory or container behind:
+
+- A failing test planted in a scratch copy of the crate made the test runner exit 1
+  with `podman run failed (status 101, signal null)` and no `passed.json`.
+- A missing image tag made the mutation runner exit 1
+  naming `podman image` and Podman's `image not known`.
+- `createContainer` removed its container when its scope ended by a thrown error and by a normal return.
+
+`native:mutation:scoped -- --file src/native/rule_commit_only_message.rs` on the rewrite's gate image
+noticed all five planted controls,
+one container at a time,
+then caught both mutants of that file and exited 0.
+Evidence `package/git-policy/cli/target/verification/native-mutation-LISN18`
+has the same files and report entries as `native-mutation-2mwlb7` from the former runner,
+the same key order in `manifest.json` and `exit.json`,
+and a `planted-controls.json` equal to the former one;
+the campaign container and every planted container were removed.
+
 Evidence directories live under the ignored `target` directory of this worktree and are not committed.
 
 ## Configuration
