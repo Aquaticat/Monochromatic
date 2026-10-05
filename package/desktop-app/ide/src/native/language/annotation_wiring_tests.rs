@@ -30,12 +30,41 @@ const TEXT: &str = "alpha beta\ngamma delta\n";
 /// ```
 const PUSHED: &[(&str, &str)] = &[("PUSH", "1")];
 
-/// The server's hints and diagnostics appear with no key, pointer, scroll, or reload after them:
-/// the poll that stores a snapshot also repaints the source.
+/// What: The pushed warning, from a server that starts answering only three seconds after it was started.
+/// Why: The source refresh repaints once, when the file's first highlighting answer arrives. A server that
+///      answers after that leaves the language poll as the only thing that can paint its hints and warning.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const LATE: [string, string][] = [['PUSH', '1'], ['INIT_DELAY_MS', '3000']];
+/// ```
+const LATE: &[(&str, &str)] = &[("PUSH", "1"), ("INIT_DELAY_MS", "3000")];
+
+/// The server's hints and diagnostics appear with no key, pointer, scroll, reload, or highlighting
+/// answer after them: the poll that stores a snapshot also repaints the source.
 #[test]
 fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
     let fixture = project(&[("main.scripted", TEXT)]);
-    let reader = reader(&fixture, "main.scripted", definitions(PUSHED, None));
+    let reader = reader(&fixture, "main.scripted", definitions(LATE, None));
+    // What: `borrow()` lends the shared source state for reading; `Some(revision)` is the present
+    //       value the highlighting revision is compared with.
+    // Why: The source refresh asks for highlighting until an answer for the displayed revision was
+    //      applied, and repaints when it applies one. After this wait it repaints nothing more.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // await eventually(() => source.current.syntaxRevision === source.current.document.revision());
+    // ```
+    eventually("the first highlighting answer was not applied", || {
+        let current = reader.source.borrow();
+        return current.syntax_revision == Some(current.document.revision());
+    });
+    // The order this test depends on: nothing from the delayed server was painted by that repaint.
+    assert!(
+        reader.window.get_source_markers().row_count() == 0
+            && reader.window.get_hint_boxes().row_count() == 0,
+        "the delayed server answered before highlighting settled; the repaints cannot be told apart"
+    );
     ready(&reader);
     eventually(
         "accepted hints and diagnostics were stored but never painted",
