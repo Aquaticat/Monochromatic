@@ -19,6 +19,14 @@ and to grill the plan before any code moves.
   `@monochromatic-dev/mcp-stdio` stays unchanged.
 - Q10: the transform is a dependency-free in-repo subset converter with a fail-loud guard
   and verdict-agreement tests; no third-party converter is adopted.
+- Q6: core lives at `package/agent-harness-shared/search-fetch`,
+  named `@monochromatic-dev/agent-harness-shared-search-fetch`.
+- Q7: truncation is ported into a neutral module and proven identical to pi's helpers by behavior tests;
+  core imports nothing from pi.
+- Q8: truncated head plus temp path stay, and the full response is additionally delivered as an MCP resource.
+  New evidence (OpenCodeReview ignores resources) reopens the delivery mechanism as Q11.
+- Q9: README snippets cover generic stdio and open-codereview.ai only;
+  live verification runs against OpenCodeReview (`ocr` on PATH), configured by the agent.
 
 Recorded without asking (policy or sibling precedent), each open for veto:
 
@@ -35,11 +43,11 @@ Recorded without asking (policy or sibling precedent), each open for veto:
 
 ## Open frontier
 
-- Q6: core package home (`package/module/search-fetch` recommended).
-- Q7: truncation ownership (import pi's `truncateHead`, `formatSize`, `withFileMutationQueue` as
-  pure utilities recommended).
-- Q8: truncation delivery to MCP hosts (keep the temp path, document the file-read requirement recommended).
-- Q9: registration and verification targets (README snippets plus live verification against one real host recommended).
+- Q11: MCP resource delivery mechanism, given OpenCodeReview renders non-text content as
+  `[unsupported content type: ...]`. Options: dynamic resource via `resources/list` and `resources/read`
+  with the URI in the text output, inline `resource_link`, or reverting to temp path only.
+- Q12: where the ported truncation module lives: inside the core package or its own `package/module/...` package.
+- Q13: proposed `AGENTS.md` `RGT` tightening after the rg misuse incident (see Evidence hygiene).
 
 ## Evidence
 
@@ -77,6 +85,29 @@ It mirrors both tool parameter schemas in valibot and transforms them with `@sin
 - In-repo subset converter: no dependency, covers exactly the constructs we use (object, string,
   array, optional, pipe description), throws on anything else.
 
+### OpenCodeReview MCP integration
+
+Source of truth: `open-code-review` repo, `pages/src/content/docs/en/mcp.md`, `pages/src/content/docs/en/tools.md`,
+`internal/mcp/client.go` (cloned at `/home/user/temp/agent/open-code-review-ocr-routing-20260823`).
+
+- OCR is an MCP client over stdio using `github.com/modelcontextprotocol/go-sdk v1.6.1` (`go.mod:12`).
+- Servers are configured under `mcp_servers.<name>` in `~/.opencodereview/config.json`, writable via
+  `ocr config set mcp_servers.<name>.command|args|tools|setup|env`; `tools` is an optional allowlist.
+- Tool names share a namespace with built-ins (`task_done`, `code_comment`, `file_read`, `file_read_diff`,
+  `file_find`, `code_search`). `web_search` and `web_fetch` collide with none of them.
+- `CallTool` returns text only (`internal/mcp/client.go:157`); `contentToText` keeps `*mcp.TextContent` and renders
+  every other content type as `[unsupported content type: %T]` (`internal/mcp/client.go:177`).
+  Repo-wide `resource` hits are OpenTelemetry and CSP only, so OCR never follows MCP resources.
+- Consequence: the Q8 resource is inert in the verification host, and inline resource content would add a
+  placeholder line to its review context.
+
+### Evidence hygiene
+
+The user corrected a wrong claim: I reported a nonexistent bash output filter rewriting terms to `ln`.
+Cause was my own `rg -rln` / `rg -rn` misuse (`-r` is `--replace`), the failure mode `AGENTS.md` `RGT` warns about.
+Re-verified after the correction: `docs/extensions.md:76` says `pi.registerTool()`, not `pi.ln()`;
+the OCR README link is `docs/mcp`; and no conclusion in this document rests on replaced output.
+
 ## Rejected ideas
 
 - Declare once in valibot, convert to plain JSON Schema, hand it to pi behind a cast.
@@ -94,5 +125,5 @@ No schema or implementation change.
 
 ## Next action
 
-Waiting on user answers for Q6, Q7, Q8, Q9, re-asked in one `ask_user_question` call.
+Waiting on user answers for Q11, Q12, Q13, asked in one `ask_user_question` call.
 After the frontier empties, restate the shared understanding and wait for confirmation before implementing.
