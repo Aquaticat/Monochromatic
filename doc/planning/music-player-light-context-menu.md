@@ -100,7 +100,7 @@ The two icon tests cover every accepted vector mapping and unknown input;
 a fresh fallback-icon mutant fails the intended rejection test,
 followed by restoration and the complete unit task.
 The native APK build passed.
-The retained APK SHA-256 is
+The first wrapping-heading APK SHA-256 is
 `f58c8967e2796076f413728e45e9b08c1e541f4b7460c369762f063b2d059689`.
 Its merged manifest disables production activity/services and removes
 WorkManager auto-initialization.
@@ -145,8 +145,15 @@ Prototype `5af5e3b10` restores `maxLines = 1` and explicit ellipsis while
 retaining full authored identity in the model and diagnostics.
 The wrapping-heading APK and captures are preserved as superseded probes;
 they will not be relabelled as the corrected artifact.
-The corrected build,
-full native action/context matrix and publication remain incomplete.
+The corrected build and full unit task passed,
+and the installed APK matched SHA-256
+`a23f02c51a02b10ee1eb2b8ed21d8ab345fed4d9deb4fdc1a8d38c7e0e54d574`.
+New large-text records confirm one heading line with intentional overflow;
+the retained eight-line record fails the current heading assertion.
+This is an actual prior-artifact negative,
+not a new source-mutation claim.
+The corrected study uses a separate private evidence directory.
+The full native action/context matrix and publication remain incomplete.
 
 ## Independently verifiable queue
 
