@@ -88,6 +88,39 @@ const ISSUE: AdjudicatedIssue = {
   tallies: {},
 };
 
+/**
+ The same issue with the panel's reading of the lone claim, one ballot
+ finding it supported and one unsupported, and no reading of the orphan claim.
+ */
+const SPLIT_PANEL_ISSUE: AdjudicatedIssue = {
+  ...ISSUE,
+  readings: {
+    [LONE_CLAIM_ID]: {
+      ballots: [
+        { panelistId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, vote: 'supported', weight: 1, },
+        { panelistId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, vote: 'unsupported', weight: 1, },
+      ],
+      configuredPanelists: 2,
+      tally: { supported: 1, unsupported: 1, ambiguous: 0, sourceDefect: 0, abstain: 0, },
+    },
+  },
+};
+
+/**
+ The same issue with a reading of the lone claim in which no seated panelist
+ was heard.
+ */
+const SILENT_PANEL_ISSUE: AdjudicatedIssue = {
+  ...ISSUE,
+  readings: {
+    [LONE_CLAIM_ID]: {
+      ballots: [],
+      configuredPanelists: 2,
+      tally: { supported: 0, unsupported: 0, ambiguous: 0, sourceDefect: 0, abstain: 0, },
+    },
+  },
+};
+
 await describe({
   name: 'claim filers (owner, 2026-09-24)',
   children: [
@@ -131,19 +164,7 @@ await describe({
       fn: async () => {
         expect(describeIssueFiling({
           sliceIndex: 3,
-          issue: {
-            ...ISSUE,
-            readings: {
-              [LONE_CLAIM_ID]: {
-                ballots: [
-                  { panelistId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, vote: 'supported', weight: 1, },
-                  { panelistId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, vote: 'unsupported', weight: 1, },
-                ],
-                configuredPanelists: 2,
-                tally: { supported: 1, unsupported: 1, ambiguous: 0, sourceDefect: 0, abstain: 0, },
-              },
-            },
-          },
+          issue: SPLIT_PANEL_ISSUE,
           filers: claimFilersOf({ attributions: ATTRIBUTIONS, },),
         },),).toBe(
           `chunk 3: issue adjudicated/whisker-tail accepted major: ${LONE_CLAIM_ID} filed by ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}, panel ${SEAT_HYPER_OPENROUTER_VISION_EDITOR} supported, ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} unsupported: accuracy/omission major: Translation omits why the cat left the windowsill.; ${ORPHAN_CLAIM_ID} filed by nobody on record, panel not on record: accuracy/omission major: The cat is called a kitten.`,
@@ -170,56 +191,33 @@ await describe({
     },),
 
     it({
-      name: 'ATTACHES the filers where the record names them and LEAVES the issue as it stands where no '
-        + 'claim is on record',
+      name: 'LEAVES an issue as it stands where none of its claims is on record',
       fn: async () => {
-        /**
-         Issues whose member claims the filers may or may not name.
-         */
-        const named = attachClaimFilers({
-          issues: [{
-            claims: [{ claimId: 'claim/nap', },],
-          },] as unknown as Parameters<typeof attachClaimFilers>[0]['issues'],
-          filers: { 'claim/nap': ['minimax-m3',], },
-        },);
-        expect('filedBy' in (named[0] ?? {}),).toBe(true,);
-
-        const unnamed = attachClaimFilers({
-          issues: [{
-            claims: [{ claimId: 'claim/nap', },],
-          },] as unknown as Parameters<typeof attachClaimFilers>[0]['issues'],
+        expect(attachClaimFilers({
+          issues: [ISSUE,],
           filers: {},
-        },);
-        expect('filedBy' in (unnamed[0] ?? {}),).toBe(false,);
+        },),).toEqual([ISSUE,],);
       },
     },),
 
     it({
-      name: 'NAMES the panel where it cast ballots and says none on record where it cast none or the '
-        + 'issue carries no reading',
+      name: 'NAMES each panelist with its vote where the panel cast ballots on a claim, and says not on '
+        + 'record where it cast none or the issue carries no reading for the claim',
       fn: async () => {
-        const full = panelClause({
-          claimId: 'claim/nap',
-          issue: {
-            readings: {
-              'claim/nap': { ballots: [{ panelistId: 'p1', vote: 'yes', },], },
-            },
-          } as unknown as Parameters<typeof panelClause>[0]['issue'],
-        },);
-        const empty = panelClause({
-          claimId: 'claim/nap',
-          issue: {
-            readings: {
-              'claim/nap': { ballots: [], },
-            },
-          } as unknown as Parameters<typeof panelClause>[0]['issue'],
-        },);
-        const none = panelClause({
-          claimId: 'claim/nap',
-          issue: { readings: {}, } as unknown as Parameters<typeof panelClause>[0]['issue'],
-        },);
-        expect(empty,).toBe(none,);
-        expect(full,).not.toBe(empty,);
+        expect(panelClause({
+          claimId: LONE_CLAIM_ID,
+          issue: SPLIT_PANEL_ISSUE,
+        },),).toBe(
+          `${SEAT_HYPER_OPENROUTER_VISION_EDITOR} supported, ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} unsupported`,
+        );
+        expect(panelClause({
+          claimId: LONE_CLAIM_ID,
+          issue: SILENT_PANEL_ISSUE,
+        },),).toBe('not on record',);
+        expect(panelClause({
+          claimId: ORPHAN_CLAIM_ID,
+          issue: SPLIT_PANEL_ISSUE,
+        },),).toBe('not on record',);
       },
     },),
   ],

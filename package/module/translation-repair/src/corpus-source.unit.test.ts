@@ -30,6 +30,7 @@ import {
   readCorpusFile,
 } from '../dist/final/node/index.mjs';
 import { fixtureGit, REAL_GIT, } from './hermetic-git-run.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { scratchDirWith, } from './scratch-dir.test-fixture.ts';
 
 /**
@@ -261,26 +262,27 @@ await describe({
     },),
 
     it({
-      name: 'throws CorpusReadError for a byte path absent at the pinned commit, the byte reader '
-        + 'naming the failure the same way',
+      name: 'REFUSES a byte path absent at the pinned commit as a missing object, naming the object '
+        + 'asked for the way the text reader names it',
       fn: async () => {
         await using fixture = await makeThrowawayClone();
-        /** Value caught from byte read of a path that never existed. */
-        let caught: unknown;
-        try {
-          await readCorpusBytes({
+        /**
+         What the byte read of a path that never existed threw.
+         */
+        const refusal = await rejectionOf(async function readsAbsentBytes(): Promise<unknown> {
+          return await readCorpusBytes({
             pin: {
               cloneDir: fixture.cloneDir,
               commitSha: fixture.commitSha,
             },
             relPath: 'people/mittens/photos/intro.webp',
           },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught instanceof CorpusReadError,).toBe(true,);
-        expect((caught as CorpusReadError).kind,).toBe('missing-object',);
+        },);
+        expect(isMissingCorpusObject(refusal,),).toBe(true,);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${fixture.commitSha}:people/mittens/photos/intro.webp `
+            + '(missing-object); check that the clone exists and the pinned commit is present.',
+        );
       },
     },),
 
@@ -333,6 +335,54 @@ await describe({
         }
         expect(caught instanceof CorpusReadError,).toBe(true,);
         expect((caught as CorpusReadError).kind,).toBe('other',);
+      },
+    },),
+
+    it({
+      name: 'LETS a listing failure that is no subprocess failure propagate as itself: a working directory '
+        + 'removed under the process names its own fault rather than reading as a corpus refusal',
+      fn: async () => {
+        await using fixture = await makeThrowawayClone();
+        /**
+         Child program that removes the directory it stands in and lists the
+         clone, printing what the listing threw. Every value it carries is
+         written as a JSON literal, which is a JavaScript literal too.
+         */
+        const program = [
+          "import { mkdtempSync, rmdirSync, } from 'node:fs';",
+          "import { tmpdir, } from 'node:os';",
+          "import { join, } from 'node:path';",
+          `const { CorpusReadError, listCorpusPeople, } = await import(${
+            JSON.stringify(new URL('../dist/final/node/index.mjs', import.meta.url,).href,)
+          });`,
+          "const gone = mkdtempSync(join(tmpdir(), 'translation-repair-gone-cwd-'));",
+          'process.chdir(gone);',
+          'rmdirSync(gone);',
+          'try {',
+          `  await listCorpusPeople({ pin: { cloneDir: ${JSON.stringify(fixture.cloneDir,)}, commitSha: ${
+            JSON.stringify(fixture.commitSha,)
+          }, gitPath: ${JSON.stringify(REAL_GIT,)} } });`,
+          "  console.log(JSON.stringify({ listed: true }));",
+          '} catch (error) {',
+          '  console.log(JSON.stringify({ isCorpusReadError: error instanceof CorpusReadError, name: error.name, code: error.code }));',
+          '}',
+        ].join('\n',);
+        /**
+         What the child printed.
+         */
+        const { stdout, } = await spawn(
+          process.execPath,
+          [
+            '--input-type=module',
+            '--eval',
+            program,
+          ],
+        );
+        expect(JSON.parse(stdout,),).toEqual({
+          isCorpusReadError: false,
+          name: 'Error',
+          code: 'ENOENT',
+        },);
       },
     },),
 

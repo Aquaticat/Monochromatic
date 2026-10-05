@@ -28,6 +28,79 @@ import { userText, } from './chat-message-reading.test-fixture.ts';
  */
 const RULED_SOURCE = '第一行。\n=====\n第二行。';
 
+/**
+ Fence line opening the nearby block.
+ */
+const NEARBY_OPENING = '====== NEARBY ORIGINAL, CONTEXT ONLY ======';
+
+/**
+ Fence line carrying the rule that closes the nearby block.
+ */
+const NEARBY_RULE_OPENING = '====== THE TWO NEARBY BLOCKS';
+
+/**
+ Editor sheet's user turn over the ruled original, with whatever nearby
+ halves a case hands in.
+
+ @param nearby - neighbouring halves, each absent or given
+
+ @returns The user turn as text
+
+ @example
+ ```ts
+ const content = sheetWith({ nearby: { neighbouringIncumbentText: 'The cat sleeps.', }, },);
+ ```
+ */
+function sheetWith(
+  { nearby, }: {
+    readonly nearby: {
+      readonly neighbouringIncumbentText?: string;
+      readonly neighbouringSourceText?: string;
+    };
+  },
+): string {
+  return userText({
+    messages: buildEditorMessages({
+      sourceText: RULED_SOURCE,
+      targetText: 'Line one.',
+      envelopes: [],
+      issues: [],
+      ...nearby,
+    },).messages,
+  },);
+}
+
+/**
+ The nearby block of a user turn, from its opening fence up to the rule that
+ closes it, or the whole turn where either fence is absent so a failing
+ expectation shows what the sheet holds.
+
+ @param content - editor sheet's user turn
+
+ @returns The two nearby halves with their fences
+
+ @example
+ ```ts
+ const block = nearbyBlockOf({ content, },);
+ ```
+ */
+function nearbyBlockOf({ content, }: { readonly content: string; },): string {
+  /**
+   Where the block opens.
+   */
+  const start = content.indexOf(NEARBY_OPENING,);
+  /**
+   Where the rule closing it opens.
+   */
+  const end = content.indexOf(NEARBY_RULE_OPENING,);
+  if ((start === (-1)) || (end === (-1)))
+    return content;
+  return content.slice(
+    start,
+    end,
+  );
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -75,23 +148,52 @@ await describe({
       ],
     },),
 
-    it({
-      name: 'READS THE NEIGHBOURING BLOCK with either half alone, the other read as nothing',
-      fn: async () => {
-        /**
-         Prompt whose neighbouring context carries only an incumbent.
-         */
-        const content = userText({
-          messages: buildEditorMessages({
-            sourceText: RULED_SOURCE,
-            targetText: 'Line one.',
-            envelopes: [],
-            issues: [],
-            neighbouringIncumbentText: 'The cat sleeps.',
-          },).messages,
-        },);
-        expect(content.includes('NEARBY EXISTING TRANSLATION',),).toBe(true,);
-      },
+    describe({
+      name: 'nearby block',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'PRINTS the nearby block with the existing translation alone, the original half an empty '
+            + 'section',
+          fn: async () => {
+            expect(nearbyBlockOf({
+              content: sheetWith({ nearby: { neighbouringIncumbentText: 'The cat sleeps.', }, },),
+            },),).toBe(
+              `${NEARBY_OPENING}\n\n====== NEARBY EXISTING TRANSLATION, CONTEXT ONLY ======\nThe cat sleeps.\n`,
+            );
+          },
+        },),
+
+        it({
+          name: 'PRINTS the nearby block with the original alone, the existing translation half an empty '
+            + 'section',
+          fn: async () => {
+            expect(nearbyBlockOf({
+              content: sheetWith({ nearby: { neighbouringSourceText: '猫睡了。', }, },),
+            },),).toBe(
+              `${NEARBY_OPENING}\n猫睡了。\n====== NEARBY EXISTING TRANSLATION, CONTEXT ONLY ======\n\n`,
+            );
+          },
+        },),
+
+        it({
+          name: 'PRINTS NO nearby block where neither half is given, nor where both are empty',
+          fn: async () => {
+            /**
+             The sheet with no nearby block at all.
+             */
+            const bare = '====== ORIGINAL ======\n第一行。\n=====\n第二行。\n====== TRANSLATION ======\nLine one.\n'
+              + '====== EDIT REGIONS ======\n\n====== END ======';
+            expect(sheetWith({ nearby: {}, },),).toBe(bare,);
+            expect(sheetWith({
+              nearby: {
+                neighbouringIncumbentText: '',
+                neighbouringSourceText: '',
+              },
+            },),).toBe(bare,);
+          },
+        },),
+      ],
     },),
   ],
 },);

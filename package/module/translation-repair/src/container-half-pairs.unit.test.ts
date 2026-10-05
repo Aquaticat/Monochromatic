@@ -66,6 +66,25 @@ function sliceOf(
   };
 }
 
+/**
+ The pair a container opened in the first of two archive-carried slices and
+ closed in the second makes.
+ */
+const FIRST_TO_SECOND = {
+  open: {
+    sliceIndex: 0,
+    position: 0,
+    insertion: false,
+    name: 'details',
+  },
+  close: {
+    sliceIndex: 1,
+    position: 1,
+    insertion: false,
+    name: 'details',
+  },
+};
+
 await describe({
   name: containerHalfPairs.name,
   children: [
@@ -125,38 +144,38 @@ await describe({
       },
     },),
     it({
-      name: 'READS NO TAG out of a name running on into a word, a self-closing tag, or a tag never closed, '
-        + 'so the closing half beside them finds nothing to pair with (ledger T8, the inline cluster)',
+      name: 'READS NO TAG out of a name running on into a word or a self-closing tag, so the closing tag line '
+        + 'beside them stays lone in its slice and pairs with the opening half of the slice before',
       fn: async () => {
         const pairs = containerHalfPairs({
           slices: [
             sliceOf({ sliceIndex: 0, text: '<details>\n猫猫在窗台上睡觉。', insertion: false, },),
             sliceOf({
               sliceIndex: 1,
-              text: '<detailsx>猫猫追蝴蝶。\n<details/>猫猫伸了个懒腰。\n</details>\n<details x',
+              text: '<detailsx>猫猫追蝴蝶。\n<details/>猫猫伸了个懒腰。\n</details>',
               insertion: false,
             },),
           ],
         },);
-        expect(pairs,).toEqual([{
-          open: {
-            sliceIndex: 0,
-            position: 0,
-            insertion: false,
-            name: 'details',
-          },
-          close: {
-            sliceIndex: 1,
-            position: 1,
-            insertion: false,
-            name: 'details',
-          },
-        },],);
+        expect(pairs,).toEqual([FIRST_TO_SECOND,],);
+      },
+    },),
+    it({
+      name: 'READS NO TAG out of a closer never closed beside prose, so the opening tag line of its slice '
+        + 'stays lone and pairs with the closing half of the slice after',
+      fn: async () => {
+        const pairs = containerHalfPairs({
+          slices: [
+            sliceOf({ sliceIndex: 0, text: '<details>\n猫猫在窗台上睡觉。</details', insertion: false, },),
+            sliceOf({ sliceIndex: 1, text: '猫猫追蝴蝶。\n</details>', insertion: false, },),
+          ],
+        },);
+        expect(pairs,).toEqual([FIRST_TO_SECOND,],);
       },
     },),
     it({
       name: 'READS a brace close at no brace depth as text rather than a close, so its tag still ends at the '
-        + '`>` after it and takes the closing half as its partner (ledger T8, the inline cluster)',
+        + '`>` after it and takes the closing half as its partner',
       fn: async () => {
         const pairs = containerHalfPairs({
           slices: [
@@ -172,38 +191,33 @@ await describe({
       },
     },),
     it({
-      name: 'READS the opener inline beside prose as an opener and the closer inline beside prose as a '
-        + 'closer, so each pairs the tag line of its own slice rather than cancelling it (ledger T8, the '
-        + 'inline cluster)',
+      name: 'READS a closer inline beside prose as the partner of its slice\'s opening tag line, so the '
+        + 'closing half of the slice after finds none',
+      fn: async () => {
+        const pairs = containerHalfPairs({
+          slices: [
+            sliceOf({ sliceIndex: 0, text: '<details>\n猫猫追蝴蝶。</details>', insertion: false, },),
+            sliceOf({ sliceIndex: 1, text: '猫猫伸了个懒腰。\n</details>', insertion: false, },),
+          ],
+        },);
+        expect(pairs,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'READS an opener inline beside prose as the partner of its slice\'s closing tag line, so the '
+        + 'opening tag line before them pairs with the closing half of the slice after',
       fn: async () => {
         const pairs = containerHalfPairs({
           slices: [
             sliceOf({
               sliceIndex: 0,
-              text: '<details>\n猫猫在窗台上睡觉。<details>',
+              text: '<details>\n猫猫在窗台上睡觉。<details>\n</details>',
               insertion: false,
             },),
-            sliceOf({
-              sliceIndex: 1,
-              text: '猫猫追蝴蝶。</details>\n</details>',
-              insertion: false,
-            },),
+            sliceOf({ sliceIndex: 1, text: '猫猫追蝴蝶。\n</details>', insertion: false, },),
           ],
         },);
-        expect(pairs,).toEqual([{
-          open: {
-            sliceIndex: 0,
-            position: 0,
-            insertion: false,
-            name: 'details',
-          },
-          close: {
-            sliceIndex: 1,
-            position: 1,
-            insertion: false,
-            name: 'details',
-          },
-        },],);
+        expect(pairs,).toEqual([FIRST_TO_SECOND,],);
       },
     },),
   ],

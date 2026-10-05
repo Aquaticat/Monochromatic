@@ -24,6 +24,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -31,7 +32,7 @@ import {
 
 import {
   type BlockPair,
-  declinedTargetBlocks,
+  BlockPairingError,
   declinedTargetIdsOfPairing,
   parseDocument,
 } from '../dist/final/node/index.mjs';
@@ -52,6 +53,32 @@ Whiskers counted the birds outside.
 const TARGET_PAGE = `Mittens slept on the sill until noon.
 
 Whiskers counted the birds outside.
+
+Her brother brought her a feather.
+`;
+
+/**
+ Original side of three paragraphs, for a pairing that leaves the middle one
+ unplaced.
+ */
+const LONGER_SOURCE_PAGE = `Mittens slept on the sill until noon.
+
+Whiskers counted the birds outside.
+
+Tabby chased a moth along the fence.
+`;
+
+/**
+ Original side of one paragraph, for a pairing that renders it more than once.
+ */
+const ONE_BLOCK_SOURCE_PAGE = `Mittens slept on the sill until noon.
+`;
+
+/**
+ Translation side of two paragraphs, the first rendering both paragraphs of
+ the two-paragraph original and the second answering to neither.
+ */
+const MERGED_TARGET_PAGE = `Mittens slept on the sill while Whiskers counted the birds.
 
 Her brother brought her a feather.
 `;
@@ -93,8 +120,8 @@ await describe({
     },),
 
     it({
-      name: 'DECLINES NOTHING where the pairing placed nothing at all, so an empty pass reports no block '
-        + 'left behind',
+      name: 'DECLINES NOTHING for an empty pairing over a page whose original holds blocks, the pairing a '
+        + 'pass hands on when no voice was usable',
       fn: async () => {
         expect([...declinedTargetIdsOfPairing({
           pairs: [],
@@ -105,8 +132,29 @@ await describe({
     },),
 
     it({
-      name: 'DECLINES NOTHING where the source side holds no block at all, so no pairing exists to leave a '
-        + 'block unclaimed',
+      name: 'DECLINES NOTHING where one original stays unplaced between two pairings, though the last '
+        + 'translation block answers to no original',
+      fn: async () => {
+        expect([...declinedTargetIdsOfPairing({
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 2,
+              target: 1,
+            },
+          ],
+          sourceNodes: parseDocument({ text: LONGER_SOURCE_PAGE, },).nodes,
+          targetNodes: parseDocument({ text: TARGET_PAGE, },).nodes,
+        },),],).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'DECLINES NOTHING where the original holds no block at all, since a pairing that placed nothing '
+        + 'declines nothing',
       fn: async () => {
         expect([...declinedTargetIdsOfPairing({
           pairs: [],
@@ -117,64 +165,108 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS a target-only block out of the declined list where a later step continues a pairing, '
-        + 'the block sitting inside the rendering the two make',
+      name: 'KEEPS a translation block out of the declines where it sits between two renderings of one '
+        + 'original, and DECLINES it with the block after it where the pairing names the first rendering alone',
       fn: async () => {
-        const { nodes, } = parseDocument({ text: 'A cat naps.\n\nA dog waits.\n\nA bird sings.', },);
         /**
-         Steps where one block is plain target-only and the next continues a
-         pairing, so the plain one sits inside the rendering; and the same
-         list without the continuation.
+         One original the translation renders as its first block and its third.
          */
-        const inside = declinedTargetBlocks({
-          steps: [{
-            kind: 'paired',
-            sourceIndex: 0,
-            targetIndex: 0,
-          }, {
-            kind: 'target-only',
-            targetIndex: 1,
-          }, {
-            kind: 'target-only',
-            targetIndex: 2,
-            continuesPairing: true,
-          },] as unknown as Parameters<typeof declinedTargetBlocks>[0]['steps'],
-          targetNodes: nodes,
-        },);
-        expect(inside,).toEqual([],);
+        const sourceNodes = parseDocument({ text: ONE_BLOCK_SOURCE_PAGE, },).nodes;
+        /**
+         The three translation blocks.
+         */
+        const targetNodes = parseDocument({ text: TARGET_PAGE, },).nodes;
 
-        const alone = declinedTargetBlocks({
-          steps: [{
-            kind: 'paired',
-            sourceIndex: 0,
-            targetIndex: 0,
-          }, {
-            kind: 'target-only',
-            targetIndex: 1,
-          },] as unknown as Parameters<typeof declinedTargetBlocks>[0]['steps'],
-          targetNodes: nodes,
-        },);
-        expect(alone.length,).toBe(1,);
+        expect([...declinedTargetIdsOfPairing({
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 0,
+              target: 2,
+            },
+          ],
+          sourceNodes,
+          targetNodes,
+        },),],).toEqual([],);
+        expect([...declinedTargetIdsOfPairing({
+          pairs: [{
+            source: 0,
+            target: 0,
+          },],
+          sourceNodes,
+          targetNodes,
+        },),],).toEqual([
+          'block/1',
+          'block/2',
+        ],);
       },
     },),
 
     it({
-      name: 'SKIPS a source-only step in the claiming walk, since it names no block of the translation',
+      name: 'DECLINES a block beside a merge, since an original riding along with its neighbour\'s rendering '
+        + 'is placed',
       fn: async () => {
-        const { nodes, } = parseDocument({ text: 'A cat naps.', },);
-        const declined = declinedTargetBlocks({
-          steps: [{
-            kind: 'paired',
-            sourceIndex: 0,
-            targetIndex: 0,
-          }, {
-            kind: 'source-only',
-            sourceIndex: 1,
-            continuesPairing: true,
-          },] as unknown as Parameters<typeof declinedTargetBlocks>[0]['steps'],
-          targetNodes: nodes,
+        expect([...declinedTargetIdsOfPairing({
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 1,
+              target: 0,
+            },
+          ],
+          sourceNodes: parseDocument({ text: SOURCE_PAGE, },).nodes,
+          targetNodes: parseDocument({ text: MERGED_TARGET_PAGE, },).nodes,
+        },),],).toEqual(['block/1',],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a pairing whose one pair names the block after the last, which read alone would '
+        + 'decline every block the page holds, naming that block and the count (ledger B138)',
+      fn: async () => {
+        /**
+         What the read threw.
+         */
+        const refusal = caught(function declines(): unknown {
+          return declinedTargetIdsOfPairing({
+            pairs: [{
+              source: 0,
+              target: 3,
+            },],
+            sourceNodes: parseDocument({ text: ONE_BLOCK_SOURCE_PAGE, },).nodes,
+            targetNodes: parseDocument({ text: TARGET_PAGE, },).nodes,
+          },);
         },);
-        expect(declined,).toEqual([],);
+        expect(refusal,).toBeInstanceOf(BlockPairingError,);
+        expect(String(refusal,),).toBe('BlockPairingError: pairing names translation block 3, and there are 3',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a pairing naming a block further past the page, naming the block the pair names rather '
+        + 'than an unclaimed one before it (ledger B138)',
+      fn: async () => {
+        /**
+         What the read threw.
+         */
+        const refusal = caught(function declines(): unknown {
+          return declinedTargetIdsOfPairing({
+            pairs: [{
+              source: 0,
+              target: 4,
+            },],
+            sourceNodes: parseDocument({ text: ONE_BLOCK_SOURCE_PAGE, },).nodes,
+            targetNodes: parseDocument({ text: TARGET_PAGE, },).nodes,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(BlockPairingError,);
+        expect(String(refusal,),).toBe('BlockPairingError: pairing names translation block 4, and there are 3',);
       },
     },),
   ],

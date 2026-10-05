@@ -98,6 +98,40 @@ await describe({
         },),
 
         it({
+          name: 'READS NO NAME from a link whose label is only spaces, which shows a reader nothing',
+          fn: async () => {
+            expect(archiveContributorNameForms({
+              text: 'Contributors for this entry: [ ](https://example.test/whisker), Pebble',
+            },),).toEqual(['Pebble',],);
+          },
+        },),
+
+        it({
+          name: 'READS a link label padded with spaces as the name it shows, without the padding',
+          fn: async () => {
+            expect(archiveContributorNameForms({
+              text: 'Contributors for this entry: [ Whisker ](https://example.test/whisker), Pebble',
+            },),).toEqual([
+              'Whisker',
+              'Pebble',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'READS a name and a link behind list markers followed by more than one space as the names they '
+            + 'show, without the spaces or the link markup',
+          fn: async () => {
+            expect(archiveContributorNameForms({
+              text: 'Contributors for this entry: -  Whisker, *  [Pebble](https://example.test/pebble)',
+            },),).toEqual([
+              'Whisker',
+              'Pebble',
+            ],);
+          },
+        },),
+
+        it({
           name: 'IGNORES ORDINARY PROSE carrying same words away from line start',
           fn: async () => {
             expect(archiveContributorNameForms({
