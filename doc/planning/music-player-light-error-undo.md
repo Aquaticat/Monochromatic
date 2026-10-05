@@ -142,6 +142,13 @@ so recovery uses that transport with exact field read-back rather than
 trusting remote exit status alone.
 The plain AOSP API36 image revision `2` is now installed;
 provisioning uses a separate new guest and tool home.
+The API36 restoration's immediate read-back differed during the panel
+transition;
+a later independent read-back matched every originally recorded field.
+Console shutdown was accepted after that equality check,
+and the next runtime waits for matching container/process absence.
+The AOSP control uses `Pixel9ProFold_AOSP36_UipH6W` on port `5580`,
+within the inspected ADB emulator scan range.
 
 ## Independently verifiable queue
 
