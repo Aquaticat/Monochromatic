@@ -14,6 +14,8 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 use crate::{frx_load::LoadedRules, frx_scan::rule_token};
 /// Import structured results so pathname matching has only one canonical finding model.
 use crate::scan_finding::ScanFinding;
+/// Native path bytes are matched before any display encoding occurs.
+use crate::path_name_bytes::{is_slash, normalized_path, prefix_parts, safe_component};
 
 /// Mask substituted for a pathname component that matches any active rule.
 const REDACTED: &str = "[REDACTED]";
@@ -82,36 +84,15 @@ pub(crate) fn logical_path(path: &str, root: Option<&Path>) -> String {
     return path.to_string();
 }
 
-/// Escapes reserved protocol colons and control characters in visible names.
-///
-/// No literal colon remains in a display path, so `:name:` cannot be mistaken
-/// for the finding-kind separator even if a filename ends with `:name`.
-/// and a newline must never inject another protocol record.
-fn safe_component(component: &str) -> String {
-    let mut safe = String::new();
-    for ch in component.chars() {
-        if ch == ':' {
-            safe.push_str("\\x3a");
-        } else if ch == '\\' {
-            safe.push_str("\\\\");
-        } else if ch.is_control() {
-            safe.push_str(&format!("\\u{{{:x}}}", ch as u32));
-        } else {
-            safe.push(ch);
-        }
-    }
-    return safe;
-}
-
 /// Matches one non-empty, single-line name component against all loaded sets.
 ///
 /// The engine treats a trailing CR or LF as a content-line terminator, which
 /// would change anchor semantics for a filename. Callers fail closed on those
 /// pathname bytes instead of misrepresenting an incomplete name as a match.
-fn matching_rules(component: &str, loaded: &LoadedRules) -> Result<Vec<String>, ()> {
+fn matching_rules(component: &[u8], loaded: &LoadedRules) -> Result<Vec<String>, ()> {
     let mut rules: Vec<String> = Vec::new();
     for set in loaded.iter_sets() {
-        let matcher = AssertUnwindSafe(|| return set.matcher.line_matches(component.as_bytes(), &[0]));
+        let matcher = AssertUnwindSafe(|| return set.matcher.line_matches(component, &[0]));
         let Ok(ids) = catch_unwind(matcher) else {
             return Err(());
         };
@@ -125,50 +106,28 @@ fn matching_rules(component: &str, loaded: &LoadedRules) -> Result<Vec<String>, 
 /// Component numbers are one-based and ignore the root and navigation markers
 /// (`.`, `..`), which are not directory names. A matcher panic masks the entire
 /// path and returns an engine-error finding instead of printing unsafe input.
-pub(crate) fn scan_path_records(path: &str, loaded: &LoadedRules) -> PathScanRecords {
-    // Git paths use `/`; native external paths use the platform separator.
-    let normalized = if cfg!(windows) { path.replace('\\', "/") } else { path.to_string() };
-    // `C:filename` is drive-relative: the drive is a prefix, while the
-    // following bytes are still a real filename that must be matched.
-    let normalized = if cfg!(windows) && normalized.len() > 2
-        && normalized.as_bytes()[0].is_ascii_alphabetic()
-        && normalized.as_bytes()[1] == b':' && normalized.as_bytes()[2] != b'/' {
-        format!("{}/{}", &normalized[..2], &normalized[2..])
-    } else {
-        normalized
-    };
-    let components: Vec<&str> = normalized.split('/').collect();
-    // A native Windows drive or UNC prefix names a volume, not directories.
-    let mut prefix_parts = if cfg!(windows) {
-        match Path::new(path).components().next() {
-            Some(std::path::Component::Prefix(prefix)) => prefix.as_os_str()
-                .to_string_lossy()
-                .split(|ch| return ch == '\\' || ch == '/')
-                .filter(|part| return !part.is_empty())
-                .count(),
-            _ => 0,
-        }
-    } else {
-        0
-    };
-    let mut displayed: Vec<String> = Vec::with_capacity(components.len());
+pub(crate) fn scan_path_records(path: &Path, loaded: &LoadedRules) -> PathScanRecords {
+    // Retain every non-separator native byte, including invalid UTF-8, until the matcher has inspected it.
+    let normalized: Vec<u8> = normalized_path(path);
+    let mut remaining_prefix: usize = prefix_parts(path);
+    let mut displayed: Vec<String> = Vec::<String>::new();
     let mut matches: Vec<(usize, Vec<String>)> = Vec::new();
     let mut position = 0;
-    for component in components {
-        if component.contains('\n') || component.contains('\r') {
+    for component in normalized.split(is_slash) {
+        if component.contains(&b'\n') || component.contains(&b'\r') {
             return PathScanRecords {
                 display: REDACTED.to_string(),
                 findings: vec![ScanFinding::PathnameLineBreak],
             };
         }
-        if component.is_empty() || component == "." || component == ".." {
+        if component.is_empty() || component == b"." || component == b".." {
             displayed.push(safe_component(component));
             continue;
         }
         // Skip every component of the native volume prefix, including UNC
         // server and share names. The root separator was already skipped.
-        if prefix_parts > 0 {
-            prefix_parts -= 1;
+        if remaining_prefix > 0 {
+            remaining_prefix -= 1;
             displayed.push(safe_component(component));
             continue;
         }
@@ -199,7 +158,7 @@ pub(crate) fn scan_path_records(path: &str, loaded: &LoadedRules) -> PathScanRec
 /// Render canonical pathname records for the existing standalone and fuzz text consumers.
 pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
     // Borrow the rules once; all matching and redaction remains inside the canonical scan.
-    let records: PathScanRecords = scan_path_records(path, loaded);
+    let records: PathScanRecords = scan_path_records(Path::new(path), loaded);
     let mut findings: Vec<String> = Vec::<String>::new();
     for finding in records.findings {
         findings.push(finding.render(records.display.as_str()));

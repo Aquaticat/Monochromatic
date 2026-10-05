@@ -14,6 +14,8 @@ use crate::{BUILTIN_NAMES, BUILTIN_PRECOMPILED, BIN_PROBE_SIZE, ScanFinding};
 /// Import the incumbent load-error channel and fixed-token cache diagnostics.
 use anyhow::Result;
 use crate::runtime_cache::CacheWarning;
+/// Native paths preserve operating-system encoding until matching/display boundaries.
+use std::path::Path;
 
 /// What: Caller-owned identity plus safely displayable results from one exact candidate snapshot.
 /// Why: Matching pathname components may have identical masked labels; identity must remain independent of display text.
@@ -67,7 +69,7 @@ impl Scanner {
     /// ```ts
     /// function scan(identity, logicalPath, exactBytes): CandidateScan;
     /// ```
-    pub fn scan(&self, identity: usize, logical_path: &str, bytes: &[u8]) -> CandidateScan {
+    pub fn scan(&self, identity: usize, logical_path: &Path, bytes: &[u8]) -> CandidateScan {
         // Canonical pathname records own a safe display path before content diagnostics are attached.
         let pathname: PathScanRecords = scan_path_records(logical_path, &self.loaded);
         // Mirror the standalone reader: binary files retain their first 8 KiB, not an invented clean/skip result.

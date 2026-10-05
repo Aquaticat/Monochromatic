@@ -45,6 +45,8 @@ mod scanner;
 pub use scanner::{CandidateScan, Scanner};
 /// Fixed-token cache warnings remain structured for embedded event reporting.
 pub use runtime_cache::CacheWarning;
+/// Native-byte path normalization and protocol-safe display encoding.
+mod path_name_bytes;
 /// Registers component-level pathname matching and masked display labels.
 mod path_scan;
 /// Registers runtime cache envelope, path, warning, and publication implementation.

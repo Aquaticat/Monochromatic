@@ -1,3 +1,7 @@
+[tasks."dependencies:fetch"]
+description = "Fetch the existing locked dependency archives before offline container verification"
+run = "cargo fetch --locked"
+
 [tasks."test:container"]
 description = "Run binary and embedded scanner tests unprivileged with Git 2.56.0 in a bounded mount-free container"
 run = "node bin/test-container.mjs"

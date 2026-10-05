@@ -9,6 +9,8 @@
 /// Import the real scanner and its closed finding catalog.
 use super::{CandidateScan, Scanner};
 use crate::{BIN_PROBE_SIZE, ScanFinding};
+/// Ordinary string fixtures still enter the public API through its native Path boundary.
+use std::path::Path;
 
 /// Construct the production hybrid matcher without reading or publishing the user's runtime cache.
 fn scanner() -> Scanner {
@@ -19,8 +21,8 @@ fn scanner() -> Scanner {
 #[test]
 fn structured_findings_keep_identity_when_paths_collide_after_masking() {
     let scanner: Scanner = scanner();
-    let first: CandidateScan = scanner.scan(41, "VAULTTOKEN_LONG/a.txt", b"clean\nVAULTTOKEN_LONG\n");
-    let second: CandidateScan = scanner.scan(42, "VAULTTOKEN_LONG/a.txt", b"clean\n");
+    let first: CandidateScan = scanner.scan(41, Path::new("VAULTTOKEN_LONG/a.txt"), b"clean\nVAULTTOKEN_LONG\n");
+    let second: CandidateScan = scanner.scan(42, Path::new("VAULTTOKEN_LONG/a.txt"), b"clean\n");
     assert_eq!(first.identity, 41);
     assert_eq!(second.identity, 42);
     assert_eq!(first.display_path, "[REDACTED]/a.txt");
@@ -39,7 +41,7 @@ fn scanner_uses_only_supplied_content_and_never_mutates_it() {
     let scanner: Scanner = scanner();
     let bytes: Vec<u8> = b"clean\n".to_vec();
     let snapshot: Vec<u8> = bytes.clone();
-    let result: CandidateScan = scanner.scan(7, "not-created-on-disk.txt", bytes.as_slice());
+    let result: CandidateScan = scanner.scan(7, Path::new("not-created-on-disk.txt"), bytes.as_slice());
     assert!(result.findings.is_empty());
     assert_eq!(result.scanned_bytes, bytes.len());
     assert_eq!(bytes, snapshot);
@@ -52,12 +54,12 @@ fn binary_prefix_behavior_matches_the_standalone_reader() {
     let scanner: Scanner = scanner();
     let mut binary: Vec<u8> = vec![0_u8; BIN_PROBE_SIZE];
     binary.extend_from_slice(b"\nVAULTTOKEN_LONG\n");
-    let result: CandidateScan = scanner.scan(8, "image.bin", binary.as_slice());
+    let result: CandidateScan = scanner.scan(8, Path::new("image.bin"), binary.as_slice());
     assert_eq!(result.scanned_bytes, BIN_PROBE_SIZE);
     assert!(result.findings.is_empty());
     let mut text: Vec<u8> = vec![b'a'; BIN_PROBE_SIZE];
     text.extend_from_slice(b"\nVAULTTOKEN_LONG\n");
-    let checked: CandidateScan = scanner.scan(9, "text.txt", text.as_slice());
+    let checked: CandidateScan = scanner.scan(9, Path::new("text.txt"), text.as_slice());
     assert_eq!(checked.scanned_bytes, text.len());
     assert_eq!(checked.findings, vec![ScanFinding::Content { line: 2, rule: String::from("0") }]);
 }
@@ -65,7 +67,7 @@ fn binary_prefix_behavior_matches_the_standalone_reader() {
 /// Unsupported line-breaking names remain explicit failures with no raw pathname in the report.
 #[test]
 fn pathname_failures_do_not_masquerade_as_clean_scans() {
-    let result: CandidateScan = scanner().scan(11, "secret\nname", b"");
+    let result: CandidateScan = scanner().scan(11, Path::new("secret\nname"), b"");
     assert_eq!(result.display_path, "[REDACTED]");
     assert_eq!(result.findings, vec![ScanFinding::PathnameLineBreak]);
     assert!(!format!("{result:?}").contains("secret"));
