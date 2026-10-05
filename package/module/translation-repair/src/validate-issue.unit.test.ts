@@ -8,6 +8,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -376,6 +377,54 @@ await describe({
         expect(rejections,).toHaveLength(1,);
         expect(rejections[0]?.kind,).toBe('anchorless-issue',);
         expect(rejections[0]?.spanIndex,).toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a document holding more than one node under the id a span names, rather than check the '
+        + 'span against the first of them, and ADMITS the same span against the document as parsed',
+      fn: async () => {
+        /**
+         Span anchored in the translation's paragraph, correct in every field.
+         */
+        const span = anchorFor({ side: 'target', needle: 'The cat likes', },);
+
+        /**
+         The translation with every block renamed to the paragraph's id, so
+         the heading is the first node a search by that id meets.
+         */
+        const repeating = {
+          text: DOCUMENTS.target.text,
+          nodes: DOCUMENTS.target.nodes.map(function renamed(node,) {
+            return {
+              ...node,
+              id: span.nodeId,
+            };
+          },),
+        };
+
+        /**
+         What validating the span against that document throws.
+         */
+        const refusal = caught(function act(): unknown {
+          return validateIssueClaim({
+            claim: omissionClaim({ spans: [span,], },),
+            documents: {
+              source: DOCUMENTS.source,
+              target: repeating,
+            },
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(Error,);
+        expect(String(refusal,),).toBe(
+          `Error: unreachable: the target document holds more than one node under the id ${span.nodeId}, `
+            + 'though parseDocument numbers its blocks, so no document it returns repeats an id',
+        );
+        // The same span against the document as parsed holds.
+        expect(validateIssueClaim({
+          claim: omissionClaim({ spans: [span,], },),
+          documents: DOCUMENTS,
+        },),).toEqual([],);
       },
     },),
 
