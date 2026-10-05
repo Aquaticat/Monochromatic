@@ -44,7 +44,7 @@ fn root_and_expanded_children_load_lazily_in_snapshot_order() {
     assert!(tree.missing_listings().is_empty());
     let src = root.join("src");
     assert!(tree.toggle(&src).expect("expand src"));
-    assert_eq!(tree.missing_listings(), [src.clone()]);
+    assert_eq!(tree.missing_listings(), [src.as_path()]);
     tree.apply_listing(&src, vec![entry("/project/src", "猫.ts", false), entry("/project/src", "a.rs", false)])
         .expect("child snapshot");
     let rows = tree.rows();
@@ -68,7 +68,7 @@ fn collapse_retains_descendant_expansion_but_stops_hidden_loading() {
     tree.toggle(&src).expect("expand src");
     tree.apply_listing(&src, vec![entry("/project/src", "nested", true)]).expect("child snapshot");
     tree.toggle(&nested).expect("expand nested");
-    assert_eq!(tree.missing_listings(), [nested.clone()]);
+    assert_eq!(tree.missing_listings(), [nested.as_path()]);
     assert!(!tree.toggle(&src).expect("collapse src"));
     assert_eq!(tree.rows().len(), 1);
     assert!(tree.missing_listings().is_empty());
