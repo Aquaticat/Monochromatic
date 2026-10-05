@@ -839,6 +839,10 @@ await describe({
         + 'neither when it does not',
       fn: async () => {
         /**
+         Signal the caller hands every call in this case.
+         */
+        const callerSignal = new AbortController().signal;
+        /**
          Exchanges recording what each call put on the wire.
          */
         const bare = recordedTransport({
@@ -848,10 +852,12 @@ await describe({
         await bareClient.chatText({
           modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
           messages: MESSAGES,
-          signal: new AbortController().signal,
+          signal: callerSignal,
           responseFormat: RESPONSE_FORMAT,
         },);
-        expect(JSON.stringify(bare.exchanges,).includes('maxAnswerChars',),).toBe(false,);
+        expect(bare.exchanges.length,).toBe(1,);
+        expect('maxAnswerChars' in (bare.exchanges[0] ?? {}),).toBe(false,);
+        expect(bare.exchanges[0]?.signal,).toBe(callerSignal,);
 
         const knobbed = recordedTransport({
           replies: [{ status: 200, bodyText: TOOL_CALL_BODY, },],
@@ -860,12 +866,15 @@ await describe({
         await knobbedClient.chatText({
           modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
           messages: MESSAGES,
-          signal: new AbortController().signal,
+          signal: callerSignal,
           responseFormat: RESPONSE_FORMAT,
           exchangeTimeoutMs: 1_000,
           maxAnswerChars: 500,
         },);
-        expect(JSON.stringify(knobbed.exchanges,).includes('"maxAnswerChars":500',),).toBe(true,);
+        expect(knobbed.exchanges.length,).toBe(1,);
+        expect(knobbed.exchanges[0]?.maxAnswerChars,).toBe(500,);
+        // A deadline-joined signal is a new signal, so the caller's own is not what the wire got.
+        expect(knobbed.exchanges[0]?.signal === callerSignal,).toBe(false,);
       },
     },),
   ],

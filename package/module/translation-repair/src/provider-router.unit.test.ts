@@ -1182,24 +1182,55 @@ await describe({
     },),
 
     it({
-      name: 'RERAISES the last refusal once every provider has refused every attempt, rather than '
-        + 'returning a silence no caller can read',
+      name: 'RERAISES the last refusal once every provider serving the model has refused on budget, '
+        + 'rather than returning a silence no caller can read',
       fn: async () => {
         /**
-         Providers all answering an upstream failure.
+         Both providers serving the model refuse on budget, each saying its own words.
          */
         const { callers, called, } = stubProviders({
-          status: { synthetic: 503, hyper: 503, openrouter: 503, },
+          status: { synthetic: 429, hyper: 429, },
+          bodyText: { synthetic: 'synthetic napping', hyper: 'hyper napping', },
         },);
-        const { budgets, } = stubBudgets({},);
+        const { budgets, refused, } = stubBudgets({},);
         const client = createRoutingClient({
           callers,
           budgets,
         },);
 
         const outcome = await ask({ client, },);
-        expect('thrown' in outcome,).toBe(true,);
-        expect(called.length,).toBeGreaterThan(0,);
+        expect(called,).toEqual(['synthetic', 'hyper',],);
+        expect(refused,).toEqual(['synthetic', 'hyper',],);
+        if (!('thrown' in outcome))
+          throw new Error('both providers refused, so the call must throw the last refusal',);
+        expect(outcome.thrown,).toBeInstanceOf(SyntheticHttpError,);
+        expect(String(outcome.thrown,),).toBe('SyntheticHttpError: provider API returned HTTP 429: hyper napping',);
+      },
+    },),
+
+    it({
+      name: 'RETHROWS a failure that is no budget refusal at once, asking no other provider',
+      fn: async () => {
+        /**
+         Every provider answering an upstream failure.
+         */
+        const { callers, called, } = stubProviders({
+          status: { synthetic: 503, hyper: 503, openrouter: 503, },
+          bodyText: { synthetic: 'synthetic napping', hyper: 'hyper napping', },
+        },);
+        const { budgets, refused, } = stubBudgets({},);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+        },);
+
+        const outcome = await ask({ client, },);
+        expect(called,).toEqual(['synthetic',],);
+        expect(refused,).toEqual([],);
+        if (!('thrown' in outcome))
+          throw new Error('the failure must be thrown to the caller',);
+        expect(outcome.thrown,).toBeInstanceOf(SyntheticHttpError,);
+        expect(String(outcome.thrown,),).toBe('SyntheticHttpError: provider API returned HTTP 503: synthetic napping',);
       },
     },),
   ],

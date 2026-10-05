@@ -117,42 +117,69 @@ await describe({
 
     it({
       name: 'RESTORES NO GLOSS from a line whose quote never closes or whose name is not followed by the '
-        + 'gloss verb, so a stray quotation is not a gloss',
+        + 'gloss verb, where the same archive with a well-formed gloss line restores it',
       fn: async () => {
         /**
-         Archives whose gloss lines hold an unclosed quote and a quoted name
-         with no verb after it.
+         Shipped text carrying the name once, with no gloss of its own.
          */
-        const unclosed = restoreNameGlossLines({
-          slices: [pair({ sliceIndex: 0, target: '“Mittens means a cloud.\n', },),],
-          replacements: [{
-            sliceIndex: 0,
-            replacementText: 'Her handle was coined while she napped.',
-          },],
-        },);
+        const shipped = 'Her handle “Mittens” was coined while she napped.';
+        /**
+         Archive sentence carrying the name once; the line after it decides.
+         */
+        const sentence = 'She got her nickname “Mittens” while napping.';
+        /**
+         Restoration of the archive whose second line is the one given.
+         */
+        function restoreWith(
+          { glossLine, }: { readonly glossLine: string; },
+        ): ReturnType<typeof restoreNameGlossLines> {
+          return restoreNameGlossLines({
+            slices: [pair({ sliceIndex: 0, target: `${sentence}\n${glossLine}\n`, },),],
+            replacements: [{ sliceIndex: 0, replacementText: shipped, },],
+          },);
+        }
+        const unclosed = restoreWith({ glossLine: '“Mittens means a cloud.', },);
         expect(unclosed.restored,).toEqual([],);
-        const unverbed = restoreNameGlossLines({
-          slices: [pair({ sliceIndex: 0, target: '“Mittens” sleeps in the sun.\n', },),],
-          replacements: [{
-            sliceIndex: 0,
-            replacementText: 'Her handle was coined while she napped.',
-          },],
-        },);
+        expect(unclosed.findings,).toEqual([],);
+        const unverbed = restoreWith({ glossLine: '“Mittens” sleeps in the sun.', },);
         expect(unverbed.restored,).toEqual([],);
+        expect(unverbed.findings,).toEqual([],);
+        const control = restoreWith({ glossLine: '“Mittens” means a cloud.', },);
+        expect(control.restored,).toEqual([
+          { sliceIndex: 0, replacementText: `${shipped}\n“Mittens” means a cloud.`, },
+        ],);
+        expect(control.findings,).toEqual(['name-gloss-restored (slice 0: "“Mittens” means a cloud.")',],);
       },
     },),
 
     it({
-      name: 'READS THE NAME AS GLOSSED where a comma stands between it and its parenthesis',
+      name: 'READS THE NAME AS GLOSSED where a comma stands between it and its parenthesis, and restores the '
+        + 'gloss line where no parenthesis follows',
       fn: async () => {
-        const restored = restoreNameGlossLines({
-          slices: [pair({ sliceIndex: 0, target: 'Her handle “Mittens” (a cloud) was coined.\n', },),],
+        /**
+         Archive carrying a well-formed gloss line of the name.
+         */
+        const archive = 'Her handle “Mittens” was coined.\n“Mittens” means a cloud.\n';
+        const commaThenParenthesis = restoreNameGlossLines({
+          slices: [pair({ sliceIndex: 0, target: archive, },),],
           replacements: [{
             sliceIndex: 0,
             replacementText: 'Her handle “Mittens”, (a cloud) was coined.',
           },],
         },);
-        expect(restored.restored.length + restored.findings.length,).toBeGreaterThanOrEqual(0,);
+        expect(commaThenParenthesis.restored,).toEqual([],);
+        expect(commaThenParenthesis.findings,).toEqual([],);
+        const commaOnly = restoreNameGlossLines({
+          slices: [pair({ sliceIndex: 0, target: archive, },),],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: 'Her handle “Mittens”, a cat, was coined.',
+          },],
+        },);
+        expect(commaOnly.restored,).toEqual([
+          { sliceIndex: 0, replacementText: 'Her handle “Mittens”, a cat, was coined.\n“Mittens” means a cloud.', },
+        ],);
+        expect(commaOnly.findings,).toEqual(['name-gloss-restored (slice 0: "“Mittens” means a cloud.")',],);
       },
     },),
   ],

@@ -290,8 +290,10 @@ await describe({
               perCallTimeoutMs: 1_000,
               l,
             },);
-            expect(judgments['seed/omission-1']?.judged,).toBe(true,);
-            expect(judgments['seed/omission-1']?.verdict,).toBe('restored',);
+            expect(judgments,).toEqual({
+              'seed/omission-0': { verdict: 'restored', judged: true, votes: 3, },
+              'seed/omission-1': { verdict: 'restored', judged: true, votes: 2, },
+            },);
           },
         },),
       ],

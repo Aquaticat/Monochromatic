@@ -220,8 +220,14 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(caught instanceof CorpusReadError,).toBe(true,);
-        expect((caught as CorpusReadError).kind,).toBe('other',);
+        expect(caught,).toBeInstanceOf(CorpusReadError,);
+        expect(String(caught,),).toBe(
+          'CorpusReadError: corpus read failed for people/gum/page.md (other); '
+            + 'check that the clone exists and the pinned commit is present.',
+        );
+        if (!(caught instanceof CorpusReadError))
+          throw new Error('the read failure must reach the caller as a CorpusReadError',);
+        expect(caught.kind,).toBe('other',);
       },
     },),
   ],
