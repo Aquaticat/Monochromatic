@@ -531,6 +531,11 @@ PATH:name:SEGMENT rule=<token>
 - `LINE` is the 1-based content line number.
 - `SEGMENT` is the 1-based position of the directory name or filename within
   the logical path. The root and navigation markers (`.`, `..`) are not names.
+  On Windows,
+  the parts of the native volume prefix (`C:`, `\\server\share`, `\\?\C:`, `\\.\COM1`, and the other prefix forms)
+  are not names either,
+  whatever their spelling;
+  the first component after the prefix is segment 1.
   Each segment is matched separately, so a rule cannot match across a `/` boundary.
   Pathname scanning is always on for every selected file, with no disable flag.
   It can make previously clean paths fail with exit code 1.
@@ -745,8 +750,12 @@ removing each output/control-flow guard must make the same consumer test fail af
 Independent observations count the host hook after each public operation,
 verify both startup and worker cases without short-circuiting,
 and drive actual parallel CLI content/name fault paths.
-Windows separator/counting policy is exercised with explicit target semantics on Linux;
-Windows's native volume-prefix parser still requires a Windows host.
+Windows separator,
+prefix-counting,
+and prefix-skip policy is exercised on Linux with explicit target semantics
+and the raw prefix bytes Windows's parser returns for each prefix form;
+Windows's native volume-prefix parser itself runs only on a Windows host,
+which no package task provides.
 See the native scanner evidence for exact results,
 source snapshots,
 commits,
