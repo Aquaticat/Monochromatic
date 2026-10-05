@@ -30,6 +30,10 @@ run = "node bin/guard-container.mjs"
 description = "Re-test startup filter mutations with the full all-feature baseline and complete retained outcomes"
 run = "node bin/mutate-container.mjs --startup"
 
+[tasks."test:mutation:pathname:container"]
+description = "Mutate only pathname normalization, prefix counting and component masking with the full all-feature baseline and complete retained outcomes"
+run = "node bin/mutate-container.mjs --pathname"
+
 [tasks."test:mutation:container"]
 description = "Mutation-test embedding owners in a bounded mount-free snapshot, retaining every outcome"
 run = "node bin/mutate-container.mjs"
