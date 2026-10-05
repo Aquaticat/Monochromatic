@@ -513,7 +513,8 @@ each now a test case:
 - `\\?\UNC\..\share\NAME`:
   `VerbatimUNC("..", "share")`.
 
-So the recorded sentence that verbatim forms are unaffected holds only when no verbatim prefix part is spelled `.` or `..`.
+So the recorded sentence that verbatim forms are unaffected
+holds only when no verbatim prefix part is spelled `.` or `..`.
 
 #### Fix
 
@@ -538,7 +539,8 @@ Linux behavior cannot change:
 `count_prefix_parts` on the raw native prefix bytes,
 and `scan_normalized_records`.
 Only native `Component::Prefix` detection is replaced:
-each fixture supplies the byte prefix that `parse_prefix` and `Prefix::len` in `library/std/src/path.rs` produce for its path,
+each fixture supplies the byte prefix
+that `parse_prefix` and `Prefix::len` in `library/std/src/path.rs` produce for its path,
 and a helper rejects a fixture prefix that is not a byte prefix of its path.
 `normalize_bytes` and `count_prefix_parts` became `pub(crate)` so this sibling module can call them.
 
@@ -581,6 +583,11 @@ Failed before the fix and pass after it:
   which stopped at its first input before the fix;
   commit `38cb30dff` split them so a separate pre-fix run could show each input failing.
 
+In `navigation_markers_after_prefix_are_not_names` and `mixed_separators_keep_prefix_boundary`,
+the first input is the device-namespace case that failed before the fix;
+their second input is a control that the old ordering also handled,
+so a pre-fix run never reached it.
+
 Passed before and after,
 as controls for prefix forms the Windows run already found correct:
 `drive_prefix_form`,
@@ -597,8 +604,8 @@ which covers `\\.\COM1`,
 `\\server\share`,
 and `C:` with nothing after the prefix.
 
-`path_name_bytes::tests::prefix_parts_count_navigation_spellings_and_device_markers` pins the counting side of the contract
-for `\\.\COM1`,
+`path_name_bytes::tests::prefix_parts_count_navigation_spellings_and_device_markers`
+pins the counting side of the contract for `\\.\COM1`,
 `\\.\C:`,
 `\\.\`,
 `\\.\..`,
@@ -607,7 +614,8 @@ and `\\?\a/./b`.
 It passed before and after the fix,
 because counting did not change.
 
-`path_scan::tests::windows_device_namespace_prefix_is_not_name_segment` is a `#[cfg(windows)]` test through the native parser:
+`path_scan::tests::windows_device_namespace_prefix_is_not_name_segment`
+is a `#[cfg(windows)]` test through the native parser:
 `\\.\COM1`,
 `\\.\C:`,
 and `\\.\pipe\NAME.with.dots`,
@@ -619,6 +627,7 @@ The test files reached the repository inside concurrent commit `8fdbbded9`,
 whose message describes only `desktop-app-ide` work;
 that commit's tree holds exactly the test-only state,
 without the fix.
+A corrective GitHub comment on that commit names the omitted forbidden-strings part.
 
 #### Fix verification runs
 
@@ -640,6 +649,21 @@ unless a fuzz path is named.
   for example `//./COM1/VAULTTOKEN_LONG/clean.txt` where `//./COM1/[REDACTED]/clean.txt` is expected,
   and `//./C\x3a/VAULTTOKEN_LONG/clean.txt` where `//./C\x3a/[REDACTED]/clean.txt` is expected.
   Those two observed displays are byte-identical to the native Windows probe's.
+- Before the fix,
+  `test:container` on the split tests with only the fix reverted:
+  `test-scZsf6`,
+  snapshot `50cde2bef9648f6ea0dbf554866dc88585362fd1e623a38cbf80758e1109ec3f`,
+  image `sha256:07acf355d3d57203e7a7ef1ad6b25302dedbbbaa478286c0216abcba196a2907`.
+  It ran from a throwaway worktree at `f9d08ae79`
+  whose `src/path_scan.rs` was replaced with the `8fdbbded9` version
+  and whose test file was the split one;
+  the worktree was removed and its evidence directory copied here.
+  The library suite reported 167 passed and 13 failed,
+  and exited `101`.
+  Each of the five split tests failed on its own masked-display assertion,
+  for example `//server/../VAULTTOKEN_LONG` where `//server/../[REDACTED]` is expected,
+  and `//?/a/./b/VAULTTOKEN_LONG` where `//?/a/./b/[REDACTED]` is expected.
+  The other eight failures are the tests that already failed in `test-gV0Dab`.
 - After the fix,
   `lint:clippy:container` on the fixed tree before the test split:
   `clippy-DInplu`,
@@ -666,6 +690,21 @@ unless a fuzz path is named.
   and 8 pathname tests passed,
   with none failed or ignored.
 - After the fix,
+  `test:container` on the final tree with the split tests:
+  `test-Nm8ISE`,
+  snapshot `48ead60d3c715575d332a496ef0bda2714dce903cdd44c7b3db81ad90f4408c7`,
+  the same snapshot as `clippy-tHewn4`,
+  image `sha256:9c1d8dbb303da6872c0413f16b1150f968ca48beb336effd5b36c3312cf9f393`,
+  exit `0`:
+  180 library,
+  4 executable unit tests in `src/main.rs`,
+  2 embedding,
+  2 public cache-warning,
+  40 CLI integration,
+  and 8 pathname tests passed,
+  with none failed or ignored.
+  All 21 tests in `path_scan::prefix_tests` and the new counting test pass.
+- After the fix,
   `smoke:embedding:container` in the fuzz sidecar:
   `package/cli/forbidden-strings.fuzz/target/verification/embedding-fuzz-HWNmVN`,
   snapshot `08fce78006d3b4ccb619345108503177d6631ed26dabac245cfa230c88a7672b`,
@@ -681,6 +720,29 @@ unless a fuzz path is named.
   so the reordered prefix branch is never entered there:
   this shows no Linux pathname regression,
   not anything about Windows prefixes.
+
+Package checks on the final tree:
+
+- `verify:evidence` reports 0 compiled-input differences for `test-Nm8ISE` and `clippy-tHewn4`.
+  The earlier runs differ by exactly the files changed after them:
+  1 for `test-nUgm3V`,
+  `clippy-DInplu`,
+  `embedding-fuzz-HWNmVN`,
+  and `test-scZsf6`;
+  3 for `test-gV0Dab`;
+  and 6 for `windows-native-8Wo0tM`,
+  which now also differs in the five pathname source and test files.
+- `lint:rust` exits nonzero with 8 `require-rustdoc` findings,
+  all on `use` lines of files this fix does not touch:
+  3 in `src/load_request.rs`,
+  1 in `src/process_boundary.rs`,
+  and 4 in `src/scanner.rs`.
+  It reports nothing for the touched files,
+  including no `max-lines` finding.
+- `verify:markdown` renders both READMEs and this document without literal bold delimiters.
+- No mutation campaign was run for the fix.
+  The only scanner mutation tasks are the full embedding campaign and the startup-only campaign,
+  so a rerun over the changed `src/path_scan.rs` is pending.
 
 #### Pending Windows confirmation
 
