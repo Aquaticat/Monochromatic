@@ -426,7 +426,25 @@ and rust-analyzer warns about a user configuration file that does not exist
 the enforced test allows `helix-lsp`'s end-of-stream record and nothing else at ERROR,
 and the ignored strict test is the acceptance test for whichever handling is adopted.
 `inspect:language-lifecycle-guards` observes both in a disposable copy,
-together with the worker's shutdown request and its wait for servers to end.
+together with the worker's shutdown request,
+its wait for servers to end,
+and its reaping.
+
+When its handle is dropped,
+the worker sends `shutdown` and `exit` to every server,
+waits up to one second for the processes to end,
+and drops its runtime, which kills every server that is left.
+It then waits, for at most two more seconds,
+until the kernel lists no child process of the worker thread (`src/language/reap.rs`),
+so an ended server is not left in the process table as a zombie.
+`lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns` covers a server
+that ignores `exit` and the end of its input (`IDE_SCRIPTED_LINGER=1`).
+A killed process that the kernel needs more than two seconds to end,
+which was seen with the machine under heavy input/output pressure,
+stays a zombie until the application exits.
+`inspect:language-reap-rate` counts leftover processes by kind over many lifetimes,
+with the reaping and with the fixed 50 ms pause it replaced;
+`doc/troubleshooting/tokio-dropped-child-zombie-after-last-park.md` has the source trace and the measurements.
 
 ## Language navigation
 
