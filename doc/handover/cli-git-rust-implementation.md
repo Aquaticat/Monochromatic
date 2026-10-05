@@ -479,12 +479,35 @@ but their container gate is still pending.
 The first scanner container attempt (`proc_8f12`) stopped before compilation:
 `cargo vendor --offline` lacked the locked `id-arena 2.3.0` archive.
 A separate `dependencies:fetch` task completed (`proc_83cb`).
-The scanner retry is `proc_9535`,
-with a source snapshot preceding the final native rule-loader/public consumer additions.
+The scanner retry passed (`proc_9535`):
+142 library tests,
+40 binary integration tests,
+and 8 pathname integration tests,
+with no filtered tests in those suites.
+The binary unit-test target had no tests in that snapshot.
+The fixture is unprivileged and uses Git 2.56.0.
+This snapshot precedes the final native rule-loader/public consumer additions
+and the standalone panic-output boundary.
 The production executable has not been rebuilt or replaced.
 Next scanner work must share typed findings with the standalone formatter,
 not parse terminal text back into candidate identities.
-The existing catch-unwind paths and stderr panic-hook behavior also need lifecycle/redaction verification.
+The standalone executable now installs a payload-omitting hook once before startup/workers,
+then invokes logger initialization and the CLI inside a separate named unwind boundary.
+Unexpected startup/runtime panics produce a fixed redacted setup error;
+already-caught matcher panics retain their per-candidate EngineError records.
+The library does not change a host's process hook.
+New subprocess controls compare the default payload-bearing hook with the protected mode.
+Their first gate is pending.
+Public load-panic conversion and embedding-host hook/profile obligations remain open;
+a hook is not an unwind catcher,
+and prior hooks must not be blindly chained because they can print payloads.
+Thread names are also not assumed safe output.
+Source inspection found scan results/scratch local to each call in
+`runtime_matcher.rs::line_matches`
+and `forbidden-regex/src/regex/batch.rs::line_matches`;
+matching methods borrow immutable compiled rules.
+The separate shared CPU-count cache is in `forbidden-regex/src/parallel.rs`.
+A complete panic-reuse/lifecycle proof remains pending.
 
 The current Rust test image was probed and contains Git 2.47.3;
 the host `/usr/bin/git` is 2.55.0.
