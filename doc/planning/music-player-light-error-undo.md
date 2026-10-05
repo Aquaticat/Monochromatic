@@ -43,6 +43,21 @@ do not conflate a multi-variable improvement with an isolated root cause.
 The current source APK and D83 requirements are unchanged by this
 infrastructure work.
 
+The fresh current-image control is `Pixel9ProFold_Fresh_5FXdOc`,
+created by the installed device manager from the official
+`pixel_9_pro_fold` profile.
+Its AVD directory and persistent tool home are newly created;
+no guest data,
+settings or keys were copied from the retired probe or original user AVD.
+Provisioning verified profile width `2076px`,
+height `2152px` and density `390dpi`.
+The current-image boot/readiness and pre-app baseline check are running
+before any music-player installation.
+The separately authorized API36 Google APIs image acquisition targets an
+owned SDK directory and leaves the main SDK read-only.
+Use of that alternate image is a comparison,
+not a declaration that API37 caused the failures.
+
 ## Independently verifiable queue
 
 - [x] Inspect the accepted dark error/toast candidates,
