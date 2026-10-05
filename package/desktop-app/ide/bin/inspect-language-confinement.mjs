@@ -3,13 +3,14 @@
 // doc/planning/slint-ide-write-confinement.md ("Acceptance tests the application must carry").
 // Every run goes through the application's real start path: ide-language-inspect drives LanguageWorker
 // with the production setup (bubblewrap), or with the unconfined setup for the guard control.
-// Real servers run only against disposable projects below the private agent scratch root,
-// which is on the same file system as real projects, so hard-link and rename probes are meaningful.
+// Real servers run only against disposable projects: below the private agent scratch root, which is
+// on the same file system as real projects, and below fresh private directories in /tmp and
+// $XDG_RUNTIME_DIR (/run/user/<uid>), which the sandbox replaces and the policy binds back read-only.
 import { spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
-import { homedir, tmpdir } from 'node:os';
+import { homedir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 
 const inspect = resolve('target/debug/ide-language-inspect');
@@ -161,11 +162,11 @@ const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(
 const stateRoot = join(base, 'app-cache', 'monochromatic-ide', 'language');
 // The private state directory the application derives for one server and project:
 // `<state root>/<project name>-<FNV-1a 64 of the project path>/<server>`, computed independently here.
-const stateOf = (project, server) => {
+const stateOf = (project, server, root = stateRoot) => {
   let hash = 0xcbf29ce484222325n;
   for (const byte of Buffer.from(project)) hash = ((hash ^ BigInt(byte)) * 0x100000001b3n) & 0xffffffffffffffffn;
   const name = basename(project).replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 40);
-  return join(stateRoot, name + '-' + hash.toString(16).padStart(16, '0'), server);
+  return join(root, name + '-' + hash.toString(16).padStart(16, '0'), server);
 };
 const probeDocuments = directory => (existsSync(directory) ? readdirSync(directory) : [])
   .filter(name => name.startsWith('probe-') && name.endsWith('.json')).map(name => JSON.parse(readFileSync(join(directory, name), 'utf8')));
@@ -237,6 +238,10 @@ const mustFail = label => /^(project|escape|alias|undo|delegate|reach\.unix|reac
 const mustSucceed = label => ['state.create', 'tmp.create', 'devnull.write'].includes(label);
 const probeVerdicts = documents => documents.flatMap(document => document.results.map(entry => ({ who: document.who, ...entry })))
   .filter(entry => (mustFail(entry.label) && entry.ok) || (mustSucceed(entry.label) && !entry.ok));
+// Project writes must fail because the project is read-only, not for an unrelated reason such as a missing path.
+const projectWritesNotReadOnly = documents => documents.flatMap(document => document.results.map(entry => ({ who: document.who, ...entry })))
+  .filter(entry => entry.label.startsWith('project.'))
+  .filter(entry => entry.code !== 'EROFS' && !/Read-only file system|Errno 30/.test(String(entry.stderr ?? '')));
 const allowedMount = (mount, state) => mount === state || mount.startsWith(state + '/') || ['/tmp', '/run', '/proc', '/dev'].includes(mount) || mount.startsWith('/dev/') || mount.startsWith('/proc/');
 
 // Variables every probe needs: targets, the host process, socket, and listener to reach, and the session marker.
@@ -252,8 +257,10 @@ const probeVariables = (project, marker, unconfined) => ({
 });
 
 // region Rust: write denial through rust-analyzer, cargo, the build script, the proc macro, and a Node child.
-const rustCase = (name, unconfined) => {
-  const project = join(base, name);
+// `where.parent` places the project (default: the scratch base); `where.cache` is the application's
+// XDG_CACHE_HOME for the run, which decides where private state lives.
+const rustCase = (name, unconfined, where = {}) => {
+  const project = join(where.parent ?? base, name);
   makeRust(project);
   const marker = randomBytes(8).toString('hex');
   const variables = { ...probeVariables(project, marker, unconfined), IDE_PROBE_NODE: process.execPath };
@@ -269,15 +276,14 @@ const rustCase = (name, unconfined) => {
       { label: 'settle', do: 'sleep', milliseconds: 8000 },
       { label: 'close', do: 'close' },
     ],
-  });
+  }, where.cache ? { env: { XDG_CACHE_HOME: where.cache } } : {});
   sleep(3000);
   return { project, before, after: snapshot(project), outcome, marker };
 };
-const confinedRust = rustCase('rust-confined', false);
-{
-  const { project, before, after, outcome, marker } = confinedRust;
+// `stateBase` is the resolved state root the application derives from the run's XDG_CACHE_HOME.
+const checkRust = (label, { project, before, after, outcome, marker }, stateBase = stateRoot) => {
   const difference = treeDiff(before, after);
-  const state = stateOf(project, 'rust-analyzer');
+  const state = stateOf(project, 'rust-analyzer', stateBase);
   const probeLines = existsSync(join(state, 'cache', 'rust-probe.tsv'))
     ? readFileSync(join(state, 'cache', 'rust-probe.tsv'), 'utf8').split('\n').filter(Boolean).map(line => line.split('\t')) : [];
   const verdict = (who, target) => probeLines.filter(line => line[0] === who && line[1] === target).map(line => line[2]);
@@ -285,7 +291,10 @@ const confinedRust = rustCase('rust-confined', false);
   const violations = probeVerdicts(documents);
   const mounts = documents.flatMap(document => document.writableMounts ?? []);
   const leaked = documents.flatMap(document => document.environment.filter(name => credentialNames.includes(name)));
-  record('rust-confined', [
+  const notReadOnly = projectWritesNotReadOnly(documents);
+  // The probe reports are kept with the results; fixtures below /tmp and /run are removed at the end.
+  writeFileSync(join(results, label + '.probes.json'), JSON.stringify({ documents, probeLines }, null, 2));
+  record(label, [
     ['inspection exited cleanly', outcome.status === 0],
     ['private state is where the application derives it, outside the project', existsSync(state) && !state.startsWith(project + '/')],
     ['hover on the build-script constant succeeded', outcome.result('generated').matched === true && outcome.hover('generated').includes('GENERATED')],
@@ -298,17 +307,19 @@ const confinedRust = rustCase('rust-confined', false);
     ['the proc macro wrote private state', verdict('proc-macro', 'state').includes('ok')],
     ['the Node escape probe ran from the build script', documents.some(document => document.who === 'build-script-child')],
     ['every escape, alias, undo, delegation, and reachability probe failed', documents.length > 0 && violations.length === 0],
+    ['every project write failed as a read-only file system', documents.length > 0 && notReadOnly.length === 0],
     ['no credential variable reached the server tree', leaked.length === 0],
     ['only private state, /tmp, and kernel file systems are writable', mounts.length > 0 && mounts.every(mount => allowedMount(mount, state))],
     ['the project tree is identical', empty(difference)],
     ['no process carrying the session marker remains', marked(marker).length === 0],
-  ], { difference, violations, mounts: [...new Set(mounts)], probeLines, state });
-}
+  ], { project, difference, violations, notReadOnly, mounts: [...new Set(mounts)], probeLines, state });
+};
+checkRust('rust-confined', rustCase('rust-confined', false));
 // endregion
 
 // region TypeScript 7: write denial through the project-supplied launcher, liveness past 10 s, no type acquisition.
-const tsCase = (name, unconfined) => {
-  const project = join(base, name);
+const tsCase = (name, unconfined, where = {}) => {
+  const project = join(where.parent ?? base, name);
   makeTypeScript(project);
   const marker = randomBytes(8).toString('hex');
   const variables = probeVariables(project, marker, unconfined);
@@ -329,15 +340,13 @@ const tsCase = (name, unconfined) => {
     ],
     // The unconfined control keeps type acquisition on (no override) but offline, as a positive control
     // that shows the acquisition check can see npm activity.
-  }, unconfined ? { env: { npm_config_cache: join(base, 'control-npm-cache'), npm_config_offline: 'true' } } : {});
+  }, unconfined ? { env: { npm_config_cache: join(base, 'control-npm-cache'), npm_config_offline: 'true' } } : (where.cache ? { env: { XDG_CACHE_HOME: where.cache } } : {}));
   sleep(3000);
   return { project, before, after: snapshot(project), outcome, marker };
 };
-const confinedTs = tsCase('ts7-confined', false);
-{
-  const { project, before, after, outcome, marker } = confinedTs;
+const checkTs = (label, { project, before, after, outcome, marker }, stateBase = stateRoot) => {
   const difference = treeDiff(before, after);
-  const state = stateOf(project, 'typescript-native');
+  const state = stateOf(project, 'typescript-native', stateBase);
   const documents = probeDocuments(join(state, 'cache'));
   const launcher = documents.find(document => document.who === 'ts7-launcher');
   // The allowlist, the redirects, and PWD, which bubblewrap itself sets to the working directory after
@@ -345,7 +354,9 @@ const confinedTs = tsCase('ts7-confined', false);
   const allowedNames = ['PATH', 'HOME', 'USER', 'LOGNAME', 'LANG', 'LC_ALL', 'LC_CTYPE', 'LC_MESSAGES', 'TZ', 'CARGO_HOME', 'RUSTUP_HOME', 'RUSTUP_TOOLCHAIN', 'XDG_CACHE_HOME', 'npm_config_cache', 'PWD'];
   const unexpectedNames = (launcher?.environment ?? []).filter(name => !allowedNames.includes(name) && !name.startsWith('IDE_PROBE_') && name !== 'IDE_LANGUAGE_SESSION');
   const violations = probeVerdicts(documents);
-  record('ts7-confined', [
+  const notReadOnly = projectWritesNotReadOnly(documents);
+  writeFileSync(join(results, label + '.probes.json'), JSON.stringify({ documents }, null, 2));
+  record(label, [
     ['inspection exited cleanly', outcome.status === 0],
     ['hover succeeded', outcome.result('hover').matched === true && outcome.hover('hover').includes('greet')],
     ['the server still answers more than 10 s after initialize', outcome.result('alive').matched === true],
@@ -353,11 +364,35 @@ const confinedTs = tsCase('ts7-confined', false);
     ['the project launcher ran its probe inside the sandbox', launcher !== undefined],
     ['the launcher saw only the allowlisted environment', launcher !== undefined && unexpectedNames.length === 0],
     ['every escape, alias, undo, delegation, and reachability probe failed', launcher !== undefined && violations.length === 0],
+    ['every project write failed as a read-only file system', launcher !== undefined && notReadOnly.length === 0],
     ['only private state, /tmp, and kernel file systems are writable', (launcher?.writableMounts ?? []).length > 0 && launcher.writableMounts.every(mount => allowedMount(mount, state))],
     ['automatic type acquisition wrote nothing', existsSync(state) && !existsSync(join(state, 'cache', 'typescript')) && readdirSync(join(state, 'npm-cache')).length === 0],
     ['the project tree is identical', empty(difference)],
     ['no process carrying the session marker remains', marked(marker).length === 0],
-  ], { difference, violations, unexpectedNames, launcherEnvironment: launcher?.environment, mounts: launcher?.writableMounts, signalToHost: launcher?.results.find(entry => entry.label === 'reach.signal0-host-pid'), state });
+  ], { project, difference, violations, notReadOnly, unexpectedNames, launcherEnvironment: launcher?.environment, mounts: launcher?.writableMounts, signalToHost: launcher?.results.find(entry => entry.label === 'reach.signal0-host-pid'), state });
+};
+checkTs('ts7-confined', tsCase('ts7-confined', false));
+// endregion
+
+// region projects below /tmp and /run: the sandbox replaces both, and the project is bound back read-only.
+// Private state lives on the same file system as each project, so hard-link and rename probes are meaningful;
+// for /tmp the cache variable reaches it through a symbolic link, which the application resolves first.
+const replacedParents = [];
+// The literal /tmp, not os.tmpdir(), which follows TMPDIR and could point elsewhere.
+for (const [location, directory] of [['tmp', '/tmp'], ['run', process.env.XDG_RUNTIME_DIR ?? '/run/user/' + process.getuid()]]) {
+  const parent = realpathSync(mkdtempSync(join(directory, 'ide-language-confinement-')));
+  replacedParents.push(parent);
+  const resolvedCache = join(parent, 'app-cache');
+  mkdirSync(resolvedCache);
+  let cache = resolvedCache;
+  if (location === 'tmp') {
+    cache = join(base, 'cache-link-to-tmp');
+    symlinkSync(resolvedCache, cache);
+  }
+  const where = { parent, cache };
+  const stateBase = join(resolvedCache, 'monochromatic-ide', 'language');
+  checkRust('rust-below-' + location, rustCase('rust-below-' + location, false, where), stateBase);
+  checkTs('ts7-below-' + location, tsCase('ts7-below-' + location, false, where), stateBase);
 }
 // endregion
 
@@ -370,11 +405,11 @@ const scriptedMarker = randomBytes(8).toString('hex');
 const scriptedState = stateOf(scriptedProject, 'scripted-ls');
 // Write attempts from inside: the project, private /tmp, private state, and an unrelated directory.
 const auditTargets = [join(scriptedProject, 'victim.txt'), '/tmp/audit-write', join(scriptedState, 'cache', 'audit-write'), join(outside, 'scripted-audit')];
-const scriptedLanguages = [
+const scriptedLanguagesWith = targets => [
   '[language-server.scripted-ls]',
   'command = ' + JSON.stringify(scripted),
   'timeout = 5',
-  'environment = ' + tomlTable({ IDE_SCRIPTED_REPORT: '/tmp/scripted-report.jsonl', IDE_SCRIPTED_AUDIT: auditTargets.join(':'), IDE_LANGUAGE_SESSION: scriptedMarker }),
+  'environment = ' + tomlTable({ IDE_SCRIPTED_REPORT: '/tmp/scripted-report.jsonl', IDE_SCRIPTED_AUDIT: targets.join(':'), IDE_LANGUAGE_SESSION: scriptedMarker }),
   '',
   '[[language]]',
   'name = "scripted"',
@@ -384,7 +419,7 @@ const scriptedLanguages = [
   'language-servers = ["scripted-ls"]',
   '',
 ].join('\n');
-const scriptedPlanFor = project => ({ project, extra_languages: scriptedLanguages, steps: [
+const scriptedPlanFor = (project, targets = auditTargets) => ({ project, extra_languages: scriptedLanguagesWith(targets), steps: [
   { label: 'open', do: 'open', file: 'file.scripted' },
   { label: 'ready', do: 'ready', seconds: 20 },
   { label: 'hover', do: 'request', kind: 'hover', at: 1, until: 'hover', seconds: 10 },
@@ -434,15 +469,27 @@ const scriptedPlan = scriptedPlanFor(scriptedProject);
   ]);
 }
 {
-  // Fail closed: a project below /tmp would be invisible inside the sandbox, so it is refused.
-  const hidden = realpathSync(mkdtempSync(join(tmpdir(), 'ide-language-hidden-')));
-  write(join(hidden, 'file.scripted'), 'alpha beta\n');
-  const outcome = run('fail-closed-tmp-project', scriptedPlanFor(hidden));
-  rmSync(hidden, { recursive: true });
-  record('fail-closed-tmp-project', [
-    ['the server was refused with the location named', outcome.statuses.includes('LaunchRefused') && outcome.statuses.includes('is below /tmp')],
+  // Helix's spelling: with PWD naming a symbolic link below /tmp, Helix roots servers at that spelling,
+  // which exists inside only because the project is bound there too.
+  const aliasParent = realpathSync(mkdtempSync(join('/tmp', 'ide-language-alias-')));
+  replacedParents.push(aliasParent);
+  const alias = join(aliasParent, 'project-link');
+  symlinkSync(scriptedProject, alias);
+  const aliasVictim = join(alias, 'victim.txt');
+  const before = snapshot(scriptedProject);
+  const outcome = run('scripted-pwd-alias', scriptedPlanFor(scriptedProject, [aliasVictim, ...auditTargets]), { env: { PWD: alias } });
+  sleep(1000);
+  const lines = existsSync(join(scriptedState, 'tmp', 'scripted-report.jsonl'))
+    ? readFileSync(join(scriptedState, 'tmp', 'scripted-report.jsonl'), 'utf8').split('\n').filter(Boolean).map(line => JSON.parse(line)) : [];
+  const audit = lines.find(line => line.audit)?.audit;
+  const writes = Object.fromEntries((audit?.writes ?? []).map(entry => [entry.path, entry]));
+  record('scripted-pwd-alias', [
+    ['the scripted server answered through the sandbox', outcome.result('hover').matched === true],
+    ['the server started in Helix\'s spelling below /tmp, which exists inside', audit?.cwd === alias],
+    ['a write through that spelling failed with error 30', writes[aliasVictim]?.errno === 30],
+    ['the project tree is identical', empty(treeDiff(before, snapshot(scriptedProject)))],
     ['no process carrying the session marker remains', marked(scriptedMarker).length === 0],
-  ]);
+  ], { alias, cwd: audit?.cwd, writes: audit?.writes });
 }
 // endregion
 
@@ -480,5 +527,7 @@ const scriptedPlan = scriptedPlanFor(scriptedProject);
 // endregion
 
 listener.close();
+// Fixtures below /tmp and /run live in memory; the results above hold everything the checks read.
+for (const parent of replacedParents) rmSync(parent, { recursive: true });
 console.log('Language confinement ' + (failed ? 'FAILED' : 'passed') + ': ' + join(results, 'results.json'));
 if (failed) process.exitCode = 1;
