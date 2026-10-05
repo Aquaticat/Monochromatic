@@ -398,10 +398,29 @@ closing-delimiter tails,
 paragraph/container prefixes,
 block-start guards,
 and point-anchored add-only edits.
-The current full table/prose gate is `proc_32b5`.
+The complete table/prose gate passed all 156 tests and Clippy (`proc_32b5`).
+The unambiguous header-only table fixture passed.
+A read-only Node probe now captures 44 break-offset cases and 32 block-start cases
+from the unchanged incumbent helpers,
+with their source hashes in `fixtures/semantic-break-parity.json`.
+New native tests compare those measured outputs rather than only handwritten expectations.
+A separately measured incumbent Unicode defect is intentionally not copied:
+`İİİİ etc. Next sentence.` and `İİİİ e.g. Next sentence.` each reported byte 13,
+because lowercasing expands the prefix and shifts abbreviation ranges away from original offsets.
+The native scanner tests abbreviations at original byte positions and keeps both cases unbroken.
+The differential fixture gate remains pending.
 New helper/rule files have uncommitted formatter output after their scoped feature commits.
-The Markdown ASAN generator unit controls passed all 5 sidecar tests in `proc_415a`;
-the instrumented build/campaign remains running and excludes table/prose additions.
+The Markdown ASAN generator controls passed all 5 sidecar tests in `proc_415a`.
+Its complete campaign then passed:
+152,781 merge executions,
+11,426 configuration executions,
+1,129 anonymous-function executions,
+458 semantic explicit-type executions,
+and 57,218 Markdown/MDX executions.
+Evidence:
+`package/linter/monochromatic-lint.fuzz/target/verification/campaign-BUNASg`.
+This snapshot excludes table/prose additions and later scanner refactors;
+it is not a final full-implementation campaign.
 
 A Markdown/MDX ASAN target has been added to the fuzz sidecar.
 Every draw exercises an independently counted rule fixture,

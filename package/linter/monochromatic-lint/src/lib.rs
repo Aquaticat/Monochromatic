@@ -72,11 +72,14 @@ pub mod markdown_headings;
 pub mod markdown_links;
 /// Owned Markdown line and UTF-16 position indexes.
 mod markdown_positions;
+/// Measured incumbent lexical-boundary conformance fixtures.
+#[cfg(test)]
+mod markdown_parity_tests;
+/// Paragraph/container ancestry for add-only prose fixes.
+mod markdown_prose_context;
 /// Heading punctuation checks with complete source escape/entity edits.
 #[doc(hidden)]
 pub mod markdown_punctuation;
-/// Paragraph/container ancestry for add-only prose fixes.
-mod markdown_prose_context;
 /// Add-only prose line breaks with token, delimiter and block guards.
 #[doc(hidden)]
 pub mod markdown_semantic_breaks;
