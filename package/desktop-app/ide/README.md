@@ -513,7 +513,7 @@ and the key callbacks.
   and clearing removes the results and keeps focus;
 - editing keys,
   every entry of the context menu,
-  and scrolling of a 201-character text,
+  and scrolling of a text wider than the box,
   which never reaches the clear cell;
 - rendered pixels in both schemes:
   placeholder,

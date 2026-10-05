@@ -266,8 +266,11 @@ fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
     let left = window.get_find_clear_x().ceil() as usize;
     let top = window.get_find_clear_y() as usize;
     let cell = [left, left + 47, top, top + 48];
-    let short = pixels(&frame(window), cell);
-    type_text(window, &"i".repeat(199));
+    let begun = frame(window);
+    let short = pixels(&begun, cell);
+    // Enough narrow letters to be wider than the box at this window width, which the check on the first
+    // letter's columns confirms.
+    type_text(window, &"i".repeat(499));
     status(window, "No matches");
     let filled = frame(window);
     assert_eq!(
@@ -278,6 +281,15 @@ fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
     assert!(
         pixels(&filled, cell) == short,
         "a text wider than the box was drawn inside the clear cell"
+    );
+    // The text area starts 12px inside the bar and 12px inside the box. These columns lie inside the first
+    // letter while the text is at its start, clear of the caret before it and of the letter after it,
+    // so they change only when the text scrolls.
+    let start = (window.get_sidebar_width() + DIVIDER) as usize + 24;
+    let first = [start + 3, start + 10, top + 12, top + 36];
+    assert!(
+        pixels(&filled, first) != pixels(&begun, first),
+        "the typed text did not scroll its first letter away, so it is not wider than the box"
     );
     // The toolkit's scrolling keeps the caret 24px inside the text area while it moves through the text,
     // and lets the end of the text reach the area's edge, which is where the cell starts.
@@ -290,9 +302,6 @@ fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
         pixels(&ended, last) != pixels(&filled, last),
         "the end of a text wider than the box was not scrolled into view"
     );
-    // The text area starts 12px inside the bar and 12px inside the box; its first columns hold the caret.
-    let start = (window.get_sidebar_width() + DIVIDER) as usize + 24;
-    let first = [start + 3, start + 14, top + 12, top + 36];
     key(window, Key::Home);
     let home = frame(window);
     assert!(
