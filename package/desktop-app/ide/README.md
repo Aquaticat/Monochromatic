@@ -455,6 +455,9 @@ centered on its position elsewhere.
 Where ranges overlap,
 the mildest severity is drawn first and the worst on top;
 the marker shows the worst severity starting on its line.
+Inside a selection an underline keeps its style but takes the selected-text ink,
+as selected glyphs do:
+the light-scheme severity inks reach only 1.16:1 to 1.39:1 against the selection fill `#0078D4`.
 
 When the caret touches a diagnostic,
 at either end of its range or inside it,
@@ -514,7 +517,7 @@ editord strips a type hint's leading `: ` and a parameter hint's trailing `:`;
 here labels are shown as the server sent them,
 without padding spaces.
 
-`test:annotations` covers selection, layout, painting, the frame stamp, and the placement measurements.
+`test:annotations` covers the visible subset, layout, painting, the frame stamp, and the placement measurements.
 `test:annotations-native` drives injected snapshots through real key and pointer events in both schemes,
 and `test:native` includes it.
 `inspect:annotation-guards` removes each guard in a disposable copy and checks that its named test fails.
