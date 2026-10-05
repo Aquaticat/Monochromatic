@@ -176,7 +176,26 @@ Logs are in `package/linter/monochromatic-lint/target/verification/`.
   Test image `f357522ebe2b80d79a5858b5768305f54ba2241629b0d7587184243bcd7633c6`,
   source tree `a3b3491e423bddea5877825ccaacfe573af7248a`.
 
-The two library-suite durations differ by 77 seconds on unchanged tests,
+- `gate-mutation-close-3.log`,
+  after the executable controls:
+  379 library tests passed,
+  and 11 of 12 `binary` tests passed;
+  `debug_streams_workspace_progress_and_plain_runs_stay_silent` failed on a byte comparison
+  described under `Dispositions of the first run`.
+- `gate-mutation-close-4.log`,
+  after that fix and the panic-hook refactor:
+  380 library tests passed in 142.43 seconds,
+  12 `binary` tests passed in 2.52 seconds,
+  and Clippy finished with no finding.
+  Test image `c184147f62f1ed1afa673cbe53b36cb7c8aeb8fd87e4f537763572551f7b03c8`,
+  source tree `fa2efe52e284f9c368a81a08d2720d14579bd3a0`.
+  The first Markdown campaign mutated this image.
+
+The `binary` target took 0.30 to 0.65 seconds before the new controls and 1 to 2.5 seconds after them;
+the workspace-progress control starts rust-analyzer's sysroot discovery and two `cargo metadata` runs.
+Every executable-scope mutant pays that time.
+
+The first two library-suite durations differ by 77 seconds on unchanged tests,
 from load on the shared host.
 The larger one is over the 180 second per-mutant limit,
 so an unscoped campaign could record timeouts that are only a slow host.
