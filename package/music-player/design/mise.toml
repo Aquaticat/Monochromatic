@@ -458,6 +458,21 @@ description = "Exercise overlay hash, cohort, hold, acquisition and no-ballot gu
 dir = "{{config_root}}"
 run = "node feedback-overlay-test.mjs"
 
+[tasks."build:track-menu"]
+description = "Build the evidence-only native D7 context-menu viewer from inspected witnesses"
+dir = "{{config_root}}"
+run = "node track-menu.mjs build"
+
+[tasks."lint:track-menu"]
+description = "Validate exact context-menu images, native input provenance and operation boundaries"
+dir = "{{config_root}}"
+run = "node track-menu.mjs validate"
+
+[tasks."test:track-menu"]
+description = "Exercise menu cohort, heading, input, crop and no-ballot guards on disposable copies"
+dir = "{{config_root}}"
+run = "node track-menu-test.mjs"
+
 [tasks."test:first-run:access"]
 description = "Exercise first-run review image, metadata, cohort and ballot guards in disposable fixtures"
 dir = "{{config_root}}"
