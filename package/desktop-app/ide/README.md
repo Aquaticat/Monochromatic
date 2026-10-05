@@ -358,10 +358,10 @@ and the active match is the reading selection while the bar is still open.
   The offsets are assigned directly,
    without easing.
 - The find text is one line;
-  the toolkit input replaces pasted line breaks with spaces.
-- The find input is the toolkit `LineEdit`,
-  as in combined search,
-  including its built-in clear icon while it has focus and text.
+  the toolkit's `TextInput` replaces pasted line breaks with spaces.
+- The find input is the application's own text box,
+  the same one combined search uses;
+  see [Find and search text box](#find-and-search-text-box).
 
 ### Find painting
 
@@ -410,6 +410,123 @@ including reload,
  file switch,
  and the search overlay.
 `inspect:find-guards` removes each guard in a disposable copy and checks that its named test fails.
+
+## Find and search text box
+
+The find text and the search query are edited in `QueryInput` (`ui/query-input.slint`),
+a single-line box built on the toolkit's `TextInput` item.
+It replaces the toolkit's fluent `LineEdit` because of that widget's clear control:
+a cell 16 px wide whose width cannot be set from outside
+(Slint 1.18.1 `widgets/fluent/lineedit.slint` lines 58 to 67,
+`widgets/common/lineedit-base.slint` lines 189 to 196).
+The user decided on 2026-10-05 to keep the control and give it a click target of at least 48 px by 48 px.
+
+### Clear control
+
+The x at the trailing end of the box empties the text.
+Its click target is a 48 px by 48 px layout cell of the box:
+the glyph is 16 px in the middle,
+and the rest of the cell is padding that takes the click.
+Being a layout cell,
+it is never drawn over the text or over anything beside the box.
+While the control is hidden,
+the same cell is the box's 12 px trailing padding.
+
+The control follows the toolkit's rule for when it exists:
+the box has text,
+is enabled,
+and has keyboard focus.
+A click empties the text,
+reports the edit,
+so the find count and highlights or the search results go with it,
+and leaves keyboard focus in the box.
+A press released outside the cell clears nothing.
+As in the toolkit,
+the control is not a Tab stop;
+from the keyboard,
+Ctrl+A and Delete empty the box.
+
+Each pointer state has two marks:
+
+- at rest,
+  the glyph alone;
+- under the pointer,
+  a filled plate with a 1 px boundary;
+- pressed,
+  a stronger fill and a 2 px boundary.
+
+Accessibility tools see a `button` named `Clear find text` or `Clear search query`
+whose default action clears.
+The toolkit's control is not exposed to them at all.
+
+### Behavior kept from the toolkit box
+
+Read from `widgets/common/lineedit-base.slint` and `widgets/fluent/lineedit.slint` of Slint 1.18.1:
+
+- The placeholder shows while the text and any input-method composition are both empty.
+- Selected text has the palette's selection fill and the palette's accent ink,
+  which is black in the dark scheme and white in the light one.
+  The source view and selected rows choose their ink from the fill instead;
+  see [Selected text ink](#selected-text-ink).
+- A text wider than the box scrolls so that the caret stays 24 px inside the text area.
+- A right click opens a menu with Undo,
+  Redo,
+  Cut,
+  Copy,
+  Paste,
+  and Select All;
+  Copy and Select All are disabled while the box is empty.
+- Editing keys,
+  clipboard shortcuts,
+  undo,
+  redo,
+  and input-method composition are `TextInput`'s own
+  (`i-slint-core` 1.18.1 `items/text.rs`),
+  so they are the same in both boxes.
+- Focus is marked by a 2 px accent line along the bottom edge and a different fill.
+- Accessibility tools see a `text-input` with its label,
+  value,
+  placeholder,
+  and enabled state,
+  and can set the value and the selection.
+
+Not carried over,
+because nothing here uses them:
+the password and read-only modes,
+the `accepted` callback,
+and the key callbacks.
+
+### Text box checks
+
+`test:native` drives both boxes with real window events:
+
+- a click on each corner pixel and on the center of the find box's clear cell clears,
+  a click one pixel outside each edge does not,
+  the cell's measured size is 48 px by 48 px,
+  and clearing keeps focus and removes the find count and the highlights;
+- the search box's clear cell has the same size,
+  and clearing removes the results and keeps focus;
+- editing keys,
+  every entry of the context menu,
+  and scrolling of a 201-character text,
+  which never reaches the clear cell;
+- rendered pixels in both schemes:
+  placeholder,
+  focus marks,
+  selection colors,
+  and the clear control's three states.
+
+`inspect:find-guards` and `inspect:search-guards` remove the cell's size,
+its whole-cell click target,
+its edit report,
+and each half of its shown rule in a disposable copy
+and check that the named tests fail.
+Input-method composition was not exercised:
+the toolkit's public window events carry no composition event,
+and the nested compositor provides no input method.
+Accessible properties were read from the running application
+through the toolkit's inspection server during the native frame captures;
+see `design/README.md`.
 
 ## Language module
 

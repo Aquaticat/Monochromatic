@@ -5,8 +5,8 @@
 use super::AppWindow;
 /// An opened find bar over a disposable two-match file, with keyboard focus in the find box.
 use super::find_clear_tests::opened;
-/// Real key events through the window, shared with the find tests.
-use super::find_tests::{chord, key, type_text};
+/// Real key events through the window and the wait for the find count, shared with the find tests.
+use super::find_tests::{chord, key, status, type_text};
 /// Rendered frames and single pixels, shared with the sidebar paint tests.
 use super::sidebar_paint_tests::{frame, pixel};
 /// Pointer helpers and the pinned width of the divider's line.
@@ -249,7 +249,9 @@ fn pixels(frame: &SharedPixelBuffer<Rgba8Pixel>, bounds: [usize; 4]) -> Vec<Rgba
 fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
     let (_fixture, reader) = opened();
     let window = &reader.window;
+    // The fixture has no such text, so the count reads "No matches" throughout and the box keeps its width.
     type_text(window, "W");
+    status(window, "No matches");
     settle(window);
     // What: `ceil()` rounds a fractional edge up to the next whole pixel, and `as usize` converts that
     // logical position to a pixel index; the headless window renders one pixel per logical pixel.
@@ -265,7 +267,13 @@ fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
     let cell = [left, left + 47, top, top + 48];
     let short = pixels(&frame(window), cell);
     type_text(window, &"i".repeat(199));
+    status(window, "No matches");
     let filled = frame(window);
+    assert_eq!(
+        window.get_find_clear_x().ceil() as usize,
+        left,
+        "typing moved the clear cell"
+    );
     assert!(
         pixels(&filled, cell) == short,
         "a text wider than the box was drawn inside the clear cell"
@@ -274,6 +282,7 @@ fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
     // The last character lies in the 18 columns before the caret's own columns.
     let last = [left - 45, left - 27, top + 12, top + 36];
     type_text(window, "W");
+    status(window, "No matches");
     let ended = frame(window);
     assert!(
         pixels(&ended, last) != pixels(&filled, last),

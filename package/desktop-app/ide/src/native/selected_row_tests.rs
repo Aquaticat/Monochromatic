@@ -90,16 +90,17 @@ struct Part {
     fill: [usize; 2],
 }
 
-/// What: `window: &AppWindow` lends the window; `scheme` and `part` name what is measured.
+/// What: `window: &AppWindow` lends the window; `scheme` and `part` name what is measured; the answer
+/// is an `f32` (a 32-bit float; sibling `f64`), the contrast ratio of the chosen ink on the drawn fill.
 /// Why: The ink is the rule's choice for the declared selection fill. On the fill that is actually
 /// drawn, which a focused or hovered tree row tints, that ink must still reach the rule's 3:1,
 /// the glyphs must show it, and nothing may be drawn in the opposite ink.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function measure(window: AppWindow, scheme: string, part: Part): void;
+/// function measure(window: AppWindow, scheme: string, part: Part): number;
 /// ```
-fn measure(window: &AppWindow, scheme: &str, part: &Part) {
+fn measure(window: &AppWindow, scheme: &str, part: &Part) -> f32 {
     let shown = frame(window);
     let ink = legible_ink(
         rgba(window.get_selection_fill().color()),
@@ -138,6 +139,26 @@ fn measure(window: &AppWindow, scheme: &str, part: &Part) {
         "{scheme} {}: part of the selected row is drawn in the opposite ink",
         part.name
     );
+    return declared;
+}
+
+/// What: `state` names a tinted state of the selected tree row; `plain` is the contrast on the untinted fill.
+/// Why: Hover and keyboard focus tint the row. The tint must be visible, and it must move the fill away
+/// from the ink, so the text never loses contrast in those states.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tinted(window: AppWindow, scheme: string, state: string, plain: number): void;
+/// ```
+fn tinted(window: &AppWindow, scheme: &str, state: &str, plain: f32) {
+    for part in &TREE {
+        let shown = measure(window, &format!("{scheme}, tree row {state},"), part);
+        assert!(
+            shown > plain,
+            "{scheme}: the {state} tint lowered the contrast of the selected row's text from {plain:.2}:1 \
+             to {shown:.2}:1, or did not tint the row"
+        );
+    }
 }
 
 /// What: `vec![...]` builds an array; `..TreeEntry::default()` fills every field not named;
@@ -223,21 +244,18 @@ fn selected_rows_use_the_ink_chosen_from_the_fill_with_measured_contrast() {
         window.invoke_focus_source();
         motion(window, 800.0, 500.0);
         settle(window);
+        let mut plain = 0.0;
         for part in &TREE {
-            measure(window, &format!("{label}, tree unfocused,"), part);
+            plain = measure(window, &format!("{label}, tree unfocused,"), part);
         }
         // The pointer over the selected row tints it.
         motion(window, 230.0, 104.0);
-        for part in &TREE {
-            measure(window, &format!("{label}, tree row hovered,"), part);
-        }
+        tinted(window, label, "hovered", plain);
         motion(window, 800.0, 500.0);
         // Keyboard focus on the selected row tints it and adds a boundary.
         window.invoke_focus_tree();
         window.set_tree_focused_row(1);
-        for part in &TREE {
-            measure(window, &format!("{label}, tree row focused,"), part);
-        }
+        tinted(window, label, "focused", plain);
         window.invoke_focus_source();
         // The location list beside the first source line: its second row is selected and has a detail.
         let places = vec![

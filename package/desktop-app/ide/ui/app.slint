@@ -169,6 +169,9 @@ export component AppWindow inherits Window {
     // Ink for selected rows of the tree, the search results, and the location list. Native code sets it to
     // the ink it chooses from the selection fill, the same one selected source text is drawn in.
     in property <brush> selected-row-ink: Palette.selection-foreground;
+    // Tint of a hovered or focused selected tree row. Native code sets it to the opposite of that ink,
+    // so the tint never moves the fill toward the text.
+    in property <brush> selected-row-tint: Palette.foreground;
     // Inlay hints and diagnostics: native code reads these inks for the source raster, so hints and underlines
     // follow the scheme like the markers drawn here.
     out property <brush> hint-ink: AnnotationInk.hint;
@@ -273,6 +276,7 @@ export component AppWindow inherits Window {
             error-message: root.tree-error;
             focused-row <=> root.tree-focused-row;
             selected-ink: root.selected-row-ink;
+            selected-tint: root.selected-row-tint;
             activate(index) => { root.tree-activate(index); }
             user-focus(index) => { root.tree-user-focus(index); }
             navigate(key, index) => { root.tree-navigate(key, index); }
