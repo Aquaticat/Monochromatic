@@ -26,7 +26,8 @@ use std::time::Duration;
 /// The user chose 1 s on 2026-10-05. Each second costs one listing per shown directory and one
 /// source read; the old polling did 2 listings and 4 source reads per second whatever was shown.
 /// The single directory reader lists one directory per 20 ms tick, so beyond about 50 shown
-/// directories a sweep takes longer than this interval and the next one follows at once.
+/// directories one pass outlasts this interval; the next pass then starts when that one has read
+/// every directory, so each directory is reread once per pass instead of once per interval.
 pub const SAFETY_SWEEP: Duration = Duration::from_secs(1);
 
 /// A notified item is not reread sooner than this after its previous read started.

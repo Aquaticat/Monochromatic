@@ -32,7 +32,7 @@ const TICK: Duration = Duration::from_millis(20);
 
 /// Longest time any of `folders` shown folders goes without a reread when nothing is notified.
 /// `watched` false gives the folders no live watch, so the unwatched timer runs beside the sweep.
-fn longest_reread_interval(folders: usize, watched: bool) -> Duration {
+fn longest_reread_interval(folders: u32, watched: bool) -> Duration {
     let start = Instant::now();
     let mut shown = Vec::new();
     for index in 0..folders {
@@ -74,7 +74,45 @@ fn longest_reread_interval(folders: usize, watched: bool) -> Duration {
         }
         now += TICK;
     }
+    // What: `map_or` reads the folder's last read time, or the start of the measured span if it had none.
+    // Why: A folder the schedule stopped reading has no second read to measure a gap from, so the time
+    //      from its last read to the end of the simulation counts as its interval.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const path of shown) longest = Math.max(longest, now - Math.max(lastRead.get(path) ?? 0, from));
+    // ```
+    for path in &shown {
+        let last = last_read
+            .get(path)
+            .map_or(measured_from, |at| return (*at).max(measured_from));
+        longest = longest.max(now.saturating_duration_since(last));
+    }
     return longest;
+}
+
+/// One pass over more folders than the sweep interval can read (one read per 20 ms tick) outlasts the
+/// interval. The next pass then waits for the unfinished one, so every folder is reread once per pass;
+/// a pass restarting from the top each interval would never reach the folders late in visible order.
+#[test]
+fn sweep_rereads_every_folder_when_one_pass_outlasts_the_interval() {
+    let folders = 120;
+    let pass = TICK * folders;
+    assert!(
+        pass > SAFETY_SWEEP,
+        "the pass no longer outlasts the interval"
+    );
+    let longest = longest_reread_interval(folders, true);
+    println!(
+        "folders={folders} pass_ms={} longest_unread_ms={}",
+        pass.as_millis(),
+        longest.as_millis()
+    );
+    assert!(
+        longest <= pass + TICK,
+        "a shown folder went unread for {} ms while sweeps restarted from the top",
+        longest.as_millis()
+    );
 }
 
 /// The safety sweep comes due every second, so it regularly coincides with a save in progress.
