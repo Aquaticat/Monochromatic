@@ -116,7 +116,7 @@ description = "Check native ripgrep records and editord-compatible filename matc
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['test', '--no-default-features', '--lib', '--test', 'search_protocol'])
+runCargo(['test', '--no-default-features', '--lib', '--test', 'search_protocol', '--test', 'search_worker'])
 """
 
 [tasks."test:reader-lifecycle"]
