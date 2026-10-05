@@ -178,6 +178,21 @@ The emulator launcher version and in-container KVM availability probes
 passed before this visit.
 This tests the runtime library environment;
 it does not identify a defective library or change the product design.
+The first native-library attempt never launched QEMU:
+`xvfb-run` was PID 1 waiting for Xvfb readiness.
+The [source-traced init control](../troubleshooting/xvfb-run-container-init.md)
+records the parent-signal boundary and successful `--init` child-launch
+control.
+The subsequent full guest attempt passed that wrapper boundary but
+terminated on `SIGSEGV` before readiness.
+Those are separate failures.
+
+The current bounded control keeps that init configuration and selects the
+installed emulator's documented `swangle` backend,
+using ANGLE with SwiftShader rather than the prior GLES path.
+It has no successful guest/capture result yet.
+Exact unowned fresh-AVD locks were preserved after positive owner checks;
+no original AVD or third-party source was changed.
 
 ## Independently verifiable queue
 
