@@ -77,8 +77,13 @@ pub fn audit(writes: &str) -> Value {
             results.push(attempt_write(path));
         }
     }
+    // The working directory shows which spelling of the project root exists inside the sandbox.
+    let cwd = std::env::current_dir().map_or(String::new(), |found| {
+        return found.display().to_string();
+    });
     return json!({
         "pid": std::process::id(),
+        "cwd": cwd,
         "environment": names,
         "writableMounts": writable_mounts(),
         "namespaces": namespaces,
