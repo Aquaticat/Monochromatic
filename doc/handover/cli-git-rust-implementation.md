@@ -606,6 +606,44 @@ Open questions it raised, with the main session's working answers (open to veto)
 - Wrapper controls before the subcommand must be stripped from the global prefix before any rule runs;
   the policy engine owns that.
 
+**Wrapper runner lint**:
+`bin/test-native-container.mjs` and `bin/mutate-native-container.mjs` now pass Oxlint with no errors or warnings
+(commits `6bc2f15f3`, `9b99e49f3`, `9cd9935d5`; detail in the foundation document's
+`Runners under the Oxlint configuration` section).
+`spawnSync` became asynchronous `spawn` with the output cap kept,
+`try...finally` became `await using` over disposable temporary directories and containers,
+and regexes became single-pass string checks.
+The gate on old and new scripts reported identical counts (322 unit and 21 binary-level tests, Clippy)
+on the same image with byte-identical evidence files,
+and a planted failing test still failed the task and left no temporary directory or container.
+This was done before the engine phase because every later wrapper gate runs through these scripts.
+
+Proposed, not applied:
+type-aware Oxlint reports many `typescript(no-unsafe-*)` findings on every `bin/*.mjs` in the repository
+because those scripts sit outside every `tsconfig.json` include list,
+so `process` and `node:` imports have no types there.
+The delegate measured 30 such findings on one helper without `/// <reference types="node" />` and 0 with it.
+The configuration-level fix (a tsconfig that includes `bin/**/*.mjs`) changes shared configuration
+that file-enforcer may own,
+so it needs its own change after checking `file-enforcer.config.ts`.
+
+**Engine phase launched**:
+the policy engine with the pre-forward built-ins and argv transforms (main checkout,
+evidence `doc/handover/cli-git-native-policy-engine.md`)
+and the candidate content layer with the scanner adapter (worktree `.claude/worktrees/cli-git-candidates`,
+branch `feat/cli-git-native-candidates`, evidence `doc/handover/cli-git-native-candidates.md`).
+The engine brief pins, each with a binary-level test:
+wrapper controls stripped before any rule core runs
+(today `git --cli-git-keep-going status` from a subdirectory would pass require-root);
+one hatch-removal mechanism for detection and removal;
+an explicit exit-2 refusal, derived from the behavior ledger, for every command whose incumbent behavior needs unported processing;
+a typed unavailable result for unsupported triggers;
+and a read-only fast path that loads no configuration and starts no extra Git process.
+The candidate brief requires a bounded Git process count for N staged candidates with a naive-reader positive control,
+and staged-versus-worktree byte isolation for the scanner.
+The optional policies follow once both land.
+The wrapper's 16 spinning mutation timeouts wait until the engine delegate releases the native modules.
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
