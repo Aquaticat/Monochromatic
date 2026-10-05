@@ -6,14 +6,14 @@
 //! // Create owned fixtures, load with each fixed preparation mode, and inspect real rule outcomes.
 //! ```
 
-/// Import production workspace loading and typed findings.
-use crate::rust_workspace::{WorkspacePreparation, discover_manifest, load_cargo_workspace};
-use crate::rust_semantic_session::RustSemanticSession;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rust_semantic_error::SemanticError;
+use crate::rust_semantic_session::RustSemanticSession;
+use crate::rust_semantic_test_support::{prepare_lockfile, progress};
+/// Import production workspace loading and typed findings.
+use crate::rust_workspace::{WorkspacePreparation, discover_manifest, load_cargo_workspace};
 /// Import owned fixture creation and named progress/lock preparation.
 use crate::test_fs::Fixture;
-use crate::rust_semantic_test_support::{prepare_lockfile, progress};
 /// Import native paths without hardcoded user directories.
 use std::path::{Path, PathBuf};
 
@@ -26,8 +26,12 @@ fn cargo_discovery_keeps_its_owner_boundary() {
     let outer: PathBuf = fixture.path.join("Cargo.toml");
     let inner: PathBuf = fixture.path.join("nested/Cargo.toml");
     std::fs::write(&outer, "[workspace]\nmembers = []\n").expect("outer manifest");
-    std::fs::write(&inner, "[package]\nname = \"inner\"\nversion = \"0.0.0\"\n").expect("inner manifest");
-    assert_eq!(discover_manifest(&nested.join("lib.rs")).expect("nearest"), inner);
+    std::fs::write(&inner, "[package]\nname = \"inner\"\nversion = \"0.0.0\"\n")
+        .expect("inner manifest");
+    assert_eq!(
+        discover_manifest(&nested.join("lib.rs")).expect("nearest"),
+        inner
+    );
     assert!(discover_manifest(Path::new("relative.rs")).is_err());
     let descriptor: PathBuf = fixture.path.join("rust-project.json");
     let result: Result<RustSemanticSession, SemanticError> =
@@ -61,21 +65,30 @@ fn main() {
     prepare_lockfile(&fixture.path);
 
     {
-        let mut source_only: RustSemanticSession = load_cargo_workspace(&manifest, WorkspacePreparation::SourceOnly, progress)
-            .expect("source-only context loads");
-        let findings: Vec<Diagnostic> = source_only.check_file(&source_path, source, "generated.rs", Severity::Error)
+        let mut source_only: RustSemanticSession =
+            load_cargo_workspace(&manifest, WorkspacePreparation::SourceOnly, progress)
+                .expect("source-only context loads");
+        let findings: Vec<Diagnostic> = source_only
+            .check_file(&source_path, source, "generated.rs", Severity::Error)
             .expect("query completes without treating missing definitions as verified");
         assert!(!findings.is_empty());
         let mut unavailable: bool = false;
         for finding in &findings {
-            if finding.processing_failure { unavailable = true; }
+            if finding.processing_failure {
+                unavailable = true;
+            }
         }
-        assert!(unavailable, "missing generated function must be an explicit coverage failure");
+        assert!(
+            unavailable,
+            "missing generated function must be an explicit coverage failure"
+        );
     }
     {
-        let mut complete: RustSemanticSession = load_cargo_workspace(&manifest, WorkspacePreparation::BuildGenerated, progress)
-            .expect("generated context loads after real Cargo preparation");
-        let findings: Vec<Diagnostic> = complete.check_file(&source_path, source, "generated.rs", Severity::Warn)
+        let mut complete: RustSemanticSession =
+            load_cargo_workspace(&manifest, WorkspacePreparation::BuildGenerated, progress)
+                .expect("generated context loads after real Cargo preparation");
+        let findings: Vec<Diagnostic> = complete
+            .check_file(&source_path, source, "generated.rs", Severity::Warn)
             .expect("query generated function");
         assert_eq!(findings.len(), 1, "{findings:?}");
         assert!(!findings[0].processing_failure);
@@ -84,7 +97,11 @@ fn main() {
     }
 
     // This changes only the owned fixture. No real project's build scripts or target directory are touched.
-    std::fs::write(&build_path, "fn main() { panic!(\"fixture build failure\"); }\n").expect("failing fixture build script");
+    std::fs::write(
+        &build_path,
+        "fn main() { panic!(\"fixture build failure\"); }\n",
+    )
+    .expect("failing fixture build script");
     let result: Result<RustSemanticSession, SemanticError> =
         load_cargo_workspace(&manifest, WorkspacePreparation::BuildGenerated, progress);
     let error: SemanticError = match result {
@@ -92,5 +109,8 @@ fn main() {
         Ok(_) => panic!("failed build preparation was accepted"),
     };
     assert!(error.message.contains("fixture build failure"), "{error}");
-    assert!(error.message.contains("not semantically verified"), "{error}");
+    assert!(
+        error.message.contains("not semantically verified"),
+        "{error}"
+    );
 }

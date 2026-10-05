@@ -41,7 +41,10 @@ pub struct RustRuleSettings {
 fn options(setting: &JsoncValue) -> Result<(Option<Severity>, usize), ConfigError> {
     let mut selected: Option<Option<Severity>> = None;
     let mut max: usize = 300;
-    for entry in setting.entries().expect("rule settings validated as a record") {
+    for entry in setting
+        .entries()
+        .expect("rule settings validated as a record")
+    {
         let key: String = key_text(&entry.key.units)?;
         if key == "severity" {
             let value: String = text(&entry.value, "severity")?;
@@ -49,14 +52,20 @@ fn options(setting: &JsoncValue) -> Result<(Option<Severity>, usize), ConfigErro
                 "off" => None,
                 "warn" => Some(Severity::Warn),
                 "error" => Some(Severity::Error),
-                _ => return Err(ConfigError::new("Rule severity must be off, warn, or error.")),
+                _ => {
+                    return Err(ConfigError::new(
+                        "Rule severity must be off, warn, or error.",
+                    ));
+                }
             });
         } else if key == "max" {
             max = line_limit(&entry.value)?;
         }
     }
     let Some(severity): Option<Option<Severity>> = selected else {
-        return Err(ConfigError::new("A selected rule requires severity off, warn, or error before execution."));
+        return Err(ConfigError::new(
+            "A selected rule requires severity off, warn, or error before execution.",
+        ));
     };
     return Ok((severity, max));
 }
@@ -75,13 +84,20 @@ pub fn rust_rule_settings(rules: &JsoncValue) -> Result<RustRuleSettings, Config
         match id.as_str() {
             "rust/max-lines" => {
                 if let Some(value) = severity {
-                    result.max_lines = Some(LineBudget { severity: value, max });
+                    result.max_lines = Some(LineBudget {
+                        severity: value,
+                        max,
+                    });
                 }
             }
             "rust/require-rustdoc" => result.rustdoc = severity,
             "rust/no-anonymous-functions" => result.no_anonymous_functions = severity,
             "rust/require-explicit-types" => result.explicit_types = severity,
-            _ => return Err(ConfigError::new(format!("Rust rule {id} has no execution adapter.").as_str())),
+            _ => {
+                return Err(ConfigError::new(
+                    format!("Rust rule {id} has no execution adapter.").as_str(),
+                ));
+            }
         }
     }
     return Ok(result);

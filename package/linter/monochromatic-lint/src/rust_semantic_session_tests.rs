@@ -47,7 +47,8 @@ fn named_query_panics_cannot_masquerade_as_a_pass() {
     let text_error: SemanticError = protect_query(text_panic).expect_err("caught text panic");
     assert!(text_error.message.contains("fixture panic"));
     assert!(text_error.message.contains("not verified"));
-    let number_error: SemanticError = protect_query(numeric_panic).expect_err("caught non-text panic");
+    let number_error: SemanticError =
+        protect_query(numeric_panic).expect_err("caught non-text panic");
     assert!(number_error.message.contains("non-text panic payload"));
     assert!(number_error.message.contains("not verified"));
 }

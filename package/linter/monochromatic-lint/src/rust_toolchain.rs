@@ -29,7 +29,15 @@ pub(crate) fn absolute_utf8(path: &Path) -> Result<AbsPathBuf, SemanticError> {
     };
     match AbsPathBuf::try_from(text) {
         Ok(absolute) => return Ok(absolute),
-        Err(error) => return Err(SemanticError::new(format!("Rust semantic path {} is not absolute: {error:?}.", path.display()).as_str())),
+        Err(error) => {
+            return Err(SemanticError::new(
+                format!(
+                    "Rust semantic path {} is not absolute: {error:?}.",
+                    path.display()
+                )
+                .as_str(),
+            ));
+        }
     }
 }
 
@@ -41,11 +49,27 @@ pub fn discover_toolchain(directory: &Path) -> Result<RustToolchain, SemanticErr
         Err(error) => return Err(SemanticError::new(format!("Cannot run rustc --print sysroot in {}: {error}. Make that project's Rust toolchain available before semantic checking.", directory.display()).as_str())),
     };
     if !output.status.success() {
-        return Err(SemanticError::new(format!("rustc --print sysroot failed in {} ({}): {}", directory.display(), output.status, String::from_utf8_lossy(&output.stderr)).as_str()));
+        return Err(SemanticError::new(
+            format!(
+                "rustc --print sysroot failed in {} ({}): {}",
+                directory.display(),
+                output.status,
+                String::from_utf8_lossy(&output.stderr)
+            )
+            .as_str(),
+        ));
     }
     let text: String = match String::from_utf8(output.stdout) {
         Ok(value) => value,
-        Err(error) => return Err(SemanticError::new(format!("rustc returned a non-UTF-8 sysroot for {}: {error}.", directory.display()).as_str())),
+        Err(error) => {
+            return Err(SemanticError::new(
+                format!(
+                    "rustc returned a non-UTF-8 sysroot for {}: {error}.",
+                    directory.display()
+                )
+                .as_str(),
+            ));
+        }
     };
     let sysroot: AbsPathBuf = absolute_utf8(Path::new(text.trim()))?;
     let library: AbsPathBuf = sysroot.join("lib/rustlib/src/rust/library");

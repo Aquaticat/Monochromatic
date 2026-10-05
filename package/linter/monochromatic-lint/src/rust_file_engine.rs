@@ -44,7 +44,11 @@ mod tests;
 impl RustFileEngine {
     /// Construct an empty invocation cache; no compiler, manifest or workspace is opened here.
     pub fn new(preparation: WorkspacePreparation, progress: fn(String)) -> RustFileEngine {
-        return RustFileEngine { workspaces: BTreeMap::<PathBuf, RustSemanticSession>::new(), preparation, progress };
+        return RustFileEngine {
+            workspaces: BTreeMap::<PathBuf, RustSemanticSession>::new(),
+            preparation,
+            progress,
+        };
     }
 
     /// Read the number of initialized workspaces for debug reporting and fast-path verification.
@@ -70,10 +74,14 @@ impl RustFileEngine {
         };
         let manifest: PathBuf = discover_manifest(&physical)?;
         if !self.workspaces.contains_key(&manifest) {
-            let workspace: RustSemanticSession = load_cargo_workspace(&manifest, self.preparation, self.progress)?;
+            let workspace: RustSemanticSession =
+                load_cargo_workspace(&manifest, self.preparation, self.progress)?;
             self.workspaces.insert(manifest.clone(), workspace);
         }
-        let workspace: &mut RustSemanticSession = self.workspaces.get_mut(&manifest).expect("inserted workspace exists");
+        let workspace: &mut RustSemanticSession = self
+            .workspaces
+            .get_mut(&manifest)
+            .expect("inserted workspace exists");
         return workspace.check_rules(&physical, source.as_str(), filename.as_str(), settings);
     }
 }

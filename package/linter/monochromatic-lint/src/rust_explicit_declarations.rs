@@ -17,10 +17,10 @@
 use crate::diagnostic::{Diagnostic, Severity};
 /// Import the retained Rust parse rather than parsing each declaration again.
 use crate::rust_source::RustSource;
-/// Import typed syntax accessors and source-node references.
-use ra_ap_syntax::{AstNode, ast};
 /// Reuse the type-policy diagnostic boundary for both syntax and semantic checks.
 use crate::rust_type_diagnostic::type_finding;
+/// Import typed syntax accessors and source-node references.
+use ra_ap_syntax::{AstNode, ast};
 
 /// What: Require annotations on let statements and anonymous-function parameters/results.
 /// Why: These are declaration positions where valid Rust otherwise infers a type.

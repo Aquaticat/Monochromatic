@@ -8,11 +8,11 @@
 
 /// Import shared findings and selected severity.
 use crate::diagnostic::{Diagnostic, Severity};
-/// Reuse typed rule selection and syntax-only dispatch over the same registered parse.
-use crate::rust_rule_settings::RustRuleSettings;
 use crate::rust_dispatch::check_syntax_rules;
 /// Import the complete rule rather than duplicating checks in the workspace adapter.
 use crate::rust_explicit_types::check_explicit_types;
+/// Reuse typed rule selection and syntax-only dispatch over the same registered parse.
+use crate::rust_rule_settings::RustRuleSettings;
 /// Import typed setup/query failures.
 use crate::rust_semantic_error::SemanticError;
 /// Import the lossless registered-tree source wrapper.

@@ -17,7 +17,9 @@ pub struct SemanticError {
 impl SemanticError {
     /// Copy a borrowed message into the error's owned String rather than retaining an &str.
     pub fn new(message: &str) -> SemanticError {
-        return SemanticError { message: String::from(message) };
+        return SemanticError {
+            message: String::from(message),
+        };
     }
 }
 

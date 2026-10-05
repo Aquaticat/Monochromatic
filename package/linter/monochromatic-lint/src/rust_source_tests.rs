@@ -18,7 +18,8 @@ fn reuses_registered_syntax_without_changing_source_bytes() {
         ra_ap_syntax::SourceFile::parse(text, ra_ap_syntax::Edition::CURRENT);
     let syntax: ra_ap_syntax::SyntaxNode = parsed.syntax_node();
     // Clone the syntax handle, not the source tree; equality below tests the retained node identity.
-    let context: RustSource = RustSource::from_syntax(String::from("registered.rs"), syntax.clone());
+    let context: RustSource =
+        RustSource::from_syntax(String::from("registered.rs"), syntax.clone());
     assert_eq!(context.source, text);
     assert_eq!(context.syntax(), &syntax);
     let separate: RustSource = RustSource::new(String::from("separate.rs"), String::from(text));

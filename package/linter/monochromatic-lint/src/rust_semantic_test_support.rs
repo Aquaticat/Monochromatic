@@ -29,7 +29,11 @@ pub(crate) fn prepare_lockfile(directory: &Path) {
         .current_dir(directory)
         .output()
         .expect("run fixture lock generation");
-    assert!(output.status.success(), "fixture lock generation: {}", String::from_utf8_lossy(&output.stderr));
+    assert!(
+        output.status.success(),
+        "fixture lock generation: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
 }
 
 /// What: Owned source directory and production semantic session.
@@ -60,14 +64,21 @@ impl SemanticFixture {
         let source_path: PathBuf = source_directory.join("main.rs");
         std::fs::write(&source_path, "fn main() {}\n").expect("write initial fixture source");
         prepare_lockfile(&directory.path);
-        let session: RustSemanticSession = load_cargo_workspace(&manifest, WorkspacePreparation::SourceOnly, progress)
-            .expect("load fixture through production boundary");
-        return SemanticFixture { session, source_path, directory };
+        let session: RustSemanticSession =
+            load_cargo_workspace(&manifest, WorkspacePreparation::SourceOnly, progress)
+                .expect("load fixture through production boundary");
+        return SemanticFixture {
+            session,
+            source_path,
+            directory,
+        };
     }
 
     /// Replace exact in-memory bytes while leaving the physical fixture unchanged.
     pub(crate) fn check(&mut self, source: &str, severity: Severity) -> Vec<Diagnostic> {
-        return self.session.check_file(&self.source_path, source, "input.rs", severity)
+        return self
+            .session
+            .check_file(&self.source_path, source, "input.rs", severity)
             .expect("check fixture snapshot");
     }
 }

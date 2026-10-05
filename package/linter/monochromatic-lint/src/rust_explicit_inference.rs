@@ -72,7 +72,8 @@ pub(crate) fn check_inferred_types(
     let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
     for node in context.syntax().descendants() {
         if is_constant_placeholder(&node)
-            || (node.kind() == SyntaxKind::INFER_TYPE && is_inferred_const_argument(semantics, &node))
+            || (node.kind() == SyntaxKind::INFER_TYPE
+                && is_inferred_const_argument(semantics, &node))
         {
             findings.push(type_finding(
                 context, &node, severity,

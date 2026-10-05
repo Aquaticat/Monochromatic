@@ -31,7 +31,10 @@ fn flags_missing_types_on_simple_and_destructuring_bindings() {
         assert_eq!(finding.code, "rust/require-explicit-types");
         assert_eq!(finding.severity, Severity::Warn);
         assert_eq!(finding.filename, "input.rs");
-        assert_eq!(finding.message, "Missing explicit type annotation on variable binding.");
+        assert_eq!(
+            finding.message,
+            "Missing explicit type annotation on variable binding."
+        );
         assert!(finding.fix.is_none());
         assert!(finding.help.is_some());
     }
@@ -49,9 +52,18 @@ fn leaves_present_annotations_for_semantic_validation() {
 fn checks_each_anonymous_parameter_and_return_annotation() {
     let findings: Vec<Diagnostic> = check("fn main() { call(|first, second: u16| first); }");
     assert_eq!(findings.len(), 2);
-    assert_eq!(findings[0].message, "Missing explicit type annotation on anonymous-function parameter.");
-    assert_eq!(findings[1].message, "Missing explicit return-type annotation on anonymous function.");
-    assert!(check("fn main() { call(|value: u16| -> u16 { return value; }); call(|| -> () {}); }").is_empty());
+    assert_eq!(
+        findings[0].message,
+        "Missing explicit type annotation on anonymous-function parameter."
+    );
+    assert_eq!(
+        findings[1].message,
+        "Missing explicit return-type annotation on anonymous function."
+    );
+    assert!(
+        check("fn main() { call(|value: u16| -> u16 { return value; }); call(|| -> () {}); }")
+            .is_empty()
+    );
     assert_eq!(check("fn main() { call(|| {}); }").len(), 1);
 }
 
@@ -62,7 +74,10 @@ fn continues_into_nested_declarations() {
     assert_eq!(findings.len(), 3);
     let typed_binding: Vec<Diagnostic> = check("fn main() { let callback: _ = |value| value; }");
     assert_eq!(typed_binding.len(), 2);
-    assert_eq!(check("fn main() { call(move || { let inner = 1; }); }").len(), 2);
+    assert_eq!(
+        check("fn main() { call(move || { let inner = 1; }); }").len(),
+        2
+    );
 }
 
 /// Rust has no annotation slot on for, if-let, while-let or match binding patterns.
@@ -77,7 +92,8 @@ fn does_not_demand_unavailable_pattern_annotation_syntax() {
 /// Comment/string contents are not declarations, and recovery nodes without patterns are not bindings.
 #[test]
 fn ignores_text_and_patternless_recovery_nodes() {
-    let source: &str = "fn main() { /* let fake = || {}; */ use_text(\"let fake = |x| x;\"); let; }";
+    let source: &str =
+        "fn main() { /* let fake = || {}; */ use_text(\"let fake = |x| x;\"); let; }";
     assert!(check(source).is_empty());
     assert!(check("").is_empty());
 }
@@ -104,5 +120,8 @@ fn anchors_findings_to_the_whole_authored_pattern() {
     assert_eq!(findings[0].labels[0].span.offset, offset);
     assert_eq!(findings[0].labels[0].span.length, "(left, right)".len());
     assert_eq!(findings[0].labels[0].span.line, 2);
-    assert_eq!(findings[0].labels[0].span.column, "    /* 🚀 */ let ".len() + 1);
+    assert_eq!(
+        findings[0].labels[0].span.column,
+        "    /* 🚀 */ let ".len() + 1
+    );
 }

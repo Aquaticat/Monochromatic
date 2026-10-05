@@ -46,7 +46,11 @@ pub(crate) fn type_finding(
 /// ```ts
 /// function resolutionFailure(context, node, message): Diagnostic;
 /// ```
-pub(crate) fn resolution_failure(context: &RustSource, node: &SyntaxNode, message: &str) -> Diagnostic {
+pub(crate) fn resolution_failure(
+    context: &RustSource,
+    node: &SyntaxNode,
+    message: &str,
+) -> Diagnostic {
     let mut diagnostic: Diagnostic = type_finding(
         context,
         node,

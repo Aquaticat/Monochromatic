@@ -8,9 +8,9 @@
 
 /// Import owned findings and typed execution settings.
 use crate::diagnostic::Diagnostic;
-use crate::rust_rule_settings::{LineBudget, RustRuleSettings};
 /// Import the actual shipped syntax checks.
 use crate::rust_no_anonymous_functions::check_no_anonymous_functions;
+use crate::rust_rule_settings::{LineBudget, RustRuleSettings};
 use crate::rust_rules::{check_max_lines, check_rustdoc};
 /// Borrow the already parsed source rather than reparsing per rule.
 use crate::rust_source::RustSource;
