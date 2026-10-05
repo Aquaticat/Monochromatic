@@ -171,6 +171,26 @@ each owned by one subagent:
   `--clearenv` with an allowlist if both real servers still pass,
   the confinement acceptance tests,
   and a confined `inspect:language` run.
+- Native language navigation in the worktree `.claude/worktrees/ide-lsp-nav`
+  on branch `feat/ide-lsp-navigation`
+  (MCP ports 9358 and 9359):
+  startup wiring of `LanguageWorker`,
+  reload and open plumbing,
+  definition,
+  references,
+  hover,
+  and server-state messages,
+  following editord's bindings.
+- Inlay hints and diagnostics rendering inside the source layout in the worktree `.claude/worktrees/ide-lsp-annotations`
+  on branch `feat/ide-lsp-annotations`
+  (MCP ports 9368 and 9369),
+  behind a setter that takes `HintsSnapshot` and `DiagnosticsSnapshot`;
+  that agent owns the inlay placement decision the scope delegates.
+  The coordinating session connects the navigation branch's snapshot accessor to this setter after both land.
+- Integration order constraint:
+  the production launch policy stays the identity policy until the bubblewrap leg lands,
+  so neither language branch is integrated onto `main` before it;
+  otherwise opening a real project would start unconfined servers that write into it.
 - IDE reaction to a live color-scheme switch in the worktree `.claude/worktrees/ide-live-theme`
   on branch `feat/ide-live-theme`,
   native probes on MCP ports 9348 and 9349:
@@ -482,12 +502,10 @@ new branch work needs its own `git worktree add -b`.
 
 Queue after the in-flight work:
 
-1. Native wiring for language intelligence:
-   hover,
-   definition,
-   references,
-   inlay and diagnostics layout in the source view,
-   and the confinement launch wrapper.
+1. Integrate the bubblewrap leg,
+   then the navigation and annotation branches,
+   then connect hints and diagnostics snapshots to the renderer,
+   and verify all five language feature paths in the nested compositor against disposable projects.
 2. Event-driven directory invalidation stays on bounded polling
    unless an existing dependency already provides file watching,
    per the proportionality rule.
