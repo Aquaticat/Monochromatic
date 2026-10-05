@@ -232,6 +232,14 @@ writeFileSync(join(directory, 'results.json'), JSON.stringify(results, null, 2))
 console.log(JSON.stringify({ directory, results }, null, 2))
 """
 
+[tasks."inspect:find-regex"]
+description = "Compare existing Helix literal regex matching against captured Chromium find cases"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'find_reference', '--', '--nocapture'])
+"""
+
 [tasks."inspect:find-reference"]
 description = "Probe browser-provided literal find against disposable Unicode and whitespace fixtures"
 run = "node bin/inspect-find-reference.mjs"
