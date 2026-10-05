@@ -118,8 +118,13 @@ fn inter_weights_and_italics_choose_real_variable_faces() {
                         assert!(run.font().data.as_ref() == expected, "wrong Inter face for weight {weight}, italic={italic}");
                         assert!(!run.synthesis().embolden());
                         assert!(run.synthesis().skew().is_none());
-                        assert_eq!(run.normalized_coords().len(), 2);
-                        if weight != 400.0 { assert_ne!(run.normalized_coords()[1], 0); }
+                        // Harfrust represents an all-default instance with an empty coordinate slice.
+                        if weight == 400.0 {
+                            assert!(run.normalized_coords().iter().all(|value| return *value == 0));
+                        } else {
+                            assert_eq!(run.normalized_coords().len(), 2);
+                            assert_ne!(run.normalized_coords()[1], 0);
+                        }
                         runs += 1;
                     }
                 }

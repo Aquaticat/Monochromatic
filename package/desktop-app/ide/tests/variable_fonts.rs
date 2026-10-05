@@ -40,8 +40,13 @@ fn code_weights_and_italics_use_real_faces_without_synthesis() {
                         assert!(run.font().data.as_ref() == expected);
                         assert!(!run.synthesis().embolden());
                         assert!(run.synthesis().skew().is_none());
-                        assert_eq!(run.normalized_coords().len(), 1);
-                        if weight != 400.0 { assert_ne!(run.normalized_coords()[0], 0); }
+                        // Empty normalized coordinates are the upstream representation of default axes.
+                        if weight == 400.0 {
+                            assert!(run.normalized_coords().iter().all(|value| return *value == 0));
+                        } else {
+                            assert_eq!(run.normalized_coords().len(), 1);
+                            assert_ne!(run.normalized_coords()[0], 0);
+                        }
                         runs += 1;
                     }
                 }
