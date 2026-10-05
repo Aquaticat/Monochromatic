@@ -118,6 +118,16 @@ pub(super) fn finish(
         }
     }
     tracing::debug!(action = ?pending.action, locations = found.len(), hover = hover.is_some(), "language request finished");
+    // A resting pointer's answer never replaces the location list or a note shown since it was asked.
+    if pending.action == Action::PointerHover
+        && matches!(
+            language.shown,
+            surface::Shown::List { .. } | surface::Shown::Popup { note: true, .. }
+        )
+    {
+        tracing::debug!("dropped a pointer hover answer under a list or a note");
+        return;
+    }
     if let Some(content) = hover {
         let text = hover_text::plain(&content);
         let pointer = pending.action == Action::PointerHover;

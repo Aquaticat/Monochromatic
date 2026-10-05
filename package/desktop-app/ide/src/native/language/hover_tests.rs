@@ -177,3 +177,36 @@ fn empty_hover_is_explained_for_ctrl_q_only() {
     escape(&reader);
     assert_eq!(popup(&reader), "");
 }
+
+/// A resting pointer's late answer never replaces the location list opened meanwhile.
+#[test]
+fn pointer_hover_answer_never_replaces_the_location_list() {
+    let fixture = project(&[("main.scripted", &sample())]);
+    let main = super::test_support::address(&fixture.root.join("main.scripted"));
+    let answer = format!(
+        "[{},{}]",
+        super::test_support::location(&main, 2, 0, 5),
+        super::test_support::location(&main, 4, 0, 5)
+    );
+    let languages = definitions(&[("DEFINITION", &answer), ("HOVER_DELAY_MS", "700")], None);
+    let reader = reader(&fixture, "main.scripted", languages);
+    ready(&reader);
+    let x = caret_x(&reader, start(6) + 2) + 2.0;
+    move_to(&reader.window, point(&reader.window, 6, x));
+    // The rest time passes and the delayed hover request is on its way.
+    idle(450);
+    super::test_support::definition(&reader);
+    eventually("the definitions list did not open", || {
+        return reader.window.get_references_open();
+    });
+    idle(1200);
+    assert!(
+        reader.window.get_references_open(),
+        "a pointer hover answer replaced the location list"
+    );
+    assert_eq!(
+        popup(&reader),
+        "",
+        "a pointer hover answer replaced the location list"
+    );
+}

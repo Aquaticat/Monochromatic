@@ -222,11 +222,22 @@ pub(super) fn explain(
         RequestOutcome::Superseded => format!(
             "{who} set the request aside because its analysis kept changing. Press {key} to try again."
         ),
-        RequestOutcome::Empty => match action.kind() {
-            RequestKind::Definition => "No definition found.".to_string(),
-            RequestKind::References => "No usages found.".to_string(),
-            RequestKind::Hover => "No hover information at this position.".to_string(),
-        },
+        RequestOutcome::Empty => {
+            let sentence = match action.kind() {
+                RequestKind::Definition => "No definition found.",
+                RequestKind::References => "No usages found.",
+                RequestKind::Hover => "No hover information at this position.",
+            };
+            // A server still analyzing the project may answer empty for now.
+            let busy = progress(status, server.as_ref());
+            if busy.is_empty() {
+                sentence.to_string()
+            } else {
+                format!(
+                    "{sentence} {who} is still working{busy}; press {key} again when it finishes."
+                )
+            }
+        }
         RequestOutcome::Unsupported => format!("{who} does not offer {wanted}."),
         RequestOutcome::NoServer | RequestOutcome::Locations(_) | RequestOutcome::Hover(_) => {
             no_server(action, status)
