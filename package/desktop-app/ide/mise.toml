@@ -110,6 +110,14 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--test', 'font_features', '--test', 'inter_features', '--test', 'variable_fonts', '--', '--nocapture'])
 """
 
+[tasks."test:tree"]
+description = "Exercise lazy tree snapshots, native names, expansion, and invalid reply rejection"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'file_tree', '--test', 'file_tree_validation'])
+"""
+
 [tasks."test:raster"]
 description = "Compare repeated viewport pixels and report shape/raster stage timings"
 shell = "node --input-type=module-typescript -e"
