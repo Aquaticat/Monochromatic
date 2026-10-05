@@ -563,7 +563,10 @@ A flaky "Text file busy" fixture failure was diagnosed (another test thread fork
 and fixed by writing fixtures through child processes:
 74 failures in 400 runs at 16 threads before, 0 after.
 
-Open to veto (detail in the foundation document):
+Three of the following were decided by the user afterwards
+(optional-policy defaults, the configuration root, and the legacy-file notice;
+see `User decisions 2026-10-05`).
+Open to veto at the time (detail in the foundation document):
 namespaced policy names;
 "option C" defaults, where the 4 policies that came from plugins are off when no `cli-git.config.jsonc` exists;
 a bare severity accepted for option-taking policies;
@@ -606,7 +609,8 @@ The merged tree passed the wrapper gate with 322 unit and 21 binary-level tests 
 (image tag `integrate-cli-git`, evidence `native-g7bnkQ`).
 Landing merged `main` in once more (`7d103c174`);
 the wrapper paths were verified byte-identical to the gated head before the fast-forward.
-Open questions it raised, with the main session's working answers (open to veto):
+Open questions it raised, with the main session's working answers
+(open to veto, except the require-root root, which the user decided; see `User decisions 2026-10-05`):
 
 - A parser `OptionError` means Git itself refuses the command:
   forward it unchanged and let Git report the error, as the delegate recommends,
@@ -710,6 +714,26 @@ Asked through the question tool, with context restated, as rule `QRX` requires.
   Detail: `doc/troubleshooting/claude-code-worktree-create-hook-no-path.md`, section `Fix applied`.
 - The restricted LFS URL normalizer is kept.
   The 289 endpoint forms the old linter accepts and the native one refuses are accepted as a behavior change.
+- The wrapper's four optional policies (forbidden-strings, forbidden-root-context, dependent-version-bump,
+  Markdown autofix) run only when `cli-git.config.jsonc` lists them.
+  This replaces the foundation's "option C", where a present file turned all nine on;
+  `{}` and no file now behave identically.
+  Cutover consequence:
+  this repository's translated config must list all four,
+  including `mono/dependent-version-bump`, which the incumbent ran at `error` without the root config naming it.
+- The wrapper's repository root is the top level Git reports,
+  for both configuration lookup and require-root,
+  honoring `--git-dir`, `--work-tree` and their environment forms.
+  The incumbent's nearest-marker walk is an intentional difference.
+- A legacy `cli-git.config.ts` beside the JSONC file is reported only by `git cli-git check`.
+  Ordinary commands stay silent about it during the rollback period.
+  A legacy file with no JSONC file stays a migration error.
+- `rust/no-anonymous-functions` rolls out at `warn` everywhere and is raised to `error` when the count reaches zero.
+  The user chose this over a per-file burn-down list;
+  the draft configuration in `doc/planning/unified-linter.md` is updated.
+
+The three wrapper decisions were sent to the engine delegate, which owns the affected modules,
+to implement with tests before building further on those defaults.
 
 ### User correction: no vetting decision gate
 
