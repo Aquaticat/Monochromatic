@@ -181,7 +181,18 @@ One targeted preflight now uses the independently proven local gRPC touch
 bridge for the fresh hierarchy's named System UI close action,
 rediscovering current metadata and port rather than reusing a PID/token.
 It requires subsequent window settling and stable owned focus.
-If that bridge cannot establish a usable runtime,
+The hardware-input attempt was rejected by an over-eager warm-up guard.
+Its supposed repeated ANR had the same retained window identity in both
+reads;
+a subsequent diagnostic read showed `LightFeedbackActivity` already
+owning focus.
+That evidence does not establish a new ANR recurrence.
+The guard now gives the same closing window a bounded settling interval
+without additional input and rejects a different ANR window explicitly.
+Recorded settings were restored and the owner exited cleanly;
+absence was checked before the corrected readiness control.
+If the proven input bridge and corrected readiness check cannot establish
+a usable runtime,
 retain the native-verification blocker rather than repeating blind boots.
 The owned runtime is restored/stopped before the next bounded visit,
 rather than left near its measured 6 GiB memory ceiling.
