@@ -6,17 +6,29 @@ import { run, snapshot, ScannerVerificationError } from '../../forbidden-strings
 
 /** Bound both the fuzz campaign and every input while leaving reproducer evidence intact. */
 async function main() {
-  if (process.argv.length !== 2) throw new ScannerVerificationError('This task accepts no arguments.');
+  const options = process.argv.slice(2);
+  if (options.length > 1 || (options.length === 1 && options[0] !== '--clippy'))
+    throw new ScannerVerificationError('Only --clippy is accepted.');
+  const clippy = options[0] === '--clippy';
   const command = [
     'cargo', 'fuzz', 'run', '--fuzz-dir', '.', 'fuzz_embedding', '--sanitizer', 'address',
     '--target', 'x86_64-unknown-linux-gnu', '--codegen-units', '16', 'seed/fuzz_embedding', '--',
     '-max_total_time=120', '-max_len=20000', '-timeout=10', '-rss_limit_mb=1536', '-seed=94',
     '-dict=dictionary/forbidden-strings.dict',
   ];
-  const fixture = await snapshot({ command, name: 'embedding-fuzz', toolchain: true, tool: 'cargo-fuzz', fuzzing: true });
+  const effectiveCommand = clippy
+    ? ['cargo', 'clippy', '--offline', '--locked', '--all-targets', '--', '-D', 'warnings'] : command;
+  const fixture = await snapshot({ command: effectiveCommand, name: clippy ? 'fuzz-clippy' : 'embedding-fuzz', toolchain: true, tool: clippy ? undefined : 'cargo-fuzz', fuzzing: true });
   let container;
   let evidencePreserved = false;
   try {
+    if (clippy) {
+      const result = run({ command: 'podman', args: ['run', '--rm', ...fixture.limits, fixture.image],
+        allowFailure: true, transcript: fixture.evidence });
+      await writeFile(join(fixture.evidence, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal }) + '\n');
+      if (result.status !== 0) throw new ScannerVerificationError(`Fuzz Clippy exited ${result.status}; inspect ${fixture.evidence}.`);
+      return;
+    }
     container = run({ command: 'podman', args: ['create', ...fixture.limits, fixture.image], capture: true }).stdout.trim();
     const result = run({ command: 'podman', args: ['start', '--attach', container], allowFailure: true, transcript: fixture.evidence });
     const copied = {};

@@ -3,6 +3,10 @@
 # shares one channel. mise still applies that toolchain to tasks run in this
 # directory; cargo-fuzz needs the nightly it provides.
 
+[tasks."lint:clippy:container"]
+description = "Check all fuzz sidecar targets with Clippy in the bounded mount-free offline snapshot"
+run = "node bin/smoke-container.mjs --clippy"
+
 [tasks."smoke:embedding:container"]
 description = "Fuzz native embedding snapshots with ASan in a mount-free offline 2 GiB / 2 CPU container"
 run = "node bin/smoke-container.mjs"

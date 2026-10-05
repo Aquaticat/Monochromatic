@@ -151,8 +151,9 @@ and 8 pathname tests.
 Evidence is `package/cli/forbidden-strings/target/verification/release-test-TsLNHP`,
 image `sha256:32bb9011eca6c543a4ce84ff6c8d6f63c1d96a54df2afc80afdde475393d8b55`.
 `cargo test --release --offline --locked --all-targets --all-features` used the actual release profile.
-The only later compiled-input difference is a test loop binding rename correcting `clippy::shadow_reuse`;
-production source matches this snapshot.
+Later differences are a test loop binding rename correcting `clippy::shadow_reuse`
+and registration of process-isolated startup-filter tests.
+The runtime scanner implementation is unchanged from this release snapshot.
 
 `verify:markdown` rendered all changed Markdown through the installed CommonMark HTML-tree pipeline.
 It exposed pre-existing README emphasis delimiters split across line endings;
@@ -170,9 +171,90 @@ Both corpus and artifact retrieval completed successfully.
 This fuzzer compiles the final production scanner and strengthened oracle;
 the inventory's later warning-test binding rename is not compiled by this target.
 
-The final all-target/all-feature Clippy gate passed with warnings denied
-and zero compiled-input differences from the current tree.
+The all-target/all-feature Clippy gate passed with warnings denied
+and zero compiled-input differences before the later startup-filter test registration.
+A final recheck includes that test module.
 Evidence is `package/cli/forbidden-strings/target/verification/clippy-NGxzJY`.
+
+## Mutation outcomes and survivor dispositions
+
+The all-feature embedding campaign used `cargo-mutants 27.1.0`
+and snapshot `6abe8fdc5f431d1c5da0845f64535a3a322e4012e876fea52cd86edd1ed22419`.
+Image was `sha256:7ec6245d9f53cabf833643bc5b4ff4e38ab6654adc5edee4a407c290cd5489b2`.
+The complete report is
+`package/cli/forbidden-strings/target/verification/mutation-fJH1Io/mutants.out`.
+Its 147 mutants produced 122 caught,
+3 missed,
+22 unviable,
+and no timeouts.
+The unmutated baseline passed.
+`cargo-mutants` exited `2` because mutants survived;
+the owning task retained its report and failed rather than labeling this a green campaign.
+
+### Surviving branches
+
+- `src/main.rs:40`:
+  replacing `logging_filter` with `Default::default()` survived.
+  New process-isolated tests exercise missing,
+  invalid,
+  and configured `RUST_LOG` directives.
+  A scoped startup mutation follow-up is running with the full all-feature baseline.
+- `src/path_name_bytes.rs:36`:
+  replacing `prefix_parts` with `0` survived on Linux.
+  The native Windows parser branch is not reached on this host.
+  Host-independent prefix counting and component-skip policy are tested,
+  but native Windows `Component::Prefix` detection remains unverified here.
+- `src/path_name_bytes.rs:36`:
+  deleting the platform guard's `!` survived on Linux.
+  Linux's native path parser then finds no Windows prefix and still returns `0`.
+  This is equivalent on the tested target,
+  not evidence of equivalence on Windows.
+
+Neither Windows survivor is excluded from the owning mutation task.
+A Windows-native run is required to close that platform limitation.
+
+### Unviable mutants
+
+The retained logs identify `rustc` failures,
+not test passes.
+Twenty generated replacements require `Default` implementations the affected domain types do not have (`E0277`):
+
+- `LoadedRules::cache_warnings`,
+  `frx_load::load`,
+  `load_from_text`,
+  and `hybrid_from_text`.
+- `frx_scan::scan_one_set` and `scan_content`.
+- `load_request::execute_pending`,
+  `protected_request`,
+  and `load`.
+- `Scanner::load`,
+  `cache_warnings`,
+  `scan`,
+  and `scanner_from_text_for_fuzzing`.
+- `path_scan::scan_path_records`,
+  `scan_normalized_records`,
+  and `scan_path`.
+- `runtime_cache::load_or_compile` and `compile_and_repair`.
+- `CacheWarning::compile_from_text` and `write_failed`.
+
+The `LoadedRules::iter_sets` replacement produces `E0271`:
+`expected Once<&mut _> to be an iterator that yields &ScanSet, but it yields &mut _`.
+The `logical_path` operator replacement produces:
+`|| operators are not supported in let chain conditions`.
+Exact generated code,
+compiler output,
+and classification remain in `unviable.txt`,
+`outcomes.json`,
+and per-mutant `log/` and `diff/` files.
+
+### Historical timeout evidence
+
+The first campaign's timeouts are retained in `mutation-D4eD13/mutants.out`:
+`prefix_parts` mutations at `src/path_name_bytes.rs:36:35` and `src/path_name_bytes.rs:38:19`.
+Their logs stopped during builtin-name loading or binary integration testing.
+No cause is proven from those stopped test lines.
+They did not recur in the all-feature campaign;
+that later result does not establish a root cause or a timeout fix.
 
 ## Export-to-evidence map
 
@@ -227,12 +309,12 @@ Evidence is `package/cli/forbidden-strings/target/verification/clippy-NGxzJY`.
 
 Current work queue:
 
-- Finish the mutation campaign and guarded/disabled consumer fixtures,
+- Finish the startup mutation follow-up and guarded/disabled consumer fixtures,
   then archive their terminal outcomes.
-- Finish the mutation campaign and classify every survivor,
+- Preserve both completed full mutation campaigns,
+  including every survivor,
   timeout,
   and unviable mutant.
-  Its initial snapshot predates the fuzz-construction changes.
 - Retain the completed feature-gated construction and public warning evidence in the final branch map.
 - Execute protected/disabled real-executable and public-loader panic fixtures.
 - Reconcile final source inventories with tests,
