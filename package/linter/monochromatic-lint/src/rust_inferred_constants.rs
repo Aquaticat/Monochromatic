@@ -93,3 +93,8 @@ pub(crate) fn is_inferred_const_argument(
     }
     return false;
 }
+
+/// Slot-position controls need a loaded Cargo project and stay outside release code.
+#[cfg(test)]
+#[path = "rust_inferred_constants_tests.rs"]
+mod tests;
