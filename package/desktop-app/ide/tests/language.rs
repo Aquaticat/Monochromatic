@@ -17,3 +17,23 @@ mod support;
 /// Start states, the readiness gate, and the start deadline.
 #[path = "language/start.rs"]
 mod start;
+
+/// External-reload synchronization for every synchronization kind and column unit.
+#[path = "language/sync.rs"]
+mod sync;
+
+/// The five feature paths and the request states.
+#[path = "language/requests.rs"]
+mod requests;
+
+/// Replies to server requests; refusal of server-initiated edits.
+#[path = "language/policy.rs"]
+mod policy;
+
+/// Crash, restart, file switches, launch refusal, and shutdown.
+#[path = "language/lifecycle.rs"]
+mod lifecycle;
+
+/// Working directory and enclosing-tree root handling.
+#[path = "language/roots.rs"]
+mod roots;

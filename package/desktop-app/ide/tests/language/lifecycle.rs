@@ -1,0 +1,305 @@
+//! Server lifetime: crash and restart, file switches, files outside the project, launch refusal,
+//! and shutdown without leftover processes.
+
+use crate::support::{self, Probe, SERVER};
+use ide_app::language::{
+    config::LanguageSetup,
+    launch::{LaunchRequest, ServerLaunch, launch_directly},
+    reply::{RequestFailure, RequestKind, RequestOutcome},
+    status::{DocumentState, ServerState},
+};
+use serde_json::Value;
+
+/// Process identifiers of every scripted server that started, in order.
+fn started(lines: &[Value]) -> Vec<u64> {
+    let mut pids = Vec::new();
+    for line in lines {
+        if let Some(pid) = line["started"]["pid"].as_u64() {
+            pids.push(pid);
+        }
+    }
+    return pids;
+}
+
+/// A crash fails the pending request, removes the server, and the next open starts a new one.
+#[test]
+fn crash_fails_the_pending_request_and_the_next_open_restarts() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "lifecycle::crash_fails_the_pending_request_and_the_next_open_restarts",
+            support::standard,
+        );
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[("HOVER", "crash")], 3));
+    probe.open(&root.join("first.scripted"), "alpha\n");
+    probe.until_ready();
+    probe.until("diagnostics from the first process", |seen| {
+        return !seen.messages().is_empty();
+    });
+    let number = probe.request(RequestKind::Hover, 1);
+    let answers = probe.answers(number);
+    assert_eq!(
+        answers[0].outcome,
+        RequestOutcome::Failed(RequestFailure::StreamClosed),
+        "the request pending at the crash did not fail"
+    );
+    probe.until("the exited state", |seen| {
+        return seen.state(SERVER) == Some(&ServerState::Exited);
+    });
+    assert!(
+        probe.messages().is_empty(),
+        "diagnostics of an exited server stayed on display"
+    );
+    support::children_until_none();
+    let after_exit = probe.request(RequestKind::Definition, 1);
+    // An explicit request starts the server again; this request is answered by the starting state.
+    let restarted = probe.answers(after_exit);
+    assert_eq!(restarted[0].outcome, RequestOutcome::Starting);
+    assert_eq!(
+        restarted[0]
+            .server
+            .as_ref()
+            .map(|server| return server.instance),
+        Some(2)
+    );
+    probe.until_ready();
+    assert_eq!(probe.status.servers.len(), 1);
+    assert_eq!(probe.status.servers[0].server.instance, 2);
+    let definition = probe.request(RequestKind::Definition, 1);
+    assert!(matches!(
+        probe.answers(definition)[0].outcome,
+        RequestOutcome::Locations(_)
+    ));
+    // Crash again, then restart by displaying a file.
+    let second_crash = probe.request(RequestKind::Hover, 1);
+    probe.answers(second_crash);
+    probe.until("the second exit", |seen| {
+        return seen.state(SERVER) == Some(&ServerState::Exited);
+    });
+    probe.open(&root.join("second.scripted"), "beta\n");
+    probe.until_ready();
+    assert_eq!(probe.status.servers[0].server.instance, 3);
+    let pids = started(&support::report(&root));
+    assert_eq!(pids.len(), 3, "three processes were expected: {pids:?}");
+    assert!(pids[0] != pids[1] && pids[1] != pids[2]);
+}
+
+/// Switching files closes the first on the server and reuses the same process for the second.
+#[test]
+fn file_switch_closes_the_first_file_and_reuses_the_server() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "lifecycle::file_switch_closes_the_first_file_and_reuses_the_server",
+            support::standard,
+        );
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let first = root.join("first.scripted");
+    let second = root.join("second.scripted");
+    probe.open(&first, "alpha\n");
+    probe.until_ready();
+    probe.until("diagnostics for the first file", |seen| {
+        return seen.messages() == ["TEXT:alpha\n"];
+    });
+    probe.open(&second, "beta\n");
+    let stamp = probe.stamp();
+    probe.until("diagnostics for the second file", |seen| {
+        return seen.messages() == ["TEXT:beta\n"]
+            && seen
+                .diagnostics
+                .as_ref()
+                .is_some_and(|found| return found.stamp == stamp);
+    });
+    assert_eq!(probe.status.servers[0].server.instance, 1);
+    let lines = support::report(&root);
+    assert_eq!(started(&lines).len(), 1);
+    let received = support::received(&lines);
+    let closed = lines
+        .iter()
+        .find(|line| return line["received"] == "textDocument/didClose")
+        .expect("didClose");
+    assert_eq!(
+        closed["params"]["textDocument"]["uri"],
+        format!("file://{}", first.display()).as_str()
+    );
+    assert_eq!(
+        received
+            .iter()
+            .filter(|method| return method.as_str() == "textDocument/didOpen")
+            .count(),
+        2
+    );
+    probe.worker.close().expect("close");
+    probe.until("the closed state", |seen| {
+        return seen.status.document == DocumentState::Closed;
+    });
+    let after_close = support::report_until(&root, "the second didClose", |seen| {
+        return support::received(seen)
+            .iter()
+            .filter(|method| return method.as_str() == "textDocument/didClose")
+            .count()
+            == 2;
+    });
+    assert_eq!(started(&after_close).len(), 1);
+    assert_eq!(
+        support::children().len(),
+        1,
+        "the server stays for the next file"
+    );
+}
+
+/// A file outside the project starts nothing and is served only by servers that already run.
+#[test]
+fn file_outside_the_project_attaches_only_running_servers() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "lifecycle::file_outside_the_project_attaches_only_running_servers",
+            support::standard,
+        );
+        return;
+    };
+    let outside = support::scratch(&root).join("dependency.scripted");
+    std::fs::write(&outside, "dependency text\n").expect("outside file");
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    probe.display(&outside, "dependency text\n");
+    probe.until("the outside-project state", |seen| {
+        return seen.status.document == DocumentState::OutsideProject;
+    });
+    assert!(probe.status.servers.is_empty());
+    std::thread::sleep(std::time::Duration::from_millis(200));
+    assert!(
+        support::children().is_empty(),
+        "a server was started for a file outside the project"
+    );
+    let unanswerable = probe.request(RequestKind::Hover, 1);
+    assert_eq!(
+        probe.answers(unanswerable)[0].outcome,
+        RequestOutcome::NoServer
+    );
+    probe.open(&root.join("inside.scripted"), "inside\n");
+    probe.until_ready();
+    probe.display(&outside, "dependency text\n");
+    probe.until("the running server to serve the outside file", |seen| {
+        return seen.status.document == DocumentState::OutsideProject
+            && seen.state(SERVER) == Some(&ServerState::Ready);
+    });
+    let number = probe.request(RequestKind::Hover, 1);
+    let answers = probe.answers(number);
+    let RequestOutcome::Hover(hover) = &answers[0].outcome else {
+        panic!("hover produced {:?}", answers[0].outcome);
+    };
+    assert_eq!(hover.text, "line=dependency text char=e");
+    let lines = support::report(&root);
+    assert_eq!(started(&lines).len(), 1);
+    let opened: Vec<&Value> = lines
+        .iter()
+        .filter(|line| return line["received"] == "textDocument/didOpen")
+        .collect();
+    assert_eq!(
+        opened[1]["params"]["textDocument"]["uri"],
+        format!("file://{}", outside.display()).as_str()
+    );
+}
+
+/// A launch policy that cannot produce a safe launch.
+fn refusing(request: &LaunchRequest) -> Result<ServerLaunch, String> {
+    return Err(format!("no confinement for {}", request.server));
+}
+
+/// A launch policy that needs a private directory although none is configured.
+fn needing_state(request: &LaunchRequest) -> Result<ServerLaunch, String> {
+    let mut launch = launch_directly(request)?;
+    launch
+        .directories
+        .push(request.project_root.join("state-inside-the-project"));
+    return Ok(launch);
+}
+
+/// A refused or unpreparable launch is reported and nothing is spawned in its place.
+#[test]
+fn refused_launch_is_reported_and_nothing_is_spawned() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "lifecycle::refused_launch_is_reported_and_nothing_is_spawned",
+            support::standard,
+        );
+        return;
+    };
+    let refused = LanguageSetup {
+        launch: refusing,
+        state_root: None,
+        extra_languages: Some(support::scripted(&root, &[], 3)),
+    };
+    let mut probe = Probe::with_setup(&root, refused);
+    probe.open(&root.join("file.scripted"), "alpha\n");
+    probe.until("the refused state", |seen| {
+        return matches!(seen.state(SERVER), Some(ServerState::LaunchRefused { .. }));
+    });
+    assert_eq!(
+        probe.state(SERVER),
+        Some(&ServerState::LaunchRefused {
+            reason: "no confinement for scripted-ls".to_string()
+        })
+    );
+    drop(probe);
+    let unprepared = LanguageSetup {
+        launch: needing_state,
+        state_root: Some(root.join("state-inside-the-project")),
+        extra_languages: Some(support::scripted(&root, &[], 3)),
+    };
+    let mut second = Probe::with_setup(&root, unprepared);
+    second.open(&root.join("file.scripted"), "alpha\n");
+    second.until("the refused state", |seen| {
+        return matches!(seen.state(SERVER), Some(ServerState::LaunchRefused { .. }));
+    });
+    let Some(ServerState::LaunchRefused { reason }) = second.state(SERVER) else {
+        panic!("unexpected state {:?}", second.state(SERVER));
+    };
+    assert!(reason.contains("is inside the project"), "{reason}");
+    assert!(
+        !root.join("state-inside-the-project").exists(),
+        "a private directory was created inside the project"
+    );
+    assert!(
+        support::children().is_empty(),
+        "a server was spawned although its launch was refused"
+    );
+    assert!(
+        support::report(&root).is_empty(),
+        "the server ran although its launch was refused"
+    );
+}
+
+/// Dropping the handle stops every server, including one that never initialized.
+#[test]
+fn dropping_the_worker_leaves_no_child_process() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "lifecycle::dropping_the_worker_leaves_no_child_process",
+            support::standard,
+        );
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    probe.open(&root.join("file.scripted"), "alpha\n");
+    probe.until_ready();
+    assert_eq!(support::children().len(), 1);
+    drop(probe);
+    support::children_until_none();
+    let received = support::received(&support::report(&root));
+    assert!(
+        received.contains(&"shutdown".to_string()) && received.contains(&"exit".to_string()),
+        "the server was not asked to shut down: {received:?}"
+    );
+    // A server stuck in `initialize` cannot be asked; it is killed when the registry is dropped.
+    let mut hanging = Probe::new(&root, support::scripted(&root, &[("INIT", "hang")], 30));
+    hanging.open(&root.join("file.scripted"), "alpha\n");
+    hanging.until("the starting state", |seen| {
+        return seen.state(SERVER) == Some(&ServerState::Starting);
+    });
+    assert_eq!(support::children().len(), 1);
+    drop(hanging);
+    support::children_until_none();
+}

@@ -18,7 +18,7 @@ use super::session::{Session, allowed};
 /// Servers that could not follow a reload are not asked about positions.
 use super::status::ServerState;
 /// The worker whose state these steps change.
-use super::worker::{Internal, Worker};
+use super::worker::Worker;
 /// What: `Rope` is Helix's character-indexed text buffer; `LanguageServerFeature` names the
 ///       features a language's configuration can restrict per server.
 /// Why: A ticket keeps the text of the revision it asks about; routing honors the configuration.
@@ -130,10 +130,13 @@ pub(super) struct Answer {
 /// The erased future every request is converted to before it is awaited.
 type PayloadFuture = Pin<Box<dyn Future<Output = Payload> + Send>>;
 
+/// A pending request as the worker loop awaits it: it resolves to the answer with its ticket.
+pub(super) type AnswerFuture = Pin<Box<dyn Future<Output = Answer> + Send>>;
+
 /// What: Store any future that yields a payload on the heap behind the erased type. `F` is one
 ///       type parameter: "some future that yields a `Payload`, may move between threads, and
 ///       borrows nothing".
-/// Why: Five differently typed futures then fit one variable and one spawn site.
+/// Why: Five differently typed futures then fit one variable and one place that awaits them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -148,7 +151,7 @@ where
 
 /// What happened when a request was to be sent to one server.
 enum Sent {
-    /// The request is on its way; an answer will arrive as an internal event.
+    /// The request is on its way; the worker loop awaits its answer.
     Spawned,
     /// The server has not finished `initialize`.
     Starting,
@@ -290,22 +293,20 @@ fn dispatch(
         server: record.identity.clone(),
         attempt,
     };
-    let internal = worker.internal.clone();
-    // What: `tokio::spawn` runs the future as an independent task on the worker's runtime.
-    // Why: The loop keeps answering server requests while this answer is pending; the task
-    //      touches no worker state and only hands the result back.
+    // What: `Box::pin(async move { ... })` builds a heap-stored future that owns the ticket and
+    //       resolves to the answer; `push` adds it to the set the worker loop awaits.
+    // Why: The loop keeps answering server requests while this answer is pending, and it sees
+    //      the answer before any notification the server sent after it. No helper task and no
+    //      worker state are involved until the loop takes the finished answer.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // void pending.then(payload => internal.push({ type: 'answered', answer: { ticket, payload } }));
+    // worker.requests.add(pending.then(payload => ({ ticket, payload })));
     // ```
-    tokio::spawn(async move {
+    worker.requests.push(Box::pin(async move {
         let payload = future.await;
-        let answer = Box::new(Answer { ticket, payload });
-        if let Err(error) = internal.send(Internal::Answered(answer)) {
-            tracing::debug!(%error, "language worker stopped before a request was answered");
-        }
-    });
+        return Answer { ticket, payload };
+    }));
     return Sent::Spawned;
 }
 

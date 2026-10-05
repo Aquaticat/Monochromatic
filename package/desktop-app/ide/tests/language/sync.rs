@@ -1,0 +1,264 @@
+//! External-reload synchronization: the server's copy of the text must equal the document text
+//! for every negotiated synchronization kind and column unit.
+
+use crate::support::{self, Probe, SERVER};
+use ide_app::language::{
+    reply::{RequestKind, RequestOutcome},
+    status::ServerState,
+};
+use serde_json::Value;
+use std::path::Path;
+
+/// The first required correspondence example of the accepted scope, before and after.
+const CAT_BEFORE: &str = "I am a big cat.";
+const CAT_AFTER: &str = "I was a big cat.";
+
+/// The second required correspondence example, before and after.
+const HUMAN_BEFORE: &str = "I am a big cat";
+const HUMAN_AFTER: &str = "I was a big cat, but now I am a human!";
+
+/// Texts that insert a line and rewrite text after an accented letter and an astral character.
+const ACCENT_BEFORE: &str = "caf\u{e9} \u{1F600} am here\nlast line\r\nend";
+const ACCENT_AFTER: &str = "caf\u{e9} \u{1F600} was here\nnew line\nlast line\r\nthe end";
+
+/// Messages of one method the server received.
+fn of_method<'a>(lines: &'a [Value], method: &str) -> Vec<&'a Value> {
+    return lines
+        .iter()
+        .filter(|line| return line["received"] == method)
+        .collect();
+}
+
+/// Open the first example, apply every reload, and require the server's copy to follow each one.
+fn follow_reloads(root: &Path, probe: &mut Probe, name: &str) -> Vec<Value> {
+    let file = root.join(name);
+    probe.open(&file, CAT_BEFORE);
+    probe.until_ready();
+    support::server_text_until(root, CAT_BEFORE);
+    let mut version = 0;
+    let mut lines = Vec::new();
+    for text in [
+        CAT_AFTER,
+        HUMAN_BEFORE,
+        HUMAN_AFTER,
+        ACCENT_BEFORE,
+        ACCENT_AFTER,
+    ] {
+        probe.reload(text);
+        version += 1;
+        lines = support::report_until(root, "the reloaded text", |seen| {
+            return support::server_text(seen) == Some((version, text.to_string()));
+        });
+    }
+    return lines;
+}
+
+/// Incremental synchronization in the three column units a server can negotiate.
+#[test]
+fn incremental_reload_reaches_the_server_in_each_column_unit() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "sync::incremental_reload_reaches_the_server_in_each_column_unit",
+            support::standard,
+        );
+        return;
+    };
+    for encoding in ["utf-8", "utf-16", "utf-32", ""] {
+        std::fs::remove_file(support::report_path(&root)).unwrap_or_default();
+        let definitions =
+            support::scripted(&root, &[("SYNC", "incremental"), ("ENCODING", encoding)], 3);
+        let mut probe = Probe::new(&root, definitions);
+        let lines = follow_reloads(&root, &mut probe, "incremental.scripted");
+        let changes = of_method(&lines, "textDocument/didChange");
+        assert_eq!(changes.len(), 5, "one change notification per reload");
+        for change in &changes {
+            let events = change["params"]["contentChanges"]
+                .as_array()
+                .expect("content changes");
+            assert!(
+                events.iter().all(|event| return !event["range"].is_null()),
+                "an incremental server was sent a whole-text change in {encoding:?}: {change}"
+            );
+        }
+        assert_eq!(changes[0]["params"]["textDocument"]["version"], 1);
+        assert_eq!(of_method(&lines, "textDocument/didOpen").len(), 1);
+        assert!(
+            of_method(&lines, "textDocument/didSave").is_empty(),
+            "didSave was sent to a server that did not ask for it"
+        );
+        assert_eq!(probe.state(SERVER), Some(&ServerState::Ready));
+    }
+}
+
+/// Full synchronization sends the whole new text.
+#[test]
+fn full_reload_sends_the_whole_text() {
+    let Some(root) = support::child_root() else {
+        support::run_child("sync::full_reload_sends_the_whole_text", support::standard);
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[("SYNC", "full")], 3));
+    let lines = follow_reloads(&root, &mut probe, "full.scripted");
+    let changes = of_method(&lines, "textDocument/didChange");
+    assert_eq!(changes.len(), 5);
+    let last = &changes[4]["params"]["contentChanges"];
+    assert_eq!(last.as_array().map(Vec::len), Some(1));
+    assert!(last[0]["range"].is_null());
+    assert_eq!(last[0]["text"], ACCENT_AFTER);
+}
+
+/// A server that takes no change notifications is closed and reopened with the new text.
+#[test]
+fn server_without_change_notifications_is_reopened() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "sync::server_without_change_notifications_is_reopened",
+            support::standard,
+        );
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[("SYNC", "none")], 3));
+    let lines = follow_reloads(&root, &mut probe, "none.scripted");
+    assert!(
+        of_method(&lines, "textDocument/didChange").is_empty(),
+        "a change notification was sent to a server that takes none"
+    );
+    assert_eq!(of_method(&lines, "textDocument/didClose").len(), 5);
+    let opens = of_method(&lines, "textDocument/didOpen");
+    assert_eq!(opens.len(), 6);
+    assert_eq!(opens[5]["params"]["textDocument"]["version"], 5);
+    assert_eq!(opens[5]["params"]["textDocument"]["text"], ACCENT_AFTER);
+    assert_eq!(probe.state(SERVER), Some(&ServerState::Ready));
+    let number = probe.request(RequestKind::Hover, 0);
+    assert!(matches!(
+        probe.answers(number)[0].outcome,
+        RequestOutcome::Hover(_)
+    ));
+}
+
+/// A server without any synchronization capability cannot follow a reload and is no longer asked.
+#[test]
+fn server_without_synchronization_becomes_unsynchronized() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "sync::server_without_synchronization_becomes_unsynchronized",
+            support::standard,
+        );
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[("SYNC", "absent")], 3));
+    probe.open(&root.join("absent.scripted"), CAT_BEFORE);
+    probe.until_ready();
+    support::server_text_until(&root, CAT_BEFORE);
+    let number = probe.request(RequestKind::Hover, 0);
+    assert!(matches!(
+        probe.answers(number)[0].outcome,
+        RequestOutcome::Hover(_)
+    ));
+    probe.reload(CAT_AFTER);
+    probe.until("the unsynchronized state", |seen| {
+        return seen.state(SERVER) == Some(&ServerState::Unsynchronized);
+    });
+    let stale = probe.request(RequestKind::Hover, 0);
+    assert_eq!(
+        probe.answers(stale)[0].outcome,
+        RequestOutcome::Unsynchronized,
+        "a position request was routed to a server holding the old text"
+    );
+    let lines = support::report(&root);
+    assert!(of_method(&lines, "textDocument/didChange").is_empty());
+    assert!(of_method(&lines, "textDocument/didClose").is_empty());
+    assert_eq!(of_method(&lines, "textDocument/didOpen").len(), 1);
+    assert_eq!(of_method(&lines, "textDocument/hover").len(), 1);
+    assert_eq!(
+        support::server_text(&lines),
+        Some((0, CAT_BEFORE.to_string())),
+        "the test must show the server still holds the old text"
+    );
+    // Another file starts synchronized again.
+    probe.open(&root.join("second.scripted"), HUMAN_BEFORE);
+    probe.until_ready();
+    support::server_text_until(&root, HUMAN_BEFORE);
+}
+
+/// After an external reload the text on disk equals the new text, so `didSave` is sent when asked for.
+#[test]
+fn did_save_follows_a_reload_when_the_server_asks_for_it() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "sync::did_save_follows_a_reload_when_the_server_asks_for_it",
+            support::standard,
+        );
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[("SAVE", "1")], 3));
+    probe.open(&root.join("saved.scripted"), CAT_BEFORE);
+    probe.until_ready();
+    probe.reload(CAT_AFTER);
+    let lines = support::report_until(&root, "didSave", |seen| {
+        return !of_method(seen, "textDocument/didSave").is_empty();
+    });
+    let received = support::received(&lines);
+    let change = received
+        .iter()
+        .position(|method| return method == "textDocument/didChange")
+        .expect("didChange");
+    let save = received
+        .iter()
+        .position(|method| return method == "textDocument/didSave")
+        .expect("didSave");
+    assert!(change < save, "didSave must follow didChange: {received:?}");
+    assert_eq!(of_method(&lines, "textDocument/didSave").len(), 1);
+}
+
+/// A reload that arrives while the server is still starting reaches it through its one `didOpen`.
+#[test]
+fn reload_during_start_is_delivered_by_the_eventual_did_open() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "sync::reload_during_start_is_delivered_by_the_eventual_did_open",
+            support::standard,
+        );
+        return;
+    };
+    let definitions = support::scripted(&root, &[("INIT_DELAY_MS", "600")], 3);
+    let mut probe = Probe::new(&root, definitions);
+    probe.open(&root.join("slow.scripted"), CAT_BEFORE);
+    probe.until("the starting state", |seen| {
+        return seen.state(SERVER) == Some(&ServerState::Starting);
+    });
+    probe.reload(CAT_AFTER);
+    probe.until_ready();
+    let lines = support::server_text_until(&root, CAT_AFTER);
+    let opens = of_method(&lines, "textDocument/didOpen");
+    assert_eq!(opens.len(), 1);
+    assert_eq!(opens[0]["params"]["textDocument"]["version"], 1);
+    assert_eq!(opens[0]["params"]["textDocument"]["text"], CAT_AFTER);
+    assert!(of_method(&lines, "textDocument/didChange").is_empty());
+}
+
+/// A reload that does not continue from the text servers hold is diffed against that text.
+#[test]
+fn missed_reload_is_recomputed_from_the_synchronized_text() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "sync::missed_reload_is_recomputed_from_the_synchronized_text",
+            support::standard,
+        );
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    probe.open(&root.join("missed.scripted"), CAT_BEFORE);
+    probe.until_ready();
+    support::server_text_until(&root, CAT_BEFORE);
+    // The application accepts a reload that never reaches the worker.
+    let missed = probe.document.prepare_reload(HUMAN_BEFORE);
+    assert!(probe.document.apply_reload(missed));
+    probe.reload(HUMAN_AFTER);
+    let lines = support::server_text_until(&root, HUMAN_AFTER);
+    assert_eq!(of_method(&lines, "textDocument/didChange").len(), 1);
+    assert_eq!(
+        support::server_text(&lines),
+        Some((1, HUMAN_AFTER.to_string()))
+    );
+}

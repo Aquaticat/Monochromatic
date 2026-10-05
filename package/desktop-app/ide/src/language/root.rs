@@ -94,10 +94,16 @@ impl RootView {
         let Ok(below) = canonical.strip_prefix(&resolved) else {
             return Err(RootRefusal::WrongWorkingDirectory(workspace));
         };
+        // Joining an empty remainder would append a trailing separator; the workspace is then the root.
+        let helix = if below.as_os_str().is_empty() {
+            workspace
+        } else {
+            workspace.join(below)
+        };
         // `Ok(...)` is the success variant of `Result`.
         return Ok(Self {
             canonical: canonical.to_path_buf(),
-            helix: workspace.join(below),
+            helix,
         });
     }
 

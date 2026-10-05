@@ -94,7 +94,9 @@ pub fn scratch(root: &Path) -> PathBuf {
         if candidate.is_dir() && !candidate.starts_with(root) {
             return candidate;
         }
-        current = current.parent().expect("scratch directory beside the project");
+        current = current
+            .parent()
+            .expect("scratch directory beside the project");
     }
 }
 
@@ -115,10 +117,7 @@ pub fn scripted_with_roots(
     timeout: u64,
     roots: &str,
 ) -> String {
-    let mut environment = format!(
-        "IDE_SCRIPTED_REPORT = '{}'",
-        report_path(root).display()
-    );
+    let mut environment = format!("IDE_SCRIPTED_REPORT = '{}'", report_path(root).display());
     for (name, value) in variables {
         environment.push_str(&format!(", IDE_SCRIPTED_{name} = '{value}'"));
     }
@@ -250,7 +249,11 @@ impl Probe {
         while let Some(reply) = self.worker.try_take_reply().expect("reply poll") {
             self.replies.push(reply);
         }
-        if let Some(diagnostics) = self.worker.try_take_diagnostics().expect("diagnostics poll") {
+        if let Some(diagnostics) = self
+            .worker
+            .try_take_diagnostics()
+            .expect("diagnostics poll")
+        {
             self.diagnostics = Some(diagnostics);
         }
         if let Some(hints) = self.worker.try_take_hints().expect("hints poll") {
@@ -384,9 +387,13 @@ pub fn server_text(lines: &[Value]) -> Option<(i64, String)> {
 
 /// Wait until the server's copy of the text equals `expected`.
 pub fn server_text_until(root: &Path, expected: &str) -> Vec<Value> {
-    return report_until(root, "the server text to equal the document text", |lines| {
-        return server_text(lines).is_some_and(|(_, text)| return text == expected);
-    });
+    return report_until(
+        root,
+        "the server text to equal the document text",
+        |lines| {
+            return server_text(lines).is_some_and(|(_, text)| return text == expected);
+        },
+    );
 }
 
 /// Processes whose parent is this process, as `(pid, state letter, command name)`.
@@ -395,7 +402,10 @@ pub fn children() -> Vec<(u32, char, String)> {
     let mut found = Vec::new();
     for entry in fs::read_dir("/proc").expect("process table").flatten() {
         let name = entry.file_name();
-        let Some(pid) = name.to_str().and_then(|text| return text.parse::<u32>().ok()) else {
+        let Some(pid) = name
+            .to_str()
+            .and_then(|text| return text.parse::<u32>().ok())
+        else {
             continue;
         };
         let Ok(stat) = fs::read_to_string(entry.path().join("stat")) else {

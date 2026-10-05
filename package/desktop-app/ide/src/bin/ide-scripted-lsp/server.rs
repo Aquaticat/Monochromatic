@@ -160,6 +160,10 @@ impl Session {
         };
         if self.script.hover_delay == 0 {
             self.send(answer);
+            if self.script.push_after_hover {
+                // An unversioned push that arrives after an answer, as delayed analysis produces.
+                self.publish(uri, &Value::Null);
+            }
             return;
         }
         // What: `Arc::clone` copies the shared pointer; `thread::spawn(move || ...)` runs the
@@ -191,10 +195,14 @@ impl Session {
                 Init::Error => self.send(
                     json!({ "id": id, "error": { "code": -32603, "message": "scripted initialize failure" } }),
                 ),
-                Init::Ok => self.send(json!({ "id": id, "result": {
-                    "capabilities": capabilities(&self.script),
-                    "serverInfo": { "name": "ide-scripted-lsp" },
-                } })),
+                Init::Ok => {
+                    // A slow start: the client must not send anything else in the meantime.
+                    thread::sleep(Duration::from_millis(self.script.init_delay));
+                    self.send(json!({ "id": id, "result": {
+                        "capabilities": capabilities(&self.script),
+                        "serverInfo": { "name": "ide-scripted-lsp" },
+                    } }));
+                }
             }
         } else if method == "shutdown" {
             self.send(json!({ "id": id, "result": null }));
