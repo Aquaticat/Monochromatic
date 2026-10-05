@@ -209,8 +209,17 @@ A shared-guidance prototype measured 256,710 bytes in `proc_0c8c`:
 it keeps the verbatim question sentence and criteria per head,
 places the remaining original instruction text once in state,
 and names that field explicitly in every question.
-Content reconstruction is checked;
-provider fit and semantic equivalence remain unqualified.
+Content reconstruction is checked,
+including full-body equality and positive controls in `proc_eda4`.
+The separately frozen trial passed in `proc_ca7b`:
+one request returned all 205 estimates and reported 62,053 input tokens.
+Its measured preparation-inclusive elapsed time was 1,001.814279 ms;
+modeled cost was US$0.002606226.
+That verifies acceptance of this input,
+not broader token fit,
+semantic equivalence,
+or the workload-average cost target.
+The archived original judgment remained closed and no tools executed.
 Keep each rule ID and text inside its question:
 TypeSafe documents question-map keys as correlation only,
 not inference input.

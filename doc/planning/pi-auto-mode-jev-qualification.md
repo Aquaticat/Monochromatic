@@ -99,9 +99,18 @@ The question sentence remains per head;
 373 bytes of remaining guidance are shared and explicitly referenced.
 This changes where the model reads guidance,
 so content preservation alone is not semantic qualification.
-No provider acceptance,
-cutoff,
-or production adoption follows from this local measurement.
+A separate one-shot trial subsequently established provider acceptance for this frozen input.
+`proc_ca7b` verified 205 estimates,
+62,053 input and 3,729 output tokens,
+and 1,001.814279 ms including preparation under the five-second sample budget.
+Modeled cost was US$0.002606226,
+bringing the known semantic subtotal to US$0.058122608 plus two failed requests with unknown billing.
+This is a single copied-input research measurement,
+not an original SDK judgment,
+accuracy or calibration evidence,
+invoice accounting,
+or proof of the workload-average target.
+No cutoff or production adoption follows.
 
 ## Batched instruction-meaning encoding diagnostic
 

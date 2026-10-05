@@ -139,9 +139,18 @@ reconstructs the original instruction text exactly,
 and measured 256,710 total bytes,
 70,418 state bytes,
 and a 992-byte longest question.
-No request using that prototype has been admitted yet.
-Token fit and model interpretation remain unqualified;
-the documentation's indirection warning still applies.
+A separate frozen trial using that exact representation was admitted and succeeded once.
+`proc_ca7b` verified 205 estimates,
+62,053 reported input tokens,
+3,729 output tokens,
+and 1,001.814279 ms including preparation.
+The modeled charge was US$0.002606226.
+The known semantic subtotal became US$0.058122608 plus the two failed requests with unknown billing.
+This verifies acceptance of one bounded input,
+not a universal capacity workaround or semantic equivalence.
+The documentation's indirection warning still applies.
+Neither failed response identified the failed token bound;
+the successful request does not retrospectively identify those causes.
 
 ### Rejected remedies and filing decision
 

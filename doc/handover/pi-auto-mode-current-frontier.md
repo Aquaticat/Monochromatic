@@ -222,11 +222,28 @@ Every question explicitly references that guidance.
 It did not establish token fit,
 provider acceptance,
 or equivalent model interpretation.
-This revision has no live admission yet.
+The separately frozen shared-guidance trial then succeeded once.
+`proc_ca7b` verified all 205 estimates,
+62,053 input and 3,729 output tokens,
+and 1,001.814279 ms including sample preparation within the five-second budget.
+Modeled cost was US$0.002606226;
+the known semantic subtotal is US$0.058122608 plus the two unquantified failed requests.
+No SDK session or tool execution occurred in this copied-input trial.
+Transport acceptance does not establish accuracy,
+calibration,
+or workload-average cost.
+
+`proc_64bf` passed synthetic transport controls,
+`proc_6062` passed the current native owner graph with fake estimates,
+and `proc_7d8d` passed actual frozen-worker launcher controls.
+`proc_eda4` additionally reconstructed the full original body,
+with positive controls for a missing instruction sibling and changed criteria.
+The independent review's generic bytes-per-token prediction was not adopted.
 
 Next:
-qualify shared-guidance transport and native integration,
-then freeze any further representation trial separately.
+connect the accepted representation to a separately admitted live original-judgment fixture,
+keeping exact prospective input checks and the preparation-inclusive deadline.
+Continue semantic and source/policy qualification separately.
 Do not truncate required inputs,
 assume moving guidance preserves calibration,
 reopen the original judgment,
