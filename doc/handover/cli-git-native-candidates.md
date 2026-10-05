@@ -26,10 +26,16 @@ a fuzz target,
 and the build inputs the new dependency needs.
 
 Inspect first:
+the conflicts under "Merging into `main`",
 the lockfile decision under "Lockfile",
 the edits to files outside this delegation under "Edits outside the owned files",
 and the choices under "Choices open to veto".
 Respond by merging the branch into the native wrapper work and by vetoing any listed choice.
+
+The final gate and the mutation campaigns ran on the tree of commit `d34761d35`;
+every later commit changes only this document.
+The fuzz smoke campaign started earlier,
+as described under "Smoke campaign".
 
 ## Branch and commits
 
@@ -56,6 +62,11 @@ Oldest first:
 - `a815718f4` pin the declared-size check against a source that grows after reporting its end
 - `7483bef30` update of this document
 - `d34761d35` compile the test targets while the gate image is built
+- `b66b7ebe6`,
+  `1519fd577`,
+  `fd69aa2eb`,
+  `0bbac323d` and the commits after them:
+  updates of this document only
 
 The commit message of `2d2f4c7e4` states wrong counts;
 a corrective commit comment is on GitHub.
@@ -64,6 +75,68 @@ Measured:
 70 registry package versions differed,
 7 of those versions appear in no tracked lockfile,
 and one crate name (`jiff-core`) appears in none.
+
+## Merging into `main`
+
+`main` has moved since the branch base `2cfaf22b0`:
+another delegation added library modules to the wrapper and the fuzz target `wrapper_controls` to the sidecar.
+A trial merge of this branch into `main` at `b3c21676d`
+(`git merge-tree --write-tree main HEAD`,
+which changes no file)
+reports conflicts in six files.
+In each one both sides added an entry at the same place,
+so the resolution keeps both,
+`main`'s first.
+
+- `package/git-policy/cli/src/native/lib.rs`:
+  both sides appended module declarations.
+  Keep `main`'s block,
+  then this branch's block from `candidate_error` to `scanner_test_support`.
+- `package/git-policy/cli.fuzz/src/lib.rs`:
+  keep `mod control_tables;` and `pub mod controls;`,
+  then `pub mod batch;`.
+- `package/git-policy/cli.fuzz/Cargo.toml`:
+  both sides added one `[[bin]]` table.
+  The conflict covers only the `name` and `path` lines,
+  because the three lines after them are the same on both sides.
+  The result needs two whole tables,
+  `wrapper_controls` and `batch_reply`,
+  each with its own `[[bin]]` header and its own `test`, `doc` and `bench` lines.
+- `package/git-policy/cli.fuzz/bin/container.mjs`:
+  keep both `targets` entries.
+- `package/git-policy/cli.fuzz/bin/planted-controls.mjs`:
+  `main` added four planted defects and this branch two.
+  The conflict ends inside the last entry of each side,
+  because both end in the same lines
+  (`to: 'if false {',` and the closing brackets).
+  Take `main`'s four entries whole,
+  closing the fourth with those lines,
+  then this branch's two.
+- `package/git-policy/cli.fuzz/README.md`:
+  three regions.
+  Keep both target sections,
+  and join the two enumerations
+  (what the generator controls reach,
+  and which defects are planted)
+  so each sentence lists both sides' items.
+
+`package/git-policy/cli/mise.toml` merges without a conflict.
+Since the branch base,
+`main` changed no `Cargo.lock`,
+not the wrapper manifest,
+not the scanner's sources or manifest,
+and not the gate runner or its snapshot helper;
+its sidecar manifest change is the one `[[bin]]` table.
+The two lockfiles of this branch should therefore stand,
+and `--locked` in the gate and in the sidecar tasks reports it if they do not.
+
+The merged tree was not built or tested by this delegation.
+After the merge,
+run the gate,
+`mise run //package/git-policy/cli.fuzz:test`,
+`mise run //package/git-policy/cli.fuzz:test:planted`
+and `mise run //package/git-policy/cli.fuzz:smoke`.
+The mutation campaigns recorded under "Mutation testing" are bound to the gate image of this branch alone.
 
 ## Candidate layer
 
@@ -309,6 +382,48 @@ and the rules file's own candidate is not scanned.
 `rules_candidate_path` resolves the rules file to its repository-relative pathname by names alone,
 as the TypeScript policy did.
 
+### Where the rules path is resolved
+
+The user decided on 2026-10-05,
+relayed by the coordinating session,
+that a `rulesFile` option in `cli-git.config.jsonc` will name the rules file,
+with `FORBIDDEN_STRINGS_RULES` as the fallback and the default file after that.
+The option belongs to the optional-policies phase;
+this branch does not implement it.
+
+Today the path is resolved in one function and nowhere else:
+
+```rust
+// package/git-policy/cli/src/native/scanner_selection.rs
+pub fn rules_source(configured: Option<&OsStr>, repository_root: &Path) -> RulesSource;
+```
+
+- `rules_source` does not read the process environment.
+  Its caller passes the value of the variable that the constant `RULES_VARIABLE` names
+  (`FORBIDDEN_STRINGS_RULES`),
+  or nothing when the variable is unset.
+- A passed value,
+  even an empty one,
+  gives `repository_root.join(value)` with `explicit: true`,
+  so an absolute value replaces the root and a missing file is a load failure.
+- No value gives `repository_root.join(DEFAULT_RULES_FILE)` with `explicit: false`.
+  A missing default file is then tolerated only while the built-in rules are on,
+  which leaves the built-in rules alone;
+  with them off it is a load failure too
+  (`scanner_adapter::tests::load_failures_leave_no_scanner`).
+- No production code calls `rules_source` yet,
+  so nothing on this branch reads the variable from the environment;
+  the controls pass values directly.
+  The call that reads the variable is the policy phase's to write.
+
+To add `rulesFile`,
+extend that one place:
+pass the option's value as `configured` when it is set and the variable's value otherwise,
+or give `rules_source` the option as a parameter ahead of `configured`.
+A value from either is explicit.
+`rules_candidate_path` takes the resolved path,
+so the rules file's own candidate stays excluded whichever source named it.
+
 ### Candidate-byte isolation
 
 `scanner_run_tests.rs`,
@@ -400,11 +515,106 @@ It is the closest control to the ledger's consumer-level test that exists before
 - A candidate pathname containing a line break was an engine failure
   (`repositoryCandidateName` threw).
   Here the scanner reports its fail-closed `PathnameLineBreak` finding.
-  Which exit status that maps to is the policy phase's decision.
+  Which code that maps to is an open question under "Failure codes by cause".
 - A `FORBIDDEN_STRINGS_RULES` value that is not UTF-8 is used as a path.
   The standalone scanner reads the variable as UTF-8 and treats such a value as unset.
 - The `executable` option is gone,
   as the ledger's "forbidden-strings" section records.
+
+### Failure codes by cause
+
+The user decided on 2026-10-05,
+relayed by the coordinating session,
+that an engine failure code names its cause:
+`content-unavailable` when a candidate's bytes or a repository fact could not be read,
+`policy-incomplete` when the policy's own machinery failed
+(for the scanner:
+its rules cannot be loaded,
+or an internal error).
+`plugin-threw` is gone.
+
+`EngineFailureCode` in `src/native/diagnostics.rs` has `ContentUnavailable` on this branch.
+The engine delegation adds `policy-incomplete` on `main`;
+this branch does not edit the enum.
+No code on this branch maps a failure to `EngineFailureCode`:
+the candidate layer and the adapter return their own typed errors,
+and the mapping is the policy phase's.
+"Expressible today" in the lists that follow means only that the enum variant exists on this branch.
+
+Failures that should carry `content-unavailable`,
+all expressible today.
+Each is a `CandidateFailure`,
+reaching the policy as a `CandidateError` from `CandidateStore::version` or `CandidateStore::bytes`,
+or wrapped as `ScanRunError::Candidate` from `scan_version`:
+
+- `GitNotStarted`:
+  a listing command or the object reader could not be started.
+- `GitFailed`:
+  a listing command exited unsuccessfully.
+- `ListingMalformed`,
+  `UnsupportedMode`,
+  `UnsupportedStatus`:
+  the listing could not be read as changed-path records.
+- `UnmergedPath`:
+  the index holds a conflicted entry,
+  so the path has no single staged content.
+- `ReaderEnded`,
+  `ReplyMalformed`,
+  `ReplyTruncated`,
+  `ReplyMismatched`:
+  the object reader's stream ended or could no longer be trusted.
+- `ObjectMissing`,
+  `ObjectKindUnexpected`:
+  Git has no such object,
+  the object is not a blob,
+  or `HEAD` does not name a commit.
+
+Failures that should carry `policy-incomplete`,
+which wait for the enum variant:
+
+- `ScannerFailure::RulesNotLoaded`,
+  as `ScannerError` from `CandidateScanner::load`:
+  the rules could not be loaded.
+  A missing explicit rules file,
+  an invalid rule and a cache configuration error all arrive as this one failure with the scanner's text,
+  for the reason under "Gaps in the scanner's embedding API";
+  under this decision all of them are `policy-incomplete`,
+  so that gap no longer blocks the choice of code.
+- `ScanFinding::EngineError` inside a returned `CandidateScan`:
+  a matcher failed or panicked inside the scanner's catch boundary.
+  It is not an `Err` of this branch;
+  it arrives among the findings of that candidate and must not be read as a clean scan.
+- `ScannerFailure::PathnameUnrepresentable`,
+  as `ScannerError` from `CandidateScanner::scan` or wrapped as `ScanRunError::Scanner`:
+  the candidate's pathname bytes are not a native path on this platform.
+  On Unix only an empty pathname is refused,
+  and the listing parser never yields one;
+  on other platforms a pathname that is not UTF-8 is refused.
+  The pathname was read;
+  what failed is handing it to the scanner,
+  so this document recommends `policy-incomplete`.
+  The decision as relayed does not name this case.
+- `CandidateFailure::StaleCandidate`:
+  the caller asked for the bytes of a candidate whose version `invalidate` retired.
+  The content is readable through a fresh version,
+  so this is a sequencing defect of the calling pass,
+  not unreadable content;
+  this document recommends `policy-incomplete`.
+  The decision as relayed does not name this case either.
+
+Open question,
+for the user:
+`ScanFinding::PathnameLineBreak`.
+The scanner could not inspect a pathname that contains a line break.
+The TypeScript policy made it an engine failure.
+Under the cause rule the nearest reading is `policy-incomplete`,
+because the pathname was read and the scan could not be completed;
+the alternative is to report it as a violation of the policy,
+since the committer can remove it by renaming the file.
+
+Not failures:
+`ScanFinding::Content` and `ScanFinding::Name` are violations,
+and a `CacheWarning` is a warning after which the scan still runs.
 
 ## Manifest and lockfile
 
@@ -668,7 +878,101 @@ so nothing here rests on a timeout.
 A rerun on a busier host can turn caught mutants into timeouts;
 compare each with the `Unmutated baseline` line of the same run before reading it as a hang.
 
-MUTATION-UNVIABLE-PENDING
+### Mutants that did not compile
+
+cargo-mutants replaces a function body with a default value of its return type.
+For 33 mutants that replacement did not compile,
+because the type has no default
+(the layer's error,
+object name,
+reply,
+record,
+candidate,
+version and reader types,
+its enums,
+`RulesSource`,
+and the scanner's result types)
+or because the generated expression for `Rc<[u8]>` does not type-check.
+The tool calls these unviable and does not count them as caught or missed;
+`unviable.txt` in each evidence directory lists them.
+They are not exclusions,
+but for those functions the campaigns say nothing about "returns a fixed value".
+
+As extra evidence,
+not as a disposition the delegation required,
+30 fixed-value defects were planted by hand,
+each in its own bounded container started from the same gate image
+with the planted file copied in and
+`cargo test --offline --locked --all-targets --no-fail-fast -- --test-threads=2` as the command,
+which is how `bin/native-planted-controls.mjs` plants its guard removals.
+A defect counts as noticed when the planted crate compiled,
+the container exited with a failure status,
+and at least one test line ended in `FAILED`.
+All 30 were noticed.
+The number after each defect is how many distinct controls failed.
+
+- `candidate_store.rs`:
+  `bytes` returns empty bytes (16),
+  one zero byte (17),
+  one byte of value one (17);
+  `version` returns an empty version (23);
+  `listing_failure` returns one fixed failure (2);
+  `empty_tree` returns one fixed name (4).
+- `candidate_reader.rs`:
+  `blob` returns empty bytes (25),
+  one zero byte (26),
+  one byte of value one (26);
+  `request` returns a missing notice without asking (32);
+  `head_commit` returns one fixed name (22);
+  `reader_ended` returns one fixed failure (4).
+- `candidate_version.rs`:
+  `build_version` ignores its records (22);
+  `candidates` returns one fixed candidate (19);
+  `candidate_at_path` returns one fixed candidate (18).
+- `candidate_batch.rs`:
+  `read_batch_reply` returns a missing notice without reading (44);
+  `parse_found_header` returns a fixed header of size 0 (39) and of size 1 (40);
+  `object_kind` returns blob for any word (22);
+  `reply_failure` returns one fixed failure (12).
+- `candidate_record.rs`:
+  `parse_raw_records` returns one fixed record (30);
+  `parse_record` returns one fixed record (29);
+  `change_of` returns added for any status (4);
+  `record_failure` returns one fixed failure (6).
+- `candidate_object.rs`:
+  `parse_object_id` returns one fixed name (35);
+  `mode_from_git` returns regular for any text (7).
+- `scanner_adapter.rs`:
+  `scan` returns one fixed empty scan (8);
+  `scan` scans no bytes (5).
+- `scanner_run.rs`:
+  `scan_version` returns one fixed empty scan (5).
+- `scanner_selection.rs`:
+  `rules_source` reports a configured rules file as not explicit (2).
+
+That gives 29 of the 33 uncompiled mutants a hand-planted counterpart,
+plus one further defect (`scan` scans no bytes).
+Four have none,
+because the fixed value cannot be written:
+`start_object_reader` and `CandidateStore::reader` would need a running process as the value,
+`CandidateScanner::load` a loaded scanner,
+and `cache_warnings` a warning,
+whose fields are private to the scanner.
+For `cache_warnings` the tool's other mutant,
+an empty list,
+was caught.
+For the other three no mutant of any kind ran;
+they hold no operator the tool mutates,
+and every control that reads a blob or scans a candidate passes through them.
+
+Evidence:
+`package/git-policy/cli/target/verification/planted-unviable-20261005`,
+`planted-unviable-20261005-second` and `planted-unviable-20261005-third`,
+each with `planted-controls.json`,
+the planted sources and the container logs.
+The script that drove the containers is a scratch file outside the repository.
+Like every evidence directory named in this document,
+these are under an ignored `target` directory and exist only in this worktree on this host.
 
 ## Fuzzing
 
@@ -711,7 +1015,11 @@ and all were noticed:
 "object content past its declared size is accepted"
 and "an object reply for another object is accepted"
 were each noticed by `batch::tests::fixed_hard_cases_hold` and `batch::tests::generated_replies_reach_every_outcome`.
-Evidence `package/git-policy/cli.fuzz/target/verification/planted-2bQ4Q5`.
+Both tasks were run again on the final tree,
+with the same result:
+11 controls passed and 7 of 7 planted defects were noticed.
+Evidence `package/git-policy/cli.fuzz/target/verification/planted-JCLo1z`;
+the earlier run is `planted-2bQ4Q5`.
 
 A first choice of planted defect,
 removing the check that fewer content bytes arrived than declared,
@@ -745,9 +1053,14 @@ while other sessions were running containers on the host.
 Three leftover containers of this worktree's run image were removed by hand.
 Evidence `package/git-policy/cli.fuzz/target/verification/campaign-xNWDLy`.
 
-The second run,
-on the sources of `a815718f4`,
-exited with status 0:
+The second run started at 15:59 local time on 2026-10-05,
+after commit `c2690ad39` and before commit `a815718f4` was recorded;
+whether the files of `a815718f4` were already in the working tree it copied was not recorded.
+That does not change what was fuzzed:
+`a815718f4` adds one `#[cfg(test)]` module and its file,
+and `d34761d35` changes only the gate runner,
+so the code a fuzz target compiles is the same at all three commits.
+The run exited with status 0:
 
 - `global_arguments`: 971,930 executions, exit status 0.
 - `config_loading`: 363,596 executions, exit status 0.
@@ -977,10 +1290,28 @@ No `.ts` file and nothing under `package/cli/forbidden-strings` was edited.
 
 ## What remains
 
+- Merge into `main`:
+  six files conflict,
+  and the merged tree is untested.
+  See "Merging into `main`".
+- Decide the code of `ScanFinding::PathnameLineBreak`,
+  and confirm or change the two recommendations under "Failure codes by cause".
+- Images this delegation left on the host,
+  by the names the runners' logs report:
+  `localhost/git-policy-native-test` with the tags `candidates`,
+  `candidates-b` and `candidates-c`
+  (one image),
+  `localhost/git-policy-native-mutation` with the same three tags
+  (three images layered on it),
+  `localhost/git-policy-cli-fuzz-build:candidates`
+  and `localhost/git-policy-cli-fuzz-run:candidates`.
+  The evidence directories name images by identity,
+  so removing them loses no record.
 - Call these layers from the policy engine:
   build the `forbidden-strings` policy over `scan_version`,
   map `ScanFinding` values and cache warnings to JSONL events,
-  and decide the exit status of `EngineError` and `PathnameLineBreak`.
+  map failures to the codes under "Failure codes by cause",
+  and read the `rulesFile` option and the variable at the one place under "Where the rules path is resolved".
 - Install a payload-free panic hook in `main.rs` before the first scan.
 - Candidate sources this branch does not provide:
   the `git add` staged delta between two index states
