@@ -35,7 +35,7 @@ pub const LONG: u16 = 3;
 /// `-z`, `--null`.
 pub const NULL: u16 = 4;
 
-/// What: Rows of `builtin_status_options` (builtin/commit.c:1548-1600), in source order.
+/// What: Rows of `builtin_status_options` (builtin/commit.c:1548-1599), in source order.
 ///       `&[OptionSpec]` is a borrowed table baked into the program.
 /// Why:  Four rows take an optional value (`PARSE_OPT_OPTARG`), so a token after them is a
 ///       pathspec, not their value.

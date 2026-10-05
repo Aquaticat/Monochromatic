@@ -28,7 +28,7 @@ pub const ATOMIC: u16 = 1;
 /// `-n`, `--dry-run`: do everything except send the updates.
 pub const DRY_RUN: u16 = 2;
 
-/// What: Rows of `options[]` in `cmd_push` (builtin/push.c:706-744), in source order.
+/// What: Rows of `options[]` in `cmd_push` (builtin/push.c:707-743), in source order.
 ///       `&[OptionSpec]` is a borrowed table baked into the program.
 /// Why:  `--branches` is an `OPT_ALIAS` of `--all`; the two names share no prefix, so the
 ///       alias needs no special ambiguity handling and is a row of its own.

@@ -35,7 +35,7 @@ pub const MERGE: u16 = 4;
 /// `--keep`.
 pub const KEEP: u16 = 5;
 
-/// What: Rows of `options[]` in `cmd_reset` (builtin/reset.c:349-383), in source order.
+/// What: Rows of `options[]` in `cmd_reset` (builtin/reset.c:350-382), in source order.
 ///       `&[OptionSpec]` is a borrowed table baked into the program.
 /// Why:  The five modes are `PARSE_OPT_NONEG`; `--recurse-submodules` takes an optional
 ///       value, so a token after it is a revision or path.

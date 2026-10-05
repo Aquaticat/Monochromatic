@@ -34,7 +34,7 @@ use std::ffi::OsString;
 /// What: The subcommand `cmd_stash` dispatches to (builtin/stash.c:2465-2479). An `enum` is
 ///       a closed set of named alternatives.
 /// Why:  `AssumedPush` is the form without a subcommand word, which Git parses as `push`
-///       with stricter flags (2497-2515).
+///       with stricter flags (2515-2528).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

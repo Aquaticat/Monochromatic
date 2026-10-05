@@ -38,7 +38,7 @@ pub const UPDATE: u16 = 3;
 /// `--resolved`: add every conflict-resolved tracked file.
 pub const RESOLVED: u16 = 4;
 
-/// What: Rows of `builtin_add_options` (builtin/add.c:261-293), in source order.
+/// What: Rows of `builtin_add_options` (builtin/add.c:261-292), in source order.
 ///       `&[OptionSpec]` is a borrowed table baked into the program.
 /// Why:  Only `--chmod`, `--pathspec-from-file`, `-U` and `--inter-hunk-context` take a
 ///       value; every other token after an option is a pathspec.

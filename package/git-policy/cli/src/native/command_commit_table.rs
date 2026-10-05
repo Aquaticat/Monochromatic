@@ -1,7 +1,7 @@
 //! What: The complete option table of `git commit` in Git 2.56.0.
 //! Why: Declaring every option Git accepts removes the guess about whether an undeclared
 //!      option consumes the next token. Rows follow `builtin_commit_options`
-//!      (builtin/commit.c:1705-1786) in source order, which the completion control compares.
+//!      (builtin/commit.c:1705-1785) in source order, which the completion control compares.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
