@@ -353,9 +353,14 @@ not applied:
 tighten `VUB` to make font fidelity part of consumer-boundary verification.
 Suggested replacement body:
 
-> Verify built, deployed, or installed artifacts through their real consumers.
-> For fonts, prefer variable assets and real italics;
-> exercise axes, features, and reading geometry.
+> Verify built,
+> deployed,
+> or installed artifacts through their real consumers.
+> For fonts,
+> prefer variable assets and real italics;
+> exercise axes,
+> features,
+> and reading geometry.
 
 This keeps the existing consumer-verification obligation
 and prevents treating a regular static font screenshot as complete typography support.
