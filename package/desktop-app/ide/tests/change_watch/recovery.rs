@@ -78,8 +78,8 @@ fn a_removed_watched_folder_requests_a_full_reread() {
     );
 }
 
-/// A renamed watched folder is unwatched: inotify would keep following the moved directory
-/// and report its changes under the old name.
+/// A renamed watched folder leaves the watched set and requests a full reread, and its new location is
+/// not reported under the old name. With the parent watched, notify also drops the kernel watch itself.
 #[test]
 fn a_renamed_watched_folder_is_not_followed_to_its_new_name() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -108,6 +108,35 @@ fn a_renamed_watched_folder_is_not_followed_to_its_new_name() {
     assert!(
         !silent.directories.contains(&folder),
         "a change in the moved folder was reported under the old name: {silent:?}"
+    );
+}
+
+/// The displayed file's folder can be watched while its parent is not; renaming it then reports only
+/// inotify's move-self event, and notify keeps that watch on the moved directory unless the IDE removes it.
+#[test]
+fn a_renamed_folder_with_an_unwatched_parent_loses_its_kernel_watch() {
+    let fixture = tempfile::tempdir().expect("disposable project");
+    let (mut watcher, workspace) = start(fixture.path());
+    let root = workspace.root().to_path_buf();
+    let parent = root.join("collapsed");
+    let folder = parent.join("folder");
+    let moved = parent.join("moved");
+    fs::create_dir_all(&folder).expect("nested fixture folder");
+    let file = folder.join("view.txt");
+    fs::write(&file, "view").expect("displayed file");
+    watcher.watch_only(&set(&[&root]), Some(&file));
+    settle(&mut watcher, &[&root, &folder]);
+    fs::rename(&folder, &moved).expect("rename the displayed file's folder");
+    arrive(
+        &mut watcher,
+        "a renamed folder's full reread and lost watch",
+        |record| {
+            return record.everything && not_watching(record, &folder);
+        },
+    );
+    assert!(
+        !kernel_watches(&moved),
+        "the moved folder kept a kernel watch that reports under its old name"
     );
 }
 
