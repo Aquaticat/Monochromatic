@@ -101,6 +101,8 @@ async function main() {
     // Only build containers disable label isolation; fuzz execution has no host mounts and keeps it enabled.
     const compilerMount = ['--security-opt', 'label=disable', '--volume', `${compiler}:/toolchain:ro`];
     execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development', 'cargo', 'test', '--lib', '--offline', '--locked', '--', '--test-threads=2'] });
+    // Type/lint the property helpers in the same bounded compiler context as their generator controls.
+    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development', 'cargo', 'clippy', '--lib', '--offline', '--locked', '--', '-D', 'warnings'] });
     const buildContainer = execute({ command: 'podman', args: [
       'create', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development',
       'cargo', 'fuzz', 'build', '--fuzz-dir', '.', '--sanitizer', 'address', '--codegen-units', '16',

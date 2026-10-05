@@ -24,6 +24,8 @@ CRLF,
 and bare CR in both Markdown and MDX modes,
 then checks arbitrary UTF-8.
 It checks original-byte diagnostic/edit boundaries and reparses accepted fixed output.
+The counted catalog now includes pipe-table conversion and semantic prose breaks.
+Container campaigns run both generator controls and sidecar Clippy before instrumented compilation.
 The existing nonempty-to-empty rewrite refusal remains an explicit allowed error.
 The raw parser path may reject malformed input with a typed processing failure.
 Fuzz-only process deadlines do not add a production parser timeout.

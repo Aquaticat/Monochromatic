@@ -16,6 +16,9 @@ use monochromatic_lint::markdown_duplicate_headings::no_duplicate_heading;
 use monochromatic_lint::markdown_headings::{heading_increment, no_emphasis_as_heading, single_h1};
 use monochromatic_lint::markdown_links::{link_image_style, no_bare_urls};
 use monochromatic_lint::markdown_punctuation::no_trailing_punctuation;
+/// Import the newly integrated table and prose checks through their actual implementation boundary.
+use monochromatic_lint::markdown_tables::no_pipe_tables;
+use monochromatic_lint::markdown_semantic_breaks::semantic_line_breaks;
 /// Import the real parser, source spans and atomic fix applier.
 use monochromatic_lint::markdown_source::MarkdownSource;
 
@@ -48,12 +51,14 @@ const CASES: &[(&str, usize)] = &[
     ("[ref]\n\n[ref]: /ok\n", 1),
     ("text\n\n[unused]: /x\n", 1),
     ("`code` and plain\n", 0),
+    ("left, right.\n", 1),
+    ("| A | B |\n| --- | --- |\n| 1 | 2 |\n", 1),
 ];
 
 /// Run the implemented rule catalog over one shared parse.
 fn findings(context: &MarkdownSource) -> Vec<Diagnostic> {
     // The fixed array borrows no captured state; Vec collects the unknown number of actual findings.
-    let checkers: [Checker; 9] = [
+    let checkers: [Checker; 11] = [
         heading_increment,
         single_h1,
         no_emphasis_as_heading,
@@ -63,6 +68,8 @@ fn findings(context: &MarkdownSource) -> Vec<Diagnostic> {
         no_duplicate_heading,
         no_trailing_punctuation,
         reference_definitions,
+        no_pipe_tables,
+        semantic_line_breaks,
     ];
     let mut result: Vec<Diagnostic> = Vec::<Diagnostic>::new();
     for checker in checkers {
@@ -142,7 +149,7 @@ pub fn check_markdown(data: &[u8]) {
 /// Independently count the catalog and visit every newline/mode branch before libFuzzer starts.
 #[test]
 fn generated_markdown_cases_reach_each_rule_and_newline_mode() {
-    let expected: [usize; 12] = [0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0];
+    let expected: [usize; 14] = [0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1];
     assert_eq!(CASES.len(), expected.len());
     for (index, count) in expected.iter().enumerate() {
         assert_eq!(CASES[index].1, *count);
