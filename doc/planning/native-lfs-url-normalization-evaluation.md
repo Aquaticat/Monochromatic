@@ -9,7 +9,8 @@ Owner: scoped delegate session `01a109e2-f31f-779e-98f4-4a3b3b1aec5c`.
 No native URL owner is recommended or adopted.
 Neither the Rust `url` family nor native Ada bindings have been vetted by this session.
 They remain discovery leads from the delegation, not screened candidates.
-The scope permits planning and audit evidence only.
+Repository-content changes are limited to planning and audit evidence;
+private scratch and throwaway-worktree experiments were also expressly permitted.
 Rust, JSONC, native Git ownership, Sätteri, and the semantic parser are settled and were not reopened.
 
 The execution guardrail rejected creation of the private TypeScript helper
@@ -35,10 +36,16 @@ The tool returned:
 
 The blocked action was not retried or translated into another execution mechanism.
 This is an execution-authorization blocker, not a finding that any URL library fails compatibility.
-The governing workflow requires atomic audit-report locking and writes before substantial evaluation proceeds.
-The session therefore stopped before promoting a serious alternative or running external discovery.
+`.agents/skills/choosing-technology/SKILL.md:460` requires create-new locking and atomic audit-report writes;
+its `Substantial-evaluation threshold` section at line 365 requires a report when a serious alternative
+is promoted using external evidence or external discovery ends with no serious alternative or a blocked source.
+The rejected helper was an attempted implementation of those requirements, not a prescribed implementation.
+This rejection does not prove that every other authorized reporting or evaluation mechanism is unavailable.
+The session stopped before promoting a serious alternative or running external discovery,
+without retrying or rephrasing the specific blocked action.
 The substantial-evaluation threshold for a `doc/audit/` vet report was not crossed.
-This planning record preserves the completed local context without claiming to be a completed vet report.
+This planning record preserves local observations collected before the blocker,
+without claiming to be a completed vet report.
 
 ## Governing workflow
 
@@ -156,9 +163,11 @@ it must not confuse Linux-only probing or cross-compilation with execution on an
 ## Outstanding evidence queue
 
 No discovery schedule was executed or claimed saturated.
-The main agent must resolve the private-helper authorization in an interactive session
-before restarting the substantial evaluation workflow.
-Then complete:
+The private-helper authorization remains unresolved.
+The guardrail directed the delegate to return the action and reason to the parent for disposition,
+rather than retry or rephrase it.
+No evidence establishes that the parent has an approval UI or that an approval attempt will succeed.
+The uncompleted evaluation queue is:
 
 1.  Freeze context, hard constraints, equal-default soft criteria, and literal discovery queries.
 2.  Complete registry, repository-host, broader-web, and repository-internal discovery,
@@ -179,12 +188,20 @@ Scoring, sensitivity, a sorted finalist ranking, and a compatibility fingerprint
 because this planning record precedes external candidate discovery and the vet-report lifecycle.
 No library has been excluded on evidence this session did not collect.
 No dependency, Cargo file, product source, scanner, wrapper, main handover, or agent instructions were edited.
-No further coding agent, Pi session, monitor, cron, or wakeup was spawned.
+No further coding-agent process, Pi session, monitor, cron, or wakeup was spawned.
+An independent Advisor model review was invoked after the initial planning commit.
+It reviewed only the report's factual claims and missing verification, with no execution or further delegation.
+This was additional model consultation, which the no-further-agents delegation sought to avoid;
+it is disclosed rather than included in an unqualified no-delegation claim.
+The review prompted corrections to the scope description, workflow-necessity claim,
+and unproven interactive recovery path.
 
 ## Response required from the main agent
 
 This record is a blocker return, not an adoption request.
 Inspect the exact guardrail diagnostic and the proposed trust rule in `Outcome and authority`.
-Handle the private-helper approval through the main interactive session,
-then resume the evidence queue without treating `url` or Ada as preselected winners.
+Determine how to handle the unresolved authorization limitation without retrying or rephrasing
+this delegate's blocked action contrary to the guardrail instruction.
+Any authorized resumed evaluation must finish the evidence queue,
+without treating `url` or Ada as preselected winners.
 Do not integrate a URL dependency based on this record.
