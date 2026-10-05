@@ -496,7 +496,7 @@ await describe({
 
         it({
           name: 'KEEPS the repaired text when the rewrite is the paragraph as it stands, the refiner '
-            + 'counting as heard and not proposing: the atom gate logs no refusal of it, where it logs one '
+            + 'counting as heard and not proposing and the findings naming its rewrite as unchanged: the atom gate logs no refusal of it, where it logs one '
             + 'of a rewrite that drops a number, so what drops it is the patch applying nothing',
           fn: async () => {
             /**
@@ -531,8 +531,39 @@ await describe({
               contributors: [],
               heard: REFINERS,
               rounds: [],
-              findings: ['refine-candidates (1/1 heard, 0 proposing)',],
+              findings: [
+                `${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-unchanged-rewrite (paragraph 1)`,
+                'refine-candidates (1/1 heard, 0 proposing)',
+              ],
             },);
+          },
+        },),
+
+        it({
+          name: 'NAMES the first of two paragraphs as an unchanged rewrite beside the second, which ships: the '
+            + 'finding numbers the paragraph as the sheet does and the unchanged one never reaches the judges',
+          fn: async () => {
+            /**
+             Slice of two eligible paragraphs, the number in the second.
+             */
+            const repairedText = `${REPAIRED_TEXT}\n\n${REPAIRED_WITH_AGE}`;
+            /**
+             Second paragraph rewritten with its number kept.
+             */
+            const smoothed = `${SMOOTH_TEXT} She was 17 that year.`;
+            /** Run whose rewrite writes the first paragraph back and smooths the second. */
+            const result = await runFixture(scriptedRefiner({
+              newText: REPAIRED_TEXT,
+              furtherRewrites: [{ paragraph: 2, newText: smoothed, },],
+              ballot: 1,
+            },), { repairedText, },);
+            expect(result.findings,).toEqual([
+              `${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-unchanged-rewrite (paragraph 1)`,
+              'refine-candidates (1/1 heard, 1 proposing)',
+              `select-self-vote (${SEAT_HYPER_OPENROUTER_VISION_EDITOR})`,
+              'refine-selected (weight 3.5 of 4 ballots)',
+            ],);
+            expect(result.refinedText,).toBe(`${REPAIRED_TEXT}\n\n${smoothed}`,);
           },
         },),
 

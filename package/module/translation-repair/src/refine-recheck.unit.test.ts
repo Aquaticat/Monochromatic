@@ -264,6 +264,65 @@ function ballotsCast(
 }
 
 /**
+ The finding a checker's report leaves for an issue it did not answer, as the
+ checker stage spells it for a checker that sent no check on the issue.
+
+ @param issueId - issue the checker left unanswered
+
+ @param modelId - checker that left it
+
+ @returns The unanswered finding
+
+ @example
+ ```ts
+ const finding = missingCheck({ issueId: SUNBATHING_ISSUE.issueId, modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },);
+ ```
+ */
+function missingCheck(
+  {
+    issueId,
+    modelId,
+  }: {
+    readonly issueId: string;
+    readonly modelId: RosterModelId;
+  },
+): string {
+  return `missing-check (${issueId}, ${modelId}, unanswered)`;
+}
+
+/**
+ Findings with the `missing-check` lines put in code-point order where they
+ stand, since the order checkers' ballots reach the stage in is the gather's
+ arrival order and the cases assert the order of everything else.
+
+ @param findings - findings as the recheck returned them
+
+ @returns The same findings, the missing-check lines sorted among their slots
+
+ @example
+ ```ts
+ const ordered = missingChecksSorted({ findings: verdict.findings, },);
+ ```
+ */
+function missingChecksSorted(
+  { findings, }: { readonly findings: readonly string[]; },
+): readonly string[] {
+  /**
+   The missing-check lines still to be placed, in code-point order.
+   */
+  const queue = findings
+    .filter(function isMissing(finding,): boolean {
+      return finding.startsWith('missing-check (',);
+    },)
+    .toSorted();
+  return findings.map(function placed(finding,): string {
+    return finding.startsWith('missing-check (',)
+      ? (queue.shift() ?? finding)
+      : finding;
+  },);
+}
+
+/**
  Runs the recheck over the sunbathing slice's rewrite.
 
  @param issues - issues the accuracy lane settled for the slice
@@ -284,7 +343,8 @@ function ballotsCast(
 
  @param asked - sink receiving every exchange the recheck sent
 
- @returns The recheck's verdict, each reading's ballots in seat order
+ @returns The recheck's verdict, each reading's ballots in seat order and its
+ missing-check findings in code-point order
 
  @example
  ```ts
@@ -335,6 +395,7 @@ async function recheck(
   },);
   return {
     ...verdict,
+    findings: missingChecksSorted({ findings: verdict.findings, },),
     readings: readingsInSeatOrder({ readings: verdict.readings, },),
   };
 }
@@ -777,8 +838,8 @@ await describe({
         ).toEqual({
           retained: false,
           findings: [
-            'missing-check (2)',
-            'missing-check (2)',
+            missingCheck({ issueId: AFTERNOON_ISSUE.issueId, modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),
+            missingCheck({ issueId: AFTERNOON_ISSUE.issueId, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),
             `refine-recheck-unheard (${AFTERNOON_ISSUE.issueId}: 1 ballot, quorum 2)`,
           ],
           readings: {
@@ -834,8 +895,8 @@ await describe({
         ).toEqual({
           retained: false,
           findings: [
-            'missing-check (1)',
-            'missing-check (1)',
+            missingCheck({ issueId: SUNBATHING_ISSUE.issueId, modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),
+            missingCheck({ issueId: SUNBATHING_ISSUE.issueId, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),
             `refine-recheck-unheard (${SUNBATHING_ISSUE.issueId}: 1 ballot, quorum 2)`,
           ],
           readings: {
@@ -905,8 +966,8 @@ await describe({
         ).toEqual({
           retained: false,
           findings: [
-            'missing-check (2)',
-            'missing-check (2)',
+            missingCheck({ issueId: AFTERNOON_ISSUE.issueId, modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),
+            missingCheck({ issueId: AFTERNOON_ISSUE.issueId, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),
             `refine-recheck-unheard (${AFTERNOON_ISSUE.issueId}: 1 ballot, quorum 2)`,
             `refine-rolled-back (${SUNBATHING_ISSUE.issueId})`,
           ],
@@ -964,7 +1025,7 @@ await describe({
         ).toEqual({
           retained: true,
           findings: [
-            'missing-check (2)',
+            missingCheck({ issueId: AFTERNOON_ISSUE.issueId, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),
             'refine-recheck-passed (2 issues)',
           ],
           readings: {
@@ -1034,7 +1095,7 @@ await describe({
           retained: false,
           findings: [
             ...SHORT_BENCH_FINDINGS,
-            'missing-check (2)',
+            missingCheck({ issueId: AFTERNOON_ISSUE.issueId, modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),
             `refine-recheck-unheard (${AFTERNOON_ISSUE.issueId}: 1 ballot, quorum 2)`,
           ],
           readings: {
