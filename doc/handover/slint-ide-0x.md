@@ -316,6 +316,29 @@ each owned by one subagent:
   a guard control,
   and the failure rate before and after;
   the test's wait must not be lengthened to hide it.
+- Repeated runs on the IDE tree `b35830353a255f96dd4754d9f0836bb359201a1b`,
+  taken while the host's load average was near 98
+  (`~/temp/agent/ide-gate-logs-20261005/repeat/results.json` and the logs beside it):
+  the native window tests passed 5 of 5 times,
+  so the two find flakes fixed in `4ab83c59e` did not recur;
+  the library and integration tests passed 4 of 5 times.
+- Open defect from the failing run:
+  `requests::inlay_hints_are_shaped_and_follow_reloads` timed out after 20 s
+  waiting for hints for the reloaded text.
+  At the timeout the server was ready,
+  the diagnostics snapshot already carried revision 1 with the reloaded text,
+  and the hints snapshot still carried revision 0.
+  So hints for the new revision were never asked for,
+  or their answer was dropped and not asked again;
+  in the application,
+  hints would vanish after an external change until something else asks.
+  An agent works on it in the worktree `.claude/worktrees/ide-hints-reload`
+  on branch `fix/ide-hints-after-reload`:
+  reproduction rate,
+  cause,
+  fix in the Language module,
+  a deterministic regression test with its guard control,
+  and the rate after.
 - Event-driven tree and displayed-file refresh with the user-approved `notify` crate:
   landed on `main` as merge `732384e4b`
   (branch `feat/ide-tree-watch` through `096fbf574`,
