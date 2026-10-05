@@ -234,6 +234,122 @@ await describe({
     },),
 
     describe({
+      name: 'parseDocument footnote graph beside autolink literals',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'PARSES a page holding an autolink literal micromark did not tokenize, alone, beside a GFM '
+            + 'footnote and beside a full-width one, reading the footnotes as the page holds them',
+          fn: async () => {
+            expect(parseDocument({ text: 'A cat ，www.cat.example naps.\n', },).footnoteGraph,).toEqual({
+              references: [],
+              definitions: [],
+              findings: [],
+            },);
+            expect(parseDocument({ text: 'A cat[^1] ，www.cat.example naps.\n\n[^1]: The cat.\n', },)
+              .footnoteGraph,).toEqual({
+              references: [{ convention: 'gfm', identifier: '1', nodeId: 'block/0', offset: 5, },],
+              definitions: [{ convention: 'gfm', identifier: '1', nodeId: 'block/1', },],
+              findings: [],
+            },);
+            expect(parseDocument({ text: 'A cat〔1〕 ，www.cat.example naps.\n\n〔1〕The cat.\n', },)
+              .footnoteGraph,).toEqual({
+              references: [{ convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/0', offset: 5, },],
+              definitions: [{ convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/1', },],
+              findings: [],
+            },);
+          },
+        },),
+        it({
+          name: 'READS an undefined GFM reference set off from an untokenized literal and no marker shape '
+            + 'the parse puts in a link: one glued to the literal, or one whose label is a literal',
+          fn: async () => {
+            /**
+             One run holding a reference in text, then a shape whose opening
+             the transform takes into the link URL, then a label the
+             transform links between its brackets.
+             */
+            const text = 'A cat ，www.cat.example [^9] naps ，www.cat.example[^8] and [^www.cat.example].\n';
+            expect(parseDocument({ text, },).footnoteGraph,).toEqual({
+              references: [{ convention: 'gfm', identifier: '9', nodeId: 'block/0', offset: text.indexOf('[^9]',), },],
+              definitions: [],
+              findings: [{ kind: 'unresolved-reference', convention: 'gfm', identifier: '9', nodeId: 'block/0', },],
+            },);
+          },
+        },),
+        it({
+          name: 'READS a full-width marker inside the text of an autolink literal as a reference, tokenized or '
+            + 'not, and one opening its block beside an untokenized literal as a definition',
+          fn: async () => {
+            /**
+             Both literals take the glued `〔1〕` into their link, micromark's
+             and the transform's alike; the second paragraph opens on its
+             definition, the literal after it untokenized.
+             */
+            const texts = [
+              'A cat ，www.cat.example〔1〕 naps.\n\n〔1〕，www.cat.example 的注释。\n',
+              'A cat www.cat.example〔1〕 naps.\n\n〔1〕，www.cat.example 的注释。\n',
+            ];
+            for (const text of texts) {
+              expect(parseDocument({ text, },).footnoteGraph,).toEqual({
+                references: [
+                  { convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/0', offset: text.indexOf('〔1〕',), },
+                ],
+                definitions: [{ convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/1', },],
+                findings: [],
+              },);
+            }
+          },
+        },),
+        it({
+          name: 'READS NO marker shape in a JSX attribute where the element text is an untokenized literal, a '
+            + 'GFM one or a full-width one',
+          fn: async () => {
+            const text = 'A cat <Cat title="[^9]" note="〔7〕">，www.cat.example [^8]</Cat> naps.\n';
+            expect(parseDocument({ text, },).footnoteGraph,).toEqual({
+              references: [{ convention: 'gfm', identifier: '8', nodeId: 'block/0', offset: text.indexOf('[^8]',), },],
+              definitions: [],
+              findings: [{ kind: 'unresolved-reference', convention: 'gfm', identifier: '8', nodeId: 'block/0', },],
+            },);
+          },
+        },),
+        it({
+          name: 'READS NO GFM shape inside the URL of an autolink literal micromark tokenized, and still reads '
+            + 'a full-width marker there',
+          fn: async () => {
+            const text = 'A cat https://cat.example/[^9]x naps www.cat.example/〔1〕x.\n';
+            expect(parseDocument({ text, },).footnoteGraph,).toEqual({
+              references: [
+                { convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/0', offset: text.indexOf('〔1〕',), },
+              ],
+              definitions: [],
+              findings: [
+                { kind: 'unresolved-reference', convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/0', },
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'PARSES a page the strict grammar refuses and the plain one reads with an untokenized literal, '
+            + 'reading its undefined reference',
+          fn: async () => {
+            /**
+             An unclosed expression makes the MDX grammar refuse the page, so
+             the plain grammar reads it, whose autolink transform also
+             rebuilds the literal without positions.
+             */
+            const text = 'A cat {paw ，www.cat.example [^9] naps.\n';
+            expect(parseDocument({ text, },).footnoteGraph,).toEqual({
+              references: [{ convention: 'gfm', identifier: '9', nodeId: 'block/0', offset: text.indexOf('[^9]',), },],
+              definitions: [],
+              findings: [{ kind: 'unresolved-reference', convention: 'gfm', identifier: '9', nodeId: 'block/0', },],
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: 'parseDocument footnote graph over containers',
       concurrency: DEFAULT_CONCURRENCY,
       children: [
