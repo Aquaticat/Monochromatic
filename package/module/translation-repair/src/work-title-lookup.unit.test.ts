@@ -290,8 +290,8 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES a non-2xx answer, a body that is not an object and a body without results, naming the query '
-            + 'and never the key',
+          name: 'REFUSES a non-2xx answer, a body that is not an object and a body without results, naming the HTTP '
+            + 'status or the check and never the key, the query or the provider body',
           fn: async () => {
             /**
              Refusing transport.
@@ -315,8 +315,7 @@ await describe({
               thrown = error;
             }
             expect(thrown instanceof WorkTitleLookupError,).toBe(true,);
-            expect((thrown as Error).message,).toContain('401',);
-            expect((thrown as Error).message,).not.toContain('secret-key',);
+            expect(String(thrown,),).toBe('WorkTitleLookupError: search responded 401',);
 
             /**
              Shapeless transport.
@@ -340,6 +339,7 @@ await describe({
               thrownShapeless = error;
             }
             expect(thrownShapeless instanceof WorkTitleLookupError,).toBe(true,);
+            expect(String(thrownShapeless,),).toBe('WorkTitleLookupError: search answered without a results array',);
 
             /**
              Transport answering a JSON array, which read as no results before
@@ -364,7 +364,7 @@ await describe({
               thrownListed = error;
             }
             expect(thrownListed instanceof WorkTitleLookupError,).toBe(true,);
-            expect((thrownListed as Error).message,).toContain('a body that is not an object',);
+            expect(String(thrownListed,),).toBe('WorkTitleLookupError: search answered with a body that is not an object',);
           },
         },),
       ],
@@ -552,6 +552,40 @@ await describe({
             },),).toEqual([],);
             expect(logged,).toEqual([
               '[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: refused by SyntaxError',
+              '[workTitleLookupLines] 1 work title looked up, 0 lines',
+            ],);
+          },
+        },),
+        it({
+          name: 'LOGS A REFUSED SEARCH WITH ITS HTTP STATUS and never the provider body the refusal answered with',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'work-title-lookup-', },);
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            /**
+             Transport refusing with cat prose in the body.
+
+             @returns A 401 whose body is prose
+             */
+            async function refusingWithProse(): Promise<Response> {
+              return new Response(
+                'Pepper purred on the warm windowsill all afternoon',
+                { status: 401, },
+              );
+            }
+            expect(await workTitleLookupLines({
+              sourceText: '她读《猫的午睡》。',
+              apiKey: 'test-key',
+              dir: scratch.path,
+              signal: SIGNAL,
+              fetchFn: refusingWithProse,
+              now: () => NOW,
+              logger,
+            },),).toEqual([],);
+            expect(logged,).toEqual([
+              '[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: search responded 401',
               '[workTitleLookupLines] 1 work title looked up, 0 lines',
             ],);
           },

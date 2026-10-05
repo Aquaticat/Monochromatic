@@ -346,7 +346,7 @@ await describe({
           },
         },),
         it({
-          name: 'REFUSES a non-2xx answer naming the url and never the key',
+          name: 'REFUSES a non-2xx answer naming the HTTP status and never the key, the url or the provider body',
           fn: async () => {
             const { fetchFn, } = stubTransport({
               status: 401,
@@ -362,9 +362,7 @@ await describe({
               throw new Error('the fetch did not refuse',);
             } catch (error) {
               expect(error,).toBeInstanceOf(CitedReferenceFetchError,);
-              expect(String(error,),).toContain(POST_URL,);
-              expect(String(error,),).not
-                .toContain('whisker-key',);
+              expect(String(error,),).toBe('CitedReferenceFetchError: contents responded 401',);
             }
           },
         },),
@@ -674,6 +672,41 @@ await describe({
             },),).toBe(`- reference 1 ${POST_URL}: could not be fetched`,);
             expect(logged,).toEqual([
               `[citedReferenceBlock] reference 1 ${POST_URL} could not be fetched: refused by SyntaxError`,
+              '[citedReferenceBlock] REFERENCES cited=1 cached=0 bought=1',
+            ],);
+          },
+        },),
+        it({
+          name: 'LOGS A PAGE THE ENDPOINT REFUSED WITH THE HTTP STATUS and never the provider body the refusal '
+            + 'answered with',
+          fn: async () => {
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            await using scratch = await scratchDir({ prefix: 'reference-block-refused-', },);
+            /**
+             Transport refusing with cat prose in the body.
+
+             @returns A 429 whose body is prose
+             */
+            async function refusingWithProse(): Promise<Response> {
+              return new Response(
+                'Mittens chased the red dot down the hall',
+                { status: 429, },
+              );
+            }
+            expect(await citedReferenceBlock({
+              sourceText: `见 ${POST_URL}`,
+              apiKey: 'whisker-key',
+              dir: scratch.path,
+              signal: SIGNAL,
+              fetchFn: refusingWithProse,
+              now: () => NOW,
+              logger,
+            },),).toBe(`- reference 1 ${POST_URL}: could not be fetched`,);
+            expect(logged,).toEqual([
+              `[citedReferenceBlock] reference 1 ${POST_URL} could not be fetched: contents responded 429`,
               '[citedReferenceBlock] REFERENCES cited=1 cached=0 bought=1',
             ],);
           },

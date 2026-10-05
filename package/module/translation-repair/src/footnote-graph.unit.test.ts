@@ -330,6 +330,42 @@ await describe({
           },
         },),
         it({
+          name: 'READS NO GFM shape inside the URL of an angle autolink, which the strict grammar refuses and the '
+            + 'plain one tokenizes, and still reads a full-width marker there and a reference beside it',
+          fn: async () => {
+            const text = 'A cat <https://cat.example/[^9]x> naps <https://cat.example/〔1〕x> and [^8].\n';
+            expect(parseDocument({ text, },).footnoteGraph,).toEqual({
+              references: [
+                { convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/0', offset: text.indexOf('〔1〕',), },
+                { convention: 'gfm', identifier: '8', nodeId: 'block/0', offset: text.indexOf('[^8]',), },
+              ],
+              definitions: [],
+              findings: [
+                { kind: 'unresolved-reference', convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/0', },
+                { kind: 'unresolved-reference', convention: 'gfm', identifier: '8', nodeId: 'block/0', },
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'READS a GFM reference in the label of an inline link and in text beside an angle autolink, where '
+            + 'the link\'s first child starts one character after its own start as an angle autolink\'s does',
+          fn: async () => {
+            const text = 'A cat [paws [^7] nap](https://cat.example/u) naps <https://cat.example/v> [^8].\n';
+            expect(parseDocument({ text, },).footnoteGraph,).toEqual({
+              references: [
+                { convention: 'gfm', identifier: '7', nodeId: 'block/0', offset: text.indexOf('[^7]',), },
+                { convention: 'gfm', identifier: '8', nodeId: 'block/0', offset: text.indexOf('[^8]',), },
+              ],
+              definitions: [],
+              findings: [
+                { kind: 'unresolved-reference', convention: 'gfm', identifier: '7', nodeId: 'block/0', },
+                { kind: 'unresolved-reference', convention: 'gfm', identifier: '8', nodeId: 'block/0', },
+              ],
+            },);
+          },
+        },),
+        it({
           name: 'PARSES a page the strict grammar refuses and the plain one reads with an untokenized literal, '
             + 'reading its undefined reference',
           fn: async () => {

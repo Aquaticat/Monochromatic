@@ -57,6 +57,59 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
+          name: 'COUNTS NO GFM MARKER SHAPE INSIDE A LINK URL (an inline destination, an angle autolink, a bare '
+            + 'literal), where the same shape in a link label, beside a URL, or full-width inside one still counts',
+          fn: async () => {
+            const text = [
+              'A cat [paws [^1] nap](https://cat.example/[^9]x) naps <https://cat.example/[^8]x>',
+              'and https://cat.example/[^7]x or (www.cat.example/[^6]x) then https://cat.example [^2].',
+              'See https://cat.example/〔3〕x and [paws](<https://cat.example/[^5]x> "title").',
+              '',
+              '[^4]: A note, see https://cat.example/[^9].',
+            ].join('\n',);
+            expect(footnoteMentions({ text, },),).toEqual([
+              { role: 'reference', convention: 'gfm', identifier: '1', },
+              { role: 'reference', convention: 'gfm', identifier: '2', },
+              { role: 'definition', convention: 'gfm', identifier: '4', },
+              { role: 'reference', convention: 'fullwidth-bracket', identifier: '3', },
+            ],);
+          },
+        },),
+        it({
+          name: 'READS THE EDGES OF A URL as the parse does: a destination balances its own parentheses and takes a '
+            + 'backslash escape, an upper-case literal and a two-letter scheme are URLs, and a shape no URL starts '
+            + '(an unclosed angle, a scheme of one letter or past its length, a literal glued to a word, an '
+            + 'empty destination, a space inside an angle) leaves its marker counted',
+          fn: async () => {
+            /**
+             Texts whose only marker is a URL's, each paired with whether it counts.
+             */
+            const cases: readonly (readonly [string, readonly string[]])[] = [
+              ['[a](https://c.example/(x)[^9]y) [^3]', ['3',],],
+              [String.raw`[a](https://c.example/\)[^9]) [^3]`, ['3',],],
+              ['A HTTPS://C.EXAMPLE/[^9] [^3]', ['3',],],
+              ['A <ab:[^9]> [^3]', ['3',],],
+              ['A <a:[^9]> [^3]', ['9', '3',],],
+              [`A <${'a'.repeat(33,)}:[^9]> [^3]`, ['9', '3',],],
+              ['A xhttps://c.example/[^9] [^3]', ['9', '3',],],
+              ['A [a]( [^9]) [^3]', ['9', '3',],],
+              ['A [a](<cat [^9] [^3]', ['9', '3',],],
+              ['A [a](<cat\n[^9]> [^3]', ['9', '3',],],
+              ['A <https://c.example/ [^9]> [^3]', ['9', '3',],],
+              ['A <https://c.example/<[^9]> [^3]', ['9', '3',],],
+              ['A <https://c.example/[^9]', ['9',],],
+            ];
+            for (const [text, identifiers,] of cases) {
+              expect(
+                footnoteMentions({ text, },)
+                  .map(function identifierOf(mention,): string {
+                    return mention.identifier;
+                  },),
+              ).toEqual(identifiers,);
+            }
+          },
+        },),
+        it({
           name: 'LISTS EACH MENTION WITH ITS ROLE, CONVENTION AND IDENTIFIER folded to the parser\'s spelling, the GFM '
             + 'convention\'s first, and reads a marker as a definition only where it opens its line before its separator',
           fn: async () => {
