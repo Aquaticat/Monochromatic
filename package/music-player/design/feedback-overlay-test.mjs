@@ -50,6 +50,21 @@ try {
   const badHash = structuredClone(manifest);
   badHash.witnesses[0].sha256 = '0'.repeat(64);
   reject({ input: badHash, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
+  const cropOrigin = structuredClone(manifest);
+  cropOrigin.witnesses[0].cropPixels.y++;
+  reject({ input: cropOrigin, diagnostic: 'measured native application bounds' });
+  const absentBounds = structuredClone(manifest);
+  delete absentBounds.witnesses[0].applicationRoot;
+  reject({ input: absentBounds, diagnostic: 'measured native application bounds' });
+  const wrongPanel = structuredClone(manifest);
+  wrongPanel.witnesses[0].physicalPixels[1]++;
+  reject({ input: wrongPanel, diagnostic: 'measured native application bounds' });
+  const wrongRenderer = structuredClone(manifest);
+  wrongRenderer.witnesses[0].renderer = 'SwiftShader';
+  reject({ input: wrongRenderer, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
+  const wrongImage = structuredClone(manifest);
+  wrongImage.witnesses[0].systemImageFingerprint = 'different-image';
+  reject({ input: wrongImage, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
   const badPath = structuredClone(manifest);
   badPath.witnesses[0].file = '../outside.png';
   reject({ input: badPath, diagnostic: 'outside the evidence boundary' });
@@ -79,7 +94,7 @@ try {
   const output = join(fixture, 'questions', 'feedback-overlay.html');
   writeFileSync(output, readFileSync(output, 'utf8').replace('Design evidence only.', 'Changed output.'));
   if (invoke('validate').status === 0) throw new Error('Changed overlay artifact accepted.');
-  console.log('Overlay review positive, hash, path, metadata, exact cohort, hold, acquisition, ballot and output controls passed.');
+  console.log('Overlay review positive, hash, measured crop, physical panel, renderer, system image, path, metadata, exact cohort, hold, acquisition, ballot and output controls passed.');
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }
