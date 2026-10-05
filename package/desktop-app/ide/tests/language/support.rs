@@ -35,6 +35,24 @@ pub const SERVER: &str = "scripted-ls";
 /// Longest wait for any expected state.
 const PATIENCE: Duration = Duration::from_secs(20);
 
+/// When set in the environment, the child process prints the worker's debug log and helix-lsp's
+/// protocol log to standard error, with wall-clock times. An intermittent failure is diagnosed
+/// from that log together with the scripted server's report.
+const LOG_VARIABLE: &str = "IDE_LANGUAGE_TEST_LOG";
+
+/// Install the opt-in log once per process; later probes of the same test find it installed.
+fn install_log() {
+    if std::env::var_os(LOG_VARIABLE).is_none() {
+        return;
+    }
+    // helix-lsp logs every message it writes and reads at `info`, and dropped answers at `debug`.
+    // `try_init` fails only when an earlier probe of this process already installed the log.
+    let _already_installed = tracing_subscriber::fmt()
+        .with_env_filter("ide_app=debug,helix_lsp=debug")
+        .with_writer(std::io::stderr)
+        .try_init();
+}
+
 /// Where the child process works: its project root, its working directory, and its `PWD`.
 pub struct Layout {
     /// Project root handed to the worker.
@@ -175,6 +193,7 @@ impl Probe {
 
     /// Start a worker for `root` with an explicit setup.
     pub fn with_setup(root: &Path, setup: LanguageSetup) -> Self {
+        install_log();
         let worker = LanguageWorker::with_setup(root, setup).expect("language worker");
         return Self {
             worker,
