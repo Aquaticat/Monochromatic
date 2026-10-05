@@ -89,8 +89,15 @@ visibility;
 no worker outcome is implied.
 
 Prototype `56b6170fd` adds the isolated native host and accepted scan-F row.
-The full unit task and APK build are running;
-no native fit or input acceptance is claimed yet.
+The full unit task and APK build passed.
+APK SHA-256 is
+`60fe847ebbd5d5c6694fbecddb08b87142b6d258137579ff0dee93901541bf29`.
+The merged manifest disables production activity/services and removes
+WorkManager initialization.
+Android lint still fails on the same five inherited errors;
+no finding names a new `ScanIndicator` source file.
+No lint rule or unrelated source was changed.
+No native fit or input acceptance is claimed yet.
 The host uses explicit same-instance debug events for start/progress,
 while Pause/Resume are native button actions.
 The inspected installed SDK `Activity.onNewIntent` contract pauses/resumes
@@ -138,6 +145,11 @@ browser verification retains 2 GiB/2 CPU.
 Original AVDs remain untouched.
 Every visit records original settings before mutation,
 restores those exact fields and verifies owner shutdown/runtime absence.
-The next step is isolated state/host preparation and installed native
-button/text API inspection,
+The owned native visit is starting through the retained pinned-image
+namespace bridge.
+Its first probe checks both panels at 200% text,
+actual Pause/Resume activation and stable active geometry.
+A failed label or control-floor check remains a failed probe,
+not publishable fit evidence.
+The next step is that measured native boundary,
 not another preference questionnaire.
