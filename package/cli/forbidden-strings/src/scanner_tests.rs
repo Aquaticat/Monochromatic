@@ -64,6 +64,26 @@ fn binary_prefix_behavior_matches_the_standalone_reader() {
     assert_eq!(checked.findings, vec![ScanFinding::Content { line: 2, rule: String::from("0") }]);
 }
 
+/// Native non-UTF-8 names are matched as bytes and encoded only after the redaction decision.
+#[cfg(unix)]
+#[test]
+fn native_path_bytes_are_not_replaced_before_matching() {
+    // Unix's native extension constructs a pathname containing a byte UTF-8 cannot represent.
+    use std::ffi::OsString;
+    use std::os::unix::ffi::OsStringExt;
+    use std::path::PathBuf;
+    let scanner: Scanner = scanner();
+    let harmless: PathBuf = PathBuf::from(OsString::from_vec(b"folder/\xffname".to_vec()));
+    let clean: CandidateScan = scanner.scan(21, harmless.as_path(), b"");
+    assert!(clean.findings.is_empty());
+    assert_eq!(clean.display_path, "folder/\\xffname");
+    let secret: PathBuf = PathBuf::from(OsString::from_vec(b"folder/\xffVAULTTOKEN_LONG".to_vec()));
+    let matched: CandidateScan = scanner.scan(22, secret.as_path(), b"");
+    assert_eq!(matched.display_path, "folder/[REDACTED]");
+    assert_eq!(matched.findings, vec![ScanFinding::Name { component: 2, rule: String::from("0") }]);
+    assert!(!format!("{matched:?}").contains("VAULTTOKEN_LONG"));
+}
+
 /// Unsupported line-breaking names remain explicit failures with no raw pathname in the report.
 #[test]
 fn pathname_failures_do_not_masquerade_as_clean_scans() {
