@@ -56,6 +56,19 @@ check the exact selected font bytes and normalized coordinates,
 and reject synthesized emboldening or skew for these primary faces.
 The source raster cache is tested across weights with the same font blob identity.
 
+Native widget snapshots verify repainting for weight/style requests
+and distinguish the bundled families from an unregistered-family fallback control.
+Pixel differences alone do not establish which font bytes were selected;
+exact face and synthesis assertions belong to the font-stack tests.
+An additional native test exercises the actual source-image and selection bindings,
+changes weight and italic state,
+and retains the middle character selected within `===`.
+The ordinary source view currently requests roman weight 400;
+syntax classifications currently change colors,
+not weight or italic style.
+The test injects typography through the existing shaper boundary,
+without adding user-facing font controls.
+
 Inter's optical-size axis is verified with explicit 14 and 32 controls.
 The current Slint `FontRequest` interface does not carry arbitrary variation settings:
 its ordinary UI request leaves `opsz` at the font default 14.

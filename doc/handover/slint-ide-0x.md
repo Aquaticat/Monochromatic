@@ -430,6 +430,12 @@ Only the file context and source remain visible in the normal source-view gate.
   `proc_e7bd` subsequently passed Clippy,
   Rust documentation/line budgets,
   and the native build.
+- `proc_60a7` passed all three native tests,
+  Rust documentation/line budgets,
+  and Clippy after adding actual source-image typography/selection coverage.
+  Native widget pixel comparisons cover request repainting and fallback distinction,
+  not direct selected-font-byte introspection.
+  The normal source surface remains roman 400 with color-only syntax spans.
 - `proc_8ed6` passed both native headless tests under nextest:
   idle DPI changes and real widget variable-weight/italic pixel changes.
   Plain cargo test initially failed because Slint's global platform was initialized on another test thread;
