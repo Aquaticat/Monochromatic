@@ -242,6 +242,18 @@ and `proc_7d8d` passed actual frozen-worker launcher controls.
 with positive controls for a missing instruction sibling and changed criteria.
 The independent review's generic bytes-per-token prediction was not adopted.
 
+Prospective native-input qualification also passed in `proc_4a49`:
+a fresh original judgment produced exactly the predicted 256,710-byte body
+and captured 205 fake estimates without executing tools.
+The first preparation stopped before worker creation because its planner omitted
+working-directory text embedded in the complete main request.
+`proc_cd8e` identified that field;
+the corrected sibling preserves it through a scoped rebase.
+`proc_6418` rejected a prospective-body mismatch before fake network dispatch,
+and `proc_8812` retained the exact guard-omission witness.
+These remain local mechanical controls,
+not a live native guard call.
+
 Next:
 connect the accepted representation to a separately admitted live original-judgment fixture,
 keeping exact prospective input checks and the preparation-inclusive deadline.

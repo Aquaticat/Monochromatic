@@ -1,5 +1,89 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Owned prospective-input planner omitted rendered working-directory context
+
+### Symptom and cause
+
+The private prospective-input preparation,
+`proc_6d51`,
+stopped before publishing its manifest or launching an SDK worker:
+
+```text
+# Private prospective fixture preparation
+AssertionError [ERR_ASSERTION]: assert(!body.includes(oldRoot))
+```
+
+The owned planner only rebased exact path values inside JSON.
+Read-only `proc_cd8e` found that the complete captured main request also contained
+the fixture directory inside a rendered system-message suffix:
+
+```text
+# Captured main-request message content
+<cwd>
+fixture-directory
+</cwd>
+```
+
+The source was the private contract's
+`contract/collector/program-rule-prospective-sdk/prospective.mjs`.
+Its string branch left non-JSON text unchanged,
+and its final old-root check correctly rejected that incomplete prediction.
+This was a planner coverage defect,
+not an established Pi or provider fault.
+
+### Verified correction and guard witness
+
+The fresh `program-rule-prospective-sdk-v2` sibling rebases only the inspected read-path fields
+and the exact terminal working-directory suffix.
+It preserves the policy prefix,
+other messages,
+and all question content.
+Reverse rebasing must deep-equal the complete seed body.
+
+`proc_4a49` verified that the predicted 256,710-byte body exactly matched
+the body produced by a fresh native judgment:
+one SDK session,
+two local main requests,
+one fake guard request,
+205 original captured records,
+and no tool execution.
+This is a finite fixture profile,
+not arbitrary text rewriting or source authority.
+
+The mismatch control `proc_6418` added a final newline to the expected body only.
+The original assessment recorded one attempt,
+but the body gate stopped before any fake network fetch.
+Both tool members remained `unentered`,
+and the expected worker failure and persisted tool errors were retained.
+
+The paired `proc_8812` removed only the exact authored body-equality guard.
+Its fake fetch count became one;
+the zero-fetch assertion failed with
+`AssertionError`,
+`ERR_ASSERTION`,
+actual one and expected zero.
+A later body verifier could detect the mismatch,
+but cannot replace pre-dispatch enforcement.
+Neither control contacted a provider or executed a tool.
+
+### Rejected remedies and filing decision
+
+Do not strip the working-directory context,
+globally substitute arbitrary prompt text,
+or reopen the failed preparation namespace.
+All source,
+stream,
+persistence,
+and cleanup checks remain separate from semantic qualification.
+
+No upstream filing:
+the fault was in the owned planner;
+no upstream repair is established or proposed.
+Native SDK support was exercised by the corrected fixture.
+Contribution policy and maintainer disposition were not assessed because no upstream change is needed.
+The demonstrated repair is consumer-side,
+not an upstream patch.
+
 ## Full-rule binding loops and genuine dependency retirement
 
 ### Measured failure and bounded remedy
