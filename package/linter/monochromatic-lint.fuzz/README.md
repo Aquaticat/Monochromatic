@@ -5,7 +5,8 @@ Targets cover JSONC configuration validation,
 ordered merging,
 the Rust anonymous-function rule,
 semantic explicit-type checking,
-and the implemented Markdown/MDX rules.
+the implemented Markdown/MDX rules,
+and the executable's per-source orchestration path.
 
 The merge target reuses the repository's structured JSONC generator.
 The configuration target combines raw syntax mutation with always-valid generated rule settings.
@@ -25,6 +26,22 @@ and bare CR in both Markdown and MDX modes,
 then checks arbitrary UTF-8.
 It checks original-byte diagnostic/edit boundaries and reparses accepted fixed output.
 The counted catalog now includes pipe-table conversion and semantic prose breaks.
+The orchestration target calls `run_file::process_source`,
+the call the executable makes for every file,
+under a fixed configuration that selects virtual files by their paths.
+Each input checks one hand-counted host with rustdoc,
+doc tests,
+quoted fences,
+MDX,
+or two Rust levels of nesting in LF or CRLF spelling,
+projects an adversarial edit group from a virtual file to the host,
+and then treats the raw input as a host in each language.
+It asserts host-addressed findings,
+no fix after a processing failure,
+no emptied file,
+a fixed point once the loop settles,
+and a `core/fix-refused` finding on refusal.
+`markdown/lfs-image-url` is absent from that configuration because it reads the filesystem.
 Container campaigns run both generator controls and sidecar Clippy before instrumented compilation.
 The existing nonempty-to-empty rewrite refusal remains an explicit allowed error.
 The raw parser path may reject malformed input with a typed processing failure.
@@ -40,7 +57,8 @@ In libfuzzer-sys 0.4.13,
 
 Run campaigns through the bounded container tasks.
 Retain and replay minimized failures.
-A clean initial campaign does not cover the unfinished parsers,
-processors,
-file walker,
-or cli-git transaction implementation.
+A clean campaign does not cover the file walker,
+configuration lookup on disk,
+atomic writes,
+the LFS rule,
+or the cli-git transaction implementation.

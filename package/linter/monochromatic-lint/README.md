@@ -1,15 +1,11 @@
 # monochromatic-lint
 
 Rust replacement for the repository's Rust and Markdown/MDX linters.
-Implementation is in progress;
+The `monochromatic-lint` executable exists and is verified in containers.
+It is not published,
+installed,
+or wired into any repository task;
 the existing tools remain active until consumer verification and cutover.
-
-The first implementation slice is the handwritten merge for ordered JSONC rule settings.
-Records merge by decoded key,
-arrays concatenate,
-and a kind mismatch anywhere in an input group selects the final value.
-Inputs are not modified.
-This is not a generic JavaScript deepmerge port.
 
 The crate's Rust visibility supports its executable and verification drivers.
 There is no supported public linter library interface.
@@ -18,6 +14,96 @@ Design:
 `doc/planning/unified-linter.md`.
 Execution:
 `doc/handover/cli-git-rust-implementation.md`.
+Executable evidence,
+open decisions,
+and the comparison with both existing linters:
+`doc/handover/unified-linter-executable.md`.
+
+## Command line
+
+```sh
+monochromatic-lint [OPTIONS] [PATH]...
+```
+
+With no path the working directory is walked,
+honoring `.gitignore`.
+Files ending in `.rs`,
+`.md`,
+and `.mdx` are linted;
+other files are skipped.
+`mise run //package/linter/monochromatic-lint:run -- <arguments>` builds and runs the executable from source.
+
+Findings are JSON Lines on standard output,
+one record per finding,
+with the rule identifier in `code`.
+A clean run prints nothing.
+Messages that are not findings go to standard error with a `monochromatic-lint:` prefix.
+
+Exit statuses:
+
+- `0`:
+  no error finding,
+  and the warning count is within `--max-warnings`.
+- `1`:
+  at least one error finding,
+  or more warnings than `--max-warnings` allows.
+- `2`:
+  the run could not be trusted to be complete:
+  a usage error,
+  an unreadable or invalid configuration,
+  no configuration for any input file,
+  or a `core/processing-failure` or `core/fix-refused` finding.
+
+Options:
+
+- `--config <FILE>` uses exactly that configuration for every file,
+  with patterns relative to the working directory.
+- `--fix` applies fixes in at most ten passes per file and rechecks the result.
+  A file is replaced atomically and keeps its mode.
+- `--stdin` with `--stdin-filename <FILE>` lints standard input as that file.
+  With `--fix` the fixed source goes to standard output and findings go to standard error.
+- `--max-warnings <COUNT>`,
+  `--quiet`,
+  and `--silent` change reporting and the warning threshold,
+  never what is linted.
+- `--print-config <FILE>` prints the effective rules for one file as strict JSON.
+- `--init` writes a starter configuration and refuses to overwrite one.
+- `--rules` lists every shipped rule as JSON Lines.
+- `--concurrency <COUNT>` bounds worker threads.
+- `--ignore-pattern <GLOB>`,
+  `--ignore-path <FILE>`,
+  and `--no-ignore` change which files the walk finds.
+- `--no-error-on-unmatched-pattern` accepts a path argument that matches nothing.
+- `--debug` adds execution notes on standard error,
+  including every file selected or ignored.
+
+## Configuration
+
+Each file is governed by the nearest `monochromatic-lint.config.jsonc` in its directory or an ancestor,
+unless `--config` names one.
+A configuration is an ordered JSONC array of blocks with `files`,
+`ignores`,
+and `rules`.
+Every block whose patterns select a file contributes its rule settings,
+merged in order.
+
+The merge is handwritten for ordered JSONC rule settings.
+Records merge by decoded key,
+arrays concatenate,
+and a kind mismatch anywhere in an input group selects the final value.
+Inputs are not modified.
+This is not a generic JavaScript deepmerge port.
+
+## Embedded sources
+
+Processors are always on.
+Fenced Rust in Markdown and MDX,
+rustdoc comments in Rust,
+and doc tests inside rustdoc are linted as virtual files named under their host,
+such as `guide.md/3.rs` and `lib.rs/12.md/1.rs`.
+Configuration patterns select virtual files by those names.
+Findings and fixes are reported at host positions.
+A fix that cannot be mapped back to the host is dropped and its finding is kept.
 
 ## Anonymous Rust functions
 
@@ -51,10 +137,7 @@ Select the rule explicitly in the ordered JSONC configuration:
 ]
 ```
 
-The rule implementation and schema entry exist;
-the new executable and production cutover remain unfinished.
-`mise run //package/linter/monochromatic-lint:test:rust-style` verifies this slice.
-Markdown adapters have since passed their own container, Clippy, and fuzz gates.
+`mise run //package/linter/monochromatic-lint:test:rust-style` verifies this rule.
 
 ## Explicit Rust types
 
@@ -70,7 +153,10 @@ Unresolved coverage produces an explicit processing failure rather than a clean 
 Use named callbacks with the anonymous-function rule:
 
 ```rust
+//! Named callbacks satisfy the anonymous-function rule.
 // src/main.rs
+
+/// Return one user's name for the `map` call.
 fn user_name(user: &User) -> String {
     return user.name.clone();
 }
@@ -86,8 +172,10 @@ It does not install toolchains or fetch dependencies.
 The host chooses source-only or generated-source preparation;
 repository JSONC cannot provide executable commands.
 Syntax-only rules do not load a Cargo workspace.
-These internal APIs and their consumer tests exist,
-but command-line orchestration is still unfinished.
+The executable prepares workspaces source-only:
+it reads source and Cargo metadata and generates nothing,
+so a definition that only a build step would produce is reported as a processing failure.
+Files that select this rule are checked on one thread after the other files.
 
 ## Native Markdown rules
 
@@ -115,26 +203,44 @@ Reference-definition deletion keeps adjacent container lines separate.
 The grouped editor refuses a nonempty-to-empty file rewrite.
 
 Pipe-table conversion and semantic line breaks are implemented.
-LFS image URL handling is owned by the native linter's commit-time adapter
-and its URL normalization dependency is still under vetting.
-Embedded Rust/rustdoc processors are implemented in `processors.rs`
-with host-mapped findings and container-preserving fix projection;
-their executable integration and the complete executable remain in progress.
 Production Rust and Markdown commands have not been replaced.
+
+## LFS image URLs
+
+`markdown/lfs-image-url` rewrites a relative image link to an LFS-tracked file
+into the object URL built from the repository's `.lfsconfig` endpoint,
+and reports an object URL whose target is missing or stale.
+The repository root is the nearest ancestor holding `.lfsconfig`;
+tracked paths come from the root `.gitattributes`.
+The `exclude` option takes gitignore-syntax patterns relative to that root.
+
+Endpoint normalization is one standard-library function,
+`lfs_object_base`,
+with a restricted contract:
+`http` or `https`,
+an ASCII host name,
+an optional decimal port,
+and a path without dot segments.
+Any other endpoint is rejected with a named reason that never echoes the endpoint,
+because it may hold credentials.
+One rejected declaration fails the whole read.
 
 ## Verification
 
 Package tasks cover type checking,
 unit tests,
 and mount-free container tests.
-The remaining CLI,
-consumer migration,
-and mutation-survivor disposition gates are tracked in the execution document;
+`lint:container` runs the library tests,
+the black-box tests of the built executable in `src/binary_tests.rs`,
+and Clippy inside a bounded container.
+Consumer migration and mutation-survivor disposition gates are tracked in the execution document;
 their absence is not a completion claim.
 `mutation:markdown` runs full container tests and Clippy before scoped native Markdown mutation.
 The fuzz sidecar includes counted Markdown/MDX fixtures,
 raw source,
-and reparsing of accepted fixed output.
+reparsing of accepted fixed output,
+and an `orchestration` target that drives the executable's per-source path
+through nested doc tests and adversarial edit groups.
 Evidence belongs to its recorded source snapshot;
 new source does not inherit a previous campaign's completion status.
 
