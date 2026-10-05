@@ -133,7 +133,7 @@ Each level-3 heading is one responsibility,
 counted with `rg --multiline --count-matches` over the `Status` and `Native state` points of this file.
 
 - Responsibilities:
-  112.
+  112 in total.
 - Status:
   92 retained,
   20 retired.
@@ -545,8 +545,10 @@ counted with `rg --multiline --count-matches` over the `Status` and `Native stat
   or `1` (`443-453`);
   any other error prints its message and exits `1` (`457-460`).
   The wrapper source installs no signal handler:
-  `rg "process\.on\(|process\.once\(|\.on\(['\"]SIG" src --glob '!src/native/**'` returns nothing,
-  with and without `--hidden --no-ignore`.
+  `rg "process\.on\(|process\.once\(|\.on\(['\"]SIG" src --glob '!src/native/**' --glob '!**/*.unit.test.ts'`
+  returns nothing,
+  with and without `--hidden --no-ignore`;
+  without the test exclusion it matches two unit-test files only.
   A Git child ended by a signal therefore yields exit `1`.
 - Spec:
   `SPEC.md:1577-1622`,
@@ -4229,10 +4231,19 @@ by route.
   `cli-git-performance.yml`,
   `final-newline.yml`.
 - Hooks:
-  repository Git hooks run under the wrapper's dispatcher during commits;
-  no repository file registers a Git hook that calls the wrapper
+  repository Git hooks run under the wrapper's dispatcher during commits.
+  No tracked file registers a Git hook
   (the hk configuration was removed,
-  `doc/handover/cli-git-policies-platform.md` section "Retirement checkpoint on 2026-07-11").
+  `doc/handover/cli-git-policies-platform.md` section "Retirement checkpoint on 2026-07-11";
+  `git config --get core.hooksPath` is unset in this checkout).
+  This checkout's untracked `.git/hooks` holds the four Git LFS hooks,
+  `post-checkout`,
+  `post-commit`,
+  `post-merge`,
+  and `pre-push`,
+  each running `git lfs <event>` through `PATH`.
+  Each therefore re-enters the wrapper as a nested invocation of the external command `lfs`,
+  which the classifier treats as configuration-loading (`src/trust/command-classification.ts:280-281`).
 - Other packages:
   `package/git/executable` (the resolver the wrapper uses and that must recognize it);
   `package/pi-plugin/auto-mode/src/git-worktree-read-allowlist.ts` (uses that resolver);
