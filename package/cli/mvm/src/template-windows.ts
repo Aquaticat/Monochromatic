@@ -7,12 +7,10 @@
 
 import {
   mkdir,
-  readFile,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 import {
   tagged,
   type Logger,
@@ -31,6 +29,7 @@ import {
   DEFAULT_GUEST_EXEC_LIMITS,
   runGuestCommand,
 } from './guest-exec.ts';
+import { pushThroughAgent, } from './guest-file-transfer.ts';
 import {
   ensureImage,
   ensureVirtioWin,
@@ -47,7 +46,6 @@ import { waitForGuestAgent, } from './virsh-wait.ts';
 import {
   defineVm,
   startVm,
-  virsh,
 } from './virsh.ts';
 
 /**
@@ -266,13 +264,13 @@ async function guestExecWait({
 }
 
 /**
- Pushes a host file into the template VM via the guest agent file-write protocol.
- Transfers the file in 1 MB base64-encoded chunks.
- 
+ Pushes a host file into the template VM through the guest agent,
+ the same way push works for a VM without a shared directory.
+
  @param guestPath - Destination path inside the guest
- 
+
  @param hostPath - Source file path on the host
- 
+
  @example
  ```ts
  await guestFilePush({ hostPath: '/tmp/winfsp.msi', guestPath: 'C:\\winfsp.msi' });
@@ -285,87 +283,10 @@ async function guestFilePush({
   readonly guestPath: string;
   readonly hostPath: string;
 },): Promise<void> {
-  /**
-   Prefixed libvirt domain name; matches what {@link defineVm} registered.
-   */
-  const fullName = `${VM_PREFIX}${TEMPLATE_VM_NAME}`;
-  /**
-   Full host-file payload buffered in memory, then streamed to the guest in chunks.
-   */
-  const data = await readFile(hostPath,);
-
-  /**
-   Open file on guest for writing.
-   */
-  const openResult = await virsh({
-    args: [
-      'qemu-agent-command',
-      fullName,
-      JSON.stringify({
-        execute: 'guest-file-open',
-        arguments: {
-          path: guestPath,
-          mode: 'wb',
-        },
-      },),
-    ],
-  },);
-  /**
-   Numeric file handle returned by the guest agent; reused for every write and the close.
-   */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
-  const handle = (JSON.parse(openResult,) as { return: number; }).return;
-
-  /**
-   48 KiB in bytes.
-   */
-  const RAW_CHUNK_KIB = 48;
-  /**
-   Write in 48 KiB raw chunks (~65 KB base64, fits within virsh CLI arg limits).
-   */
-  const RAW_CHUNK: number = RAW_CHUNK_KIB * BYTES_PER_KIB;
-  for (let offset = 0; offset < data
-    .length; offset += RAW_CHUNK) {
-    /**
-     Raw byte slice of the current chunk; zero-copy view into `data`.
-     */
-    const chunk = data.subarray(
-      offset,
-      offset + RAW_CHUNK,
-    );
-    /**
-     Base64-encoded chunk; the QMP protocol only carries text, so binary must be encoded.
-     */
-    const b64 = Buffer.from(chunk,)
-      .toString('base64',);
-    // oxlint-disable-next-line no-await-in-loop -- deliberate serial file transfer
-    await virsh({
-      args: [
-        'qemu-agent-command',
-        fullName,
-        JSON.stringify({
-          execute: 'guest-file-write',
-          arguments: {
-            handle,
-            'buf-b64': b64,
-          },
-        },),
-      ],
-    },);
-  }
-
-  /**
-   Close the file handle.
-   */
-  await virsh({
-    args: [
-      'qemu-agent-command',
-      fullName,
-      JSON.stringify({
-        execute: 'guest-file-close',
-        arguments: { handle, },
-      },),
-    ],
+  await pushThroughAgent({
+    domain: `${VM_PREFIX}${TEMPLATE_VM_NAME}`,
+    guestPath,
+    hostPath,
   },);
 }
 

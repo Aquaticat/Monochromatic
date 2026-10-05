@@ -23,6 +23,7 @@ import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import {
   appendFile,
+  mkdir,
   readdir,
   readFile,
   writeFile,
@@ -30,6 +31,11 @@ import {
 import { constants, } from 'node:os';
 import { join, } from 'node:path';
 import { text, } from 'node:stream/consumers';
+
+import {
+  guestFileCommand,
+  isFileCommand,
+} from './fixture.fake-guest-files.ts';
 
 //region Shapes
 
@@ -66,6 +72,10 @@ type ProcessEntry = {
  - `domstate`: state reported by `domstate`; an object with a `failure` text makes it fail.
  - `domains`: list of `{ name, state }` printed by `list --all`.
  - `connectFailure`: when true every command fails the way virsh does without a session daemon.
+ - `virtiofsd`: when true libvirt can serve a virtiofs share; otherwise `start` and `domxml-to-native` fail for a domain that has one.
+ - `probeFailure`: standard-error text making `domxml-to-native` fail for another reason.
+
+ The guest agent's file commands and their scenario keys are in `fixture.fake-guest-files.ts`.
  */
 type Scenario = Readonly<Record<string, unknown>>;
 
@@ -611,7 +621,7 @@ async function guestExecStatus({
   if (entry === undefined) {
     await writeState(counted,);
     fail(
-      `error: internal error: unable to execute QEMU agent command 'guest-exec-status': PID ${
+      `error: guest agent command failed: unable to execute QEMU agent command 'guest-exec-status': PID ${
         String(pid,)
       } does not exist`,
     );
@@ -724,12 +734,152 @@ async function agentCommand({
     },);
     return;
   }
+  if (isFileCommand(execute,)) {
+    /**
+     Result of the simulated file command.
+     */
+    const outcome = await guestFileCommand({
+      directory: String(directory,),
+      execute,
+      request,
+      scenario,
+    },);
+    if ('failure' in outcome) {
+      fail(outcome.failure,);
+    }
+    else {
+      reply(outcome.reply,);
+    }
+    return;
+  }
   fail(
-    `error: internal error: unable to execute QEMU agent command '${execute}': The command ${execute} has not been found`,
+    `error: guest agent command failed: unable to execute QEMU agent command '${execute}': The command ${execute} has not been found`,
   );
 }
 
 //endregion Guest agent commands
+
+//region Domain definitions
+
+/**
+ Text of libvirt's error when a domain has a virtiofs share and no virtiofsd exists, recorded on this host.
+ */
+const NO_VIRTIOFSD = 'error: operation failed: Unable to find a satisfying virtiofsd';
+
+/**
+ Directory holding the XML of every domain defined so far.
+ */
+const definedDirectory = join(
+  directory,
+  'defined',
+);
+
+/**
+ Handles `define <xml file>`: remembers the domain's XML under its name.
+
+ @param xmlPath - File holding the domain XML
+ */
+async function defineDomain(xmlPath: string,): Promise<void> {
+  /**
+   Domain XML as mvm wrote it.
+   */
+  const xml = await readFile(
+    xmlPath,
+    'utf8',
+  );
+  /**
+   Domain name: the text of the first `name` element.
+   */
+  const name = xml.slice(
+    xml.indexOf('<name>',) + '<name>'.length,
+    xml.indexOf('</name>',),
+  );
+  await mkdir(
+    definedDirectory,
+    { recursive: true, },
+  );
+  await writeFile(
+    join(
+      definedDirectory,
+      `${name}.xml`,
+    ),
+    xml,
+  );
+  process.stdout
+    .write(`Domain '${name}' defined from ${xmlPath}\n\n`,);
+}
+
+/**
+ Handles `start <domain>`: fails the way libvirt does when the domain has a share nothing can serve.
+
+ @param domain - Domain name
+
+ @param scenario - Scenario saying whether a virtiofsd exists
+ */
+async function startDomain({
+  domain,
+  scenario,
+}: {
+  readonly domain: string;
+  readonly scenario: Scenario;
+},): Promise<void> {
+  /**
+   XML the domain was defined with.
+   */
+  const xml = await readFile(
+    join(
+      definedDirectory,
+      `${domain}.xml`,
+    ),
+    'utf8',
+  );
+  if (xml.includes('virtiofs',) && (scenario.virtiofsd !== true)) {
+    fail(`error: Failed to start domain '${domain}'\n${NO_VIRTIOFSD}`,);
+    return;
+  }
+  process.stdout
+    .write(`Domain '${domain}' started\n\n`,);
+}
+
+/**
+ Handles `domxml-to-native qemu-argv --xml <file>`: converts without defining anything,
+ and fails like a start would when the XML has a share nothing can serve.
+
+ @param scenario - Scenario saying whether a virtiofsd exists; `probeFailure` makes the conversion fail with that text
+
+ @param xmlPath - File holding the domain XML
+ */
+async function convertDomain({
+  scenario,
+  xmlPath,
+}: {
+  readonly scenario: Scenario;
+  readonly xmlPath: string;
+},): Promise<void> {
+  /**
+   Scripted failure of the conversion, when the scenario asks for one.
+   */
+  const { probeFailure, } = scenario;
+  if ((typeof probeFailure) === 'string') {
+    fail(probeFailure,);
+    return;
+  }
+  /**
+   Domain XML to convert.
+   */
+  const xml = await readFile(
+    xmlPath,
+    'utf8',
+  );
+  if (xml.includes('virtiofs',) && (scenario.virtiofsd !== true)) {
+    fail(NO_VIRTIOFSD,);
+    return;
+  }
+  process.stdout
+    .write('qemu-system-x86_64 -name guest=converted\n\n',);
+}
+
+//endregion Domain definitions
 
 //region Domain listing
 
@@ -785,6 +935,11 @@ function listDomains({
 //region Dispatch
 
 /**
+ Longest argument written to the call log in full.
+ */
+const LOGGED_ARGUMENT_CHARACTERS = 2_000;
+
+/**
  Arguments after the `--connect <uri>` pair mvm always passes.
  */
 const [subcommand, ...tokens] = process.argv
@@ -799,8 +954,23 @@ await appendFile(
     directory,
     'calls.jsonl',
   ),
-  `${JSON.stringify(process.argv
-    .slice(2,),)}\n`,
+  `${
+    JSON.stringify(
+      process.argv
+        .slice(2,)
+        .map(function shortenForLog(argument,) {
+          // A file write carries its data in one argument; the log keeps only enough to recognize the command.
+          return argument.length > LOGGED_ARGUMENT_CHARACTERS
+            ? `${
+              argument.slice(
+                0,
+                LOGGED_ARGUMENT_CHARACTERS,
+              )
+            }...`
+            : argument;
+        },),
+    )
+  }\n`,
 );
 
 /**
@@ -816,6 +986,25 @@ else if (subcommand === 'list') {
     namesOnly: tokens.includes('--name',),
     scenario,
   },);
+}
+else if (subcommand === 'define') {
+  await defineDomain(String(tokens[0],),);
+}
+else if (subcommand === 'start') {
+  await startDomain({
+    domain: String(tokens[0],),
+    scenario,
+  },);
+}
+else if (subcommand === 'domxml-to-native') {
+  await convertDomain({
+    scenario,
+    xmlPath: String(tokens.at(-1,),),
+  },);
+}
+else if ((subcommand === 'destroy') || (subcommand === 'undefine')) {
+  process.stdout
+    .write(`Domain '${String(tokens[0],)}' ${subcommand}d\n\n`,);
 }
 else if (subcommand === 'qemu-agent-command') {
   await agentCommand({

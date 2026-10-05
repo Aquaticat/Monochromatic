@@ -57,7 +57,23 @@ export type VmMeta = {
    ISO 8601 timestamp of VM creation.
    */
   createdAt: string;
+  /**
+   How files move between host and guest: the virtiofs shared directory, or the
+   guest agent for a VM defined without the share. Absent in metadata written
+   before the guest agent route existed, which means the shared directory.
+   */
+  fileTransfer?: FileTransferRoute;
 };
+
+/**
+ Channel a VM's files travel through.
+
+ @example
+ ```ts
+ const route: FileTransferRoute = 'guest-agent';
+ ```
+ */
+export type FileTransferRoute = 'guest-agent' | 'virtiofs';
 
 //endregion VM metadata type
 
@@ -66,6 +82,8 @@ export type VmMeta = {
 /**
  Writes VM metadata to `meta.json` in the VM directory.
  Also writes the legacy `image` text file for backwards compatibility.
+ 
+ @param fileTransfer - How files move between host and guest; defaults to the virtiofs shared directory
  
  @param guest - Guest config for OS family, shell, and default user
  
@@ -86,10 +104,12 @@ export type VmMeta = {
  ```
  */
 export async function writeVmMeta({
+  fileTransfer = 'virtiofs',
   guest,
   image,
   vmDir,
 }: {
+  readonly fileTransfer?: FileTransferRoute;
   readonly guest: GuestConfig;
   readonly image: string;
   readonly vmDir: string;
@@ -107,6 +127,7 @@ export async function writeVmMeta({
   const meta: VmMeta = {
     createdAt: new Date().toISOString(),
     defaultUser: guest.defaultUser,
+    fileTransfer,
     image,
     osFamily: guest.osFamily,
     shell: guest.shell,

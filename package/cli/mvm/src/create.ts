@@ -15,6 +15,7 @@ import {
 } from './config.ts';
 import { domainXml, } from './domain-xml.ts';
 import { exec, } from './exec.ts';
+import { chooseFileTransferRoute, } from './file-transfer-route.ts';
 import { writeVmMeta, } from './meta.ts';
 import {
   CUSTOM_GUEST_DEFAULTS,
@@ -190,16 +191,23 @@ export async function create({
   },);
 
   /**
-   Shared directory exposed to the guest via virtiofs.
+   How this VM's files will move: the virtiofs share, or the guest agent when libvirt finds no virtiofsd.
+   Decided before the domain is defined, because a domain with a share it cannot serve does not start.
+   */
+  const fileTransfer = await chooseFileTransferRoute(vmDir,);
+  /**
+   Shared directory exposed to the guest via virtiofs; only created and attached when the share is used.
    */
   const sharedDir = join(
     vmDir,
     SHARED_DIR_NAME,
   );
-  await mkdir(
-    sharedDir,
-    { recursive: true, },
-  );
+  if (fileTransfer === 'virtiofs') {
+    await mkdir(
+      sharedDir,
+      { recursive: true, },
+    );
+  }
 
   /**
    NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init; {@link NO_SEED_ISO} for Windows.
@@ -207,6 +215,7 @@ export async function create({
   const seedIso = await createSeedIso({
     guest,
     name,
+    sharedMount: fileTransfer === 'virtiofs',
     vmDir,
   },);
   /**
@@ -216,7 +225,7 @@ export async function create({
     diskPath,
     name,
     osFamily: guest.osFamily,
-    sharedDir,
+    ...(fileTransfer === 'virtiofs' ? { sharedDir, } : {}),
     ...(seedIso !== NO_SEED_ISO ? { seedIsoPath: seedIso, } : {}),
   },);
 
@@ -225,6 +234,7 @@ export async function create({
     xml,
   },);
   await writeVmMeta({
+    fileTransfer,
     guest,
     image,
     vmDir,

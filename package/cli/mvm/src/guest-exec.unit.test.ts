@@ -468,7 +468,7 @@ await describe({
       fn: async () => {
         await using _fake = await installFakeVirsh({
           launchFailure:
-            'error: internal error: unable to execute QEMU agent command \'guest-exec\': Guest agent command failed, error was \'Failed to execute child process\'',
+            'error: guest agent command failed: unable to execute QEMU agent command \'guest-exec\': Guest agent command failed, error was \'Failed to execute child process\'',
         },);
         const error = await caught(() =>
           exec({

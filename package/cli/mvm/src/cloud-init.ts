@@ -67,19 +67,23 @@ function asLinux(guest: GuestConfig,): LinuxGuestConfig {
  
  @param name - VM hostname
  
+ @param sharedMount - Whether the VM has the virtiofs share, which the guest then mounts at `/mnt/shared`
+ 
  @returns Cloud-init user-data string
  
  @example
  ```ts
- vmUserData({ name: 'my-vm', guest: IMAGES['ubuntu'] });
+ vmUserData({ name: 'my-vm', guest: IMAGES['ubuntu'], sharedMount: true });
  ```
  */
 function vmUserData({
   guest,
   name,
+  sharedMount,
 }: {
   readonly guest: GuestConfig;
   readonly name: string;
+  readonly sharedMount: boolean;
 },): string {
   /**
    Guest config narrowed to Linux; lets us read `initSystem`, `shell`, and `defaultUser`.
@@ -91,12 +95,16 @@ users:
   - name: ${linux.defaultUser}
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: ${linux.shell}
-mounts:
+${
+    sharedMount
+      ? `mounts:
   - [mvm-shared, /mnt/shared, virtiofs, "defaults,nofail", "0", "0"]
 runcmd:
   - ["mkdir", "-p", "/mnt/shared"]
   - ["mount", "-a"]
-${
+`
+      : ''
+  }${
     vmAutologin({
       initSystem: linux.initSystem,
       user: linux.defaultUser,
@@ -164,6 +172,8 @@ ${templateRuncmd(linux.initSystem,)}`;
  
  @param name - VM name used as hostname
  
+ @param sharedMount - Whether the VM has the virtiofs share to mount; defaults to true, false for a VM defined without the share
+ 
  @param template - Whether this is a template creation (installs qemu-guest-agent)
  
  @param vmDir - Directory to write the seed ISO into
@@ -182,11 +192,13 @@ ${templateRuncmd(linux.initSystem,)}`;
 export async function createSeedIso({
   guest,
   name,
+  sharedMount = true,
   template = false,
   vmDir,
 }: {
   readonly guest: GuestConfig;
   readonly name: string;
+  readonly sharedMount?: boolean;
   readonly template?: boolean;
   readonly vmDir: string;
 },): Promise<string | typeof NO_SEED_ISO> {
@@ -227,6 +239,7 @@ export async function createSeedIso({
       : vmUserData({
         guest,
         name,
+        sharedMount,
       },),
   );
 
