@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "scope": "Freshly inspected authored native menu poses and offline viewer, not a new ballot, real operation success or native accessibility acceptance.",
+  "htmlSha256": "e578966189a5e9fe63e75c9e8f0363146f7171e318c16e3de4faebbebc77f8dc",
+  "templateSha256": "934e50e711bf98969127620e8a7a4a0712ed35f0c7946542df95072bd3a61d1b",
+  "builderSha256": "801353cdd1d5f7998b0a5127726353482e84685a5bc3fd758b4b1962eb389871",
+  "manifestSha256": "368add9a13a3d596e22093448c95ba0d81cb85c0c262e3c05c41ae659d1d541b",
+  "nativeVerificationSha256": "43eb6e8f07ce6b803b88f3b6e9c288a926269e03dafc2761083aa4a0b467f0b2",
+  "browserCliVersion": "0.38.1",
+  "firefoxESR140Exercised": false,
+  "resourceBounds": {
+    "memoryGiB": 2,
+    "cpu": 2
+  },
+  "imagesDecodedAndOpened": 24,
+  "contexts": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "mode": "light",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "mode": "dark",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "light",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "dark",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "overflow": false
+    }
+  ],
+  "offline": true,
+  "browserEngine": "Chromium",
+  "noPolicyVotes": true,
+  "consoleErrors": 0,
+  "limits": "All distinct previews opened in first desktop/light interaction pass; separate availability, observations and representative modal/zoom/pan controls exercised in all four contexts. Axe audits are closed-page only, not native acceptance.",
+  "browsersClosed": true,
+  "ownedRuntimeAbsenceVerified": true,
+  "productionSourceAndAcceptedSearchReviewUnchanged": true,
+  "guardReportSha256": {
+    "positive": "9e8a457c8956c630c191a6408ce65d4911315b9c81c3dc8ef9e823463ffd461d",
+    "without-exact-cohort": "436d85e8eebdacaf4f8dea08b8d02e9e11dbb0f5feb59e303628d3d510adcb36",
+    "without-native-input": "286e66ce29f8edf482931bf6393651df849f5979275ea51b3166c1893d081b76",
+    "restored": "9e8a457c8956c630c191a6408ce65d4911315b9c81c3dc8ef9e823463ffd461d"
+  },
+  "publicationPreflight": {
+    "fixtures": [
+      {
+        "name": "positive",
+        "intendedOutcome": true,
+        "publicWrites": 0
+      },
+      {
+        "name": "inspection-hash",
+        "intendedOutcome": true,
+        "publicWrites": 0
+      },
+      {
+        "name": "restoration",
+        "intendedOutcome": true,
+        "publicWrites": 0
+      },
+      {
+        "name": "late-action-context",
+        "intendedOutcome": true,
+        "publicWrites": 0
+      }
+    ]
+  },
+  "publicationPreflightSha256": "43c1ad03253d1fe259073ab5500c9f657e1598503caae49df2d7a7e1d5aefc6c",
+  "rendererScreenshotsInspected": [
+    {
+      "file": "review-1440-light.png",
+      "sha256": "3b9c8d6c8f40093b3d48e0a91ef57b57e0b16703e58b35709df6655913beba35"
+    },
+    {
+      "file": "review-1440-dark.png",
+      "sha256": "76f777119c975a49a608716bd3d54f9e20913c06e161b631fb319fe1712f3d37"
+    },
+    {
+      "file": "review-390-light.png",
+      "sha256": "5699bb2b85953edd88f4ad2880a5e4c3721ca334e5a885ee92af27bb774293e2"
+    },
+    {
+      "file": "review-390-dark.png",
+      "sha256": "efc32a412809968fed92f8c8430f0aa70740831f1b9cf92c96b12c4b3e6b0072"
+    },
+    {
+      "file": "modal-1440-light.png",
+      "sha256": "92c73d08309822284e1829171a595e503810bff68aa95887c2b13c6896a0293e"
+    },
+    {
+      "file": "modal-1440-dark.png",
+      "sha256": "2ab2fc0e1ca23c4a622d359c5c51b8a43759b7a184e670c1c6f301fd472f5849"
+    },
+    {
+      "file": "modal-390-light.png",
+      "sha256": "b0a6776e96b9625b65dd54efc323d06fe3c89265616b527b498a792c0072e276"
+    },
+    {
+      "file": "modal-390-dark.png",
+      "sha256": "2d707743b709d8c791bc6663264c8e618ac9130cb6199b42eb39f77044c8dae2"
+    }
+  ],
+  "verificationLimits": [
+    "Closed-page axe checks only; no open-dialog, Firefox ESR140 or native accessibility acceptance.",
+    "Native intents do not execute playback, clipboard, analysis, file-manager, trash or restore operations.",
+    "Synthetic changed-inset and geometry fixtures are validation controls, not extra Android captures.",
+    "Full Android lint retains five inherited errors, 65 warnings and two hints."
+  ]
+}

@@ -310,5 +310,20 @@
     "separateBaseAndOverrideEqualityClaimed": false,
     "ownerExitCode": 0,
     "matchingRuntimeAbsent": true
+  },
+  "runtimeOwnerEvidence": {
+    "adapter": "INFO         | Graphics Adapter Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))",
+    "graphicsApi": "INFO         | Graphics API Version OpenGL ES 3.0 (4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2)",
+    "ownerOutputSha256": "358ba9ab7d4cc73c004b4ae1d8ab62c28fa7c827e610d61b650f4dc9b206ede4",
+    "ownerStderrSha256": "0c037a3521a15ca9b4ee35680100c5f7c5c3235b63a8bde1deac9d36bf23621c"
+  },
+  "priorArtifactComparison": {
+    "files": 24,
+    "byteEqualityTransferRejected": true,
+    "matchingMeasuredRootsAndMenuBounds": true,
+    "maximumEightBitChannelDifference": 3,
+    "causeEstablished": false,
+    "replacementInspection": "Every current full-region pair inspected afresh and hash-bound; no cross-artifact pixel or visual equivalence claim.",
+    "privateReportSha256": "130b36a6191b70b2ea4e4ac2a292ca1b60f9dd039ad4041955a592dc2613d62e"
   }
 }
