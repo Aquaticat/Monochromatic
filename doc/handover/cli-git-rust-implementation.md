@@ -644,6 +644,30 @@ and staged-versus-worktree byte isolation for the scanner.
 The optional policies follow once both land.
 The wrapper's 16 spinning mutation timeouts wait until the engine delegate releases the native modules.
 
+**Second API session limit and file-enforcer manifests**:
+all four running delegates stopped again on the API session limit and were resumed from their transcripts.
+The engine and candidate delegates had not written anything yet.
+The linter mutation runner and the scanner's Windows virtual machine (`mvm-wbase-20261005`) kept running
+through the interruption;
+a subagent that dies does not take its background processes with it,
+so a resumed delegate must check them by process and evidence directory rather than wait for a notification.
+
+A concurrent session's file-enforcer run left `package/git-policy/cli/Cargo.toml`
+and `package/git-policy/cli.fuzz/Cargo.toml` modified.
+`file-enforcer.config.ts` owns package Cargo manifests:
+it derives `package.homepage` from the crate path
+and pins `libfuzzer-sys` with the `arbitrary-derive` feature for fuzz sidecars.
+The delegates' hand-written wrapper manifests had never been through it.
+The main session committed its output as `ff3559d89`,
+with the fuzz lockfile regenerated through `mise run //package/git-policy/cli.fuzz:lock`
+(adds `derive_arbitrary` and its four proc-macro crates only).
+
+Proposed `AGENTS.md` change, not applied:
+rule `WC2` tells agents to check `file-enforcer.config.ts` before editing root config.
+Extend it to package `Cargo.toml` files,
+which file-enforcer also normalizes,
+so a new crate's manifest is generated or run through it before its first commit.
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
