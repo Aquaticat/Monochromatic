@@ -533,6 +533,9 @@ D84 (2026-10-05) removes the third row:
 analysis is automatic and non-optional,
 so Settings has no analysis switch.
 D85 removes the closing sentence that says the pane is short.
+D86 (2026-10-05) removes the two remaining rows:
+both behaviours are always on and are not settings.
+Nothing of settings-a's content is left.
 
 ### D12. Analysis status lives nowhere after the first run
 The user chose this explicitly:
@@ -2371,6 +2374,49 @@ D11's wording about the pane saying out loud that it is short is withdrawn
 with it.
 The sentence was mock copy that no decision chose,
 and D81 already adds template configuration to Settings.
+
+D86 (2026-10-05) then removes the pane's two remaining rows.
+
+### D86. Prefix stripping and resume are always on, not settings (2026-10-05)
+
+The human withdrew D11's two remaining rows:
+`Strip common prefixes from filenames` and `Resume where I left off` are
+always on and are not settings.
+This supersedes the same-day answer that only the analysis switch goes,
+which `HANDOFF.md` recorded under the two-row Settings publication.
+
+The behaviours stand as D11 described them,
+without a switch:
+titles are shown without a common filename prefix,
+as in `Another Xronixle` for
+`かめりあ(Camellia) - Another Xronixle.flac`,
+and launch restores folder,
+track and position,
+paused.
+
+With D84 and D85,
+nothing of settings-a's content remains.
+Settings stays a destination only because D81 places template configuration
+there;
+that content is undesigned (section 11e of `open-questions.md`).
+The Fold placement used by the Settings study was adopted from D50,
+D51 and existing Settings behaviour,
+not accepted,
+and this record does not change that.
+The published two-row Settings study is withdrawn by this record.
+
+A scoped source reading on the same day,
+not an acceptance of production:
+Android `PlaybackService` already loads a persisted session through
+`SessionStore.load` when it starts,
+with no setting;
+whether it restores folder,
+track and position paused as D11 words it was not checked.
+`core/RelPath.kt` strips the longest common directory prefix from displayed
+paths and `rowDisplay` strips a folder label;
+a search of Android and desktop production source found no code that removes
+a shared filename prefix or the extension as D11's example does.
+No production implementation is authorized by this record.
 
 ## Pending after the theme picks (2026-09-04)
 
