@@ -180,18 +180,36 @@ A repeated Android lint run reports the same five inherited errors and
 65 warnings rather than 68;
 the new row's three `ModifierParameter` findings are gone.
 This is not a full-package lint pass.
-A separate owned visit and evidence directory re-verify the new artifact
-instead of inferring native equivalence from the source change.
+A separate owned visit and evidence directory verified the new artifact:
+all 24 poses and all seven action intents in every panel/theme/scale context
+passed,
+along with tap/long-press separation,
+outside dismissal,
+unchanged player geometry/app pixels and duplicate-name targeting.
+The recorded settings were restored exactly;
+the owner exited `0` and its container/QEMU were absent.
 The inspected `a23f02c5` captures retain their original APK/source identity.
-Final publication remains incomplete.
+
+Byte comparison rejected inspection transfer for all 24 new crops.
+Their measured roots and menu bounds match the prior records,
+but RGB channels differ by up to 3 on the 8-bit scale.
+This comparison does not establish a cause or visual equivalence.
+Every current full-region pair was opened and inspected independently,
+then bound to the current APK/source and crop hashes.
+The rejected transfer record is retained as resolved by fresh inspection,
+not erased or converted into an equality claim.
+Current PNGs and scoped native verification are published;
+the offline viewer and final consumer verification remain in progress.
+Disposable publication controls rejected a changed inspection hash,
+changed restoration and missing action context before any public write.
 
 ## Independently verifiable queue
 
 - [x] Identify D7's explicit actions and distinguish historical design from
   executable row/menu ownership.
-- [ ] Inspect current native menu declarations and accepted player hooks,
+- [x] Inspect current native menu declarations and accepted player hooks,
   then build an isolated debug study without production callbacks.
-- [ ] Verify target identity,
+- [x] Verify target identity,
   opening/dismissal,
   action-intent ownership and fit across both panels,
   themes and 100%/200% text.
@@ -218,5 +236,5 @@ The successful D83 runtime bridge is reusable infrastructure,
 not a claim that cold-start system failures are fixed.
 
 No new preference question is established by this initial audit.
-The next action is the installed-menu API and isolated-host inspection,
+The next action is offline consumer verification and publication closure,
 not a colour ballot or production implementation.

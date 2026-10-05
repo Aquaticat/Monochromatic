@@ -105,13 +105,33 @@ The first `f58c8967` wrapping-heading artifact is also retained as a
 superseded probe,
 not current visual evidence.
 
-The current-artifact native repetition and final publication are still in
-progress.
-The consumer is prepared to require exact cohort membership,
+The current artifact completed the same 24-pose cohort and full action
+matrix in its own bounded visit.
+All seven actions were initially visible in every captured menu.
+Plain tap emitted one row event without a menu;
+long press opened the target menu without a row tap.
+Outside dismissal preserved player geometry and app pixels without leaking
+a tap to the underlying row.
+Changed-pixel controls rejected differences;
+an offline replay also rejected changed root and viewport coordinates.
+Duplicate-name coverage is copy-name intent on source indices 1 and 2,
+not every action on both duplicates.
+
+Byte equality to the prior inspected artifact failed for all 24 captures.
+Measured roots and menu bounds match,
+while RGB channels differ by at most 3 on the 8-bit scale.
+No cause or cross-artifact visual equivalence is inferred.
+All current full-region pairs were inspected afresh and hash-bound before
+publishing `questions/evidence/track-menu-witnesses.json` and its PNGs.
+`questions/evidence/track-menu-native-verification.json` records exact
+contexts,
+operation limits and geometry replay.
+The prepared consumer requires exact cohort membership,
 measured crop bounds,
 actual runtime provenance,
 heading behavior and native-input evidence.
-No new preference answer is required to complete those checks.
+Final viewer verification remains in progress;
+no new preference answer is required.
 
 ## Privacy and restoration
 
@@ -131,6 +151,14 @@ its actual renderer is recorded from the owning visit,
 not inferred from a requested GPU flag.
 Only the recorded original settings are restored and exactly read back.
 Separate base-state/override equality is not claimed.
+The current native owner exited `0` after exact recorded-field restoration;
+its matching container and QEMU are absent.
+The measured adapter was LLVM 20.1.2 llvmpipe software rendering despite
+the requested host GPU path.
+The owner log still contains GPU fallback,
+`bad color buffer handle` and `stop: Not implemented` diagnostics.
+Successful capture and shutdown are not diagnostic-free or general
+stability claims.
 Original user AVDs and library data remain untouched.
 The [continuation plan](../../../../doc/planning/music-player-light-context-menu.md)
 records terminal outcomes,
