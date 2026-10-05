@@ -72,6 +72,9 @@ pub mod search_protocol;
 /// Filename matching follows editord's smart-case literal-substring rule.
 pub mod search_query;
 
+/// Overlay query parsing and shortcut timing are independent of native event delivery.
+pub mod search_input;
+
 /// One-way cancellation reaches both search children without waiting for another output record.
 pub mod search_cancel;
 
