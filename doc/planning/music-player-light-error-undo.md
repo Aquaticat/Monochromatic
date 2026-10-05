@@ -109,6 +109,19 @@ root,
 not silently reuse the old status-strip size or crop app content away.
 Physical panel size and density still match the official profile.
 
+A subsequent API37 cold restart reached authorized readiness,
+but the cover control's fresh frame/window check rejected a System UI ANR
+that owned focus after the app launch.
+The fresh guest's initial baseline and successful inner controls remain
+valid bounded observations,
+not proof that old userdata caused every failure or that cold restarts
+are stable.
+The failed cover visit restored its recorded fields and stopped.
+The separately provisioned API36 Google APIs Fold is the next comparison,
+using the same emulator binary,
+renderer,
+APK and 6GiB/2CPU limits.
+
 ## Independently verifiable queue
 
 - [x] Inspect the accepted dark error/toast candidates,
