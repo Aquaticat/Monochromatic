@@ -275,6 +275,8 @@ function tokensOfRows(
 
  @returns Printable summary
 
+ @throws Error when handed no row, which `summarizeBench` never does
+
  @example
  ```ts
  console.log(describeRows({ rows, },),);
@@ -283,6 +285,16 @@ function tokensOfRows(
 function describeRows(
   { rows, }: { readonly rows: readonly BenchRow[]; },
 ): string {
+  // `summarizeBench` reads each width and each pass off the rows it then
+  // groups by them, so a group holds the row its width and pass came from.
+  // Over no row the mean this line ends on divides nothing by nothing and
+  // would print `NaNms per slice`.
+  if (rows.length === 0)
+    throw new Error(
+      'unreachable: describeRows was handed no row, though summarizeBench groups rows by a width and a pass it '
+        + 'read off those rows',
+    );
+
   /**
    Rows whose slice already had a translation.
    */

@@ -1,11 +1,7 @@
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { RenderingAuditInvariantError, } from '../rendering-audit-invariant.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
-import type {
-  ArtifactDeliveryRow,
-  ArtifactSliceDelivery,
-  ArtifactSliceOutcome,
-} from './artifact-two-lane-vocabulary.ts';
+import type { ArtifactSliceDelivery, } from './artifact-two-lane-vocabulary.ts';
 import {
   pageRelationOf,
   type SettledPageRelation,
@@ -244,8 +240,10 @@ export function identityOf({ prepared, }: { readonly prepared: PreparedDocumentP
 
  @returns One subject per decided slice
 
- @throws {@link Error} when a row that passed the decided filter is not
- decided, which cannot happen and is never swallowed if it does
+ @throws {@link RenderingAuditInvariantError} when a row that passed the
+ decided filter is not decided, or when a slice the translate lane delivered
+ is named by no comparison row; either contradicts the one artifact both were
+ read from, and neither is swallowed
 
  @example
  ```ts
@@ -291,18 +289,13 @@ export function subjectsOf(
   );
 
   return delivery
-    .filter(function wasDecided(row,): row is ArtifactDeliveryRow & {
-      readonly outcome: Extract<ArtifactSliceOutcome, { readonly kind: 'decided' }>;
-    } {
+    .filter(function wasDecided(row,): boolean {
       /**
        What the lane did at this slice.
        */
       const { outcome, } = row;
 
-      // A slice the lane never reached has no rendering to audit. The
-      // predicate carries the narrowing downstream, so `asSubject` reads
-      // the decided outcome without an invariant re-check (ledger T8,
-      // 2026-10-04).
+      // A slice the lane never reached has no rendering to audit.
       return outcome.kind === 'decided';
     },)
     .map(function asSubject(row,): SettledAuditSubject {
@@ -313,6 +306,14 @@ export function subjectsOf(
         outcome,
         delivery: shipped,
       } = row;
+
+      // The filter kept decided rows only, so this names a row it let
+      // through wrongly; it also tells the compiler the outcome carries an
+      // accepted text.
+      if (outcome.kind !== 'decided')
+        throw new RenderingAuditInvariantError({
+          invariant: `slice ${String(row.sliceIndex,)} passed the decided filter and is not decided`,
+        },);
 
       /**
        What would stand at this slice.

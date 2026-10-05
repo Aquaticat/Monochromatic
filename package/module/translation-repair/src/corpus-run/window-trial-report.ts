@@ -297,11 +297,18 @@ function pairedExcessOf(
       triple,
     ): number {
       /**
-       Whether one arm replaced the archive:1 where it did.
+       Whether one arm replaced the archive at this slice, as a number the
+       paired difference can add.
 
        @param arm - arm whose ledger row is read
 
-       @returns One where the arm shipped, zero where it stood
+       @returns One where the arm shipped its rendering, zero where the
+       archive stood
+
+       @example
+       ```ts
+       const wide = shippedOf(TRIAL_ARMS.wide,);
+       ```
        */
       function shippedOf(arm: string,): number {
         return (triple.get(arm,)

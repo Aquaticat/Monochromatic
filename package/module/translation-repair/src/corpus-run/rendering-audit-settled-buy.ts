@@ -3,7 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { citedReferenceUrlsOf, } from '../cited-reference-scan.ts';
 import { runRenderingAudit, } from '../rendering-audit.ts';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import { RenderingAuditInvariantError, } from '../rendering-audit-invariant.ts';
 import { askedAmong, } from './command-flags.ts';
 import type { PassReferenceReader, } from './pass-outside-reads.ts';
 import { digestAuditedText, } from './rendering-audit-settled-digest.ts';
@@ -185,6 +185,9 @@ export type CitedSubject = {
  @returns Every subject with its page's references, in buying order; a page
  that links pages and reads as nothing is `unread`, never `none`
 
+ @throws {@link RenderingAuditInvariantError} when a subject's page was never
+ read, which cannot happen while the pages read are these subjects' own
+
  @example
  ```ts
  const cited = await withCitedReferences({ subjects: buying, reader: RUN_OUTSIDE_READS.references, },);
@@ -291,10 +294,19 @@ export async function withCitedReferences(
     /**
      What this subject's page cites. The map is total over the subjects:
      it is built from this very list, one entry per page read, so a miss
-     here is a defect and never a page that cites nothing (ledger T8,
-     2026-10-04).
+     here is a defect and never a page that cites nothing.
      */
-    const references = nonNullishOrThrow(cited.get(subject.pageSourceText,),);
+    const references = cited.get(subject.pageSourceText,);
+
+    // Named rather than left to a bare non-null check, whose message says
+    // only that a value was missing: the entry and the slice say which
+    // purchase had no page read for it.
+    if (references === undefined)
+      throw new RenderingAuditInvariantError({
+        invariant: `${subject.entryId} slice ${
+          String(subject.sliceIndex,)
+        } was bought and its page was never read for references`,
+      },);
     return {
       subject,
       references,

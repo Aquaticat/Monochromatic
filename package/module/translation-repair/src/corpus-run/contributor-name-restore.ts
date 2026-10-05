@@ -154,6 +154,9 @@ function titleNames(
 
  @returns The heading rewritten, or left alone
 
+ @throws Error when the rewritten heading equals the heading as written,
+ which a rendering the heading does not already carry cannot produce
+
  @example
  ```ts
  const restored = restoreHeading({ line, title, authorities, },);
@@ -223,6 +226,17 @@ function restoreHeading(
    Heading as the page will carry it.
    */
   const after = `${page.marks} ${prefix}${authority.rendering}`;
+
+  // A rebuild equal to the line means the name the line writes is the
+  // rendering, trimmed; every authority's rendering is trimmed
+  // (`contributor-name-authorities.ts`), so `carriesRendering` has already
+  // answered for such a heading and it never reaches here. Reported as
+  // rewritten, it would log a line restored to itself.
+  if (after === line)
+    throw new Error(
+      'unreachable: the heading rebuilt around the rendering equals the heading as written, though the name it '
+        + 'writes was read as not carrying that rendering',
+    );
   return {
     rewritten: true,
     after,
@@ -241,6 +255,9 @@ function restoreHeading(
  @param authority - rendering the original's signer takes
 
  @returns The signature rewritten, or left alone
+
+ @throws Error when the rewritten signature equals the signature as written,
+ which a rendering the signature does not already carry cannot produce
 
  @example
  ```ts
@@ -270,6 +287,18 @@ function restoreSignature(
     0,
     signature.nameStart,
   )}${authority.rendering}${line.slice(signature.nameEnd,)}`;
+
+  // A rebuild equal to the line means the span the name stands in is the
+  // rendering itself, and the name is that span trimmed; every authority's
+  // rendering is trimmed (`contributor-name-authorities.ts`), so
+  // `carriesRendering` has already answered for such a signature and it
+  // never reaches here. Reported as rewritten, it would log a line restored
+  // to itself.
+  if (after === line)
+    throw new Error(
+      'unreachable: the signature rebuilt around the rendering equals the signature as written, though the name '
+        + 'it writes was read as not carrying that rendering',
+    );
   return {
     rewritten: true,
     after,

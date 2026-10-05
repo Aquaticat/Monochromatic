@@ -56,10 +56,26 @@ const SIGNED_TWICE = pair({
 const TWO_SECTIONS = pair({
   sliceIndex: 3,
   source: '### 其三：猫猫\n\n它睡了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 17 日</p>\n\n'
-    + '### 其四：狗狗\n\n它跑了。',
+    + '### 其四：小猫\n\n它跑了。',
   target: '### Maomao\n\nIt sleeps.\n\n> <p style="text-align: end;">——Maomao, December 17, 2024</p>\n\n'
-    + '### Doggo\n\nIt runs.',
+    + '### Kitten\n\nIt runs.',
 });
+
+/**
+ Finding the pass writes when it restores the archive's handle into the
+ heading `### Three: Cat Cat` of slice 0.
+ */
+const HEADING_RESTORED = 'contributor-name-restored (slice 0: "### Three: Cat Cat" to "### Three: Maomao" in a heading; '
+  + 'the archive\'s signature rendering)';
+
+/**
+ Finding the pass writes when it restores the archive's handle into the
+ signature of slice 0 that the page signed `Cat Cat`.
+ */
+const SIGNATURE_RESTORED =
+  'contributor-name-restored (slice 0: "> <p style="text-align: end;">—Cat Cat, December 17, 2024</p>" to '
+    + '"> <p style="text-align: end;">—Maomao, December 17, 2024</p>" in a signature; '
+    + 'the archive\'s signature rendering)';
 
 await describe({
   name: 'a contributor name is rendered one way across headings and signatures (class sixty-seven)',
@@ -173,7 +189,7 @@ await describe({
         const dropped = {
           sliceIndex: 3,
           replacementText: 'It sleeps.\n\n> <p style="text-align: end;">——Maomao, December 17, 2024</p>\n\n'
-            + '### Four: Doggo\n\nIt runs.',
+            + '### Four: Kitten\n\nIt runs.',
         };
         const restored = restoreContributorNames({
           slices: [TWO_SECTIONS,],
@@ -188,10 +204,17 @@ await describe({
     },),
 
     it({
-      name: 'MATCHES a heading naming the contributor outright and restores it with no prefix, the '
-        + 'rendering standing alone where the original heading carries no colon',
+      name: 'WRITES the rendering alone into a heading whose original is the contributor\'s name and no more, '
+        + 'dropping the prefix and colon the page put before the name',
       fn: async () => {
-        const restored = restoreContributorNames({
+        /**
+         The one row the page writes, as the pass leaves it.
+         */
+        const restoredRow = {
+          sliceIndex: 0,
+          replacementText: '### Maomao\n\nIt sleeps.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
+        };
+        expect(restoreContributorNames({
           slices: [pair({
             sliceIndex: 0,
             source: '### 猫猫\n\n它睡了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 17 日</p>',
@@ -199,46 +222,87 @@ await describe({
           },),],
           replacements: [{
             sliceIndex: 0,
-            replacementText: '### Cat Cat\n\nIt sleeps.\n\n> <p style="text-align: end;">—Cat Cat, December 17, 2024</p>',
+            replacementText: '### Our friend: Cat Cat\n\nIt sleeps.\n\n> <p style="text-align: end;">—Cat Cat, December 17, 2024</p>',
           },],
+        },),).toEqual({
+          replacements: [restoredRow,],
+          restored: [restoredRow,],
+          findings: [
+            'contributor-name-restored (slice 0: "### Our friend: Cat Cat" to "### Maomao" in a heading; '
+              + 'the archive\'s signature rendering)',
+            SIGNATURE_RESTORED,
+          ],
         },);
-        expect(restored.replacements[0]?.replacementText,)
-          .toBe('### Maomao\n\nIt sleeps.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',);
       },
     },),
 
     it({
-      name: 'LEAVES a heading whose original names no contributor alone, since nothing authorises its '
-        + 'rewrite',
+      name: 'LEAVES a heading whose original names no contributor as the page has it, beside a heading of the '
+        + 'same slice it restores',
       fn: async () => {
-        const restored = restoreContributorNames({
+        /**
+         The one row the page writes, its first heading restored and its
+         second as the page wrote it.
+         */
+        const restoredRow = {
+          sliceIndex: 0,
+          replacementText: '### Three: Maomao\n\nIt sleeps.\n\n### Little Cat\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
+        };
+        expect(restoreContributorNames({
           slices: [pair({
             sliceIndex: 0,
-            source: '### 其三：猫猫\n\n它睡了。\n\n### 狗狗\n\n它跑了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 17 日</p>',
-            target: '### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
+            source: '### 其三：猫猫\n\n它睡了。\n\n### 小猫\n\n它跑了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 17 日</p>',
+            target: '### Maomao\n\nIt sleeps.\n\n### Kitten\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
           },),],
           replacements: [{
             sliceIndex: 0,
-            replacementText: '### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
+            replacementText: '### Three: Cat Cat\n\nIt sleeps.\n\n### Little Cat\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
           },],
+        },),).toEqual({
+          replacements: [restoredRow,],
+          restored: [restoredRow,],
+          findings: [HEADING_RESTORED,],
         },);
-        expect(restored.replacements[0]?.replacementText,)
-          .toBe('### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',);
       },
     },),
 
     it({
-      name: 'SKIPS a slice the replacements never wrote, since there is no line of it to restore',
+      name: 'LEAVES a slice no lane replaced as the archive has it, though its heading names the signer word '
+        + 'for word, and restores the replaced slice beside it',
       fn: async () => {
-        const restored = restoreContributorNames({
-          slices: [CARRIED, UNCARRIED,],
+        /**
+         A section only the archive carries, headed word for word and signed
+         with the handle.
+         */
+        const archiveOnly = pair({
+          sliceIndex: 1,
+          source: '### 其四：猫猫\n\n它醒了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 18 日</p>',
+          target: '### Four: Cat Cat\n\nIt wakes.\n\n> <p style="text-align: end;">——Maomao, December 18, 2024</p>',
+        },);
+        /**
+         The one row the page writes, restored.
+         */
+        const restoredRow = {
+          sliceIndex: 0,
+          replacementText: '### Three: Maomao\n\nIt sleeps.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
+        };
+        expect(restoreContributorNames({
+          slices: [
+            CARRIED,
+            archiveOnly,
+          ],
           replacements: [{
             sliceIndex: 0,
             replacementText: '### Three: Cat Cat\n\nIt sleeps.\n\n> <p style="text-align: end;">—Cat Cat, December 17, 2024</p>',
           },],
+        },),).toEqual({
+          replacements: [restoredRow,],
+          restored: [restoredRow,],
+          findings: [
+            HEADING_RESTORED,
+            SIGNATURE_RESTORED,
+          ],
         },);
-        expect(restored.replacements.length,).toBe(1,);
-        expect(restored.replacements[0]?.sliceIndex,).toBe(0,);
       },
     },),
   ],

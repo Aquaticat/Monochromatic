@@ -22,6 +22,8 @@
  */
 
 import {
+  caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -31,6 +33,8 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   identityOf,
   type ParsedTwoLaneArtifact,
+  prepareDocumentPair,
+  RenderingAuditInvariantError,
   type SettledIdentity,
   subjectsOf,
 } from '../../dist/final/node/index.mjs';
@@ -242,105 +246,156 @@ const ARTIFACT = {
 //endregion Fixtures
 
 await describe({
-  name: subjectsOf.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS the translate lane ledger and no other, since a settled artifact carries two that '
-        + 'both delivered text and an audit pointed at the wrong one reports a denominator over slices '
-        + 'no reader ever met',
-      fn: async () => {
-        const subjects = subjectsOf({
-          artifact: ARTIFACT,
-          runSet: 'run-cc33',
-          identity: IDENTITY,
-          pageSourceText: PAGE_NAP,
-        },);
+    describe({
+      name: subjectsOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS the translate lane ledger and no other, since a settled artifact carries two that '
+            + 'both delivered text and an audit pointed at the wrong one reports a denominator over slices '
+            + 'no reader ever met',
+          fn: async () => {
+            const subjects = subjectsOf({
+              artifact: ARTIFACT,
+              runSet: 'run-cc33',
+              identity: IDENTITY,
+              pageSourceText: PAGE_NAP,
+            },);
 
-        expect(subjects.length,).toBe(1,);
+            expect(subjects.length,).toBe(1,);
 
-        /**
-         Only slice the translate lane decided.
-         */
-        const subject = nonNullishOrThrow(subjects[0],);
+            /**
+             Only slice the translate lane decided.
+             */
+            const subject = nonNullishOrThrow(subjects[0],);
 
-        expect(subject.sliceIndex,).toBe(0,);
-        expect(subject.candidateText,).toBe(TRANSLATE_NAP,);
-        expect(subject.sourceText,).toBe(SOURCE_NAP,);
-        expect(subject.deliveryKind,).toBe('replacement-shipped',);
-        expect(subject.auditsArchiveText,).toBe(false,);
-      },
-    },),
-    it({
-      name: 'CARRIES the archive provenance every join needs, naming the run set, the entry, the digest '
-        + 'that produced the decision and the commit it was read at, since two runs of one entry are '
-        + 'separated by nothing else',
-      fn: async () => {
-        const subjects = subjectsOf({
-          artifact: ARTIFACT,
-          runSet: 'run-cc33',
-          identity: IDENTITY,
-          pageSourceText: PAGE_NAP,
-        },);
-
-        /**
-         Only slice the translate lane decided.
-         */
-        const subject = nonNullishOrThrow(subjects[0],);
-
-        expect(subject.runSet,).toBe('run-cc33',);
-        expect(subject.entryId,).toBe('mittens-window',);
-        expect(subject.artifactDigest,).toBe('digest-aa11',);
-        expect(subject.corpusSha,).toBe('sha-bb22',);
-        expect(subject.identity,).toEqual(IDENTITY,);
-        expect(subject.pageSourceText,).toBe(PAGE_NAP,);
-      },
-    },),
-
-    it({
-      name: 'READS NO identity from a preparation declaring an empty one, since the declaration says '
-        + 'nothing to carry',
-      fn: async () => {
-        expect(identityOf({
-          prepared: { identityContext: '', },
-        } as unknown as Parameters<typeof identityOf>[0],),).toEqual({ kind: 'none', },);
-      },
-    },),
-
-    it({
-      name: 'THROWS the invariant naming a delivered slice no comparison row describes, rather than '
-        + 'quietly shrinking the audited population',
-      fn: async () => {
-        /**
-         Artifact whose translate lane delivered a slice the comparison
-         rows never named.
-         */
-        const inconsistent = {
-          ...ARTIFACT,
-          lanes: {
-            ...ARTIFACT.lanes,
-            translate: {
-              delivery: [
-                ...ARTIFACT.lanes.translate.delivery,
-                deliveryRow({
-                  sliceIndex: 7,
-                  sourceText: SOURCE_NAP,
-                  outcome: {
-                    kind: 'decided',
-                    acceptedText: TRANSLATE_NAP,
-                  },
-                  delivery: { kind: 'replacement-shipped', },
-                },),
-              ],
-            },
+            expect(subject.sliceIndex,).toBe(0,);
+            expect(subject.candidateText,).toBe(TRANSLATE_NAP,);
+            expect(subject.sourceText,).toBe(SOURCE_NAP,);
+            expect(subject.deliveryKind,).toBe('replacement-shipped',);
+            expect(subject.auditsArchiveText,).toBe(false,);
           },
-        } as unknown as ParsedTwoLaneArtifact;
-        expect(() => subjectsOf({
-          artifact: inconsistent,
-          runSet: 'run/one',
-          identity: IDENTITY,
-          pageSourceText: PAGE_NAP,
-        },),).toThrow('named by no comparison row',);
-      },
+        },),
+        it({
+          name: 'CARRIES the archive provenance every join needs, naming the run set, the entry, the digest '
+            + 'that produced the decision and the commit it was read at, since two runs of one entry are '
+            + 'separated by nothing else',
+          fn: async () => {
+            const subjects = subjectsOf({
+              artifact: ARTIFACT,
+              runSet: 'run-cc33',
+              identity: IDENTITY,
+              pageSourceText: PAGE_NAP,
+            },);
+
+            /**
+             Only slice the translate lane decided.
+             */
+            const subject = nonNullishOrThrow(subjects[0],);
+
+            expect(subject.runSet,).toBe('run-cc33',);
+            expect(subject.entryId,).toBe('mittens-window',);
+            expect(subject.artifactDigest,).toBe('digest-aa11',);
+            expect(subject.corpusSha,).toBe('sha-bb22',);
+            expect(subject.identity,).toEqual(IDENTITY,);
+            expect(subject.pageSourceText,).toBe(PAGE_NAP,);
+          },
+        },),
+
+        it({
+          name: 'THROWS the invariant naming a delivered slice no comparison row describes, rather than '
+            + 'quietly shrinking the audited population',
+          fn: async () => {
+            /**
+             Artifact whose translate lane delivered a slice the comparison
+             rows never named.
+             */
+            const inconsistent = {
+              ...ARTIFACT,
+              lanes: {
+                ...ARTIFACT.lanes,
+                translate: {
+                  delivery: [
+                    ...ARTIFACT.lanes.translate.delivery,
+                    deliveryRow({
+                      sliceIndex: 7,
+                      sourceText: SOURCE_NAP,
+                      outcome: {
+                        kind: 'decided',
+                        acceptedText: TRANSLATE_NAP,
+                      },
+                      delivery: { kind: 'replacement-shipped', },
+                    },),
+                  ],
+                },
+              },
+            } as unknown as ParsedTwoLaneArtifact;
+
+            /**
+             What reading its subjects raised.
+             */
+            const refusal = caught(function readSubjects(): unknown {
+              return subjectsOf({
+                artifact: inconsistent,
+                runSet: 'run/one',
+                identity: IDENTITY,
+                pageSourceText: PAGE_NAP,
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(RenderingAuditInvariantError,);
+            expect(String(refusal,),).toBe(
+              'RenderingAuditInvariantError: rendering audit invariant broken: slice 7 was delivered by the '
+                + 'translate lane and named by no comparison row',
+            );
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: identityOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS no identity where the preparation carries no identity block, and none where the block '
+            + 'it carries is empty, and READS the block as declared where it holds a line',
+          fn: async () => {
+            /**
+             A pair declaring nothing: no front matter, no heading, no link,
+             no signature, no pronoun.
+             */
+            const pair = {
+              sourceText: '猫睡了。\n',
+              targetText: 'The cat sleeps.\n',
+            };
+            expect([
+              prepareDocumentPair(pair,),
+              // One empty line from a caller makes the block the empty
+              // string, which the sheets render as no block at all.
+              prepareDocumentPair({
+                ...pair,
+                contextLines: ['',],
+              },),
+              prepareDocumentPair({
+                ...pair,
+                contextLines: ['- nickname: Mittens',],
+              },),
+            ].map(function identityRead(prepared,): SettledIdentity {
+              return identityOf({ prepared, },);
+            },),).toEqual([
+              { kind: 'none', },
+              { kind: 'none', },
+              {
+                kind: 'declared',
+                context: '- nickname: Mittens',
+              },
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);
