@@ -197,8 +197,12 @@ It is not a graphics-stability or cover-verification pass.
 
 The next bounded renderer control exposes the host's existing render node
 and requests `-gpu host` with the same native-library environment and caps.
-Actual adapter output must be inspected before claiming hardware rendering;
-the earlier host request resolved to llvmpipe without a render node.
+The actual adapter output is
+`llvmpipe (LLVM 20.1.2, 256 bits)`.
+Exposing the render node did not establish hardware rendering;
+this remains a software-rendered native-library control.
+The earlier host request resolved to LLVM22 llvmpipe in the different
+library environment.
 Exact unowned fresh-AVD locks were preserved after positive owner checks;
 no original AVD or third-party source was changed.
 
