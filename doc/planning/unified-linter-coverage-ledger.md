@@ -67,29 +67,40 @@ they are not incumbent parity work:
 ## Native implementation verification
 
 The active implementation record is
-[`cli-git-rust-implementation.md`](../handover/cli-git-rust-implementation.md).
-On 2026-10-04,
-CLI grammar,
-native literal/glob discovery,
-Rust dispatch,
-and JSONL/stdin-fix output routing passed their 121-test container suite and Clippy.
+[`cli-git-rust-implementation.md`](../handover/cli-git-rust-implementation.md),
+whose `Handoff 2026-10-05` section carries the full current state.
 
-Subsequent Markdown ports add commands-show-output,
-duplicate headings,
-trailing punctuation,
-and reference-definition use/uniqueness.
-The current recorded test gate passed 138 tests (`proc_02be`);
-Clippy then rejected late initialization in definition classification.
-That branch has been restructured without a suppression;
-its renewed gate and scoped mutation campaign are pending.
-A bare-CR output-bearing shell-example regression was caught and corrected before this test pass.
+Implemented and verified:
+configuration merge and discovery,
+Rust rules (max-lines, rustdoc, anonymous functions, explicit types),
+native Markdown/MDX adapter and rules,
+JSONL/stdin-fix output routing,
+literal/glob discovery,
+bounded fixpoint loop,
+embedded processors (virtual Rust and Rustdoc extraction with host-mapped fixes),
+and the forbidden-strings in-process scanner API.
 
-The current full mutation campaign still covers the older semantic-session snapshot.
-Its surfaced fence-indentation and heading-depth survivors led to native offset controls,
-removal of redundant indentation adjustment,
-and explicit adjacent/equal-heading tests.
-No final mutation completion is claimed yet.
-The new Markdown/MDX ASAN target is also awaiting its first campaign result.
+Verification evidence:
+170-test container gate (`proc_0fca`),
+processor delegate 203-test suite with Clippy and guard-focused mutation
+(image `62a207e21b353bf4`),
+scanner delegate full suite with ASan fuzzing (256,297 runs) and panic controls,
+and fuzz campaign `campaign-KqhBLf` covering merge, configuration,
+rust-style, explicit-types, and Markdown/MDX including tables and prose.
+
+Open mutation state:
+full-snapshot campaign `proc_3d86` recorded 18 survivors on its older snapshot;
+Markdown-scoped rerun `proc_ea56` recorded 17 survivors
+centered on table cell boundaries, continuation prefixes,
+and prose break/block-start guards.
+Both survivor inventories need disposition or new controls before any completion claim.
+
+Remaining implementation:
+linter executable orchestration and consumer migration,
+native cli-git wrapper (configuration, policies, Git operations, transactions),
+Windows-native scanner mutation verification,
+and native LFS URL normalization vetting
+(planning record: `native-lfs-url-normalization-evaluation.md`).
 
 ## Rust linter
 

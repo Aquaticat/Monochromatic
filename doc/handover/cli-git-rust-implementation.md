@@ -10,20 +10,139 @@ The accepted scope is in
 and
 [`unified-linter.md`](../planning/unified-linter.md).
 
+## Handoff 2026-10-05
+
+This session hands off to Claude Opus after the Astra usage limit was reached.
+The three scope-limited delegate sessions
+(scanner verification,
+native LFS URL evaluation,
+processors) have all returned.
+
+### Session-owner state
+
+Main session work since the delegates started:
+
+- Bounded fixpoint loop (`fix_loop.rs`) with cycle detection,
+  ten-pass cap,
+  and mandatory final check;
+  170-test gate passed (`proc_0fca`).
+- Native cli-git wrapper foundations in `package/git-policy/cli/src/native/`:
+  `global_arguments.rs` (Git 2.56.0 `handle_options` parity,
+  9 tests passed in container `proc_d019`)
+  and `config_loading.rs` (lazy policy-loading classification).
+  The classification gate (`proc_c227`) passed all 9 tests
+  but Clippy failed with `if_same_then_else` in `config_loading.rs:188`.
+  Fix that condition merge before continuing the wrapper.
+  The wrapper has its own `Cargo.toml`,
+  `native:lock`/`native:format`/`native:check`/`native:test:container` tasks,
+  and its test fixture uses the audited Git 2.56.0 image
+  `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`.
+- Processor implementation from the delegate is now committed (`ff5706ef3`)
+  after the delegated session's guardrail blocked its scoped commits.
+  Formatter-only deltas committed as `00777e5ef`.
+- A trust rule for private scratch audit helpers and bounded container verification
+  under `~/temp/agent` was accepted in this session,
+  so the blocked LFS URL evaluation can resume.
+
+### Delegate outcomes
+
+**Scanner embedding verification**
+(`doc/handover/scanner-native-verification.md`,
+commit `f0635c911`):
+complete.
+Release suite passed 158 library tests,
+2 binary-boundary tests,
+4 public embedding tests,
+40 CLI integration tests,
+and 8 pathname tests.
+Clippy passed across scanner and every fuzz-sidecar target.
+ASan embedding fuzzing passed 256,297 runs.
+Panic controls passed with independent observations
+(hook ownership, unwind outcomes, real parallel CLI faults).
+Mutation: 147 mutants, 122 caught, 22 unviable, 3 survivors;
+startup follow-up caught all 5 mutants including the logging-filter survivor.
+Remaining limitation:
+two Windows-native prefix-detection mutants survive on Linux;
+the full mutation gate stays non-green pending Windows-native verification.
+Scoped paths are committed and clean.
+
+**Native LFS URL evaluation**
+(`doc/planning/native-lfs-url-normalization-evaluation.md`,
+commit `afa351721`):
+blocked before candidate vetting by the private-helper permission gate.
+Local measurements completed:
+Node v26.10.0 with Ada 4.0.0,
+consumed `lfsObjectBase` contract documented
+(parse without base,
+clear credentials/query/fragment,
+serialize,
+remove one final slash,
+preserve literal prefix matching).
+No candidate is recommended or adopted.
+With the newly accepted trust rule the queue can resume at
+frozen discovery queries and candidate screening.
+Do not treat the Rust `url` family or Ada bindings as preselected winners.
+
+**Processors**
+(`doc/handover/unified-linter-processors.md`):
+implemented and committed (`ff5706ef3`),
+verified at 203 native tests (33 processor tests),
+Clippy,
+standalone built-library consumer,
+84 systematic cases,
+1,024 seeded fuzz cases,
+and 5/5 guard-focused mutants caught
+(immutable image `62a207e21b353bf4b0b047e67d9424a2720eda1c1d7286b006150ddd9f96188a`).
+Interface:
+`extract`,
+`VirtualSource::check_rust` (host-mapped findings,
+no synthetic-main reporting),
+`project_diagnostic`,
+`project_fix` (container-preserving atomic groups),
+explicit processing failure for unresolvable virtual semantics.
+The final handover document still needs a render check
+and the delegate's scoped mutation campaign was still running when it returned.
+Integration into executable orchestration and global fuzzing remains.
+
+### Mutation state
+
+- Full snapshot campaign (`proc_3d86`, older snapshot):
+  439 mutants, 18 missed, 367 caught, 52 unviable, 2 timeouts.
+  Survivors include `rust_inferred_constants.rs` argument-index arithmetic.
+- Markdown-scoped rerun (`proc_ea56`):
+  496 mutants, 17 missed, 442 caught, 26 unviable, 11 timeouts.
+  Survivors concentrate in `markdown_tables.rs` cell boundaries,
+  `markdown_prose_context.rs` continuation prefixes,
+  `markdown_break_points.rs`, and `markdown_block_start.rs`.
+  Full inventory:
+  `package/linter/monochromatic-lint/target/verification/`.
+- Fuzz campaign `campaign-KqhBLf` passed
+  (147,101 merge, 13,394 configuration, 1,185 rust-style,
+  539 explicit-types, 64,366 Markdown/MDX including tables and prose).
+
 ## Work queue
 
-- [ ] Unified-linter foundation: JSONC schema, ordered merge, command interface, and artifact tests.
+- [x] Unified-linter foundation: JSONC schema, ordered merge, command interface, and artifact tests.
 - [ ] Unified-linter Rust and Markdown/MDX rules, processors, fix mapping, and consumer parity.
-- [ ] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
-- [ ] Forbidden-strings structured embedding interface, standalone parity, and integration fuzzing.
+  Rules and processors are implemented;
+  executable orchestration, stdin/fix/output/exit integration, and consumer migration remain.
+- [x] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
+- [x] Forbidden-strings structured embedding interface and standalone parity.
+  Windows-native mutation verification remains open.
 - [ ] Rust cli-git configuration, Git resolution/argv, static policies, and management commands.
+  Native global-argument and lazy-config foundations are in;
+  fix the `if_same_then_else` Clippy finding and continue.
 - [ ] Rust cli-git transactions, hooks, locks, replay, recovery, worktree copy, and auto-push.
 - [ ] Container integration, mutation testing, fuzzing, platform checks, and release-artifact performance gates.
+  Mutation survivors from both campaigns need disposition or new controls.
 - [ ] Coordinated native installation, consumer migration, documentation, and retirement of old implementations.
+- [ ] Native LFS URL normalization: resume vetting under the accepted scratch-helper trust rule.
 
 Each item needs its own passing evidence before completion.
 Current production tools remain active until cutover.
 The first crates.io publication still needs explicit user approval.
+The user chose continuous execution:
+finish the queue or identify a genuine blocker rather than ending on a progress report.
 
 ## Prerequisites and evidence
 
