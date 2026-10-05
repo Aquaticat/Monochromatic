@@ -211,9 +211,22 @@ one response line:
    `down`,
    `left`,
    `right`,
+   `home`,
+   `end`,
+   `pageup`,
+   `pagedown`,
+   `ctrl`,
+   `shift`,
+   `alt`,
+   `meta`,
    and single characters).
    Action defaults to
   `tap`.
+  For a shortcut,
+  press its modifier,
+  tap the target key,
+  then release the modifier through this same isolated seat.
+  Release held keys in the caller's cleanup path.
 - `type TEXT` types the rest of the line as individual key taps (US layout;
    characters
   off that layout are skipped).

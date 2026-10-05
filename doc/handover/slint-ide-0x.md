@@ -20,9 +20,12 @@ Opaque directory-request identities now fence replies;
 Native tree rows,
 file switching,
 and Ctrl+digit promotion/reveal are now bound.
-`proc_ba75` is running native consumer tests and scoped lint.
-Next inspect the results,
-then run the actual nested compositor click/keyboard/clipboard checks.
+Native callback tests and scoped lint pass in `proc_ee8d`.
+Actual nested Wayland mouse/keyboard/clipboard navigation checks pass in
+`/tmp/monochromatic-ide-native-bOrX20/interaction.mjs` and `edge-probe.mjs`.
+Next verify off-screen reveal and Tab traversal,
+finish the remaining guard controls/formatting,
+then continue combined search and in-file find.
 New identity/admission and file-open-generation guard controls remain to be exercised in the disposable copy.
 The procedural-macro and variable-font paths now both pass native font isolation.
 Continue annotations and language intelligence after workspace navigation.
@@ -436,6 +439,58 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
+- `proc_3806`,
+  `ide-native-tree-seat-controls`,
+  serves MCP at port 9318 and control socket
+  `/tmp/monochromatic-ide-native-bOrX20/control.sock`.
+  Its binary predates the latest reveal-liveness,
+  reader-disconnection,
+  initial-directory diagnostic,
+  and Tab changes;
+  restart before their physical-input verification.
+- `interaction.mjs` in that directory passes entirely through native seat modifiers and key events:
+  mouse file opens,
+  arrow/Enter tree navigation,
+  Ctrl+1 alternation,
+  Ctrl+0 ancestor reveal,
+  failed-open retention,
+  ignored typing,
+  and `am a` to `was a` selection correspondence after switching files.
+  Independent `wl-paste` reads the isolated clipboard.
+  `tree-selection-reload.png` was inspected.
+- `edge-probe.mjs` passes ignored native paste,
+  outside-symlink rejection,
+  external tree removal/recreation,
+  root-unavailable source retention and recovery,
+  and tree Home/End/PageUp/PageDown/Space controls.
+  `tree-root-unavailable.png` was inspected.
+- An initial probe mixed MCP modifier injection with native seat arrow events and failed its selection-copy assertion.
+  It is not selection-regression evidence:
+  the replacement probe keeps the entire chord on the native seat and passes.
+- The nested helper now accepts `ctrl`,
+  `shift`,
+  `alt`,
+  and `meta` key names.
+  Its modifier test failed with `None` versus `Some(29)` before implementation;
+  `proc_9075` then passed all 42 helper tests,
+  Clippy,
+  and the release build.
+- Advisor raised unmatched reveal and stopped-reader liveness risks.
+  `missing_reveal_keeps_the_existing_model_until_tree_changes` failed before the fix in `proc_bbf5`.
+  The native code now waits for actual directory changes rather than rebuilding an identical tree every 20ms.
+  A positive model-identity control proves the assertion detects real replacements.
+- The proposed contained-alias defect was not reproduced:
+  the canonical target row is selected and badged,
+  reopening its alias preserves selection/generation,
+  and model identity stays stable.
+  The test passed both before and after the liveness fix.
+  Canonical aliases intentionally share one history identity.
+- Reader/opener disconnect tests failed before state cleanup in `proc_f52d`.
+  `proc_9d01` passed after clearing the reader's busy/sender state and the opener's waiting target.
+  `proc_ee8d` passed native review regressions,
+  including accurate first-listing failure text and recovery,
+  plus scoped Rust lint.
+
 - `proc_ba75`,
   `ide-native-navigation-consumer-tests`,
   runs the real window callbacks for file switching,
@@ -671,6 +726,8 @@ Asynchronous callers must use `complete_listing` rather than the synchronous `ap
 never blocks UI polling,
 and closes input before joining its thread on shutdown.
 The native tree now uses `ui/tree.slint` plus `src/native/navigation/` bindings.
+Its header shows the distinguishing project name;
+the full root remains available through accessibility.
 It retains native paths behind lossy display labels,
 shows recent-file slot badges,
 and expands/reveals ancestors after successful opens.
@@ -695,6 +752,15 @@ This is polling,
 not filesystem watcher integration;
 refresh latency grows with the number of expanded directories.
 No event-driven latency guarantee is claimed.
+Collapsing a folder dismisses its folder-scoped diagnostic;
+re-expansion requests it again.
+Canonical inside symlink aliases select and badge the real target row rather than creating duplicate history slots.
+Successful file opens focus the source view;
+Tab traversal back to the tree is implemented but still needs physical-input verification.
+Both readers close their input and join on shutdown;
+a filesystem operation that never returns can therefore delay shutdown.
+Cancellation invalidates replies,
+not a running operating-system file read.
 
 Observed-failing guard checks passed in `proc_1d30`:
 removing snapshot validation,
