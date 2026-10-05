@@ -83,7 +83,10 @@ class SettingsPaneFixtureTest {
         assertEquals("Resume where I left off", rows[1].title)
         assertEquals("Restores the folder, track and position on launch, paused.", rows[1].supporting)
     }
-    /** Each row's switch position is read from its own state field in both scenes. */
+    /**
+     * Each row's switch position is read from its own state field. Both authored scenes set the two
+     * fields equal, so a mixed record is also checked: only it can tell the rows' fields apart.
+     */
     @Test fun rowPositionsFollowState() {
         val accepted = settingsPaneRows(settingsPaneFixture("accepted"))
         assertTrue(accepted[0].checked)
@@ -91,6 +94,9 @@ class SettingsPaneFixtureTest {
         val inverse = settingsPaneRows(settingsPaneFixture("inverse"))
         assertFalse(inverse[0].checked)
         assertFalse(inverse[1].checked)
+        val mixed = settingsPaneRows(SettingsPaneState(true, false))
+        assertTrue(mixed[0].checked)
+        assertFalse(mixed[1].checked)
     }
     /** The header keeps the accepted settings-a wording. */
     @Test fun titleKeepsAcceptedCopy() {
