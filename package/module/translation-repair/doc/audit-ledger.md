@@ -7332,6 +7332,33 @@ One position word left a comment
 and the position-reference scan caught it (WR5),
 fixed forward.
 
+DECLINED RE-VERIFICATION (2026-10-05):
+the flatMap's node read
+(`declined-target-runs.ts` 193 to 196)
+cannot miss
+(the `isDeclined` filter keeps only target-only steps
+and the alignment indexes the same node list),
+so the kind ternary and the undefined arm
+became one `nonNullishOrThrow`
+under a type-guard filter.
+The empty-pairing refusal (158)
+now has its case
+(an empty source side yields no paired step
+and no source-only step to stop earlier).
+LEFT with the cause named:
+the rendering-continues machinery
+(105,
+106 to 109,
+111)
+and the claiming walk's source-only arm
+(172 to 173)
+need the aligner's `continuesPairing` emission rules
+mapped first.
+Two scan slips in the edit
+(a TSDoc before a `return`,
+a position word in its comment)
+were caught and fixed forward.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

@@ -683,6 +683,43 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  05:10 UTC:
+  `declined` re-verified
+  (the ledger's
+  `DECLINED RE-VERIFICATION` paragraph):
+  the flatMap's node read cannot miss
+  and became one `nonNullishOrThrow`
+  under a type-guard filter,
+  and the empty-pairing refusal has its case.
+  LEFT with the cause named:
+  the rendering-continues machinery
+  (`declined-target-runs.ts` 105,
+  106 to 109,
+  111)
+  and the claiming walk's source-only arm
+  (172 to 173)
+  need the aligner's `continuesPairing` emission rules
+  mapped first.
+  Gates at the close:
+  1,564 [PASS] and no [FAIL],
+  35 source scans and no [FAIL].
+  Two scan slips in the edit
+  (a TSDoc before a `return`,
+  a position word in its comment)
+  caught and fixed forward.
+
+  Next:
+  read `align-blocks-walk.ts`
+  to map the `continuesPairing` emission rules,
+  then design the fixtures for the four open spans;
+  then the rest of the left-open list
+  (`corpus-run/runs`,
+  `transient`,
+  `corpus-run/name`,
+  `edit`)
+  in the ranking's order.
+
+- 2026-10-05,
   04:52 UTC:
   the next batch's baseline census taken at commit `6a015b331`:
   `census written to ~/.cache/translation-repair/coverage/census-i01hsd/census.json`
