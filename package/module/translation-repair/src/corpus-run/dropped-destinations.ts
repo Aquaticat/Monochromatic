@@ -239,7 +239,14 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
       end,
     ), },),);
     // The run always consumes at least its scheme, so the scan advances to
-    // its end.
+    // its end. LOUD IF IT EVER DOES NOT: a scheme opening on a stopper would
+    // leave the cursor where it stood and this loop running for ever (ledger
+    // M113).
+    if (end === start)
+      throw new Error(
+        'unreachable: a web address run that consumed nothing, though every scheme in SCHEMES opens on a '
+          + 'character outside RUN_STOPPERS',
+      );
     at = end;
   }
   return runs;

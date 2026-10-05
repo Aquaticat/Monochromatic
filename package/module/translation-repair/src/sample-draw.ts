@@ -24,9 +24,11 @@ import {
 
  @param available - candidate count per band
 
- @param size - total slots desired across all bands
+ @param size - total slots desired across all bands, a whole number
 
  @returns Slots allocated per band, summing to `min(size, total available)`
+
+ @throws {@link RangeError} when the size is not a whole number, zero or more
 
  @example
  ```ts
@@ -45,6 +47,15 @@ export function allocateBandQuota(
     readonly size: number;
   },
 ): BandQuota {
+  // A WHOLE NUMBER OF SLOTS OR NOTHING. The round-robin stops on `remaining`
+  // reaching exactly zero, which a fraction steps over: two and a half slots
+  // asked of bands holding ten each handed out nine, one from every band on
+  // every pass (ledger B127).
+  if ((!Number.isSafeInteger(size,)) || (size < 0))
+    throw new RangeError(
+      `A sample size is a whole number of slots, zero or more; received ${String(size,)}.`,
+    );
+
   /**
    Slots handed out so far, mutated in place as the round-robin proceeds.
    */
@@ -156,11 +167,6 @@ type RankedCandidate = {
    Shuffle key of the candidate's entry, breaking ties between entries.
    */
   readonly entryKey: string;
-
-  /**
-   Shuffle key of the candidate's issue, breaking ties within an entry.
-   */
-  readonly issueKey: string;
 };
 
 /**
@@ -206,8 +212,8 @@ function selectFromBand(
   }
 
   /**
-   Every candidate decorated with its within-entry rank and both shuffle
-   keys, ready for the global round-robin sort.
+   Every candidate decorated with its within-entry rank and its entry's
+   shuffle key, ready for the global round-robin sort.
    */
   const ranked: readonly RankedCandidate[] = [
     ...byEntry.values(),
@@ -248,7 +254,6 @@ function selectFromBand(
               id: entry.candidate
                 .entryId,
             },),
-            issueKey: entry.issueKey,
           };
         },);
     },);
@@ -260,10 +265,11 @@ function selectFromBand(
     ) {
       if (a.rank !== b.rank)
         return a.rank - b.rank;
-      // Entry-key ordering, breaking rank ties between entries. Equal
-      // keys mean one entry twice, whose ranks already order its
-      // candidates by the issue shuffle; the stable order settles
-      // anything else (ledger T8, 2026-10-04).
+      // Entry-key ordering, breaking rank ties between entries. Two
+      // candidates of one rank come from different entries, since a rank is
+      // a position inside one entry's bucket and `byEntry` keeps one bucket
+      // per entry, so their entry keys differ and nothing is left to an
+      // issue key or to arrival order (ledger T8, 2026-10-04).
       return compareCodePoints({
         left: a.entryKey,
         right: b.entryKey,

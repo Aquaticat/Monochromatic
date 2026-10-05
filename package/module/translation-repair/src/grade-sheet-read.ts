@@ -133,6 +133,16 @@ function extractAnswer({ line, }: { readonly line: string; },): string {
    */
   const start = line.indexOf(GRADE_MARKER,);
 
+  // LOUD RATHER THAN SLICED FROM A MISS. Without this check a heading
+  // lacking the marker would have its opening characters cut off as if they
+  // were the marker, and whatever followed read as the grader's answer
+  // (ledger M113).
+  if (start === (-1))
+    throw new Error(
+      'unreachable: an item heading without its grade marker, though parseGradedSheet keeps only headings '
+        + 'that carry it',
+    );
+
   /**
    Everything after the marker, with the trailing legend cut off. The legend
    is last on the line, so the LAST occurrence bounds the answer even when a

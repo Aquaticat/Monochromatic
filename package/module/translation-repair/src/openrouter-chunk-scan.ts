@@ -20,8 +20,10 @@ import { ssePayloadOf, } from './sse-data-line.ts';
 
  NOTHING HERE THROWS: a chunk that does not parse was already refused or
  accepted by the completion reader, and this scan reports nothing about it.
- The `[DONE]` sentinel, blank keep-alives and comment lines carry no JSON and
- are skipped by the opening-brace check.
+ The `[DONE]` sentinel, blank keep-alives and comment lines carry no JSON, so
+ the parse fails on each and it is skipped. A chunk whose payload opens with
+ spaces before its brace parses and is read, as the completion reader reads
+ it.
 
  @param bodyText - whole drained `text/event-stream` body
 

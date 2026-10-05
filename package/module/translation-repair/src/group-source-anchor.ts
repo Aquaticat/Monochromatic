@@ -238,6 +238,17 @@ export function anchorOffsets(
      */
     const offset = (forward === NO_OFFSET) ? tail : forward;
 
+    // LOUD RATHER THAN ANCHORED AT `NO_OFFSET`. A paired step is what let
+    // the walk past the opening check, and a paired step in range gives
+    // `tail` a real end; only a walk pairing past `targetNodes` leaves both
+    // readings empty, and that walk is broken rather than a page with
+    // nowhere to write (ledger M113).
+    if (offset === NO_OFFSET)
+      throw new Error(
+        'unreachable: an unplaced original with no rendered block before or after it, in a walk that '
+          + 'pairs a step; its paired steps index past the translation blocks',
+      );
+
     return [[
       at,
       offset,

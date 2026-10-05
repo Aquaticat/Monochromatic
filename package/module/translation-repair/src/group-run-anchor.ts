@@ -166,6 +166,15 @@ export function reanchorInsertions(
      scans to find (ledger T8, the group cluster).
      */
     const settled = (next === NO_BOUNDARY) ? previous : next;
+
+    // LOUD RATHER THAN WRITTEN. Without this check the insertion would carry
+    // `NO_BOUNDARY` as its offset, a position no page has, and the splice
+    // would be left to make what it could of it (ledger M113).
+    if (settled === NO_BOUNDARY)
+      throw new Error(
+        'unreachable: an insertion with no translation block on either side, though an anchor is named only '
+          + 'where a step paired and a paired step leaves its translation block in a run',
+      );
     return {
       kind: 'insertion',
       sourceRun: run.sourceRun,

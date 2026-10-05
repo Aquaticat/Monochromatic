@@ -56,6 +56,17 @@ await describe({
         },),).toBe(0.25,);
       },
     },),
+
+    it({
+      name: 'READS the cost off a chunk whose payload opens with spaces before its brace, which the '
+        + 'completion reader parses and folds like any other chunk',
+      fn: async () => {
+        expect(openRouterCostOf({
+          bodyText: 'data:   {"usage":{"cost":0.4}}\n\ndata: [DONE]\n',
+        },),).toBe(0.4,);
+      },
+    },),
+
     it({
       name: 'SKIPS a cost that is not finite, since it states no spend (ledger T8, the openrouter '
         + 'cluster)',

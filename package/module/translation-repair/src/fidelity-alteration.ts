@@ -100,9 +100,12 @@ export function digitRuns({ text, }: { readonly text: string; },): readonly stri
 
  @param text - passage to search
 
- @param needle - string to count
+ @param needle - string to count, drawn from the passage itself
 
  @returns Whether exactly one occurrence exists
+
+ @throws Error when the passage does not carry the string at all, which no
+ caller's needle can do
 
  @example
  ```ts
@@ -120,9 +123,18 @@ function occursOnce(
 ): boolean {
   /**
    Where it first appears. The caller draws the needle from this very text
-   (`digitRuns` over it), so the absence case has no input and comes out.
+   (`digitRuns` over it), so the absence case has no input.
    */
   const first = text.indexOf(needle,);
+
+  // LOUD RATHER THAN ANSWERED. Without this check a missing needle searched
+  // again from the passage's start, found nothing, and read as occurring
+  // once (ledger M113).
+  if (first === (-1))
+    throw new Error(
+      'unreachable: a number missing from the passage it was read off, though sharedNumber draws every '
+        + 'needle from that passage with digitRuns',
+    );
   return !text.includes(
     needle,
     first + 1,
