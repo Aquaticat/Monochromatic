@@ -683,6 +683,29 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  00:54 UTC:
+  the T8 `claim` batch left its 3 arms documented
+  (`claim-panel-voters.ts:54`,
+  `claim-filers.ts:253`,
+  `262`):
+  the cases need the `AdjudicatedIssue`'s full fixture shape,
+  whose fields the attach map reads directly,
+  and the two attempts crashed on the runtime reads.
+  Both attempts reverted;
+  the tree stays green.
+  Counts at the close:
+  the full suite 1,564 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-claim-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-claim-scans.log`).
+  This line lands in the trial-log commit that follows the revert.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/canadian` cluster's remaining arms
+  or the next in the ranking.
+
+- 2026-10-05,
   00:52 UTC:
   the next batch's baseline census taken at commit `e484cbf04`:
   `census written to ~/.cache/translation-repair/coverage/census-5tlfGG/census.json`

@@ -7067,6 +7067,24 @@ The reach census (`~/temp/agent/mimo-trial/reach-resolution.log`)
 reads `ran 2, still cold 1`.
 No B entry found.
 
+The sixty-seventh cluster of that census,
+`claim`,
+against `census-5tlfGG` at `11ae619cb`:
+3 line stretches over `claim-panel-voters.ts`
+and `claim-filers.ts`.
+Left:
+the empty-ballots return
+(`claim-panel-voters.ts:54`),
+the missing-filers fallback
+(`claim-filers.ts:253`),
+and the no-claims-on-record return
+(`262`):
+the cases need the `AdjudicatedIssue`'s full fixture shape,
+whose fields the attach map reads directly.
+The reach census was not run for a landed case;
+none landed.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
