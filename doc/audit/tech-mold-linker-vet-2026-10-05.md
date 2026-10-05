@@ -21,6 +21,9 @@ The incumbent (rust-lld 23.1.1, the rustc self-contained linker reached through 
 is carried as the status-quo baseline candidate required by the replacement parity overlay, with evidence depth equal to its production use plus the
 measurements recorded in this report, not a fresh source audit.
 
+The ranking in this report orders mold against the per-environment status quo only;
+no other external linker was evaluated, per the user restriction.
+
 Start date:
 2026-10-05.
 
@@ -104,6 +107,13 @@ Measured on 2026-10-05 on the dev host (Fedora 44, kernel 7.2.7, x86_64, 16 core
   `LLD 23.1.1 (compatible with GNU linkers)`. The incumbent for cargo builds is therefore rustc's
   self-contained rust-lld; GNU ld 2.46.1 handles only non-rustc cc links. The initial incumbent
   record in this report named GNU ld from PATH inspection alone and is superseded by this probe.
+- Incumbent per environment (this matters for SC1): the dev host uses rust-lld 23.1.1 (link-path
+  probe); the Fedora 44 build container uses GNU ld, proven by the control runs' `.comment`
+  output (no LLD marker on default-driver builds, mold marker on mold builds, in "Validation
+  results"); GitHub Actions ubuntu runners were not measured (open item), and their
+  rustup-toolchain default is inferred to be the self-contained rust-lld from the host probe
+  plus upstream issue #1708 (rustup rustc 1.99 on Ubuntu 26.04 defaults to rust-lld);
+  the inference is labeled, not measured.
 - Linker configuration today:
   - repository root `.cargo/config.toml` sets environment only (Zig cache dir, Slint flag),
     no linker or rustflags;
@@ -158,6 +168,22 @@ preference is asked before finalizing.
 - SC4: supply-chain and auditability posture (weight 1).
 - SC5: release maturity and track record (weight 1).
 - SC6: documentation and ecosystem support (weight 1).
+
+Rating anchors for SC1, frozen before any phase E result was read (2026-10-05):
+
+- 4: mold is at least 2x faster than the environment's incumbent on the median relink cycle of a
+  typical repository crate, or saves at least 2 s per median relink.
+- 3: at least 25 percent faster and at least 0.3 s saved on the median relink cycle, or a
+  clearly measured cold-build saving of the same proportion.
+- 2: a real benefit beyond run-to-run spread but below the 25 percent or 0.3 s thresholds.
+- 1: within run-to-run spread (no measurable benefit).
+- 0: measurably slower than the incumbent beyond spread.
+
+The incumbent baseline is scored on SC1 as the complement of the measured mold result.
+Disclosure: this rubric has one benefit axis (SC1) against five risk and cost axes (SC2 through
+SC6). Under the default equal weights that structure encodes a burden of proof for adopting a
+build-critical tool; it is disclosed here rather than redesigned, and the sensitivity matrix
+names which weight controls the order.
 
 Maximum per finalist: `6 * 4 = 24` points, normalized to 100.
 
@@ -474,6 +500,22 @@ private scratch volume), network enabled only during the fetch phase, `--network
   `package/music-player/desktop-app` cannot receive env `RUSTFLAGS` because its
   `.cargo/config.toml` sets target-table rustflags that take precedence; mold integration for
   that crate is an adoption-time config edit, recorded as SC3 evidence instead of a test run.
+- Phase E2 (supplemental controls and boundary probes, host, after phase E to avoid CPU
+  contention with timing runs): three-arm relink control on `forbidden-strings` adding
+  `-fuse-ld=bfd` (GNU ld) alongside rust-lld and mold, with per-run load-average capture;
+  `-Ztime-passes` linking-pass isolation on `forbidden-strings` in dedicated target directories
+  (nightly host toolchain); a second alternating cold-build pair on `git-policy-cli`;
+  a cargo precedence probe on a synthetic scratch project replicating
+  `package/music-player/desktop-app/.cargo/config.toml`'s target-table rustflags, to prove or
+  disprove by measurement that env `RUSTFLAGS` is ignored there; one `cargo nextest run` of a
+  crate suite under mold (the repository's actual test runner, cargo-nextest 0.9.146);
+  one real guard invocation of the mold-linked `cli-git-native` against a scratch commit inside
+  the throwaway worktree (the git shim executes
+  `@monochromatic-dev/git-policy-cli/dist/final/node/index.mjs`, which drives the native binary;
+  the invocation pattern is taken from that source); a `mise registry` check for a mold backend
+  (result on 2026-10-05: `aqua:rui314/mold` exists; the `mise latest` query is recorded in E2);
+  and a recheck of upstream issue #1708 (still zero comments as of 19:0x) and the release list
+  (no 3.0.x patch) before finalization.
 
 Undeclared command, write, or network endpoint discovered during any phase stops that phase for
 manifest update and inspection before continuing.
@@ -497,6 +539,18 @@ manifest update and inspection before continuing.
 - Phase C2 (prebuilt versus source-built parity): pass. Byte-identical executables from both
   binaries (`cmp` reported no difference), both ran, both carry the mold `.comment`
   identification.
+- Control runs (big-link positive control, offline container, 4 CPUs, 119 s total elapsed):
+  rebuilding only the `mold-cli` unit (debug profile, `cargo clean -p mold-cli` between runs)
+  took 15.0 s under the container's default driver (Fedora rustc 1.98.1 to GNU ld; the output
+  `.comment` carried no LLD or mold marker) and 7.2 s with `-fuse-ld=mold` on the second mold
+  run (`.comment` confirmed `mold 3.0.0 (8de38c35a2df16a25f7ff87ac3ad07156a925beb; compatible
+  with GNU ld)`). The first mold run (49.8 s), the `-fuse-ld=bfd` run (22.0 s), and the trailing
+  default rerun (22.4 s) each followed a RUSTFLAGS change, which invalidates every unit
+  fingerprint and forced full-tree rebuilds; they are excluded from the same-scope comparison.
+  Same-scope result: GNU ld 15.0 s versus mold 7.2 s on a large debug link. The positive control
+  passes (the harness resolves a large link-time difference), and the methodology finding is
+  folded into phase E: flags stay constant within a target directory. The bfd arm moves to
+  phase E2 on the host, against the real host incumbent.
 - Harness failures (mine, invalidating, rerun): the first phase N and phase B payloads ran under
   `set -x` without `set -e`, so their exit 0 came from the trailing marker echo; the first phase
   B run found `cargo: command not found` for all three commands (6 s elapsed, zero work done)
@@ -544,8 +598,17 @@ Pending. The recommendation is stated only after validation, scoring, and sensit
 
 ## Open items
 
-- Run phase E; decide on phase D.
-- Freeze ratings, run the one-at-a-time sensitivity matrix, and if an input controls the order
-  between speed benefit and maturity risk, ask the user for that preference with options before
-  finalizing.
+- Run phase E, then phase E2; decide on phase D.
+- Measure or label the CI ubuntu runner incumbent before any adoption decision (the inference is
+  recorded in "Context").
+- Freeze ratings against the SC1 anchors, run the one-at-a-time sensitivity matrix, and if an
+  input controls the order between speed benefit and maturity risk, ask the user for that
+  preference with separable options before finalizing.
+- Untested link surfaces to carry into "Evidence limits and deviations": cdylib and plugin
+  crates, the terminal crate's Zig and vendored-native link path (Fedora 41 container), CI
+  fuzz-target links (libFuzzer and ASan instrumented), and release-profile LTO links beyond
+  `forbidden-strings`.
+- Cleanup at completion: release the report lock, `git worktree remove` the eval worktree,
+  `podman rmi localhost/mold-eval:v3.0.0-deps-n2`, `podman volume rm mold-eval-root`, remove
+  scratch probe directories; record what was kept and where.
 - Update and commit this report after each phase per the skill's update cadence.
