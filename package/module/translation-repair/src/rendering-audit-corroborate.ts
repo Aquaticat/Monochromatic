@@ -1,10 +1,9 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
 import { textsInCodePointOrder, } from './code-points.ts';
 import type {
   ScreenedFinding,
   SideReading,
 } from './rendering-audit-screen.ts';
+import { RenderingAuditInvariantError, } from './rendering-audit-invariant.ts';
 import type { RenderingAuditCategory, } from './rendering-audit-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -212,15 +211,16 @@ function defectKey({ finding, }: { readonly finding: ScreenedFinding; },): strin
 /**
  Whether two intervals share any position.
 
- @param left - one interval, or null
+ @param left - one claim's interval on a side, or the named absence where its
+ category does not use that side
 
- @param right - the other
+ @param right - the other claim's, on the same side
 
- @returns Whether both exist and intersect
+ @returns Whether both are spans and intersect
 
  @example
  ```ts
- const shared = intersects({ left: [0, 4,], right: [2, 9,], },);
+ const shared = intersects({ left: { kind: 'span', start: 0, end: 4, }, right: { kind: 'unused', }, },);
  ```
  */
 function intersects(
@@ -278,6 +278,10 @@ function sameSpans(
 
  @returns Defects reaching the corroboration threshold, most-agreed first
 
+ @throws {@link RenderingAuditInvariantError} when a defect group holds no
+ member, which cannot occur, since every group is opened by the claim it is
+ keyed on
+
  @example
  ```ts
  const corroborated = corroborate({ claims, },);
@@ -316,7 +320,12 @@ export function corroborate(
        First member, which every member agrees with by construction of the
        key.
        */
-      const first = nonNullishOrThrow(members.at(0,),);
+      const [first,] = members;
+
+      if (first === undefined)
+        throw new RenderingAuditInvariantError({
+          invariant: 'a defect group with no members cannot occur, since groups are built from claims',
+        },);
 
       return {
         category: first.finding
@@ -474,6 +483,10 @@ function aboutTheSameThing(
  @returns Groups of at least {@link CORROBORATION_VOICES} distinct voices,
  most-agreed first
 
+ @throws {@link RenderingAuditInvariantError} when an agreement group holds
+ no member, which cannot occur, since every group is grown from the claim
+ that seeds it
+
  @example
  ```ts
  const agreed = corroborateByOverlap({ claims, },);
@@ -546,7 +559,12 @@ export function corroborateByOverlap(
       /**
        First member, whose category every other member shares.
        */
-      const first = nonNullishOrThrow(members.at(0,),);
+      const [first,] = members;
+
+      if (first === undefined)
+        throw new RenderingAuditInvariantError({
+          invariant: 'an overlap group with no members cannot occur, since groups are grown from a seed',
+        },);
 
       return {
         category: first.finding

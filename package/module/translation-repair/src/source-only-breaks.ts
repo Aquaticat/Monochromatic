@@ -133,6 +133,10 @@ export function sourceOnlyBreakFindings(
 
  @returns Model-facing findings, one per kind short of its floor
 
+ @throws Error when the original's or the candidate's shapes and break counts
+ differ in length, which cannot occur, since `readSliceSkeleton` reads both
+ off one parse's top-level blocks
+
  @example
  ```ts
  substituteBreakFindings({ pageBlocks: [{ kind: 'paragraph', detail: '', },], sourceBlocks: [{ kind: 'blockquote', detail: '', },], sourceBreaks: [2,], candidateBlocks: [{ kind: 'blockquote', detail: '', },], candidateBreaks: [0,], },);
@@ -153,6 +157,17 @@ export function substituteBreakFindings(
     readonly candidateBreaks: readonly number[];
   },
 ): readonly string[] {
+  // EACH SIDE IS TWO PARALLEL LISTS, one entry per top-level block, and every
+  // read in this function takes a block's breaks at that block's own index.
+  // Lists of different lengths were not read off one parse, so an index no
+  // longer names a block's own breaks: the sums would count breaks under the
+  // wrong kind or read past the end. Each side is refused before any read.
+  if (sourceBreaks.length !== sourceBlocks.length)
+    throw new Error('unreachable: the block shapes and break counts of the original differ in length, where one parse yields both',);
+
+  if (candidateBreaks.length !== candidateBlocks.length)
+    throw new Error('unreachable: the block shapes and break counts of the candidate differ in length, where one parse yields both',);
+
   /**
    Kinds the page rendered, whose breaks the page floor governs.
    */

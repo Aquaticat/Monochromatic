@@ -140,8 +140,9 @@ export type ScreenedReport = {
 
  @returns Whether each side is required
 
- @throws {@link Error} when a category belongs to no anchoring rule, which is
- a vocabulary that grew without this rule growing with it
+ @throws {@link RenderingAuditInvariantError} when a category belongs to no
+ anchoring rule, which is a vocabulary that grew without this rule growing
+ with it
 
  @example
  ```ts

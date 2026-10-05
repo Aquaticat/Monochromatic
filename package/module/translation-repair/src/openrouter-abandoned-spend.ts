@@ -38,7 +38,8 @@ const UNMEASURED_RAW_CHARS_PER_TOKEN = 184;
  @param rawCharsPerToken - Ratio the card carries, `'unmeasured'` where the
  roster holds no observation for the model
 
- @returns Raw characters the reckoning divides a completion token's count by
+ @returns Raw characters one completion token stands for, which the reckoning
+ divides the delivered characters by
 
  @example
  ```ts
