@@ -102,10 +102,20 @@ The nine pure message tests and fresh third-line/overflow guard-removal
 controls passed,
 including exact restoration and the complete unit task.
 
-The next action is the updated pure-test run with the multiline/non-ASCII
-diagnostic-tail fixture,
-current artifact build and focused native lifecycle/fit/log read-back
-controls.
+The updated nine message tests and complete unit task passed with the
+multiline/non-ASCII diagnostic fixture;
+the outcome fixture report now contains 16 passing cases.
+Fresh third-line and overflow mutants failed the intended tests,
+followed by exact restoration.
+The current overlay APK built from `c890d09b0` is retained with SHA-256
+`7d359b9b6d624788e474d916109f2217bf5d644e797da4fb2ea70c4c6690a671`.
+The new owned SwiftShader runtime reached authorized readiness and recorded
+a separate original-settings snapshot under the unchanged 6 GiB/2 CPU caps.
+An observed startup System UI ANR was dismissed before focused acquisition;
+no blocked frame is accepted as application evidence.
+
+The next action is focused native lifecycle/fit/log read-back verification,
+not another policy or cosmetic questionnaire.
 Same-scene player-geometry equality needs a changing-geometry positive
 control before any new held capture cohort.
 Log capture remains a named debug intent here,
