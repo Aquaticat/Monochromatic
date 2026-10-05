@@ -90,6 +90,15 @@ mod search_collect;
 /// Read-only ripgrep subprocesses are killed and reaped on cancellation or output limits.
 mod search_process;
 
+/// Plain literal, case-insensitive in-file matching kept in one replaceable function.
+pub mod find;
+
+/// Active, next, previous, and visible matches derived from the reading selection.
+pub mod find_navigation;
+
+/// One bounded in-file find job; replies are tagged by file generation, revision, and query.
+pub mod find_worker;
+
 /// Unmodified variable and real italic font assets with stable source-font identities.
 pub mod font_asset;
 

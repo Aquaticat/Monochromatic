@@ -232,8 +232,16 @@ writeFileSync(join(directory, 'results.json'), JSON.stringify(results, null, 2))
 console.log(JSON.stringify({ directory, results }, null, 2))
 """
 
+[tasks."test:find"]
+description = "Check the plain in-file matcher, match navigation, worker reply identity, and pinned browser differences"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--lib', '--test', 'find', '--test', 'find_navigation', '--test', 'find_worker', '--test', 'find_reference'])
+"""
+
 [tasks."inspect:find-regex"]
-description = "Compare existing Helix literal regex matching against captured Chromium find cases"
+description = "Print the production plain matcher's per-case comparison against captured Chromium find cases"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
