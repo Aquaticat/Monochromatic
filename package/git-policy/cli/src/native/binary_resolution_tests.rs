@@ -11,8 +11,8 @@
 
 /// Import the shared fixtures and bounded process helpers.
 use super::support::{
-    Fixture, Observed, TIMED_OUT_SIGNAL, bounded, bounded_for, direct, executable, fixture,
-    link_real_git, observe, remove,
+    Fixture, Observed, TIMED_OUT_SIGNAL, bounded, bounded_for, copy_executable, direct, executable,
+    fixture, link_real_git, observe, remove,
 };
 use std::ffi::OsString;
 use std::os::unix::ffi::OsStrExt;
@@ -42,8 +42,15 @@ fn plant_wrapper_forms(fixture: &Fixture) {
         std::fs::create_dir(fixture.root.join(directory)).expect("directory");
     }
     std::fs::hard_link(&fixture.wrapper, fixture.root.join("hard/git")).expect("hard link");
-    std::fs::copy(&fixture.wrapper, fixture.root.join("copy-early/git")).expect("early copy");
-    std::fs::copy(&fixture.wrapper, fixture.root.join("copy-late/git")).expect("late copy");
+    // Copies are made by a child process so no control can inherit them open for writing.
+    copy_executable(
+        fixture.wrapper.as_path(),
+        fixture.root.join("copy-early/git").as_path(),
+    );
+    copy_executable(
+        fixture.wrapper.as_path(),
+        fixture.root.join("copy-late/git").as_path(),
+    );
     // A link to the link: two hops to the same file.
     std::os::unix::fs::symlink(fixture.root.join("bin/git"), fixture.root.join("chain/git"))
         .expect("chained link");
