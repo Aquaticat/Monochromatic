@@ -7,6 +7,7 @@ import { maskHtmlComments, } from '../mask-html-comments.ts';
 import { maskInvisibleLines, } from '../mask-invisible-lines.ts';
 import { parseBodyTolerant, } from '../parse-document.ts';
 import type { DeepReadonlyData, } from '../readonly-data.ts';
+import { nextSchemeStart, } from '../scheme-start-scan.ts';
 import {
   judgeDestinationRenderings,
   sameAddress,
@@ -69,14 +70,6 @@ type ReadonlyMdastRoot = DeepReadonlyData<Root>;
  Any node of a parsed page, read-only.
  */
 type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
-
-/**
- Schemes a bare run may start with.
- */
-const SCHEMES = [
-  'https://',
-  'http://',
-] as const;
 
 /**
  Characters that end a bare run: whitespace, Markdown and HTML delimiters, and
@@ -154,52 +147,15 @@ export type DestinationCheck = {
 };
 
 /**
- Position of the nearest scheme at or after `from`, or positive infinity when
- none remains.
+ Bare web addresses in the text.
 
- @param text - text scanned
-
- @param from - offset to scan from
-
- @returns Offset of the scheme that starts first
-
- @example
- ```ts
- const at = nearestScheme({ text, from: 0, },);
- ```
- */
-function nearestScheme(
-  {
-    text,
-    from,
-  }: {
-    readonly text: string;
-    readonly from: number;
-  },
-): number {
-  return SCHEMES
-    .map(function positionOf(scheme,): number {
-      return text.indexOf(
-        scheme,
-        from,
-      );
-    },)
-    .filter(function present(at,): boolean {
-      return at >= 0;
-    },)
-    .reduce(
-      function earliest(
-        best,
-        at,
-      ): number {
-        return (at < best) ? at : best;
-      },
-      Number.POSITIVE_INFINITY,
-    );
-}
-
-/**
- Bare web addresses in the text, as one linear pass.
+ ONE LINEAR PASS. `nextSchemeStart` searches forward from the cursor for where
+ a scheme starts, the run is read from there to its first stopper, and the
+ cursor resumes at that stopper: nothing behind the cursor is searched again,
+ so the pass costs time in proportion to the text. This summary said so while
+ the scan searched for each scheme apart and read to the text's end, at every
+ run, for a scheme the text lacks (`scheme-start-scan.ts` holds the
+ measurement).
 
  COVERS WHAT THE TREE CANNOT: front matter and HTML attributes. A Markdown
  destination shows up here too, because its
@@ -208,6 +164,10 @@ function nearestScheme(
  @param text - text scanned
 
  @returns Runs in the order found, repeats kept
+
+ @throws Error when a run consumed nothing, which no text produces: a run
+ opens where `nextSchemeStart` found a scheme, and no scheme opens on a
+ stopper
 
  @example
  ```ts
@@ -221,18 +181,18 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
   const runs: string[] = [];
 
   /**
-   Cursor, advanced past every run or scheme examined.
+   Cursor, advanced past every run read.
    */
   let at = 0;
   while (at < text.length) {
     /**
-     Where the next run starts, infinite when no scheme remains.
+     Where the next run starts, the text's length when no scheme remains.
      */
-    const start = nearestScheme({
+    const start = nextSchemeStart({
       text,
       from: at,
     },);
-    if (!Number.isFinite(start,))
+    if (start === text.length)
       break;
 
     /**
@@ -252,8 +212,8 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
     // M113).
     if (end === start)
       throw new Error(
-        'unreachable: a web address run that consumed nothing, though every scheme in SCHEMES opens on a '
-          + 'character outside RUN_STOPPERS',
+        'unreachable: a web address run that consumed nothing, though nextSchemeStart answers only where a '
+          + 'scheme starts and no scheme opens on a character in RUN_STOPPERS',
       );
     at = end;
   }

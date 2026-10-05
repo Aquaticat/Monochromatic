@@ -1,3 +1,5 @@
+import { nextSchemeStart, } from './scheme-start-scan.ts';
+
 //region Cited-reference scan
 // The pages an original links, read off its `http://` and `https://` spans.
 // CLASS THIRTY-FIVE (2026-09-16): the archive's human translator wrote "older
@@ -15,25 +17,6 @@
  sheet carries: at `REFERENCE_TEXT_CHARACTERS` each this is the whole budget.
  */
 export const MAX_CITED_REFERENCES = 8;
-
-/**
- Schemes a link starts with.
- */
-const SCHEMES = [
-  'https://',
-  'http://',
-] as const;
-
-/**
- Shortest scheme prefix every link shares, found first so the scan reads one
- pass.
- */
-const SCHEME_STEM = 'http';
-
-/**
- What `indexOf` answers when nothing is found.
- */
-const NOT_FOUND = -1;
 
 /**
  Characters a link never runs into: whitespace and the Markdown, bracket and
@@ -176,39 +159,6 @@ function isLeftOut({ url, }: { readonly url: string; },): boolean {
 }
 
 /**
- Whether a whole scheme starts at one position.
-
- @param text - original document
-
- @param at - index to test
-
- @returns Whether `https://` or `http://` begins here
-
- @example
- ```ts
- schemeAt({ text: 'see https://a.example', at: 4, },);
- // => true
- ```
- */
-function schemeAt(
-  {
-    text,
-    at,
-  }: {
-    readonly text: string;
-    readonly at: number;
-  },
-): boolean {
-  return SCHEMES
-    .some(function startsHere(scheme,): boolean {
-      return text.startsWith(
-        scheme,
-        at,
-      );
-    },);
-}
-
-/**
  Index of the first stop character at or after a position, or the text's
  end.
 
@@ -251,8 +201,8 @@ function stopFrom(
  @returns Link without trailing punctuation
 
  @throws Error when `url` is all trailing punctuation, which no caller
- passes: `citedReferenceUrlsOf` cuts every run where `schemeAt` matched, so
- each opens with the scheme's letters
+ passes: `citedReferenceUrlsOf` cuts every run where `nextSchemeStart` found
+ a scheme, so each opens with the scheme's letters
 
  @example
  ```ts
@@ -282,8 +232,11 @@ function withoutTrailingPunctuation({ url, }: { readonly url: string; },): strin
  corpus's own pages and people's profiles left out, at most
  `MAX_CITED_REFERENCES`.
 
- ONE LINEAR PASS with `indexOf` over the scheme stem; each link is read to
- its first stop character and the cursor resumes there.
+ ONE LINEAR PASS: `nextSchemeStart` finds where each link begins, the link is
+ read to its first stop character, and the search resumes there. A run that
+ consumed nothing cannot leave the cursor standing, since
+ `withoutTrailingPunctuation` throws on the empty run before the cursor is
+ read again.
 
  @param text - original document
 
@@ -307,24 +260,12 @@ export function citedReferenceUrlsOf(
    */
   const taken = new Set<string>();
   for (
-    let cursor = text.indexOf(
-      SCHEME_STEM,
-      0,
-    );
-    (cursor !== NOT_FOUND) && (found.length < MAX_CITED_REFERENCES);
+    let cursor = nextSchemeStart({
+      text,
+      from: 0,
+    },);
+    (cursor < text.length) && (found.length < MAX_CITED_REFERENCES);
   ) {
-    if (
-      !schemeAt({
-        text,
-        at: cursor,
-      },)
-    ) {
-      cursor = text.indexOf(
-        SCHEME_STEM,
-        cursor + SCHEME_STEM.length,
-      );
-      continue;
-    }
     /**
      Exclusive end of the link's run.
      */
@@ -349,10 +290,10 @@ export function citedReferenceUrlsOf(
       taken.add(url,);
       found.push(url,);
     }
-    cursor = text.indexOf(
-      SCHEME_STEM,
-      end,
-    );
+    cursor = nextSchemeStart({
+      text,
+      from: end,
+    },);
   }
   return found;
 }
