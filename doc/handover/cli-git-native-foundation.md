@@ -113,6 +113,19 @@ Test image
 `15bd4395ea94c2f2cde8cc7957baf037ee7d0c7054c91633ff318172b8bd1a8a`;
 evidence `package/git-policy/cli/target/verification/native-8EIyYT`.
 
+### Final tree
+
+The gate was run again on commit `f15351ad5`,
+whose wrapper sources equal those of `de15ea3ea`:
+144 unit tests,
+21 binary-level tests,
+and Clippy passed.
+The test image ID,
+`15bd4395ea94c2f2cde8cc7957baf037ee7d0c7054c91633ff318172b8bd1a8a`,
+is the one built for `de15ea3ea`,
+which confirms the inputs are identical.
+Evidence `package/git-policy/cli/target/verification/native-vWfYMM`.
+
 Evidence directories live under the ignored `target` directory of this worktree and are not committed.
 
 ## Configuration
@@ -637,10 +650,29 @@ and running the script inside that window fails.
 Commit `de15ea3ea` has fixture scripts written by a child `tee` and wrapper copies made by a child `cp`,
 so the test process never holds an executable open for writing.
 
-That was the only such failure seen in the gate runs and campaigns recorded here.
-A mutant caught only by that failure would have been counted as caught;
-none was identified,
-and the full campaign was not repeated to rule it out.
+The rate was measured by repeating the unit and binary-level tests 400 times in one bounded container
+(2 GiB,
+2 CPUs,
+256 PIDs,
+no network)
+with 16 test threads,
+more than the gate's 2,
+to widen the window.
+Before the fix
+(test image `11f544e29a261417dd283a9e4ebac0988acf4c1118dc43486c0c063213da472c`)
+74 of 400 runs failed,
+68 of them with "Text file busy",
+spread over 11 tests,
+binary-level controls among them.
+The other 6 failing runs were not kept,
+so their cause is not recorded.
+After the fix
+(test image `15bd4395ea94c2f2cde8cc7957baf037ee7d0c7054c91633ff318172b8bd1a8a`)
+0 of 400 runs failed.
+The rate at the gate's 2 threads was not measured.
+
+The full campaign ran before the fix,
+so some of its caught mutants may have been caught by this failure instead of by a control.
 
 ## Fuzzing
 
