@@ -16,8 +16,6 @@ package dev.monochromatic.musicplayer
 // import { BackHandler, Box, Row, Scaffold } from 'native-ui';
 // ```
 import androidx.activity.compose.BackHandler
-// Page background fill.
-import androidx.compose.foundation.background
 // Select the same player palette as the other verified studies.
 import androidx.compose.foundation.isSystemInDarkTheme
 // Overlay container and measured regions.
@@ -44,6 +42,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 // Scaffold owns the closed player's system insets, as in the verified scan study.
 import androidx.compose.material3.Scaffold
+// A filled region that also tells its children which colour to draw text and icons in.
+import androidx.compose.material3.Surface
 // Native function registration.
 import androidx.compose.runtime.Composable
 // Emit the composed state after it enters composition.
@@ -130,8 +130,21 @@ internal fun SettingsPaneStudy(state: SettingsPaneState, opened: Boolean, onEven
                 }
             }
         } else if (isCover) {
-            SettingsPane(state = state, onEvent = onEvent, onBack = onBack, onMeasure = onMeasure,
-                modifier = Modifier.fillMaxSize(), startSafe = 16.dp, endSafe = 16.dp, pageColor = pageColor)
+            // What: `Surface(color, contentColor) { ... }` fills its region with `color` and makes
+            // `contentColor` the default for text and icons drawn inside its trailing lambda.
+            // Why: The accepted Search page is hosted inside such a region. Without one, text and icons
+            // that name no colour of their own stay black, which a fresh inspection found unreadable in
+            // the dark theme on the retained deck's title and transport buttons.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // <div style={{ background: pageColor, color: scheme.onSurface }}>{children}</div>
+            // ```
+            Surface(modifier = Modifier.fillMaxSize(), color = pageColor,
+                contentColor = MaterialTheme.colorScheme.onSurface) {
+                SettingsPane(state = state, onEvent = onEvent, onBack = onBack, onMeasure = onMeasure,
+                    modifier = Modifier.fillMaxSize(), startSafe = 16.dp, endSafe = 16.dp, pageColor = pageColor)
+            }
         } else {
             // What: `with(LocalDensity.current) { (55f / density).dp }` reads the screen's pixels-per-dp
             // and converts 55 physical pixels to dp; `55f` is a 32-bit floating-point literal.
@@ -143,15 +156,19 @@ internal fun SettingsPaneStudy(state: SettingsPaneState, opened: Boolean, onEven
             // const halfDent = 55 / density;
             // ```
             val halfDent = with(LocalDensity.current) { (55f / density).dp }
-            Row(modifier = Modifier.fillMaxSize().background(pageColor)) {
-                SearchFoldDeckHost(light = light,
-                    modifier = Modifier.weight(1f).settingsPaneMeasure("left", onMeasure),
-                    deckFullHeight = true) { slot ->
-                    SearchFoldFolders(light = light, modifier = slot.padding(end = halfDent + 8.dp))
+            // The same content-colour region as the cover page, here around both halves.
+            Surface(modifier = Modifier.fillMaxSize(), color = pageColor,
+                contentColor = MaterialTheme.colorScheme.onSurface) {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    SearchFoldDeckHost(light = light,
+                        modifier = Modifier.weight(1f).settingsPaneMeasure("left", onMeasure),
+                        deckFullHeight = true) { slot ->
+                        SearchFoldFolders(light = light, modifier = slot.padding(end = halfDent + 8.dp))
+                    }
+                    SettingsPane(state = state, onEvent = onEvent, onBack = onBack, onMeasure = onMeasure,
+                        modifier = Modifier.weight(1f), startSafe = halfDent + 16.dp, endSafe = 16.dp,
+                        pageColor = pageColor)
                 }
-                SettingsPane(state = state, onEvent = onEvent, onBack = onBack, onMeasure = onMeasure,
-                    modifier = Modifier.weight(1f), startSafe = halfDent + 16.dp, endSafe = 16.dp,
-                    pageColor = pageColor)
             }
         }
         // What: An empty Box padded by the safe-drawing insets, drawn over the study and measured.

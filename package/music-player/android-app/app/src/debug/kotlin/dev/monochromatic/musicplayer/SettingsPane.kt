@@ -141,7 +141,7 @@ internal fun SettingsPane(state: SettingsPaneState, onEvent: (String) -> Unit, o
             // A `for (row in rows)` loop emits one row per list element, like `rows.map(...)` in JSX.
             for (row in settingsPaneRows(state)) {
                 SettingsPaneSwitchRow(row = row, onEvent = onEvent, onMeasure = onMeasure,
-                    startSafe = startSafe, endSafe = endSafe, pageColor = pageColor)
+                    startSafe = startSafe, endSafe = endSafe)
                 HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
             }
             Text(text = settingsPaneClosing(),
@@ -173,7 +173,16 @@ private fun SettingsPaneHeader(onBack: () -> Unit, onMeasure: (String) -> Unit, 
         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
         .padding(start = startSafe, end = endSafe), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBack, modifier = Modifier.size(48.dp).settingsPaneMeasure("back", onMeasure)) {
-            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back to player")
+            // What: `tint` is the colour the glyph is drawn in; `onSurface` is the theme's text-on-page role.
+            // Why: Without it the glyph takes an inherited default that stays black in the dark theme,
+            // where a fresh inspection found the arrow unreadable on the dark header.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // <ArrowBackIcon aria-label="Back to player" style={{ color: scheme.onSurface }}/>
+            // ```
+            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back to player",
+                tint = MaterialTheme.colorScheme.onSurface)
         }
         // What: `semantics { heading() }` marks this text as a heading; `weight(1f)` gives it the remaining width.
         // Why: The title truncates on one line inside the fixed header instead of pushing the Back target.
@@ -185,6 +194,8 @@ private fun SettingsPaneHeader(onBack: () -> Unit, onMeasure: (String) -> Unit, 
         Text(text = settingsPaneTitle(),
             modifier = Modifier.weight(1f).padding(start = 8.dp).semantics { heading() }
                 .settingsPaneMeasure("title", onMeasure),
+            // The title names its own theme colour for the same reason as the Back glyph.
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis,
             onTextLayout = { layout ->
                 onMeasure("SettingsPane.text:title:lines=${layout.lineCount},overflow=${layout.hasVisualOverflow}")
@@ -206,13 +217,13 @@ private fun SettingsPaneHeader(onBack: () -> Unit, onMeasure: (String) -> Unit, 
  * In TS you'd write (pseudocode):
  * ```ts
  * function SettingsPaneSwitchRow(input: { row: SettingsPaneRow; onEvent: (event: string) => void; onMeasure: (line: string) => void;
- *   startSafe: number; endSafe: number; pageColor: Color }): UIElement;
+ *   startSafe: number; endSafe: number }): UIElement;
  * // <ListItem role="switch" aria-checked={row.checked} onClick={() => onEvent('toggle:' + row.id)} .../>
  * ```
  */
 @Composable
 private fun SettingsPaneSwitchRow(row: SettingsPaneRow, onEvent: (String) -> Unit, onMeasure: (String) -> Unit,
-    startSafe: Dp, endSafe: Dp, pageColor: Color) {
+    startSafe: Dp, endSafe: Dp) {
     ListItem(
         headlineContent = {
             Text(text = row.title, modifier = Modifier.settingsPaneMeasure("row-title:" + row.id, onMeasure),
@@ -233,7 +244,15 @@ private fun SettingsPaneSwitchRow(row: SettingsPaneRow, onEvent: (String) -> Uni
             Switch(checked = row.checked, onCheckedChange = null,
                 modifier = Modifier.settingsPaneMeasure("switch:" + row.id, onMeasure))
         },
-        colors = ListItemDefaults.colors(containerColor = pageColor),
+        // What: `Color.Transparent` gives the row no fill of its own, so the page colour behind it shows.
+        // Why: An opaque row fill starts after the fold-connector inset and covered the soft edge of the
+        // separator above it only from there on, leaving that line one pixel different across the connector.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <ListItem style={{ background: 'transparent' }}/>
+        // ```
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
 }
 //endregion
