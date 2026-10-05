@@ -164,6 +164,28 @@ runCargo(['clippy', '--all-targets', '--', '--deny', 'warnings'])
 description = "Check source-line budget and Rust documentation"
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
+[tasks."inspect:listview-algorithm"]
+description = "Run isolated scroll-algorithm controls against a supplied Slint repeater source file"
+usage = 'arg "<source>" help="Path to Slint internal/core/model/repeater.rs"'
+shell = "node --input-type=module-typescript -e"
+run = """
+const { mkdtempSync, readFileSync, writeFileSync, copyFileSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join, resolve } = await import('node:path')
+const { execFileSync } = await import('node:child_process')
+const source = readFileSync(process.env.usage_source, 'utf8')
+const start = source.indexOf('fn update_visible_instances(')
+const end = source.indexOf('/// Adapter implementing [`RepeaterInstanceOps`]', start)
+if (start < 0 || end < start) throw new Error('Slint virtualization function boundaries were not found')
+const directory = mkdtempSync(join(tmpdir(), 'ide-listview-algorithm-'))
+writeFileSync(join(directory, 'algorithm.rs'), source.slice(start, end))
+copyFileSync(resolve('../../../doc/troubleshooting/slint-listview-random-seek-probe.rs'), join(directory, 'harness.rs'))
+const args = ['run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128', '--security-opt', 'label=disable', '--volume', directory + ':/work', '--workdir', '/work', 'localhost/monochromatic/ide']
+console.log('Standalone algorithm controls: ' + directory)
+execFileSync('podman', [...args, 'rustc', '--edition=2024', '--test', 'harness.rs', '--out-dir', '/work'], { stdio: 'inherit' })
+execFileSync('podman', [...args, '/work/harness', '--nocapture'], { stdio: 'inherit' })
+"""
+
 [tasks."inspect:layout-constraints"]
 description = "Check accepted and rejected Slint sizing declarations using disposable markup"
 shell = "node --input-type=module-typescript -e"
