@@ -84,7 +84,9 @@ pub(super) fn update(window: &AppWindow, source: &Rc<RefCell<State>>, shared: &R
             }
         }
     }
-    if changed || navigation.reveal.is_some() {
+    // A missing reveal target waits for a directory change, not another identical model every 20ms.
+    // Initial opens and explicit shortcuts already publish once at their action boundary.
+    if changed {
         present::update(window, source, &mut navigation);
     }
     if let Err(error) = schedule(&mut navigation) {
