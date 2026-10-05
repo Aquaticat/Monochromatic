@@ -21,7 +21,8 @@ and the next implementation action.
   and recent-file reveal.
   The sidebar is resizable;
   see [Sidebar width](#sidebar-width).
-  Event-driven directory invalidation remains parity work.
+  External changes reach the tree and the source through inotify notifications;
+  see [Change watching](#change-watching).
 - [x] Combined path/content search.
 - [x] In-file find.
   Plain literal,
@@ -512,14 +513,166 @@ Source positions,
 painting,
 and selection share native shaped-row geometry.
 
-The displayed file is reread by a bounded background worker at 250 ms intervals.
+The displayed file is reread by a bounded background worker when a change notification names it;
+see [Change watching](#change-watching).
 External changes map the latest caret,
 selection,
 and viewport through Helix correspondence,
 even while text remains selected.
 Read failures retain the last readable source and show a diagnostic until recovery.
 The concrete caret and replacement-selection cases in the accepted scope pass through the native GUI.
-This polling boundary is not yet a workspace tree watcher or language-server synchronization loop.
+
+## Change watching
+
+The tree and the displayed file follow external changes through Linux inotify,
+using the `notify` crate 8.2.0 (`INotifyWatcher` by name, default features off, no polling backend).
+Only what is shown is watched,
+each directory non-recursively:
+the project root,
+every visible expanded folder,
+and the displayed file's folder,
+even when the tree does not show that folder.
+Collapsing a folder removes its watch;
+folders inside a collapsed folder stay expanded in the tree but are not watched.
+A folder is watched only at its own canonical path inside the project root,
+so a symbolic link to a folder elsewhere,
+or to another folder of the project,
+is never watched.
+The watcher only reads.
+
+A notification carries no data.
+It marks a directory listing or the displayed file as due,
+and the existing bounded readers reread;
+their request identity and stale-reply fencing still decide what is shown.
+A burst of notifications for one folder becomes one pending reread,
+with at most one more after a read already under way.
+The IDE's own opens and reads of watched paths are not changes and are ignored.
+A new watch rereads its folder once more,
+because a change can land between the first listing and the watch.
+
+For the displayed file,
+a closed write,
+a rename into place,
+a removal,
+and a permission change are read at once.
+A write that is still open,
+including the truncation that starts an in-place save,
+and a newly created file are read once 150 ms pass without another write,
+and at most 250 ms after the first.
+The latest notification decides,
+so a save that deletes and rewrites the file waits for the rewrite.
+
+### Recovery and timers
+
+A full reread of every shown folder and the displayed file follows:
+an inotify queue overflow (`IN_Q_OVERFLOW`),
+an error from the notification stream,
+a watched folder that is removed or renamed,
+a watch that cannot be added,
+including at the `fs.inotify.max_user_watches` limit,
+and a watcher that cannot start or stops.
+Each is logged.
+A renamed folder's watch is removed,
+because inotify keeps following the moved directory under its old name.
+
+A shown item without a live watch keeps the previous timers:
+the displayed file every 250 ms,
+and unwatched folders one at a time every 500 ms.
+Failed watches are retried every 10 s.
+
+Every 10 s,
+every shown folder and the displayed file are reread anyway,
+after all notified work.
+inotify never reports some changes:
+network and FUSE mounts,
+writes through `mmap`,
+and unmounts (`notify` does not map `IN_UNMOUNT`).
+The sweep bounds how long those stay stale.
+It costs one listing per shown folder and one source read per 10 s,
+against 20 listings and 40 source reads per 10 s under the previous polling.
+
+### Threading and shutdown
+
+A watch thread owns the watcher and applies the set of shown folders,
+because adding a watch blocks until notify's own event thread answers.
+notify's event thread records notifications into state the UI timer drains every 20 ms.
+Closing the window closes the watch thread and joins it;
+dropping the watcher makes notify remove its watches and close its descriptor.
+notify starts its event thread detached,
+so that thread is not joined.
+A watch call stuck on a hung filesystem delays window close,
+as a stuck directory or file read already does.
+
+### Measured refresh latency
+
+`inspect:refresh-latency` times an external write until the tree row or the source text changes,
+through the shipped bindings in the headless window,
+16 trials per case,
+three runs per build,
+with the same pseudo-random write gaps and target folders in both builds.
+Polling (`48a1b5756`):
+a new file in one of 8 expanded folders took a median of 1657 to 1706 ms across runs,
+at most 4035 ms;
+with one expanded folder,
+651 to 785 ms,
+at most 988 ms;
+a rewrite of the displayed file,
+115 to 147 ms,
+at most 281 ms.
+Watching:
+a new file took a median of 26 to 34 ms with 8 folders and 30 to 35 ms with one,
+at most 54 ms;
+a rewrite took 36 to 52 ms,
+at most 67 ms.
+
+### Deliberate differences from editord
+
+editord watches each folder with chokidar when it is first expanded and keeps the watch after collapse;
+this reader removes it on collapse.
+editord refreshes the displayed file only through its folder's watch,
+so a file opened from search in a collapsed folder is not refreshed there;
+this reader always watches the displayed file's folder.
+editord ignores events for `.git`,
+`node_modules`,
+editor swap,
+and temporary file names;
+this reader lists those names like any other,
+so their changes appear.
+editord waits for a file's size to stay unchanged for 150 ms (`awaitWriteFinish`) before reporting it;
+this reader reads closed writes at once and waits 150 ms only for writes still open.
+editord drops a folder's watch on an error;
+this reader rereads everything shown,
+keeps that folder on a timer,
+and retries the watch.
+editord has no overflow handling or periodic reread.
+
+### Change-watching checks
+
+`tests/change_watch.rs` runs the watcher over disposable folders:
+entry changes,
+moves in and out,
+the extra read after a new watch,
+collapse removing the kernel watch,
+finished and unfinished writes,
+silence for the IDE's own reads,
+a real queue overflow,
+a notification error,
+removed,
+renamed,
+failed,
+and retried watches,
+refused outside and symbolic-link folders,
+and no watch left after shutdown.
+`tests/refresh_policy.rs` pins the intervals.
+`native::watch_tests` checks the shipped tree and source in the headless window.
+`inspect:watch-guards` removes each guard in a disposable copy and requires its named test to fail.
+In the nested compositor,
+dark and light,
+external create,
+rename,
+and delete in an expanded folder,
+and both correspondence examples through atomic replace,
+show without polling.
 
 ## Build boundary
 

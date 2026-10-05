@@ -76,7 +76,7 @@ const run = (item, phase) => {
   const command = item.native
     ? ['cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--filter-expr', 'test(' + item.test + ')']
     : ['cargo', 'test', '--offline', '--no-default-features', '--test', item.integration, item.test, '--', '--nocapture'];
-  const result = spawnSync('podman', [
+  const start = () => spawnSync('podman', [
     'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
     '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
     '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
@@ -84,6 +84,13 @@ const run = (item, phase) => {
     '--env', 'SLINT_BACKEND=headless', '--env', 'SLINT_MCP_PORT=0', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
     'localhost/monochromatic/ide', ...command,
   ], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  let result = start();
+  // Concurrent podman sessions can briefly lock podman's own storage database before the container exists;
+  // that is not a test outcome, so the identical command is started again.
+  for (let attempt = 1; attempt <= 3 && result.status === 125 && (result.stderr ?? '').includes('database is locked'); attempt++) {
+    console.log('podman storage was locked; starting ' + item.name + ' ' + phase + ' again (' + attempt + ')');
+    result = start();
+  }
   const output = (result.stdout ?? '') + (result.stderr ?? '');
   writeFileSync(join(artifact, item.name + '-' + phase + '.log'), output);
   if (result.error) throw result.error;
