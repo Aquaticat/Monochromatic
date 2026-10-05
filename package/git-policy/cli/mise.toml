@@ -1,3 +1,15 @@
+[tasks."native:lock"]
+description = "Generate the standalone native wrapper Cargo lockfile"
+run = "cargo generate-lockfile --offline"
+
+[tasks."native:format"]
+description = "Format native wrapper Rust source without changing TypeScript"
+run = "cargo fmt"
+
+[tasks."native:check"]
+description = "Check the native wrapper implementation library"
+run = "cargo check --locked --offline"
+
 [tasks."test:git-image"]
 description = "Build the audited Git 2.56.0 release in the bounded Rust test image"
 run = "node bin/build-git-test-image.mjs"

@@ -1,0 +1,33 @@
+[package]
+name = "git-policy-cli"
+version = "0.0.1"
+edition = "2024"
+description = "Native repository-owned Git policy wrapper implementation."
+license = "LGPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/Aquaticat/Monochromatic.git"
+# First crates.io publication requires separate approval; the TypeScript executable remains active meanwhile.
+publish = false
+
+[lib]
+name = "git_policy_cli"
+path = "src/native/lib.rs"
+
+[dependencies]
+# Both native tools use the already adopted comment-preserving JSONC foundation.
+monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }
+
+[lints.clippy]
+disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
+
+[profile.release]
+panic = "unwind"
+overflow-checks = true
+
+# The native implementation keeps the repository's standalone Cargo ownership convention.
+[workspace]
