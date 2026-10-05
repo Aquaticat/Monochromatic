@@ -11,6 +11,17 @@ use forbidden_strings::{Scanner, ScanFinding};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+/// What: `#[path = "..."] mod blocked_root;` compiles the named file as a private module of this test crate.
+/// Why:  The CLI integration suite includes the same file, so both assert one platform-specific reason
+///       for a cache root blocked by a regular file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as blockedRoot from './support/blocked_root.ts';
+/// ```
+#[path = "support/blocked_root.rs"]
+mod blocked_root;
+
 /// Find only the artifact generated in this disposable fixture, never a user's cache.
 fn artifact(root: &Path) -> PathBuf {
     // A Vec work stack walks bounded fixture directories without recursive call depth.
@@ -45,7 +56,8 @@ fn warning_consumer_probe() {
         std::fs::write(artifact(root.join("cache").as_path()), b"invalid").expect("corrupt fixture artifact");
     }
     let scanner: Scanner = Scanner::load(rules.as_path(), false, true).expect("public cache recovery");
-    let expected_reason = if mode == "blocked" { "unreadable" }
+    // A root blocked by a regular file reads as `unreadable` on Unix and `missing` on Windows; every other reason is shared.
+    let expected_reason = if mode == "blocked" { blocked_root::blocked_root_reason() }
         else if mode == "unavailable" { "cache-root-unavailable" } else { "invalid" };
     assert_eq!(scanner.cache_warnings()[0].reason(), expected_reason);
     assert_eq!(scanner.cache_warnings()[0].recovery(), "compile-from-text");

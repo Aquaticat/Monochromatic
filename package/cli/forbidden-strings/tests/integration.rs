@@ -13,6 +13,19 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::Command as ProcessCommand;
 
+// What:     `#[path = "..."] mod blocked_root;` compiles the named file as
+//           a private module of this test crate.
+// Why:      The embedding-warning suite includes the same file, so both
+//           assert one platform-specific reason for a cache root blocked
+//           by a regular file.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import * as blockedRoot from './support/blocked_root.ts';
+// ```
+#[path = "support/blocked_root.rs"]
+mod blocked_root;
+
 // What:     `const BIN: &str = env!("CARGO_BIN_EXE_forbidden-strings");`
 //           uses the compile-time env var Cargo sets for integration
 //           tests of a binary crate. The value is the absolute path to
@@ -1683,7 +1696,11 @@ fn cache_write_failure_keeps_scan_correct() {
         .expect("spawn scanner");
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert_eq!(output.status.code(), Some(1));
-    assert!(stderr.contains("\"reason\":\"unreadable\""));
+    // The read-side reason for a root blocked by a regular file is the platform's:
+    // `unreadable` on Unix and `missing` on Windows. `format!` builds the owned JSON
+    // fragment once; `.as_str()` lends it to `contains` without copying.
+    let blocked_reason: String = format!("\"reason\":\"{}\"", blocked_root::blocked_root_reason());
+    assert!(stderr.contains(blocked_reason.as_str()), "blocked-root reason missing; stderr: {stderr}");
     assert!(stderr.contains("\"reason\":\"write-failed\""));
     assert!(stderr.contains("target.txt:1 rule=0"));
     let _ = fs::remove_dir_all(dir);
