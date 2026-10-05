@@ -78,6 +78,9 @@ and resumption details are in [the handover][handover].
   see [the find matching plan](slint-ide-find-matching.md).
 - [ ] Complete tree parity:
   resizable sidebar and event-driven directory invalidation beyond the current bounded polling implementation.
+  The resizable sidebar landed on 2026-10-05.
+  Directory invalidation stays on bounded polling unless an existing dependency provides file watching,
+  per the user's proportionality direction.
 - [ ] Required language-intelligence feature paths and synchronization.
   The compiled `helix-lsp` spike and verified design are in
   [the language intelligence design](slint-ide-language-intelligence.md);

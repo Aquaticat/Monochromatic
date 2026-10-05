@@ -122,12 +122,11 @@ when a plain conventional solution with existing dependencies meets the stated s
 Work in flight,
 each owned by one subagent:
 
-- Resizable sidebar in the worktree `.claude/worktrees/ide-sidebar`
-  on branch `feat/ide-sidebar-resize`,
-  native probes on MCP ports 9328 and 9329.
 - Branch heads at 11:48 on 2026-10-05,
   all committed with clean worktrees:
-  `feat/ide-sidebar-resize` at `4e0907962` (6 commits),
+  `feat/ide-sidebar-resize` at `4e0907962` (6 commits,
+  plus `8bfa7bd0b` later;
+  since integrated),
   `feat/ide-source-keys` at `b59b15b59` (8 commits,
   since integrated),
   `feat/ide-language-core` at `652d383dd` (7 commits).
@@ -166,6 +165,45 @@ each owned by one subagent:
 
 Completed in this fan-out:
 
+- Resizable sidebar,
+  cherry-picked onto `main` as `365699eef` through `2187b8ebd` from `feat/ide-sidebar-resize`,
+  plus the integration fix `0123ec0ba`.
+  The tree starts at 256px like editord's `16rem`,
+  session-only,
+  and stays between 160px and the window width minus the divider cell and a 240px source column.
+  The divider is its own 48px layout cell,
+  so its pointer area overlaps no tree row or source text;
+  the cost is a 47px gutter beside the 1px line.
+  A left-button drag resizes;
+  clicks and double-clicks without movement do nothing.
+  The divider is a Tab stop between tree and source,
+  steps 16px with Left and Right and jumps with Home and End,
+  and is exposed as a `slider` named "Sidebar width",
+  because Slint 1.18.1 has no splitter or separator role.
+  States use two channels:
+  idle 1px line,
+  hover with column-resize cursor and a 3px line,
+  drag at full ink,
+  keyboard focus with a cell boundary.
+  The width is clamped by layout constraints,
+  not a size binding on `root.width`,
+  which is a binding loop;
+  the source cell's preferred width equals its 240px minimum,
+  or long content shrinks the sidebar.
+  The tab stop and the 48px cell changed `main`'s source pointer and focus test expectations,
+  updated in `0123ec0ba`.
+  Eight guard-removal controls passed on the branch
+  (`~/temp/agent/ide-sidebar-guard-hJqYf7/results.json`).
+  Dark,
+  light,
+  and 480x320 narrow sessions passed with seat clicks and toolkit-level drags,
+  because the compositor protocol has no held pointer drag;
+  evidence in `~/temp/agent/ide-sidebar-j/`.
+  `inspect:native` now also takes `IDE_NATIVE_SIZE`,
+  because the compositor's `resize` command had no effect while the host session was locked
+  (inferred,
+  with the older compositor binary).
+  The divider-as-Tab-stop choice and the gutter were reported to the user as open to veto.
 - Source-view reading gate,
   cherry-picked onto `main` as `6545c521d` through `374ea9a36`
   from `feat/ide-source-keys`.
@@ -377,15 +415,29 @@ Queue after the in-flight work:
    references,
    inlay and diagnostics layout in the source view,
    and the confinement launch wrapper.
-2. Sidebar resizing.
-   Event-driven directory invalidation stays on bounded polling
+2. Event-driven directory invalidation stays on bounded polling
    unless an existing dependency already provides file watching,
    per the proportionality rule.
+   Measured on 2026-10-05:
+   none of the 646 packages in `package/desktop-app/ide/Cargo.lock` is a watcher
+   (`notify`,
+   `inotify`,
+   or similar),
+   so event-driven refresh needs a new dependency;
+   that question went to the user.
 3. IDE reaction to a live system-theme change,
    verified in the nested compositor with `color-scheme light` and `color-scheme dark` on the control socket,
    plus a headless theme-change test.
-   Scheduled after the sidebar branch lands.
-4. The final package gates:
+   Unblocked now that the sidebar and source-key branches are on `main`.
+4. Two flaky native find tests,
+   diagnosed by the sidebar agent from eight runs each in disposable copies:
+   `native_find_paints_visible_matches_only_and_reveals_far_columns` failed 3 of 8 runs on unmodified `8995633b0`;
+   its `1/301` status wait can be satisfied by the reply for the first typed character,
+   because the query `n` also yields 301 matches on that fixture.
+   `native_find_recomputes_after_external_reload_and_follows_selection_correspondence`
+   failed 1 of 8 with selection `(2, 5)` instead of `(2, 6)`;
+   not yet diagnosed.
+5. The final package gates:
    guard-removal reruns on the final `main`,
    packaging,
    consumer-boundary checks,
@@ -1271,8 +1323,8 @@ and expands/reveals ancestors after successful opens.
 Rows have 48px minimum dimensions;
 expanded folders use both arrow direction and font weight,
 and the displayed file uses selection background and weight.
-The current sidebar is fixed at 256px;
-resizing parity remains unimplemented.
+Since 2026-10-05 the sidebar starts at 256px and resizes through a 48px divider cell;
+the "Completed in this fan-out" list records it.
 
 `FileOpener` reuses `ReloadWorker` for project-relative resolution,
 read/diff,
