@@ -14,7 +14,9 @@ import type { DeepReadonlyData, } from './readonly-data.ts';
 // one text node with text and link nodes that carry no position, wherever its
 // pattern finds a literal micromark did not tokenize (ledger B123). This module
 // places such a run in the raw text and says which marker lexemes of that raw
-// lie in the run's text, as against a link's own URL.
+// lie in the run's text, as against a link's own URL. The footnote marker
+// reader (`active-footnote-markers.ts`) and the document's footnote graph
+// (`footnote-graph.ts`) both read runs through it.
 
 /**
  Any node of the parsed tree, its root among them.
@@ -86,6 +88,44 @@ export function nodeBounds(node: TreeNode,): RawBounds | typeof NO_NODE_BOUNDS {
     start,
     end,
   };
+}
+
+/**
+ Whether a link is an autolink literal, whose only text is its own URL: one
+ micromark tokenized spans exactly that text, with no label bracket before
+ it, and one the autolink-literal transform built carries no span at all.
+ A GFM marker shape inside such text is part of the URL (ledger B123).
+
+ @param node - node a walk is about to descend into
+
+ @returns Whether the node's children are URL text a marker walk must not
+ read for GFM shapes
+
+ @example
+ ```ts
+ if (!isAutolinkLiteral(node,)) descend();
+ ```
+ */
+export function isAutolinkLiteral(node: TreeNode,): boolean {
+  if (node.type !== 'link')
+    return false;
+  /**
+   The link's own span, absent on a link the transform built.
+   */
+  const bounds = nodeBounds(node,);
+  if (bounds === NO_NODE_BOUNDS)
+    return true;
+  /**
+   First child of the link, absent under an empty label.
+   */
+  const [first,] = node.children;
+  if (first === undefined)
+    return false;
+  /**
+   Span of that child, which a label bracket sets off from the link's start.
+   */
+  const firstBounds = nodeBounds(first,);
+  return (firstBounds !== NO_NODE_BOUNDS) && (firstBounds.start === bounds.start);
 }
 
 /**
@@ -615,10 +655,10 @@ function runEdges(parent: TreeNode,): RawBounds {
 
  @example
  ```ts
- const run: UnpositionedRun = { opener, regionStart: 0, spans: [], };
+ const run: UnpositionedRun = { opener, regionStart: 0, regionEnd: 21, spans: [], };
  ```
  */
-type UnpositionedRun = {
+export type UnpositionedRun = {
   /**
    First member of the run, the node a source-order walk meets first.
    */
@@ -627,6 +667,13 @@ type UnpositionedRun = {
    Origin of the run's raw region in the masked parser input.
    */
   readonly regionStart: number;
+  /**
+   Offset after the run's raw region, where its positioned neighbour or its
+   parent's edge begins. The region holds the run's text and, at most, the
+   parent's own markup beside it, which holds no square bracket and no
+   full-width marker bracket.
+   */
+  readonly regionEnd: number;
   /**
    Lexemes lying in the run's text, their offsets relative to the region.
    */
@@ -698,6 +745,7 @@ export function unpositionedRuns(
       runs.push({
         opener,
         regionStart,
+        regionEnd: bounds.start,
         spans: runSpans({
           members,
           region: text.slice(
@@ -730,6 +778,7 @@ export function unpositionedRuns(
     runs.push({
       opener,
       regionStart,
+      regionEnd,
       spans: runSpans({
         members,
         region: text.slice(

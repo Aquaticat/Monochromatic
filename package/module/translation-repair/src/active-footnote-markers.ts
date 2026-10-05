@@ -4,6 +4,7 @@ import { splitFrontMatter, } from './front-matter.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import { FootnoteRewriteError, } from './footnote-rewrite-error.ts';
 import {
+  isAutolinkLiteral,
   NO_NODE_BOUNDS,
   nodeBounds,
   type TreeNode,
@@ -157,43 +158,6 @@ function placedReferences(
         + marker.endOffset,
     };
   },);
-}
-
-/**
- Whether a link is an autolink literal, whose only text is its own URL: one
- micromark tokenized spans exactly that text, with no label bracket before
- it, and one the autolink-literal transform built carries no span at all.
- A marker shape inside such text is part of the URL (ledger B123).
-
- @param node - node the walk is about to descend into
-
- @returns Whether the node's children are URL text the walk must not read
-
- @example
- ```ts
- if (!isAutolinkLiteral(node,)) descend();
- ```
- */
-function isAutolinkLiteral(node: TreeNode,): boolean {
-  if (node.type !== 'link')
-    return false;
-  /**
-   The link's own span, absent on a link the transform built.
-   */
-  const bounds = nodeBounds(node,);
-  if (bounds === NO_NODE_BOUNDS)
-    return true;
-  /**
-   First child of the link, absent under an empty label.
-   */
-  const [first,] = node.children;
-  if (first === undefined)
-    return false;
-  /**
-   Span of that child, which a label bracket sets off from the link's start.
-   */
-  const firstBounds = nodeBounds(first,);
-  return (firstBounds !== NO_NODE_BOUNDS) && (firstBounds.start === bounds.start);
 }
 
 /**

@@ -3,12 +3,22 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { RootContent, } from 'mdast';
 
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
-import { gfmMarkerSpans, } from './gfm-marker-spans.ts';
+import { footnoteGraphFindings, } from './footnote-graph-findings.ts';
+import {
+  isAutolinkLiteral,
+  NO_NODE_BOUNDS,
+  nodeBounds,
+  type TreeNode,
+  type UnpositionedRun,
+  unpositionedRuns,
+} from './footnote-unpositioned-runs.ts';
+import {
+  gfmMarkerSpans,
+  type GfmMarkerSpan,
+} from './gfm-marker-spans.ts';
 import type {
-  FootnoteConvention,
   FootnoteDefinitionHit,
   FootnoteGraph,
-  FootnoteGraphFinding,
   FootnoteReferenceHit,
 } from './footnote-model.ts';
 
@@ -161,32 +171,6 @@ export function scanGfmReferenceLiterals(
 //region Graph construction
 
 /**
- Composite key joining convention and identifier for grouping.
-
- @param convention - syntax family
-
- @param identifier - normalized identifier
-
- @returns Collision-free grouping key
-
- @example
- ```ts
- graphKey({ convention: 'gfm', identifier: '1', },);
- ```
- */
-function graphKey(
-  {
-    convention,
-    identifier,
-  }: {
-    readonly convention: FootnoteConvention;
-    readonly identifier: string;
-  },
-): string {
-  return `${convention}\u0000${identifier}`;
-}
-
-/**
  Mutable accumulator threaded through one document walk.
 
  @example
@@ -207,10 +191,119 @@ type GraphAccumulator = {
 };
 
 /**
+ Records the markers one raw region of text holds: each full-width marker,
+ a definition where only whitespace precedes it in its block and a reference
+ elsewhere, then each GFM literal the caller found there.
+
+ @param regionStart - body-relative start of the region
+
+ @param region - raw text of the region, from the masked body
+
+ @param literals - GFM literal lexemes of the region that are references,
+ their offsets relative to it
+
+ @param blockStart - body-relative start of the block holding the region
+
+ @param bodyText - body source for faithful slice scanning
+
+ @param bodyOffset - absolute offset of body start in full document source
+
+ @param nodeId - structural identifier of the block
+
+ @param acc - accumulator receiving hits
+
+ @example
+ ```ts
+ collectRegionHits({ regionStart: 0, region: '猫〔1〕', literals: [], blockStart: 0, bodyText, bodyOffset: 0, nodeId: 'block/0', acc, },);
+ ```
+ */
+function collectRegionHits(
+  {
+    regionStart,
+    region,
+    literals,
+    blockStart,
+    bodyText,
+    bodyOffset,
+    nodeId,
+    acc,
+  }: {
+    readonly regionStart: number;
+    readonly region: string;
+    readonly literals: readonly GfmMarkerSpan[];
+    readonly blockStart: number;
+    readonly bodyText: string;
+    readonly bodyOffset: number;
+    readonly nodeId: string;
+    readonly acc: GraphAccumulator;
+  },
+): void {
+  for (const hit of scanFullwidthMarkers({ slice: region, },)) {
+    /**
+     Text between block start and marker;
+     all-whitespace prefix means marker opens its block,
+     which is how archive-convention definitions are written.
+     */
+    const prefix = bodyText.slice(
+      blockStart,
+      regionStart + hit.localOffset,
+    );
+
+    if (prefix.trim() === '') {
+      acc.definitions
+        .push({
+        convention: 'fullwidth-bracket',
+        identifier: hit.identifier,
+        nodeId,
+      },);
+    }
+    else {
+      acc.references
+        .push({
+        convention: 'fullwidth-bracket',
+        identifier: hit.identifier,
+        nodeId,
+        offset: bodyOffset + regionStart
+          + hit.localOffset,
+      },);
+    }
+  }
+
+  // Literal [^id] sequences survive parsing only when their definition is
+  // missing, so every hit here is an unresolved GFM reference.
+  //
+  // Folded on the way in, because every other identifier in this graph
+  // arrives from an mdast node already folded. An unresolved reference
+  // spelled `[^Note]` and an orphan definition spelled `[^note]:` are one
+  // footnote, and reporting them under two names hides that they are.
+  for (const literal of literals) {
+    acc.references
+      .push({
+      convention: 'gfm',
+      identifier: normalizeFootnoteIdentifier({ identifier: literal.rawLabel, },),
+      nodeId,
+      offset: bodyOffset + regionStart
+        + literal.startOffset,
+    },);
+  }
+}
+
+/**
  Walks one top-level block with an explicit work-stack,
- collecting GFM footnote references and full-width markers from text nodes.
- Code and inline-code nodes never enter text scanning because only `text` nodes are
+ collecting GFM footnote references and full-width markers from text.
+ Code and inline-code nodes never enter text scanning because only text is
  scanned, which is what makes marker look-alikes inside code harmless.
+
+ TEXT IS READ RAW, in three shapes. A positioned `text` node gives its own
+ span. A run of nodes the autolink-literal transform rebuilt without
+ positions gives the raw between its positioned neighbours, read through
+ `footnote-unpositioned-runs.ts` as the footnote relabel reads it (ledger
+ B123), at the run's first node. The text of an autolink literal micromark
+ tokenized is its URL: GFM shapes there are no references, as they are none
+ in a rebuilt literal either. A full-width marker is read wherever text
+ shows it, a literal's link text included, since no grammar reads that
+ convention and both micromark and the transform take a glued `〔N〕` into
+ the link.
 
  @param block - top-level mdast block to walk
 
@@ -223,6 +316,9 @@ type GraphAccumulator = {
  @param bodyOffset - absolute offset of body start in full document source
 
  @param acc - accumulator receiving hits
+
+ @throws FootnoteRewriteError of the `position` kind when an unpositioned run
+ cannot be placed in the raw text, a tree shape no input is known to build
 
  @example
  ```ts
@@ -252,15 +348,26 @@ function collectBlockHits(
   const nodeId = `block/${String(blockIndex,)}`;
 
   /**
+   Unpositioned runs of the parents walked so far, keyed by each run's first
+   node, where the walk records the run's markers in source order.
+   */
+  const runs = new Map<TreeNode, UnpositionedRun>();
+
+  /**
    Explicit work-stack replacing recursion for this bounded structural walk.
    */
-  const stack: RootContent[] = [block,];
+  const stack: TreeNode[] = [block,];
 
   while (stack.length > 0) {
     /**
      Node under examination, proven present by loop condition.
      */
     const node = nonNullishOrThrow(stack.pop(),);
+
+    /**
+     Raw span of this node, absent on a node the transform rebuilt.
+     */
+    const bounds = nodeBounds(node,);
 
     if (node.type === 'footnoteReference') {
       acc.references
@@ -273,183 +380,79 @@ function collectBlockHits(
           .offset,),
       },);
     }
-    else if (node.type === 'text') {
+    else if ((node.type === 'text') && (bounds !== NO_NODE_BOUNDS)) {
       /**
-       Body-relative start of this text node.
+       Raw text of this node.
        */
-      const textStart = nonNullishOrThrow(node.position
-        ?.start
-        .offset,);
+      const region = bodyText.slice(
+        bounds.start,
+        bounds.end,
+      );
+      collectRegionHits({
+        regionStart: bounds.start,
+        region,
+        literals: gfmMarkerSpans({ text: region, },),
+        blockStart,
+        bodyText,
+        bodyOffset,
+        nodeId,
+        acc,
+      },);
+    }
 
-      /**
-       Body-relative end of this text node.
-       */
-      const textEnd = nonNullishOrThrow(node.position
-        ?.end
-        .offset,);
+    /**
+     Unpositioned run this node opens, absent for every other node.
+     */
+    const run = runs.get(node,);
+    if (run !== undefined) {
+      collectRegionHits({
+        regionStart: run.regionStart,
+        region: bodyText.slice(
+          run.regionStart,
+          run.regionEnd,
+        ),
+        literals: run.spans,
+        blockStart,
+        bodyText,
+        bodyOffset,
+        nodeId,
+        acc,
+      },);
+    }
 
-      for (const hit of scanFullwidthMarkers({ slice: bodyText.slice(
-        textStart,
-        textEnd,
-      ), },)) {
-        /**
-         Text between block start and marker;
-         all-whitespace prefix means marker opens its block,
-         which is how archive-convention definitions are written.
-         */
-        const prefix = bodyText.slice(
+    if (isAutolinkLiteral(node,)) {
+      // A tokenized literal's text is its URL: full-width markers only. A
+      // rebuilt one carries no span, its text read with its run.
+      if (bounds !== NO_NODE_BOUNDS) {
+        collectRegionHits({
+          regionStart: bounds.start,
+          region: bodyText.slice(
+            bounds.start,
+            bounds.end,
+          ),
+          literals: [],
           blockStart,
-          textStart + hit.localOffset,
-        );
-
-        if (prefix.trim() === '') {
-          acc.definitions
-            .push({
-            convention: 'fullwidth-bracket',
-            identifier: hit.identifier,
-            nodeId,
-          },);
-        }
-        else {
-          acc.references
-            .push({
-            convention: 'fullwidth-bracket',
-            identifier: hit.identifier,
-            nodeId,
-            offset: bodyOffset + textStart
-              + hit.localOffset,
-          },);
-        }
-      }
-
-      // Literal [^id] sequences survive parsing only when their definition is
-      // missing, so every hit here is an unresolved GFM reference.
-      //
-      // Folded on the way in, because every other identifier in this graph
-      // arrives from an mdast node already folded. An unresolved reference
-      // spelled `[^Note]` and an orphan definition spelled `[^note]:` are one
-      // footnote, and reporting them under two names hides that they are.
-      for (const literal of scanGfmReferenceLiterals({ slice: bodyText.slice(
-        textStart,
-        textEnd,
-      ), },)) {
-        acc.references
-          .push({
-          convention: 'gfm',
-          identifier: normalizeFootnoteIdentifier({ identifier: literal.identifier, },),
+          bodyText,
+          bodyOffset,
           nodeId,
-          offset: bodyOffset + textStart
-            + literal.localOffset,
+          acc,
         },);
       }
     }
-
-    if ('children' in node) {
+    else if ('children' in node) {
+      for (const opened of unpositionedRuns({
+        parent: node,
+        text: bodyText,
+      },))
+        runs.set(
+          opened.opener,
+          opened,
+        );
       // Reverse push keeps source order once the LIFO stack pops.
       for (const child of [...node.children,].toReversed())
         stack.push(child,);
     }
   }
-}
-
-/**
- Computes integrity findings from collected references and definitions.
-
- @param references - every reference in source order
-
- @param definitions - every definition in source order
-
- @returns Findings for unresolved references, orphan definitions, and duplicates
-
- @example
- ```ts
- computeFindings({ references, definitions, },);
- ```
- */
-function computeFindings(
-  {
-    references,
-    definitions,
-  }: {
-    readonly references: readonly FootnoteReferenceHit[];
-    readonly definitions: readonly FootnoteDefinitionHit[];
-  },
-): readonly FootnoteGraphFinding[] {
-  /**
-   Definition count per grouping key, driving duplicate detection.
-   */
-  const definitionCounts = new Map<string, number>();
-  for (const definition of definitions) {
-    /**
-     Grouping key of this definition.
-     */
-    const key = graphKey(definition,);
-    definitionCounts.set(
-      key,
-      (definitionCounts.get(key,) ?? 0) + 1,
-    );
-  }
-
-  /**
-   Keys of identifiers referenced at least once, driving orphan detection.
-   */
-  const referencedKeys = new Set(references.map(function toKey(reference,): string {
-    return graphKey(reference,);
-  },),);
-
-  /**
-   Unresolved references: no definition carries their key.
-   */
-  const unresolved = references
-    .filter(function lacksDefinition(reference,): boolean {
-      return !definitionCounts.has(graphKey(reference,),);
-    },)
-    .map(function toFinding(reference,): FootnoteGraphFinding {
-      return {
-        kind: 'unresolved-reference',
-        convention: reference.convention,
-        identifier: reference.identifier,
-        nodeId: reference.nodeId,
-      };
-    },);
-
-  /**
-   Orphan definitions: never referenced anywhere.
-   */
-  const orphans = definitions
-    .filter(function neverReferenced(definition,): boolean {
-      return !referencedKeys.has(graphKey(definition,),);
-    },)
-    .map(function toFinding(definition,): FootnoteGraphFinding {
-      return {
-        kind: 'orphan-definition',
-        convention: definition.convention,
-        identifier: definition.identifier,
-        nodeId: definition.nodeId,
-      };
-    },);
-
-  /**
-   Duplicate definitions: identifier defined more than once.
-   */
-  const duplicates = definitions
-    .filter(function definedTwice(definition,): boolean {
-      return (definitionCounts.get(graphKey(definition,),) ?? 0) > 1;
-    },)
-    .map(function toFinding(definition,): FootnoteGraphFinding {
-      return {
-        kind: 'duplicate-definition',
-        convention: definition.convention,
-        identifier: definition.identifier,
-        nodeId: definition.nodeId,
-      };
-    },);
-
-  return [
-    ...unresolved,
-    ...orphans,
-    ...duplicates,
-  ];
 }
 
 /**
@@ -464,6 +467,9 @@ function computeFindings(
  @param bodyOffset - absolute offset of body start in full document source
 
  @returns Graph with references, definitions, and integrity findings
+
+ @throws FootnoteRewriteError of the `position` kind when an unpositioned run
+ cannot be placed in the raw text, a tree shape no input is known to build
 
  @example
  ```ts
@@ -517,7 +523,7 @@ export function buildFootnoteGraph(
   return {
     references: acc.references,
     definitions: acc.definitions,
-    findings: computeFindings(acc,),
+    findings: footnoteGraphFindings(acc,),
   };
 }
 
