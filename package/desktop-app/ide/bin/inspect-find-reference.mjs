@@ -40,6 +40,18 @@ const cases = [
   { name: 'tab-as-space', text: 'one\ttwo', query: 'one two' },
   { name: 'nbsp-as-space', text: 'one\u00a0two', query: 'one two' },
   { name: 'empty-pattern', text: 'a needle here', query: '' },
+  { name: 'kana-script', text: 'か', query: 'カ' },
+  { name: 'kana-width', text: 'ｶ', query: 'カ' },
+  { name: 'kana-small', text: 'ゃ', query: 'や' },
+  { name: 'kana-voiced', text: 'が', query: 'か' },
+  { name: 'kana-composed', text: 'か\u3099', query: 'が' },
+  { name: 'kana-halfwidth-voiced', text: 'ｶﾞ', query: 'ガ' },
+  { name: 'single-quote', text: 'can’t', query: "can't" },
+  { name: 'double-quote', text: '“text”', query: '"text"' },
+  { name: 'soft-hyphen', text: 'co\u00adoperate', query: 'cooperate' },
+  { name: 'soft-hyphen-only', text: 'cooperate', query: '\u00ad' },
+  { name: 'half-expansion', text: 'ß', query: 's' },
+  { name: 'combining-mark-only', text: 'cafe\u0301', query: '\u0301' },
 ];
 try {
   call(['open', pathToFileURL(fixture).href]);
