@@ -479,12 +479,12 @@ dir = "{{config_root}}"
 run = "node scan-indicator.mjs build"
 
 [tasks."lint:scan-indicator"]
-description = "Validate exact scan-indicator images, authored states, bar slot and status-reading boundaries"
+description = "Validate exact scan-indicator images, authored states, bar slot, status readings and label clearance pixels"
 dir = "{{config_root}}"
 run = "node scan-indicator.mjs validate"
 
 [tasks."test:scan-indicator"]
-description = "Exercise scan cohort, authored-state, bar-slot, status-reading and no-ballot guards on disposable copies"
+description = "Exercise every scan viewer rule on disposable copies; `-- without <rule>` deletes one rule, `-- list` names them"
 dir = "{{config_root}}"
 run = "node scan-indicator-test.mjs"
 

@@ -96,7 +96,7 @@ progress/completion transitions are recorded separately from the static images.<
 <figure data-scene="idle"><h3>No active scan</h3><button type="button" class="preview-button"><img alt="Accepted native player without a scan bar or permanent status slot"><span>Open no-bar baseline</span></button><figcaption></figcaption></figure>
 <figure data-scene="running"><h3>Authored analysis in progress</h3><button type="button" class="preview-button"><img alt="Native scan-F bar with an authored count and fixed-width Pause control"><span>Open running scan bar</span></button><figcaption></figcaption></figure>
 <figure data-scene="paused"><h3>Authored analysis paused</h3><button type="button" class="preview-button"><img alt="Native scan-F bar retains its count and fixed control slot while showing Resume"><span>Open paused scan bar</span></button><figcaption></figcaption></figure>
-<figure data-scene="wide-count"><h3>Wider authored count</h3><button type="button" class="preview-button"><img alt="Native scan-F bar with a wider synthetic count, preserving the fixed Pause slot and one-line ellipsis"><span>Open count-width stress</span></button><figcaption></figcaption></figure>
+<figure data-scene="wide-count"><h3>Wider authored count</h3><button type="button" class="preview-button"><img alt="Native scan-F bar with a wider synthetic count in the same fixed Pause slot and one-line status"><span>Open count-width stress</span></button><figcaption></figcaption></figure>
 </div></section>
 <details><summary>Read the verification boundary</summary>
 <p>The host extends ComponentActivity, not MainActivity. Its merged manifest disables production entry and
@@ -110,7 +110,11 @@ A same-APK comparison reproduced that failure and measured the accepted source p
 not a real worker. Completion-return checks compare the player against the no-bar baseline; rectangles alone
 are not glyph bounds or universal accessibility acceptance.</p>
 <p>Raw screenshots, hierarchies, logs and generated identities remain private. Only freshly inspected,
-metadata-stripped app-area crops with exact artifact and runtime provenance are embedded here.</p>
+metadata-stripped app-area crops are embedded here, each checked against its recorded hash.</p>
+<p>The status readings come from the hash-bound inspection record; they are read by eye, not by this page.
+The label clearance figures are re-measured from the embedded images whenever this page is validated.
+Neither is glyph metrics or accessibility acceptance.</p>
+__SCAN_INDICATOR_PROVENANCE__
 </details>
 <fieldset><legend>Optional evidence observations</legend><label for="final-notes">Observed clipping or missing evidence</label>
 <textarea id="final-notes" name="notes" placeholder="Optional observations only; no policy answer is required."></textarea></fieldset>
