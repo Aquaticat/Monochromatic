@@ -907,6 +907,36 @@ fn rules_init_print_config_and_debug_modes() {
     assert_eq!(fixture.read("a.md"), "# Title.\n");
 }
 
+/// `--debug` streams semantic-workspace progress to standard error while a workspace loads, and a run without
+/// it prints nothing there. An unparsable `Cargo.toml` makes the load fail after its first progress message,
+/// so both runs end quickly with the same single processing finding and status 2.
+#[test]
+fn debug_streams_workspace_progress_and_plain_runs_stay_silent() {
+    let fixture: Fixture = Fixture::new();
+    fixture.write(
+        CONFIG,
+        r#"[{ "files": ["**/*.rs"], "rules": { "rust/require-explicit-types": { "severity": "error" } } }]"#,
+    );
+    fixture.write("Cargo.toml", "[package\n");
+    fixture.write("src/lib.rs", "//! Library.\n");
+    let debug: Run = run(&fixture.path, &["--debug", "src/lib.rs"], b"");
+    assert_eq!(debug.status, 2, "{}", debug.stderr);
+    assert!(
+        debug
+            .stderr
+            .contains("monochromatic-lint: debug: discovering sysroot\n"),
+        "{}",
+        debug.stderr
+    );
+    let plain: Run = run(&fixture.path, &["src/lib.rs"], b"");
+    assert_eq!((plain.status, plain.stderr.as_str()), (2, ""));
+    assert_eq!(plain.stdout, debug.stdout);
+    assert_eq!(
+        located(plain.stdout.as_str()),
+        ["src/lib.rs core/processing-failure 1 1"]
+    );
+}
+
 /// Output is the same at every concurrency limit, and a reader that closes the pipe early causes no error output.
 #[test]
 fn concurrency_and_closed_pipes_do_not_change_results() {
