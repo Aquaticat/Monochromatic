@@ -508,6 +508,11 @@ description = "Exercise first-run review image, metadata, cohort and ballot guar
 dir = "{{config_root}}"
 run = ["node first-run-scroll-evidence-test.mjs", "node first-run-access-test.mjs"]
 
+[tasks."test:template-reference"]
+description = "Exercise the design reference for the supporting-text template language: fields, formats, conditions, error lines and typing help"
+dir = "{{config_root}}"
+run = "node template-reference-test.mjs"
+
 [tasks."build:search:ranking"]
 description = "Rebuild the archived D/P and M/F/T comparison from sanitized native captures"
 dir = "{{config_root}}"
