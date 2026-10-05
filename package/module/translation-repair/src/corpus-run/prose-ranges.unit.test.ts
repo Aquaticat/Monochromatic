@@ -57,56 +57,80 @@ await describe({
     },),
 
     it({
-      name: 'PROTECTS a line comment and READS ITS END at the line end or the text end, whichever ends '
-        + 'the comment',
+      name: 'PROTECTS a line comment in an expression and READS ITS END at the line end, so a closing '
+        + 'brace written inside the comment closes nothing, or at the text end where the line never ends',
       fn: async () => {
-        /**
-         Comment whose line the text runs out over, and one whose line a
-         newline closes.
-         */
-        const atLineEnd = protectedRanges({ text: '{ // meow', },);
-        const atTextEnd = protectedRanges({ text: '{ // meow\n}\n', },);
-        expect(atLineEnd.length,).toBe(1,);
-        expect(atTextEnd.length,).toBe(1,);
+        // The brace at offset 10 is comment text; the one that closes the
+        // expression opens the line after, at 12.
+        expect(protectedRanges({ text: '{ // meow }\n} purr', },),).toStrictEqual([{
+          start: 0,
+          end: 13,
+        },],);
+        expect(protectedRanges({ text: '{ // meow', },),).toStrictEqual([{
+          start: 0,
+          end: 9,
+        },],);
       },
     },),
 
     it({
-      name: 'PROTECTS an expression quoting with a backtick, since the template literal holds code the '
-        + 'cat words walk must not read',
+      name: 'PROTECTS an expression quoting with a backtick to the brace past the template literal, '
+        + 'since a closing brace inside the literal is text of the quote',
       fn: async () => {
-        const ranges = protectedRanges({ text: `{ \`meow \${cat} meow\` }`, },);
-        expect(ranges.length,).toBeGreaterThan(0,);
+        expect(protectedRanges({ text: '{ `meow } meow` } purr', },),).toStrictEqual([{
+          start: 0,
+          end: 17,
+        },],);
       },
     },),
 
     it({
-      name: 'PROTECTS A CODE FENCE and reads to its closing fence',
+      name: 'PROTECTS A CODE FENCE through its closing fence, and a code span past the fence apart from it',
       fn: async () => {
-        const ranges = protectedRanges({ text: 'A cat.\n```\ncode\n```\nA dog.\n', },);
-        expect(ranges.length,).toBe(1,);
+        expect(protectedRanges({ text: 'A cat.\n```\ncode `x` more\n```\nA cat `y`.\n', },),).toStrictEqual([
+          {
+            start: 7,
+            end: 28,
+          },
+          {
+            start: 35,
+            end: 38,
+          },
+        ],);
       },
     },),
 
     it({
-      name: 'READS A DOUBLE BACKTICK as no code-span end, since the second backtick opens a span of its '
-        + 'own',
+      name: 'PROTECTS a code span whose opening backtick follows an escaped backtick, as the parse reads '
+        + 'it, and READS NO span in a bare double backtick (ledger B130)',
       fn: async () => {
-        const ranges = protectedRanges({ text: '``', },);
-        expect(ranges.length,).toBe(0,);
+        // The backtick at offset 7 is escaped and is text; the span opens at 8.
+        expect(protectedRanges({ text: 'A cat \\``meow` naps.', },),).toStrictEqual([{
+          start: 8,
+          end: 14,
+        },],);
+        expect(protectedRanges({ text: '``', },),).toStrictEqual([],);
       },
     },),
+
     it({
-      name: 'READS A MARKER THAT NEVER CLOSES as running to the text end, and a URL inside an expression '
-        + 'as running to its end mark',
+      name: 'READS A BLOCK COMMENT THAT NEVER CLOSES as running to the text end, a closing brace inside it '
+        + 'closing nothing',
       fn: async () => {
-        /**
-         Comment whose close never comes, and an expression carrying a URL.
-         */
-        const unterminated = protectedRanges({ text: '{ /* meow', },);
-        const withUrl = protectedRanges({ text: 'See https://cat.example/a cat today.', },);
-        expect(unterminated.length,).toBe(1,);
-        expect(withUrl.length,).toBeGreaterThanOrEqual(0,);
+        expect(protectedRanges({ text: '{ /* meow } purr', },),).toStrictEqual([{
+          start: 0,
+          end: 16,
+        },],);
+      },
+    },),
+
+    it({
+      name: 'PROTECTS a bare web address in prose up to the space that ends it',
+      fn: async () => {
+        expect(protectedRanges({ text: 'See https://cat.example/a cat today.', },),).toStrictEqual([{
+          start: 4,
+          end: 25,
+        },],);
       },
     },),
   ],
