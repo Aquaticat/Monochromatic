@@ -250,6 +250,12 @@ digests,
 rule text,
 or operating-system error text.
 
+One reason differs by platform.
+When a regular file sits where the cache root directory should be,
+the first warning's reason is `unreadable` on Unix targets and `missing` on Windows,
+because Unix reports a not-a-directory error for a path below a file,
+while Windows reports the same path-not-found error as for an absent directory.
+
 ### Built-in baseline (`--builtin-rules`)
 
 The binary embeds the betterleaks-ported baseline ruleset.
