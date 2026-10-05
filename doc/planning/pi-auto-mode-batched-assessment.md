@@ -1,6 +1,131 @@
 # Batched axioms with a three-call assessment ceiling
 
+## Incremental rule-relevance cache direction
+
+The user refined the rule-indexed proposal:
+reparse `AGENTS.md` when it changes,
+classify which changed rules are relevant to auto-mode,
+and preserve repository-scoped cached classifications.
+This replaces repeating static relevance work on every action.
+It does not cache whether a particular action is allowed.
+
+Define relevance against a versioned auto-mode remit:
+could the rule affect an approval,
+block,
+or confirmation decision in a supported situation?
+This is distinct from applicability to the current action.
+A rule excluded from the guard's question set remains an instruction for the coding agent.
+
+Reuse the existing source owner and exact rule index for change detection.
+The package's existing `context.ts#getReusableApproval` is an action/session-branch approval lookup,
+not a repository policy cache.
+Do not put relevance classifications into its verdict entries.
+
+### Repository namespace and rule versions
+
+Use canonical remote repository identity and the primary branch as the shared namespace/baseline.
+The current repository has remote `origin`;
+`git symbolic-ref refs/remotes/origin/HEAD` returned `refs/remotes/origin/main`.
+This identifies a baseline,
+not authority or the currently governing policy.
+
+The working tree's actual instructions remain authoritative inputs to the existing source checks.
+Different branches and uncommitted edits need distinct policy-revision manifests,
+even when they share a remote.
+Do not reuse a main-branch classification blindly or make unrelated main-branch commits invalidate all rule entries.
+
+A policy-revision manifest can reference cached rule entries keyed by:
+
+- Exact rule text and heading/scope context.
+- Policy file's relative scope.
+- Relevance question and answer-schema version.
+- Classifier model and qualification-profile version.
+- Auto-mode remit version.
+
+A new manifest reuses unchanged eligible entries.
+Changed or added rules are classified together;
+deleted rules leave the active manifest.
+Heading changes count as changes to affected descendants.
+Shared-context,
+scope,
+or unresolved dependency changes require wider reclassification.
+An unchanged paragraph alone is not sufficient proof that its classification inputs are unchanged.
+
+Cached classifications are semantic data,
+not live source ownership,
+instruction precedence,
+human approval,
+or execution permission.
+Each use still binds to the actual current source occurrence.
+A late result must not replace a newer revision's active selection.
+
+### Classification and action-time behavior
+
+Submit changed and context-affected rules in a single classification request,
+with the complete current policy as context.
+Keep relevant and uncertain rules in the action-time question set.
+Only a qualified irrelevant classification can remove a rule from that set.
+Malformed,
+missing,
+stale,
+or unavailable classifications cannot silently remove rules.
+
+The full current policy still accompanies guard-model assessments.
+Caching reduces repeated classification and question selection;
+it does not authorize truncating policy.
+
+Refresh independently of actions when possible.
+If classification is needed inside a pending action judgment,
+it must not create a second deadline or evade that judgment's attempt budget.
+Until refresh is usable,
+keep affected rules unresolved/included rather than reuse stale exclusions.
+Record maintenance inference costs separately and include them when evaluating workload cost.
+
+### Response-contract question
+
+The intended one-request behavior is clear.
+A literal single question returning an arbitrary subset still needs a compatible answer contract.
+
+The current public Gateway System One source,
+`apps/gateway/src/systemone/systemone.ts` in `theopenco/llmgateway`,
+defines `noul`,
+`choice`,
+and `score`.
+Its `choice` result is one highest-probability option;
+the option probabilities sum to one.
+Those probabilities are not independent relevance scores for a set of rules.
+This source was fetched from the repository's current `main` branch,
+rather than inferred from the existing binary adapter.
+
+The recommended fit to the approved Jev path is one batched request containing independent relevance questions
+for the changed rules.
+It preserves per-rule uncertainty and the existing typed contract,
+but it is not literally one subset-valued question.
+A literal subset-returning question would require a separately qualified response path.
+Clarify that distinction before implementing the classifier contract;
+no model switch or new private-data route is adopted here.
+
+### Required checks
+
+- Unchanged rules reuse classifications without another inference request.
+- Added,
+  edited,
+  deleted,
+  and heading-moved rules produce the correct delta.
+- Same-remote worktrees with different policy contents do not exchange stale exclusions.
+- Classifier,
+  remit,
+  and schema changes invalidate affected entries.
+- Unknown or malformed classifications preserve candidate rules.
+- Older in-flight results cannot become the current revision's selection.
+- Cached relevance cannot authorize an action or bypass original source/currentness checks.
+
 ## Proposed rule-indexed assessment
+
+The incremental relevance-cache direction refines this earlier all-rule proposal.
+Keep the all-rule form as a comparison or conservative fallback,
+not a requirement to repeat static relevance classification for every action.
+
 
 The user proposed parsing `AGENTS.md` into one question per rule.
 This is a proposed next baseline,
