@@ -41,6 +41,7 @@ export component AppWindow inherits Window {
     public function reveal-tree(index: int) { project-tree.reveal(index); }
     public function focus-source() { code-focus.focus(); }
     public function focus-tree() { project-tree.focus(); }
+    out property <bool> source-has-focus: code-focus.has-focus;
     public function reset-source-scroll() {
         scroll.content-x = 0px;
         scroll.content-y = 0px;
@@ -138,6 +139,9 @@ export component AppWindow inherits Window {
     FocusScope {
         width: parent.width;
         height: parent.height;
+        // This scope only observes keys of its children; as a focus owner it would be a stop where no key acts.
+        focus-on-tab-navigation: false;
+        focus-on-click: false;
         capture-key-pressed(event) => {
             root.shortcut-observed(event.text, true);
             if event.modifiers.control && !event.modifiers.shift && !event.modifiers.alt && (event.text == "f" || event.text == "F") {
@@ -203,7 +207,8 @@ export component AppWindow inherits Window {
 
                 key-pressed(event) => {
                     // Let the toolkit traverse between the tree and read-only source instead of swallowing Tab.
-                    if event.text == Key.Tab { return reject; }
+                    // Shift+Tab arrives as Tab with a modifier or as the dedicated back-tab key, depending on the platform.
+                    if event.text == Key.Tab || event.text == Key.Backtab { return reject; }
                     if event.modifiers.control && (event.text == "c" || event.text == "C") {
                         root.copy-selection();
                     } else if event.modifiers.control && (event.text == "a" || event.text == "A") {
