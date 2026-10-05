@@ -62,6 +62,29 @@ fn embedded_prompt_text_is_never_removed() {
     }
 }
 
+/// Edits stay absolute source offsets when prose and a multi-byte info string precede the commands.
+#[test]
+fn fences_after_other_content_keep_absolute_prompt_offsets() {
+    for newline in ["\n", "\r\n", "\r"] {
+        let source: String = format!(
+            "🚀 intro{newline}{newline}```шелл{newline}$ pwd{newline}$ ls{newline}```{newline}"
+        );
+        let findings: Vec<Diagnostic> = check(source.as_str());
+        assert_eq!(findings.len(), 1, "{source:?}");
+        let fix: Fix = findings[0].fix.clone().expect("mapped prefix fixes");
+        // Independent positions come from searching the authored text, not from the rule's own arithmetic.
+        let first: usize = source.find("$ pwd").expect("first prompt");
+        let second: usize = source.find("$ ls").expect("second prompt");
+        assert_eq!(fix.edits.len(), 2);
+        assert_eq!((fix.edits[0].start, fix.edits[0].end), (first, first + 2));
+        assert_eq!((fix.edits[1].start, fix.edits[1].end), (second, second + 2));
+        assert_eq!(
+            apply_fixes(source.as_str(), &[fix]).expect("apply").source,
+            format!("🚀 intro{newline}{newline}```шелл{newline}pwd{newline}ls{newline}```{newline}")
+        );
+    }
+}
+
 /// Empty, output-bearing, indented and non-fenced examples are not prompt-only column-one fences.
 #[test]
 fn exceptions_do_not_rewrite_unrelated_examples() {

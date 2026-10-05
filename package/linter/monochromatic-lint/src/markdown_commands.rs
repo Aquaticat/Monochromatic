@@ -31,14 +31,14 @@ fn all_prompts(value: &str) -> bool {
 }
 
 /// What: Find authored prompt prefixes without replacing normalized code-node content.
-/// Why: LF, CRLF and bare CR remain byte-identical; closing fences cannot begin with a shell prompt.
+/// Why: LF, CRLF and bare CR remain byte-identical; opening and closing fences cannot begin with a shell prompt.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function promptEdits(source, bodyStart, nodeEnd): Edit[];
+/// function promptEdits(source, nodeStart, nodeEnd): Edit[];
 /// ```
 fn prompt_edits(source: &str, start: usize, end: usize) -> Vec<Edit> {
-    // Borrow the authored body and let the standard iterator retain every newline byte.
+    // Borrow the authored node, fence lines included, and let the standard iterator retain every newline byte.
     let written: &str = &source[start..end];
     let mut line_start: usize = start;
     let mut edits: Vec<Edit> = Vec::<Edit>::new();
@@ -71,14 +71,8 @@ pub fn commands_show_output(context: &MarkdownSource, severity: Severity) -> Vec
             continue;
         }
         let (start, end): (usize, usize) = context.offsets(*id);
-        // A native fenced block with nonempty command content has an opening line terminator.
-        let opener_end: usize = context
-            .slice(*id)
-            .find(['\n', '\r'])
-            .expect("nonempty fenced code has an opening line ending");
-        // A CRLF's remaining LF is an empty scanner segment, preserving offsets without another newline state machine.
-        let after_opener: usize = start + opener_end + 1;
-        let edits: Vec<Edit> = prompt_edits(context.source.as_str(), after_opener, end);
+        // The opening line begins with its fence marker, never a prompt, so the scan needs no body offset.
+        let edits: Vec<Edit> = prompt_edits(context.source.as_str(), start, end);
         let mut diagnostic: Diagnostic = finding(
             context,
             *id,
