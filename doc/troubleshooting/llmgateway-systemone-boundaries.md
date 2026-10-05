@@ -23,6 +23,136 @@ and retains upstream error diagnostics separately from ordinary payload fields.
 These are source findings reproduced with an offline mocked-provider harness,
 not observations of model substitution or private-data retention in the hosted service.
 
+## Full-rule request rejected with `max_tokens_exceeded`
+
+### Symptom and retained scope
+
+On 2026-10-05,
+the private copied-input action-relation canary sent one 454,012-byte request
+containing 205 independent rule questions.
+The response was HTTP 400:
+
+```json
+{
+  "detail": {
+    "error_type": "max_tokens_exceeded"
+  }
+}
+```
+
+`proc_48e7` verified the retained request hash,
+original five-second accounting,
+one initiated client attempt,
+zero completed samples,
+worker exit,
+and complete private streams.
+No scores or usage were returned.
+The failed namespace remains consumed;
+there was no retry,
+input truncation,
+SDK session,
+or native tool execution.
+Billing is unknown,
+not proven zero.
+
+### Documented limits and forwarding source
+
+The [TypeSafe model reference][typesafe-model-limits]
+specifies 64k tokens for `state` plus all questions combined,
+and 32k tokens for `state` plus the longest question.
+The public Gateway catalogue exposed only `context_length: 64000`.
+The error did not identify which constraint failed or provide an exact token count.
+Do not turn serialized byte counts into asserted tokenizer measurements.
+
+The source paths in this subsection refer to the fresh read-only clone
+`~/temp/agent/llmgateway-systemone.sDAGWZTZ`,
+revision `cdfb922062f73f24e3ab457720b2afce14d0a458`.
+The hosted deployment's matching revision is unestablished.
+The forwarding object preserves state and questions:
+
+```typescript
+// apps/gateway/src/systemone/systemone.ts:635-639 in the 2026-10-05 clone
+requestBody: {
+  model: upstreamModel,
+  state,
+  questions,
+},
+```
+
+The error branch can return a structured upstream body unchanged:
+
+```typescript
+// apps/gateway/src/systemone/systemone.ts:1056-1059 in the 2026-10-05 clone
+upstreamJson && typeof upstreamJson === "object"
+  ? upstreamJson
+  : normalizedUpstreamError,
+status as 400 | 401 | 403 | 404 | 410 | 429 | 500 | 502 | 503 | 504,
+```
+
+This source trace explains why a TypeSafe-shaped detail can reach the client.
+It does not reveal exact backend token accounting or establish zero hosted retries or charges.
+
+### Local encoding revision and remaining verification
+
+The rejected encoding duplicated native binding projections in `state.bindings`
+as well as supplying the selected rule directly in each question.
+`proc_ba2b` removed only that duplicate model-facing bookkeeping in a private fork:
+
+- Entire request:
+  454,012 bytes to 315,353 bytes.
+- State:
+  208,680 bytes to 70,021 bytes.
+- Question map:
+  unchanged at 245,279 bytes.
+- Longest question:
+  1,280 bytes.
+
+The check requires deep equality of every question and every remaining state field.
+Native IDs,
+source bindings,
+and answer correlation remain with the original code owner.
+Full policy,
+selected-rule text and headings,
+parent/prepared programs,
+and original main request remain intact.
+This is a verified local representation change,
+not a verified provider workaround or semantic-equivalence result.
+
+The [TypeSafe API reference][typesafe-question-schema]
+says question-map keys are not sent to inference.
+Keep the selected rule explicitly inside `instructions`;
+a key such as `rule_LN7` alone is insufficient.
+The [Jev 1.13 limitations][typesafe-jaggedness]
+also warn about indirection,
+irrelevant state,
+and adversarial content.
+The first revision therefore preserves the question wording and criteria instead of replacing them with extra references.
+
+### Rejected remedies and filing decision
+
+Do not drop rules,
+truncate policy or complete operations,
+reset an original budget,
+replay a consumed namespace,
+or present unknown failed-request billing as free.
+Do not treat general JSON structure support as proof that a new encoding preserves calibration.
+A separately frozen trial is required before claiming the revised representation is accepted.
+
+No upstream defect is established:
+the provider documents bounded context,
+and the observed request was rejected with a token-limit error.
+Upstream fault therefore fails the filing gate;
+fixability,
+support,
+contribution acceptance,
+and willingness are not grounds for filing this as a bug.
+The consumer-side encoding revision has local content-preservation measurements only.
+No upstream issue or comment is warranted.
+
+[typesafe-model-limits]: https://docs.typesafe.ai/models
+[typesafe-question-schema]: https://docs.typesafe.ai/api
+[typesafe-jaggedness]: https://docs.typesafe.ai/model-jaggedness/jev-1.13
+
 ## Source identity
 
 Repository:

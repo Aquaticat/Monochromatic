@@ -189,14 +189,38 @@ the stable retirement cause,
 and unentered members on the corrected graph.
 No provider call or fixture tool execution occurred in these native qualification controls.
 
+The separately frozen copied-input interface request was then sent once.
+`proc_48e7` reconciled its terminal HTTP 400 response,
+`max_tokens_exceeded`,
+with no scores or usage returned.
+The 454,012-byte namespace is consumed and was not retried.
+Known modeled semantic spend remains US$0.055516382,
+plus this failed request with unquantified billing.
+
+Current TypeSafe documentation specifies both 64k tokens for state plus all questions
+and 32k for state plus the longest question.
+The response did not identify which bound failed or return an exact token count.
+The client now has a separately versioned encoding that removes only duplicated native binding bookkeeping
+from model state.
+`proc_ba2b` measured 315,353 bytes,
+with every question,
+criterion,
+selected rule,
+policy byte,
+and program/request field unchanged.
+Token counts and provider acceptance of that revision remain unmeasured.
+
 Next:
-finish documenting and retaining the corrected native scopes,
-then prepare a separately frozen real whole-program interface assessment or semantic study.
-Any copied-input research remains separate from a live original judgment.
-No paid action-relation request,
-semantic cutoff,
+finish compact-wire controls and documentation,
+then freeze any new representation trial separately.
+Do not truncate required inputs,
+add question indirection unnecessarily,
+reopen the original judgment,
+or replay the rejected body.
+No semantic cutoff,
 source-authority admission,
-or production change has been scheduled by these mechanical results.
+cache exclusion,
+or production change follows.
 
 ## Current approval UI correction
 

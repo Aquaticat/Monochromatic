@@ -188,10 +188,24 @@ The private action-relation wire now carries all indexed rules with original pro
 Its original five-second budget was unchanged,
 and no tool executed.
 The real 205-rule relevance canary is a different predicate and input shape.
-Neither result establishes real full-rule action-assessment provider acceptance,
+The later copied-input full-rule interface canary returned HTTP 400 with `max_tokens_exceeded`.
+No scores or usage were returned,
+and `proc_48e7` reconciled that consumed request without replay.
+TypeSafe documents a 64k-token total and a 32k-token state-plus-longest-question limit.
+Neither native fake transport nor the successful relevance predicate establishes
+real full-rule action-assessment acceptance,
 latency,
 cost,
 or accuracy.
+
+A separate encoding keeps native binding bookkeeping in code rather than duplicating it in model state.
+`proc_ba2b` measured 315,353 bytes instead of 454,012,
+while preserving all 205 questions and every other state field exactly.
+That is a byte/content measurement,
+not an exact token count or provider-fit claim.
+Keep each rule ID and text inside its question:
+TypeSafe documents question-map keys as correlation only,
+not inference input.
 
 The benefit is explicit question coverage of the indexed rules rather than a manually selected set of rule-specific heads.
 The risks are compound rules,

@@ -67,6 +67,31 @@ Notably,
 A relevance cutoff that simply drops everything below a high positive threshold would lose this restriction.
 The current implementation retains uncertain rules and admits no exclusions.
 
+## Full-rule action interface rejection
+
+The copied-native-input `operation_violates_rule` canary sent one 454,012-byte request
+with all 205 rule questions and complete policy/program context.
+It returned HTTP 400 with `max_tokens_exceeded`.
+`proc_48e7` reconciled one initiated client request,
+zero completed samples,
+no returned scores or token usage,
+and no retry.
+This was research over archived data,
+not reopening a native judgment or authorizing a tool.
+
+The known modeled semantic subtotal remains US$0.055516382,
+plus one failed request whose billing amount is unknown.
+Do not add a zero charge or fabricate an input-token estimate.
+The [endpoint boundary record](../troubleshooting/llmgateway-systemone-boundaries.md)
+documents the provider's separate total and state-plus-longest-question limits.
+
+The no-question-change encoding revision removes duplicate model-facing binding bookkeeping only.
+Its 315,353-byte size is measured locally,
+not accepted by the provider yet.
+No semantic qualification,
+cutoff,
+or production adoption follows from reducing that representation.
+
 ## Batched instruction-meaning encoding diagnostic
 
 `proc_51ef` verified a fixed four-request study of the unchanged
