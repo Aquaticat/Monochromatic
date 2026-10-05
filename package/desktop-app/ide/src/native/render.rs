@@ -12,6 +12,8 @@ use super::{AppWindow, State, find::present::present, ui::SourceSelection};
 use ide_app::find_navigation::paint_ranges;
 /// Only matches inside the materialized rows and horizontal tile become native rectangles.
 use ide_app::find_paint::rectangles;
+/// Selected-text ink is chosen from the selection fill, not from the color scheme.
+use ide_app::selection_ink::legible_ink;
 /// Physical viewport description for shared shaping.
 use ide_app::shaped_text::Viewport;
 /// Exact paint inputs exclude collapsed caret movement.
@@ -31,9 +33,14 @@ fn rgba(color: slint::Color) -> [u8; 4] {
 /// Render shared shaped rows, releasing state before any Slint setter can reenter.
 pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let factor = window.window().scale_factor();
+    // The palette's selection ink follows the color scheme while its selection fill does not,
+    // so the ink is chosen from the fill that is actually drawn behind the selected glyphs.
     let colors = CodeColors {
         foreground: rgba(window.get_source_foreground().color()),
-        selected: rgba(window.get_selected_foreground().color()),
+        selected: legible_ink(
+            rgba(window.get_selection_fill().color()),
+            rgba(window.get_selected_foreground().color()),
+        ),
         dark: window.get_dark_scheme(),
     };
     let mut current = state.borrow_mut();
