@@ -34,13 +34,24 @@ runCargo(['fetch'])
 """
 
 [tasks.runtime]
-description = "Prepare pinned Helix TypeScript/Rust slice assets in bounded build-only storage"
+description = "Prepare pinned Helix grammars, queries, and notices for the measured language inventory in bounded build-only storage"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-const { cpSync, copyFileSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } = await import('node:fs')
+const { cpSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } = await import('node:fs')
 const { dirname, join } = await import('node:path')
 const revision = 'ba40e547426b0f9896c8bdc699a4ab11f2b37dbc'
+// REUSE-layout sources keep license texts in LICENSES/ and the copyright line only in source headers.
+// Accept them only when every header names one license whose text is present; otherwise the notice is missing.
+const reuseHeaders = (sourceRoot, name) => {
+  const texts = existsSync(join(sourceRoot, 'LICENSES')) ? readdirSync(join(sourceRoot, 'LICENSES')) : []
+  const lines = ['grammar.js', 'src/scanner.c', 'src/scanner.cc', 'src/parser.c'].filter(file => existsSync(join(sourceRoot, file)))
+    .flatMap(file => readFileSync(join(sourceRoot, file), 'utf8').split(String.fromCharCode(10), 8).filter(line => /Copyright|SPDX-License-Identifier/.test(line)).map(line => file + ': ' + line))
+  const declared = lines.filter(line => line.includes('SPDX-License-Identifier'))
+  const covered = declared.every(line => texts.includes((line.match(/SPDX-License-Identifier: *([A-Za-z0-9.+-]+) *$/)?.[1] ?? '') + '.txt'))
+  if (!lines.some(line => line.includes('Copyright')) || !declared.length || !covered) throw new Error('Missing grammar license notices for ' + name)
+  return lines.join(String.fromCharCode(10)) + String.fromCharCode(10)
+}
 const metadata = JSON.parse(runCargo(['metadata', '--format-version', '1'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 16 * 1024 * 1024 }))
 const loader = metadata.packages.find(item => item.name === 'helix-loader')
 if (!loader?.source?.endsWith('#' + revision)) throw new Error('Cargo did not resolve the pinned helix-loader revision')
@@ -67,9 +78,13 @@ for (const profile of ['debug', 'release']) {
     const name = grammar.name.slice(0, -3)
     const sourceRoot = join(built, 'grammars', 'sources', name)
     const notices = readdirSync(sourceRoot).filter(file => /^(?:licen[cs]e|copying|notice|authors)(?:[._-]|$)/i.test(file))
-    if (!notices.length) throw new Error('Missing grammar license notices for ' + name)
+    const headers = notices.length ? '' : reuseHeaders(sourceRoot, name)
     const licenseDirectory = join(destination, 'licenses', name)
     mkdirSync(licenseDirectory, { recursive: true })
+    if (headers) {
+      writeFileSync(join(licenseDirectory, 'REUSE-headers.txt'), headers)
+      notices.push('LICENSES')
+    }
     for (const notice of notices) cpSync(join(sourceRoot, notice), join(licenseDirectory, notice), { recursive: true })
   }
   writeFileSync(join(destination, 'manifest.json'), JSON.stringify({ helixRevision: revision, grammars: grammars.map(entry => entry.name) }, null, 2))
