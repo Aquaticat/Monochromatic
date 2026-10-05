@@ -17,6 +17,11 @@ pnpm 12.5.1,
 mise 2026.10.0);
 everything else names where it comes from.
 
+The trial ended on 2026-10-05.
+"Outcome:
+merged on 2026-10-05" says what became of its work,
+and which of this file's instructions turned out wrong.
+
 ## The mistakes this package punishes most
 
 These five come from the package's own record of what went wrong
@@ -668,6 +673,74 @@ these are the ones the code here trips most.
   and "Standing constraints".
 - [The corpus-pass runbook](../runbook/translation-repair-corpus-pass.md),
   for the launch this trial does not make.
+
+## Outcome: merged on 2026-10-05
+
+Claude Code read the trial branch on 2026-10-05 (UTC),
+on the owner's instruction to build on it by merging or to discard it,
+and merged it:
+`translation-repair-rebased` moved from `28303c42a` to `7f069adc9` by fast-forward,
+all 303 commits,
+and was pushed.
+The trial checkout and its branch are left in place for the owner to remove.
+This section records that decision and stays open to the owner's veto.
+
+### What the decision rests on
+
+Measured on the trial tip `7f069adc9`,
+and again in the main checkout once it was merged:
+
+- the whole suite printed 1,564 `[PASS]` lines and no `[FAIL]`;
+- the lint ended `Found 0 warnings and 0 errors.`;
+- all 35 source scans passed;
+- the Markdown lint found nothing in `audit-ledger.md`,
+  `mistake-prevention.md` or this file.
+
+Read by hand:
+
+- the whole production diff
+  (63 files,
+  776 lines added and 379 removed);
+- every test hunk that removed a line:
+  no expectation was changed to fit new code and no case was removed;
+- the share of weak assertion shapes in the added cases
+  (24 `toContain` in 396 added expectations,
+  against 1,652 in 14,703 across the package when the trial began).
+
+### What this file got wrong
+
+"Third:
+T8 batches,
+one cluster at a time" told the trial that every census stretch ends cased,
+unreachable and removed,
+or a fixed defect,
+and to take the census again until its counts read zero.
+A guard on a state no input produces must stay and can never run,
+so that rule had no place for it,
+and the trial took guards out,
+flattened named errors to `nonNullishOrThrow`,
+and added parameters to production functions so cases could force a guarded state.
+The package ledger records each one and what replaced it:
+`M112` for the first removal and the rule it left,
+`M113` for the family,
+and `B127` for the one removal that changed a result.
+The corrected rule is in `mistake-prevention.md`,
+"Guards a census wants gone".
+The rest of the trial's production diff and its added cases are being read against that rule as this is written;
+the ledger carries what that reading finds.
+
+### Choices the trial made that the owner may veto
+
+- The `gitOutput` catch in `corpus-source.ts` wraps every throwable as `CorpusReadError`
+  (`33fc7a459`,
+  recorded under "Decisions for the owner to review").
+- Parameters added to production functions so a case could reach a branch:
+  `fold` on `anchorLocatedSpan`,
+  `needle` on `deleteOneSentence`,
+  `anchor` on `insertBorrowedSentence`,
+  and `ocrTool` on `readImageWithOcr`.
+  The first three are removed again (`fa86b527d`);
+  ledger `M113` says what becomes of the fourth.
 
 ## Trial log
 

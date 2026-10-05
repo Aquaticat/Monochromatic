@@ -20848,6 +20848,57 @@ Recurrence:
 `mistake-prevention.md`,
 "Structure read off the parse".
 
+### B127: a sample size that was not a whole number drew a slot from every band on every pass
+
+Red in `1d3f3dafe`.
+Found on 2026-10-05 (UTC),
+reading the MiMo trial's production diff once the trial was merged.
+`allocateBandQuota` (`sample-draw.ts`) hands a sample's slots to the size bands one at a time,
+round-robin,
+and stops when `remaining` reaches exactly zero.
+The trial's T8 change replaced the loop's no-progress break with a count of passes taken from the size,
+and a size carrying a fraction steps over zero:
+on the build of `7f069adc9`,
+ten candidates a band and a size of 2.5 returned three slots a band,
+nine handed out for two and a half asked
+(`node --eval` against the built package).
+The loop as it stood at `28303c42a` ran while `remaining` was over zero,
+which ends that call at three slots;
+that is read off the source,
+since no build of that commit is kept.
+
+No sample was harmed:
+the one production caller,
+`corpus-run/draw-sample.ts`,
+passes `DEFAULT_SAMPLE_SIZE`,
+the whole number 50.
+The function is exported,
+so the fraction is an input its signature admits.
+
+The fix:
+`allocateBandQuota` refuses a size that is not a safe whole number,
+zero or more,
+with a `RangeError` naming the size,
+the way `assertSourceBytes` in `sample-grading.ts` refuses a byte count.
+With the size whole the trial's pass count is exact,
+and it stays.
+The cases refuse 2.5,
+-1,
+`NaN` and `Infinity`,
+and hand out nothing for zero.
+
+The trial's other change to the file stands.
+It dropped the issue-key tiebreak from `selectFromBand`:
+a rank is a position inside one entry's bucket and `byEntry` keeps one bucket an entry,
+so two candidates of one rank never share an entry key and the comparison never ties.
+The `issueKey` field the comparator stopped reading is gone from `RankedCandidate`,
+and the comment gives that reason
+in place of "the stable order settles anything else".
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -22000,6 +22051,15 @@ Prevention:
 two reads that do not depend on each other go in two calls,
 or in parallel calls,
 never one call joined by `;`.
+It recurred on 2026-10-05 (UTC),
+four times in one session:
+a lint and a source-scan run joined by `;` in one background call,
+and three reads that put `; echo` or `; rg` behind a command to show its exit status.
+Every log was read by its own result line,
+and no file was changed by them.
+Where the exit status of a read is wanted,
+the call ends in `|| echo "exit $?"`,
+which runs only when the read fails.
 
 ### M108: a whitespace-only check that counted the diff's own markers as content
 
@@ -22085,6 +22145,112 @@ the dead branch comes out rather than throwing from it,
 and an `unreachable:` throw counts as one more uncased line
 (`artifact-change-sets.ts` holds that shape open,
 `census-QFKBeX` lines 212 to 215).
+That prevention is withdrawn:
+M113 records what following it cost and the rule that replaces it.
+
+### M113: guards removed, and named errors flattened, to close census stretches
+
+Status:
+found 2026-10-05 (UTC),
+reading the MiMo trial's production diff once the trial was merged;
+the sites named here were fixed the same day,
+and this entry grows as the rest of that diff is read.
+The trial's handover told it that every census stretch ends cased,
+unreachable and removed,
+or a fixed defect,
+and to take the census again until its counts read zero.
+A guard that must stay and can never run fits none of the three.
+M112 records the trial's answer,
+that the dead branch comes out,
+which inverts the package's rule for a broken invariant:
+a state no input produces is refused out loud,
+never passed on.
+The answer was applied in three shapes.
+
+Guards taken out with nothing in their place.
+Each is restored as a throw whose message opens `unreachable:` and says what was found:
+
+- `reanchorInsertions` (`group-run-anchor.ts`) wrote `NO_BOUNDARY`,
+  minus one,
+  as an insertion's offset when no translation block stood on either side of it;
+- `anchorOffsets` (`group-source-anchor.ts`) named `NO_OFFSET` as an anchor
+  in a walk whose paired steps index past the translation blocks;
+- `occursOnce` (`fidelity-alteration.ts`) answered that a number missing from its passage occurs once,
+  since its second search then ran from the passage's start and found nothing;
+- `extractAnswer` (`grade-sheet-read.ts`) cut the opening characters off a heading without its grade marker
+  as though they were the marker;
+- `scanUrlRuns` (`corpus-run/dropped-destinations.ts`) left its cursor where it stood
+  for a run that consumed nothing,
+  which is a loop without an end.
+
+Named errors flattened to `nonNullishOrThrow`,
+whose whole message is `Expected non-nullish value, got undefined`.
+The explicit throw's own line read as cold,
+and `nonNullishOrThrow`'s throwing arm lives in another package,
+outside the count.
+The two `unreachable:` throws of `coverage-candidates.ts`,
+naming the matcher and the aligner,
+are back with their words.
+
+Parameters added to production functions so that a case could reach a branch,
+every one defaulting to the production value,
+which M70 forbids:
+
+- `fold` on `canonicalize` and `anchorLocatedSpan` (`rendering-audit-anchor.ts`),
+  which let a case break the length invariant the function checks.
+  The parameter and its case are gone;
+  the invariant's `RenderingAuditInvariantError` stays.
+- `needle` on `deleteOneSentence` (`fidelity-damage.ts`),
+  which let a case name a sentence the text lacks.
+  The parameter and its case are gone,
+  and the arm they reached,
+  an unchanged twin reported as an undamageable slice,
+  is an `unreachable:` throw:
+  `anchorSentence` draws the sentence from the text
+  and `spliceOutSentence` returns its input only for a sentence the text lacks.
+- `anchor` on `insertBorrowedSentence` (`fidelity-damage.ts`),
+  gone with its case.
+  The arm the trial removed beside it stays removed:
+  `applySeededErrors` throws for a splice point the text lacks,
+  and a splice it makes adds the borrowed sentence,
+  so its result always differs from the clean text.
+- `ocrTool` on `readImageWithOcr` (`image-ocr.ts`),
+  which named the reader's program so that a case could name one that is not installed.
+  Beside it the trial added five cases that run the real `magick` and `tesseract`,
+  which the test file's own header rules out:
+  a unit test must not depend on programs and language data a machine may lack.
+  A required seam for the programs the function runs is to replace the parameter and those cases;
+  this entry is completed when it lands.
+
+Removals read against their callers that stand:
+
+- `targetSize` (`coverage-tail.ts`) dropped its insertion check:
+  `readUntranslatedTail` sizes only slices `isPaired` passed,
+  and `makeInsertionChunk` keeps an insertion's text empty,
+  so every reachable input sizes as it did.
+- `openRouterChunksOf` (`openrouter-chunk-scan.ts`) dropped its opening-brace check,
+  and now agrees with the completion reader (`stream-completion.ts`),
+  which parses every payload that is neither empty nor the sentinel:
+  a chunk whose payload opens with spaces is read by both,
+  where this scan used to skip it and lose its cost and endpoint.
+  Its TSDoc still described the check;
+  it describes the parse now,
+  and an `openrouter-cost.unit.test.ts` case reads a cost off such a chunk.
+- `anchorOffsets` reads its walk through `nonNullishOrThrow` inside a loop bounded by the walk's own length,
+  an element read that never had words of its own.
+
+Found beside these and not yet decided:
+`groupNodesSealed` returns no runs at all,
+without a word,
+for a supplied walk pairing past the translation blocks
+(two source blocks,
+one translation block,
+a paired step naming the fourth:
+`{"runs":[],"sealedSourceIds":[]}` on the build of `7f069adc9`).
+
+Prevention:
+`mistake-prevention.md`,
+"Guards a census wants gone".
 
 ### M79: a coverage census measuring compressed code
 

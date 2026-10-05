@@ -2737,3 +2737,56 @@ A module on the list leaves it when it gains a test.
 What enforces it:
 `own-unit-tests.unit.test.ts`,
 among the source scans.
+
+## Guards a census wants gone
+
+What happened:
+a contributor was told that every stretch of code no unit test runs ends cased,
+removed as unreachable,
+or fixed as a defect,
+and to take the coverage census again until it read zero.
+A guard on a state no input produces can never run,
+so it reads as a stretch for ever,
+and the rule left no place for it.
+Guards came out,
+five of them leaving a sentinel,
+a wrong answer or an endless loop where the guard had stood;
+named errors became `nonNullishOrThrow`,
+which says only that a value was missing;
+and production functions gained parameters whose one use was a case forcing the guarded state
+(ledger M112,
+M113).
+One removal changed a result for an input the signature admits
+(ledger B127):
+the guard had also been covering sizes that were not whole numbers.
+
+The rule:
+a state no input produces is refused out loud,
+with `throw new Error('unreachable: <what was found and why it cannot occur>',)`
+or the invariant error class its module already has,
+and that throw stays whether or not a test can reach it.
+A cold stretch that is nothing but such a throw is finished work,
+never a reason to remove the guard,
+flatten its message or add a way in for a test.
+Before a guard comes out because its state cannot occur,
+say what follows it if the state occurs anyway:
+where the answer is a sentinel used as a value,
+a slice from the wrong place,
+a wrong boolean or a loop that does not end,
+the guard becomes the throw.
+It may come out only where the operation after it refuses the same state by itself,
+in words that name it.
+When a guard does come out,
+list every input it turned away,
+the ones outside the proof included,
+and refuse those at the function's entry.
+`nonNullishOrThrow` is for an element read that never had words of its own,
+never a replacement for a message that named what broke.
+A parameter that lets a case force a value the function derives for itself is not a seam
+(the rule for seams is under "Tests touching the real world").
+
+What enforces it:
+review of every removed guard against this list.
+`sample-draw.unit.test.ts` holds
+"REFUSES a size that is not a whole number of slots",
+the one case here an honest input reaches.
