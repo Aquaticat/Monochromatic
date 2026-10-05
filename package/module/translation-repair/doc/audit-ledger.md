@@ -7238,6 +7238,73 @@ and the run's own census bytes exclude the target statement
 from the cold set.
 A passing suite is not branch evidence.
 
+RE-VERIFICATION COMPLETE (2026-10-05):
+the fixture-reasoned left sites are re-verified
+by byte span too,
+and all but one now carry cases
+whose assertions distinguish their branches:
+
+- `photo-reference.ts` 133 and 303 covered:
+  the reduce's earlier-mark arm needs one element
+  carrying two quote kinds,
+  and the asset-directory refusal needs a path
+  starting with the entry placeholder
+  but not the photos directory
+  (my earlier path failed the placeholder check first
+  and returned the same value there).
+
+- `dropped-destinations.ts` 187 and 292 to 295 covered:
+  the reduce's second arm needs one text carrying
+  both scheme kinds
+  (mine carried one scheme twice),
+  and the empty return is the tree-side shape
+  where the destination is all punctuation
+  (a scan run always starts with a scheme character).
+  Its run-advance fallback (241)
+  was provably dead
+  (the end scan always consumes the scheme)
+  and became the plain advance.
+
+- `active-footnote-markers.ts` 309 to 335 covered:
+  the four bounds arms split between a run at its
+  parent's ends
+  and a run between positioned neighbours.
+  The autolink transform rebuilds the surrounding text
+  unpositioned too,
+  so the far side needs an inline node
+  that keeps its positions.
+
+- `claim-panel-voters.ts` 54
+  and `claim-filers.ts` 253 and 262 covered:
+  the empty-ballots return needed an issue
+  whose readings carry the claim,
+  and the filers fallback was dead behind its own filter.
+
+- `publish-fixed.ts` 320 and 321 were dead
+  behind the shared dropped list
+  and the trace type's required fields;
+  they became `nonNullishOrThrow`.
+
+- `model-card-derive.ts` 366 covered
+  through `recordOver`'s own keys;
+  421 to 427 remains UNRESOLVED
+  with the cause known:
+  both its inputs are the module's own card
+  and roster tables,
+  so the disagreement it guards is data drift
+  no test fixture can stage.
+
+Two of the re-verification edits put TSDoc blocks
+before statements;
+the attachment scan caught both,
+and they are comments now
+(fix-forward,
+never amend).
+
+Suite at the close:
+1,564 [PASS] and no [FAIL];
+35 source scans and no [FAIL].
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

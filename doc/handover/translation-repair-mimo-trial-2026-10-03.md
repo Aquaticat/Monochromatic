@@ -683,6 +683,73 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  04:10 UTC:
+  the re-verification is COMPLETE
+  and recorded in the ledger
+  (the `CORRECTION (2026-10-05)` paragraph
+  and the `RE-VERIFICATION COMPLETE (2026-10-05)`
+  paragraph that follows it).
+  Every site in both groups
+  (the eight attribution claims
+  and the fixture-reasoned left sites)
+  now carries either a case whose assertion
+distinguishes its branch
+  with the run's own census bytes excluding the statement,
+  or a named unconstructible cause:
+
+- covered since the correction:
+  `photo-reference.ts` 133 and 303,
+  `dropped-destinations.ts` 187 and 292 to 295,
+  `active-footnote-markers.ts` 309 to 335,
+  `claim-panel-voters.ts` 54,
+  `claim-filers.ts` 253 and 262,
+  `model-card-derive.ts` 366;
+  and dead fallbacks narrowed in
+  `dropped-destinations.ts` 241,
+  `claim-filers.ts` 253,
+  `publish-fixed.ts` 320 and 321.
+
+- UNRESOLVED with the cause known:
+  `model-card-derive.ts` 421 to 427,
+  whose two inputs are the module's own card
+  and roster tables,
+  so the disagreement it guards is data drift
+  no fixture can stage.
+
+  The lesson the ledger now states as method:
+  a case covers a branch only where its assertion
+distinguishes that branch from the other paths
+  returning the same value,
+  and the run's own census byte spans
+  exclude the target statement from the cold set.
+  Passing the suite is not branch evidence.
+  A stretch's line label can start one line early,
+  so the verdict line's words are derived text
+  and the JSON spans are the ground truth.
+
+  Working tree:
+  clean at `f4780cd0b`,
+  suite 1,564 [PASS] and no [FAIL],
+  35 source scans and no [FAIL],
+  two TSDoc-before-statement slips
+  caught by the attachment scan
+  and fixed forward.
+
+  Verification worktree `/home/user/worktrees/verify-coverage`
+  (detached,
+  probe files present)
+  is disposable;
+  `git worktree remove` once the counts are read.
+
+  Next:
+  the whole-suite census at this commit,
+  then the ranking's next cluster
+  with the method standard
+  (distinguishing assertions,
+  byte-span proof,
+  and named causes for whatever stays open).
+
+- 2026-10-05,
   03:10 UTC:
   the eight attribution claims are re-verified and CLOSED,
   with a self-named correction in the ledger
