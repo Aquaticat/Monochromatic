@@ -12,7 +12,10 @@
  @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -27,6 +30,7 @@ import {
   parseDocument,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -235,6 +239,8 @@ function sectionTextsOf({ text, }: { readonly text: string; },): readonly string
 
  @param modelIds - roster the round asks
 
+ @param logger - logger the round writes to, for a case reading its lines
+
  @returns What the round settled, beside how many calls it cost
 
  @example
@@ -250,6 +256,7 @@ async function runRound(
     resumed = new Map<string, StoredRound>(),
     persisted = new Map<string, string>(),
     modelIds = ROSTER,
+    logger = l,
   }: {
     readonly sourceText?: string;
     readonly targetText?: string;
@@ -257,6 +264,7 @@ async function runRound(
     readonly resumed?: ReadonlyMap<string, StoredRound>;
     readonly persisted?: Map<string, string>;
     readonly modelIds?: readonly RosterModelId[];
+    readonly logger?: Logger;
   },
 ) {
   /**
@@ -277,7 +285,7 @@ async function runRound(
     target: parseDocument({ text: targetText, },),
     signal: new AbortController().signal,
     exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
-    l,
+    l: logger,
     sectionCache: {
       resumed,
       persist: async function record(
@@ -379,6 +387,71 @@ await describe({
           .findings,).toEqual(first.round
           .findings,);
       },
+    },),
+
+    ...[
+      {
+        damage: 'NAMES A TRANSLATION SECTION THE DOCUMENT LACKS',
+        pairs: [{ source: 0, target: 5, },],
+        refusal: 'pairing names translation section 5, and there are 2',
+      },
+      {
+        damage: 'NAMES AN ORIGINAL SECTION THE DOCUMENT LACKS',
+        pairs: [{ source: 7, target: 0, },],
+        refusal: 'pairing names original section 7, and there are 3',
+      },
+      {
+        damage: 'PAIRS ONE TRANSLATION SECTION WITH TWO ORIGINALS',
+        pairs: [{ source: 0, target: 0, }, { source: 1, target: 0, },],
+        refusal: 'pairing does not advance on the translation side at position 1',
+      },
+      {
+        damage: 'MOVES BACKWARDS ON THE TRANSLATION SIDE',
+        pairs: [{ source: 0, target: 1, }, { source: 1, target: 0, },],
+        refusal: 'pairing does not advance on the translation side at position 1',
+      },
+      {
+        damage: 'PAIRS ONE ORIGINAL SECTION WITH TWO TRANSLATIONS',
+        pairs: [{ source: 0, target: 0, }, { source: 0, target: 1, },],
+        refusal: 'pairing does not advance on the original side at position 1',
+      },
+    ].map(function damagedCase({ damage, pairs, refusal, },) {
+      return it({
+        name: `MISSES ON A CACHED SECTION PAIRING THAT ${damage}, warns in the refusal's words, and buys the round again`,
+        fn: async () => {
+          const fresh = await runRound({},);
+          const key = pairingQuestionKey({
+            question: 'section',
+            sourceTexts: sectionTextsOf({ text: SOURCE_TEXT, },),
+            targetTexts: sectionTextsOf({ text: TARGET_TEXT, },),
+            pictureContext: '',
+            modelIds: ROSTER,
+          },);
+          const lines: string[] = [];
+          const damaged = await runRound({
+            resumed: new Map([[key, { pairs, findings: ['an older round',], },],],),
+            logger: levelCapturingLogger({ lines, },),
+          },);
+          expect({
+            round: damaged.round,
+            calls: damaged.calls.count,
+            persisted: damaged.persisted.get(key,),
+            warned: lines.filter(function isWarning(line,): boolean {
+              return line.startsWith('warn ',);
+            },),
+          },).toEqual({
+            round: fresh.round,
+            calls: ROSTER.length,
+            persisted: fresh.persisted.get(key,),
+            warned: [
+              `warn the section pairing cache misses: the record under ${key} does not fit its sections (${refusal}), `
+              + 'so the roster is asked again',
+              'warn the aligner refused sections on this document: asking 2 voices which of 3 original sections '
+              + 'render as which of 2 translation sections',
+            ],
+          },);
+        },
+      },);
     },),
 
     it({

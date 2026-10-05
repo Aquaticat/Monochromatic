@@ -36,7 +36,17 @@ import {
   writeCachedLookup,
 } from '../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
+import {
+  bodyCutBy,
+  invalidHeaderRejection,
+} from './body-cut-response.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
+
+/**
+ What a request that failed before any answer came back says it can be.
+ */
+const TAIL = 'failed before any answer came back: either the network could not be reached, or the transport refused to send the request, as it does for a key or header holding a line break; check the connection and the key';
 
 /**
  Abort signal that never fires.
@@ -367,6 +377,137 @@ await describe({
             expect(String(thrownListed,),).toBe('WorkTitleLookupError: search answered with a body that is not an object',);
           },
         },),
+
+        it({
+          name: 'REFUSES a transport that rejects, naming the endpoint and the two things a rejection before any answer '
+            + 'can be, a network failure or a request the transport refuses, and keeps the failure as the refusal\'s cause without repeating its message',
+          fn: async () => {
+            /**
+             What a dropped connection rejects with.
+             */
+            const failure = new TypeError('fetch failed',);
+            /**
+             Transport whose connection drops.
+
+             @returns Never; it rejects
+             */
+            async function dropping(): Promise<Response> {
+              throw failure;
+            }
+            /**
+             What the rejection became.
+             */
+            const refusal = await rejectionOf(async function searchesOverADroppedConnection(): Promise<unknown> {
+              return await searchWorkTitle({
+                apiKey: 'secret-key',
+                query: '《活着》 official English title',
+                signal: SIGNAL,
+                fetchFn: dropping,
+              },);
+            },);
+            expect(refusal instanceof WorkTitleLookupError,).toBe(true,);
+            expect(String(refusal,),).toBe(
+              `WorkTitleLookupError: search request to ${EXA_SEARCH_URL} ${TAIL}`,
+            );
+            expect(Error.isError(refusal,) ? refusal.cause : undefined,).toBe(failure,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a request the transport will not send, such as a header value holding a line break, in '
+            + 'the same words as a network failure and without quoting the value',
+          fn: async () => {
+            /**
+             Transport refusing a header as the runtime's `fetch` does.
+
+             @returns Never; it rejects
+             */
+            async function refusingTheHeader(): Promise<Response> {
+              throw invalidHeaderRejection();
+            }
+            /**
+             What the rejection became.
+             */
+            const refusal = await rejectionOf(async function sendsABadHeader(): Promise<unknown> {
+              return await searchWorkTitle({
+                apiKey: 'secret-key',
+                query: '《活着》 official English title',
+                signal: SIGNAL,
+                fetchFn: refusingTheHeader,
+              },);
+            },);
+            expect(String(refusal,),).toBe(`WorkTitleLookupError: search request to ${EXA_SEARCH_URL} ${TAIL}`,);
+          },
+        },),
+
+        it({
+          name: 'LEAVES the caller\'s abort an abort: a transport that rejects with the signal\'s reason is not '
+            + 'reported as a network failure',
+          fn: async () => {
+            /**
+             Why the caller stopped.
+             */
+            const reason = new DOMException('the caller stopped waiting', 'AbortError',);
+            /**
+             The caller's abort, already fired.
+             */
+            const stopped = new AbortController();
+            stopped.abort(reason,);
+            /**
+             Transport rejecting as `fetch` does for an aborted signal.
+
+             @returns Never; it rejects with the signal's reason
+             */
+            async function abortedTransport(): Promise<Response> {
+              throw stopped.signal.reason;
+            }
+            expect(await rejectionOf(async function searchesAfterTheAbort(): Promise<unknown> {
+              return await searchWorkTitle({
+                apiKey: 'secret-key',
+                query: '《活着》 official English title',
+                signal: stopped.signal,
+                fetchFn: abortedTransport,
+              },);
+            },),).toBe(reason,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES an answer whose connection fails while the body is read, saying the network failed while the '
+            + 'endpoint was answering, with the failure as its cause',
+          fn: async () => {
+            /**
+             What the connection fails with while the body streams.
+             */
+            const cut = new TypeError('terminated',);
+            /**
+             Transport answering 200 and then failing mid-body.
+
+             @returns A 200 whose body stream errors
+             */
+            async function cutBody(): Promise<Response> {
+              return bodyCutBy({ failure: cut, },);
+            }
+            /**
+             Refusal for the cut body.
+             */
+            const interrupted = await rejectionOf(async function readsACutBody(): Promise<unknown> {
+              return await searchWorkTitle({
+                apiKey: 'secret-key',
+                query: '《活着》 official English title',
+                signal: SIGNAL,
+                fetchFn: cutBody,
+              },);
+            },);
+            expect({
+              interrupted: String(interrupted,),
+              cause: Error.isError(interrupted,) ? interrupted.cause : undefined,
+            },).toEqual({
+              interrupted: `WorkTitleLookupError: search lost the network while ${EXA_SEARCH_URL} was answering`,
+              cause: cut,
+            },);
+          },
+        },),
       ],
     },),
 
@@ -586,6 +727,38 @@ await describe({
             },),).toEqual([],);
             expect(logged,).toEqual([
               '[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: search responded 401',
+              '[workTitleLookupLines] 1 work title looked up, 0 lines',
+            ],);
+          },
+        },),
+        it({
+          name: 'LOGS A TRANSPORT THAT REJECTS as the network failing at the endpoint, where it logged the class of '
+            + 'the failure alone, and contributes no line',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'work-title-lookup-', },);
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            /**
+             Transport whose connection drops.
+
+             @returns Never; it rejects
+             */
+            async function dropping(): Promise<Response> {
+              throw new TypeError('fetch failed',);
+            }
+            expect(await workTitleLookupLines({
+              sourceText: '她读《猫的午睡》。',
+              apiKey: 'test-key',
+              dir: scratch.path,
+              signal: SIGNAL,
+              fetchFn: dropping,
+              now: () => NOW,
+              logger,
+            },),).toEqual([],);
+            expect(logged,).toEqual([
+              `[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: search request to ${EXA_SEARCH_URL} ${TAIL}`,
               '[workTitleLookupLines] 1 work title looked up, 0 lines',
             ],);
           },

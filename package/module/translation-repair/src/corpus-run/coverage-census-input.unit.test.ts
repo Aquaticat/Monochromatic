@@ -586,6 +586,27 @@ await describe({
             expect((refusal as Error).cause,).toBeInstanceOf(Error,);
           },
         },),
+        it({
+          name: 'REFUSES A BASELINE THAT IS NOT A CENSUS as a stated refusal, so the command prints it as the '
+            + 'operator\'s mistake and not as a fault of its own',
+          fn: async () => {
+            /**
+             What the reader raised for text that is not JSON.
+             */
+            const refusal = caught(function readsText(): unknown {
+              return readBaselineCensus({
+                path: '/tmp/purr.json',
+                text: 'purr',
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect(refusal,).toBeInstanceOf(CensusBaselineError,);
+            expect(String(refusal,),).toBe(
+              'CensusBaselineError: baseline /tmp/purr.json does not read as a census this command wrote: it is not '
+              + 'JSON',
+            );
+          },
+        },),
       ],
     },),
   ],

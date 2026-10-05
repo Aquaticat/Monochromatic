@@ -116,6 +116,54 @@ await describe({
         });
       },
     },),
+    ...[
+      {
+        damage: 'MOVES BACKWARDS ON THE ORIGINAL SIDE',
+        pairs: [{ source: 1, target: 0 }, { source: 0, target: 1 }],
+        refusal: 'pairing moves backwards on the original side at position 1',
+        texts: {},
+      },
+      {
+        damage: 'REPEATS ONE CORRESPONDENCE',
+        pairs: [{ source: 0, target: 0 }, { source: 0, target: 0 }],
+        refusal: 'pairing repeats the same correspondence at position 1',
+        texts: {},
+      },
+      {
+        damage: 'PAIRS A FOOTNOTE DEFINITION WITH A BODY BLOCK',
+        pairs: [{ source: 0, target: 0 }, { source: 1, target: 3 }],
+        refusal: 'pairing pairs a footnote definition with a body block at position 1',
+        texts: {
+          sourceText: 'Cat one.[^1]\n\nCat two.\n\nCat three.\n\n[^1]: Note about cats.\n',
+          targetText: 'Chat un.[^1]\n\nChat deux.\n\nChat trois.\n\n[^1]: Note sur les chats.\n',
+        },
+      },
+    ].map(test => it({
+      name: `MISSES ON A CACHED PAIRING THAT ${test.damage}, warns in the refusal's words, and buys the section again`,
+      fn: async () => {
+        const fresh = fixture(test.texts);
+        const bought = await prepareBlockPairing(fresh.input);
+        const f = fixture(test.texts);
+        const lines: string[] = [];
+        const { key } = blockPairingQuestion({ pair: f.input.pair, modelIds: roster });
+        f.stored.set(key, { pairs: test.pairs, findings: ['an older round'], });
+        const result = await prepareBlockPairing({ ...f.input, l: levelCapturingLogger({ lines }) });
+        expect({
+          result,
+          calls: f.calls.length,
+          stored: f.stored.get(key),
+          warned: lines.filter(line => line.startsWith('warn ')),
+        }).toEqual({
+          result: bought,
+          calls: 2,
+          stored: fresh.stored.get(key),
+          warned: [
+            `warn [prepareBlockPairing] section 7 misses the block-pairing cache: the record under ${key} does not `
+              + `fit its blocks (${test.refusal}), so the roster is asked again`,
+          ],
+        });
+      },
+    },)),
     it({
       name: 'keeps uncached acquisition usable without introducing a persistence dependency',
       fn: async () => {

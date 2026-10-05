@@ -20,8 +20,25 @@ import {
 
 import {
   CitedReferenceFetchError,
+  EXA_CONTENTS_URL,
+  fetchCitedReference,
   fetchedOf,
 } from '../dist/final/node/index.mjs';
+import {
+  bodyCutBy,
+  invalidHeaderRejection,
+} from './body-cut-response.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
+
+/**
+ What a request that failed before any answer came back says it can be.
+ */
+const TAIL = 'failed before any answer came back: either the network could not be reached, or the transport refused to send the request, as it does for a key or header holding a line break; check the connection and the key';
+
+/**
+ Abort signal that never fires.
+ */
+const SIGNAL = new AbortController().signal;
 
 /**
  Reads the message a body raises, or empty when it raises none.
@@ -119,6 +136,141 @@ await describe({
           failure: 'error',
         },);
       },
+    },),
+    describe({
+      name: fetchCitedReference.name,
+      children: [
+        it({
+          name: 'REFUSES a transport that rejects, naming the endpoint and the two things a rejection before any answer '
+            + 'can be, a network failure or a request the transport refuses, and keeps the failure as the refusal\'s cause without repeating its message',
+          fn: async () => {
+            /**
+             What a dropped connection rejects with.
+             */
+            const failure = new TypeError('fetch failed',);
+            /**
+             Transport whose connection drops.
+
+             @returns Never; it rejects
+             */
+            async function dropping(): Promise<Response> {
+              throw failure;
+            }
+            /**
+             What the rejection became.
+             */
+            const refusal = await rejectionOf(async function fetchesOverADroppedConnection(): Promise<unknown> {
+              return await fetchCitedReference({
+                apiKey: 'secret-key',
+                url: 'https://cats.example/post',
+                signal: SIGNAL,
+                fetchFn: dropping,
+              },);
+            },);
+            expect(refusal instanceof CitedReferenceFetchError,).toBe(true,);
+            expect(String(refusal,),).toBe(
+              `CitedReferenceFetchError: contents request to ${EXA_CONTENTS_URL} ${TAIL}`,
+            );
+            expect(Error.isError(refusal,) ? refusal.cause : undefined,).toBe(failure,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a request the transport will not send, such as a header value holding a line break, in '
+            + 'the same words as a network failure and without quoting the value',
+          fn: async () => {
+            /**
+             Transport refusing a header as the runtime's `fetch` does.
+
+             @returns Never; it rejects
+             */
+            async function refusingTheHeader(): Promise<Response> {
+              throw invalidHeaderRejection();
+            }
+            /**
+             What the rejection became.
+             */
+            const refusal = await rejectionOf(async function sendsABadHeader(): Promise<unknown> {
+              return await fetchCitedReference({
+                apiKey: 'secret-key',
+                url: 'https://cats.example/post',
+                signal: SIGNAL,
+                fetchFn: refusingTheHeader,
+              },);
+            },);
+            expect(String(refusal,),).toBe(`CitedReferenceFetchError: contents request to ${EXA_CONTENTS_URL} ${TAIL}`,);
+          },
+        },),
+
+        it({
+          name: 'LEAVES the caller\'s abort an abort: a transport that rejects with the signal\'s reason is not '
+            + 'reported as a network failure',
+          fn: async () => {
+            /**
+             Why the caller stopped.
+             */
+            const reason = new DOMException('the caller stopped waiting', 'AbortError',);
+            /**
+             The caller's abort, already fired.
+             */
+            const stopped = new AbortController();
+            stopped.abort(reason,);
+            /**
+             Transport rejecting as `fetch` does for an aborted signal.
+
+             @returns Never; it rejects with the signal's reason
+             */
+            async function abortedTransport(): Promise<Response> {
+              throw stopped.signal.reason;
+            }
+            expect(await rejectionOf(async function fetchesAfterTheAbort(): Promise<unknown> {
+              return await fetchCitedReference({
+                apiKey: 'secret-key',
+                url: 'https://cats.example/post',
+                signal: stopped.signal,
+                fetchFn: abortedTransport,
+              },);
+            },),).toBe(reason,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES an answer whose connection fails while the body is read, saying the network failed while the '
+            + 'endpoint was answering, with the failure as its cause',
+          fn: async () => {
+            /**
+             What the connection fails with while the body streams.
+             */
+            const cut = new TypeError('terminated',);
+            /**
+             Transport answering 200 and then failing mid-body.
+
+             @returns A 200 whose body stream errors
+             */
+            async function cutBody(): Promise<Response> {
+              return bodyCutBy({ failure: cut, },);
+            }
+            /**
+             Refusal for the cut body.
+             */
+            const interrupted = await rejectionOf(async function readsACutBody(): Promise<unknown> {
+              return await fetchCitedReference({
+                apiKey: 'secret-key',
+                url: 'https://cats.example/post',
+                signal: SIGNAL,
+                fetchFn: cutBody,
+              },);
+            },);
+            expect({
+              interrupted: String(interrupted,),
+              cause: Error.isError(interrupted,) ? interrupted.cause : undefined,
+            },).toEqual({
+              interrupted: `CitedReferenceFetchError: contents lost the network while ${EXA_CONTENTS_URL} was answering`,
+              cause: cut,
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

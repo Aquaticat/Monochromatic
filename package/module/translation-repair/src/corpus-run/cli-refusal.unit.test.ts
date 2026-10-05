@@ -37,6 +37,8 @@
  @module
  */
 
+import { join, } from 'node:path';
+
 import {
   describe,
   expect,
@@ -44,14 +46,22 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  BedrockCreditOverrideError,
   createSeatTally,
+  EmptyPoolError,
+  GradedSheetExistsError,
   LedgerShapeError,
+  MixedGenerationError,
+  readBaselineFile,
   reportingRefusals,
   RUN_SEATS,
   RunConfigError,
   RunJsonUnreadableError,
+  SpendCeilingOverrideError,
   StatedRefusalError,
+  UnsafeSeedError,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
@@ -239,6 +249,43 @@ function withFreshRunSeats(): Disposable {
   };
 }
 
+/**
+ What a directory of settled entries holds across two built pipelines.
+ */
+const TWO_PIPELINES = {
+  groups: [
+    {
+      digest: 'sha256:aaaaaaaaaaaaaaaa',
+      entryIds: ['Mittens',],
+    },
+    {
+      digest: 'sha256:bbbbbbbbbbbbbbbb',
+      entryIds: ['Pepper',],
+    },
+  ],
+  total: 2,
+  tipByEntry: new Map<string, string>(),
+  malformedIds: [],
+  untaggedIds: [],
+  legacyIds: [],
+};
+
+/**
+ Refusals an operator's own mistake raises: a setting, a seed, a path or a
+ pool they chose.
+ */
+const OPERATOR_MISTAKES: readonly Error[] = [
+  new SpendCeilingOverrideError({ value: 'plenty', },),
+  new BedrockCreditOverrideError({ value: 'plenty', },),
+  new UnsafeSeedError({ seed: '../escape', },),
+  new GradedSheetExistsError({ path: '/runs/grading-sheet-seed.md', },),
+  new EmptyPoolError({
+    census: TWO_PIPELINES,
+    requiredCommit: 'cafe1234cafe1234',
+  },),
+  new MixedGenerationError({ census: TWO_PIPELINES, },),
+];
+
 await describe({
   name: reportingRefusals.name,
   children: [
@@ -343,6 +390,57 @@ await describe({
         expect(printed.lines.length,).toBe(STATED_LINES,);
         expect(printed.lines[0],).toBe(`score-verify: ${STATED_MESSAGE}`,);
       },
+    },),
+    it({
+      name: 'REPEATS a baseline the operator named wrongly in its own words, at the stated-refusal code and with no '
+        + 'fault line or frames, where the census command reads it',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+        await using scratch = await scratchDir({ prefix: 'cli-refusal-baseline-', },);
+        /**
+         A path nothing stands at, as a baseline named with a typo would be.
+         */
+        const path = join(
+          scratch.path,
+          'purr.json',
+        );
+
+        await reportingRefusals({
+          what: 'coverage-census',
+          argv: BARE_ARGV,
+          run: async () => {
+            await readBaselineFile({ path, },);
+          },
+        },);
+
+        expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
+        expect(printed.lines,).toEqual([
+          `coverage-census: baseline ${path} does not read as a census this command wrote: it could not be read `
+          + '(ENOENT)',
+        ],);
+      },
+    },),
+    ...OPERATOR_MISTAKES.map(function operatorMistakeCase(refusal,) {
+      return it({
+        name: `REPEATS ${refusal.name}, the operator's own mistake, in its own words at the stated-refusal code `
+          + 'with no fault line or frames',
+        fn: async () => {
+          using held = holdingExitCode();
+          using printed = collectingErrors({ lines: [], },);
+
+          await reportingRefusals({
+            what: 'draw-sample',
+            argv: BARE_ARGV,
+            run: async () => {
+              throw refusal;
+            },
+          },);
+
+          expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
+          expect(printed.lines,).toEqual([`draw-sample: ${refusal.message}`,],);
+        },
+      },);
     },),
     it({
       name: 'KEEPS both halves for a marked class on the fault path, sentence and frames',
