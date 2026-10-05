@@ -448,6 +448,44 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
+- Search backend is implemented but not yet bound to the native overlay.
+  `search_worker.rs` keeps one latest request/reply,
+  cancels superseded queries,
+  and joins its owned thread after child cleanup.
+  `search_process.rs` runs filename/content ripgrep streams concurrently,
+  disables inherited configuration and preprocessing,
+  and reaps children after cancellation or result caps.
+- `proc_ea69` passed real subprocess tests,
+  protocol tests,
+  bounded output tests,
+  and scoped Rust lint.
+  Quiet-child cancellation verifies the owned PID is gone;
+  a preprocessing-config positive control verifies `--no-config` separately from environment removal.
+  Invalid regexes and oversized records retain the other stream's filename results.
+- Search output records are capped at 4 MiB before parsing;
+  diagnostic storage is capped at 64 KiB while still draining stderr.
+  Previews retain at most 300 complete graphemes.
+  Native filenames use NUL-delimited records or decoded base64 JSON paths.
+- The bounded IDE image lacked `rg` and was updated to include it.
+  Its verified runtime is ripgrep 14.1.1;
+  the host is 15.2.0.
+  Existing base64 0.23.1 is now an explicit dependency;
+  the generated lockfile added only that direct dependency edge.
+- Fresh UI-reference reads found required parity details:
+  double-Shift release within 400ms opens the modal;
+  non-Shift keypresses interrupt the chord;
+  query debounce is 150ms;
+  leading `%` selects content-only presentation;
+  input is trimmed;
+  Up/Down selection wraps.
+  Search scope is the last-focused tree directory,
+  or the parent of its focused file,
+  falling back to the project root.
+  The current worker searches the project root;
+  add per-request scope validation on the background thread before wiring the overlay.
+- Installed Slint FocusScope supports `capture-key-pressed` and `capture-key-released`.
+  Use those for global shortcut observation rather than duplicating per-widget key handlers.
+
 - Final native smoke `proc_4e47` is at port 9318,
   socket `/tmp/monochromatic-ide-native-EGMdAC/control.sock`.
   `interaction.mjs`,
