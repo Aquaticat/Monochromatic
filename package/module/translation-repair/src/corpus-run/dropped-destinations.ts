@@ -1,12 +1,8 @@
 import type {
-  Link,
   Root,
   RootContent,
 } from 'mdast';
-import {
-  NO_NODE_BOUNDS,
-  nodeBounds,
-} from '../footnote-unpositioned-runs.ts';
+import { isAutolinkLiteral, } from '../footnote-unpositioned-runs.ts';
 import { splitFrontMatter, } from '../front-matter.ts';
 import { maskHtmlComments, } from '../mask-html-comments.ts';
 import { maskInvisibleLines, } from '../mask-invisible-lines.ts';
@@ -88,13 +84,10 @@ type ReadonlyMdastRoot = DeepReadonlyData<Root>;
 type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 
 /**
- A link of a parsed page, read-only.
- */
-type ReadonlyMdastLink = DeepReadonlyData<Link>;
-
-/**
  Characters that end a bare run: whitespace, Markdown and HTML delimiters, and
- the full-width punctuation Chinese prose sets a link off with.
+ the full-width punctuation Chinese prose sets a link off with. A closing
+ parenthesis ends a run only where it balances no opening one of the run
+ (`addressEnd`).
  */
 const RUN_STOPPERS: ReadonlySet<string> = new Set([
   ' ',
@@ -217,11 +210,13 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
       break;
 
     /**
-     End of the run, exclusive: the first stopper after the scheme.
+     End of the run, exclusive: the first stopper after the scheme, a closing
+     parenthesis that balances one the run opened not being one.
      */
-    let end = start;
-    while ((end < text.length) && (!RUN_STOPPERS.has(text.charAt(end,),)))
-      end += 1;
+    const end = addressEnd({
+      text,
+      from: start,
+    },);
 
     runs.push(trimDestination({ url: text.slice(
       start,
@@ -242,23 +237,109 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
 }
 
 /**
- Where a destination's address ends: its first stopper, or its end.
+ Where a run of sentence punctuation and closing parentheses ends.
 
- @param url - destination as the tree or the scan produced it
+ @param text - text holding the run
 
- @returns Offset of the first stopper, exclusive end of the address
+ @param from - offset of the run's first character
+
+ @returns Offset of the first character after the run, the text's length when it reaches the end
 
  @example
  ```ts
- const end = firstStopper({ url: 'https://example.org/a\uff0c', },);
+ const end = trailRunEnd({ text: 'a.).b', from: 1, },);
  ```
  */
-function firstStopper({ url, }: { readonly url: string; },): number {
-  for (let at = 0; at < url.length; at += 1) {
-    if (RUN_STOPPERS.has(url.charAt(at,),))
+function trailRunEnd(
+  {
+    text,
+    from,
+  }: {
+    readonly text: string;
+    readonly from: number;
+  },
+): number {
+  for (let at = from; at < text.length; at += 1) {
+    /**
+     Character under the scan.
+     */
+    const character = text.charAt(at,);
+    if (!(RUN_TRAILERS.has(character,) || (character === ')')))
       return at;
   }
-  return url.length;
+  return text.length;
+}
+
+/**
+ Where an address ends in a text: its first stopper from an offset, or the
+ text's end.
+
+ A CLOSING PARENTHESIS THAT BALANCES AN OPENING ONE OF THE SAME ADDRESS IS
+ NOT A STOPPER, as the parse reads it (`micromark-extension-gfm-autolink-literal`
+ 2.1.0, `tokenizePath`: a `)` is part of the path while fewer have closed than
+ opened). `Tabby_(cat)` is one address, so a page writing it bare and a source
+ linking it explicitly name one destination; a `)` that balances none, as the
+ one closing a parenthesis set around the address, still ends it.
+
+ SENTENCE PUNCTUATION BEFORE A CLOSING PARENTHESIS ENDS THE ADDRESS AT THE
+ PUNCTUATION when the run of such marks and parentheses reaches the address's
+ end, as the parse's trail rule reads it (`tokenizeTrail`): `(see Tabby_(cat).)`
+ holds `Tabby_(cat)` and `(cat.)` holds `(cat`. A run followed by an ordinary
+ character is part of the address. One pass over the characters; a run that
+ turned out to be no trail is not looked at again.
+
+ @param text - text holding the address
+
+ @param from - offset of the address's first character
+
+ @returns Offset of the first stopper at or after `from`, exclusive end of the address
+
+ @example
+ ```ts
+ const end = addressEnd({ text: 'https://example.org/a\uff0c', from: 0, },);
+ ```
+ */
+function addressEnd(
+  {
+    text,
+    from,
+  }: {
+    readonly text: string;
+    readonly from: number;
+  },
+): number {
+  for (let at = from, noTrailBefore = from, open = 0; at < text.length;) {
+    /**
+     Character under the scan.
+     */
+    const character = text.charAt(at,);
+    if (character === '(') {
+      open += 1;
+      at += 1;
+      continue;
+    }
+    if ((character === ')') && (open > 0)) {
+      open -= 1;
+      at += 1;
+      continue;
+    }
+    if (RUN_TRAILERS.has(character,) && (at >= noTrailBefore)) {
+      /**
+       Where the run of sentence punctuation and closing parentheses from here ends.
+       */
+      const runEnd = trailRunEnd({
+        text,
+        from: at,
+      },);
+      if ((runEnd === text.length) || RUN_STOPPERS.has(text.charAt(runEnd,),))
+        return at;
+      noTrailBefore = runEnd;
+    }
+    if (RUN_STOPPERS.has(character,))
+      return at;
+    at += 1;
+  }
+  return text.length;
 }
 
 /**
@@ -295,7 +376,10 @@ function trimDestination({ url, }: { readonly url: string; },): string {
   // ONE CUT: step back from the first stopper over the trailing sentence
   // punctuation, then slice once, rather than copying the address once per
   // mark shed (ledger B70).
-  for (let cut = firstStopper({ url, },); cut > 0; cut -= 1) {
+  for (let cut = addressEnd({
+    text: url,
+    from: 0,
+  },); cut > 0; cut -= 1) {
     if (!RUN_TRAILERS.has(url.charAt(cut - 1,),)) {
       return url.slice(
         0,
@@ -307,47 +391,6 @@ function trimDestination({ url, }: { readonly url: string; },): string {
     'unreachable: the cut at the first stopper and the shed of sentence punctuation left nothing of an address, '
       + 'though only a scanned run and an autolink literal are trimmed, and both open on the letter of a scheme',
   );
-}
-
-/**
- Whether a link is an autolink literal, an address prose ran into: one the
- parse tokenized with its first child starting where the link starts, no
- label bracket or angle bracket before it, or one the autolink-literal
- transform built, which carries no span at all.
-
- THE SAME TEST `isAutolinkLiteral` (`active-footnote-markers.ts`) makes of a
- node it is about to descend into, there to keep a marker shape inside a URL
- out of the footnote relabel (ledger B123). This one is handed a link, so it
- asks only about the link's span and its first child's.
-
- @param link - link node of the parsed page
-
- @returns Whether its destination is an address prose ran into, which the
- reader cuts where prose resumed, rather than one its author wrote out
-
- @example
- ```ts
- const literal = isProseAddress(link,);
- ```
- */
-function isProseAddress(link: ReadonlyMdastLink,): boolean {
-  /**
-   Span of the whole link, absent on one the transform built.
-   */
-  const linkBounds = nodeBounds(link,);
-  if (linkBounds === NO_NODE_BOUNDS)
-    return true;
-  /**
-   First child of the link, absent under an empty label.
-   */
-  const [opening,] = link.children;
-  if (opening === undefined)
-    return false;
-  /**
-   Span of that child, which a bracket sets off from the link's start.
-   */
-  const openingBounds = nodeBounds(opening,);
-  return (openingBounds !== NO_NODE_BOUNDS) && (openingBounds.start === linkBounds.start);
 }
 
 /**
@@ -414,11 +457,12 @@ export function markdownDestinations(
       || (node.type === 'image')
       || (node.type === 'definition')) {
       /**
-       Where this node leads: an address prose ran into cut where the prose
-       resumed, anything else as written, empty only where it was written
-       with no destination.
+       Where this node leads: an autolink literal, an address prose ran into
+       (`isAutolinkLiteral`, the test the footnote relabel makes), cut where
+       the prose resumed, anything else as written, empty only where it was
+       written with no destination.
        */
-      const destination = ((node.type === 'link') && isProseAddress(node,))
+      const destination = ((node.type === 'link') && isAutolinkLiteral(node,))
         ? trimDestination({ url: node.url, },)
         : node.url;
       // AN EMPTY DESTINATION IS NOT READ: it names nowhere a reader could

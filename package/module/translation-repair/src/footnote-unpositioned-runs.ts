@@ -94,7 +94,9 @@ export function nodeBounds(node: TreeNode,): RawBounds | typeof NO_NODE_BOUNDS {
  Whether a link is an autolink literal, whose only text is its own URL: one
  micromark tokenized spans exactly that text, with no label bracket before
  it, and one the autolink-literal transform built carries no span at all.
- A GFM marker shape inside such text is part of the URL (ledger B123).
+ A GFM marker shape inside such text is part of the URL (ledger B123), and the
+ destination reader (`corpus-run/dropped-destinations.ts`) takes the same test
+ to know an address prose ran into, which it cuts where the prose resumed.
  An angle autolink is no literal here: its span starts at its `<`, and
  {@link isAngleAutolink} tells it, which only a walk under the plain grammar
  meets (the strict grammar refuses the page, so the marker reader never does).

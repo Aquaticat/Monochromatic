@@ -1680,14 +1680,6 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'footnote-url-spans.ts#endsUrl': {
-    tests: 1,
-    why: SCANNER,
-  },
-  'footnote-url-spans.ts#mayPrecedeLiteral': {
-    tests: 1,
-    why: SCANNER,
-  },
   'front-matter-comment-authority.ts#contributorAttribution': {
     tests: 1,
     why: PARSED,

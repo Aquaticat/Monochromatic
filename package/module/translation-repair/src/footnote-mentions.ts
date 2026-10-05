@@ -4,19 +4,25 @@ import {
 } from './footnote-graph.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import {
-  insideUrlSpan,
-  urlSpansOf,
-} from './footnote-url-spans.ts';
+  insideParsedSpan,
+  parsedSpansOf,
+} from './footnote-parsed-spans.ts';
 
 //region Footnote mentions
 // Attribution input for the assembly guard: how often one text mentions each
 // footnote identifier, and in which ROLE.
 //
-// Deliberately NOT a parse. A slice is a fragment, and a fragment does not
-// reliably parse as a document: one opening on a thematic break reads as front
-// matter, and an HTML comment spanning a slice boundary masks differently at
-// fragment scale. What is wanted here is only `did this slice change its
-// relationship to this identifier`, which a scan answers without any of that.
+// Deliberately NOT a parse of the fragment as a document. A slice is a
+// fragment, and a fragment does not reliably parse as a document: one opening
+// on a thematic break reads as front matter, and an HTML comment spanning a
+// slice boundary masks differently at fragment scale. What is wanted here is
+// only `did this slice change its relationship to this identifier`, which a
+// scan answers without any of that. The one thing the scan asks the parse is
+// which marker shapes lie where the parse reads no reference (a URL, a code
+// span, an image, a link's destination, a masked comment, ledger B212), through
+// `footnote-parsed-spans.ts`, which parses the fragment under both grammars
+// with no front matter split and its comments masked as the page masks them,
+// and leaves every marker it cannot place counted.
 //
 // The role is not decoration: a slice that turns `[^1]: the note` into prose
 // saying `see[^1]` mentions the identifier exactly as often as before, and
@@ -191,11 +197,13 @@ export type FootnoteMention = {
 /**
  Every footnote mention a text makes, with its ROLE.
 
- A GFM marker shape inside a link's URL (an inline destination, an angle
- autolink or a bare literal) is no mention, as the footnote graph and the
- relabel read it (ledger B159): the attribution guard compares mentions of
- an original and its candidate, and a URL's spelling is no footnote. A
- full-width marker there still counts, as the graph counts it.
+ A GFM marker shape where the parse of the text reads no reference is no
+ mention, as the footnote graph and the relabel read it (ledger B159, B212):
+ inside a URL (an inline destination, an angle autolink or a bare literal),
+ an inline code span, an image, a link reference definition, an HTML comment,
+ or the markup around a link's label. A full-width marker there still counts,
+ as the graph counts it, and so does a shape in a code block or a raw HTML
+ node, which a fragment cannot settle for the page.
 
  Role matters for attribution: a slice that turns `[^1]: the note` into prose
  saying `see[^1]` mentions the identifier exactly as often as before, and only
@@ -224,16 +232,16 @@ export function footnoteMentions(
    */
   const mentions: FootnoteMention[] = [];
   /**
-   Where the text keeps link URLs, whose GFM marker shapes are not mentions.
+   Where the parse of the text reads no GFM reference.
    */
-  const urlSpans = urlSpansOf({ text, },);
+  const unreadSpans = parsedSpansOf({ text, },);
   for (const [convention, hits, separator, markerLength,] of [
     [
       'gfm',
       scanGfmReferenceLiterals({ slice: text, },)
-        .filter(function outsideUrls(hit,): boolean {
-          return !insideUrlSpan({
-            spans: urlSpans,
+        .filter(function outsideUnreadSpans(hit,): boolean {
+          return !insideParsedSpan({
+            spans: unreadSpans,
             offset: hit.localOffset,
           },);
         },),

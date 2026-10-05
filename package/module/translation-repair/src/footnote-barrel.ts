@@ -63,9 +63,9 @@ export {
   MAX_SLICE_IDENTIFIERS,
 } from './footnote-mentions.ts';
 export {
-  insideUrlSpan,
-  urlSpansOf,
-} from './footnote-url-spans.ts';
+  insideParsedSpan,
+  parsedSpansOf,
+} from './footnote-parsed-spans.ts';
 export type {
   FootnoteConvention,
   FootnoteDefinitionHit,
