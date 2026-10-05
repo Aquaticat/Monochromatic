@@ -23,6 +23,8 @@ use forbidden_regex::RegexSet;
 
 /// Imports the std filesystem module used to read the runtime rules file.
 use std::fs;
+/// Native rule-file paths must not be converted to lossy strings before filesystem reads.
+use std::path::Path;
 
 /// Imports runtime cache module, hybrid matcher, and precompiled builtin path.
 use crate::{load_precompiled, runtime_cache, runtime_matcher::RuntimeRules};
@@ -132,21 +134,22 @@ fn parse_builtin_names(text: &str, expected: usize) -> Result<Vec<Option<String>
 /// carries only an opaque rule index plus the engine's static reason, and a
 /// collision carries only the section name, never rule text.
 pub fn load(
-    rules_path: &str,
+    rules_path: impl AsRef<Path>,
     builtin_rules: bool,
     explicit: bool,
     precompiled: &[u8],
     builtin_names: &str,
 ) -> Result<LoadedRules> {
+    let native_path: &Path = rules_path.as_ref();
     let mut sets: Vec<ScanSet> = Vec::new();
     let mut cache_warnings: Vec<runtime_cache::CacheWarning> = Vec::new();
 
     // Read and load the runtime rules file. A missing implicit default under
     // `--builtin-rules` is the one tolerated absence; every other failure surfaces.
-    let user_rules = match fs::read_to_string(rules_path) {
+    let user_rules = match fs::read_to_string(native_path) {
         Ok(text) => {
-            let cache_load = runtime_cache::load_or_compile(rules_path, &text)
-                .map_err(|reason| return anyhow!("rules {}: {}", rules_path, reason))?;
+            let cache_load = runtime_cache::load_or_compile(native_path, &text)
+                .map_err(|reason| return anyhow!("rules {}: {}", native_path.display(), reason))?;
             cache_warnings = cache_load.warnings;
             Some(cache_load.compiled)
         }
@@ -157,7 +160,7 @@ pub fn load(
         {
             None
         }
-        Err(error) => return Err(anyhow!("read rules {}: {}", rules_path, error)),
+        Err(error) => return Err(anyhow!("read rules {}: {}", native_path.display(), error)),
     };
 
     // The runtime set takes ids 0..user_len; the builtin baseline is offset past it.
@@ -185,7 +188,7 @@ pub fn load(
             if builtin_set.contains(user_name.as_str()) {
                 return Err(anyhow!(
                     "rules {}: rule name '{}' collides with a builtin baseline rule name",
-                    rules_path,
+                    native_path.display(),
                     user_name,
                 ));
             }

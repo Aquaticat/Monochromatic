@@ -44,7 +44,7 @@ pub(crate) struct CacheLoad {
 
 /// Loads compatible artifact or compiles and best-effort repairs from one text snapshot.
 pub(crate) fn load_or_compile(
-    rules_path: &str,
+    rules_path: &std::path::Path,
     text: &str,
 ) -> Result<CacheLoad> {
     let digest = source_digest(text.as_bytes()).map_err(|error| return anyhow!(error))?;
@@ -101,7 +101,7 @@ pub(crate) fn load_or_compile(
 
 /// Compiles source snapshot and appends write warning when repair cannot publish safely.
 fn compile_and_repair(
-    rules_path: &str,
+    rules_path: &std::path::Path,
     text: &str,
     digest: SourceDigest,
     location: &path::CacheLocation,
@@ -130,7 +130,7 @@ fn publish_compiled_snapshot(
 }
 
 /// Reports whether authoritative path still contains compiled snapshot bytes.
-fn source_path_still_matches(rules_path: &str, expected: SourceDigest) -> bool {
+fn source_path_still_matches(rules_path: &std::path::Path, expected: SourceDigest) -> bool {
     let Ok(current) = std::fs::read(rules_path) else {
         return false;
     };
@@ -139,6 +139,7 @@ fn source_path_still_matches(rules_path: &str, expected: SourceDigest) -> bool {
 
 /// Eagerly compiles one explicit rules file into derived per-user cache artifact.
 pub(crate) fn compile_rules_file_to_cache(rules_path: &str) -> Result<()> {
+    let native_path: &std::path::Path = std::path::Path::new(rules_path);
     let source_bytes = std::fs::read(rules_path)
         .map_err(|error| return anyhow!("read rules {}: {}", rules_path, error))?;
     let text = std::str::from_utf8(&source_bytes)
@@ -151,7 +152,7 @@ pub(crate) fn compile_rules_file_to_cache(rules_path: &str) -> Result<()> {
     if read_artifact(&location.artifact_path, MAX_ARTIFACT_BYTES)
         .is_ok_and(|bytes| return decode(&bytes, digest).is_ok())
     {
-        if source_path_still_matches(rules_path, digest) {
+        if source_path_still_matches(native_path, digest) {
             return Ok(());
         }
         return Err(anyhow!("rules {} changed while validating cache", rules_path));
@@ -159,7 +160,7 @@ pub(crate) fn compile_rules_file_to_cache(rules_path: &str) -> Result<()> {
 
     let compiled = RuntimeRules::compile(text)
         .map_err(|error| return anyhow!("rules {}: {}", rules_path, error))?;
-    if !source_path_still_matches(rules_path, digest) {
+    if !source_path_still_matches(native_path, digest) {
         return Err(anyhow!("rules {} changed during compilation", rules_path));
     }
     let artifact = encode(&compiled, digest)

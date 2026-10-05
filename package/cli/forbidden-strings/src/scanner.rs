@@ -51,7 +51,7 @@ impl Scanner {
     /// ```ts
     /// function loadScanner(runtimeRulesPath, builtinRules, explicitlySelectedPath): Scanner;
     /// ```
-    pub fn load(runtime_rules_path: &str, builtin_rules: bool, explicit: bool) -> Result<Scanner> {
+    pub fn load(runtime_rules_path: &Path, builtin_rules: bool, explicit: bool) -> Result<Scanner> {
         // Propagate the loader's existing redacted failure instead of accepting an incomplete ruleset.
         let loaded: LoadedRules = frx_load::load(runtime_rules_path, builtin_rules, explicit, BUILTIN_PRECOMPILED, BUILTIN_NAMES)?;
         return Ok(Scanner { loaded });
