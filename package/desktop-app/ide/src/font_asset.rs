@@ -15,9 +15,11 @@ pub const UI_ROMAN: &[u8] = include_bytes!("../asset/font/InterVariable.ttf");
 pub const UI_ITALIC: &[u8] = include_bytes!("../asset/font/InterVariable-Italic.ttf");
 
 /// Shared roman identity lets cache tests distinguish variation coordinates rather than new font IDs.
-static CODE_ROMAN_BLOB: LazyLock<Blob<u8>> = LazyLock::new(|| return Blob::new(Arc::new(CODE_ROMAN)));
+static CODE_ROMAN_BLOB: LazyLock<Blob<u8>> =
+    LazyLock::new(|| return Blob::new(Arc::new(CODE_ROMAN)));
 /// The italic face has a distinct identity while sharing its bytes across all views.
-static CODE_ITALIC_BLOB: LazyLock<Blob<u8>> = LazyLock::new(|| return Blob::new(Arc::new(CODE_ITALIC)));
+static CODE_ITALIC_BLOB: LazyLock<Blob<u8>> =
+    LazyLock::new(|| return Blob::new(Arc::new(CODE_ITALIC)));
 
 /// Return shared handles for both real code faces; cloning retains each blob's ID.
 pub(crate) fn code_faces() -> [Blob<u8>; 2] {

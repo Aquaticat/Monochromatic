@@ -13,11 +13,23 @@ fn listing_matches_dirents_and_refreshes_from_disk() {
     fs::write(fixture.path().join(".hidden"), "hidden").expect("hidden fixture");
     fs::write(fixture.path().join("猫 'quoted'.ts"), "const 猫 = 1;").expect("Unicode fixture");
     let project = Workspace::new(fixture.path()).expect("open project");
-    let expected = fs::read_dir(fixture.path()).expect("reference dirents")
-        .map(|entry| return entry.expect("reference entry").file_name()).collect::<Vec<_>>();
+    let expected = fs::read_dir(fixture.path())
+        .expect("reference dirents")
+        .map(|entry| return entry.expect("reference entry").file_name())
+        .collect::<Vec<_>>();
     let first = project.list(Path::new(".")).expect("initial listing");
-    assert_eq!(first.iter().map(|entry| return entry.name.clone()).collect::<Vec<_>>(), expected);
-    assert!(first.iter().any(|entry| return entry.name == "src" && entry.is_directory));
+    assert_eq!(
+        first
+            .iter()
+            .map(|entry| return entry.name.clone())
+            .collect::<Vec<_>>(),
+        expected
+    );
+    assert!(
+        first
+            .iter()
+            .any(|entry| return entry.name == "src" && entry.is_directory)
+    );
     assert!(first.iter().any(|entry| return entry.name == ".hidden"));
     fs::write(fixture.path().join("new.rs"), "fn main() {}").expect("external new file");
     let second = project.list(Path::new(".")).expect("fresh listing");
@@ -32,9 +44,14 @@ fn contained_relative_and_absolute_paths_resolve() {
     fs::create_dir(fixture.path().join("src")).expect("source directory");
     fs::write(fixture.path().join("src/main.rs"), "fn main() {}").expect("source file");
     let project = Workspace::new(fixture.path()).expect("open project");
-    let path = project.resolve(Path::new("src/../src/main.rs")).expect("contained relative path");
+    let path = project
+        .resolve(Path::new("src/../src/main.rs"))
+        .expect("contained relative path");
     assert!(path.starts_with(project.root()));
-    assert_eq!(project.resolve(&path).expect("contained absolute path"), path);
+    assert_eq!(
+        project.resolve(&path).expect("contained absolute path"),
+        path
+    );
 }
 
 /// Component containment rejects sibling-prefix paths and parent traversal.
@@ -63,9 +80,20 @@ fn symbolic_links_do_not_bypass_project_boundary() {
     symlink(root.join("inside"), root.join("alias")).expect("inside link fixture");
     let project = Workspace::new(&root).expect("open project");
     assert!(project.list(Path::new("escape")).is_err());
-    assert!(project.list(Path::new("alias")).expect("contained explicit alias").is_empty());
+    assert!(
+        project
+            .list(Path::new("alias"))
+            .expect("contained explicit alias")
+            .is_empty()
+    );
     let entries = project.list(Path::new(".")).expect("root entries");
-    assert!(!entries.iter().find(|entry| return entry.name == "alias").expect("link entry").is_directory);
+    assert!(
+        !entries
+            .iter()
+            .find(|entry| return entry.name == "alias")
+            .expect("link entry")
+            .is_directory
+    );
 }
 
 /// Missing paths, file roots, and listing a file report failures rather than empty directories.

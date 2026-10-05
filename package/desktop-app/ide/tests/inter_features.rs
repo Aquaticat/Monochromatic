@@ -9,10 +9,16 @@ use parley::{
 use std::{borrow::Cow, sync::Arc};
 
 /// Both real variable faces must be chosen from the bundled bytes, never synthesized or discovered on the host.
-use ide_app::font_asset::{UI_ROMAN, UI_ITALIC};
+use ide_app::font_asset::{UI_ITALIC, UI_ROMAN};
 
 /// Shape one UI label with explicit features and the registered real Inter faces.
-fn label_with_style(text: &str, weight: f32, italic: bool, optical_size: Option<f32>, features: &[FontFeature]) -> Layout<u32> {
+fn label_with_style(
+    text: &str,
+    weight: f32,
+    italic: bool,
+    optical_size: Option<f32>,
+    features: &[FontFeature],
+) -> Layout<u32> {
     let mut fonts = FontContext::new();
     for bytes in [UI_ROMAN, UI_ITALIC] {
         let blob = parley::fontique::Blob::new(Arc::new(bytes));
@@ -26,10 +32,18 @@ fn label_with_style(text: &str, weight: f32, italic: bool, optical_size: Option<
     )));
     builder.push_default(StyleProperty::FontSize(15.0));
     builder.push_default(StyleProperty::FontWeight(FontWeight::new(weight)));
-    builder.push_default(StyleProperty::FontStyle(if italic { FontStyle::Italic } else { FontStyle::Normal }));
+    builder.push_default(StyleProperty::FontStyle(if italic {
+        FontStyle::Italic
+    } else {
+        FontStyle::Normal
+    }));
     let mut variations = Vec::new();
-    if let Some(size) = optical_size { variations.push(FontVariation::new(Tag::new(b"opsz"), size)); }
-    builder.push_default(StyleProperty::FontVariations(FontVariations::List(Cow::Borrowed(&variations))));
+    if let Some(size) = optical_size {
+        variations.push(FontVariation::new(Tag::new(b"opsz"), size));
+    }
+    builder.push_default(StyleProperty::FontVariations(FontVariations::List(
+        Cow::Borrowed(&variations),
+    )));
     builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
         Cow::Borrowed(features),
     )));
@@ -115,12 +129,19 @@ fn inter_weights_and_italics_choose_real_variable_faces() {
                 for item in line.items() {
                     if let PositionedLayoutItem::GlyphRun(glyph_run) = item {
                         let run = glyph_run.run();
-                        assert!(run.font().data.as_ref() == expected, "wrong Inter face for weight {weight}, italic={italic}");
+                        assert!(
+                            run.font().data.as_ref() == expected,
+                            "wrong Inter face for weight {weight}, italic={italic}"
+                        );
                         assert!(!run.synthesis().embolden());
                         assert!(run.synthesis().skew().is_none());
                         // Harfrust represents an all-default instance with an empty coordinate slice.
                         if weight == 400.0 {
-                            assert!(run.normalized_coords().iter().all(|value| return *value == 0));
+                            assert!(
+                                run.normalized_coords()
+                                    .iter()
+                                    .all(|value| return *value == 0)
+                            );
                         } else {
                             assert_eq!(run.normalized_coords().len(), 2);
                             assert_ne!(run.normalized_coords()[1], 0);

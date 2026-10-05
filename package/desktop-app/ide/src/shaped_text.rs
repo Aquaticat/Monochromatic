@@ -2,14 +2,14 @@
 
 /// Canonical source remains in the read-only document.
 use crate::document::Document;
-/// Syntax classifications stay independent of pixels.
-use crate::source_style::StyleSpan;
-/// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
-use crate::text_projection::{Projection, project_line};
 /// Variable roman and real italic blobs retain stable cache identities.
 use crate::font_asset::code_faces;
+/// Syntax classifications stay independent of pixels.
+use crate::source_style::StyleSpan;
 /// Immutable font requests validate continuous weights before shaping.
 use crate::source_typography::SourceTypography;
+/// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
+use crate::text_projection::{Projection, project_line};
 /// Construction failures identify unsupported source typography.
 use anyhow::Result;
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
@@ -85,13 +85,17 @@ impl Default for TextShaper {
 impl TextShaper {
     /// Register the embedded primary face; system fonts supply other scripts.
     pub fn new() -> Self {
-        return Self::with_typography(SourceTypography::default()).expect("valid default source typography");
+        return Self::with_typography(SourceTypography::default())
+            .expect("valid default source typography");
     }
 
     /// Create a source shaper with explicit OpenType features, without changing source characters.
     /// Settings are immutable for this shaper; replacing it also requires invalidating native frame state.
     pub fn with_features(features: Vec<FontFeature>) -> Self {
-        let typography = SourceTypography { features, ..SourceTypography::default() };
+        let typography = SourceTypography {
+            features,
+            ..SourceTypography::default()
+        };
         return Self::with_typography(typography).expect("valid default source weight");
     }
 
@@ -103,7 +107,11 @@ impl TextShaper {
         for blob in code_faces() {
             fonts.collection.register_fonts(blob, None);
         }
-        return Ok(Self { fonts, layouts: LayoutContext::new(), typography });
+        return Ok(Self {
+            fonts,
+            layouts: LayoutContext::new(),
+            typography,
+        });
     }
 
     /// Shape text with explicit source typography and no soft wrapping.
@@ -121,8 +129,14 @@ impl TextShaper {
             Cow::Borrowed("JetBrains Mono"),
         )));
         builder.push_default(StyleProperty::FontSize(15.0));
-        builder.push_default(StyleProperty::FontWeight(FontWeight::new(self.typography.weight)));
-        let style = if self.typography.italic { FontStyle::Italic } else { FontStyle::Normal };
+        builder.push_default(StyleProperty::FontWeight(FontWeight::new(
+            self.typography.weight,
+        )));
+        let style = if self.typography.italic {
+            FontStyle::Italic
+        } else {
+            FontStyle::Normal
+        };
         builder.push_default(StyleProperty::FontStyle(style));
         builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(24.0)));
         builder.push_default(StyleProperty::Brush(0));

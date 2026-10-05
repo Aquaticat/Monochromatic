@@ -1,9 +1,9 @@
 //! Immutable source typography selects real variable font instances and real italic faces.
 
+/// Invalid font requests fail visibly rather than creating non-finite layout coordinates.
+use anyhow::{Result, bail};
 /// Typed features preserve OpenType tags and values without an application-specific string syntax.
 use parley::{FontFeature, setting::Tag};
-/// Invalid font requests fail visibly rather than creating non-finite layout coordinates.
-use anyhow::{bail, Result};
 
 /// Font choices retained for one shaper; creating a new shaper invalidates native frame state.
 #[derive(Clone)]
@@ -33,7 +33,10 @@ impl SourceTypography {
     /// The packaged JetBrains Mono files advertise wght 100 through 800.
     pub fn validate(&self) -> Result<()> {
         if !self.weight.is_finite() || !(100.0..=800.0).contains(&self.weight) {
-            bail!("Source font weight {} is outside the bundled JetBrains Mono range 100 to 800", self.weight);
+            bail!(
+                "Source font weight {} is outside the bundled JetBrains Mono range 100 to 800",
+                self.weight
+            );
         }
         return Ok(());
     }

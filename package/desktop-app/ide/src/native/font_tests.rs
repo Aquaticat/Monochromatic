@@ -32,7 +32,12 @@ slint::slint! {
 /// Capture rendered pixels only after processing the pending property changes.
 fn snapshot(window: &FontProbe) -> Vec<u8> {
     update_timers_and_animations();
-    return window.window().take_snapshot().expect("native font snapshot").as_bytes().to_vec();
+    return window
+        .window()
+        .take_snapshot()
+        .expect("native font snapshot")
+        .as_bytes()
+        .to_vec();
 }
 
 /// Intermediate weights and true italics visibly change both bundled families and restore cleanly.
@@ -47,13 +52,23 @@ fn native_text_renders_variable_weights_and_real_italic_faces() {
         let regular = snapshot(&window);
         window.set_weight(537);
         let intermediate = snapshot(&window);
-        assert_ne!(regular, intermediate, "variable weight must affect native {family} pixels");
+        assert_ne!(
+            regular, intermediate,
+            "variable weight must affect native {family} pixels"
+        );
         window.set_italic(true);
         let italic = snapshot(&window);
-        assert_ne!(intermediate, italic, "real italic must affect native {family} pixels");
+        assert_ne!(
+            intermediate, italic,
+            "real italic must affect native {family} pixels"
+        );
         window.set_italic(false);
         window.set_weight(400);
-        assert_eq!(snapshot(&window), regular, "font cache must restore {family} defaults");
+        assert_eq!(
+            snapshot(&window),
+            regular,
+            "font cache must restore {family} defaults"
+        );
     }
     window.hide().expect("close typography fixture");
 }

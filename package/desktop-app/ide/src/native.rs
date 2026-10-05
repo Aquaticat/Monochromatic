@@ -35,6 +35,9 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
+/// Native font instance changes must repaint rather than reuse stale glyphs.
+#[cfg(test)]
+mod font_tests;
 /// Source selection and keyboard callbacks.
 mod input;
 /// Background source reads apply correspondence to the latest UI reading state.
@@ -44,9 +47,6 @@ mod render;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;
-/// Native font instance changes must repaint rather than reuse stale glyphs.
-#[cfg(test)]
-mod font_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
 /// Bind caret and selection callbacks.
