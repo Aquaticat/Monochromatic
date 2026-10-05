@@ -68,7 +68,9 @@ this is not Firefox ESR140 or native accessibility acceptance.
 The final guest's recorded fields were restored and the owner exited `0`;
 matching native/browser containers and QEMU are absent.
 No new preference ballot is waiting.
-The remaining independent light surfaces are the context menu,
+`doc/planning/music-player-light-context-menu.md` starts the next independent
+surface with the accepted D7 action list and an executable-source audit.
+The remaining light surfaces are the context menu,
 Settings and scan bar;
 D81's Settings-template requirement remains settled while its editor details
 are a separate design problem.

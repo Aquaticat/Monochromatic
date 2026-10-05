@@ -1,0 +1,100 @@
+# Light track context-menu continuation
+
+## Purpose and settled input
+
+Continue the authorized design queue after the completed D83 overlay
+publication.
+The next independent light surface is D7's track context menu.
+This does not reopen Search,
+notifications,
+supporting-text configurability or the rejected minimal-menu proposal.
+Settings templates and the scan bar remain separate work.
+
+D7 and `package/music-player/design/candidates/ctx-b.dc.html` specify a
+track-name heading and grouped actions:
+
+- Play.
+- Start shuffle from here.
+- File details with an inline peak value.
+- Re-analyse true peak.
+- Show in file manager.
+- Copy filename.
+- Move to trash with destructive meaning.
+
+D7's prose and the historical candidate caption say eight items,
+but both explicit action lists contain seven action rows plus the heading.
+Use the enumerated actions;
+do not invent an additional action to satisfy the caption.
+The dark candidate's old row cues and fixed page dimensions are historical
+context,
+not authority to undo the accepted player or Fold geometry.
+
+## Initial executable-source audit
+
+The Android row in
+`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt:3578`
+uses `Text` with `Modifier.clickable`.
+The inspected handler toggles the current track or calls `playIndex` for
+another row.
+It does not contain a long-press context-menu owner.
+The `DropdownMenuItem` occurrences in that file belong to transport-button
+overflow,
+not D7's track actions.
+
+The inspected selected-page desktop row in
+`package/music-player/desktop-app/ui/app.slint:1961`
+uses `TouchArea.clicked` to toggle or select a track.
+That row is not a verified D7 context-menu implementation.
+Searches across the current Android production source,
+desktop source and Slint UI found no `Copy filename`,
+`File details`,
+`Show in file manager` or `Move to trash` labels,
+or context-menu/long-press handler markers.
+The broader menu search located the Android transport-overflow incumbent.
+These are scoped source findings,
+not a universal platform-capability claim.
+
+The repository has a separate file-manager row-menu study in
+`doc/planning/file-manager.md`,
+under its row context-menu spike result.
+That record is a relevant input-ownership precedent,
+not music-player menu verification or authority for new keyboard defaults.
+Any deciding Slint behavior must be rechecked against its cited source and
+installed version before reuse.
+The immediate visual study remains native Compose on the Fold target.
+
+## Independently verifiable queue
+
+- [x] Identify D7's explicit actions and distinguish historical design from
+  executable row/menu ownership.
+- [ ] Inspect current native menu declarations and accepted player hooks,
+  then build an isolated debug study without production callbacks.
+- [ ] Verify target identity,
+  opening/dismissal,
+  action-intent ownership and fit across both panels,
+  themes and 100%/200% text.
+  If content exceeds a viewport,
+  prove access to it rather than shrinking layout floors.
+- [ ] Publish only inspected,
+  sanitized and exact-artifact-bound evidence with explicit action limits.
+
+## Boundaries
+
+No real playback,
+peak analysis,
+clipboard write,
+file-manager launch,
+trash or restore is authorized by this design study.
+Action selection records an authored target and debug intent only.
+D8's consent and truthful success boundaries remain intact.
+No new IME,
+TalkBack or keyboard-default experiment is part of this item.
+Original AVDs and completed D83 artifacts remain untouched.
+Native work retains 6 GiB/2 CPU bounds;
+browser verification retains 2 GiB/2 CPU bounds.
+The successful D83 runtime bridge is reusable infrastructure,
+not a claim that cold-start system failures are fixed.
+
+No new preference question is established by this initial audit.
+The next action is the installed-menu API and isolated-host inspection,
+not a colour ballot or production implementation.

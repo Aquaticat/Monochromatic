@@ -49,6 +49,9 @@ the completed first-run/no-library queue is in
 The whole-map keyboard proposal is verified without new accepted defaults.
 `doc/planning/music-player-light-error-undo.md` records the completed D83
 state-family study and inspected offline publication.
+`doc/planning/music-player-light-context-menu.md` continues the queue with
+D7's accepted track actions,
+without production callbacks or a replacement action-list ballot.
 Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
