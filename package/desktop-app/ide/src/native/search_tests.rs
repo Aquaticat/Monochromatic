@@ -166,15 +166,40 @@ fn pending_file_open_does_not_steal_search_input_focus() {
     let target = row(&reader.window, "pending.txt").expect("pending source row");
     reader.window.invoke_tree_activate(target);
     open(&reader.window);
-    assert!(!reader.window.get_source_available(), "control requires the source reply to remain pending until after overlay activation");
+    assert!(
+        !reader.window.get_source_available(),
+        "control requires the source reply to remain pending until after overlay activation"
+    );
     wait_until(|| return reader.window.get_source_text() == "pending source");
-    reader.window.window().dispatch_event(WindowEvent::KeyPressed { text: "n".into() });
-    reader.window.window().dispatch_event(WindowEvent::KeyReleased { text: "n".into() });
-    assert_eq!(reader.window.get_search_query(), "n", "asynchronous source install stole query focus");
-    reader.window.invoke_tree_activate(row(&reader.window, "pending.txt").expect("current file row"));
-    reader.window.window().dispatch_event(WindowEvent::KeyPressed { text: "e".into() });
-    reader.window.window().dispatch_event(WindowEvent::KeyReleased { text: "e".into() });
-    assert_eq!(reader.window.get_search_query(), "ne", "same-file request stole query focus");
+    reader
+        .window
+        .window()
+        .dispatch_event(WindowEvent::KeyPressed { text: "n".into() });
+    reader
+        .window
+        .window()
+        .dispatch_event(WindowEvent::KeyReleased { text: "n".into() });
+    assert_eq!(
+        reader.window.get_search_query(),
+        "n",
+        "asynchronous source install stole query focus"
+    );
+    reader
+        .window
+        .invoke_tree_activate(row(&reader.window, "pending.txt").expect("current file row"));
+    reader
+        .window
+        .window()
+        .dispatch_event(WindowEvent::KeyPressed { text: "e".into() });
+    reader
+        .window
+        .window()
+        .dispatch_event(WindowEvent::KeyReleased { text: "e".into() });
+    assert_eq!(
+        reader.window.get_search_query(),
+        "ne",
+        "same-file request stole query focus"
+    );
     assert_eq!(reader.window.get_source_text(), "pending source");
     reader.window.invoke_search_dismiss();
     reader.window.hide().expect("close pending-open reader");

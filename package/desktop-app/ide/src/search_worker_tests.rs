@@ -11,7 +11,15 @@ use tokio::sync::watch;
 
 /// Construct synthetic results without scanning or mutating any real directory.
 fn reply(generation: u64) -> Arc<SearchReply> {
-    return Arc::new(SearchReply { generation, query: "unchanged pattern".to_string(), scope: PathBuf::from("unused-scope"), results: SearchResults { paths: Ok(Vec::new()), contents: Ok(Vec::new()) } });
+    return Arc::new(SearchReply {
+        generation,
+        query: "unchanged pattern".to_string(),
+        scope: PathBuf::from("unused-scope"),
+        results: SearchResults {
+            paths: Ok(Vec::new()),
+            contents: Ok(Vec::new()),
+        },
+    });
 }
 
 /// A queued old reply is consumed but rejected; an otherwise identical current reply is accepted.
@@ -27,10 +35,31 @@ fn unread_reply_identity_must_equal_the_current_generation() {
     // ```
     let (requests, _request_receiver) = watch::channel(None);
     let (publisher, replies) = watch::channel(None);
-    let mut worker = SearchWorker { requests: Some(requests), replies, cancellation: None, generation: 2, thread: None };
+    let mut worker = SearchWorker {
+        requests: Some(requests),
+        replies,
+        cancellation: None,
+        generation: 2,
+        thread: None,
+    };
     publisher.send_replace(Some(reply(1)));
-    assert!(worker.try_take().expect("old reply poll").is_none(), "a stale reply crossed the current generation boundary");
-    assert!(worker.try_take().expect("old reply consumed once").is_none());
+    assert!(
+        worker.try_take().expect("old reply poll").is_none(),
+        "a stale reply crossed the current generation boundary"
+    );
+    assert!(
+        worker
+            .try_take()
+            .expect("old reply consumed once")
+            .is_none()
+    );
     publisher.send_replace(Some(reply(2)));
-    assert_eq!(worker.try_take().expect("current reply poll").expect("positive current-generation control").generation, 2);
+    assert_eq!(
+        worker
+            .try_take()
+            .expect("current reply poll")
+            .expect("positive current-generation control")
+            .generation,
+        2
+    );
 }
