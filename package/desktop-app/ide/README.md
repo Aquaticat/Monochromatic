@@ -356,6 +356,23 @@ A command method returns `false` when the queue is full;
  before any thread or Helix call,
 because Helix roots every server at the process working directory.
 
+Inlay hints and pull diagnostics are requests the worker makes on its own:
+when a file is displayed,
+ after a reload,
+ and when `request_hints` reports the visible lines.
+Nobody else would ask again,
+so a request the server supersedes (`-32801` or `-32800`)
+or leaves unanswered for its whole request timeout
+is sent again up to 3 times,
+and a hint request names the lines reported last.
+After that the server owes the answer (`src/language/owed.rs`):
+its next message of any kind makes the worker ask once more,
+at most 3 times for one displayed text.
+A failure the server states itself is final for that text.
+A definition,
+ references,
+ or hover request that times out is reported to its caller as a timeout and is not sent again.
+
 The TypeScript family uses the project's own TypeScript 7 server (`node_modules/typescript/bin/tsc --lsp --stdio`);
 a project without it shows the missing-executable state.
 Server-initiated workspace edits are refused.
@@ -390,6 +407,11 @@ nothing falls back to an unconfined launch.
 
 `test:language` runs the unit rules and sessions against the scripted server `ide-scripted-lsp`,
 one child process per session.
+`IDE_SCRIPTED_STALL_AT` and `IDE_SCRIPTED_STALL_MS` hold the scripted server's read loop once,
+before the first message of the named method,
+so `tests/language/again.rs` makes a request time out without any load on the machine.
+`IDE_LANGUAGE_TEST_LOG=1` makes a session print the worker's debug log
+and the helix-lsp protocol log to standard error.
 `inspect:language` runs all five feature paths,
  a reload,
  and the stale-reply case
@@ -404,7 +426,8 @@ the mount and environment audits,
 and the same fixtures unconfined as the guard control.
 `inspect:language-guards` removes the fencing,
  readiness,
- and edit-refusal guards in a disposable copy
+ edit-refusal,
+ and ask-again guards in a disposable copy
 and checks that their named tests fail.
 
 ## Language navigation
