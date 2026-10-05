@@ -945,6 +945,12 @@ of decisions.md.
    D10's empty state now only applies when
   there is no system library,
    and has not been redrawn for that narrower case.
+  D84 (2026-10-05) supersedes the ask-before-analysing part:
+  true-peak analysis is automatic and not optional,
+  so the four answers no longer apply.
+  When analysis runs is still open,
+  and the first-run study's sentence `After opening a library, choose whether to analyse it.`
+  now contradicts D84.
 
 ## 9. Smaller loose ends
 

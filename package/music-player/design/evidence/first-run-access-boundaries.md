@@ -22,6 +22,16 @@ D27 supplies automatic use of an available system library and a separate
 choice before full-library analysis.
 No scan/dismiss answers are changed.
 
+D84 (2026-10-05) supersedes that separate choice:
+true-peak analysis is automatic and not optional,
+so no ask-before-analysing prompt and no scan/dismiss answer remains.
+The study's explanation ends `After opening a library, choose whether to analyse it.`
+(`first-run-access-witnesses.json`, `bodyText`),
+which predates D84 and no longer matches it.
+The published study is left unchanged,
+because its review verification binds the page by hash;
+correcting that sentence is a follow-up.
+
 ## Fresh source boundary
 
 The source audit at `0c391a82556eeda61a285de2d70c1270fbc8994d` found

@@ -7,8 +7,8 @@ import { inflateSync } from 'node:zlib';
 const questions = join(process.cwd(), 'questions');
 const evidence = join(questions, 'evidence');
 const artifact = {
-  apkSha256: '85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50',
-  prototypeCommit: '483f16cdd4c0bda6269ae2e4666732db6407ce75',
+  apkSha256: '5f3a23911f2a5c32859a78e533704298bfb5afa042cf968f4fc82691ef35e9ab',
+  prototypeCommit: '67eae28d1f31689bcc9f132e4db97ec87426e572',
   containerImageId: '4b8805002ee369c81b7826b941afc52c0c9678a0d0e427a0fefd1684b78b5f94',
   systemImageFingerprint: 'google/sdk_gphone16k_x86_64/emu64xa16k:17/CE2A.260420.050/16231978:user/dev-keys',
   renderer: 'Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))',

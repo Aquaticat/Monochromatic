@@ -122,7 +122,7 @@ which were left as historical style comparisons.
 <tr>
 <td>**settings-a**</td>
 <td>860×600</td>
-<td>Three flat switch rows; says out loud that the pane is short.</td>
+<td>Three flat switch rows; says out loud that the pane is short. D84 (2026-10-05) removes the third row, `Analyse true peak in the background`, because true-peak analysis is automatic and not optional; D85 (2026-10-05) removes the closing sentence.</td>
 </tr>
 <tr>
 <td>**tabletop-c**</td>
@@ -552,7 +552,7 @@ the visible dynamic rail line.
 <tr>
 <td>**first-run-a**</td>
 <td>411×923</td>
-<td>**Settled behaviour (D27).** Auto-opens the system music library and asks before analysing: Scan once / Always scan / Dismiss once / Dismiss forever, all 48dp. Interactive — walks into the scan-F bar, the dismissed state and always-scan.</td>
+<td>**Settled behaviour (D27).** Auto-opens the system music library and asks before analysing: Scan once / Always scan / Dismiss once / Dismiss forever, all 48dp. Interactive — walks into the scan-F bar, the dismissed state and always-scan. D84 (2026-10-05) supersedes the ask-before-analysing prompt and its four answers: true-peak analysis is automatic and not optional. Automatic opening of the system music library stands.</td>
 </tr>
 <tr>
 <td>**toast-a**</td>

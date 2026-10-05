@@ -319,7 +319,7 @@ try {
     if (target === undefined) {
       const built = readFileSync(output, 'utf8');
       for (const statement of ['id="inspection-findings"', 'against a 117 pixel floor', 'Neither a switch position nor the theme changes any measured rectangle.',
-        'prototype commit 483f16cdd4c0bda6269ae2e4666732db6407ce75', 'APK SHA-256 85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50',
+        'prototype commit 67eae28d1f31689bcc9f132e4db97ec87426e572', 'APK SHA-256 5f3a23911f2a5c32859a78e533704298bfb5afa042cf968f4fc82691ef35e9ab',
         'renderer Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))']) {
         if (!built.includes(statement)) throw new Error('Generated statement absent: ' + statement);
       }
