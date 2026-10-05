@@ -361,6 +361,51 @@ so the test can only become easier to pass there.
 Markdown nesting did not recurse in the same calibration:
 block quotes and lists 4,000 levels deep completed at a 256 KiB stack.
 
+## Markdown campaign
+
+`mutation:markdown` now covers 26 production modules,
+including the 10 that the executable added
+(`markdown_lfs_*`,
+`markdown_dispatch.rs` and `markdown_rule_settings.rs`;
+20 files with their tests),
+which no campaign had mutated:
+751 mutants at the gate 4 snapshot.
+The first run mutates test image
+`c184147f62f1ed1afa673cbe53b36cb7c8aeb8fd87e4f537763572551f7b03c8`
+(`campaign-markdown-1.log`).
+Results are pending.
+
+## Defects found
+
+No mutant so far exposed a defect on unmutated input:
+no wrong exit status,
+lost finding,
+corrupting fix or unbounded work in the released code.
+The survivors were test gaps and one redundant struct update.
+
+One platform risk follows from the stack calibration and was not measured.
+With `--concurrency 1`,
+or with a single file,
+no worker starts and the file is linted on the main thread.
+On Linux that thread has the same 8 MiB as a worker.
+If a Windows build keeps the MSVC linker's default stack reserve of 1 MiB
+(recalled, not checked here against the linker documentation or the release build settings),
+a single file nested between 250 and 500 parentheses deep would abort there
+while the same file among others would be linted on an 8 MiB worker.
+Neither Windows nor a release build was run here.
+
+## Final campaigns
+
+The plan for the final snapshot:
+after the Markdown survivors are dispositioned,
+one gate builds the final test image,
+and the executable,
+Markdown and processor campaigns each run against it with `mise run --skip-deps`,
+one at a time.
+Their three `manifest.json` files must name the same `baseImage`.
+The processor campaign runs only once, there:
+no processor source changed after `Timeouts removed`.
+
 ## Remaining
 
 ### Never-mutated files outside this brief
