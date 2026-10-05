@@ -1,5 +1,72 @@
 # Batched axioms with a three-call assessment ceiling
 
+## Proposed rule-indexed assessment
+
+The user proposed parsing `AGENTS.md` into one question per rule.
+This is a proposed next baseline,
+not an adopted runtime policy or production change.
+
+The current protected file has 205 literal tagged rule headers
+and 31,421 bytes,
+measured with `rg --count '^[A-Z0-9]{3}:' AGENTS.md` and `wc --bytes AGENTS.md`.
+Its SHA-256 remains
+`15890c665cdb1c054f8c56c2f212cb75297292b812dc0a2e8065e21156483c39`.
+The existing private `contract/policy-index.mjs` preserves exact tagged paragraphs,
+source spans,
+heading ancestry,
+and unclassified material.
+Reuse it rather than introduce another rule parser.
+
+The proposed unit is one rule paired with the complete proposed operation and relevant established facts.
+Use a fixed question template with the original rule as data;
+do not ask a model to paraphrase rules into newly generated questions.
+A possible binary baseline is:
+
+> Would executing the complete proposed operation violate this selected rule,
+> given the supplied established facts?
+
+Bind each question to its exact original rule occurrence and original judgment.
+Include heading context and the complete governing policy so exceptions and cross-references are not discarded.
+Other governing instruction sources still require collection and authority handling;
+indexing this file is not proof of complete instruction coverage.
+
+Batch questions under the same original deadline and attempt budget,
+not one API call or judgment per rule.
+The local selection contract allows up to 512 questions per batch,
+so 205 is within that local bound.
+The current native transport adapter is qualified only for its one-slot and two-slot profiles.
+This is not evidence that a full-rule request meets provider,
+latency,
+cost,
+or accuracy requirements.
+
+The benefit is explicit question coverage of the indexed rules rather than a manually selected set of rule-specific heads.
+The risks are compound rules,
+missing contextual facts,
+irrelevant workflow rules,
+and policy interactions.
+A binary violation score merges satisfied and inapplicable cases.
+Uncertainty must remain unresolved,
+and a low violation score does not establish permission or prove that no instruction applies.
+The answer contract and deterministic combination must preserve those distinctions where they affect the result.
+
+Code still owns source eligibility,
+precedence,
+verified approval facts,
+and the final decision.
+Do not AND every answer without accounting for priorities and exceptions,
+or let a per-rule model result invent an approval record.
+Rules may themselves permit actions;
+a separate human grant is not universally required.
+
+Prefer measuring this all-rule baseline before expanding prerequisite-only predicates.
+Measure complete serialized input,
+returned usage,
+deadline behavior,
+and semantic references over complete operations.
+The earlier two-slot mean of US$0.000803628 is not a forecast for 205 rules.
+No new full-rule inference run or threshold adoption follows from this proposal alone.
+
 ## Accepted requirements
 
 On 2026-10-01,
