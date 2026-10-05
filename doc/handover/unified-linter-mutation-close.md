@@ -371,8 +371,18 @@ including the 10 that the executable added
 which no campaign had mutated:
 751 mutants at the gate 4 snapshot.
 The first run mutates test image
-`c184147f62f1ed1afa673cbe53b36cb7c8aeb8fd87e4f537763572551f7b03c8`
-(`campaign-markdown-1.log`).
+`c184147f62f1ed1afa673cbe53b36cb7c8aeb8fd87e4f537763572551f7b03c8`.
+
+A first start (`mutation-AuPwZ7`, `campaign-markdown-1.log`) was stopped by removing its container
+after the baseline and a few mutants,
+because each mutant took 11 seconds to build for 0.1 seconds of tests.
+Its baseline ran 136 library tests and filtered out all 12 `binary` tests,
+so every selected test is a library test,
+yet every mutant also rebuilt the executable and the `binary` target.
+The scope now passes `--cargo-arg=--lib`,
+which reaches both the build and the test phase and selects the same tests.
+The restarted run is `mutation-6Cgoi0` (`campaign-markdown-2.log`),
+against the same image.
 Results are pending.
 
 ## Defects found
