@@ -307,11 +307,15 @@ export function directoryIdNameStands(
 
   /**
    Whether the source itself carries the id among its aliases, so the handle
-   is the person's own.
+   is the person's own: the alias is the id character for character, or
+   spells the id's Latin letters. An id with no Latin letter is spelled by no
+   alias; comparing letters alone took any alias without one for it, a Han
+   alias for an id of digits (ledger B131).
    */
   const sourceAliasIsId = aliasesOf({ metadata: source, },)
     .some(function isId(alias,): boolean {
-      return latinLettersOf({ text: alias, },) === idLetters;
+      return (alias === entryId)
+        || ((idLetters !== '') && (latinLettersOf({ text: alias, },) === idLetters));
     },);
   if (sourceAliasIsId)
     return true;
