@@ -320,3 +320,8 @@ impl Drop for ObjectReader {
 #[cfg(test)]
 #[path = "candidate_reader_tests.rs"]
 mod tests;
+
+/// Stand-in programs that cut replies short, mismatch them, or never answer.
+#[cfg(test)]
+#[path = "candidate_reader_failure_tests.rs"]
+mod failure_tests;

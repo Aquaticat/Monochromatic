@@ -217,23 +217,24 @@ pub fn parse_raw_records(output: &[u8]) -> Result<Vec<CandidateRecord>, Candidat
         ));
     };
     let tokens: Vec<&[u8]> = body.split(is_nul).collect();
-    // What: `.chunks_exact(2)` visits the tokens two at a time; `.remainder()` is what is
-    //       left over when the count is odd.
+    // What: `.as_chunks::<2>()` splits the tokens into pairs (arrays of exactly two) plus
+    //       whatever is left over when the count is odd; `::<2>` is the pair size.
     // Why:  A leftover token is a record without its pathname.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (tokens.length % 2 !== 0) throw malformed();
     // ```
-    if !tokens.chunks_exact(2).remainder().is_empty() {
+    let (pairs, leftover): (&[[&[u8]; 2]], &[&[u8]]) = tokens.as_chunks::<2>();
+    if !leftover.is_empty() {
         return Err(record_failure(
             CandidateFailure::ListingMalformed,
-            tokens.len() / 2,
+            pairs.len(),
             "has no pathname token",
         ));
     }
-    // `.enumerate()` pairs each chunk with its zero-based position.
-    for (position, pair) in tokens.chunks_exact(2).enumerate() {
+    // `.iter().enumerate()` visits each pair with its zero-based position.
+    for (position, pair) in pairs.iter().enumerate() {
         // A trailing `?` returns the failure to our caller, or unwraps the record.
         records.push(parse_record(position, pair[0], pair[1])?);
     }

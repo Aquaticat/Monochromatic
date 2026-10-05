@@ -339,13 +339,20 @@ pub fn read_batch_reply(
             "sent a header that is neither an object header nor a missing notice",
         ));
     };
-    if let Some(requested) = parse_object_id(request) {
-        if requested != object {
-            return Err(reply_failure(
-                CandidateFailure::ReplyMismatched,
-                "answered with a different object than the one requested",
-            ));
-        }
+    // What: `requested` is the request as an object name, or nothing when it was a word
+    //       such as `HEAD`; `.as_ref()` views it as `Option<&ObjectId>` for comparing.
+    // Why:  Only a request that is itself a complete name pins which object must answer.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (requested !== undefined && requested !== object) throw mismatched();
+    // ```
+    let requested: Option<ObjectId> = parse_object_id(request);
+    if requested.is_some() && requested.as_ref() != Some(&object) {
+        return Err(reply_failure(
+            CandidateFailure::ReplyMismatched,
+            "answered with a different object than the one requested",
+        ));
     }
     let bytes: Vec<u8> = read_content(stream, size)?;
     return Ok(BatchReply::Found {

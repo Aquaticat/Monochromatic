@@ -369,3 +369,13 @@ mod lifecycle_tests;
 #[cfg(test)]
 #[path = "candidate_process_count_tests.rs"]
 mod process_count_tests;
+
+/// Unborn, SHA-256 and private-index listings.
+#[cfg(test)]
+#[path = "candidate_store_baseline_tests.rs"]
+mod baseline_tests;
+
+/// Listings that must be refused.
+#[cfg(test)]
+#[path = "candidate_store_failure_tests.rs"]
+mod failure_tests;

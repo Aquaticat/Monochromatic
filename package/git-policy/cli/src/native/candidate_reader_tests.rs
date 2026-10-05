@@ -14,7 +14,7 @@ use super::{ObjectReader, start_object_reader};
 use crate::candidate_error::{CandidateError, CandidateFailure};
 use crate::candidate_object::{ObjectId, parse_object_id};
 use crate::git_metadata::strip_git_line;
-use crate::test_support::{REAL_GIT, executable, fixture, git, remove, repository};
+use crate::test_support::{REAL_GIT, fixture, git, remove, repository};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
@@ -43,31 +43,6 @@ fn store_blob(repository: &Path, bytes: &[u8]) -> ObjectId {
 fn rev_parse(repository: &Path, revision: &str) -> ObjectId {
     let output: std::process::Output = git(repository, &["rev-parse", "--verify", revision]);
     return parse_object_id(strip_git_line(output.stdout.as_slice())).expect("object name");
-}
-
-/// A stand-in `git` that waits for one request line, answers with fixed bytes, and exits.
-/// Waiting first keeps the request write from racing the stand-in's exit.
-fn stand_in(root: &Path, name: &str, reply: &str) -> PathBuf {
-    let path: PathBuf = root.join(name);
-    executable(
-        path.as_path(),
-        format!("#!/bin/sh\nread -r request\nprintf '{reply}'\nexit 0\n").as_bytes(),
-    );
-    return path;
-}
-
-/// Wait, within a bound, until a child has exited and is waiting to be collected.
-fn wait_until_exited(process: u32) {
-    for _attempt in 0..500 {
-        let stat: String =
-            std::fs::read_to_string(format!("/proc/{process}/stat")).expect("process entry");
-        // The state letter follows the parenthesized program name; `Z` is an exited, uncollected child.
-        if stat.contains(") Z ") {
-            return;
-        }
-        std::thread::sleep(std::time::Duration::from_millis(10));
-    }
-    panic!("the stand-in did not exit within the bound");
 }
 
 /// Blob bytes come back exactly: text, binary with NUL and non-UTF-8 bytes, an empty blob, and a large one.
@@ -182,137 +157,6 @@ fn head_commit_is_resolved_or_absent() {
     );
     drop(unborn_subject);
     remove(root.as_path());
-}
-
-/// A `HEAD` that resolves to something other than a commit is refused instead of used as a baseline.
-#[test]
-fn head_that_is_not_a_commit_is_refused() {
-    let root: PathBuf = fixture("reader-head-kind");
-    let name: String = "a".repeat(40);
-    let program: PathBuf = stand_in(
-        root.as_path(),
-        "git",
-        format!("{name} tree 0\\n\\n").as_str(),
-    );
-    let mut subject: ObjectReader =
-        start_object_reader(program.as_path(), &[], &[]).expect("stand-in starts");
-    let error: CandidateError = subject.head_commit().expect_err("tree as HEAD");
-    assert_eq!(error.failure, CandidateFailure::ObjectKindUnexpected);
-    assert!(
-        error.message.contains("HEAD does not name a commit"),
-        "{error}"
-    );
-    drop(subject);
-    remove(root.as_path());
-}
-
-/// A process that dies in the middle of a reply produces a typed failure, and the reader refuses every later request.
-#[test]
-fn reply_cut_short_by_a_dying_process_closes_the_reader() {
-    let root: PathBuf = fixture("reader-dies");
-    let name: String = "a".repeat(40);
-    let object: ObjectId = parse_object_id(name.as_bytes()).expect("name");
-    let program: PathBuf = stand_in(
-        root.as_path(),
-        "git",
-        format!("{name} blob 100\\nonly part").as_str(),
-    );
-    let mut subject: ObjectReader =
-        start_object_reader(program.as_path(), &[], &[]).expect("stand-in starts");
-    let error: CandidateError = subject.blob(&object).expect_err("truncated reply");
-    assert_eq!(error.failure, CandidateFailure::ReplyTruncated);
-    assert!(subject.pipes.is_none());
-    assert!(subject.blobs.is_empty());
-    assert_eq!(
-        subject.blob(&object).expect_err("closed reader").failure,
-        CandidateFailure::ReaderEnded
-    );
-    assert_eq!(
-        subject.head_commit().expect_err("closed reader").failure,
-        CandidateFailure::ReaderEnded
-    );
-    drop(subject);
-    remove(root.as_path());
-}
-
-/// A reply naming another object is refused and closes the reader, so its bytes are never attributed.
-#[test]
-fn reply_for_another_object_closes_the_reader() {
-    let root: PathBuf = fixture("reader-mismatch");
-    let requested: ObjectId = parse_object_id(&[b'a'; 40]).expect("name");
-    let other: String = "b".repeat(40);
-    let program: PathBuf = stand_in(
-        root.as_path(),
-        "git",
-        format!("{other} blob 5\\nwrong\\n").as_str(),
-    );
-    let mut subject: ObjectReader =
-        start_object_reader(program.as_path(), &[], &[]).expect("stand-in starts");
-    assert_eq!(
-        subject
-            .blob(&requested)
-            .expect_err("mismatched reply")
-            .failure,
-        CandidateFailure::ReplyMismatched
-    );
-    assert!(subject.pipes.is_none());
-    assert!(subject.blobs.is_empty());
-    drop(subject);
-    remove(root.as_path());
-}
-
-/// A process that exits without answering is a reader failure.
-#[test]
-fn process_that_answers_nothing_is_a_reader_failure() {
-    let root: PathBuf = fixture("reader-silent");
-    let program: PathBuf = stand_in(root.as_path(), "git", "");
-    let mut subject: ObjectReader =
-        start_object_reader(program.as_path(), &[], &[]).expect("stand-in starts");
-    let error: CandidateError = subject
-        .blob(&parse_object_id(&[b'a'; 40]).expect("name"))
-        .expect_err("no reply");
-    assert_eq!(error.failure, CandidateFailure::ReaderEnded);
-    drop(subject);
-    remove(root.as_path());
-}
-
-/// A request written to a process that already exited is a reader failure that closes the reader.
-#[test]
-fn request_to_an_exited_process_is_a_reader_failure() {
-    let root: PathBuf = fixture("reader-exited");
-    let program: PathBuf = root.join("git");
-    executable(program.as_path(), b"#!/bin/sh\nexit 0\n");
-    let mut subject: ObjectReader =
-        start_object_reader(program.as_path(), &[], &[]).expect("stand-in starts");
-    wait_until_exited(subject.child.id());
-    let error: CandidateError = subject
-        .blob(&parse_object_id(&[b'a'; 40]).expect("name"))
-        .expect_err("exited process");
-    assert_eq!(error.failure, CandidateFailure::ReaderEnded);
-    assert!(
-        error.message.contains("stopped accepting requests"),
-        "{error}"
-    );
-    assert!(subject.pipes.is_none());
-    drop(subject);
-    remove(root.as_path());
-}
-
-/// A program that cannot be started is its own failure, naming the operation.
-#[test]
-fn unstartable_git_is_reported() {
-    let error: CandidateError =
-        match start_object_reader(Path::new("/nonexistent-directory/git"), &[], &[]) {
-            Ok(_) => panic!("a missing program must not start"),
-            Err(failure) => failure,
-        };
-    assert_eq!(error.failure, CandidateFailure::GitNotStarted);
-    assert!(
-        error
-            .message
-            .starts_with("cli-git could not start git cat-file --batch to read Git objects: "),
-        "{error}"
-    );
 }
 
 /// Objects written after the reader started are still found, as a fix that stages new content requires.
