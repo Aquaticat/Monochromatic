@@ -937,6 +937,49 @@ fn debug_streams_workspace_progress_and_plain_runs_stay_silent() {
     );
 }
 
+/// A write failure other than a closed pipe exits 2 whichever stream failed, instead of the findings' status.
+/// `/dev/full` refuses every write with "no space left on device".
+#[test]
+fn a_failing_output_stream_exits_two() {
+    let fixture: Fixture = Fixture::new();
+    fixture.write(CONFIG, RULES);
+    fixture.write("a.md", "# Title.\n");
+    let baseline: Run = run(&fixture.path, &[], b"");
+    assert_eq!((baseline.status, baseline.stderr.as_str()), (1, ""));
+    // Standard output fails; standard error stays empty because nothing else had to be said.
+    let full_stdout: std::fs::File = std::fs::File::options()
+        .write(true)
+        .open("/dev/full")
+        .expect("open /dev/full");
+    let stdout_failed: Output = Command::new(BINARY)
+        .current_dir(&fixture.path)
+        .stdin(Stdio::null())
+        .stdout(Stdio::from(full_stdout))
+        .stderr(Stdio::piped())
+        .output()
+        .expect("run the built executable");
+    assert_eq!(stdout_failed.status.code(), Some(2));
+    assert!(stdout_failed.stderr.is_empty());
+    // Standard error fails while `--debug` writes its notes there; the findings still reach standard output.
+    let full_stderr: std::fs::File = std::fs::File::options()
+        .write(true)
+        .open("/dev/full")
+        .expect("open /dev/full");
+    let stderr_failed: Output = Command::new(BINARY)
+        .arg("--debug")
+        .current_dir(&fixture.path)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::from(full_stderr))
+        .output()
+        .expect("run the built executable");
+    assert_eq!(stderr_failed.status.code(), Some(2));
+    assert_eq!(
+        String::from_utf8(stderr_failed.stdout).expect("UTF-8"),
+        baseline.stdout
+    );
+}
+
 /// Output is the same at every concurrency limit, and a reader that closes the pipe early causes no error output.
 #[test]
 fn concurrency_and_closed_pipes_do_not_change_results() {
