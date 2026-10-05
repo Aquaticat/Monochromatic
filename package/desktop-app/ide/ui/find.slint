@@ -1,5 +1,6 @@
 // Transient in-file find. Native code owns match positions and identity; this markup only edits the find text.
-import { LineEdit, Palette } from "std-widgets.slint";
+import { Palette } from "std-widgets.slint";
+import { QueryInput } from "query-input.slint";
 
 export component FindBar inherits Rectangle {
     in property <bool> open;
@@ -9,6 +10,12 @@ export component FindBar inherits Rectangle {
     in property <string> error-message;
     in-out property <string> query;
     out property <bool> query-has-focus: input.has-focus;
+    // The clear control of the find text: whether it is shown, and its layout cell in window coordinates.
+    out property <bool> clear-shown: input.clear-shown;
+    out property <length> clear-x: input.clear-x;
+    out property <length> clear-y: input.clear-y;
+    out property <length> clear-width: input.clear-width;
+    out property <length> clear-height: input.clear-height;
     // The owner sets this height only while open, so a closed bar reserves no space.
     out property <length> bar-height: root.row-height + (root.error-message == "" ? 0px : error.preferred-height + 8px);
     callback edited(string);
@@ -60,14 +67,12 @@ export component FindBar inherits Rectangle {
             padding-left: 12px;
             padding-right: 12px;
             spacing: 12px;
-            input := LineEdit {
+            input := QueryInput {
                 enabled: root.open;
-                min-width: 48px;
-                min-height: 48px;
                 max-height: 48px;
-                horizontal-stretch: 1;
                 text <=> root.query;
                 placeholder-text: "Find in file";
+                clear-label: "Clear find text";
                 accessible-label: "Find text";
                 accessible-description: root.status-detail;
                 edited(text) => { root.edited(text); }

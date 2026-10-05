@@ -1,5 +1,6 @@
 // Transient combined search. Native code owns query generations and native-path result identities.
-import { LineEdit, ScrollView, Palette } from "std-widgets.slint";
+import { ScrollView, Palette } from "std-widgets.slint";
+import { QueryInput } from "query-input.slint";
 
 export struct SearchEntry {
     path: string,
@@ -25,6 +26,12 @@ export component ProjectSearch inherits Rectangle {
     forward-focus: input;
     public function focus-query() { input.focus(); }
     public function reset-scroll() { results.content-y = 0px; }
+    // The clear control of the query: whether it is shown, and its layout cell in window coordinates.
+    out property <bool> clear-shown: input.clear-shown;
+    out property <length> clear-x: input.clear-x;
+    out property <length> clear-y: input.clear-y;
+    out property <length> clear-width: input.clear-width;
+    out property <length> clear-height: input.clear-height;
     private property <length> row-height: 64px;
 
     function move-selection(delta: int) {
@@ -40,7 +47,7 @@ export component ProjectSearch inherits Rectangle {
     // Consume clicks in panel padding instead of forwarding them to the outside-dismiss layer.
     TouchArea { width: parent.width; height: parent.height; }
 
-    // Capture result-navigation keys before the native line edit consumes them.
+    // Capture result-navigation keys before the query input consumes them.
     FocusScope {
         width: parent.width;
         height: parent.height;
@@ -63,12 +70,11 @@ export component ProjectSearch inherits Rectangle {
                 overflow: elide;
                 vertical-alignment: center;
             }
-            input := LineEdit {
-                min-width: 48px;
-                min-height: 48px;
+            input := QueryInput {
                 max-height: 48px;
                 text <=> root.query;
                 placeholder-text: "Files and contents · % for contents only";
+                clear-label: "Clear search query";
                 accessible-label: "Search query";
                 edited(text) => { root.edited(text); }
             }

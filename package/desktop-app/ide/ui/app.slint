@@ -96,6 +96,17 @@ export component AppWindow inherits Window {
     in property <bool> find-no-match;
     in property <string> find-error;
     out property <bool> find-has-focus: find-bar.query-has-focus;
+    // The 48px clear cells of the find text and the search query, in window coordinates, for geometry checks.
+    out property <bool> find-clear-shown: find-bar.clear-shown;
+    out property <length> find-clear-x: find-bar.clear-x;
+    out property <length> find-clear-y: find-bar.clear-y;
+    out property <length> find-clear-width: find-bar.clear-width;
+    out property <length> find-clear-height: find-bar.clear-height;
+    out property <bool> search-clear-shown: search-panel.clear-shown;
+    out property <length> search-clear-x: search-panel.clear-x;
+    out property <length> search-clear-y: search-panel.clear-y;
+    out property <length> search-clear-width: search-panel.clear-width;
+    out property <length> search-clear-height: search-panel.clear-height;
     callback find-request;
     callback find-edited(string);
     callback find-navigate(int);
