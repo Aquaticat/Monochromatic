@@ -1,5 +1,5 @@
 // Lazy project navigation. Native code keeps filesystem paths outside display strings.
-import { ListView, Palette } from "std-widgets.slint";
+import { ScrollView, Palette } from "std-widgets.slint";
 
 export struct TreeEntry {
     label: string,
@@ -22,6 +22,7 @@ export component ProjectTree inherits Rectangle {
     callback navigate(string, int);
     callback shortcut(string, bool, bool, bool);
     private property <length> row-height: 48px;
+    private property <int> first-visible: max(0, floor(-view.content-y / root.row-height) - 1);
     background: Palette.background;
     forward-focus: tree-focus;
     accessible-role: navigation;
@@ -57,16 +58,24 @@ export component ProjectTree inherits Rectangle {
                 overflow: elide;
             }
         }
-        view := ListView {
+        view := ScrollView {
             vertical-stretch: 1;
+            content-width: self.visible-width;
+            content-height: max(self.visible-height, root.entries.length * root.row-height);
             accessible-role: tree;
             accessible-label: "Project directories and files";
             accessible-item-count: root.entries.length;
-            accessible-delegate-focus: root.focused-row;
+            accessible-delegate-focus: root.focused-row - root.first-visible;
 
-            for entry[index] in root.entries: Rectangle {
-                min-width: 48px;
-                min-height: 48px;
+            // Fixed-height windowing retains native ScrollView physics without ListView's random-seek rounding.
+            for slot in ceil(view.visible-height / root.row-height) + 2: Rectangle {
+                private property <int> index: root.first-visible + slot;
+                private property <TreeEntry> entry: index < root.entries.length ? root.entries[index] :
+                    { label: "", depth: 0, directory: false, expanded: false, selected: false, recency: "" };
+                visible: index < root.entries.length;
+                x: 0px;
+                y: index * root.row-height;
+                width: max(48px, view.visible-width);
                 height: root.row-height;
                 background: entry.selected ? Palette.selection-background : transparent;
                 border-width: tree-focus.has-focus && index == root.focused-row ? 1px : 0px;
