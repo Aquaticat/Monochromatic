@@ -1,7 +1,7 @@
 //! Routing of position requests to every server of the displayed document, and their retries.
 
-/// Sending one request to one server.
-use super::{Ask, Sent, Ticket, dispatch};
+/// Sending one request to one server, and the hint request for the window reported last.
+use super::{Ask, Sent, Ticket, dispatch, hint_ask};
 /// Exited servers are started again by an explicit position request.
 use crate::language::attach;
 /// Replies name the server process that answered.
@@ -89,9 +89,11 @@ pub(in crate::language) async fn position(
     return;
 }
 
-/// What: Send a superseded request again, if its text is still displayed and its server still runs.
+/// What: Send a request again, if its text is still displayed and its server still runs: a
+///       superseded one, or one of the worker's own that timed out.
 /// Why: A server answers `-32801` or `-32800` when its own state moved under the request; the
-///      same question is then valid a moment later.
+///      same question is then valid a moment later. A timed-out hint or diagnostics request has
+///      nobody who would ask again, so the worker does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -100,12 +102,26 @@ pub(in crate::language) async fn position(
 pub(in crate::language) fn retry(worker: &mut Worker, ticket: Ticket) {
     let current = worker.session.stamp() == Some(ticket.stamp);
     let record = worker.session.index_of_identity(&ticket.server);
-    let sent = match (current, record) {
-        (true, Some(index)) => dispatch(
+    // What: A hint request is asked again for the window reported last, which `hint_ask` reads;
+    //       every other request is asked again exactly as it was. `Some(...)` is the "value
+    //       present" variant of `Option`.
+    // Why: A timed-out request is sent again a whole request timeout later; by then the reader
+    //      may have scrolled, and hints for the earlier lines must not replace the current ones.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const ask = ticket.ask.kind === 'hints' ? hintAsk(worker.session) : ticket.ask;
+    // ```
+    let ask = match ticket.ask {
+        Ask::Hints { .. } => hint_ask(&worker.session),
+        other => Some(other),
+    };
+    let sent = match (current, record, ask) {
+        (true, Some(index), Some(wanted)) => dispatch(
             worker,
             index,
             ticket.number,
-            ticket.ask,
+            wanted,
             ticket.position,
             ticket.attempt,
         ),

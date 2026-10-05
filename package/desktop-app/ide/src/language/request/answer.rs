@@ -2,8 +2,8 @@
 
 /// Conversion of each answer against the ticket's text.
 use super::convert::{definition_outcome, hover_outcome, references_outcome};
-/// The request types this module completes.
-use super::{Answer, Ask, Payload, Ticket};
+/// The request types this module completes, and asking again for what a server still owes.
+use super::{Answer, Ask, Payload, Ticket, catch_up};
 /// Hint shaping.
 use crate::language::hints;
 /// Replies and their outcomes.
@@ -21,7 +21,9 @@ use helix_lsp::lsp;
 /// ```
 use std::time::Duration;
 
-/// How often a superseded request is sent again before it is reported as superseded.
+/// How often one request is sent again: a superseded one before it is reported as superseded,
+/// and a hint or pull-diagnostics request that was superseded or timed out before the server is
+/// recorded as owing the answer.
 const MAX_RETRIES: u32 = 3;
 
 /// Wait before a superseded position or hint request is sent again.
@@ -123,9 +125,75 @@ fn replied(
     });
 }
 
-/// What: Store a pull-diagnostics answer, or send the request again when the server asks for that.
+/// What: Mark whether one server owes the answer to a request the worker made on its own.
+///       `&Ticket` lends the request; `owes` is the new value of its flag.
+/// Why: An answer settles what was owed; a request that stayed unanswered through its retries
+///      is owed until the server is asked again. Position requests have a waiting reader, who
+///      is told the outcome, so nothing is recorded for them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function record(worker: Worker, ticket: Ticket, owes: boolean): void {
+///   const owed = worker.session.servers.find(row => same(row.identity, ticket.server))?.owed;
+///   if (owed && ticket.ask.kind === 'hints') owed.hints = owes;
+///   if (owed && ticket.ask.kind === 'pull') owed.pull = owes;
+/// }
+/// ```
+fn record(worker: &mut Worker, ticket: &Ticket, owes: bool) {
+    let Some(index) = worker.session.index_of_identity(&ticket.server) else {
+        return;
+    };
+    // `&mut` borrows the record's field so the assignment changes the stored value.
+    let owed = &mut worker.session.servers[index].owed;
+    match ticket.ask {
+        Ask::Hints { .. } => owed.hints = owes,
+        Ask::Pull => owed.pull = owes,
+        Ask::Position(_) => {}
+    }
+}
+
+/// What: Continue a failed request the worker made on its own for the displayed text. `wait`
+///       is "how long until it is sent again", or nothing for a failure that asking again
+///       cannot change. `&helix_lsp::Error` lends the failure for the log.
+/// Why: Nobody else asks for hints or pull diagnostics again, so a request that was superseded
+///      or timed out is sent again a bounded number of times. When those are used up the
+///      server owes the answer, and `request::catch_up` asks once more when it next sends
+///      anything. A failure the server stated itself is final for this text.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function unanswered(worker: Worker, ticket: Ticket, wait: number | undefined, error: Error): void {
+///   if (wait === undefined) return;
+///   if (ticket.attempt < MAX_RETRIES) worker.timer(wait, { type: 'retry', ticket: { ...ticket, attempt: ticket.attempt + 1 } });
+///   else record(worker, ticket, true);
+/// }
+/// ```
+fn unanswered(
+    worker: &mut Worker,
+    ticket: Ticket,
+    wait: Option<Duration>,
+    error: &helix_lsp::Error,
+) {
+    let Some(delay) = wait else {
+        tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, %error, "request failed; asking again would not change that");
+        return;
+    };
+    if ticket.attempt < MAX_RETRIES {
+        tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, attempt = ticket.attempt + 1, %error, "request stayed unanswered; sending it again");
+        let mut again = ticket;
+        again.attempt += 1;
+        worker.timer(delay, Internal::Retry(Box::new(again)));
+        return;
+    }
+    tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, %error, "request stayed unanswered through its retries; it is asked again when the server next sends anything");
+    record(worker, &ticket, true);
+}
+
+/// What: Store a pull-diagnostics answer, or send the request again when the server asks for
+///       that or stayed silent past its timeout.
 /// Why: The store fences the answer by stamp; a failure whose data says `retriggerRequest` is
-///      retried as Helix does (`helix-term/src/handlers/diagnostics.rs`), a bounded number of times.
+///      retried as Helix does (`helix-term/src/handlers/diagnostics.rs`), a bounded number of
+///      times. A timed-out request is sent again at once, because the wait already happened.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -136,6 +204,9 @@ fn pulled(
     ticket: Ticket,
     result: helix_lsp::Result<lsp::DocumentDiagnosticReportResult>,
 ) {
+    if result.is_ok() {
+        record(worker, &ticket, false);
+    }
     let store = &mut worker.session.diagnostics;
     match result {
         Ok(lsp::DocumentDiagnosticReportResult::Report(lsp::DocumentDiagnosticReport::Full(
@@ -170,20 +241,35 @@ fn pulled(
                 }),
                 _ => false,
             };
-            let current = worker.session.stamp() == Some(ticket.stamp);
-            if wants_retry && current && ticket.attempt < MAX_RETRIES {
-                let mut again = ticket;
-                again.attempt += 1;
-                worker.timer(PULL_RETRY_DELAY, Internal::Retry(Box::new(again)));
-            } else {
-                tracing::debug!(server = %ticket.server.name, %error, "pull diagnostics failed");
+            if worker.session.stamp() != Some(ticket.stamp) {
+                tracing::debug!(server = %ticket.server.name, %error, "pull diagnostics failed for text that is no longer displayed");
+                return;
             }
+            // What: Pick the wait before the request is sent again. `matches!` tests the error's
+            //       variant; `Some(...)` is the "value present" variant of `Option`.
+            // Why: The server names its own wait by asking for a retrigger; a timeout already
+            //      waited, so that request goes out at once; every other failure is final.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const wait = wantsRetry ? PULL_RETRY_DELAY : error instanceof TimeoutError ? 0 : undefined;
+            // ```
+            let wait = if wants_retry {
+                Some(PULL_RETRY_DELAY)
+            } else if matches!(error, helix_lsp::Error::Timeout(_)) {
+                Some(Duration::ZERO)
+            } else {
+                None
+            };
+            unanswered(worker, ticket, wait, &error);
         }
     }
 }
 
-/// What: Store one server's hints for the displayed text, or retry a superseded request.
-/// Why: Hints are latest-value state: an answer for another revision is simply dropped.
+/// What: Store one server's hints for the displayed text, or send a superseded or timed-out
+///       request again.
+/// Why: Hints are latest-value state: an answer for another revision is simply dropped, and so
+///      is its failure, because the reload that replaced the text asked afresh.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -207,6 +293,7 @@ fn hinted(
     };
     match result {
         Ok(found) => {
+            record(worker, &ticket, false);
             let shaped = hints::shape(
                 found.unwrap_or_default(),
                 &ticket.text,
@@ -222,14 +309,22 @@ fn hinted(
             worker.session.hint_lines = (first_line, last_line);
         }
         Err(error) => {
-            let superseded = matches!(classify_error(&error), Failure::Superseded);
-            if superseded && ticket.attempt < MAX_RETRIES {
-                let mut again = ticket;
-                again.attempt += 1;
-                worker.timer(RETRY_DELAY, Internal::Retry(Box::new(again)));
-            } else {
-                tracing::debug!(server = %ticket.server.name, %error, "inlay hint request failed");
-            }
+            // What: Pick the wait before the request is sent again, by the class of the failure.
+            // Why: A superseded request is valid again a moment later. A timed-out request
+            //      already waited the server's whole request timeout, so it goes out at once;
+            //      without this the hints of the displayed text stay missing until the reader
+            //      scrolls or the file changes again. A failure the server stated is final.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const wait = superseded ? RETRY_DELAY : timedOut ? 0 : undefined;
+            // ```
+            let wait = match classify_error(&error) {
+                Failure::Superseded => Some(RETRY_DELAY),
+                Failure::Failed(RequestFailure::Timeout) => Some(Duration::ZERO),
+                Failure::Failed(_) => None,
+            };
+            unanswered(worker, ticket, wait, &error);
         }
     }
 }
@@ -266,13 +361,27 @@ fn is_server_answer(payload: &Payload) -> bool {
 /// ```
 pub(in crate::language) fn finish(worker: &mut Worker, answer: Answer) {
     let Answer { ticket, payload } = answer;
-    if is_server_answer(&payload)
+    let answered = is_server_answer(&payload);
+    if answered
         && worker
             .session
             .diagnostics
             .answered(&ticket.server, ticket.stamp)
     {
         tracing::debug!(server = %ticket.server.name, "diagnostics hold ended by the server's first answer after the reload");
+    }
+    // What: An answer the server produced shows that it processes its input, so it is asked
+    //       again for what it still owes. `if let Some(x) = ...` runs the block only when the
+    //       server's record exists.
+    // Why: This runs before the answer itself is handled, so a request whose last retry fails
+    //      here is not asked again by its own failure, only by a later message.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (answered && index !== undefined) catchUp(worker, index);
+    // ```
+    if answered && let Some(index) = worker.session.index_of_identity(&ticket.server) {
+        catch_up(worker, index);
     }
     // `clone` copies the root path so the worker can be changed while targets are converted.
     let root = worker.root.clone();

@@ -391,6 +391,9 @@ fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
     );
 }
 
+/// Request timeout of the scripted server in the hint test, in seconds.
+const HINT_TIMEOUT_SECONDS: u64 = 3;
+
 /// Hints are shaped for drawing, tagged with their text, and asked for again after a reload.
 #[test]
 fn inlay_hints_are_shaped_and_follow_reloads() {
@@ -401,13 +404,17 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[], HINT_TIMEOUT_SECONDS),
+    );
     probe.open(&root.join("main.scripted"), "plain text line\nsecond\n");
     probe.until_ready();
     let window = HintWindow {
         first_line: 0,
         visible_lines: 20,
     };
+    let asked = std::time::Instant::now();
     assert!(
         probe
             .worker
@@ -436,11 +443,19 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
             .as_ref()
             .is_some_and(|hints| return hints.stamp == stamp);
     });
+    // Exactly one request per displayed text. Only a request the server left unanswered for its
+    // whole timeout is sent again, so each further request needs one more elapsed timeout; on a
+    // machine that did not stall for that long the count is exactly two.
+    let timeouts = usize::try_from(asked.elapsed().as_secs() / HINT_TIMEOUT_SECONDS);
+    let allowed = 2 + timeouts.expect("small count");
     let requests = support::received(&support::report(&root))
         .iter()
         .filter(|method| return method.as_str() == "textDocument/inlayHint")
         .count();
-    assert_eq!(requests, 2);
+    assert!(
+        (2..=allowed).contains(&requests),
+        "{requests} hint requests were sent where at most {allowed} can follow from timeouts"
+    );
 }
 
 /// Versioned pushes are exact; they replace each other across reloads without any hold.
