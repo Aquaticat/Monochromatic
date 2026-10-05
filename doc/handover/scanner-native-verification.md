@@ -647,7 +647,13 @@ unless a fuzz path is named.
   image `sha256:9270213fb34e7d73af29f3f029033abd0bee97f07a38fe89693e3ddc367cbb95`,
   exit `0` with no warning.
 - After the fix,
-  `test:container` on the same fixed tree before the test split:
+  `lint:clippy:container` on the final tree with the split tests:
+  `clippy-tHewn4`,
+  snapshot `48ead60d3c715575d332a496ef0bda2714dce903cdd44c7b3db81ad90f4408c7`,
+  image `sha256:167b707f83ff9e89580ad4fce5a391ec3a566b1edd2563e31cdd64ed841ad06f`,
+  exit `0` with no warning.
+- After the fix,
+  `test:container` on the fixed tree before the test split:
   `test-nUgm3V`,
   snapshot `b2736ad4c2925e1afa9592700f2de8929af20ccc6eeceae265704889ec295ac8`,
   image `sha256:8cffcf36eee5b78652ef269a43883f66d54608baf3f69bcbcc8f546996d99f18`,
