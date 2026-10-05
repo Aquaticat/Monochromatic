@@ -195,9 +195,15 @@ a 48dp Back target and a one-line title in a 72dp bar.
 The unfolded arrangement reuses the Search page's deck host and folder
 browser on the left;
 the cover page is full width.
-The complete unit task and APK build passed.
-APK SHA-256 is
-`2faeddc682baf92aaf3d0bfcb4f5c53d4c1d29dc6d2803b2fe46e40513305ee1`.
+Prototype `6bc622ff7` then makes each measured element report its unclipped
+rectangle beside its visible one,
+so a row scrolled partly out of view is not judged shorter than it is.
+The complete unit task and APK build passed for that commit.
+The current APK SHA-256 is
+`40d0b0e4ab592e920372be8d4771fb9381e4e885501b54f575ac3db567a11f0d`;
+the first host build,
+`2faeddc682baf92aaf3d0bfcb4f5c53d4c1d29dc6d2803b2fe46e40513305ee1`,
+was never installed.
 The merged manifest disables the production activity and services,
 removes WorkManager initialization and exports `SettingsPaneActivity`.
 The player's own Settings button is not wired;
