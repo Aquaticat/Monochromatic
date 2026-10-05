@@ -184,6 +184,11 @@ fn traversal(arena: &Arena<Mdast>, source: &str, bom: usize) -> Result<Traversal
     });
 }
 
+/// Direct native-arena guard controls, independent of what malformed text the parser happens to emit.
+#[cfg(test)]
+#[path = "markdown_traversal_tests.rs"]
+mod traversal_tests;
+
 /// What: Parse with the exact accepted feature set and expose immutable views.
 /// Why: Defaults in the dependency enable unwanted math and omit TOML frontmatter.
 ///
