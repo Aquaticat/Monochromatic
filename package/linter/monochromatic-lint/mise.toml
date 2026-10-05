@@ -313,3 +313,7 @@ if (result.status !== 0) throw new Error('Processor snapshot Clippy failed: ' + 
 [tasks.run]
 description = "Run the debug build of monochromatic-lint from this package directory (pass paths and flags after --)"
 run = "cargo run --quiet --bin monochromatic-lint --"
+
+[tasks."test:processors:slice"]
+description = "Run only the processor tests in the tagged mount-free, network-disabled 2 GiB / 2 CPU snapshot"
+run = "node bin/test-container.mjs processors"
