@@ -177,35 +177,37 @@ fn read_header_line(stream: &mut dyn BufRead) -> Result<Vec<u8>, CandidateError>
 }
 
 /// What: Parse a decimal object size. `Option<usize>` is "a size or nothing".
-///       `.checked_mul(..)` and `.checked_add(..)` return `None` instead of wrapping on
-///       overflow; a trailing `?` returns that `None` to our caller.
 /// Why:  The size decides how many content bytes are consumed, so only Git's canonical
 ///       form is accepted: digits only, no sign, no leading zero, and no overflow.
+///       The standard parser does the arithmetic, so no hand-written digit loop can
+///       be off by one; it alone would also accept a leading `+`, which the digit
+///       check refuses first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function parseSize(digits: string): number | undefined;
 /// ```
 fn parse_size(digits: &[u8]) -> Option<usize> {
-    if digits.is_empty() {
+    if digits.len() > 1 && digits[0] == b'0' {
         // `None` is the "absent" variant.
         return None;
     }
-    if digits.len() > 1 && digits[0] == b'0' {
+    // `.iter().all(u8::is_ascii_digit)` asks the standard digit test about every byte.
+    if !digits.iter().all(u8::is_ascii_digit) {
         return None;
     }
-    let mut size: usize = 0;
-    for byte in digits {
-        if !byte.is_ascii_digit() {
-            return None;
-        }
-        // `usize::from(u8)` widens one digit's value; `*byte - b'0'` is that value.
-        size = size
-            .checked_mul(10)?
-            .checked_add(usize::from(*byte - b'0'))?;
-    }
-    // `Some(...)` is the "present" variant.
-    return Some(size);
+    // What: `std::str::from_utf8(..)` views the bytes as text; `.ok()?` returns `None`
+    //       when that fails. `.parse::<usize>()` reads a number; `.ok()` turns a failure
+    //       (empty text, or a value too large for `usize`) into `None`.
+    // Why:  An empty field and an overflowing one are refused by the same parser that
+    //       accepts every canonical size.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const size = Number(text); return Number.isSafeInteger(size) ? size : undefined;
+    // ```
+    let text: &str = std::str::from_utf8(digits).ok()?;
+    return text.parse::<usize>().ok();
 }
 
 /// Map Git's object type word to a kind; any other word is not a header this layer accepts.
