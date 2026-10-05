@@ -94,19 +94,24 @@ Recorded native settings were restored and owned runtimes are absent.
 Real analysis,
 native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
-The [Settings viewer](questions/settings-pane.html) presents 32 freshly
-inspected native views of D11's accepted pane across both panels,
+The [Settings viewer](questions/settings-pane.html) presents 24 freshly
+inspected native views of the accepted Settings pane across both panels,
 themes and text scales,
-with the closed player and an end-of-column view wherever the column scrolls.
+with the closed player.
+D84 removed D11's true-peak analysis row,
+because analysis is automatic and not optional,
+and D85 removed the closing sentence,
+so the pane holds two switch rows.
 [Its evidence boundary](evidence/settings-pane-boundaries.md) records the
 adopted Fold placement,
-the first build that inspection rejected,
+the withdrawn three-row publication,
 native row toggles,
 both Back paths and an offline replay of those inputs.
-At 200% text the column scrolls on both panels,
-and on the unfolded panel `Resume where I left off` leaves `off` alone on
-its second line;
-the viewer states both rather than deciding them.
+Nothing scrolls at either text size,
+most of the page below the two rows is empty,
+and on the unfolded panel at 200% text `Resume where I left off` leaves
+`off` alone on its second line;
+the viewer states these rather than deciding them.
 Real preferences,
 native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.

@@ -2,24 +2,27 @@
 
 ## Purpose and accepted pane
 
-This design-only study carries D11's accepted Settings pane into the current
+This design-only study carries the accepted Settings pane into the current
 Fold player and its light/dark schemes.
-It does not reopen Search,
-the D27 first-run answers,
-or D81's template editor,
+It does not reopen Search or D81's template editor,
 whose fields and controls remain undesigned (section 11e of
 `open-questions.md`).
 
 D11 selects `candidates/settings-a.dc.html`:
 three flat switch rows and a closing sentence saying the pane is short.
 D12 removed settings-b's analysis-status row,
-and D47 superseded the command bar together with D21's fourth row,
-so the study draws exactly three rows:
-`Strip common prefixes from filenames`,
-`Resume where I left off` and `Analyse true peak in the background`.
-Scene `accepted` is the mock's state:
-the first two switches on and the third off.
-Scene `inverse` puts every switch in its other position.
+and D47 superseded the command bar together with D21's fourth row.
+D84 (2026-10-05) then removed settings-a's third row,
+`Analyse true peak in the background`:
+true-peak analysis is automatic and not optional,
+so Settings provides no analysis switch.
+D85 (2026-10-05) removed the closing sentence.
+The study therefore draws exactly two rows,
+`Strip common prefixes from filenames` and `Resume where I left off`,
+and nothing after them.
+Scene `accepted` is the mock's state for those rows:
+both switches on.
+Scene `inverse` puts both switches off.
 
 The mock is an 860 by 600px desktop window.
 D49 makes the Fold panels the layout source,
@@ -52,9 +55,9 @@ the viewer says how to object to it.
 ## Isolated artifact and input owner
 
 The current source is prototype commit
-`483f16cdd4c0bda6269ae2e4666732db6407ce75`,
+`67eae28d1f31689bcc9f132e4db97ec87426e572`,
 with APK SHA-256
-`85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50`.
+`5f3a23911f2a5c32859a78e533704298bfb5afa042cf968f4fc82691ef35e9ab`.
 `SettingsPaneActivity` extends `ComponentActivity`,
 not the production activity.
 Its merged manifest disables production activity/services and removes
@@ -62,19 +65,24 @@ WorkManager auto-initialization.
 The player's own Settings button is not wired;
 the page opens from an authored scene or one explicit debug event.
 
-Prototype `af793e436` adds the immutable three-switch record,
-D11's row order and copy and one checked toggle per row.
+The immutable record holds two switch values,
+the order and copy of D11's remaining rows and one checked toggle per row.
+The removed analysis toggle is rejected like any unknown event.
 Its 12 pure fixture tests passed,
 and fresh unknown-scene,
 copy-drift,
 row-position-swap,
-unknown-event and cross-row-toggle mutants each failed their intended test
-before exact restoration.
+unknown-event,
+cross-row-toggle and reinstated-analysis-toggle mutants each failed their
+intended test before exact restoration.
+Both authored scenes set the two switches equal,
+so the row-position test also checks a mixed record;
+only that record tells the rows' fields apart.
 
-## Superseded first build
+## Superseded builds and interrupted visits
 
-The first owned visit captured APK
-`40d0b0e4ab592e920372be8d4771fb9381e4e885501b54f575ac3db567a11f0d`
+The first owned visit captured a three-row build,
+APK `40d0b0e4ab592e920372be8d4771fb9381e4e885501b54f575ac3db567a11f0d`,
 and passed every measured rule and input check.
 Fresh inspection then rejected it.
 In dark,
@@ -86,42 +94,61 @@ while the accepted Search page is hosted inside a region that does.
 Each separator was also a pixel different across the fold connector,
 because the opaque row fill began after the connector inset.
 Measured rectangles could not show either defect.
-The current build fixes all three;
-the first build's captures stay private and are not publication inputs.
+Its captures stay private.
 
-A second visit on the current build failed before its first capture,
-when a 15 s bound on `podman inspect` expired under host load.
-It restored every recorded field,
-its owner exited `0`,
-and it supplies no evidence.
+Prototype `483f16cdd4c0bda6269ae2e4666732db6407ce75`,
+APK `85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50`,
+fixed those defects and was inspected and published with three rows and the
+closing sentence.
+D84 and D85 withdrew that publication;
+its files were replaced by the current cohort and remain in git history.
+
+Some visits supplied no evidence.
+The second,
+on the withdrawn build,
+and the fifth both met a 15 s `podman inspect` bound that expired under host
+load;
+both bounds are now 120 s.
+The fourth stopped when the guest killed a hierarchy dump during a startup
+dialog.
+The fifth also stopped a capture because a late configuration change
+recreated the host after its launch;
+every launch is now watched and relaunched within a bound,
+and each capture records the attempts its launch used.
+The sixth captured and was inspected on both panels,
+then its emulator crashed in the GL translator during the input stage,
+before restoration;
+a recovery boot restored that visit's own recorded baseline.
+Each of those visits ended with every recorded field restored and no matching
+runtime remaining.
 
 ## Native fit
 
-The third visit captured 32 views:
+The seventh visit captured 24 views:
 both panels,
 light and dark,
 100% and 200% text,
-the closed player,
-both switch scenes,
-and an end-of-column view of each scene wherever the column scrolls,
-eight in all.
+the closed player and both switch scenes.
 At the measured 390dpi density the header is 176px high,
 the Back target 117 by 117px and every switch 127 by 78px.
-Rows are 216 to 265px high at 100% text and 435 to 720px at 200%,
+Rows are 216px high at 100% text and 435 to 629px at 200%,
 all above the 117px floor.
 No row title,
-supporting line,
-page title or closing sentence reports overflow.
+supporting line or page title reports overflow.
 On the inner panel no title,
-supporting line,
-switch or closing sentence starts inside the fold connector.
+supporting line or switch starts inside the fold connector.
 Neither a switch position nor the theme changes any measured rectangle.
 
-At 100% text the whole column,
-closing sentence included,
-fits on both panels.
-At 200% it scrolls by 787px on the inner panel and 318px on the cover,
-and the closing sentence is not wholly shown until the column is scrolled.
+No column scrolls on either panel at either text size,
+and both rows are wholly shown above the navigation area.
+Below the last row's separator,
+1324px of empty page remain on the inner panel at 100% text and 589px at
+200%;
+on the cover,
+1599px and 967px.
+The viewer's builder re-measures from the images that this region is one
+uniform colour,
+so nothing is drawn where the closing sentence used to be.
 Rectangles are device layout reports,
 not glyph bounds or accessibility acceptance.
 
@@ -134,8 +161,7 @@ Each toggle changed pixels only inside its own row,
 redrew its switch,
 and left every rectangle unchanged;
 toggling back restored the app pixels exactly.
-At 200% text on the inner panel the third row was reached by scrolling to
-the column end first.
+No row needed scrolling to be reached.
 The Back target closed the page once,
 and the closed player matched a freshly launched closed player in geometry and
 app pixels.
@@ -150,25 +176,27 @@ Opening Settings changes about 79,000 of 2,011,644 left-half pixels at 100%
 text and about 70,000 at 200%:
 the folder browser reflows narrower,
 as it does for the Search page.
-The live input matrix was recomputed offline from its 90 retained captures,
+The live input matrix was recomputed offline from its 72 retained
+captures,
 and every field of its manifest was reproduced.
 
 ## Fresh inspection
 
-All 16 light/dark full-region pairs were inspected on 2026-10-05,
+All 12 light/dark full-region pairs were inspected on 2026-10-05,
 after every crop was re-derived from its private raw capture with a
 changed-byte control.
-An enlarged detail confirmed that each separator has the same colour inside
-the fold connector as beyond it.
+An enlarged detail confirmed that the last separator has the same colour
+inside the fold connector as beyond it.
 In dark the header and deck text are drawn in the theme's light text colour,
-as on the accepted Search page.
+as on the accepted Search page,
+and the page below the rows is true black.
 
-Four observations are recorded for the human,
+These observations are recorded for the human,
 not turned into a ballot:
 at 200% text on the inner panel `Resume where I left off` leaves `off`
 alone on its second line;
-at the start of a scrolling column the last visible line runs under the
-gesture handle;
+with two rows most of the page below them is empty,
+most visibly on the cover at 100% text;
 opening Settings narrows the left folder browser;
 and the 24dp Back arrow reads small beside the 200% title.
 
@@ -178,9 +206,12 @@ Every switch position is authored debug state.
 No preference is stored,
 no filename prefix is stripped,
 no session is restored and no analysis runs.
-Whether the third row reflects a D27 first-run answer,
-and whether the closing sentence survives D81's template entry,
-stay with the 11e design round.
+D84 makes true-peak analysis automatic and not optional;
+when it runs is not decided,
+and this study neither draws nor exercises it.
+D81 places template configuration in Settings;
+no template entry is drawn,
+and that stays with the 11e design round.
 No new IME,
 TalkBack or keyboard-default experiment is included.
 
@@ -202,6 +233,14 @@ Published crops start at the measured application root,
 keep exact RGB,
 are opaque 8-bit PNGs with essential chunks only,
 and show only authored labels and the anonymous gesture handle.
+One image,
+the inner closed player in light at 100% text,
+shows no gesture handle in the system's navigation strip.
+It was the first capture of the visit;
+the same state captured later in the input stage shows the handle,
+and the cause was not established.
+That strip is below the measured application root and no rule or comparison
+reads it.
 
 Only the freshly recorded fields were restored and read back:
 font scale,
@@ -209,7 +248,7 @@ night mode,
 device state,
 accessibility state and services,
 display geometry and the system image fingerprint.
-The second readback matched every field.
+The first readback matched every field.
 The owner's exit status `0` was recorded by its own parent process,
 and no matching container or emulator process remained.
 Original AVDs and library data remain untouched.
@@ -217,38 +256,41 @@ Original AVDs and library data remain untouched.
 ## Publication and consumer verification
 
 [The witness manifest](../questions/evidence/settings-pane-witnesses.json)
-and its 32 PNGs carry each view's measured rectangles,
+and its 24 PNGs carry each view's measured rectangles,
 visible parts and line counts.
 [The native verification record](../questions/evidence/settings-pane-native-verification.json)
 holds the input contexts,
 their replay,
-the superseded build,
+the superseded builds,
+the interrupted visits,
 fixture reports,
 lint totals and restoration.
-Publication preflights rejected seven changed inputs before any public write.
+The publisher removed the withdrawn three-row files only after each matched
+the hash its own witness file recorded.
+Publication preflights rejected eight changed inputs before any public write.
 The [offline viewer](../questions/settings-pane.html) states the measured
 findings from that data and the by-eye observations separately.
 
-Its builder holds 105 named rules,
+Its builder holds 99 named rules,
 one per line.
 Validation re-measures drawn switch positions,
-header contrast and the retained left half from the embedded images;
+header contrast,
+the empty page after the rows and the retained left half from the embedded
+images;
 the left half must match the published accepted Search images.
-Run on the rejected first build's crops,
-those pixel rules reject it by name.
-The consumer test rejects 142 changed inputs,
+The consumer test rejects 135 changed inputs,
 at least one per rule.
-Each of the 105 rules and the script-data encoding was deleted once in a
-disposable copy,
+Each of the 99 rules and the script-data encoding was deleted once in
+a disposable copy,
 and the test failed on that rule by name every time.
 The pixel rules decode the embedded PNGs in process;
-that decoder matched ImageMagick byte for byte on all 36 images it reads.
+that decoder matched ImageMagick byte for byte on all 28 images it
+reads.
 
 Four offline Chromium desktop/mobile light/dark contexts decoded and opened
-all 32 previews,
+all 24 previews,
 exercised every panel,
 scale and theme combination,
-the end-of-column availability and its scroll note,
 optional blank observations,
 inert adversarial notes,
 stale-reply invalidation and modal zoom/pan/reset/focus.

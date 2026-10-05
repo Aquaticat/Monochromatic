@@ -12,46 +12,86 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
-## Handoff: Settings pane publication complete (2026-10-05)
+## Handoff: two-row Settings publication complete (2026-10-05)
 
 Purpose:
-tell the next session what the D11 Settings study left behind and what
-remains of the light-surface queue.
+tell the next session what the Settings study left behind after the human
+withdrew part of D11,
+and what remains of the light-surface queue.
 The plan is `doc/planning/music-player-light-settings.md`;
 the scope and limits are in `evidence/settings-pane-boundaries.md`.
 
+### What the human decided
+
+D84:
+true-peak analysis is automatic and not optional,
+so Settings provides no analysis switch.
+This removes D11's third row and supersedes D27's ask-before-analysing
+prompt and its four answers.
+D27's automatic opening of an available system music library stands,
+D12's Re-analyse on the track menu stands,
+and D26's scan bar stands.
+Reading the scan bar's Pause/Resume as a temporary pause that does not make
+analysis optional is the recording session's interpretation,
+not the human's statement.
+When analysis runs is not decided.
+
+D85:
+the Settings pane has no closing sentence.
+
+Settings keeps `Strip common prefixes from filenames` and
+`Resume where I left off`;
+the human confirmed that only the analysis switch goes.
+
 ### What is done
 
-`questions/settings-pane.html` presents 32 freshly inspected native views of
-D11's three switch rows and closing sentence:
+`questions/settings-pane.html` presents 24 freshly inspected native views of
+those two rows:
 both Fold panels,
 light and dark,
 100% and 200% text,
-the closed player,
-both switch scenes and an end-of-column view wherever the column scrolls.
-The artifact is prototype `483f16cdd4c0bda6269ae2e4666732db6407ce75`,
+the closed player and both switch scenes.
+The artifact is prototype `67eae28d1f31689bcc9f132e4db97ec87426e572`,
 APK SHA-256
-`85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50`.
+`5f3a23911f2a5c32859a78e533704298bfb5afa042cf968f4fc82691ef35e9ab`.
+The earlier three-row publication was withdrawn and its evidence files
+replaced in one commit;
+they remain in git history.
 
+Nothing scrolls on either panel at either text size.
 Row toggles,
 the Back target,
 one authored reopen and system Back passed in all eight environments,
 each returning to an unchanged player,
-and were replayed offline from 90 retained captures.
+and were replayed offline from 72 retained captures.
 The guest's recorded fields were restored,
 the owner exited `0` and no matching runtime remains.
-The viewer's 105 rules,
-142 rejected consumer inputs,
+The viewer's 99 rules,
+135 rejected consumer inputs,
 per-rule deletion proofs,
 publication preflights and four-context offline Chromium checks passed;
 `questions/evidence/settings-pane-review-verification.json` binds them.
-`verify-first-run-final-documents.ts` checks this artifact too.
+A pixel rule confirms that nothing is drawn between the last row and the
+navigation area.
 
-The first build drew the dark header and deck text black;
-fresh inspection rejected it,
-and the viewer's pixel rules now reject those images by name.
-A second visit failed on a short `podman inspect` bound under host load and
-supplied no evidence.
+### What went wrong on the way
+
+The emulator was unreliable under host load.
+The fourth,
+fifth and sixth visits each failed:
+a killed hierarchy dump during a startup dialog,
+a late configuration change that recreated the host,
+and an emulator segmentation fault in the GL translator.
+The sixth crashed before restoration and left stale AVD lock files naming a
+reused process ID,
+so the next boot was refused as a second instance.
+With no emulator or container running,
+those locks were removed from the owned AVD copy and a recovery boot restored
+that visit's own baseline.
+`restore-stop-fresh-fold.ts` now allows 120 s for `podman inspect`,
+and every Settings launch is watched and relaunched within a bound if the
+host is created again.
+The seventh visit supplied every published capture and input check.
 
 ### What the human may want to look at
 
@@ -59,26 +99,36 @@ The Fold placement was adopted from D50,
 D51 and existing Settings behaviour,
 not separately chosen;
 the viewer's optional observations box is the way to object.
-At 200% text the column scrolls on both panels,
-`Resume where I left off` leaves `off` alone on its second line on the inner
-panel,
-the last visible line sits under the gesture handle until scrolled,
+With two rows most of the page below them is empty,
+most visibly on the cover at 100% text.
+At 200% text on the inner panel `Resume where I left off` leaves `off` alone
+on its second line,
 and the 24dp Back arrow reads small beside the title.
 None of these was turned into a ballot.
 
+One published image,
+the inner closed player in light at 100% text,
+shows no gesture handle in the system's navigation strip.
+It was the first capture of the visit and the cause was not established;
+the viewer and the boundary document say so.
+
 ### What remains
 
-Every light surface in the original queue now has its own inspected native
-study.
+The published first-run study still says
+`After opening a library, choose whether to analyse it.`,
+which D84 contradicts.
+`questions/first-run-access.html` is bound by hash in its review verification,
+so it was not edited;
+`evidence/first-run-access-boundaries.md`,
+`open-questions.md` and `candidates.md` carry dated notes instead.
+Correcting that study needs a rebuild and a fresh verification record.
+
 The next design item is D81's template editor (`open-questions.md` 11e):
 its fields,
 grammar,
 editor controls,
 preview and validation are undesigned and need the human's direction before
 anything is built.
-Two Settings questions wait for that round:
-whether the third row reflects a D27 first-run answer,
-and whether the closing sentence survives a template entry.
 No production implementation is authorized.
 
 ## Handoff: scan-F publication complete, Settings pane next

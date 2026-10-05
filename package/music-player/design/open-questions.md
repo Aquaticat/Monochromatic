@@ -57,11 +57,13 @@ D26 scan-F study and verified 32-view viewer at
 `questions/scan-indicator.html`,
 without real analysis,
 revised consent defaults or a scan-policy ballot.
-`doc/planning/music-player-light-settings.md` records the completed D11
-Settings-pane study and verified 32-view viewer at
+`doc/planning/music-player-light-settings.md` records the completed
+Settings-pane study and verified 24-view viewer at
 `questions/settings-pane.html`,
 without stored preferences,
 a template entry or a Settings-template ballot.
+It draws D11's two remaining rows:
+D84 removed the true-peak analysis row and D85 the closing sentence.
 The template editor design remains an independent queue item.
 Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
@@ -1145,17 +1147,19 @@ Native Pause/Resume and authored progress/completion checks are recorded
 separately in `evidence/scan-indicator-boundaries.md`,
 with the inspected cover ellipsis and large-text Resume clearance stated
 as observations.
-D11's Settings pane now has its own 32-view light/dark native publication
-in `questions/settings-pane.html`.
+The Settings pane now has its own 24-view light/dark native publication
+in `questions/settings-pane.html`,
+with two rows after D84 and D85.
 Row toggles,
 the Back target,
 system Back and the return to an unchanged player are recorded separately
 in `evidence/settings-pane-boundaries.md`.
-The 200% text scroll,
+The mostly empty page below the two rows,
 the orphaned `off` and the narrowed left browser are stated as observations.
-Whether the third row reflects a D27 first-run answer,
-and whether the closing sentence survives D81's template entry,
-stay with the 11e design round.
+D84 answered whether the third row reflects a D27 first-run answer by
+removing the row,
+and D85 removed the closing sentence;
+only the template entry itself stays with the 11e design round.
 
 ### 11e. Custom display templating: Settings requirement settled, details open
 
