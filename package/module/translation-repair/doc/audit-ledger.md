@@ -6054,9 +6054,13 @@ All cased in the vote-change driver file:
 the not-carried refusal
 (a verdict that never claimed a rendering),
 the evidence-not-locatable refusal
-(the cut emptying the translation),
+(the cut emptying the translation;
+renamed `cut-left-nothing` on 2026-10-05,
+ledger B149),
 the no-room decoy
 (a quoted rendering filling all but one character,
+which left two,
+ledger B150,
 the no-room reading riding its row),
 and the held pair through a client whose vote follows the quote
 (the wire's rule that a `none` claim carries an empty quote
@@ -21657,6 +21661,631 @@ Recurrence:
 `mistake-prevention.md`,
 "Globals a case replaces".
 
+### B141: a refinement recheck nobody answered read as passed
+
+Red in `9c2eb03d9`,
+fixed in `e0151b92c`.
+
+Found by the independent review of the trial's cases (report 4,
+F1),
+behind a case asserting `refine-recheck-passed` for a round in which no checker was heard.
+`retainsResolvedIssues` rolled a rewrite back over an open issue only where a tally said `worse`,
+and a round with no ballot has no tally saying anything,
+so it returned `refine-recheck-passed` and the rewrite shipped.
+It read neither `heardCheckers` nor the checker stage's findings,
+so a round every checker answered `not-fixed` and a round nobody answered left one findings list.
+On a bench of three,
+the floor `assertCheckerQuorumReachable` holds a run to,
+one checker heard of three passed the recheck by itself.
+The stage's `stage-quorum-unmet (checker 0/3)` was dropped with the rest of its findings,
+so the settlement passed `everyStageHeard` and was written to the refine cache.
+A confirmed issue in such a round did roll back,
+under `refine-rolled-back`,
+which names it as an issue the rewrite broke,
+and that was cached too.
+Ledger L11 rules that a rewrite ships only after a checker round;
+a round short of its quorum is none.
+
+The fix:
+the recheck reads the checker stage's findings through `silentStagesOf` (`stage-silence.ts`),
+the reader the caches use,
+and a round short of quorum rolls the slice back whatever its ballots say,
+under `refine-recheck-unheard (<heard> of <configured> checkers heard)`,
+decided before any issue is read,
+so an outage is never recorded as an issue the rewrite broke.
+The checker stage's findings now ride on all three verdicts,
+as they do on the accuracy lane's outcome (`repair-chunk.ts`),
+so a lost voice or a missing check shows on a pass and on a rollback,
+and a round short of quorum keeps its settlement out of the cache.
+Rolling back follows the package's gates between a new text and a standing one:
+the consolidation gate and the polish gate each ship the standing text unless two ballots name the new one.
+Decided for quality under the owner's standing directive and open to veto;
+the alternative ships the rewrite under the unheard finding.
+The gate moved to `refine-recheck.ts` for the file-length cap,
+with its cases in `refine-recheck.unit.test.ts`.
+
+Measured on the built package with a scripted bench of three:
+with the unfixed gate,
+none heard and one heard each gave `refine-recheck-passed (1 issue)`,
+shipped the rewrite and passed `everyStageHeard`;
+with the fix both roll back under `refine-recheck-unheard` and fail `everyStageHeard`.
+
+Left as it was,
+each shown by a probe:
+a damage probe that hears no prober still ships the rewrite,
+under `stage-quorum-unmet (introduced-defect-probe ...)` and uncached;
+and a round that met its quorum counts an open issue no heard checker ruled on as passed,
+now beside one `missing-check` finding a checker.
+
+Cache:
+no version moved.
+A record written at refine version 5 by the unfixed gate could hold a rewrite shipped on a round short of quorum,
+and would resume as it is;
+none exists.
+`cache-account-audit --runs-under` over the agent runs on 2026-10-05 counted 13,714 slice-cache records
+under 391 runs directories,
+the newest written at 04:26 UTC on 2026-09-27,
+before every cache version's current value was set;
+the account is in `REFINE_CACHE_VERSION`'s TSDoc (`refine-slice-key.ts`).
+
+Recurrence:
+`mistake-prevention.md`,
+"Which seats a quorum counts":
+a gate that passes on "nobody objected" first reads that enough voices answered,
+through the stage's own account,
+and carries that stage's findings with its verdict.
+
+### B142: a refiner's rewrite the resolver dropped left no finding
+
+Red in `9c2eb03d9`,
+fixed in `e0151b92c`.
+
+Noted by the independent review (report 4,
+weak assertions) behind the trial's case for a rewrite naming paragraph 99;
+the behaviour predates the trial.
+`resolveRefineRewrites` (`refine-wire.ts`) records `refine-unknown-paragraph (<n>)` for a rewrite naming a paragraph the sheet never showed,
+`refine-duplicate-paragraph (<n>)` for a second rewrite of one paragraph,
+and each invisible variant it folds.
+`runRefineStage` read the resolution's operations alone,
+so those findings reached neither the stage's findings nor a log line,
+and the stage reported `refine-candidates (1/1 heard, 0 proposing)`,
+which is what it reports for a refiner that proposed nothing.
+A reply rewriting one paragraph twice and naming a missing one shipped its first rewrite with no trace of the other two.
+The editor lane keeps its resolver's findings (`buildEditorCandidates`,
+`editor-candidates.ts`).
+
+The fix:
+the stage resolves each heard reply once and carries the resolver's findings into its own,
+between the gather's and `refine-candidates`,
+each credited to its rewriter as the editor lane's are,
+in roster order,
+and logged.
+The consolidation polish round calls the same stage and gains the same findings.
+Two cases pin it:
+the dropped rewrite with the stage's whole result,
+and the dropped rewrites beside one that ships.
+
+Left as it was:
+a rewrite the atom gate refuses still reaches a log line only,
+since the gate's detail quotes atom values and a finding needs wording that carries none.
+
+Cache:
+no version moved;
+only findings are added.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation":
+a caller of a function that returns operations beside findings reads both,
+or says why it drops the findings.
+
+### B143: a scripted client no prober ever heard
+
+Fixed in `9c2eb03d9`,
+the test commit of B141.
+
+Found by the same review.
+`scriptedSettleClient` in `refine-slice-settle.unit.test.ts`,
+written by the trial,
+offered every exchange one list of replies and returned the first its guard accepted.
+The list ended with `EMPTY_INTRODUCED_DEFECT_REPORT`,
+the probe's result object,
+which no stage's wire accepts,
+and held a checker reply only under `worseTally`.
+So every run through it ended on `stage-quorum-unmet (introduced-defect-probe 0/2)`,
+a run without `worseTally` heard no checker either,
+and its comment said the replies were ones each call's guard accepts.
+No case asserted the findings,
+so nothing showed it.
+No case passed because the prober went unheard:
+the sheet cases asserted text recorded before any reply was validated.
+One half of the recheck case passed on the unheard checker round,
+which is the recheck defect.
+
+The fix:
+the client scripts by the stage's structured-output name,
+each reply checked against the guard the built package exports for that stage,
+and every scripted case asserts the settlement's findings whole,
+so a stage the script fails to answer shows as a lost voice.
+The cases run on a checker bench of three,
+the floor the refine phase holds a run to.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail":
+a scripted client is shown heard by each stage it serves,
+by a case asserting that stage's findings or its heard count,
+before any case built on it is read as evidence.
+
+### B144: the run scan read a link's own URL and a tag's attribute as footnote markers
+
+Red in `adce3f9a8`,
+fixed in `3ba21f95c`;
+B123 continued.
+
+Found reviewing the B123 fix (`9d7bbbec2`,
+`d59d9851e`).
+The fix scanned the whole raw region of an unpositioned run with `gfmMarkerSpans`,
+its link members included,
+and gave a run at the head or tail of its parent the parent's whole span.
+So `A cat naps ，www.example.com[^9] tail.` under the rewrite of `9` to `10` came back `，www.example.com[^10]`,
+though the parse holds `[^9` in the link's `url` and text and only `]` as text;
+`[^www.example.com]` and `[^paw@cat.example]` were read as references with a link standing between their brackets;
+and `<Cat title="[^1]">，www.example.com</Cat>` under `1` to `2` rewrote the attribute.
+Each breaks the promise of `applyFootnoteRelabel` that URLs and attributes stay byte-identical,
+and each inflated the label inventory `documentLabels` returns.
+Three of the cases added with the fix asserted the rewritten URL.
+The fix:
+`footnote-unpositioned-runs.ts` pairs every square bracket of a run's raw region with the same bracket of the run's decoded text,
+in order,
+counting a character reference that spells a bracket as one,
+and keeps a marker lexeme only where both its brackets fall in text nodes no link separates.
+A run that opens an `mdxJsxTextElement` starts after the element's last attribute;
+a run at the edge of any parent but a paragraph,
+heading,
+emphasis,
+strong,
+delete,
+table cell or JSX text element,
+a run member that is neither text nor a link of text,
+and bracket counts that still differ
+refuse with the `position` kind.
+Measured:
+56 constructs agree with the parse (`probe-3-matrix.mjs` in the fix's scratch),
+12,000 generated pages agree with an oracle that aligns characters instead of counting brackets,
+while the unfixed build differs on 2,942 of 5,978,
+and none of the 279 Markdown files of the corpus clone reads differently.
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a raw region read in place of nodes is checked against those nodes' own values before any span of it is acted on.
+
+Open,
+being fixed:
+`collectBlockHits` (`footnote-graph.ts`) reads the start and end of every `text` node through `nonNullishOrThrow`,
+so `A cat ，www.cat.example naps.` makes `parseDocument` throw `Expected non-nullish value, got undefined`,
+with or without a footnote on the page.
+`reorderFootnoteDefinitions` and `footnoteProtectedRanges` call it,
+so the relabel pass ends on a throw that is no rewrite refusal
+for the very pages B123 was opened for.
+The module is outside this fix's files.
+
+### B145: a marker shape inside a tokenized autolink literal was relabelled
+
+Red in `adce3f9a8`,
+fixed in `3ba21f95c`.
+
+Found with the B123 review,
+older than the trial:
+the walk at `28303c42a` read every positioned `text` node,
+the one text child of an autolink literal among them,
+and that text is the URL.
+`A cat naps https://cat.example/[^9]x tail.` under the rewrite of `9` to `10` came back `https://cat.example/[^10]x`.
+The fix:
+`isAutolinkLiteral` (`active-footnote-markers.ts`) reads a link whose span starts where its first child starts,
+or that carries no span,
+as a literal,
+and the walk does not descend into it.
+A labelled link keeps its label read,
+since a bracket sets the label off from the link's start.
+No page of the corpus clone holds a literal whose text carries a marker opening
+(count over 279 files),
+so no cached decision moves.
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
+
+### B146: cases whose expectation was the function's own output
+
+Fixed in `adce3f9a8`.
+
+The three B123 bounds cases took their expected text from what the fixed function returned,
+so they asserted the URL rewrite as right,
+and one case name said the reference "stays in its text" while the tree held it in the link.
+Two more cases named a shape as no marker under a map that named another label,
+so a misread could not fail them.
+The corrected cases set the reference off from the literal by a space,
+the glued form asserts the refusal a tokenized twin gives,
+and the two inventory cases assert `documentLabels`.
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail":
+an expectation for a parse-dependent result is written off the printed tree,
+and a case that names a shape as inactive asserts the inventory,
+or a map that names the shape.
+
+### B147: a `.png` picture decoded onto itself
+
+Red in `e300e6c33`,
+fixed in `d550bf04f`.
+
+Found on 2026-10-05 (UTC),
+replacing the trial's `ocrTool` seam with a required program runner (ledger M113).
+The scratch copy of a picture was `asset.` plus its extension,
+and the decoded copy was `asset.png`,
+so for a `.png` asset the two were one file.
+The fallback decoder rewrote its own input,
+and a first decoder that wrote part of its output before failing
+left the fallback to decode what it wrote.
+The red case scripts a first decoder that writes garbage to its target and exits 1:
+the reading came back as the garbage,
+32 characters taken as text.
+A `.webp` asset was never exposed,
+its copy and target being different files.
+No run is known to have been harmed:
+the reviewer measured the real `dwebp` failing before it wrote,
+and `magick` rewriting the file whole.
+The fix:
+the decoded copy is `decoded.png`,
+outside every name the scratch copy takes,
+and `@param png` says the two are never one file.
+Recurrence:
+`mistake-prevention.md`,
+"File names derived from an input",
+a new heading.
+
+### B148: an OCR reader that wrote nothing ended the entry, and an asset name chose where its copy was written
+
+Red in `e300e6c33`,
+fixed in `d550bf04f`.
+
+Three more edges of `readImageWithOcr` (`image-ocr.ts`) were found writing its cases.
+A reader that exited without an error and wrote no transcript made the reading reject with `ENOENT`,
+which `readImagePair` does not contain,
+so the entry ended;
+it is now `unavailable` with reason `ocr-failed` and a warning.
+The scratch copy took the whole text after an asset name's last dot as its extension:
+`../../etc/passwd` and `tabby.png/../../paw` pointed the write into a directory nobody made and rejected,
+and a 300-letter extension rejected with `ENAMETOOLONG`;
+the extension is now taken only when it is at most 16 ASCII letters and digits,
+and the picture is read either way.
+A decoder that is not installed was logged as `refused by Error` under the scratch path;
+the line now names the asset and says the decoder is not installed.
+Each has its red case in `image-ocr.unit.test.ts`.
+
+Recurrence:
+`mistake-prevention.md`,
+"File names derived from an input"
+for the extension,
+and "Refusals inside a composed operation"
+for the missing transcript.
+
+### B149: the coverage control called a cut that left nothing evidence it could not locate
+
+Red in `9c03075d7`,
+fixed in `341211543`.
+
+Found 2026-10-05 (UTC),
+reviewing the MiMo trial's test cases (review part 4,
+F3).
+`withoutSpans` (`corpus-run/coverage-control.ts`) answers blank for a document no span was in,
+and blank again when the spans were the whole document.
+`tryCase` read every blank as `evidence-not-locatable`,
+documented as a carried verdict none of whose spans could be found.
+That state no input produces:
+`judgeCoverage` calls a passage carried only on a full claim it anchored,
+and fills `evidence` with the translation's own text for each such claim,
+the same translation `tryCase` cuts.
+A roster quoting the whole translation was refused as not locatable with all three spans found.
+
+The fix:
+the refusal reason is `cut-left-nothing`;
+`tryCase` checks every span is non-blank and in the translation before it cuts,
+and throws `unreachable:` where one is not;
+the reason's union and documentation say so.
+`coverage-control-probe.ts` read the old reason without naming it and said such a case's evidence could not be found;
+its lines were brought in line in the same commit,
+and `d233f882f` reworded one of them that the count-nouns scan caught.
+The census note in the T8 entry on code no unit test runs keeps the old name,
+with a note.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B150: a coverage control held without a decoy that ran
+
+Red in `9c03075d7`,
+fixed in `341211543`.
+
+Found 2026-10-05 (UTC),
+reviewing the MiMo trial's test cases (review part 4,
+F5).
+A page with no room for a decoy cut clear of the anchored spans records `no-room` and no absence vote.
+`coverageControlHolds` took the decoy half over every row,
+so such a row counted as a decoy that was taken and moved nothing.
+Three rows with no room and a roster following the quote held,
+with no decoy ever asked;
+one decoy that drew the vote beside two such rows held too.
+
+The fix:
+the result carries `decoysTaken`;
+the control holds only where at least one decoy was taken,
+and no more than half of the decoys taken drew the vote;
+a control that took none prints why it cannot hold.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B151: the consolidate store resumed a terminal beside a gate the stage never writes with it
+
+Red in `9c03075d7`,
+fixed in `341211543`.
+
+Found 2026-10-05 (UTC),
+reviewing the MiMo trial's test cases (review part 4,
+F6).
+`settleConsolidation` writes no gate on its five exits before the gate,
+and `gateAndShip` always writes one,
+naming the terminal from what that gate ships.
+`isConsolidationSettlement` (`corpus-run/consolidate-cache-store.ts`) checked each field's shape and never the two together.
+A file with terminal `consolidated` and no gate was resumed,
+and its `text` shipped under an artifact saying no gate was asked;
+so was `consolidated` beside a gate shipping `standing`,
+and `incumbent-only` beside a gate.
+The trial's case pinned the first as resumable.
+
+The fix:
+`SETTLEMENT_TERMINALS` names beside each terminal the gate the stage writes with it,
+and `gateFitsTerminal` refuses a record where the two disagree;
+a refused record is bought again.
+Other couplings the stage keeps and the store does not check are listed in the fix wave's report,
+`settleGateBallots` against the stored `choice` first among them.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B152: a resumed window trial joined its first row onto a torn last line
+
+Red in `9c03075d7`,
+fixed in `341211543`.
+
+Found 2026-10-05 (UTC) by the audit of file reads behind B134 and B135,
+and reproduced on the build of the fix wave's worktree.
+A kill mid-append leaves a last line with no newline,
+and `appendTrialRow` appended the next row straight after it.
+One appended row was lost and its arm bought again;
+after a second,
+the unreadable line was no longer last,
+and `readTrialLedger` threw the parser's `SyntaxError`,
+whose message quotes the text it refused,
+at the opening and closing reads of every later run.
+
+The fix:
+before each append `appendTrialRow` reads the ledger's last byte,
+and where it is no newline removes a fragment by an atomic rewrite,
+or ends a whole row,
+saying which through its logger;
+the read warns of a torn last line and reports it as `tornTail`;
+a line that ends in a newline and does not parse throws `TrialLedgerLineError`,
+which names the file and the line number and none of its text.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back".
+
+### B153: the window trial ledger dropped a whole line that was no row without a word
+
+Fixed in `341211543`,
+its case in `9c03075d7`.
+
+Found 2026-10-05 (UTC),
+reviewing the MiMo trial's test cases (review part 4,
+F7).
+`readTrialLedger` left out a line that parses and fails `isWindowTrialRow`,
+and said nothing.
+Rows of four older shapes were appended to this same file:
+before `judgesHeard`,
+before `position`,
+and before `chunkIndex` became `sliceIndex`.
+
+The fix:
+`accountTrialLedger` returns the rows,
+the count of whole lines left out,
+and whether the last line was torn,
+and says through its logger how many it left out and why;
+`readTrialLedger` returns its rows,
+and the window trial's closing report prints the count.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back".
+
+### B154: a contributor label or list item with spaces read the spaces, or the link, as the name
+
+Red in `df0bcb85a`,
+fixed in `ba243b3c3`.
+
+Found 2026-10-05 (UTC),
+checking B126's fix for the same shape.
+`contributorForm` (`contributor-name-authority.ts`) took the text after a list marker as it stood
+and the label between `[` and `](` as it stood.
+A label of spaces read as the name `" "`,
+a padded label as `" Whisker "`,
+and a marker followed by two spaces left a space before `[`,
+so `*  [Pebble](https://example.test/pebble)` read as its whole markup,
+B126's shape again.
+
+The fix:
+the spaces after a marker are dropped,
+and the label is trimmed,
+so a label of spaces is empty and dropped as B126's empty label is.
+Three cases hold the three inputs.
+A reference link such as `[Whisker][w]` still reads as markup;
+only the parse can tell whether it shows as a link.
+
+No cached decision changes,
+measured over the pinned corpus with the built package:
+a digest of the forms each of 92 entries declares is byte-identical before and after,
+and no entry holds an untrimmed or link-carrying form.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
+
+### B155: a decisions reply refusal carried an undefined cause, and a mistyped field read as missing
+
+Red in `df0bcb85a`,
+fixed in `ba243b3c3`.
+
+Found 2026-10-05 (UTC),
+reading the MiMo trial's production diff once the trial was merged.
+The trial gave `DecisionReplyShapeError` a `cause`
+and passed `{ cause, }` to `Error` whether or not one was supplied,
+so every refusal but the parse failure carried an own `cause` of `undefined`.
+Beside it,
+`readDecisionReplyBody` reported an `answers` that is an array,
+or a `model` that is a number,
+as missing.
+
+The fix:
+the constructor spreads `cause` only when one is supplied,
+as `CreditsShapeError` does,
+and a present but mistyped field reads `answers is not an object` or `model is not a string`.
+The cases assert each refusal's class,
+whole message and cause.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B156: the listing catch read a fault of the process as a corpus refusal
+
+Red in `df0bcb85a`,
+fixed in `ba243b3c3`.
+
+Found 2026-10-05 (UTC),
+checking the trial's decision for the owner on `gitOutput` (`corpus-source.ts`,
+`33fc7a459`).
+The trial wrapped every throwable of the listing call as `CorpusReadError`,
+on the reason that nano-spawn's one raw throw is an `options.input` write the call never makes,
+and cited a scratch probe.
+nano-spawn 2.1.0 also throws raw before any child exists:
+`source/options.js` reads `process.cwd()`,
+which throws `ENOENT` once the working directory is removed,
+and `source/context.js` throws a `TypeError` for a command part that is no string.
+Wrapped,
+both read as a corpus failure whose message advises a check of the clone.
+
+The fix:
+the catch wraps a `SubprocessError` alone and lets anything else propagate as itself,
+as it did at `28303c42a`,
+so the error's own class and message name the fault;
+the comment states the fact and names the nano-spawn files and the case that hold it.
+A case removes the working directory under a child process and reads the listing's failure back.
+The text and byte readers go through `execFile`,
+and with the working directory removed both still read.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B157: a heading beside definitions the strict grammar refuses read as unparseable
+
+Red in `49f3ebdbf`,
+fixed in `699ad2f8c`.
+
+Found on 2026-10-05 (UTC),
+reading the MiMo trial's production diff once the trial was merged.
+`inspectParagraph` (`inspect-paragraph.ts`) parses a paragraph twice:
+alone,
+to decide whether it is exactly one paragraph,
+and with the document's definitions appended,
+so that its references resolve.
+The trial's T8 change (`f8cf67026`) cut the kind half out of the first check,
+so that the second `not-one-paragraph` check would run,
+and read the paragraph's kind off the definitions parse.
+A single block that is no paragraph then reached the definitions parse:
+on the build of `22afb6c89`,
+a heading beside definitions the strict grammar refuses returned `unparseable`,
+where the code at `28303c42a` returned `not-one-paragraph` before the definitions were parsed
+(read off the source,
+since no build of that commit is kept).
+The function's own TSDoc says that question must not be influenced by anything appended to the paragraph.
+
+The fix:
+the alone check refuses again a text that is not one paragraph on its own,
+as at `28303c42a`.
+The second check is a throw whose message opens `unreachable:` and names the block the definitions parse led with:
+the definitions are appended after a blank line,
+which ends a paragraph,
+so they cannot change its first block.
+A probe ran forty texts that parse alone as one paragraph against twenty-six definitions shapes,
+1040 pairs,
+and moved no first block;
+joined by one newline instead,
+the same pairs moved 116,
+setext headings and a table among them.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B158: an unavailable deterministic reader recorded as zero characters read
+
+Red in `49f3ebdbf`,
+fixed in `699ad2f8c`.
+
+Found on 2026-10-05 (UTC)
+by the fourth review of the trial's added cases (its finding F4).
+`readImagePair` (`image-reading-pair.ts`) confirms a picture textless where two readers report little or no text,
+and wrote the deterministic reader's count into that verdict:
+`0` for every deterministic reading that was not `read`.
+Where the deterministic reader was unavailable,
+the verdict read `{ kind: 'no-text', characters: 0, confirmedBy }`
+and the log line said the picture was confirmed textless past the deterministic reader's 0 characters:
+a count the deterministic reader never took,
+which a reader of the record takes for one it measured.
+The trial's case pinned the zero
+under a name saying the reader had found none.
+
+The fix:
+a second `no-text` shape carries `deterministicUnavailable`,
+the reader's reason,
+beside the confirming readers,
+and no count;
+the log line names the reader unavailable with its reason.
+The counted shape and its line are unchanged.
+
+The picture store learned the shape in the same commit:
+`isPairedReading` (`corpus-run/reading-cache-store.ts`) had accepted a `no-text` record only with a numeric `characters`,
+so the new verdict would have been refused on every resume,
+with a warning per picture per run,
+and its readers asked again on every run;
+it now accepts one whose reason is one the deterministic reader gives
+and whose confirming readers are names,
+and three cases in `reading-cache-store.unit.test.ts` hold it.
+Records the unfixed build wrote are not resumed by the fixed one,
+since the store's generation is the digest of the built files.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input":
+a reading that failed reaches the verdict as a failure,
+never as an empty value.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -23088,6 +23717,85 @@ Prevention:
 `mistake-prevention.md`,
 "Guards a census wants gone".
 
+Closed on 2026-10-05 (UTC) for the `ocrTool` seam (`e300e6c33`,
+`d550bf04f`):
+the seam landed in place of `ocrTool`.
+`readImageWithOcr` (`image-ocr.ts`) requires `runProgram`,
+a `ProgramRunner` both decoders and the OCR reader go through,
+and `decodeToPng` takes the same runner;
+nothing defaults it.
+The real runner is `runInstalledProgram`,
+named once,
+where `RUN_PICTURE_SOURCES` (`corpus-run/pass-visual-evidence.ts`) binds it through `ocrReaderOver`.
+The trial's five cases ran the real `magick`,
+`dwebp` and `tesseract` with `chi_sim` data,
+and the older undecodable case relied on the real decoders failing;
+all six are gone.
+Every case of `image-ocr.unit.test.ts` about the reader now runs through `scriptedPrograms`
+(`scripted-programs.test-fixture.ts`),
+which starts no process
+and whose stand-ins copy,
+transcribe,
+refuse or are missing at the paths the reader names,
+and each case asserts the reading,
+the programs run with their arguments,
+and every line logged.
+The stand-in rejections copy Node's spawn and exit failures field for field,
+and two cases hold them against the rejections `runInstalledProgram` raises.
+Prevention:
+`mistake-prevention.md`,
+"Tests touching the real world":
+a program on the machine is an outside read like the corpus,
+and its runner is a required parameter.
+
+Removals read against their callers and left standing on 2026-10-05 (UTC)
+(`df0bcb85a`,
+`ba243b3c3`,
+the verifying agent's reading):
+
+- `attachClaimFilers` (`claim-filers.ts`) reads a claim's filers through `nonNullishOrThrow`
+  behind the filter that kept the claim for that very key.
+- `containerHalfPairs` (`container-half-pairs.ts`) reads the half it splices out through `nonNullishOrThrow`;
+  the index comes from the same list's `findLastIndex`,
+  checked against not-found first.
+- `classifyDisplacement` (`displacement-class.ts`) reads a slice's class and a high slice through `nonNullishOrThrow`;
+  both arrays are maps of the same readings.
+- `listedNames` (`edit-prompt.ts`) reads the last name through `nonNullishOrThrow`
+  in the arm taken only for two names or more.
+- `declinedTargetBlocks` (`declined-target-runs.ts`) keeps its `nonNullishOrThrow` node read,
+  behind the checks every production path makes first,
+  `blockPairingToSteps` and `walkIntoRuns` (B138);
+  the comment that credited the alignment for it now names them.
+  The verifying agent found,
+  on a base before B138,
+  that a pairing read back from a settled artifact naming a block past the section reached that read,
+  declining every block or throwing a missing-value error that named nothing,
+  and refused it in this module with a `RangeError`;
+  B138's `BlockPairingError` now meets that pairing upstream,
+  so the merge kept B138's refusal,
+  and two cases in `declined-target-runs.unit.test.ts` pin it through this module's entry.
+
+Named errors flattened to `nonNullishOrThrow`,
+one more
+(`49f3ebdbf`,
+`699ad2f8c`):
+`readImagePair` (`image-reading-pair.ts`) named the roster slot of a reader whose exchange threw
+with an explicit throw,
+and the trial replaced it with `nonNullishOrThrow`
+and a comment crediting a capability gate.
+The slot is present because the settlements are the roster mapped one ask per slot;
+the throw is back with its words,
+in the `unreachable:` form,
+and the comment gives that reason.
+
+A check cut in half so that another would run:
+`inspectParagraph` (`inspect-paragraph.ts`) lost the kind half of its structure check
+so that the leading-block check behind it went live,
+which moved a heading beside broken definitions from `not-one-paragraph` to `unparseable`
+(B157).
+The check is whole again,
+and the leading-block check is an `unreachable:` throw.
+
 ### M114: a commit left without its lint, and a setup command read by its task status
 
 Status:
@@ -23132,6 +23840,20 @@ a commit that defers its gates starts them in the background in the call after i
 "with the next change" names no time.
 A command that sets up what a later step uses is read by its log before that step starts,
 and a path an agent is sent to is listed in the call that sends it.
+
+Recurred on 2026-10-05 (UTC),
+the lead's own:
+merging `341211543`,
+the lead edited `coverage-control-probe.ts` beside the agent's patch
+and committed after `lint:types` and the named tests,
+without the source scans;
+the commit's message said so.
+The count-nouns scan then failed the whole suite and the scans on `ba243b3c3`,
+on a line the lead had written,
+and `d233f882f` reworded it.
+A hand edit made while merging is checked like any other change:
+the scans run before the commit,
+not only in the gates after it.
 
 ### M115: an invariant throw counted as code no test ran
 

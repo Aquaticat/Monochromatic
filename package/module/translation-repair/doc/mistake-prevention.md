@@ -160,6 +160,16 @@ a comparison over a fixture with nothing to compare (ledger B131),
 or the wrong result as the intended one (ledger B128,
 B139).
 
+More on 2026-10-05:
+a scripted client no prober ever heard,
+whose cases asserted no findings (ledger B143);
+footnote cases whose expected text was the fixed function's own output (ledger B146);
+a coverage control that held with no decoy taken (ledger B150),
+and called a cut that left nothing evidence it could not locate (ledger B149);
+and a store guard that checked a settlement's fields one by one and never two that come together (ledger B151).
+A scripted client is shown heard by each stage it serves before a case built on it counts,
+and an expectation for a parse-dependent result is written off the printed tree.
+
 The rule:
 a red guard is read case by case before the fix,
 and each case must fail for the reason its name gives;
@@ -649,6 +659,14 @@ the Bedrock ledger's place and the transport from the process by default,
 and their tests set some keys and built on the rest the suite inherits (X23).
 43 test helpers made a temporary directory and could leave it behind,
 and the system's temporary directory had gathered thousands under their prefixes (ledger B108).
+
+The T8 trial added an OCR reader parameter that defaulted to the real program and five cases that ran
+`magick`,
+`dwebp` and `tesseract`;
+the reader now requires its program runner,
+and its cases run scripted programs (ledger M113).
+A program on the machine is an outside read like the corpus,
+and its runner is a required parameter.
 
 The rule:
 before a test drives a production entry point,
@@ -1175,6 +1193,16 @@ And B80's first case expected one refusal from every roster seat,
 where the gather asks a window of quorum plus one,
 so it would have failed with the fix in place.
 
+A refinement recheck that heard no checker,
+or one of three,
+passed the rewrite,
+since it rolled back only on a tally saying `worse`
+and dropped the checker stage's own `stage-quorum-unmet` finding with the rest (ledger B141).
+A gate that passes on nobody objecting first reads,
+through the stage's own account,
+that enough voices answered,
+and carries that stage's findings with its verdict.
+
 The rule:
 when a rule changes what a quorum counts,
 census every threshold derived from a gather,
@@ -1576,6 +1604,11 @@ so the id stood on an alias that was not it (ledger B131);
 and a link destination the trim cut to nothing compared equal to every other one it emptied,
 so a page that dropped the parent directory and kept the current one dropped nothing (ledger B139).
 
+A textless confirmation recorded the deterministic reader's count as `0`
+where that reader never ran (ledger B158).
+A reading that failed reaches the verdict as a failure,
+never as an empty value.
+
 The rule:
 a call states every input that decides what a floor refuses,
 what a sheet shows or whether a text may ship,
@@ -1847,6 +1880,13 @@ and a caller's gate turns any rejection into a named refusal of the claim;
 the throw bypassed both,
 and the whole suite on `9ff566830` went red on a caller's case (ledger B129).
 
+The refine stage read its resolver's operations and not the findings returned beside them,
+so a rewrite naming a paragraph the sheet never showed left no trace (ledger B142);
+and an OCR reader that exited cleanly and wrote no transcript made the reading reject with `ENOENT`,
+which the reading pair does not contain (ledger B148).
+A caller of a function that returns operations beside findings reads both,
+or says why it drops the findings.
+
 The rule:
 a step that can refuse on input a page can carry refuses as its sibling refusals do,
 leaving the steps that held applied,
@@ -2024,6 +2064,13 @@ The translate floor and the archive-revision shape check compared only the top-l
 so a candidate keeping a container tag while turning the quote inside it into prose passed both,
 and only the quote guard after judging caught it,
 keeping the whole archive where a floor finding would have sent the candidate back to its translator (ledger B110).
+
+The footnote run scan read a link's own URL and a tag's attribute as marker text (ledger B144),
+the marker walk read an autolink literal's text,
+which is its URL (ledger B145),
+and a contributor form kept the spaces and link markup the page shows no reader (ledger B154).
+A raw region read in place of nodes is checked against those nodes' own values
+before any span of it is acted on.
 
 The rule:
 a question about what a passage's blocks are
@@ -2879,6 +2926,12 @@ grouped such a walk into nothing,
 and a pairing read off a stored artifact could build one,
 since the check on a model's reply had vouched for another list (ledger B138).
 
+The trial's other production edits were read against their callers on 2026-10-05:
+a refusal given an own `cause` of `undefined` and a mistyped field reported as missing (ledger B155),
+a catch widened to wrap a fault of the process as a corpus refusal (ledger B156),
+and a check cut in half so that another would run,
+which moved a heading beside broken definitions to `unparseable` (ledger B157).
+
 The rule:
 a state no input produces is refused out loud,
 with `throw new Error('unreachable: <what was found and why it cannot occur>',)`
@@ -2956,6 +3009,12 @@ and three coverage census readers whose `@throws` promise their own class
 running `JSON.parse` bare (ledger B135,
 open).
 
+The window trial ledger was mended:
+an append ends a torn last line first,
+and a line that ends in a newline and does not parse is refused by name (ledger B152);
+a whole line of an older row shape is left out and counted,
+not dropped without a word (ledger B153).
+
 The rule:
 a file this package writes and a later run parses is written through `writeFileAtomic`.
 Its reader tells a path nothing stands at from a file that is there,
@@ -2981,3 +3040,28 @@ No scan holds every `JSON.parse` of a file to a catch or a failure-as-data helpe
 nor every plain `writeFile` to a reviewed list;
 until one does,
 a new reader or writer of such a file is reviewed against this rule.
+
+## File names derived from an input
+
+What happened:
+the OCR reader copied a picture to `asset.` plus its extension
+and decoded it to `asset.png`,
+so a `.png` asset was decoded onto itself,
+and a first decoder that wrote part of its output before failing left the fallback to decode that (ledger B147);
+the same extension,
+taken as the whole text after the name's last dot,
+let `../../etc/passwd` point the write outside the scratch directory,
+and a 300-letter extension fail the write (ledger B148).
+
+The rule:
+every file name a function derives from an input is checked against every fixed name the same function writes,
+and a fixed name is chosen outside the set the derived one can take;
+a part of a name taken from an input is limited to characters and a length that cannot leave the directory
+or fail the write.
+
+What enforces it:
+`image-ocr.unit.test.ts` holds a `.png` picture whose first decoder damages its target,
+and asset names with a traversal,
+a space and a 300-letter extension.
+No scan finds a derived name beside a fixed one;
+a new writer of scratch files is reviewed against this rule.
