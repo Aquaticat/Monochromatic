@@ -64,8 +64,8 @@ export component SidebarDivider inherits Rectangle {
             root.resize(self.press-value + self.absolute-position.x + self.mouse-x - self.press-pointer);
         }
     }
-    // Prototype divider-tab B: not a Tab stop. The window resizes the sidebar with Alt+Shift+Left and
-    // Alt+Shift+Right instead (ui/app.slint); nothing focuses this scope any more.
+    // Prototype divider-tab C: not a Tab stop and no keyboard resizing. Nothing focuses this scope any more,
+    // so its keys are unreachable; assistive technology keeps the slider's increment, decrement, and set actions.
     keys := FocusScope {
         width: 0px;
         height: 0px;
