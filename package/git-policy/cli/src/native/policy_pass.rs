@@ -77,42 +77,6 @@ pub fn policies_of_kind(optional: bool) -> Vec<PolicyId> {
     return policies;
 }
 
-/// What: Whether an event is a rejection by a fixed transform. `&PolicyEvent` borrows it.
-/// Why:  Such a rejection ends the pass before the optional policies unless the caller
-///       asked to keep going.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const isCoreFinding = (event: PolicyEvent) => event.type === 'core-finding';
-/// ```
-fn is_core_finding(event: &PolicyEvent) -> bool {
-    // `match` picks one arm per variant; `{ .. }` and `(_)` ignore what a variant carries.
-    match event {
-        PolicyEvent::CoreFinding { .. } => return true,
-        PolicyEvent::Finding(_)
-        | PolicyEvent::WarnUnsafe { .. }
-        | PolicyEvent::EngineFailure { .. }
-        | PolicyEvent::FixSummary { .. } => return false,
-    }
-}
-
-/// What: Whether any of the events is a rejection by a fixed transform.
-/// Why:  One named loop instead of a search with an inline function.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const coreBlocked = events.some(isCoreFinding);
-/// ```
-fn any_core_finding(events: &[PolicyEvent]) -> bool {
-    // `for event in events` borrows each event in order.
-    for event in events {
-        if is_core_finding(event) {
-            return true;
-        }
-    }
-    return false;
-}
-
 /// What: Run one pass for `request` over `checks`. `<F: RepositoryFacts>` says the function
 ///       works with any one facts provider `F`; `&mut ShippedChecks<F>` lends the shipped
 ///       policies and their provider for writing, because checks cache repository facts.
@@ -151,7 +115,9 @@ pub fn run_policy_pass<F: RepositoryFacts>(
             request.controls.commit_only_escaped,
             &mut checks.facts,
         );
-        let core_blocked: bool = any_core_finding(transformed.events.as_slice());
+        // A complete transform stage reports nothing but rejections, so any event of a
+        // complete stage is one; an incomplete stage is handled first.
+        let rejected: bool = !transformed.events.is_empty();
         // `.extend(list)` moves every item of `list` onto the end.
         events.extend(transformed.events);
         if !transformed.complete {
@@ -161,7 +127,7 @@ pub fn run_policy_pass<F: RepositoryFacts>(
                 end: StageEnd::Failed,
             };
         }
-        if core_blocked && !request.controls.keep_going {
+        if rejected && !request.controls.keep_going {
             return PassResult {
                 arguments,
                 events,

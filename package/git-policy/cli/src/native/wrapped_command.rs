@@ -40,7 +40,7 @@ use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
 use super::unported::{Unported, unported_from_unavailable, unported_notice};
 use super::worktree_identity::worktree_root;
-use super::wrapper_invocation::StrippedInvocation;
+use super::wrapper_invocation::{StrippedInvocation, command_region, command_word};
 /// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
 ///       expect: `String`, which must be valid UTF-8.
 /// Why:  Arguments and environment values are never decoded.
@@ -229,10 +229,8 @@ fn prepare_guarded_command<F: RepositoryFacts>(
     if let Some(what) = command_frontier(stripped, &location.identity) {
         return Err(refused(String::new(), &what, command));
     }
-    // `.as_encoded_bytes()` lends the raw bytes of the command word.
-    let word: &[u8] = stripped.arguments[stripped.layout.prefix_len].as_encoded_bytes();
     // Only `git add` inside a worktree has content for a policy to read before Git runs.
-    if word == b"add" && worktree_root(&location.identity).is_some() {
+    if command_word(stripped) == b"add" && worktree_root(&location.identity).is_some() {
         checks.candidates = CandidateSource::NotPorted(ADD_CANDIDATES_NEED);
     }
     // `Ok(x)` is the success case.
@@ -263,11 +261,9 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
             stderr: String::new(),
         };
     }
-    let word_index: usize = stripped.layout.prefix_len;
-    // `.to_string_lossy()` renders the command word for messages; `.into_owned()` makes it owned text.
-    let command: String = stripped.arguments[word_index]
-        .to_string_lossy()
-        .into_owned();
+    // `String::from_utf8_lossy` renders the command word for messages, replacing bytes that
+    // are not UTF-8; `.into_owned()` makes it owned text.
+    let command: String = String::from_utf8_lossy(command_word(stripped)).into_owned();
     // `.as_slice()` lends an owned list as a borrowed view.
     let policies: PolicyConfig =
         if classify_config_loading(stripped.arguments.as_slice()) == ConfigLoading::Skip {
@@ -291,9 +287,7 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
     }
     // `mut` allows the push gate to append its events.
     let mut events: Vec<PolicyEvent> = pass.events;
-    let word: &[u8] = stripped.arguments[word_index].as_encoded_bytes();
-    // `&list[n..]` borrows the tokens after the command word.
-    if word == b"push" && !push_is_dry_run(&stripped.arguments[word_index + 1..]) {
+    if command_word(stripped) == b"push" && !push_is_dry_run(command_region(stripped)) {
         let gate_request: StageRequest = StageRequest {
             trigger: Trigger::ManualPush,
             config: request.config,

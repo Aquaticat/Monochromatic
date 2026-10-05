@@ -349,6 +349,35 @@ pub fn strip_wrapper_controls(arguments: &[OsString]) -> StrippedInvocation {
     };
 }
 
+/// What: The raw bytes of the command word of an invocation that names a command.
+///       `&StrippedInvocation` borrows the invocation; `&[u8]` borrows the word's bytes.
+/// Why:  Every later decision starts from the command word, read in one place.
+/// Gotcha: The caller must have seen that the invocation names a command; without one
+///         there is no word and this function panics.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function commandWord(stripped: StrippedInvocation): string { return stripped.args[stripped.layout.prefixLen]; }
+/// ```
+pub fn command_word(stripped: &StrippedInvocation) -> &[u8] {
+    // `.as_encoded_bytes()` lends the raw bytes of the token.
+    return stripped.arguments[stripped.layout.prefix_len].as_encoded_bytes();
+}
+
+/// What: The tokens after the command word of an invocation that names a command.
+///       `&[OsString]` borrows those tokens.
+/// Why:  The refusal frontier and the push gate both read the command's own options;
+///       taking the region from one function keeps the two from reading different tokens.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function commandRegion(stripped: StrippedInvocation): string[] { return stripped.args.slice(stripped.layout.prefixLen + 1); }
+/// ```
+pub fn command_region(stripped: &StrippedInvocation) -> &[OsString] {
+    // `&list[n..]` borrows the tokens from index `n` on.
+    return &stripped.arguments[stripped.layout.prefix_len + 1..];
+}
+
 /// Position, value and separator controls stay out of the release executable.
 #[cfg(test)]
 #[path = "wrapper_invocation_tests.rs"]

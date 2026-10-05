@@ -27,7 +27,7 @@ use super::command_worktree::changes_worktree_registrations;
 use super::git_builtins::is_git_builtin;
 use super::unported::Unported;
 use super::worktree_identity::WorktreeIdentity;
-use super::wrapper_invocation::StrippedInvocation;
+use super::wrapper_invocation::{StrippedInvocation, command_region, command_word};
 /// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
 ///       expect: `String`, which must be valid UTF-8.
 /// Why:  Arguments and environment values are compared as bytes and never decoded.
@@ -130,11 +130,8 @@ pub fn command_frontier(
     stripped: &StrippedInvocation,
     identity: &WorktreeIdentity,
 ) -> Option<Unported> {
-    let word_index: usize = stripped.layout.prefix_len;
-    // `.as_encoded_bytes()` lends the raw bytes of the command word.
-    let word: &[u8] = stripped.arguments[word_index].as_encoded_bytes();
-    // `&list[n..]` borrows the tokens after the command word.
-    let region: &[OsString] = &stripped.arguments[word_index + 1..];
+    let word: &[u8] = command_word(stripped);
+    let region: &[OsString] = command_region(stripped);
     if word == b"commit" {
         if commit_is_dry_run(region) {
             return None;

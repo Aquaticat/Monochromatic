@@ -9,7 +9,9 @@
 //! ```
 
 /// The function under test, its result types and the argument builder.
-use super::{RegionReading, StrippedInvocation, strip_wrapper_controls};
+use super::{
+    RegionReading, StrippedInvocation, command_region, command_word, strip_wrapper_controls,
+};
 use crate::command_options::OptionErrorKind;
 use crate::command_test_support::os_arguments;
 use crate::global_arguments::GlobalOutcome;
@@ -448,4 +450,40 @@ fn undecodable_arguments_are_kept_unchanged() {
         ]
     );
     assert_eq!(found.controls.escaped, vec![PolicyId::AddExplicit]);
+}
+
+/// The command word and its region are read after the global options, without the word itself.
+#[test]
+fn the_command_word_and_its_region_follow_the_global_options() {
+    for (values, word, region) in [
+        (vec!["status"], "status", vec![]),
+        (
+            vec!["status", "--short", "file"],
+            "status",
+            vec!["--short", "file"],
+        ),
+        (
+            vec!["-C", "dir", "--no-pager", "commit", "-m", "x"],
+            "commit",
+            vec!["-m", "x"],
+        ),
+        (
+            vec!["--cli-git-keep-going", "worktree", "add", "../topic"],
+            "worktree",
+            vec!["add", "../topic"],
+        ),
+        (
+            vec!["-C", "dir", "reset", "--no-enforce-worktree", "--hard"],
+            "reset",
+            vec!["--hard"],
+        ),
+    ] {
+        let stripped: StrippedInvocation = strip(values.as_slice());
+        assert_eq!(command_word(&stripped), word.as_bytes(), "{values:?}");
+        assert_eq!(
+            command_region(&stripped),
+            os_arguments(region.as_slice()).as_slice(),
+            "{values:?}"
+        );
+    }
 }

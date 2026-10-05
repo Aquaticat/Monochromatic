@@ -11,8 +11,8 @@
 
 /// Import the shared fixtures and the bounded process helpers.
 use super::support::{
-    Fixture, Observed, fixture, git, porcelain, remove, repository, run_direct, run_wrapped,
-    silent_success, stderr_of,
+    Fixture, Observed, fixture, git, observe, porcelain, remove, repository, run_direct,
+    run_wrapped, silent_success, stderr_of, wrapped,
 };
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
@@ -141,6 +141,69 @@ fn destructive_commands_run_only_in_a_linked_worktree() {
         silent_success()
     );
     assert!(!repo.join("untracked.txt").exists());
+    remove(&fixture);
+}
+
+/// A repository inside the caller's tool cache is exempt from linked-worktree-only.
+#[test]
+fn a_tool_cache_checkout_is_exempt_from_the_linked_worktree_rule() {
+    let fixture: Fixture = fixture("builtin-cache");
+    // The fixture's home directory is the caller's `HOME`; `uv` keeps Git checkouts below it.
+    std::fs::create_dir_all(fixture.root.join("home/.cache/uv")).expect("tool cache");
+    let cached: PathBuf = repository(&fixture, OsStr::new("home/.cache/uv/checkout"));
+    let ordinary: PathBuf = repository(&fixture, OsStr::new("ordinary"));
+    for repo in [&cached, &ordinary] {
+        std::fs::write(repo.join("tracked.txt"), b"one\n").expect("tracked file");
+        git(&fixture, repo.as_path(), &["add", "--", "tracked.txt"]);
+        git(
+            &fixture,
+            repo.as_path(),
+            &["commit", "--quiet", "--message=tracked"],
+        );
+        std::fs::write(repo.join("tracked.txt"), b"two\n").expect("modify tracked file");
+    }
+    // In the cache the main worktree may be reset; Git runs and restores the file.
+    assert_eq!(
+        run_wrapped(&fixture, cached.as_path(), &["reset", "--hard", "--quiet"]),
+        silent_success()
+    );
+    assert_eq!(
+        std::fs::read(cached.join("tracked.txt")).expect("tracked file"),
+        b"one\n"
+    );
+    // Positive control: the same command in an ordinary main worktree is rejected.
+    assert_rejected_by(
+        &run_wrapped(
+            &fixture,
+            ordinary.as_path(),
+            &["reset", "--hard", "--quiet"],
+        ),
+        "linked-worktree-only",
+        "ordinary repository",
+    );
+    assert_eq!(
+        std::fs::read(ordinary.join("tracked.txt")).expect("tracked file"),
+        b"two\n"
+    );
+    // Without a usable home directory there is no cache to exempt.
+    std::fs::write(cached.join("tracked.txt"), b"two\n").expect("modify tracked file");
+    for home in ["", "/nonexistent-home"] {
+        assert_rejected_by(
+            &observe(
+                wrapped(&fixture)
+                    .env("HOME", home)
+                    .current_dir(&cached)
+                    .args(["reset", "--hard", "--quiet"]),
+                b"",
+            ),
+            "linked-worktree-only",
+            home,
+        );
+    }
+    assert_eq!(
+        std::fs::read(cached.join("tracked.txt")).expect("tracked file"),
+        b"two\n"
+    );
     remove(&fixture);
 }
 
