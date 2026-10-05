@@ -74,7 +74,15 @@ pub fn run_child(test: &str, layout: fn(&Path) -> Layout) {
     let placed = layout(&base);
     let mut command = Command::new(std::env::current_exe().expect("test executable"));
     command
-        .args([test, "--exact", "--nocapture", "--test-threads=1"])
+        // An ignored test that was asked for by name must run in the child too; without this the
+        // child would run nothing and report success.
+        .args([
+            test,
+            "--exact",
+            "--nocapture",
+            "--test-threads=1",
+            "--include-ignored",
+        ])
         .current_dir(&placed.cwd)
         .env(ROOT_VARIABLE, &placed.root);
     match &placed.pwd {
