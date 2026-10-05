@@ -6,8 +6,8 @@ import { join } from 'node:path';
 const question = join(process.cwd(), 'questions');
 const evidence = join(question, 'evidence');
 const manifest = JSON.parse(readFileSync(join(evidence, 'feedback-overlay-witnesses.json'), 'utf8'));
-if (manifest.apkSha256 !== '7d359b9b6d624788e474d916109f2217bf5d644e797da4fb2ea70c4c6690a671' ||
-    manifest.prototypeCommit !== 'c890d09b04922f137a8e4a7b51a8dd944356dbde' || manifest.witnesses.length !== 48) {
+if (manifest.apkSha256 !== '2b556131d86e39acb8ebcf194f39da9ed8e36e2f146a86ab4fb971f4c8f06480' ||
+    manifest.prototypeCommit !== '743c5b378c6333f75857a3d5b7c87e4c284b53c5' || manifest.witnesses.length !== 48) {
   throw new Error('Overlay artifact or inspected cohort differs.');
 }
 const expected = [];

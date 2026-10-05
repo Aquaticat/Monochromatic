@@ -529,7 +529,8 @@ new IME work and native accessibility acceptance.
   longer detail directs users to Android logs.
   Feedback must not resize the player.
   Native overlay verification remains in progress.
-- **OPEN: other light surfaces not yet drawn (11d):**
+- **OPEN:**
+  other light surfaces not yet drawn (11d):
   settings pane,
  context menu,
   first-run prompt,
