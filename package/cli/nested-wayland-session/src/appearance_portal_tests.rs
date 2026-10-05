@@ -70,6 +70,73 @@ fn private_portal_rejects_unknown_setting() -> anyhow::Result<()> {
     return Ok(())
 }
 
+/// Marks the re-executed test process whose data directories hold a planted service file.
+const PLANTED_ROLE_VARIABLE: &str = "NESTED_WAYLAND_SESSION_TEST_PLANTED_ROLE";
+
+/// Names the service planted where a stock session bus looks for service files.
+const PLANTED_SERVICE: &str = "org.example.MonochromaticPlantedService";
+
+/// Asks the private bus to list and start services; runs only inside the re-executed process.
+///
+/// A client connected to the private bus is exactly what a hosted toolkit is, so these are the
+/// same requests that made the stock configuration try to execute `org.a11y.Bus`.
+fn run_planted_role() -> anyhow::Result<()> {
+    let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
+    let connection = zbus::blocking::connection::Builder::address(portal.bus_address())?.build()?;
+    let bus = zbus::blocking::fdo::DBusProxy::new(&connection)?;
+    let mut activatable = Vec::new();
+    for name in bus.list_activatable_names()? {
+        activatable.push(name.to_string());
+    }
+    // Only the bus driver itself: no service directory was read, planted or host.
+    assert_eq!(activatable, ["org.freedesktop.DBus"]);
+    for service in [PLANTED_SERVICE, "org.a11y.Bus"] {
+        let started = bus.start_service_by_name(zbus::names::WellKnownName::try_from(service)?, 0);
+        // let-else binds the refusal message or stops the test with the unexpected outcome.
+        let Err(zbus::fdo::Error::ServiceUnknown(message)) = started else {
+            panic!("expected ServiceUnknown for {service}, got {started:?}");
+        };
+        assert!(message.contains(service), "{message}");
+    }
+    return Ok(())
+}
+
+/// Confirms a hosted client cannot make the private bus start a service from any service file.
+///
+/// The test re-executes itself with `XDG_DATA_HOME` and `XDG_DATA_DIRS` naming a disposable
+/// directory that holds one planted `.service` file. The stock session configuration searches
+/// exactly those directories, so it would list and try to start the planted service; that is
+/// the positive control, independent of which services this machine has installed.
+#[test]
+fn private_bus_never_reads_service_files() -> anyhow::Result<()> {
+    if std::env::var_os(PLANTED_ROLE_VARIABLE).is_some() {
+        return run_planted_role();
+    }
+    let root = std::env::temp_dir().join(format!(
+        "monochromatic-nested-planted-services-{}",
+        std::process::id(),
+    ));
+    let services = root.join("dbus-1").join("services");
+    std::fs::create_dir_all(&services)?;
+    // The program path does not exist, so even a stock bus could never run anything here.
+    std::fs::write(
+        services.join(format!("{PLANTED_SERVICE}.service")),
+        format!("[D-BUS Service]\nName={PLANTED_SERVICE}\nExec=/nonexistent/monochromatic-planted-service\n"),
+    )?;
+    let status = Command::new(std::env::current_exe()?)
+        .arg("--exact")
+        .arg("appearance_portal::tests::private_bus_never_reads_service_files")
+        .arg("--nocapture")
+        .env(PLANTED_ROLE_VARIABLE, "planted")
+        .env("XDG_DATA_HOME", &root)
+        .env("XDG_DATA_DIRS", &root)
+        .status();
+    std::fs::remove_dir_all(&root)?;
+    let finished = status?;
+    assert!(finished.success(), "re-executed planted-service role failed: {finished}");
+    return Ok(())
+}
+
 /// Bounds how long a test waits for a signal that must already be on the private bus.
 const SIGNAL_TIMEOUT: Duration = Duration::from_secs(2);
 

@@ -6,6 +6,9 @@ use std::collections::HashMap;
 /// Imports buffered address read from `dbus-daemon` stdout.
 use std::io::{BufRead, BufReader};
 
+/// Imports the owned OS-native string that carries the configuration path to `dbus-daemon`.
+use std::ffi::OsString;
+
 /// Imports owned scratch paths for private bus socket and cleanup.
 use std::path::PathBuf;
 
@@ -74,6 +77,42 @@ const PRIVATE_BUS_ADDRESS_TIMEOUT: Duration = Duration::from_secs(2);
 
 /// Produces collision-free paths when tests start more than one private bus.
 static PRIVATE_BUS_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+/// Configuration of the private bus: the stock session bus minus every service directory.
+///
+/// What:     `const PRIVATE_BUS_CONFIG: &str = r#"..."#;`. A string baked into the binary.
+///           `r#"..."#` is a raw string literal: backslashes and quotes inside it are literal
+///           text, so the XML needs no escaping. It keeps the stock `session.conf` elements that
+///           make this a session bus (`<type>`, `<keep_umask/>`, `<auth>`, the allow-all
+///           policy) and omits `<standard_session_servicedirs/>`, every `<servicedir>`, and every
+///           `<include>`/`<includedir>`, which could add service directories back.
+/// Why:      Without a service directory the daemon has no `.service` file to read, so a
+///           hosted client asking it to start a name (as `slint-viewer` did for `org.a11y.Bus`)
+///           gets `org.freedesktop.DBus.Error.ServiceUnknown` at once, and no host program is
+///           ever executed for it. `dbus-daemon` refuses a configuration without `<listen>`,
+///           so the element names a path that cannot be bound; the `--address` option, which
+///           the daemon documents as overriding `<listen>`, supplies the real socket.
+/// Gotcha:   No path is interpolated into this text, so no XML escaping is needed. Adding one
+///           later would make the text a syntax boundary.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const PRIVATE_BUS_CONFIG = `<busconfig>...</busconfig>`;
+/// ```
+const PRIVATE_BUS_CONFIG: &str = r#"<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>session</type>
+  <keep_umask/>
+  <listen>unix:path=/dev/null/replaced-by-the-address-option</listen>
+  <auth>EXTERNAL</auth>
+  <policy context="default">
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+"#;
 
 /// Requested isolated color scheme.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -204,7 +243,7 @@ fn read_bus_address(stdout: ChildStdout) -> std::io::Result<String> {
 /// Owns private message-bus daemon and scratch directory.
 #[derive(Debug)]
 struct PrivateBus {
-    /// Running `dbus-daemon --session --nofork` process.
+    /// Running `dbus-daemon --config-file=... --nofork` process with no service directories.
     daemon: Child,
     /// Scratch directory containing bus socket.
     directory: PathBuf,
@@ -224,8 +263,33 @@ impl PrivateBus {
         std::fs::create_dir(&directory)
             .with_context(|| format!("creating private D-Bus directory: {}", directory.display()))?;
         let socket_path = directory.join("bus");
+        let config_path = directory.join("bus.conf");
+        // Write the service-free configuration beside the socket; clean the directory on failure.
+        if let Err(error) = std::fs::write(&config_path, PRIVATE_BUS_CONFIG) {
+            if let Err(cleanup_error) = std::fs::remove_dir_all(&directory) {
+                tracing::warn!(
+                    %cleanup_error,
+                    path = %directory.display(),
+                    "failed to clean private D-Bus directory after configuration write error",
+                );
+            }
+            return Err(error)
+                .with_context(|| format!("writing private D-Bus configuration: {}", config_path.display()));
+        }
+        // What:     `OsString::from(...)` starts an owned OS-native string (sibling: UTF-8
+        //           `String`); `.push(&config_path)` appends the path's raw bytes, borrowed.
+        // Why:      The option is built without converting the path to UTF-8, so an unusual
+        //           temporary-directory name cannot be altered on its way to the daemon.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const configArgument = "--config-file=" + configPath;
+        // ```
+        let mut config_argument = OsString::from("--config-file=");
+        config_argument.push(&config_path);
+        // `--config-file` replaces `--session`, which would load the stock service directories.
         let daemon = Command::new("dbus-daemon")
-            .arg("--session")
+            .arg(config_argument)
             .arg("--nofork")
             .arg("--nopidfile")
             .arg("--nosyslog")
