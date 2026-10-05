@@ -2,8 +2,8 @@
 
 Status:
 in progress;
-hard-gate confirmation and targeted evidence are complete for the candidate;
-finalist validation (execution phases) is running.
+hard gates, targeted evidence, and upstream-side validation (phases N2, B, C1, C2) are complete;
+the consumer-boundary phase E is pending, then scoring and sensitivity.
 
 Lifecycle phase:
 finalist validation.
@@ -17,8 +17,8 @@ cargo builds on the dev host, containers, and CI.
 Sole external candidate per the user instruction of 2026-10-05
 ("Evaluate this specific candidate only").
 macOS, Windows MSVC, and Android targets keep their existing linkers because mold links ELF only.
-The incumbent (GNU ld via the cc driver) is carried as the status-quo baseline candidate required
-by the replacement parity overlay, with evidence depth equal to its production use plus the
+The incumbent (rust-lld 23.1.1, the rustc self-contained linker reached through the cc driver)
+is carried as the status-quo baseline candidate required by the replacement parity overlay, with evidence depth equal to its production use plus the
 measurements recorded in this report, not a fresh source audit.
 
 Start date:
@@ -34,10 +34,16 @@ Governing skill SHA-256:
 `552ac9955299b65a9f921a4e836b60a3fabc15d3477eeb8ec2bfb3f400647f9b`.
 
 Compatibility fingerprint:
-`89c9982ac41072cc6c17e84414f8a1f7bf9a903306c86a87e622f3a37e24b746`.
-Fingerprint input (schema 1, RFC 8785 canonicalization, SHA-256 over 1497 UTF-8 bytes):
+`6427299613fd2e86e7773be2e7fec33f43c325f7994c181d8335b09ef0784d0e`.
+Fingerprint input (schema 1, RFC 8785 canonicalization, SHA-256 over 1535 UTF-8 bytes):
 subject, decision scope, hard constraints, deployment, trust boundary, incumbent
-(GNU ld via cc driver, 2.46.1-1.fc44), base categories, overlays.
+(rust-lld, LLD 23.1.1 with rustc 1.100.0-nightly), base categories, overlays.
+Superseded fingerprints, newest first:
+
+- `89c9982ac41072cc6c17e84414f8a1f7bf9a903306c86a87e622f3a37e24b746`,
+  recorded before a hello-world link-driver probe showed that rustc's self-contained rust-lld,
+  not GNU ld, is the linker this host's cargo builds consume;
+  the incumbent input changed accordingly on 2026-10-05.
 
 Active audit owner:
 pi session `01a10d3d-dcca-70df-8a23-041ebf12cd66`, lock record at
@@ -71,7 +77,8 @@ Candidate components and classification:
 
 Active overlays:
 
-- incumbent dependency replacement (replaces GNU ld as the linker invoked by the cc driver on Linux);
+- incumbent dependency replacement (replaces rust-lld as the linker rustc reaches through the cc
+  driver on Linux; GNU ld remains for non-rustc links);
 - high-trust execution (runs in every Linux build on the dev host, in containers, and in CI, and
   writes shipped native artifacts);
 - native and prebuilt binary boundary (release tarballs, distro packages, `mold-wrapper.so`,
@@ -89,14 +96,22 @@ Measured on 2026-10-05 on the dev host (Fedora 44, kernel 7.2.7, x86_64, 16 core
 - Rust toolchain: rustc and cargo `1.100.0-nightly (1303417c4 2026-09-21)`, host
   `x86_64-unknown-linux-gnu`, LLVM 23.1.1. No `rust-toolchain.toml` in the repository.
 - C toolchain: GCC 16.2.1 (`cc`), GNU ld 2.46.1-1.fc44. No mold, lld, or gold binary is installed
-  on the host (`command -v` sweep).
+  on the host PATH (`command -v` sweep).
+- Actual rustc link path, measured with `rustc -C link-arg=-Wl,--version` on a hello world
+  (2026-10-05): collect2 invokes
+  `~/.rustup/toolchains/nightly-2026-09-22-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/ld.lld`
+  through a `-B` directory rustc adds, and the linker reports
+  `LLD 23.1.1 (compatible with GNU linkers)`. The incumbent for cargo builds is therefore rustc's
+  self-contained rust-lld; GNU ld 2.46.1 handles only non-rustc cc links. The initial incumbent
+  record in this report named GNU ld from PATH inspection alone and is superseded by this probe.
 - Linker configuration today:
   - repository root `.cargo/config.toml` sets environment only (Zig cache dir, Slint flag),
     no linker or rustflags;
   - `package/music-player/desktop-app/.cargo/config.toml` sets per-target rustflags
     (`target-feature=+aes`) for linux-gnu, both darwin triples, and windows-msvc, and pins
     `linker = "lld-link.exe"` for `x86_64-pc-windows-msvc` only;
-  - all Linux linking therefore goes through the default cc driver to GNU ld;
+  - all Linux cargo linking therefore goes through the default cc driver, which rustc steers to
+    its self-contained rust-lld via `-B` (measured by the link-path probe in "Context");
   - host-level `~/.cargo/config.toml` sets `build.build-dir` into the cargo cache
     (`doc/decision/cargo-build-dir-host-cache.md`), so experiments must override the build dir to
     avoid churning shared fingerprints.
@@ -206,14 +221,15 @@ GitHub Action by the same author) is recorded as an integration option, not a se
   (verified by `git ls-remote . refs/tags/v3.0.0` inside the clone and `git tag --points-at HEAD`).
 - Clone: `~/temp/agent/mold-2026-10-05` (shallow, tag checkout).
 
-#### Incumbent baseline: GNU ld 2.46.1 via cc driver
+#### Incumbent baseline: rust-lld 23.1.1 (rustc self-contained) via cc driver
 
-- Discovery source: repository incumbent class (class 1).
+- Discovery source: repository incumbent class (class 1) plus the hello-world link-path probe
+  recorded in "Context".
 - Base category: inspectable open-source local technology (binutils), consumed today as the
   distro-packaged default.
 - Role: status-quo baseline required by the replacement parity overlay; kept as a candidate.
 - Evidence depth note: daily production use in this repository plus the measurements in this
-  report; no fresh binutils source audit (deviation recorded in "Evidence limits and deviations").
+  report; no fresh LLVM lld source audit (deviation recorded in "Evidence limits and deviations").
 
 #### Not evaluated (user restriction)
 
@@ -289,7 +305,10 @@ Access date for all URLs and API calls: 2026-10-05. Clone path for all `path:lin
 - Issues (`gh issue list --state all --search "sort:updated-desc" --limit 10`):
   #1708 open today, "rust-lld cannot link mold-cli": a from-source `cargo build --release` failure
   on Ubuntu 26.04 with rustc 1.99 whose default driver links with rust-lld; at sample time zero
-  comments (opened 15:42Z, sampled 18:2xZ). Relevant to building mold, not to mold's linking.
+  comments (opened 15:42Z, sampled around 18:20Z). Relevant to building mold from source, not to
+  mold's linking behavior; the link-path probe shows this host's rustc also defaults to the
+  self-contained rust-lld, so the failure mode is reachable for host from-source builds, while
+  the container build uses Fedora rustc 1.98.1 (phase B outcome in "Validation results").
   #1706, #1707, #1661, #1704, #1703: feature requests and packaging feedback, all open,
   updated within the last two days.
   #1701 open: "mold silently ignores --no-mmap-output-file" (a silent-ignore bug report).
@@ -325,9 +344,16 @@ Access date for all URLs and API calls: 2026-10-05. Clone path for all `path:lin
   (`cli/Cargo.toml:17-18`, `https://github.com/rui314/mimalloc_rust` rev
   `3979460494f1cd1e7f936cb8e10f41e927c9f698`; lock entries `libmimalloc-sys 0.1.49`,
   `mimalloc 0.1.52`), a same-author package that extends the audit surface and requires git
-  fetching at build time; `--features system-allocator` removes it. `libz-sys`, `zstd-sys`,
-  `blake3`, `crc32fast`, `libmimalloc-sys`, `cc` are expected build-script (C-compiling) crates;
-  the exact enumeration runs after `cargo fetch` in the execution phase.
+  fetching at build time; `--features system-allocator` removes it.
+  Enumerated after `cargo fetch --locked` in phase N2 (find over the fetched registry sources and
+  git checkouts): 16 registry build scripts (`blake3`, `cpp_demangle`, `crc32fast`,
+  `crossbeam-deque`, `crossbeam-epoch`, `crossbeam-utils`, `getrandom`, `libc`, `libz-sys`,
+  `portable-atomic`, `proc-macro2`, `quote`, `rayon-core`, `serde_core`, `zstd-safe`, `zstd-sys`),
+  plus `libmimalloc-sys/build.rs` in the pinned git checkout (it compiles the vendored
+  microsoft/mimalloc submodule, fetched at revs `02a2f5df9d7d46d30263b83832eebeeab62dc5fe` and
+  `d4881d338125e1cb7c47ba4cfb398d6f7c0c8d45` per the fetch log), plus mold's own `build.rs` and
+  `cli/build.rs` (cc compiles `c/mold-wrapper.c` and `c/lto-message.c`; `git` embeds the commit
+  hash at build time).
 - Source quality indicators: `rustfmt.toml` present; workspace-wide edition 2024,
   `rust-version = 1.95`; release profile `panic = "abort"`; unsafe usage concentrated in
   `src/lto.rs` (69 matches, LLVM plugin C API), `src/elf.rs` (27), `src/symbol.rs` (25),
@@ -377,56 +403,109 @@ suite plus a 20-arch release build under 2 CPUs would exceed reasonable wall-clo
 all phases remain in a disposable container with no ambient credentials, no real home mount, and a
 private scratch volume), network enabled only during the fetch phase, `--network=none` afterwards.
 
-- Phase N (fetch, network on): image `registry.fedoraproject.org/fedora:44` (digest recorded on
-  pull); `dnf install` per `install-test-deps.sh` fedora branch (curl, gcc-c++, glibc-static,
-  libstdc++-static, diffutils, util-linux, tar) plus gcc, git, zlib-devel; rustup stable per the
-  clone's `rust-toolchain.toml` (channel stable, from static.rust-lang.org);
-  `cargo fetch --locked` (crates.io and static.crates.io; plus `git fetch` of the pinned
-  mimalloc_rust rev from github.com with `CARGO_NET_GIT_FETCH_WITH_CLI=true`).
-  Expected writes: container overlay plus named volumes for `CARGO_HOME` and `CARGO_TARGET_DIR`.
-  Expected subprocesses: dnf, rustup, cargo, git, cc. Success condition: `cargo fetch --locked`
-  exits 0; then enumerate build-script crates from the fetched registry sources.
-- Phase B (build and test, network off): CI distro-job equivalent for Fedora x86_64:
-  `cargo build --locked -p mold-cli --no-default-features --features x86_64` then
+- Phase N/N2 (fetch, network on): executed. Image `registry.fedoraproject.org/fedora:44`, pulled
+  digest
+  `sha256:86289176d4a4af5c9b9c9df225eed4489f075bb67549411da2e0d4c121854491`; flags
+  `--cpus 4 --memory 8g --pids-limit 1024` (recorded deviation from the 2 CPU / 2 GiB default:
+  the host has 16 cores with roughly 25 GiB available, and the rustc links of mold-cli are
+  memory-heavy per upstream issue #1708); volumes `mold-eval-root` at `/root` (CARGO_HOME and
+  CARGO_TARGET_DIR) and the pinned clone bind-mounted read-only at `/src` with the SELinux shared
+  label `:z` (host Enforcing). `dnf install` per the `install-test-deps.sh` fedora branch plus
+  gcc, git, zlib-devel, rust, cargo (deviation from the planned rustup-stable: distro packages
+  avoid a curl-piped installer; the measured container toolchain is Fedora rustc/cargo 1.98.1,
+  which satisfies the manifest `rust-version = 1.95`). `cargo fetch --locked` with
+  `CARGO_NET_GIT_FETCH_WITH_CLI=true` downloaded the crates.io index and every locked crate, the
+  pinned mimalloc_rust rev `3979460494f1cd1e7f936cb8e10f41e927c9f698`, and its two
+  microsoft/mimalloc submodule revs. Success condition met: exit 0 under `set -eux`, marker
+  `PHASE_N2_DONE`, elapsed 27.8 s warm. The provisioned container was committed as image
+  `localhost/mold-eval:v3.0.0-deps-n2`
+  (`sha256:51ad0a3946265912e7aa173b3e2da25e01b3852170dc0f54ad78f45f74e371db`) so every later
+  phase runs from a fixed dependency state with the network off.
+- Phase B (build and test, `--network=none`, `CARGO_NET_OFFLINE=true`, from the committed image):
+  executed. `cargo build --locked -p mold-cli --no-default-features --features x86_64` (debug),
+  `cargo build --release --locked -p mold-cli --no-default-features --features x86_64` (the
+  parity binary for phase C2), then
   `cargo test --locked -p mold-cli --no-default-features --features x86_64 --test integration --
-  --native`. Wall-clock ceiling 60 minutes (matches upstream `timeout-minutes: 60`).
-  Success: exit 0; failures diagnosed individually.
-- Phase R (release build, network off): `cargo build --release --locked` (default features,
-  all 20 arches, the distributed configuration). Wall-clock ceiling 90 minutes. Output:
-  `target/release/mold` and `mold-wrapper.so`, used for consumer-boundary tests.
-  Known risk: rust-lld default-driver failure per issue #1708; if reproduced, the fallback driver
-  flag is recorded and the failure is diagnosed, not silently worked around.
-- Phase C (prebuilt verification, network on): download
-  `mold-3.0.0-x86_64-linux.tar.gz` from the v3.0.0 release, `sha256sum` against the published
-  digest `6c90d4a474c7c0409dfb575be03a5345878ac14fdba18de8b40fa58c60121189`, extract, run
-  `--version`, link a hello-world with both the prebuilt and the source-built binary, compare
-  `readelf -p .comment` identification.
-- Phase D (reproducibility attempt, network on, optional): `./dist.sh x86_64` in a full clone on
-  the host under podman (pinned Debian snapshot image, pinned Rust toolchain, `--locked` deps),
-  comparing the resulting tarball's mold binary digest with the published asset. If skipped, the
-  reason and the evidence that HC4 is nevertheless met are recorded.
-- Phase E (consumer boundary, host, incumbent tooling): disposable git worktree of this repository
-  at HEAD (`~/temp/agent/wt-mold-eval`), isolated `CARGO_TARGET_DIR`/build dir under
-  `~/temp/agent`, mold binary from phase R exposed as `ld.mold` on `PATH`,
-  `RUSTFLAGS="-C link-arg=-fuse-ld=mold"`. Crates: `package/cli/forbidden-strings`,
-  `package/linter/monochromatic-lint`, `package/git-policy/cli`. Steps: hello-world driver check
-  (GCC 16.2.1 accepts `-fuse-ld=mold`), full `cargo build` and test-suite runs under both linkers,
-  interleaved relink timing (5 runs per linker after `touch` of the crate root, medians and
-  spread reported per the noise rule), `readelf -p .comment` verification, and one real CLI
-  invocation per built binary. No repository file is modified; no shared cargo build-dir
-  fingerprints are churned. Deviation note: raw `cargo` is used instead of `mise run` tasks
-  because the experiment requires environment overrides that tasks do not accept, and the
-  evaluation must not modify task configuration; recorded per the skill's omission rules.
+  --native`. Wall-clock ceiling 60 minutes (matches upstream `timeout-minutes: 60`); actual
+  elapsed 151 s. Outcome in "Validation results": pass, 519 pass / 39 skip / 0 fail.
+- Phase R (all-arch release build): omitted with evidence. Exact omitted command:
+  `cargo build --release --locked` with default features (20 arches). The all-arch artifact class
+  is exactly the release tarball whose published digest phase C1 verified and which the inspected
+  tag CI built green; this repository consumes x86_64-linux-gnu links only, which the phase B
+  release configuration (the fedora distro CI job's feature set) covers.
+- Phase C1 (prebuilt verification): executed. Host download with curl of
+  `mold-3.0.0-x86_64-linux.tar.gz` from the v3.0.0 release (download and `tar` only, no host
+  execution at this step); `sha256sum --check` against the GitHub-published digest
+  `6c90d4a474c7c0409dfb575be03a5345878ac14fdba18de8b40fa58c60121189`: OK. First execution of the
+  extracted `bin/mold` happened inside the committed container image, `--network=none`, default
+  2 CPU / 2 GiB isolation: `--version`, a GCC 16.2.1 hello world linked through
+  `-fuse-ld=mold` with `ld.mold` symlinked on PATH, execution of the result,
+  `readelf -p .comment`, `ldd`. Elapsed 0.8 s.
+- Phase C2 (prebuilt versus source-built parity): executed. One offline container at default
+  isolation linked the same C source through the tarball binary and the phase B release binary;
+  compared version strings, runtime behavior, `.comment` identification, and output bytes with
+  `cmp`. Elapsed 3.6 s. Outcome in "Validation results".
+- Phase D (reproducibility attempt, optional): `./dist.sh x86_64` on the host under podman
+  (pinned Debian snapshot image, pinned Rust toolchain with SHA-256, `--locked` deps), comparing
+  the resulting binary digest with the published asset. Decided after phase E; HC4 is already met
+  by the tag-to-commit mapping, the verified asset digest, the matching embedded commit hash in
+  both the prebuilt and the source-built binary (phases C1, C2), and the inspected green tag CI.
+  If skipped, the reason is recorded.
+- Phase E (consumer boundary, host, incumbent tooling): pending. Disposable git worktree of this
+  repository created at commit `b8ade98f5` (`~/temp/agent/wt-mold-eval`; concurrent sessions
+  committed to main during this evaluation, the worktree stays pinned). Isolation probe measured
+  first: the `CARGO_TARGET_DIR` environment variable overrides the host-level `build.build-dir`
+  setting (probe artifact landed in the scratch directory), so experiments set
+  `CARGO_TARGET_DIR` under `~/temp/agent` and never churn shared cargo fingerprints.
+  mold binary: the digest-verified prebuilt from phase C1, exposed as `ld.mold` in a scratch PATH
+  directory; `RUSTFLAGS="-C link-arg=-fuse-ld=mold"`. Host execution of the prebuilt is a
+  recorded deviation from container isolation, justified by: the consumer boundary requires the
+  host rustc 1.100-nightly toolchain and the shared cargo registry cache; the binary's command
+  tree is audited (no network code anywhere in `src/`; subprocess spawn only under the explicit
+  `mold -run` flag, which these tests never pass; writes confined to the linker output paths
+  rustc provides); and the exact artifact digest matches the upstream CI output.
+  Crates: `package/cli/forbidden-strings`, `package/linter/monochromatic-lint`,
+  `package/git-policy/cli`. Steps per crate: full `cargo build` and `cargo test` under the
+  incumbent rust-lld and under mold; interleaved relink timing (5 runs per linker after touching
+  the crate root, medians and spread reported per the noise rule); `readelf -p .comment`
+  verification of a mold-linked binary; one real CLI invocation per built binary. Raw `cargo`
+  instead of `mise run` tasks is a recorded deviation: tasks accept no environment overrides and
+  the evaluation must not modify task configuration.
   `package/music-player/desktop-app` cannot receive env `RUSTFLAGS` because its
-  `.cargo/config.toml` sets target-table rustflags that take precedence; that crate's mold
-  integration is an adoption-time config edit, recorded as SC3 evidence instead of a test run.
+  `.cargo/config.toml` sets target-table rustflags that take precedence; mold integration for
+  that crate is an adoption-time config edit, recorded as SC3 evidence instead of a test run.
 
 Undeclared command, write, or network endpoint discovered during any phase stops that phase for
 manifest update and inspection before continuing.
 
 ## Validation results
 
-Pending. This section is filled in as phases N, B, R, C, D, and E complete.
+- Phase N2 (fetch and lifecycle-surface enumeration, network on): pass, exit 0 under `set -eux`.
+- Phase B (offline build and native integration suite): pass. Dev profile finished in 33.07 s,
+  release profile in 44.36 s, no compiler warnings; the integration harness reported
+  `x86_64: pass=519 skip=39 fail=0`; the source-built binary reports
+  `mold 3.0.0 (8de38c35a2df16a25f7ff87ac3ad07156a925beb; compatible with GNU ld)`. Total elapsed
+  151 s. The 39 skips are per-script self-skips (`tests/lib.rs:459-463` reads a `skipped` marker
+  line from each test log): the fedora dependency set installs no clang, gdb, or cross
+  toolchains, so those tests opt out; upstream CI runs the same suite on ubuntu-24.04 with clang,
+  gdb, ten cross toolchains, QEMU, and Intel SDE and was green on the v3.0.0 tag
+  (`gh run list`, 2026-10-05T07:13Z). Issue #1708's rust-lld failure did not reproduce: Fedora
+  rustc 1.98.1's default driver linked mold-cli successfully in both profiles.
+- Phase C1 (prebuilt digest, first execution, driver flag, `.comment` identification): pass.
+  Digest OK; `--version` embeds the pinned tag commit; the linked hello world ran and links only
+  libc.
+- Phase C2 (prebuilt versus source-built parity): pass. Byte-identical executables from both
+  binaries (`cmp` reported no difference), both ran, both carry the mold `.comment`
+  identification.
+- Harness failures (mine, invalidating, rerun): the first phase N and phase B payloads ran under
+  `set -x` without `set -e`, so their exit 0 came from the trailing marker echo; the first phase
+  B run found `cargo: command not found` for all three commands (6 s elapsed, zero work done)
+  because the dnf-provisioned packages lived in the `--rm`'d phase N container overlay while only
+  the `/root` volume persisted; the first phase N build-script enumeration used
+  `find -maxdepth 2`, one level too shallow for `registry/src/<index>/<crate>/build.rs`.
+  Fixes: `set -eux` payloads, the committed provisioned image for offline phases, `maxdepth 3`,
+  and full reruns. The invalid runs are excluded from evidence.
+- Phase E (consumer boundary): pending.
 
 ## Score arithmetic
 
@@ -465,9 +544,7 @@ Pending. The recommendation is stated only after validation, scoring, and sensit
 
 ## Open items
 
-- Run phases N, B, R, C, E; decide on phase D after C.
-- Check whether rustc 1.100-nightly on this host uses rust-lld or cc by default for the hello
-  world probe (bears on issue #1708 relevance and on phase R).
+- Run phase E; decide on phase D.
 - Freeze ratings, run the one-at-a-time sensitivity matrix, and if an input controls the order
   between speed benefit and maturity risk, ask the user for that preference with options before
   finalizing.
