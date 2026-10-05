@@ -185,3 +185,74 @@ so an unscoped campaign could record timeouts that are only a slow host.
 and 84 `builtin(require-rustdoc)` findings,
 one fewer than the 85 recorded before this work;
 none is on an item added here.
+
+## Executable campaign
+
+### Scope
+
+No campaign had mutated the executable's modules.
+`mutation:executable`
+(`bin/mutate-container.mjs --executable`)
+mutates `src/run_*.rs`,
+`src/main.rs`,
+`src/rust_dispatch.rs` and `src/rust_rule_settings.rs`:
+188 mutants at the first snapshot.
+`mutation:list:executable` prints the scope without building.
+The Markdown modules the executable added
+(`markdown_lfs_*`,
+`markdown_dispatch.rs` and `markdown_rule_settings.rs`)
+are inside the Markdown scope's `src/markdown_*.rs` glob,
+so they are dispositioned under `Markdown campaign` instead of being mutated twice.
+`rust_dispatch.rs` and `rust_rule_settings.rs` predate the executable
+but had never been mutated,
+and they are the Rust half of the same dispatch and rule-settings layer.
+
+### Test selection
+
+`main.rs` and the real streams are reached only by the `binary` test target,
+and its ten test names share no substring a positive filter could select.
+The scope therefore runs every test
+and passes libtest `--skip` for the suites that load real Cargo workspaces:
+`rust_explicit_types`,
+`rust_file_engine`,
+`rust_inferred_constants`,
+`rust_semantic_session` and `rust_workspace`.
+Those suites also call `check_syntax_rules`,
+which the orchestration,
+processor and Rust-rule tests that stay in reach as well.
+The unmutated baseline of the first campaign built in 84 seconds and tested in 1 second,
+so the 180 second limit was left unchanged.
+Its log shows the selection took effect:
+369 library tests ran with 9 filtered out,
+then the 10 `binary` tests.
+
+## Remaining
+
+### Never-mutated files outside this brief
+
+No campaign has mutated these production files,
+and none of the three scopes here includes them
+(counts from `cargo mutants --list --no-config` at the first executable snapshot):
+
+- `src/file_discovery.rs`: 20 mutants.
+- `src/fix_loop.rs`: 5 mutants.
+- `src/path_inputs.rs`: 25 mutants.
+- `src/rust_file_engine.rs`: 5 mutants.
+- `src/rust_toolchain.rs`: 4 mutants.
+- `src/rust_workspace.rs`: 14 mutants.
+- `src/cli_options.rs` and `src/lib.rs`: none generated.
+
+The first three are executable orchestration that predates the executable work
+and run with the fast tests,
+so they would fit the executable scope at little cost.
+The last three are only reached by the Cargo-workspace suites the executable scope skips,
+so they need a scope with those suites and a measured per-mutant limit.
+`src/processors_consumer.rs` is a standalone consumer program outside the module tree.
+
+### Whole-suite duration
+
+The whole library suite took 183.94 seconds in one gate run and 107.20 seconds in the next,
+on unchanged tests.
+The unscoped `mutation` task would record some mutants as timeouts on a loaded host.
+Every scope here filters the suite,
+so none of them is affected.
