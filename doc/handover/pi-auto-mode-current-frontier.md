@@ -68,6 +68,54 @@ not applied to protected `AGENTS.md`:
 expand the existing owner-discovery rule to cover UI and workflow implementations,
 so incumbent discovery precedes replacement work.
 
+## Current batched instruction-meaning integration
+
+The private `batched-prerequisite-wire` adapter now carries distinct original clause claims
+in one request,
+using fixed pre-authored wire slots.
+Slots correlate answers;
+they are not new semantic definition IDs or permission records.
+The exact complete policy and original parent,
+prepared group,
+and main request remain in the assessment.
+
+The fixed `states_approval_prerequisite` predicate asks about clause meaning,
+not member applicability.
+The original judgment now shares that claim across prepared-member selectors.
+Generic member claims cannot issue this predicate,
+and other predicates retain member-specific bindings.
+This avoids resampling the same clause meaning through another member or wire slot.
+
+`proc_5b5e` passed 32 synthetic transport controls,
+including swapped clauses,
+reversed response-key order,
+malformed answers,
+original-deadline expiry,
+cancellation,
+and credential redaction.
+`proc_0eb5` then passed one native SDK session with two local main requests,
+one fake guard attempt,
+two original clause estimates,
+and two independently authorized fixture reads.
+Estimates `0.37` and `0.61` were canned controls,
+not semantic evidence or release decisions.
+
+The exact shared-map omission produced the intended
+`AssertionError: Missing expected exception.`
+The first verifier `proc_60d2` incorrectly expected extension callbacks for admission-blocked calls.
+Its SDK worker exited successfully;
+a separate read-only reconciliation checks the persisted results without replaying that worker.
+See [the verification-boundary incident](../troubleshooting/pi-sdk-staging.md#owned-admission-verifier-confused-extension-callbacks-with-persisted-results).
+
+The batched encoding still needs its own live diagnostic.
+Single-clause results do not qualify this representation.
+Applicability,
+authority,
+full policy coverage,
+current grants,
+and production adoption remain separate.
+Keep using the incumbent Pi approval TUI.
+
 ## Settled design and authorization
 
 - Models estimate narrow semantic axioms;

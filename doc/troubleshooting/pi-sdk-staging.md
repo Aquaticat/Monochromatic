@@ -1636,3 +1636,89 @@ Nothing is filed or drafted upstream.
 - Prototype:
   the correction lives in the owned staging boundary;
   no upstream patch is justified.
+
+## Owned admission verifier confused extension callbacks with persisted results
+
+### Symptom and source
+
+The private Pi SDK 1.0.2 clause-reuse omission worker exited with status zero.
+The separate verifier in `proc_60d2` failed Node's `assert.deepStrictEqual`:
+actual `[]`,
+expected `[true, true]`.
+This was an owned verifier error,
+not a new SDK failure or an absent tool outcome.
+
+Paths in this section are relative to the private consumer-contract repository.
+`contract/collector/instruction-meaning-reuse-omission/verify.mjs` checked the extension callback trace:
+
+```js
+// contract/collector/instruction-meaning-reuse-omission/verify.mjs
+assert.deepEqual(record.trace.map(value=>value.isError),[true,true]);
+```
+
+The private dispatcher catches assessment failure before native execution.
+In `contract/collector/instruction-meaning-sdk-copy/stage-private/prepared-dispatch.mjs:105`,
+the deciding branch is:
+
+```js
+// contract/collector/instruction-meaning-sdk-copy/stage-private/prepared-dispatch.mjs
+}catch(error){failures.push(error);block('Complete group preparation or assessment failed');return {block:true,reason:'Complete group preparation or assessment failed'};}
+```
+
+The staged agent loop separately creates and emits persisted tool-result messages
+at `contract/collector/instruction-meaning-sdk-copy/stage-private/agent-loop.mjs:480`:
+
+```js
+// contract/collector/instruction-meaning-sdk-copy/stage-private/agent-loop.mjs
+const message = createToolResultMessage(finalized);
+await emitToolResultMessage(message, emit);
+```
+
+The callback trace was therefore the wrong evidence surface for this admission failure.
+Do not infer absent outcomes from that empty trace.
+
+### Verification and remedy
+
+The intact `proc_0eb5` case executed both native reads and observed successful extension callbacks.
+The omission replaced shared `instructionMeaningPairs` reuse with a fresh `WeakMap`.
+It retained the exact intended assertion failure:
+`AssertionError`,
+code `ERR_ASSERTION`,
+operator `throws`,
+message `Missing expected exception.`
+Neither native read executed.
+
+The recovery task is `mise --no-env --no-hooks run check`
+from `contract/collector/instruction-meaning-reuse-reconciliation/`.
+It reads the retained worker exit,
+source hashes,
+assertion witness,
+streams,
+outcome,
+and session JSONL.
+It checks native result identities and error messages rather than manufacturing extension callbacks.
+This is read-only reconciliation of a completed worker,
+not another SDK run or broader event qualification.
+The failed verifier and original namespace remain unchanged.
+
+Replaying the SDK worker to repair the verifier,
+treating every exception as an omission witness,
+or weakening native admission would not correct this evidence-boundary error.
+
+### Upstream filing decision
+
+Nothing is filed or drafted upstream.
+
+- Fault:
+  the owned verifier chose the wrong event surface.
+- Fixability:
+  the correction belongs in the owned result verifier.
+- Supported use:
+  this private staged admission profile does not establish a new upstream event contract.
+- Contribution policy:
+  no upstream contribution is proposed.
+- Maintainer disposition:
+  no upstream response or intent is inferred.
+- Prototype:
+  retained-artifact reconciliation tests the local remedy;
+  no upstream patch is justified by this incident.
