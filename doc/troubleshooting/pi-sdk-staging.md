@@ -52,7 +52,7 @@ It is a current comparison,
 not a record that a caller's earlier eligibility assertion failed:
 
 ```javascript
-// Private contract/lifecycle/native-text-read-contract/dependencies.mjs:78
+// Private contract/lifecycle/native-text-read-contract/dependencies.mjs:83
 function checkRetained(handle) { return revalidate({handle,verify:checkSignal}); }
 ```
 
