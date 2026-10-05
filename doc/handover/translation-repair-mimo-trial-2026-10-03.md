@@ -683,6 +683,21 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  05:22 UTC:
+  the next batch's baseline census taken at commit `9fe80a109`:
+  `census written to ~/.cache/translation-repair/coverage/census-aU1H0y/census.json`
+  (`~/temp/agent/mimo-trial/census-final2.log` of this round),
+  `library source: 90 files, 119 stretches over 309 lines, 4 functions never called`.
+  Largest clusters by stretches then lines:
+  `corpus-run/runs` leads with 3 over 9 in 2,
+  `transient` with 3 over 7 in 1,
+  `artifact` with 2 over 17 in 2.
+  This line lands in the trial-log commit that follows `9fe80a109`.
+  Next:
+  the `corpus-run/runs` re-verification
+  with the byte-level method.
+
+- 2026-10-05,
   05:17 UTC:
   `declined` is FULLY COVERED
   (the ledger's
