@@ -99,6 +99,9 @@ pub mod find_navigation;
 /// One bounded in-file find job; replies are tagged by file generation, revision, and query.
 pub mod find_worker;
 
+/// Match rectangles for materialized rows share selection's shaped geometry.
+pub mod find_paint;
+
 /// Unmodified variable and real italic font assets with stable source-font identities.
 pub mod font_asset;
 

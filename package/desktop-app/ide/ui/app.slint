@@ -2,6 +2,7 @@
 import { Palette } from "std-widgets.slint";
 import { ProjectTree, TreeEntry } from "tree.slint";
 import { ProjectSearch, SearchEntry } from "search.slint";
+import { FindBar } from "find.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -63,9 +64,25 @@ export component AppWindow inherits Window {
         scroll.content-y = -min(max(0, line) * root.line-height, max(0px, scroll.content-height - scroll.height));
     }
 
+    in-out property <bool> find-open;
+    in-out property <string> find-query;
+    in property <string> find-status;
+    in property <string> find-status-detail;
+    in property <bool> find-no-match;
+    in property <string> find-error;
+    out property <bool> find-has-focus: find-bar.query-has-focus;
+    callback find-request;
+    callback find-edited(string);
+    callback find-navigate(int);
+    callback find-dismiss;
+    public function focus-find() { find-bar.focus-query(); }
+
     in property <bool> source-available: true;
     in property <image> source-image;
     in property <[SourceSelection]> source-selections;
+    // Visible in-file find matches except the active one, which is the selection itself.
+    in property <[SourceSelection]> source-matches;
+    in property <bool> selection-is-match;
     in property <float> image-x;
     in property <float> image-y;
     in property <float> image-width;
@@ -84,7 +101,9 @@ export component AppWindow inherits Window {
     in property <int> selection-anchor;
     in property <int> selection-head;
     in-out property <length> scroll-y: 0px;
+    in-out property <length> scroll-x: 0px;
     out property <float> viewport-height: scroll.height / 1px;
+    out property <float> viewport-width: (scroll.width - root.gutter-width) / 1px;
     private property <length> line-height: 24px;
     private property <length> gutter-width: 56px;
     private property <length> font-size: 15px;
@@ -121,6 +140,15 @@ export component AppWindow inherits Window {
         height: parent.height;
         capture-key-pressed(event) => {
             root.shortcut-observed(event.text, true);
+            if event.modifiers.control && !event.modifiers.shift && !event.modifiers.alt && (event.text == "f" || event.text == "F") {
+                root.find-request();
+                return accept;
+            }
+            // The modal search overlay is the topmost surface while open and handles its own Escape.
+            if event.text == Key.Escape && root.find-open && !root.search-open {
+                root.find-dismiss();
+                return accept;
+            }
             reject
         }
         capture-key-released(event) => {
@@ -193,6 +221,7 @@ export component AppWindow inherits Window {
                     content-width: max(self.width, root.document-width * 1px + root.gutter-width);
                     content-height: max(self.height, root.total-lines * root.line-height);
                     content-y <=> root.scroll-y;
+                    content-x <=> root.scroll-x;
                     accessible-role: region;
                     accessible-label: "Source viewport";
                     accessible-value: self.content-y / 1px;
@@ -209,6 +238,20 @@ export component AppWindow inherits Window {
                         width: selection.width * 1px;
                         height: selection.height * 1px;
                         background: Palette.selection-background;
+                        // The active match is the selection plus a heavier boundary than other matches.
+                        border-width: root.selection-is-match ? 2px : 0px;
+                        border-color: Palette.foreground;
+                    }
+
+                    // Other matches: a translucent fill and a thin boundary, drawn over any selection beneath.
+                    for found in root.source-matches: Rectangle {
+                        x: root.gutter-width + found.x * 1px;
+                        y: found.y * 1px;
+                        width: found.width * 1px;
+                        height: found.height * 1px;
+                        background: Palette.foreground.with-alpha(0.14);
+                        border-width: 1px;
+                        border-color: Palette.foreground.with-alpha(0.7);
                     }
 
                     Image {
@@ -261,6 +304,20 @@ export component AppWindow inherits Window {
                         }
                     }
                 }
+            }
+
+            find-bar := FindBar {
+                visible: root.find-open;
+                height: root.find-open ? self.bar-height : 0px;
+                open: root.find-open;
+                query <=> root.find-query;
+                status: root.find-status;
+                status-detail: root.find-status-detail;
+                no-match: root.find-no-match;
+                error-message: root.find-error;
+                edited(text) => { root.find-edited(text); }
+                navigate(delta) => { root.find-navigate(delta); }
+                shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
             }
 
             if root.error-message != "": Text {

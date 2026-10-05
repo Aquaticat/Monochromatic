@@ -7,7 +7,11 @@
 /// ```ts
 /// import { type State, AppWindow, SourceSelection } from '../native';
 /// ```
-use super::{AppWindow, State, ui::SourceSelection};
+use super::{AppWindow, State, find::present::present, ui::SourceSelection};
+/// Match rectangles come from the same shaped rows as selection rectangles.
+use ide_app::find_navigation::paint_ranges;
+/// Only matches inside the materialized rows and horizontal tile become native rectangles.
+use ide_app::find_paint::rectangles;
 /// Physical viewport description for shared shaping.
 use ide_app::shaped_text::Viewport;
 /// Exact paint inputs exclude collapsed caret movement.
@@ -50,13 +54,23 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     // if (!samePaintInputs(previous, next)) pixels = paint(prepare(document));
     // ```
     let mut rendered_pixels = None;
+    // Stale or absent find results yield an empty list, so outdated positions are never drawn.
+    let ranges = paint_ranges(
+        &current.find,
+        current.file_generation,
+        current.document.revision(),
+    );
+    let found = present(&current);
     let stamp = FrameStamp::new(
         &current.document,
         viewport,
         horizontal,
         colors,
         Arc::clone(&current.styles),
-    );
+    )
+    .with_matches(Arc::clone(&ranges));
+    // Match rectangles change only together with the frame, never on caret-only updates.
+    let mut rendered_matches = None;
     if current.frame_stamp.as_ref() != Some(&stamp) {
         // Destructure the mutable borrow so caches can update while source is lent read-only.
         let State {
@@ -66,7 +80,24 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
             raster,
             ..
         } = &mut *current;
-        let view = shaper.prepare(document, viewport, styles);
+        let mut view = shaper.prepare(document, viewport, styles);
+        view.matches = rectangles(
+            &view,
+            &ranges,
+            found.active,
+            horizontal,
+            horizontal + viewport.width,
+        );
+        let mut marks = Vec::new();
+        for rect in &view.matches {
+            marks.push(SourceSelection {
+                x: rect.x,
+                y: rect.y,
+                width: rect.width,
+                height: rect.height,
+            });
+        }
+        rendered_matches = Some(marks);
         // Propagate raster failure visibly rather than retaining misleading old source pixels.
         match raster.paint(&view, colors, horizontal) {
             Ok(image) => {
@@ -142,6 +173,15 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     }
     window.set_error_message(SharedString::from(diagnostic));
     window.set_source_selections(ModelRc::from(Rc::new(VecModel::from(selections))));
+    window.set_selection_is_match(found.active.is_some());
+    if let Some(marks) = rendered_matches {
+        window.set_source_matches(ModelRc::from(Rc::new(VecModel::from(marks))));
+    }
+    if let Some(status) = found.status {
+        window.set_find_status(SharedString::from(status.label));
+        window.set_find_status_detail(SharedString::from(status.detail));
+        window.set_find_no_match(status.no_match);
+    }
     window.set_document_width(document_width);
     window.set_caret_x(caret.x);
     window.set_caret_y(caret.y);

@@ -61,6 +61,8 @@ pub struct ShapedView {
     pub height: u32,
     /// Shared logical selection rectangles drive both native backgrounds and glyph clipping.
     pub selections: Vec<ReadingRect>,
+    /// In-file find rectangles from the same row geometry; filled by the native renderer.
+    pub matches: Vec<ReadingRect>,
 }
 
 /// Own font discovery and shaping scratch space, rather than recreate per glyph.
@@ -214,6 +216,7 @@ impl TextShaper {
             width,
             height,
             selections: Vec::new(),
+            matches: Vec::new(),
         };
         view.selections = view.selection(document);
         return view;
@@ -293,6 +296,12 @@ impl ShapedView {
         let position = document.position();
         let start = position.anchor.min(position.head);
         let end = position.anchor.max(position.head);
+        return self.range(start, end);
+    }
+
+    /// Return per-line rectangles for any source character range in the materialized rows.
+    /// Selection and in-file find matches share this path, so neither reshapes a ligature.
+    pub fn range(&self, start: usize, end: usize) -> Vec<ReadingRect> {
         let mut result = Vec::new();
         for shaped in &self.rows {
             let len = shaped.projection.source_to_byte.len() - 1;

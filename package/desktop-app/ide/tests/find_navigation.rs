@@ -4,8 +4,11 @@
 use ide_app::find::{FindMatches, MAX_FIND_MATCHES, find_matches};
 /// The helpers under test are pure; the native bar only applies their answers.
 use ide_app::find_navigation::{
-    FindResults, active, at_or_after, at_or_before, current_matches, paint_ranges, status, visible,
+    FindResults, active, at_or_after, at_or_before, navigable_matches, paint_ranges,
+    positioned_matches, status, visible,
 };
+/// Accepted results are tagged exactly like worker replies.
+use ide_app::find_worker::FindIdentity;
 
 /// Three matches at 0..2, 6..8, and 12..14 with gaps between them.
 fn matches() -> FindMatches {
@@ -124,17 +127,26 @@ fn status_text_names_active_total_truncation_and_no_match() {
     assert!(absent.no_match);
 }
 
-/// Results painted or navigated for another file generation or revision would use wrong positions.
+/// The tag of the accepted fixture results: file generation 3, revision 5, query 7.
+fn accepted_identity() -> FindIdentity {
+    return FindIdentity {
+        file: 3,
+        revision: 5,
+        query: 7,
+    };
+}
+
+/// Results painted for another file generation or revision would mark wrong positions.
 #[test]
-fn results_are_usable_only_for_their_file_generation_and_revision() {
+fn results_are_painted_only_for_their_file_generation_and_revision() {
     // What: `Some(...)` wraps present results; `None` would mean the bar has no accepted results.
     // Why: The native state stores accepted results as an optional value.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const accepted: FindResults | undefined = new FindResults(3, 5, matches());
+    // const accepted: FindResults | undefined = new FindResults(identity, matches());
     // ```
-    let accepted = Some(FindResults::new(3, 5, matches()));
+    let accepted = Some(FindResults::new(accepted_identity(), matches()));
     assert_eq!(
         paint_ranges(&accepted, 3, 5).len(),
         3,
@@ -150,9 +162,38 @@ fn results_are_usable_only_for_their_file_generation_and_revision() {
         0,
         "matches from another content revision were painted"
     );
-    assert!(current_matches(&accepted, 3, 5).is_some());
-    assert!(current_matches(&accepted, 4, 5).is_none());
-    assert!(current_matches(&accepted, 3, 6).is_none());
+    assert!(positioned_matches(&accepted, 3, 5).is_some());
+    assert!(positioned_matches(&accepted, 4, 5).is_none());
+    assert!(positioned_matches(&accepted, 3, 6).is_none());
     assert_eq!(paint_ranges(&None, 3, 5).len(), 0);
-    assert!(current_matches(&None, 3, 5).is_none());
+    assert!(positioned_matches(&None, 3, 5).is_none());
+}
+
+/// Enter must not step through matches of another file, revision, or superseded find text.
+#[test]
+fn results_are_navigable_only_for_their_exact_identity() {
+    let accepted = Some(FindResults::new(accepted_identity(), matches()));
+    assert!(
+        navigable_matches(&accepted, accepted_identity()).is_some(),
+        "positive control: current results are navigable"
+    );
+    let mut other_file = accepted_identity();
+    other_file.file = 4;
+    assert!(
+        navigable_matches(&accepted, other_file).is_none(),
+        "matches from another file generation were navigable"
+    );
+    let mut other_revision = accepted_identity();
+    other_revision.revision = 6;
+    assert!(
+        navigable_matches(&accepted, other_revision).is_none(),
+        "matches from another content revision were navigable"
+    );
+    let mut other_query = accepted_identity();
+    other_query.query = 8;
+    assert!(
+        navigable_matches(&accepted, other_query).is_none(),
+        "matches from a superseded query were navigable"
+    );
+    assert!(navigable_matches(&None, accepted_identity()).is_none());
 }

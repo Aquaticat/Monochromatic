@@ -16,6 +16,8 @@ mod ui {
 
 /// Source-open errors identify their input instead of exposing an unlabelled I/O failure.
 use anyhow::{Context, bail};
+/// Accepted in-file matches carry the file generation and revision they describe.
+use ide_app::find_navigation::FindResults;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
@@ -39,6 +41,14 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
+/// In-file find bar, worker polling, and selection-based match navigation.
+mod find;
+/// File switching and the modal search overlay must coexist with an open find bar.
+#[cfg(test)]
+mod find_interplay_tests;
+/// Real key events drive the find bar, reloads, file switches, and the search overlay together.
+#[cfg(test)]
+mod find_tests;
 /// Native font instance changes must repaint rather than reuse stale glyphs.
 #[cfg(test)]
 mod font_tests;
@@ -121,6 +131,8 @@ struct State {
     presented_revision: Option<u64>,
     /// Last materialized image inputs; reset when changing the displayed file.
     frame_stamp: Option<FrameStamp>,
+    /// Accepted in-file matches; painted only while they describe the displayed file and revision.
+    find: Option<FindResults>,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
@@ -146,6 +158,7 @@ impl State {
             shaped: None,
             presented_revision: None,
             frame_stamp: None,
+            find: None,
         };
     }
 }
@@ -201,6 +214,8 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     // Retain the timer until window shutdown; its Drop also closes and joins the worker.
     let _reload_timer = reload::bind(&window, &state)?;
     bind_appearance(&window, &state);
+    // Retain the timer until window shutdown; its Drop also closes and joins the find worker.
+    let _find_timer = find::bind(&window, &state)?;
     let _navigation_timer = navigation::bind(&window, &state, workspace)?;
     render(&window, &state);
     if state.borrow().file_path.is_none() {

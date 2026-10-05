@@ -2,6 +2,8 @@
 
 /// Canonical source revision and selection define source paint inputs.
 use crate::document::Document;
+/// In-file find ranges are painted from the same shaped rows as selection.
+use crate::find::FindRanges;
 /// Physical tile geometry determines materialized rows and font scale.
 use crate::shaped_text::Viewport;
 /// Syntax spans belong to the source paint key even when text is unchanged.
@@ -31,6 +33,8 @@ pub struct FrameStamp {
     colors: CodeColors,
     /// Shared immutable classifications prevent copying the whole span list on each caret step.
     styles: SourceStyles,
+    /// Shared immutable in-file find ranges; empty while the find bar shows nothing.
+    matches: FindRanges,
 }
 
 /// Compare exact paint inputs, using shared snapshot identity before comparing new span contents.
@@ -42,7 +46,8 @@ impl PartialEq for FrameStamp {
             && self.viewport == other.viewport
             && self.horizontal == other.horizontal
             && self.colors == other.colors
-            && (Arc::ptr_eq(&self.styles, &other.styles) || self.styles == other.styles);
+            && (Arc::ptr_eq(&self.styles, &other.styles) || self.styles == other.styles)
+            && (Arc::ptr_eq(&self.matches, &other.matches) || self.matches == other.matches);
     }
 }
 
@@ -73,6 +78,14 @@ impl FrameStamp {
             horizontal,
             colors,
             styles,
+            matches: Arc::from([]),
         };
+    }
+
+    /// Replace the in-file find ranges of this stamp; a different match list is a different frame.
+    /// The stamp is consumed and returned so existing callers without matches stay unchanged.
+    pub fn with_matches(mut self, matches: FindRanges) -> Self {
+        self.matches = matches;
+        return self;
     }
 }

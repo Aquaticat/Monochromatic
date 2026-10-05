@@ -2,6 +2,8 @@
 
 /// Match ranges and their shared list come from the single matching function.
 use crate::find::{FindMatches, FindRange, FindRanges};
+/// Accepted results keep the tag of the request that produced them.
+use crate::find_worker::FindIdentity;
 /// What: `Arc` shares one immutable allocation between owners.
 /// Why: A stale result returns an empty list without copying or exposing its outdated ranges.
 ///
@@ -95,7 +97,8 @@ pub fn visible(ranges: &[FindRange], start: usize, end: usize) -> &[FindRange] {
 }
 
 /// Visible count text and its spoken form; the two strings always describe the same state.
-#[derive(Clone, Debug, PartialEq, Eq)]
+/// The default is empty text: no find text, so nothing to count.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct FindStatus {
     /// Compact "active/total" text, or "No matches".
     pub label: String,
@@ -150,30 +153,41 @@ pub fn status(matches: &FindMatches, active_index: Option<usize>) -> FindStatus 
     };
 }
 
-/// Accepted matches remember the displayed file and revision whose positions they describe.
+/// Accepted matches remember the file generation, revision, and query that produced them.
 pub struct FindResults {
-    /// File-open generation at acceptance.
-    file: u64,
-    /// Content revision at acceptance.
-    revision: u64,
+    /// Tag copied from the accepted worker reply.
+    identity: FindIdentity,
     /// Shared ranges and truncation state.
     matches: FindMatches,
 }
 
-/// Results are read only through an identity check, so stale positions cannot be painted.
+/// Results are read only through identity checks, so stale positions cannot be painted or navigated.
 impl FindResults {
-    /// Record matches for exactly one displayed file generation and content revision.
-    pub fn new(file: u64, revision: u64, matches: FindMatches) -> Self {
-        return Self {
-            file,
-            revision,
-            matches,
-        };
+    /// Record matches together with the identity of the reply that carried them.
+    pub fn new(identity: FindIdentity, matches: FindMatches) -> Self {
+        return Self { identity, matches };
     }
 
-    /// Lend matches only while they describe the displayed document; otherwise there is nothing to show.
-    pub fn current(&self, file: u64, revision: u64) -> Option<&FindMatches> {
-        if self.file == file && self.revision == revision {
+    /// Lend matches while their positions describe the displayed document.
+    /// The query may be one edit behind: its highlights stay until the newer reply replaces them.
+    pub fn positioned(&self, file: u64, revision: u64) -> Option<&FindMatches> {
+        if self.identity.file == file && self.identity.revision == revision {
+            return Some(&self.matches);
+        }
+        return None;
+    }
+
+    /// Lend matches only for the exact displayed file, revision, and current find text.
+    /// Enter and Shift+Enter use this, so they never step through matches of a superseded query.
+    pub fn navigable(&self, wanted: FindIdentity) -> Option<&FindMatches> {
+        // What: `&wanted` lends the copied tag to the three-part comparison.
+        // Why: One comparison function decides staleness for worker replies and for navigation.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (isCurrent(this.identity, wanted)) return this.matches;
+        // ```
+        if self.identity.is_current(&wanted) {
             return Some(&self.matches);
         }
         return None;
@@ -181,13 +195,13 @@ impl FindResults {
 }
 
 /// What: `&Option<FindResults>` borrows results that may be absent; the answer borrows from them.
-/// Why: Navigation after a reload or file switch must not move the selection to outdated positions.
+/// Why: Painting and the count text after a reload or file switch must not use outdated positions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function currentMatches(results: FindResults | undefined, file: number, revision: number): FindMatches | undefined;
+/// function positionedMatches(results: FindResults | undefined, file: number, revision: number): FindMatches | undefined;
 /// ```
-pub fn current_matches(
+pub fn positioned_matches(
     results: &Option<FindResults>,
     file: u64,
     revision: u64,
@@ -195,12 +209,23 @@ pub fn current_matches(
     let Some(accepted) = results else {
         return None;
     };
-    return accepted.current(file, revision);
+    return accepted.positioned(file, revision);
+}
+
+/// Matches usable for Enter and Shift+Enter; absent while a newer query, revision, or file is pending.
+pub fn navigable_matches(
+    results: &Option<FindResults>,
+    wanted: FindIdentity,
+) -> Option<&FindMatches> {
+    let Some(accepted) = results else {
+        return None;
+    };
+    return accepted.navigable(wanted);
 }
 
 /// Ranges to paint for the displayed document; stale or absent results paint nothing.
 pub fn paint_ranges(results: &Option<FindResults>, file: u64, revision: u64) -> FindRanges {
-    if let Some(matches) = current_matches(results, file, revision) {
+    if let Some(matches) = positioned_matches(results, file, revision) {
         // What: `Arc::clone` copies the pointer, not the ranges.
         // Why: The frame stamp keeps the same allocation and can compare identity cheaply.
         //

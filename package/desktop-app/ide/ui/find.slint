@@ -1,0 +1,94 @@
+// Transient in-file find. Native code owns match positions and identity; this markup only edits the find text.
+import { LineEdit, Palette } from "std-widgets.slint";
+
+export component FindBar inherits Rectangle {
+    in property <bool> open;
+    in property <string> status;
+    in property <string> status-detail;
+    in property <bool> no-match;
+    in property <string> error-message;
+    in-out property <string> query;
+    out property <bool> query-has-focus: input.has-focus;
+    // The owner sets this height only while open, so a closed bar reserves no space.
+    out property <length> bar-height: root.row-height + (root.error-message == "" ? 0px : error.preferred-height + 8px);
+    callback edited(string);
+    callback navigate(int);
+    callback shortcut(string, bool, bool, bool);
+    public function focus-query() {
+        input.focus();
+        input.select-all();
+    }
+    private property <length> row-height: 56px;
+    background: Palette.background;
+    clip: true;
+    accessible-role: search;
+    accessible-label: "Find in file";
+    forward-focus: input;
+
+    Rectangle {
+        y: 0px;
+        width: parent.width;
+        height: 1px;
+        background: Palette.foreground;
+        opacity: 0.2;
+    }
+
+    // Capture match navigation before the single-line input consumes Return.
+    FocusScope {
+        width: parent.width;
+        height: parent.height;
+        capture-key-pressed(event) => {
+            if event.text == Key.Return {
+                root.navigate(event.modifiers.shift ? -1 : 1);
+                return accept;
+            }
+            // Recent-file shortcuts keep working while the find text has focus; native code decodes the key.
+            if event.modifiers.control {
+                root.shortcut(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
+            }
+            reject
+        }
+        HorizontalLayout {
+            x: 0px;
+            y: 0px;
+            width: parent.width;
+            height: root.row-height;
+            padding: 4px;
+            padding-left: 12px;
+            padding-right: 12px;
+            spacing: 12px;
+            input := LineEdit {
+                enabled: root.open;
+                min-width: 48px;
+                min-height: 48px;
+                max-height: 48px;
+                horizontal-stretch: 1;
+                text <=> root.query;
+                placeholder-text: "Find in file";
+                accessible-label: "Find text";
+                accessible-description: root.status-detail;
+                edited(text) => { root.edited(text); }
+            }
+            Text {
+                horizontal-stretch: 0;
+                text: root.status;
+                color: Palette.foreground;
+                font-weight: root.no-match ? 600 : 400;
+                vertical-alignment: center;
+                horizontal-alignment: right;
+                accessible-role: text;
+                accessible-label: root.status-detail;
+            }
+        }
+        error := Text {
+            visible: root.error-message != "";
+            x: 12px;
+            y: root.row-height;
+            width: parent.width - 24px;
+            text: root.error-message;
+            color: Palette.foreground;
+            font-weight: 600;
+            wrap: word-wrap;
+        }
+    }
+}

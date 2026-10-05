@@ -1,0 +1,184 @@
+//! In-file find beside file switching and the modal search overlay, through real window key events.
+
+/// The complete reader fixture and key helpers of the find tests.
+use super::find_tests::{chord, key, reader, selection, status, type_text};
+/// Bounded waits and tree-row lookup shared with the navigation tests.
+use super::navigation_tests::{row, wait_until};
+/// Real toolkit key events reach the same capture scopes as seat input.
+use slint::{ComponentHandle, Model, platform::Key};
+/// What: `fs` writes disposable fixture files; nothing here touches a real project.
+/// Why: State-changing verification must run against throwaway directories.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as fs from 'node:fs';
+/// ```
+use std::fs;
+
+/// Switching files with the bar open recomputes for the new file and keeps typing in the find input.
+#[test]
+fn native_find_recomputes_for_a_switched_file_and_keeps_input_focus() {
+    let fixture = tempfile::tempdir().expect("disposable switch project");
+    fs::write(
+        fixture.path().join("alpha.txt"),
+        "alpha needle\nand needle\n",
+    )
+    .expect("first fixture");
+    fs::write(
+        fixture.path().join("beta.txt"),
+        "beta: needle needle needle\n",
+    )
+    .expect("second fixture");
+    let reader = reader(fixture.path(), "alpha.txt");
+    let window = &reader.window;
+    wait_until(|| return row(window, "beta.txt").is_some());
+    chord(window, Key::Control, "f");
+    type_text(window, "needle");
+    status(window, "1/2");
+    let generation = reader.source.borrow().file_generation;
+    window.invoke_tree_activate(row(window, "beta.txt").expect("second file row"));
+    wait_until(|| return reader.source.borrow().file_generation > generation);
+    status(window, "0/3");
+    assert!(
+        window.get_find_open(),
+        "switching files closed the find bar"
+    );
+    assert!(
+        window.get_find_has_focus(),
+        "a file open moved keyboard focus out of the find input"
+    );
+    assert_eq!(
+        window.get_source_matches().row_count(),
+        3,
+        "matches were not recomputed for the new file"
+    );
+    assert_eq!(
+        selection(&reader),
+        (0, 0),
+        "a file switch must not move the selection"
+    );
+    key(window, Key::Return);
+    status(window, "1/3");
+    assert_eq!(selection(&reader), (6, 12));
+    let switched = reader.source.borrow().file_generation;
+    // The recent-file shortcut is pressed while the find input has focus.
+    chord(window, Key::Control, "1");
+    wait_until(|| return reader.source.borrow().file_generation > switched);
+    status(window, "0/2");
+    assert_eq!(window.get_find_query(), "needle");
+    assert_eq!(
+        window.get_source_text(),
+        "alpha needle\nand needle\n",
+        "Ctrl+1 in the find input did not switch back"
+    );
+    assert!(window.get_find_has_focus());
+    type_text(window, "s");
+    assert_eq!(
+        window.get_find_query(),
+        "needles",
+        "typing after the switch left the find input"
+    );
+    status(window, "No matches");
+    key(window, Key::Escape);
+    assert!(!window.get_find_open());
+    window.hide().expect("close switch window");
+}
+
+/// Escape closes only the topmost surface; Ctrl+F is ignored under the modal search overlay.
+#[test]
+fn native_find_and_search_overlay_close_topmost_first() {
+    let fixture = tempfile::tempdir().expect("disposable overlay project");
+    fs::write(fixture.path().join("layers.txt"), "needle and needle\n").expect("overlay fixture");
+    let reader = reader(fixture.path(), "layers.txt");
+    let window = &reader.window;
+    chord(window, Key::Control, "f");
+    type_text(window, "needle");
+    status(window, "1/2");
+    key(window, Key::Shift);
+    key(window, Key::Shift);
+    assert!(
+        window.get_search_open(),
+        "double-Shift did not open search above the find bar"
+    );
+    assert!(window.get_find_open(), "opening search closed the find bar");
+    chord(window, Key::Control, "f");
+    type_text(window, "q");
+    assert_eq!(
+        window.get_search_query(),
+        "q",
+        "Ctrl+F took keyboard focus from the modal search overlay"
+    );
+    assert_eq!(window.get_find_query(), "needle");
+    key(window, Key::Escape);
+    assert!(
+        !window.get_search_open(),
+        "Escape did not close the topmost search overlay"
+    );
+    assert!(
+        window.get_find_open(),
+        "one Escape closed both the search overlay and the find bar"
+    );
+    assert_eq!(window.get_find_status(), "1/2");
+    assert_eq!(window.get_source_matches().row_count(), 1);
+    key(window, Key::Escape);
+    assert!(
+        !window.get_find_open(),
+        "the second Escape did not close the find bar"
+    );
+    key(window, Key::Shift);
+    key(window, Key::Shift);
+    assert!(window.get_search_open());
+    chord(window, Key::Control, "f");
+    assert!(
+        !window.get_find_open(),
+        "Ctrl+F opened the find bar under the modal search overlay"
+    );
+    key(window, Key::Escape);
+    assert!(!window.get_search_open());
+    assert!(!window.get_find_open());
+    window.hide().expect("close overlay window");
+}
+
+/// Refused find text shows its diagnostic; empty text clears highlights without claiming "No matches".
+#[test]
+fn native_find_reports_refused_text_and_clears_for_empty_text() {
+    let fixture = tempfile::tempdir().expect("disposable diagnostic project");
+    fs::write(fixture.path().join("bounds.txt"), "needle\n").expect("diagnostic fixture");
+    let reader = reader(fixture.path(), "bounds.txt");
+    let window = &reader.window;
+    window.invoke_find_edited("needle".into());
+    assert_eq!(
+        window.get_find_status(),
+        "",
+        "an edit reached the closed find bar"
+    );
+    chord(window, Key::Control, "f");
+    type_text(window, "needle");
+    status(window, "1/1");
+    window.invoke_find_edited("n".repeat(1001).into());
+    wait_until(|| return window.get_find_error() != "");
+    assert!(window.get_find_error().contains("at most 1000 characters"));
+    assert_eq!(
+        window.get_source_matches().row_count(),
+        0,
+        "refused find text kept old highlights"
+    );
+    assert!(!window.get_selection_is_match());
+    window.invoke_find_edited("needle".into());
+    status(window, "1/1");
+    assert_eq!(
+        window.get_find_error(),
+        "",
+        "a later valid query kept the diagnostic"
+    );
+    window.invoke_find_edited("".into());
+    assert_eq!(window.get_find_status(), "");
+    assert!(!window.get_find_no_match());
+    assert!(!window.get_selection_is_match());
+    assert_eq!(
+        window.get_selected_text(),
+        "needle",
+        "clearing find text must keep the selection"
+    );
+    window.hide().expect("close diagnostic window");
+}

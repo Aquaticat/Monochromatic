@@ -13,6 +13,16 @@ use slint::SharedString;
 /// Shared source state never crosses the background-reader thread.
 use std::{cell::RefCell, path::PathBuf, rc::Rc};
 
+/// Focus the source after an open, unless the find input is being typed into.
+/// A recent-file shortcut pressed in the find bar then keeps stepping through matches of the new file.
+fn focus_source(window: &AppWindow) {
+    if window.get_find_has_focus() {
+        tracing::debug!("kept keyboard focus in the find input after a source open");
+        return;
+    }
+    window.invoke_focus_source();
+}
+
 /// Keep the current document and viewport when reopening its existing canonical target.
 pub(super) fn request(
     window: &AppWindow,
@@ -42,7 +52,7 @@ pub(super) fn request_at(
         }
         render(window, source);
         if !window.get_search_open() {
-            window.invoke_focus_source();
+            focus_source(window);
         }
         return Ok(());
     }
@@ -112,7 +122,7 @@ pub(super) fn apply(
     render(window, source);
     present::update(window, source, navigation);
     if !window.get_search_open() {
-        window.invoke_focus_source();
+        focus_source(window);
     }
     tracing::info!(path = %path.display(), changed, "project source open presented");
     return Ok(());
