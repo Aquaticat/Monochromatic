@@ -10,7 +10,10 @@ import {
   type OpenRun,
 } from './group-merge.ts';
 import { reanchorInsertions, } from './group-run-anchor.ts';
-import { anchorOffsets, } from './group-source-anchor.ts';
+import {
+  anchorOffsets,
+  blockAtStep,
+} from './group-source-anchor.ts';
 
 //region Aligned run grouping
 // Turns a monotone block alignment into budget-bounded slice runs. This
@@ -139,6 +142,65 @@ function nodeChars(node: DocumentNode,): number {
 }
 
 /**
+ One walk step beside the blocks it names.
+ */
+type StepBlocks = {
+  /**
+   Step as the walk carries it.
+   */
+  readonly step: AlignmentStep;
+
+  /**
+   Original block the step contributes, none where it names a translation
+   block alone.
+   */
+  readonly sourceNode: readonly DocumentNode[];
+
+  /**
+   Translation block the step contributes, none where it names an original
+   alone.
+   */
+  readonly targetNode: readonly DocumentNode[];
+};
+
+/**
+ Whether the pairing declined the translation block a step names alone.
+
+ @param blocks - one step beside the blocks it names
+
+ @param declined - ids of blocks no original claims
+
+ @returns Whether the step names a translation block alone and that block
+ is declined
+
+ @example
+ ```ts
+ const skipped = namesDeclinedBlock({ blocks, declined, },);
+ ```
+ */
+function namesDeclinedBlock(
+  {
+    blocks,
+    declined,
+  }: {
+    readonly blocks: StepBlocks;
+    readonly declined: ReadonlySet<string>;
+  },
+): boolean {
+  /**
+   Step, and the translation block it names when it names one.
+   */
+  const {
+    step,
+    targetNode,
+  } = blocks;
+  return (step.kind === 'target-only')
+    && targetNode.some(function isDeclined(node,): boolean {
+      return declined.has(node.id,);
+    },);
+}
+
+/**
  Reads the walk positions a declined block falls immediately before.
 
  A DECLINED BLOCK MUST CLOSE THE RUN, not merely be skipped. A run's text is
@@ -148,9 +210,8 @@ function nodeChars(node: DocumentNode,): number {
  here is what puts the block BETWEEN two slices, where `splice-slices.ts`
  leaves it untouched.
 
- @param walk - steps the grouping reads, in document order
-
- @param targetNodes - translation blocks the steps index
+ @param stepBlocks - steps the grouping reads, in document order, each
+ beside the blocks it names
 
  @param declined - ids of blocks no original claims
 
@@ -158,17 +219,15 @@ function nodeChars(node: DocumentNode,): number {
 
  @example
  ```ts
- const afterDecline = positionsAfterDecline({ walk, targetNodes, declined, },);
+ const afterDecline = positionsAfterDecline({ stepBlocks, declined, },);
  ```
  */
 function positionsAfterDecline(
   {
-    walk,
-    targetNodes,
+    stepBlocks,
     declined,
   }: {
-    readonly walk: readonly AlignmentStep[];
-    readonly targetNodes: readonly DocumentNode[];
+    readonly stepBlocks: readonly StepBlocks[];
     readonly declined: ReadonlySet<string>;
   },
 ): ReadonlySet<number> {
@@ -181,14 +240,13 @@ function positionsAfterDecline(
    Whether a declined block has been passed with no run started since.
    */
   let sawDecline = false;
-  for (const [at, step,] of walk.entries()) {
-    /**
-     Block this step names on the translation side, when it names one.
-     */
-    const node = (step.kind === 'target-only')
-      ? targetNodes[step.targetIndex]
-      : undefined;
-    if ((node !== undefined) && declined.has(node.id,)) {
+  for (const [at, blocks,] of stepBlocks.entries()) {
+    if (
+      namesDeclinedBlock({
+        blocks,
+        declined,
+      },)
+    ) {
       sawDecline = true;
       continue;
     }
@@ -220,6 +278,9 @@ function positionsAfterDecline(
  @param sealed - ids of translation blocks the archive's note seals
 
  @returns Open runs in document order, sealed ones marked
+
+ @throws Error when a step names a block its side lacks, in `blockAtStep`'s
+ words, before any run is built
 
  @example
  ```ts
@@ -260,6 +321,45 @@ function walkIntoRuns(
   };
 
   /**
+   Every step beside the blocks it names, none or one a side.
+
+   READ BEFORE ANYTHING ELSE READS THE WALK, so a step that names a block its
+   side lacks is refused in `blockAtStep`'s words whichever reader would have
+   met it first. The decline reader, the anchors and the loop here each meet
+   a different step first, and each made something different of such a step:
+   a flat missing-value error, a run with nothing on one side that the merge
+   then let go, or an insertion of no blocks.
+   */
+  const stepBlocks = walk.map(function toStepBlocks(
+    step,
+    at,
+  ): StepBlocks {
+    return {
+      step,
+      sourceNode: (step.kind === 'target-only')
+        ? []
+        : [
+          blockAtStep({
+            nodes: sourceNodes,
+            index: step.sourceIndex,
+            side: 'original',
+            at,
+          },),
+        ],
+      targetNode: (step.kind === 'source-only')
+        ? []
+        : [
+          blockAtStep({
+            nodes: targetNodes,
+            index: step.targetIndex,
+            side: 'translation',
+            at,
+          },),
+        ],
+    };
+  },);
+
+  /**
    Blocks no original claims, EMPTY when the scorer produced the walk.
 
    The scorer cannot abstain, so its `target-only` steps report where its
@@ -278,8 +378,7 @@ function walkIntoRuns(
    Walk positions a declined block falls immediately before.
    */
   const afterDecline = positionsAfterDecline({
-    walk,
-    targetNodes,
+    stepBlocks,
     declined,
   },);
 
@@ -313,35 +412,26 @@ function walkIntoRuns(
       targetNodes,
     },)
     : new Map<number, number>();
-  for (const [at, step,] of walk.entries()) {
-    /**
-     Block this step would contribute on the translation side, absent when it
-     contributes none, read before anything else so a declined one can end the
-     run without entering it.
-     */
-    const declinedNode = (step.kind === 'target-only')
-      ? targetNodes[step.targetIndex]
-      : undefined;
-    if ((declinedNode !== undefined) && declined.has(declinedNode.id,))
+  for (const [at, blocks,] of stepBlocks.entries()) {
+    // A DECLINED BLOCK IS ASKED ABOUT BEFORE ANYTHING ELSE, so it can end the
+    // run without entering it.
+    if (
+      namesDeclinedBlock({
+        blocks,
+        declined,
+      },)
+    )
       continue;
 
     /**
-     Original block this step contributes, when it contributes one.
+     Step at this position, the original block it contributes and the
+     translation block it contributes, each present when the step names one.
      */
-    const sourceNode = step.kind === 'target-only'
-      ? []
-      : [ sourceNodes[step.sourceIndex], ].filter(function isPresent(node,) {
-        return node !== undefined;
-      },);
-
-    /**
-     Translation block this step contributes, when it contributes one.
-     */
-    const targetNode = step.kind === 'source-only'
-      ? []
-      : [ targetNodes[step.targetIndex], ].filter(function isPresent(node,) {
-        return node !== undefined;
-      },);
+    const {
+      step,
+      sourceNode,
+      targetNode,
+    } = blocks;
 
     /**
      Run currently accepting blocks, absent before the first step.
@@ -489,6 +579,10 @@ function walkIntoRuns(
 
  @returns Runs covering every unsealed block on both sides exactly once,
  beside the ids of the originals the sealed blocks took with them
+
+ @throws Error when a step names a block its side lacks, in `blockAtStep`'s
+ words: `blockPairingToSteps` refuses a pairing that would build such a
+ step, so only a walk built another way can carry one
 
  @example
  ```ts

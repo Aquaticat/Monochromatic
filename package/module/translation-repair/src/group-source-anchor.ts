@@ -44,6 +44,63 @@ type RenderedSpan = {
 };
 
 /**
+ Reads the block a walk step names on one side.
+
+ LOUD RATHER THAN ABSENT. A step that named a block its side lacks used to
+ read as a step carrying no block there: the grouper filtered it out, the
+ anchors read it as a step that consumes no translation, and a walk pairing
+ one original with a translation block past the last grouped to no runs at
+ all, the whole section gone and nothing said. `walkIntoRuns` reads every
+ step's blocks through here before anything else reads the walk, and
+ `renderedSpan` reads through here too, so that state has one refusal and
+ one wording.
+
+ @param nodes - one side's blocks, which the walk indexes
+
+ @param index - block the step names on that side
+
+ @param side - which side the blocks are, for the refusal
+
+ @param at - step's position in the walk, for the refusal
+
+ @returns Block the step names
+
+ @throws Error when the step names no block of that side, which no walk
+ built in this package does: `alignBlocks` walks these very blocks, and
+ `blockPairingToSteps` refuses a pairing that names a block its side lacks
+
+ @example
+ ```ts
+ const node = blockAtStep({ nodes: targetNodes, index: step.targetIndex, side: 'translation', at: 3, },);
+ ```
+ */
+export function blockAtStep(
+  {
+    nodes,
+    index,
+    side,
+    at,
+  }: {
+    readonly nodes: readonly DocumentNode[];
+    readonly index: number;
+    readonly side: 'original' | 'translation';
+    readonly at: number;
+  },
+): DocumentNode {
+  /**
+   Block at that index, absent only for a walk that names what its side lacks.
+   */
+  const node = nodes[index];
+  if (node === undefined)
+    throw new Error(
+      `unreachable: walk step ${String(at,)} names ${side} block ${String(index,)}, and there are `
+        + `${String(nodes.length,)}, though alignBlocks walks these very blocks and blockPairingToSteps `
+        + 'refuses a pairing that names a block its side lacks',
+    );
+  return node;
+}
+
+/**
  Reads the span of the translation block a step consumes.
 
  RETURNS SENTINELS RATHER THAN AN ABSENT NODE, so callers compare numbers
@@ -54,37 +111,45 @@ type RenderedSpan = {
 
  @param targetNodes - translation blocks the steps index
 
+ @param at - step's position in the walk, named when the step is refused
+
  @returns Start and end offsets, both {@link NO_OFFSET} when the step consumes
  no translation block
 
+ @throws Error when the step names a translation block the side lacks, in
+ `blockAtStep`'s words
+
  @example
  ```ts
- const span = renderedSpan({ step, targetNodes, },);
+ const span = renderedSpan({ step, targetNodes, at: 0, },);
  ```
  */
 function renderedSpan(
   {
     step,
     targetNodes,
+    at,
   }: {
     readonly step: AlignmentStep;
     readonly targetNodes: readonly DocumentNode[];
+    readonly at: number;
   },
 ): RenderedSpan {
-  /**
-   Block this step consumes, absent when it names only an original or indexes
-   past the sequence.
-   */
-  const node = (step.kind === 'source-only')
-    ? undefined
-    : targetNodes[step.targetIndex];
-
-  if (node === undefined)
+  if (step.kind === 'source-only')
     return {
       start: NO_OFFSET,
       end: NO_OFFSET,
     };
 
+  /**
+   Block this step consumes.
+   */
+  const node = blockAtStep({
+    nodes: targetNodes,
+    index: step.targetIndex,
+    side: 'translation',
+    at,
+  },);
   return {
     start: node.startOffset,
     end: node.endOffset,
@@ -128,6 +193,11 @@ export function leavesOriginalUnplaced(step: AlignmentStep,): boolean {
 
  @returns Walk position of each unplaced original, mapped to the offset its
  rendering would be written at
+
+ @throws Error when a step names a translation block the side lacks, in
+ `blockAtStep`'s words, or when an unplaced original has no rendered block
+ before or after it in a walk that pairs a step; no walk built in this
+ package does either
 
  @example
  ```ts
@@ -188,6 +258,7 @@ export function anchorOffsets(
     const span = renderedSpan({
       step,
       targetNodes,
+      at,
     },);
     if (span.start !== NO_OFFSET)
       scan.next = span.start;
@@ -203,6 +274,7 @@ export function anchorOffsets(
     function lastRendered(
       standing: number,
       step,
+      at,
     ): number {
       /**
        Span this step consumes on the translation side.
@@ -210,6 +282,7 @@ export function anchorOffsets(
       const span = renderedSpan({
         step,
         targetNodes,
+        at,
       },);
 
       return (span.end === NO_OFFSET) ? standing : span.end;
@@ -239,14 +312,15 @@ export function anchorOffsets(
     const offset = (forward === NO_OFFSET) ? tail : forward;
 
     // LOUD RATHER THAN ANCHORED AT `NO_OFFSET`. A paired step is what let
-    // the walk past the opening check, and a paired step in range gives
-    // `tail` a real end; only a walk pairing past `targetNodes` leaves both
-    // readings empty, and that walk is broken rather than a page with
+    // the walk past the opening check, a paired step names a translation
+    // block (`blockAtStep` refuses one that names a block the side lacks),
+    // and that block gives `tail` a real end; so no walk leaves both
+    // readings empty, and one that did is broken rather than a page with
     // nowhere to write (ledger M113).
     if (offset === NO_OFFSET)
       throw new Error(
         'unreachable: an unplaced original with no rendered block before or after it, in a walk that '
-          + 'pairs a step; its paired steps index past the translation blocks',
+          + 'pairs a step, though a paired step names a translation block and that block ends at an offset',
       );
 
     return [[
