@@ -6,8 +6,8 @@ import { join } from 'node:path';
 const questions = join(process.cwd(), 'questions');
 const evidence = join(questions, 'evidence');
 const manifest = JSON.parse(readFileSync(join(evidence, 'track-menu-witnesses.json'), 'utf8'));
-if (manifest.schema !== 1 || manifest.apkSha256 !== 'a23f02c51a02b10ee1eb2b8ed21d8ab345fed4d9deb4fdc1a8d38c7e0e54d574' ||
-    manifest.prototypeCommit !== '5af5e3b107499f0a31c733f556802393def1d137' || manifest.witnesses.length !== 24) {
+if (manifest.schema !== 1 || manifest.apkSha256 !== '1e2092fe9e11e0aaf6b56b125db77ba19798f5d7c0706ceccbe6c0323551870a' ||
+    manifest.prototypeCommit !== 'd1d19dfed8b47cbe6d589fc0b47176e022242aad' || manifest.witnesses.length !== 24) {
   throw new Error('Track-menu artifact or inspected cohort differs.');
 }
 const expected = [];

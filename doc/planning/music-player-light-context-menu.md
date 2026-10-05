@@ -173,8 +173,15 @@ Those conventions require an outermost `modifier`,
 first among optional parameters and defaulting to `Modifier`.
 Prototype `d1d19dfed` moves the sole input owner to that standard boundary;
 unrelated IME/Search code and lint rules are not changed.
-The updated source is being built and re-verified rather than claiming
-native equivalence from inspection.
+The updated source passed the complete unit task and APK build;
+its APK SHA-256 is
+`1e2092fe9e11e0aaf6b56b125db77ba19798f5d7c0706ceccbe6c0323551870a`.
+A repeated Android lint run reports the same five inherited errors and
+65 warnings rather than 68;
+the new row's three `ModifierParameter` findings are gone.
+This is not a full-package lint pass.
+A separate owned visit and evidence directory re-verify the new artifact
+instead of inferring native equivalence from the source change.
 The inspected `a23f02c5` captures retain their original APK/source identity.
 Final publication remains incomplete.
 
