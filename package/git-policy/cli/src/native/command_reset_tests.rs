@@ -10,12 +10,12 @@
 
 /// The parser, its table, the oracles and the real-Git fixture helpers.
 use super::{RESET_TABLE, ResetMode, ResetRegion, parse_reset_region, reset_changes_worktree};
-use crate::command_escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 use crate::command_options::OptionErrorKind;
 use crate::command_test_completion::{git_completion, render_completion};
 use crate::command_test_support::{
     assert_table_invariants, git, os_arguments, remove, repository_with_tracked_file,
 };
+use crate::escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 use std::path::PathBuf;
 
 /// Parse a region Git accepts, with no other wrapper flags.

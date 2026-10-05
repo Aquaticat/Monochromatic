@@ -10,13 +10,13 @@
 
 /// The parser, its table, the oracles and the real-Git fixture helpers.
 use super::{CLEAN_TABLE, CleanRegion, clean_changes_worktree, parse_clean_region};
-use crate::command_escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 use crate::command_options::OptionErrorKind;
 use crate::command_test_completion::{git_completion, render_completion};
 use crate::command_test_support::{
     assert_table_invariants, git, git_with_input, os_arguments, remove,
     repository_with_tracked_file,
 };
+use crate::escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 use std::path::PathBuf;
 use std::process::Output;
 

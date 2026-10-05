@@ -14,7 +14,6 @@ use super::{
     BranchCreationCommand, BranchCreationRegion, branch_creation_command,
     parse_branch_creation_region,
 };
-use crate::command_escape_hatch::BRANCH_WORKTREE_ESCAPE_HATCH as HATCH;
 use crate::command_options::OptionErrorKind::{
     AmbiguousOption, HelpRequested, MissingValue, SingleDashLongOption, UnexpectedValue,
     UnknownOption,
@@ -22,6 +21,7 @@ use crate::command_options::OptionErrorKind::{
 use crate::command_options::{OptionErrorKind, WrapperOccurrence};
 use crate::command_options_query::without_tokens;
 use crate::command_test_support::os_arguments;
+use crate::escape_hatch::BRANCH_WORKTREE_ESCAPE_HATCH as HATCH;
 use std::ffi::OsString;
 
 /// Split a space-separated argument line; the empty line is the empty region.

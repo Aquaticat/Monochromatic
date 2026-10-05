@@ -145,9 +145,6 @@ pub mod command_add;
 /// The Git 2.56.0 option table of `git clean` and its deletion facts.
 pub mod command_clean;
 
-/// Wrapper-only escape-hatch spellings shared by several command modules.
-pub mod command_escape_hatch;
-
 /// The Git 2.56.0 option table of `git reset` and its mode.
 pub mod command_reset;
 

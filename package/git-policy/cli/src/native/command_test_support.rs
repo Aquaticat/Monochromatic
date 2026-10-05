@@ -11,14 +11,16 @@
 use super::command_options::{
     Arity, DEFAULT_MODE, OptionError, OptionSpec, ParsedOptions, parse_options, row,
 };
+/// The real Git path and fixture removal are shared with the wrapper's unit tests unchanged.
+/// The fixture constructor and Git runners stay separate on purpose: their directory prefix
+/// keeps command fixtures apart from wrapper fixtures in one test process, and the runners
+/// also fix `GIT_EDITOR` and close standard input.
+pub(crate) use super::test_support::{REAL_GIT, remove};
 /// Native string, path, stream and process types used by the fixtures.
 use std::ffi::OsString;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
-
-/// The real Git 2.56.0 executable installed in the verification image.
-pub(crate) const REAL_GIT: &str = "/usr/bin/git";
 
 /// Identifiers of the synthetic rows shared by the tokenizer test files.
 pub(crate) const ALL: u16 = 1;
@@ -97,11 +99,6 @@ pub(crate) fn fixture(name: &str) -> PathBuf {
     }
     std::fs::create_dir(&root).expect("fresh fixture");
     return std::fs::canonicalize(&root).expect("canonical fixture");
-}
-
-/// Remove only the fixture directory a test created.
-pub(crate) fn remove(root: &Path) {
-    std::fs::remove_dir_all(root).expect("remove only the fixture");
 }
 
 /// Start real Git in a fixture with no system or global configuration and a fixed identity.

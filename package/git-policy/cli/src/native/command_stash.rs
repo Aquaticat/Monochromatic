@@ -9,15 +9,6 @@
 //! // parseStashRegion(['push', '-m', '--no-enforce-worktree']).hasEscapeHatch === false
 //! ```
 
-/// What: Bring the shared hatch spelling, the tokenizer, its questions and the stash tables
-///       into this file.
-/// Why:  This module only dispatches as `cmd_stash` does and interprets the tokenizer.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { parseOptions } from './command_options.ts';
-/// ```
-use super::command_escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 use super::command_options::{
     OptionError, OptionErrorKind, OptionSpec, ParseMode, ParsedOptions, WrapperOccurrence,
     parse_options,
@@ -28,6 +19,15 @@ use super::command_stash_table::{
     STASH_KEEP_UNKNOWN_MODE, STASH_PLAIN_MODE, STASH_POP_TABLE, STASH_PUSH_TABLE, STASH_SAVE_TABLE,
     STASH_SHOW_TABLE, STASH_STOP_MODE, STASH_STORE_TABLE,
 };
+/// What: Bring the shared hatch spelling, the tokenizer, its questions and the stash tables
+///       into this file.
+/// Why:  This module only dispatches as `cmd_stash` does and interprets the tokenizer.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { parseOptions } from './command_options.ts';
+/// ```
+use super::escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 

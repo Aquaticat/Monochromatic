@@ -23,6 +23,10 @@ pub const WORKTREE_ENFORCEMENT_ESCAPE_HATCH: &str = "--no-enforce-worktree";
 /// Wrapper-only flag skipping ignored-state synchronization into new worktrees.
 pub const WORKTREE_COPY_ESCAPE_HATCH: &str = "--no-worktree-copy";
 
+/// Wrapper-only flag suppressing worktree-first branch creation enforcement for one
+/// `branch`, `checkout` or `switch` invocation.
+pub const BRANCH_WORKTREE_ESCAPE_HATCH: &str = "--no-enforce-worktree-branch";
+
 /// Token after which Git treats every remaining argument as a path.
 pub const PATHSPEC_SEPARATOR: &str = "--";
 

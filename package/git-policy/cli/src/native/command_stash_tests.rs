@@ -10,7 +10,6 @@
 
 /// The parser, its tables, the oracles and the real-Git fixture helpers.
 use super::{StashRegion, StashSubcommand, parse_stash_region};
-use crate::command_escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 use crate::command_options::{OptionError, OptionErrorKind, OptionSpec, WrapperOccurrence};
 use crate::command_stash_table::{
     STASH_APPLY_TABLE, STASH_DROP_TABLE, STASH_EMPTY_TABLE, STASH_EXPORT_TABLE, STASH_POP_TABLE,
@@ -21,6 +20,7 @@ use crate::command_test_support::{
     assert_table_invariants, git, git_status, os_arguments, output_text, remove,
     repository_with_tracked_file,
 };
+use crate::escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 use std::path::PathBuf;
 use std::process::Output;
 

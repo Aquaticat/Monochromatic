@@ -8,6 +8,10 @@
 //! // resetChangesWorktree(parseResetRegion(['--har', 'HEAD~1'])) === true
 //! ```
 
+use super::command_options::{
+    Arity, DEFAULT_MODE, OptionError, OptionSpec, ParsedOptions, UNREAD, parse_options, row,
+};
+use super::command_options_query::{WrapperFlags, split_wrapper_flags};
 /// What: Bring the shared hatch spelling, the tokenizer, its table builder and its
 ///       questions into this file.
 /// Why:  This module only declares Git's table and interprets what the tokenizer found.
@@ -16,11 +20,7 @@
 /// ```ts
 /// import { parseOptions, row } from './command_options.ts';
 /// ```
-use super::command_escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
-use super::command_options::{
-    Arity, DEFAULT_MODE, OptionError, OptionSpec, ParsedOptions, UNREAD, parse_options, row,
-};
-use super::command_options_query::{WrapperFlags, split_wrapper_flags};
+use super::escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 

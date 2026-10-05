@@ -26,9 +26,9 @@ use super::command_branch_target::{
     checkout_target, creates_explicitly, guess_allowed, switch_target,
 };
 use super::command_checkout_table::{CHECKOUT_TABLE, SWITCH_TABLE};
-use super::command_escape_hatch::BRANCH_WORKTREE_ESCAPE_HATCH;
 use super::command_options::{DEFAULT_MODE, OptionError, OptionSpec, ParsedOptions, parse_options};
 use super::command_options_query::{WrapperFlags, positional_tokens, split_wrapper_flags};
+use super::escape_hatch::BRANCH_WORKTREE_ESCAPE_HATCH;
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 

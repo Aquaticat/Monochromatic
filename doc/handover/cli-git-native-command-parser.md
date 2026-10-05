@@ -109,7 +109,8 @@ This replaces the injected asynchronous checkers of the TypeScript rules.
   `command_branch_table.rs`
   and `command_checkout_table.rs`.
   `branch-create-strip.ts` is replaced by `without_tokens` over the reported positions.
-- The escape-hatch spellings shared by several modules are in `command_escape_hatch.rs`.
+- The escape-hatch spellings shared by several modules were in `command_escape_hatch.rs`;
+  at integration they moved into `main`'s `escape_hatch.rs` (see `Integration notes`).
 
 ### Rule core modules
 
@@ -494,13 +495,20 @@ never when only compilation or Clippy fails.
 
   `command_status.rs` reads it to skip the values of global options.
   `main` still has the private form, so a merge must keep the `pub(crate)` line.
-- `command_escape_hatch.rs` repeats `WORKTREE_ENFORCEMENT_ESCAPE_HATCH`,
-  which `main` already has in `escape_hatch.rs`.
-  Keep one definition when merging.
+- Resolved at integration (main session, 2026-10-05):
+  `command_escape_hatch.rs` repeated `WORKTREE_ENFORCEMENT_ESCAPE_HATCH`;
+  the file is deleted,
+  `BRANCH_WORKTREE_ESCAPE_HATCH` moved into `escape_hatch.rs`,
+  and the command modules import both from there.
   `main`'s `strip_escape_hatch` removes the hatch by spelling with a value-option list;
   the command modules here report hatch positions,
   and `without_tokens` removes exactly those.
-- The test fixtures in `command_test_support.rs` overlap with `main`'s `test_support.rs`.
+- Resolved at integration:
+  `command_test_support.rs` now re-exports `REAL_GIT` and `remove` from `test_support.rs`,
+  which were identical.
+  Its `fixture`, `git_output`, `git` and `repository` stay separate on purpose:
+  the `native-command-` directory prefix keeps command fixtures apart from wrapper fixtures in one test process,
+  and its runners also set `GIT_EDITOR=true` and close standard input.
 - A parser `Err(OptionError)` means Git 2.56.0 itself refuses the command.
   The recommended engine handling is to forward the command unchanged,
   so Git prints its own error and exits 129.
