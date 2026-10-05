@@ -501,9 +501,21 @@ A second run on an image rebuilt from the saved patch compared both trees with t
   The patch adds none;
   upstream's own sources do not pass this Clippy version.
 
+A new option changes the help text,
+the completions and the configuration schema,
+so the upstream integration tests whose names contain `show_help`,
+`completions`,
+`config` or `option` were run on the patched tree as well:
+26 passed and none failed,
+among them `show_help`,
+`completions_option_generates_something`,
+`emit_config_schema` and `example_config_file_can_be_loaded`.
+No snapshot under `tests/snapshots/` captures the help text;
+`show_help` asserts one substring.
+
 Open, not measured:
 
-- The whole upstream integration suite was not run,
+- The rest of the upstream integration suite (114 of its 140 tests) was not run,
   and no test runs a timing-out tree through the command line with `--accept=timeout`
   (upstream's own test that lets a mutant hang,
   `mutants_causing_tests_to_hang_are_stopped_by_manual_timeout`,
@@ -516,9 +528,10 @@ the image is `localhost/cargo-mutants-accept-prototype:v27.1.0`.
 
 ### Comment draft
 
-Do not post as-is.
-Posting on #545 is an external action that needs the user's authorization,
-and the bracketed sentence in the draft is for the user to complete.
+All six constraints hold,
+so the draft is fileable once the user authorizes posting and completes its bracketed sentence.
+Posting on #545 is an external action;
+the main session does not take it unasked.
 
 The thread already contains the request,
 the design and the step list.

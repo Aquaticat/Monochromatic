@@ -964,6 +964,12 @@ that is verification, not a decision for the user.
 - [x] cargo-mutants upstream check: the option from upstream issue 545 is prototyped and verified
   (`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`, section `Prototype`).
 - [ ] Ask the user whether to post the comment draft on upstream issue 545.
+  Held on purpose for the next question batch,
+  which the open-decision brief feeds:
+  a question blocks the main session until it is answered,
+  and five delegates are reporting to it.
+  Ask it with that batch,
+  or alone as soon as no delegate is running.
 - [ ] Rust cli-git configuration, Git resolution/argv, static policies, and management commands.
   Configuration, Git resolution and forwarding, the management skeleton,
   the command parser and the rule cores are merged on `main` (`7d103c174`, see `Resumption 2026-10-05`).
