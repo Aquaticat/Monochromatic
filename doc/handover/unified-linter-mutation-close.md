@@ -783,7 +783,20 @@ then the processor campaign if both exit 0,
 all against the image that gate builds.
 The processor campaign reruns because `processors_fences.rs` parses through `MarkdownSource`,
 whose source changed.
-Results are pending.
+
+Gate 6,
+`gate-mutation-close-6.log`,
+started at repository head `9e61f66a3`,
+linter source tree `ceb495865521beda0f988a536435ffd69cc1d100`:
+384 library tests passed in 162.42 seconds,
+12 `binary` tests passed in 3.50 seconds,
+and Clippy with `-D warnings` finished with no finding.
+Test image `5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`.
+`lint:rust` on the same source reports no code-line budget finding
+and 83 `builtin(require-rustdoc)` findings,
+none on an item added by this work.
+
+Campaign results are pending.
 
 ## Remaining
 
