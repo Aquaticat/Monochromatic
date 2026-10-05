@@ -79,6 +79,9 @@ pub mod input;
 /// True notched-wheel input reaches the hosted client's native Wayland path.
 pub mod input_wheel;
 
+/// Hosted-client frame pacing must not depend on the parent window being presented.
+pub mod frame_pacing;
+
 /// What:     `pub mod keymap;`. Declares the US-layout keycode tables.
 /// Why:      Maps characters and key names to evdev keycodes; display-independent.
 ///

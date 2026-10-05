@@ -30,6 +30,9 @@ use crate::handler::clipboard::ClipboardProtocols;
 /// The private Settings portal is owned by this session, never shared with the host.
 use crate::appearance_portal::AppearancePortal;
 
+/// Stall bookkeeping that keeps the hosted client drawing while the parent is silent.
+use crate::frame_pacing::FramePacing;
+
 /// What:     A grouped `use` of Smithay items. Each path names a type used below; the
 ///           braces just avoid repeating the common `smithay::...` prefix.
 /// Why:      Bring the compositor building blocks into scope.
@@ -226,6 +229,13 @@ pub struct Compositor {
     ///           handle it switches must be reachable from state. Dropping the state stops
     ///           the private bus and removes its socket directory.
     pub appearance_portal: Option<AppearancePortal>,
+
+    /// When the parent compositor last presented, and whether a timer paces the client instead.
+    ///
+    /// What:     `pub frame_pacing: FramePacing`. A small owned record.
+    /// Why:      The live redraw path records each presentation here, and the fallback timer
+    ///           reads it to decide whether the hosted client is being starved.
+    pub frame_pacing: FramePacing,
 
     /// The hosted app's exit code once it has exited, else `None`.
     ///
@@ -458,6 +468,7 @@ impl Compositor {
             child: None,
             shutdown_deadline: None,
             appearance_portal: None,
+            frame_pacing: FramePacing::new(start_time),
             child_exit_code: None,
             recorder: None,
             loop_handle,
