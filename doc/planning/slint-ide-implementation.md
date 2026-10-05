@@ -79,8 +79,8 @@ and resumption details are in [the handover][handover].
 - [ ] Complete tree parity:
   resizable sidebar and event-driven directory invalidation beyond the current bounded polling implementation.
   The resizable sidebar landed on 2026-10-05.
-  Directory invalidation stays on bounded polling unless an existing dependency provides file watching,
-  per the user's proportionality direction.
+  On 2026-10-05 the user chose OS file-change notifications and approved the `notify` crate without vetting;
+  event-driven invalidation is in progress on branch `feat/ide-tree-watch`.
 - [ ] Required language-intelligence feature paths and synchronization.
   The compiled `helix-lsp` spike and verified design are in
   [the language intelligence design](slint-ide-language-intelligence.md);

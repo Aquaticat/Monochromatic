@@ -664,7 +664,7 @@ Each state occurred in the spike and is observable as follows.
 
 The coordinating session adopted option A for all three,
 because the accepted scope already determines each answer.
-The TypeScript choice was reported to the user as open to veto.
+The user confirmed the TypeScript 7 server choice on 2026-10-05.
 
 - TypeScript server: option A.
   The scope requires actual TypeScript feature paths,

@@ -140,6 +140,40 @@ Inlay placement is delegated to the agent:
 choose the implementation supported by evidence,
 not an assumed presentation preference.
 
+## Decisions of 2026-10-05
+
+The user answered these during the delegated continuation;
+quotations are the user's words.
+
+- In-file find uses plain literal,
+  case-insensitive substring matching:
+  "why would we need to vet a find matcher?
+  Isn't it just substring match?"
+  Chrome's collation folding is a recorded difference,
+  not a target.
+- TypeScript language features use the project's own TypeScript 7 server (`tsc --lsp --stdio`).
+- Language servers are confined with bubblewrap as measured,
+  without a formal vetting run,
+  with a process-id namespace except for the TypeScript servers.
+- Confined language servers have no network access:
+  "Why would language servers have network access?
+  That (giving language servers network access) would be extremely bad and against any kind of intuition."
+  TypeScript projects take types from installed `node_modules`;
+  automatic type acquisition,
+  which downloads `@types` packages for JavaScript projects,
+  is off.
+- Directory and displayed-file refresh become event-driven with OS file-change notifications:
+  "I'm approving the notify crate w/o vetting.
+  I trust it."
+  This approval covers the `notify` crate itself.
+- Moving between outputs with different scaling is verified end to end:
+  the nested test compositor gains runtime output scaling first.
+- The nested test compositor's private D-Bus session must not activate services from host service definitions.
+- The `pi` second-opinion model is skipped for this work.
+- UI questions are presented with screenshots of every option,
+  stored as local files in the repository rather than a network service:
+  "These are useful records that shouldn't depend on a network service to be available."
+
 ## Verification boundary
 
 Completion requires the actual native application,

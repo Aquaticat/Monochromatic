@@ -1167,6 +1167,15 @@ All three choices were reported to the user as open to veto.
 - Process-id namespace:
   option A,
   on by default and off for the measured TypeScript servers.
+- The user confirmed all three on 2026-10-05:
+  bubblewrap as measured without a formal vetting run,
+  and the process-id namespace except for the TypeScript servers.
+  On network access the user answered:
+  "Why would language servers have network access?
+  That (giving language servers network access) would be extremely bad and against any kind of intuition."
+  No network is therefore a requirement,
+  not a preference;
+  option B is rejected.
 - Follow-up for the implementation leg:
   test clearing the inherited environment (`--clearenv` plus an allowlist),
   because servers otherwise inherit credential variables from the application;
