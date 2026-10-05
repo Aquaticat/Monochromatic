@@ -2418,6 +2418,27 @@ a search of Android and desktop production source found no code that removes
 a shared filename prefix or the extension as D11's example does.
 No production implementation is authorized by this record.
 
+D87 (2026-10-05) answers what the Settings page then holds:
+nothing.
+
+### D87. The Settings page stays and is empty (2026-10-05)
+
+Asked nothing further,
+the human said of the Settings page:
+leave it empty.
+Settings therefore remains a destination with its header and its way back,
+and draws no row,
+no sentence and no placeholder below the header.
+This supersedes the reading in D86 that Settings stays only because of D81;
+it stays because the human kept it.
+D81's template configuration is still placed in Settings and still
+undesigned (section 11e of `open-questions.md`),
+so the page is empty until that is designed.
+The Fold placement of the page remains adopted from D50,
+D51 and existing Settings behaviour,
+not separately accepted.
+No production implementation is authorized by this record.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
