@@ -21,8 +21,22 @@
  pin the containment in both directions, since a namespace that claims too
  much is as wrong as one that claims too little.
 
+ THE `openNamespacedCache` SUITE PINS WHEN AND HOW A LANE RESTAMPS ITS
+ MARKER: only when the marker does not already name the generation opening,
+ and then by replacing the file, never by rewriting it in place. A marker
+ cut short reads as another generation, and the open that reads it discards
+ every slice the lane holds in that directory.
+
  @module
  */
+
+import {
+  chmod,
+  open,
+  readdir,
+  readFile,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
 
 import {
   DEFAULT_CONCURRENCY,
@@ -35,11 +49,13 @@ import {
   belongsToNamespace,
   EVERY_SLICE_NAMESPACE,
   isSliceFileName,
+  openNamespacedCache,
   PICTURE_READING_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,
   type SliceNamespace,
   TRANSLATE_SLICE_NAMESPACE,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  A file name in a namespace, built the way the store builds one.
@@ -65,6 +81,22 @@ function fileIn(
   },
 ): string {
   return `${namespace.prefix}${key}.json`;
+}
+
+/**
+ Accepts a stored text, the only value the open cases store.
+
+ @param value - stored record
+
+ @returns Whether it is text
+
+ @example
+ ```ts
+ await openNamespacedCache({ dir, generation, namespace, isValue: isText, },);
+ ```
+ */
+function isText(value: unknown,): value is string {
+  return (typeof value) === 'string';
 }
 
 await describe({
@@ -212,6 +244,111 @@ await describe({
             }.4242.partial`,
               },),).toBe(false,);
             }
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: openNamespacedCache.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RESTAMPS its marker by replacing the file and leaves nothing beside it, so a reader that opened the '
+            + 'marker before a reopen under another generation still reads the earlier generation whole, where a '
+            + 'restamp in place showed that reader the later bytes',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'slice-cache-namespace-', },);
+            const dir = scratch.path;
+            await openNamespacedCache({
+              dir,
+              generation: 'nap-3',
+              namespace: REPAIR_SLICE_NAMESPACE,
+              isValue: isText,
+            },);
+            /**
+             Reader holding the marker open since before the restamp.
+             */
+            await using earlier = await open(
+              join(
+                dir,
+                REPAIR_SLICE_NAMESPACE.marker,
+              ),
+              'r',
+            );
+            await openNamespacedCache({
+              dir,
+              generation: 'nap-4',
+              namespace: REPAIR_SLICE_NAMESPACE,
+              isValue: isText,
+            },);
+            expect(await earlier.readFile('utf8',),).toBe('nap-3\n',);
+            expect(await readFile(
+              join(
+                dir,
+                REPAIR_SLICE_NAMESPACE.marker,
+              ),
+              'utf8',
+            ),).toBe('nap-4\n',);
+            expect(await readdir(dir,),).toEqual([REPAIR_SLICE_NAMESPACE.marker,],);
+          },
+        },),
+        it({
+          name: 'WRITES NOTHING on a reopen under the generation its marker already names, so the reopen resumes its '
+            + 'slice from a marker and a directory it may only read, where the restamp of every open needed the '
+            + 'marker writable and emptied it when the write was refused',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'slice-cache-namespace-', },);
+            const dir = scratch.path;
+            /**
+             Cache as the run that filled it left it, holding one slice.
+             */
+            const filled = await openNamespacedCache({
+              dir,
+              generation: 'nap-3',
+              namespace: REPAIR_SLICE_NAMESPACE,
+              isValue: isText,
+            },);
+            await filled.persist({
+              key: 'whiskers',
+              serialized: JSON.stringify('purr',),
+            },);
+            // Read and traverse only, on the marker and on the directory: a
+            // superuser is not held by either, so run as root this case
+            // passes whatever the open writes.
+            await chmod(
+              join(
+                dir,
+                REPAIR_SLICE_NAMESPACE.marker,
+              ),
+              0o400,
+            );
+            await chmod(
+              dir,
+              0o500,
+            );
+            /**
+             Puts the directory back so the scratch directory can be removed,
+             however the reopen ends.
+             */
+            await using _writable = {
+              [Symbol.asyncDispose]: async () => {
+                await chmod(
+                  dir,
+                  0o700,
+                );
+              },
+            };
+            /**
+             Cache as a later run under the same generation opens it.
+             */
+            const reopened = await openNamespacedCache({
+              dir,
+              generation: 'nap-3',
+              namespace: REPAIR_SLICE_NAMESPACE,
+              isValue: isText,
+            },);
+            expect([...reopened.resumed,],).toEqual([['whiskers', 'purr',],],);
           },
         },),
       ],
