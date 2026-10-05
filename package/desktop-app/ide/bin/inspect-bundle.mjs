@@ -134,7 +134,9 @@ const checks = {
 };
 
 // One nested-compositor session of an application copy on the disposable project.
-// Returns the combined compositor and application output once `settled` accepts it, and a screenshot.
+// Returns the combined compositor and application output once `settled` accepts it, a screenshot, and what was
+// wrong with the way the session ended, if anything: the caller judges the output first, so a damaged directory
+// is reported by its damage and not by a slow exit.
 const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session');
 const plain = text => text.replace(/\u001b\[[0-9;]*m/g, '');
 const session = async ({ name, application, settled }) => {
@@ -182,10 +184,12 @@ const session = async ({ name, application, settled }) => {
     }
     demand(await control('quit') === 'ok', 'the compositor refused quit');
     const [code, signal] = await exited;
-    demand(code === 0 && signal === null, 'the session ended with status ' + code + ' and signal ' + signal + '; see ' + log);
-    demand(output().includes('hosted client exited with code 0'), 'the application did not exit with status 0; see ' + log);
-    demand(!output().includes('forcing shutdown'), 'the application ignored the close request and was stopped by force; see ' + log);
-    return { output: output(), frame };
+    let ending;
+    // The compositor reports a client it had to kill as exit status 0, so the forced case is checked first.
+    if (output().includes('forcing shutdown')) ending = 'the application did not exit within the compositor\'s 2 s after the close request and was stopped by force; see ' + log;
+    else if (code !== 0 || signal !== null) ending = 'the session ended with status ' + code + ' and signal ' + signal + '; see ' + log;
+    else if (!output().includes('hosted client exited with code 0')) ending = 'the application did not exit with status 0; see ' + log;
+    return { output: output(), frame, ending };
   } finally {
     writeFileSync(log, output());
     if (child.exitCode === null && child.signalCode === null) { child.kill(); await exited; }
@@ -207,21 +211,23 @@ checks['starts-outside-source-tree'] = async () => {
   const application = copyOf('application');
   const version = spawnSync(join(application, 'monochromatic-ide'), ['--version'], { cwd: '/', env: {}, encoding: 'utf8' });
   demand(version.status === 0 && /^monochromatic-ide \d+\.\d+\.\d+/.test(version.stdout), 'the copy did not report its version: ' + JSON.stringify([version.status, version.stdout, version.stderr]));
-  const { output, frame } = await session({ name: 'with-runtime', application, settled: text => prepared.test(text) || text.includes(unavailable) });
+  const { output, frame, ending } = await session({ name: 'with-runtime', application, settled: text => prepared.test(text) || text.includes(unavailable) });
   demand(!output.includes(unavailable), 'the copy could not highlight from its own runtime: ' + output.split('\n').find(line => line.includes(unavailable)));
   const spans = Number(output.match(prepared)[1]);
   demand(spans > 0, 'the copy prepared no highlighted span for fixture.sql');
+  demand(ending === undefined, ending);
   return { version: version.stdout.trim(), spans, frame };
 };
 // Without its runtime the copy still opens the file, and names the missing manifest instead of showing plain text silently.
 checks['missing-runtime-reported'] = async () => {
   const application = copyOf('application-without-runtime', 'runtime');
   demand(!existsSync(join(application, 'runtime')), 'the runtime was not left out of the copy');
-  const { output, frame } = await session({ name: 'without-runtime', application, settled: text => prepared.test(text) || text.includes(unavailable) });
+  const { output, frame, ending } = await session({ name: 'without-runtime', application, settled: text => prepared.test(text) || text.includes(unavailable) });
   const report = output.split('\n').find(line => line.includes(unavailable));
   demand(report !== undefined, 'the copy without a runtime reported nothing; it would show plain text silently');
   const manifest = join(application, 'runtime', 'manifest.json');
   demand(report.includes('Cannot read the bundled language manifest ' + manifest), 'the report does not name the missing manifest ' + manifest + ': ' + report);
+  demand(ending === undefined, ending);
   return { report: report.slice(report.indexOf(unavailable)), frame };
 };
 

@@ -108,6 +108,8 @@ run = """
 {{vars.cargo}}
 // Only the application binary: the runtime, inspection, and scripted-server helpers are build and test tools.
 // SLINT_EMIT_DEBUG_INFO keeps element ids for the debug inspection builds; sibling release builds do not set it.
+// The shared 2 GiB and 2 CPU bound is enough: measured on 2026-10-05, a build from an empty release directory
+// peaked at 1,116 MiB of anonymous memory with no out-of-memory kill and took 15 to 19 minutes on a loaded host.
 runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'build', '--release', '--bin', 'monochromatic-ide'])
 """
 
@@ -154,6 +156,14 @@ arg "[directory]" default="dist/monochromatic-ide" help="Assembled directory to 
 arg "[only]" help="Comma-separated check names to run; default is every check"
 '''
 run = "node bin/inspect-bundle.mjs"
+
+[tasks."inspect:bundle-guards"]
+description = "Damage copies of an assembled application directory and observe each bundle check fail on its damage"
+usage = '''
+arg "[directory]" default="dist/monochromatic-ide" help="Assembled directory to copy and damage"
+arg "[only]" help="Comma-separated case names to run; default is every case"
+'''
+run = "node bin/inspect-bundle-guards.mjs"
 
 [tasks."run:bundle"]
 description = "Run the assembled application against a local root supplied as an argument"
