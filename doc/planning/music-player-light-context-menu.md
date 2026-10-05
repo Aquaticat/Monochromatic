@@ -89,8 +89,18 @@ Ordinary,
 lower-anchor,
 long-name and duplicate-identity inputs are authored controls,
 not template presets or live library state.
-Pure tests and fresh unknown-scene,
-unknown-action and target-identity mutants are in progress.
+The 12 pure fixture tests and fresh unknown-scene,
+unknown-action and target-identity mutants passed,
+with exact restoration and the complete unit task.
+Prototype `647230359` also builds the isolated `TrackMenuActivity`:
+row long press owns target selection,
+a measured anchor supplies the native popup position,
+and action clicks emit debug intents only.
+The two icon tests cover every accepted vector mapping and unknown input;
+a fresh fallback-icon mutant fails the intended rejection test,
+followed by restoration and the complete unit task.
+The native APK build passed.
+No native menu fit or activation result is claimed yet.
 
 ## Independently verifiable queue
 
