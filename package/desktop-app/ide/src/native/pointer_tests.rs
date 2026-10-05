@@ -98,7 +98,11 @@ fn click_count_selects_caret_word_and_line() {
         "a single click must place the caret at the nearest boundary (coordinate control)"
     );
     click(window, inside_beta);
-    assert_eq!(position(&reader), (6, 10), "a double click selects the word");
+    assert_eq!(
+        position(&reader),
+        (6, 10),
+        "a double click selects the word"
+    );
     assert_eq!(window.get_selected_text(), "beta");
     click(window, inside_beta);
     assert_eq!(
@@ -108,7 +112,11 @@ fn click_count_selects_caret_word_and_line() {
     );
     assert_eq!(window.get_selected_text(), "alpha beta gamma\n");
     click(window, inside_beta);
-    assert_eq!(position(&reader), (8, 8), "a fourth click is a single click");
+    assert_eq!(
+        position(&reader),
+        (8, 8),
+        "a fourth click is a single click"
+    );
     // A second press after the multi-click interval is a new single click, not a double click.
     sleep(Duration::from_millis(550));
     click(window, inside_beta);
@@ -122,7 +130,11 @@ fn click_count_selects_caret_word_and_line() {
     click(window, inside_line);
     assert_eq!(position(&reader), (25, 25));
     click(window, inside_line);
-    assert_eq!(position(&reader), (24, 28), "double click on the second line");
+    assert_eq!(
+        position(&reader),
+        (24, 28),
+        "double click on the second line"
+    );
     assert_eq!(window.get_selected_text(), "line");
     // A triple click on the empty line selects its terminator and shows a mark for it.
     let empty = point(window, 2, 1.0);
@@ -132,7 +144,11 @@ fn click_count_selects_caret_word_and_line() {
     assert_eq!(position(&reader), (34, 35));
     assert_eq!(window.get_selected_text(), "\n");
     let marks = window.get_source_selections();
-    assert_eq!(marks.row_count(), 1, "the selected empty line shows nothing");
+    assert_eq!(
+        marks.row_count(),
+        1,
+        "the selected empty line shows nothing"
+    );
     assert_eq!(
         marks.row_data(0).expect("terminator mark").width,
         TERMINATOR_MARK
@@ -213,7 +229,11 @@ fn drag_selects_text_by_characters_and_by_words_without_panning() {
     window
         .window()
         .dispatch_event(WindowEvent::PointerMoved { position: gamma });
-    assert_eq!(position(&reader), (6, 16), "a word drag takes the whole word");
+    assert_eq!(
+        position(&reader),
+        (6, 16),
+        "a word drag takes the whole word"
+    );
     let alpha = point(window, 0, caret_x(&reader, 2) + 1.0);
     window
         .window()

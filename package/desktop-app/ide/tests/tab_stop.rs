@@ -97,7 +97,10 @@ fn corrections_accumulate_across_the_tabs_of_one_line() {
 #[test]
 fn projection_gives_each_tab_one_display_byte() {
     let projection = project_line("\ta\t猫\t𝒳\tb\r\n");
-    assert_eq!(projection.text, " a 猫 𝒳 b", "terminators are not displayed");
+    assert_eq!(
+        projection.text, " a 猫 𝒳 b",
+        "terminators are not displayed"
+    );
     assert_eq!(projection.tabs, [0, 2, 6, 11]);
     // Source boundaries: tab, a, tab, 猫 (3 bytes), tab, 𝒳 (4 bytes), tab, b.
     assert_eq!(projection.source_to_byte, [0, 1, 2, 3, 6, 7, 11, 12, 13]);

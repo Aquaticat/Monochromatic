@@ -81,7 +81,11 @@ fn horizontal_keys_move_by_grapheme_word_line_and_document_and_extend_with_shift
     chord(window, Key::Shift, Key::LeftArrow);
     assert_eq!(position(&reader), (3, 2), "Shift+Left extends backwards");
     chord(window, Key::Control, Key::RightArrow);
-    assert_eq!(position(&reader), (5, 5), "Ctrl+Right to the end of the word");
+    assert_eq!(
+        position(&reader),
+        (5, 5),
+        "Ctrl+Right to the end of the word"
+    );
     chord(window, Key::Control, Key::RightArrow);
     assert_eq!(
         position(&reader),
@@ -91,7 +95,11 @@ fn horizontal_keys_move_by_grapheme_word_line_and_document_and_extend_with_shift
     chord(window, Key::Control, Key::RightArrow);
     assert_eq!(position(&reader), (15, 15), "an operator is one stop");
     chord(window, Key::Control, Key::RightArrow);
-    assert_eq!(position(&reader), (18, 18), "a run of CJK letters is one word");
+    assert_eq!(
+        position(&reader),
+        (18, 18),
+        "a run of CJK letters is one word"
+    );
     chord(window, Key::Control, Key::RightArrow);
     assert_eq!(
         position(&reader),
@@ -99,7 +107,11 @@ fn horizontal_keys_move_by_grapheme_word_line_and_document_and_extend_with_shift
         "Ctrl+Right continues on the next line"
     );
     chord(window, Key::Control, Key::LeftArrow);
-    assert_eq!(position(&reader), (19, 19), "Ctrl+Left to the start of the word");
+    assert_eq!(
+        position(&reader),
+        (19, 19),
+        "Ctrl+Left to the start of the word"
+    );
     chord(window, Key::Control, Key::LeftArrow);
     assert_eq!(
         position(&reader),
@@ -107,13 +119,25 @@ fn horizontal_keys_move_by_grapheme_word_line_and_document_and_extend_with_shift
         "Ctrl+Left continues on the previous line"
     );
     control_shift(window, Key::LeftArrow);
-    assert_eq!(position(&reader), (16, 13), "Ctrl+Shift+Left extends by word");
+    assert_eq!(
+        position(&reader),
+        (16, 13),
+        "Ctrl+Shift+Left extends by word"
+    );
     control_shift(window, Key::RightArrow);
-    assert_eq!(position(&reader), (16, 15), "Ctrl+Shift+Right extends by word");
+    assert_eq!(
+        position(&reader),
+        (16, 15),
+        "Ctrl+Shift+Right extends by word"
+    );
     key(window, Key::Home);
     assert_eq!(position(&reader), (0, 0), "Home");
     key(window, Key::End);
-    assert_eq!(position(&reader), (18, 18), "End stops before the terminator");
+    assert_eq!(
+        position(&reader),
+        (18, 18),
+        "End stops before the terminator"
+    );
     chord(window, Key::Shift, Key::Home);
     assert_eq!(position(&reader), (18, 0), "Shift+Home");
     key(window, Key::RightArrow);
