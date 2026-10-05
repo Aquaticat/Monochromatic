@@ -49,6 +49,10 @@ manually dismissible overlays that never resize the player,
 with two-line messages and Android-log direction for longer detail.
 The former layout-reserving bar studies are superseded;
 D8/D9 outcome requirements and D29's non-reserving placement context remain.
+[The overlay evidence boundary](evidence/feedback-overlay-boundaries.md)
+separates held poses,
+native lifecycle controls and actual storage/log-export implementation.
+The current viewer template is not yet a verified publication.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds
