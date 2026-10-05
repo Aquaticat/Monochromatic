@@ -42,7 +42,7 @@ pub mod effective_target;
 /// The per-invocation decision the thin executable performs.
 pub mod entry;
 
-/// Removal of wrapper-only escape-hatch flags before forwarding.
+/// Spellings of the wrapper-only escape hatches shared by several modules.
 pub mod escape_hatch;
 
 /// Starting real Git with unchanged arguments, streams and exit status.
@@ -177,3 +177,12 @@ pub mod command_config;
 
 /// Pure decision of the require-root policy.
 pub mod rule_require_root;
+
+/// Whether a `git worktree` invocation creates or moves a worktree.
+pub mod command_worktree;
+
+/// Wrapper-only control spellings, their meanings, and removal before the subcommand.
+pub mod wrapper_controls;
+
+/// Removal of every wrapper control from one invocation, by position.
+pub mod wrapper_invocation;
