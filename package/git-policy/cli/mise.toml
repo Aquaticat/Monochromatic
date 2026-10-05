@@ -10,6 +10,10 @@ run = ["node bin/test-native-container.mjs", "node bin/mutate-native-container.m
 description = "Plant guard removals and run cargo-mutants for `-- --file <glob>` scopes against the last gate image"
 run = "node bin/mutate-native-container.mjs"
 
+[tasks."native:mutation:list"]
+description = "List the mutants cargo-mutants finds in the native wrapper without building or running anything; `-- <options>` are passed on"
+run = "cargo mutants --list --no-config"
+
 [tasks."native:lock"]
 description = "Generate the standalone native wrapper Cargo lockfile"
 run = "cargo generate-lockfile --offline"

@@ -61,6 +61,20 @@ const nativeSourcePrefix = 'src/native/';
 const rustSourceSuffix = '.rs';
 /** Characters a mutation scope's file-name glob may contain. */
 const scopeNameCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_*?.-';
+/**
+ Mutant kinds no campaign tries, as regular expressions matched against the names `cargo mutants --list` prints.
+
+ Turning `+= 1` into `*= 1`, or `-= 1` into `/= 1`, leaves a counter unchanged, so a loop stepping one never ends
+ and the mutant only reaches the test timeout.
+ cargo-mutants exits with its timeout status whenever any mutant timed out and has no option to change that,
+ so one such mutant fails a whole campaign.
+ The human accepted on 2026-10-05 that these two kinds are never tried.
+ `replace += with -=` stays active as the check on every counter.
+ */
+const excludedMutantKinds = [
+  String.raw`replace \+= with \*=`,
+  'replace -= with /=',
+];
 
 /**
  Check for a full content-addressed Podman ID with one linear scan.
@@ -145,6 +159,12 @@ function mutationCommand({ scopes }) {
     containerReport,
     '--cargo-arg=--offline',
     '--cargo-arg=--locked',
+    ...excludedMutantKinds.flatMap(function exclusionArguments(kind) {
+      return [
+        '--exclude-re',
+        kind,
+      ];
+    }),
     // Scoped runs are evidence for the named files only. The unmutated baseline still runs over everything.
     ...scopes.flatMap(function scopeArguments(scope) {
       return [
