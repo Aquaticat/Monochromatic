@@ -89,15 +89,15 @@ run = "node bin/mutate-container.mjs --executable"
 
 [tasks."mutation:list:executable"]
 description = "Inspect the executable mutant scope without mutating or building source"
-run = "cargo mutants --list --no-config --file 'src/run_*.rs' --file src/main.rs --file src/rust_dispatch.rs --file src/rust_rule_settings.rs"
+run = "cargo mutants --list --no-config --exclude-re 'replace \\+= with \\*=' --exclude-re 'replace -= with /=' --file 'src/run_*.rs' --file src/main.rs --file src/rust_dispatch.rs --file src/rust_rule_settings.rs"
 
 [tasks."mutation:list:markdown"]
 description = "Inspect the Markdown mutant scope without mutating or building source"
-run = "cargo mutants --list --no-config --file 'src/markdown_*.rs'"
+run = "cargo mutants --list --no-config --exclude-re 'replace \\+= with \\*=' --exclude-re 'replace -= with /=' --file 'src/markdown_*.rs'"
 
 [tasks."mutation:list:inferred-constants"]
 description = "Inspect the constant-slot resolver mutant scope without mutating or building source"
-run = "cargo mutants --list --no-config --file src/rust_inferred_constants.rs"
+run = "cargo mutants --list --no-config --exclude-re 'replace \\+= with \\*=' --exclude-re 'replace -= with /=' --file src/rust_inferred_constants.rs"
 
 [tasks."test:container"]
 description = "Run artifact tests in a mount-free, network-disabled 2 GiB / 2 CPU container"
@@ -261,6 +261,7 @@ const filter = 'replace (has_main|verify|encoded|rewrite).* with (true|false|Ok\
 const command = ['cargo', 'mutants', '--in-place', '--baseline', 'run', '--no-config', '--no-shuffle',
   '--jobserver-tasks', '2', '--build-timeout', '300', '--timeout', '180',
   '--file', 'src/processors_prepare.rs', '--file', 'src/processors_projection.rs', '--file', 'src/processors_rewrite.rs',
+  '--exclude-re', 'replace \\+= with \\*=', '--exclude-re', 'replace -= with /=',
   '--re', filter, '--cargo-test-arg=processors', '--cargo-arg=--offline', '--cargo-arg=--locked', '--caught',
   '--output', '/work/processor-mutation-report'];
 let container;
@@ -296,7 +297,7 @@ run = ["cargo mutants --help", "rustc --help"]
 
 [tasks."mutation:list:processors"]
 description = "Inspect concrete guard mutant identities without compiling or mutating source"
-run = "cargo mutants --list --no-config --file src/processors_projection.rs --file src/processors_prepare.rs --file src/processors_rewrite.rs"
+run = "cargo mutants --list --no-config --exclude-re 'replace \\+= with \\*=' --exclude-re 'replace -= with /=' --file src/processors_projection.rs --file src/processors_prepare.rs --file src/processors_rewrite.rs"
 
 [tasks."lint:processors"]
 description = "Run Clippy against the processor-tested bounded source snapshot"

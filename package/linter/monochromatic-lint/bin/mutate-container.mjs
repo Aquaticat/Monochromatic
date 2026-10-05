@@ -23,6 +23,20 @@ const mutationImage = `localhost/monochromatic-lint-mutation:${imageTag}`;
  */
 const executableSkips = ['rust_explicit_types', 'rust_file_engine', 'rust_inferred_constants', 'rust_semantic_session', 'rust_workspace'];
 
+/**
+ * Mutant-name patterns no scope tries, each passed as its own `--exclude-re` argument.
+ * `x += 1` to `x *= 1` and `x -= 1` to `x /= 1` leave a counter unchanged, so a loop that steps its own
+ * index never ends, and cargo-mutants 27.1.0 exits with its timeout status whenever any mutant times out.
+ * Skipping these two kinds was decided for this repository on 2026-10-05; `+=` to `-=` and `-=` to `+=`
+ * still test every counter. Record: doc/handover/unified-linter-mutation-close.md, `Excluded mutation kinds`.
+ */
+const excludedMutantPatterns = ['replace \\+= with \\*=', 'replace -= with /='];
+
+/** One cargo-mutants `--exclude-re` option pair, which drops every mutant whose listed name matches the pattern. */
+function exclusionArguments(pattern) {
+  return ['--exclude-re', pattern];
+}
+
 /** One libtest `--skip` option pair, which excludes every test whose name contains the substring. */
 function skipArguments(name) {
   return ['--skip', name];
@@ -80,6 +94,7 @@ async function main() {
       '--build-timeout', '300', '--timeout', '180',
       '--no-config', '--no-shuffle', '--output', '/work/mutation-report',
       '--cargo-arg=--offline', '--cargo-arg=--locked',
+      ...excludedMutantPatterns.flatMap(exclusionArguments),
     ];
     if (rustStyle)
       command.push('--file', 'src/rust_no_anonymous_functions.rs', '--cargo-test-arg=rust_no_anonymous_functions');
