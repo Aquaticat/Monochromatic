@@ -220,12 +220,24 @@ fn processors_refuse_semantic_guessing_even_for_a_valid_virtual_method_call() {
 /// Adversarial/native failure, fuzz and synthetic-main controls.
 #[path = "processors_controls_tests.rs"]
 mod controls;
+/// Exact Rustdoc margin, blank-line and block-body extraction controls.
+#[path = "processors_docs_tests.rs"]
+mod docs;
 /// Endpoint, Unicode and allowed-depth positive controls.
 #[path = "processors_edge_tests.rs"]
 mod edges;
 /// Bounded randomized native extraction/projection verification.
 #[path = "processors_fuzz_tests.rs"]
 mod fuzz;
+/// Exact prepared doctest text for hidden markers, helpers and Rustdoc identity.
+#[path = "processors_prepare_tests.rs"]
+mod prepare;
 /// Fix projection controls are split to keep each source module inspectable.
 #[path = "processors_projection_tests.rs"]
 mod projection;
+/// Atomic-group validation, whole-line envelopes and container refusal reasons.
+#[path = "processors_rewrite_tests.rs"]
+mod rewrite;
+/// Exact host positions for points, ranges, anchors and rendered refusals.
+#[path = "processors_spans_tests.rs"]
+mod spans;
