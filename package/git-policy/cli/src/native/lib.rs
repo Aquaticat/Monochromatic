@@ -6,5 +6,8 @@
 //! // Internal modules used by the forthcoming native entry point and consumer verification.
 //! ```
 
+/// Lazy configuration loading for known inspection versus mutation/ambiguous commands.
+pub mod config_loading;
+
 /// Git 2.56.0 global-argument boundaries over unchanged operating-system strings.
 pub mod global_arguments;
