@@ -8,6 +8,20 @@
 
 /// Import the real byte scanner and abbreviation classifier.
 use super::{abbreviation_at, break_offsets};
+/// Import the consuming rule, parser and edit application for parser-placed node boundaries.
+use crate::diagnostic::{Diagnostic, Severity};
+use crate::edits::{Fix, apply_fixes};
+use crate::markdown_semantic_breaks::semantic_line_breaks;
+use crate::markdown_source::MarkdownSource;
+
+/// Run the consuming rule so text-node boundaries come from the real parser, not handcrafted slices.
+fn check(source: &str) -> Vec<Diagnostic> {
+    // Own the fixture text because the parsed source keeps its exact bytes for later offsets.
+    let context: MarkdownSource =
+        MarkdownSource::new(String::from("breaks.md"), String::from(source), false)
+            .expect("fixture parses");
+    return semantic_line_breaks(&context, Severity::Error);
+}
 
 /// All punctuation families share their word-boundary and paragraph-tail behavior.
 #[test]
@@ -50,6 +64,46 @@ fn source_after_the_text_node_is_not_truncated() {
     assert!(break_offsets("First.", "", true).is_empty());
     let trailing: String = format!("{}\nNext", " ".repeat(300));
     assert!(break_offsets("First.", trailing.as_str(), false).is_empty());
+}
+
+/// A break point that opens its text node has no earlier byte to inspect for an ellipsis.
+#[test]
+fn leading_break_points_are_not_mistaken_for_ellipses() {
+    assert_eq!(break_offsets(". next word", "", true), [1]);
+    assert_eq!(break_offsets("? next word", "", true), [1]);
+    assert!(break_offsets(".. next word", "", true).is_empty());
+}
+
+/// Inline code places the following text node directly after itself; its leading period still ends a sentence.
+#[test]
+fn parsed_text_nodes_may_begin_with_their_break_point() {
+    let source: &str = "`code`. Next words here\n";
+    let findings: Vec<Diagnostic> = check(source);
+    assert_eq!(findings.len(), 1);
+    // Byte 7 follows the six code bytes and the period, in original-source addressing.
+    assert_eq!(findings[0].labels[0].span.offset, 7);
+    let fix: Fix = findings[0].fix.clone().expect("add-only fix");
+    assert_eq!(
+        apply_fixes(source, &[fix]).expect("apply").source,
+        "`code`.\n Next words here\n"
+    );
+}
+
+/// Source glued to a node's final break point is the next written character, not a word boundary.
+#[test]
+fn glued_trailing_source_is_not_a_separator() {
+    assert!(break_offsets("Sentence.", "`code` follows", false).is_empty());
+    assert!(break_offsets("Sentence.", "x", true).is_empty());
+    assert!(break_offsets("said \"done.\"", "`code`", false).is_empty());
+    assert_eq!(break_offsets("Sentence.", " `code` follows", false), [9]);
+    assert_eq!(break_offsets("said \"done.\"", " then", false), [12]);
+}
+
+/// The parser ends a text node where inline code begins, with or without a written separator between them.
+#[test]
+fn parsed_inline_code_glued_to_a_sentence_gets_no_break() {
+    assert!(check("Sentence.`code` follows here\n").is_empty());
+    assert_eq!(check("Sentence. `code` follows here\n").len(), 1);
 }
 
 /// Case folding determines abbreviation identity without shifting byte coordinates.
