@@ -106,6 +106,20 @@ fn lexical_normalization_resolves_dot_components() {
         apply_segments(Path::new("/r"), "a/../../x/./y//z"),
         PathBuf::from("/x/y/z")
     );
+    // Path equality compares components, which hides a `.` segment and a trailing separator.
+    // The operating system does not: `b.png/` and `b.png/.` name a directory. Compare the exact spelling.
+    for (segments, spelled) in [
+        ("a/../../x/./y//z", "/x/y/z"),
+        ("a/b.png/", "/r/a/b.png"),
+        ("a/b.png/.", "/r/a/b.png"),
+        ("./a//b.png", "/r/a/b.png"),
+    ] {
+        assert_eq!(
+            apply_segments(Path::new("/r"), segments).as_os_str(),
+            spelled,
+            "{segments}"
+        );
+    }
     assert_eq!(
         repo_relative(Path::new("/r"), Path::new("/r/a/b.png")),
         Some(String::from("a/b.png"))

@@ -232,6 +232,18 @@ fn targets_resolve_to_lfs_plain_and_missing() {
         LfsImageTarget::Missing
     );
     assert_eq!(context.targets.len(), 4);
+    // A trailing separator or dot segment still names the tracked file, as the incumbent's `path.resolve` does.
+    // A fresh repository has an empty cache, so each spelling is read from disk.
+    for spelled in ["pkg/asset/shot.png/", "pkg/./asset/shot.png/."] {
+        let fresh: LfsImageRepo = repository(&fixture.path);
+        assert_eq!(
+            fresh.resolve_target(spelled).expect("resolved from disk"),
+            LfsImageTarget::Lfs {
+                oid: String::from(IMAGE_OID)
+            },
+            "{spelled}"
+        );
+    }
 }
 
 /// Relative destinations, object URLs and image definitions are all candidates; external images are not.
