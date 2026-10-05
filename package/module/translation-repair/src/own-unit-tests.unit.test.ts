@@ -767,7 +767,6 @@ const ALLOWLIST: readonly string[] = [
   'src/reference-attest-match.ts',
   'src/reference-attest-stage.ts',
   'src/reference-attest-wire.ts',
-  'src/reference-cache.ts',
   'src/refine-phase-slice.ts',
   'src/refine-probe-verdict.ts',
   'src/refine-selection-context.ts',
