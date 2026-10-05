@@ -33,6 +33,9 @@ const PORTAL_BUS_NAME: &str = "org.freedesktop.portal.Desktop";
 /// Stores portal object path.
 const PORTAL_OBJECT_PATH: &str = "/org/freedesktop/portal/desktop";
 
+/// Stores Settings interface name used by method calls and the change signal.
+const SETTINGS_INTERFACE: &str = "org.freedesktop.portal.Settings";
+
 /// Stores appearance namespace read by desktop toolkits.
 const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
 
@@ -75,6 +78,26 @@ impl ColorSchemePreference {
             Self::Light => return 2,
         }
     }
+}
+
+/// Result of asking the running private portal to serve a color scheme.
+///
+/// What:     `pub enum SwitchOutcome { Changed, Unchanged }`. A closed set of two data-less
+///           variants. `#[derive(...)]` asks the compiler to generate copying, debug printing,
+///           and equality comparison for it.
+/// Why:      The portal contract emits `SettingChanged` only when a setting changes, so callers
+///           need to know whether hosted clients were notified or nothing happened.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type SwitchOutcome = "changed" | "unchanged";
+/// ```
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SwitchOutcome {
+    /// The served value changed and one `SettingChanged` signal was emitted.
+    Changed,
+    /// The requested value was already served; no signal was emitted.
+    Unchanged,
 }
 
 /// Minimal Settings interface serving only deterministic appearance color scheme.
@@ -276,6 +299,13 @@ impl AppearancePortal {
             .context("starting private XDG Settings portal")?;
         tracing::info!(?preference, "started isolated XDG appearance portal");
         return Ok(Self { bus, _connection: connection });
+    }
+
+    /// Serves `preference` from now on and notifies subscribed clients on the private bus.
+    ///
+    /// Scaffold only: the runtime switch is not implemented yet.
+    pub fn set_color_scheme(&self, _preference: ColorSchemePreference) -> Result<SwitchOutcome> {
+        return Ok(SwitchOutcome::Unchanged);
     }
 
     /// Returns private session bus address for hosted-child environment.

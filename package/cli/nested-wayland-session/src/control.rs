@@ -397,6 +397,10 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
                 None => return Response::Err("not recording".to_string()),
             }
         }
+        Command::ColorScheme(preference) => {
+            // Scaffold only: no private portal is reachable from the control thread yet.
+            return crate::control_color_scheme::switch(None, preference);
+        }
         Command::Quit => {
             // Ask hosted client to close before tearing down its Wayland connection.
             child::request_hosted_client_shutdown(state);

@@ -45,6 +45,9 @@ pub mod child;
 /// ```
 pub mod control;
 
+/// Runtime appearance switching reaches only the private Settings portal.
+pub mod control_color_scheme;
+
 /// What:     `pub mod dnd;`. Declares the compositor-originated drag-and-drop module.
 /// Why:      Drives a server-side `text/uri-list` drag toward the hosted app so the app's
 ///           INBOUND file-drop path can be tested deterministically without a file manager.

@@ -14,6 +14,16 @@
 /// ```
 use std::path::PathBuf;
 
+/// What:     Import the closed set of appearance values the private portal can serve.
+/// Why:      A runtime appearance request carries the same typed value as the startup option,
+///           so no second spelling of `dark` and `light` can drift from it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { type ColorSchemePreference } from "./appearance_portal";
+/// ```
+use crate::appearance_portal::ColorSchemePreference;
+
 /// Real-wheel command parsing is separate from the existing control verbs.
 #[path = "protocol_wheel.rs"]
 mod wheel;
@@ -109,6 +119,7 @@ pub enum KeyAction {
 ///   | { kind: "type"; text: string }
 ///   | { kind: "resize"; width: number; height: number }
 ///   | { kind: "dropFile"; path: string; x?: number; y?: number }
+///   | { kind: "colorScheme"; preference: "dark" | "light" }
 ///   | { kind: "quit" };
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -179,6 +190,11 @@ pub enum Command {
     },
     /// Stop the running recording.
     RecordStop,
+    /// Change the private appearance portal's color scheme while the client runs.
+    ColorScheme(
+        /// Appearance value the private portal serves from now on.
+        ColorSchemePreference,
+    ),
     /// Stop the compositor.
     Quit,
 }

@@ -94,6 +94,14 @@ run = """
 runCargo(['nextest', 'run'])
 """
 
+[tasks."test:all"]
+description = "cargo nextest run that reports every failing test instead of stopping at the first (host if dev libs present, else container)"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo_dispatch}}
+runCargo(['nextest', 'run', '--no-fail-fast'])
+"""
+
 [tasks.package]
 description = "Build the crates.io package tarball (container)"
 shell = "node --input-type=module-typescript -e"
