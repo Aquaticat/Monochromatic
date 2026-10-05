@@ -67,6 +67,29 @@ version `7.0.0` in the stable listing.
 The corrected direct Android CLI install uses that path,
 `--no-metrics` and an owned SDK root.
 No main-SDK update or original AVD mutation is part of acquisition.
+API36 revision `7` installed and a separate official Pixel 9 Pro Fold AVD
+was provisioned successfully.
+
+The fresh API37 control displayed its actual debugging authorization
+prompt;
+the fingerprint matched the new guest's own generated key.
+Direct approval yielded authorized ADB and completed-boot read-back.
+Before installing the music-player APK,
+four bounded focus samples showed the launcher,
+no visible ANR and no logged fatal crash.
+Its image fingerprint is
+`google/sdk_gphone16k_x86_64/emu64xa16k:17/CE2A.260420.050/16231978:user/dev-keys`.
+This is bounded baseline evidence,
+not universal image stability or isolation of the older guest's cause.
+
+The same current E2 overlay APK then passed the fresh cover/light/200%
+long-detail and combined held-pose probe,
+including log-capture intent.
+Current native lifecycle and unchanged-layout controls continue on this
+fresh guest with recorded-settings restoration in the wrapper's cleanup
+path.
+The alternative API36 guest remains separately provisioned for comparison;
+no additional emulator is run concurrently with this native control.
 
 ## Independently verifiable queue
 
