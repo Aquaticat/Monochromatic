@@ -105,9 +105,9 @@ fn run(
     let mut checks: Scripted = scripted(outcomes);
     let request: StageRequest = StageRequest {
         trigger,
-        config,
-        controls,
-        selected,
+        config: config.clone(),
+        controls: controls.clone(),
+        selected: selected.to_vec(),
     };
     let result: StageResult = run_policy_stage(&request, every_policy().as_slice(), &mut checks);
     let mut called: Vec<PolicyId> = Vec::<PolicyId>::new();
@@ -171,9 +171,9 @@ fn policies_run_in_order_for_their_triggers() {
     let mut checks: Scripted = scripted(vec![]);
     let request: StageRequest = StageRequest {
         trigger: Trigger::PreForward,
-        config: &configured,
-        controls: &none,
-        selected: &[],
+        config: configured,
+        controls: none,
+        selected: Vec::<PolicyId>::new(),
     };
     run_policy_stage(
         &request,
@@ -554,18 +554,23 @@ fn unported_triggers_are_unavailable_not_clean() {
     }
 }
 
+/// A manual-push request over the given settings, controls and filter.
+fn manual_push(config: &PolicyConfig, controls: &Controls, selected: &[PolicyId]) -> StageRequest {
+    return StageRequest {
+        trigger: Trigger::ManualPush,
+        config: config.clone(),
+        controls: controls.clone(),
+        selected: selected.to_vec(),
+    };
+}
+
 /// Applicability follows the same trigger, filter, escape and severity tests as the stage.
 #[test]
 fn applicability_matches_the_stage() {
     let built_ins: PolicyConfig = PolicyConfig::defaults();
     let none: Controls = no_controls();
-    let request: StageRequest = StageRequest {
-        trigger: Trigger::ManualPush,
-        config: &built_ins,
-        controls: &none,
-        selected: &[],
-    };
     let all: Vec<PolicyId> = every_policy();
+    let request: StageRequest = manual_push(&built_ins, &none, &[]);
     // Only `final-newline` declares manual push among the policies that run unlisted.
     assert!(any_policy_applies(&request, all.as_slice()));
     assert!(!any_policy_applies(
@@ -574,39 +579,27 @@ fn applicability_matches_the_stage() {
     ));
     assert!(!any_policy_applies(&request, &[]));
     let off: PolicyConfig = with_severity(&built_ins, PolicyId::FinalNewline, Severity::Off);
-    let without: StageRequest = StageRequest {
-        trigger: Trigger::ManualPush,
-        config: &off,
-        controls: &none,
-        selected: &[],
-    };
-    assert!(!any_policy_applies(&without, all.as_slice()));
+    assert!(!any_policy_applies(
+        &manual_push(&off, &none, &[]),
+        all.as_slice()
+    ));
     let mut escaped: Controls = no_controls();
     escaped.escaped = vec![PolicyId::FinalNewline];
-    let escaping: StageRequest = StageRequest {
-        trigger: Trigger::ManualPush,
-        config: &built_ins,
-        controls: &escaped,
-        selected: &[],
-    };
-    assert!(!any_policy_applies(&escaping, all.as_slice()));
-    let filtered: StageRequest = StageRequest {
-        trigger: Trigger::ManualPush,
-        config: &built_ins,
-        controls: &none,
-        selected: &[PolicyId::RequireRoot],
-    };
-    assert!(!any_policy_applies(&filtered, all.as_slice()));
+    assert!(!any_policy_applies(
+        &manual_push(&built_ins, &escaped, &[]),
+        all.as_slice()
+    ));
+    assert!(!any_policy_applies(
+        &manual_push(&built_ins, &none, &[PolicyId::RequireRoot]),
+        all.as_slice()
+    ));
     // Once listed, the scanner also declares manual push.
     let configured: PolicyConfig =
         with_severity(&all_listed(), PolicyId::FinalNewline, Severity::Off);
-    let scanning: StageRequest = StageRequest {
-        trigger: Trigger::ManualPush,
-        config: &configured,
-        controls: &none,
-        selected: &[],
-    };
-    assert!(any_policy_applies(&scanning, all.as_slice()));
+    assert!(any_policy_applies(
+        &manual_push(&configured, &none, &[]),
+        all.as_slice()
+    ));
 }
 
 /// An error finding of `require-root`.

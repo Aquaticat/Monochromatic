@@ -198,3 +198,28 @@ pub mod policy_engine;
 
 /// The bounded loop that repeats a pass after corrections changed candidate content.
 pub mod policy_convergence;
+
+/// The one query for repository identity, top level and the path below it.
+pub mod repository_location;
+
+/// Lazily fetched repository facts behind one interface, with the real-Git provider.
+pub mod repository_facts;
+
+/// Pure decision of the linked-worktree-only policy.
+pub mod rule_linked_worktree;
+
+/// Pure decision of the branch-worktree-only policy and its one-query remote guess.
+pub mod rule_branch_worktree;
+
+/// Pure decision of the add-explicit policy.
+pub mod rule_add_explicit;
+
+/// The shipped policies as checks over rule cores and repository facts.
+pub mod policy_checks;
+
+/// The fixed argument transforms of a forwarded command, in order.
+pub mod policy_transforms;
+
+/// A scripted repository-facts provider for unit tests; never in the release build.
+#[cfg(test)]
+mod policy_test_support;

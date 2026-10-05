@@ -31,12 +31,15 @@ use std::process::Stdio;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type MetadataOutput = { success: boolean; stdout: Buffer; stderr: Buffer };
+/// type MetadataOutput = { success: boolean; code: number | null; stdout: Buffer; stderr: Buffer };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct MetadataOutput {
     /// Whether Git exited with status zero.
     pub success: bool,
+    /// Git's exit code, or nothing when a signal ended it. Some queries answer through
+    /// their exit code alone (`git diff-index --quiet` exits 1 for "differs").
+    pub code: Option<i32>,
     /// Exact bytes Git wrote to standard output, including what it printed before failing.
     pub stdout: Vec<u8>,
     /// Exact bytes Git wrote to standard error.
@@ -71,6 +74,7 @@ pub fn run_metadata_git(
     // `Ok(...)` is the success variant carrying the captured result.
     return Ok(MetadataOutput {
         success: output.status.success(),
+        code: output.status.code(),
         stdout: output.stdout,
         stderr: output.stderr,
     });

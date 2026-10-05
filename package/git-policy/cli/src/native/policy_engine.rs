@@ -95,26 +95,25 @@ pub trait PolicyChecks {
     fn check(&mut self, policy: PolicyId, trigger: Trigger) -> PolicyOutcome;
 }
 
-/// What: The settings of one stage. `&'a T` borrows a value for the lifetime `'a`, the
-///       stretch of the program during which the request is used; `&'a [PolicyId]`
-///       borrows a list.
-/// Why:  The caller keeps ownership of configuration and controls for the whole
-///       invocation; the stage only reads them.
+/// What: The settings of one stage. A `struct` that owns its values: `PolicyConfig`,
+///       `Controls` and `Vec<PolicyId>` are copies made once per invocation.
+/// Why:  Owning small copies keeps the record free of borrowing rules, so it can be
+///       handed to every stage of an invocation as one plain value.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type StageRequest = { trigger: PolicyTrigger; config: PolicyConfig; controls: Controls; selected: PolicyId[] };
 /// ```
-#[derive(Clone, Copy, Debug)]
-pub struct StageRequest<'a> {
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct StageRequest {
     /// The lifecycle point being checked.
     pub trigger: Trigger,
     /// Effective severities.
-    pub config: &'a PolicyConfig,
+    pub config: PolicyConfig,
     /// Keep-going and per-invocation escapes.
-    pub controls: &'a Controls,
+    pub controls: Controls,
     /// The `--policy` filter of a direct command; empty selects every policy.
-    pub selected: &'a [PolicyId],
+    pub selected: Vec<PolicyId>,
 }
 
 /// What: Why a pass could not be evaluated by this executable.
@@ -187,7 +186,7 @@ fn policy_applies(request: &StageRequest, policy: PolicyId) -> bool {
     if !request.selected.is_empty() && !request.selected.contains(&policy) {
         return false;
     }
-    if is_escaped(request.controls, policy) {
+    if is_escaped(&request.controls, policy) {
         return false;
     }
     return request.config.setting(policy).severity != Severity::Off;

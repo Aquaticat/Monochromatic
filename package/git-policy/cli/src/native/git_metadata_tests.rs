@@ -55,6 +55,7 @@ fn queries_capture_output_and_exit_state() {
         version,
         MetadataOutput {
             success: true,
+            code: Some(0),
             stdout: b"git version 2.56.0\n".to_vec(),
             stderr: Vec::<u8>::new(),
         }
@@ -72,6 +73,7 @@ fn queries_capture_output_and_exit_state() {
     )
     .expect("Git starts");
     assert!(!outside.success);
+    assert_eq!(outside.code, Some(128));
     assert_eq!(outside.stdout, Vec::<u8>::new());
     assert!(
         String::from_utf8_lossy(&outside.stderr).contains("not a git repository"),
@@ -105,6 +107,7 @@ fn queries_pass_arguments_and_overlay_and_close_stdin() {
         output,
         MetadataOutput {
             success: false,
+            code: Some(3),
             stdout: b"a b\0\0\xff-raw\0--\0".to_vec(),
             stderr: b"overlay value".to_vec(),
         }
