@@ -110,6 +110,15 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--test', 'font_features', '--test', 'inter_features', '--test', 'variable_fonts', '--', '--nocapture'])
 """
 
+[tasks."test:open"]
+depends = ["runtime"]
+description = "Verify latest-request source opening, project boundaries, cancellation, and syntax revisions"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'file_open'])
+"""
+
 [tasks."test:cli"]
 description = "Verify native-path argument grammar and executable help without display startup"
 shell = "node --input-type=module-typescript -e"
