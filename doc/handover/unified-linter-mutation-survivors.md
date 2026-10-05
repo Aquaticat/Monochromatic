@@ -113,7 +113,7 @@ The other eleven Markdown files generate the same counts as before.
 ## Dispositions by file
 
 Locations are `line:column` as recorded by the named campaign.
-"Rerun" means the Markdown rerun `PENDING_MD_DIR` unless the constant-slot rerun is named.
+Each `caught.txt` reference names the campaign it comes from.
 
 ### `src/markdown_block_start.rs`
 
@@ -126,13 +126,13 @@ Locations are `line:column` as recorded by the named campaign.
   ` 12.\r` and ` 9)\n` require.
   Those cases were added in `111e02fec`,
   after the campaign's snapshot.
-  PENDING_BLOCK_1562
+  Caught in `mutation-BX2JYq` (`caught.txt` line 3).
 - `15:44: replace || with && in boundary` was missed in `mutation-p3QH2L`.
   Still generated at `15:44`.
   Killed by the same test.
   Under the mutant a tab stops being a marker boundary,
   which its cases ` #\t heading` and ` 3)\t item` require.
-  PENDING_BLOCK_1544
+  Caught in `mutation-BX2JYq` (`caught.txt` line 4).
 - `36:23: replace || with && in starts_block_construct` was missed in `mutation-p3QH2L`.
   Removed in `111e02fec`.
   Equivalent:
@@ -148,7 +148,7 @@ Locations are `line:column` as recorded by the named campaign.
   Removed.
   The marker run is counted while walking the slice.
   The counter mutants at `45:15` now terminate and are caught.
-  PENDING_BLOCK_4515
+  They are recorded in `mutation-BX2JYq` at `caught.txt` lines 18 and 19.
 - `69:20: replace += with *= in starts_block_construct` timed out in `mutation-p3QH2L`.
   Removed.
   The rule-line scan iterates `&line[width..]` and has no counter.
@@ -156,7 +156,7 @@ Locations are `line:column` as recorded by the named campaign.
   Removed.
   The digit run is counted while walking the slice.
   The counter mutants at `75:16` now terminate and are caught.
-  PENDING_BLOCK_7516
+  They are recorded in `mutation-BX2JYq` at `caught.txt` lines 53 and 54.
 
 The negative controls ` . next` and ` ) next` were added,
 because the digit guard is what keeps a leading delimiter from being read as an ordered marker.
@@ -175,7 +175,7 @@ because the digit guard is what keeps a leading delimiter from being read as an 
   Closing delimiters are passed with `trim_start_matches(closing)`.
   The offset arithmetic that remains is at `88:38` and `89:40`,
   and all four of its mutants are caught.
-  PENDING_BREAK_8838
+  They are recorded in `mutation-BX2JYq` at `caught.txt` lines 85 to 88.
 - `93:48: replace < with <= in break_offsets` was missed in `mutation-p3QH2L`.
   Removed.
   The comparison chose between the node's own tail and the paragraph's following source;
@@ -206,7 +206,7 @@ because the digit guard is what keeps a leading delimiter from being read as an 
   list-contained and Unicode-prefixed fences.
   The helper is now `fence_marker_end`,
   and its remaining sum at `41:23` was caught in `mutation-p3QH2L` (`caught.txt` lines 134 and 135).
-  PENDING_CODE_4123
+  Both are caught again in `mutation-BX2JYq` (`caught.txt` lines 104 and 105).
 
 ### `src/markdown_commands.rs`
 
@@ -237,7 +237,9 @@ and uses a Cyrillic info string in LF,
 CRLF and bare CR,
 and compares each edit with an offset found by searching the fixture.
 It covers both non-equivalent cases.
-PENDING_COMMANDS
+All 14 viable mutants of `markdown_commands.rs` are caught in `mutation-BX2JYq`
+(`caught.txt` lines 109 to 122;
+the other 2 are unviable).
 
 ### `src/markdown_headings.rs`
 
@@ -251,7 +253,7 @@ added in `1eae5c4bc` after the campaign's snapshot:
 the first and third report a legal one-step increase,
 the second reports an equal-depth sibling.
 They were caught in `mutation-p3QH2L` (`caught.txt` lines 204 to 206).
-PENDING_HEADINGS
+They are caught again in `mutation-BX2JYq` (`caught.txt` lines 173 to 175).
 
 ### `src/markdown_prose_context.rs`
 
@@ -304,7 +306,10 @@ CRLF and bare CR,
 and `nested_later_line_containers_keep_markers_and_blank_list_bullets` covers a quote inside a list.
 The remaining arithmetic is `ending + 1` at `75:29`,
 and both of its mutants are caught.
-PENDING_PROSE_7529
+They are recorded in `mutation-BX2JYq` at `caught.txt` lines 234 and 235.
+The paragraph check that replaced the guard,
+`replace == with != in paragraph_for` at `39:17`,
+is caught at line 223.
 
 - `80:49: replace || with && in continuation_prefix` was missed in `mutation-p3QH2L`.
   Still generated,
@@ -312,7 +317,7 @@ PENDING_PROSE_7529
   Killed:
   a tab in the prefix became a space,
   and `tab_indentation_survives_in_the_continuation_prefix` fails.
-  PENDING_PROSE_8349
+  Caught in `mutation-BX2JYq` (`caught.txt` line 238).
 
 ### `src/markdown_source.rs`
 
@@ -325,7 +330,7 @@ Still generated at the same locations.
 Killed by the damaged-arena controls in `markdown_traversal_tests.rs`,
 added in `5c4c240ba` after the campaign's snapshot.
 They were caught in `mutation-p3QH2L` (`caught.txt` lines 334 and 343 to 345).
-PENDING_SOURCE_TRAVERSAL
+They are caught again in `mutation-BX2JYq` (`caught.txt` lines 298 and 307 to 309).
 
 - `309:37: replace - with + in MarkdownSource::node_span` was missed in `mutation-1vJeuS`.
   Still generated,
@@ -333,7 +338,7 @@ PENDING_SOURCE_TRAVERSAL
   Killed by the exact length assertion in `bom_and_astral_source_slices_are_exact`,
   added in `40fb44175`.
   It was caught in `mutation-p3QH2L` (`caught.txt` line 380).
-  PENDING_SOURCE_SPAN
+  It is caught again in `mutation-BX2JYq` (`caught.txt` line 344).
 - `352:9: replace MarkdownSource::text_nodes -> Vec<u32> with vec![]` was missed in `mutation-1vJeuS`.
 - `352:9: replace MarkdownSource::text_nodes -> Vec<u32> with vec![0]` was missed in `mutation-1vJeuS`.
 - `352:9: replace MarkdownSource::text_nodes -> Vec<u32> with vec![1]` was missed in `mutation-1vJeuS`.
@@ -344,7 +349,7 @@ now at `357:9` and `360:35`.
 The method had no tested caller in the older snapshot.
 Its caller is the heading-punctuation rule,
 whose tests were caught killing all four in `mutation-p3QH2L` (`caught.txt` lines 392 to 395).
-PENDING_SOURCE_TEXT
+They are caught again in `mutation-BX2JYq` (`caught.txt` lines 356 to 359).
 
 - `314:9: replace MarkdownSource::parent -> Option<u32> with Some(0)` timed out in `mutation-1vJeuS`.
 - `314:9: replace MarkdownSource::parent -> Option<u32> with Some(1)` timed out in `mutation-1vJeuS`.
@@ -373,7 +378,7 @@ and one unfinished test keeps the test binary alive until the 180 second limit.
 Bounding the walks would add a guard against a cycle
 that `traversal` already makes impossible,
 so the walks were left alone.
-PENDING_PARENT_LOG
+`mutation-BX2JYq` records both as timeouts again.
 
 ### `src/markdown_tables.rs`
 
@@ -401,7 +406,7 @@ two and three backslashes that reach the first byte,
 and the empty cell.
 `parsed_cells_ending_in_escaped_pipes_keep_their_text` covers the same boundary through parsed rows.
 The two remaining mutants at `34:17` and `37:19` are caught.
-PENDING_TABLES
+They are recorded in `mutation-BX2JYq` at `caught.txt` lines 380 and 381.
 
 ### `src/rust_inferred_constants.rs`
 
@@ -415,8 +420,11 @@ Still generated at the same locations.
 They survived because the older snapshot had no case with a hole in a second slot,
 so neither counter was ever incremented before a match.
 The conformance case "mixed type and constant slots retain their positions" was added in `0baded620`,
-after the campaign's snapshot,
-and it already fails under all five.
+after the campaign's snapshot.
+`semantic_conformance_and_source_overlay_controls`,
+the one test function that holds every conformance case,
+failed under all five in `mutation-yE1SL2`;
+its log cannot say which case failed first.
 
 `holes_resolve_against_the_parameter_in_their_own_slot` in the new `rust_inferred_constants_tests.rs`
 is a second,
@@ -442,7 +450,8 @@ and under every other viable mutant of the file.
 - `src/markdown_definitions.rs:44:20: replace -= with /= in removal_edit` timed out in `mutation-p3QH2L`.
 - `src/markdown_punctuation.rs:64:29: replace -= with /= in suffix_start` timed out in `mutation-p3QH2L`.
 
-Both are still generated and both are detected by timeout.
+Both are still generated and both are detected by timeout;
+`mutation-BX2JYq` records both as timeouts again.
 They have the hand-stepped shape described in "Why the loops were restructured".
 `removal_edit` scans back to the line start exactly as `continuation_prefix` did,
 and `suffix_start` counts a backslash run exactly as `cell_content` did.
@@ -520,7 +529,28 @@ and failed `markdown_source::tests::parents_mirror_child_edges_and_stop_at_the_r
 
 ### Markdown scope
 
-PENDING_MD_SCOPE
+The command was
+`mise run --skip-deps //package/linter/monochromatic-lint:mutation:markdown`.
+Evidence is `mutation-BX2JYq`,
+exit status 3:
+424 mutants,
+394 caught,
+0 missed,
+26 unviable,
+4 timeouts.
+The unmutated baseline built in 101.4 seconds and ran the Markdown tests in 0.3 seconds.
+The campaign ran from 14:54:58 to 15:30:27 UTC.
+
+The four timeouts are exactly the ones this document predicts:
+`markdown_definitions.rs:44:20`,
+`markdown_punctuation.rs:64:29`,
+and the two `Some` replacements at `markdown_source.rs:319:9`.
+No mutant of the five restructured files was missed or timed out:
+`markdown_block_start.rs` has 61 caught,
+`markdown_break_points.rs` 33 caught and 2 unviable,
+`markdown_commands.rs` 14 caught and 2 unviable,
+`markdown_prose_context.rs` 23 caught,
+and `markdown_tables.rs` 17 caught and 3 unviable.
 
 ### Controls shown to fail
 
@@ -531,7 +561,24 @@ The count is the number of mutants under which the per-mutant log records the co
   every viable mutant of `mutation-yE1SL2`.
 - `markdown_source::tests::parents_mirror_child_edges_and_stop_at_the_root` failed under 4,
   every mutant of `mutation-BmlHMt`.
-PENDING_CONTROLS
+
+The remaining counts come from `mutation-BX2JYq`.
+
+- `markdown_block_start::tests::leaves_non_markers_and_empty_lines_available`
+  (extended with ` . next` and ` ) next`) failed under 41.
+- `markdown_break_points::tests::leading_break_points_are_not_mistaken_for_ellipses` failed under 23.
+- `markdown_break_points::tests::parsed_text_nodes_may_begin_with_their_break_point` failed under 62.
+- `markdown_break_points::tests::glued_trailing_source_is_not_a_separator` failed under 21.
+- `markdown_break_points::tests::parsed_inline_code_glued_to_a_sentence_gets_no_break` failed under 65.
+- `markdown_commands::tests::fences_after_other_content_keep_absolute_prompt_offsets` failed under 47.
+- `markdown_prose_context::tests::later_line_paragraphs_copy_only_their_own_line_prefix` failed under 78.
+- `markdown_prose_context::tests::nested_later_line_containers_keep_markers_and_blank_list_bullets` failed under 80.
+- `markdown_prose_context::tests::tab_indentation_survives_in_the_continuation_prefix` failed under 81.
+- `markdown_prose_context::tests::paragraph_lookup_climbs_inline_wrappers_and_respects_exclusions` failed under 33.
+- `markdown_prose_context::tests::paragraphs_never_nest_inside_paragraphs` failed under 19.
+- `markdown_source::tests::parents_mirror_child_edges_and_stop_at_the_root` failed under 17.
+- `markdown_tables::tests::escape_runs_reaching_the_cell_start_decide_the_final_pipe` failed under 4.
+- `markdown_tables::tests::parsed_cells_ending_in_escaped_pipes_keep_their_text` failed under 61.
 
 ## Open items
 
@@ -631,3 +678,8 @@ followed by the commits that add this document.
 - `5a9a47208` filters the constant-slot scope to the tests that reach the resolver.
 - `be43d526f` passes both constant-slot test filters to the test binary.
 - `7df60fe63` adds the `--markdown-parent` scope.
+
+The evidence directories `mutation-yE1SL2`,
+`mutation-BmlHMt` and `mutation-BX2JYq`,
+and `gate-survivors-1e257034b.log`,
+are copied to the main checkout's `package/linter/monochromatic-lint/target/verification/`.
