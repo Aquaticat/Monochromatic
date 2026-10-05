@@ -31,6 +31,7 @@ import {
 
 import {
   type BlockPair,
+  declinedTargetBlocks,
   declinedTargetIdsOfPairing,
   parseDocument,
 } from '../dist/final/node/index.mjs';
@@ -112,6 +113,68 @@ await describe({
           sourceNodes: [],
           targetNodes: parseDocument({ text: 'A cat naps on the mat.', },).nodes,
         },),],).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'KEEPS a target-only block out of the declined list where a later step continues a pairing, '
+        + 'the block sitting inside the rendering the two make',
+      fn: async () => {
+        const { nodes, } = parseDocument({ text: 'A cat naps.\n\nA dog waits.\n\nA bird sings.', },);
+        /**
+         Steps where one block is plain target-only and the next continues a
+         pairing, so the plain one sits inside the rendering; and the same
+         list without the continuation.
+         */
+        const inside = declinedTargetBlocks({
+          steps: [{
+            kind: 'paired',
+            sourceIndex: 0,
+            targetIndex: 0,
+          }, {
+            kind: 'target-only',
+            targetIndex: 1,
+          }, {
+            kind: 'target-only',
+            targetIndex: 2,
+            continuesPairing: true,
+          },] as unknown as Parameters<typeof declinedTargetBlocks>[0]['steps'],
+          targetNodes: nodes,
+        },);
+        expect(inside,).toEqual([],);
+
+        const alone = declinedTargetBlocks({
+          steps: [{
+            kind: 'paired',
+            sourceIndex: 0,
+            targetIndex: 0,
+          }, {
+            kind: 'target-only',
+            targetIndex: 1,
+          },] as unknown as Parameters<typeof declinedTargetBlocks>[0]['steps'],
+          targetNodes: nodes,
+        },);
+        expect(alone.length,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'SKIPS a source-only step in the claiming walk, since it names no block of the translation',
+      fn: async () => {
+        const { nodes, } = parseDocument({ text: 'A cat naps.', },);
+        const declined = declinedTargetBlocks({
+          steps: [{
+            kind: 'paired',
+            sourceIndex: 0,
+            targetIndex: 0,
+          }, {
+            kind: 'source-only',
+            sourceIndex: 1,
+            continuesPairing: true,
+          },] as unknown as Parameters<typeof declinedTargetBlocks>[0]['steps'],
+          targetNodes: nodes,
+        },);
+        expect(declined,).toEqual([],);
       },
     },),
   ],
