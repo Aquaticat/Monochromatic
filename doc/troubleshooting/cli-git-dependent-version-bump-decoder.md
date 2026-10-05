@@ -106,3 +106,32 @@ and willingness were not assessed;
 no candidate fix was prototyped.
 The durable artifact is this local incident record,
 not an upstream allegation.
+
+## Second reproduction: multi-package commits crash the same policy
+
+During the search-fetch MCP extraction (2026-10-05),
+two `git commit` invocations stopped before forwarding with the identical engine failure:
+
+```json
+{"schemaVersion":1,"sequence":0,"type":"engine-failure","code":"plugin-threw","message":"The \"list\" argument must be an instance of SharedArrayBuffer, ArrayBuffer or ArrayBufferView.","trigger":"pre-forward","policyId":"mono/dependent-version-bump"}
+```
+
+Both invocations named more than one package in one commit:
+
+- the core extraction, spanning `package/agent-harness-shared/search-fetch`,
+  `package/pi-plugin/search-fetch`,
+  and `pnpm-lock.yaml`
+- the server package, spanning `package/mcp/search-fetch`,
+  `package/pi-plugin/search-fetch/package.json`,
+  and `pnpm-lock.yaml`
+
+Verified workaround without any policy escape:
+split the commit per package and let `pnpm-lock.yaml` ride with one of them.
+Every single-package commit passed all policies unchanged,
+including `dependent-version-bump`.
+This is preferable to the `--no-enforce-mono/dependent-version-bump` escape above
+whenever the change genuinely spans packages,
+because the policy still runs on each commit.
+
+Repeated observation only;
+it does not establish a cause.
