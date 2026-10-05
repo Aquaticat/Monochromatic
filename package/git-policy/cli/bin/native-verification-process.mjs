@@ -83,7 +83,9 @@ export async function runCommand({
   capture = false,
   allowFailure = false,
 }) {
-  const step = `${command} ${args[0] ?? ''}`;
+  const step = args[0] === undefined
+    ? command
+    : `${command} ${args[0]}`;
   const child = spawn(
     command,
     [...args],
