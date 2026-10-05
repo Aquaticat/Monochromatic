@@ -158,9 +158,10 @@ not a verbal question.
   and the production Settings boundary.
 - [x] Re-check the MD3 switch and list-row values against the current
   specification source and record them in `md3-tokens.md`.
-- [ ] Build pure authored Settings state and an isolated native host using
-  the accepted player and the proposed Fold placement,
+- [x] Build pure authored Settings state with checked toggle events,
   without persistence or production wiring.
+- [ ] Build an isolated native host using the accepted player and the
+  proposed Fold placement.
 - [ ] Measure light/dark fit on both panels at 100% and 200% text,
   including the long supporting lines and both switch positions.
   Preserve the 48dp layout floor.
@@ -169,6 +170,22 @@ not a verbal question.
   Verify the return to an unchanged player.
 - [ ] Publish freshly inspected,
   sanitized and exact-artifact-bound evidence and verify its offline viewer.
+
+## Isolated preparation and verification
+
+Prototype `af793e436` adds an immutable three-switch record,
+D11's row order and copy,
+and one checked toggle event per row.
+Scene `accepted` is D11's mock state;
+scene `inverse` puts every switch in the other position.
+The complete unit task passed with 12 Settings fixture tests.
+Fresh unknown-scene,
+copy-drift,
+row-position-swap,
+unknown-event and cross-row-toggle mutants each failed their intended test.
+Exact restoration and a freshly executed complete unit task followed.
+No native fit,
+input or placement evidence exists yet.
 
 ## Boundaries and next action
 
