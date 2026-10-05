@@ -114,7 +114,7 @@ async function main() {
     await writeFile(join(evidence, 'build-state.json'), buildState.stdout);
     if (built.status !== 0)
       throw new FuzzVerificationError(`Instrumented build exited ${built.status}; container state retained in ${evidence}.`);
-    const targets = ['merge_values', 'configuration', 'rust_style', 'rust_explicit_types', 'markdown'];
+    const targets = ['merge_values', 'configuration', 'rust_style', 'rust_explicit_types', 'markdown', 'orchestration'];
     await mkdir(join(context, 'bin'), { recursive: true });
     for (const target of targets)
       execute({ command: 'podman', args: ['cp', `${buildContainer}:/work/build/x86_64-unknown-linux-gnu/release/${target}`, join(context, 'bin', target)] });

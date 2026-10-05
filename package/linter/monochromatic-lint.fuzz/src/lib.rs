@@ -9,6 +9,9 @@
 /// Counted Markdown/MDX rules and raw-source edit safety controls.
 pub mod markdown;
 
+/// Whole per-source path: host rules, processors, nested doc tests, projection and the fix loop.
+pub mod orchestration;
+
 /// Semantic explicit-type property controls.
 pub mod explicit_types;
 /// Fixed in-memory workspace initialization for semantic properties.

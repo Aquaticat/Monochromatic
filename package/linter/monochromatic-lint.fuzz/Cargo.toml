@@ -66,6 +66,13 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "orchestration"
+path = "fuzz_targets/orchestration.rs"
+test = false
+doc = false
+bench = false
+
 [profile.release]
 panic = "unwind"
 
