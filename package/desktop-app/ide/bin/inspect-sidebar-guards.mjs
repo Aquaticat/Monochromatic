@@ -1,0 +1,87 @@
+#!/usr/bin/env node
+// Observe committed sidebar-resize regressions failing after guard removal in a disposable package copy.
+import { spawnSync } from 'node:child_process';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join, relative, sep } from 'node:path';
+
+const privateRoot = join(homedir(), 'temp', 'agent');
+if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Guard scratch root must exclude group and other permissions: ' + privateRoot);
+if (!process.env.usage_cache) throw new Error('Provide the disposable Cargo target-cache directory');
+const cache = realpathSync(process.env.usage_cache);
+if (!cache.startsWith(realpathSync(privateRoot) + sep) || !statSync(cache).isDirectory()) throw new Error('Target cache must be a disposable directory below ' + privateRoot);
+// A private Cargo home copy keeps disposable builds off the shared volume's package-cache lock.
+let cargoHome = 'ide-cargo';
+if (process.env.usage_cargo) {
+  cargoHome = realpathSync(process.env.usage_cargo);
+  if (!cargoHome.startsWith(realpathSync(privateRoot) + sep) || !statSync(cargoHome).isDirectory()) throw new Error('Cargo home copy must be a disposable directory below ' + privateRoot);
+}
+const artifact = mkdtempSync(join(privateRoot, 'ide-sidebar-guard-'));
+const source = join(artifact, 'package');
+const origin = process.cwd();
+cpSync(origin, source, { recursive: true, filter: path => !['target', '.git', 'node_modules'].includes(relative(origin, path).split(sep)[0]) });
+mkdirSync(join(source, 'target'), { recursive: true });
+console.log('SIDEBAR_GUARD_ARTIFACT=' + artifact);
+
+const drag = 'divider_drag_resizes_and_stops_at_both_bounds';
+const resize = 'window_resize_shrinks_the_sidebar_and_restores_the_request';
+const stored = 'root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);';
+const cases = [
+  // The stored request: drag and keys cannot keep a width that cannot be shown now.
+  { name: 'drag-upper-bound', file: 'ui/app.slint', before: stored, after: 'root.sidebar-requested-width = max(width, root.sidebar-minimum-width);', test: drag, failure: 'a drag stored a width above the maximum' },
+  { name: 'drag-lower-bound', file: 'ui/app.slint', before: stored, after: 'root.sidebar-requested-width = min(width, root.sidebar-maximum-width);', test: drag, failure: 'a drag stored a width below the minimum' },
+  // Any held button reports movement; only the left button records a drag origin.
+  { name: 'left-button-only', file: 'ui/divider.slint', before: '            if !self.pressed { return; }\n', after: '', test: 'divider_ignores_plain_clicks_and_other_buttons_and_keeps_keyboard_focus', failure: 'a right-button drag resized the sidebar' },
+  // The layout clamp: the source cell keeps its minimum and is never the cell that shrinks first.
+  { name: 'source-minimum', file: 'ui/app.slint', before: '            min-width: root.source-minimum-width;\n', after: '', test: resize, failure: 'the sidebar did not shrink to keep the source minimum' },
+  { name: 'source-preferred', file: 'ui/app.slint', before: '            preferred-width: root.source-minimum-width;\n', after: '', test: resize, failure: 'a long file label narrowed the sidebar' },
+  { name: 'sidebar-minimum', file: 'ui/app.slint', before: 'min-width: root.project-visible ? root.sidebar-minimum-width : 0px;', after: 'min-width: 0px;', test: resize, failure: 'the sidebar shrank below its minimum' },
+  { name: 'maximum-floor', file: 'ui/app.slint', before: 'max(root.sidebar-minimum-width,\n        root.width - root.divider-width - root.source-minimum-width)', after: '(root.width - root.divider-width - root.source-minimum-width)', test: resize, failure: 'the reported maximum fell below the minimum' },
+  // Without a project there is no divider to focus.
+  { name: 'hidden-divider', file: 'ui/app.slint', before: '            visible: root.project-visible;\n            min-width: root.project-visible ? root.divider-width : 0px;', after: '            min-width: root.project-visible ? root.divider-width : 0px;', test: 'hidden_project_has_no_divider', failure: 'reached the divider of a hidden project' },
+];
+// An optional comma-separated list reruns only the named guards, for example after adding one.
+const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
+const selected = only ? cases.filter(item => only.has(item.name)) : cases;
+if (only && selected.length !== only.size) throw new Error('Unknown guard name in: ' + process.env.usage_only);
+const results = [];
+const baselined = new Set();
+const run = (item, phase) => {
+  const result = spawnSync('podman', [
+    'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
+    '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
+    '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
+    '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2', '--env', 'SLINT_EMIT_DEBUG_INFO=1',
+    '--env', 'SLINT_BACKEND=headless', '--env', 'SLINT_MCP_PORT=0', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
+    'localhost/monochromatic/ide',
+    'cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--filter-expr', 'test(' + item.test + ')',
+  ], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  const output = (result.stdout ?? '') + (result.stderr ?? '');
+  writeFileSync(join(artifact, item.name + '-' + phase + '.log'), output);
+  if (result.error) throw result.error;
+  const failedAsExpected = result.status !== 0 && output.includes(item.test) && output.includes(item.failure);
+  const passedAsExpected = result.status === 0 && output.includes(item.test) && /1 (?:test|passed)/.test(output);
+  const accepted = phase === 'removed' ? failedAsExpected : passedAsExpected;
+  results.push({ name: item.name, phase, test: item.test, status: result.status, accepted });
+  writeFileSync(join(artifact, 'results.json'), JSON.stringify(results, null, 2));
+  if (!accepted) throw new Error('Unexpected ' + phase + ' result for ' + item.name + '; inspect ' + artifact);
+  console.log(JSON.stringify(results.at(-1)));
+};
+for (const item of selected) {
+  // A restored run of an earlier case is already this test's unmodified baseline.
+  if (!baselined.has(item.test)) {
+    run(item, 'baseline');
+    baselined.add(item.test);
+  }
+  const path = join(source, item.file);
+  const original = readFileSync(path, 'utf8');
+  try {
+    const start = original.indexOf(item.before);
+    if (start < 0) throw new Error('Mutation source anchor is absent: ' + item.before);
+    if (original.indexOf(item.before, start + item.before.length) >= 0) throw new Error('Mutation source anchor is ambiguous: ' + item.before);
+    writeFileSync(path, original.slice(0, start) + item.after + original.slice(start + item.before.length));
+    run(item, 'removed');
+  } finally { writeFileSync(path, original); }
+  run(item, 'restored');
+}
+console.log('Sidebar guard controls passed: ' + artifact + ' (' + selected.length + ' of ' + cases.length + ' guards)');

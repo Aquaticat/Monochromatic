@@ -88,8 +88,16 @@ fn clicks_beside_the_divider_reach_tree_rows_and_source_at_every_width() {
     // const window = shared.window;
     // ```
     let window = &shared.window;
-    let mut row = 1;
-    for target in [256.0, MINIMUM, 1100.0 - DIVIDER - SOURCE_MINIMUM] {
+    let widest = 1100.0 - DIVIDER - SOURCE_MINIMUM;
+    // What: Each `(row, target)` pair is a two-value tuple taken apart by the loop header.
+    // Why: Every width clicks its own tree row and source line, so a result left over from the
+    // previous width cannot pass.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const [row, target] of [[1, 256], [2, MINIMUM], [3, widest]]) { ... }
+    // ```
+    for (row, target) in [(1, 256.0), (2, MINIMUM), (3, widest)] {
         drag_to(window, target);
         let width = window.get_sidebar_width();
         assert_eq!(width, target, "the drag did not reach the tested width");
@@ -129,11 +137,7 @@ fn clicks_beside_the_divider_reach_tree_rows_and_source_at_every_width() {
         );
         // Source lines are 24px tall below the 32px file label; the first source pixel is line-number gutter.
         let line = row as usize + 3;
-        click(
-            window,
-            width + DIVIDER,
-            HEADER + line as f32 * 24.0 + 12.0,
-        );
+        click(window, width + DIVIDER, HEADER + line as f32 * 24.0 + 12.0);
         // What: `borrow()` reads the shared state; `line_to_char` is the character index where a line starts.
         // Why: A gutter click places the caret at the start of the clicked line.
         //
@@ -149,7 +153,6 @@ fn clicks_beside_the_divider_reach_tree_rows_and_source_at_every_width() {
             "the first source pixel after the divider did not place the caret on its line at width {width}"
         );
         drop(state);
-        row += 1;
     }
     window.hide().expect("close sidebar window");
 }
@@ -183,9 +186,19 @@ fn tree_windowing_and_scrollbar_follow_the_sidebar_width() {
         window.invoke_reveal_tree(0);
         settle(window);
         let scrolled = window.get_tree_scroll_y();
-        press(window, width - 5.0, HEADER + 100.0, PointerEventButton::Left);
+        press(
+            window,
+            width - 5.0,
+            HEADER + 100.0,
+            PointerEventButton::Left,
+        );
         motion(window, width - 5.0, HEADER + 200.0);
-        release(window, width - 5.0, HEADER + 200.0, PointerEventButton::Left);
+        release(
+            window,
+            width - 5.0,
+            HEADER + 200.0,
+            PointerEventButton::Left,
+        );
         settle(window);
         assert!(
             window.get_tree_scroll_y() < scrolled,

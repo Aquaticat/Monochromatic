@@ -116,6 +116,20 @@ fn source_relayouts_and_repaints_after_a_sidebar_resize() {
 fn window_resize_shrinks_the_sidebar_and_restores_the_request() {
     let shared = fixture(6);
     let window = &shared.window;
+    // What: `repeat(60)` builds one long owned string; `.into()` converts it to Slint's string type.
+    // Why: The file label's own preferred width is far wider than the window.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // window.fileLabel = 'long-directory-name/'.repeat(60);
+    // ```
+    window.set_file_label("long-directory-name/".repeat(60).into());
+    settle(window);
+    assert_eq!(
+        window.get_sidebar_width(),
+        256.0,
+        "a long file label narrowed the sidebar"
+    );
     let widest = 1100.0 - DIVIDER - SOURCE_MINIMUM;
     drag_to(window, widest);
     assert_eq!(window.get_sidebar_width(), widest, "widest sidebar control");
