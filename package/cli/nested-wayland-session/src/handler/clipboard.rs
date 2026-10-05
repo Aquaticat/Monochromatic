@@ -23,6 +23,7 @@ pub struct ClipboardProtocols {
     ext: ext_data_control::DataControlState,
 }
 
+/// Construct both clipboard-manager globals together so neither exists without the other.
 impl ClipboardProtocols {
     /// Register clipboard management only on the supplied nested display.
     pub fn new(display: &DisplayHandle) -> Self {
