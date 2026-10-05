@@ -10,11 +10,7 @@ fn nothing_owed_asks_nothing() {
         None,
         "a server that owes nothing was asked again"
     );
-    assert_eq!(
-        owed,
-        Owed::default(),
-        "asking nothing spent a catch-up ask"
-    );
+    assert_eq!(owed, Owed::default(), "asking nothing spent a catch-up ask");
 }
 
 #[test]

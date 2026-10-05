@@ -404,10 +404,7 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
         );
         return;
     };
-    let mut probe = Probe::new(
-        &root,
-        support::scripted(&root, &[], HINT_TIMEOUT_SECONDS),
-    );
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], HINT_TIMEOUT_SECONDS));
     probe.open(&root.join("main.scripted"), "plain text line\nsecond\n");
     probe.until_ready();
     let window = HintWindow {

@@ -90,10 +90,7 @@ fn hints_are_asked_again_when_the_first_request_times_out() {
     };
     let definitions = support::scripted(
         &root,
-        &[
-            ("STALL_AT", "textDocument/inlayHint"),
-            ("STALL_MS", STALL),
-        ],
+        &[("STALL_AT", "textDocument/inlayHint"), ("STALL_MS", STALL)],
         TIMEOUT,
     );
     let mut probe = Probe::new(&root, definitions);
@@ -136,10 +133,7 @@ fn hints_are_asked_again_after_a_reload_when_the_request_times_out() {
     };
     let definitions = support::scripted(
         &root,
-        &[
-            ("STALL_AT", "textDocument/didChange"),
-            ("STALL_MS", STALL),
-        ],
+        &[("STALL_AT", "textDocument/didChange"), ("STALL_MS", STALL)],
         TIMEOUT,
     );
     let mut probe = Probe::new(&root, definitions);
