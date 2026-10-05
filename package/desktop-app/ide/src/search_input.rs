@@ -18,8 +18,13 @@ impl SearchInput {
     pub fn parse(raw: &str) -> Option<Self> {
         let content_only = raw.starts_with('%');
         let query = raw.strip_prefix('%').unwrap_or(raw).trim();
-        if query.is_empty() { return None; }
-        return Some(Self { query: query.to_string(), content_only });
+        if query.is_empty() {
+            return None;
+        }
+        return Some(Self {
+            query: query.to_string(),
+            content_only,
+        });
     }
 }
 
@@ -36,13 +41,19 @@ pub struct DoubleShift {
 impl DoubleShift {
     /// Classify the key at the toolkit boundary and retain only the gesture-relevant fact.
     pub fn press(&mut self, is_shift: bool) {
-        if !is_shift { self.intervening_key = true; }
+        if !is_shift {
+            self.intervening_key = true;
+        }
     }
 
     /// Return true only for a second uninterrupted Shift release strictly within 400 milliseconds.
     pub fn release(&mut self, is_shift: bool, elapsed: Duration) -> bool {
-        if !is_shift { return false; }
-        let timely = self.last_release.and_then(|last| return elapsed.checked_sub(last))
+        if !is_shift {
+            return false;
+        }
+        let timely = self
+            .last_release
+            .and_then(|last| return elapsed.checked_sub(last))
             .is_some_and(|gap| return gap < Duration::from_millis(400));
         if !self.intervening_key && timely {
             self.last_release = None;

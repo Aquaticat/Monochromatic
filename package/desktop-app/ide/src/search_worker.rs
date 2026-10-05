@@ -1,9 +1,7 @@
 //! Latest-query search worker cancels and reaps old ripgrep children before running the newest request.
 
 /// Search data remains immutable when published to the native thread.
-use crate::{
-    search::SearchResults, search_cancel::SearchCancellation, workspace::Workspace,
-};
+use crate::{search::SearchResults, search_cancel::SearchCancellation, workspace::Workspace};
 /// Startup and unexpected worker failures must not masquerade as no results.
 use anyhow::{Context, Result};
 /// Arc shares immutable requests/replies across threads; the join handle owns shutdown.

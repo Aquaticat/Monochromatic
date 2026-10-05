@@ -8,11 +8,37 @@ use std::time::Duration;
 /// Percent applies only at the raw input's first character, and empty patterns do not start work.
 #[test]
 fn query_prefix_and_trimming_follow_the_reference_order() {
-    assert_eq!(SearchInput::parse("  needle  "), Some(SearchInput { query: "needle".to_string(), content_only: false }));
-    assert_eq!(SearchInput::parse("%  needle\n"), Some(SearchInput { query: "needle".to_string(), content_only: true }));
-    assert_eq!(SearchInput::parse(" %needle"), Some(SearchInput { query: "%needle".to_string(), content_only: false }));
-    assert_eq!(SearchInput::parse("%%literal"), Some(SearchInput { query: "%literal".to_string(), content_only: true }));
-    for empty in ["", " \t\n", "%", "%  "] { assert!(SearchInput::parse(empty).is_none()); }
+    assert_eq!(
+        SearchInput::parse("  needle  "),
+        Some(SearchInput {
+            query: "needle".to_string(),
+            content_only: false
+        })
+    );
+    assert_eq!(
+        SearchInput::parse("%  needle\n"),
+        Some(SearchInput {
+            query: "needle".to_string(),
+            content_only: true
+        })
+    );
+    assert_eq!(
+        SearchInput::parse(" %needle"),
+        Some(SearchInput {
+            query: "%needle".to_string(),
+            content_only: false
+        })
+    );
+    assert_eq!(
+        SearchInput::parse("%%literal"),
+        Some(SearchInput {
+            query: "%literal".to_string(),
+            content_only: true
+        })
+    );
+    for empty in ["", " \t\n", "%", "%  "] {
+        assert!(SearchInput::parse(empty).is_none());
+    }
 }
 
 /// The second release must precede the 400ms boundary; successful gestures reset the pair.
