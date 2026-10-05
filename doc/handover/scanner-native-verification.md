@@ -1929,5 +1929,9 @@ That check exposed and corrected README bold spans split across line endings.
 The main agent should inspect the terminal results,
 retained mutant classifications,
 source inventories,
-and the open findings in `Windows-native follow-up` before any production cutover.
-No human response is needed to continue this scoped queue.
+and the findings in `Windows-native follow-up` and `Windows baseline follow-up` before any production cutover.
+The scoped Linux queue needed no human response.
+The Windows baseline does:
+the Windows suite stays at two failing tests until the human decides
+`Reason reported for a cache root blocked by a regular file`,
+and `Decisions left after the Windows baseline follow-up` lists two further choices that block nothing.
