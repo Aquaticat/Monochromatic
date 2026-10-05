@@ -283,6 +283,15 @@ each owned by one subagent:
   the record lands on `main` in `package/desktop-app/ide/design/`,
   local files only,
   and the questions are asked after it exists.
+- Quiet language-server shutdown and the confined navigation check
+  in the worktree `.claude/worktrees/ide-language-verify`
+  on branch `feat/ide-language-verify`
+  (MCP ports 9408 and 9409):
+  trace and fix the ERROR-level shutdown and runtime messages at their cause,
+  a lifecycle check that fails on any of them,
+  SIGKILL of the application leaving no server behind,
+  and navigation in the nested compositor with confined servers against disposable projects below `/tmp`,
+  with project tree hashes before and after.
 - Session-limit interruptions:
   the API session limit cut the running agents off twice,
   at about 11:10 and 14:15 on 2026-10-05.
