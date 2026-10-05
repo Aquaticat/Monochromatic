@@ -310,7 +310,9 @@ impl Annotations {
         }
         if self.diagnostics_current(stamp) {
             // The first diagnostic whose range, or an earlier one's, reaches the window.
-            let from = self.reach.partition_point(|furthest| return *furthest < start);
+            let from = self
+                .reach
+                .partition_point(|furthest| return *furthest < start);
             for problem in &self.problems[from..] {
                 if problem.mark.start >= end {
                     break;

@@ -10,12 +10,14 @@
 mod ui {
     // Use the toolkit's supported re-export syntax rather than editing generated Rust.
     slint::slint! {
-        export { AppWindow, SourceSelection } from "../ui/app.slint";
+        export { AppWindow, SourceMarker, SourceSelection } from "../ui/app.slint";
     }
 }
 
 /// Source-open errors identify their input instead of exposing an unlabelled I/O failure.
 use anyhow::{Context, bail};
+/// Hint and diagnostic snapshots with their position index.
+use ide_app::annotation::Annotations;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
@@ -41,6 +43,14 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
+/// Inlay hints and diagnostics: the snapshot setter, visible subset, marker rows, and caret card.
+mod annotate;
+/// Rendered annotation pixels in both schemes, untouched source pixels, and visible-only repaints.
+#[cfg(test)]
+mod annotation_paint_tests;
+/// Injected hint and diagnostic snapshots through real key and pointer events.
+#[cfg(test)]
+mod annotation_tests;
 /// Real key events drive caret movement, Shift selection, paging, and caret-following scroll.
 #[cfg(test)]
 mod caret_tests;
@@ -60,6 +70,9 @@ mod focus_tests;
 mod font_tests;
 /// Source selection and keyboard callbacks.
 mod input;
+/// Inspection-only hint and diagnostic injection from a JSON file; debug builds only.
+#[cfg(debug_assertions)]
+mod inspect;
 /// Project tree and asynchronous successful-file navigation.
 mod navigation;
 /// Missing targets and canonical aliases exercise reveal liveness and model identity.
@@ -157,6 +170,8 @@ struct State {
     frame_stamp: Option<FrameStamp>,
     /// Accepted in-file matches; painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
+    /// Latest hint and diagnostic snapshots; painted only while they describe the displayed file and revision.
+    annotations: Annotations,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
@@ -183,6 +198,7 @@ impl State {
             presented_revision: None,
             frame_stamp: None,
             find: None,
+            annotations: Annotations::default(),
         };
     }
 }
@@ -242,6 +258,9 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     let _find_timer = find::bind(&window, &state)?;
     let _navigation_timer = navigation::bind(&window, &state, workspace)?;
     render(&window, &state);
+    // Debug builds started with `IDE_INSPECT_ANNOTATIONS` show that file's hints and diagnostics; see `inspect`.
+    #[cfg(debug_assertions)]
+    inspect::inject(&window, &state)?;
     if state.borrow().file_path.is_none() {
         window.invoke_focus_tree();
     }

@@ -262,6 +262,8 @@ fn inline_hint_changes_where_down_lands() {
         }
     }
     let total = length + 1;
-    println!("placement vertical: {differing} of {total} caret positions land elsewhere with the hint inline");
+    println!(
+        "placement vertical: {differing} of {total} caret positions land elsewhere with the hint inline"
+    );
     assert!(differing > 0);
 }

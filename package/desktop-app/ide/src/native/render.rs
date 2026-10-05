@@ -7,7 +7,9 @@
 /// ```ts
 /// import { type State, AppWindow, SourceSelection } from '../native';
 /// ```
-use super::{AppWindow, State, find::present::present, ui::SourceSelection};
+use super::{AppWindow, State, annotate, find::present::present, ui::SourceSelection};
+/// Hints and diagnostic marks are positioned against the frame's shaped rows.
+use ide_app::annotation_layout::lay_out;
 /// Match rectangles come from the same shaped rows as selection rectangles.
 use ide_app::find_navigation::paint_ranges;
 /// Only matches inside the materialized rows and horizontal tile become native rectangles.
@@ -78,6 +80,9 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         current.document.revision(),
     );
     let found = present(&current);
+    // Stale or absent hint and diagnostic snapshots yield nothing; only the materialized rows are taken.
+    let inks = annotate::colors(window);
+    let shown = annotate::visible(&current);
     let stamp = FrameStamp::new(
         &current.document,
         viewport,
@@ -85,9 +90,11 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         colors,
         Arc::clone(&current.styles),
     )
-    .with_matches(Arc::clone(&ranges));
-    // Match rectangles change only together with the frame, never on caret-only updates.
+    .with_matches(Arc::clone(&ranges))
+    .with_annotations(Arc::clone(&shown), inks);
+    // Match rectangles, markers, and hint boxes change only together with the frame, never on caret-only updates.
     let mut rendered_matches = None;
+    let mut rendered_annotations = None;
     if current.frame_stamp.as_ref() != Some(&stamp) {
         // Destructure the mutable borrow so caches can update while source is lent read-only.
         let State {
@@ -115,6 +122,11 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
             });
         }
         rendered_matches = Some(marks);
+        // Annotations are positioned after shaping and never change the rows that reading geometry uses.
+        let frame = lay_out(document, &view, &shown, shaper, inks);
+        rendered_annotations = Some(annotate::rows(&frame));
+        // `Some(frame)` hands the positioned annotations to the raster with the rows they belong to.
+        view.annotations = Some(frame);
         // Propagate raster failure visibly rather than retaining misleading old source pixels.
         match raster.paint(&view, colors, horizontal) {
             Ok(image) => {
@@ -156,7 +168,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     for row in &view.rows {
         document_width = document_width.max(row.layout.full_width() / factor + CARET_ROOM);
     }
+    // Hint labels after the widest line stay reachable by scrolling; the range only grows, so nothing jumps.
+    document_width = document_width.max(annotate::extent(view.annotations.as_ref()) + CARET_ROOM);
     current.document_width = document_width;
+    let (problems, severity) = annotate::card(&current);
     let updated_source = if current.presented_revision != Some(revision) {
         current.presented_revision = Some(revision);
         Some(current.document.text().to_string())
@@ -195,6 +210,11 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     if let Some(marks) = rendered_matches {
         window.set_source_matches(ModelRc::from(Rc::new(VecModel::from(marks))));
     }
+    if let Some((markers, boxes)) = rendered_annotations {
+        window.set_source_markers(ModelRc::from(Rc::new(VecModel::from(markers))));
+        window.set_hint_boxes(ModelRc::from(Rc::new(VecModel::from(boxes))));
+    }
+    annotate::present_card(window, problems, severity);
     if let Some(status) = found.status {
         window.set_find_status(SharedString::from(status.label));
         window.set_find_status_detail(SharedString::from(status.detail));

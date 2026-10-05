@@ -151,7 +151,11 @@ fn overlapping_ranges_draw_the_worst_severity_last() {
         ],
     };
     let (_, _, frame) = laid_out("abcdefghij", &visible);
-    let order: Vec<Severity> = frame.underlines.iter().map(|run| return run.severity).collect();
+    let order: Vec<Severity> = frame
+        .underlines
+        .iter()
+        .map(|run| return run.severity)
+        .collect();
     assert_eq!(
         order,
         [
@@ -179,10 +183,7 @@ fn marker_and_labels_follow_the_end_of_the_line() {
                 text: "width:".to_string(),
             },
         ],
-        marks: vec![
-            mark(4, 9, Severity::Hint),
-            mark(12, 30, Severity::Error),
-        ],
+        marks: vec![mark(4, 9, Severity::Hint), mark(12, 30, Severity::Error)],
     };
     let (_, view, frame) = laid_out(source, &visible);
     let end_x = view.rows[0].caret_x(23, 1.0);
@@ -200,10 +201,7 @@ fn marker_and_labels_follow_the_end_of_the_line() {
         frame.hints[0].x + frame.hints[0].width + LABEL_GAP
     ));
     assert!(frame.hints[1].width > frame.hints[0].width);
-    assert!(close(
-        frame.extent,
-        frame.hints[1].x + frame.hints[1].width
-    ));
+    assert!(close(frame.extent, frame.hints[1].x + frame.hints[1].width));
     // Labels sit on the common source baseline.
     for label in &frame.hints {
         let natural = label

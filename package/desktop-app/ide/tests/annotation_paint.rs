@@ -170,12 +170,30 @@ fn each_severity_has_its_own_line_style_in_its_ink() {
     let (_, warning_lit, warning_spread, warning_run) = found[1];
     let (_, information_lit, information_spread, information_run) = found[2];
     let (_, hint_lit, hint_spread, _) = found[3];
-    assert!(error_lit > 0.95 && error_spread >= 2.0, "the error wave is missing");
-    assert!(warning_lit > 0.5 && warning_lit < 0.85 && warning_spread < 1.0, "warning dashes");
-    assert!(information_lit > 0.3 && information_lit < 0.7 && information_spread < 1.0, "information dots");
-    assert!(information_run < warning_run, "information dots are as long as warning dashes");
-    assert!(hint_lit > 0.1 && hint_lit < 0.4 && hint_spread < 1.0, "hint dots");
-    assert!(information_lit > hint_lit + 0.1, "hint dots are as dense as information dots");
+    assert!(
+        error_lit > 0.95 && error_spread >= 2.0,
+        "the error wave is missing"
+    );
+    assert!(
+        warning_lit > 0.5 && warning_lit < 0.85 && warning_spread < 1.0,
+        "warning dashes"
+    );
+    assert!(
+        information_lit > 0.3 && information_lit < 0.7 && information_spread < 1.0,
+        "information dots"
+    );
+    assert!(
+        information_run < warning_run,
+        "information dots are as long as warning dashes"
+    );
+    assert!(
+        hint_lit > 0.1 && hint_lit < 0.4 && hint_spread < 1.0,
+        "hint dots"
+    );
+    assert!(
+        information_lit > hint_lit + 0.1,
+        "hint dots are as dense as information dots"
+    );
 }
 
 /// Hint labels are painted in the hint ink after the line's text only; without labels nothing is painted there.
@@ -211,7 +229,11 @@ fn hint_labels_paint_after_the_line_end_in_the_hint_ink() {
     for y in 0..24 {
         for x in end + 2..bare.width as usize {
             let offset = (y * bare.width as usize + x) * 4;
-            assert_eq!(bare.bytes[offset + 3], 0, "ink after the text at {x},{y} without annotations");
+            assert_eq!(
+                bare.bytes[offset + 3],
+                0,
+                "ink after the text at {x},{y} without annotations"
+            );
         }
     }
 }

@@ -1,9 +1,9 @@
 //! Rasterize shared shaped rows; glyphs retain their common baseline and advances.
 
-/// Diagnostic underline styles and the tile both they and glyphs are drawn into.
-use crate::annotation_paint::{Tile, paint_underlines};
 /// Hint text starts this far inside its label box.
 use crate::annotation_layout::LABEL_PADDING;
+/// Diagnostic underline styles and the tile both they and glyphs are drawn into.
+use crate::annotation_paint::{Tile, paint_underlines};
 /// Bounded glyph images prevent repeating outline rasterization on every viewport update.
 use crate::glyph_cache::{GlyphCache, GlyphKey};
 /// Selection color follows geometry rather than recoloring an entire ligature glyph.
@@ -164,7 +164,14 @@ impl TextRaster {
                 width: view.width,
                 height: view.height,
             };
-            self.draw(&row.layout, origin, colors, None, &selected_intervals, &mut tile)?;
+            self.draw(
+                &row.layout,
+                origin,
+                colors,
+                None,
+                &selected_intervals,
+                &mut tile,
+            )?;
         }
         // What: `if let Some(frame) = &view.annotations` borrows the positioned annotations when there are any.
         // Why: Hint labels use the hint ink and no selection; underlines follow the glyphs they mark.

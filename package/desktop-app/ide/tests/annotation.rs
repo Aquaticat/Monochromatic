@@ -1,6 +1,14 @@
 //! Which hints and diagnostics a frame paints: stale snapshots paint nothing, windows are bounded to the
 //! materialized rows, multi-line ranges above a window are found, and the caret card lists the worst first.
 
+/// What: Helix's rope and the shared-ownership pointer the Language module hands snapshots out in.
+/// Why: Windows are computed from the displayed text's line starts.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Rope } from 'helix-core';
+/// ```
+use helix_core::Rope;
 /// The production selection logic and the Language module's snapshot records.
 use ide_app::{
     annotation::{Annotations, Mark, describe},
@@ -10,14 +18,6 @@ use ide_app::{
         identity::{DocumentStamp, ServerIdentity},
     },
 };
-/// What: Helix's rope and the shared-ownership pointer the Language module hands snapshots out in.
-/// Why: Windows are computed from the displayed text's line starts.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { Rope } from 'helix-core';
-/// ```
-use helix_core::Rope;
 /// Snapshots are shared values.
 use std::sync::Arc;
 
@@ -120,8 +120,14 @@ fn stale_snapshots_paint_nothing_and_show_no_card() {
             diagnostics(stamp, vec![("rustc", vec![problem(4, 5, None, "unused")])]),
         );
         let shown = annotations.visible(SHOWN, &text, 0, 5);
-        assert!(shown.labels.is_empty(), "a stale hint was painted: {stamp:?}");
-        assert!(shown.marks.is_empty(), "a stale mark was painted: {stamp:?}");
+        assert!(
+            shown.labels.is_empty(),
+            "a stale hint was painted: {stamp:?}"
+        );
+        assert!(
+            shown.marks.is_empty(),
+            "a stale mark was painted: {stamp:?}"
+        );
         assert!(annotations.at(SHOWN, 4).is_empty());
     }
     let current = Annotations::new(
@@ -149,14 +155,22 @@ fn hint_window_follows_rows_and_line_ends() {
                 hint(24, "   "),
                 hint(38, "end-of-text"),
             ],
-            ),
+        ),
         None,
     );
     let first = annotations.visible(SHOWN, &text, 0, 1);
-    let texts: Vec<&str> = first.labels.iter().map(|label| return label.text.as_str()).collect();
+    let texts: Vec<&str> = first
+        .labels
+        .iter()
+        .map(|label| return label.text.as_str())
+        .collect();
     assert_eq!(texts, [": i32", "end-of-line-0"]);
     let middle = annotations.visible(SHOWN, &text, 1, 3);
-    let texts: Vec<&str> = middle.labels.iter().map(|label| return label.text.as_str()).collect();
+    let texts: Vec<&str> = middle
+        .labels
+        .iter()
+        .map(|label| return label.text.as_str())
+        .collect();
     assert_eq!(texts, ["start-of-line-1"]);
     let last = annotations.visible(SHOWN, &text, 4, 5);
     assert_eq!(last.labels.len(), 1);
@@ -217,7 +231,10 @@ fn caret_problems_include_range_ends_and_order_by_severity() {
                         problem(9, 9, Some(Severity::Error), "point"),
                     ],
                 ),
-                ("other", vec![problem(12, 14, Some(Severity::Error), "elsewhere")]),
+                (
+                    "other",
+                    vec![problem(12, 14, Some(Severity::Error), "elsewhere")],
+                ),
             ],
         ),
     );
@@ -241,7 +258,12 @@ fn caret_problems_include_range_ends_and_order_by_severity() {
 /// The card names the severity in words, then the code and source, then the trimmed message.
 #[test]
 fn card_text_spells_out_severity_code_and_source() {
-    let mut coded = problem(0, 1, Some(Severity::Error), "mismatched types\nexpected `u32`\n");
+    let mut coded = problem(
+        0,
+        1,
+        Some(Severity::Error),
+        "mismatched types\nexpected `u32`\n",
+    );
     coded.code = Some("E0308".to_string());
     let annotations = Annotations::new(
         None,
@@ -249,7 +271,10 @@ fn card_text_spells_out_severity_code_and_source() {
             SHOWN,
             vec![
                 ("rustc", vec![coded]),
-                ("", vec![problem(2, 3, Some(Severity::Information), "plain")]),
+                (
+                    "",
+                    vec![problem(2, 3, Some(Severity::Information), "plain")],
+                ),
             ],
         ),
     );

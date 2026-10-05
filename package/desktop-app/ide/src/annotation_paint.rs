@@ -19,7 +19,7 @@ use crate::language::diagnostics::Severity;
 pub const PERIOD: f32 = 6.0;
 /// Height of the wave above and below its center line, in logical pixels.
 pub const AMPLITUDE: f32 = 1.5;
-/// Thickness of every underline style, in logical pixels.
+/// Thickness of every underline style in logical pixels, rounded to whole physical rows and at least one.
 pub const THICKNESS: f32 = 1.25;
 /// Distance of the underline's center line below the common source baseline, in logical pixels.
 pub const DROP: f32 = 3.0;
@@ -99,7 +99,7 @@ fn offset(severity: Severity, along: f32, scale: f32) -> f32 {
 
 /// What: Draw one underline run over the physical `span` (left and right edge), centered on physical `line`.
 ///       `&mut Tile` lends the tile for writing; `(f32, f32)` is a pair (tuple) of floats.
-/// Why: Each pixel column is covered in proportion to its overlap with the run and the line's thickness.
+/// Why: Each pixel column is covered in proportion to its overlap with the run; rows are whole pixels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -115,7 +115,8 @@ fn underline(
     color: [u8; 4],
 ) {
     let (left, right) = span;
-    let half = THICKNESS * scale / 2.0;
+    // Whole pixel rows keep the line in its full ink; a line split over two rows reads as a paler color.
+    let thickness = (THICKNESS * scale).round().max(1.0);
     // What: `as i32` truncates to a signed 32-bit integer (siblings `u32`, `i64`), clamped to the tile first.
     // Why: Pixel loops run over whole columns; a negative start would wrap an unsigned index.
     //
@@ -133,14 +134,11 @@ fn underline(
             continue;
         }
         let center = line + offset(severity, along, scale);
-        let top = (center - half).floor() as i32;
-        let bottom = (center + half).ceil() as i32;
-        for row in top..bottom {
+        let top = (center - thickness / 2.0).round() as i32;
+        for row in top..top + thickness as i32 {
             if row < 0 || row >= tile.height as i32 {
                 continue;
             }
-            let y = row as f32;
-            let down = ((center + half).min(y + 1.0) - (center - half).max(y)).clamp(0.0, 1.0);
             // What: `as usize` converts the checked, non-negative coordinates to byte indices.
             // Why: Slices are indexed by `usize`.
             //
@@ -149,7 +147,7 @@ fn underline(
             // const index = (row * tile.width + column) * 4;
             // ```
             let index = (row as usize * tile.width as usize + column as usize) * 4;
-            blend(tile.bytes, index, color, down * across);
+            blend(tile.bytes, index, color, across);
         }
     }
 }
