@@ -577,6 +577,21 @@ which is part of that duration.
 Its five cases could move into the fixture that `rust_explicit_types_tests.rs` already loads.
 That file is outside this delegation.
 
+### What the reruns do not cover
+
+The unscoped `mutation` task was not run,
+as instructed.
+The three scopes together cover every file with a recorded survivor or timeout,
+at the branch snapshot.
+
+`main` has moved since the branch was created.
+At `cba0702fe` it adds 20 `markdown_*` files
+(dispatch,
+LFS and rule-settings modules with their tests)
+that the `src/markdown_*.rs` glob will include after a cherry-pick.
+None of them was mutated here.
+`git merge-tree --write-tree main` merged this branch into that commit without a conflict.
+
 ### Task additions
 
 `test:markdown` and `test:inferred-constants` were added beside `test:rust-style`,
