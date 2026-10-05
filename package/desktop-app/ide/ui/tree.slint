@@ -16,6 +16,9 @@ export component ProjectTree inherits Rectangle {
     in property <string> project-path;
     in property <string> error-message;
     in-out property <int> focused-row: -1;
+    // Ink for text and marks on a selected row. The owner passes the ink native code chooses from the
+    // selection fill; the palette's own selection ink, the fallback here, is black in the dark scheme.
+    in property <brush> selected-ink: Palette.selection-foreground;
     out property <bool> tree-has-focus: tree-focus.has-focus;
     out property <length> scroll-y: view.content-y;
     out property <length> viewport-height: view.visible-height;
@@ -107,7 +110,7 @@ export component ProjectTree inherits Rectangle {
                     font-size: 14px;
                     horizontal-alignment: center;
                     vertical-alignment: center;
-                    color: entry.selected ? Palette.selection-foreground : Palette.foreground;
+                    color: entry.selected ? root.selected-ink : Palette.foreground;
                 }
                 Text {
                     x: 32px + entry.depth * 16px;
@@ -116,7 +119,7 @@ export component ProjectTree inherits Rectangle {
                     text: entry.label;
                     font-size: 14px;
                     font-weight: entry.selected || entry.expanded ? 600 : 400;
-                    color: entry.selected ? Palette.selection-foreground : Palette.foreground;
+                    color: entry.selected ? root.selected-ink : Palette.foreground;
                     vertical-alignment: center;
                     overflow: elide;
                 }

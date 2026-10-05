@@ -55,6 +55,21 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         ),
         dark: window.get_dark_scheme(),
     };
+    // What: `colors.selected` holds red, green, blue, alpha bytes; `Color::from_argb_u8` builds a toolkit
+    //       color from them, alpha first, and `Brush::from` wraps it as the fill type the property holds.
+    // Why: Selected rows of the tree, the search results, and the location list sit on the same fill
+    //      as selected source text, so they are drawn in the same chosen ink.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // window.selectedRowInk = toColor(colors.selected);
+    // ```
+    window.set_selected_row_ink(slint::Brush::from(slint::Color::from_argb_u8(
+        colors.selected[3],
+        colors.selected[0],
+        colors.selected[1],
+        colors.selected[2],
+    )));
     let mut current = state.borrow_mut();
     let first = current.first;
     let horizontal = current.horizontal;

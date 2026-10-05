@@ -14,6 +14,9 @@ export component ReferenceList inherits Rectangle {
     // "References" or "Definitions", with the count, for sighted and assistive readers alike.
     in property <string> title;
     in-out property <int> selected-row: 0;
+    // Ink for text and marks on a selected row. The owner passes the ink native code chooses from the
+    // selection fill; the palette's own selection ink, the fallback here, is black in the dark scheme.
+    in property <brush> selected-ink: Palette.selection-foreground;
     // Left edge of the caret and the top and bottom of its line, in the parent's coordinates.
     in property <length> anchor-x;
     in property <length> anchor-top;
@@ -116,7 +119,7 @@ export component ReferenceList inherits Rectangle {
                     Text {
                         horizontal-stretch: 1;
                         text: entry.label;
-                        color: item.selected ? Palette.selection-foreground : Palette.foreground;
+                        color: item.selected ? root.selected-ink : Palette.foreground;
                         font-family: "JetBrains Mono";
                         font-weight: item.selected ? 600 : 400;
                         vertical-alignment: center;
@@ -125,7 +128,7 @@ export component ReferenceList inherits Rectangle {
                     if entry.detail != "": Text {
                         horizontal-stretch: 0;
                         text: entry.detail;
-                        color: item.selected ? Palette.selection-foreground : Palette.foreground;
+                        color: item.selected ? root.selected-ink : Palette.foreground;
                         font-weight: 600;
                         vertical-alignment: center;
                     }
