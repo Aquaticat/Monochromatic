@@ -476,6 +476,11 @@ without consuming a prefix part.
 The unconsumed part then skips the first real name.
 Verbatim forms are unaffected because `?` is not a navigation marker.
 The probe output is `logs/probe-baseline.log` in the evidence directory.
+Those line numbers describe the tested snapshot.
+Since the 2026-10-05 fix,
+`count_prefix_parts` starts at `src/path_name_bytes.rs:51`,
+the prefix skip is at `src/path_scan.rs:141`,
+and the navigation-marker test follows it at `src/path_scan.rs:146`.
 
 #### Confirmed mechanism
 
