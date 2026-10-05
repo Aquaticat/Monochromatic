@@ -44,7 +44,8 @@ struct Case {
 /// Compare the incumbent without pretending simple Unicode case folding implements collation search.
 #[test]
 fn report_incumbent_literal_find_against_browser_reference() {
-    let corpus: Corpus = serde_json::from_str(include_str!("fixture/browser-find.json")).expect("captured browser corpus");
+    let corpus: Corpus = serde_json::from_str(include_str!("fixture/browser-find.json"))
+        .expect("captured browser corpus");
     let mut differences = Vec::new();
     let mut seen_positive = false;
     let mut seen_negative = false;
@@ -59,17 +60,45 @@ fn report_incumbent_literal_find_against_browser_reference() {
         let mut builder = RegexBuilder::new(&escape(&case.query));
         builder.case_insensitive(true);
         let matcher = builder.build().expect("escaped literal compiles");
-        let matched = if case.query.is_empty() { None } else { matcher.find(&case.text) };
+        let matched = if case.query.is_empty() {
+            None
+        } else {
+            matcher.find(&case.text)
+        };
         let selected = matched.map(|result| return result.as_str()).unwrap_or("");
-        let start = matched.map(|result| return case.text[..result.start()].encode_utf16().count()).unwrap_or(0);
-        let end = matched.map(|result| return case.text[..result.end()].encode_utf16().count()).unwrap_or(0);
-        let agrees = matched.is_some() == case.found && selected == case.selected && start == case.start_utf16 && end == case.end_utf16;
-        if !agrees { differences.push(case.name.clone()); }
-        if case.name == "positive-literal" { assert!(matched.is_some() && agrees); seen_positive = true; }
-        if case.name == "negative-literal" { assert!(matched.is_none() && agrees); seen_negative = true; }
+        let start = matched
+            .map(|result| return case.text[..result.start()].encode_utf16().count())
+            .unwrap_or(0);
+        let end = matched
+            .map(|result| return case.text[..result.end()].encode_utf16().count())
+            .unwrap_or(0);
+        let agrees = matched.is_some() == case.found
+            && selected == case.selected
+            && start == case.start_utf16
+            && end == case.end_utf16;
+        if !agrees {
+            differences.push(case.name.clone());
+        }
+        if case.name == "positive-literal" {
+            assert!(matched.is_some() && agrees);
+            seen_positive = true;
+        }
+        if case.name == "negative-literal" {
+            assert!(matched.is_none() && agrees);
+            seen_negative = true;
+        }
         // Exact machine-readable terminal output is an inspection artifact, not application logging.
-        println!("{}", serde_json::json!({ "case": case.name, "agrees": agrees, "browserFound": case.found, "regexFound": matched.is_some(), "regexSelected": selected, "regexStartUtf16": start, "regexEndUtf16": end }));
+        println!(
+            "{}",
+            serde_json::json!({ "case": case.name, "agrees": agrees, "browserFound": case.found, "regexFound": matched.is_some(), "regexSelected": selected, "regexStartUtf16": start, "regexEndUtf16": end })
+        );
     }
-    assert!(seen_positive && seen_negative, "the corpus must exercise both match outcomes");
-    println!("{}", serde_json::json!({ "browserVersion": corpus.browser_version, "differentCases": differences }));
+    assert!(
+        seen_positive && seen_negative,
+        "the corpus must exercise both match outcomes"
+    );
+    println!(
+        "{}",
+        serde_json::json!({ "browserVersion": corpus.browser_version, "differentCases": differences })
+    );
 }
