@@ -1,5 +1,21 @@
 # Native Settings-pane verification boundary
 
+## Withdrawn on 2026-10-05
+
+This document describes a study that is no longer a current design.
+D86 made `Strip common prefixes from filenames` and `Resume where I left off`
+always-on behaviour and not settings,
+which withdrew the two-row pane the same day it was published.
+D87 keeps the Settings page and leaves it empty until D81's template
+configuration is designed,
+and the human said an empty page needs no study.
+The viewer carries a withdrawal notice,
+and everything from `Purpose and accepted pane` on is kept as the record of
+what was built and checked.
+D88 rules out the builder's digest checks.
+The rule and rejected-input counts given in this document are those of the
+publication and do not describe the builder once those checks are gone.
+
 ## Purpose and accepted pane
 
 This design-only study carries the accepted Settings pane into the current

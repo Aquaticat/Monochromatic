@@ -21,7 +21,14 @@ D84 (2026-10-05) removes the third row:
 true-peak analysis is automatic and not optional,
 so Settings provides no analysis switch.
 D85 (2026-10-05) removes the closing sentence.
-The pane now holds two rows.
+The pane then held two rows.
+
+D86 (2026-10-05) made both remaining rows always-on behaviour and not settings,
+and D87 keeps the Settings page and leaves it empty,
+with no study of the empty page.
+The two-row study this plan produced is therefore withdrawn and kept as a record.
+Everything this plan says about the two-row pane is history,
+and this item is closed.
 
 The accepted source is
 `package/music-player/design/candidates/settings-a.dc.html`.

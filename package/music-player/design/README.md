@@ -94,14 +94,18 @@ Recorded native settings were restored and owned runtimes are absent.
 Real analysis,
 native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
-The [Settings viewer](questions/settings-pane.html) presents 24 freshly
-inspected native views of the accepted Settings pane across both panels,
+The [Settings viewer](questions/settings-pane.html) is a withdrawn record,
+not a current design.
+It presents 24 inspected native views of a two-row Settings pane across both panels,
 themes and text scales,
 with the closed player.
 D84 removed D11's true-peak analysis row,
 because analysis is automatic and not optional,
-and D85 removed the closing sentence,
-so the pane holds two switch rows.
+and D85 removed the closing sentence.
+D86 then made the two remaining rows always-on behaviour and not settings,
+and D87 keeps the Settings page and leaves it empty until D81's template
+configuration is designed;
+no study of the empty page is built.
 [Its evidence boundary](evidence/settings-pane-boundaries.md) records the
 adopted Fold placement,
 the withdrawn three-row publication,

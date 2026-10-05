@@ -309,3 +309,141 @@ The entries as first put:
 
 The next step is a built Compose study of the editor on the Fold,
 shown in a verified review form.
+`Editor study: the agent's proposal` says what that study builds.
+
+## Editor study: the agent's proposal
+
+Nothing under this heading is decided.
+It is what the agent builds so the human can look at it,
+following the project's standard that visual and behavioural questions are
+asked by building.
+
+### What the app has today
+
+Read from production source on 2026-10-05:
+
+- `Track` holds a `uri` and a `displayPath`
+  (`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/Track.kt`).
+  Folder,
+  file name and extension all come from that path.
+- No tag is read.
+  In the Android production source,
+  artist and album occur only in comments and path examples
+  (`Track.kt`,
+  `core/Page.kt`,
+  `core/RelPath.kt`,
+  `BrainPlayer.kt`),
+  so the language offers no artist or album field.
+- Duration is known for the current track only (`PlaybackSnapshot.durationMs`).
+  `MediaStoreSource.kt`,
+  `SafTreeSource.kt` and `LibrarySource.kt` read no duration,
+  so no row but the current one has it today.
+- True peak is measured per file by the sweep and is absent until a file is analysed.
+- The production track row (`trackRow` in `MainActivity.kt`) draws one text,
+  `rowDisplay(rowLabel, item.name)`,
+  and no supporting line.
+  D35's duration and true-peak line exists in the design,
+  not in the app.
+
+The study therefore previews a line that production cannot fill yet for
+every row.
+That gap belongs to production,
+not to the template language,
+and the study states it.
+
+### Spelling
+
+KWGT's own spelling is adopted wherever KWGT has one,
+because the human named KWGT as the precedent:
+formulas between `$` signs,
+`mi(...)` for a field of the track,
+`tf(...)` for formatting a duration,
+`tc(...)` for text conversion,
+`if(condition, then, [else])`,
+and `+` to join pieces of text inside a formula.
+
+Fields,
+each a mode word of `mi`:
+
+- `title`:
+  the name the row shows as its title.
+- `file`:
+  the file name without its extension.
+- `ext`:
+  the extension.
+- `folder`:
+  the folder that holds the file.
+- `path`:
+  the path from the library root.
+- `len`:
+  the duration in seconds,
+  as KWGT's documentation defines it;
+  `tf(mi(len), m:ss)` formats it.
+- `peak`:
+  the true peak in dBTP with one decimal,
+  and nothing when the file is not analysed yet.
+
+`mi(title)` and `mi(len)` mean what they mean in KWGT;
+the other mode words are the player's own.
+KWGT's documentation shows `tf(mi(len), mm:ss)`,
+and the first-hand run gave `03:20` for it.
+The player's rows show `4:35`,
+without a leading zero,
+so the default uses `m:ss`.
+KWGT's documentation lists no table of format letters;
+it uses a single `h` and `m` in one example.
+Reading a single letter as unpadded is the agent's,
+and the player's grammar defines it either way.
+
+### Default and fallback
+
+The default track-row template reproduces D35's line and drops the
+true-peak part while a file is not analysed:
+
+```text
+# default template for a track row's supporting line
+$tf(mi(len), m:ss)$$if(mi(peak) != "", " · " + mi(peak) + " dBTP")$
+```
+
+A field with no value yields nothing.
+That is the agent's choice;
+what KWGT does there was not observed.
+While a template is invalid the rows keep the last valid template (D90).
+
+### What the study shows
+
+One template,
+the track row's supporting line,
+because that is the line D35 and D81 name.
+Other row types and titles stay out until the human asks for them.
+
+- The Settings page with the template as its one entry,
+  showing the line it currently produces.
+- The editor opened from that entry:
+  preview rows on top,
+  drawn as real track rows from the open library,
+  one of them a file that is not analysed yet;
+  the template field under them;
+  the field list under the field;
+  a way back to the default.
+- The editor while typing inside a call,
+  with the signature and argument help and the keyboard open.
+- The editor with an unknown field and with a formula left open,
+  showing the error lines while the preview keeps the last valid result.
+- The editor with no library open,
+  where the preview uses stand-in values.
+
+Each is captured on both Fold panels,
+in light and dark,
+at 100% and 200% text.
+
+The study is debug-only and authored:
+each state's template text,
+preview,
+help and errors are fixture values,
+not the output of a production parser.
+A small reference evaluator beside the builder computes what each authored
+template yields for the fixture tracks,
+and the builder refuses a capture whose drawn text differs from it,
+so no screenshot can show a result the grammar does not produce.
+No production implementation is authorized.
