@@ -52,6 +52,9 @@ pub mod markdown_code;
 /// Copyable prompt-only shell examples with byte-preserving grouped fixes.
 #[doc(hidden)]
 pub mod markdown_commands;
+/// Used and unique reference definitions with localized removal fixes.
+#[doc(hidden)]
+pub mod markdown_definitions;
 /// Duplicate headings scoped by their textual ancestor path.
 #[doc(hidden)]
 pub mod markdown_duplicate_headings;
