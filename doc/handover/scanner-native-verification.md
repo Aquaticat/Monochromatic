@@ -740,6 +740,11 @@ Package checks on the final tree:
   It reports nothing for the touched files,
   including no `max-lines` finding.
 - `verify:markdown` renders both READMEs and this document without literal bold delimiters.
+- The guard campaigns were not rerun.
+  The only text anchor `bin/guard-container.mjs` substitutes in `src/path_scan.rs`,
+  `catch_unwind(matcher)` for the `without-name-catch` variant,
+  still occurs exactly once in the fixed file;
+  `bin/observe-guards-container.mjs` substitutes no `path_scan.rs` text.
 - No mutation campaign was run for the fix.
   The only scanner mutation tasks are the full embedding campaign and the startup-only campaign,
   so a rerun over the changed `src/path_scan.rs` is pending.
@@ -955,6 +960,9 @@ Major scoped commits:
   committed inside a concurrent `desktop-app-ide` commit whose message does not mention them.
 - `833483171`: prefix parts consumed before navigation classification.
 - `c2c629313`: README statement that Windows prefix parts are not name segments.
+- `38cb30dff`: one test per navigation-spelled prefix input,
+  committed after the fix and shown failing against the reverted fix in `test-scZsf6`.
+- `01029d830` through `42312f27a`: this document's device-namespace records.
 
 Both READMEs and this evidence document are rendered through the installed CommonMark HTML-tree pipeline.
 Trees and readable rendered text remain in `target/verification/docs`.
