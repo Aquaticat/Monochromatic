@@ -52,6 +52,19 @@ fn heading_increment_matches_existing_messages_and_positions() {
     assert!(heading_increment(&document("plain\n", false), Severity::Error).is_empty());
 }
 
+/// Every legal one-step increase and repeated depth remains clean, including deeper starting levels.
+#[test]
+fn heading_increment_accepts_adjacent_depths_and_equal_siblings() {
+    for source in [
+        "# One\n\n## Two\n\n### Three\n\n#### Four\n\n##### Five\n\n###### Six\n",
+        "### Three\n\n#### Four\n\n#### Peer\n",
+        "# One\n\n# Peer\n",
+    ] {
+        let context: MarkdownSource = document(source, false);
+        assert!(heading_increment(&context, Severity::Error).is_empty(), "{source}");
+    }
+}
+
 /// Frontmatter title values do not consume the single allowed h1.
 #[test]
 fn single_h1_ignores_frontmatter_title() {
