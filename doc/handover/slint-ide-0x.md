@@ -254,35 +254,162 @@ each owned by one subagent:
   and rust-analyzer's "notify error: No path was found" all land at ERROR through `helix_lsp`),
   which the repository's cleanup rule forbids;
   selected rows of the location list use the palette's selected-text ink like the tree and search list.
-  Snapshots for the annotation renderer are stored in `State::annotations`
-  and read with `Annotations::hints(stamp)` and `Annotations::diagnostics(stamp)`;
-  accepting one triggers no render yet,
-  and the frame stamp does not include hints or diagnostics.
-- Inlay hints and diagnostics rendering inside the source layout in the worktree `.claude/worktrees/ide-lsp-annotations`
-  on branch `feat/ide-lsp-annotations`
-  (MCP ports 9368 and 9369),
-  behind a setter that takes `HintsSnapshot` and `DiagnosticsSnapshot`;
-  that agent owns the inlay placement decision the scope delegates.
-  The coordinating session connects the navigation branch's snapshot accessor to this setter after both land.
-- Event-driven tree and displayed-file refresh with the user-approved `notify` crate
-  in the worktree `.claude/worktrees/ide-tree-watch`
-  on branch `feat/ide-tree-watch`
-  (MCP ports 9388 and 9389),
-  replacing round-robin directory polling and the 250 ms file read loop,
-  with reconciliation on watcher errors,
-  overflow,
-  and a slow safety reconcile.
-- UI option screenshots for the user's pending UI questions
-  (divider gutter,
-  divider Tab stop,
-  find-input clear icon,
-  find-bar buttons),
-  built as throwaway variants on branch `prototype/ide-ui-variants`
-  in `.claude/worktrees/ide-ui-variants`
-  (MCP ports 9378 and 9379);
-  the record lands on `main` in `package/desktop-app/ide/design/`,
-  local files only,
-  and the questions are asked after it exists.
+  The annotation renderer's snapshot store and repaint are recorded in the item "Inlay hints and diagnostics".
+- Inlay hints and diagnostics:
+  done,
+  landed on `main` as merge `1d7bc0fe7`
+  (branch `feat/ide-lsp-annotations` through `112dbd955`,
+  merged on `integrate/ide-language-core` as `3476a78af` with fixes `889beb9fe` and `d5ea96492`),
+  plus the test correction `1c953683b`.
+  Hints are drawn in boxes after the end of their line,
+  diagnostics as severity underlines with lettered markers,
+  and the problems at the caret in a card;
+  placement was the agent's delegated choice and stays open to the user's veto.
+  The package README section "Inlay hints and diagnostics" has the measurements and the differences from editord.
+  One store:
+  `State::annotations` is `ide_app::annotation::Annotations`;
+  the language poll stores a snapshot only for the displayed file generation and revision
+  (`accept_hints`,
+  `accept_diagnostics`),
+  the renderer reads the same store,
+  and the frame stamp includes the visible annotations.
+  The poll repaints once in the tick that stored a snapshot (`src/native/language/poll.rs`).
+  The problem card hides while the hover popup,
+  a note,
+  or the location list is shown (`problem-card-visible` in `ui/app.slint`).
+  Gate at `d5ea96492`
+  (IDE tree `4653e9920f21305bb958cbd65fe80ed5b6d6a7eb`):
+  lint;
+  the library and integration tests on the second run;
+  85 of 85 native tests.
+  Guard controls on `main` at `1c953683b`:
+  `repaint-on-accept` and `card-yields-to-popup` failed when removed and passed when restored
+  (`~/temp/agent/ide-language-navigation-guard-murJAW`),
+  and the re-anchored `card-focus` guard likewise
+  (`~/temp/agent/ide-annotation-guard-a3HMKh`).
+  Two findings from this integration.
+  First,
+  the window tests' shared server definitions set `IDE_SCRIPTED_PUSH` to `0`;
+  a test that needs the scripted warning names `PUSH` itself.
+  Second,
+  the first version of the repaint test passed with the repaint removed
+  (`~/temp/agent/ide-language-navigation-guard-pc9vqd`):
+  the source refresh repaints once when the file's first highlighting answer is applied,
+  about 250 ms after opening,
+  and that painted the stored annotations.
+  The test now uses a server that answers after 3 s,
+  waits until `State::syntax_revision` equals the displayed revision,
+  and asserts nothing is painted before the server is ready.
+  Any window test that claims "painted without another event" needs the same wait.
+- Open defect,
+  observed once in the first library test run of that gate:
+  `lifecycle::dropping_the_worker_leaves_no_child_process` failed with a scripted-server child
+  left as a zombie (state `Z`) for the whole 5 s wait after the worker was dropped
+  (`~/temp/agent/ide-gate-logs-20261005/annotations-merge-test-zombie.log`).
+  The Language module's shutdown code is the same on `main`,
+  so this is not from the merge.
+  Unverified guess:
+  the child handle is dropped with kill-on-drop before the child exited,
+  and the worker's runtime ends before reaping it.
+  The agent working on quiet shutdown (`feat/ide-language-verify`) was asked for the cause,
+  a fix,
+  a guard control,
+  and the failure rate before and after;
+  the test's wait must not be lengthened to hide it.
+- Event-driven tree and displayed-file refresh with the user-approved `notify` crate:
+  the agent finished on branch `feat/ide-tree-watch` at `096fbf574`
+  (9 commits on `48a1b5756`,
+  worktree `.claude/worktrees/ide-tree-watch`);
+  the coordinating session merged it on `integrate/ide-language-core`
+  (additive conflicts in `mise.toml` and `src/native.rs`)
+  and the gate on that merge was running when this was written.
+  Not on `main` until the item "Completed in this fan-out" says so.
+  The agent's measured results and open points:
+  - `notify` 8.2.0 with default features off;
+    the code names `notify::INotifyWatcher`,
+    so no polling backend can be selected.
+    Six new lockfile packages
+    (`notify`,
+    `notify-types`,
+    `inotify`,
+    `inotify-sys`,
+    and the BSD-only `kqueue` and `kqueue-sys`),
+    regenerated with the `fetch` task.
+  - Watched,
+    each non-recursively:
+    the root,
+    visible expanded folders,
+    and the displayed file's folder,
+    only when the folder's canonical path equals its path inside the root.
+    Events only invalidate;
+    the existing readers reread and keep their stale-reply fencing.
+  - A full reread follows a queue overflow,
+    a stream error,
+    an event without paths,
+    a removed or renamed watched folder,
+    a failed watch,
+    and a watch thread that ended.
+    Items without a live watch keep the old timers (file 250 ms,
+    folders 500 ms round robin);
+    a sweep every 10 s rereads everything shown and retries failed watches.
+  - Latency from an external write to the model change,
+    medians of 16 trials in 3 runs:
+    a new file with eight expanded folders took 1657 to 1706 ms under polling and 29 to 35 ms watching;
+    a rewrite of the displayed file took 115 to 118 ms and now 44 to 48 ms.
+    Run-to-run spread of medians was at most 134 ms polling and 6 ms watching
+    (`~/temp/agent/ide-refresh-latency-MpRf1V/results.json` before,
+    `~/temp/agent/ide-refresh-latency-9Ljcjy/results.json` after).
+  - On the branch:
+    30 of 30 guard controls (`~/temp/agent/ide-watch-guard-lnfGWB/results.json`),
+    405 passing library and integration results,
+    43 of 43 native tests with the two ignored latency measurements skipped,
+    lint;
+    nested-session frames for both schemes in `~/temp/agent/ide-tree-watch-20261005/native-evidence-final/`.
+  - Chosen values open to the user's veto:
+    the 10 s sweep,
+    a 100 ms gap between notified rereads of one item
+    (added beyond the brief so a busy folder is not reread every tick),
+    and the 150 ms quiet and 250 ms limit before reading a file that is still being written.
+  - Not exercised end to end:
+    an unavailable watcher (inotify instance limit) and `fs.inotify.max_user_watches` exhaustion;
+    both are logged at WARN and fall back to the timers,
+    with no visible message.
+    `notify` 8.2.0 spawns its loop thread detached and unwraps sends to it;
+    a panic there would take the watch thread down.
+  - Facts worth keeping:
+    the IDE's own reads raise open and close events on watched paths,
+    so only close-after-write counts among access events;
+    a moved folder's watch follows the inode unless removed,
+    and `notify` removes it itself only when the parent is watched too.
+- UI batch 2:
+  the comparison page and option screenshots are on `main`
+  (`package/desktop-app/ide/design/`,
+  commit `b52227249`),
+  the user answered every question,
+  and the answers are in the scope record under "Interface decisions (UI batch 2)".
+  An agent applies them in the worktree `.claude/worktrees/ide-ui-batch2`
+  on branch `feat/ide-ui-batch-2`
+  (MCP ports 9394 and 9395),
+  based on `integrate/ide-language-core` at `d5ea96492`:
+  a thin divider line with a narrow pointer grab zone taken from cited desktop precedent,
+  the divider still a Tab stop with two-channel focus,
+  the application's own text box with a 48 by 48 clear cell in the find and search boxes,
+  white text on selected rows in the tree,
+  the search list,
+  and the references list,
+  and frames of the applied result under `package/desktop-app/ide/design/screenshots/`.
+- Landing a branch that conflicts with `main`:
+  merge it with `git merge --no-ff` in `.claude/worktrees/ide-integrate`,
+  resolve once,
+  and gate there.
+  A plain `git rebase main` afterwards would drop the merge commit and its resolutions,
+  so a gated merge lands through the worktree `.claude/worktrees/ide-land`
+  (branch `land/ide-desktop-app`):
+  fast-forward it to `main`,
+  `git merge --no-ff <gated commit>`,
+  confirm `git rev-parse HEAD:package/desktop-app/ide` equals the gated tree,
+  then `git merge --ff-only` from the main checkout.
+  That keeps `main` as the first parent.
 - Quiet language-server shutdown and the confined navigation check
   in the worktree `.claude/worktrees/ide-language-verify`
   on branch `feat/ide-language-verify`

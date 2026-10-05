@@ -200,6 +200,71 @@ quotations are the user's words.
   stored as local files in the repository rather than a network service:
   "These are useful records that shouldn't depend on a network service to be available."
 
+### Interface decisions (UI batch 2)
+
+Every option was shown as built screenshots:
+`package/desktop-app/ide/design/questions/2026-10-05-ui-batch-2.html`,
+with frames in `package/desktop-app/ide/design/screenshots/2026-10-05-ui-batch-2/`.
+
+- The sidebar divider is a thin line with no strip (option B):
+  "The 48px rule came from Android and focus on touch targets.
+  Losing easily dragging the divider support on touch screens also isn't going to impact this specific app."
+  The pointer grab zone is narrow and sized from desktop precedent checked against sources,
+  not the prototype's 48 px zone over the tree and the source;
+  that sizing was announced by the agent and is open to the user's veto.
+- The divider's smaller target is an exception for that one element,
+  not for the application:
+  "'Target size is not a concern on this desktop app' is wrong.
+  It depends on the situation.
+  For this specific app,
+  we're supporting desktops only;
+  there are desktops with touch screens,
+  but all desktops have touchpads/mice and a keyboard;
+  grabbing the divider and changing where it's at is a very infrequent action;
+  we're already committed to supporting changing where it is at both by mouse and keyboard.
+  Only because all these conditions are met that we were able to bend the 48 x 48 rule for that specific element."
+- The divider stays a keyboard Tab stop (option A).
+- The clear button in the find and search boxes stays,
+  with a click or touch target of at least 48 by 48:
+  "Keep it and make it at least 48 x 48."
+  A target is its hit area:
+  "Please understand what a click/touch target is.
+  That includes invisible padding."
+  The toolkit's control has a hit cell 16 px wide and as tall as the box
+  (measured in `i-slint-compiler` 1.18.1,
+  `widgets/fluent/lineedit.slint` and `widgets/common/lineedit-base.slint`),
+  and its width cannot be set from outside,
+  so the application gets its own text box with its own clear cell.
+- The find bar stays keyboard only (option A):
+  no previous,
+  next,
+  or close buttons.
+- Selected rows in the tree,
+  the combined-search list,
+  and the references list draw white text on the blue selection fill in both schemes (option B),
+  the same rule as selected source text.
+
+### Agent rule decisions
+
+- Asking for decisions:
+  questions are batched in the question tool and each item's context is explained again in plain words
+  (rule `QRX` in `AGENTS.md`).
+- UI decisions are asked with built screenshots of every option stored as local repository files
+  (rule `QVS` in `.agents/skills/visual-design-review/SKILL.md`).
+- Target-size rules live in the "Target size" section of `.agents/skills/visual-design-review/SKILL.md`,
+  not in `AGENTS.md`:
+  the 48 px minimum (rule `ATS`,
+  now naming desktop too,
+  moved there "with more details"),
+  the hit-area definition (rule `HZA`),
+  and the per-element exception rule (rule `TXE`).
+  The agent added rules `HZP` and `HZK` and a worked example beside them;
+  those additions are open to the user's veto.
+- Declined:
+  a reference-parity rule,
+  a CLI `--help` rule,
+  and a font-verification rule.
+
 ## Verification boundary
 
 Completion requires the actual native application,
