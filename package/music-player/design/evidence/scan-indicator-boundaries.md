@@ -89,8 +89,11 @@ The complete 32-pose cohort now covers both panels,
 light/dark and 100%/200% text across idle,
 running,
 paused and wide-count scenes.
-Six cover 200% active views report the accepted status ellipsis;
-the total count is not fully visible there.
+Six cover 200% active views report the accepted status ellipsis.
+Fresh inspection reads `412…` in the running and paused views,
+where the total is absent,
+and `9,9…` in the wide-count view,
+where neither count is complete.
 Layout rectangles are not glyph bounds or accessibility acceptance.
 
 Native controls passed in all eight panel/theme/scale environments:
@@ -106,6 +109,39 @@ Changed-pixel and changed-geometry controls were rejected.
 While active the bar reserves 137px of player height at 390dpi;
 this is scan-F's own row reservation,
 not a floating-overlay measurement.
+
+## Fresh inspection and label clearance
+
+A separate continuation session inspected all 16 light/dark full-region
+pairs and four native-resolution bar strips on 2026-10-05.
+Each crop was re-derived from its private raw capture,
+with a changed-byte control,
+before the record was bound to its hash.
+No prior inspection was transferred.
+
+A rendered-pixel measurement reads the clear background gap between the
+control outline and the label ink in every active crop.
+At 200% the Resume label stays 1 to 2 physical pixels clear on the leading
+side and 5 on the trailing side,
+on both panels and themes.
+Pause at 200% keeps 29 to 32 pixels,
+and both labels at 100% keep at least 57.
+No glyph is cut and the native overflow flag is false in each case,
+but Resume at 200% reads as touching the outline.
+The measurement counts a pixel as ink when any channel differs from the
+control background by more than 24 of 255;
+it is not glyph metrics or accessibility acceptance.
+
+While the bar is present,
+scrollable player content is clipped 137px sooner.
+The inner folder list and letter rail show one fewer row.
+The track list shows one fewer row or part-row everywhere except inner at
+100%,
+where its visible rows still fit.
+
+These are observations of D26's fixed 100dp control and single-line status,
+recorded for the human's inspection.
+They do not reopen the padding question or create a ballot.
 
 ## Verification limits
 
@@ -130,6 +166,8 @@ No lint rule or unrelated source was changed.
 
 The measured adapter was LLVM 20.1.2 llvmpipe software rendering despite
 the requested host GPU path.
+The retained startup output reports that the GPU cannot be used for
+hardware rendering.
 Successful capture and shutdown are not diagnostic-free or general
 stability claims.
 
@@ -151,31 +189,62 @@ accessibility disabled,
 no enabled accessibility services,
 2076 by 2152 at 390dpi and the system image fingerprint.
 Separate base-state and override equality is not claimed.
+The restored fields were read back twice:
+the first readback still reported the cover geometry,
+and the second matched every recorded field.
 The owner exited `0`;
 matching containers and QEMU are absent.
+That exit code comes from the capturing session's lifecycle notification,
+retained beside the private runtime evidence;
+the owner's own process logs were not kept.
+Runtime absence was verified again at publication.
 Original AVDs and library data remain untouched.
 
-## Publication state and next steps
+## Publication and consumer verification
 
-Sanitization is complete:
-32 measured-inset crops are ready under the private
-`study-source-padding/verified-crops/` with retained-RGB proofs.
-`questions/scan-indicator.template.html` is prepared but not yet bound to
-witnesses.
-Remaining work:
-make and inspect the light/dark full-region pairs,
-bind a fresh inspection record to these exact crop hashes,
-publish `scan-indicator-witnesses.json` and scoped native verification,
-build and validate `scan-indicator.html`,
-run consumer tests and guard-removal proofs,
-run four-context offline browser verification,
-inspect the resulting screenshots,
-publish the review-verification digest,
-then close the plan,
-README,
-HANDOFF and open-questions records.
-The document verifier must also learn this artifact.
-No new preference answer is required to complete those checks.
+The live action matrix was recomputed offline from its 64 retained
+captures,
+with a per-step event ledger,
+and reproduced every field of the live manifest.
+Publication preflights rejected six changed inputs before any public write.
+
+[The witness manifest](../questions/evidence/scan-indicator-witnesses.json)
+and its 32 PNGs carry the inspected status reading and label clearance for
+each view.
+[The native verification record](../questions/evidence/scan-indicator-native-verification.json)
+holds the action contexts,
+their replay,
+the padding control,
+fixture reports,
+lint totals and restoration.
+The [offline viewer](../questions/scan-indicator.html) states the inspection
+findings from that witness data.
+Its build and validation,
+consumer tests and exact-cohort,
+authored-state and ellipsis-binding guard-removal proofs passed.
+The [review verification record](../questions/evidence/scan-indicator-review-verification.json)
+binds exact viewer,
+builder,
+test,
+manifest and native-result digests.
+
+Four offline Chromium desktop/mobile light/dark contexts exercised all
+32 previews,
+environment combinations,
+status notes,
+optional blank observations,
+inert adversarial notes,
+stale-reply invalidation and modal zoom/pan/reset/focus.
+All distinct previews were opened in the first desktop/light pass;
+representative modal controls were separately exercised in every context.
+The twelve resulting review,
+gallery and modal screenshots were inspected.
+Each closed-page axe audit had 22 passes,
+40 inapplicable checks and no violations or incomplete results.
+Open-dialog axe,
+Firefox ESR140 and native accessibility acceptance were not exercised.
+The browser closed and its owned container is absent.
+No new preference answer is required.
 
 The [continuation plan](../../../../doc/planning/music-player-light-scan-indicator.md)
 records terminal outcomes,

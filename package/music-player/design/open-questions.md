@@ -52,12 +52,12 @@ state-family study and inspected offline publication.
 `doc/planning/music-player-light-context-menu.md` records the completed D7
 study and verified 24-pose viewer at `questions/track-menu.html`,
 without production callbacks or a replacement action-list ballot.
-Settings/template editor design and the scan indicator remain independent
-queue items.
-`doc/planning/music-player-light-scan-indicator.md` records the scan-F study:
-native capture and action checks are complete,
-with sanitized crops ready and viewer publication remaining.
-No real analysis or revised consent defaults are included.
+`doc/planning/music-player-light-scan-indicator.md` records the completed
+D26 scan-F study and verified 32-view viewer at
+`questions/scan-indicator.html`,
+without real analysis,
+revised consent defaults or a scan-policy ballot.
+Settings/template editor design remains an independent queue item.
 Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
@@ -537,13 +537,11 @@ new IME work and native accessibility acceptance.
   Messages target two lines;
   longer detail directs users to Android logs.
   Feedback must not resize the player.
-  Native overlay verification remains in progress.
+  Its native light/dark overlay study is complete (11d).
 - **OPEN:**
-  other light surfaces not yet drawn (11d):
-  settings pane,
- context menu,
-  first-run prompt,
-  scan bar.
+  the Settings pane is the remaining light surface not yet drawn (11d).
+  The context menu,
+  first-run prompt and scan bar now have their own inspected native studies.
 - D10 no-system-library/declined-source states now have built design evidence.
   `evidence/first-run-access-boundaries.md` records the scoped authored
   native study and `questions/first-run-access.html` is verified evidence,
@@ -1125,10 +1123,12 @@ not still awaiting a light version.
 D7's track menu now has its own 24-pose light/dark native publication in
 `questions/track-menu.html`,
 with seven action intents and input/dismissal checks recorded separately.
-The scan indicator has a captured 32-pose light/dark native cohort and
-native action matrix recorded in
-`evidence/scan-indicator-boundaries.md`;
-sanitized crops are ready and viewer publication remains.
+D26's scan indicator now has its own 32-view light/dark native publication
+in `questions/scan-indicator.html`.
+Native Pause/Resume and authored progress/completion checks are recorded
+separately in `evidence/scan-indicator-boundaries.md`,
+with the inspected cover ellipsis and large-text Resume clearance stated
+as observations.
 The Settings pane remains to be drawn in light;
 do not credit other studies as evidence for that surface.
 

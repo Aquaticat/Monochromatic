@@ -12,10 +12,11 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
-## Handoff: scan-F native capture complete, publication in progress
+## Handoff: scan-F publication complete, Settings pane next
 
 This record is the continuation state for the next agent session.
-The human is handing the queue to Claude Opus.
+Claude Opus picked up the queue on 2026-10-05 and completed the scan-F
+publication.
 Continue substantive authorized work;
 do not stop at a status-only report or invent another preference ballot.
 
@@ -91,23 +92,31 @@ Full Android lint retains five inherited errors,
 the new row's modifier warnings are gone.
 `evidence/track-menu-boundaries.md` keeps these scopes explicit.
 
-The remaining light surfaces are Settings and the scan indicator.
-`doc/planning/music-player-light-scan-indicator.md` and
-`evidence/scan-indicator-boundaries.md` record the scan-F source audit,
-state model,
-measured padding correction and native verification.
+`doc/planning/music-player-light-scan-indicator.md` records the completed
+D26 scan-F study.
+`questions/scan-indicator.html` presents 32 freshly inspected native views
+across both panels,
+themes and text scales.
+Native Pause/Resume,
+authored progress and completion passed in all eight environments and were
+recomputed offline from the retained captures.
+Viewer guard proofs and four-context offline Chromium checks passed;
+Firefox and native accessibility remain outside that evidence.
+`evidence/scan-indicator-boundaries.md` keeps these scopes explicit.
+
+The remaining light surface is the Settings pane.
 D81's Settings-template requirement remains settled while its editor details
 are a separate design problem.
 
-## Scan-F handoff state and next action
+## Scan-F completion record and next action
 
-Current artifact:
+Artifact:
 prototype `25a95411750c5c5356631fc508513c42a81ad1c4`,
 APK SHA-256
 `c06ec80240e41641fee1fdec79313a8294b9595544740145f4fa6f2b1f77ddf1`
 in the owned private study directory.
 
-Completed:
+Completed by the capturing session:
 21 pure fixture tests with four fresh guard-removal mutants;
 same-APK proof that the rejected 12dp button padding clips Resume at
 inner/light/200% while scan-F's source padding fits the same intrinsic text
@@ -124,29 +133,49 @@ Changed-pixel and changed-geometry controls were rejected.
 The guest's recorded fields were restored,
 the owner exited `0` and matching native runtimes are absent.
 
-What to inspect first:
-`evidence/scan-indicator-boundaries.md` for scope and limits;
-the plan's current-state section for the exact remaining queue;
-the private `verified-crops/manifest.json` and
-`native-actions/manifest.json` for measured records.
+Completed by the continuation session:
+fresh inspection of all 16 full-region pairs and four native bar strips,
+bound to crop hashes re-derived from the raw captures;
+offline replay of the action matrix from its 64 retained captures;
+publication of the witnesses,
+native verification and viewer with rejection controls;
+consumer tests with three guard-removal proofs;
+four-context offline browser verification with twelve inspected
+screenshots;
+and the review-verification digest.
+`verify-first-run-final-documents.ts` now checks the scan artifact.
+
+What inspection found,
+for the human to look at in `questions/scan-indicator.html`:
+on cover at 200% the status label shows only `412…`,
+or `9,9…` for the wide count,
+so the hidden counts are not visible;
+at 200% the Resume label stays just 1 to 2 physical pixels clear of the
+control outline on its leading side and reads as touching it.
+Both are observations of D26's fixed 100dp control and single-line status.
+The human has not been asked to decide anything about them.
+
+What to inspect first for the next item:
+D11 in `decisions.md`,
+which selects candidate settings-a;
+section 11d and 11e of `open-questions.md`;
+and `doc/planning/music-player-light-scan-indicator.md` as the pattern for
+a source audit,
+isolated native host,
+fit study and publication.
 
 What remains:
-make and visually inspect the light/dark full-region pairs,
-bind a fresh inspection record to the exact crop hashes,
-publish the witness manifest and scoped native verification,
-build and validate `questions/scan-indicator.html`,
-run consumer tests and guard-removal proofs,
-run four-context offline browser verification and inspect screenshots,
-publish the review-verification digest,
-then close the plan,
-README,
-this handover and open-questions.
-Extend `verify-first-run-final-documents.ts` to learn the scan artifact.
+carry D11's accepted Settings pane into the current Fold player and its
+light/dark schemes,
+starting with an executable-source audit and a plan under `doc/planning/`.
+Keep D81's template editor out of that fit study;
+its fields,
+grammar and controls are undesigned and need the human.
 
 How to respond:
-continue the queue directly with the inspection-pair step.
-Do not reopen the padding question,
-re-run native capture,
+continue the queue directly with the Settings source audit.
+Do not reopen the scan padding question,
+re-run scan capture,
 or offer Settings-template or scan-policy ballots.
 Full Android lint retains five inherited errors,
 65 warnings and two hints;

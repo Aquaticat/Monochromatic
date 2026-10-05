@@ -125,7 +125,7 @@ not source inspection or guessed text width.
   progress changes and disappearance after authored completion.
   Verify stable active geometry and exact return to the no-bar baseline;
   record any deliberate appearance/disappearance reservation separately.
-- [ ] Publish freshly inspected,
+- [x] Publish freshly inspected,
   sanitized and exact-artifact-bound evidence and verify its offline viewer.
 
 ## Boundaries and next action
@@ -232,21 +232,86 @@ Full Android lint still reports the same five inherited errors,
 65 warnings and two hints;
 no finding names a `ScanIndicator` source file.
 Sanitization is complete:
-32 measured-inset crops with retained-RGB proofs are ready under the
-private study directory.
-`questions/scan-indicator.template.html` is prepared but not yet bound to
-witnesses.
+32 measured-inset crops with retained-RGB proofs are under the private
+study directory.
 
-Remaining publication work:
-make and inspect the light/dark full-region pairs,
-bind a fresh inspection record to the exact crop hashes,
-publish the witness manifest and scoped native verification,
-build and validate `scan-indicator.html`,
-run consumer tests and guard-removal proofs,
-run four-context offline browser verification,
-inspect the resulting screenshots,
-publish the review-verification digest,
-then close README,
-HANDOFF and open-questions.
-The document verifier must also learn this artifact.
-No new preference answer is required.
+## Fresh inspection
+
+A separate continuation session inspected the cohort on 2026-10-05.
+It opened all 16 light/dark full-region pairs and four native-resolution
+bar strips,
+re-derived every crop from its private raw capture with a changed-byte
+control,
+and bound the record to the exact crop hashes.
+No prior inspection was transferred.
+
+Only authored labels and anonymous system navigation remain in the images.
+Idle views show no bar,
+separator or reserved slot.
+
+On cover at 200% the status label is ellipsized in all six active views.
+Running and paused show `412…`,
+so the total is absent;
+the wide-count view shows `9,9…`,
+so neither count is complete.
+Every other active view shows both counts in full.
+
+At 200% on both panels and themes the Resume label spans nearly the whole
+fixed control.
+Its ink stays 1 to 2 physical pixels clear of the outline on the leading
+side and 5 on the trailing side;
+no glyph is cut.
+Pause at 200% keeps 29 to 32 pixels clear,
+and both labels at 100% keep at least 57.
+The native overflow flag is false in every one of these views,
+so that flag alone does not describe this visual result.
+
+Both findings are observations of D26's fixed 100dp control and
+single-line status.
+They are recorded for the human's inspection,
+not as a reopened padding question or a new ballot.
+
+## Offline replay and publication
+
+The live action matrix was recomputed offline from its 64 retained
+screenshots,
+hierarchies and logs,
+including a per-step event ledger.
+Every field of the live manifest was reproduced.
+Disposable publication controls rejected a changed inspection hash,
+a contradicted ellipsis reading,
+changed restoration,
+a changed owner exit,
+missing action context and a changed replay binding before any public write.
+
+`questions/evidence/scan-indicator-witnesses.json` and its 32 PNGs,
+`questions/evidence/scan-indicator-native-verification.json` and
+`questions/scan-indicator.html` are published.
+The viewer states the inspection findings from the witness data.
+Its build and exact validation passed.
+Consumer positives,
+fresh exact-cohort,
+authored-state and ellipsis-binding guard removals,
+and restored positives passed.
+Four offline Chromium contexts decoded and opened all 32 images,
+exercised every environment combination,
+status notes,
+optional observations,
+inert notes,
+stale-reply invalidation and modal zoom/pan/reset/focus.
+All twelve review,
+gallery and modal screenshots were inspected.
+Closed-page axe checks report zero violations or incomplete results;
+open-dialog,
+Firefox ESR140 and native accessibility acceptance remain untested.
+`questions/evidence/scan-indicator-review-verification.json` binds the
+viewer,
+builder,
+test and evidence digests.
+The owned browser container is absent after browser closure.
+
+This scan-indicator item is complete within its declared design/debug scope.
+The remaining light surface is the Settings pane;
+its template editor remains a separate design problem under D81.
+No scan-policy ballot or production implementation follows from this
+completion.

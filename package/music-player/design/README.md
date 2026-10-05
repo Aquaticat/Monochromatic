@@ -76,15 +76,26 @@ Recorded native settings were restored and owned runtimes are absent.
 Real operations,
 native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
-Settings/template editor design and the scan indicator remain independent
-queue items.
-The scan indicator now has a measured native study in progress:
-`evidence/scan-indicator-boundaries.md` records the accepted scan-F bar,
-the rejected 12dp padding correction,
-the 32-pose cohort and the native action matrix.
-Sanitized crops are ready;
-inspection,
-viewer publication and consumer verification remain.
+D26's light scan-indicator continuation is also complete.
+The [scan viewer](questions/scan-indicator.html) presents 32 freshly
+inspected native views of the accepted scan-F bar across both panels,
+themes and text scales.
+[Its evidence boundary](evidence/scan-indicator-boundaries.md) records the
+rejected 12dp padding draft,
+native Pause/Resume,
+authored progress and completion,
+and an offline replay of that action matrix.
+Inspection found the cover status ellipsized to `412…` at 200% text and
+the Resume label within 1 to 2 physical pixels of its outline at 200%;
+the viewer states both rather than deciding them.
+The viewer's tests,
+guard-removal proofs and four-context offline Chromium checks passed.
+Recorded native settings were restored and owned runtimes are absent.
+Real analysis,
+native accessibility and Firefox acceptance are not claimed;
+full Android lint still has inherited failures.
+The Settings pane is the remaining light surface;
+its template editor is a separate design problem under D81.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds
