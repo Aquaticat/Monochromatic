@@ -97,6 +97,73 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     });
 }
 
+/// Render after a keyboard caret movement and keep the caret visible with the smallest possible scroll.
+///
+/// `paged` first moves the view by that many logical pixels, so a page key keeps the caret's place on screen.
+/// A caret above the view becomes the top line, one below the bottom line; a visible caret keeps the offsets.
+/// Horizontally the caret gets up to 48 px of room on the side it left the view.
+/// Offsets are assigned directly, like other programmatic reveals; native wheel easing is unaffected.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function follow(window: AppWindow, state: Shared<State>, paged: number): void;
+/// ```
+pub(super) fn follow(window: &AppWindow, state: &Rc<RefCell<State>>, paged: f32) {
+    let height = window.get_viewport_height();
+    let width = window.get_viewport_width();
+    let horizontal = -window.get_scroll_x();
+    let before = -window.get_scroll_y();
+    let mut current = state.borrow_mut();
+    let text = current.document.text();
+    let row = text.char_to_line(current.document.position().head);
+    let top = row as f32 * 24.0;
+    let limit = (text.len_lines() as f32 * 24.0 - height).max(0.0);
+    let mut offset = (before + paged).clamp(0.0, limit);
+    if top < offset {
+        offset = top;
+    } else if top + 24.0 > offset + height {
+        offset = top + 24.0 - height;
+    }
+    offset = offset.clamp(0.0, limit);
+    // A fractional offset left by smooth scrolling is kept while the caret stays in view.
+    if offset != before {
+        offset = offset.round();
+    }
+    place(&mut current, horizontal, offset, width, height);
+    drop(current);
+    if offset != before {
+        window.set_scroll_y(-offset);
+    }
+    render(window, state);
+    let mut shown = state.borrow_mut();
+    let mut left = horizontal;
+    // The caret's x comes from shaped glyph geometry, available only after its row is rendered.
+    if let Some(view) = &shown.shaped {
+        let caret = view.caret(&shown.document);
+        let room = 48.0_f32.min(width / 4.0);
+        if caret.x < horizontal {
+            left = caret.x - room;
+        } else if caret.x + caret.width > horizontal + width {
+            left = caret.x + caret.width + room - width;
+        }
+    }
+    let widest = (shown.document_width - width).max(0.0);
+    left = left.clamp(0.0, widest).round();
+    tracing::debug!(
+        row,
+        vertical = offset,
+        horizontal = left,
+        "followed source caret"
+    );
+    if left == horizontal {
+        return;
+    }
+    place(&mut shown, left, offset, width, height);
+    drop(shown);
+    window.set_scroll_x(-left);
+    render(window, state);
+}
+
 /// Scroll a source character range into view and render it.
 /// A visible range keeps its offsets; a hidden row is centered; a hidden column starts 48 px from the left.
 /// Offsets are assigned directly, like other programmatic reveals; native wheel easing is unaffected.

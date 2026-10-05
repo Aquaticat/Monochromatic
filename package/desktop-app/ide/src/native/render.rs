@@ -25,6 +25,16 @@ use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 /// UI callbacks share state without cross-thread synchronization.
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
+/// What: `const` names a compile-time value; `f32` is a 32-bit float of logical pixels (sibling `f64`).
+/// Why: The scrollable width ends this far after the widest line, so a caret at that line's end
+/// is inside the view instead of being cut off at its right edge.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const CARET_ROOM = 24;
+/// ```
+const CARET_ROOM: f32 = 24.0;
+
 /// Convert a toolkit palette color to raster input without losing alpha.
 fn rgba(color: slint::Color) -> [u8; 4] {
     return [color.red(), color.green(), color.blue(), color.alpha()];
@@ -142,8 +152,9 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let lines = document.text().len_lines();
     let selected = document.selected_text();
     let mut document_width = current.document_width;
+    // Trailing blanks count as width, and the caret after the widest line needs room inside the scroll range.
     for row in &view.rows {
-        document_width = document_width.max(row.layout.width() / factor);
+        document_width = document_width.max(row.layout.full_width() / factor + CARET_ROOM);
     }
     current.document_width = document_width;
     let updated_source = if current.presented_revision != Some(revision) {
