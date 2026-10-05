@@ -1326,6 +1326,16 @@ The release binary has no headless backend
 (`SLINT_BACKEND=headless` without a display ends with "No backends configured"),
 so both startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`.
 SQL is the sample because it has a bundled grammar and no configured language server.
+Both also require a clean end:
+the application exits with status 0 within the compositor's 2 s after the close request,
+and the session leaves no application process,
+no private bus daemon,
+and no bus directory behind.
+A session that fails is ended through the compositor's `quit` first,
+because a compositor ended by a signal leaves its `dbus-daemon`,
+that daemon's directory below the temporary directory,
+and its hosted application running;
+whatever is left is stopped and removed.
 
 `mise run //package/desktop-app/ide:inspect:bundle-guards [directory] [only]` damages one copy per case
 and requires the matching check to fail on it while the unrelated checks still pass:
@@ -1354,7 +1364,7 @@ and an executable that still finds a runtime elsewhere.
 - Build:
   2 GiB and 2 CPUs are enough.
   Two release builds from an empty release directory finished in 18 min 40 s and 15 min 22 s of Cargo time,
-  on a host whose load average stayed between 50 and 97,
+  on a host whose load average was between 54 and 97 each time it was read during them,
   so the second container averaged 1.04 of its 2 CPUs.
   In the second,
   sampled four times a second from the container's control group,

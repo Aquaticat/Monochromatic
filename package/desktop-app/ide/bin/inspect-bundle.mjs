@@ -4,9 +4,9 @@
 // hosted in the repository's nested compositor, on a one-file project whose language configures no server.
 import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
-import { closeSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { closeSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createConnection } from 'node:net';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
 
@@ -139,6 +139,28 @@ const checks = {
 // is reported by its damage and not by a slow exit.
 const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session');
 const plain = text => text.replace(/\u001b\[[0-9;]*m/g, '');
+// Stop and remove what a session may leave behind, and return what was found.
+// A compositor that ends by a signal leaves its hosted application, its private bus daemon, and that daemon's
+// directory, which carries the compositor's process id; a compositor that ends on `quit` leaves none of them.
+const sweep = (compositorProcess, executable) => {
+  const directory = join(tmpdir(), 'monochromatic-nested-wayland-session-' + compositorProcess + '-0');
+  const found = [];
+  for (const entry of readdirSync('/proc')) {
+    if (!/^\d+$/.test(entry)) continue;
+    // A process may end between the listing and these reads; that is not a leftover.
+    let exe;
+    let command;
+    try {
+      exe = readlinkSync('/proc/' + entry + '/exe');
+      command = readFileSync('/proc/' + entry + '/cmdline', 'utf8').split('\0');
+    } catch { continue; }
+    if (exe !== executable && !command.some(part => part.includes(directory + sep))) continue;
+    found.push(command.filter(Boolean).join(' ').slice(0, 160));
+    try { process.kill(Number(entry), 'SIGKILL'); } catch { continue; }
+  }
+  if (existsSync(directory)) { found.push(directory); rmSync(directory, { recursive: true, force: true }); }
+  return found;
+};
 const session = async ({ name, application, settled }) => {
   demand(process.env.WAYLAND_DISPLAY, 'a Wayland session is needed to host the nested compositor');
   demand(existsSync(compositor), 'missing ' + compositor + '; build //package/cli/nested-wayland-session first');
@@ -189,10 +211,22 @@ const session = async ({ name, application, settled }) => {
     if (output().includes('forcing shutdown')) ending = 'the application did not exit within the compositor\'s 2 s after the close request and was stopped by force; see ' + log;
     else if (code !== 0 || signal !== null) ending = 'the session ended with status ' + code + ' and signal ' + signal + '; see ' + log;
     else if (!output().includes('hosted client exited with code 0')) ending = 'the application did not exit with status 0; see ' + log;
+    // The application's process may outlive the compositor's report by a moment; a real leftover outlives this wait.
+    await wait(300);
+    const left = sweep(child.pid, join(application, 'monochromatic-ide'));
+    if (ending === undefined && left.length > 0) ending = 'the session left behind: ' + left.join('; ') + '; see ' + log;
     return { output: output(), frame, ending };
   } finally {
+    // A failed session is asked to quit first and stopped by a signal only when that does not end it.
+    if (child.exitCode === null && child.signalCode === null) {
+      const asked = await Promise.race([control('quit').catch(() => undefined), wait(2000)]);
+      const force = setTimeout(() => child.kill('SIGKILL'), asked === 'ok' ? 5000 : 0);
+      await exited;
+      clearTimeout(force);
+    }
     writeFileSync(log, output());
-    if (child.exitCode === null && child.signalCode === null) { child.kill(); await exited; }
+    const left = sweep(child.pid, join(application, 'monochromatic-ide'));
+    if (left.length > 0) console.error('Removed what the session left behind: ' + left.join('; '));
   }
 };
 // A copy below the scratch root, optionally without one top-level entry.
