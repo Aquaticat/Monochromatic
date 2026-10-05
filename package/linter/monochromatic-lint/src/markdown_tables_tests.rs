@@ -14,7 +14,9 @@ use crate::markdown_source::MarkdownSource;
 
 /// Parse a fixture in the caller's requested language mode.
 fn check(source: &str, mdx: bool) -> Vec<Diagnostic> {
-    let context: MarkdownSource = MarkdownSource::new(String::from("table.md"), String::from(source), mdx).expect("table fixture");
+    let context: MarkdownSource =
+        MarkdownSource::new(String::from("table.md"), String::from(source), mdx)
+            .expect("table fixture");
     return no_pipe_tables(&context, Severity::Warn);
 }
 
@@ -32,15 +34,18 @@ fn fixed(source: &str, mdx: bool) -> String {
 #[test]
 fn table_alignment_and_cell_spelling_survive_conversion() {
     let source: &str = "| Name | Age | Note |\n| :--- | --: | :--: |\n| Bob | 30 | a \\| b |\n| Sue | 25 | **x** |\n";
-    assert_eq!(fixed(source, false), concat!(
-        "<table>\n<thead>\n<tr>\n",
-        "<th align=\"left\">Name</th>\n<th align=\"right\">Age</th>\n<th align=\"center\">Note</th>\n",
-        "</tr>\n</thead>\n<tbody>\n<tr>\n",
-        "<td align=\"left\">Bob</td>\n<td align=\"right\">30</td>\n<td align=\"center\">a | b</td>\n",
-        "</tr>\n<tr>\n",
-        "<td align=\"left\">Sue</td>\n<td align=\"right\">25</td>\n<td align=\"center\">**x**</td>\n",
-        "</tr>\n</tbody>\n</table>\n",
-    ));
+    assert_eq!(
+        fixed(source, false),
+        concat!(
+            "<table>\n<thead>\n<tr>\n",
+            "<th align=\"left\">Name</th>\n<th align=\"right\">Age</th>\n<th align=\"center\">Note</th>\n",
+            "</tr>\n</thead>\n<tbody>\n<tr>\n",
+            "<td align=\"left\">Bob</td>\n<td align=\"right\">30</td>\n<td align=\"center\">a | b</td>\n",
+            "</tr>\n<tr>\n",
+            "<td align=\"left\">Sue</td>\n<td align=\"right\">25</td>\n<td align=\"center\">**x**</td>\n",
+            "</tr>\n</tbody>\n</table>\n",
+        )
+    );
 }
 
 /// Ordinary prose and existing HTML pass; containers and indentation remain report-only.
@@ -64,7 +69,10 @@ fn conversion_respects_container_and_written_form_boundaries() {
 /// Header-only tables need no body wrapper and may omit the outer cell delimiters.
 #[test]
 fn header_only_tables_and_escaped_terminal_pipes_are_preserved() {
-    assert_eq!(fixed("A\n-\n", false), "<table>\n<thead>\n<tr>\n<th>A</th>\n</tr>\n</thead>\n</table>\n");
+    assert_eq!(
+        fixed("A | B\n- | -\n", false),
+        "<table>\n<thead>\n<tr>\n<th>A</th>\n<th>B</th>\n</tr>\n</thead>\n</table>\n"
+    );
     assert_eq!(cell_content("|a\\|"), "a\\|");
     assert_eq!(cell_content("|a\\\\|"), "a\\\\");
     assert_eq!(cell_content(""), "");
@@ -73,7 +81,10 @@ fn header_only_tables_and_escaped_terminal_pipes_are_preserved() {
 /// The emitted HTML must not contain literal attacker-controlled tags, quotes or MDX expressions.
 #[test]
 fn converted_text_cannot_introduce_markup_or_mdx_expressions() {
-    let output: String = fixed("| Payload |\n| - |\n| \\<img src=x onerror=alert(1)> & <b>\"x\"</b> ' |\n", false);
+    let output: String = fixed(
+        "| Payload |\n| - |\n| \\<img src=x onerror=alert(1)> & <b>\"x\"</b> ' |\n",
+        false,
+    );
     assert!(!output.contains("<img src=x"));
     assert!(output.contains("&lt;img src=x onerror=alert(1)&gt;"));
     assert!(output.contains("&amp;"));

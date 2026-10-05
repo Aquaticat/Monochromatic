@@ -9,10 +9,10 @@
 /// Import shared diagnostic and edit contracts.
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::{Edit, Fix};
+use crate::markdown_finding::finding;
 /// Import the native source and final-context text encoder.
 use crate::markdown_source::MarkdownSource;
 use crate::markdown_table_text::html_table_cell_text;
-use crate::markdown_finding::finding;
 /// Import installed table payload decoders rather than interpreting bytes manually.
 use satteri_ast::mdast::{ColumnAlign, MdastNodeType, decode_table_alignments};
 
@@ -41,7 +41,13 @@ fn cell_content(written: &str) -> &str {
 }
 
 /// Append a row's cells using only fixed element/attribute names and escaped text.
-fn append_row(context: &MarkdownSource, row: u32, header: bool, alignments: &[ColumnAlign], output: &mut String) {
+fn append_row(
+    context: &MarkdownSource,
+    row: u32,
+    header: bool,
+    alignments: &[ColumnAlign],
+    output: &mut String,
+) {
     // A fixed boolean choice cannot interpolate an untrusted element name.
     let tag: &str = if header { "th" } else { "td" };
     output.push_str("<tr>\n");
@@ -98,14 +104,27 @@ pub fn no_pipe_tables(context: &MarkdownSource, severity: Severity) -> Vec<Diagn
             continue;
         }
         // Build the report independently of whether this table has a safe whole-node edit.
-        let mut diagnostic: Diagnostic = finding(context, *id, "markdown/no-pipe-tables", severity, String::from(DETAIL), None);
+        let mut diagnostic: Diagnostic = finding(
+            context,
+            *id,
+            "markdown/no-pipe-tables",
+            severity,
+            String::from(DETAIL),
+            None,
+        );
         if let Some(parent) = context.parent(*id)
             && context.kind(parent) == MdastNodeType::Root
             && context.node_span(*id).column == 1
         {
             // The shared editor applies this complete replacement atomically with other findings' fixes.
             let (start, end): (usize, usize) = context.offsets(*id);
-            diagnostic.fix = Some(Fix { edits: vec![Edit { start, end, replacement: table_html(context, *id) }] });
+            diagnostic.fix = Some(Fix {
+                edits: vec![Edit {
+                    start,
+                    end,
+                    replacement: table_html(context, *id),
+                }],
+            });
         }
         findings.push(diagnostic);
     }

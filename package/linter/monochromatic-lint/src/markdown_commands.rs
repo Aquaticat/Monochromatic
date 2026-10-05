@@ -38,28 +38,20 @@ fn all_prompts(value: &str) -> bool {
 /// function promptEdits(source, bodyStart, nodeEnd): Edit[];
 /// ```
 fn prompt_edits(source: &str, start: usize, end: usize) -> Vec<Edit> {
-    let bytes: &[u8] = source.as_bytes();
+    // Borrow the authored body and let the standard iterator retain every newline byte.
+    let written: &str = &source[start..end];
     let mut line_start: usize = start;
     let mut edits: Vec<Edit> = Vec::<Edit>::new();
-    while line_start < end {
-        if bytes[line_start..end].starts_with(b"$ ") {
+    // CRLF yields a separate LF segment with no prompt; its byte still advances the next line's offset.
+    for line in written.split_inclusive(['\n', '\r']) {
+        if line.starts_with("$ ") {
             edits.push(Edit {
                 start: line_start,
                 end: line_start + 2,
                 replacement: String::new(),
             });
         }
-        let mut next: usize = line_start;
-        while next < end && bytes[next] != b'\n' && bytes[next] != b'\r' {
-            next += 1;
-        }
-        if next == end {
-            break;
-        }
-        if bytes[next] == b'\r' && next + 1 < end && bytes[next + 1] == b'\n' {
-            next += 1;
-        }
-        line_start = next + 1;
+        line_start += line.len();
     }
     return edits;
 }
