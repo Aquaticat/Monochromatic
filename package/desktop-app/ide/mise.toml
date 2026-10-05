@@ -148,7 +148,7 @@ run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks."lint:slint"]
 description = "Check the native UI declaration"
-run = "slint-viewer --check ui/app.slint"
+run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint"]
 
 [tasks.lint]
 run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rust", "mise run //package/desktop-app/ide:lint:slint"]
