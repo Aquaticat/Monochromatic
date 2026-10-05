@@ -25,8 +25,7 @@ read from `/proc/<pid>/stat` by `children` in `tests/language/support.rs`.
 State `Z` is a zombie: the process has ended, and its parent has not collected its exit status.
 The test had polled for five seconds (`children_until_none` in the same file) before it gave up.
 
-While the machine is under heavy input/output pressure,
-the same assertion also fails with a child that is still running:
+In some measurements the same assertion also failed with a child that was still running:
 
 ```text
 child processes remain after the worker was dropped: [(141, 'D', "ide-scripted-ls")]
@@ -254,7 +253,8 @@ The counting was checked with a copy of the task whose second variant removes th
 of 10 runs each, 7 and 8 were counted as zombies, and none with the reaping.
 A short run can show nothing:
 60 runs at sixteen at a time found no leftover process with either variant on 2026-10-05,
-while the measurements listed in "Measurements" used 600 runs each with a separate script and prebuilt binaries.
+while the measurements listed in "Measurements" used 600 or 150 runs each
+with a separate script and prebuilt binaries.
 
 The guard control removes the reaping call and expects a zombie from the test whose server must be killed:
 
@@ -265,49 +265,82 @@ mise run //package/desktop-app/ide:inspect:language-lifecycle-guards <target-cac
 
 ### Measurements
 
-All runs are `lifecycle::dropping_the_worker_leaves_no_child_process`, one test process per run.
+All runs are `lifecycle::dropping_the_worker_leaves_no_child_process` unless a line names another test,
+one test process per run, in one container bounded to two processors and 2 GiB.
 "Before" is the fixed 50 ms pause; "after" is the runtime drop followed by reaping for at most two seconds.
+The machine has 16 processors and was shared with other work throughout.
+Each line gives the load average and the ten-second "some" figure of `/proc/pressure/io`
+that were read when the measurement started;
+"not recorded" marks the measurements taken before those were read.
+A failed run is counted by what it left:
+a zombie (state `Z`),
+a process still running (state `D`),
+or neither (a server that was not ready within twenty seconds, or one that was killed before it read `shutdown`).
 
-Sixteen test processes at a time on two processors:
+#### Sixteen test processes at a time, before
 
-- Before: 34 of 600 runs failed in one measurement and 55 of 600 in another, every one with a zombie.
-  A measurement before these reported 1 of 600 and is discarded:
-  a quoting mistake in the measuring script made all 600 runs write the same log and the same failure marker
-  (`ide-language-verify-zombie-baseline-contended-0r07T4/runs/` holds one `.log` and one `.failed`),
-  so its count says only that at least one run failed.
-- After, in a probe build whose bound was ten seconds: 0 of 600 failed.
+- 34 of 600 failed, all with a zombie. Load not recorded.
+- 55 of 600 failed, all with a zombie. Load not recorded.
+- 53 of 600 failed: 29 zombies, 17 still running, 7 neither.
+  Load 85 and pressure 88 percent, read once while this measurement and the next "after" one ran.
+- 69 of 600 failed: 52 zombies, 16 still running, 1 neither. Load 21, pressure 1 percent.
+- 61 of 600 failed, all with a zombie. Load 97, pressure 6 percent.
+
+A measurement before these reported 1 of 600 and is discarded:
+a quoting mistake in the measuring script made all 600 runs write the same log and the same failure marker
+(`ide-language-verify-zombie-baseline-contended-0r07T4/runs/` holds one `.log` and one `.failed`),
+so its count says only that at least one run failed.
+
+#### Sixteen test processes at a time, after
+
+- 0 of 600 failed in a probe build whose bound was ten seconds. Load not recorded.
   Its 1200 shutdowns waited a median of 0 ms until no child was listed,
   more than 50 ms in 81 of them,
   more than one second in 3,
   and never more than 1457 ms, which is where the two seconds come from.
-- After, with the two seconds: 2 of 600 failed.
-  One left a zombie.
-  In the other the server had read only `initialize` when it was killed,
-  so the test's check that `shutdown` was received failed; that server was starved, not left behind.
+- 2 of 600 failed: 1 zombie, 1 neither. Load not recorded.
+- 71 of 600 failed: 24 zombies, 35 still running, 12 neither. Load 85, pressure 88 percent.
+- 0 of 600 failed. Load 46, pressure 17 percent.
+- 42 of 600 failed: 16 zombies, 4 still running, 22 neither. Load 69, pressure 39 percent.
+  This measurement took 359 s; the others at this level took 116 to 176 s.
+- `lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns`:
+  4 of 600 failed, all neither (four servers not ready in time, in runs active at the same moment).
+  Load 76, pressure 36 percent.
 
-The same sixteen at a time, later, with the machine under heavy input/output pressure from other work
-(`/proc/pressure/io` over ten seconds: some 88 percent, full 13.5 percent; load average 85 on 16 processors):
+#### Two test processes at a time, the test suite's own level
 
-- Before: 53 of 600 failed: 29 zombies, 17 still running in state `D`, 7 servers not ready within twenty seconds.
-- After: 71 of 600 failed: 24 zombies, 35 still running in state `D`, 12 servers not ready within twenty seconds.
+Before:
 
-The two "after" measurements differ from each other (2 and 71)
-by more than "after" differs from "before" in the later pair (71 and 53),
-so the later pair shows no difference between the variants.
-What it does show is the limit of a bounded wait:
-a killed process that stays in state `D` for longer than the bound ends after the worker thread is gone,
-and then nothing reaps it.
+- 0 of 150 failed. Pressure 14 percent, load not recorded.
+- 4 of 150 failed: 3 zombies, 1 still running. Pressure 59 percent, load not recorded.
+- 5 of 150 failed: 3 zombies, 2 still running. Load 58, pressure 37 percent.
+
+After:
+
+- 4 of 150 failed: 2 zombies, 2 still running. Pressure 54 percent, load not recorded.
+- 2 of 150 failed: 1 zombie, 1 still running. Pressure 50 percent, load not recorded.
+- 1 of 150 failed: neither. Load 56, pressure 57 percent.
+
+One at a time, before: 0 of 20 failed. Load not recorded.
+
+#### What the measurements show
+
+At sixteen at a time, "before" left zombies in every measurement, 29 to 61 of 600.
+"After" left 0 or 1 of 600 in three measurements,
+and 16 and 24 of 600 in the two measurements that also had processes still running and servers not ready in time.
+In those two, processes stalled for seconds,
+and a killed process that needs longer than the two seconds to end
+ends after the worker thread is gone, where nothing reaps it.
+That is the limit of any bounded wait.
+
+At two at a time the measurements differ from each other by as much as the variants do:
+zombies in 0, 3, and 3 of 150 runs before, and in 2, 1, and 0 after.
+No difference is shown at that level.
+
+Runs that left a process still running came in groups that were active at the same moment
+(runs 33 to 41 of one measurement, for example),
+which fits a stall of the whole container or machine and not something inside one run.
 What those processes waited for inside the kernel was not traced.
-
-Two test processes at a time, the test suite's own level, during the same period:
-
-- Before: 0 of 150, then 4 of 150 (3 zombies, 1 still running).
-- After: 4 of 150 (2 zombies, 2 still running), then 2 of 150 (1 zombie, 1 still running).
-
-That is 4 of 300 before and 6 of 300 after: no difference.
-The four failures of the first "after" measurement were two pairs of runs that were active at the same moment,
-which fits a stall of the whole machine and not something inside one run.
-One at a time, before: 0 of 20.
 
 ### Cases without a leftover process
 
@@ -320,7 +353,8 @@ One at a time, before: 0 of 20.
 
 - Before the change: the server ends more than 50 ms after the registry was dropped.
 - Before the change: the server had not answered `initialize`, and has not ended when the runtime is dropped.
-- After the change: the killed server needs more than two seconds to end.
+- After the change: the killed server needs more than two seconds to end,
+  which happened only in measurements where processes stalled for seconds.
 
 ### Cases with a process still running
 
@@ -355,7 +389,8 @@ Tradeoffs:
 - `/proc/thread-self/children` exists on Linux kernels built with `CONFIG_PROC_CHILDREN`.
   Without it the wait cannot see completion and uses the whole allowance.
 - A killed process that needs longer than the allowance to end still becomes a zombie.
-  Measured: 1 of 600 runs in one measurement, and 24 of 600 under heavy input/output pressure.
+  Measured: 0 or 1 of 600 runs in three measurements,
+  and 16 and 24 of 600 in two measurements in which processes stalled for seconds.
 
 ## What does not work
 
@@ -363,7 +398,7 @@ Tradeoffs:
   and no pause covers the server held by the `initialize` task.
 - Waiting inside the worker's own runtime before dropping it. See "A reading that was wrong".
 - A longer bounded wait alone.
-  Under heavy input/output pressure a killed process stayed in state `D` for more than five seconds.
+  In the measurements with stalls, a killed process stayed in state `D` for more than five seconds.
 - A runtime that parks without a timeout as a permanent reaper.
   This follows from `orphan.rs:92` and was not run:
   tokio starts listening for `SIGCHLD` only when a park returns while the queue is not empty,
@@ -422,6 +457,7 @@ Paths are inside `~/temp/agent/` on the investigating machine and are not kept i
 - `ide-language-verify-zombie-probe-bound10s-hnqbjk/` and `ide-language-verify-r1/reap-waits.txt`:
   the probe build with the ten-second bound and its 1200 reaping waits in milliseconds.
 - `ide-language-verify-r1/zombie-two.json`: the two-at-a-time measurements with the pressure figures at each start.
+- `ide-language-verify-r1/zombie-quiet.json`: the measurements that recorded load and pressure at each start.
 
 [tokio-2685]: https://github.com/tokio-rs/tokio/issues/2685
 [helix-4068]: https://github.com/helix-editor/helix/issues/4068
