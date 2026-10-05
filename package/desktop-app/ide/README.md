@@ -334,40 +334,67 @@ including reload,
 The headless core in `src/language` drives Helix's language-server client on one worker thread.
 It is not wired into the window yet.
 The native layer owns one `LanguageWorker`:
-it sends `open`, `reload`, `close`, `request`, and `request_hints` without waiting,
-and polls `try_take_status`, `try_take_reply`, `try_take_diagnostics`, and `try_take_hints` from a timer.
-Every result carries the file generation, content revision, and server process it answers;
+it sends `open`,
+ `reload`,
+ `close`,
+ `request`,
+ and `request_hints` without waiting,
+and polls `try_take_status`,
+ `try_take_reply`,
+ `try_take_diagnostics`,
+ and `try_take_hints` from a timer.
+Every result carries the file generation,
+ content revision,
+ and server process it answers;
 the handle drops results for anything no longer displayed.
-A command method returns `false` when the queue is full; send it again on the next poll.
-`enter_project_directory` must run once at startup, before any thread or Helix call,
+A command method returns `false` when the queue is full;
+ send it again on the next poll.
+`enter_project_directory` must run once at startup,
+ before any thread or Helix call,
 because Helix roots every server at the process working directory.
 
 The TypeScript family uses the project's own TypeScript 7 server (`node_modules/typescript/bin/tsc --lsp --stdio`);
 a project without it shows the missing-executable state.
 Server-initiated workspace edits are refused.
 Every server launch passes through one launch policy in `src/language/launch.rs`.
-The default, `src/language/confine.rs`, runs each server inside `/usr/bin/bwrap`
-with the whole file system read-only, no network, and a cleared environment plus an allowlist,
+The default,
+ `src/language/confine.rs`,
+ runs each server inside `/usr/bin/bwrap`
+with the whole file system read-only,
+ no network,
+ and a cleared environment plus an allowlist,
 following `doc/planning/slint-ide-write-confinement.md`.
 Each server writes only its private state,
 `$XDG_CACHE_HOME/monochromatic-ide/language/<project>-<hash>/<server>`,
-which also holds its private `/tmp`, caches, and cargo output.
+which also holds its private `/tmp`,
+ caches,
+ and cargo output.
 Without bubblewrap or user namespaces,
-or for a project below `/tmp`, `/run`, `/dev`, or `/proc`,
+or for a project below `/tmp`,
+ `/run`,
+ `/dev`,
+ or `/proc`,
 the server shows the launch-refused state with the cause and remedy;
 nothing falls back to an unconfined launch.
 `LanguageSetup::unconfined()` exists only for tests and guard controls on disposable projects.
 
 `test:language` runs the unit rules and sessions against the scripted server `ide-scripted-lsp`,
 one child process per session.
-`inspect:language` runs all five feature paths, a reload, and the stale-reply case
+`inspect:language` runs all five feature paths,
+ a reload,
+ and the stale-reply case
 against real confined TypeScript and Rust servers on disposable projects,
 and checks that the servers left each project tree unchanged.
 `inspect:language-confinement` runs the write-confinement acceptance tests:
-write, escape, and delegation probes from inside the server trees,
-the mount and environment audits, fail-closed cases,
+write,
+ escape,
+ and delegation probes from inside the server trees,
+the mount and environment audits,
+ fail-closed cases,
 and the same fixtures unconfined as the guard control.
-`inspect:language-guards` removes the fencing, readiness, and edit-refusal guards in a disposable copy
+`inspect:language-guards` removes the fencing,
+ readiness,
+ and edit-refusal guards in a disposable copy
 and checks that their named tests fail.
 
 ## Fonts and appearance
