@@ -239,16 +239,23 @@ export component AppWindow inherits Window {
                         height: selection.height * 1px;
                         background: Palette.selection-background;
                         // The active match is the selection plus a heavier boundary than other matches.
-                        border-width: root.selection-is-match ? 2px : 0px;
-                        border-color: Palette.foreground;
+                        // The boundary sits just outside the character cells so it never covers glyph stems.
+                        Rectangle {
+                            visible: root.selection-is-match;
+                            x: -2px;
+                            width: parent.width + 4px;
+                            height: parent.height;
+                            border-width: 2px;
+                            border-color: Palette.foreground;
+                        }
                     }
 
                     // Other matches: a translucent fill and a thin boundary, drawn over any selection beneath.
                     for found in root.source-matches: Rectangle {
-                        x: root.gutter-width + found.x * 1px;
-                        y: found.y * 1px;
-                        width: found.width * 1px;
-                        height: found.height * 1px;
+                        x: root.gutter-width + found.x * 1px - 1px;
+                        y: found.y * 1px + 1px;
+                        width: found.width * 1px + 2px;
+                        height: found.height * 1px - 2px;
                         background: Palette.foreground.with-alpha(0.14);
                         border-width: 1px;
                         border-color: Palette.foreground.with-alpha(0.7);

@@ -138,6 +138,20 @@ fn native_find_and_search_overlay_close_topmost_first() {
     key(window, Key::Escape);
     assert!(!window.get_search_open());
     assert!(!window.get_find_open());
+    // Escape reaches the bar from the tree as well, and focus then moves to the source.
+    chord(window, Key::Control, "f");
+    assert!(window.get_find_open());
+    window.invoke_focus_tree();
+    assert!(window.get_tree_has_focus());
+    key(window, Key::Escape);
+    assert!(
+        !window.get_find_open(),
+        "Escape from the tree did not close the find bar"
+    );
+    assert!(
+        !window.get_tree_has_focus() && !window.get_find_has_focus(),
+        "closing the find bar did not move keyboard focus to the source"
+    );
     window.hide().expect("close overlay window");
 }
 
@@ -154,9 +168,20 @@ fn native_find_reports_refused_text_and_clears_for_empty_text() {
         window.get_tree_has_focus(),
         "dismissing a closed find bar moved keyboard focus"
     );
-    window.invoke_focus_source();
-    window.invoke_find_edited("needle".into());
+    window.set_source_available(false);
     chord(window, Key::Control, "f");
+    assert!(
+        !window.get_find_open(),
+        "Ctrl+F opened the find bar without a displayed file"
+    );
+    window.set_source_available(true);
+    window.invoke_find_edited("needle".into());
+    // The same shortcut from the tree is the positive control for the ignored one.
+    chord(window, Key::Control, "f");
+    assert!(
+        window.get_find_open() && window.get_find_has_focus(),
+        "Ctrl+F from the tree did not open and focus the find bar"
+    );
     settle();
     assert_eq!(
         selection(&reader),

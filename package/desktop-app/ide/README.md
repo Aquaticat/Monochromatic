@@ -20,9 +20,9 @@ and the next implementation action.
   and recent-file reveal.
   Sidebar resizing and event-driven directory invalidation remain parity work.
 - [x] Combined path/content search.
-- [ ] In-file find.
-  Browser reference semantics are measured and traced to ICU collation search;
-  matcher vetting is next.
+- [x] In-file find.
+  Plain literal, case-insensitive matching with a transient find bar;
+  see [In-file find](#in-file-find).
 - [ ] Required language-intelligence feature paths.
 - [ ] Measured Helix-supported language inventory and private server state.
 - [ ] Native interaction tests and behavior-difference documentation.
@@ -75,12 +75,168 @@ and archive decompression are disabled.
 Canonical scope validation is not an OS-enforced filesystem sandbox.
 Native dark/light input and clipboard probes verify result opening and content-line navigation.
 Headless tests cover late replies, close cancellation, pending-open focus, and result-model pointer lifetime.
-In-file find is not implemented yet.
-Its reference behavior is Chrome's find-in-page, which editord delegates to the browser.
-Measured semantics and the pinned Chromium source trace are in
-[the find matching plan][find-matching];
-the incumbent regex differs on 13 of 29 captured cases,
-so the matcher is still being vetted.
+
+## In-file find
+
+Ctrl+F opens a find bar under the source view and focuses its input with the previous find text selected.
+The bar exists only while finding;
+it has no previous, next, or close buttons,
+because Enter, Shift+Enter, and Escape cover those actions for a bar that only the keyboard can open.
+Matching is incremental while typing.
+Enter selects the next match and Shift+Enter the previous one,
+wrapping at the ends of the file.
+Escape closes the bar,
+removes the highlights,
+and returns focus to the source view.
+
+The bar shows the active match and the total as `3/17`,
+`0/17` when the selection is not on a match,
+`No matches` in a heavier weight when nothing matches,
+and a trailing `+` when the match list was cut off at its bound.
+Accessibility tools get the same state as a sentence,
+for example `Match 3 of 17`,
+both as the find input's description and as a text element.
+The bar uses the `search` role with the label `Find in file`.
+
+### Find matching
+
+Matching is plain:
+the find text is compared literally,
+ignoring case,
+against the whole file.
+Regular-expression punctuation has no special meaning,
+and empty find text matches nothing.
+Case folding is the Unicode simple case folding of the `regex` crate that Helix reexports;
+no dependency was added.
+Matching lives in one function,
+`find_matches` in `src/find.rs`,
+so its semantics can be replaced in one place.
+Matches are ranges of source character positions,
+the same unit as selection and copying.
+
+### Deliberate differences from editord
+
+editord delegates Ctrl+F to Chrome's find-in-page,
+which matches through ICU collation search;
+the measured semantics are in [the find matching plan][find-matching].
+The user decided on 2026-10-05 not to reproduce that folding.
+`tests/find_reference.rs` runs the production matcher against the captured Chrome 149.0.7827.54 corpus
+in `tests/fixture/browser-find.json` and pins the exact set of differing cases,
+so an accidental change of matching behavior fails the suite:
+
+- `canonical-accent` and `plain-accent`:
+  composed, decomposed, and unaccented letters do not match each other.
+- `case-expansion`:
+  `STRASSE` does not match `Straße`.
+- `compatibility-ligature`:
+  `office` does not match `oﬃce`.
+- `dotted-i`:
+  `i` does not match `İ`.
+- `nbsp-as-space`:
+  an ordinary space does not match a no-break space.
+- `kana-script`, `kana-width`, and `kana-composed`:
+  kana script, width, and voicing marks are not folded.
+- `single-quote` and `double-quote`:
+  straight quotes do not match curly quotes.
+- `soft-hyphen`:
+  a soft hyphen inside a word is not ignored.
+- `combining-mark-only`:
+  a lone combining mark matches wherever the file contains it.
+
+The interaction also differs from the browser bar:
+the bar sits under the source view and never covers source text,
+it has no buttons,
+and the active match is the reading selection while the bar is still open.
+
+### Find behavior decisions
+
+- The active match is the reading selection.
+  Typing, Enter, and Shift+Enter set the selection to a match,
+  so Ctrl+C in the source view copies its original text
+  and the last active match stays selected after Escape.
+  A selection that is not exactly one match leaves no active match.
+- Typing selects the first match at or after the selection start,
+  so extending the find text keeps the current match while it still matches.
+  Enter continues after the selection end;
+  Shift+Enter continues before the selection start.
+- Only typing, Enter, and Shift+Enter move the selection.
+  Reopening the bar,
+  an external reload,
+  and a file switch recompute the highlights and the count without moving it.
+- Enter and Shift+Enter do nothing until matches for the displayed file,
+  its current revision,
+  and the current find text have arrived.
+- After an external reload the selection follows Helix correspondence like any other selection.
+  The active match stays active while its text survives;
+  otherwise the count shows no active match,
+  and the selection does not jump to another occurrence.
+  Highlights for the old revision are hidden until matches for the new one arrive.
+- Switching files while the bar is open,
+  through the tree,
+  a search result,
+  or Ctrl+0 to Ctrl+9,
+  keeps the bar open and recomputes matches for the new file.
+  The find input keeps keyboard focus when it had it,
+  and Ctrl+0 to Ctrl+9 work from the find input.
+- Ctrl+F is ignored while the combined search overlay is open and while no file is displayed.
+  Double-Shift opens combined search above an open find bar.
+  Escape closes only the topmost surface:
+  the overlay first,
+  then the bar.
+- Escape closes the bar from the tree and the source view as well as from the find input,
+  and always moves focus to the source view.
+- Empty find text clears the highlights and the count without reporting `No matches`.
+- Revealing a match keeps the scroll offsets when the match is already visible.
+  Otherwise its line is centered,
+  and a column outside the view is placed 48 px from the left edge of the text.
+  The offsets are assigned directly, without easing.
+- The find text is one line;
+  the toolkit input replaces pasted line breaks with spaces.
+- The find input is the toolkit `LineEdit`,
+  as in combined search,
+  including its built-in clear icon while it has focus and text.
+
+### Find painting
+
+Match rectangles come from the same shaped rows as selection rectangles (`ShapedView::range`),
+so marking a match never reshapes text and ligatures stay intact.
+Each state uses two visible channels:
+
+- another match has a translucent fill in the foreground color and a 1 px boundary;
+- the active match has the selection background and selection ink and a 2 px boundary;
+- a selection that is not a match has the selection colors without a boundary.
+
+Other matches are drawn over a selection,
+so they stay visible inside a larger selection such as select-all.
+Match ranges are part of the frame stamp:
+a different match list repaints the visible source tile once,
+even though only the native rectangles read the matches.
+
+### Find bounds
+
+- Find text is limited to 1,000 characters;
+  longer text shows a diagnostic in the bar.
+- Files up to 64 MiB are searched,
+  because the worker copies the source into one contiguous string for the scan;
+  a larger file shows a diagnostic.
+- At most 10,000 matches are retained (160 kB per list);
+  the count then ends in `+`,
+  and navigation wraps within the retained matches.
+- One background job runs at a time on the `ide-in-file-find` thread,
+  with at most one waiting request.
+  A newer request replaces the waiting one;
+  a running scan is not interrupted,
+  but its reply is discarded.
+- Requests and replies carry the file-open generation,
+  the content revision,
+  and the query generation;
+  a reply that differs in any of them is discarded.
+- Only matches inside the materialized rows and the horizontal raster tile become native rectangles.
+
+`test:find` covers the matcher, navigation, worker, painting, and the pinned browser differences.
+`test:native` drives the bar through real window key events,
+including reload, file switch, and the search overlay.
+`inspect:find-guards` removes each guard in a disposable copy and checks that its named test fails.
 
 ## Fonts and appearance
 

@@ -68,9 +68,14 @@ const cases = [
   { name: 'closed-bar-edit', file: 'src/native/find/session.rs', before: 'if !find.open {', after: 'if false {', native: true, test: 'native_find_reports_refused_text_and_clears_for_empty_text', failure: 'an edit reached the closed find bar' },
   { name: 'closed-bar-dismiss', file: 'src/native/find/session.rs', before: 'if !find.open {', after: 'if false {', occurrence: 1, native: true, test: 'native_find_reports_refused_text_and_clears_for_empty_text', failure: 'dismissing a closed find bar moved keyboard focus' },
   { name: 'find-input-focus', file: 'src/native/navigation/open.rs', before: 'if window.get_find_has_focus() {', after: 'if false {', native: true, test: 'native_find_recomputes_for_a_switched_file_and_keeps_input_focus', failure: 'a file open moved keyboard focus out of the find input' },
+  { name: 'no-file-ignored', file: 'src/native/find/session.rs', before: 'if !window.get_source_available() {', after: 'if false {', native: true, test: 'native_find_reports_refused_text_and_clears_for_empty_text', failure: 'Ctrl+F opened the find bar without a displayed file' },
   { name: 'search-overlay-modal', file: 'src/native/find/session.rs', before: 'if window.get_search_open() {', after: 'if false {', native: true, test: 'native_find_and_search_overlay_close_topmost_first', failure: 'Ctrl+F took keyboard focus from the modal search overlay' },
   { name: 'escape-topmost', file: 'ui/app.slint', before: 'root.find-open && !root.search-open {', after: 'root.find-open {', native: true, test: 'native_find_and_search_overlay_close_topmost_first', failure: 'Escape did not close the topmost search overlay' },
 ];
+// An optional comma-separated list reruns only the named guards, for example after adding one.
+const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
+const selected = only ? cases.filter(item => only.has(item.name)) : cases;
+if (only && selected.length !== only.size) throw new Error('Unknown guard name in: ' + process.env.usage_only);
 const results = [];
 const baselined = new Set();
 const run = (item, phase) => {
@@ -96,7 +101,7 @@ const run = (item, phase) => {
   if (!accepted) throw new Error('Unexpected ' + phase + ' result for ' + item.name + '; inspect ' + artifact);
   console.log(JSON.stringify(results.at(-1)));
 };
-for (const item of cases) {
+for (const item of selected) {
   // A restored run of an earlier case is already this test's unmodified baseline.
   if (!baselined.has(item.test)) {
     run(item, 'baseline');
@@ -112,4 +117,4 @@ for (const item of cases) {
   } finally { writeFileSync(path, original); }
   run(item, 'restored');
 }
-console.log('Find guard controls passed: ' + artifact + ' (' + cases.length + ' guards)');
+console.log('Find guard controls passed: ' + artifact + ' (' + selected.length + ' of ' + cases.length + ' guards)');

@@ -262,6 +262,7 @@ description = "Remove in-file find guards only in a disposable copy and observe 
 usage = '''
 arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
 run = "node bin/inspect-find-guards.mjs"
 
