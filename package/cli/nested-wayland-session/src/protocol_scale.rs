@@ -60,17 +60,18 @@ pub(super) fn parse(tokens: &mut std::str::SplitWhitespace) -> Result<Command, S
         return Err("scale takes exactly one value, such as 1, 1.25, or 2".to_string());
     }
 
-    // What:     `match` branches on the shared parser's `Result`. `Ok(scale)` binds the value
-    //           and wraps it in the command; `Err(message)` passes the parser's message on,
-    //           which already names the scale and the accepted range.
+    // What:     `?` unwraps the shared parser's `Ok(scale)`, or returns its `Err(message)`
+    //           from this function unchanged; that message already names the scale and the
+    //           accepted range.
     // Why:      One parser keeps startup and runtime values identical.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return { kind: "scale", scale: OutputScale.parse(text) };
+    // const scale = OutputScale.parse(text); // throws the parser's message
     // ```
-    match OutputScale::parse(text) {
-        Ok(scale) => return Ok(Command::Scale(scale)),
-        Err(message) => return Err(message),
-    }
+    let scale = OutputScale::parse(text)?;
+
+    // What:     `Ok(Command::Scale(scale))` wraps the value in the command, then in success.
+    // Why:      Hand the typed request to the control dispatcher.
+    return Ok(Command::Scale(scale));
 }

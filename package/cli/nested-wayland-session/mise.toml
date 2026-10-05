@@ -503,6 +503,203 @@ assert.equal(code, 0, 'the inner session did not keep its client current while i
 console.log('Hosted client stays current while the parent compositor withholds frame callbacks')
 '''
 
+[tasks."inspect:scale"]
+description = "Verify --scale and the runtime scale command with a Slint client: reported scale, protocol events, screenshot size, rendered geometry, and click coordinates"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdtempSync, mkdirSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { default: assert } = await import('node:assert/strict')
+// Runs inside the nested session as the hosted command.
+const client = async () => {
+{{vars.slint_scheme_probe}}
+  const [socketPath, evidence, phase] = process.argv.slice(1)
+  const logical = phase === 'runtime' ? { width: 640, height: 360 } : { width: 400, height: 300 }
+  // The scene reports the scale Slint applies (one logical pixel in physical pixels), its logical
+  // size, and every click position in logical pixels. The top-left quadrant is yellow on blue.
+  // slint-viewer attaches --on handlers after `init` runs, so a one-shot timer reports the start.
+  const scene = join(evidence, 'scale-scene.slint')
+  writeFileSync(scene, [
+    'export component Scene inherits Window {',
+    '    callback scale-seen(float);',
+    '    callback size-seen(float, float);',
+    '    callback clicked-at(float, float);',
+    '    property <float> scale: 1px / 1phx;',
+    '    Timer {',
+    '        interval: 50ms;',
+    '        triggered => { root.scale-seen(root.scale); root.size-seen(root.width / 1px, root.height / 1px); self.running = false; }',
+    '    }',
+    '    changed scale => { root.scale-seen(root.scale); }',
+    '    changed width => { root.size-seen(root.width / 1px, root.height / 1px); }',
+    '    changed height => { root.size-seen(root.width / 1px, root.height / 1px); }',
+    '    background: #204060;',
+    '    Rectangle { x: 0px; y: 0px; width: root.width / 2; height: root.height / 2; background: #e0c040; }',
+    '    TouchArea { clicked => { root.clicked-at(self.mouse-x / 1px, self.mouse-y / 1px); } }',
+    '}',
+    '',
+  ].join('\n'))
+  // WAYLAND_DEBUG makes the client's Wayland library print every event it receives on stderr.
+  const viewer = spawn('slint-viewer', [
+    '--on', 'scale-seen', 'echo scale-seen $1',
+    '--on', 'size-seen', 'echo size-seen $1 $2',
+    '--on', 'clicked-at', 'echo clicked-at $1 $2',
+    scene,
+  ], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, WAYLAND_DEBUG: 'client' } })
+  const output = []
+  const protocol = []
+  viewer.stdout.on('data', chunk => output.push(chunk))
+  viewer.stderr.on('data', chunk => protocol.push(chunk))
+  const reported = kind => Buffer.concat(output).toString().split('\n')
+    .filter(line => line.startsWith(kind + ' ')).map(line => line.slice(kind.length + 1).split(' ').map(Number))
+  const scales = () => reported('scale-seen').map(values => values[0])
+  const clicks = () => reported('clicked-at')
+  const events = pattern => [...Buffer.concat(protocol).toString().matchAll(pattern)].map(match => Number(match[1]))
+  // Consecutive duplicates collapse, so the sequences read as changes.
+  const changes = values => values.filter((value, index) => index === 0 || values[index - 1] !== value)
+  const near = (actual, expected) => Math.abs(actual - expected) < 0.01
+  // PNG stores width and height as big-endian words at bytes 16 and 20.
+  const pngSize = name => {
+    const bytes = readFileSync(join(evidence, name + '.png'))
+    return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)]
+  }
+  // The green channel of a few points in the last frame of a short BMP recording.
+  const greens = async (name, points) => {
+    const directory = join(evidence, 'frames-' + name)
+    mkdirSync(directory)
+    assert.equal(await control(socketPath, 'record ' + directory + ' 20 bmp'), 'ok')
+    await wait(400)
+    assert.match(await control(socketPath, 'record stop'), /^ok captured=/)
+    const bytes = readFileSync(join(directory, readdirSync(directory).sort().at(-1)))
+    const offset = bytes.readUInt32LE(10)
+    const width = bytes.readInt32LE(18)
+    const height = bytes.readInt32LE(22)
+    assert.equal(bytes.readUInt16LE(28), 32, 'recorded frames are 32-bit')
+    // A positive height stores rows bottom-up; the green byte is second in either channel order.
+    return points.map(([x, y]) => {
+      const row = height > 0 ? height - 1 - y : y
+      return bytes[offset + (row * width + x) * 4 + 1]
+    })
+  }
+  // Physical size the protocol prescribes: logical size times scale, rounded half away from zero.
+  const physical = scale => [Math.round(logical.width * scale), Math.round(logical.height * scale)]
+  // Checks one scale: client report, framebuffer size, client geometry, and click mapping.
+  const check = async (scale, name) => {
+    await until('Slint to apply scale ' + scale, () => near(scales().at(-1) ?? 0, scale))
+    await wait(settle)
+    await screenshot(socketPath, evidence, name)
+    const [width, height] = pngSize(name)
+    const [expectedWidth, expectedHeight] = physical(scale)
+    // The parent may round the window up by less than its own scale, never down.
+    assert(width >= expectedWidth && width <= expectedWidth + 3, name + ' width ' + width + ' for ' + expectedWidth)
+    assert(height >= expectedHeight && height <= expectedHeight + 3, name + ' height ' + height + ' for ' + expectedHeight)
+    // The yellow quadrant must end at half the physical size, and blue must reach the far corner.
+    const halfX = Math.round(expectedWidth / 2)
+    const halfY = Math.round(expectedHeight / 2)
+    const [insideYellow, outsideYellow, farCorner] = await greens(name, [
+      [halfX - 3, halfY - 3], [halfX + 3, halfY + 3], [expectedWidth - 3, expectedHeight - 3],
+    ])
+    assert(insideYellow > 150, name + ': yellow quadrant green ' + insideYellow)
+    assert(outsideYellow > 50 && outsideYellow < 90, name + ': blue past the quadrant green ' + outsideYellow)
+    assert(farCorner > 50 && farCorner < 90, name + ': blue at the far corner green ' + farCorner)
+    // Logical clicks land on the same logical point at every scale.
+    for (const [x, y] of [[500, 300], [100, 50]].filter(([x, y]) => x < logical.width && y < logical.height)) {
+      const before = clicks().length
+      assert.equal(await control(socketPath, 'click ' + x + ' ' + y), 'ok')
+      await until('the click at ' + x + ',' + y, () => clicks().length === before + 1)
+      const [seenX, seenY] = clicks().at(-1)
+      assert(Math.abs(seenX - x) <= 0.5 && Math.abs(seenY - y) <= 0.5, name + ': click ' + x + ',' + y + ' seen at ' + seenX + ',' + seenY)
+    }
+    console.log('scale ' + scale + ': client reports ' + scales().at(-1) + ', screenshot ' + width + 'x' + height
+      + ', quadrant greens ' + insideYellow + '/' + outsideYellow + '/' + farCorner)
+  }
+  const empty = await screenshot(socketPath, evidence, 'empty')
+  try {
+    await until('Slint to report its first scale', () => scales().length > 0)
+    await firstFrame(socketPath, evidence, empty)
+    if (phase === 'runtime') {
+      await check(1, 'scale-1')
+      // The scene's startup timer may report before the first configure, so only reports that
+      // arrive after this point count; any of them would be a resize.
+      const sizesBefore = reported('size-seen').length
+      assert.deepEqual(reported('size-seen').at(-1), [logical.width, logical.height])
+      // Negative control: the scale already applied changes nothing.
+      assert.equal(await control(socketPath, 'scale 1'), 'ok unchanged')
+      for (const [scale, name] of [[2, 'scale-2'], [1.25, 'scale-1.25'], [1.5, 'scale-1.5'], [1, 'scale-1-again']]) {
+        assert.equal(await control(socketPath, 'scale ' + scale), 'ok changed')
+        await check(scale, name)
+      }
+      assert.match(await control(socketPath, 'scale 1.333'), /^err scale must be a whole number of 120ths/)
+      assert.match(await control(socketPath, 'scale'), /^err scale requires a value/)
+      // A switch changes only the scale: the client reported no new logical size across four switches.
+      assert.deepEqual(reported('size-seen').slice(sizesBefore), [], 'a scale switch resized the client')
+      // Positive control for that size detector, and resize at a scale other than 1: the logical
+      // size changes at once and the framebuffer follows at the current scale.
+      assert.equal(await control(socketPath, 'scale 2'), 'ok changed')
+      await check(2, 'scale-2-again')
+      logical.width = 600
+      logical.height = 340
+      assert.equal(await control(socketPath, 'resize 600 340'), 'ok')
+      await until('the client to report the new logical size', () => String(reported('size-seen').at(-1)) === '600,340')
+      await check(2, 'resized-at-2')
+      assert.deepEqual(changes(scales()), [1, 2, 1.25, 1.5, 1, 2])
+    } else {
+      // Started with --scale 1.5, the client never draws at scale 1.
+      assert.deepEqual(changes(scales()), [1.5])
+      await check(1.5, 'startup-1.5')
+    }
+  } finally {
+    viewer.kill()
+    if (viewer.exitCode === null && viewer.signalCode === null) await once(viewer, 'exit')
+  }
+  // What the client was told, from its own protocol log.
+  const log = Buffer.concat(protocol).toString()
+  writeFileSync(join(evidence, phase + '-client-protocol.log'), log)
+  writeFileSync(join(evidence, phase + '-client-reports.log'), Buffer.concat(output).toString())
+  const preferred = changes(events(/wp_fractional_scale_v1[@#]\d+\.preferred_scale\((\d+)\)/g))
+  const outputScales = changes(events(/wl_output[@#]\d+\.scale\((-?\d+)\)/g))
+  const destinations = events(/wp_viewport[@#]\d+\.set_destination\((\d+), \d+\)/g)
+  console.log(phase + ': preferred_scale ' + preferred.join(' -> ') + '; wl_output.scale ' + outputScales.join(' -> ')
+    + '; viewport widths ' + [...new Set(destinations)].join(', '))
+  if (phase === 'runtime') {
+    assert.deepEqual(preferred, [120, 240, 150, 180, 120, 240])
+    assert.deepEqual(outputScales, [1, 2, 1, 2])
+  } else {
+    assert.deepEqual(preferred, [180])
+    assert.deepEqual(outputScales, [2])
+  }
+  // The client sized its window in logical pixels through the viewport, never in physical pixels.
+  // A cursor surface may set its own small viewport, so widths under 100 are not window widths.
+  const windowWidths = phase === 'runtime' ? [640, 600] : [400]
+  assert(windowWidths.every(width => destinations.includes(width)), 'viewport widths ' + destinations)
+  assert(destinations.every(width => width < 100 || windowWidths.includes(width)),
+    'a viewport was sized in physical pixels: ' + destinations)
+  const other = log.split('\n').filter(line => line.trim() !== '' && !line.startsWith('['))
+  console.log(phase + ': client stderr besides the protocol log: ' + (other.length === 0 ? 'none' : other.join(' | ')))
+}
+const binary = './target/release/monochromatic-nested-wayland-session'
+const evidence = mkdtempSync(join(tmpdir(), 'nested-scale-'))
+const host = async (phase, options) => {
+  const directory = join(evidence, phase)
+  mkdirSync(directory)
+  const socketPath = join(directory, 'control.sock')
+  const session = spawn(binary, [...options, '--socket', socketPath, '--color-scheme', 'dark', '--',
+    'node', '--input-type=module', '-e', 'await (' + client.toString() + ')()', '--', socketPath, directory, phase,
+  ], { stdio: 'inherit' })
+  const [code] = await once(session, 'exit')
+  assert.equal(code, 0, phase + ' scale client failed')
+}
+try {
+  await host('runtime', ['--size', '640x360'])
+  await host('startup', ['--size', '400x300', '--scale', '1.5'])
+} finally {
+  console.log('Evidence: ' + evidence)
+}
+console.log('Nested output scale verified at startup and at runtime')
+'''
+
 [tasks."run:built"]
 description = "Run the already-built release compositor without rebuilding"
 run = "./target/release/monochromatic-nested-wayland-session"
