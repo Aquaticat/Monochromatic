@@ -234,6 +234,19 @@ The next diagnostic observes startup without app launches,
 settings writes or touches for a bounded interval,
 then retains that same live guest for recovery and acquisition rather
 than automatically introducing another cold start.
+The no-input observation retained 23 samples through guest uptime
+`135.65` seconds.
+It began with launcher focus and no `am_anr` record,
+then recorded `com.android.systemui` executing
+`.keyguard.KeyguardService` after `20023ms`,
+plus startup/broadcast failures in other image packages.
+The System UI ANR window subsequently owned focus.
+No debug-app launch,
+settings write or touch was issued during that interval.
+That separates this observed startup failure from feedback scene changes;
+it does not identify the resource or library responsible.
+Recovery now targets the observed window on the same retained guest.
+
 The native-container bridge is ADB touch;
 the optional gRPC helper is not used because its Python dependency is
 absent in this image.
