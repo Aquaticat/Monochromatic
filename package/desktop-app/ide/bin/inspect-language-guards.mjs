@@ -44,6 +44,9 @@ const cases = [
   { name: 'readiness-gate', file: 'src/language/session.rs', before: '.filter(|client| return client.is_initialized());', after: ';', integration: 'language', test: 'start::request_before_initialize_is_answered_starting_and_nothing_is_sent', failure: 'Language support stopped unexpectedly' },
   // Refusal of server-initiated edits, as a pure policy and through the scripted server's own request.
   { name: 'edit-refusal', file: 'src/language/incoming.rs', before: 'json!({ "applied": false, "failureReason": EDIT_REFUSAL })', after: 'json!({ "applied": true })', test: 'language::incoming::tests::workspace_edit_is_refused_with_a_normal_result', failure: 'a server-initiated workspace edit was not refused' },
+  // Embedder workarounds for helix-lsp behavior recorded in doc/troubleshooting/helix-lsp-embedding-roots-and-stop.md.
+  { name: 'root-spelling', file: 'src/language/root.rs', before: 'Ok(below) => self.helix.join(below),', after: 'Ok(_) => path.to_path_buf(),', integration: 'language', test: 'roots::project_reached_through_a_linked_working_directory_is_rooted_at_the_project', failure: 'the server was not rooted at the project reached through the linked working directory' },
+  { name: 'stop-tombstone', file: 'src/language/attach.rs', before: 'worker.registry.remove_by_id(client.id());', after: 'worker.registry.stop(client.name());', integration: 'language', test: 'lifecycle::crash_fails_the_pending_request_and_the_next_open_restarts', failure: 'an exited server could not be started again' },
   { name: 'edit-refusal-worker', file: 'src/language/incoming.rs', before: 'json!({ "applied": false, "failureReason": EDIT_REFUSAL })', after: 'json!({ "applied": true })', integration: 'language', test: 'policy::server_requests_get_policy_replies_and_edits_change_nothing', failure: 'a server-initiated workspace edit was not refused' },
 ];
 // An optional comma-separated list reruns only the named guards.

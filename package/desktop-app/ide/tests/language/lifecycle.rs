@@ -55,7 +55,11 @@ fn crash_fails_the_pending_request_and_the_next_open_restarts() {
     let after_exit = probe.request(RequestKind::Definition, 1);
     // An explicit request starts the server again; this request is answered by the starting state.
     let restarted = probe.answers(after_exit);
-    assert_eq!(restarted[0].outcome, RequestOutcome::Starting);
+    assert_eq!(
+        restarted[0].outcome,
+        RequestOutcome::Starting,
+        "an exited server could not be started again"
+    );
     assert_eq!(
         restarted[0]
             .server

@@ -196,7 +196,8 @@ fn project_reached_through_a_linked_working_directory_is_rooted_at_the_project()
     let lines = support::server_text_until(&root, "alpha\nbeta\ngamma line\n");
     assert_eq!(
         initialize(&lines)["params"]["rootUri"],
-        format!("file://{}", spelled.display()).as_str()
+        format!("file://{}", spelled.display()).as_str(),
+        "the server was not rooted at the project reached through the linked working directory"
     );
     let opened = lines
         .iter()
