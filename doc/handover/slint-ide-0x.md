@@ -218,9 +218,9 @@ Completed in this fan-out:
   Open items from it:
   the toolkit `LineEdit` clear icon shows in the find input,
   as it does in the search overlay;
-  every accepted match list repaints the source tile;
-  the compositor `screenshot` command returned stale frames while the host session was locked
-  (`doc/troubleshooting/nested-wayland-screenshot-stale-frame.md`).
+  every accepted match list repaints the source tile.
+  The stale compositor `screenshot` frames it reported are fixed;
+  see the runtime color-scheme entry in this list.
 - Measured Helix runtime language coverage,
   cherry-picked onto `main` as `953753833` through `9cc81b5f7`.
   The runtime ships 27 grammars for 22 of the 23 `tokei`-measured languages
@@ -245,6 +245,39 @@ Completed in this fan-out:
   `file` targets outside the project root open read-only;
   `didSave` follows an external reload when the server asks for it.
   The TypeScript choice was reported to the user as open to veto.
+- Runtime color-scheme switching in the nested compositor,
+  commits `96f8adc2a` through `8da338a3e` on `main`.
+  The control socket accepts `color-scheme dark|light`;
+  it answers `ok changed` after replacing the served value and emitting
+  `org.freedesktop.portal.Settings.SettingChanged` with body `ssv`
+  from the connection that owns `org.freedesktop.portal.Desktop` on the private bus,
+  `ok unchanged` without a signal,
+  and an error when the session has no private portal.
+  It never falls back to another bus.
+  Slint 1.18.1's winit backend ignores the signal from any other sender or with a `u` body
+  (`doc/troubleshooting/slint-nested-color-scheme-portal.md`).
+  `inspect:color-scheme` in that package showed a `slint-viewer` scene follow dark,
+  light,
+  dark,
+  light live.
+  The same leg traced and fixed the stale `screenshot` frames:
+  while the parent compositor stops presenting,
+  for example with the host session locked,
+  the hosted client received no frame callbacks;
+  `src/frame_pacing.rs` now paces it from a timer
+  (`doc/troubleshooting/nested-wayland-screenshot-stale-frame.md`).
+  The package passes 56 tests,
+  lint,
+  and Clippy.
+  Read-only analysis found no IDE change needed for a live switch:
+  `ui/app.slint` calls `theme-changed` when `dark-scheme` changes,
+  and `src/source_frame.rs` includes the colors in the frame stamp.
+  Not yet verified:
+  the IDE under a live switch,
+  a headless theme-change test,
+  and a possible frame with the new palette over the old source image.
+  The compositor has no runtime output scaling,
+  so physical-output DPI migration is covered only by the headless scale-factor test.
 
 Known constraints from the spike that the native wiring must honor:
 `Registry` derives the LSP root from the process working directory;
@@ -283,7 +316,10 @@ Queue after the in-flight work:
    unless an existing dependency already provides file watching,
    per the proportionality rule.
 3. IDE reaction to a live system-theme change,
-   verified in the nested compositor.
+   verified in the nested compositor with `color-scheme light` and `color-scheme dark` on the control socket,
+   plus a headless theme-change test.
+   Scheduled after the sidebar and source-key branches land,
+   because the source-key branch changes selection ink.
 4. Remaining source-view keyboard navigation,
    tab-width parity,
    and the final package gates.
@@ -439,6 +475,8 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
 - [ ] Enforce subprocess project-write confinement.
 - [ ] Verify light mode and live system-theme changes using the private portal,
   not host KDE settings.
+  The nested compositor can now switch the private preference at runtime;
+  the IDE-side check remains.
 - [ ] Finish scoped formatting,
   Rust documentation/line budgets,
   Clippy,
@@ -1064,8 +1102,9 @@ Native fontconfig resolves both absent primary families to Adwaita Mono external
 while the app retains its embedded faces.
 
 Read [the private theme-portal investigation][theme].
-The compositor supports startup `--color-scheme dark|light` on a private D-Bus session.
-Live theme-switch signaling still needs investigation and verification.
+The compositor supports startup `--color-scheme dark|light` on a private D-Bus session,
+and since 2026-10-05 the runtime control command `color-scheme dark|light`.
+The IDE's reaction to a live switch is not yet verified.
 
 ## Helix and behavioral references
 
