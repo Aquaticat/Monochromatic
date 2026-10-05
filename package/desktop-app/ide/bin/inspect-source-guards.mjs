@@ -70,9 +70,9 @@ const cases = [
   { name: 'caret-room', file: 'src/native/render.rs', before: 'row.layout.full_width() / factor + CARET_ROOM', after: 'row.layout.full_width() / factor', native: true, test: 'view_follows_the_caret_with_the_smallest_scroll', failure: 'End on a long line must show the whole caret' },
   { name: 'mouse-drag-selects', file: 'ui/app.slint', before: '                    mouse-drag-pan-enabled: false;\n', after: '', native: true, test: 'drag_selects_text_by_characters_and_by_words_without_panning', failure: equality },
   { name: 'left-button-only', file: 'ui/app.slint', before: '                            if !self.pressed { return; }\n', after: '', native: true, test: 'drag_selects_text_by_characters_and_by_words_without_panning', failure: 'a drag with the middle button changed the selection' },
-  { name: 'observer-scope-not-a-stop', file: 'ui/app.slint', before: '        focus-on-tab-navigation: false;\n', after: '', native: true, test: 'tab_alternates_between_tree_and_source_while_find_is_closed', failure: 'Tab must cycle tree and source only' },
+  { name: 'observer-scope-not-a-stop', file: 'ui/app.slint', before: '        focus-on-tab-navigation: false;\n', after: '', native: true, test: 'tab_cycles_tree_divider_and_source_while_find_is_closed', failure: 'Tab must cycle tree, divider, and source only' },
   { name: 'find-scope-not-a-stop', file: 'ui/find.slint', before: '        focus-on-tab-navigation: false;\n', after: '', native: true, test: 'tab_visits_tree_source_and_open_find_bar_in_reading_order', failure: 'Tab order with an open find bar' },
-  { name: 'back-tab-leaves-source', file: 'ui/app.slint', before: ' || event.text == Key.Backtab', after: '', native: true, test: 'tab_alternates_between_tree_and_source_while_find_is_closed', failure: 'the dedicated back-tab key did not leave the source view' },
+  { name: 'back-tab-leaves-source', file: 'ui/app.slint', before: ' || event.text == Key.Backtab', after: '', native: true, test: 'tab_cycles_tree_divider_and_source_while_find_is_closed', failure: 'the dedicated back-tab key did not leave the source view' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;

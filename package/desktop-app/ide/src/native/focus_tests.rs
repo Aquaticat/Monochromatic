@@ -32,6 +32,9 @@ fn focused(window: &AppWindow) -> &'static str {
     if window.get_find_has_focus() {
         return "find";
     }
+    if window.get_sidebar_divider_has_focus() {
+        return "divider";
+    }
     return "none";
 }
 
@@ -62,9 +65,9 @@ fn shift_tab(window: &AppWindow, count: usize) -> Vec<&'static str> {
     return seen;
 }
 
-/// Without a find bar the only stops are the tree and the source view, in both directions.
+/// Without a find bar the only stops are the tree, the sidebar divider, and the source view, in both directions.
 #[test]
-fn tab_alternates_between_tree_and_source_while_find_is_closed() {
+fn tab_cycles_tree_divider_and_source_while_find_is_closed() {
     let fixture = tempfile::tempdir().expect("disposable focus project");
     fs::write(fixture.path().join("focus.txt"), "one\ntwo\n").expect("focus fixture");
     let reader = reader(fixture.path(), "focus.txt");
@@ -72,23 +75,23 @@ fn tab_alternates_between_tree_and_source_while_find_is_closed() {
     assert_eq!(focused(window), "source");
     assert_eq!(
         tab(window, 4),
-        ["tree", "source", "tree", "source"],
-        "Tab must cycle tree and source only"
+        ["tree", "divider", "source", "tree"],
+        "Tab must cycle tree, divider, and source only"
     );
     assert_eq!(
         shift_tab(window, 4),
-        ["tree", "source", "tree", "source"],
-        "Shift+Tab must cycle source and tree only"
+        ["source", "divider", "tree", "source"],
+        "Shift+Tab must cycle source, divider, and tree only"
     );
     // Some platforms deliver Shift+Tab as one dedicated key instead of Tab with a modifier.
     key(window, Key::Backtab);
     assert_eq!(
         focused(window),
-        "tree",
+        "divider",
         "the dedicated back-tab key did not leave the source view"
     );
     key(window, Key::Backtab);
-    assert_eq!(focused(window), "source");
+    assert_eq!(focused(window), "tree");
     window.hide().expect("close focus window");
 }
 
@@ -103,12 +106,12 @@ fn tab_visits_tree_source_and_open_find_bar_in_reading_order() {
     assert_eq!(focused(window), "find");
     assert_eq!(
         tab(window, 6),
-        ["tree", "source", "find", "tree", "source", "find"],
+        ["tree", "divider", "source", "find", "tree", "divider"],
         "Tab order with an open find bar"
     );
     assert_eq!(
         shift_tab(window, 6),
-        ["source", "tree", "find", "source", "tree", "find"],
+        ["tree", "find", "source", "divider", "tree", "find"],
         "Shift+Tab order with an open find bar"
     );
     assert_eq!(
@@ -123,8 +126,8 @@ fn tab_visits_tree_source_and_open_find_bar_in_reading_order() {
         "closing the bar returns to source"
     );
     assert_eq!(
-        tab(window, 2),
-        ["tree", "source"],
+        tab(window, 3),
+        ["tree", "divider", "source"],
         "the closed find bar must not remain a stop"
     );
     window.hide().expect("close focus window");

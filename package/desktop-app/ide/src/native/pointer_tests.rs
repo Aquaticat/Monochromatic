@@ -29,14 +29,14 @@ use slint::{
 use std::{fs, thread::sleep, time::Duration};
 
 /// What: `const` names a compile-time value; `f32` is a 32-bit float of logical pixels (sibling `f64`).
-/// Why: Source text starts right of the 256 px tree, its 1 px divider, and the 56 px line-number gutter.
+/// Why: Source text starts right of the 256 px tree, its 48 px divider cell, and the 56 px line-number gutter.
 /// The first assertion of every test is a positive control for these two origins.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const TEXT_LEFT = 256 + 1 + 56;
+/// const TEXT_LEFT = 256 + 48 + 56;
 /// ```
-const TEXT_LEFT: f32 = 313.0;
+const TEXT_LEFT: f32 = 360.0;
 
 /// Source rows start below the 32 px file label.
 const TEXT_TOP: f32 = 32.0;

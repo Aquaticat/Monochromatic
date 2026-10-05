@@ -381,6 +381,7 @@ Every movement key also has a Shift form that extends the selection from its anc
 - Ctrl+A selects everything,
   and Ctrl+C copies the selection as original source text.
 - Tab and Shift+Tab move keyboard focus between the tree,
+  the sidebar divider,
   the source view,
   and the find input while the find bar is open,
   in that order.
