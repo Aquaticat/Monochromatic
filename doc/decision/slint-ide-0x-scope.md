@@ -170,6 +170,19 @@ quotations are the user's words.
   the nested test compositor gains runtime output scaling first.
 - The nested test compositor's private D-Bus session must not activate services from host service definitions.
 - The `pi` second-opinion model is skipped for this work.
+- Runtime grammars stay at the measured inventory plus the companions it needs:
+  the 74 tracked files whose types Helix recognizes but `tokei` does not count
+  (patches,
+  ignore and attribute files,
+  ini,
+  properties,
+  Caddyfile,
+  Ghostty and git configuration)
+  stay plain text;
+  the TSX and AWK grammars stay bundled.
+- The Slint grammar ships its `LICENSES/` texts plus the copyright lines extracted from its source headers.
+- Final binary and asset size is not a constraint for this package:
+  "final bin size isn't a constraint on this specific package."
 - UI questions are presented with screenshots of every option,
   stored as local files in the repository rather than a network service:
   "These are useful records that shouldn't depend on a network service to be available."
