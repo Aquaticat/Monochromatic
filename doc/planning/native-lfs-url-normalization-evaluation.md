@@ -101,29 +101,29 @@ Evaluation order is part of the contract:
 the fixture records the first rejection,
 and two of the positive controls are detectable only through it.
 
-1.  **Scheme**.
+1.  Scheme.
     The endpoint must begin with `http://` or `https://`,
     compared byte by byte with ASCII letter case ignored.
     Otherwise reject with `scheme`.
     The output scheme is lowercase.
-2.  **Query and fragment**.
+2.  Query and fragment.
     Everything from the first `?` or `#` to the end is discarded without inspection.
     The remainder is the hierarchy.
     If the hierarchy contains `\`,
     reject with `backslash`.
-3.  **Authority and path**.
+3.  Authority and path.
     The authority is the hierarchy up to its first `/`;
     the path is the rest,
     including that `/`,
     or empty.
-4.  **Credentials**.
+4.  Credentials.
     Everything in the authority up to and including its last `@` is discarded without inspection.
     The remainder is the host and port.
     If it begins with `[`,
     reject with `ipv6_literal`.
     The host is the text before the first `:`;
     the port is the text after it.
-5.  **Host**.
+5.  Host.
     Apply these checks in order.
     An empty host rejects with `empty_host`.
     A byte other than an ASCII letter,
@@ -144,7 +144,7 @@ and two of the positive controls are detectable only through it.
     no leading zero on a part longer than one digit,
     each at most 255.
     Otherwise reject with `numeric_host`.
-6.  **Port**.
+6.  Port.
     An absent or empty port serializes as no port.
     A byte other than an ASCII digit rejects with `port_character`.
     The decimal value,
@@ -153,7 +153,7 @@ and two of the positive controls are detectable only through it.
     check the bound on every digit so that no integer overflows.
     The value 443 on `https` and 80 on `http` serializes as no port.
     Any other value serializes in decimal without leading zeros.
-7.  **Path**.
+7.  Path.
     A byte other than an ASCII letter,
     an ASCII digit,
     or one of ``-._~!$&'()*+,;=:@/%`` rejects with `path_character`.
@@ -170,7 +170,7 @@ and two of the positive controls are detectable only through it.
     `.%2e`,
     `%2e.`,
     or `%2e%2e` rejects with `dot_segment`.
-8.  **Serialization**.
+8.  Serialization.
     Concatenate the scheme,
     `://`,
     the host,
@@ -181,22 +181,22 @@ and two of the positive controls are detectable only through it.
 
 Guarantees the port must keep:
 
-- **Equality on acceptance**:
+- Equality on acceptance:
   whenever the function returns `Ok(base)`,
   the incumbent returns exactly `base` for the same endpoint.
-- **Explicit rejection**:
+- Explicit rejection:
   every other input returns `Err` with the first applicable reason.
   For some of those inputs the incumbent also throws;
   for the rest it returns a string,
   and those are the classified differences.
-- **No credential in output**:
+- No credential in output:
   the returned base never contains the discarded credentials.
   The diagnostic built from a rejection should not echo them either.
   The incumbent's `TypeError` (code `ERR_INVALID_URL`) carries the raw endpoint,
   credentials included,
   in its `input` property;
   this was measured with `https://user:secret@`.
-- **Bounded work**:
+- Bounded work:
   one pass over the input,
   no recursion,
   no allocation beyond the output and the lowercased host.
@@ -693,7 +693,7 @@ The native function rejects all three.
 The scan around the normalizer is a separate port,
 but the corpus settled three facts it needs.
 
-- **Trim set**.
+- Trim set.
   The incumbent calls `String.prototype.trim`,
   which removes exactly 25 code points
   (measured over every code point):
@@ -717,7 +717,7 @@ but the corpus settled three facts it needs.
   and would start trimming U+0085.
   The port needs an explicit table;
   four `configs` cases of class `whitespace` cover both code points.
-- **Lowercasing**.
+- Lowercasing.
   The incumbent lowercases section and key names with `toLowerCase`.
   No non-ASCII code point lowercases to a string containing a letter of `lfs`,
   `url`,
@@ -726,7 +726,7 @@ but the corpus settled three facts it needs.
   or a space
   (measured over every code point),
   so ASCII-only lowercasing gives the same comparisons.
-- **Failure of any declaration**.
+- Failure of any declaration.
   The incumbent normalizes every collected declaration before taking the first,
   so a malformed declaration anywhere fails the read.
   The `configs` cases of class `order` cover a valid first declaration followed by a rejected one.
@@ -936,16 +936,16 @@ whatever the outcome of decoding it.
 
 ### Evidence limits
 
-- **One oracle**.
+- One oracle.
   The incumbent was measured on Node `v26.10.0` with Ada `4.0.0` on Linux x64 only.
   Another Node or Ada release can differ;
   the fixture records the oracle versions for that reason.
-- **One platform**.
+- One platform.
   Nothing was run on macOS or Windows.
   The reference calls no platform-dependent API,
   which is an observation from its source,
   not a measurement.
-- **Reference toolchain**.
+- Reference toolchain.
   The differential runs used the Rust reference compiled with `rustc 1.100.0-nightly` on the host.
   The same source was also compiled offline with `rustc 1.97.0`
   in a container from the supplied image `localhost/monochromatic-semantic-rust-src:1.97.0`
@@ -959,23 +959,23 @@ whatever the outcome of decoding it.
   The wider differential runs were not repeated with that build.
   The reference was not checked with the package's Clippy configuration,
   and whether that image matches the toolchain the package builds with was not verified.
-- **Differential evidence is not a proof**.
+- Differential evidence is not a proof.
   Equality on acceptance rests on the corpora listed under `Measurements`
   and on reading the host conversion,
   the IPv4 detection,
   and the length limit in the Ada source.
   The unbounded first version shows that a large random run can miss a real divergence;
   another input-size-dependent or path-dependent behavior may remain undiscovered.
-- **Alternatives not executed**.
+- Alternatives not executed.
   `url` and native Ada bindings were neither built nor run.
-- **Scratch scripts are not durable**.
+- Scratch scripts are not durable.
   The corpus generator,
   oracle wrapper,
   model,
   Rust reference,
   and bounded-exhaustive runner live in `~/temp/agent/native-lfs-url-vet-20261005/`.
   Only the fixture and this document are committed.
-- **Inputs outside the comparison**.
+- Inputs outside the comparison.
   An endpoint longer than a JavaScript string can hold has no incumbent behavior to compare with.
   How the incumbent's file read treats a `.lfsconfig` that is not valid UTF-8 was not measured;
   the port must choose and test its own behavior for that file.
