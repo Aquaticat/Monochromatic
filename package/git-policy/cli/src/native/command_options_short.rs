@@ -168,3 +168,8 @@ pub(crate) fn scan_short_cluster(
     }
     return Ok(1);
 }
+
+/// Cluster arity, typo-check and help cases.
+#[cfg(test)]
+#[path = "command_options_short_tests.rs"]
+mod tests;

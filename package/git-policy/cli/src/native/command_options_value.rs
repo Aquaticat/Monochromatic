@@ -100,3 +100,8 @@ pub(crate) fn take_value(
         token: index,
     });
 }
+
+/// Per-arity value cases and the real-Git control for the last-argument default.
+#[cfg(test)]
+#[path = "command_options_value_tests.rs"]
+mod tests;

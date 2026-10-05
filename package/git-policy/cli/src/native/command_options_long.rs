@@ -207,3 +207,8 @@ pub(crate) fn scan_long_option(
         token: index,
     });
 }
+
+/// Abbreviation, ambiguity and negation cases.
+#[cfg(test)]
+#[path = "command_options_long_tests.rs"]
+mod tests;

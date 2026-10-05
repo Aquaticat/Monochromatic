@@ -7,8 +7,10 @@
 //! // const root = await mkdtemp(join(tmpdir(), 'native-')); await git(root, ['init']);
 //! ```
 
-/// Tokenizer table type checked by the oracles in this file.
-use super::command_options::OptionSpec;
+/// Tokenizer types used by the shared synthetic table and the table oracles.
+use super::command_options::{
+    Arity, DEFAULT_MODE, OptionError, OptionSpec, ParsedOptions, parse_options, row,
+};
 /// Native string, path, stream and process types used by the fixtures.
 use std::ffi::OsString;
 use std::io::Write;
@@ -18,6 +20,48 @@ use std::process::{Command, Output, Stdio};
 /// The real Git 2.56.0 executable installed in the verification image.
 pub(crate) const REAL_GIT: &str = "/usr/bin/git";
 
+/// Identifiers of the synthetic rows shared by the tokenizer test files.
+pub(crate) const ALL: u16 = 1;
+pub(crate) const MESSAGE: u16 = 2;
+pub(crate) const UNTRACKED: u16 = 3;
+pub(crate) const CONTAINS: u16 = 4;
+pub(crate) const HARD: u16 = 5;
+pub(crate) const NO_VERIFY: u16 = 6;
+pub(crate) const AMEND: u16 = 7;
+pub(crate) const ALLOW_EMPTY: u16 = 8;
+pub(crate) const ALLOW_EMPTY_MESSAGE: u16 = 9;
+
+/// One row per arity and negation class Git has.
+pub(crate) const SYNTHETIC_TABLE: &[OptionSpec] = &[
+    row(ALL, Some(b'a'), Some("all"), Arity::None, true),
+    row(MESSAGE, Some(b'm'), Some("message"), Arity::Required, true),
+    row(
+        UNTRACKED,
+        Some(b'u'),
+        Some("untracked-files"),
+        Arity::Optional,
+        true,
+    ),
+    row(
+        CONTAINS,
+        None,
+        Some("contains"),
+        Arity::LastArgDefault,
+        false,
+    ),
+    row(HARD, None, Some("hard"), Arity::None, false),
+    row(NO_VERIFY, Some(b'n'), Some("no-verify"), Arity::None, true),
+    row(AMEND, None, Some("amend"), Arity::None, true),
+    row(ALLOW_EMPTY, None, Some("allow-empty"), Arity::None, true),
+    row(
+        ALLOW_EMPTY_MESSAGE,
+        None,
+        Some("allow-empty-message"),
+        Arity::None,
+        true,
+    ),
+];
+
 /// Own a fixture argument vector without changing any spelling.
 pub(crate) fn os_arguments(values: &[&str]) -> Vec<OsString> {
     let mut result: Vec<OsString> = Vec::<OsString>::new();
@@ -25,6 +69,16 @@ pub(crate) fn os_arguments(values: &[&str]) -> Vec<OsString> {
         result.push(OsString::from(value));
     }
     return result;
+}
+
+/// Tokenize text arguments against the synthetic table with Git's default flags.
+pub(crate) fn parse_synthetic(values: &[&str]) -> Result<ParsedOptions, OptionError> {
+    return parse_options(
+        os_arguments(values).as_slice(),
+        SYNTHETIC_TABLE,
+        DEFAULT_MODE,
+        &[],
+    );
 }
 
 /// Build one argument from raw bytes that need not be UTF-8.
@@ -123,6 +177,43 @@ pub(crate) fn repository(parent: &Path, name: &str) -> PathBuf {
         &["commit", "--quiet", "--allow-empty", "--message=initial"],
     );
     return root;
+}
+
+/// Create a fixture whose repository has `tracked.txt` committed; returns the fixture
+/// directory to remove and the repository root.
+pub(crate) fn repository_with_tracked_file(name: &str) -> (PathBuf, PathBuf) {
+    let directory: PathBuf = fixture(name);
+    let root: PathBuf = repository(directory.as_path(), "repository");
+    std::fs::write(root.join("tracked.txt"), b"one\n").expect("write tracked file");
+    git(root.as_path(), &["add", "--", "tracked.txt"]);
+    git(
+        root.as_path(),
+        &["commit", "--quiet", "--message=base", "--", "tracked.txt"],
+    );
+    return (directory, root);
+}
+
+/// Leave the repository in a conflicted merge of `tracked.txt`, with `MERGE_HEAD` present.
+pub(crate) fn start_conflicted_merge(root: &Path) {
+    git(root, &["switch", "--quiet", "--create", "other"]);
+    std::fs::write(root.join("tracked.txt"), b"other\n").expect("write other side");
+    git(
+        root,
+        &["commit", "--quiet", "--message=other", "--", "tracked.txt"],
+    );
+    git(root, &["switch", "--quiet", "main"]);
+    std::fs::write(root.join("tracked.txt"), b"main\n").expect("write main side");
+    git(
+        root,
+        &["commit", "--quiet", "--message=main", "--", "tracked.txt"],
+    );
+    let merge: Output = git_status(root, &["merge", "--quiet", "other"]);
+    assert!(!merge.status.success(), "the merge must conflict");
+}
+
+/// Standard output of a command as trimmed text.
+pub(crate) fn output_text(output: &Output) -> String {
+    return String::from_utf8_lossy(&output.stdout).trim().to_owned();
 }
 
 /// Require what Git's `parse_options_check` requires of a table (parse-options.c:642-736):

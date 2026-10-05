@@ -30,3 +30,32 @@ mod command_options_value;
 /// Real-Git fixtures and table oracles for command tests; never in the release build.
 #[cfg(test)]
 mod command_test_support;
+
+/// Differential harness over `git rev-parse --parseopt`; never in the release build.
+#[cfg(test)]
+mod command_test_parseopt;
+
+/// Table oracle over `--git-completion-helper-all`; never in the release build.
+#[cfg(test)]
+mod command_test_completion;
+
+/// Facts about the arguments after `git commit`.
+pub mod command_commit;
+
+/// The complete Git 2.56.0 option table of `git commit`.
+pub mod command_commit_table;
+
+/// The shared result and builder of transforms that add tokens to a command line.
+pub mod rule_argument_rewrite;
+
+/// Pure core of the index-against-`HEAD` check.
+pub mod rule_commit_index;
+
+/// Pure decision of the commit-only transform.
+pub mod rule_commit_only;
+
+/// User-facing diagnostics of the commit-only transform.
+pub mod rule_commit_only_message;
+
+/// Pure core of the merge, cherry-pick and revert conclusion check.
+pub mod rule_commit_sequencer;

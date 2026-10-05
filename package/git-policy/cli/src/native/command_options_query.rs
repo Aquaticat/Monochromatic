@@ -14,7 +14,7 @@
 /// ```ts
 /// import { Boundary, Occurrence, OptionValue, ParsedOptions } from './command_options.ts';
 /// ```
-use super::command_options::{Boundary, Occurrence, OptionValue, ParsedOptions};
+use super::command_options::{Boundary, Occurrence, OptionValue, ParsedOptions, WrapperOccurrence};
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
@@ -130,6 +130,48 @@ pub fn has_wrapper_flag(parsed: &ParsedOptions, flag: usize) -> bool {
         }
     }
     return false;
+}
+
+/// What: Wrapper-only flags found in option position, split into the command's own escape
+///       hatch and every other flag the caller listed.
+/// Why:  A rule asks "was my hatch written?", while the caller removes all of them by position.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type WrapperFlags = { escape: number[]; other: WrapperOccurrence[] };
+/// ```
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct WrapperFlags {
+    /// Region token indexes of the command's own escape hatch.
+    pub escape: Vec<usize>,
+    /// Other wrapper flags; `flag` indexes the caller's list.
+    pub other: Vec<WrapperOccurrence>,
+}
+
+/// What: Split the wrapper occurrences of a parse whose flag list was built as
+///       "own escape hatch first, then the caller's flags".
+/// Why:  Every command module builds its list that way, so the caller's indexes are the
+///       tokenizer's indexes minus one.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const escape = wrapper.filter(w => w.flag === 0).map(w => w.token);
+/// const other = wrapper.filter(w => w.flag > 0).map(w => ({ flag: w.flag - 1, token: w.token }));
+/// ```
+pub fn split_wrapper_flags(parsed: &ParsedOptions) -> WrapperFlags {
+    let mut escape: Vec<usize> = Vec::<usize>::new();
+    let mut other: Vec<WrapperOccurrence> = Vec::<WrapperOccurrence>::new();
+    for occurrence in &parsed.wrapper {
+        if occurrence.flag == 0 {
+            escape.push(occurrence.token);
+        } else {
+            other.push(WrapperOccurrence {
+                flag: occurrence.flag - 1,
+                token: occurrence.token,
+            });
+        }
+    }
+    return WrapperFlags { escape, other };
 }
 
 /// What: Copy `arguments` without the tokens at `removed`, which are indexes relative to
