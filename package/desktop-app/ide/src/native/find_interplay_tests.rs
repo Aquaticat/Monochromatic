@@ -1,7 +1,7 @@
 //! In-file find beside file switching and the modal search overlay, through real window key events.
 
 /// The complete reader fixture and key helpers of the find tests.
-use super::find_tests::{chord, key, reader, selection, status, type_text};
+use super::find_tests::{chord, eventually, key, reader, selection, settle, status, type_text};
 /// Bounded waits and tree-row lookup shared with the navigation tests.
 use super::navigation_tests::{row, wait_until};
 /// Real toolkit key events reach the same capture scopes as seat input.
@@ -38,7 +38,9 @@ fn native_find_recomputes_for_a_switched_file_and_keeps_input_focus() {
     let generation = reader.source.borrow().file_generation;
     window.invoke_tree_activate(row(window, "beta.txt").expect("second file row"));
     wait_until(|| return reader.source.borrow().file_generation > generation);
-    status(window, "0/3");
+    eventually("matches were not recomputed for the new file", || {
+        return window.get_find_status() == "0/3";
+    });
     assert!(
         window.get_find_open(),
         "switching files closed the find bar"
@@ -50,7 +52,7 @@ fn native_find_recomputes_for_a_switched_file_and_keeps_input_focus() {
     assert_eq!(
         window.get_source_matches().row_count(),
         3,
-        "matches were not recomputed for the new file"
+        "the new file's matches were not marked"
     );
     assert_eq!(
         selection(&reader),
@@ -146,13 +148,26 @@ fn native_find_reports_refused_text_and_clears_for_empty_text() {
     fs::write(fixture.path().join("bounds.txt"), "needle\n").expect("diagnostic fixture");
     let reader = reader(fixture.path(), "bounds.txt");
     let window = &reader.window;
+    window.invoke_focus_tree();
+    window.invoke_find_dismiss();
+    assert!(
+        window.get_tree_has_focus(),
+        "dismissing a closed find bar moved keyboard focus"
+    );
+    window.invoke_focus_source();
     window.invoke_find_edited("needle".into());
+    chord(window, Key::Control, "f");
+    settle();
+    assert_eq!(
+        selection(&reader),
+        (0, 0),
+        "an edit reached the closed find bar"
+    );
     assert_eq!(
         window.get_find_status(),
         "",
-        "an edit reached the closed find bar"
+        "empty find text must show no count"
     );
-    chord(window, Key::Control, "f");
     type_text(window, "needle");
     status(window, "1/1");
     window.invoke_find_edited("n".repeat(1001).into());
@@ -172,7 +187,11 @@ fn native_find_reports_refused_text_and_clears_for_empty_text() {
         "a later valid query kept the diagnostic"
     );
     window.invoke_find_edited("".into());
-    assert_eq!(window.get_find_status(), "");
+    assert_eq!(
+        window.get_find_status(),
+        "",
+        "empty find text must show no count"
+    );
     assert!(!window.get_find_no_match());
     assert!(!window.get_selection_is_match());
     assert_eq!(

@@ -1,0 +1,109 @@
+#!/usr/bin/env node
+// Observe committed in-file find regressions failing after guard removal in a disposable package copy.
+import { spawnSync } from 'node:child_process';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join, relative, sep } from 'node:path';
+
+const privateRoot = join(homedir(), 'temp', 'agent');
+if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Guard scratch root must exclude group and other permissions: ' + privateRoot);
+if (!process.env.usage_cache) throw new Error('Provide the disposable Cargo target-cache directory');
+const cache = realpathSync(process.env.usage_cache);
+if (!cache.startsWith(realpathSync(privateRoot) + sep) || !statSync(cache).isDirectory()) throw new Error('Target cache must be a disposable directory below ' + privateRoot);
+const artifact = mkdtempSync(join(privateRoot, 'ide-find-guard-'));
+const source = join(artifact, 'package');
+const origin = process.cwd();
+cpSync(origin, source, { recursive: true, filter: path => !['target', '.git', 'node_modules'].includes(relative(origin, path).split(sep)[0]) });
+mkdirSync(join(source, 'target'), { recursive: true });
+console.log('FIND_GUARD_ARTIFACT=' + artifact);
+
+const replaceOne = (text, before, after, occurrence = 0) => {
+  let offset = 0;
+  let start = -1;
+  for (let index = 0; index <= occurrence; index++) {
+    start = text.indexOf(before, offset);
+    if (start < 0) throw new Error('Mutation source anchor is absent: ' + before);
+    offset = start + before.length;
+  }
+  return text.slice(0, start) + after + text.slice(start + before.length);
+};
+const equality = 'assertion `left == right` failed';
+const cases = [
+  // Reply identity: each component of the three-part tag is removed separately.
+  { name: 'identity-file', file: 'src/find_worker.rs', before: 'return self.file == wanted.file', after: 'return true', test: 'reply_for_another_file_generation_is_rejected', failure: 'a reply for another file generation was accepted' },
+  { name: 'identity-revision', file: 'src/find_worker.rs', before: '&& self.revision == wanted.revision', after: '&& true', test: 'reply_for_another_content_revision_is_rejected', failure: 'a reply for another content revision was accepted' },
+  { name: 'identity-query', file: 'src/find_worker.rs', before: '&& self.query == wanted.query', after: '&& true', test: 'reply_for_another_query_is_rejected', failure: 'a reply for another query was accepted' },
+  { name: 'cancel-wants-nothing', file: 'src/find_worker.rs', before: '        self.wanted = None;\n', after: '', test: 'reply_after_cancel_is_rejected', failure: 'a reply was accepted after cancellation' },
+  // The same comparison through a real worker thread: latest request, reload, and navigation.
+  { name: 'latest-request-wins', file: 'src/find_worker.rs', before: '&& self.query == wanted.query', after: '&& true', integration: 'find_worker', test: 'newest_request_wins_over_running_and_waiting_requests', failure: 'a reply for a superseded query was returned' },
+  { name: 'reload-retag', file: 'src/find_worker.rs', before: '&& self.revision == wanted.revision', after: '&& true', integration: 'find_worker', test: 'reload_retags_requests_with_the_new_revision', failure: equality },
+  { name: 'navigation-retag', file: 'src/find_worker.rs', before: 'return self.file == wanted.file', after: 'return true', integration: 'find_worker', test: 'navigation_retags_requests_with_the_new_file_generation', failure: 'a reply for the previous file was returned' },
+  { name: 'navigable-query', file: 'src/find_worker.rs', before: '&& self.query == wanted.query', after: '&& true', integration: 'find_navigation', test: 'results_are_navigable_only_for_their_exact_identity', failure: 'matches from a superseded query were navigable' },
+  // Painting validity: accepted results describe exactly one file generation and revision.
+  { name: 'paint-file', file: 'src/find_navigation.rs', before: 'if self.identity.file == file && ', after: 'if ', integration: 'find_navigation', test: 'results_are_painted_only_for_their_file_generation_and_revision', failure: 'matches from another file generation were painted' },
+  { name: 'paint-revision', file: 'src/find_navigation.rs', before: ' && self.identity.revision == revision {', after: ' {', integration: 'find_navigation', test: 'results_are_painted_only_for_their_file_generation_and_revision', failure: 'matches from another content revision were painted' },
+  // Matching semantics and bounds.
+  { name: 'empty-query', file: 'src/find.rs', before: 'if query.is_empty() {', after: 'if false {', integration: 'find', test: 'empty_query_matches_nothing', failure: equality },
+  { name: 'literal-escape', file: 'src/find.rs', before: 'RegexBuilder::new(&escape(query))', after: 'RegexBuilder::new(query)', integration: 'find', test: 'regex_metacharacters_are_literal', failure: equality },
+  { name: 'case-folding', file: 'src/find.rs', before: 'builder.case_insensitive(true);', after: 'builder.case_insensitive(false);', integration: 'find_reference', test: 'plain_matcher_differs_from_browser_reference_only_in_pinned_cases', failure: "the plain matcher's differences from the browser reference changed" },
+  { name: 'match-limit', file: 'src/find.rs', before: 'if ranges.len() == limit {', after: 'if false {', integration: 'find', test: 'match_count_is_bounded_and_reports_truncation', failure: 'matches beyond the limit were retained' },
+  { name: 'query-limit', file: 'src/find.rs', before: 'if length > MAX_FIND_QUERY_CHARS {', after: 'if false {', integration: 'find', test: 'query_length_is_bounded_with_a_diagnostic', failure: 'an over-long query was accepted' },
+  { name: 'source-limit', file: 'src/find.rs', before: 'if bytes > source_bytes {', after: 'if false {', integration: 'find', test: 'source_size_is_bounded_with_a_diagnostic', failure: 'source above the bound was searched' },
+  // Paint inputs.
+  { name: 'active-excluded', file: 'src/find_paint.rs', before: 'if active == Some(*range) {', after: 'if false {', integration: 'find_paint', test: 'active_match_is_excluded_from_other_match_rectangles', failure: 'the active match was also drawn as an ordinary match' },
+  { name: 'horizontal-tile', file: 'src/find_paint.rs', before: 'if rectangle.x + rectangle.width < left || rectangle.x > right {', after: 'if false {', integration: 'find_paint', test: 'rectangles_are_limited_to_materialized_rows_and_the_horizontal_tile', failure: 'rectangles right of the horizontal tile were kept' },
+  { name: 'frame-stamp', file: 'src/source_frame.rs', before: '\n            && (Arc::ptr_eq(&self.matches, &other.matches) || self.matches == other.matches);', after: ';', integration: 'source_frame', test: 'find_matches_invalidate_and_equal_lists_reuse', failure: 'adding matches must invalidate the frame' },
+  // Native bar: recompute triggers, focus, overlay interplay, and lifecycle.
+  { name: 'reload-recompute', file: 'src/native/find/tick.rs', before: 'revision: state.document.revision(),', after: 'revision: 0,', native: true, test: 'native_find_recomputes_after_external_reload_and_follows_selection_correspondence', failure: 'matches were not recomputed for the reloaded revision' },
+  { name: 'file-recompute', file: 'src/native/find/tick.rs', before: 'file: state.file_generation,', after: 'file: 1,', native: true, test: 'native_find_recomputes_for_a_switched_file_and_keeps_input_focus', failure: 'matches were not recomputed for the new file' },
+  { name: 'seek-only-on-edit', file: 'src/native/find/tick.rs', before: 'if find.seek\n        && let Some(index)', after: 'if let Some(index)', native: true, test: 'native_find_recomputes_after_external_reload_and_follows_selection_correspondence', failure: 'the selection must follow the replaced region, not jump to a later match' },
+  { name: 'closed-bar-stays-idle', file: 'src/native/find/tick.rs', before: 'if !find.open || !find.available {', after: 'if !find.available {', native: true, test: 'native_find_opens_types_steps_wraps_reveals_and_closes', failure: 'highlights returned after closing' },
+  { name: 'empty-text-clears', file: 'src/native/find/tick.rs', before: 'if find.query.is_empty() {', after: 'if false {', native: true, test: 'native_find_reports_refused_text_and_clears_for_empty_text', failure: 'empty find text must show no count' },
+  { name: 'closed-bar-edit', file: 'src/native/find/session.rs', before: 'if !find.open {', after: 'if false {', native: true, test: 'native_find_reports_refused_text_and_clears_for_empty_text', failure: 'an edit reached the closed find bar' },
+  { name: 'closed-bar-dismiss', file: 'src/native/find/session.rs', before: 'if !find.open {', after: 'if false {', occurrence: 1, native: true, test: 'native_find_reports_refused_text_and_clears_for_empty_text', failure: 'dismissing a closed find bar moved keyboard focus' },
+  { name: 'find-input-focus', file: 'src/native/navigation/open.rs', before: 'if window.get_find_has_focus() {', after: 'if false {', native: true, test: 'native_find_recomputes_for_a_switched_file_and_keeps_input_focus', failure: 'a file open moved keyboard focus out of the find input' },
+  { name: 'search-overlay-modal', file: 'src/native/find/session.rs', before: 'if window.get_search_open() {', after: 'if false {', native: true, test: 'native_find_and_search_overlay_close_topmost_first', failure: 'Ctrl+F took keyboard focus from the modal search overlay' },
+  { name: 'escape-topmost', file: 'ui/app.slint', before: 'root.find-open && !root.search-open {', after: 'root.find-open {', native: true, test: 'native_find_and_search_overlay_close_topmost_first', failure: 'Escape did not close the topmost search overlay' },
+];
+const results = [];
+const baselined = new Set();
+const run = (item, phase) => {
+  const command = item.native
+    ? ['cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--filter-expr', 'test(' + item.test + ')']
+    : ['cargo', 'test', '--offline', '--no-default-features', ...(item.integration ? ['--test', item.integration] : ['--lib']), item.test, '--', '--nocapture'];
+  const result = spawnSync('podman', [
+    'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
+    '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
+    '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', 'ide-cargo:/cargo',
+    '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2', '--env', 'SLINT_EMIT_DEBUG_INFO=1',
+    '--env', 'SLINT_BACKEND=headless', '--env', 'SLINT_MCP_PORT=0', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
+    'localhost/monochromatic/ide', ...command,
+  ], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  const output = (result.stdout ?? '') + (result.stderr ?? '');
+  writeFileSync(join(artifact, item.name + '-' + phase + '.log'), output);
+  if (result.error) throw result.error;
+  const failedAsExpected = result.status !== 0 && output.includes(item.test) && output.includes(item.failure);
+  const passedAsExpected = result.status === 0 && output.includes(item.test) && /1 (?:test|passed)/.test(output);
+  const accepted = phase === 'removed' ? failedAsExpected : passedAsExpected;
+  results.push({ name: item.name, phase, test: item.test, status: result.status, accepted });
+  writeFileSync(join(artifact, 'results.json'), JSON.stringify(results, null, 2));
+  if (!accepted) throw new Error('Unexpected ' + phase + ' result for ' + item.name + '; inspect ' + artifact);
+  console.log(JSON.stringify(results.at(-1)));
+};
+for (const item of cases) {
+  // A restored run of an earlier case is already this test's unmodified baseline.
+  if (!baselined.has(item.test)) {
+    run(item, 'baseline');
+    baselined.add(item.test);
+  }
+  const path = join(source, item.file);
+  const original = readFileSync(path, 'utf8');
+  try {
+    const changed = replaceOne(original, item.before, item.after, item.occurrence);
+    if (changed === original) throw new Error('Mutation did not change ' + item.file);
+    writeFileSync(path, changed);
+    run(item, 'removed');
+  } finally { writeFileSync(path, original); }
+  run(item, 'restored');
+}
+console.log('Find guard controls passed: ' + artifact + ' (' + cases.length + ' guards)');

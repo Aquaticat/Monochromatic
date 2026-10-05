@@ -109,9 +109,6 @@ pub(super) fn edit(window: &AppWindow, state: &Rc<RefCell<State>>, find: &mut Fi
 
 /// Enter (positive delta) or Shift+Enter (negative delta): select the next or previous match, wrapping.
 pub(super) fn navigate(window: &AppWindow, state: &Rc<RefCell<State>>, find: &Find, delta: i32) {
-    if !find.open {
-        return;
-    }
     let current = state.borrow();
     let identity = tick::wanted(&current, find);
     // What: `let ... else` extracts usable matches or leaves early when there are none.

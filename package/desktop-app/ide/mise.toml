@@ -257,6 +257,11 @@ description = "Remove search guards only in a disposable copy and observe named 
 usage = 'arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"'
 run = "node bin/inspect-search-guards.mjs"
 
+[tasks."inspect:find-guards"]
+description = "Remove in-file find guards only in a disposable copy and observe named regression failures"
+usage = 'arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"'
+run = "node bin/inspect-find-guards.mjs"
+
 [tasks."inspect:search-accessibility"]
 description = "Verify accepted search landmarks and rejected dialog role declarations in disposable markup"
 shell = "node --input-type=module-typescript -e"

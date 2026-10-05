@@ -21,7 +21,13 @@ use slint::{
 /// ```ts
 /// type Shared<T> = { current: T };
 /// ```
-use std::{cell::RefCell, fs, path::Path, rc::Rc};
+use std::{
+    cell::RefCell,
+    fs,
+    path::Path,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 /// A complete reader: source refresh, in-file find, and project navigation on one window.
 pub(super) struct Reader {
@@ -105,6 +111,28 @@ pub(super) fn type_text(window: &AppWindow, text: &str) {
 /// Wait until the bar shows exactly this count text.
 pub(super) fn status(window: &AppWindow, expected: &str) {
     wait_until(|| return window.get_find_status() == expected);
+}
+
+/// Advance native timers until `ready` holds, failing with a message naming the missing behavior.
+pub(super) fn eventually(message: &str, mut ready: impl FnMut() -> bool) {
+    let start = Instant::now();
+    loop {
+        slint::platform::update_timers_and_animations();
+        if ready() {
+            return;
+        }
+        assert!(start.elapsed() < Duration::from_secs(5), "{message}");
+        std::thread::sleep(Duration::from_millis(2));
+    }
+}
+
+/// Let several polling ticks and any worker reply pass before asserting that nothing changed.
+pub(super) fn settle() {
+    let start = Instant::now();
+    while start.elapsed() < Duration::from_millis(120) {
+        slint::platform::update_timers_and_animations();
+        std::thread::sleep(Duration::from_millis(2));
+    }
 }
 
 /// The selection as (start, end) source character positions.
@@ -196,6 +224,13 @@ fn native_find_opens_types_steps_wraps_reveals_and_closes() {
     );
     assert!(!window.get_selection_is_match());
     assert_eq!(window.get_find_status(), "");
+    settle();
+    assert_eq!(
+        window.get_source_matches().row_count(),
+        0,
+        "highlights returned after closing"
+    );
+    assert_eq!(window.get_find_status(), "");
     assert_eq!(
         window.get_selected_text(),
         "Needle",
@@ -249,9 +284,12 @@ fn native_find_recomputes_after_external_reload_and_follows_selection_correspond
     let revision = reader.source.borrow().document.revision();
     fs::write(&path, "A new first line\nI am a big cat\n").expect("prefix reload");
     wait_until(|| return reader.source.borrow().document.revision() > revision);
-    wait_until(|| {
-        return window.get_selection_is_match() && window.get_find_status() == "1/1";
-    });
+    eventually(
+        "matches were not recomputed for the reloaded revision",
+        || {
+            return window.get_selection_is_match() && window.get_find_status() == "1/1";
+        },
+    );
     assert_eq!(
         selection(&reader),
         (19, 23),
@@ -265,17 +303,16 @@ fn native_find_recomputes_after_external_reload_and_follows_selection_correspond
     )
     .expect("replacement reload");
     wait_until(|| return reader.source.borrow().document.revision() > moved);
-    status(window, "0/1");
-    assert_eq!(
-        window.get_selected_text(),
-        "was a",
-        "the selection must follow the replaced region, not jump to a later match"
+    eventually(
+        "the selection must follow the replaced region, not jump to a later match",
+        || return window.get_find_status() == "0/1",
     );
+    assert_eq!(window.get_selected_text(), "was a");
     assert!(!window.get_selection_is_match());
     assert_eq!(
         window.get_source_matches().row_count(),
         1,
-        "matches were not recomputed for the reloaded revision"
+        "the later match was not marked after the replacement reload"
     );
     key(window, Key::Return);
     status(window, "1/1");
