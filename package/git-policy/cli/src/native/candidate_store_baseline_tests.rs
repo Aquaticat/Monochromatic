@@ -137,3 +137,22 @@ fn overlay_selects_a_private_index() {
     assert_eq!(paths(&real_version), [b"real.txt".to_vec()]);
     remove(root.as_path());
 }
+
+/// An intent-to-add entry is listed as an addition of the empty blob, which Git stored when the intent was recorded.
+#[test]
+fn intent_to_add_entry_is_an_empty_addition() {
+    let root: PathBuf = fixture("store-intent");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    write(repo.as_path(), b"intent.txt", b"not staged yet\n");
+    git(repo.as_path(), &["add", "--intent-to-add", "intent.txt"]);
+    let mut subject: CandidateStore = store(repo.as_path());
+    let version: Rc<CandidateVersion> = subject
+        .version(&CandidateSource::StagedAgainstHead)
+        .expect("staged version");
+    assert_eq!(paths(&version), [b"intent.txt".to_vec()]);
+    let candidate: &Candidate = at(&version, b"intent.txt");
+    assert_eq!(candidate.change, CandidateChange::Added);
+    // The worktree content is not what the index names: the entry's object is the empty blob.
+    assert!(subject.bytes(candidate).expect("empty blob").is_empty());
+    remove(root.as_path());
+}

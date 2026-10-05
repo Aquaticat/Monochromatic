@@ -38,12 +38,38 @@ An accepted document must satisfy the registry-order and bound invariants
 and survive being restated canonically.
 A rejection must render as one `config-invalid` JSON line that decodes back to the same message.
 
+### `batch_reply`
+
+Runs `read_batch_reply`,
+the reader of one `git cat-file --batch` reply,
+over two views of every input:
+the bytes split at the first line feed into a request and a raw stream,
+and the bytes mapped to a built reply together with the outcome it must have
+(a canonical reply,
+a missing notice,
+a reply for another object,
+content shorter or longer than declared,
+a stream that ends early,
+an overlong header,
+or a header Git never prints).
+Reply content is file content,
+so it may imitate a reply.
+It checks that reading is repeatable,
+that an accepted reply is byte for byte Git's canonical rendering of the returned value,
+that a reply to a request by name names that object,
+that bytes after the reply change nothing,
+that no sampled proper prefix of an accepted reply is accepted,
+and that a refusal is one of the four reply failures.
+The target reads in-memory bytes only;
+the process that produces real replies is controlled beside the subject.
+
 ## Controls
 
 `mise run //package/git-policy/cli.fuzz:test` runs the generator controls.
 They count that the generators reach every layout outcome,
 both loading decisions,
-and non-default accepted configurations,
+non-default accepted configurations,
+and every reply kind and reply failure,
 so an invariant that is never reached cannot pass unnoticed.
 
 `mise run //package/git-policy/cli.fuzz:test:planted` proves the invariants can fail.
@@ -53,7 +79,9 @@ plants one defect at a time
 a bare `git` skipping configuration,
 an unconsumed global option value,
 `warn` read as `error`,
-a rejected `landing` section),
+a rejected `landing` section,
+object content accepted past its declared size,
+a reply accepted for another object),
 and requires a generator control to fail for each.
 Results are retained under `target/verification/planted-*`.
 Removing a flag from a mutation list alone is not a usable plant:
