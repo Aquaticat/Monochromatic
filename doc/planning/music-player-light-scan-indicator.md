@@ -145,11 +145,27 @@ browser verification retains 2 GiB/2 CPU.
 Original AVDs remain untouched.
 Every visit records original settings before mutation,
 restores those exact fields and verifies owner shutdown/runtime absence.
-The owned native visit is starting through the retained pinned-image
-namespace bridge.
-Its first probe checks both panels at 200% text,
-actual Pause/Resume activation and stable active geometry.
-A failed label or control-floor check remains a failed probe,
-not publishable fit evidence.
-The next step is that measured native boundary,
-not another preference questionnaire.
+The owned visit reached the exact isolated activity with a fresh baseline.
+The initial probe failed on inner/light/200% Resume text:
+`ScanIndicator.text:control:Resume:lines=1,overflow=true`.
+Pause reported no overflow;
+the bar and control rectangles were unchanged after the native pause input.
+The bar measured 137px high;
+the control measured 244px wide and 131px high within it at 390dpi.
+This is a real text-fit failure,
+not failed touch delivery or accepted visual evidence.
+The probe stopped before cover checks and before the complete cohort.
+Recorded-setting restoration and owner shutdown were started immediately.
+
+The first native draft supplied 12dp horizontal button content padding.
+That value is not specified by D26 or scan-F's source,
+whose control has no horizontal padding declaration.
+The separate playback-mode control's 12dp floor must not be silently
+promoted into a scan-control requirement.
+The next step is to distinguish width from height overflow and measure the
+accepted fixed-width control at its actual source padding,
+without shrinking text or claiming a fix from source alone.
+Authored completion removes the row at the next composition;
+this introduces no production dwell-time or animation requirement.
+The separator preserves scan-F's existing `border-top` rather than adding
+a new status surface.
