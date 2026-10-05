@@ -232,6 +232,32 @@ writeFileSync(join(directory, 'results.json'), JSON.stringify(results, null, 2))
 console.log(JSON.stringify({ directory, results }, null, 2))
 """
 
+[tasks."inspect:search-accessibility"]
+description = "Verify accepted search landmarks and rejected dialog role declarations in disposable markup"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { mkdtempSync, writeFileSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { spawnSync } = await import('node:child_process')
+const directory = mkdtempSync(join(tmpdir(), 'ide-search-accessibility-'))
+const version = spawnSync('slint-viewer', ['--version'], { encoding: 'utf8' })
+if (version.error || version.status !== 0) throw version.error ?? new Error(version.stderr)
+const results = []
+for (const role of ['search', 'region', 'dialog']) {
+  const path = join(directory, role + '.slint')
+  writeFileSync(path, 'export component Case inherits Window { Rectangle { accessible-role: ' + role + '; } }')
+  const result = spawnSync('slint-viewer', ['--check', path], { encoding: 'utf8' })
+  if (result.error) throw result.error
+  const expected = role === 'dialog' ? result.status !== 0 && result.stderr.includes("Unknown unqualified identifier 'dialog'") : result.status === 0
+  if (!expected) throw new Error('Unexpected accessible role result: ' + role + ': ' + result.stderr)
+  results.push({ role, status: result.status, stderr: result.stderr })
+}
+const record = { directory, version: version.stdout.trim(), results }
+writeFileSync(join(directory, 'results.json'), JSON.stringify(record, null, 2))
+console.log(JSON.stringify(record, null, 2))
+"""
+
 [tasks."lint:slint"]
 description = "Check the native UI declaration"
 run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint"]
