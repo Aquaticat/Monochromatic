@@ -181,7 +181,7 @@ Logs are in `package/linter/monochromatic-lint/target/verification/`.
   379 library tests passed,
   and 11 of 12 `binary` tests passed;
   `debug_streams_workspace_progress_and_plain_runs_stay_silent` failed on a byte comparison
-  described under `Dispositions of the first run`.
+  described under `Executable survivors`.
 - `gate-mutation-close-4.log`,
   after that fix and the panic-hook refactor:
   380 library tests passed in 142.43 seconds,
@@ -252,7 +252,7 @@ Five of them load or prepare a Cargo workspace;
 `no_semantic_selection_avoids_workspace_initialization` and the three semantic-session tests are quick,
 and are skipped only because they share those modules' names.
 
-### Dispositions of the first run
+### Executable survivors
 
 `mutation-hQ4LIa` mutated test image
 `f357522ebe2b80d79a5858b5768305f54ba2241629b0d7587184243bcd7633c6`
@@ -270,7 +270,8 @@ which do not compile.
 Each missed mutant below names its disposition;
 the rerun under `Final campaigns` is the proof for each killing test.
 
-- `src/run_check.rs:126:13: delete field explicit_types from struct RustRuleSettings expression in HostChecker<'run>::check_rust_root`.
+- `src/run_check.rs:126:13`,
+  `delete field explicit_types from struct RustRuleSettings expression in HostChecker<'run>::check_rust_root`.
   Equivalent, and the redundant code is removed.
   `check_syntax_rules` reads only `max_lines`,
   `rustdoc` and `no_anonymous_functions`,
@@ -384,8 +385,28 @@ which reaches both the build and the test phase and selects the same tests.
 The restarted run is `mutation-6Cgoi0` (`campaign-markdown-2.log`),
 against the same image.
 Its unmutated baseline built in 108 seconds and ran the Markdown tests in under a second.
+Result:
+751 mutants,
+699 caught,
+8 missed,
+44 unviable,
+0 timeouts,
+exit status 2.
 
-### Dispositions of the first run
+The four timeouts of `mutation-BX2JYq` are gone,
+and the mutants behind them are caught by ordinary failing tests:
+
+- both constant replacements of `MarkdownSource::parent`
+  (`Some(0)` and `Some(1)` at `src/markdown_source.rs:319:9`),
+  which is the evidence that every ancestor walk is bounded;
+- the remaining arithmetic of the restructured loops,
+  `ending + 1` at `src/markdown_definitions.rs:55:29`
+  and the escape step at `src/markdown_punctuation.rs:79:23`.
+
+All 8 missed mutants are in the modules the executable added;
+the 16 modules mutated before have none.
+
+### Markdown survivors
 
 Locations are `line:column` at the gate 4 snapshot.
 The rerun under `Final campaigns` is the proof for each killing test.
@@ -408,7 +429,8 @@ The rerun under `Final campaigns` is the proof for each killing test.
   with and without a following space,
   and commented-out section headers,
   with an uncommented declaration after comments as the positive control.
-- `src/markdown_lfs_config.rs:113:9: replace <impl std::fmt::Display for LfsConfigError>::fmt -> std::fmt::Result with Ok(Default::default())`.
+- `src/markdown_lfs_config.rs:113:9`,
+  `replace <impl std::fmt::Display for LfsConfigError>::fmt -> std::fmt::Result with Ok(Default::default())`.
   Not equivalent:
   a processing finding built from this error would lose its explanation.
   The only code that renders it is `HostChecker::lfs_context` in `run_check.rs`,
@@ -464,8 +486,6 @@ The rerun under `Final campaigns` is the proof for each killing test.
   through a repository with an empty cache
   (a cached repository answers from its map and never reaches the file system).
 
-Results for the remaining files are pending.
-
 ## Defects found
 
 No mutant so far exposed a defect on unmutated input:
@@ -487,15 +507,23 @@ Neither Windows nor a release build was run here.
 
 ## Final campaigns
 
-The plan for the final snapshot:
-after the Markdown survivors are dispositioned,
-one gate builds the final test image,
-and the executable,
-Markdown and processor campaigns each run against it with `mise run --skip-deps`,
+A final round is one gate,
+which builds the test image,
+followed by the three campaigns against that image with `mise run --skip-deps`,
 one at a time.
-Their three `manifest.json` files must name the same `baseImage`.
-The processor campaign runs only once, there:
-no processor source changed after `Timeouts removed`.
+Their three `manifest.json` files must name the same `baseImage`,
+and a round counts only if all three exit 0.
+The executable and processor campaigns run first,
+because their sources changed the most since they were last mutated
+(the processor restructuring under `Timeouts removed` had never been mutated);
+the Markdown campaign starts only if both pass.
+
+Round 1 is running:
+`gate-mutation-close-5.log`,
+then `campaign-executable-final-1.log`,
+`campaign-processors-files-final-1.log` and `campaign-markdown-final-1.log`.
+A processor discovery pass on the gate 4 image (`mutation-dy0x0l`) was started and removed before its baseline,
+in favour of running the processor campaign once on the gate 5 image.
 
 ## Remaining
 
