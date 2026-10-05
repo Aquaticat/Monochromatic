@@ -8,12 +8,15 @@
 
 /// Import the production helpers under test.
 use super::{continuation_prefix, paragraph_for};
-/// Import the consuming rule, its severity and the actual grouped-edit applier.
+/// Import the severity every rule entry point takes.
 use crate::diagnostic::Severity;
+/// Import the grouped fix record and the production applier, so fixes are applied exactly as released.
 use crate::edits::{Fix, apply_fixes};
+/// Import the consuming rule; the prefix only matters through the breaks it inserts.
 use crate::markdown_semantic_breaks::semantic_line_breaks;
-/// Import the native parser adapter and its typed node catalog.
+/// Import the native parser adapter that owns exact source bytes and node offsets.
 use crate::markdown_source::MarkdownSource;
+/// Import the typed node-kind catalog used to pick paragraphs and text out of a parse.
 use satteri_ast::mdast::MdastNodeType;
 
 /// Parse one exact fixture through the native adapter.
