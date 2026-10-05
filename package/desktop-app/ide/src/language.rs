@@ -48,6 +48,9 @@ pub mod incoming;
 /// The launch seam: what is spawned for a server, and where its private directories may be.
 pub mod launch;
 
+/// The production launch policy: bubblewrap confinement, refusing rather than running unconfined.
+pub mod confine;
+
 /// The language registry, built in code from Helix's built-in definitions and the application's overrides.
 pub mod config;
 

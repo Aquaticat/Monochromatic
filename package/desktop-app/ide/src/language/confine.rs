@@ -1,0 +1,208 @@
+//! The production launch policy: every language server runs inside bubblewrap, so neither it
+//! nor anything it starts can write project files. If confinement cannot be set up, the server
+//! is refused; there is no fallback to an unconfined launch.
+
+/// The seam's input and output types.
+use super::launch::{LaunchRequest, ServerLaunch};
+/// What: `Command` starts a child process and waits for it; `OnceLock` holds a value computed once.
+/// Why: The namespace probe runs bubblewrap once per process and remembers the answer.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { spawnSync } from 'node:child_process';
+/// ```
+use std::{
+    os::unix::fs::PermissionsExt,
+    path::{Path, PathBuf},
+    process::Command,
+    sync::OnceLock,
+};
+
+/// The bubblewrap command line, without system access.
+pub mod recipe;
+
+/// The only bubblewrap the policy uses: the host's packaged copy, never one found on `PATH`.
+pub const BUBBLEWRAP: &str = "/usr/bin/bwrap";
+
+/// A program that exists on the host and does nothing, used to test sandbox creation.
+const PROBE_PROGRAM: &str = "/usr/bin/true";
+
+/// Result of the sandbox probe with a process-id namespace, computed once per process.
+static PROBE_WITH_PID: OnceLock<Result<(), String>> = OnceLock::new();
+
+/// Result of the sandbox probe without a process-id namespace, computed once per process.
+static PROBE_WITHOUT_PID: OnceLock<Result<(), String>> = OnceLock::new();
+
+/// What: Turn text into a safe single path component. `char` is one Unicode scalar value.
+/// Why: Project and server names become directory names below private state.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const component = (text: string) => text.replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+$/, '_') || '_';
+/// ```
+fn component(text: &str) -> String {
+    let mut safe = String::new();
+    for character in text.chars() {
+        if character.is_ascii_alphanumeric()
+            || character == '.'
+            || character == '_'
+            || character == '-'
+        {
+            safe.push(character);
+        } else {
+            safe.push('_');
+        }
+    }
+    if safe.is_empty() || safe.chars().all(|character| return character == '.') {
+        return "_".to_string();
+    }
+    return safe;
+}
+
+/// What: The 64-bit FNV-1a hash of some bytes. `u64` is an unsigned 64-bit integer;
+///       `wrapping_mul` multiplies and keeps the low 64 bits instead of failing on overflow.
+/// Why: Two projects with the same directory name need different state; the standard library's
+///      hasher may change between releases, and this one is fixed by its definition.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function fnv1a(bytes: Uint8Array): bigint
+/// ```
+fn fnv1a(bytes: &[u8]) -> u64 {
+    let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+    for byte in bytes {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+    return hash;
+}
+
+/// What: The private state directory of one server for one project:
+///       `<state root>/<project name>-<hash of the project path>/<server>`.
+/// Why: The adopted shape keeps state per project and per server, outside the project.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function stateDirectory(stateRoot: string, project: string, server: string): string
+/// ```
+pub fn state_directory(state_root: &Path, project_root: &Path, server: &str) -> PathBuf {
+    // `file_name` is the last path component; `to_string_lossy` renders it as text.
+    let name = project_root
+        .file_name()
+        .map_or("root".to_string(), |found| {
+            return found.to_string_lossy().into_owned();
+        });
+    let shortened: String = component(&name).chars().take(40).collect();
+    let hash = fnv1a(project_root.as_os_str().as_encoded_bytes());
+    return state_root
+        .join(format!("{shortened}-{hash:016x}"))
+        .join(component(server));
+}
+
+/// What: The application's private state root: `$XDG_CACHE_HOME/monochromatic-ide/language`,
+///       or `$HOME/.cache/monochromatic-ide/language`; nothing when neither is an absolute path.
+/// Why: Cache storage outside the project is allowed by the accepted scope.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function defaultStateRoot(): string | undefined
+/// ```
+pub fn default_state_root() -> Option<PathBuf> {
+    // `filter` keeps the value only when the closure accepts it.
+    let cache = std::env::var_os("XDG_CACHE_HOME")
+        .map(PathBuf::from)
+        .filter(|path| return path.is_absolute())
+        .or_else(|| {
+            return std::env::var_os("HOME")
+                .map(PathBuf::from)
+                .filter(|path| return path.is_absolute())
+                .map(|home| return home.join(".cache"));
+        })?;
+    return Some(cache.join("monochromatic-ide").join("language"));
+}
+
+/// What: Start bubblewrap once with the server's namespaces around a program that does nothing.
+/// Why: A host without user namespaces makes bubblewrap fail; the probe turns that into a
+///      refusal with the cause, before any server process exists.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function probe(bubblewrap: string, pidNamespace: boolean): void // throws with the cause
+/// ```
+fn probe(bubblewrap: &str, pid_namespace: bool) -> Result<(), String> {
+    let mut arguments = recipe::isolation(pid_namespace);
+    arguments.push("--".to_string());
+    arguments.push(PROBE_PROGRAM.to_string());
+    let output = Command::new(bubblewrap)
+        .args(&arguments)
+        .env_clear()
+        .output()
+        .map_err(|error| return format!("cannot run {bubblewrap}: {error}"))?;
+    if output.status.success() {
+        return Ok(());
+    }
+    // `from_utf8_lossy` renders bubblewrap's message even if it is not valid UTF-8.
+    let message = String::from_utf8_lossy(&output.stderr).trim().to_string();
+    return Err(format!(
+        "{bubblewrap} could not create the language-server sandbox ({}: {message}). Language servers are not started without write confinement. Allow unprivileged user namespaces for this application (sysctl user.max_user_namespaces above 0, and no security policy denying them), then restart the application",
+        output.status
+    ));
+}
+
+/// What: The confined launch with an explicit bubblewrap path.
+/// Why: Tests pass a missing path to prove that an absent bubblewrap refuses the server.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function confineWith(request: LaunchRequest, bubblewrap: string): ServerLaunch // throws to refuse
+/// ```
+pub fn confine_with(request: &LaunchRequest, bubblewrap: &str) -> Result<ServerLaunch, String> {
+    let executable = std::fs::metadata(bubblewrap)
+        .is_ok_and(|found| return found.is_file() && found.permissions().mode() & 0o111 != 0);
+    if !executable {
+        return Err(format!(
+            "{bubblewrap} is not installed, so {} cannot be confined and is not started. Install bubblewrap (the bubblewrap package) and restart the application",
+            request.server
+        ));
+    }
+    let Some(state_root) = request.state_root.as_ref() else {
+        return Err(format!(
+            "no private state directory is available for {} (neither XDG_CACHE_HOME nor HOME is an absolute path), so it is not started. Set HOME or XDG_CACHE_HOME and restart the application",
+            request.server
+        ));
+    };
+    let pid_namespace = !recipe::NO_PID_NAMESPACE.contains(&request.server.as_str());
+    let cell = if pid_namespace {
+        &PROBE_WITH_PID
+    } else {
+        &PROBE_WITHOUT_PID
+    };
+    // `get_or_init` runs the probe on first use and returns the stored answer afterwards.
+    cell.get_or_init(|| return probe(bubblewrap, pid_namespace))
+        .clone()?;
+    let mut inherited: Vec<(String, String)> = Vec::new();
+    for name in recipe::ALLOWED_ENVIRONMENT {
+        // `var` fails for unset and non-Unicode values; both are left out.
+        if let Ok(value) = std::env::var(name) {
+            inherited.push((name.to_string(), value));
+        }
+    }
+    let state = state_directory(state_root, &request.project_root, &request.server);
+    return recipe::recipe(request, &state, bubblewrap, &inherited);
+}
+
+/// What: The production launch policy. Its signature is `LaunchPolicy`.
+/// Why: One function decides how every server starts; it refuses rather than run unconfined.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const launchConfined: LaunchPolicy = request => confineWith(request, '/usr/bin/bwrap');
+/// ```
+pub fn launch_confined(request: &LaunchRequest) -> Result<ServerLaunch, String> {
+    return confine_with(request, BUBBLEWRAP);
+}
+
+/// Command-line shapes, settings overrides, state naming, and refusals, without starting bubblewrap.
+#[cfg(test)]
+#[path = "confine_tests.rs"]
+mod tests;

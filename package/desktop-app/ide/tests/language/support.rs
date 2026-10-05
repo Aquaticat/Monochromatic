@@ -168,7 +168,7 @@ impl Probe {
     pub fn new(root: &Path, definitions: String) -> Self {
         let setup = LanguageSetup {
             extra_languages: Some(definitions),
-            ..LanguageSetup::default()
+            ..LanguageSetup::unconfined()
         };
         return Self::with_setup(root, setup);
     }
