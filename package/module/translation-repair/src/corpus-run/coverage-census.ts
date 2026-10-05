@@ -3,7 +3,6 @@ import {
   mkdtemp,
   mkdtempDisposable,
   readFile,
-  writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { pathToFileURL, } from 'node:url';
@@ -12,6 +11,7 @@ import { runnerEntrySources, } from '../build-entries.ts';
 import { contextRoot, } from '../log-context.ts';
 import { packageCacheDir, } from '../lookup-cache.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import { writeFileAtomic, } from './atomic-write.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import {
@@ -214,9 +214,11 @@ async function reportCensus(
     reportDirectory,
     'census.json',
   );
-  await writeFile(
-    censusPath,
-    censusFileText({
+  // ATOMIC, since a later census reads this file back as its baseline: a plain
+  // write a full disk refuses part way leaves text cut short at the path.
+  await writeFileAtomic({
+    path: censusPath,
+    text: censusFileText({
       head,
       clean,
       testFiles: asked.testFiles,
@@ -228,7 +230,7 @@ async function reportCensus(
       unloadedBundles,
       unloadedSources,
     },),
-  );
+  },);
   /**
    Sources the batch claims, empty for every source.
    */

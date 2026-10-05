@@ -2,6 +2,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from '../json-guard.ts';
+import { parseModelJson, } from '../model-content.ts';
 
 //region Coverage file
 // Ledger T8: what the census reads out of one file `NODE_V8_COVERAGE` wrote,
@@ -171,8 +172,10 @@ function isFunctionCoverage(value: unknown,): value is FunctionCoverage {
 
  @returns Each bundle script the process loaded
 
- @throws CoverageFileError where the file or a bundle script in it does not
- read as V8 writes one
+ @throws CoverageFileError where the file is not JSON (a write cut short
+ leaves one), or it or a bundle script in it does not read as V8 writes one;
+ the refusal never repeats the parser's message, which quotes the text it
+ refused
 
  @example
  ```ts
@@ -191,9 +194,18 @@ export function bundleScriptsOf(
   },
 ): readonly BundleScript[] {
   /**
+   Parse attempt over the file, its failure taken as data.
+   */
+  const attempt = parseModelJson({ text, },);
+  if (!attempt.parsed)
+    throw new CoverageFileError({
+      path,
+      says: 'it is not JSON',
+    },);
+  /**
    The file as JSON.
    */
-  const parsed: unknown = JSON.parse(text,);
+  const parsed = attempt.value;
   if (!isJsonRecord(parsed,))
     throw new CoverageFileError({
       path,

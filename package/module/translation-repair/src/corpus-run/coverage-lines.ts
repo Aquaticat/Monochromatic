@@ -12,6 +12,7 @@ import {
   isJsonRecord,
 } from '../json-guard.ts';
 import { lineStartsOf, } from '../line-starts.ts';
+import { parseModelJson, } from '../model-content.ts';
 import type { UncalledFunction, } from './coverage-tally.ts';
 
 //region Coverage lines
@@ -169,8 +170,9 @@ const SOURCE_MAP_VERSION = 3;
 
  @returns The map, and the sources it names as written in it
 
- @throws SourceMapFileError where the file is not a version 3 map with
- named sources and mappings
+ @throws SourceMapFileError where the file is not JSON (a write cut short
+ leaves one), or is not a version 3 map with named sources and mappings; the
+ refusal never repeats the parser's message, which quotes the text it refused
 
  @example
  ```ts
@@ -190,9 +192,18 @@ export function readSourceMap(
   readonly sources: readonly string[];
 } {
   /**
+   Parse attempt over the file, its failure taken as data.
+   */
+  const attempt = parseModelJson({ text, },);
+  if (!attempt.parsed)
+    throw new SourceMapFileError({
+      path,
+      says: 'it is not JSON',
+    },);
+  /**
    The file as JSON.
    */
-  const parsed: unknown = JSON.parse(text,);
+  const parsed = attempt.value;
   if (!isJsonRecord(parsed,))
     throw new SourceMapFileError({
       path,

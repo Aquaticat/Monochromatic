@@ -1,12 +1,14 @@
 import { randomUUID, } from 'node:crypto';
 import {
+  link,
   mkdir,
-  open,
   rename,
   rm,
+  writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { failureName, } from '../error-name.ts';
 import { contextRoot, } from '../log-context.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import {
@@ -42,6 +44,18 @@ import {
 // The atomic rename in `writeFileAtomic` protects a READER from a half-written
 // file. It says nothing about two writers, which is this. Who holds a lock and
 // whether it still runs is `runs-lock-holder.ts`.
+//
+// THE LOCK APPEARS WITH ITS HOLDER ALREADY IN IT. It used to be created empty
+// and written after, and a starter that finds a lock it cannot read takes it
+// over, since a pass killed between the two leaves exactly that. So a second
+// starter arriving between the create and the write read a live holder's
+// empty lock as unreadable, moved it aside and claimed its own, and both
+// passes went on: measured on 2026-10-05, two starters at once on a fresh
+// directory in one process both held it in 28 of 200 rounds. The holder's
+// text is now written to a name only this claim knows and hard-linked to the
+// lock's name, which fails when anything stands there, so the claim and the
+// text are one filesystem operation. A runs directory on a filesystem without
+// hard links refuses the lock with that filesystem's own error.
 
 /**
  Logger every lock line goes through; the lock takes no caller-supplied one.
@@ -128,17 +142,102 @@ export class RunsDirectoryBusyError extends Error {
 }
 
 /**
- Tries to create the lock file, failing rather than overwriting.
+ Links a written lock into place, failing rather than overwriting.
 
- `wx` makes the check and the claim ONE filesystem operation, which is the
- whole mechanism: checking for the file and then creating it leaves a window
- in which two passes both see it absent and both proceed.
+ @param staged - file already holding the holder's whole text
+
+ @param path - lock file path
+
+ @returns Whether the link made the lock, false where something stands there
+
+ @throws whatever the filesystem refuses the link with, for any failure but
+ the lock already existing
+
+ @example
+ ```ts
+ const won = await linkedInPlace({ staged, path, },);
+ ```
+ */
+async function linkedInPlace(
+  {
+    staged,
+    path,
+  }: {
+    readonly staged: string;
+    readonly path: string;
+  },
+): Promise<boolean> {
+  try {
+    await link(
+      staged,
+      path,
+    );
+    return true;
+  }
+  catch (error) {
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'EEXIST'))
+      return false;
+    throw error;
+  }
+}
+
+/**
+ Removal of a claim's staged text when the claim's scope ends, whatever its
+ link answered.
+
+ A REMOVAL THAT FAILS is said on a warning naming the file and the filesystem
+ code rather than thrown: the claim's own answer, won, lost or refused, is
+ what the starter acts on, and the file left is one name nothing reads.
+
+ @param staged - name only that claim knows, absent where its write failed
+ before creating it
+
+ @returns Disposable removing it
+
+ @example
+ ```ts
+ await using _staging = stagedRemoval({ staged, },);
+ ```
+ */
+function stagedRemoval(
+  { staged, }: { readonly staged: string; },
+): AsyncDisposable {
+  return {
+    async [Symbol.asyncDispose](): Promise<void> {
+      try {
+        await rm(
+          staged,
+          { force: true, },
+        );
+      }
+      catch (error) {
+        lockLog.warn(`${staged} is left after a claim and could not be removed (${failureName({ error, },)})`,);
+      }
+    },
+  };
+}
+
+/**
+ Tries to create the lock file, holder and all, failing rather than
+ overwriting.
+
+ A LINK MAKES THE CHECK, THE CLAIM AND THE TEXT ONE FILESYSTEM OPERATION,
+ which is the whole mechanism. Checking for the file and then creating it
+ leaves a window in which two passes both see it absent and both proceed;
+ creating it empty and then writing it leaves one in which another starter
+ reads it as unreadable and takes it over. The text goes first to a name only
+ this claim knows, beside the lock so the link stays on one filesystem, and
+ that name is removed whatever the link answers.
 
  @param path - lock file path
 
  @param holder - what to record inside it
 
  @returns Whether this call created it
+
+ @throws whatever the filesystem refuses writing the text or the link with,
+ for any failure but the lock already existing
 
  @example
  ```ts
@@ -154,36 +253,36 @@ async function claim(
     readonly holder: LockHolder;
   },
 ): Promise<boolean> {
-  try {
-    /**
-     Handle from an exclusive create, which fails when the file is there.
-
-     DISPOSED RATHER THAN CLOSED BY HAND, so a write that fails still closes
-     it; the empty file such a failure leaves is what the next pass reads as
-     unreadable and evicts, which is the documented recovery.
-     */
-    await using handle = await open(
-      path,
-      'wx',
-    );
-    await handle.writeFile(lockFileText({ holder, },),);
-    return true;
-  }
-  catch (error) {
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'EEXIST'))
-      return false;
-    throw error;
-  }
+  /**
+   Name only this claim knows, holding the text until the link.
+   */
+  const staged = `${path}.claim-${randomUUID()}`;
+  /**
+   Removes the staged text when this claim ends, won, lost or refused.
+   */
+  await using _staging = stagedRemoval({ staged, },);
+  await writeFile(
+    staged,
+    lockFileText({ holder, },),
+    { flag: 'wx', },
+  );
+  return await linkedInPlace({
+    staged,
+    path,
+  },);
 }
 
 /**
  Takes exclusive ownership of a runs directory for the life of a scope.
 
- Created with `wx`, so the check and the claim are one filesystem operation
- and two passes starting together cannot both win. A lock whose process is
- gone is taken over, since a pass killed at its hard cap leaves one behind and
- refusing forever would make every crash need manual cleanup.
+ Linked into place with its holder already written, so the check, the claim
+ and the text are one filesystem operation: two passes starting together
+ cannot both win, and no starter ever finds a live holder's lock empty. A
+ lock whose process is gone is taken over, since a pass killed at its hard
+ cap leaves one behind and refusing forever would make every crash need
+ manual cleanup; so is one that says nothing readable, which a pass of a
+ build before this one left when killed between creating and writing its
+ lock, since a live holder's lock of this build is never seen that way.
 
  @param runsDir - durable output root this pass owns
 
@@ -192,9 +291,10 @@ async function claim(
  @throws RunsDirectoryBusyError when a live process already holds it, or when
  this call loses a concurrent race for a stale lock to another starter
 
- @throws whatever the filesystem refuses creating the runs directory or the
- lock file with, for any failure but the lock file already existing (an
- unwritable runs directory, say), unwrapped
+ @throws whatever the filesystem refuses creating the runs directory, the
+ claim's text or the lock file with, for any failure but the lock file
+ already existing (an unwritable runs directory, or one on a filesystem
+ without hard links, say), unwrapped
 
  @example
  ```ts

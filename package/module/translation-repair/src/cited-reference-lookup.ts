@@ -26,6 +26,7 @@ import {
   type ReferenceRecord,
   writeCachedReference,
 } from './reference-cache.ts';
+import { refusalText, } from './refusal-text.ts';
 import { EXA_API_KEY_VAR, } from './work-title-search.ts';
 
 /**
@@ -164,7 +165,10 @@ export function referenceLineOf(
 /**
  Block of reference lines for one original: what every page it links says,
  bought once and cached, one line per page in order of citation. Empty when
- the original links nowhere or no key is set.
+ the original links nowhere or no key is set. A page that could not be
+ fetched keeps a line saying so, and its failure is logged as `refusalText`
+ renders it, its message where its class declares the message free of quoted
+ text and its class name otherwise.
 
  @param sourceText - original document
 
@@ -312,7 +316,9 @@ export async function citedReferenceBlock(
         record,
       },);
     } catch (error) {
-      rl.warn(`reference ${String(index,)} ${url} could not be fetched: ${String(error,)}`,);
+      // `refusalText`, never the caught value's own words: a contents body
+      // that is not JSON fails as V8's `SyntaxError`, whose message quotes it.
+      rl.warn(`reference ${String(index,)} ${url} could not be fetched: ${refusalText({ error, },)}`,);
       return `${referenceLineHead({
         index,
         url,

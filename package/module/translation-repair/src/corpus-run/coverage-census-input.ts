@@ -3,6 +3,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from '../json-guard.ts';
+import { parseModelJson, } from '../model-content.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import type { BaselineCensus, } from './coverage-census-baseline.ts';
@@ -183,7 +184,7 @@ const FORMAT_BEFORE_INVARIANT_THROWS = 2;
 
  @example
  ```ts
- await writeFile(censusPath, censusFileText({ head, clean, testFiles, passes, stretches, invariantThrows, uncalled, loadedSources, unloadedBundles, unloadedSources, },),);
+ await writeFileAtomic({ path: censusPath, text: censusFileText({ head, clean, testFiles, passes, stretches, invariantThrows, uncalled, loadedSources, unloadedBundles, unloadedSources, },), },);
  ```
  */
 export function censusFileText(
@@ -350,11 +351,12 @@ function isInvariantThrowStretch(value: unknown,): value is InvariantThrowStretc
 
  @returns Its commit, stretches and loaded sources
 
- @throws CensusBaselineError where the file is of the format written before
- invariant throws were counted apart, is not the current census format,
- holds no list of stretches, of invariant throws or of loaded sources, names
- no commit, does not say whether its tree matched that commit, or was taken
- with uncommitted changes
+ @throws CensusBaselineError where the file is not JSON (a write cut short
+ leaves one), is of the format written before invariant throws were counted
+ apart, is not the current census format, holds no list of stretches, of
+ invariant throws or of loaded sources, names no commit, does not say whether
+ its tree matched that commit, or was taken with uncommitted changes; the
+ refusal never repeats the parser's message, which quotes the text it refused
 
  @example
  ```ts
@@ -371,9 +373,18 @@ export function readBaselineCensus(
   },
 ): BaselineCensus {
   /**
+   Parse attempt over the file, its failure taken as data.
+   */
+  const attempt = parseModelJson({ text, },);
+  if (!attempt.parsed)
+    throw new CensusBaselineError({
+      path,
+      says: 'it is not JSON',
+    },);
+  /**
    The file as JSON.
    */
-  const parsed: unknown = JSON.parse(text,);
+  const parsed = attempt.value;
   if (!isJsonRecord(parsed,))
     throw new CensusBaselineError({
       path,

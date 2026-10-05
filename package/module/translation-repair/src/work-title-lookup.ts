@@ -11,6 +11,7 @@ import {
   readCachedLookup,
   writeCachedLookup,
 } from './lookup-cache.ts';
+import { refusalText, } from './refusal-text.ts';
 import {
   lookupQueryFor,
   workTitlesOf,
@@ -277,7 +278,9 @@ export function namesWork(
 
 /**
  Evidence lines for every work an original names, each title looked up once
- and cached; a failed lookup is logged and contributes no line.
+ and cached; a failed lookup contributes no line and is logged as
+ `refusalText` renders it, its message where its class declares the message
+ free of quoted text and its class name otherwise.
 
  @param sourceText - original document
 
@@ -370,7 +373,9 @@ export async function workTitleLookupLines(
         record,
       },);
     } catch (error) {
-      wl.warn(`lookup for ${title} failed and contributes no line: ${String(error,)}`,);
+      // `refusalText`, never the caught value's own words: a search body that
+      // is not JSON fails as V8's `SyntaxError`, whose message quotes it.
+      wl.warn(`lookup for ${title} failed and contributes no line: ${refusalText({ error, },)}`,);
       return [];
     }
   },),);

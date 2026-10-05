@@ -35,8 +35,9 @@ import {
 // APPEND-ONLY JSON LINES rather than a rewritten total, so two processes
 // writing at once (a pass and a budget sample) cannot lose each other's
 // calls, and so a reader can see what was bought and when. A line that will
-// not parse is a thrown error naming its number, not a skipped line: a ledger
-// that silently dropped a line would report money as unspent.
+// not parse is a thrown error naming the file and the line's number, not a
+// skipped line: a ledger that silently dropped a line would report money as
+// unspent.
 //
 // DURABLE OUTSIDE THE RUNS DIRECTORY, since every launch uses a fresh runs
 // directory and the credit is spent across all of them: the XDG state
@@ -129,20 +130,27 @@ export class BedrockCreditOverrideError extends Error {
 /**
  Raised when a ledger line will not read as a spend entry.
 
+ NAMES THE FILE as well as the line: the ledger is repaired by hand (the
+ module note says why a line is never skipped), and the variable can move it
+ off its default, so the line number alone does not say which file to open.
+
  @example
  ```ts
- throw new BedrockLedgerShapeError({ line: 3, detail: 'usd is not a number', },);
+ throw new BedrockLedgerShapeError({ path, line: 3, detail: 'usd is not a number', },);
  ```
  */
 export class BedrockLedgerShapeError extends Error {
   /**
-   Declares this message safe to forward: a line number and an authored
+   Declares this message safe to forward: the ledger file's path, which the
+   home or the operator's variable names, a line number and an authored
    phrase, never the line's content.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   Names the line and what was wrong with it.
+   Names the file, the line and what was wrong with it.
+
+   @param path - ledger file the line is in
 
    @param line - one-based line number in the ledger file
 
@@ -150,19 +158,21 @@ export class BedrockLedgerShapeError extends Error {
 
    @example
    ```ts
-   new BedrockLedgerShapeError({ line: 3, detail: 'not a JSON object', },);
+   new BedrockLedgerShapeError({ path, line: 3, detail: 'not a JSON object', },);
    ```
    */
   public constructor(
     {
+      path,
       line,
       detail,
     }: {
+      readonly path: string;
       readonly line: number;
       readonly detail: string;
     },
   ) {
-    super(`Bedrock spend ledger line ${String(line,)} violated expectations: ${detail}`,);
+    super(`Bedrock spend ledger ${path} line ${String(line,)} violated expectations: ${detail}`,);
     this.name = 'BedrockLedgerShapeError';
   }
 }
@@ -349,7 +359,10 @@ export function bedrockLedgerPathFrom(
 }
 
 /**
- Reads one ledger line as an entry, naming the line when it will not read.
+ Reads one ledger line as an entry, naming the file and the line when it will
+ not read.
+
+ @param path - ledger file, for the error
 
  @param text - one line of the file
 
@@ -361,14 +374,16 @@ export function bedrockLedgerPathFrom(
 
  @example
  ```ts
- const entry = entryOf({ text, line: 1, },);
+ const entry = entryOf({ path, text, line: 1, },);
  ```
  */
 function entryOf(
   {
+    path,
     text,
     line,
   }: {
+    readonly path: string;
     readonly text: string;
     readonly line: number;
   },
@@ -381,6 +396,7 @@ function entryOf(
       return JSON.parse(text,);
     } catch (error) {
       throw new BedrockLedgerShapeError({
+        path,
         line,
         detail: `not valid JSON (${errorName({ error, },)})`,
       },);
@@ -388,6 +404,7 @@ function entryOf(
   })();
   if (!isJsonRecord(parsed,))
     throw new BedrockLedgerShapeError({
+      path,
       line,
       detail: 'not a JSON object',
     },);
@@ -405,11 +422,13 @@ function entryOf(
   } = parsed;
   if ((typeof at) !== 'string')
     throw new BedrockLedgerShapeError({
+      path,
       line,
       detail: 'at is not a string',
     },);
   if ((typeof model) !== 'string')
     throw new BedrockLedgerShapeError({
+      path,
       line,
       detail: 'model is not a string',
     },);
@@ -421,11 +440,13 @@ function entryOf(
     && (usd >= 0);
   if (!usdIsAmount)
     throw new BedrockLedgerShapeError({
+      path,
       line,
       detail: 'usd is not a non-negative number',
     },);
   if (((typeof promptTokens) !== 'number') || ((typeof completionTokens) !== 'number'))
     throw new BedrockLedgerShapeError({
+      path,
       line,
       detail: 'token counts are not numbers',
     },);
@@ -440,6 +461,7 @@ function entryOf(
   }
   if (!isSpendReckoning(estimated,))
     throw new BedrockLedgerShapeError({
+      path,
       line,
       detail: 'estimated is not a reckoning this package writes',
     },);
@@ -527,6 +549,7 @@ export function createBedrockLedger(
         if (lineText === '')
           return [];
         return [entryOf({
+          path,
           text: lineText,
           line: index + 1,
         },),];
