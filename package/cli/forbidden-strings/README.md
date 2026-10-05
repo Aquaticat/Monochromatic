@@ -664,6 +664,37 @@ Hosted GitHub runners use their native account cache for the derived artifact.
 A self-hosted or shared runner should set `FORBIDDEN_STRINGS_CACHE_DIR` to job-scoped storage
 when its account cache survives jobs.
 
+## In-process candidate scans
+
+The Rust library now exposes `Scanner`,
+`CandidateScan`,
+`ScanFinding`,
+and fixed-token `CacheWarning` accessors for the native cli-git rewrite.
+The adapter is undergoing verification;
+production cli-git still uses its existing scanner integration.
+
+`Scanner::load` reuses the current runtime-rule cache,
+compiler,
+and embedded baseline.
+`Scanner::scan` accepts a caller-chosen opaque candidate identity,
+a logical pathname,
+and the exact candidate byte slice.
+It does not open a worktree file or substitute a temporary filename.
+
+Content and pathname findings stay structured until the standalone formatter runs.
+Matching pathname components are masked before they become display labels.
+Candidate identity therefore remains usable even when distinct candidates share a masked label.
+Findings never contain matched content bytes.
+The inherited binary policy inspects the first 8 KiB when that prefix contains NUL;
+`scanned_bytes` reports that boundary explicitly.
+
+The first adapter currently takes UTF-8 path strings.
+Native non-UTF-8 pathname handling,
+load/consumer integration tests,
+panic-hook stderr redaction,
+and the full container/mutation/fuzz gates remain pending.
+This is not a production-cutover announcement.
+
 ## Integration
 
 ### Local cli-git policy

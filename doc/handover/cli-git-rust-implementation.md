@@ -436,11 +436,37 @@ a retry is pending.
 
 Scanner embedding has begun with the structured `ScanFinding` model in
 `package/cli/forbidden-strings/src/scan_finding.rs`.
-It is not yet registered or connected to the content/path scan core.
-No scanner behavior or production executable has changed.
+The type is now registered and used by the shared content and pathname cores.
+Standalone adapters render those canonical records into the existing protocol.
+`Scanner::load`,
+`Scanner::scan`,
+`CandidateScan`,
+and structured `CacheWarning` accessors are implemented,
+with direct candidate-buffer and redaction controls.
+The first adapter still accepts UTF-8 path strings;
+native non-UTF-8 path support and public loader/consumer verification remain pending.
+The production executable has not been rebuilt or replaced.
 Next scanner work must share typed findings with the standalone formatter,
 not parse terminal text back into candidate identities.
 The existing catch-unwind paths and stderr panic-hook behavior also need lifecycle/redaction verification.
+
+The current Rust test image was probed and contains Git 2.47.3;
+the host `/usr/bin/git` is 2.55.0.
+Neither is the selected 2.56.0 wrapper-test contract.
+Git 2.56.0 source was cloned read-only at
+`~/temp/agent/git-native-2.56.0-20261004`,
+commit `a018953688f1b10bddf91bff8747068f5f4746a4`.
+Its build entry points/generators were inspected,
+and `EXECUTION.md` records the mount-free,
+network-disabled,
+2 GiB/2 CPU/128 PID boundary.
+`proc_b2d5` is running the owning `test:git-image` task.
+The fixture excludes Tk UI and localization only;
+Perl/Python helpers,
+curl,
+fsmonitor,
+and Git's default Rust support remain enabled.
+A version probe must show exactly Git 2.56.0 before scanner/wrapper verification uses the image.
 
 A Markdown/MDX ASAN target has been added to the fuzz sidecar.
 Every draw exercises an independently counted rule fixture,
