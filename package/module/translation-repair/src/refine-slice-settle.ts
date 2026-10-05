@@ -1,5 +1,4 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { wordForCount, } from './count-word.ts';
@@ -10,6 +9,7 @@ import { PRODUCTION_PRIOR_ISSUE_DISCLOSURE, } from './introduced-defect-wire.ts'
 import { parseDocument, } from './parse-document.ts';
 import { deriveRefinableEnvelopes, } from './refine-envelope.ts';
 import { admittedClaimCounts, } from './refine-probe-verdict.ts';
+import { retainsResolvedIssues, } from './refine-recheck.ts';
 import { runRefineStage, } from './refine-stage.ts';
 import type {
   ChunkRepairOutcome,
@@ -20,9 +20,7 @@ import {
   checkerBenchAtStage,
   standingSeating,
 } from './repair-checker-reseat.ts';
-import type { IssueCheckerReading, } from './checker-reading.ts';
 import { collectRefinedAuthors, } from './issue-authors.ts';
-import { runCheckerStage, } from './repair-edit-stages.ts';
 
 //region Refine slice settle
 // What the naturalness lane does to ONE slice, separated from the loop that
@@ -76,8 +74,9 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
 
   /**
    Models whose rewrite is in the text this returns, empty on every path
-   where no rewrite ships: a non-translation slice, a rewriter that changed
-   nothing, and a rewrite the recheck rolled back.
+   where no rewrite ships: a rewriter that changed nothing, a rewrite the
+   recheck rolled back or could not hear a quorum of checkers on, and a
+   rewrite the damage probe rolled back.
 
    NOT STORED, FOR THE REASON `asked` IS NOT. It names what THIS run bought,
    and a slice resumed from disk bought no rewrite. `outcome.authorship`
@@ -275,9 +274,9 @@ export async function settleRefinedSlice(
   },);
 
   /**
-   Whether every issue the checkers had confirmed is still confirmed in the
-   refined text, and no accepted issue the text never fixed drew a worse
-   ballot on it.
+   Whether the recheck reached its quorum of checkers, every issue they had
+   confirmed is still confirmed in the refined text, and no accepted issue
+   the text never fixed drew a worse ballot on it.
    */
   const retained = await retainsResolvedIssues({
     client,
@@ -306,6 +305,8 @@ export async function settleRefinedSlice(
         // recheck changes what ships, so dropping its ballots here would lose
         // the most consequential checker round the lane ever buys, and would
         // leave `refine-rolled-back` naming issues with no evidence behind it.
+        // A round short of its quorum is kept the same way: the few ballots
+        // it did hear, or none, are what `refine-recheck-unheard` rests on.
         recheckReadings: retained.readings,
       },
       findings: [
@@ -483,211 +484,6 @@ export async function settleRefinedSlice(
     // THE ONLY PATH WHERE A REWRITE SHIPS, so the only one that names anybody.
     refinedBy: refined.contributors,
     refinersHeard: refined.heard,
-  };
-}
-
-/**
- Whether a refinement kept every issue the checkers had already confirmed,
- and made no accepted issue `T1` leaves open worse.
-
- Rolls back the WHOLE slice when it did not. Checkers report per ISSUE while
- refinement happens per paragraph, and an issue can span paragraphs, so which
- paragraph broke a given issue is not derivable from what the checker returns.
- The regressed issue is named in the findings so a later session can judge
- whether finer attribution is worth building.
-
- @param client - injected model client
-
- @param checkerModelIds - checkers as seated at the stage
-
- @param outcome - settled accuracy outcome for this slice, carrying who wrote
- the repaired text this rewrote
-
- @param refineContributors - models whose rewrite won, empty when none did
-
- @param sourceText - original chunk text
-
- @param refinedText - candidate text the refinement produced
-
- @param identityContext - declared names and handles, when any (ledger L14)
-
- @param referenceContext - what the pages the original cites say, when it
- cites any (ledger L14)
-
- @param signal - caller abort honored by every exchange
-
- @param perCallTimeoutMs - deadline per exchange
-
- @param l - pipeline logger
-
- @returns Whether refinement may ship, plus findings
-
- AN OPEN ISSUE IS ROLLED BACK ON ONE WORSE BALLOT, the threshold the owner
- ruled for a patch's unconfirmed edits the same day (ledger L3): the checkers
- were never going to call an issue the patch did not fix `fixed`, so
- `not-fixed` is the text as it stood and `worse` is the only verdict that
- says the rewrite damaged it. A `fixed` ballot credits nothing; the round is
- a rollback gate, and a resolution it recorded would rest on a round no panel
- or selection ever weighed.
-
- @example
- ```ts
- const retained = await retainsResolvedIssues({ client, checkerModelIds, outcome, refineContributors, sourceText, refinedText, signal, perCallTimeoutMs, l, },);
- ```
- */
-async function retainsResolvedIssues(
-  {
-    client,
-    checkerModelIds,
-    outcome,
-    refineContributors,
-    sourceText,
-    refinedText,
-    identityContext,
-    referenceContext,
-    signal,
-    perCallTimeoutMs,
-    l,
-  }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
-    readonly checkerModelIds: readonly RosterModelId[];
-    readonly outcome: ChunkRepairOutcome;
-    readonly refineContributors: readonly RosterModelId[];
-    readonly sourceText: string;
-    readonly refinedText: string;
-    readonly identityContext?: string;
-    readonly referenceContext?: string;
-    readonly signal: AbortSignal;
-    readonly perCallTimeoutMs: number;
-    readonly l: Logger;
-  }>,
-): Promise<{
-  readonly retained: boolean;
-  readonly findings: readonly string[];
-
-  /**
-   What each checker said this time, empty where no round was bought.
-   */
-  readonly readings: Readonly<Record<string, IssueCheckerReading>>;
-}> {
-  /**
-   Issues the checkers had confirmed fixed in `T1`.
-   */
-  const confirmed = outcome.issues
-    .filter(function wasResolved(issue,) {
-      return outcome.resolvedIssueIds
-        .includes(issue.issueId,);
-    },);
-
-  /**
-   Accepted issues `T1` does not resolve, which the rewrite was never shown:
-   every accepted issue of a slice whose accuracy patch lost, where the
-   rewrite is of the archive, and any a winning patch left open. LEDGER L11,
-   the owner's ruling of 2026-09-28 ("Recheck the rewrite"): 1,218 of 2,144
-   refined slices over every run rewrote the archive after the patch lost,
-   457 of them over accepted issues, and none had a checker round.
-   */
-  const open = outcome.issues
-    .filter(function isOpen(issue,) {
-      return (issue.status === 'accepted')
-        && (!outcome.resolvedIssueIds
-          .includes(issue.issueId,));
-    },);
-
-  /**
-   Every issue the round rules on, confirmed first.
-   */
-  const checked = [
-    ...confirmed,
-    ...open,
-  ];
-
-  // Nothing was proved about this slice and no defect is known in it, so a
-  // refinement can neither un-prove nor worsen one. This is the common case:
-  // the lane's whole target is text with no accepted issue, and spending a
-  // checker round there would buy nothing.
-  if (checked.length === 0)
-    return {
-      retained: true,
-      findings: [],
-      // NO ROUND RAN, so there is nothing to have said. Distinct from a round
-      // every checker answered with the same verdict, which leaves ballots.
-      readings: {},
-    };
-
-  /**
-   Checker verdicts over the refined text.
-   */
-  const checker = await runCheckerStage({
-    client,
-    checkerModelIds,
-    sourceText,
-    patchedText: refinedText,
-    issues: checked,
-    authorship: collectRefinedAuthors({
-      editorAuthorship: outcome.authorship,
-      refineContributors,
-    },),
-    ...(identityContext === undefined ? {} : { identityContext, }),
-    ...(referenceContext === undefined ? {} : { referenceContext, }),
-    signal,
-    perCallTimeoutMs,
-    l,
-  },);
-
-  /**
-   Issues the refinement broke, named so the rollback is explainable.
-   */
-  const regressed = confirmed
-    .filter(function brokeIt(issue,) {
-      return checker.tallies[issue.issueId]
-        ?.resolved
-        !== true;
-    },)
-    .map(function toId(issue,) {
-      return issue.issueId;
-    },);
-
-  /**
-   Open issues at least one checker found the refinement made worse.
-   */
-  const worsened = open
-    .filter(function madeItWorse(issue,) {
-      /**
-       Tally of this issue's recheck, present by the checker stage's own
-       contract: it builds one per issue asked and `nonNullishOrThrow`-reads
-       it for its own readings, and `open` is a subset of the checked list.
-       */
-      const tally = nonNullishOrThrow(checker.tallies[issue.issueId],);
-      return tally.worse > 0;
-    },)
-    .map(function toId(issue,) {
-      return issue.issueId;
-    },);
-
-  /**
-   Every issue the rollback answers for.
-   */
-  const lost = [
-    ...regressed,
-    ...worsened,
-  ];
-  if (lost.length === 0)
-    return {
-      retained: true,
-      findings: [`refine-recheck-passed (${String(checked.length,)} ${
-        wordForCount({
-          count: checked.length,
-          one: 'issue',
-          many: 'issues',
-        },)
-      })`,],
-      readings: checker.readings,
-    };
-  return {
-    retained: false,
-    findings: [`refine-rolled-back (${lost.join(', ',)})`,],
-    readings: checker.readings,
   };
 }
 

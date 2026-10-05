@@ -31,6 +31,7 @@ import {
 import {
   isRefineReportWire,
   REFINE_RESPONSE_FORMAT,
+  type RefineResolution,
   resolveRefineRewrites,
 } from './refine-wire.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
@@ -108,6 +109,27 @@ export type RefineStageResult = {
    Stage telemetry in scorecard-stable wording.
    */
   readonly findings: readonly string[];
+};
+
+/**
+ One heard rewriter's reply after the resolver bound it to the sheet.
+
+ @example
+ ```ts
+ const reply: ResolvedReply = { modelId, resolution: resolveRefineRewrites({ wire, envelopes, },), };
+ ```
+ */
+type ResolvedReply = {
+  /**
+   Rewriter that sent the reply.
+   */
+  readonly modelId: RosterModelId;
+
+  /**
+   Operations the reply's rewrites bound to, and what the resolver dropped
+   or folded on the way.
+   */
+  readonly resolution: RefineResolution;
 };
 
 /**
@@ -255,24 +277,62 @@ export async function runRefineStage(
   },);
 
   /**
+   Each heard rewriter's reply bound to real paragraphs, beside what the
+   resolver dropped from it.
+   */
+  const resolved = gather.voices
+    .map(function toResolved(voice,): ResolvedReply {
+      return {
+        modelId: voice.modelId,
+        resolution: resolveRefineRewrites({
+          wire: voice.value,
+          envelopes: plan.envelopes,
+        },),
+      };
+    },);
+
+  /**
+   What the resolver recorded against each reply, credited to its rewriter
+   and listed in roster order so the order never depends on who answered
+   first.
+
+   CARRIED INTO THE STAGE'S FINDINGS, as the editor lane carries its
+   resolver's (`editor-candidates.ts`). The stage read the operations alone,
+   so a rewrite naming a paragraph the sheet never showed, or a paragraph
+   already rewritten, was dropped with no finding and no log line: the stage
+   reported the refiner as heard and not proposing, which is what it reports
+   for a refiner that proposed nothing.
+   */
+  const resolverFindings = resolved
+    .toSorted(function byRoster(
+      left,
+      right,
+    ) {
+      return refinerModelIds.indexOf(left.modelId,)
+        - refinerModelIds.indexOf(right.modelId,);
+    },)
+    .flatMap(function toFindings(reply,): readonly string[] {
+      return reply.resolution
+        .findings
+        .map(function attribute(finding,): string {
+          return `${reply.modelId}: ${finding}`;
+        },);
+    },);
+  for (const finding of resolverFindings)
+    rl.info(finding,);
+
+  /**
    One gated candidate per rewriter that proposed anything surviving, before
    identical rewrites are merged.
    */
-  const proposed = gather.voices
-    .flatMap(function toCandidate(voice,) {
-      /**
-       Operations bound to real paragraphs.
-       */
-      const resolution = resolveRefineRewrites({
-        wire: voice.value,
-        envelopes: plan.envelopes,
-      },);
-
+  const proposed = resolved
+    .flatMap(function toCandidate(reply,) {
       /**
        Operations whose replacement carried every protected atom through
        unchanged and in order.
        */
-      const gated = resolution.operations
+      const gated = reply.resolution
+        .operations
         .flatMap(function survivesGate(operation,): readonly PatchOperation[] {
           /**
            Paragraph this operation replaces, present by the resolver's
@@ -310,7 +370,7 @@ export async function runRefineStage(
               },
             ];
           }
-          rl.info(`${voice.modelId}: ${verdict.detail}`,);
+          rl.info(`${reply.modelId}: ${verdict.detail}`,);
           return [];
         },);
       if (gated.length === 0)
@@ -337,7 +397,7 @@ export async function runRefineStage(
         {
           producer: {
             kind: 'model',
-            modelId: voice.modelId,
+            modelId: reply.modelId,
           },
           value: patch.patchedText,
           rendered: patch.patchedText,
@@ -370,6 +430,7 @@ export async function runRefineStage(
    */
   const stageFindings = [
     ...gather.findings,
+    ...resolverFindings,
     `refine-candidates (${String(gather.voices
       .length,)}/${String(refinerModelIds.length,)} heard, ${
       String(candidates.length,)

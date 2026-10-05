@@ -227,6 +227,7 @@ export {
   type RepairStatus,
   type RepairTranslationResult,
 } from './repair-translation.ts';
+export { retainsResolvedIssues, } from './refine-recheck.ts';
 export {
   type RefinedSliceOutcome,
   type RefinedSliceSettlement,

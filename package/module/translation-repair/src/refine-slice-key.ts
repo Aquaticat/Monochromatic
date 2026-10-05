@@ -192,6 +192,17 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  `declared-names-evidence.ts`); the key already hashes the identity, and the
  same find, rerun for this change, finds none after 04:27 UTC on 2026-09-27
  against a control of 494.
+
+ Rides inside 5 too: a recheck that heard fewer checkers than its stage's
+ quorum rolls the rewrite back under `refine-recheck-unheard` and carries
+ the checker stage's findings, where it passed the rewrite as checked and
+ let the settlement be stored (`refine-recheck.ts`); and the rewriter
+ stage keeps what the resolver dropped from a reply as findings. A record
+ the unfixed gate wrote could hold a rewrite shipped on such a round, but
+ none was written under this number: checked on 2026-10-05 with
+ `cache-account-audit --runs-under` over the agent runs, 13,714 slice-cache
+ records under 391 runs directories, the newest written at 04:26 UTC on
+ 2026-09-27, before every cache version's current value was set.
  */
 export const REFINE_CACHE_VERSION = 5;
 
