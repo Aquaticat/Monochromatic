@@ -15,8 +15,8 @@ import {
 //region Sunbathing recheck
 // THE SLICE, ITS OPEN ISSUE AND ITS CHECKER BENCH that the refinement
 // recheck's cases share: one repaired paragraph about a cat sunbathing, the
-// rewrite a refiner proposes for it, one accepted issue quoting it, and three
-// checkers.
+// rewrite a refiner proposes for it, an accepted issue quoting it (and a
+// second, for a round that rules on two), and three checkers.
 //
 // TEST SUPPORT, NOT PACKAGE SOURCE. The slice settler's test file and the
 // recheck's own both rule on this slice, the first through the whole lane
@@ -33,9 +33,16 @@ export const REPAIRED_TEXT =
   'The cat is doing the sunbathing on the windowsill in every afternoon, and when the light is moving across the floor she is following it without any hurry at all.';
 
 /**
+ Wording the rewrite appends to the repaired text: present after the rewrite
+ and absent before it, which is what a damage prober's claim of added damage
+ quotes for the probe's screen to admit it.
+ */
+export const ADDED_WORDING = 'Rewritten for flow.';
+
+/**
  Rewrite a scripted refiner proposes for that one paragraph.
  */
-export const REWRITTEN_TEXT: string = `${REPAIRED_TEXT} Rewritten for flow.`;
+export const REWRITTEN_TEXT: string = `${REPAIRED_TEXT} ${ADDED_WORDING}`;
 
 /**
  Original this slice was repaired against.
@@ -54,42 +61,90 @@ export const CHECKERS: readonly RosterModelId[] = [
 ];
 
 /**
- Wording of the repaired text the accepted issue complains about.
+ Builds an accepted issue about the repaired text, with the one member claim
+ the panel accepted, quoting the text, so the checker sheet shows a checker
+ what it rules on.
+
+ @param issueId - id the checker sheet numbers and the readings key the
+ issue by
+
+ @param claimId - id of its one member claim
+
+ @param quote - wording of the repaired text the claim complains about
+
+ @param summary - claim as the panel read it
+
+ @returns Accepted issue a recheck rules on
+
+ @example
+ ```ts
+ const issue = acceptedIssueQuoting({ issueId: 'adjudicated/nap', claimId: 'issue/nap', quote: 'the cat', summary: 'Too plain.', },);
+ ```
  */
-const SUNBATHING_QUOTE = 'is doing the sunbathing';
+function acceptedIssueQuoting(
+  {
+    issueId,
+    claimId,
+    quote,
+    summary,
+  }: {
+    readonly issueId: string;
+    readonly claimId: string;
+    readonly quote: string;
+    readonly summary: string;
+  },
+): AdjudicatedIssue {
+  return {
+    issueId,
+    status: 'accepted',
+    severity: 'minor',
+    claims: [
+      {
+        claimId,
+        claim: {
+          category: 'fluency/grammar',
+          severity: 'minor',
+          summary,
+          spans: [
+            {
+              side: 'target',
+              nodeId: 'block/1',
+              nodeHash: hashContent({ content: REPAIRED_TEXT, },),
+              startOffset: REPAIRED_TEXT.indexOf(quote,),
+              endOffset: REPAIRED_TEXT.indexOf(quote,) + quote.length,
+              quotedText: quote,
+            },
+          ],
+        },
+      },
+    ],
+    tallies: {},
+  };
+}
 
 /**
- Accepted issue about the repaired text, with the one member claim the panel
- accepted, quoting the text, so the checker sheet shows a checker what it
- rules on. A case decides whether the accuracy lane's checkers confirmed it
- fixed or left it open.
+ Accepted issue about the repaired text's "is doing the sunbathing". A case
+ decides whether the accuracy lane's checkers confirmed it fixed or left it
+ open.
  */
-export const SUNBATHING_ISSUE: AdjudicatedIssue = {
+export const SUNBATHING_ISSUE: AdjudicatedIssue = acceptedIssueQuoting({
   issueId: 'adjudicated/sunbathing',
-  status: 'accepted',
-  severity: 'minor',
-  claims: [
-    {
-      claimId: 'issue/sunbathing',
-      claim: {
-        category: 'fluency/grammar',
-        severity: 'minor',
-        summary: 'The cat "is doing the sunbathing", which no speaker says.',
-        spans: [
-          {
-            side: 'target',
-            nodeId: 'block/1',
-            nodeHash: hashContent({ content: REPAIRED_TEXT, },),
-            startOffset: REPAIRED_TEXT.indexOf(SUNBATHING_QUOTE,),
-            endOffset: REPAIRED_TEXT.indexOf(SUNBATHING_QUOTE,) + SUNBATHING_QUOTE.length,
-            quotedText: SUNBATHING_QUOTE,
-          },
-        ],
-      },
-    },
-  ],
-  tallies: {},
-};
+  claimId: 'issue/sunbathing',
+  quote: 'is doing the sunbathing',
+  summary: 'The cat "is doing the sunbathing", which no speaker says.',
+},);
+
+/**
+ Second accepted issue about the same text, numbered after the sunbathing one
+ on the checker sheet, for a round that rules on two issues and hears a
+ different number of ballots on each.
+ */
+export const AFTERNOON_ISSUE: AdjudicatedIssue = acceptedIssueQuoting({
+  issueId: 'adjudicated/afternoon',
+  claimId: 'issue/afternoon',
+  quote: 'in every afternoon',
+  summary: 'The cat naps "in every afternoon", where English drops the preposition.',
+},);
 
 /**
  Builds the settled accuracy outcome of the slice, standing as a translation

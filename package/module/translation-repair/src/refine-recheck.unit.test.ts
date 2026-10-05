@@ -6,7 +6,10 @@
 
  A ROUND SHORT OF ITS QUORUM IS THE CASE THIS FILE EXISTS FOR. With no ballot
  cast, no tally says worse, so such a round returned the findings of a round
- every checker answered and the rewrite shipped as rechecked.
+ every checker answered and the rewrite shipped as rechecked. The same holds
+ for one issue a round that met its quorum cast too few ballots on, so cases
+ rule on two issues and hear a different number of ballots on each, on the
+ three-seat bench and on a five-seat bench the router left short.
 
  Each case asserts the whole verdict: whether the rewrite is retained, every
  finding, and every issue's reading. The cases for what the slice settler
@@ -25,6 +28,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  NoProviderForModelError,
   retainsResolvedIssues,
   type AdjudicatedIssue,
   type ChatJsonOutcome,
@@ -40,12 +44,15 @@ import {
   stagesAsked,
 } from './asked-sheets.test-fixture.ts';
 import {
+  SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import {
+  AFTERNOON_ISSUE,
   CHECKERS,
   everyCheckerSays,
   readingsInSeatOrder,
@@ -87,14 +94,65 @@ const THIRD_SEAT_LOST_FINDINGS: readonly string[] = [
 ];
 
 /**
+ Two open issues the sheet numbers in this order, for a round that hears a
+ different number of ballots on each.
+ */
+const TWO_OPEN_ISSUES: readonly AdjudicatedIssue[] = [
+  SUNBATHING_ISSUE,
+  AFTERNOON_ISSUE,
+];
+
+/**
+ Checker bench of five seats, the three of `CHECKERS` first, for a round the
+ router leaves short: the last three seats no provider serves, so two
+ reachable seats are short of the bench's quorum of three and the checker
+ stage closes on two, the fewest voices any stage closes on.
+ */
+const FIVE_SEATS: readonly RosterModelId[] = [
+  ...CHECKERS,
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+];
+
+/**
+ Seats of that bench no provider serves.
+ */
+const REFUSED_SEATS: readonly RosterModelId[] = [
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+];
+
+/**
+ What the checker stage reports for that short bench's round, heard on its
+ first two seats: the short bench, the three refused seats as lost voices,
+ and the short roster.
+ */
+const SHORT_BENCH_FINDINGS: readonly string[] = [
+  'stage-short-bench (checker reachable 2 of 5, quorum 2)',
+  `stage-voice-lost (checker ${SEAT_SYNTHETIC_TEXT_EVERYWHERE})`,
+  `stage-voice-lost (checker ${SEAT_HYPER_ONLY})`,
+  `stage-voice-lost (checker ${SEAT_OPENROUTER_ONLY_CHECKER})`,
+  'stage-roster-incomplete (checker 2/5)',
+];
+
+/**
  Client standing in for the checker bench, which is all the recheck asks.
 
- Each checker answers with its scripted verdict on the one issue. One given
- no verdict sends an empty report, which the checker stage's guard refuses
- (ledger L8), so the stage never hears it and the client hands the refusal
- back as a schema mismatch, as a provider's would.
+ Each checker answers with its scripted verdicts on the issues the sheet
+ numbers first and second. One given no verdict on either sends an empty
+ report, which the checker stage's guard refuses (ledger L8), so the stage
+ never hears it and the client hands the refusal back as a schema mismatch,
+ as a provider's would. A refused seat throws the router's refusal, which
+ the stage reads as a seat no provider serves.
 
- @param verdicts - verdict each checker casts on the one issue, by model id
+ @param verdicts - verdict each checker casts on the issue the sheet numbers
+ first, by model id
+
+ @param secondIssueVerdicts - verdict each checker casts on the issue the
+ sheet numbers second, by model id; a checker it leaves out skips that issue
+
+ @param refused - seats no provider serves
 
  @param asked - sink receiving every exchange the recheck sent
 
@@ -102,15 +160,19 @@ const THIRD_SEAT_LOST_FINDINGS: readonly string[] = [
 
  @example
  ```ts
- const client = checkerBench({ verdicts: everyCheckerSays({ verdict: 'fixed', },), asked: [], },);
+ const client = checkerBench({ verdicts: everyCheckerSays({ verdict: 'fixed', },), secondIssueVerdicts: new Map(), refused: [], asked: [], },);
  ```
  */
 function checkerBench(
   {
     verdicts,
+    secondIssueVerdicts,
+    refused,
     asked,
   }: {
     readonly verdicts: ReadonlyMap<RosterModelId, ResolutionVerdict>;
+    readonly secondIssueVerdicts: ReadonlyMap<RosterModelId, ResolutionVerdict>;
+    readonly refused: readonly RosterModelId[];
     readonly asked: AskedSheet[];
   },
 ): SyntheticClient {
@@ -122,20 +184,40 @@ function checkerBench(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       asked.push(askedSheetOf({ request, },),);
+      if (refused.includes(request.modelId,)) {
+        throw new NoProviderForModelError({
+          modelId: request.modelId,
+          reason: 'every provider serving this cat is out of treats',
+        },);
+      }
       /**
-       Verdict this checker casts, absent for one never heard.
+       Verdict this checker casts on the first issue, absent for one never
+       heard or one that skips it.
        */
       const verdict = verdicts.get(request.modelId,);
       /**
-       Report the checker sends: its one check, or none.
+       Verdict this checker casts on the second issue, absent for one that
+       skips it.
+       */
+      const secondVerdict = secondIssueVerdicts.get(request.modelId,);
+      /**
+       Report the checker sends: a check per issue it rules on, or none.
        */
       const report: unknown = {
-        checks: (verdict === undefined)
-          ? []
-          : [{
-            issue: 1,
-            verdict,
-          },],
+        checks: [
+          ...((verdict === undefined)
+            ? []
+            : [{
+              issue: 1,
+              verdict,
+            },]),
+          ...((secondVerdict === undefined)
+            ? []
+            : [{
+              issue: 2,
+              verdict: secondVerdict,
+            },]),
+        ],
       };
       if (request.validate(report,))
         return {
@@ -188,8 +270,17 @@ function ballotsCast(
 
  @param resolvedIssueIds - issues among them its checkers had confirmed fixed
 
- @param verdicts - verdict each checker casts this round; a checker it
- leaves out is never heard
+ @param verdicts - verdict each checker casts this round on the issue the
+ sheet numbers first, confirmed issues being numbered before open ones; a
+ checker it and `secondIssueVerdicts` both leave out is never heard
+
+ @param secondIssueVerdicts - verdict each checker casts on the issue the
+ sheet numbers second; a checker it leaves out skips that issue
+
+ @param checkerModelIds - bench the round seats, `CHECKERS` unless a case
+ seats another
+
+ @param refused - seats of that bench no provider serves
 
  @param asked - sink receiving every exchange the recheck sent
 
@@ -205,11 +296,17 @@ async function recheck(
     issues,
     resolvedIssueIds = [],
     verdicts = new Map<RosterModelId, ResolutionVerdict>(),
+    secondIssueVerdicts = new Map<RosterModelId, ResolutionVerdict>(),
+    checkerModelIds = CHECKERS,
+    refused = [],
     asked = [],
   }: {
     readonly issues: readonly AdjudicatedIssue[];
     readonly resolvedIssueIds?: readonly string[];
     readonly verdicts?: ReadonlyMap<RosterModelId, ResolutionVerdict>;
+    readonly secondIssueVerdicts?: ReadonlyMap<RosterModelId, ResolutionVerdict>;
+    readonly checkerModelIds?: readonly RosterModelId[];
+    readonly refused?: readonly RosterModelId[];
     readonly asked?: AskedSheet[];
   },
 ): Promise<Awaited<ReturnType<typeof retainsResolvedIssues>>> {
@@ -219,9 +316,11 @@ async function recheck(
   const verdict = await retainsResolvedIssues({
     client: checkerBench({
       verdicts,
+      secondIssueVerdicts,
+      refused,
       asked,
     },),
-    checkerModelIds: CHECKERS,
+    checkerModelIds,
     outcome: {
       ...sunbathingOutcome({ nonTranslationStanding: false, },),
       issues,
@@ -649,6 +748,372 @@ await describe({
                 regressed: false,
               },
             },
+          },
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a round that met its quorum but heard one ballot on the second of two open issues, '
+        + 'short of the quorum of two: refine-recheck-unheard names that issue with its one ballot beside '
+        + 'the two missing checks, though every ballot cast says not-fixed',
+      fn: async () => {
+        /**
+         Round every checker answers on the first issue, the first seat alone
+         on the second.
+         */
+        const secondIssueVerdicts = new Map<RosterModelId, ResolutionVerdict>([
+          [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            'not-fixed',
+          ],
+        ],);
+        expect(
+          await recheck({
+            issues: TWO_OPEN_ISSUES,
+            verdicts: everyCheckerSays({ verdict: 'not-fixed', },),
+            secondIssueVerdicts,
+          },),
+        ).toEqual({
+          retained: false,
+          findings: [
+            'missing-check (2)',
+            'missing-check (2)',
+            `refine-recheck-unheard (${AFTERNOON_ISSUE.issueId}: 1 ballot, quorum 2)`,
+          ],
+          readings: {
+            [SUNBATHING_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts: everyCheckerSays({ verdict: 'not-fixed', },), },),
+              configuredCheckers: 3,
+              tally: {
+                fixed: 0,
+                notFixed: 3,
+                worse: 0,
+                resolved: false,
+                regressed: false,
+              },
+            },
+            [AFTERNOON_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts: secondIssueVerdicts, },),
+              configuredCheckers: 3,
+              tally: {
+                fixed: 0,
+                notFixed: 1,
+                worse: 0,
+                resolved: false,
+                regressed: false,
+              },
+            },
+          },
+        },);
+      },
+    },),
+
+    it({
+      name: 'NAMES a confirmed issue the round heard one ballot on unheard, not regressed, though that '
+        + 'ballot says fixed: the round met its quorum on the open issue, and no ballot says the rewrite '
+        + 'broke the confirmed one',
+      fn: async () => {
+        /**
+         The first seat's verdict on the confirmed issue, which the sheet
+         numbers first; the other two skip it.
+         */
+        const verdicts = new Map<RosterModelId, ResolutionVerdict>([
+          [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            'fixed',
+          ],
+        ],);
+        expect(
+          await recheck({
+            issues: TWO_OPEN_ISSUES,
+            resolvedIssueIds: [SUNBATHING_ISSUE.issueId,],
+            verdicts,
+            secondIssueVerdicts: everyCheckerSays({ verdict: 'not-fixed', },),
+          },),
+        ).toEqual({
+          retained: false,
+          findings: [
+            'missing-check (1)',
+            'missing-check (1)',
+            `refine-recheck-unheard (${SUNBATHING_ISSUE.issueId}: 1 ballot, quorum 2)`,
+          ],
+          readings: {
+            [SUNBATHING_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts, },),
+              configuredCheckers: 3,
+              tally: {
+                fixed: 1,
+                notFixed: 0,
+                worse: 0,
+                resolved: false,
+                regressed: false,
+              },
+            },
+            [AFTERNOON_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts: everyCheckerSays({ verdict: 'not-fixed', },), },),
+              configuredCheckers: 3,
+              tally: {
+                fixed: 0,
+                notFixed: 3,
+                worse: 0,
+                resolved: false,
+                regressed: false,
+              },
+            },
+          },
+        },);
+      },
+    },),
+
+    it({
+      name: 'NAMES both an issue heard short of quorum and an issue one checker found worse, in one round: '
+        + 'refine-recheck-unheard for the second issue and refine-rolled-back for the first',
+      fn: async () => {
+        /**
+         Round with one worse ballot on the first issue, from the second seat.
+         */
+        const verdicts = new Map<RosterModelId, ResolutionVerdict>([
+          [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            'not-fixed',
+          ],
+          [
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            'worse',
+          ],
+          [
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            'not-fixed',
+          ],
+        ],);
+        /**
+         The first seat alone rules on the second issue.
+         */
+        const secondIssueVerdicts = new Map<RosterModelId, ResolutionVerdict>([
+          [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            'not-fixed',
+          ],
+        ],);
+        expect(
+          await recheck({
+            issues: TWO_OPEN_ISSUES,
+            verdicts,
+            secondIssueVerdicts,
+          },),
+        ).toEqual({
+          retained: false,
+          findings: [
+            'missing-check (2)',
+            'missing-check (2)',
+            `refine-recheck-unheard (${AFTERNOON_ISSUE.issueId}: 1 ballot, quorum 2)`,
+            `refine-rolled-back (${SUNBATHING_ISSUE.issueId})`,
+          ],
+          readings: {
+            [SUNBATHING_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts, },),
+              configuredCheckers: 3,
+              tally: {
+                fixed: 0,
+                notFixed: 2,
+                worse: 1,
+                resolved: false,
+                regressed: false,
+              },
+            },
+            [AFTERNOON_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts: secondIssueVerdicts, },),
+              configuredCheckers: 3,
+              tally: {
+                fixed: 0,
+                notFixed: 1,
+                worse: 0,
+                resolved: false,
+                regressed: false,
+              },
+            },
+          },
+        },);
+      },
+    },),
+
+    it({
+      name: 'PASSES a round that heard two ballots on the second of two open issues, the quorum of two, '
+        + 'one checker skipping it: refine-recheck-passed (2 issues) beside the one missing check',
+      fn: async () => {
+        /**
+         The first two seats rule on the second issue, the third skips it.
+         */
+        const secondIssueVerdicts = new Map<RosterModelId, ResolutionVerdict>([
+          [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            'not-fixed',
+          ],
+          [
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            'not-fixed',
+          ],
+        ],);
+        expect(
+          await recheck({
+            issues: TWO_OPEN_ISSUES,
+            verdicts: everyCheckerSays({ verdict: 'not-fixed', },),
+            secondIssueVerdicts,
+          },),
+        ).toEqual({
+          retained: true,
+          findings: [
+            'missing-check (2)',
+            'refine-recheck-passed (2 issues)',
+          ],
+          readings: {
+            [SUNBATHING_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts: everyCheckerSays({ verdict: 'not-fixed', },), },),
+              configuredCheckers: 3,
+              tally: {
+                fixed: 0,
+                notFixed: 3,
+                worse: 0,
+                resolved: false,
+                regressed: false,
+              },
+            },
+            [AFTERNOON_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts: secondIssueVerdicts, },),
+              configuredCheckers: 3,
+              tally: {
+                fixed: 0,
+                notFixed: 2,
+                worse: 0,
+                resolved: false,
+                regressed: false,
+              },
+            },
+          },
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a round on a bench the router left short, closed at its quorum of two, that heard one '
+        + 'ballot on the second issue: refine-recheck-unheard names that issue against the quorum of two '
+        + 'the stage closed on, not the bench quorum of three',
+      fn: async () => {
+        /**
+         The two reachable seats' verdicts on the first issue.
+         */
+        const verdicts = new Map<RosterModelId, ResolutionVerdict>([
+          [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            'not-fixed',
+          ],
+          [
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            'not-fixed',
+          ],
+        ],);
+        /**
+         The first seat alone rules on the second issue.
+         */
+        const secondIssueVerdicts = new Map<RosterModelId, ResolutionVerdict>([
+          [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            'not-fixed',
+          ],
+        ],);
+        expect(
+          await recheck({
+            issues: TWO_OPEN_ISSUES,
+            verdicts,
+            secondIssueVerdicts,
+            checkerModelIds: FIVE_SEATS,
+            refused: REFUSED_SEATS,
+          },),
+        ).toEqual({
+          retained: false,
+          findings: [
+            ...SHORT_BENCH_FINDINGS,
+            'missing-check (2)',
+            `refine-recheck-unheard (${AFTERNOON_ISSUE.issueId}: 1 ballot, quorum 2)`,
+          ],
+          readings: {
+            [SUNBATHING_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts, },),
+              configuredCheckers: 5,
+              tally: {
+                fixed: 0,
+                notFixed: 2,
+                worse: 0,
+                resolved: false,
+                regressed: false,
+              },
+            },
+            [AFTERNOON_ISSUE.issueId]: {
+              ballots: ballotsCast({ verdicts: secondIssueVerdicts, },),
+              configuredCheckers: 5,
+              tally: {
+                fixed: 0,
+                notFixed: 1,
+                worse: 0,
+                resolved: false,
+                regressed: false,
+              },
+            },
+          },
+        },);
+      },
+    },),
+
+    it({
+      name: 'PASSES a round on a bench the router left short whose two reachable checkers rule on both '
+        + 'issues: two ballots an issue meet the quorum of two the stage closed on, below the bench quorum '
+        + 'of three',
+      fn: async () => {
+        /**
+         The two reachable seats' verdicts, the same on both issues.
+         */
+        const verdicts = new Map<RosterModelId, ResolutionVerdict>([
+          [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            'not-fixed',
+          ],
+          [
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            'not-fixed',
+          ],
+        ],);
+        /**
+         Reading each issue holds: the two reachable seats' ballots.
+         */
+        const reading: IssueCheckerReading = {
+          ballots: ballotsCast({ verdicts, },),
+          configuredCheckers: 5,
+          tally: {
+            fixed: 0,
+            notFixed: 2,
+            worse: 0,
+            resolved: false,
+            regressed: false,
+          },
+        };
+        expect(
+          await recheck({
+            issues: TWO_OPEN_ISSUES,
+            verdicts,
+            secondIssueVerdicts: verdicts,
+            checkerModelIds: FIVE_SEATS,
+            refused: REFUSED_SEATS,
+          },),
+        ).toEqual({
+          retained: true,
+          findings: [
+            ...SHORT_BENCH_FINDINGS,
+            'refine-recheck-passed (2 issues)',
+          ],
+          readings: {
+            [SUNBATHING_ISSUE.issueId]: reading,
+            [AFTERNOON_ISSUE.issueId]: reading,
           },
         },);
       },

@@ -1,7 +1,8 @@
 /**
  Tests that the naturalness lane's slice settler does not stop on the critics'
  non-translation votes (ledger L15), and that a rewrite ships only past a
- recheck its checkers were heard on (ledger L11).
+ recheck its checkers were heard on and a damage probe its probers were heard
+ on (ledger L11).
 
  WHY THIS FILE WAS WRONG. It was written on 2026-08-24 to defend an early
  return that deleting left the whole suite green, on the reading that a slice
@@ -62,6 +63,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import {
+  ADDED_WORDING,
   CHECKERS,
   everyCheckerSays,
   readingsInSeatOrder,
@@ -177,6 +179,65 @@ const SELECTED_FINDINGS: readonly string[] = [
 ];
 
 /**
+ What a scripted prober answers: a report raising no claim, a reply the
+ probe stage's guard refuses so the stage never hears it, or a report whose
+ one claim quotes wording the rewrite added.
+ */
+type ProberAnswer = 'no-claim' | 'unreadable' | 'added-claim';
+
+/**
+ Report each prober answer sends, every one but the unreadable one shaped as
+ the probe stage's guard accepts.
+ */
+const PROBER_REPORTS: ReadonlyMap<ProberAnswer, unknown> = new Map<ProberAnswer, unknown>([
+  [
+    'no-claim',
+    { checks: [], },
+  ],
+  [
+    'unreadable',
+    { checks: 'none', },
+  ],
+  [
+    'added-claim',
+    {
+      checks: [{
+        region: 1,
+        verdict: 'introduced-defect',
+        category: 'fluency/addition',
+        severity: 'minor',
+        evidence: ADDED_WORDING,
+        omittedText: '',
+        reason: 'the cat never said it was rewritten',
+      },],
+    },
+  ],
+],);
+
+/**
+ Prober answers of a damage probe that heard none of its three probers.
+ */
+const NO_PROBER_HEARD: ReadonlyMap<RosterModelId, ProberAnswer> = new Map(CHECKERS.map(function toEntry(
+  modelId,
+): readonly [
+  RosterModelId,
+  ProberAnswer,
+] {
+  return [
+    modelId,
+    'unreadable',
+  ];
+},),);
+
+/**
+ Lost voices the damage probe reports for a round that heard none of its
+ three probers, in the bench's seat order.
+ */
+const EVERY_PROBER_LOST: readonly string[] = CHECKERS.map(function toFinding(modelId,): string {
+  return `stage-voice-lost (introduced-defect-probe ${modelId})`;
+},);
+
+/**
  Heading the damage probe's sheet prints over the neighbouring original.
  */
 const NEARBY_ORIGINAL_HEADING = 'NEARBY ORIGINAL, CONTEXT ONLY';
@@ -231,17 +292,21 @@ const REFUSING_CLIENT: SyntheticClient = {
 
  SCRIPTED BY STAGE, each stage getting the reply its own wire guard accepts:
  the rewriter one rewrite of the one paragraph, a judge a ballot for it, a
- prober a report raising no claim, and a checker its verdict on the one
- issue. A checker given no verdict sends an empty report, which the checker
- stage's guard refuses (ledger L8), so the stage never hears that checker. A
- reply its stage refuses comes back as a schema mismatch, as a provider's
- would, and shows as a lost voice in the findings every scripted case
- asserts whole.
+ prober a report raising no claim unless a case scripts another answer, and
+ a checker its verdict on the one issue. A checker given no verdict sends an
+ empty report, which the checker stage's guard refuses (ledger L8), so the
+ stage never hears that checker; a prober scripted unreadable sends a report
+ the probe stage's guard refuses. A reply its stage refuses comes back as a
+ schema mismatch, as a provider's would, and shows as a lost voice in the
+ findings every scripted case asserts whole.
 
  @param asked - sink receiving each exchange in the order the flow asked
 
  @param checkerVerdicts - verdict each checker casts on the one issue, by
  model id; a checker it leaves out is never heard
+
+ @param proberAnswers - what each prober answers, by model id; a prober it
+ leaves out raises no claim
 
  @returns Client usable by the settle flow
 
@@ -254,9 +319,11 @@ function scriptedSettleClient(
   {
     asked,
     checkerVerdicts = new Map<RosterModelId, ResolutionVerdict>(),
+    proberAnswers = new Map<RosterModelId, ProberAnswer>(),
   }: {
     readonly asked: AskedSheet[];
     readonly checkerVerdicts?: ReadonlyMap<RosterModelId, ResolutionVerdict>;
+    readonly proberAnswers?: ReadonlyMap<RosterModelId, ProberAnswer>;
   },
 ): SyntheticClient {
   return {
@@ -309,7 +376,7 @@ function scriptedSettleClient(
         ],
         [
           PROBER_STAGE,
-          { checks: [], },
+          PROBER_REPORTS.get(proberAnswers.get(request.modelId,) ?? 'no-claim',),
         ],
       ],);
       /**
@@ -752,6 +819,133 @@ await describe({
         expect(settled.outcome.refined,).toBe(false,);
         expect(settled.outcome.repairedText,).toBe(REPAIRED_TEXT,);
         expect(settled.refinedBy,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'ROLLS BACK a rewrite whose damage probe heard none of its three probers: the findings carry the '
+        + 'probe stage\'s three lost voices and its unmet quorum and name the probe round unheard at 0 of 3, '
+        + 'not damage the rewrite added, and the text before the rewrite ships',
+      fn: async () => {
+        /**
+         Settlement of a slice with no accepted issue, so no recheck runs, whose
+         three probers each send a report the probe stage refuses.
+         */
+        const settled = await settleWith({
+          nonTranslationStanding: false,
+          client: scriptedSettleClient({
+            asked: [],
+            proberAnswers: NO_PROBER_HEARD,
+          },),
+        },);
+        expect(settled.findings,).toEqual([
+          ...SELECTED_FINDINGS,
+          ...EVERY_PROBER_LOST,
+          'stage-quorum-unmet (introduced-defect-probe 0/3)',
+          'refine-probe-unheard (0 of 3 probers heard)',
+        ],);
+        expect(settled.outcome.refined,).toBe(false,);
+        expect(settled.outcome.repairedText,).toBe(REPAIRED_TEXT,);
+        expect(settled.refinedBy,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'ROLLS BACK a rewrite whose damage probe heard one prober of three, short of the stage\'s quorum '
+        + 'of two, though that prober raised no claim: refine-probe-unheard at 1 of 3 beside the two lost '
+        + 'voices and the unmet quorum',
+      fn: async () => {
+        /**
+         Settlement of the slice whose first prober alone is heard, raising
+         nothing.
+         */
+        const settled = await settleWith({
+          nonTranslationStanding: false,
+          client: scriptedSettleClient({
+            asked: [],
+            proberAnswers: new Map<RosterModelId, ProberAnswer>([
+              ...NO_PROBER_HEARD,
+              [
+                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                'no-claim',
+              ],
+            ],),
+          },),
+        },);
+        expect(settled.findings,).toEqual([
+          ...SELECTED_FINDINGS,
+          `stage-voice-lost (introduced-defect-probe ${SEAT_SYNTHETIC_VISION_WITHHELD})`,
+          `stage-voice-lost (introduced-defect-probe ${SEAT_SYNTHETIC_TEXT_EVERYWHERE})`,
+          'stage-quorum-unmet (introduced-defect-probe 1/3)',
+          'refine-probe-unheard (1 of 3 probers heard)',
+        ],);
+        expect(settled.outcome.refined,).toBe(false,);
+        expect(settled.outcome.repairedText,).toBe(REPAIRED_TEXT,);
+        expect(settled.refinedBy,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'NAMES the damage a lone heard prober\'s admitted claim shows, though its round fell short of '
+        + 'quorum: refine-rolled-back-by-probe counts the claim beside the probe stage\'s unmet quorum, and '
+        + 'no unheard finding replaces it',
+      fn: async () => {
+        /**
+         Settlement of the slice whose first prober alone is heard, quoting
+         the wording the rewrite added.
+         */
+        const settled = await settleWith({
+          nonTranslationStanding: false,
+          client: scriptedSettleClient({
+            asked: [],
+            proberAnswers: new Map<RosterModelId, ProberAnswer>([
+              ...NO_PROBER_HEARD,
+              [
+                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                'added-claim',
+              ],
+            ],),
+          },),
+        },);
+        expect(settled.findings,).toEqual([
+          ...SELECTED_FINDINGS,
+          `stage-voice-lost (introduced-defect-probe ${SEAT_SYNTHETIC_VISION_WITHHELD})`,
+          `stage-voice-lost (introduced-defect-probe ${SEAT_SYNTHETIC_TEXT_EVERYWHERE})`,
+          'stage-quorum-unmet (introduced-defect-probe 1/3)',
+          'refine-rolled-back-by-probe (1 added-damage and 0 removal claims admitted against the rewrite)',
+        ],);
+        expect(settled.outcome.refined,).toBe(false,);
+        expect(settled.outcome.repairedText,).toBe(REPAIRED_TEXT,);
+      },
+    },),
+
+    it({
+      name: 'SHIPS a rewrite whose damage probe heard two probers of three, the stage\'s quorum, neither '
+        + 'raising a claim: the lost prober and the short roster are named beside the selection\'s findings',
+      fn: async () => {
+        /**
+         Settlement of the slice whose third prober alone is never heard.
+         */
+        const settled = await settleWith({
+          nonTranslationStanding: false,
+          client: scriptedSettleClient({
+            asked: [],
+            proberAnswers: new Map<RosterModelId, ProberAnswer>([
+              [
+                SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                'unreadable',
+              ],
+            ],),
+          },),
+        },);
+        expect(settled.findings,).toEqual([
+          ...SELECTED_FINDINGS,
+          `stage-voice-lost (introduced-defect-probe ${SEAT_SYNTHETIC_TEXT_EVERYWHERE})`,
+          'stage-roster-incomplete (introduced-defect-probe 2/3)',
+        ],);
+        expect(settled.outcome.refined,).toBe(true,);
+        expect(settled.outcome.repairedText,).toBe(REWRITTEN_TEXT,);
+        expect(settled.refinedBy,).toEqual(REFINERS,);
       },
     },),
   ],

@@ -64,6 +64,16 @@ const SMOOTH_TEXT =
   'The cat sunbathes on the windowsill every afternoon, and when the light moves across the floor she follows it without hurry.';
 
 /**
+ Repaired slice carrying one protected atom, the number 17.
+ */
+const REPAIRED_WITH_AGE = `${REPAIRED_TEXT} She was 17 that year.`;
+
+/**
+ Rewrite of that slice which reads better and drops the number.
+ */
+const REWRITE_WITHOUT_AGE = `${SMOOTH_TEXT} She was young that year.`;
+
+/**
  Roster judges are drawn from.
  */
 const JUDGES: readonly RosterModelId[] = [
@@ -495,10 +505,10 @@ await describe({
              */
             const refused = capturingLoggerPair();
             await runFixture(scriptedRefiner({
-              newText: `${SMOOTH_TEXT} She was young that year.`,
+              newText: REWRITE_WITHOUT_AGE,
               ballot: 1,
             },), {
-              repairedText: `${REPAIRED_TEXT} She was 17 that year.`,
+              repairedText: REPAIRED_WITH_AGE,
               logger: refused.logger,
             },);
             expect(linesNamingTheRefiner({ lines: refused.lines, },),).toEqual([
@@ -530,14 +540,9 @@ await describe({
           name: 'refuses a rewrite that dropped a protected atom, even when the '
             + 'judges would have taken it',
           fn: async () => {
-            /**
-             Repaired text carrying a number, and a rewrite that loses it.
-             */
-            const withNumber = `${REPAIRED_TEXT} She was 17 that year.`;
-
             /** Refinable slice of the numbered fixture. */
             const slice = deriveRefinableEnvelopes({
-              document: parseDocument({ text: withNumber, },),
+              document: parseDocument({ text: REPAIRED_WITH_AGE, },),
             },);
 
             /** Run whose rewrite silently drops the age. */
@@ -546,13 +551,13 @@ await describe({
               mode: { kind: 'comparative', },
               sliceIndex: 0,
               client: scriptedRefiner({
-                newText: `${SMOOTH_TEXT} She was young that year.`,
+                newText: REWRITE_WITHOUT_AGE,
                 ballot: 1,
               },),
               refinerModelIds: REFINERS,
               judgeModelIds: JUDGES,
               sourceText: SOURCE_TEXT,
-              repairedText: withNumber,
+              repairedText: REPAIRED_WITH_AGE,
               envelopes: slice.envelopes,
               definitions: slice.definitions,
               signal: new AbortController().signal,
@@ -560,7 +565,74 @@ await describe({
               l,
             },);
             expect(result.changed,).toBe(false,);
-            expect(result.refinedText,).toBe(withNumber,);
+            expect(result.refinedText,).toBe(REPAIRED_WITH_AGE,);
+          },
+        },),
+
+        it({
+          name: 'NAMES a rewrite the atom gate refused in the stage\'s findings, credited to its rewriter, by '
+            + 'its paragraph and the kind of refusal: a rewrite dropping the paragraph\'s one number leaves '
+            + 'protected atom count changed against paragraph 1, the repaired text standing and no round '
+            + 'judged',
+          fn: async () => {
+            /** Run whose one rewrite the gate refuses for the dropped number. */
+            const result = await runFixture(scriptedRefiner({
+              newText: REWRITE_WITHOUT_AGE,
+              ballot: 1,
+            },), { repairedText: REPAIRED_WITH_AGE, },);
+            expect(result,).toEqual({
+              refinedText: REPAIRED_WITH_AGE,
+              changed: false,
+              contributors: [],
+              heard: REFINERS,
+              rounds: [],
+              findings: [
+                `${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-atom-gate-refused (paragraph 1, protected atom `
+                + 'count changed)',
+                'refine-candidates (1/1 heard, 0 proposing)',
+              ],
+            },);
+          },
+        },),
+
+        it({
+          name: 'NAMES the position of a protected atom a rewrite changed and neither of its values: a '
+            + 'rewrite of the second paragraph turning its 17 into 18 leaves protected atom 1 changed '
+            + 'against paragraph 2, and the gate\'s own line still quotes both numbers',
+          fn: async () => {
+            /**
+             Slice of two eligible paragraphs, the number in the second.
+             */
+            const repairedText = `${REPAIRED_TEXT}\n\n${REPAIRED_WITH_AGE}`;
+            /**
+             Lines the stage logs for the run.
+             */
+            const logged = capturingLoggerPair();
+            /** Run whose rewrite of the second paragraph changes the age. */
+            const result = await runFixture(scriptedRefiner({
+              newText: `${REPAIRED_TEXT} She was 18 that year.`,
+              paragraph: 2,
+              ballot: 1,
+            },), {
+              repairedText,
+              logger: logged.logger,
+            },);
+            expect(result,).toEqual({
+              refinedText: repairedText,
+              changed: false,
+              contributors: [],
+              heard: REFINERS,
+              rounds: [],
+              findings: [
+                `${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-atom-gate-refused (paragraph 2, protected atom 1 `
+                + 'changed)',
+                'refine-candidates (1/1 heard, 0 proposing)',
+              ],
+            },);
+            expect(linesNamingTheRefiner({ lines: logged.lines, },),).toEqual([
+              `[runRefineStage] ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: protected atom 1 changed (number:17 became `
+              + 'number:18)',
+            ],);
           },
         },),
 
