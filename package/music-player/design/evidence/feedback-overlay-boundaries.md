@@ -126,8 +126,16 @@ held-pose markers and fresh acquisition assertions.
 It is evidence only,
 not another policy ballot.
 
-Publication is still pending native controls,
+Publication is still pending final held-pose acquisition,
 image inspection and offline browser verification.
+The fresh API37 guest completed the inner lifecycle contexts under
+SwiftShader and the cover contexts under container-native LLVM20 llvmpipe.
+Each group covers light/dark at 100%/200% text,
+auto/manual dismissal,
+Undo/log intent,
+full diagnostic read-back and unchanged measured player geometry.
+Those groups retain their separate renderer provenance;
+exposing a render node did not make the llvmpipe run hardware-rendered.
 The earlier fixed-pane diagnostic cohort showed native expiry and manual
 completion with unchanged application geometry;
 its corrected offline pixel comparison retained `3743106` identical
