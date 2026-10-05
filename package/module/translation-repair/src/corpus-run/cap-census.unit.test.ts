@@ -366,6 +366,50 @@ await describe({
           },
         },),
         it({
+          name: 'LEAVES A SPEND LINE UNPAIRED when its stream line is no completed stream as the writer writes one: '
+            + 'its unit runs on into another word, or it carries no content count at all, where the line as written '
+            + 'pairs',
+          fn: async () => {
+            /**
+             A completed stream as the writer writes it, five content
+             characters delivered.
+             */
+            const written = streamLine({ stamp: '2026-09-28T10:00:00.000Z', label: OPENROUTER_ID, outcome: 'completed', content: 5, },);
+
+            /**
+             The same line with its unit run on into another word, and with
+             its content field left out.
+             */
+            const misread = [
+              written.replace(' 5 content chars,', ' 5 content charms of luck,',),
+              written.replace(' 5 content chars,', '',),
+            ];
+            expect(misread.includes(written,),).toBe(false,);
+
+            /**
+             The call's spend line, inside the pairing window of each.
+             */
+            const spend = spendLine({
+              stamp: '2026-09-28T10:00:00.020Z',
+              tail: `provider=openrouter model=${OPENROUTER_ID} prompt=799 completion=23 cost=0.0625 endpoint=Morph`,
+            },);
+            expect([written, ...misread,].map(function readingOf(line,) {
+              return readCapLog({ lines: [line, spend,], },);
+            },),).toEqual(([5, 'unpaired', 'unpaired',] as const).map(function readingWith(content,) {
+              return {
+                samples: [{
+                  provider: 'openrouter',
+                  model: OPENROUTER_ID,
+                  completion: 23,
+                  at: Date.parse('2026-09-28T10:00:00.020Z',),
+                  content,
+                },],
+                unstampedLines: 0,
+              };
+            },),);
+          },
+        },),
+        it({
           name: 'LEAVES OUT A LINE WHOSE STAMP THE LOGGER DID NOT WRITE, rather than dating or pairing a call by a '
             + 'reading of text no writer here makes: a stamp without its zone reads as local time, a date alone as '
             + 'midnight, and no stamp as NaN, which pairs with nothing and compares as no time at all (ledger B73)',
@@ -386,6 +430,27 @@ await describe({
             expect(readCapLog({ lines, },),).toEqual({
               samples: [],
               unstampedLines: lines.length,
+            },);
+          },
+        },),
+        it({
+          name: 'LEAVES OUT AND COUNTS A SPEND LINE THE LOGGER DID NOT PREFIX: the bare line the spend writer '
+            + 'returns reads as a record, and so does the same line behind one bracket, and neither holds a second '
+            + 'bracket to read a stamp from',
+          fn: async () => {
+            /**
+             A reported call's record as the spend writer returns it, before
+             any logger has put a level, a stamp and tags in front of it.
+             */
+            const bare = `SPEND provider=hyper model=${HYPER_ID} prompt=10 completion=13`;
+            expect(readCapLog({
+              lines: [
+                bare,
+                `[info] ${bare}`,
+              ],
+            },),).toEqual({
+              samples: [],
+              unstampedLines: 2,
             },);
           },
         },),
@@ -577,41 +642,6 @@ await describe({
             },);
           },
         },),
-
-        it({
-          name: 'READS A MALFORMED STAMP as unstamped, A LINE WHOSE UNIT WORD IS WRONG as an other line, '
-            + 'and a stream carrying no content count as pairing to none',
-          fn: async () => {
-            // A stream line whose stamp bracket holds no date, one whose
-            // content unit word is wrong, and one carrying no content phrase
-            // at all.
-            expect(readCapLog({
-              lines: [`[info] [not-a-date] [translation-repair] [reportStreamProgress] stream ${OPENROUTER_ID}: completed, elapsed 1ms, firstByte 1ms, maxGap 1ms, 1 raw char, 0 unreadable frames, 5 content chars, 0 reasoning chars`,],
-            },),).toEqual({ samples: [], unstampedLines: 1, },);
-            expect(readCapLog({
-              lines: [`[info] [2026-09-28T10:00:00.000Z] [translation-repair] [reportStreamProgress] stream ${OPENROUTER_ID}: completed, elapsed 1ms, firstByte 1ms, maxGap 1ms, 1 raw char, 0 unreadable frames, 5 content charms of luck, 0 reasoning chars`,],
-            },),).toEqual({ samples: [], unstampedLines: 0, },);
-            expect(readCapLog({
-              lines: [
-                `[info] [2026-09-28T10:00:00.000Z] [translation-repair] [reportStreamProgress] stream ${OPENROUTER_ID}: completed, elapsed 1ms, firstByte 1ms, maxGap 1ms, 1 raw char, 0 unreadable frames, 0 reasoning chars`,
-                spendLine({
-                  stamp: '2026-09-28T10:00:00.020Z',
-                  tail: `provider=openrouter model=${OPENROUTER_ID} prompt=799 completion=23 cost=0.0625 endpoint=Morph`,
-                },),
-              ],
-            },),).toEqual({
-              samples: [{
-                provider: 'openrouter',
-                model: OPENROUTER_ID,
-                completion: 23,
-                at: Date.parse('2026-09-28T10:00:00.020Z',),
-                content: 'unpaired',
-              },],
-              unstampedLines: 0,
-            },);
-          },
-        },),
-
       ],
     },),
   ],
