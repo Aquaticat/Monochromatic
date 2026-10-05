@@ -24,7 +24,7 @@ use super::command_clean::{CleanRegion, clean_changes_worktree, parse_clean_regi
 use super::command_options::OptionError;
 use super::command_reset::{ResetRegion, parse_reset_region, reset_changes_worktree};
 use super::effective_target::EffectiveTarget;
-use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
+use super::global_arguments::command_tokens;
 /// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
 ///       expect: `String`, which must be valid UTF-8.
 /// Why:  Arguments are compared as bytes and never decoded.
@@ -125,15 +125,14 @@ fn guarded_command(
 /// function decideLinkedWorktree(args: string[]): LinkedWorktreeDecision;
 /// ```
 pub fn decide_linked_worktree(arguments: &[OsString]) -> LinkedWorktreeDecision {
-    let layout: GlobalLayout = global_layout(arguments);
-    if layout.outcome != GlobalOutcome::Command {
+    // `let Some((a, b)) = ... else { ... };` unpacks the command word and the tokens after
+    // it, or returns when Git runs no subcommand.
+    let Some((word, region)) = command_tokens(arguments) else {
         return LinkedWorktreeDecision::Pass;
-    }
+    };
     // `.as_encoded_bytes()` lends the raw bytes of the subcommand word.
-    let word: &[u8] = arguments[layout.prefix_len].as_encoded_bytes();
-    // `&arguments[n..]` borrows the tokens after the subcommand word.
     let guarded: Result<Option<GuardedCommand>, OptionError> =
-        guarded_command(word, &arguments[layout.prefix_len + 1..]);
+        guarded_command(word.as_encoded_bytes(), region);
     // `if let Ok(Some(command)) = ...` runs only for an accepted, guarded region.
     if let Ok(Some(command)) = guarded {
         return LinkedWorktreeDecision::NeedsEffectiveTarget(command);

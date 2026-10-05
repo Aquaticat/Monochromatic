@@ -159,6 +159,28 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
     };
 }
 
+/// What: The command word and the tokens after it, when the arguments name a command.
+///       `Option<(&OsString, &[OsString])>` is "a pair of borrowed views, or nothing":
+///       the word, and the list of everything after it.
+/// Why:  Every rule that reads a command's own options needs exactly this split. Taking it
+///       from one function means no rule computes an offset of its own, so no rule can
+///       read the command word as one of its options by an arithmetic slip.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function commandTokens(args: string[]): [word: string, region: string[]] | undefined;
+/// ```
+pub fn command_tokens(arguments: &[OsString]) -> Option<(&OsString, &[OsString])> {
+    let layout: GlobalLayout = global_layout(arguments);
+    if layout.outcome != GlobalOutcome::Command {
+        // `None` is the "absent" case of `Option`.
+        return None;
+    }
+    // `&arguments[n..]` borrows from the command word on; `.split_first()` separates the
+    // first item from the rest, or gives `None` for an empty list.
+    return arguments[layout.prefix_len..].split_first();
+}
+
 /// Boundary controls include real Git probes and native non-UTF-8 arguments.
 #[cfg(test)]
 #[path = "global_arguments_tests.rs"]

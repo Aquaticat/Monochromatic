@@ -25,7 +25,7 @@ use super::command_branch_create::{
 };
 use super::command_options::OptionError;
 use super::escape_hatch::BRANCH_WORKTREE_ESCAPE_HATCH;
-use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
+use super::global_arguments::command_tokens;
 /// What: `OsStr`/`OsString` are borrowed/owned operating-system text of raw bytes. Sibling
 ///       the reader might expect: `&str`/`String`, which must be valid UTF-8.
 /// Why:  A branch name is passed to Git with its exact bytes.
@@ -87,18 +87,16 @@ pub enum BranchWorktreeDecision {
 /// function decideBranchWorktree(args: string[]): BranchWorktreeDecision;
 /// ```
 pub fn decide_branch_worktree(arguments: &[OsString]) -> BranchWorktreeDecision {
-    let layout: GlobalLayout = global_layout(arguments);
-    if layout.outcome != GlobalOutcome::Command {
-        return BranchWorktreeDecision::Pass;
-    }
-    // `.as_encoded_bytes()` lends the raw bytes of the subcommand word.
-    let word: &[u8] = arguments[layout.prefix_len].as_encoded_bytes();
-    // `let Some(x) = ... else { ... };` unwraps the guarded command or returns.
-    let Some(command) = branch_creation_command(word) else {
+    // `let Some((a, b)) = ... else { ... };` unpacks the command word and the tokens after
+    // it, or returns when Git runs no subcommand.
+    let Some((word, region)) = command_tokens(arguments) else {
         return BranchWorktreeDecision::Pass;
     };
-    // `&arguments[n..]` borrows the tokens after the subcommand word.
-    let region: &[OsString] = &arguments[layout.prefix_len + 1..];
+    // `.as_encoded_bytes()` lends the raw bytes of the subcommand word;
+    // `let Some(x) = ... else { ... };` unwraps the guarded command or returns.
+    let Some(command) = branch_creation_command(word.as_encoded_bytes()) else {
+        return BranchWorktreeDecision::Pass;
+    };
     // `Result<A, B>` is "either success `A` or failure `B`"; `&[]` is an empty flag list.
     let parsed: Result<BranchCreationRegion, OptionError> =
         parse_branch_creation_region(command, region, &[]);

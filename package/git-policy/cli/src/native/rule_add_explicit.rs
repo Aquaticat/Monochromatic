@@ -19,7 +19,7 @@
 /// ```
 use super::command_add::{ADD_ESCAPE_HATCH, AddRegion, parse_add_region};
 use super::command_options::OptionError;
-use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
+use super::global_arguments::command_tokens;
 /// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
 ///       expect: `String`, which must be valid UTF-8.
 /// Why:  Arguments are compared as bytes; only the rejection text renders them.
@@ -51,16 +51,16 @@ pub const BULK_ADD_CODE: &str = "bulk-add-rejected";
 /// function decideAddExplicit(args: string[]): string | undefined;
 /// ```
 pub fn decide_add_explicit(arguments: &[OsString]) -> Option<String> {
-    let layout: GlobalLayout = global_layout(arguments);
-    // `.as_encoded_bytes()` lends the raw bytes of the subcommand word.
-    if layout.outcome != GlobalOutcome::Command
-        || arguments[layout.prefix_len].as_encoded_bytes() != b"add"
-    {
+    // `let Some((a, b)) = ... else { ... };` unpacks the command word and the tokens after
+    // it, or returns when Git runs no subcommand.
+    let Some((word, region)) = command_tokens(arguments) else {
         // `None` is the "absent" case of `Option`.
         return None;
+    };
+    // `.as_encoded_bytes()` lends the raw bytes of the subcommand word.
+    if word.as_encoded_bytes() != b"add" {
+        return None;
     }
-    // `&arguments[n..]` borrows the tokens after `add`.
-    let region: &[OsString] = &arguments[layout.prefix_len + 1..];
     // `Result<A, B>` is "either success `A` or failure `B`"; `&[]` is an empty flag list.
     let parsed: Result<AddRegion, OptionError> = parse_add_region(region, &[]);
     // `let Ok(x) = ... else { ... };` unwraps the facts or returns for a refused region.
