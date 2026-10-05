@@ -7127,6 +7127,117 @@ No case landed;
 the reach was not run.
 No B entry found.
 
+CORRECTION (2026-10-05),
+self-named:
+the eight paragraphs above that explain cold lines as
+"the census's attribution"
+(the spend,
+slice-cache-namespace,
+model-content,
+lookup-cache,
+lane-contest-cache-store,
+nudged-reask,
+resolution-wire,
+and canadian groups)
+were wrong.
+Re-verified against each run's own census byte spans
+and V8's own ranges on the coverage build,
+every one of the eight traced to my own fixtures or assertions:
+
+- `resolution-wire.ts` 328 was covered all along:
+  V8 reports the return's bytes with count 1,
+  and the run's cold span `[11812..11892]` begins after them.
+  The stretch's line label starts at the boundary line,
+  so the words "still cold 328" named a span holding
+  lines 329 to 331.
+
+- `lane-contest-cache-store.ts` 59 to 61:
+  the guard reads the archive field of each BALLOT
+  (line 84 inside `isLaneContestBallot`),
+  and my case put `archive` on the outcome.
+
+- `nudged-reask.ts` 147,
+  153,
+  159:
+  my first reply carried no `servedBy`,
+  so the function answered from the untagged reply
+  before the re-ask ever ran;
+  and both assertions read `kind === 'ok'`,
+  which every path returns.
+
+- `canadian-date-read-leading.ts` 259:
+  the refused year arises where four or more digits
+  fail the clean-year read
+  (the example shape is `May 3 20233`);
+  my "no year" text took the none path.
+
+- `canadian-date-read-leading.ts` 335:
+  the runs-on comma belongs to `yearMonthDay`
+  (the year-first form,
+  such as `2026 May 3rd`)
+  and needs an ordinal day;
+  my texts went through the month-first and leading readers,
+  whose own `closingComma` produced the commas
+  my expected strings looked for.
+
+- `canadian-spelling-capital.ts` 463:
+  the counter runs inside `insideEmphasis`,
+  which the respeller calls only for a capitalized candidate word;
+  my lowercase word never reached it.
+
+- `spend-read.ts` 238:
+  the negative-count return is the same literal as the returns
+  beside it,
+  and the assertion could not tell them apart;
+  the file's own known-good tail now proves the readable path
+  beside the refusals.
+
+- `spend-read.ts` 345's `?? ''` is dead code
+  (`String.split` always yields at least one piece)
+  and became `nonNullishOrThrow`.
+  The remaining sites in these groups
+  (`lookup-cache.ts` 193 and 221,
+  `slice-cache-namespace.ts` 266 and 378,
+  `model-content.ts` 36)
+  were covered by their cases as written:
+  the runs' own byte spans exclude those statements,
+  and the residual spans are neighbouring statements
+  other cases cover.
+
+VERIFIED TOOL FACTS
+(kept for later readers of these censuses):
+the suite prints one info line per suite
+listing its fulfilled children's names,
+per-case `[PASS]` lines are debug level,
+and empty-name suites log at debug
+(`package/module/test/src/describe.ts`),
+so counting `[PASS]` lines counts named suites,
+not cases;
+a cold stretch's line label can start at the line
+before the cold bytes
+(the piece begins at the boundary after an executed statement),
+and the run's own census JSON carries the byte spans
+(`bundle`,
+`start`,
+`end`)
+whose slice of the coverage chunk's text names the exact statement;
+the verdict line's words are derived from baseline stretch boundaries
+matched against merged spans and can misattribute;
+the coverage build is unminified for exactly this reason
+(`package/module/translation-repair/mise.toml`,
+`coverage-census:build` says compression folds guards into expressions
+V8 gives no range for,
+ledger M79);
+and `isJsonRecord` is object and non-null and not-array
+(`src/json-guard.ts`).
+
+METHOD FROM HERE:
+a case counts as covering a branch only where its assertion
+distinguishes that branch from the other paths returning the same value,
+and the run's own census bytes exclude the target statement
+from the cold set.
+A passing suite is not branch evidence.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

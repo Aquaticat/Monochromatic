@@ -683,6 +683,100 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  03:10 UTC:
+  the eight attribution claims are re-verified and CLOSED,
+  with a self-named correction in the ledger
+  (`CORRECTION (2026-10-05)`).
+  Every one traced to my own fixtures or assertions,
+  not the tool:
+
+- resolution's 328 was covered all along
+  (V8's range for the return's bytes reports count 1;
+  the run's cold span begins after them,
+  and the stretch's line label starts at the boundary line).
+
+- lane read the archive field of each BALLOT,
+  where my case set it on the outcome.
+
+- nudged's first reply carried no `servedBy`,
+  so the function answered before the re-ask,
+  and both assertions read `kind === 'ok'`,
+  which every path returns.
+
+- canadian's dates sat in other readers:
+  the refused year wants a month-first date
+  followed by four or more digits the year read refuses,
+  the runs-on comma belongs to the year-first reader
+  and needs an ordinal day,
+  and the underscore counter runs only
+  for a capitalized candidate word.
+
+- spend's negative-count return shares its literal
+  with the returns beside it,
+  so the assertion could not tell them apart;
+  the file's own known-good tail now proves the readable path.
+  Its `fields[0]` fallback is dead
+  (`split` always yields one)
+  and became `nonNullishOrThrow`.
+
+- lookup 193 and 221,
+  slice-cache-namespace 266 and 378,
+  and model-content 36 were covered as written;
+  the residual spans beside them are neighbouring statements.
+
+  Verified tool facts,
+  recorded in the ledger for later readers:
+  the suite prints one info line per suite
+  (per-case lines at debug),
+  so pass counts are suite counts;
+  a stretch's line label can start one line early,
+  and each run's own census JSON byte spans
+  are the ground truth;
+  the coverage build is unminified because
+  compression folds guards into expressions V8 gives no range for.
+
+  Method from here:
+  a case covers a branch only where its assertion
+distinguishes that branch from other paths returning the same value,
+  and the run's own census bytes exclude the target statement
+  from the cold set.
+
+  Open work re-opened by the same standard:
+  the sites earlier recorded as left for fixture reasons
+  were not byte-verified either,
+  and the same method applies to them:
+  `photo-reference.ts` 133 and 303,
+  `dropped-destinations.ts` 187,
+  241,
+  292 to 295,
+  `active-footnote-markers.ts` 309 to 335,
+  `claim-panel-voters.ts` 54
+  and `claim-filers.ts` 253 and 262,
+  `publish-fixed.ts` 320 and 321,
+  `model-card-derive.ts` 366 and 421 to 427,
+  and the nudged abort arm's siblings
+  (all covered now).
+  The claim group's fixture blocker
+  (the `AdjudicatedIssue` shape)
+  and the publish group's
+  (the destination fields)
+  are the two named ones still needing fixture work.
+
+  Verification worktree:
+  `/home/user/worktrees/verify-coverage`
+  (detached at `1099a5495`),
+  holds the coverage build and the probe files
+  `zz-probe-guard.ts` and `zz-attribution-probe.unit.test.ts`
+  used for the V8 experiment;
+  it is disposable and can be removed
+  (`git worktree remove`) once the remaining sites are done.
+
+  Next:
+  re-verify `photo-reference.ts` 133 and 303
+  with the byte-level method,
+  then the rest of the re-opened list in the order named.
+
+- 2026-10-05,
   01:49 UTC:
   CORRECTION OF THE RECORD,
   and the investigation it re-opens.
