@@ -207,11 +207,16 @@ Running at the last update of this document:
   the main session merges the branch after its gate.
   Evidence: `doc/handover/cli-git-native-candidates.md` on that branch.
 - mvm on a Flatpak-only libvirt host (main checkout, `package/cli/mvm`).
-- Scanner Windows baseline follow-up (main checkout, `package/cli/forbidden-strings`).
-  Evidence: `doc/handover/scanner-native-verification.md`.
+- Open-decision brief (documentation only):
+  `doc/planning/cli-git-rust-open-decisions.md`,
+  built from the behavior ledger's `Open questions`,
+  separating what evidence settles from what the user must choose,
+  grouped by the phase each choice blocks.
 
-Queued behind the five-agent limit:
-the cargo-mutants option prototype named under `Mutation timeouts and the cargo-mutants exit status`.
+The scanner Windows follow-up delegate has reported;
+see `Scanner Windows baseline and prefix confirmation`.
+The main session ran the cargo-mutants option prototype itself;
+see `Mutation timeouts and the cargo-mutants exit status`.
 
 ### Delegate results
 
@@ -775,10 +780,26 @@ from `Windows virtual machine and bridges` to `Guest agent findings`.
   although the guest command keeps running,
   and an unread exit status keyed by process ID alone was returned for a later command that reused the ID.
   They are in the brief of the delegate that is changing mvm.
+- The delegate finished at `703a1c21d`:
+  `test:container` passed 182 library, 4 binary-unit, 2 embedding, 2 cache-warning, 40 CLI and 8 pathname tests,
+  with `lint:clippy:container`, `lint:clippy:windows` and `lint:rust` clean.
+  `lint:clippy:windows` compiles the Windows branch of both changed tests and runs neither.
+- The scanner's mutation runner gained a `--list` flag (`cd1b9d1db`),
+  not asked for,
+  used to measure the exclusion through the runner itself.
+  In the pathname scope the exclusion removes three mutants that every retained campaign had caught
+  and none had timed out on,
+  so for the scanner the user's "in any of our mutation runs" costs three caught mutants and removes no timeout.
 
 Still open:
 one Windows run at or after `aaf4c08e7` with both tests unfiltered and the failing positive control beside it,
-and MSVC, which is unexercised.
+whose mutation campaign also drops the two Windows-only `--skip` filters for those tests;
+MSVC, which is unexercised;
+and two non-blocking choices the delegate left
+(the rustdoc of `platform_absolute_path`,
+and `logical_path` with verbatim or differently cased Windows paths),
+described in `doc/handover/scanner-native-verification.md`,
+section `Decisions left after the Windows baseline follow-up`.
 
 #### Isolated worktree settings
 
