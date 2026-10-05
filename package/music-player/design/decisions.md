@@ -2442,6 +2442,44 @@ so no native study of the empty page is built;
 the withdrawn two-row study is kept as a record and is not replaced.
 No production implementation is authorized by this record.
 
+### D88. Nothing is locked by hash (2026-10-05)
+
+The published first-run study had been left uncorrected on the ground that
+its review verification bound the page by hash.
+Told so,
+the human said:
+do not lock by hash,
+ever.
+
+What follows from it:
+
+- No check fails or refuses because a page,
+  template,
+  builder,
+  test or record differs from a recorded digest.
+- A recorded digest is never a reason to leave something uncorrected or to put a correction off.
+- Review-verification records carry no digest of a page,
+  template,
+  builder,
+  test,
+  manifest or report.
+  Those fields were removed from the published records under
+  `questions/evidence/` on this date,
+  and each record says so in `pageDigestsRemoved`.
+
+A narrower reading the agent adopted,
+not the human's words,
+and open to veto:
+digests that only name what was captured stay for now.
+Those are the digest of each published screenshot in a witness manifest,
+the digest of the debug APK that produced a set of captures,
+and the digests of browser screenshots that were looked at.
+The builders still compare each embedded screenshot with its manifest digest,
+and some still require the manifest's APK digest to equal a value written in the builder.
+Under the widest reading of the human's words those are locks too.
+Removing them is asked of the human,
+not done.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

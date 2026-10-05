@@ -303,10 +303,10 @@ Open-dialog axe,
 Firefox ESR140 and native accessibility acceptance were not exercised.
 The browser closed and its owned container is absent.
 The [review verification record](../questions/evidence/settings-pane-review-verification.json)
-binds exact viewer,
+records that check of the viewer,
 builder,
 test,
-manifest and native-result digests.
+manifest and native result.
 No new preference answer is required.
 
 The [continuation plan](../../../../doc/planning/music-player-light-settings.md)

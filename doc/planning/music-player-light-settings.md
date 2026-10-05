@@ -339,10 +339,10 @@ its pixel rules decode PNGs in process,
 matching ImageMagick byte for byte on all 36 images they read.
 Four offline Chromium contexts passed with no axe violations,
 and all sixteen screenshots were inspected.
-`questions/evidence/settings-pane-review-verification.json` binds the
+`questions/evidence/settings-pane-review-verification.json` records that check of the
 viewer,
 builder,
-test and evidence digests;
+test and evidence;
 `evidence/settings-pane-boundaries.md` holds the scope.
 
 That three-row publication completed the item within its declared
@@ -475,18 +475,21 @@ its in-process PNG decoder matched ImageMagick byte for byte on all 28 images
 it reads.
 Four offline Chromium contexts passed with no axe violations,
 and all sixteen screenshots were inspected.
-`questions/evidence/settings-pane-review-verification.json` binds the
+`questions/evidence/settings-pane-review-verification.json` records that check of the
 viewer,
 builder,
-test and evidence digests;
+test and evidence;
 `evidence/settings-pane-boundaries.md` holds the scope.
 
 This Settings item is complete within its declared design/debug scope.
 One follow-up is recorded and not done:
 the published first-run study still says
 `After opening a library, choose whether to analyse it.`,
-which D84 contradicts,
-and its page is bound by hash in its own review verification.
+which D84 contradicts.
+It was left alone at first on the ground that its review verification bound the page by hash.
+D88 (2026-10-05) rules that out:
+nothing is locked by hash.
+The rebuild is tracked in `package/music-player/design/HANDOFF.md`.
 
 The viewer builder now expects two rows,
 reads the column end from the last row and the measured divider between the

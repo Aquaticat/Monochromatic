@@ -226,17 +226,18 @@ Its builder holds 86 named rules,
 one per line.
 Validation re-measures every label clearance from the embedded images,
 so those figures are not only asserted by the manifest.
-The status readings stay read by eye and bound by hash.
+The status readings stay read by eye;
+the manifest names each image they were read from by its digest.
 The consumer test rejects 106 changed inputs,
 at least one per rule,
 and checks HTML escaping behind the rule that normally hides it.
 Each of the 86 rules and the escape was deleted once in a disposable copy;
 the test failed on that rule by name every time.
 The [review verification record](../questions/evidence/scan-indicator-review-verification.json)
-binds exact viewer,
+records that check of the viewer,
 builder,
 test,
-manifest and native-result digests.
+manifest and native result.
 
 An independent read-only review by a separate agent session,
 given the code without this session's conclusions,

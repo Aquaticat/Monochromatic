@@ -1,12 +1,6 @@
 {
   "schema": 1,
   "scope": "Freshly inspected authored native Settings switch states and their offline viewer, not a new ballot, a stored preference or native accessibility acceptance.",
-  "htmlSha256": "822cfc0fc0129119380e9b14faeb8459b9ed9dec41af8ca6262ce6da6c124ae4",
-  "templateSha256": "455712b93e958bc6d5d35e8723d64f1d94e5152096989a7f3c84ee9b09ed0432",
-  "builderSha256": "194efa6c03ec59d08250b958ec144bac4568a91b4b0a3018fda63e4d9007ec06",
-  "consumerTestSha256": "0b2d95e9f01bb0d3eedc66f6f7b8182a6f5c2e7d5d7c3875f3c38a377ffebb60",
-  "manifestSha256": "9ca1438ad5f8d56dfb943ba41e041864de17cd212831e9fb6a19a54ee764e995",
-  "nativeVerificationSha256": "00b69bdd932fdf63250af47c39beff49cbcf49bd02437ca94549b52ad2842169",
   "browserCliVersion": "0.38.1",
   "browserContainerImageId": "4b8805002ee369c81b7826b941afc52c0c9678a0d0e427a0fefd1684b78b5f94",
   "firefoxESR140Exercised": false,
@@ -110,8 +104,7 @@
     "outcomes": {
       "accepted": 54,
       "caughtByAnotherCheck": 46
-    },
-    "reportSha256": "192e4babb119134474aa3cba53c71ca0d448e4093fd51a2aa037179784246305"
+    }
   },
   "publicationPreflight": {
     "fixtures": [
@@ -180,7 +173,6 @@
       }
     ]
   },
-  "publicationPreflightSha256": "db7d7652196f474fcde6197fcdf4f14a514ee1c2e30382e8e57d66783ee64cff",
   "rendererScreenshotsInspected": [
     {
       "file": "review-1440-light.png",
@@ -254,5 +246,6 @@
     "The Fold placement follows D50, D51 and the existing Settings behaviour; it was adopted, not separately chosen.",
     "Synthetic changed-inset and changed-witness fixtures are validation controls, not extra Android captures.",
     "Full Android lint retains five inherited errors; no finding names a Settings study file."
-  ]
+  ],
+  "pageDigestsRemoved": "Digests of the page, template, builder, test, manifest, native result, preflight and guard reports were removed from this record on 2026-10-05: nothing is locked by hash, and a recorded digest is never a reason to leave a page uncorrected. This record describes the check made when it was written; later edits to those files are allowed and are not covered by it."
 }

@@ -1148,3 +1148,10 @@ Do not reduce the 48dp interaction minimum to achieve this alignment.
      Questionnaire validators
     compare each data URL with its named source raster and sample disclosed role mappings
     pixel by pixel.
+16. **Nothing is locked by hash.**
+     No check refuses a page,
+    template,
+    builder,
+    test or record because it differs from a recorded digest,
+    and a recorded digest is never a reason to leave something uncorrected.
+    D88 holds the human's words and the reading still open.

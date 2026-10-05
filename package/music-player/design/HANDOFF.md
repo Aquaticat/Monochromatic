@@ -42,6 +42,9 @@ the Settings pane has no closing sentence.
 Settings keeps `Strip common prefixes from filenames` and
 `Resume where I left off`;
 the human confirmed that only the analysis switch goes.
+Later the same day D86 withdrew both rows as settings and D87 left the
+Settings page empty,
+so this paragraph and the study described under `What is done` are history.
 
 ### What is done
 
@@ -70,7 +73,7 @@ The viewer's 99 rules,
 135 rejected consumer inputs,
 per-rule deletion proofs,
 publication preflights and four-context offline Chromium checks passed;
-`questions/evidence/settings-pane-review-verification.json` binds them.
+`questions/evidence/settings-pane-review-verification.json` records them.
 A pixel rule confirms that nothing is drawn between the last row and the
 navigation area.
 
@@ -123,11 +126,12 @@ the viewer and the boundary document say so.
 The published first-run study still says
 `After opening a library, choose whether to analyse it.`,
 which D84 contradicts.
-`questions/first-run-access.html` is bound by hash in its review verification,
-so it was not edited;
+`questions/first-run-access.html` was not edited at the time,
+on the ground that its review verification bound it by hash;
+D88 has since ruled that out.
 `evidence/first-run-access-boundaries.md`,
-`open-questions.md` and `candidates.md` carry dated notes instead.
-Correcting that study needs a rebuild and a fresh verification record.
+`open-questions.md` and `candidates.md` carry dated notes.
+Correcting that study needs fresh captures and a rebuild.
 
 The next design item is D81's template editor (`open-questions.md` 11e):
 its fields,

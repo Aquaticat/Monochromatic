@@ -28,9 +28,13 @@ so no ask-before-analysing prompt and no scan/dismiss answer remains.
 The study's explanation ends `After opening a library, choose whether to analyse it.`
 (`bodyText` in `first-run-access-witnesses.json`),
 which predates D84 and no longer matches it.
-The published study is left unchanged,
-because its review verification binds the page by hash;
-correcting that sentence is a follow-up.
+The published study still shows that sentence.
+It was left alone at first on the ground that its review verification bound the page by hash.
+D88 (2026-10-05) rules that out:
+nothing is locked by hash.
+The correction is under way:
+the prototype copy is changed (prototype commit `61e2cf776`),
+and fresh captures are not yet taken.
 
 ## Fresh source boundary
 

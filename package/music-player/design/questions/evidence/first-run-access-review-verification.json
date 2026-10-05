@@ -1,9 +1,6 @@
 {
   "schema": 1,
   "scope": "Authored native first-run state evidence and offline review controls. No policy ballot, production discovery, permissions, recovery, playback, consent implementation or native accessibility acceptance.",
-  "htmlSha256": "e60871dcd6c3d05f170b5f4ab92e5ca2de00f08f18f15eab712a3132e06d392d",
-  "builderSha256": "92a61b54e3dc2c3e377136f715e9da165c8945dbc3daa34cb523dc6603feb316",
-  "manifestSha256": "6d861a0657dff6131d06ed992099de1c25ece4f823a2e3de6dc0140d491cde9a",
   "browserCliVersion": "0.38.1",
   "browserEngine": "Chromium; Firefox ESR 140 not exercised",
   "resourceBounds": {
@@ -85,12 +82,6 @@
   "noPolicyVotes": true,
   "consoleErrors": 0,
   "browsersClosed": true,
-  "guardReportSha256": {
-    "positive": "e864736aa09a79bb7f134440dc4386a8deca77e2755c541e5649d42b75e3ecc7",
-    "without-exact-cohort": "9ba9eb2632d566582c90c7e712c59d27c705d1cffc25c3bc29768733db8ed5ff",
-    "restored": "e864736aa09a79bb7f134440dc4386a8deca77e2755c541e5649d42b75e3ecc7",
-    "without-scroll-signals": "0d104e17192cb436008198eb98cb60adab7c3ad627b9024cd71ddedd88261a5f"
-  },
   "nativeRecordedFieldsRestored": {
     "fontScale": "1.0",
     "nightMode": "Night mode: no",
@@ -109,5 +100,6 @@
     "Synthetic scroll-signal guard tests are not native gesture tests.",
     "No absent source-status API is implemented by authored complete/partial flags.",
     "Restoration compares the fresh recorded fields, not separately retained base/override configuration."
-  ]
+  ],
+  "pageDigestsRemoved": "Digests of the page, template, builder, test, manifest, native result, preflight and guard reports were removed from this record on 2026-10-05: nothing is locked by hash, and a recorded digest is never a reason to leave a page uncorrected. This record describes the check made when it was written; later edits to those files are allowed and are not covered by it."
 }
