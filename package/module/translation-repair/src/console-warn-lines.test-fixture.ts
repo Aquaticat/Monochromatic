@@ -16,12 +16,22 @@
  first, the logger finishes verifying before `console.warn` is replaced, and
  its report reaches the console it was written for.
 
+ SO DOES THE TEST FRAMEWORK'S LOGGER. The build bundles its own copy of the
+ logger, so a test process holds a second one: module-logger's default
+ logger, which the test framework writes through and which reports its sinks
+ the same way. It starts on the framework's first line, before any case, and
+ a verify that ran past its time limit would report into whatever divert was
+ open by then. That timing was not reproduced; flushing it here waits its
+ verification out before the divert opens, whenever it started.
+
  A CASE CALLING THIS RUNS ONE AT A TIME: the divert is process-wide and held
  across an await, so every suite around the case sets `concurrency: 1`
  (`global-writes-sequenced.unit.test.ts`).
 
  @module
  */
+
+import { logger as frameworkLogger, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from '../dist/final/node/index.mjs';
 
@@ -93,10 +103,11 @@ export async function warnLinesDuring<ResultT,>(
   readonly result: ResultT;
   readonly warned: readonly string[];
 }> {
-  // The logger verifies its sinks before `console.warn` is replaced, so what it
-  // says about one it could not verify is not taken for the work's.
+  // Both loggers verify their sinks before `console.warn` is replaced, so what
+  // either says about one it could not verify is not taken for the work's.
   await contextRoot({ tag: 'console-warn-lines', },)
     .flush();
+  await frameworkLogger.flush();
   /**
    Each text `console.warn` was called with; the sink joins the lines of one
    turn into one call and passes that one text.

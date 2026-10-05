@@ -11,6 +11,10 @@
  reports the same way five seconds later (ledger B140); the regular file
  stands in for the load without waiting on it.
 
+ TWO LOGGERS SHARE A TEST PROCESS: the one the built package bundles, which
+ the code under test writes through, and module-logger's default logger,
+ which the test framework writes through. Each reports its own sinks.
+
  Fixtures are cat-themed invention.
 
  @module
@@ -85,8 +89,8 @@ await describe({
   name: 'warnLinesDuring',
   children: [
     it({
-      name: 'KEEPS the work\'s warning and SENDS the logger\'s own report of a sink it could not verify to the console '
-        + 'the divert stood in for, where the first line of the process starts the logger inside the divert '
+      name: 'KEEPS the work\'s warning and SENDS each logger\'s own report of a sink it could not verify to the '
+        + 'console the divert stood in for, where the first line of the process starts the logger inside the divert '
         + '(ledger B140)',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'console-warn-lines-', },);
@@ -123,6 +127,20 @@ await describe({
         // empty streams.
         if (child.error !== undefined)
           throw new Error(`the child never started, so nothing was exercised (${child.error.name})`,);
+        /**
+         What a logger reports for the file standing where its log directory
+         goes.
+         */
+        const report = `${LOGGER_REPORT_PREFIX}file sink verification failed: EEXIST: file already exists, mkdir '${
+          join(
+            scratch.path,
+            'node_modules',
+            '.monochromatic',
+          )
+        }'`;
+        // TWO REPORTS, ONE FROM EACH LOGGER: the fixture starts the built package's
+        // logger and the test framework's before it diverts, and each has its
+        // own file sink to verify.
         expect({
           status: child.status,
           stdout: child.stdout,
@@ -135,13 +153,8 @@ await describe({
           status: 0,
           stdout: JSON.stringify(['[whiskers] purr',],),
           reports: [
-            `${LOGGER_REPORT_PREFIX}file sink verification failed: EEXIST: file already exists, mkdir '${
-              join(
-                scratch.path,
-                'node_modules',
-                '.monochromatic',
-              )
-            }'`,
+            report,
+            report,
           ],
         },);
       },
