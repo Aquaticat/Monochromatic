@@ -14,16 +14,27 @@ use satteri_ast::mdast::MdastNodeType;
 pub(crate) fn paragraph_for(context: &MarkdownSource, id: u32) -> Option<u32> {
     // These ancestors represent content with another syntax or a single-line contract.
     const SKIP: &[MdastNodeType] = &[
-        MdastNodeType::Heading, MdastNodeType::Table, MdastNodeType::TableRow, MdastNodeType::TableCell,
-        MdastNodeType::Link, MdastNodeType::LinkReference, MdastNodeType::Image, MdastNodeType::ImageReference,
-        MdastNodeType::Definition, MdastNodeType::Html, MdastNodeType::FootnoteDefinition, MdastNodeType::FootnoteReference,
+        MdastNodeType::Heading,
+        MdastNodeType::Table,
+        MdastNodeType::TableRow,
+        MdastNodeType::TableCell,
+        MdastNodeType::Link,
+        MdastNodeType::LinkReference,
+        MdastNodeType::Image,
+        MdastNodeType::ImageReference,
+        MdastNodeType::Definition,
+        MdastNodeType::Html,
+        MdastNodeType::FootnoteDefinition,
+        MdastNodeType::FootnoteReference,
     ];
     // Option carries a discovered paragraph id, not a synthesized fallback node.
     let mut paragraph: Option<u32> = None;
     let mut cursor: Option<u32> = context.parent(id);
     while let Some(parent) = cursor {
         let kind: MdastNodeType = context.kind(parent);
-        if SKIP.contains(&kind) { return None; }
+        if SKIP.contains(&kind) {
+            return None;
+        }
         if paragraph.is_none() && kind == MdastNodeType::Paragraph {
             paragraph = Some(parent);
         }
@@ -37,10 +48,15 @@ pub(crate) fn delimiter_tail(context: &MarkdownSource, id: u32) -> u32 {
     let mut tail: u32 = id;
     while let Some(parent) = context.parent(tail) {
         let kind: MdastNodeType = context.kind(parent);
-        if kind != MdastNodeType::Strong && kind != MdastNodeType::Emphasis && kind != MdastNodeType::Delete {
+        if kind != MdastNodeType::Strong
+            && kind != MdastNodeType::Emphasis
+            && kind != MdastNodeType::Delete
+        {
             break;
         }
-        if context.children(parent).last() != Some(&tail) { break; }
+        if context.children(parent).last() != Some(&tail) {
+            break;
+        }
         tail = parent;
     }
     return tail;

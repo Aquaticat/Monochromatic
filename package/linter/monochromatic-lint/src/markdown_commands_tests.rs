@@ -49,13 +49,16 @@ fn prompt_only_examples_preserve_authored_source() {
 #[test]
 fn embedded_prompt_text_is_never_removed() {
     for newline in ["\n", "\r\n", "\r"] {
-        let source: String = format!("```sh{newline}$ echo '$ value' and $ other{newline}```{newline}");
+        let source: String =
+            format!("```sh{newline}$ echo '$ value' and $ other{newline}```{newline}");
         let findings: Vec<Diagnostic> = check(source.as_str());
         assert_eq!(findings.len(), 1);
         let fix: Fix = findings[0].fix.clone().expect("line prefix fix");
         assert_eq!(fix.edits.len(), 1);
-        assert_eq!(apply_fixes(source.as_str(), &[fix]).expect("apply").source,
-            format!("```sh{newline}echo '$ value' and $ other{newline}```{newline}"));
+        assert_eq!(
+            apply_fixes(source.as_str(), &[fix]).expect("apply").source,
+            format!("```sh{newline}echo '$ value' and $ other{newline}```{newline}")
+        );
     }
 }
 

@@ -14,8 +14,20 @@ use super::{abbreviation_at, break_offsets};
 fn break_points_preserve_tokens_and_final_punctuation() {
     assert_eq!(break_offsets("left, right.", "", true), [5]);
     assert_eq!(break_offsets("first. next", "", true), [6]);
-    assert_eq!(break_offsets("one; two: three? four! end.", "", true), [4, 9, 16, 22]);
-    for source in ["3.14 here.", "1,000 here.", "Node.js here.", "9.0.0-rc.3 here.", "wait... here.", "e.g. here.", "first.\nnext.", "first.\r\nnext."] {
+    assert_eq!(
+        break_offsets("one; two: three? four! end.", "", true),
+        [4, 9, 16, 22]
+    );
+    for source in [
+        "3.14 here.",
+        "1,000 here.",
+        "Node.js here.",
+        "9.0.0-rc.3 here.",
+        "wait... here.",
+        "e.g. here.",
+        "first.\nnext.",
+        "first.\r\nnext.",
+    ] {
         assert!(break_offsets(source, "", true).is_empty(), "{source}");
     }
 }

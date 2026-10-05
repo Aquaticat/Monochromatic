@@ -47,10 +47,12 @@ pub struct FixedSource {
 fn verify_processing(findings: &[Diagnostic]) -> Result<(), FixError> {
     for finding in findings {
         if finding.processing_failure {
-            return Err(FixError { message: format!(
-                "Cannot safely fix {} because {} reported incomplete processing: {}. Original file bytes have not been changed.",
-                finding.filename, finding.code, finding.message,
-            ) });
+            return Err(FixError {
+                message: format!(
+                    "Cannot safely fix {} because {} reported incomplete processing: {}. Original file bytes have not been changed.",
+                    finding.filename, finding.code, finding.message,
+                ),
+            });
         }
     }
     return Ok(());
@@ -63,7 +65,10 @@ fn verify_processing(findings: &[Diagnostic]) -> Result<(), FixError> {
 /// ```ts
 /// function fixSource(source, checker): FixedSource;
 /// ```
-pub fn fix_source<Checker: SourceChecker>(source: &str, checker: &mut Checker) -> Result<FixedSource, FixError> {
+pub fn fix_source<Checker: SourceChecker>(
+    source: &str,
+    checker: &mut Checker,
+) -> Result<FixedSource, FixError> {
     // Own each provisional snapshot independently of the caller's unchanged source.
     let mut current: String = String::from(source);
     let mut history: Vec<String> = Vec::<String>::new();
@@ -97,7 +102,12 @@ pub fn fix_source<Checker: SourceChecker>(source: &str, checker: &mut Checker) -
     // Always perform the specified final check, even after an unchanged pass.
     let diagnostics: Vec<Diagnostic> = checker.check(current.as_str())?;
     verify_processing(diagnostics.as_slice())?;
-    return Ok(FixedSource { source: current, diagnostics, changed_passes, stop });
+    return Ok(FixedSource {
+        source: current,
+        diagnostics,
+        changed_passes,
+        stop,
+    });
 }
 
 /// Fixture checkers inspect every submitted source version and every normal/error stop path.

@@ -38,13 +38,25 @@ fn rejected(arena: &Arena<Mdast>) -> MarkdownError {
 fn child_graph_rejects_duplicate_invalid_and_cyclic_ids() {
     let mut duplicate: Arena<Mdast> = valid_arena();
     duplicate.set_children(0, &[1, 1]);
-    assert!(rejected(&duplicate).message.contains("invalid or repeated child"));
+    assert!(
+        rejected(&duplicate)
+            .message
+            .contains("invalid or repeated child")
+    );
     let mut invalid: Arena<Mdast> = valid_arena();
     invalid.children[0] = 99;
-    assert!(rejected(&invalid).message.contains("invalid or repeated child"));
+    assert!(
+        rejected(&invalid)
+            .message
+            .contains("invalid or repeated child")
+    );
     let mut cyclic: Arena<Mdast> = valid_arena();
     cyclic.children[0] = 0;
-    assert!(rejected(&cyclic).message.contains("invalid or repeated child"));
+    assert!(
+        rejected(&cyclic)
+            .message
+            .contains("invalid or repeated child")
+    );
 }
 
 /// Every source-range predicate fails independently, not only when several defects happen together.
@@ -70,7 +82,11 @@ fn root_and_kind_validation_does_not_assume_a_valid_parser_result() {
     assert!(rejected(&unknown).message.contains("unknown node kind"));
     let mut wrong_root: Arena<Mdast> = valid_arena();
     wrong_root.nodes[0].node_type = MdastNodeType::Paragraph as u8;
-    assert!(rejected(&wrong_root).message.contains("non-root entry node"));
+    assert!(
+        rejected(&wrong_root)
+            .message
+            .contains("non-root entry node")
+    );
 }
 
 /// An invalid flat child-list range is rejected before the arena's unchecked accessor is called.

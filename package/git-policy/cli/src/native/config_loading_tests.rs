@@ -79,21 +79,55 @@ fn git(directory: &std::path::Path, arguments: &[&str]) -> std::process::Output 
         .current_dir(directory)
         .env("GIT_CONFIG_NOSYSTEM", "1")
         .env("GIT_CONFIG_GLOBAL", directory.join("absent-global-config"))
-        .args(arguments).output().expect("native Git fixture command");
-    assert!(output.status.success(), "{:?}: {}", arguments, String::from_utf8_lossy(&output.stderr));
+        .args(arguments)
+        .output()
+        .expect("native Git fixture command");
+    assert!(
+        output.status.success(),
+        "{:?}: {}",
+        arguments,
+        String::from_utf8_lossy(&output.stderr)
+    );
     return output;
 }
 
 /// Optional --color does not consume a separated branch name in the selected native release.
 #[test]
 fn native_optional_color_flag_still_creates_a_named_branch() {
-    let directory = std::env::temp_dir().join(format!("native-color-classification-{}", std::process::id()));
+    let directory = std::env::temp_dir().join(format!(
+        "native-color-classification-{}",
+        std::process::id()
+    ));
     std::fs::create_dir(&directory).expect("fresh fixture");
     git(&directory, &["init", "--initial-branch=main"]);
-    git(&directory, &["-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false", "commit", "--allow-empty", "--message=initial"]);
+    git(
+        &directory,
+        &[
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "--allow-empty",
+            "--message=initial",
+        ],
+    );
     git(&directory, &["branch", "--color", "created-with-color"]);
-    git(&directory, &["show-ref", "--verify", "--quiet", "refs/heads/created-with-color"]);
-    assert_eq!(classify(&["branch", "--color", "created-with-color"]), ConfigLoading::Required);
+    git(
+        &directory,
+        &[
+            "show-ref",
+            "--verify",
+            "--quiet",
+            "refs/heads/created-with-color",
+        ],
+    );
+    assert_eq!(
+        classify(&["branch", "--color", "created-with-color"]),
+        ConfigLoading::Required
+    );
     std::fs::remove_dir_all(directory).expect("remove only the fixture");
 }
 

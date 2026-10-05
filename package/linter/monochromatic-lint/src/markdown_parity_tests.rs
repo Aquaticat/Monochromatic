@@ -55,10 +55,24 @@ fn measured_incumbent_lexical_outputs_match_native_byte_results() {
     assert_eq!(cases.breaks.len(), 44);
     assert_eq!(cases.blocks.len(), 32);
     for case in cases.breaks {
-        assert_eq!(break_offsets(case.slice.as_str(), case.trailing.as_str(), case.paragraph_tail), case.expected, "{}", case.slice);
+        assert_eq!(
+            break_offsets(
+                case.slice.as_str(),
+                case.trailing.as_str(),
+                case.paragraph_tail
+            ),
+            case.expected,
+            "{}",
+            case.slice
+        );
     }
     for case in cases.blocks {
-        assert_eq!(starts_block_construct(case.source.as_str(), case.at), case.expected, "{}", case.source);
+        assert_eq!(
+            starts_block_construct(case.source.as_str(), case.at),
+            case.expected,
+            "{}",
+            case.source
+        );
     }
 }
 

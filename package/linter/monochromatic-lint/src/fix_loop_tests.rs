@@ -39,7 +39,9 @@ impl SourceChecker for Checker {
     fn check(&mut self, source: &str) -> Result<Vec<Diagnostic>, FixError> {
         self.seen.push(String::from(source));
         if self.fail_at == Some(self.seen.len()) {
-            return Err(FixError { message: String::from("late fixture check failed") });
+            return Err(FixError {
+                message: String::from("late fixture check failed"),
+            });
         }
         let replacement: String = match self.mode {
             Mode::Settle => {
@@ -79,8 +81,8 @@ impl SourceChecker for Checker {
                 column: 1,
             },
         );
-        finding.processing_failure = matches!(self.mode, Mode::Processing)
-            || self.processing_at == Some(self.seen.len());
+        finding.processing_failure =
+            matches!(self.mode, Mode::Processing) || self.processing_at == Some(self.seen.len());
         let end: usize = if matches!(self.mode, Mode::Invalid) {
             source.len() + 1
         } else {

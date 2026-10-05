@@ -6,24 +6,32 @@
 //! // For each eligible text node, insert source-aware breaks without changing any existing byte.
 //! ```
 
+/// Import the established diagnostic/fix model and native source.
+use crate::diagnostic::{Diagnostic, Severity};
+use crate::edits::{Edit, Fix};
 /// Import byte-oriented lexical guards and AST boundary helpers.
 use crate::markdown_block_start::starts_block_construct;
 use crate::markdown_break_points::break_offsets;
 use crate::markdown_prose_context::{continuation_prefix, delimiter_tail, paragraph_for};
-/// Import the established diagnostic/fix model and native source.
-use crate::diagnostic::{Diagnostic, Severity};
-use crate::edits::{Edit, Fix};
 use crate::markdown_source::MarkdownSource;
 use satteri_ast::mdast::MdastNodeType;
 
 /// Report missing line breaks at their insertion points, not at the paragraph's beginning.
 pub fn semantic_line_breaks(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
     // Match the incumbent's CRLF preference; existing breaks of either kind remain untouched.
-    let newline: &str = if context.source.contains("\r\n") { "\r\n" } else { "\n" };
+    let newline: &str = if context.source.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
     let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
     for id in context.visible_nodes() {
-        if context.kind(*id) != MdastNodeType::Text { continue; }
-        let Some(paragraph): Option<u32> = paragraph_for(context, *id) else { continue; };
+        if context.kind(*id) != MdastNodeType::Text {
+            continue;
+        }
+        let Some(paragraph): Option<u32> = paragraph_for(context, *id) else {
+            continue;
+        };
         let tail: u32 = delimiter_tail(context, *id);
         let (_, tail_end): (usize, usize) = context.offsets(tail);
         let (_, paragraph_end): (usize, usize) = context.offsets(paragraph);
@@ -35,17 +43,29 @@ pub fn semantic_line_breaks(context: &MarkdownSource, severity: Severity) -> Vec
         let prefix: String = continuation_prefix(context, paragraph);
         for relative in break_offsets(written, trailing, is_paragraph_tail) {
             // A text-tail break belongs after all actual closing delimiters, never inside them.
-            let at: usize = if relative == written.len() { tail_end } else { start + relative };
-            if starts_block_construct(context.source.as_str(), at) { continue; }
+            let at: usize = if relative == written.len() {
+                tail_end
+            } else {
+                start + relative
+            };
+            if starts_block_construct(context.source.as_str(), at) {
+                continue;
+            }
             let mut diagnostic: Diagnostic = Diagnostic::new(
-                "markdown/semantic-line-breaks", severity,
+                "markdown/semantic-line-breaks",
+                severity,
                 String::from("A line break belongs here, after a prose break-point character."),
-                context.filename.clone(), context.span(at, 0),
+                context.filename.clone(),
+                context.span(at, 0),
             );
             // The insertion consumes no authored bytes; the grouped editor resolves competing fixes.
-            diagnostic.fix = Some(Fix { edits: vec![Edit {
-                start: at, end: at, replacement: format!("{newline}{prefix}"),
-            }] });
+            diagnostic.fix = Some(Fix {
+                edits: vec![Edit {
+                    start: at,
+                    end: at,
+                    replacement: format!("{newline}{prefix}"),
+                }],
+            });
             findings.push(diagnostic);
         }
     }

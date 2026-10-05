@@ -171,7 +171,9 @@ fn mixed_command(arguments: &[OsString], branch: bool) -> ConfigLoading {
             let mut numeric_lines: bool = false;
             for letter in &token[1..] {
                 if numeric_lines {
-                    if letter.is_ascii_digit() { continue; }
+                    if letter.is_ascii_digit() {
+                        continue;
+                    }
                     return ConfigLoading::Required;
                 }
                 let mutations: &[u8] = if branch { b"cCdDfmMut" } else { b"adefsumF" };

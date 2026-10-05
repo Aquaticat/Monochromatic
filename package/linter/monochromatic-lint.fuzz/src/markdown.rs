@@ -16,11 +16,11 @@ use monochromatic_lint::markdown_duplicate_headings::no_duplicate_heading;
 use monochromatic_lint::markdown_headings::{heading_increment, no_emphasis_as_heading, single_h1};
 use monochromatic_lint::markdown_links::{link_image_style, no_bare_urls};
 use monochromatic_lint::markdown_punctuation::no_trailing_punctuation;
-/// Import the newly integrated table and prose checks through their actual implementation boundary.
-use monochromatic_lint::markdown_tables::no_pipe_tables;
 use monochromatic_lint::markdown_semantic_breaks::semantic_line_breaks;
 /// Import the real parser, source spans and atomic fix applier.
 use monochromatic_lint::markdown_source::MarkdownSource;
+/// Import the newly integrated table and prose checks through their actual implementation boundary.
+use monochromatic_lint::markdown_tables::no_pipe_tables;
 
 /// What: A plain named function pointer; no captured closure or per-input executable configuration.
 /// Why: The pure rules share one parse while the fence rule receives its explicit rustdoc flag.
