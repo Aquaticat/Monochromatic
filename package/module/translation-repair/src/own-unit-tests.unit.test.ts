@@ -736,7 +736,6 @@ const ALLOWLIST: readonly string[] = [
   'src/naturalness-quorum.ts',
   'src/naturalness-repair-interrupted-error.ts',
   'src/no-provider-for-model-error.ts',
-  'src/nudged-reask.ts',
   'src/openrouter-chunk-scan.ts',
   'src/pace-saturation.ts',
   'src/page-apparatus-clause.ts',
