@@ -149,9 +149,34 @@ exit status 0,
 cd -- /var/home/user/Monochromatic && git worktree add -b <branch> .claude/worktrees/<name> main
 ```
 
+A worktree created from the main checkout receives no ignored state:
+`package/git-policy/cli/README.md` documents that main worktrees bypass ignored-state synchronization
+"even when they create a linked worktree".
+The first commit in the new worktree therefore failed with this policy event, verbatim:
+
+```text
+{"schemaVersion":1,"sequence":0,"type":"engine-failure","code":"plugin-threw","message":"Forbidden-strings scanner executable could not be started.","trigger":"pre-forward","policyId":"security/forbidden-strings"}
+```
+
+Provision the worktree before the subagent's first commit:
+
+```sh
+# doc/troubleshooting/claude-code-worktree-create-hook-no-path.md
+mkdir --parents .claude/worktrees/<name>/package/cli/forbidden-strings/target/release
+cp --reflink=auto --preserve=mode package/cli/forbidden-strings/target/release/forbidden-strings \
+  .claude/worktrees/<name>/package/cli/forbidden-strings/target/release/forbidden-strings
+cd -- /var/home/user/Monochromatic/.claude/worktrees/<name> && mise run prepare:pnpm:install
+```
+
+After that the same commit succeeded and auto-push published the branch.
+`prepare:pnpm:install` took 1.5 seconds against the warm store and changed no tracked file.
+
 Then launch the subagent without `isolation` and tell it the worktree root and branch.
 
 Tradeoffs:
+
+- The copied scanner is the main checkout's build as of the copy,
+  not a build of the worktree's own scanner source.
 
 - The subagent's session still starts in the main checkout.
   It must pin every shell command to the worktree and use absolute paths under it;
