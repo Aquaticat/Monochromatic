@@ -17,8 +17,8 @@ use helix_lsp::{OffsetEncoding, lsp};
 
 /// The store that decides which pushed and pulled sets are current.
 mod store;
-/// The worker owns one store; the verdict type lets it log why a pushed set was dropped.
-pub(crate) use store::{DiagnosticStore, PushVerdict};
+/// The worker owns one store.
+pub(crate) use store::DiagnosticStore;
 
 /// What: A closed set of four names, mirroring the protocol's numeric severities.
 /// Why: The reader styles a problem by severity and must not depend on protocol numbers.
