@@ -260,7 +260,7 @@ description = "Check inlay-hint and diagnostic layout, painting, stale-snapshot 
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['test', '--no-default-features', '--test', 'annotation_placement', '--', '--nocapture'])
+runCargo(['test', '--no-default-features', '--test', 'annotation', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'source_frame', '--', '--nocapture'])
 """
 
 [tasks."inspect:find-regex"]
