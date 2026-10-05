@@ -95,6 +95,9 @@ fn reads_exact_query_output() {
         b"/r/.git/MERGE_HEAD\n/r/.git/CHERRY_PICK_HEAD\n/r/.git/REVERT_HEAD\n\n\n\n",
         b"/r/.git/REVERT_HEAD\n/r/.git/CHERRY_PICK_HEAD\n/r/.git/MERGE_HEAD\n",
         b"/r/.git/MERGE_HEAD /r/.git/CHERRY_PICK_HEAD\n/r/.git/REVERT_HEAD\n",
+        // One or two trailing bytes beyond three complete lines.
+        b"/r/.git/MERGE_HEAD\n/r/.git/CHERRY_PICK_HEAD\n/r/.git/REVERT_HEAD\nx",
+        b"/r/.git/MERGE_HEAD\n/r/.git/CHERRY_PICK_HEAD\n/r/.git/REVERT_HEAD\n\n\n",
     ] {
         assert_eq!(
             sequencer_head_paths(malformed),
