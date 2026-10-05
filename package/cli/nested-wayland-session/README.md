@@ -43,6 +43,10 @@ alternative considered are recorded in
 - Provides an isolated clipboard through wlr-data-control and ext-data-control,
   sharing the nested seat's regular clipboard with `wl_data_device` clients.
 - Changes the nested screen size.
+- Serves a private dark or light appearance preference and switches it while the app runs,
+  without touching the host desktop theme.
+- Keeps the hosted app drawing when its own window is hidden or the host session is locked,
+  so screenshots show the app's current frame.
 - Answers every control command with a plain machine-readable `ok`/`err` line.
 
 ## Requirements
@@ -107,6 +111,7 @@ monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
 - `--color-scheme dark|light` gives the hosted client a private XDG Settings portal
   with deterministic appearance.
   It does not change the host desktop theme.
+  The `color-scheme` control command switches it while the client runs.
 - `--isolate` launches the hosted app inside a resource-controlled systemd scope so a
   greedy app cannot starve the capture pipeline (see [60fps recording](#60fps-recording)).
   It degrades to a direct launch,
@@ -182,6 +187,49 @@ the hosted client inherits its usual session bus.
 Normal shutdown removes the private socket directory.
 A forced `SIGKILL` bypasses process cleanup and can leave its PID-named temporary directory behind.
 
+#### Switch appearance while the client runs
+
+Start with a control socket and either explicit value,
+then send `color-scheme` on the socket:
+
+```sh
+monochromatic-nested-wayland-session --socket /tmp/nws.sock --color-scheme dark -- my-app
+
+printf 'color-scheme light\n' | nc -U /tmp/nws.sock   # => ok changed
+printf 'color-scheme light\n' | nc -U /tmp/nws.sock   # => ok unchanged
+```
+
+A change replaces the value the private portal serves through `ReadOne`,
+`Read`,
+and `ReadAll`,
+then emits `org.freedesktop.portal.Settings.SettingChanged` on the private bus
+with the arguments `org.freedesktop.appearance`,
+`color-scheme`,
+and the new value as a variant holding an unsigned integer
+(`1` for dark,
+`2` for light).
+Requesting the value already served answers `ok unchanged` and emits nothing,
+because the portal defines that signal as emitted when a setting changes.
+
+The command only ever uses the private bus started by `--color-scheme`.
+A session started without that option has no private bus,
+so the command answers `err` and names the option to add;
+it never falls back to the session bus the compositor itself inherited.
+
+Use `mise run //package/cli/nested-wayland-session:inspect:color-scheme` to verify the built release binary.
+The task requires `gdbus`,
+`dbus-daemon`,
+`dbus-monitor`,
+`dbus-send`,
+and `slint-viewer`.
+It hosts a Slint scene that reports every `Palette.color-scheme` value the toolkit applies,
+watches the private bus,
+switches in both directions,
+and checks screenshots and recorded frames.
+The compositor's own session-bus environment points at a disposable decoy bus for the run,
+and the task requires that the decoy saw no connection and no portal signal.
+It prints the directory holding its evidence.
+
 Never change the host desktop theme to produce fixture screenshots.
 Use this option for isolated dark and light scenes.
 See [`doc/troubleshooting/slint-nested-color-scheme-portal.md`](
@@ -199,9 +247,14 @@ one response line:
  or `err <message>`.
 
 - `ping` answers `ok` (liveness check).
-- `screenshot PATH` renders the current frame and writes it to `PATH` as a PNG.
+- `screenshot PATH` composites the hosted app's latest committed frame and writes it to `PATH` as a PNG.
+  The app needs time to draw after input;
+  see [Frame pacing](#frame-pacing) for what keeps that frame current.
 - `click X Y [left|right|middle]` moves the pointer to the logical point and clicks
   (button defaults to `left`).
+- `wheel X Y HORIZONTAL VERTICAL` moves the pointer to the logical point
+  and delivers real wheel notches there.
+  Positive counts scroll right and down.
 - `key NAME [press|release|tap]` presses a named key (`enter`,
    `escape`,
    `tab`,
@@ -254,6 +307,11 @@ one response line:
 - `record stop` stops recording and answers with the measured statistics,
    for example
   `ok captured=180 dropped=0 failures=0 seconds=3.004 fps=59.9`.
+- `color-scheme dark|light` switches the private appearance preference started by `--color-scheme`.
+  It answers `ok changed` after notifying subscribed clients,
+  `ok unchanged` when that value was already served,
+  and `err <message>` when the session has no private appearance portal.
+  See [Switch appearance while the client runs](#switch-appearance-while-the-client-runs).
 - `quit` stops the compositor.
 
 Payloads are passed through verbatim:
@@ -282,6 +340,31 @@ in-process features rather than external tools:
    and there is no `/dev/uinput` involvement.
 - The control API is a Unix socket whose blocking-IO thread forwards parsed commands to
   the render thread over a channel and returns each result.
+
+## Frame pacing
+
+A Wayland client draws its next frame after the compositor tells it the previous one was shown.
+The live path sends that notice after presenting to the parent compositor,
+and the parent in turn paces this tool the same way.
+A parent that stops presenting the nested window,
+for example because the host session is locked or the window is hidden,
+would therefore leave the hosted app waiting to draw,
+and `screenshot` showing an old frame.
+
+To keep capture independent of host visibility,
+a timer at the nested output's 60 Hz refresh sends those notices itself
+whenever the parent has presented nothing for 50 ms and no recording is running.
+The log records when this fallback starts and when the parent presents again.
+While a recording runs,
+the recorder's own timer sets the pace instead.
+
+Use `mise run //package/cli/nested-wayland-session:inspect:stalled-parent` to verify the built release binary.
+The task hosts one session inside another and starts a very slow recording in the outer one,
+which withholds frame notices from the inner one exactly as a hidden window would.
+It then requires that inner screenshots follow three appearance switches.
+It needs `slint-viewer`.
+The withheld notices come from the outer session's recording,
+not from the host's lock or window state.
 
 ## 60fps recording
 
@@ -357,6 +440,7 @@ Tasks fall back to the host automatically when the development libraries are pre
 
 - `mise run //package/cli/nested-wayland-session:build` builds the release binary.
 - `mise run //package/cli/nested-wayland-session:test` runs the unit tests.
+- `mise run //package/cli/nested-wayland-session:test:all` runs them without stopping at the first failure.
 - `mise run //package/cli/nested-wayland-session:lint:clippy` runs clippy with warnings
   denied.
 - `mise run //package/cli/nested-wayland-session:lint:rust` runs the repo's Rust linter
