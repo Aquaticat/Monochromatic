@@ -3,6 +3,7 @@
 /// Consumer APIs use the same stamp as the native rendering boundary.
 use ide_app::{
     document::{Document, ReadingPosition},
+    find::{FindRange, FindRanges},
     shaped_text::Viewport,
     source_frame::FrameStamp,
     source_style::{SourceStyles, StyleSpan},
@@ -149,4 +150,51 @@ fn source_revision_invalidates() {
     let reload = document.prepare_reload("new source");
     document.apply_reload(reload);
     assert!(original != stamp(&document));
+}
+
+/// In-file find matches are a paint input: a different match list is a different frame.
+#[test]
+fn find_matches_invalidate_and_equal_lists_reuse() {
+    let document = Document::new("needle and needle");
+    let without = stamp(&document);
+    // What: `FindRanges::from` moves a fixed list into shared immutable storage.
+    // Why: The renderer hands the stamp the same shared list the worker produced.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const first: ReadonlyArray<FindRange> = [{ start: 0, end: 6 }];
+    // ```
+    let first = FindRanges::from([FindRange { start: 0, end: 6 }]);
+    let both = FindRanges::from([
+        FindRange { start: 0, end: 6 },
+        FindRange { start: 11, end: 17 },
+    ]);
+    // What: `clone` on a shared list copies its pointer, not its ranges.
+    // Why: Two stamps holding the same allocation must compare equal without scanning.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const marked = stamp(document).withMatches(first);
+    // ```
+    let marked = stamp(&document).with_matches(first.clone());
+    assert!(
+        without != marked,
+        "adding matches must invalidate the frame"
+    );
+    assert!(
+        marked == stamp(&document).with_matches(first.clone()),
+        "the same shared match list must reuse the frame"
+    );
+    assert!(
+        marked == stamp(&document).with_matches(FindRanges::from([FindRange { start: 0, end: 6 }])),
+        "an equal match list in another allocation must reuse the frame"
+    );
+    assert!(
+        marked != stamp(&document).with_matches(both),
+        "a different match list must invalidate the frame"
+    );
+    assert!(
+        without == stamp(&document).with_matches(FindRanges::from([])),
+        "an empty match list is the frame without matches"
+    );
 }
