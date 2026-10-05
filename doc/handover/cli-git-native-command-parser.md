@@ -37,7 +37,9 @@ oldest first:
 - `2421befae` refuse sequencer path output with one or two trailing bytes
 - `fe851e3b4` draft of this document
 - `fa8a56d2a` drop branches planted mutations showed to be equivalent and pin equals splitting
-- the commit that completes this document
+- `583e77af9` complete this document
+- `ee6e3c484` pick the git config form after leading wrapper flags
+- the commit that records `ee6e3c484` in this document
 
 Two commit messages state a wrong count;
 each has a corrective commit comment on GitHub.
@@ -399,16 +401,16 @@ Line numbers refer to the Git 2.56.0 source at commit
 ### Gate
 
 `GIT_POLICY_NATIVE_IMAGE_TAG=command-parser mise run //package/git-policy/cli:native:test:container`
-at `fa8a56d2a`:
+at `ee6e3c484`:
 186 tests passed,
 0 failed;
 Clippy passed (`{"tests":true,"clippy":true}`).
-Image `652d51b9db43dc06c6e48534930eacbca425c37108d6cd107633a00151ac5255`,
+Image `f157e220fd2bd272df9f09f5a12f19e3befe1cdbb2c089fe9c5ae2fd42db7edb`,
 built from the audited Git 2.56.0 base
 `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`,
 run with `--network=none`, `--memory=2g`, `--cpus=2` and `--pids-limit=128`.
 Of the 186 tests, 177 are in this branch's modules;
-the rest are the existing `global_arguments.rs` and `config_loading.rs` tests.
+the other 9 are the existing `global_arguments_tests.rs` (5) and `config_loading_tests.rs` (4).
 Cargo prints one manifest warning on every run,
 `unused dependency monochromatic-jsonc-edit`,
 which predates this branch and comes from `Cargo.toml`, which this branch does not change.
@@ -474,6 +476,9 @@ never when only compilation or Clippy fails.
 - Follow-up, at `fa8a56d2a`:
   the two remaining survivor guards and three new mutations of the stash typo boundary;
   all 5 killed by tests.
+- Leading wrapper flags of `git config`, at `ee6e3c484`:
+  disabling the skip, and picking the form from the first token again;
+  both killed by tests.
 
 ## Integration notes
 
@@ -503,6 +508,16 @@ never when only compilation or Clippy fails.
   (the `--no-enforce-<policy>` flags and `--cli-git-keep-going`)
   as `wrapper_flags` to every parser;
   otherwise Git's tables refuse them as unknown options.
+  `parse_stash_region` and `parse_config_region` skip leading wrapper flags
+  before choosing a subcommand or form,
+  because the wrapper removes them before Git runs.
+- Remove wrapper controls from the global prefix,
+  the tokens before the subcommand,
+  before calling any decision built on `global_layout`.
+  `global_layout` reports an unknown global option as `InvalidOption`,
+  and `decide_commit_only`, `atomic_push`, `status_hints_off` and `decide_require_root`
+  then leave the command alone,
+  so `git --cli-git-keep-going status` from a subdirectory would pass require-root.
 - `resolve_require_root` needs the effective directory and the repository root.
   `main`'s `resolve_worktree_identity` already asks Git with the forwarded global prefix,
   which is one candidate source for the root.
