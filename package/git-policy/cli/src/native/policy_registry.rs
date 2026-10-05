@@ -219,10 +219,9 @@ pub fn policy_by_name(name: &str) -> Option<&'static PolicyDescriptor> {
 /// function policyDescriptor(id: PolicyId): PolicyDescriptor;
 /// ```
 pub fn policy_descriptor(id: PolicyId) -> &'static PolicyDescriptor {
-    let mut index: usize = 0;
-    while index < POLICY_REGISTRY.len() {
-        let descriptor: &PolicyDescriptor = &POLICY_REGISTRY[index];
-        index += 1;
+    // `for descriptor in POLICY_REGISTRY` borrows each row in order; no index is needed
+    // because the row itself is returned, not wrapped in `Some(...)`.
+    for descriptor in POLICY_REGISTRY {
         if descriptor.id == id {
             return descriptor;
         }
