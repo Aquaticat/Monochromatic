@@ -81,6 +81,9 @@ mod sidebar_keyboard_tests;
 /// Source repaint, window resizing, the find bar, and the search overlay beside a resized sidebar.
 #[cfg(test)]
 mod sidebar_layout_tests;
+/// Rendered divider states and tree painting inside the narrowest sidebar.
+#[cfg(test)]
+mod sidebar_paint_tests;
 /// Real pointer drags on the sidebar divider resize within both bounds.
 #[cfg(test)]
 mod sidebar_tests;
