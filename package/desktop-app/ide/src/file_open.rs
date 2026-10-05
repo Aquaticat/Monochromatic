@@ -19,6 +19,8 @@ pub struct OpenedFile {
     pub document: Document,
     /// Classification may report an independent parser failure without discarding readable text.
     pub syntax: Option<SyntaxReply>,
+    /// True for a file outside the project, opened read-only from a language target.
+    pub outside_project: bool,
 }
 
 /// One executing read plus one replaceable desired target; no unbounded file-open queue.
@@ -31,10 +33,14 @@ pub struct FileOpener {
     generation: u64,
     /// Only the latest waiting target is retained while an older read finishes.
     pending: Option<PathBuf>,
+    /// The waiting target lies outside the project and is read without project resolution.
+    pending_outside: bool,
+    /// The read submitted for the current generation lies outside the project.
+    submitted_outside: bool,
 }
 
 /// Turn an accepted empty-base read into a fresh document with a collapsed initial caret.
-fn opened(reply: ReloadReply) -> Result<OpenedFile> {
+fn opened(reply: ReloadReply, outside_project: bool) -> Result<OpenedFile> {
     // What: ? propagates the current source-read error before attempting to use a resolved target.
     // Why: Failed opens retain the previously displayed document at the caller boundary.
     //
@@ -81,6 +87,7 @@ fn opened(reply: ReloadReply) -> Result<OpenedFile> {
         path,
         document,
         syntax: reply.syntax,
+        outside_project,
     });
 }
 
@@ -99,6 +106,8 @@ impl FileOpener {
             worker: ReloadWorker::new()?,
             generation: 0,
             pending: None,
+            pending_outside: false,
+            submitted_outside: false,
         });
     }
 
@@ -123,6 +132,19 @@ impl FileOpener {
         tracing::debug!(path = %path.display(), generation = self.generation, "requested project source open");
         // Some retains the latest native path until its bounded reader slot becomes available.
         self.pending = Some(path);
+        self.pending_outside = false;
+        return Ok(());
+    }
+
+    /// What: Request a file outside the project, read without project resolution.
+    /// Why: A language server can name a standard-library or dependency file as a definition.
+    ///      The caller passes only a canonical path the Language module validated as an existing
+    ///      regular file outside the root; tree and search opens never come here.
+    pub fn request_outside(&mut self, path: PathBuf) -> Result<()> {
+        self.cancel()?;
+        tracing::debug!(path = %path.display(), generation = self.generation, "requested outside-project source open");
+        self.pending = Some(path);
+        self.pending_outside = true;
         return Ok(());
     }
 
@@ -144,7 +166,7 @@ impl FileOpener {
         // Lend no mutable document state to the worker while consuming its completed reply.
         if let Some(reply) = completed {
             if reply.generation == self.generation {
-                return Ok(Some(opened(reply)?));
+                return Ok(Some(opened(reply, self.submitted_outside)?));
             }
             if let Err(error) = reply.result {
                 tracing::debug!(%error, generation = reply.generation, "discarded stale file-open failure");
@@ -169,19 +191,24 @@ impl FileOpener {
         // ```ts
         // submit({ workspace, path, snapshot: new Document(''), generation, highlightUnchanged: true });
         // ```
-        let submitted = self.worker.request_project(
-            self.workspace.clone(),
-            ReloadRequest {
-                path: path.clone(),
-                snapshot: Document::new(""),
-                generation: self.generation,
-                highlight_unchanged: true,
-            },
-        )?;
+        let request = ReloadRequest {
+            path: path.clone(),
+            snapshot: Document::new(""),
+            generation: self.generation,
+            highlight_unchanged: true,
+        };
+        // An outside target is not resolved against the project, which would refuse it.
+        let submitted = if self.pending_outside {
+            self.worker.request(request)?
+        } else {
+            self.worker
+                .request_project(self.workspace.clone(), request)?
+        };
         if !submitted {
             bail!("File-open reader rejected an idle request; restart the application");
         }
         self.pending = None;
+        self.submitted_outside = self.pending_outside;
         return Ok(None);
     }
 }

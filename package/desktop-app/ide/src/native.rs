@@ -26,6 +26,10 @@ use ide_app::source_frame::FrameStamp;
 use ide_app::text_raster::TextRaster;
 /// Explicit startup paths retain one canonical project boundary.
 use ide_app::{cli::Options, workspace::Workspace};
+/// The Language module's handle, its startup rule, its log directive, and the reload record.
+use ide_app::language::{
+    HELIX_LOG_DIRECTIVE, LanguageWorker, enter_project_directory, sync::DocumentReload,
+};
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
 /// Toolkit handles and models bridge owned Rust state to the window.
@@ -60,6 +64,8 @@ mod focus_tests;
 mod font_tests;
 /// Source selection and keyboard callbacks.
 mod input;
+/// Go to definition, references, and hover through the Language module.
+mod language;
 /// Project tree and asynchronous successful-file navigation.
 mod navigation;
 /// Missing targets and canonical aliases exercise reveal liveness and model identity.
@@ -157,6 +163,14 @@ struct State {
     frame_stamp: Option<FrameStamp>,
     /// Accepted in-file matches; painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
+    /// The latest accepted external reload the Language module has not been told about yet.
+    language_reload: Option<DocumentReload>,
+    /// Latest accepted inlay hints and diagnostics; read them with the displayed stamp.
+    annotations: language::Annotations,
+    /// The displayed file lies outside the project; it was opened read-only from a language target.
+    outside_project: bool,
+    /// Where the caret goes once the file of a language target is installed.
+    pending_jump: Option<language::Jump>,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
@@ -183,16 +197,36 @@ impl State {
             presented_revision: None,
             frame_stamp: None,
             find: None,
+            language_reload: None,
+            annotations: language::Annotations::default(),
+            outside_project: false,
+            pending_jump: None,
         };
     }
 }
 
 /// Run one project window after display-independent argument parsing has completed.
 pub fn run(options: Options) -> anyhow::Result<()> {
+    // helix-lsp logs every protocol message in full at `info`; its directive keeps it at warnings.
     tracing_subscriber::fmt()
-        .with_env_filter("ide_app=debug,monochromatic_ide=debug")
+        .with_env_filter(format!(
+            "ide_app=debug,monochromatic_ide=debug,{HELIX_LOG_DIRECTIVE}"
+        ))
         .init();
     let workspace = Workspace::new(&options.project)?;
+    // Helix roots every server at the working directory it reads first, so the project root
+    // becomes the working directory before any thread starts or any Helix call is made.
+    // What: `and_then` starts the worker only when entering the directory succeeded.
+    // Why: Either failure leaves the window usable; language features then explain the reason.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let worker: LanguageWorker | Error;
+    // try { process.chdir(root); worker = new LanguageWorker(root); } catch (error) { worker = error; }
+    // ```
+    let language_worker = enter_project_directory(workspace.root())
+        .and_then(|()| return LanguageWorker::new(workspace.root()));
+    let project_root = workspace.root().to_path_buf();
     // Resolve initial-file paths relative to the explicit root, never the caller's ambient cwd.
     let file_path = if let Some(file) = options.file {
         Some(workspace.resolve(&file)?)
@@ -240,12 +274,22 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     bind_appearance(&window, &state);
     // Retain the timer until window shutdown; its Drop also closes and joins the find worker.
     let _find_timer = find::bind(&window, &state)?;
-    let _navigation_timer = navigation::bind(&window, &state, workspace)?;
+    let (_navigation_timer, navigation_state) =
+        navigation::bind_shared(&window, &state, workspace)?;
+    let language_binding = language::bind(
+        &window,
+        &state,
+        &navigation_state,
+        &project_root,
+        language_worker,
+    );
     render(&window, &state);
     if state.borrow().file_path.is_none() {
         window.invoke_focus_tree();
     }
     window.run()?;
+    // The window is gone; stopping servers may take up to about a second without freezing it.
+    language_binding.close();
     // What: Ok(()) reports success without a payload; Err would carry a failure.
     // Why: Clean window closure is not a process error.
     //

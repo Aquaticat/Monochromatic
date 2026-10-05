@@ -205,6 +205,15 @@ impl Session {
             self.send(json!({ "id": id, "result": null }));
         } else if method == "textDocument/hover" {
             self.hover(id, params);
+        } else if method == "textDocument/definition"
+            && let Some(result) = &self.script.definition
+        {
+            // A scripted result is sent exactly as the test wrote it.
+            self.send(json!({ "id": id, "result": result }));
+        } else if method == "textDocument/references"
+            && let Some(result) = &self.script.references
+        {
+            self.send(json!({ "id": id, "result": result }));
         } else if method == "textDocument/definition" {
             let range = json!({ "start": { "line": 2, "character": 0 }, "end": { "line": 2, "character": 6 } });
             let mut targets = vec![
