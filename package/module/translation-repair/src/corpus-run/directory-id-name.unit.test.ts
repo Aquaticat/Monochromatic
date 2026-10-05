@@ -156,9 +156,17 @@ await describe({
     },),
 
     it({
-      name: 'READS NO name and no alias out of front matter that is no record at all, a list reading '
-        + 'as neither',
+      name: 'READS NO name and no alias out of front matter holding no data, or holding a list, neither '
+        + 'being a record',
       fn: async () => {
+        // No data parses to null, which only the record check keeps the name
+        // and alias reads from destructuring.
+        expect(directoryIdNameStands({
+          entryId: 'maotong',
+          source: blockOf({ text: '---\n---\n', },),
+          page: blockOf({ text: ID_ONLY_PAGE, },),
+          archives: [],
+        },),).toBe(false,);
         expect(directoryIdNameStands({
           entryId: 'maotong',
           source: blockOf({ text: '---\n- 猫童\n- MaoTong\n---\n', },),
@@ -181,11 +189,19 @@ await describe({
     },),
 
     it({
-      name: 'READS NO alias where the info block is no record, so nothing there can name the id',
+      name: 'READS NO alias where the info block holds nothing or holds a number, neither being a record',
       fn: async () => {
+        // An empty info block parses to null, which only the record check
+        // keeps the alias read from destructuring.
         expect(directoryIdNameStands({
           entryId: 'maotong',
-          source: blockOf({ text: '---\nname: 狗狗\ninfo: 7\n---\n', },),
+          source: blockOf({ text: '---\nname: 咪咪\ninfo:\n---\n', },),
+          page: blockOf({ text: ID_ONLY_PAGE, },),
+          archives: [],
+        },),).toBe(false,);
+        expect(directoryIdNameStands({
+          entryId: 'maotong',
+          source: blockOf({ text: '---\nname: 咪咪\ninfo: 7\n---\n', },),
           page: blockOf({ text: ID_ONLY_PAGE, },),
           archives: [],
         },),).toBe(false,);
@@ -193,18 +209,20 @@ await describe({
     },),
 
     it({
-      name: 'STANDS where the alias is a list whose entries name the id, and falls where the alias is '
-        + 'neither text nor list',
+      name: 'STANDS where the alias is a list whose entries name the id, and FALLS where the alias is '
+        + 'neither text nor list, though written out it would spell the id',
       fn: async () => {
         expect(directoryIdNameStands({
           entryId: 'maotong',
-          source: blockOf({ text: '---\nname: 狗狗\ninfo:\n  alias:\n    - maotong\n---\n', },),
+          source: blockOf({ text: '---\nname: 咪咪\ninfo:\n  alias:\n    - maotong\n---\n', },),
           page: blockOf({ text: ID_ONLY_PAGE, },),
           archives: [],
         },),).toBe(true,);
+        // A YAML boolean under the alias, and an id spelled as that boolean
+        // prints: a reader that wrote the value out would find the id in it.
         expect(directoryIdNameStands({
-          entryId: 'maotong',
-          source: blockOf({ text: '---\nname: 狗狗\ninfo:\n  alias: 42\n---\n', },),
+          entryId: 'true',
+          source: blockOf({ text: '---\nname: 咪咪\ninfo:\n  alias: true\n---\n', },),
           page: blockOf({ text: ID_ONLY_PAGE, },),
           archives: [],
         },),).toBe(false,);
@@ -212,12 +230,47 @@ await describe({
     },),
 
     it({
-      name: 'READS NO letters in an id of punctuation alone, so no name can spell anything of it',
+      name: 'FALLS where the id holds no Latin letter and no alias is the id itself, since an alias with '
+        + 'no Latin letter spells nothing of it, and STANDS where an alias is that id character for '
+        + 'character (ledger B131)',
       fn: async () => {
+        /**
+         Source naming the person in Han, with a Han alias.
+         */
+        const source = blockOf({ text: '---\nname: 猫童\ninfo:\n  alias: 猫童\n---\n', },);
+
+        /**
+         Page that offers no English rendering to stand on.
+         */
+        const page = blockOf({ text: '---\nname: nothing\n---\n', },);
+        expect([
+          '，。',
+          '2024',
+          '猫咪',
+        ].map(function stands(entryId,): boolean {
+          return directoryIdNameStands({
+            entryId,
+            source,
+            page,
+            archives: [],
+          },);
+        },),).toEqual([
+          false,
+          false,
+          false,
+        ],);
+        expect(directoryIdNameStands({
+          entryId: '猫童',
+          source,
+          page,
+          archives: [],
+        },),).toBe(true,);
+        // A source with no name: the pinyin walk has no character to refuse
+        // an id of no letters at, so only its own guard does.
         expect(directoryIdNameStands({
           entryId: '，。',
-          source: blockOf({ text: '---\nname: 猫童\n---\n', },),
-          page: blockOf({ text: '---\nname: nothing\n---\n', },),
+          source: blockOf({ text: '---\ninfo:\n  alias: Whiskers\n---\n', },),
+          page,
           archives: [],
         },),).toBe(false,);
       },
