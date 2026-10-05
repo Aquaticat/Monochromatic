@@ -153,6 +153,9 @@ internal fun LightFeedbackStudy(scene: String, onAction: (String) -> Unit, holdF
                 }) {
                 SearchPlayerPreview(isCover = isCover, light = light,
                     onSearch = { onAction("LightFeedbackStudy.search-intent:$scene") },
+                    // The accepted 7.5mm study routes through equal surfaces with a 12dp information-only inset.
+                    // Cover ignores this inner information inset and keeps its full-width list/deck composition.
+                    e2InformationStartInset = 12.dp,
                     omittedTitles = fixture.omittedTitles,
                     trackViewportModifier = Modifier.onGloballyPositioned { coordinates ->
                         trackBounds = coordinates.boundsInRoot()
