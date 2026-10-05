@@ -132,12 +132,22 @@ The container receives this package and a dedicated Cargo cache,
 not the user's home or credentials.
 The source documentation/line-budget task invokes the repository's Rust linter separately.
 
-The `runtime` task prepares the pinned Rust/TypeScript/TSX/JavaScript/JSDoc grammar slice,
+The `runtime` task prepares pinned Helix grammars for the measured language inventory,
 matching query assets,
 and license notices beside built binaries.
 It is a build-only operation,
 not an application-triggered downloader.
-Full measured-language coverage remains in the queue.
+The selection is the languages `tokei` measures as repository source or configuration
+that Helix supports at the pinned revision,
+plus the companion grammars their queries inject for content the repository contains.
+[The runtime language plan][runtime-languages] records the measurement,
+each grammar's revision and license,
+and language-server presence on this host.
+The published `manifest.json` lists the bundled grammars:
+a file whose recognized language is not listed stays plain text,
+while a listed grammar that fails to load is reported as a broken installation.
+
+[runtime-languages]: ../../../doc/planning/slint-ide-runtime-languages.md
 
 Helix crates share a pinned upstream revision.
 Helix code and runtime assets retain their own license obligations;
