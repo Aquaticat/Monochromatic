@@ -383,7 +383,88 @@ The scope now passes `--cargo-arg=--lib`,
 which reaches both the build and the test phase and selects the same tests.
 The restarted run is `mutation-6Cgoi0` (`campaign-markdown-2.log`),
 against the same image.
-Results are pending.
+Its unmutated baseline built in 108 seconds and ran the Markdown tests in under a second.
+
+### Dispositions of the first run
+
+Locations are `line:column` at the gate 4 snapshot.
+The rerun under `Final campaigns` is the proof for each killing test.
+
+- `src/markdown_lfs_config.rs:56:28: replace || with && in lfs_endpoints`
+  and `src/markdown_lfs_config.rs:56:53: replace || with && in lfs_endpoints`.
+  Equivalent, and the redundant code is removed.
+  The mutated line skipped blank lines and `#` or `;` comments before anything else read them.
+  Without it,
+  a blank line has no `=` and declares nothing;
+  a comment is never a section header,
+  because a header must start with `[`;
+  and a comment's key is the trimmed text before its first `=`,
+  which starts with the comment character,
+  so it can never equal `url` or `lfsurl`,
+  the only keys that declare an endpoint.
+  `lfs_endpoints` no longer has the skip.
+  `commented_out_declarations_declare_nothing` is the control for the behavior the skip appeared to protect:
+  commented-out `url` and `lfsurl` lines with either comment character,
+  with and without a following space,
+  and commented-out section headers,
+  with an uncommented declaration after comments as the positive control.
+- `src/markdown_lfs_config.rs:113:9: replace <impl std::fmt::Display for LfsConfigError>::fmt -> std::fmt::Result with Ok(Default::default())`.
+  Not equivalent:
+  a processing finding built from this error would lose its explanation.
+  The only code that renders it is `HostChecker::lfs_context` in `run_check.rs`,
+  whose tests are outside the `markdown` filter,
+  so the survivor is a property of the scope's test selection, not of the whole suite.
+  `optional_reads_distinguish_absence_from_failure` now asserts that the rendered text equals the stored message
+  and that the message starts with `Cannot read `.
+- `src/markdown_lfs_context.rs:137:72: replace != with == in find_lfs_repo_root`.
+  Not equivalent:
+  a search that starts below a regular file would fail with an inspection error instead of walking past it,
+  and every other inspection error would be skipped silently.
+  A permission-denied probe cannot separate the two in the container,
+  where tests run as root,
+  so `the_nearest_regular_configuration_file_marks_the_root` now starts a search at `r/sub/blocker/deeper`,
+  where `blocker` is a regular file:
+  the operating system answers "not a directory" for both candidates below it,
+  and the search must still return `r/sub`.
+- `src/markdown_lfs_sha256.rs:136:47: replace ^ with | in compress`,
+  `src/markdown_lfs_sha256.rs:144:49: replace ^ with | in compress`
+  and `src/markdown_lfs_sha256.rs:144:71: replace ^ with | in compress`.
+  Equivalent, all three.
+  Line 136 was the FIPS 180-4 `Ch` spelling `(x & y) ^ (!x & z)`:
+  its halves never share a set bit,
+  because one needs the `x` bit set and the other needs it clear,
+  so exclusive or and inclusive or give the same value.
+  Line 144 was the FIPS `Maj` spelling `(x & y) ^ (x & z) ^ (y & z)`:
+  for any three input bits either none,
+  exactly one,
+  or all three of those terms are set,
+  and both operators then agree,
+  also after the changed operator precedence of the replaced text.
+  Nothing here is redundant code that could be deleted,
+  and the instructions for this work allow no mutant exclusion,
+  so both functions are respelled so that no operator is interchangeable:
+  `choose` is `z ^ (x & (y ^ z))` and `majority` is `y ^ ((x ^ y) & (y ^ z))`.
+  A scratch truth-table check found that each of the 14 operator replacements cargo-mutants can make
+  in the two new bodies changes the result for some input bits.
+  `choose_and_majority_match_their_fips_definitions` compares both functions with the FIPS spellings
+  on all eight combinations of three input bits (results `0xcacacaca` and `0xe8e8e8e8`),
+  and the published and measured digest vectors are unchanged.
+- `src/markdown_lfs_target.rs:104:31: replace || with && in apply_segments`.
+  Not equivalent:
+  empty and `.` segments would stay in the resolved path.
+  The one existing assertion compared `PathBuf` values,
+  and path equality compares components,
+  which drops `.` segments and a trailing separator.
+  The operating system does not drop them:
+  `shot.png/` and `shot.png/.` name a directory,
+  so a tracked image written with either spelling would resolve as missing,
+  where the incumbent's `path.resolve` still names the file.
+  `lexical_normalization_resolves_dot_components` now compares the exact path spelling for four destinations,
+  and `targets_resolve_to_lfs_plain_and_missing` resolves both spellings from disk
+  through a repository with an empty cache
+  (a cached repository answers from its map and never reaches the file system).
+
+Results for the remaining files are pending.
 
 ## Defects found
 
