@@ -297,12 +297,53 @@ Glob expansion and JSONL/stdin-fix output routing were then added.
 but Clippy rejected one unnecessary cloned single-element test slice
 (`clippy::cloned_ref_to_slice_refs`);
 that assertion now uses `std::slice::from_ref`.
-The latest output/glob recheck is pending.
+The output/glob recheck passed all 121 tests and Clippy (`proc_6b17`).
 The preceding gate passed 108 tests but one new settings fixture attempted to parse top-level null,
 which the JSONC package rejects before schema validation.
 The fixture now tests a valid JSONC array root and nested null instead.
 
+Markdown commands-show-output,
+textually scoped duplicate headings,
+and trailing punctuation have now been ported.
+`proc_1bf8` passed all 130 tests,
+including escaped/entity punctuation and LF/CRLF/bare-CR prompt fixes.
+Clippy rejected the optional-edit construction with `clippy::manual_map`;
+a named early-return helper now preserves the no-closure policy without suppressing that lint.
+Additional controls cover output-bearing CRLF/bare-CR fences,
+container exceptions,
+exact messages,
+markup-boundary heading text,
+and native fence offsets.
+The recheck is pending.
+
+Advisor review supplied those additional controls.
+Its suggested punctuation expansion and registry finding were rejected after checking
+`package/cli/markdown-lint/src/rule/md026-no-trailing-punctuation.ts`
+and `package/linter/monochromatic-lint/src/configuration_rules.rs`:
+the accepted punctuation is only `.` and `:`,
+and all specified Markdown identifiers were already registered.
+Executable dispatch is still pending,
+so registration alone does not establish a working command.
+Textual ancestry and column-one fence restrictions directly match the incumbent rule source.
+The proposed non-JSON silent-mode error output was not adopted:
+findings remain JSONL when displayed,
+and exit status remains independent of display filtering.
+The punctuation suffix scanner consumes each successful scanned suffix before continuing;
+the first unsupported suffix returns immediately,
+so repeated reverse searches do not rescan the successful prefixes.
+
 Full mutation is running as `proc_3d86` against its recorded immutable source snapshot.
+It has reported a survivor in `markdown_code.rs`:
+changing the indentation adjustment from addition to subtraction.
+The existing native fixture's code-node range already excludes indentation.
+Installed Sätteri `firstpass.rs` (`parse_fenced_code_block`) records the scanner's marker offset,
+and `arena_build.rs` copies that span.
+A native parser offset/fix matrix now covers column-one,
+indented,
+quoted,
+list-contained,
+and Unicode-prefixed fences before removing redundant adjustment logic.
+The final mutation report and further survivor dispositions remain pending.
 Semantic fuzz controls now exercise all generated branches through production sessions.
 The first fixture path was not a crate root;
 renaming the fixed metadata path to `/main.rs` made all generator controls pass.
@@ -362,7 +403,8 @@ The corrected error-boundary assumptions and source evidence are recorded in
 
 Native Markdown/MDX arena adapter,
 owned byte/UTF-16 positions,
-and the initial heading/link/fence rule ports are written and awaiting their first verification.
+and the initial heading/link/fence rule ports passed their recorded gates.
+Later Markdown additions have their separate results recorded in this handover.
 Dependencies retain the already approved Sätteri versions.
 The markdownlint MIT notice is now included.
 Continue with the remaining Markdown rules,

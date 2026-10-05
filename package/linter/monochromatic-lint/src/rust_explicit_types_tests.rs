@@ -145,6 +145,31 @@ fn semantic_conformance_and_source_overlay_controls() {
             count: 1,
         },
         Case {
+            name: "enum qualifier constant hole retains its constant parameter",
+            source: "enum Choice<const N: usize> { Value } fn main() { let value: Choice<3> = Choice::<_>::Value; }",
+            count: 1,
+        },
+        Case {
+            name: "enum variant constant hole retains its constant parameter",
+            source: "enum Choice<const N: usize> { Value } fn main() { let value: Choice<3> = Choice::Value::<_>; }",
+            count: 1,
+        },
+        Case {
+            name: "mixed type and constant slots retain their positions",
+            source: "fn build<T: Copy, const N: usize>(value: T) -> [T; N] { return [value; N]; } fn main() { let values: [u8; 3] = build::<u8, _>(1_u8); }",
+            count: 1,
+        },
+        Case {
+            name: "imported variant uses the enum's parameters",
+            source: "enum Choice<T> { Value(T) } use Choice::Value; fn main() { let value: Choice<u16> = Value(1_u16); }",
+            count: 1,
+        },
+        Case {
+            name: "Self is fixed by its enclosing generic implementation",
+            source: "struct Holder<T>(T); impl<T> Holder<T> { fn new(value: T) -> Self { return Self(value); } } fn main() { let value: Holder<u16> = Holder::<u16>::new(1_u16); }",
+            count: 0,
+        },
+        Case {
             name: "explicit constant generic argument passes",
             source: "fn build<const N: usize>() -> [u8; N] { return [0_u8; N]; } fn main() { let values: [u8; 3] = build::<3>(); }",
             count: 0,
