@@ -31,7 +31,7 @@ export type AnchorTarget = {
 
   /**
    Block nodes with ids, absolute offsets, and content hashes. No two share
-   an id: validation refuses a document where a span's id names two.
+   an id: validation rejects a span whose id names two.
    */
   readonly nodes: readonly DocumentNode[];
 };
@@ -40,6 +40,10 @@ export type AnchorTarget = {
  Defect class of one rejected anchor.
  `quote-mismatch` also covers non-empty quotes on zero-width spans,
  because a zero-width slice is always empty.
+ `repeated-node-id` is the one class that is a defect of the document and
+ not of the claim: no document `parseDocument` returns repeats an id, and a
+ hand-built one that does is named for it rather than read by its first node
+ (ledger B129).
 
  @example
  ```ts
@@ -51,6 +55,7 @@ export type AnchorRejectionKind =
   | 'malformed-offset'
   | 'inverted-span'
   | 'unknown-node'
+  | 'repeated-node-id'
   | 'stale-node-hash'
   | 'span-outside-node'
   | 'quote-mismatch';
@@ -98,9 +103,6 @@ export type AnchorRejection = {
  @param documents - current pair anchors must hold against
 
  @returns Empty when span holds; exactly one rejection otherwise
-
- @throws {@link Error} when the document holds more than one node under the
- id the span names, which is a defect of the document and not of the claim
 
  @example
  ```ts
@@ -169,11 +171,15 @@ function validateSpanAnchor(
     },);
 
   // A search stopping at the first node of an id would check the span against
-  // a node it was not built on, and call a sound span stale.
+  // a node it was not built on, and call a sound span stale (ledger B129).
   if (repeat !== undefined) {
-    throw new Error(
-      `unreachable: the ${span.side} document holds more than one node under the id ${span.nodeId}, though parseDocument numbers its blocks, so no document it returns repeats an id`,
-    );
+    return [{
+      kind: 'repeated-node-id',
+      spanIndex,
+      detail: `${label} names node ${span.nodeId},`
+        + ` which the ${span.side} document lists more than once,`
+        + ' so the span cannot be checked against the node it was built on.',
+    },];
   }
 
   if (node === undefined) {
@@ -241,9 +247,6 @@ function validateSpanAnchor(
  @param documents - current pair anchors must hold against
 
  @returns Rejections in span order; empty when claim anchors hold
-
- @throws {@link Error} when a document holds more than one node under an id
- a span names, which is a defect of the document and not of the claim
 
  @example
  ```ts

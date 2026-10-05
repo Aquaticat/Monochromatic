@@ -8,7 +8,6 @@
  */
 
 import {
-  caught,
   describe,
   expect,
   it,
@@ -381,8 +380,9 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a document holding more than one node under the id a span names, rather than check the '
-        + 'span against the first of them, and ADMITS the same span against the document as parsed',
+      name: 'REJECTS a span whose node id the document lists more than once, naming that defect of the '
+        + 'document rather than calling the span stale against the first of them, and ADMITS the same '
+        + 'span against the document as parsed',
       fn: async () => {
         /**
          Span anchored in the translation's paragraph, correct in every field.
@@ -403,23 +403,18 @@ await describe({
           },),
         };
 
-        /**
-         What validating the span against that document throws.
-         */
-        const refusal = caught(function act(): unknown {
-          return validateIssueClaim({
-            claim: omissionClaim({ spans: [span,], },),
-            documents: {
-              source: DOCUMENTS.source,
-              target: repeating,
-            },
-          },);
-        },);
-        expect(refusal,).toBeInstanceOf(Error,);
-        expect(String(refusal,),).toBe(
-          `Error: unreachable: the target document holds more than one node under the id ${span.nodeId}, `
-            + 'though parseDocument numbers its blocks, so no document it returns repeats an id',
-        );
+        expect(validateIssueClaim({
+          claim: omissionClaim({ spans: [span,], },),
+          documents: {
+            source: DOCUMENTS.source,
+            target: repeating,
+          },
+        },),).toEqual([{
+          kind: 'repeated-node-id',
+          spanIndex: 0,
+          detail: `span 0 (target) names node ${span.nodeId}, which the target document lists more than `
+            + 'once, so the span cannot be checked against the node it was built on.',
+        },],);
         // The same span against the document as parsed holds.
         expect(validateIssueClaim({
           claim: omissionClaim({ spans: [span,], },),

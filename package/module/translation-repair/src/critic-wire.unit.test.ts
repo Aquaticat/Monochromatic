@@ -277,7 +277,7 @@ await describe({
 
         it({
           name: 'refuses a claim when caller-supplied documents list two nodes '
-            + 'sharing one id whose hashes disagree',
+            + 'sharing one id, naming the repeated id rather than a stale hash',
           fn: async () => {
             /** Decoy paragraph sharing the real node's id but listed first. */
             const decoyText = 'Decoy paragraph nobody quotes.';
@@ -294,9 +294,9 @@ await describe({
              Resolution against a target side whose nodes list the decoy
              before the real node even though both carry id 'block/0':
              `bindQuoteRegion` anchors the quote to the overlapping (real)
-             node, but `validateSpanAnchor` looks the id back up by `.find`,
-             which returns the decoy first, so the recorded hash and the
-             looked-up node's hash disagree.
+             node, and `validateSpanAnchor` finds two nodes under that id.
+             It used to take the decoy, the one listed first, and report a
+             stale hash (ledger B129).
              */
             const resolution = resolveCriticIssue({
               wire: {
@@ -335,7 +335,7 @@ await describe({
 
             expect(resolution.resolved,).toBe(false,);
             if (!resolution.resolved)
-              expect(resolution.reason,).toBe('anchor-validation (stale-node-hash)',);
+              expect(resolution.reason,).toBe('anchor-validation (repeated-node-id)',);
           },
         },),
       ],
