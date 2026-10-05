@@ -102,9 +102,9 @@ Full authored detail goes to the tagged Android diagnostic sink.
 The diagnostic control emits only a private capture intent in this study;
 it neither exports a log file nor announces capture success.
 
-## Required evidence before publication
+## Published evidence and verification
 
-The final evidence set must distinguish:
+The final evidence set distinguishes:
 
 - Native layout rectangles from glyph bounds and accessibility acceptance.
 - Same-scene before/after geometry from comparisons that also change rows.
@@ -117,17 +117,39 @@ The final evidence set must distinguish:
 - A full multiline log read-back from a matching prefix or final marker alone.
 - The exact new artifact from earlier bar or fixed-pane captures.
 
-A changing-geometry positive control must be rejected before trusting an
-unchanged-player result.
-The final viewer requires the exact inspected panel/scene/theme/font
-combinations,
-image digests,
-held-pose markers and fresh acquisition assertions.
-It is evidence only,
+Changed-geometry controls reject a shifted viewport before unchanged-player
+results are accepted.
+The [offline viewer](../questions/feedback-overlay.html) contains 48
+inspected held poses with exact panel/scene/theme/font combinations,
+image digests and fresh acquisition assertions.
+[Its witness manifest](../questions/evidence/feedback-overlay-witnesses.json)
+records measured crop origins,
+application roots,
+physical dimensions,
+image fingerprint and actual renderer/library environment.
+These crops retain the application's RGB,
+including ordinary viewport clipping and temporary notice occlusion.
+They are not universal row-visibility evidence.
+The viewer is evidence only,
 not another policy ballot.
 
-Publication is still pending final held-pose acquisition,
-image inspection and offline browser verification.
+Build,
+validation and consumer tests passed,
+including a changed-inset positive fixture,
+invalid crop/provenance negatives,
+fresh exact-cohort/hold mutants and restored positives.
+[Consumer verification](../questions/evidence/feedback-overlay-review-verification.json)
+binds the publication by digest.
+Offline Chromium checks decoded and opened every image and exercised
+availability controls,
+optional empty/blank observations,
+inert adversarial notes,
+stale-reply invalidation and representative modal zoom/pan/reset/focus in
+four viewport/theme contexts.
+Closed-page axe checks reported no violations or incomplete results,
+and no browser console errors were observed.
+This is not Firefox ESR140,
+open-dialog or native accessibility acceptance.
 The fresh API37 guest completed the inner lifecycle contexts under
 SwiftShader and the cover contexts under container-native LLVM20 llvmpipe.
 Each group covers light/dark at 100%/200% text,
@@ -136,6 +158,16 @@ Undo/log intent,
 full diagnostic read-back and unchanged measured player geometry.
 Those groups retain their separate renderer provenance;
 exposing a render node did not make the llvmpipe run hardware-rendered.
+[Native verification](../questions/evidence/feedback-overlay-native-verification.json)
+retains each owning visit's actual adapter output.
+The cover lifecycle group's raw records inherited a stale SwiftShader field;
+the published group uses its matching owner's measured LLVM20 adapter.
+The final held poses and separate Undo Close checks have a separately
+verified LLVM20 owner.
+All expiry logs contain exactly one activity creation and study entry;
+duplicated-initialization controls are rejected.
+Manual Undo Close passed every panel/theme/font context,
+retaining the independent error without emitting a restoration intent.
 The earlier fixed-pane diagnostic cohort showed native expiry and manual
 completion with unchanged application geometry;
 its corrected offline pixel comparison retained `3743106` identical
@@ -166,8 +198,14 @@ but a later cover cold-start check rejected a System UI ANR.
 An API36 Google APIs guest is provisioned as a separate comparison.
 Image selection is not a proved root cause,
 and results from different images are not interchangeable.
-Each bounded stage restores and reads back the recorded original fields,
-then requests graceful shutdown.
+The final capture visit recovered one observed startup System UI dialog
+before acquisition and retained the same guest across both panels.
+Interrupted command attempts stayed private;
+completed records were preserved and resumed with fresh hierarchy requests.
+The final visit restored and exactly read back the recorded original fields,
+then requested graceful shutdown.
+Its owner exited `0`,
+and matching QEMU and native/browser containers were verified absent.
 Separate base-state/override configuration equality is not claimed unless
 it was independently recorded and compared.
 Browser verification runs in an owned 2 GiB/2 CPU container and closes its

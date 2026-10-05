@@ -47,8 +47,8 @@ The human directed continued design work;
 the completed first-run/no-library queue is in
 `doc/planning/music-player-first-run-access.md`.
 The whole-map keyboard proposal is verified without new accepted defaults.
-`doc/planning/music-player-light-error-undo.md` owns the next independent
-state-family queue.
+`doc/planning/music-player-light-error-undo.md` records the completed D83
+state-family study and inspected offline publication.
 Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
@@ -1096,8 +1096,8 @@ surface with a Search button and page.
  acceptance.
  Reconsidering the picker
 remains a separate pre-1.x question, not a promise to replace it;
- the keyboard-map pass
- and undrawn light surfaces remain open;
+ the whole-map keyboard proposal is verified but not adopted;
+ the remaining light surfaces are listed in section 11d;
  Android notification presentation is settled by D82;
   desktop
   window sizing follows the Fold design as developer-owned work (D49).
@@ -1107,8 +1107,15 @@ D45 settles the cover's flat L3 surface with hairlines at both seams, and the P2
 was captured in that scheme.
  P4, the provisional D46 choice, now has its own L3
 captures at 100% and 200% text.
- The error bar, undo toast, settings pane, context menu, first-run prompt and
-scan bar remain undrawn in light; do not credit the cover decision as evidence for them.
+The first-run/no-library study now has its own inspected native evidence.
+D83's error/Undo overlays also have a completed light/dark study:
+`questions/feedback-overlay.html` presents 48 inspected held poses,
+with native expiry and action results recorded separately.
+The layout-reserving error bar is superseded,
+not still awaiting a light version.
+The Settings pane,
+context menu and scan bar remain to be drawn in light;
+do not credit the cover or overlay studies as evidence for those surfaces.
 
 ### 11e. Custom display templating: Settings requirement settled, details open
 

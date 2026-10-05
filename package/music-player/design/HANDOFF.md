@@ -12,7 +12,7 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
-## Current design queue: light error/Undo after first-run and keymap evidence
+## Current design queue: light error/Undo publication complete
 
 The filename evidence and its configurable-support correction are complete.
 The human directed continued work rather than another status-only stop.
@@ -49,7 +49,7 @@ control and popup ownership without files or audio;
 and OS-delivery limits.
 The map is not an accepted default or production implementation.
 No per-key questionnaire is queued.
-`doc/planning/music-player-light-error-undo.md` owns the next independent
+`doc/planning/music-player-light-error-undo.md` records the completed
 source/fit/publication queue under D83's current overlay treatment.
 D83 replaces the layout-reserving error bar with auto/manual-dismiss
 feedback that never resizes player regions.
@@ -57,6 +57,21 @@ Messages target two lines and direct longer detail to Android logs.
 Earlier bar captures and resize/drop witnesses are superseded,
 not the current verification target.
 No real file is trashed or restored by that design work.
+`questions/feedback-overlay.html` now presents 48 inspected held native
+poses with exact APK/source/image/renderer provenance.
+`questions/evidence/feedback-overlay-native-verification.json` separates
+actual native expiry,
+manual error dismissal,
+Undo intent and Undo Close from the held images.
+The viewer's scoped guards and four-context offline Chromium checks pass;
+this is not Firefox ESR140 or native accessibility acceptance.
+The final guest's recorded fields were restored and the owner exited `0`;
+matching native/browser containers and QEMU are absent.
+No new preference ballot is waiting.
+The remaining independent light surfaces are the context menu,
+Settings and scan bar;
+D81's Settings-template requirement remains settled while its editor details
+are a separate design problem.
 
 ## Filename investigation record (started 2026-09-29)
 

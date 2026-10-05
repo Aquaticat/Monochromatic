@@ -43,7 +43,7 @@ with editing and focused-control ownership preserved.
 [Its boundary record](evidence/keyboard-map-boundaries.md) distinguishes
 proposal,
 protocol and actual OS/native delivery.
-The active light error/Undo work follows D83:
+The completed light error/Undo study follows D83:
 auto-dismissing,
 manually dismissible overlays that never resize the player,
 with two-line messages and Android-log direction for longer detail.
@@ -52,7 +52,16 @@ D8/D9 outcome requirements and D29's non-reserving placement context remain.
 [The overlay evidence boundary](evidence/feedback-overlay-boundaries.md)
 separates held poses,
 native lifecycle controls and actual storage/log-export implementation.
-The current viewer template is not yet a verified publication.
+The [verified offline viewer](questions/feedback-overlay.html) presents
+48 inspected native held poses across both panels,
+themes and text scales.
+Native expiry,
+error dismissal,
+Undo intent and Undo Close are separately verified;
+held images are not timing evidence.
+The guest's recorded settings were restored and its owner exited cleanly.
+The consumer passed scoped tests and four-context Chromium checks,
+not Firefox ESR140 or native accessibility acceptance.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds

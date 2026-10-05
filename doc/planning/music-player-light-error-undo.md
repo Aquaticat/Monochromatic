@@ -1,5 +1,73 @@
 # Light error and Undo state-family continuation
 
+## Completed scoped publication
+
+The D83 source,
+native state/fit and evidence-publication queue is complete.
+The [offline overlay review](../../package/music-player/design/questions/feedback-overlay.html)
+contains 48 inspected held poses:
+both Fold panels,
+light/dark,
+100%/200% text and the six authored scenes.
+The consumer derives crop heights from each measured application inset,
+not a retired guest's fixed strip.
+Native error text fits within two rendered lines in these poses;
+long detail has a named Android-log direction.
+Ordinary viewport clipping and temporary overlay occlusion remain visible,
+not cropped away or described as universal row visibility.
+
+The current APK is
+`2b556131d86e39acb8ebcf194f39da9ed8e36e2f146a86ab4fb971f4c8f06480`,
+from prototype `743c5b378c6333f75857a3d5b7c87e4c284b53c5`.
+The [native verification record](../../package/music-player/design/questions/evidence/feedback-overlay-native-verification.json)
+separates inner SwiftShader lifecycle evidence,
+cover LLVM20 llvmpipe lifecycle evidence and the final LLVM20 held/Undo
+Close visit.
+The actual adapter output is retained for each owning visit.
+The cover lifecycle records' inherited SwiftShader label is explicitly
+corrected from their matching owner log,
+not silently reused.
+
+Native checks cover automatic expiry without manual input or repeated
+activity/study initialization,
+manual error dismissal,
+Undo intent,
+manual Undo Close without restoration intent,
+full diagnostic read-back and unchanged player geometry/pixels outside
+notices and shadows.
+Fresh duplicate-initialization and changed-geometry controls reject their
+intended invalid cases.
+Held poses are not expiry evidence.
+
+The [viewer verification record](../../package/music-player/design/questions/evidence/feedback-overlay-review-verification.json)
+binds the generated HTML,
+builder,
+manifest and native report by digest.
+Build,
+validation,
+consumer tests,
+fresh exact-cohort/hold mutants and restored positives passed.
+A synthetic changed-inset positive fixture and mismatched-inset negatives
+exercise the measured-crop contract.
+Offline Chromium verification opened all 48 images and exercised four
+viewport/theme contexts,
+optional observations,
+zoom/pan/reset and focus return.
+Closed-page axe checks had no violations or incomplete results;
+Firefox ESR140,
+open-dialog audits and native accessibility acceptance are not claimed.
+
+The final guest's recorded fields were restored with exact read-back.
+Its owner exited `0`,
+and matching native/browser containers and QEMU were absent.
+No production source,
+real file operation,
+log export,
+original AVD or new IME/TalkBack study was introduced.
+The chronological investigation sections retain intermediate failures and
+pending states as history,
+not instructions to repeat completed work.
+
 ## Purpose and existing decisions
 
 This is the next independent design-only queue item after first-run evidence
@@ -18,9 +86,9 @@ manually dismissible toast/snackbar overlays and a two-line message target.
 Longer details direct users to Android logs.
 D29's left alignment and 16dp owner separation remain applicable,
 but no message may resize the player.
-The unresolved work is carrying that current behavior into the light
-surface and verified Fold geometry,
-not asking about pill colour or spacing below their hard floors.
+The completed work carries that behavior into the light surface and
+verified Fold geometry,
+without asking about pill colour or spacing below their hard floors.
 
 ## Fresh emulator recovery authorized by the human
 
@@ -254,12 +322,15 @@ no stale dump was accepted.
 Host/guest process inspection found no remaining dump process,
 and the resumed acquisition used fresh paths with a 60-second command
 bound while preserving the completed records.
-Cover acquisition continues on the same guest.
+Cover acquisition subsequently completed on the same guest.
+After a separate filtered-log transport timeout,
+the remaining poses used the existing owned ADB server through its
+user/network namespaces rather than per-command OCI execution.
 The eight existing expiry logs also pass a separate single-activity and
 single-study-entry check,
 with duplicated-initialization rejection controls.
-The separate manual Close branch of Undo feedback is queued for native
-verification before shutdown.
+The separate manual Close branch of Undo feedback then passed every
+panel/theme/font context before exact restoration and shutdown.
 
 The native-container bridge is ADB touch;
 the optional gRPC helper is not used because its Python dependency is
@@ -279,13 +350,13 @@ no original AVD or third-party source was changed.
   Completion requires distinguishing known missing-file signals,
   failed trash operations and actual Undo capability from invented
   recovery actions.
-- [ ] Build isolated native light/dark authored states for error only,
+- [x] Build isolated native light/dark authored states for error only,
   Undo only and the combined state,
   preserving D8/D9/D29 as revised by D83 and accepted player information clearance.
   Completion requires fit and overlap evidence at both panels and native
   font scales,
   not a live filesystem mutation.
-- [ ] Publish inspected,
+- [x] Publish inspected,
   sanitized state evidence and verify its consumer review.
   Record implementation limits and restore/stop any owned runtime.
   Ask only if a consequential unresolved requirement survives the audit.
@@ -323,8 +394,10 @@ D83 is the current non-reserving presentation authority.
 `package/music-player/design/candidates/toast-a.dc.html` are historical
 accepted dark treatments to inspect,
 not a current source-operation proof.
-`package/music-player/design/open-questions.md` section 11d lists the light error bar and
-Undo toast as undrawn.
+At queue opening,
+`package/music-player/design/open-questions.md` section 11d listed the light
+error bar and Undo toast as undrawn;
+it now records the completed D83 replacement.
 
 ## Current presentation authority
 
@@ -364,7 +437,7 @@ multiline/non-ASCII diagnostic fixture;
 the outcome fixture report now contains 16 passing cases.
 Fresh third-line and overflow mutants failed the intended tests,
 followed by exact restoration.
-The current overlay APK built from `c890d09b0` is retained with SHA-256
+The first fixed-pane overlay APK built from `c890d09b0` is retained with SHA-256
 `7d359b9b6d624788e474d916109f2217bf5d644e797da4fb2ea70c4c6690a671`.
 The new owned SwiftShader runtime reached authorized readiness and recorded
 a separate original-settings snapshot under the unchanged 6 GiB/2 CPU caps.
@@ -519,7 +592,7 @@ or universally forbids direct operations;
 current ownership and grants matter.
 D8 does not authorize bypassing OS consent or falsely reporting success.
 
-## Fixture implementation in progress
+## Fixture implementation record
 
 The owned debug worktree now has exact missing,
 Undo,
