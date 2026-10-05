@@ -115,6 +115,9 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// External changes reach the tree and source through inotify notifications, faster than polling could.
+#[cfg(test)]
+mod watch_tests;
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.

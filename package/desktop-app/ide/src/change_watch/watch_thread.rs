@@ -54,23 +54,33 @@ fn add(watcher: &mut INotifyWatcher, workspace: &Workspace, path: &Path) -> Resu
         );
     }
     // What: `if let Err(error) = ...` runs the block only when `watch` failed.
-    // Why: The watch limit needs a specific remedy; other failures keep notify's own message.
+    // Why: The failure is described with its directory and, for the watch limit, its remedy.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // try { watcher.watch(path, 'non-recursive'); } catch (error) { throw describe(error); }
+    // try { watcher.watch(path, 'non-recursive'); } catch (error) { throw new Error(describe(error, path)); }
     // ```
     if let Err(error) = watcher.watch(path, RecursiveMode::NonRecursive) {
-        if let ErrorKind::MaxFilesWatch = error.kind {
-            bail!(
-                "Cannot watch {}: the inotify watch limit is reached; raise fs.inotify.max_user_watches",
-                path.display()
-            );
-        }
-        bail!("Cannot watch {}: {error}", path.display());
+        bail!("{}", describe(&error, path));
     }
     return Ok(());
 }
+
+/// Name the directory; the watch limit (`ENOSPC` from `inotify_add_watch`) gets the sysctl to raise.
+pub(super) fn describe(error: &notify::Error, path: &Path) -> String {
+    if let ErrorKind::MaxFilesWatch = error.kind {
+        return format!(
+            "Cannot watch {}: the inotify watch limit is reached; raise fs.inotify.max_user_watches",
+            path.display()
+        );
+    }
+    return format!("Cannot watch {}: {error}", path.display());
+}
+
+/// The watch-limit message cannot be provoked without exhausting the host's inotify watches.
+#[cfg(test)]
+#[path = "watch_thread_tests.rs"]
+mod tests;
 
 /// Remove one watch; a watch the kernel already dropped (removed directory) is expected and only logged.
 fn remove(watcher: &mut INotifyWatcher, path: &Path) {
