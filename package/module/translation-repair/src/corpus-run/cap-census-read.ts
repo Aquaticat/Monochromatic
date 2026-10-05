@@ -132,9 +132,18 @@ export type CapSample = {
  */
 function stampOf({ line, }: { readonly line: string; },): number | 'unstamped' {
   /**
-   What the line's second bracket holds.
+   What the line's second bracket holds, absent where the line has none.
    */
-  const stamp = nonNullishOrThrow(line.split('] [',)[1],);
+  const [, stamp,] = line.split('] [',);
+
+  // A spend line need not carry the logger's prefix. `readSpendLine` reads
+  // the bare line `reportSpend` returns and the same line behind any text
+  // ending in a space, so a record reaches here with one bracket or none. It
+  // has no stamp the logger wrote, which is what `unstamped` says; throwing
+  // on it ended the whole census on one line (ledger B73's rule is that such
+  // a line costs its call, not the report).
+  if (stamp === undefined)
+    return 'unstamped';
   return isIsoStampText({ text: stamp, },) ? Date.parse(stamp,) : 'unstamped';
 }
 
