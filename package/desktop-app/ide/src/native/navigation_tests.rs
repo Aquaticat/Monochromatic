@@ -1,21 +1,34 @@
 //! Native tree callbacks exercise real background reads, file installation, and recent-file reveal.
 
 /// Use the same source and navigation bindings as the shipped window.
-use super::{AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, navigation, reload, render};
+use super::{
+    AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, navigation, reload,
+    render,
+};
 /// Reading positions and canonical project identity remain independent of UI labels.
 use ide_app::{document::ReadingPosition, workspace::Workspace};
 /// Headless snapshots use the real window and system-time timer processing.
 use slint::{ComponentHandle, Model, SharedString, platform::update_timers_and_animations};
 /// Fixtures and waits are bounded, while UI ownership remains single-threaded.
-use std::{cell::RefCell, fs, rc::Rc, time::{Duration, Instant}};
+use std::{
+    cell::RefCell,
+    fs,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 /// Allow native timers and background replies to progress until a concrete rendered-state predicate holds.
 pub(super) fn wait_until(mut ready: impl FnMut() -> bool) {
     let start = Instant::now();
     loop {
         update_timers_and_animations();
-        if ready() { return; }
-        assert!(start.elapsed() < Duration::from_secs(5), "native navigation did not reach the expected state");
+        if ready() {
+            return;
+        }
+        assert!(
+            start.elapsed() < Duration::from_secs(5),
+            "native navigation did not reach the expected state"
+        );
         std::thread::sleep(Duration::from_millis(2));
     }
 }
@@ -24,7 +37,10 @@ pub(super) fn wait_until(mut ready: impl FnMut() -> bool) {
 pub(super) fn row(window: &AppWindow, label: &str) -> Option<i32> {
     let model = window.get_tree_entries();
     for index in 0..model.row_count() {
-        if model.row_data(index).is_some_and(|entry| return entry.label == label) {
+        if model
+            .row_data(index)
+            .is_some_and(|entry| return entry.label == label)
+        {
             return Some(index as i32);
         }
     }
@@ -55,10 +71,17 @@ fn native_tree_switches_files_and_preserves_current_file_reading_state() {
     render(&window, &state);
     wait_until(|| return row(&window, "view.txt").is_some());
     let selected = row(&window, "view.txt").expect("revealed initial source");
-    let entry = window.get_tree_entries().row_data(selected as usize).expect("initial row");
+    let entry = window
+        .get_tree_entries()
+        .row_data(selected as usize)
+        .expect("initial row");
     assert_eq!(entry.recency, "0");
     assert!(entry.selected);
-    state.borrow_mut().document.select(ReadingPosition { anchor: 2, head: 6, viewport: 0 });
+    state.borrow_mut().document.select(ReadingPosition {
+        anchor: 2,
+        head: 6,
+        viewport: 0,
+    });
     render(&window, &state);
     window.set_scroll_y(-120.5);
     update_timers_and_animations();
@@ -113,8 +136,19 @@ fn native_failed_open_keeps_source_and_does_not_promote_history() {
     assert_eq!(window.get_source_text(), "readable source");
     assert_eq!(state.borrow().file_generation, generation);
     let binary = row(&window, "binary.txt").expect("binary remains visible");
-    assert_eq!(window.get_tree_entries().row_data(binary as usize).expect("binary metadata").recency, "");
-    fs::write(fixture.path().join("source.txt"), "externally refreshed source").expect("external replacement");
+    assert_eq!(
+        window
+            .get_tree_entries()
+            .row_data(binary as usize)
+            .expect("binary metadata")
+            .recency,
+        ""
+    );
+    fs::write(
+        fixture.path().join("source.txt"),
+        "externally refreshed source",
+    )
+    .expect("external replacement");
     wait_until(|| return window.get_source_text() == "externally refreshed source");
     assert!(window.get_error_message().contains("binary.txt"));
     window.invoke_tree_shortcut(SharedString::from("0"), true, false, false);

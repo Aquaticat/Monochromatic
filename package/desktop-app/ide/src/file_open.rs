@@ -1,7 +1,11 @@
 //! Latest-request-wins source opening without replacing the displayed document before a successful read.
 
 /// Opened source reuses the existing revision-aware reader, syntax engine, and read-only project boundary.
-use crate::{document::{Document, ReadingPosition}, reload_worker::{ReloadReply, ReloadRequest, ReloadWorker, SyntaxReply}, workspace::Workspace};
+use crate::{
+    document::{Document, ReadingPosition},
+    reload_worker::{ReloadReply, ReloadRequest, ReloadWorker, SyntaxReply},
+    workspace::Workspace,
+};
 /// Protocol inconsistencies remain errors rather than silently installing mismatched source.
 use anyhow::{Context, Result, bail};
 /// Requested and resolved paths retain native filenames.
@@ -39,7 +43,9 @@ fn opened(reply: ReloadReply) -> Result<OpenedFile> {
     // const update = unwrapResult(reply.result);
     // ```
     let update = reply.result?;
-    let path = reply.resolved_path.context("Successful project open has no resolved source path")?;
+    let path = reply
+        .resolved_path
+        .context("Successful project open has no resolved source path")?;
     let mut document = Document::new("");
     // What: Some extracts a changed source; an empty file legitimately has no update from the empty base.
     // Why: Empty UTF-8 files remain valid open targets.
@@ -49,15 +55,33 @@ fn opened(reply: ReloadReply) -> Result<OpenedFile> {
     // if (update !== undefined && !document.applyReload(update)) throw new Error('Mismatched base');
     // ```
     // A let-chain combines optional extraction and its boolean rejection condition without another nested block.
-    if let Some(reload) = update && !document.apply_reload(reload) {
-        bail!("Cannot install opened source {}: its base revision does not match", path.display());
+    if let Some(reload) = update
+        && !document.apply_reload(reload)
+    {
+        bail!(
+            "Cannot install opened source {}: its base revision does not match",
+            path.display()
+        );
     }
-    document.select(ReadingPosition { anchor: 0, head: 0, viewport: 0 });
-    if let Some(syntax) = &reply.syntax && syntax.revision != document.revision() {
-        bail!("Cannot install opened source {}: its classification revision does not match", path.display());
+    document.select(ReadingPosition {
+        anchor: 0,
+        head: 0,
+        viewport: 0,
+    });
+    if let Some(syntax) = &reply.syntax
+        && syntax.revision != document.revision()
+    {
+        bail!(
+            "Cannot install opened source {}: its classification revision does not match",
+            path.display()
+        );
     }
     // Ok transfers the completed reading state without copying the source into another text representation.
-    return Ok(OpenedFile { path, document, syntax: reply.syntax });
+    return Ok(OpenedFile {
+        path,
+        document,
+        syntax: reply.syntax,
+    });
 }
 
 /// Unexpected reader termination must release pending UI work after reporting its error.
@@ -70,15 +94,26 @@ impl FileOpener {
     /// Create one reader for new opens while the displayed source can retain its own refresh worker.
     pub fn new(workspace: Workspace) -> Result<Self> {
         // The worker owns its thread; None records that no file has been requested yet.
-        return Ok(Self { workspace, worker: ReloadWorker::new()?, generation: 0, pending: None });
+        return Ok(Self {
+            workspace,
+            worker: ReloadWorker::new()?,
+            generation: 0,
+            pending: None,
+        });
     }
 
     /// Invalidate earlier replies even when the new intent is to keep the already displayed file.
     pub fn cancel(&mut self) -> Result<()> {
         // checked_add refuses identity reuse rather than wrapping a u64 back to an old generation.
-        self.generation = self.generation.checked_add(1).context("File-open request identity exhausted; restart the application")?;
+        self.generation = self
+            .generation
+            .checked_add(1)
+            .context("File-open request identity exhausted; restart the application")?;
         self.pending = None;
-        tracing::debug!(generation = self.generation, "invalidated pending file open");
+        tracing::debug!(
+            generation = self.generation,
+            "invalidated pending file open"
+        );
         return Ok(());
     }
 
@@ -114,14 +149,19 @@ impl FileOpener {
             if let Err(error) = reply.result {
                 tracing::debug!(%error, generation = reply.generation, "discarded stale file-open failure");
             } else {
-                tracing::debug!(generation = reply.generation, "discarded stale file-open result");
+                tracing::debug!(
+                    generation = reply.generation,
+                    "discarded stale file-open result"
+                );
             }
         }
         if self.worker.is_busy() {
             return Ok(None);
         }
         // Borrow the desired path until the reader accepts its owned request.
-        let Some(path) = &self.pending else { return Ok(None); };
+        let Some(path) = &self.pending else {
+            return Ok(None);
+        };
         // What: clone copies only path/boundary metadata; the empty document is an immutable initial base.
         // Why: The prior displayed document must not influence another file's initial caret or viewport.
         //
@@ -129,9 +169,15 @@ impl FileOpener {
         // ```ts
         // submit({ workspace, path, snapshot: new Document(''), generation, highlightUnchanged: true });
         // ```
-        let submitted = self.worker.request_project(self.workspace.clone(), ReloadRequest {
-            path: path.clone(), snapshot: Document::new(""), generation: self.generation, highlight_unchanged: true,
-        })?;
+        let submitted = self.worker.request_project(
+            self.workspace.clone(),
+            ReloadRequest {
+                path: path.clone(),
+                snapshot: Document::new(""),
+                generation: self.generation,
+                highlight_unchanged: true,
+            },
+        )?;
         if !submitted {
             bail!("File-open reader rejected an idle request; restart the application");
         }

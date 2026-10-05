@@ -138,13 +138,23 @@ impl ReloadWorker {
     /// Refresh an already accepted source path; false means the worker still owns earlier work.
     pub fn request(&mut self, request: ReloadRequest) -> Result<bool> {
         // None retains the existing accepted target rather than adding another project-path lookup.
-        return self.send(QueuedRead { request, workspace: None });
+        return self.send(QueuedRead {
+            request,
+            workspace: None,
+        });
     }
 
     /// Resolve a new tree/search open inside its explicit workspace on the background thread.
-    pub fn request_project(&mut self, workspace: Workspace, request: ReloadRequest) -> Result<bool> {
+    pub fn request_project(
+        &mut self,
+        workspace: Workspace,
+        request: ReloadRequest,
+    ) -> Result<bool> {
         // Some transfers the read-only boundary with this request; no path resolution runs on the UI thread.
-        return self.send(QueuedRead { request, workspace: Some(workspace) });
+        return self.send(QueuedRead {
+            request,
+            workspace: Some(workspace),
+        });
     }
 
     /// Admit at most one executing job or unread response regardless of the source-read mode.

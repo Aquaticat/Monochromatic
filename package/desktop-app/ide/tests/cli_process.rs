@@ -2,7 +2,12 @@
 #![cfg(feature = "gui")]
 
 /// Subprocess outputs verify exit status and streams at the actual CLI boundary.
-use std::{ffi::OsStr, fs, path::Path, process::{Command, Output}};
+use std::{
+    ffi::OsStr,
+    fs,
+    path::Path,
+    process::{Command, Output},
+};
 
 /// Isolate native display endpoints and private state even if startup ordering regresses.
 fn invoke(root: &Path, args: &[&OsStr]) -> Output {
@@ -40,14 +45,23 @@ fn executable_help_and_version_exit_without_startup() {
         assert!(text.contains("monochromatic-ide"));
         assert!(!text.contains("opened read-only project"));
     }
-    assert_eq!(fs::read_dir(fixture.path()).expect("private directory").count(), 0);
+    assert_eq!(
+        fs::read_dir(fixture.path())
+            .expect("private directory")
+            .count(),
+        0
+    );
 }
 
 /// Bad option grammar has status 2 and stderr, not an attempted native backend connection.
 #[test]
 fn executable_usage_errors_exit_before_startup() {
     let fixture = tempfile::tempdir().expect("disposable CLI environment");
-    for args in [vec![], vec![OsStr::new("--unknown")], vec![OsStr::new("one"), OsStr::new("two")]] {
+    for args in [
+        vec![],
+        vec![OsStr::new("--unknown")],
+        vec![OsStr::new("one"), OsStr::new("two")],
+    ] {
         let output = invoke(fixture.path(), &args);
         assert_eq!(output.status.code(), Some(2));
         assert!(output.stdout.is_empty());
@@ -55,7 +69,12 @@ fn executable_usage_errors_exit_before_startup() {
         assert!(text.contains("Usage:"));
         assert!(!text.contains("wayland"));
     }
-    assert_eq!(fs::read_dir(fixture.path()).expect("private directory").count(), 0);
+    assert_eq!(
+        fs::read_dir(fixture.path())
+            .expect("private directory")
+            .count(),
+        0
+    );
 }
 
 /// Positive filesystem controls prove valid argument grammar reaches root/source validation before GUI startup.
@@ -70,10 +89,18 @@ fn invalid_project_and_non_regular_source_have_input_specific_errors() {
     let absent_text = String::from_utf8(absent.stderr).expect("UTF-8 missing-root diagnostic");
     assert!(absent_text.contains("Cannot open project directory"));
     assert!(absent_text.contains(&missing.display().to_string()));
-    let directory = invoke(fixture.path(), &[project.as_os_str(), OsStr::new("--file"), OsStr::new(".")]);
+    let directory = invoke(
+        fixture.path(),
+        &[project.as_os_str(), OsStr::new("--file"), OsStr::new(".")],
+    );
     assert!(!directory.status.success());
     let directory_text = String::from_utf8(directory.stderr).expect("UTF-8 source diagnostic");
     assert!(directory_text.contains("not a regular file"));
     assert!(directory_text.contains(&project.display().to_string()));
-    assert_eq!(fs::read_dir(fixture.path()).expect("private directory").count(), 1);
+    assert_eq!(
+        fs::read_dir(fixture.path())
+            .expect("private directory")
+            .count(),
+        1
+    );
 }

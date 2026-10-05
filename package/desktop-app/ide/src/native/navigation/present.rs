@@ -12,19 +12,29 @@ use std::{cell::RefCell, rc::Rc};
 /// Expand only known ancestors; later directory replies expose the next missing level.
 fn expand_reveal(navigation: &mut Navigation) {
     // Clone the desired identity so directory expansion can mutate the tree independently.
-    let Some(target) = navigation.reveal.clone() else { return; };
+    let Some(target) = navigation.reveal.clone() else {
+        return;
+    };
     let mut ancestors = Vec::new();
     for ancestor in target.ancestors().skip(1) {
-        if ancestor == navigation.workspace.root() { break; }
+        if ancestor == navigation.workspace.root() {
+            break;
+        }
         ancestors.push(ancestor);
     }
     // Reverse the bounded ancestor walk so parents become visible before their children.
     for ancestor in ancestors.into_iter().rev() {
         let rows = navigation.tree.rows();
-        let Some(row) = rows.iter().find(|row| return row.entry.path == ancestor) else { break; };
-        if !row.entry.is_directory { break; }
+        let Some(row) = rows.iter().find(|row| return row.entry.path == ancestor) else {
+            break;
+        };
+        if !row.entry.is_directory {
+            break;
+        }
         // A let-chain enters the error branch only when expansion was needed and that operation failed.
-        if !row.expanded && let Err(error) = navigation.tree.toggle(ancestor) {
+        if !row.expanded
+            && let Err(error) = navigation.tree.toggle(ancestor)
+        {
             tracing::warn!(%error, path = %ancestor.display(), "cannot expand reveal ancestor");
             break;
         }
@@ -41,8 +51,16 @@ pub(super) fn update(window: &AppWindow, source: &Rc<RefCell<State>>, navigation
     for (index, row) in navigation.rows.iter().enumerate() {
         // Native filenames may not be UTF-8; this lossy string is never used to reopen their paths.
         let label = SharedString::from(row.entry.name.to_string_lossy().into_owned());
-        let slot = navigation.recent.paths().iter().position(|path| return path == &row.entry.path);
-        let recency = if let Some(slot_index) = slot { slot_index.to_string() } else { String::new() };
+        let slot = navigation
+            .recent
+            .paths()
+            .iter()
+            .position(|path| return path == &row.entry.path);
+        let recency = if let Some(slot_index) = slot {
+            slot_index.to_string()
+        } else {
+            String::new()
+        };
         model.push(TreeEntry {
             label,
             depth: row.depth as i32,

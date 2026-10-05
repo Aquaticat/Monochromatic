@@ -14,18 +14,18 @@ mod ui {
     }
 }
 
+/// Source-open errors identify their input instead of exposing an unlabelled I/O failure.
+use anyhow::{Context, bail};
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
 use ide_app::source_frame::FrameStamp;
 /// Raster output retains the exact glyph positions used by selection.
 use ide_app::text_raster::TextRaster;
-/// Source and display geometry use the same library interface tested headlessly.
-use ide_app::{document::Document, source_style::SourceStyles};
 /// Explicit startup paths retain one canonical project boundary.
 use ide_app::{cli::Options, workspace::Workspace};
-/// Source-open errors identify their input instead of exposing an unlabelled I/O failure.
-use anyhow::{Context, bail};
+/// Source and display geometry use the same library interface tested headlessly.
+use ide_app::{document::Document, source_style::SourceStyles};
 /// Toolkit handles and models bridge owned Rust state to the window.
 use slint::{ComponentHandle, SharedString};
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
@@ -46,12 +46,12 @@ mod font_tests;
 mod input;
 /// Project tree and asynchronous successful-file navigation.
 mod navigation;
-/// Native project callbacks exercise actual reader/timer and source replacement boundaries.
-#[cfg(test)]
-mod navigation_tests;
 /// Missing targets and canonical aliases exercise reveal liveness and model identity.
 #[cfg(test)]
 mod navigation_reveal_tests;
+/// Native project callbacks exercise actual reader/timer and source replacement boundaries.
+#[cfg(test)]
+mod navigation_tests;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
@@ -168,7 +168,10 @@ pub fn run(options: Options) -> anyhow::Result<()> {
         let metadata = std::fs::metadata(path)
             .with_context(|| return format!("Cannot inspect source file {}", path.display()))?;
         if !metadata.is_file() {
-            bail!("Cannot open source {}: it is not a regular file", path.display());
+            bail!(
+                "Cannot open source {}: it is not a regular file",
+                path.display()
+            );
         }
         let text = std::fs::read_to_string(path)
             .with_context(|| return format!("Cannot read UTF-8 source file {}", path.display()))?;

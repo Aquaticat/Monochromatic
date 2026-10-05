@@ -5,17 +5,28 @@ use super::{AppWindow, Navigation, State, open, present};
 /// Queue failures remain actionable diagnostics with their affected directory path.
 use anyhow::Result;
 /// Timed retry/refresh bounds avoid reading an inaccessible folder on every UI tick.
-use std::{cell::RefCell, rc::Rc, time::{Duration, Instant}};
+use std::{
+    cell::RefCell,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 /// Consume the sole directory reply and retain its error until that same target recovers.
 fn directory_reply(navigation: &mut Navigation) -> bool {
-    if !navigation.reader_available { return false; }
+    if !navigation.reader_available {
+        return false;
+    }
     let was_busy = navigation.reader.is_busy();
     match navigation.reader.poll(&mut navigation.tree) {
         Ok(changed) => {
             if was_busy && !navigation.reader.is_busy() {
                 let completed = navigation.reading.take();
-                if changed && navigation.directory_error.as_ref().is_some_and(|(path, _message)| return Some(path) == completed.as_ref()) {
+                if changed
+                    && navigation
+                        .directory_error
+                        .as_ref()
+                        .is_some_and(|(path, _message)| return Some(path) == completed.as_ref())
+                {
                     navigation.directory_error = None;
                     return true;
                 }
@@ -27,14 +38,21 @@ fn directory_reply(navigation: &mut Navigation) -> bool {
             if navigation.reader.is_busy() || navigation.reading.is_none() {
                 navigation.reader_available = false;
             }
-            let path = navigation.reading.take().unwrap_or_else(|| return navigation.workspace.root().to_path_buf());
+            let path = navigation
+                .reading
+                .take()
+                .unwrap_or_else(|| return navigation.workspace.root().to_path_buf());
             let retained = if navigation.tree.has_listing(&path) {
                 "The last directory snapshot is retained."
             } else {
                 "No directory snapshot is available."
             };
-            let message = format!("{error:#}. {retained} Restore access to this directory or restart the application.");
-            if navigation.directory_error.as_ref() == Some(&(path.clone(), message.clone())) { return false; }
+            let message = format!(
+                "{error:#}. {retained} Restore access to this directory or restart the application."
+            );
+            if navigation.directory_error.as_ref() == Some(&(path.clone(), message.clone())) {
+                return false;
+            }
             tracing::warn!(path = %path.display(), %error, "project directory read failed");
             navigation.directory_error = Some((path, message));
             return true;
@@ -44,16 +62,26 @@ fn directory_reply(navigation: &mut Navigation) -> bool {
 
 /// Fill one available read slot; lazy expansions take priority over round-robin visible-folder refresh.
 fn schedule(navigation: &mut Navigation) -> Result<()> {
-    if !navigation.reader_available || navigation.reader.is_busy() { return Ok(()); }
-    let cooling = navigation.last_read.is_some_and(|time| return time.elapsed() < Duration::from_millis(500));
+    if !navigation.reader_available || navigation.reader.is_busy() {
+        return Ok(());
+    }
+    let cooling = navigation
+        .last_read
+        .is_some_and(|time| return time.elapsed() < Duration::from_millis(500));
     let missing = navigation.tree.missing_listings();
     let next_missing = missing.iter().find(|path| {
-        return !cooling || !navigation.directory_error.as_ref().is_some_and(|(failed, _message)| return failed == *path);
+        return !cooling
+            || !navigation
+                .directory_error
+                .as_ref()
+                .is_some_and(|(failed, _message)| return failed == *path);
     });
     let target = if let Some(path) = next_missing {
         path.clone()
     } else {
-        if cooling { return Ok(()); }
+        if cooling {
+            return Ok(());
+        }
         let mut directories = vec![navigation.workspace.root().to_path_buf()];
         for row in &navigation.rows {
             if row.entry.is_directory && row.expanded {
@@ -73,7 +101,11 @@ fn schedule(navigation: &mut Navigation) -> Result<()> {
 }
 
 /// Apply current results before scheduling more work, keeping source selection independent of tree reads.
-pub(super) fn update(window: &AppWindow, source: &Rc<RefCell<State>>, shared: &Rc<RefCell<Navigation>>) {
+pub(super) fn update(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    shared: &Rc<RefCell<Navigation>>,
+) {
     let mut navigation = shared.borrow_mut();
     let changed = directory_reply(&mut navigation);
     if navigation.opener.has_pending() {
@@ -85,7 +117,11 @@ pub(super) fn update(window: &AppWindow, source: &Rc<RefCell<State>>, shared: &R
             }
             Ok(None) => {}
             Err(error) => {
-                open::failed(window, source, format!("{error:#}. Choose a readable UTF-8 file inside this project."));
+                open::failed(
+                    window,
+                    source,
+                    format!("{error:#}. Choose a readable UTF-8 file inside this project."),
+                );
             }
         }
     }
@@ -97,7 +133,10 @@ pub(super) fn update(window: &AppWindow, source: &Rc<RefCell<State>>, shared: &R
     if let Err(error) = schedule(&mut navigation) {
         tracing::warn!(%error, "cannot schedule project directory read");
         navigation.reader_available = false;
-        navigation.directory_error = Some((navigation.workspace.root().to_path_buf(), format!("{error:#}. Restart the application to resume directory reads.")));
+        navigation.directory_error = Some((
+            navigation.workspace.root().to_path_buf(),
+            format!("{error:#}. Restart the application to resume directory reads."),
+        ));
         present::update(window, source, &mut navigation);
     }
 }

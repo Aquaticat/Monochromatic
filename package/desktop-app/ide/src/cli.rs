@@ -36,7 +36,9 @@ fn command() -> Command {
     let mut file = Arg::new("file");
     file = file.long("file").value_name("FILE");
     file = file.value_parser(PathBufValueParser::new());
-    file = file.help("Initially display a UTF-8 source file within PROJECT; relative paths start at PROJECT");
+    file = file.help(
+        "Initially display a UTF-8 source file within PROJECT; relative paths start at PROJECT",
+    );
     command = command.arg(file);
     return command;
 }
@@ -64,7 +66,9 @@ pub fn parse_args(args: &[OsString]) -> Result<Options> {
     // const matches = command().tryParse(argv);
     // ```
     let matches = command().try_get_matches_from(argv)?;
-    let project = matches.get_one::<PathBuf>("project").context("Validated project argument is missing")?;
+    let project = matches
+        .get_one::<PathBuf>("project")
+        .context("Validated project argument is missing")?;
     // cloned copies a present owned path; omission remains None rather than a fabricated filename.
     let file = matches.get_one::<PathBuf>("file").cloned();
     // What: Ok returns the owned configuration after parser validation.
@@ -74,5 +78,8 @@ pub fn parse_args(args: &[OsString]) -> Result<Options> {
     // ```ts
     // return { project: matches.project, file: matches.file };
     // ```
-    return Ok(Options { project: project.clone(), file });
+    return Ok(Options {
+        project: project.clone(),
+        file,
+    });
 }

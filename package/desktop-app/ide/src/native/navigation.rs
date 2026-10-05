@@ -2,14 +2,25 @@
 
 /// One source owner and one native window remain independent of background filesystem reads.
 use super::{AppWindow, State};
-/// Reuse filesystem-free tree state, bounded workers, and editord-compatible session-local history.
-use ide_app::{directory_worker::DirectoryWorker, file_open::FileOpener, file_tree::{FileTree, TreeRow}, recent::RecentFiles, workspace::Workspace};
 /// Startup failures must not silently disable project navigation.
 use anyhow::Result;
+/// Reuse filesystem-free tree state, bounded workers, and editord-compatible session-local history.
+use ide_app::{
+    directory_worker::DirectoryWorker,
+    file_open::FileOpener,
+    file_tree::{FileTree, TreeRow},
+    recent::RecentFiles,
+    workspace::Workspace,
+};
 /// Weak window handles and a retained timer bind worker results to the native event loop.
 use slint::{ComponentHandle, SharedString, Timer, TimerMode};
 /// UI-thread shared state is separate from worker-owned snapshots and native path identities.
-use std::{cell::RefCell, path::PathBuf, rc::Rc, time::{Duration, Instant}};
+use std::{
+    cell::RefCell,
+    path::PathBuf,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 /// Click, directory-navigation, and Ctrl+digit bindings.
 mod actions;
@@ -49,7 +60,11 @@ struct Navigation {
 }
 
 /// Start navigation against the canonical root without synchronously enumerating its directories.
-pub(super) fn bind(window: &AppWindow, source: &Rc<RefCell<State>>, workspace: Workspace) -> Result<Timer> {
+pub(super) fn bind(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    workspace: Workspace,
+) -> Result<Timer> {
     // What: clone owns the initial file identity without keeping a UI borrow alive through callbacks.
     // Why: History records only the already successful startup open, not pending requests.
     //
@@ -75,9 +90,18 @@ pub(super) fn bind(window: &AppWindow, source: &Rc<RefCell<State>>, workspace: W
     };
     // Rc/RefCell shares checked mutable UI ownership; workers never receive this shared object.
     let navigation = Rc::new(RefCell::new(Navigation {
-        workspace, tree, reader, opener, recent, reader_available: true,
-        rows: Vec::new(), reading: None, last_read: None, refresh_index: 0,
-        directory_error: None, reveal: initial,
+        workspace,
+        tree,
+        reader,
+        opener,
+        recent,
+        reader_available: true,
+        rows: Vec::new(),
+        reading: None,
+        last_read: None,
+        refresh_index: 0,
+        directory_error: None,
+        reveal: initial,
     }));
     window.set_project_label(SharedString::from(project_label));
     window.set_project_path(SharedString::from(project_path));

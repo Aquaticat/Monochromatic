@@ -14,7 +14,12 @@ impl ReloadWorker {
         // Dropping worker-side endpoints produces the standard library's real Disconnected state.
         drop(receiver);
         drop(sender);
-        return Self { requests: Some(requests), replies, busy: true, thread: None };
+        return Self {
+            requests: Some(requests),
+            replies,
+            busy: true,
+            thread: None,
+        };
     }
 }
 
@@ -24,6 +29,9 @@ fn disconnected_reader_releases_its_outstanding_slot() {
     let mut reader = ReloadWorker::disconnected_for_test();
     assert!(reader.is_busy());
     assert!(reader.try_take().is_err());
-    assert!(!reader.is_busy(), "disconnected reader retained its busy slot");
+    assert!(
+        !reader.is_busy(),
+        "disconnected reader retained its busy slot"
+    );
     assert!(reader.requests.is_none());
 }

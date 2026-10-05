@@ -4,17 +4,22 @@
 use super::{AppWindow, Navigation, State, present};
 /// Reuse the same revision-aware classification application as external reloads.
 use crate::native::{reload::apply_syntax, render};
-/// New source documents arrive only after successful project-boundary resolution and reading.
-use ide_app::{file_open::OpenedFile, source_style::SourceStyles};
 /// Identity exhaustion reports an error rather than reusing an obsolete file generation.
 use anyhow::{Context, Result};
+/// New source documents arrive only after successful project-boundary resolution and reading.
+use ide_app::{file_open::OpenedFile, source_style::SourceStyles};
 /// File context remains a display-only native-path label.
 use slint::SharedString;
 /// Shared source state never crosses the background-reader thread.
 use std::{cell::RefCell, path::PathBuf, rc::Rc};
 
 /// Keep the current document and viewport when reopening its existing canonical target.
-pub(super) fn request(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Navigation, path: PathBuf) -> Result<()> {
+pub(super) fn request(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    navigation: &mut Navigation,
+    path: PathBuf,
+) -> Result<()> {
     if source.borrow().file_path.as_ref() == Some(&path) {
         navigation.opener.cancel()?;
         navigation.reveal = Some(path);
@@ -39,13 +44,21 @@ pub(super) fn failed(window: &AppWindow, source: &Rc<RefCell<State>>, message: S
 }
 
 /// Install a successful different file, invalidating all source-specific frame and accessibility caches.
-pub(super) fn apply(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Navigation, opened: OpenedFile) -> Result<()> {
+pub(super) fn apply(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    navigation: &mut Navigation,
+    opened: OpenedFile,
+) -> Result<()> {
     // Own the resolved identity for history/reveal after the document moves into its native owner.
     let path = opened.path;
     let mut current = source.borrow_mut();
     let changed = current.file_path.as_ref() != Some(&path);
     if changed {
-        let generation = current.file_generation.checked_add(1).context("Displayed-file identity exhausted; restart the application")?;
+        let generation = current
+            .file_generation
+            .checked_add(1)
+            .context("Displayed-file identity exhausted; restart the application")?;
         current.document = opened.document;
         current.file_path = Some(path.clone());
         current.file_generation = generation;

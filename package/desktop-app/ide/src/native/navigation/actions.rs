@@ -10,8 +10,15 @@ use slint::{ComponentHandle, SharedString};
 use std::{cell::RefCell, rc::Rc};
 
 /// Activate the current native row identity, never reconstructing a path from its display label.
-fn activate(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Navigation, index: i32) {
-    if index < 0 { return; }
+fn activate(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    navigation: &mut Navigation,
+    index: i32,
+) {
+    if index < 0 {
+        return;
+    }
     // Clone metadata before mutating the tree; stale indices remain a logged no-op.
     let Some(row) = navigation.rows.get(index as usize).cloned() else {
         tracing::debug!(index, "ignored obsolete tree row activation");
@@ -21,7 +28,12 @@ fn activate(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Na
         navigation.reveal = None;
         match navigation.tree.toggle(&row.entry.path) {
             Ok(expanded) => {
-                if !expanded && navigation.directory_error.as_ref().is_some_and(|(path, _message)| return path == &row.entry.path) {
+                if !expanded
+                    && navigation
+                        .directory_error
+                        .as_ref()
+                        .is_some_and(|(path, _message)| return path == &row.entry.path)
+                {
                     navigation.directory_error = None;
                 }
             }
@@ -39,20 +51,36 @@ fn activate(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Na
 }
 
 /// Right expands or enters a directory; left collapses or focuses its visible parent.
-fn navigate(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Navigation, key: &str, index: i32) {
-    if index < 0 { return; }
-    let Some(row) = navigation.rows.get(index as usize).cloned() else { return; };
+fn navigate(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    navigation: &mut Navigation,
+    key: &str,
+    index: i32,
+) {
+    if index < 0 {
+        return;
+    }
+    let Some(row) = navigation.rows.get(index as usize).cloned() else {
+        return;
+    };
     if SharedString::from(slint::platform::Key::RightArrow) == key {
         if row.entry.is_directory && !row.expanded {
             activate(window, source, navigation, index);
-        } else if navigation.rows.get(index as usize + 1).is_some_and(|next| return next.depth > row.depth) {
+        } else if navigation
+            .rows
+            .get(index as usize + 1)
+            .is_some_and(|next| return next.depth > row.depth)
+        {
             window.invoke_reveal_tree(index + 1);
         }
     } else if SharedString::from(slint::platform::Key::LeftArrow) == key {
         if row.entry.is_directory && row.expanded {
             activate(window, source, navigation, index);
         } else {
-            let parent = navigation.rows[..index as usize].iter().rposition(|candidate| return candidate.depth < row.depth);
+            let parent = navigation.rows[..index as usize]
+                .iter()
+                .rposition(|candidate| return candidate.depth < row.depth);
             if let Some(parent_index) = parent {
                 window.invoke_reveal_tree(parent_index as i32);
             }
@@ -61,13 +89,22 @@ fn navigate(window: &AppWindow, source: &Rc<RefCell<State>>, navigation: &mut Na
 }
 
 /// Bind callbacks once; history remains session-local and promotes only after successful source installation.
-pub(super) fn bind(owner: &AppWindow, shared_source: &Rc<RefCell<State>>, shared_navigation: &Rc<RefCell<Navigation>>) {
+pub(super) fn bind(
+    owner: &AppWindow,
+    shared_source: &Rc<RefCell<State>>,
+    shared_navigation: &Rc<RefCell<Navigation>>,
+) {
     let click_source = Rc::clone(shared_source);
     let click_navigation = Rc::clone(shared_navigation);
     let click_window = owner.as_weak();
     owner.on_tree_activate(move |index| {
         if let Some(window) = click_window.upgrade() {
-            activate(&window, &click_source, &mut click_navigation.borrow_mut(), index);
+            activate(
+                &window,
+                &click_source,
+                &mut click_navigation.borrow_mut(),
+                index,
+            );
         }
     });
     let key_source = Rc::clone(shared_source);
@@ -75,15 +112,25 @@ pub(super) fn bind(owner: &AppWindow, shared_source: &Rc<RefCell<State>>, shared
     let key_window = owner.as_weak();
     owner.on_tree_navigate(move |key, index| {
         if let Some(window) = key_window.upgrade() {
-            navigate(&window, &key_source, &mut key_navigation.borrow_mut(), &key, index);
+            navigate(
+                &window,
+                &key_source,
+                &mut key_navigation.borrow_mut(),
+                &key,
+                index,
+            );
         }
     });
     let recent_source = Rc::clone(shared_source);
     let recent_navigation = Rc::clone(shared_navigation);
     let recent_window = owner.as_weak();
     owner.on_tree_shortcut(move |key, control, shift, alt| {
-        let Some(slot) = shortcut_slot(&key, control, shift, alt) else { return; };
-        let Some(window) = recent_window.upgrade() else { return; };
+        let Some(slot) = shortcut_slot(&key, control, shift, alt) else {
+            return;
+        };
+        let Some(window) = recent_window.upgrade() else {
+            return;
+        };
         let mut navigation = recent_navigation.borrow_mut();
         let Some(path) = navigation.recent.at(slot) else {
             tracing::debug!(slot, "ignored empty recent-file slot");

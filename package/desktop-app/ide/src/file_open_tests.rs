@@ -18,5 +18,8 @@ fn disconnected_opener_clears_pending_work_after_reporting_failure() {
     };
     assert!(opener.has_pending());
     assert!(opener.poll().is_err());
-    assert!(!opener.has_pending(), "stopped opener remained eligible for continuous UI polling");
+    assert!(
+        !opener.has_pending(),
+        "stopped opener remained eligible for continuous UI polling"
+    );
 }
