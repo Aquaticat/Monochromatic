@@ -34,7 +34,7 @@ pub struct GlobalLayout {
 }
 
 /// Complete separated-value globals accepted by Git 2.56.0 git.c::handle_options.
-const VALUE_OPTIONS: &[&[u8]] = &[
+pub(crate) const VALUE_OPTIONS: &[&[u8]] = &[
     b"-C",
     b"-c",
     b"--git-dir",
