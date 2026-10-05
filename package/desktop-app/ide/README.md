@@ -649,7 +649,8 @@ as with the search overlay.
 Rows are 48 px tall;
 the selected row has the selection fill,
 a heavier weight,
-and a boundary.
+and a boundary,
+and its text is drawn in the ink described under [Selected rows](#selected-rows).
 Accessibility tools see a `list` named by the title,
 with `list-item` rows that report their selection and open on their default action.
 
@@ -1043,6 +1044,40 @@ Inter's normal Slint UI request currently retains the optical-axis default,
 not automatic optical sizing.
 Idle DPI changes are covered by a native headless window-event regression.
 Live system-theme change and physical-output scale migration remain to be verified.
+
+### Selected rows
+
+The selected row of the tree,
+of the search results,
+and of the location list draws its text and marks in the ink native code chooses from the selection fill.
+It is the rule of [Selected text ink](#selected-text-ink) in `src/selection_ink.rs`,
+applied in `src/native/render.rs`.
+With the fluent palette that ink is white on `#0078D4` in both color schemes,
+where the palette's own selection ink is black in the dark scheme.
+The user chose this on 2026-10-05.
+
+Measured on rendered frames in both schemes
+by `selected_rows_use_the_ink_chosen_from_the_fill_with_measured_contrast`:
+
+- White on the fill reaches 4.53:1.
+  That holds for the tree's file name,
+  its slot badge,
+  the location list's label and detail,
+  and both lines of a search result,
+  whether or not the list has keyboard focus.
+  No part of a selected row is dimmed:
+  all of it uses the one ink at full opacity.
+- A selected tree row under the pointer or with keyboard focus is tinted.
+  The tint is the opposite of the ink,
+  black under white ink,
+  so it moves the fill away from the text:
+  the fill becomes `#006EC3` and the ratio 5.23:1.
+  Tinted with the foreground ink,
+  as unselected rows are,
+  the dark scheme's fill became `#1482D7` and the ratio fell to 4.04:1.
+
+`inspect:theme-guards` removes the ink choice and reverses the tint in a disposable copy
+and checks that the test fails.
 
 ## Source view keys
 

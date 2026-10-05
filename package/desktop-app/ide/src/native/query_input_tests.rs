@@ -249,8 +249,9 @@ fn pixels(frame: &SharedPixelBuffer<Rgba8Pixel>, bounds: [usize; 4]) -> Vec<Rgba
 fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
     let (_fixture, reader) = opened();
     let window = &reader.window;
-    // The fixture has no such text, so the count reads "No matches" throughout and the box keeps its width.
-    type_text(window, "W");
+    // The fixture holds neither letter typed here, so the count reads "No matches" throughout
+    // and the box keeps its width.
+    type_text(window, "M");
     status(window, "No matches");
     settle(window);
     // What: `ceil()` rounds a fractional edge up to the next whole pixel, and `as usize` converts that
@@ -281,7 +282,7 @@ fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
     // The toolkit keeps the caret 24px before the end of the text area, which ends where the cell starts.
     // The last character lies in the 18 columns before the caret's own columns.
     let last = [left - 45, left - 27, top + 12, top + 36];
-    type_text(window, "W");
+    type_text(window, "M");
     status(window, "No matches");
     let ended = frame(window);
     assert!(
