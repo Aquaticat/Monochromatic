@@ -105,10 +105,7 @@ Back are recorded separately from the static images.</p>
 <figure data-scene="closed" data-position="none"><h3>Player before Settings opens</h3><button type="button" class="preview-button"><img alt="Accepted native player with Settings closed"><span>Open closed-player baseline</span></button><figcaption></figcaption></figure>
 <figure data-scene="accepted" data-position="start"><h3>Settings in the accepted mock state</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched on"><span>Open accepted switch positions</span></button><figcaption></figcaption></figure>
 <figure data-scene="inverse" data-position="start"><h3>Every switch in its other position</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched off"><span>Open opposite switch positions</span></button><figcaption></figcaption></figure>
-<figure data-scene="accepted" data-position="end" data-optional><h3>Accepted state, scrolled to the end</h3><button type="button" class="preview-button"><img alt="Native Settings page in the accepted switch positions scrolled to its last row"><span>Open accepted state at the column end</span></button><figcaption></figcaption></figure>
-<figure data-scene="inverse" data-position="end" data-optional><h3>Other positions, scrolled to the end</h3><button type="button" class="preview-button"><img alt="Native Settings page in the opposite switch positions scrolled to its last row"><span>Open opposite state at the column end</span></button><figcaption></figcaption></figure>
-</div>
-<p id="scroll-note" role="status"></p></section>
+</div></section>
 <details><summary>Read the verification boundary</summary>
 <p>The host extends ComponentActivity, not MainActivity. Its merged manifest disables production entry and
 playback/analysis services and removes automatic WorkManager initialization.</p>
@@ -160,23 +157,15 @@ function metadata(image) {
 function render() {
   document.getElementById('environment').textContent = state.panel + ' panel · ' + state.fontScale * 100 +
     '% native text · ' + selectedScheme() + ' native images. Thumbnail size is not native font scale.';
-  let scrolled = 0;
   for (const figure of document.querySelectorAll('figure[data-scene]')) {
     const image = images[imageKey(figure)];
-    // End-of-column views exist only where the device reported a scrollable column.
-    if (!image && !figure.hasAttribute('data-optional')) throw new Error('Required native witness is absent: ' + imageKey(figure));
-    figure.hidden = !image;
-    if (!image) continue;
-    if (figure.dataset.position === 'end') scrolled++;
+    if (!image) throw new Error('Required native witness is absent: ' + imageKey(figure));
     const element = figure.querySelector('img');
     element.src = image.source;
     element.width = image.width;
     element.height = image.height;
     figure.querySelector('figcaption').textContent = metadata(image) + ' · ' + image.fitNote;
   }
-  document.getElementById('scroll-note').textContent = scrolled > 0
-    ? 'In these conditions the Settings column scrolls, so each open state also has an end-of-column view.'
-    : 'In these conditions the whole Settings column fits without scrolling, so no end-of-column view exists.';
 }
 function resizePreview() {
   if (!state.preview) throw new Error('No native witness is open.');

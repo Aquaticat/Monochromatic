@@ -55,12 +55,8 @@ function evidenceBytes(at) {
 const closed = { panel: 'cover', view: 'closed', scale: 1, position: 'none' };
 const fits = { panel: 'inner', view: 'accepted', scale: 1, position: 'start' };
 const other = { panel: 'inner', view: 'inverse', scale: 1, position: 'start' };
-const scrolls = { panel: 'inner', view: 'accepted', scale: 2, position: 'start' };
-const end = { panel: 'inner', view: 'accepted', scale: 2, position: 'end' };
+const large = { panel: 'inner', view: 'accepted', scale: 2, position: 'start' };
 const cover = { panel: 'cover', view: 'inverse', scale: 1, position: 'start' };
-function everyEnd({ input, change }) {
-  for (const item of input.witnesses) if (item.panel === 'inner' && item.fontScale === 2 && item.position === 'end') change(item);
-}
 // Pastes one block of the same image over another place in it, keeping the sanitized PNG form.
 // Offsets are image pixels of the unfolded 100% light crop, whose status strip is 136px.
 function paste({ path, from, size, to }) {
@@ -77,9 +73,11 @@ const cases = [
   { rule: 'witness-path', at: closed, change: item => { item.file = '../outside.png'; } },
   { rule: 'witness-panel', at: closed, change: item => { item.panel = ['cover']; } },
   { rule: 'witness-scheme', at: closed, change: item => { item.scheme = ['light']; } },
-  { rule: 'witness-font-scale', at: scrolls, change: item => { item.fontScale = '2'; } },
+  { rule: 'witness-font-scale', at: large, change: item => { item.fontScale = '2'; } },
   { rule: 'witness-view', at: closed, change: item => { item.view = ['closed']; } },
   { rule: 'witness-position', at: fits, change: item => { item.position = 'middle'; } },
+  // No column scrolls, so an end-of-column position is not an authored view either.
+  { rule: 'witness-position', at: fits, change: item => { item.position = 'end'; } },
   { rule: 'witness-position-view', at: closed, change: item => { item.position = 'start'; } },
   { rule: 'witness-position-view', at: fits, change: item => { item.position = 'none'; } },
   { rule: 'witness-filename', at: closed, change: item => { item.scheme = 'dark'; } },
@@ -159,8 +157,7 @@ const cases = [
   { rule: 'row-order', at: fits, change: item => { item.rows[1].row[1] -= 5; } },
   { rule: 'row-order', at: fits, change: item => { item.rows[1].row[1] += 10; } },
   // A start view whose rows sit above the viewport top is not at the column start.
-  { rule: 'row-order', at: scrolls, change: item => { item.rows[0].row[1] -= 40; } },
-  { rule: 'row-order', at: end, change: item => { item.rows[0].row[1] += 40; } },
+  { rule: 'row-order', at: large, change: item => { item.rows[0].row[1] -= 40; } },
   { rule: 'switch-size', at: fits, change: item => { item.rows[0].switch[2]++; } },
   { rule: 'switch-size', at: fits, change: item => { item.rows[1].switch[3]--; } },
   { rule: 'row-parts-inside', at: fits, change: item => { item.rows[0].title[0] = item.rows[0].row[0] - 1; } },
@@ -175,19 +172,16 @@ const cases = [
   { rule: 'visible-switch-part', at: fits, change: item => { item.visible.rows[0].switch = [0, 0, 10, 10]; } },
   { rule: 'fold-connector', at: fits, change: item => { item.rows[0].title[0] = 1092; } },
   { rule: 'fold-connector', at: fits, change: item => { item.rows[1].supporting[0] = 1092; } },
-  // The same image under an end-of-column name, for a column whose recorded scroll extent is zero.
-  { rule: 'position-scroll', at: fits, rename: name => name.replace('-accepted-', '-accepted-end-'), change: item => { item.position = 'end'; } },
   { rule: 'scroll-geometry', at: fits, change: item => { item.scrollMaxPixels = 7; } },
-  { rule: 'scroll-geometry', at: scrolls, change: item => { item.scrollMaxPixels--; } },
-  { rule: 'fits-without-scroll', at: fits, change: item => { item.visible.rows[1].row = null; } },
-  { rule: 'end-shows-closing', at: end, change: item => { item.visible.closing = null; } },
+  // A last row reaching past the navigation area overhangs the viewport, so a zero extent is inconsistent.
+  { rule: 'scroll-geometry', at: large, change: item => { item.rows[1].row[3] += 2000; } },
+  // A consistent 10px overhang: the extent agrees with the geometry, so only the no-scroll rule refuses it.
+  { rule: 'column-fits', at: fits, change: item => { item.rows[1].row[3] = item.applicationRoot[3] + 10 - (item.rows[1].row[1] - item.rows[0].row[3]); item.scrollMaxPixels = 10; } },
+  { rule: 'rows-shown', at: fits, change: item => { item.visible.rows[1].row = null; } },
   { rule: 'exact-cohort', manifest: input => { input.witnesses.splice(input.witnesses.indexOf(pick({ input, ...closed })), 1); } },
-  { rule: 'exact-cohort', manifest: input => { input.witnesses.splice(input.witnesses.indexOf(pick({ input, ...end })), 1); } },
   // Per-view rules still hold here, so only the cross-view rule can refuse these.
   { rule: 'layout-stable', at: other, change: item => { item.rows[1].titleLines = 3; } },
   { rule: 'layout-stable', at: { ...fits, scheme: 'dark' }, change: item => { item.rows[0].supportingLines = 5; } },
-  // Every end view agrees with the others, so only the comparison with the start views can refuse them.
-  { rule: 'end-shift', manifest: input => { everyEnd({ input, change: item => { item.rows[1].row[3]++; } }); } },
   { rule: 'template-slot', template: text => text.replace('__SETTINGS_PANE_IMAGES__', '{}') },
   { rule: 'template-slot', template: text => text.replace('__SETTINGS_PANE_FINDINGS__', '') },
   { rule: 'template-slot', template: text => text.replace('__SETTINGS_PANE_PROVENANCE__', '') },

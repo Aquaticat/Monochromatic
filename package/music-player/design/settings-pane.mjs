@@ -72,9 +72,10 @@ for (const [index, capture] of manifest.witnesses.entries()) {
   need({ rule: 'witness-scheme', holds: scheme === 'light' || scheme === 'dark', detail: at + 'theme is not light or dark' });
   need({ rule: 'witness-font-scale', holds: fontScale === 1 || fontScale === 2, detail: at + 'font scale is not the number 1 or 2' });
   need({ rule: 'witness-view', holds: typeof view === 'string' && Object.hasOwn(states, view), detail: at + 'view is not an authored view' });
-  need({ rule: 'witness-position', holds: position === 'none' || position === 'start' || position === 'end', detail: at + 'scroll position is not none, start or end' });
+  // With two rows the column fits in every captured condition, so no end-of-column view exists.
+  need({ rule: 'witness-position', holds: position === 'none' || position === 'start', detail: at + 'scroll position is not none or start' });
   need({ rule: 'witness-position-view', holds: (view === 'closed') === (position === 'none'), detail: at + 'only the closed player has no scroll position' });
-  const named = `settings-pane-${panel}-${view}${position === 'end' ? '-end' : ''}-${scheme}-s${fontScale * 100}.png`;
+  const named = `settings-pane-${panel}-${view}-${scheme}-s${fontScale * 100}.png`;
   need({ rule: 'witness-filename', holds: file === named, detail: at + 'filename and metadata disagree' });
 
   //region Crop follows the measured application root
@@ -160,8 +161,7 @@ for (const [index, capture] of manifest.witnesses.entries()) {
     need({ rule: 'scroll-extent', holds: Number.isInteger(scroll) && scroll >= 0, detail: at + 'scroll extent is not a whole pixel count' });
     need({ rule: 'rows-list', holds: Array.isArray(rows) && rows.length === 2, detail: at + 'page does not record two rows' });
     need({ rule: 'visible-record', holds: typeof visible === 'object' && visible !== null && Array.isArray(visible.rows) && visible.rows.length === 2, detail: at + 'visible-part record is absent' });
-    const offset = position === 'end' ? scroll : 0;
-    let previousBottom = viewport[1] - offset;
+    let previousBottom = viewport[1];
     const information = [title];
     const shownRows = [];
     for (const [rowIndex, row] of rows.entries()) {
@@ -194,33 +194,30 @@ for (const [index, capture] of manifest.witnesses.entries()) {
     // E2: information stays off the fold connector, which ends at x 1093 on the unfolded panel.
     const offConnector = panel === 'cover' || information.every(rect => rect[0] >= 1093);
     need({ rule: 'fold-connector', holds: offConnector, detail: at + 'information starts inside the fold connector' });
-    const lastWhole = shownRows.at(-1).whole;
-    need({ rule: 'position-scroll', holds: position === 'start' || scroll > 0, detail: at + 'end-of-column view exists for a column that does not scroll' });
     // The column ends one divider below its last row, plus the navigation inset under the application root.
     // The divider is read from the gap between the two rows rather than assumed, since 1dp is a fractional pixel count here.
     const divider = rows[1].row[1] - rows[0].row[3];
-    const overhang = rows[1].row[3] + offset + divider + (pane[3] - bounds[3]) - viewport[3];
+    const overhang = rows[1].row[3] + divider + (pane[3] - bounds[3]) - viewport[3];
     need({ rule: 'scroll-geometry', holds: scroll === Math.max(0, overhang), detail: at + 'scroll extent is not what the measured column overhangs its viewport' });
-    need({ rule: 'fits-without-scroll', holds: scroll > 0 || shownRows.every(row => row.whole), detail: at + 'a column that does not scroll hides a row' });
-    need({ rule: 'end-shows-last-row', holds: position === 'start' || lastWhole, detail: at + 'end-of-column view does not show the whole last row' });
+    need({ rule: 'column-fits', holds: scroll === 0, detail: at + 'column scrolls, and this review has no end-of-column view to show what it hides' });
+    need({ rule: 'rows-shown', holds: shownRows.every(row => row.whole), detail: at + 'a row is not wholly shown above the navigation area' });
     const heights = rows.map(row => row.row[3] - row.row[1]);
-    fitNote = `rows ${heights.join(', ')} px high · ` + (scroll === 0 ? 'whole column fits without scrolling'
-      : position === 'end' ? `column scrolled ${scroll} px to its end` : `column scrolls ${scroll} px; ${lastWhole ? 'last row already shown' : 'last row not wholly shown until scrolled'}`);
-    opened.push({ capture, key, heights, lastWhole, shownRows });
+    // Empty page between the last row's divider and the navigation area.
+    const spare = bounds[3] - rows[1].row[3] - divider;
+    fitNote = `rows ${heights.join(', ')} px high · whole column fits without scrolling · ${spare} px of empty page below it`;
+    opened.push({ capture, key, heights, spare, shownRows });
     //endregion
   }
   images[key] = { file, hash, width, height, density: 390, fitNote, source: `data:image/png;base64,${png.toString('base64')}` };
 }
 //endregion
 
-//region Cohort shape: every environment has its three views, and an end view exactly where its column scrolls
+//region Cohort shape: every environment has its three views
 const expected = [];
 for (const panel of ['inner', 'cover']) for (const scheme of ['light', 'dark']) for (const scale of [1, 2]) {
   expected.push(`comparison/${panel}/closed/${scheme}/${scale}/none`);
   for (const view of ['accepted', 'inverse']) {
     expected.push(`comparison/${panel}/${view}/${scheme}/${scale}/start`);
-    const start = opened.find(item => item.key === `comparison/${panel}/${view}/${scheme}/${scale}/start`);
-    if (start && start.capture.scrollMaxPixels > 0) expected.push(`comparison/${panel}/${view}/${scheme}/${scale}/end`);
   }
 }
 need({ rule: 'exact-cohort', holds: same(Object.keys(images).sort(), expected.sort()), detail: 'review requires exact panel, view, theme, scale and scroll-position combinations' });
@@ -230,18 +227,9 @@ function layout(capture) {
   return [pane, header, back, title, viewport, scrollMaxPixels, capture.rows.map(row => [row.row, row.title, row.supporting, row.switch, row.titleLines, row.supportingLines])];
 }
 for (const item of opened) {
-  const { panel, view, scheme, fontScale, position } = item.capture;
+  const { panel, fontScale, position } = item.capture;
   const reference = opened.find(other => other.key === `comparison/${panel}/accepted/light/${fontScale}/${position}`);
   need({ rule: 'layout-stable', holds: reference !== undefined && same(layout(reference.capture), layout(item.capture)), detail: `${item.capture.file}: a switch position or theme changed the layout` });
-  if (position === 'end') {
-    const start = opened.find(other => other.key === `comparison/${panel}/${view}/${scheme}/${fontScale}/start`);
-    const moved = item.capture.scrollMaxPixels;
-    const shifted = start !== undefined && start.capture.rows.every((row, index) => {
-      const after = item.capture.rows[index].row;
-      return row.row[1] - after[1] === moved && row.row[3] - after[3] === moved;
-    });
-    need({ rule: 'end-shift', holds: shifted, detail: `${item.capture.file}: end-of-column rows are not the start rows moved by the scroll extent` });
-  }
 }
 //endregion
 
@@ -338,7 +326,9 @@ function nothingAfterRows(item) {
   const { capture } = item;
   const last = capture.rows.at(-1).row;
   const divider = capture.rows[1].row[1] - capture.rows[0].row[3];
-  const top = last[3] + divider;
+  // The divider's layout box is 2px, but its 1dp stroke is 2.4375px wide at 390dpi and tints one more
+  // pixel row; the retained images show that row at about half the divider's contrast.
+  const top = last[3] + divider + 1;
   if (top >= capture.applicationRoot[3]) return true;
   const { rgb } = measuredRegion({ capture, rectangle: [capture.pane[0], top, capture.pane[2], capture.applicationRoot[3]] });
   if (rgb === null) return false;
@@ -407,31 +397,13 @@ function range(values) {
   const high = Math.max(...values);
   return low === high ? String(low) : `${low} to ${high}`;
 }
-// Names the panels and text scales a set of views covers, for example `the cover and inner panels at 200% text`.
-function conditions(items) {
-  const scales = [...new Set(items.map(item => item.capture.fontScale))].sort();
-  return scales.map(scale => {
-    const panels = [...new Set(items.filter(item => item.capture.fontScale === scale).map(item => item.capture.panel))].sort();
-    return `the ${panels.join(' and ')} panel${panels.length > 1 ? 's' : ''} at ${scale * 100}% text`;
-  }).join(' and ');
-}
-function sameConditions(first, second) {
-  return conditions(first) === conditions(second);
-}
 const starts = opened.filter(item => item.capture.position === 'start');
-const scrolling = starts.filter(item => item.capture.scrollMaxPixels > 0);
-const hiddenLast = scrolling.filter(item => !item.lastWhole);
 const normal = starts.filter(item => item.capture.fontScale === 1);
 const large = starts.filter(item => item.capture.fontScale === 2);
-const scrollSentence = scrolling.length === 0
-  ? 'The whole column fits without scrolling in every condition.'
-  : `On ${conditions(scrolling)} the column scrolls, by ${range(scrolling.map(item => item.capture.scrollMaxPixels))} physical pixels; ` +
-    (hiddenLast.length === 0 ? 'its last row is still wholly shown before scrolling.'
-      : sameConditions(hiddenLast, scrolling) ? 'there the last row is not wholly shown until the column is scrolled.'
-        : `on ${conditions(hiddenLast)} the last row is not wholly shown until the column is scrolled.`) +
-    ' Everywhere else the whole column fits.';
 const findings = `<p id="inspection-findings" class="note">Inspection and measurement found this.
-${scrollSentence}
+The whole column fits without scrolling in every condition.
+Below the last row, ${range(normal.map(item => item.spare))} physical pixels of empty page remain at 100% text
+and ${range(large.map(item => item.spare))} at 200%, above the navigation area.
 Rows are ${range(normal.flatMap(item => item.heights))} physical pixels high at 100% text
 and ${range(large.flatMap(item => item.heights))} at 200%, against a 117 pixel floor;
 no row title or supporting line reports overflow.
