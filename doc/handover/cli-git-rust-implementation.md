@@ -367,7 +367,27 @@ Clippy stopped the mutation task on `clippy::needless_late_init` in the definiti
 The rule now returns early for the first used definition,
 then initializes its reason with a short conditional.
 The scoped mutation task has not reached mutation yet.
-A refreshed full gate is pending.
+The refreshed gate passed all 138 tests and Clippy in `proc_a8a3`.
+Its Markdown-scoped mutation campaign is now running against that exact pre-table snapshot:
+315 mutants,
+passing unmutated baseline,
+evidence `package/linter/monochromatic-lint/target/verification/mutation-n3zXgl`.
+The surfaced prompt-scan mutants showed missing controls for `$ ` inside a command.
+A new regression checks embedded prompt-looking text in every newline mode;
+the scanner now uses a newline-retaining standard iterator instead of redundant byte loops.
+The final survivor inventory remains pending.
+Mutation log matches are context-only;
+terminal outcomes still wake the agent.
+
+Pipe-table reporting/conversion and the HTML/MDX text encoder have been added afterward.
+They preserve alignment and literal Markdown cell syntax,
+report nested/indented tables without destructive whole-node fixes,
+and encode HTML-sensitive characters plus MDX expression braces at interpolation.
+The JavaScript trim set was measured over BMP scalar values;
+it includes BOM and excludes NEXT LINE,
+unlike Rust's default trim.
+The latest table/prompt container gate is `proc_ccaf`.
+Tables are not covered by either currently running mutation snapshot or `proc_415a`.
 
 A Markdown/MDX ASAN target has been added to the fuzz sidecar.
 Every draw exercises an independently counted rule fixture,
