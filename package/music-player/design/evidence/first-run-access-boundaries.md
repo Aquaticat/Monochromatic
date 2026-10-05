@@ -26,7 +26,7 @@ D84 (2026-10-05) supersedes that separate choice:
 true-peak analysis is automatic and not optional,
 so no ask-before-analysing prompt and no scan/dismiss answer remains.
 The study's explanation ends `After opening a library, choose whether to analyse it.`
-(`first-run-access-witnesses.json`, `bodyText`),
+(`bodyText` in `first-run-access-witnesses.json`),
 which predates D84 and no longer matches it.
 The published study is left unchanged,
 because its review verification binds the page by hash;
