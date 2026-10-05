@@ -58,10 +58,12 @@ fn suffix_start(written: &str, count: usize) -> Option<usize> {
         if last == b'.' || last == b':' {
             let mut start: usize = end - 1;
             let mut slash_start: usize = start;
+            let mut escaped: bool = false;
             while slash_start > 0 && bytes[slash_start - 1] == b'\\' {
+                escaped = !escaped;
                 slash_start -= 1;
             }
-            if (start - slash_start) % 2 == 1 {
+            if escaped {
                 start -= 1;
             }
             end = start;

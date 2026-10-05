@@ -71,19 +71,11 @@ pub fn commands_show_output(context: &MarkdownSource, severity: Severity) -> Vec
             continue;
         }
         let (start, end): (usize, usize) = context.offsets(*id);
-        let bytes: &[u8] = context.source.as_bytes();
-        let mut body: usize = start;
-        while body < end && bytes[body] != b'\n' && bytes[body] != b'\r' {
-            body += 1;
-        }
-        if body == end {
-            continue;
-        }
-        if bytes[body] == b'\r' && body + 1 < end && bytes[body + 1] == b'\n' {
-            body += 1;
-        }
-        body += 1;
-        let edits: Vec<Edit> = prompt_edits(context.source.as_str(), body, end);
+        // A native fenced block with nonempty command content has an opening line terminator.
+        let opener_end: usize = context.slice(*id).find(['\n', '\r']).expect("nonempty fenced code has an opening line ending");
+        // A CRLF's remaining LF is an empty scanner segment, preserving offsets without another newline state machine.
+        let after_opener: usize = start + opener_end + 1;
+        let edits: Vec<Edit> = prompt_edits(context.source.as_str(), after_opener, end);
         let mut diagnostic: Diagnostic = finding(
             context,
             *id,
