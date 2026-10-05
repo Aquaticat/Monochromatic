@@ -78,26 +78,20 @@ A legacy file without a JSONC file stays a migration error on every configuratio
 
 `bin/mutate-native-container.mjs` passes `--exclude-re 'replace \+= with \*='`
 and `--exclude-re 'replace -= with /='` to cargo-mutants on every campaign.
-The coordinating agent read these facts at cargo-mutants v27.1.0 and supplied them for this record:
-`src/outcome.rs:118` returns the timeout exit code whenever any mutant timed out,
-with no option to change it;
-the operator table is hard-coded at `src/visit.rs:594`;
-and `--exclude-re` matches mutant names (`src/options.rs:352`).
 The human accepted that these two kinds are never tried.
+The cause,
+the cargo-mutants source that decides it,
+the measured cost in this package
+(34 of 1,230 mutants at commit `d1c02273a`)
+and the tradeoffs are in
+[`cargo-mutants-timeout-exit-status.md`](../troubleshooting/cargo-mutants-timeout-exit-status.md).
 `replace += with -=` stays active as the check on every counter.
-
-Measured with `mise run //package/git-policy/cli:native:mutation:list`
-on the tree of commit `d1c02273a`:
-the list has 1230 mutants without the two options and 1196 with them.
-The 34 that disappear are 33 named `replace += with *=` and 1 named `replace -= with /=`;
-a line-by-line comparison of the two lists shows no other difference and no added line.
 
 The three loops whose step mutant `replace += with -=` had timed out were rewritten to visit the argument slice
 instead of stepping an index:
 `mixed_command` in `config_loading.rs`,
 `global_layout` in `global_arguments.rs`,
 and `parse_direct` in `management_arguments.rs`.
-The scoped campaign over those three files is recorded under "Mutation testing".
 None of the modules added by this delegation steps a loop index by hand.
 
 ## Gate results
@@ -165,9 +159,14 @@ The count is unchanged because the commit extends an existing binary-level test.
 ### Helper removal
 
 Commit `4bef275e6` removes a function only tests called.
-It was checked on the host only
-(Clippy with warnings denied and the eight `policy_pass` unit tests).
-Its container gate is pending and is recorded under "Final tree" when it has run.
+It was first checked on the host only;
+the gate of commit `24cfeaaee` includes it.
+
+### Classifier test
+
+Commit `24cfeaaee`:
+441 unit and 36 binary-level tests,
+evidence `native-sgFHN6`.
 
 ### Tests run on the host
 
@@ -848,7 +847,7 @@ Commit `24cfeaaee` adds `config_loading::tests::global_option_errors_keep_the_fa
 Planting the mutant fails that test and no other unit test;
 with the source restored it passes.
 
-### Results still pending
+### Scoped campaigns before the final tree
 
 - `wrapper_controls.rs`,
   `wrapper_invocation.rs`,
@@ -857,31 +856,126 @@ with the source restored it passes.
   `policy_events.rs`,
   `git_builtins.rs`,
   `unported.rs`,
-  `action.rs`:
+  `action.rs`,
+  against the gate image of commit `d8adb6015`
+  (evidence `native-mutation-nMRlpS`):
   84 mutants,
-  running.
-- `policy_engine.rs`,
-  `policy_convergence.rs`,
-  `policy_checks.rs`,
-  `policy_transforms.rs`,
-  `policy_pass.rs`,
-  `wrapped_command.rs`:
-  running.
+  76 caught,
+  8 unviable,
+  0 missed,
+  0 timeouts.
+  The second reading sets nothing aside.
 - `repository_location.rs`,
   `repository_facts.rs`,
   `rule_branch_worktree.rs`,
   `rule_linked_worktree.rs`,
   `rule_add_explicit.rs`,
-  `git_metadata.rs`:
-  running.
-- `pending_state.rs`,
-  `refusal_frontier.rs`,
-  `entry.rs`,
-  `management.rs`,
-  `invocation_config.rs`,
-  `config_schema.rs`,
-  `config_policies.rs`:
-  not started.
+  `git_metadata.rs`
+  (evidence `native-mutation-YIs2yn`):
+  85 mutants,
+  3 missed,
+  and 1 more caught only by the 5-second bound.
+  They are dispositioned under "Survivors removed with their code".
+- `policy_engine.rs`,
+  `policy_convergence.rs`,
+  `policy_checks.rs`,
+  `policy_transforms.rs`,
+  `policy_pass.rs`,
+  `wrapped_command.rs`
+  (evidence `native-mutation-YCTtwI`):
+  stopped before any mutant,
+  because the planted control "commit refusal frontier" was not noticed.
+  The cause is recorded under "Planted controls read the live tree".
+
+### Planted controls read the live tree
+
+`bin/native-planted-controls.mjs` plants each guard removal in the source file as it is in the working tree,
+then builds it inside the gate image.
+The gate image is a snapshot taken earlier.
+When a file a control names is edited between the gate and the campaign,
+the planted file no longer fits the snapshot.
+In evidence `native-mutation-YCTtwI` the planted `refusal_frontier.rs` imported two functions
+that the snapshot's `wrapper_invocation.rs` did not have yet,
+the build failed,
+the named test never ran,
+and the runner refused to trust the campaign.
+That refusal is the runner working as intended.
+The files the controls name must not be edited between a gate and the campaign that uses its image.
+
+### Survivors removed with their code
+
+Each of these could not be killed by any test on Linux.
+None is excluded;
+the code that produced the mutant no longer exists.
+Commit `37d362484`.
+
+#### Function variants not compiled on Linux
+
+`cli-git-native-foundation.md` records 8 missed mutants in `#[cfg(not(unix))]` variants of
+`forwarding::outcome_of`,
+`forwarding::replace_process_with_real_git`,
+`git_metadata::path_from_git_bytes`,
+`real_git_candidate::is_executable`
+and `real_git_candidate::same_inode`.
+cargo-mutants 27.1.0 skips an item only for `#[cfg(test)]`,
+a test attribute
+or `mutants::skip`
+(`src/visit.rs:861-865`, read in the v27.1.0 sources),
+so it mutates a function the Linux build never compiles,
+and such a mutant always passes.
+Two of them appeared again in evidence `native-mutation-YIs2yn`.
+
+Each pair of variants is now one function.
+The part every system shares is ordinary code,
+and only the statement that differs sits in a `#[cfg(unix)]` or `#[cfg(not(unix))]` block.
+The function-level mutants are therefore exercised by the Linux tests,
+and the non-Unix blocks hold no operator a mutant could change.
+`outcome_of` needs no non-Unix block at all:
+an exit code,
+else on Unix a signal,
+else a general failure,
+is on other systems exactly what its former variant computed.
+
+Nothing compiled the non-Unix code before.
+`mise run //package/git-policy/cli:native:clippy:windows` now type-checks and lints the library
+for `x86_64-pc-windows-gnu` with warnings denied.
+It passes on commit `37d362484`.
+Its positive control:
+a type error planted in the non-Unix block of `is_executable` fails that task
+while the Linux Clippy task still passes,
+and the task passes again with the source restored.
+The task checks types only;
+no Windows behavior is run.
+
+#### Two equivalent mutants in the script read
+
+`cli-git-native-foundation.md` records two equivalent mutants in `real_git_candidate.rs`:
+`filled < limit` to `filled <= limit` in the loop of `read_up_to`,
+and the read limit `MAX_SCRIPT_INSPECTION_BYTES + 1 - header.len()` in `classify_candidate`.
+`read_up_to` now reads through the standard library's bounded reader and has no loop.
+`classify_candidate` reads the whole bound after the 4-byte header and compares the joined length with the bound:
+the header is at least one byte of any file that has one,
+so the read reaches past the bound exactly when the script is too large,
+and no arithmetic on the limit is left.
+`script_inspection_bound_is_exact` still pins the bound from both sides.
+
+#### An offset each rule core computed for itself
+
+`decide_linked_worktree` and `decide_add_explicit` sliced the tokens after the command word
+with `prefix_len + 1`.
+The mutant `prefix_len * 1` hands the option table the command word as a leading positional token,
+which changes no decision either rule makes,
+so no test can tell the two apart.
+`global_arguments::command_tokens` now returns the command word and the tokens after it,
+split by the standard library,
+and the three rule cores that read a command's own options take both from it.
+`command_tokens_split_after_the_global_options` tests the split.
+
+### Final tree
+
+Pending:
+a campaign over every file of `src/native/` on the tree of commit `37d362484`,
+in four parts that run side by side under their own gate images.
 
 ## Fuzzing
 
@@ -957,6 +1051,9 @@ In order:
 - `d8adb6015`: the fuzz target and the status-format commit control.
 - `4bef275e6`: removal of a helper only tests called.
 - `24cfeaaee`: the classifier test that kills the surviving mutant.
+- `e0042aeda`: the command word and region read in one place, and the tool-cache test.
+- `37d362484`: single-body platform functions, the loop-free bounded read,
+  the shared command split and the Windows type-check task.
 
 ## Superseded passages elsewhere
 
@@ -965,6 +1062,8 @@ stops every repository-changing command,
 in its sections "Authority and scope",
 "What the executable does today"
 and "Not ported".
+Its sections "Survivors left" and "Timeouts" list 10 missed mutants and 17 timeouts;
+"Survivors removed with their code" and "The three rewritten loops" record why none of them exists any more.
 This document supersedes those passages.
 They were left as written,
 because the permission to edit that file covered only the three configuration decisions.
@@ -983,7 +1082,8 @@ each has a sibling `*_tests.rs`.
   and removal before the subcommand.
 - `wrapper_invocation.rs`:
   removal of every control from one invocation by position,
-  and how the command region was read.
+  how the command region was read,
+  and the command word and region of the result.
 - `command_worktree.rs`:
   whether a `git worktree` invocation creates or moves a worktree.
 - `escape_hatch.rs`:
@@ -1054,6 +1154,12 @@ each has a sibling `*_tests.rs`.
   `global_arguments.rs`,
   `management_arguments.rs`:
   the three loop rewrites.
+  `global_arguments.rs` also gained `command_tokens`.
+- `forwarding.rs`,
+  `git_metadata.rs`,
+  `real_git_candidate.rs`:
+  one body per platform-specific function,
+  and the bounded read without a loop.
 
 ### Binary-level tests
 
