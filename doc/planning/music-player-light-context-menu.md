@@ -132,8 +132,21 @@ and Android Back dismissed it while retaining the original root/viewport
 geometry.
 Its measured-inset private crop was visually inspected;
 the complete menu and its inline peak value are visible in that context.
-Large-text long-heading probes on both panels are next;
-the full action/context matrix and publication remain incomplete.
+Large-text long-heading probes then passed on both panels.
+The cover initially exposed every full-size action;
+the inner needed one observed scroll to expose Move to trash.
+Those captures also exposed an implementation deviation:
+the accepted `ctx-b.dc.html:19` heading explicitly uses one-line ellipsis,
+but the native prototype omitted the line cap and rendered eight heading
+lines in the inner stress pose.
+The source property had been overlooked,
+not left as a new user preference.
+Prototype `5af5e3b10` restores `maxLines = 1` and explicit ellipsis while
+retaining full authored identity in the model and diagnostics.
+The wrapping-heading APK and captures are preserved as superseded probes;
+they will not be relabelled as the corrected artifact.
+The corrected build,
+full native action/context matrix and publication remain incomplete.
 
 ## Independently verifiable queue
 
