@@ -550,8 +550,8 @@ export function refusePageThatDisagrees(
 
   if (!pageWeightRefutes({ weight, },))
     return;
-  // `pageWeightRefutes` returns false for an unweighable weight, so the check
-  // above has already returned; the throw exists to narrow the types.
+  // `pageWeightRefutes` returns false for an unweighable weight, so the
+  // refutes check has already returned; the throw exists to narrow the types.
   if (weight.kind === 'unweighable')
     throw new Error('unreachable: an unweighable weight cannot refute',);
 
