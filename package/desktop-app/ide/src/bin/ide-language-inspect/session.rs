@@ -12,6 +12,7 @@ use ide_app::document::Document;
 /// The handle and the types it exchanges.
 use ide_app::language::{
     LanguageWorker,
+    config::LanguageSetup,
     diagnostics::DiagnosticsSnapshot,
     hints::{HintWindow, HintsSnapshot},
     identity::DocumentStamp,
@@ -74,9 +75,9 @@ fn emit(started: Instant, mut record: Value) {
 /// Session steps.
 impl Session {
     /// Start the worker for a project; no server starts until a file is opened.
-    pub fn new(project: &Path) -> Result<Self> {
+    pub fn new(project: &Path, setup: LanguageSetup) -> Result<Self> {
         // The trailing `?` returns the start error to the caller.
-        let worker = LanguageWorker::new(project)?;
+        let worker = LanguageWorker::with_setup(project, setup)?;
         // `Ok(...)` is the success variant of `Result`.
         return Ok(Self {
             worker,
