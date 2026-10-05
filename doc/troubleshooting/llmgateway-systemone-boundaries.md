@@ -32,12 +32,9 @@ the private copied-input action-relation canary sent one 454,012-byte request
 containing 205 independent rule questions.
 The response was HTTP 400:
 
-```json
-{
-  "detail": {
-    "error_type": "max_tokens_exceeded"
-  }
-}
+```text
+# Private program-rule-interface/dispatch-private/model-private/failure.json: retained response
+{"detail":{"error_type":"max_tokens_exceeded"}}
 ```
 
 `proc_48e7` verified the retained request hash,
