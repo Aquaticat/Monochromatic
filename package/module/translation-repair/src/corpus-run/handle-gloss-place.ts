@@ -98,8 +98,10 @@ function continuesWord({ character, }: { readonly character: string; },): boolea
 }
 
 /**
- Every whole-word appearance of a rendering in one slice's text, with the
- gloss each carries.
+ Every whole-word appearance of a rendering in one slice's text that the
+ pass may write at, with the gloss each carries. An appearance followed by a
+ parenthesis that is no gloss (empty, unclosed on its line, or holding
+ markup) is left out, so the pass writes nothing there.
 
  @param sliceIndex - slice whose text is read
 
@@ -107,7 +109,7 @@ function continuesWord({ character, }: { readonly character: string; },): boolea
 
  @param rendering - handle as the page renders it
 
- @returns Appearances in text order
+ @returns Appearances in text order, bare or glossed
 
  @example
  ```ts
@@ -191,15 +193,16 @@ function appearancesIn(
         close,
       )
         .includes('\n',));
-    if (!isGloss) {
-      found.push({
-        sliceIndex,
-        start,
-        end: past,
-        gloss: '',
-      },);
+    // A parenthesis that is no gloss leaves its appearance as the writer
+    // left it, neither the first nor a later one: empty, never closed, or
+    // closed only by a mark on a later line. Read as an appearance with no
+    // gloss, a first one took the handle's gloss in front of the parenthesis
+    // it already opened (`### Ten: Jinmao (Brocade Cat) (Brocade Cat`), and
+    // the signature under it, whose gloss was well formed, lost its own. The
+    // scan goes on from the handle's end, since the mark that closed the
+    // parenthesis may belong to a later appearance's gloss.
+    if (!isGloss)
       continue;
-    }
     // A PARENTHESIS HOLDING MARKUP IS NO GLOSS (ledger A6). The first close
     // parenthesis ends a link's destination, so `Jinmao ([her song](url))`
     // read the link as a gloss, moved it onto the heading and stripped it
