@@ -21508,8 +21508,12 @@ and on the rebuild path a recipe that does not fit its text now throws where it 
 `carveSettled`,
 `rendering-audit-settled-input.ts` and `slice-census-entry.ts` do not,
 so one such artifact would stop those instruments.
+B170 has the rebuild answer `moved` again;
+`slice-census-entry.ts` converts the pairings itself and still stops.
 
-Open:
+Open when this entry was written,
+closed in B170,
+B171 and B172:
 a catch of `BlockPairingError` in `rebuildPreparation` answering `moved` in the refusal's words,
 so those instruments go on;
 `slice-cache-store.ts` says a cached pairing is re-read through `readBlockPairing`,
@@ -21583,7 +21587,9 @@ and an empty destination is recorded on neither side,
 so a source link with no destination that a page drops is no longer reported by this check,
 though the slice rule still protects the link as an atom.
 
-Open:
+Open when this entry was written,
+closed in B173,
+B174 and B175:
 `trimDestination` still cuts an explicit destination at a stopper where something precedes it,
 so two explicit links differing only past a full-width comma read as one,
 where the cut is right for an autolink literal only;
@@ -22792,6 +22798,281 @@ have not been read against their unions.
 Prevention:
 `mistake-prevention.md`,
 "Lists that must name every member of a type".
+
+### B170: a recorded pairing that did not fit its text stopped the rebuild instruments
+
+Red in `5df296c5f`,
+fixed in `25c33df4f`.
+
+Found on 2026-10-05 (UTC),
+as the item ledger B138 left open.
+Since `e71249a76` `blockPairingToSteps` refuses a pair naming a block its section lacks,
+and `rebuildPreparation` (`corpus-run/artifact-two-lane-rebuild.ts`) let that `BlockPairingError` out.
+`rebuildPage` (`page-republish.ts`) caught it and left the page with the class name alone,
+`because=BlockPairingError`;
+`carveSettled` and the rendering audit's settled input caught nothing,
+so one such artifact would stop the displacement probe and the audit.
+On a build of `d233f882f`,
+an artifact recording pairs up to translation block 3,
+written before the archive was stored,
+rebuilt over a corpus copy whose section holds 3 blocks,
+threw `BlockPairingError: pairing names translation block 3, and there are 3`
+(the fixing agent's probe;
+the red case printed the same error on the branch).
+The same refusal was worded in two files,
+`pair-blocks-wire.ts` and `pair-blocks-steps.ts`.
+
+The fix:
+`rebuildPreparation` catches the refusal through `requireBlockPairingRefusal`,
+carves the artifact again as one that records no block pairing,
+and answers `moved`.
+Its detail says that the recorded block pairing does not fit the text carved,
+gives the refusal in parentheses (`pairing names translation block 3, and there are 3`),
+and says every section's blocks were carved by the deterministic aligner.
+A republish then leaves the page and says that sentence;
+`carveSettled` returns a carve marked moved,
+which the displacement probe warns about and still measures;
+the rendering audit answers `refused`,
+or `unverifiable` where the section half is unrecorded.
+The wording lives once,
+in `assertPairsNameBlocks` (`pair-blocks-wire.ts`),
+which `readBlockPairing`,
+`blockPairingToSteps` and the cache's warm path call.
+`parseBlockPairing` gained a comment saying why it bounds no block index:
+the record carries no block counts.
+The red run printed the `BlockPairingError` for the case
+"ANSWERS MOVED IN THE REFUSAL'S WORDS where the recorded block pairing names a translation block the carved text lacks,
+and carves every section's blocks by the deterministic aligner instead".
+
+No settled artifact answers differently
+(the fixing agent's measurement,
+over 466 artifact files under 477 artifacts directories on the audit machine):
+268 read as version 2,
+249 rebuild as reproduced and 17 as moved on both builds,
+and none differs in reproduction,
+defaulted halves or carve identity.
+
+Open to the owner's veto:
+every section's blocks are carved by the deterministic aligner once one pairing is refused,
+since the refusal names no section
+and a pairing that misses one section says the text parsed otherwise than the run's.
+
+Open:
+`slice-census-entry.ts` converts a recipe's pairings itself and catches nothing,
+so the slice census still stops on such an artifact.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B171: a cached block pairing naming a block its section lacks ended the run with a missing-value error
+
+Red in `5df296c5f`,
+fixed in `25c33df4f`.
+
+Found on 2026-10-05 (UTC),
+as an item ledger B138 left open.
+`prepareBlockPairing` (`prepare-block-pairing.ts`) handed a cached record's pairs to `claimMediaAdjacentTargets` as stored.
+The cache reader checks a record's shape only (`isPairList`),
+and three comments said the record was re-read through `readBlockPairing`,
+which happened only where media adjacency widened it.
+A record naming original block 9 of 2 reached `pairSharesMedia`,
+whose `nonNullishOrThrow` ended the section with `Expected non-nullish value, got undefined`,
+naming no section,
+key or block.
+The key hashes the blocks' text,
+so such a record is a damaged or hand-edited file,
+which is an input all the same.
+
+The fix:
+the warm path reads the cached pairs through `assertPairsNameBlocks`,
+the check `readBlockPairing` reads a reply's indices through.
+A record that does not fit is a miss:
+the warning names the section and the key,
+gives the refusal (`pairing names original block 9, and there are 2`)
+and says the roster is asked again,
+and the section is bought and stored over the same key.
+The comments in `corpus-run/slice-cache-store.ts`,
+`pair-media-adjacency.ts` and `pair-definition-order.ts` now say that.
+The red run printed the missing-value error for the case
+"MISSES ON A CACHED PAIRING THAT NAMES A BLOCK ITS SECTION LACKS,
+warns in the refusal's words,
+and buys the section again".
+
+No cache version moves:
+the lane's generation is the digest of the built files,
+which this change moves by itself
+(the fixing agent's reading of `corpus-run/pipeline-digest.ts`,
+with the two builds' digests measured to differ).
+
+Open:
+the warm path checks block indices only,
+not the order or the repeats `readBlockPairing` refuses;
+and a cached section pairing is handed on unchecked by `buySectionPairing`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B172: a walk that named no step for a block grouped the section without it
+
+Red in `5df296c5f`,
+fixed in `25c33df4f`.
+
+Found on 2026-10-05 (UTC),
+as an item ledger B138 left open.
+`groupNodesSealed` (`group-aligned.ts`) read each step's blocks and never asked whether every block had a step.
+A walk of one original-only step over two originals and one translation returned no runs,
+and so did an empty walk,
+with nothing said.
+
+The fix:
+after every step's blocks are read,
+`assertWalkNamesSide` refuses a walk that leaves a block of either side unnamed,
+in a message opening `unreachable: no walk step names original block 1, and there are 2`
+and naming the two builders that give every block a step.
+It is an invariant throw:
+`alignBlocks` walks its cursor from the lists' lengths to the origin,
+`bareBlockPairingSteps` gives every original a step and every translation block one,
+and `mergeGap` reuses the indices it was given.
+The red run printed `Expected groupsTheWalk to throw, but it returned` for the case
+"REFUSES a supplied walk that names no step for a block of either side,
+in the words of the refusal for a block the section lacks,
+an empty walk among them".
+The comment closing `mergeOneSidedRuns` named a caller's one-sided fallback that went in T8's seventeenth batch;
+it now says the held blocks leave the runs unsaid and which assertion refuses that.
+
+No carve changed:
+268 version 2 artifacts rebuild to the same carve identity on both builds
+(the fixing agent's measurement).
+
+Open:
+`groupNodesSealed` called alone still drops a translation-only block behind a sealed run with no paired run after it;
+six shapes through `prepareDocumentPair` did not reach that state (the fixing agent's probes).
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B173: an explicit link destination was cut where prose would end an address
+
+Red in `5df296c5f`,
+fixed in `25c33df4f`.
+
+Found on 2026-10-05 (UTC),
+as an item ledger B139 left open.
+`markdownDestinations` (`corpus-run/dropped-destinations.ts`) sent every tree destination through `trimDestination`,
+which cuts at the first stopper and sheds trailing sentence punctuation.
+That is right for an autolink literal,
+whose address prose ran into,
+and wrong for a destination its author wrote out:
+two explicit links differing only past a full-width comma read as one,
+and a source linking both against a page keeping the first reported nothing dropped.
+
+The fix:
+a link is an address prose ran into when it carries no span,
+or its first child starts where the link starts,
+the test `isAutolinkLiteral` (`active-footnote-markers.ts`) makes for the footnote relabel;
+`isProseAddress` applies it,
+and only such a link is trimmed.
+Every other link,
+every image and every definition stands as written.
+`trimDestination` then meets only addresses that open on a scheme's letter,
+so its emptied arm is an `unreachable:` throw.
+The red run printed three [FAIL] cases in `dropped-destinations.unit.test.ts`,
+two of them these;
+a case pinning the literal arm was green before and after,
+and fails with that arm switched off.
+
+No pinned page reads differently
+(the fixing agent's measurements):
+over the 276 page files at the pin neither reader's output differs between the builds,
+where an explicit destination holding a full-width comma appended to each differs on all 276,
+and original against archive drops 14 destinations on both builds.
+Over 249 pages rebuilt from settled artifacts on the audit machine,
+one entry's page reads one more destination,
+an explicit one a model wrote that ends in a closing parenthesis,
+and no dropped list changes.
+
+Open to the owner's veto:
+an explicit destination keeps its trailing sentence punctuation too;
+and the scanner still reads such a destination's address off the raw text and stops at the stopper,
+so a source writing an address with a closing parenthesis inside as an explicit link,
+against a page writing the same address bare,
+now reports the explicit destination dropped.
+
+Open:
+the literal test stands in two files,
+since `isAutolinkLiteral` is private to its module;
+and a closing parenthesis is a run stopper,
+so a bare address holding a balanced pair of parentheses reads short on the scanner and on a literal alike
+(the fixing agent's observation).
+A prose cut that kept a balanced closing parenthesis would remove the difference between explicit and bare
+that this fix opened.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input".
+
+### B174: a dropped destination was traced to every slice holding it as a substring
+
+Red in `5df296c5f`,
+fixed in `25c33df4f`.
+
+Found on 2026-10-05 (UTC),
+as an item ledger B139 left open.
+`traceDroppedDestinations` (`corpus-run/destination-completeness.ts`) asked `text.includes` of each slice.
+A dropped `https://example.org/tabby` was traced to a slice holding only `https://example.org/tabby-album`,
+and a dropped `.` to every slice holding a full stop,
+the shipped text among them,
+which the trace's own type says is empty since the page drops it.
+
+The fix:
+each slice's text on each side is read by `collectDestinations`,
+the readers that found the drop,
+and a slice carries an address when one of its destinations has the same `sameAddress` key.
+Nothing is read when nothing was dropped.
+The red run printed two [FAIL] cases in the new `traceDroppedDestinations` suite.
+
+No real trace changed
+(the fixing agent's measurement):
+14 traces over the pinned corpus,
+original against archive,
+and 5 over 249 pages rebuilt from settled artifacts read the same under both rules.
+
+Open:
+`DroppedDestinationError` still words its count as `destination(s)` and several slices as `slice 4, 7`;
+the fix needs a line in the message inventory.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input".
+
+### B175: the site root keyed as the empty string
+
+Red in `5df296c5f`,
+fixed in `25c33df4f`.
+
+Found on 2026-10-05 (UTC),
+as an item ledger B139 left open.
+`sameAddress` (`corpus-run/destination-renderings.ts`) shed a trailing slash from every address,
+so `/` keyed as the empty string,
+the key of a destination written with nothing in it.
+`judgeDestinationRenderings` over a source linking `/` and a page carrying an empty destination dropped nothing.
+
+The fix:
+the slash is shed only where something remains,
+so the site root keys as `/`.
+The red run printed `expected { root: '', ... }` for the case
+"KEYS the site root as itself,
+so it never compares equal to the empty string".
+
+No pinned page links the site root:
+0 of 276 page files read `/` as a destination (the fixing agent's measurement).
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input".
 
 ## Process mistakes in this audit
 

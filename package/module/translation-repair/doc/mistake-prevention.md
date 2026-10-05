@@ -1615,6 +1615,17 @@ where that reader never ran (ledger B158).
 A reading that failed reaches the verdict as a failure,
 never as an empty value.
 
+The destination reader cut every destination where prose would end an address,
+so two explicit links differing only past a full-width comma read as one (ledger B173).
+The trace of a dropped destination searched each slice for the address as a substring,
+and found a shorter address inside a longer one and a full stop in every sentence (ledger B174).
+The site root,
+shed of its trailing slash,
+keyed as the empty destination (ledger B175).
+A rule written for one kind of input is applied to that kind alone,
+told apart by what the parse says,
+and a key never maps a value that names something onto the key of nothing.
+
 The rule:
 a call states every input that decides what a floor refuses,
 what a sheet shows or whether a text may ship,
@@ -1904,6 +1915,16 @@ A rewrite the atom gate refused reached an info line alone,
 so the stage read as a refiner that proposed nothing (ledger B162).
 A refusal is a finding on the stage that refused,
 worded without the values it compared.
+
+A refusal added to the walk builder,
+for a pairing naming a block its section lacks,
+came out of the artifact rebuild as a throw,
+where the rebuild answers every other carve that departs from the run's as `moved`.
+A republish then said only the class name,
+and two instruments that walk every settled artifact would have stopped on one (ledger B170).
+A refusal added inside a step is followed to every caller of the operation the step sits in,
+and where that operation already answers a misfit as data,
+the new refusal becomes that answer.
 
 The rule:
 a step that can refuse on input a page can carry refuses as its sibling refusals do,
@@ -2960,6 +2981,9 @@ Four cases were added to cover a branch of the persistence guard that no pass re
 each building its artifact by cast,
 and one of them pinned an artifact nothing had reviewed passing unrefused (ledger B168).
 
+A walk reader checked each step's blocks and never that every block had a step,
+so a walk leaving one unnamed grouped its section to nothing (ledger B172).
+
 The rule:
 a state no input produces is refused out loud,
 with `throw new Error('unreachable: <what was found and why it cannot occur>',)`
@@ -3054,6 +3078,13 @@ and took it over from a live holder (ledger B165).
 A temporary name is unique to its call,
 not to its process,
 and a lock another process may read as abandoned appears with its content already in it.
+
+A cached block pairing was checked for its shape alone and used as stored,
+while three comments said a reader read it again,
+so a record naming a block its section lacks ended the run with a missing-value error naming nothing (ledger B171).
+A record read back is read against what it is about to be used on,
+by the check a fresh answer goes through,
+and one that does not fit is a miss said on a warning.
 
 The rule:
 a file this package writes and a later run parses is written through `writeFileAtomic`.
