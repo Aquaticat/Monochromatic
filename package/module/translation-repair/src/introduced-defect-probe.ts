@@ -33,7 +33,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // OVER A NATURALNESS REWRITE AN ADMITTED CLAIM ROLLS THE REWRITE BACK (ledger
 // L11, decided for quality 2026-09-28): what a rollback loses there is
 // fluency, and what comes back is text a checker round or the archive already
-// stood behind (`refine-slice-settle.ts`).
+// stood behind (`refine-slice-settle.ts`). So does a round that heard fewer
+// probers than its quorum, read off the `stage-quorum-unmet` finding this
+// stage's gather returns (`refine-probe-verdict.ts`).
 
 /**
  Everything the probe stage produced for one chunk.

@@ -203,6 +203,23 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  `cache-account-audit --runs-under` over the agent runs, 13,714 slice-cache
  records under 391 runs directories, the newest written at 04:26 UTC on
  2026-09-27, before every cache version's current value was set.
+
+ Rides inside 5 too: a damage probe that heard fewer probers than its
+ stage's quorum rolls the rewrite back under `refine-probe-unheard`, where
+ it shipped the rewrite (`refine-probe-verdict.ts`); a recheck that met its
+ quorum but cast fewer ballots than it on one issue rolls back under
+ `refine-recheck-unheard` naming the issue, where it passed the rewrite or
+ named a confirmed issue as one the rewrite broke (`refine-recheck.ts`); and
+ the rewriter stage records each rewrite the atom gate refused as a finding.
+ The probe's short round kept its settlement out of the cache before the
+ change too, by the probe stage's own `stage-quorum-unmet` finding; a record
+ the unfixed recheck wrote could hold a rewrite shipped on an issue short of
+ ballots, but none was written under this number: checked on 2026-10-05 with
+ `cache-account-audit --runs-under` over the agent runs, 13,503 slice-cache
+ records under 382 runs directories, the newest written at 04:26 UTC on
+ 2026-09-27, before every cache version's current value was set; three
+ directories another user owns, which the audit could not list, are left
+ out of that count.
  */
 export const REFINE_CACHE_VERSION = 5;
 

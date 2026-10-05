@@ -2,12 +2,18 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { IssueCheckerReading, } from './checker-reading.ts';
 import { wordForCount, } from './count-word.ts';
 import { collectRefinedAuthors, } from './issue-authors.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
+import {
+  type ReachableQuorum,
+  reachableQuorum,
+  shortBenchStageFinding,
+} from './stage-reachable-quorum.ts';
 import { silentStagesOf, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -19,6 +25,99 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // gained its exit for a round short of quorum. The settler calls this once,
 // after a rewrite won and before the damage probe, and rolls the whole slice
 // back on anything but a pass.
+
+/**
+ Stage label the checker stage's gather writes its findings under.
+ */
+const CHECKER_STAGE = 'checker';
+
+/**
+ Voices the checker stage's gather closed its round on, which is also the
+ number of ballots an issue needs before the round counts as heard on it.
+
+ THE STAGE HANDS BACK NO QUORUM, so it is read where its gather left it. On
+ a bench whose every seat a provider could serve, that is the bench quorum.
+ Where the router refused seats enough to leave the bench short of it, the
+ gather closed on fewer (`reachableQuorum`, never below two) and wrote
+ that number into its `stage-short-bench` finding. The finding is matched by
+ rebuilding it with the producer's own `shortBenchStageFinding` for each
+ count of refused seats, never by reading its wording here, so the two
+ spellings cannot drift.
+
+ @param benchSize - checkers the round seated
+
+ @param findings - the checker stage's own findings
+
+ @returns Voices the round closed on
+
+ @throws {@link Error} when more than one short-bench finding matches, which
+ one gather never writes
+
+ @example
+ ```ts
+ const quorum = checkerQuorumClosedOn({ benchSize: 5, findings: checker.findings, },);
+ ```
+ */
+function checkerQuorumClosedOn(
+  {
+    benchSize,
+    findings,
+  }: {
+    readonly benchSize: number;
+    readonly findings: readonly string[];
+  },
+): number {
+  /**
+   Quorum the gather would close on for each count of refused seats, every
+   seat reachable first.
+   */
+  const quorums = [
+    ...Array.from({ length: benchSize + 1, },)
+      .keys(),
+  ]
+    .map(function withRefused(unreachable,): ReachableQuorum {
+      return reachableQuorum({
+        benchSize,
+        unreachable,
+      },);
+    },);
+
+  /**
+   The short bench this round's findings name, at most one.
+   */
+  const named = quorums.filter(function namedShort(quorum,): boolean {
+    return quorum.short
+      && findings.includes(shortBenchStageFinding({
+        stage: CHECKER_STAGE,
+        quorum,
+        benchSize,
+      },),);
+  },);
+  if (named.length > 1) {
+    throw new Error(
+      'unreachable: the checker stage\'s findings name more than one short bench for one round, '
+        + 'though its gather writes one finding for the quorum it closed on',
+    );
+  }
+
+  /**
+   The short bench the gather closed on, absent where every seat it needed
+   was reachable.
+   */
+  const [shortBench,] = named;
+  if (shortBench !== undefined)
+    return shortBench.needed;
+
+  /**
+   Quorum of the bench with every seat reachable, which the gather closes on
+   whenever it writes no short-bench finding.
+   */
+  const wholeBench = reachableQuorum({
+    benchSize,
+    unreachable: 0,
+  },);
+  return wholeBench.needed;
+}
 
 /**
  Whether a refinement kept every issue the checkers had already confirmed,
@@ -71,6 +170,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  between a new text and a standing one keep (the consolidation gate and the
  polish gate each ship the standing text unless two ballots name the new
  one).
+
+ SO DOES AN ISSUE SHORT OF THAT QUORUM in a round that met it: an issue the
+ round cast fewer ballots on than the checker stage closed on is named under
+ `refine-recheck-unheard` with its count, whatever those ballots say, and is
+ never read as regressed or worsened. An issue that was heard and broke rolls
+ back beside it under `refine-rolled-back`.
 
  @example
  ```ts
@@ -226,13 +331,102 @@ export async function retainsResolvedIssues(
   }
 
   /**
+   Ballots an issue needs before this round counts as heard on it: the
+   quorum the checker stage closed the round on.
+   */
+  const quorum = checkerQuorumClosedOn({
+    benchSize: checkerModelIds.length,
+    findings: checker.findings,
+  },);
+
+  /**
+   This round's reading of one issue it ruled on.
+
+   @param issue - issue among those the round was asked about
+
+   @returns The issue's ballots and tally, present by the checker stage's own
+   contract: it builds one reading per issue asked and `nonNullishOrThrow`-reads
+   each tally for it, and every issue read here is in the checked list
+
+   @example
+   ```ts
+   const reading = readingOf(issue,);
+   ```
+   */
+  function readingOf(issue: AdjudicatedIssue,): IssueCheckerReading {
+    return nonNullishOrThrow(checker.readings[issue.issueId],);
+  }
+
+  /**
+   Whether the round cast as many ballots on an issue as it closed on.
+
+   THE COUNT IS THE READING'S BALLOTS, one per heard checker that ruled on
+   the issue. The `missing-check` findings say the same thing per checker
+   but number the issue on the sheet and name no checker.
+
+   @param issue - issue among those the round was asked about
+
+   @returns Whether the issue's ballots reach the quorum
+
+   @example
+   ```ts
+   const readable = heardEnough(issue,);
+   ```
+   */
+  function heardEnough(issue: AdjudicatedIssue,): boolean {
+    return readingOf(issue,)
+      .ballots
+      .length
+      >= quorum;
+  }
+
+  // AN ISSUE HEARD SHORT OF THE QUORUM IS UNHEARD, though the round met its
+  // own. A checker heard on the round may skip an issue (`missing-check`) or
+  // cast a verdict the tally cannot read, and the round's reading of that
+  // issue then rests on fewer ballots than the rule that no single model
+  // decides allows. With no worse ballot among them an open issue read as
+  // not worsened and the rewrite shipped under `refine-recheck-passed`.
+  //
+  // SET APART BEFORE THE ISSUES ARE READ, as the round is: a confirmed issue
+  // cannot read as resolved on fewer than two ballots, and would be named as
+  // one the rewrite broke.
+  /**
+   Issues the round heard fewer ballots on than it closed on, each with its
+   finding in scorecard-stable wording.
+   */
+  const unheard = checked
+    .filter(function heardTooFew(issue,): boolean {
+      return !heardEnough(issue,);
+    },)
+    .map(function toFinding(issue,): string {
+      /**
+       Ballots this round cast on the issue.
+       */
+      const cast = readingOf(issue,)
+        .ballots
+        .length;
+      return `refine-recheck-unheard (${issue.issueId}: ${String(cast,)} ${
+        wordForCount({
+          count: cast,
+          one: 'ballot',
+          many: 'ballots',
+        },)
+      }, quorum ${String(quorum,)})`;
+    },);
+  for (const finding of unheard)
+    l.warn(`slice ${String(outcome.sliceIndex,)}: ${finding}; keeping the text before the rewrite`,);
+
+  /**
    Issues the refinement broke, named so the rollback is explainable.
    */
   const regressed = confirmed
+    .filter(function readable(issue,) {
+      return heardEnough(issue,);
+    },)
     .filter(function brokeIt(issue,) {
-      return checker.tallies[issue.issueId]
-        ?.resolved
-        !== true;
+      return !readingOf(issue,)
+        .tally
+        .resolved;
     },)
     .map(function toId(issue,) {
       return issue.issueId;
@@ -242,14 +436,14 @@ export async function retainsResolvedIssues(
    Open issues at least one checker found the refinement made worse.
    */
   const worsened = open
+    .filter(function readable(issue,) {
+      return heardEnough(issue,);
+    },)
     .filter(function madeItWorse(issue,) {
-      /**
-       Tally of this issue's recheck, present by the checker stage's own
-       contract: it builds one per issue asked and `nonNullishOrThrow`-reads
-       it for its own readings, and `open` is a subset of the checked list.
-       */
-      const tally = nonNullishOrThrow(checker.tallies[issue.issueId],);
-      return tally.worse > 0;
+      return readingOf(issue,)
+        .tally
+        .worse
+        > 0;
     },)
     .map(function toId(issue,) {
       return issue.issueId;
@@ -262,11 +456,11 @@ export async function retainsResolvedIssues(
     ...regressed,
     ...worsened,
   ];
-  // THE CHECKER STAGE'S OWN FINDINGS RIDE ON BOTH VERDICTS, as they do on the
+  // THE CHECKER STAGE'S OWN FINDINGS RIDE ON EVERY VERDICT, as they do on the
   // accuracy lane's outcome (`repair-chunk.ts`): a round that met its quorum
   // with a voice lost, or with a ballot the tally could not read whole, is
   // otherwise the same findings as a round every checker answered.
-  if (lost.length === 0)
+  if ((unheard.length === 0) && (lost.length === 0))
     return {
       retained: true,
       findings: [
@@ -285,7 +479,10 @@ export async function retainsResolvedIssues(
     retained: false,
     findings: [
       ...checker.findings,
-      `refine-rolled-back (${lost.join(', ',)})`,
+      ...unheard,
+      // Named only where a heard issue answers for the rollback, so an issue
+      // short of ballots is never also named as one the rewrite broke.
+      ...((lost.length === 0) ? [] : [`refine-rolled-back (${lost.join(', ',)})`,]),
     ],
     readings: checker.readings,
   };

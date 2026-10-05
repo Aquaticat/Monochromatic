@@ -1,14 +1,13 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import { wordForCount, } from './count-word.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { PRODUCTION_PRIOR_ISSUE_DISCLOSURE, } from './introduced-defect-wire.ts';
 import { parseDocument, } from './parse-document.ts';
 import { deriveRefinableEnvelopes, } from './refine-envelope.ts';
-import { admittedClaimCounts, } from './refine-probe-verdict.ts';
+import { refineProbeVerdict, } from './refine-probe-verdict.ts';
 import { retainsResolvedIssues, } from './refine-recheck.ts';
 import { runRefineStage, } from './refine-stage.ts';
 import type {
@@ -76,7 +75,8 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
    Models whose rewrite is in the text this returns, empty on every path
    where no rewrite ships: a rewriter that changed nothing, a rewrite the
    recheck rolled back or could not hear a quorum of checkers on, and a
-   rewrite the damage probe rolled back.
+   rewrite the damage probe rolled back or could not hear a quorum of
+   probers on.
 
    NOT STORED, FOR THE REASON `asked` IS NOT. It names what THIS run bought,
    and a slice resumed from disk bought no rewrite. `outcome.authorship`
@@ -274,9 +274,10 @@ export async function settleRefinedSlice(
   },);
 
   /**
-   Whether the recheck reached its quorum of checkers, every issue they had
-   confirmed is still confirmed in the refined text, and no accepted issue
-   the text never fixed drew a worse ballot on it.
+   Whether the recheck reached its quorum of checkers on the round and on
+   every issue, every issue they had confirmed is still confirmed in the
+   refined text, and no accepted issue the text never fixed drew a worse
+   ballot on it.
    */
   const retained = await retainsResolvedIssues({
     client,
@@ -322,7 +323,8 @@ export async function settleRefinedSlice(
 
   /**
    Audit of damage the REWRITE caused, which rolls it back on any claim the
-   screen admits (ledger L11).
+   screen admits (ledger L11) and on a round that heard fewer probers than
+   its quorum.
 
    The accuracy probe already ran, but it compared the original translation
    with the repaired one and finished before this lane started, so it says
@@ -385,12 +387,11 @@ export async function settleRefinedSlice(
   },);
 
   /**
-   Claims the screen admitted against the rewrite: damage it added, quoted
-   from the rewrite and absent before, and content it dropped, quoted from
-   the text before it and absent after.
+   What the probe's report decides for the rewrite: kept, or rolled back on
+   a claim the screen admitted or on a round short of its probers' quorum.
    */
-  const admitted = admittedClaimCounts({ report: refinementDefects, },);
-  if ((admitted.added + admitted.dropped) > 0) {
+  const probed = refineProbeVerdict({ report: refinementDefects, },);
+  if (probed.kind === 'rolled-back') {
     // LEDGER L11, decided for quality under the owner's standing directive
     // (2026-09-28). 175 of 2,144 kept rewrites over every run carried an
     // admitted claim, and a reading of every region with one (the roster
@@ -399,20 +400,20 @@ export async function settleRefinedSlice(
     // fluent ones, and what comes back is text a checker round or the archive
     // already stood behind. Requiring two claims would have caught 9.
     //
+    // A PROBE SHORT OF ITS QUORUM ROLLS BACK THE SAME WAY, as a recheck short
+    // of its quorum does: with too few probers heard, no claim is silence
+    // rather than a clean bill. A probe outage therefore rolls back rewrites
+    // that were sound; the gates between a new text and a standing one fail
+    // closed, and the settlement stays out of the cache, so a later run buys
+    // the slice again.
+    //
     // THE REPORT IS NOT ATTACHED. The lane contest reads `refinementDefects`
     // as damage evidence against the repair candidate, whose text is `T1`
-    // again; the counts go to the findings.
+    // again; the counts and the probe stage's own findings go to the findings.
     /**
      The rollback, in scorecard-stable wording.
      */
-    const finding = `refine-rolled-back-by-probe (${String(admitted.added,)} added-damage and `
-      + `${String(admitted.dropped,)} removal ${
-        wordForCount({
-          count: admitted.dropped,
-          one: 'claim',
-          many: 'claims',
-        },)
-      } admitted against the rewrite)`;
+    const { finding, } = probed;
     l.warn(`slice ${String(outcome.sliceIndex,)}: ${finding}; keeping the text before the rewrite`,);
     return {
       outcome: {
