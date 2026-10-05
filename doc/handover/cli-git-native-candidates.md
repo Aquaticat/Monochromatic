@@ -575,6 +575,38 @@ failed ones included.
 
 ## Mutation testing
 
+### Campaigns
+
+`native:mutation:scoped` binds to the last gate image by tag,
+plants its five guard removals,
+then runs cargo-mutants 27.1.0 with a 300-second build bound and a 90-second test bound.
+All campaigns here ran against the final gate image
+`9ffa5c481579a9f6501944626169fbb599602ce8458e0aa19f052c840ee65721`.
+
+The ten new source files were split over three campaigns that ran at the same time,
+because one mutant took minutes on the shared host.
+The runner names its campaign image by the tag,
+so campaigns that run together need different tags.
+The second and third campaign therefore used the tags `candidates-b` and `candidates-c`,
+which `podman tag` made further names of the same gate image;
+each campaign's `manifest.json` records that image identity as `baseImage`.
+This departs from "always `candidates`" in the delegation;
+the tags are this worktree's own.
+
+- Tag `candidates`:
+  `candidate_batch.rs`,
+  `candidate_record.rs`,
+  `candidate_object.rs`,
+  `candidate_error.rs`.
+- Tag `candidates-b`:
+  `candidate_reader.rs`,
+  `candidate_store.rs`,
+  `candidate_version.rs`.
+- Tag `candidates-c`:
+  `scanner_adapter.rs`,
+  `scanner_run.rs`,
+  `scanner_selection.rs`.
+
 MUTATION-PENDING
 
 ## Fuzzing
