@@ -59,6 +59,9 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
  @returns Record, cached from now on
 
+ @throws CacheFileUnreadableError when the title's cache file is there and
+ cannot be read, before anything is bought (`lookup-cache.ts`)
+
  @example
  ```ts
  const record = await lookupWorkTitle({ title: '《活着》', apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), },);

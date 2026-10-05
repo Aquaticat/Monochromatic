@@ -19,6 +19,7 @@ export {
 } from './declared-names-evidence.ts';
 export {
   type CachedLookup,
+  CacheFileUnreadableError,
   isLookupHit,
   isLookupRecord,
   LOOKUP_CACHE_DIR_VAR,

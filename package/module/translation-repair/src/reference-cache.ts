@@ -6,21 +6,31 @@
 // the url's digest, never expiring (the owner, same day: "Cache Exa results
 // semi-permanently on disk since the reference links rarely change their
 // content"); a record is refreshed only by deleting its file.
+//
+// DAMAGED, UNREADABLE AND HALF-WRITTEN FILES are handled as the lookup cache
+// handles them, through its reader (`lookup-cache.ts`): a file holding no
+// record is a miss said on a warning naming the file, so the page is bought
+// again and the file replaced; a file that is there and cannot be read is
+// refused (`CacheFileUnreadableError`); and the write is atomic. The parse
+// refusal of a file cut short used to reject the whole reference block, and
+// with it the entry citing the page, on every run until the file was deleted.
 
 import { createHash, } from 'node:crypto';
-import {
-  mkdir,
-  readFile,
-  writeFile,
-} from 'node:fs/promises';
+import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { FetchedReference, } from './cited-reference-fetch.ts';
+import { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 import { contextRoot, } from './log-context.ts';
 import { isJsonRecord, } from './json-guard.ts';
-import { lookupCacheDir, } from './lookup-cache.ts';
+import {
+  CACHE_FILE_ABSENT,
+  cacheFileText,
+  lookupCacheDir,
+} from './lookup-cache.ts';
+import { parseModelJson, } from './model-content.ts';
 
 /**
  Logger root for the cache.
@@ -158,46 +168,18 @@ export function isReferenceRecord(value: unknown,): value is ReferenceRecord {
 }
 
 /**
- File text, or nothing when the file cannot be read.
-
- @param path - file to read
-
- @returns Text, or an empty string for a file that is not there
-
- @example
- ```ts
- const text = await textOrNothing({ path, },);
- ```
- */
-async function textOrNothing(
-  { path, }: { readonly path: string; },
-): Promise<string> {
-  /**
-   Logger pre-tagged with this function's name.
-   */
-  const rl = tagged({
-    tag: textOrNothing.name,
-    l,
-  },);
-  try {
-    return await readFile(
-      path,
-      'utf8',
-    );
-  } catch (error) {
-    rl.debug(`no cached reference at ${path}: ${String(error,)}`,);
-    return '';
-  }
-}
-
-/**
  Reads the cached record for a url.
 
  @param dir - cache directory
 
  @param url - page to look for
 
- @returns The record, or a miss when the file is absent or is not a record
+ @returns The record, or a miss when no file is there or the file holds no
+ record: text that is not JSON (a file cut short or left empty), or JSON of
+ another shape, each said on a warning naming the file
+
+ @throws CacheFileUnreadableError when the file is there and could not be
+ read
 
  @example
  ```ts
@@ -228,27 +210,32 @@ export async function readCachedReference(
     url,
   },);
   /**
-   File text, empty when absent.
+   File text, or that no file is there.
    */
-  const text = await textOrNothing({ path, },);
-  if (text === '')
+  const text = await cacheFileText({ path, },);
+  if (text === CACHE_FILE_ABSENT)
     return { kind: 'miss', };
   /**
-   Parsed record, refused when the file is not one.
+   Parse attempt over the file's text, its failure taken as data and its
+   detail never repeated, since V8 quotes the text it refused.
    */
-  const parsed: unknown = JSON.parse(text,);
-  if (!isReferenceRecord(parsed,)) {
+  const attempt = parseModelJson({ text, },);
+  if (!attempt.parsed) {
+    rl.warn(`cached reference at ${path} does not parse as JSON; ignoring it`,);
+    return { kind: 'miss', };
+  }
+  if (!isReferenceRecord(attempt.value,)) {
     rl.warn(`cached reference at ${path} is not a record; ignoring it`,);
     return { kind: 'miss', };
   }
   return {
     kind: 'hit',
-    record: parsed,
+    record: attempt.value,
   };
 }
 
 /**
- Writes a record for its url.
+ Writes a record for its url so no reader finds it half-written.
 
  @param dir - cache directory, created when missing
 
@@ -280,14 +267,13 @@ export async function writeCachedReference(
     null,
     2,
   );
-  await writeFile(
-    referenceCachePath({
+  await writeFileAtomic({
+    path: referenceCachePath({
       dir,
       url: record.url,
     },),
-    `${text}\n`,
-    'utf8',
-  );
+    text: `${text}\n`,
+  },);
 }
 
 //endregion Reference cache

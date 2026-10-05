@@ -50,6 +50,9 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
  @returns Record, cached from now on
 
+ @throws CacheFileUnreadableError when the page's cache file is there and
+ cannot be read, before anything is bought (`lookup-cache.ts`)
+
  @example
  ```ts
  const record = await lookupCitedReference({ url, apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), },);
@@ -178,6 +181,11 @@ export function referenceLineOf(
  @param logger - entry logger
 
  @returns Lines joined by newlines, or an empty string
+
+ @throws CacheFileUnreadableError when a cited page's cache file is there and
+ cannot be read: every page's file is read before anything is bought, outside
+ the catch that turns one page's failed fetch into a line, so a cache
+ directory that cannot be read stops the entry and buys nothing
 
  @example
  ```ts

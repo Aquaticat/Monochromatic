@@ -84,6 +84,7 @@ const MARKED_CLASSES: readonly string[] = [
   'BlankSelectionError',
   'CacheAccountLogError',
   'CacheAccountReadError',
+  'CacheFileUnreadableError',
   'CallTimeoutError',
   'CensusBaselineError',
   'CheckerIndependenceError',
