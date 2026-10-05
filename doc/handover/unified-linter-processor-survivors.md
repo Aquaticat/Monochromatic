@@ -20,7 +20,20 @@ or by naming the entry whose disposition you reject.
 
 ## Result
 
-RERUN_RESULT_PLACEHOLDER
+The rerun on the final source snapshot found 374 mutants:
+348 caught,
+0 missed,
+24 unviable,
+and 2 timeouts.
+The 2 timeouts are the same two loop-counter mutants as before,
+and "Timeouts" explains why a timeout is their only possible detection.
+
+The mutant count fell by 6 because the two simplified lines generate fewer mutants.
+A set comparison of both reports finds exactly those 6 removed and none added:
+
+- 2 `line_doc` mutants of the removed `end += 2` statement.
+- 4 `fences` mutants of the removed offset arithmetic and its `>` comparison.
+  The one mutant of the new `>=` comparison is caught.
 
 Baseline for comparison,
 from `target/verification/mutation-exJwfB` on image
@@ -361,7 +374,8 @@ The new test deletes a line whose comment marker is indented differently from it
 ### Timeouts
 
 - `src/processors_docs.rs:223:23`,
-  `+=` to `*=` in `docs`:
+  `+=` to `*=` in `docs`,
+  at `222:23` after the carriage-return branch was removed:
   the timeout is the detection.
 - `src/processors_lines.rs:45:20`,
   `+=` to `*=` in `physical_lines`:
@@ -487,7 +501,71 @@ and three are worth knowing about:
 
 ## Rerun evidence
 
-RERUN_EVIDENCE_PLACEHOLDER
+The rerun mutated commit `e7e5b24aa`.
+Later commits change only this document,
+and a hash check inside the tested image found its processor sources,
+fixture,
+`src/lib.rs`,
+`Cargo.toml`,
+and `Cargo.lock` byte-identical to commit `f5744ad3c`.
+
+Command,
+run from `package/linter/monochromatic-lint` in the worktree:
+
+```sh
+# package/linter/monochromatic-lint
+MONOCHROMATIC_LINT_IMAGE_TAG=processor-survivors mise run //package/linter/monochromatic-lint:mutation:processors:files
+```
+
+The task first ran the full container suite,
+which passed 228 tests,
+then container Clippy with warnings denied,
+which reported no warnings.
+
+- Tested source image,
+  `localhost/monochromatic-lint-test:processor-survivors`:
+  `48f1112dda8a331248860032ba641dc900154d87f7522225c829826d5e5cb126`.
+- Campaign image,
+  `localhost/monochromatic-lint-mutation:processor-survivors`:
+  `40b37f300a715458f8b86a19d5dd41c245bf59cdc33fa8e9c8ed4042e15997c8`.
+- `cargo-mutants` 27.1.0,
+  executable SHA-256
+  `f985f265ee3ea3e453aa98b04c52134953911f692f8ce8abf137f3873202a2d0`,
+  the same executable as the baseline campaign.
+- Bounds:
+  no network,
+  no mounts,
+  2 GiB memory,
+  2 CPUs,
+  128 processes,
+  300 second build timeout,
+  180 second test timeout.
+- Duration:
+  97 seconds of baseline build and 28 minutes of mutants,
+  1,985 seconds for the whole task including the full suite and Clippy.
+- Exit status 3,
+  which `cargo-mutants` 27.1.0 reserves for timeouts (`src/exit_code.rs`, `ExitCode::Timeout`).
+  Missed mutants would give status 2.
+  The runner reports any nonzero status as a failed task,
+  so the task fails while these 2 timeouts remain.
+
+The report directory is `target/verification/mutation-w00nRd` in the worktree,
+copied to `package/linter/monochromatic-lint/target/verification/processor-survivors-mutation-w00nRd`
+in the main checkout.
+Its `hand-plants` directory holds the planting driver,
+its plans and results,
+the reachability probes and their logs,
+and the log of the whole task.
+
+One further probe,
+`processors_probe_emptied_block_docs.rs`,
+checked the accepted path in which a container disappears and the intended virtual text is empty.
+Emptying the body of `/**X*/` produces `/***/`,
+which the lexer treats as an ordinary comment,
+so the item loses its documentation as requested and the host stays valid Rust.
+Block delimiters are never deleted by design,
+so this is the expected result,
+not a defect.
 
 ## Notes for integration
 
