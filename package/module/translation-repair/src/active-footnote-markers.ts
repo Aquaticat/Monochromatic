@@ -4,6 +4,12 @@ import { splitFrontMatter, } from './front-matter.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import { FootnoteRewriteError, } from './footnote-rewrite-error.ts';
 import {
+  NO_NODE_BOUNDS,
+  nodeBounds,
+  type TreeNode,
+  unpositionedRuns,
+} from './footnote-unpositioned-runs.ts';
+import {
   gfmMarkerAt,
   gfmMarkerSpans,
   type GfmMarkerSpan,
@@ -113,104 +119,95 @@ function positionedFootnote(
 }
 
 /**
- This node carries no raw bounds, distinct from bounds that read zero.
+ Places the marker lexemes read off one syntax-authorized raw region as
+ literal-looking references in document coordinates.
 
- @example
- ```ts
- if (nodeBounds(node,) === NO_NODE_BOUNDS) joinUnpositionedRun();
- ```
- */
-const NO_NODE_BOUNDS: unique symbol = Symbol('no raw bounds on a node MDAST rebuilt unpositioned',);
-
-/**
- Raw bounds of a syntax node, where the parser kept them.
-
- @param node - any node the walk holds
-
- @returns The node's raw offsets in the masked parser input, or
- {@link NO_NODE_BOUNDS} where a transform rebuilt the node without
- positions
-
- @example
- ```ts
- const bounds = nodeBounds(node,);
- ```
- */
-function nodeBounds(
-  node: DeepReadonlyData<RootContent>,
-): {
-  readonly start: number;
-  readonly end: number;
-} | typeof NO_NODE_BOUNDS {
-  /**
-   Node's raw start and exclusive end.
-   */
-  const start = node.position
-    ?.start
-    .offset;
-  /**
-   Exclusive end of this node's raw span.
-   */
-  const end = node.position
-    ?.end
-    .offset;
-  return ((start === undefined) || (end === undefined)) ? NO_NODE_BOUNDS : {
-    start,
-    end,
-  };
-}
-
-/**
- Literal-looking references recovered from one syntax-authorized raw region.
+ @param spans - lexemes of the region, their offsets relative to it
 
  @param regionStart - region origin in the masked parser input
 
- @param region - raw text of the region, plain text or the source an
- autolink literal stands in for
-
  @param bodyOffset - body origin in the complete document
 
- @returns Marker spans in document coordinates, source order
+ @returns Reference markers in document coordinates, source order
 
  @example
  ```ts
- const recovered = recoveredReferences({ regionStart: 0, region: 'Missing[^9].', bodyOffset: 0, });
+ const placed = placedReferences({ spans: gfmMarkerSpans({ text: 'Missing[^9].', },), regionStart: 0, bodyOffset: 0, },);
  ```
  */
-function recoveredReferences(
+function placedReferences(
   {
+    spans,
     regionStart,
-    region,
     bodyOffset,
   }: {
+    readonly spans: readonly GfmMarkerSpan[];
     readonly regionStart: number;
-    readonly region: string;
     readonly bodyOffset: number;
   },
 ): ActiveFootnoteMarker[] {
-  return gfmMarkerSpans({ text: region, },)
-    .map(function place(marker,): ActiveFootnoteMarker {
-      return {
-        ...marker,
-        kind: 'reference',
-        identifier: normalizeFootnoteIdentifier({ identifier: marker.rawLabel, },),
-        startOffset: bodyOffset + regionStart
-          + marker.startOffset,
-        endOffset: bodyOffset + regionStart
-          + marker.endOffset,
-      };
-    },);
+  return spans.map(function place(marker,): ActiveFootnoteMarker {
+    return {
+      ...marker,
+      kind: 'reference',
+      identifier: normalizeFootnoteIdentifier({ identifier: marker.rawLabel, },),
+      startOffset: bodyOffset + regionStart
+        + marker.startOffset,
+      endOffset: bodyOffset + regionStart
+        + marker.endOffset,
+    };
+  },);
+}
+
+/**
+ Whether a link is an autolink literal, whose only text is its own URL: one
+ micromark tokenized spans exactly that text, with no label bracket before
+ it, and one the autolink-literal transform built carries no span at all.
+ A marker shape inside such text is part of the URL (ledger B123).
+
+ @param node - node the walk is about to descend into
+
+ @returns Whether the node's children are URL text the walk must not read
+
+ @example
+ ```ts
+ if (!isAutolinkLiteral(node,)) descend();
+ ```
+ */
+function isAutolinkLiteral(node: TreeNode,): boolean {
+  if (node.type !== 'link')
+    return false;
+  /**
+   The link's own span, absent on a link the transform built.
+   */
+  const bounds = nodeBounds(node,);
+  if (bounds === NO_NODE_BOUNDS)
+    return true;
+  /**
+   First child of the link, absent under an empty label.
+   */
+  const [first,] = node.children;
+  if (first === undefined)
+    return false;
+  /**
+   Span of that child, which a label bracket sets off from the link's start.
+   */
+  const firstBounds = nodeBounds(first,);
+  return (firstBounds !== NO_NODE_BOUNDS) && (firstBounds.start === bounds.start);
 }
 
 /**
  Inventories active markers under strict document grammar without hiding unmatched container tags.
- Literal-looking references are recovered only from text nodes in the masked parser input.
+ Literal-looking references are recovered only from text in the masked parser input: the raw span of a
+ positioned text node, or the raw behind the text nodes of an unpositioned run (ledger B123). The text
+ of an autolink literal is its URL and is never read.
 
  @param text - whole document or structural slice with canonical offsets
 
  @returns Active references and definition openers in source order
 
- @throws FootnoteRewriteError when syntax or positioned marker identity cannot be established
+ @throws FootnoteRewriteError when syntax or positioned marker identity cannot be established, or an
+ unpositioned run cannot be placed in the raw text
 
  @example
  ```ts
@@ -241,113 +238,14 @@ export function activeFootnoteMarkers({ text, }: { readonly text: string; },): r
      */
     const root = parseMdxBody({ body: parsedText, },);
     /**
-     Raw bounds of each unpositioned run, keyed by the run's first node.
-     The autolink-literal transform rebuilds text and link nodes without
-     positions wherever its pattern finds a literal micromark did not
-     tokenize (ledger B123), so a run's raw is the source between its
-     positioned neighbours, or the parent's own bounds at either end.
+     References of each unpositioned run, keyed by the run's first member,
+     where the walk emits them in source order.
      */
-    const unpositionedRuns = new Map<DeepReadonlyData<RootContent>, {
-      readonly start: number;
-      readonly end: number;
-    }>();
-    /**
-     Child lists left to bound, each with the raw bounds it may not cross.
-     Only the autolink-literal transform leaves nodes unpositioned, as text
-     and link siblings replacing one text node, so no unpositioned subtree
-     holds structure this walk descends into.
-     */
-    const lists: {
-      readonly children: DeepReadonlyData<RootContent>[];
-      readonly parentStart: number;
-      readonly parentEnd: number;
-    }[] = [{
-      children: root.children,
-      parentStart: 0,
-      parentEnd: parsedText.length,
-    },];
-    for (let list = lists.pop(); list !== undefined; list = lists.pop()) {
-      /**
-       This list's children and the raw bounds it may not cross.
-       */
-      const {
-        children,
-        parentStart,
-        parentEnd,
-      } = list;
-      for (let index = 0; index < children.length; index += 1) {
-        /**
-         This child.
-         */
-        const child = nonNullishOrThrow(children[index],);
-        /**
-         Bounds of this child where the parser kept them.
-         */
-        const bounds = nodeBounds(child,);
-        if (bounds !== NO_NODE_BOUNDS) {
-          if ('children' in child) {
-            /**
-             This child's own children, carried one by one into the list
-             shape, as the main walk's stack carries them.
-             */
-            const nested: DeepReadonlyData<RootContent>[] = [];
-            for (const nestedChild of child.children)
-              nested.push(nestedChild,);
-            lists.push({
-              children: nested,
-              parentStart: bounds.start,
-              parentEnd: bounds.end,
-            },);
-          }
-          continue;
-        }
-        /**
-         Bounds of the previous positioned sibling, absent at the head of
-         the list where the parent's own start bounds the run.
-         */
-        const previous = (index === 0)
-          ? NO_NODE_BOUNDS
-          : nodeBounds(nonNullishOrThrow(children[index - 1],),);
-        /**
-         Raw start of this run.
-         */
-        const start = (previous === NO_NODE_BOUNDS)
-          ? parentStart
-          : previous.end;
-        /**
-         Index after the run's last unpositioned member.
-         */
-        let after = index;
-        while ((after < children.length) && (nodeBounds(nonNullishOrThrow(children[after],),) === NO_NODE_BOUNDS))
-          after += 1;
-        /**
-         Bounds of the next positioned sibling, absent at the tail of the
-         list where the parent's own end bounds the run.
-         */
-        const next = (after === children.length)
-          ? NO_NODE_BOUNDS
-          : nodeBounds(nonNullishOrThrow(children[after],),);
-        /**
-         Raw end of this run.
-         */
-        const end = (next === NO_NODE_BOUNDS)
-          ? parentEnd
-          : next.start;
-        unpositionedRuns.set(
-          child,
-          {
-            start,
-            end,
-          },
-        );
-        index = after - 1;
-      }
-    }
+    const runReferences = new Map<TreeNode, readonly ActiveFootnoteMarker[]>();
     /**
      Owned structural work-stack, avoiding recursion through container spines.
      */
-    const work: DeepReadonlyData<RootContent>[] = root.children
-      .toReversed();
+    const work: TreeNode[] = [root,];
     /**
      Positioned markers collected in source-order preorder.
      */
@@ -359,41 +257,49 @@ export function activeFootnoteMarkers({ text, }: { readonly text: string; },): r
           text: parsedText,
           bodyOffset,
         },),);
-      else {
+      else if (node.type === 'text') {
         /**
-         Raw region this node's literal-looking references live in: its own
-         positioned span, or the unpositioned run it opens (ledger B123).
+         Raw span of this text node, absent on a member of an unpositioned
+         run, whose references the run's first member carries.
          */
         const bounds = nodeBounds(node,);
         if (bounds !== NO_NODE_BOUNDS) {
-          if (node.type === 'text')
-            markers.push(...recoveredReferences({
-              regionStart: bounds.start,
-              region: parsedText.slice(
-                bounds.start,
-                bounds.end,
-              ),
-              bodyOffset,
-            },),);
-        }
-        else {
-          /**
-           Unpositioned run this node opens, scanned once at its first
-           member for the references its raw may hold.
-           */
-          const run = unpositionedRuns.get(node,);
-          if (run !== undefined)
-            markers.push(...recoveredReferences({
-              regionStart: run.start,
-              region: parsedText.slice(
-                run.start,
-                run.end,
-              ),
-              bodyOffset,
-            },),);
+          for (const marker of placedReferences({
+            spans: gfmMarkerSpans({ text: parsedText.slice(
+              bounds.start,
+              bounds.end,
+            ), },),
+            regionStart: bounds.start,
+            bodyOffset,
+          },))
+            markers.push(marker,);
         }
       }
-      if ('children' in node) {
+      /**
+       References of the unpositioned run this node opens, absent for
+       every other node.
+       */
+      const opened = runReferences.get(node,);
+      if (opened !== undefined) {
+        for (const marker of opened)
+          markers.push(marker,);
+      }
+      // An autolink literal's text is its URL: neither read nor searched
+      // for runs, a link the transform built being a member of its
+      // parent's run already.
+      if (('children' in node) && (!isAutolinkLiteral(node,))) {
+        for (const run of unpositionedRuns({
+          parent: node,
+          text: parsedText,
+        },))
+          runReferences.set(
+            run.opener,
+            placedReferences({
+              spans: run.spans,
+              regionStart: run.regionStart,
+              bodyOffset,
+            },),
+          );
         for (const child of node.children
           .toReversed())
           work.push(child,);
