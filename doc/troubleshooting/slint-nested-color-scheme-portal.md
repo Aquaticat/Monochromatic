@@ -344,10 +344,42 @@ or variable expansion other than `$1`,
 and so on.
 The tradeoff of the working form is that reports share the viewer's own standard output.
 
-### The private bus attempts D-Bus activation from host service files
+### `slint-viewer --on` handlers miss callbacks made from `init`
 
-The private `dbus-daemon --session` uses the stock session configuration,
-including the host's service directories.
+A scene that reports from `init => { root.report(...); }` printed nothing:
+the handler did not exist yet.
+`slint-viewer` creates the component,
+which runs `init`,
+and only then installs the `--on` handlers:
+
+```rust
+// slint-ui/slint tag v1.18.1, tools/viewer/main.rs:304
+        let component = c.create()?;
+        setup_instance(&component, &args.on, args.load_data.as_deref(), args.path())?;
+```
+
+```rust
+// slint-ui/slint tag v1.18.1, tools/viewer/main.rs:378 (end of setup_instance)
+    install_callbacks(instance, callbacks);
+```
+
+The appearance probe never noticed,
+because its first report comes from `changed scheme` once the portal value arrives,
+after the handlers exist.
+The scale probe in `inspect:scale` (`package/cli/nested-wayland-session/mise.toml`)
+reports its starting state from a one-shot 50 ms `Timer` instead;
+timers run in the event loop,
+after `install_callbacks`.
+Its tradeoff:
+the timer can fire before the first configure,
+so the first size report may be `0 0`,
+and the task only counts size reports that arrive after its first settled check.
+
+### The private bus attempted D-Bus activation from host service files (closed 2026-10-05)
+
+Until 2026-10-05 the private daemon ran as `dbus-daemon --session`,
+which loads the stock `/usr/share/dbus-1/session.conf`
+with `<standard_session_servicedirs/>` and its includes.
 When `slint-viewer` asked for the accessibility bus,
 the private daemon logged:
 
@@ -356,12 +388,63 @@ Activating service name='org.a11y.Bus' requested by ':1.6' (... comm="slint-view
 Activated service 'org.a11y.Bus' failed: Failed to execute program org.a11y.Bus: Permission denied
 ```
 
-Slint then logged a warning and continued.
+The same two lines appeared again on 2026-10-05
+when `inspect:scale` first ran against the release binary built before the fix.
 Nothing reached the host session bus,
-but a hosted client can ask the private daemon to start any service the host has a service file for.
-Not changed in this work.
-A private configuration file without service directories would close it;
-that has not been built or measured.
+but a hosted client could ask the private daemon to start any service the host has a service file for.
+`man dbus-daemon` (1.16.2) says `--session` is equivalent to
+`--config-file=/usr/share/dbus-1/session.conf`,
+and lists `<standard_session_servicedirs/>` as
+`$XDG_RUNTIME_DIR/dbus-1/services`,
+`$XDG_DATA_HOME/dbus-1/services`,
+and `dbus-1/services` under each `XDG_DATA_DIRS` entry.
+
+The private daemon now starts with `--config-file` pointing at a file written beside its socket
+(`PRIVATE_BUS_CONFIG` in `package/cli/nested-wayland-session/src/appearance_portal.rs`):
+the stock session elements that make it a session bus
+(`<type>session</type>`,
+`<keep_umask/>`,
+`<auth>EXTERNAL</auth>`,
+the allow-all default policy)
+and no `<servicedir>`,
+no `<standard_session_servicedirs/>`,
+no `<include>` or `<includedir>`.
+Measured with `dbus-send` against both configurations on 2026-10-05:
+
+```text
+stock   ListActivatableNames: 73 names, including org.a11y.Bus
+stock   StartServiceByName org.a11y.Bus: org.freedesktop.DBus.Error.Spawn.ExecFailed:
+        Failed to execute program org.a11y.Bus: Permission denied
+private ListActivatableNames: org.freedesktop.DBus only
+private StartServiceByName org.a11y.Bus: org.freedesktop.DBus.Error.ServiceUnknown:
+        The name org.a11y.Bus was not provided by any .service files
+```
+
+The private daemon logs nothing for the refused request,
+and neither `slint-viewer` nor the IDE printed an accessibility warning in the 2026-10-05 runs.
+
+`dbus-daemon` 1.16.2 refuses a configuration without `<listen>`,
+even when `--address` is given:
+`Failed to start message bus: Configuration file needs one or more <listen> elements giving addresses`.
+The file therefore lists `unix:path=/dev/null/replaced-by-the-address-option`,
+a path that cannot be bound,
+and the existing `--address` option overrides it,
+as the manual says it does.
+No path is interpolated into the file,
+so it needs no XML escaping.
+
+The guard is `private_bus_never_reads_service_files` in
+`package/cli/nested-wayland-session/src/appearance_portal_tests.rs`.
+It re-executes itself with `XDG_DATA_HOME` and `XDG_DATA_DIRS` naming a disposable directory
+that holds one planted `.service` file,
+so it does not depend on which services the machine has installed.
+The first version of the test only asked for `org.a11y.Bus`;
+it passed against the stock configuration inside the build container,
+which has no such service file,
+so it could not detect the bug and was replaced.
+The planted version failed against the stock configuration
+(`left: ["org.freedesktop.DBus", "org.example.MonochromaticPlantedService"]`)
+and passes with the private configuration.
 
 ## Upstream filing decision
 
@@ -451,3 +534,32 @@ into words and executed without a shell (or run it through `sh -c` if a shell wa
 This report was prepared with AI assistance; the reproduction and source reading were checked by running
 the installed 1.18.1 binary and reading the tagged source.
 ~~~
+
+### `slint-viewer --on` and callbacks made from `init`
+
+Nothing is filed.
+
+1.  Upstream's fault:
+    no.
+    The `--on` help text promises a handler for a callback,
+    not delivery of calls made while the component is constructed.
+    The interpreter can only accept a handler on an instance that exists,
+    and creating it runs `init` (`tools/viewer/main.rs:304`, then `:378`).
+2.  Fixable:
+    only by changing how the viewer constructs components,
+    for example by queuing early calls;
+    no evidence was gathered that this is wanted.
+3.  Supported use case:
+    not documented either way.
+4.  Contribution welcome:
+    as for the help-text item in this section.
+5.  Likely to be fixed:
+    `gh search issues --repo slint-ui/slint` for `viewer --on init`
+    and `slint-viewer callback init handler` returned no results on 2026-10-05.
+6.  Prototype:
+    none,
+    because constraint 1 fails.
+
+The consumer-side workaround,
+a one-shot `Timer`,
+is recorded under "Related quirks found while verifying".
