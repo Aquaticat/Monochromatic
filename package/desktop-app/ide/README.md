@@ -263,6 +263,32 @@ including reload,
  and the search overlay.
 `inspect:find-guards` removes each guard in a disposable copy and checks that its named test fails.
 
+## Language module
+
+The headless core in `src/language` drives Helix's language-server client on one worker thread.
+It is not wired into the window yet.
+The native layer owns one `LanguageWorker`:
+it sends `open`, `reload`, `close`, `request`, and `request_hints` without waiting,
+and polls `try_take_status`, `try_take_reply`, `try_take_diagnostics`, and `try_take_hints` from a timer.
+Every result carries the file generation, content revision, and server process it answers;
+the handle drops results for anything no longer displayed.
+A command method returns `false` when the queue is full; send it again on the next poll.
+`enter_project_directory` must run once at startup, before any thread or Helix call,
+because Helix roots every server at the process working directory.
+
+The TypeScript family uses the project's own TypeScript 7 server (`node_modules/typescript/bin/tsc --lsp --stdio`);
+a project without it shows the missing-executable state.
+Server-initiated workspace edits are refused.
+Every server launch passes through one launch policy in `src/language/launch.rs`;
+the default spawns the server itself, without write confinement.
+
+`test:language` runs the unit rules and sessions against the scripted server `ide-scripted-lsp`,
+one child process per session.
+`inspect:language` runs all five feature paths, a reload, and the stale-reply case
+against real TypeScript and Rust servers on disposable projects.
+`inspect:language-guards` removes the fencing, readiness, and edit-refusal guards in a disposable copy
+and checks that their named tests fail.
+
 ## Fonts and appearance
 
 Official variable roman and real italic fonts for JetBrains Mono and Inter are bundled under `asset/font`
