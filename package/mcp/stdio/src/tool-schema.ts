@@ -49,13 +49,13 @@ export function strictArguments<const TEntries extends v.ObjectEntries,>(
 ): v.StrictObjectSchema<TEntries, undefined> {
   /**
    Same entries on a prototype-free object, so `key in entries` sees only declared names.
+   The literal's `__proto__: null` sets the prototype rather than adding a property,
+   and the spread keeps the declared entry types intact.
    */
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- Object.assign returns any through its spread overload; the value is the entries argument with its prototype removed */
-  const bareEntries = Object.assign(
-    Object.create(null,),
-    entries,
-  ) as TEntries;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
+  const bareEntries: TEntries = {
+    __proto__: null,
+    ...entries,
+  };
   return v.strictObject(bareEntries,);
 }
 
