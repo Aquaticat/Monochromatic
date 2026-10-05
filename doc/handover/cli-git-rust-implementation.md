@@ -120,6 +120,104 @@ Integration into executable orchestration and global fuzzing remains.
   (147,101 merge, 13,394 configuration, 1,185 rust-style,
   539 explicit-types, 64,366 Markdown/MDX including tables and prose).
 
+## Resumption 2026-10-05
+
+Claude Opus resumed from the `Handoff 2026-10-05` section on the user's instruction to continue with subagents.
+The main session coordinates and integrates;
+delegates own disjoint files and write their own evidence documents.
+This document and the coverage ledger are edited only by the main session.
+
+### Done by the main session
+
+- `if_same_then_else` in `config_loading.rs` is fixed (`2680f7cb6`);
+  `mise run //package/git-policy/cli:native:test:container` passed 9 tests and Clippy.
+- Verification runners take an overridable image tag (`cd54f8b64`):
+  `GIT_POLICY_NATIVE_IMAGE_TAG` for the wrapper runner
+  and `MONOCHROMATIC_LINT_IMAGE_TAG` for the linter test, Clippy and mutation runners,
+  both defaulting to `development`.
+  Two snapshots building one fixed tag could run each other's image.
+  The wrapper override was exercised with default and custom tags;
+  the linter runners get their first run from the delegates' gates.
+- `doc/handover/unified-linter-processors.md` passed its render check.
+- The processor delegate's last campaign
+  (`package/linter/monochromatic-lint/target/verification/processors-mutation-VrbPEr`)
+  finished with 5 caught and none missed.
+  That campaign plants 5 guard removals;
+  an unrestricted cargo-mutants pass over the `processors*.rs` files has not run.
+
+### Delegates and ownership
+
+- Linter executable (main checkout):
+  owns `package/linter/monochromatic-lint` and `package/linter/monochromatic-lint.fuzz`
+  except the files listed for the mutation-survivor delegate.
+  Slices: rule coverage audit, binary and orchestration, binary-level container tests,
+  fuzz sidecar extension, differential comparison against both incumbents.
+  Evidence: `doc/handover/unified-linter-executable.md`.
+- Native wrapper foundation (main checkout):
+  owns `package/git-policy/cli/src/native` except `command_*.rs` and `rule_*.rs`,
+  the crate manifest and lockfile, the native runner, and the `native:*` tasks.
+  Slices: `cli-git.config.jsonc` loader, real-Git resolution and forwarding with the executable entry,
+  management-command skeleton, wrapper mutation runner, `package/git-policy/cli.fuzz`.
+  Evidence: `doc/handover/cli-git-native-foundation.md`.
+- Behavior ledger (documentation only):
+  `doc/planning/cli-git-rust-behavior-ledger.md`,
+  the first step of the accepted implementation sequence, which had not been written.
+- LFS URL normalizer selection (documentation and one fixture):
+  see `User correction: no vetting decision gate`.
+- Scanner Windows-native verification:
+  the two retained survivors at `package/cli/forbidden-strings/src/path_name_bytes.rs:36`,
+  through a Windows virtual machine;
+  evidence goes into `doc/handover/scanner-native-verification.md`.
+- Linter mutation survivors (queued, linked worktree
+  `.claude/worktrees/linter-mutation-survivors`, branch `test/linter-mutation-survivors`):
+  owns `markdown_block_start.rs`, `markdown_break_points.rs`, `markdown_code.rs`, `markdown_commands.rs`,
+  `markdown_headings.rs`, `markdown_prose_context.rs`, `markdown_source.rs`, `markdown_tables.rs`,
+  `rust_inferred_constants.rs`, their tests, `bin/mutate-container.mjs`, and the `mutation*` tasks.
+  Inventories: `mutation-1vJeuS` (full campaign, 18 missed, 2 timeouts)
+  and `mutation-p3QH2L` (Markdown rerun, 17 missed, 11 timeouts)
+  under `package/linter/monochromatic-lint/target/verification`.
+  Evidence: `doc/handover/unified-linter-mutation-survivors.md`.
+- Git command parser and pure rule cores (queued, linked worktree
+  `.claude/worktrees/cli-git-native-command-parser`, branch `feat/cli-git-native-command-parser`):
+  ports `package/git-policy/cli/src/parser` and the decision cores of `src/rule`
+  into `command_*.rs` and `rule_*.rs`.
+  Evidence: `doc/handover/cli-git-native-command-parser.md`.
+
+The two queued delegates wait for a free slot:
+this session allows 5 concurrent subagents.
+Their branches are cherry-picked onto `main` by the main session,
+which unions `src/native/lib.rs` and reruns both package gates on the integrated tree.
+
+### User correction: no vetting decision gate
+
+The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
+The user replied (2026-10-05):
+"we don't need a vetting decision here."
+The gate is removed.
+The normalizer owner is chosen by measurement:
+the option that reproduces the incumbent on a differential corpus with the least added dependency footprint.
+The delegate commits `package/linter/monochromatic-lint/fixtures/lfs-url-parity.json`
+and a `Selected owner` section in
+[`native-lfs-url-normalization-evaluation.md`](../planning/native-lfs-url-normalization-evaluation.md);
+the linter delegate then ports the rule and may add a selected crate to the manifest.
+The differential test stays because the rule's findings and edits must match the incumbent;
+that is verification, not a decision for the user.
+
+### Environment findings
+
+- Tool-managed worktree isolation fails in this repository:
+  `.claude/settings.local.json` registers `cctt` (the terminal-title plugin) for the `WorktreeCreate` hook.
+  A command hook on that event must create the worktree and print its path;
+  `cctt` prints none,
+  so Claude Code reports "hook succeeded but returned no worktree path".
+  Workaround used: `git worktree add -b <branch> .claude/worktrees/<name> main`
+  (`.claude/` is ignored at `.gitignore:125`),
+  with the delegate told to keep every path inside that root.
+- The second-opinion command from the generated `CLAUDE.md`
+  (`pi --model openai-codex/gpt-5.6-sol`) exited 1 with "No API key found for openai-codex";
+  pi also reports that model retired in favor of `gpt-6.1-sol`.
+  The advisor was consulted alone.
+
 ## Work queue
 
 - [x] Unified-linter foundation: JSONC schema, ordered merge, command interface, and artifact tests.
@@ -130,13 +228,17 @@ Integration into executable orchestration and global fuzzing remains.
 - [x] Forbidden-strings structured embedding interface and standalone parity.
   Windows-native mutation verification remains open.
 - [ ] Rust cli-git configuration, Git resolution/argv, static policies, and management commands.
-  Native global-argument and lazy-config foundations are in;
-  fix the `if_same_then_else` Clippy finding and continue.
+  Native global-argument and lazy-config foundations are in and pass tests and Clippy (`2680f7cb6`);
+  configuration, Git resolution and forwarding, the command parser and rule cores are delegated
+  (see `Resumption 2026-10-05`).
+  The policy engine, management-command execution, and the optional policies are not started.
 - [ ] Rust cli-git transactions, hooks, locks, replay, recovery, worktree copy, and auto-push.
 - [ ] Container integration, mutation testing, fuzzing, platform checks, and release-artifact performance gates.
   Mutation survivors from both campaigns need disposition or new controls.
 - [ ] Coordinated native installation, consumer migration, documentation, and retirement of old implementations.
-- [ ] Native LFS URL normalization: resume vetting under the accepted scratch-helper trust rule.
+- [ ] Native LFS URL normalization: owner selected by differential measurement, no decision gate;
+  then port `markdown/lfs-image-url`.
+- [ ] Behavior ledger for the wrapper (`doc/planning/cli-git-rust-behavior-ledger.md`), delegated.
 
 Each item needs its own passing evidence before completion.
 Current production tools remain active until cutover.
