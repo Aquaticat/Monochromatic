@@ -529,6 +529,11 @@ Analyse true peak in the background       OFF in the mock
  Grouped cards with section headers and an analysis-status row
 (settings-b).
 
+D84 (2026-10-05) removes the third row:
+analysis is automatic and non-optional,
+so Settings has no analysis switch.
+D85 removes the closing sentence that says the pane is short.
+
 ### D12. Analysis status lives nowhere after the first run
 The user chose this explicitly:
  once analysis is done it never needs to be seen again.
@@ -937,6 +942,11 @@ and is never explained in place.
  Note this pushes against D10's empty state,
  which now
 only applies when no system library exists or the user declined it.
+
+D84 (2026-10-05) supersedes the ask-before-analysing prompt and its four
+answers:
+true-peak analysis is automatic and non-optional.
+Automatic opening of the system music library stands.
 
 ### D28. The picker rail adapts to the library's writing systems (revises D3, D17)
 **Only writing systems present in the library get a section in the rail:**
@@ -2333,6 +2343,34 @@ The current work remains an isolated authored design study.
 No production storage,
 playback,
 IME or TalkBack operation is authorized by this presentation change.
+
+### D84. True-peak analysis is automatic and non-optional (2026-10-05)
+
+The human withdrew D11's `Analyse true peak in the background` row:
+Settings provides no switch for analysis,
+because true-peak analysis is automatic and not optional.
+This supersedes D11's third row and D27's ask-before-analysing prompt,
+whose four answers (`Scan once`,
+`Always scan`,
+`Dismiss once`,
+`Dismiss forever`) existed only to make analysis optional.
+D27's automatic opening of an available system music library stands.
+D12's Re-analyse on the track menu stands.
+D26's scan bar stands;
+reading its Pause/Resume control as a temporary pause that does not make
+analysis optional is this record's interpretation,
+not the human's statement.
+When analysis runs is not selected here.
+No production implementation is authorized by this record.
+
+### D85. The Settings pane has no closing sentence (2026-10-05)
+
+The human dropped settings-a's closing paragraph,
+`That's everything. There is no library to configure, no tags to read, and no audio processing beyond normalisation — so this pane stays short until the app grows.`
+D11's wording about the pane saying out loud that it is short is withdrawn
+with it.
+The sentence was mock copy that no decision chose,
+and D81 already adds template configuration to Settings.
 
 ## Pending after the theme picks (2026-09-04)
 
