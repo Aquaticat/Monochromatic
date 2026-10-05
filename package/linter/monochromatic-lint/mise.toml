@@ -287,3 +287,7 @@ const result = spawnSync('podman', [
 if (result.error) throw result.error;
 if (result.status !== 0) throw new Error('Processor snapshot Clippy failed: ' + result.status);
 '''
+
+[tasks."test:processors:slice"]
+description = "Run only the processor tests in the tagged mount-free, network-disabled 2 GiB / 2 CPU snapshot"
+run = "node bin/test-container.mjs processors"
