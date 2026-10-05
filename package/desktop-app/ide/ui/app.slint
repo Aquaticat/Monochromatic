@@ -93,6 +93,8 @@ export component AppWindow inherits Window {
     in property <float> caret-y;
     out property <brush> source-foreground: Palette.foreground;
     out property <brush> selected-foreground: Palette.selection-foreground;
+    // Native code picks the selected-text ink from this fill, because the palette's ink follows the scheme instead.
+    out property <brush> selection-fill: Palette.selection-background;
     out property <bool> dark-scheme: Palette.color-scheme == ColorScheme.dark;
     in property <string> source-text;
     in property <string> selected-text;

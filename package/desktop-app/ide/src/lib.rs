@@ -48,6 +48,9 @@ mod syntax_error;
 /// Partial ligature selection clips foreground against source selection geometry.
 mod selection_paint;
 
+/// Selected-text ink follows the selection background's lightness, not the color scheme.
+pub mod selection_ink;
+
 /// One local project boundary exposes directory snapshots without mutation operations.
 pub mod workspace;
 
