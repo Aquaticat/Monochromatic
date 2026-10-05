@@ -282,12 +282,12 @@ pub(super) fn tick(
     // A closure returning `anyhow::Result<()>` lets `?` stop the steps at the first worker error.
     let mut steps = || -> anyhow::Result<()> {
         sync::update(language, source)?;
+        // A status for an earlier file generation is ignored.
         if let Some(worker) = language.worker.as_mut()
             && let Some(status) = worker.try_take_status()?
+            && status.file == Some(displayed.file)
         {
-            if status.file == Some(displayed.file) {
-                language.status = status;
-            }
+            language.status = status;
         }
         cancel_stale(window, source, language, displayed);
         rest(window, source, language, displayed);

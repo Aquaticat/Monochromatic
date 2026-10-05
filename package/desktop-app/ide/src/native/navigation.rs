@@ -71,6 +71,8 @@ pub(super) struct Navigation {
 }
 
 /// Start navigation against the canonical root without synchronously enumerating its directories.
+/// Window tests without language navigation keep only the timer; the application uses `bind_shared`.
+#[cfg(test)]
 pub(super) fn bind(
     window: &AppWindow,
     source: &Rc<RefCell<State>>,

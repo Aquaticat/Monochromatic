@@ -8,7 +8,7 @@ use super::test_support::{
 /// Key events for the list and a tree-row lookup shared with the navigation tests.
 use crate::native::{find_tests::key, navigation_tests::row};
 /// Toolkit models, encoded keys, and window handles.
-use slint::{ComponentHandle, LogicalPosition, Model, SharedString, platform::Key};
+use slint::{LogicalPosition, Model, SharedString, platform::Key};
 
 /// One hundred and twenty lines of 13 characters plus a newline: `line 007 word`.
 fn numbered() -> String {
