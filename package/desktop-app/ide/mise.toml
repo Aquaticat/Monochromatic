@@ -100,6 +100,17 @@ run = """
 runCargo(['build'])
 """
 
+[tasks."build:release"]
+depends = ["runtime"]
+description = "Build the optimized application binary in the bounded container"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+// Only the application binary: the runtime, inspection, and scripted-server helpers are build and test tools.
+// SLINT_EMIT_DEBUG_INFO keeps element ids for the debug inspection builds; sibling release builds do not set it.
+runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'build', '--release', '--bin', 'monochromatic-ide'])
+"""
+
 [tasks.test]
 depends = ["runtime"]
 description = "Run library and integration tests in the bounded container"
