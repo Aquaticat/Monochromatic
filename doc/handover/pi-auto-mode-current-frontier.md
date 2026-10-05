@@ -195,7 +195,7 @@ The separately frozen copied-input interface request was then sent once.
 with no scores or usage returned.
 The 454,012-byte namespace is consumed and was not retried.
 Known modeled semantic spend remains US$0.055516382,
-plus this failed request with unquantified billing.
+plus the failed full-rule requests with unquantified billing.
 
 Current TypeSafe documentation specifies both 64k tokens for state plus all questions
 and 32k for state plus the longest question.
@@ -208,15 +208,29 @@ criterion,
 selected rule,
 policy byte,
 and program/request field unchanged.
-Token counts and provider acceptance of that revision remain unmeasured.
+The separate 315,353-byte trial also returned HTTP 400 with `max_tokens_exceeded`.
+`proc_e51c` reconciled that consumed namespace without replay.
+Neither rejected representation returned scores or usage;
+there are now two unquantified failed-request charges alongside the known subtotal.
+
+The next local revision keeps the exact question sentence,
+criteria,
+and selected rule inside every head,
+and moves the remaining 373-byte instruction guidance verbatim into shared state.
+Every question explicitly references that guidance.
+`proc_0c8c` measured 256,710 bytes and verified reconstruction of the full original instruction string.
+It did not establish token fit,
+provider acceptance,
+or equivalent model interpretation.
+This revision has no live admission yet.
 
 Next:
-finish compact-wire controls and documentation,
-then freeze any new representation trial separately.
+qualify shared-guidance transport and native integration,
+then freeze any further representation trial separately.
 Do not truncate required inputs,
-add question indirection unnecessarily,
+assume moving guidance preserves calibration,
 reopen the original judgment,
-or replay the rejected body.
+or replay rejected bodies.
 No semantic cutoff,
 source-authority admission,
 cache exclusion,

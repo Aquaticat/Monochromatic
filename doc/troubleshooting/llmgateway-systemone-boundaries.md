@@ -112,8 +112,14 @@ Full policy,
 selected-rule text and headings,
 parent/prepared programs,
 and original main request remain intact.
-This is a verified local representation change,
-not a verified provider workaround or semantic-equivalence result.
+The separate 315,353-byte representation trial also returned HTTP 400
+with the same `max_tokens_exceeded` detail.
+`proc_e51c` verified one attempt,
+no returned scores or usage,
+and no replay.
+Both failed requests have unknown billing.
+Thus metadata removal is a verified local representation change,
+not a working provider workaround or semantic-equivalence result.
 
 The [TypeSafe API reference][typesafe-question-schema]
 says question-map keys are not sent to inference.
@@ -123,7 +129,19 @@ The [Jev 1.13 limitations][typesafe-jaggedness]
 also warn about indirection,
 irrelevant state,
 and adversarial content.
-The first revision therefore preserves the question wording and criteria instead of replacing them with extra references.
+The metadata-only revision preserved all question wording and criteria.
+After its rejection,
+the next local prototype retained the exact question sentence and criteria in each head
+while moving 373 bytes of remaining guidance verbatim to shared state.
+Every question names `assessmentGuidance` explicitly.
+`proc_0c8c` checked that concatenating the question sentence and shared guidance
+reconstructs the original instruction text exactly,
+and measured 256,710 total bytes,
+70,418 state bytes,
+and a 992-byte longest question.
+No request using that prototype has been admitted yet.
+Token fit and model interpretation remain unqualified;
+the documentation's indirection warning still applies.
 
 ### Rejected remedies and filing decision
 

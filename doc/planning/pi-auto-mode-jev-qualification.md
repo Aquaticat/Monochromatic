@@ -80,17 +80,28 @@ This was research over archived data,
 not reopening a native judgment or authorizing a tool.
 
 The known modeled semantic subtotal remains US$0.055516382,
-plus one failed request whose billing amount is unknown.
+plus two failed full-rule requests whose billing amounts are unknown.
 Do not add a zero charge or fabricate an input-token estimate.
 The [endpoint boundary record](../troubleshooting/llmgateway-systemone-boundaries.md)
 documents the provider's separate total and state-plus-longest-question limits.
 
 The no-question-change encoding revision removes duplicate model-facing binding bookkeeping only.
-Its 315,353-byte size is measured locally,
-not accepted by the provider yet.
-No semantic qualification,
+Its separately frozen 315,353-byte request also returned `max_tokens_exceeded`,
+without usage or scores.
+`proc_e51c` reconciled that second consumed namespace.
+No unchanged body was retried.
+
+The shared-guidance local prototype retains all original instruction words,
+per-rule criteria and rule context,
+and complete policy/program input.
+`proc_0c8c` measured 256,710 bytes.
+The question sentence remains per head;
+373 bytes of remaining guidance are shared and explicitly referenced.
+This changes where the model reads guidance,
+so content preservation alone is not semantic qualification.
+No provider acceptance,
 cutoff,
-or production adoption follows from reducing that representation.
+or production adoption follows from this local measurement.
 
 ## Batched instruction-meaning encoding diagnostic
 

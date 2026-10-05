@@ -202,7 +202,15 @@ A separate encoding keeps native binding bookkeeping in code rather than duplica
 `proc_ba2b` measured 315,353 bytes instead of 454,012,
 while preserving all 205 questions and every other state field exactly.
 That is a byte/content measurement,
-not an exact token count or provider-fit claim.
+not an exact token count.
+The separately frozen 315,353-byte live trial was also rejected with `max_tokens_exceeded`;
+`proc_e51c` retained the failure without replay.
+A shared-guidance prototype measured 256,710 bytes in `proc_0c8c`:
+it keeps the verbatim question sentence and criteria per head,
+places the remaining original instruction text once in state,
+and names that field explicitly in every question.
+Content reconstruction is checked;
+provider fit and semantic equivalence remain unqualified.
 Keep each rule ID and text inside its question:
 TypeSafe documents question-map keys as correlation only,
 not inference input.
