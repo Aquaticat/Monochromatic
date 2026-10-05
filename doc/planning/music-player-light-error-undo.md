@@ -151,6 +151,21 @@ Cover ignores that inner inset.
 The first overlay APK remains diagnostic evidence,
 not the final accepted-player publication artifact.
 Corrected artifact identity and new native evidence are required.
+The corrected E2 overlay build is `743c5b378` with APK SHA-256
+`2b556131d86e39acb8ebcf194f39da9ed8e36e2f146a86ab4fb971f4c8f06480`.
+It is separately retained from the fixed-pane diagnostic APK.
+
+Readiness and input are not assumed synchronous:
+a failed preflight observed a named System UI ANR still owning focus
+immediately after a close command.
+Another snapshot helper exceeded its short command bound despite receiving
+`0` on stdout;
+that partial result was not promoted to a completed read.
+The bounded stage now verifies window settling before acquisition and
+retains rejected frame/window/log evidence on a focus mismatch.
+Each native stage restores original fields and requests graceful shutdown
+in its cleanup path.
+No rejected preflight is counted as a fit or lifecycle witness.
 The owned runtime is restored/stopped before the next bounded visit,
 rather than left near its measured 6 GiB memory ceiling.
 Same-scene player-geometry equality needs a changing-geometry positive
