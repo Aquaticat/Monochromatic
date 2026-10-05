@@ -53,13 +53,13 @@ fn reader_bounds_requests_and_preserves_snapshot_order() {
     assert!(!worker.poll(&mut tree).expect("idle poll"));
     assert!(worker.request(&mut tree, &root).expect("first request"));
     assert!(worker.is_busy());
-    assert!(
-        !worker
-            .request(&mut tree, &root)
-            .expect("bounded second request")
-    );
-    assert!(tree.missing_listings().is_empty());
-    assert!(finish(&mut worker, &mut tree).expect("first reply still current"));
+    let second = worker.request(&mut tree, &root);
+    let no_duplicate_listing = tree.missing_listings().is_empty();
+    // Drain before asserting admission, so a guard-removal regression cannot deadlock Drop behind a full reply slot.
+    let first = finish(&mut worker, &mut tree);
+    assert!(!second.expect("bounded second request"));
+    assert!(no_duplicate_listing);
+    assert!(first.expect("first reply still current"));
     // Consume the visible rows and compare their exact native entries, not lossy display strings.
     let actual: Vec<_> = tree
         .rows()
