@@ -98,9 +98,29 @@ source invalidation that restoration cannot revive,
 and the exact enumeration-freshness omission witness.
 An empty index still does not establish complete governing-source coverage.
 
+The original claim-to-answer handoff is now rebased onto the candidate-aware judgment.
+`proc_d959` verified canonical evidence capture,
+equal estimates remaining distinct across claims,
+copied/foreign/cross-claim rejection,
+and malformed/discarded/unissued refusal.
+The exact canonical-identity omission failed its authored assertion.
+
+Native checking exposed distinct incidents.
+`proc_b5b2` called evidence validation after the next request generation had retired the original;
+that rejection was correct.
+The active-request control `proc_f221` then found that restoring a changed dependency
+revived evidence eligibility.
+`proc_7bc6` verified the repair:
+the original judgment permanently retires evidence eligibility after a genuine dependency failure,
+including other claims sharing those dependencies.
+Canonical identity is checked first,
+so a rejected copied record does not poison genuine evidence.
+Successful evidence closure still permits validation after its inference clock expires.
+The repaired fixture executed no tools and made no provider request.
+`proc_f9b4` reconciled the failed artifacts read-only.
+
 Next:
-rebase the existing original claim-to-answer evidence handoff onto this candidate-aware judgment,
-then verify provenance and post-close dependency checks without another paid model request.
+connect original candidate-bound evidence to rule-based action assessment and code-owned policy premises.
 Do not promote retained estimates,
 candidate enumeration,
 or source designation into missing policy premises.

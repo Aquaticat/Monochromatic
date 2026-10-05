@@ -1,5 +1,118 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Original claim evidence must not regain eligibility after a dependency failure
+
+### Symptom and distinct fixture failure
+
+The private candidate-aware evidence handoff first failed in `proc_b5b2` with:
+
+```text
+# Private candidate-claim-evidence-sdk-consumer, after the next request generation
+RequestObservationStaleError: Observed request is no longer current
+```
+
+Its cause was `Request generation changed`.
+The fixture placed a retained-evidence assertion after `session.prompt()` had completed another main request.
+This was correct original-request retirement,
+not a restoration defect.
+The intended changed/restored dependency suffix had not run.
+
+Fresh active-request control `proc_f221` placed that suffix inside the original `beforeToolBatch` callback,
+after evidence closure.
+Changing disposable `b.txt` correctly rejected evidence validation.
+Restoring its original bytes then incorrectly passed validation.
+The authored assertion recorded:
+
+```text
+# Private candidate-evidence-restoration-sdk/controls-private/native-text/restoration-witness.json
+AssertionError [ERR_ASSERTION]: Missing expected exception.
+```
+
+The SDK converted the thrown callback assertion into admission-blocked tool results.
+A separate completion assertion ensured this error handback could not masquerade as a passing test.
+No fixture tool executed in this failing restoration case.
+
+### Root cause and verified repair
+
+The original handoff authenticated the evidence object,
+then performed only a current dependency check:
+
+```javascript
+// Private candidate-claim-evidence-sdk-copy/stage-private/child-constructor.mjs:107
+function assertClaimEvidence(input){knownSelection().assertCapturedIdentity(input);assertDependenciesCurrent();}
+```
+
+Retained file comparison in `contract/lifecycle/external-dependency-controls/file-observer.mjs:91`
+compares original path,
+device,
+inode,
+mode,
+and bytes.
+It is a current comparison,
+not a record that a caller's earlier eligibility assertion failed:
+
+```javascript
+// Private contract/lifecycle/native-text-read-contract/dependencies.mjs:78
+function checkRetained(handle) { return revalidate({handle,verify:checkSignal}); }
+```
+
+The enclosing judgment now retains a failure sentinel for its captured evidence:
+
+```javascript
+// Private candidate-claim-evidence-sdk-copy-v2/stage-private/child-constructor.mjs:107
+function assertClaimEvidence(input){
+  knownSelection().assertCapturedIdentity(input);
+  if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});
+  try{assertDependenciesCurrent();}
+  catch(error){
+    evidenceEligibilityFailure=Object.freeze({cause:error});
+    throw error;
+  }
+}
+```
+
+Checking canonical identity first keeps copied or cross-claim records from poisoning genuine evidence.
+A genuine shared-dependency failure retires all captured evidence in that original judgment.
+The object sentinel also retains falsy thrown values rather than treating them as absence of failure.
+This is evidence eligibility,
+not a new registry or a policy verdict.
+
+`proc_d959` checked the canonical-capture owner and its exact identity-guard omission.
+`proc_7bc6` verified the repaired native suffix on SDK 1.0.2 and Node 26.10.0:
+one session,
+two local main requests,
+one fake guard request,
+and zero fixture executions.
+It checked successful validation after inference-clock expiry,
+changed/restored dependency refusal,
+shared-claim retirement,
+copy rejection before retirement checking,
+persisted outcomes,
+source hashes,
+empty worker stderr,
+and disposal.
+`proc_f9b4` independently reconciled both failed namespaces without SDK replay.
+
+### Rejected remedies and filing decision
+
+Do not refresh the old judgment,
+reset its budget,
+use retained JSON as live evidence,
+or waive a stale original request after its successor begins.
+Moving the fixture check into the original callback repaired the placement error only;
+it did not fix restoration eligibility.
+The failure sentinel intentionally requires a new original judgment after a genuine eligibility failure.
+It does not provide filesystem atomicity or detect every unobserved transient source change.
+
+This is owned private integration code.
+No Pi or Gateway fault was established,
+so upstream fixability,
+supported-use-case claims,
+contribution acceptance,
+and willingness do not justify an upstream filing.
+The local repair is prototyped and verified;
+no upstream issue or comment is warranted.
+
 ## Relevance canary and native hook diagnostics
 
 ### Symptoms and separate failures
