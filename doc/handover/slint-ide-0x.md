@@ -443,9 +443,19 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
+- `proc_fe92`,
+  `ide-tree-final-format-verification`,
+  runs formatting,
+  the full library/integration suite,
+  native tests,
+  and package lint after the final tree-windowing and pointer-identity changes.
+- `proc_81e8` stopped cleanly after the light-mode native proofs.
+  No current native probe should be assumed running;
+  check the process list before starting the final smoke check.
+
 - `proc_81e8`,
   `ide-fixed-row-tree-native-proof`,
-  is the active light-mode probe at port 9319,
+  was the completed light-mode probe at port 9319,
   socket `/tmp/monochromatic-ide-native-D6RbFJ/control.sock`.
   Its `interaction.mjs`,
   `focus-reveal.mjs`,
@@ -471,12 +481,16 @@ Only the file context and source remain visible in the normal source-view gate.
   No upstream message was posted and no dependency was patched.
   Original-source controls failed in `proc_2f24`;
   the completed prototype passed five control groups in `proc_3830`.
-- `proc_2879` is running observed-failing identity,
+- `proc_2879` passed observed-failing identity,
   directory admission,
   source-open ordering,
-  and runtime build-boundary guards in the disposable copy at
+  and runtime build-boundary guard controls in the disposable copy at
   `/home/user/temp/agent/ide-tree-guard-zlIbRv/package`.
-  Evidence will be `navigation-results.json` beside that copy.
+  Every baseline passed,
+  removing each guard caused its named assertion to fail,
+  and restoring it passed again.
+  Evidence is `navigation-results.json` beside that copy.
+  This completes the previously outstanding runtime-helper guard-removal probe.
 - `proc_1542` passed 91 library/integration tests and the complete package lint before the final windowing changes.
 
 - `proc_3806`,
@@ -828,9 +842,10 @@ the current source projection still expands tabs using a four-column terminal-wi
 Tab-width parity and mixed-script physical tab geometry are outstanding findings,
 not verified font behavior.
 
-The runtime build helper's configuration-boundary test passes,
-but its guard still needs an observed-failing removal probe in disposable fixtures.
-Do not loosen the guard or touch real user configuration for that verification.
+The runtime helper's configuration-boundary guard was removed only in the disposable copy.
+`runtime_rejects_non_build_configuration_before_writing` failed,
+then passed again after restoration.
+No real user configuration was touched.
 
 The compositor protocol-delivery regression failed with an unflushed sync reply,
 then passed after end-of-dispatch flushing.
