@@ -10,25 +10,47 @@ continue the queue without asking the user to say “continue”.
 The application remains an incomplete read-only workspace reader.
 
 Current boundary:
-finish native combined-search consumer verification and guard controls,
-then implement in-file find.
-The search worker and native overlay are implemented;
-`proc_e023` passed 31 library/search tests and complete package lint.
-`proc_024d` passed all twelve native tests before its unused-import lint failure;
-that import was removed and the following consumer process reran the native gate.
-The dark nested Wayland search probe passes at
-`/tmp/monochromatic-ide-native-H0znPy/search-probe.mjs`.
-Its inspected screenshots cover ordered combined results,
+implement in-file find after the completed combined-search gate.
+`proc_9bf4` passed 119 library/integration tests,
+fourteen native tests,
+and complete package lint.
+`proc_ee06` passed disposable guard-removal controls including result caps at
+`/home/user/temp/agent/ide-search-guard-r46p2u/results.json`.
+The guards cover reply identity,
+result/record limits,
+scope containment,
+EOF cancellation,
+and source focus while a search overlay is open.
+
+The dark and light native search probes pass at
+`/tmp/monochromatic-ide-native-H0znPy/search-probe.mjs` and
+`/tmp/monochromatic-ide-native-YJgXM6/search-probe.mjs`.
+Their inspected screenshots cover ordered combined results,
 selection/copy at source line 120,
 and invalid regex diagnostics alongside a usable filename result.
-The first clipboard probe incorrectly treated a not-yet-published selection as a terminal failure;
-it now waits for the expected isolated clipboard value.
-It never inspects or clears the host clipboard.
-`proc_c872` remains the active dark consumer until its control socket is told to quit.
-Light rendering,
-additional native edge tests,
-search guard-removal controls,
-and in-file find remain next.
+The light `search-edge-probe.mjs` also verifies actual tree-directory scoping,
+failed binary-file retention,
+recovery,
+and outside-click dismissal.
+The first clipboard probe treated a not-yet-published selection as terminal failure;
+the corrected probe waits for the expected isolated clipboard value.
+No host clipboard is inspected or cleared.
+Both native consumer processes exited cleanly after socket `quit`;
+there is no active native IDE probe.
+
+Whole-model search row replacement already cancels a held click in Slint 1.18.1.
+The added custom press guard was ineffective and was removed after a rebuilt disposable control still passed.
+The tree's fixed-slot guard remains necessary.
+See [the pointer lifetime investigation](../troubleshooting/slint-repeater-model-pointer-lifetime.md).
+
+In-file find is not implemented yet.
+Fresh reference reads confirm that editord delegates Ctrl+F to real Chrome's find-in-page,
+rather than implementing another regular-expression search widget.
+`inspect:find-reference` now probes synthetic Unicode/whitespace cases in an isolated browser profile.
+Its current process is `proc_53b2`;
+inspect its terminal result before choosing the native matching semantics.
+It closes its own browser session in `finally`.
+The probe's `Window.find` path is non-standard and is not itself proof of every Chrome toolbar behavior.
 
 Historical navigation verification:
 The read-only workspace model's five tests and the lazy tree model's eight tests pass.
@@ -52,8 +74,8 @@ formatting,
 ten native tests,
 and package lint pass.
 The final dark native smoke also passes with the click guard installed.
-Continue combined path/content search and in-file find.
-New identity/admission and file-open-generation guard controls remain to be exercised in the disposable copy.
+This navigation checkpoint preceded the combined-search gate.
+Identity/admission and file-open-generation guard controls subsequently passed in the disposable copy.
 The procedural-macro and variable-font paths now both pass native font isolation.
 Continue annotations and language intelligence after workspace navigation.
 Actual TypeScript/Rust syntax is now wired and the highlighted native screenshot was inspected.
@@ -154,11 +176,9 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
   source rendering,
   and smooth-wheel acceptance.
 - [x] Implement live external refresh and exercise both supplied correspondence examples through the GUI.
-- [ ] Implement tree,
-  search,
-  in-file find,
-  file switching,
-  and native recent-file reveal/badges.
+- [x] Implement native tree, file switching, and recent-file reveal/badges.
+- [x] Implement combined path/content search and verify it in dark/light native sessions.
+- [ ] Implement in-file find.
 - [ ] Implement runtime syntax and language-server paths:
   definition,
   references,

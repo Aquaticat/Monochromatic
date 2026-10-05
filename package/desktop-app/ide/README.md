@@ -19,7 +19,8 @@ and the next implementation action.
   asynchronous file switching,
   and recent-file reveal.
   Sidebar resizing and event-driven directory invalidation remain parity work.
-- [ ] Combined path/content search and in-file find.
+- [x] Combined path/content search.
+- [ ] In-file find.
 - [ ] Required language-intelligence feature paths.
 - [ ] Measured Helix-supported language inventory and private server state.
 - [ ] Native interaction tests and behavior-difference documentation.
@@ -69,8 +70,9 @@ inherited ripgrep configuration,
 preprocessors,
 and archive decompression are disabled.
 Canonical scope validation is not an OS-enforced filesystem sandbox.
-Native search verification is still in progress;
-in-file find is not implemented yet.
+Native dark/light input and clipboard probes verify result opening and content-line navigation.
+Headless tests cover late replies, close cancellation, pending-open focus, and result-model pointer lifetime.
+In-file find is not implemented yet.
 
 ## Fonts and appearance
 
