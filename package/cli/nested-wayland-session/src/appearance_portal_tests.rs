@@ -141,13 +141,16 @@ fn runtime_switch_emits_setting_changed_only_for_real_changes() -> anyhow::Resul
     let proxy = settings_proxy(&portal)?;
     // Subscribe before switching, as Slint subscribes before its initial read.
     let signals = proxy.receive_signal("SettingChanged")?;
+    let reader = settings_proxy(&portal)?;
     let (sender, receiver) = mpsc::sync_channel(8);
     // The blocking iterator has no timeout, so a helper thread forwards into a bounded wait.
     let _forwarder = std::thread::Builder::new()
         .name("setting-changed-forwarder".to_owned())
         .spawn(move || {
             for message in signals {
-                if sender.send(message).is_err() {
+                // Read back at notification time, as a client that re-reads on change would.
+                let read_back = served_values(&reader);
+                if sender.send((message, read_back)).is_err() {
                     return;
                 }
             }
@@ -155,9 +158,11 @@ fn runtime_switch_emits_setting_changed_only_for_real_changes() -> anyhow::Resul
 
     assert_eq!(portal.set_color_scheme(ColorSchemePreference::Dark)?, SwitchOutcome::Unchanged);
     assert_eq!(portal.set_color_scheme(ColorSchemePreference::Light)?, SwitchOutcome::Changed);
-    let first = receiver
+    let (first, first_read_back) = receiver
         .recv_timeout(SIGNAL_TIMEOUT)
         .context("no SettingChanged arrived after switching dark to light")?;
+    // The served value must already be the announced one when the signal is delivered.
+    assert_eq!(first_read_back?, [2, 2, 2]);
     assert_eq!(
         decode_setting_changed(&first)?,
         (APPEARANCE_NAMESPACE.to_owned(), COLOR_SCHEME_KEY.to_owned(), 2, "ssv".to_owned()),
@@ -165,9 +170,10 @@ fn runtime_switch_emits_setting_changed_only_for_real_changes() -> anyhow::Resul
 
     assert_eq!(portal.set_color_scheme(ColorSchemePreference::Light)?, SwitchOutcome::Unchanged);
     assert_eq!(portal.set_color_scheme(ColorSchemePreference::Dark)?, SwitchOutcome::Changed);
-    let second = receiver
+    let (second, second_read_back) = receiver
         .recv_timeout(SIGNAL_TIMEOUT)
         .context("no SettingChanged arrived after switching light to dark")?;
+    assert_eq!(second_read_back?, [1, 1, 1]);
     assert_eq!(
         decode_setting_changed(&second)?,
         (APPEARANCE_NAMESPACE.to_owned(), COLOR_SCHEME_KEY.to_owned(), 1, "ssv".to_owned()),

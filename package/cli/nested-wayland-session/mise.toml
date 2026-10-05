@@ -34,6 +34,93 @@ const containerCargo = (cargoArgs) => {
 const runCargo = (cargoArgs) => { if (hostOk) { execFileSync('cargo', cargoArgs, { stdio: 'inherit' }) } else { containerCargo(cargoArgs) } }
 """
 
+# Shared body for hosted inspection clients (interpolated inside an async function whose
+# source is passed to a nested `node -e`). It provides:
+# - until(label, probe): poll until probe() is truthy, failing after ten seconds.
+# - control(socketPath, line): send one control command, resolve with its response line.
+# - startViewer(evidence): show a Slint scene through slint-viewer whose scheme-seen callback
+#   reports every Palette.color-scheme value the toolkit applies. slint-viewer runs the --on
+#   handler as a plain command, so the report arrives on the viewer's stdout.
+# - screenshot(socketPath, evidence, name): write a PNG and return its SHA-256.
+# - firstFrame(socketPath, evidence, emptyHash): wait until the client has committed a frame.
+# Literal ''' strings keep JavaScript escapes such as '\n' out of TOML's own escaping.
+slint_scheme_probe = '''
+  const { spawn, spawnSync } = await import('node:child_process')
+  const { once } = await import('node:events')
+  const { createConnection } = await import('node:net')
+  const { readFileSync, readdirSync, writeFileSync, mkdirSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const { createHash } = await import('node:crypto')
+  const { setTimeout: wait } = await import('node:timers/promises')
+  const { default: assert } = await import('node:assert/strict')
+  // Time for the client to draw and commit after it reports a value.
+  const settle = 400
+  const until = async (label, probe, limit = 10000) => {
+    const started = performance.now()
+    while (performance.now() - started < limit) {
+      const value = probe()
+      if (value) return value
+      await wait(25)
+    }
+    assert.fail('timed out waiting for ' + label)
+  }
+  const control = (socketPath, line) => new Promise((resolve, reject) => {
+    const socket = createConnection(socketPath)
+    let reply = ''
+    socket.on('error', reject)
+    socket.on('data', chunk => {
+      reply += chunk
+      if (reply.includes('\n')) { socket.end(); resolve(reply.trim()) }
+    })
+    socket.write(line + '\n')
+  })
+  const startViewer = evidence => {
+    const scene = join(evidence, 'scene.slint')
+    writeFileSync(scene, [
+      'import { Palette } from "std-widgets.slint";',
+      'export component Scene inherits Window {',
+      '    callback scheme-seen(string);',
+      '    property <string> scheme: Palette.color-scheme == ColorScheme.dark ? "dark"',
+      '        : Palette.color-scheme == ColorScheme.light ? "light" : "unknown";',
+      '    background: Palette.background;',
+      '    init => { root.scheme-seen(root.scheme); }',
+      '    changed scheme => { root.scheme-seen(root.scheme); }',
+      '    Text {',
+      '        text: "Palette.color-scheme: " + root.scheme;',
+      '        color: Palette.foreground;',
+      '        font-size: 28px;',
+      '    }',
+      '}',
+      '',
+    ].join('\n'))
+    const viewer = spawn('slint-viewer', ['--on', 'scheme-seen', 'echo scheme-seen $1', scene], { stdio: ['ignore', 'pipe', 'inherit'] })
+    const output = []
+    viewer.stdout.on('data', chunk => output.push(chunk))
+    const reported = () => Buffer.concat(output).toString()
+    const seen = () => reported().split('\n').filter(line => line.startsWith('scheme-seen ')).map(line => line.slice(12))
+    const stop = async () => {
+      viewer.kill()
+      if (viewer.exitCode === null && viewer.signalCode === null) await once(viewer, 'exit')
+    }
+    return { reported, seen, stop }
+  }
+  const screenshot = async (socketPath, evidence, name) => {
+    const path = join(evidence, name + '.png')
+    assert.equal(await control(socketPath, 'screenshot ' + path), 'ok')
+    return createHash('sha256').update(readFileSync(path)).digest('hex')
+  }
+  // The toolkit reports its first value before its first frame is committed, so poll until
+  // the screenshot stops being the empty screen captured before the client started.
+  const firstFrame = async (socketPath, evidence, emptyHash) => {
+    const started = performance.now()
+    while (performance.now() - started < 10000) {
+      if (await screenshot(socketPath, evidence, 'first-frame') !== emptyHash) return
+      await wait(50)
+    }
+    assert.fail('timed out waiting for the client to commit its first frame')
+  }
+'''
+
 [tasks.image]
 description = "Build the Fedora build container image"
 run = "podman build -t localhost/monochromatic/nested-wayland-session -f Containerfile ."
@@ -184,6 +271,237 @@ execFileSync('./target/release/monochromatic-nested-wayland-session', [
   'await (' + client.toString() + ')()', '--', process.env.WAYLAND_DISPLAY ?? '',
 ], { stdio: 'inherit' })
 """
+
+[tasks."inspect:color-scheme"]
+description = "Verify the runtime color-scheme switch on the private bus with a bus monitor, a Slint client, screenshots, and a decoy session bus"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn, spawnSync } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdtempSync, writeFileSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { setTimeout: wait } = await import('node:timers/promises')
+const { default: assert } = await import('node:assert/strict')
+// Runs inside the nested session as the hosted command.
+const client = async () => {
+{{vars.slint_scheme_probe}}
+  const [hostDisplay, decoyAddress, socketPath, evidence] = process.argv.slice(1)
+  const privateAddress = process.env.DBUS_SESSION_BUS_ADDRESS ?? String()
+  assert(process.env.WAYLAND_DISPLAY)
+  assert.notEqual(process.env.WAYLAND_DISPLAY, hostDisplay)
+  assert.equal(process.env.DISPLAY, undefined)
+  assert.match(privateAddress, /monochromatic-nested-wayland-session-/)
+  assert.notEqual(privateAddress, decoyAddress)
+  assert.equal(process.env.DBUS_STARTER_ADDRESS, undefined)
+  const portal = ['--session', '--dest', 'org.freedesktop.portal.Desktop', '--object-path', '/org/freedesktop/portal/desktop']
+  const served = () => {
+    const result = spawnSync('gdbus', ['call', ...portal, '--method', 'org.freedesktop.portal.Settings.ReadOne', 'org.freedesktop.appearance', 'color-scheme'], { timeout: 3000 })
+    assert.equal(result.status, 0, result.stderr.toString())
+    return result.stdout.toString().trim()
+  }
+  // Bus-level observer: every signal the private portal emits, in order.
+  const monitor = spawn('gdbus', ['monitor', ...portal], { stdio: ['ignore', 'pipe', 'inherit'] })
+  const monitorOutput = []
+  monitor.stdout.on('data', chunk => monitorOutput.push(chunk))
+  const monitored = () => Buffer.concat(monitorOutput).toString()
+  const signals = () => monitored().split('\n').filter(line => line.includes('SettingChanged'))
+  // Mean luminance of one background pixel in the last frame of a short recording.
+  const frame = async name => {
+    const directory = join(evidence, 'frames-' + name)
+    mkdirSync(directory)
+    assert.equal(await control(socketPath, 'record ' + directory + ' 20 bmp'), 'ok')
+    await wait(500)
+    assert.match(await control(socketPath, 'record stop'), /^ok captured=/)
+    const bytes = readFileSync(join(directory, readdirSync(directory).sort().at(-1)))
+    const pixel = bytes.readUInt32LE(10) + 4 * 9
+    return (bytes[pixel] + bytes[pixel + 1] + bytes[pixel + 2]) / 3
+  }
+  const empty = await screenshot(socketPath, evidence, 'empty')
+  // Toolkit-level observer: Slint reports each Palette.color-scheme value it applies.
+  const viewer = startViewer(evidence)
+  const { seen } = viewer
+  try {
+    await until('the bus monitor to attach', () => monitored().includes('Monitoring signals'))
+    await until('Slint to apply the startup scheme', () => seen().at(-1) === 'dark')
+    assert.equal(served(), '(<uint32 1>,)')
+    const startup = seen().length
+
+    // Phase one never records, so each screenshot shows only what the client committed unprompted.
+    await firstFrame(socketPath, evidence, empty)
+    await wait(settle)
+    const darkShot = await screenshot(socketPath, evidence, 'dark')
+    // Negative control: the value already served changes nothing and emits nothing.
+    assert.equal(await control(socketPath, 'color-scheme dark'), 'ok unchanged')
+    // Positive control: a real change reaches the bus monitor and the toolkit.
+    assert.equal(await control(socketPath, 'color-scheme light'), 'ok changed')
+    await until('Slint to apply light', () => seen().at(-1) === 'light')
+    await until('the light signal', () => signals().length >= 1)
+    assert.equal(served(), '(<uint32 2>,)')
+    await wait(settle)
+    const lightShot = await screenshot(socketPath, evidence, 'light')
+    assert.notEqual(lightShot, darkShot, 'screenshot did not change after the switch to light')
+
+    assert.equal(await control(socketPath, 'color-scheme light'), 'ok unchanged')
+    assert.equal(await control(socketPath, 'color-scheme dark'), 'ok changed')
+    await until('Slint to apply dark again', () => seen().length === startup + 2 && seen().at(-1) === 'dark')
+    await until('the dark signal', () => signals().length >= 2)
+    assert.equal(served(), '(<uint32 1>,)')
+    await wait(settle)
+    const darkAgainShot = await screenshot(socketPath, evidence, 'dark-again')
+    assert.notEqual(darkAgainShot, lightShot, 'screenshot did not change after the switch back to dark')
+    assert.equal(darkAgainShot, darkShot, 'the first dark screenshot was not the frame the client shows for dark')
+
+    // Signals arrive in order, so exactly these two prove both unchanged requests emitted nothing.
+    assert.deepEqual(signals().map(line => line.replace(/^.*SettingChanged /, String())), [
+      "('org.freedesktop.appearance', 'color-scheme', <uint32 2>)",
+      "('org.freedesktop.appearance', 'color-scheme', <uint32 1>)",
+    ])
+    assert.deepEqual(seen().slice(startup), ['light', 'dark'])
+    assert.match(await control(socketPath, 'color-scheme system'), /^err color-scheme value must be dark or light/)
+
+    // Phase two reads pixels from recorded frames, an independent capture path.
+    const darkLuminance = await frame('dark')
+    assert(darkLuminance < 96, 'dark frame luminance ' + darkLuminance)
+    assert.equal(await control(socketPath, 'color-scheme light'), 'ok changed')
+    await until('Slint to apply light again', () => seen().at(-1) === 'light')
+    const lightLuminance = await frame('light')
+    assert(lightLuminance > 160, 'light frame luminance ' + lightLuminance)
+
+    writeFileSync(join(evidence, 'private-bus-monitor.log'), monitored())
+    writeFileSync(join(evidence, 'slint-seen.log'), viewer.reported())
+    console.log('Slint observed: ' + seen().join(' -> '))
+    console.log('Private bus signals: ' + signals().length + '; the two unchanged requests emitted none')
+    console.log('Screenshots without recording: dark ' + darkShot.slice(0, 12) + ', light ' + lightShot.slice(0, 12) + ', dark ' + darkAgainShot.slice(0, 12))
+    console.log('Recorded frame luminance: dark ' + darkLuminance + ', light ' + lightLuminance)
+  } finally {
+    monitor.kill()
+    await viewer.stop()
+  }
+}
+const evidence = mkdtempSync(join(tmpdir(), 'nested-color-scheme-'))
+const socketPath = join(evidence, 'control.sock')
+// A disposable decoy stands in for the host session bus in the compositor's own environment.
+const decoyAddress = 'unix:path=' + join(evidence, 'decoy-bus')
+const decoy = spawn('dbus-daemon', ['--session', '--nofork', '--nopidfile', '--nosyslog', '--print-address=1', '--address=' + decoyAddress], { stdio: ['ignore', 'pipe', 'inherit'] })
+let failure
+try {
+  await once(decoy.stdout, 'data')
+  const watcher = spawn('dbus-monitor', ['--address', decoyAddress], { stdio: ['ignore', 'pipe', 'inherit'] })
+  const watcherOutput = []
+  watcher.stdout.on('data', chunk => watcherOutput.push(chunk))
+  const watched = () => Buffer.concat(watcherOutput).toString()
+  const untilWatched = async text => {
+    const started = performance.now()
+    while (!watched().includes(text) && performance.now() - started < 3000) await wait(25)
+    assert(watched().includes(text), 'decoy session bus watcher did not report ' + text)
+  }
+  try {
+    await untilWatched('NameAcquired')
+    const session = spawn('./target/release/monochromatic-nested-wayland-session', [
+      '--size', '640x240', '--socket', socketPath, '--color-scheme', 'dark', '--',
+      'node', '--input-type=module', '-e', 'await (' + client.toString() + ')()', '--',
+      process.env.WAYLAND_DISPLAY ?? String(), decoyAddress, socketPath, evidence,
+    ], { stdio: 'inherit', env: { ...process.env, DBUS_SESSION_BUS_ADDRESS: decoyAddress } })
+    const [code] = await once(session, 'exit')
+    assert.equal(code, 0, 'nested color-scheme client failed')
+    // Positive control: the watcher must see a deliberate environment-addressed connection.
+    const sentinel = spawnSync('dbus-send', ['--session', '--type=signal', '/sentinel', 'org.example.Sentinel.Ping'], {
+      timeout: 3000, env: { ...process.env, DBUS_SESSION_BUS_ADDRESS: decoyAddress },
+    })
+    assert.equal(sentinel.status, 0, sentinel.stderr.toString())
+    await untilWatched('member=Ping')
+    writeFileSync(join(evidence, 'decoy-session-bus.log'), watched())
+    // Every connection must call Hello first, so one Hello before the sentinel signal is the sentinel itself.
+    const beforeSentinel = watched().slice(0, watched().indexOf('member=Ping'))
+    assert.equal(beforeSentinel.split('member=Hello').length - 1, 1,
+      'something other than the sentinel connected to the decoy session bus')
+    assert(!watched().includes('SettingChanged'), 'a SettingChanged signal reached the decoy session bus')
+    console.log('Decoy session bus saw only the sentinel connection; no portal traffic left the private bus')
+  } finally {
+    watcher.kill()
+  }
+} catch (error) {
+  failure = error
+} finally {
+  decoy.kill()
+}
+console.log('Evidence: ' + evidence)
+if (failure) throw failure
+console.log('Nested runtime color-scheme switch verified')
+'''
+
+[tasks."inspect:stalled-parent"]
+description = "Verify screenshots stay current while a parent compositor withholds frame callbacks, by hosting one session inside another"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdtempSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { default: assert } = await import('node:assert/strict')
+// Runs inside the inner session as its hosted command.
+const client = async () => {
+{{vars.slint_scheme_probe}}
+  const [outerSocket, innerSocket, evidence] = process.argv.slice(1)
+  const empty = await screenshot(innerSocket, evidence, 'empty')
+  const viewer = startViewer(evidence)
+  const { seen } = viewer
+  const switchTo = async (value, count) => {
+    assert.equal(await control(innerSocket, 'color-scheme ' + value), 'ok changed')
+    await until('Slint to apply ' + value, () => seen().length === count && seen().at(-1) === value)
+    await wait(settle)
+  }
+  let recording = false
+  try {
+    await until('Slint to apply the startup scheme', () => seen().at(-1) === 'dark')
+    const startup = seen().length
+    await firstFrame(innerSocket, evidence, empty)
+    await wait(settle)
+    // One frame every ten seconds: the outer session now withholds frame callbacks from the
+    // inner one, which is what a locked or hidden host window does to a single session.
+    const frames = join(evidence, 'outer-frames')
+    mkdirSync(frames)
+    assert.equal(await control(outerSocket, 'record ' + frames + ' 0.1 bmp'), 'ok')
+    recording = true
+    const starved = performance.now()
+    await wait(600)
+    const dark = await screenshot(innerSocket, evidence, 'starved-dark')
+    await switchTo('light', startup + 1)
+    const light = await screenshot(innerSocket, evidence, 'starved-light')
+    await switchTo('dark', startup + 2)
+    const darkAgain = await screenshot(innerSocket, evidence, 'starved-dark-again')
+    await switchTo('light', startup + 3)
+    const lightAgain = await screenshot(innerSocket, evidence, 'starved-light-again')
+    const elapsed = Math.round(performance.now() - starved)
+    assert(elapsed < 8000, 'the starved phase outlived one outer recording period: ' + elapsed + ' ms')
+    console.log('Starved screenshots: dark ' + dark.slice(0, 12) + ', light ' + light.slice(0, 12)
+      + ', dark ' + darkAgain.slice(0, 12) + ', light ' + lightAgain.slice(0, 12) + ' in ' + elapsed + ' ms')
+    // A client may still draw its first change unprompted; the later ones need frame callbacks.
+    assert.notEqual(light, dark, 'inner screenshot did not change after the first switch')
+    assert.equal(darkAgain, dark, 'inner screenshot is stale after the second switch')
+    assert.equal(lightAgain, light, 'inner screenshot is stale after the third switch')
+  } finally {
+    if (recording) await control(outerSocket, 'record stop')
+    await viewer.stop()
+  }
+}
+const binary = './target/release/monochromatic-nested-wayland-session'
+const evidence = mkdtempSync(join(tmpdir(), 'nested-stalled-parent-'))
+const outerSocket = join(evidence, 'outer.sock')
+const innerSocket = join(evidence, 'inner.sock')
+const session = spawn(binary, [
+  '--size', '640x240', '--socket', outerSocket, '--',
+  binary, '--size', '640x240', '--socket', innerSocket, '--color-scheme', 'dark', '--',
+  'node', '--input-type=module', '-e', 'await (' + client.toString() + ')()', '--',
+  outerSocket, innerSocket, evidence,
+], { stdio: 'inherit' })
+const [code] = await once(session, 'exit')
+console.log('Evidence: ' + evidence)
+assert.equal(code, 0, 'the inner session did not keep its client current while its parent withheld frames')
+console.log('Hosted client stays current while the parent compositor withholds frame callbacks')
+'''
 
 [tasks."run:built"]
 description = "Run the already-built release compositor without rebuilding"
