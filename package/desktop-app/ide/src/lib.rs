@@ -51,6 +51,9 @@ pub mod workspace;
 /// Lazy tree rows and expansion state consume background directory snapshots without I/O.
 pub mod file_tree;
 
+/// Bounded background directory reads apply only current tree-request replies.
+pub mod directory_worker;
+
 /// Unmodified variable and real italic font assets with stable source-font identities.
 pub mod font_asset;
 
