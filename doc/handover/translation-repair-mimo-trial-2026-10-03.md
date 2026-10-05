@@ -683,6 +683,45 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  04:45 UTC:
+  `corpus-run/published` re-verified and CLOSED
+  (the ledger's
+  `PUBLISHED-PAGE RE-VERIFICATION` paragraph):
+  the three incumbent-map fallbacks dead
+  (`wouldShipTextPerSlice` walks the same
+  `artifact.comparison` the map is built from)
+  and narrowed,
+  the filled-anchor caveat covered
+  with its distinguishing message pair,
+  and the unweighable guard
+  an `unreachable:` throw
+  whose line stays cold by design.
+  One WR5 slip in a comment
+  caught by the scan and fixed forward.
+  Gates at the close:
+  1,564 [PASS] and no [FAIL],
+  35 source scans and no [FAIL].
+
+  The left-open list stands at:
+  `declined`'s shape reasons,
+  `corpus-run/runs`' unconstructible claims,
+  `transient`'s abort siblings,
+  `corpus-run/name`'s comma arm
+  and map fallback,
+  `edit`'s single-name join,
+  and the `model-card-derive` data-invariant guard
+  (its cause named,
+  unconstructible).
+  Each takes the byte-level method
+  next round.
+
+  Next:
+  re-verify `declined`
+  (`declined-target-runs.ts`)
+  with the byte-level method,
+  then the rest in the ranking's order.
+
+- 2026-10-05,
   04:22 UTC:
   the next batch's baseline census taken at commit `744aa0d40`:
   `census written to ~/.cache/translation-repair/coverage/census-DJtsdw/census.json`

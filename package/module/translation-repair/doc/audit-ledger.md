@@ -7305,6 +7305,33 @@ Suite at the close:
 1,564 [PASS] and no [FAIL];
 35 source scans and no [FAIL].
 
+PUBLISHED-PAGE RE-VERIFICATION (2026-10-05):
+the incumbent-map fallbacks
+(`published-page-check.ts` 179,
+196,
+236)
+are dead:
+`wouldShipTextPerSlice` walks the same
+`artifact.comparison` the map is built from
+(an earlier fixture cut the comparison
+and the results proved identical),
+and they became `nonNullishOrThrow`.
+The filled-anchor caveat
+(`published-page-disagreement.ts` 99 to 100)
+now has its case,
+its message pair distinguishing the floor
+from the outright comparison.
+The unweighable guard (552)
+cannot fire after the refutes check
+(`pageWeightRefutes` returns false for unweighable)
+but narrows the types,
+so it became an `unreachable:` throw,
+its line cold by design
+(ledger M112's shape).
+One position word left a comment
+and the position-reference scan caught it (WR5),
+fixed forward.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
