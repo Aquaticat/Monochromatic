@@ -211,7 +211,21 @@ Undo/log intent,
 full diagnostic read-back and unchanged player geometry.
 Recorded fields were restored and the owner exited cleanly.
 The successful bounded run is not an isolated root-cause diagnosis.
-Final held-pose acquisition now keeps this configuration fixed,
+The first final inner acquisition was again blocked by a startup System UI
+window and rejected before publication.
+The harness had been force-stopping the entire app process between scenes
+and rewriting environment settings even when their requested values matched.
+It now reads before changing settings and uses the inspected
+`FLAG_ACTIVITY_CLEAR_TOP` path to recreate the default-mode debug activity
+with new intent data while retaining its process.
+Every captured scene still requires the exact fresh entry marker.
+A bounded,
+recorded preflight settles only the observed system-package startup dialogs;
+no dialog dismissal occurs during accepted acquisition.
+This is a harness correction to test,
+not an asserted ANR root cause.
+
+Final held-pose acquisition keeps the runtime configuration fixed,
 with actual adapter,
 library environment,
 image fingerprint and measured system insets in each new record.
