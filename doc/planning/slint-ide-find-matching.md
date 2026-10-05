@@ -89,11 +89,57 @@ shadow-tree,
 ruby,
 or DOM block-boundary behavior.
 
+## Comparison result
+
+`inspect:find-regex` (`proc_6c18`) ran the already adopted Helix `regex` engine
+against the captured corpus in `tests/fixture/browser-find.json`.
+Every query is escaped as a literal
+and the builder enables Unicode case-insensitive matching,
+so the comparison isolates matching semantics from pattern syntax.
+Positive and negative controls are asserted inside the test.
+
+The engines agree on 16 of 29 cases:
+literal and negative controls,
+ASCII case,
+regex metacharacters,
+significant spaces,
+CJK,
+final sigma,
+newline and tab literals,
+empty patterns,
+and the small-kana,
+voicing,
+soft-hyphen-only,
+and half-expansion negatives.
+
+They differ on 13 cases:
+
+- `canonical-accent`, `plain-accent`: browser folds decomposed accents.
+- `case-expansion`: `STRASSE` matches `Straße`.
+- `compatibility-ligature`: `office` matches `oﬃce`.
+- `dotted-i`: `i` matches `İ`.
+- `nbsp-as-space`: ordinary space matches NBSP.
+- `kana-script`, `kana-width`, `kana-composed`: browser folds kana
+  script/width and composed versus combining voicing marks.
+- `single-quote`, `double-quote`: browser folds curly and straight quotes.
+- `soft-hyphen`: browser makes soft hyphen ignorable inside a word.
+- `combining-mark-only`: browser rejects a lone combining mark while
+  regex matches it, so this is a false positive in the incumbent.
+
+Conclusion:
+literal escaping plus Unicode case folding does not reproduce
+Chrome's ICU collation search.
+The matcher must be selected through the technology-vetting workflow
+before any `Cargo.toml` change.
+
 ## Next verification
 
-- Run `inspect:find-regex` to measure the existing Helix regex engine against the captured corpus.
-  It escapes all query punctuation and enables Unicode case-insensitive matching;
-  it does not assume that this equals collation search.
-- Probe editord's one-div-per-line structure before treating multiline queries as accepted native behavior.
-- Freeze candidate discovery and run the technology-vetting workflow before recommending another matching dependency.
-- Keep UI and worker design independent of any unadopted matcher choice.
+- [x] Run `inspect:find-regex` to measure the existing Helix regex engine
+  against the captured corpus.
+  Result recorded in “Comparison result”.
+- [ ] Probe editord's one-div-per-line structure (`editor-pane-dom.ts`,
+  `white-space: pre-wrap`) before treating multiline queries as accepted
+  native behavior.
+- [ ] Freeze candidate discovery and run the technology-vetting workflow
+  before recommending another matching dependency.
+- [ ] Keep UI and worker design independent of any unadopted matcher choice.

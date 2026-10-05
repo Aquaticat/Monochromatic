@@ -21,6 +21,8 @@ and the next implementation action.
   Sidebar resizing and event-driven directory invalidation remain parity work.
 - [x] Combined path/content search.
 - [ ] In-file find.
+  Browser reference semantics are measured and traced to ICU collation search;
+  matcher vetting is next.
 - [ ] Required language-intelligence feature paths.
 - [ ] Measured Helix-supported language inventory and private server state.
 - [ ] Native interaction tests and behavior-difference documentation.
@@ -42,6 +44,7 @@ Failed opens retain the displayed source and do not enter recent-file history.
 Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
 
 [listview]: ../../../doc/troubleshooting/slint-listview-random-seek-offset.md
+[find-matching]: ../../../doc/planning/slint-ide-find-matching.md
 
 ## Combined search
 
@@ -73,6 +76,11 @@ Canonical scope validation is not an OS-enforced filesystem sandbox.
 Native dark/light input and clipboard probes verify result opening and content-line navigation.
 Headless tests cover late replies, close cancellation, pending-open focus, and result-model pointer lifetime.
 In-file find is not implemented yet.
+Its reference behavior is Chrome's find-in-page, which editord delegates to the browser.
+Measured semantics and the pinned Chromium source trace are in
+[the find matching plan][find-matching];
+the incumbent regex differs on 13 of 29 captured cases,
+so the matcher is still being vetted.
 
 ## Fonts and appearance
 

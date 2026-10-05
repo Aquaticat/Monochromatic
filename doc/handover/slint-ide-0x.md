@@ -8,6 +8,8 @@ then authorized implementation.
 A checkpoint is not a pause:
 continue the queue without asking the user to say “continue”.
 The application remains an incomplete read-only workspace reader.
+The user paused this session to hand the work to another agent;
+resume the queue on request without waiting for a second authorization.
 
 Current boundary:
 implement in-file find after the completed combined-search gate.
@@ -73,10 +75,71 @@ then follow the actual string-search implementation before choosing a native mat
 ordinary case-insensitive regex matching has not been shown equivalent.
 The pinned source trace and expanded measured corpus are recorded in
 [the find matching plan](../planning/slint-ide-find-matching.md).
-`inspect:find-regex` now measures the already adopted Helix regex engine against that corpus.
 No new matching dependency is adopted.
 Browser matching fidelity follows the existing reference instruction;
-it is not being sent back to the user as a rubber-stamp question.
+it is not a question to send back to the user.
+
+The incumbent gap is measured, not assumed.
+`inspect:find-regex` (`proc_6c18`) runs the already adopted Helix `regex` engine
+against the captured 29-case corpus,
+escaping every query as a literal and enabling Unicode case-insensitive matching.
+It agrees on 16 cases and differs on 13:
+canonical-accent,
+plain-accent,
+case-expansion,
+compatibility-ligature,
+dotted-i,
+nbsp-as-space,
+kana-script,
+kana-width,
+kana-composed,
+single-quote,
+double-quote,
+soft-hyphen,
+and combining-mark-only.
+Ordinary regex matching therefore cannot satisfy the reference semantics.
+
+### Handoff state
+
+Working tree is clean at `f897750b7`.
+No background process,
+native compositor,
+MCP port,
+or browser session remains running.
+Unrelated concurrent commits from other sessions sit in the same history;
+leave them alone and stage only explicit task paths.
+
+Next actions, in order:
+
+1. Probe editord's real one-div-per-line DOM (`editor-pane-dom.ts`,
+   `white-space: pre-wrap` at `editor-pane.styles.ts:64`)
+   for multiline query behavior.
+   The captured corpus uses a `<pre>` element,
+   so multiline semantics are still unmeasured.
+2. Run the choosing-technology vetting workflow for the in-file matcher:
+   candidate ledger,
+   hard gates,
+   equal-depth validation,
+   then scoring.
+   Existing tools first.
+   The incumbent Helix regex is a named approximation candidate
+   with the 13 differences above;
+   any ICU-collation candidate must be cloned and audited before ranking.
+   Do not adopt or edit `Cargo.toml` before the vet report completes.
+3. Implement the native find bar and worker with the selected matcher,
+   keeping match ranges generation-tagged across file reload and navigation.
+4. Continue the remaining queue:
+   annotations/inlay layout,
+   LSP feature paths,
+   sidebar resizing,
+   event-driven directory invalidation,
+   full measured language runtime,
+   project-write confinement,
+   live system-theme change,
+   and physical-output DPI migration.
+
+Do not restart technology selection for the IDE architecture:
+Helix reuse and the standalone Rust/Slint design are approved.
 
 Historical navigation verification:
 The read-only workspace model's five tests and the lazy tree model's eight tests pass.
@@ -192,7 +255,8 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
   Native text/binary clipboard lifecycle checks pass.
   Hosted children no longer inherit X11 fallback variables.
 - [x] Bundle and verify font embedding.
-  Inter Regular/SemiBold and JetBrains Mono Regular are imported by Slint.
+  Official variable roman and genuine italic Inter and JetBrains Mono
+  are imported by Slint from `asset/font`.
   `build.rs` explicitly selects `EmbedResourcesKind::EmbedFiles`.
   Generated Rust embeds/registers the bytes.
   Native fontconfig excludes host copies of those families.
@@ -205,6 +269,9 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
 - [x] Implement native tree, file switching, and recent-file reveal/badges.
 - [x] Implement combined path/content search and verify it in dark/light native sessions.
 - [ ] Implement in-file find.
+  Browser reference semantics are measured and traced to ICU collation search;
+  the incumbent regex differs on 13 of 29 cases.
+  Matcher vetting and the native find UI remain.
 - [ ] Implement runtime syntax and language-server paths:
   definition,
   references,
@@ -513,6 +580,10 @@ Copy is keyboard-only.
 Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
+
+Every managed process exited before this handoff;
+none is running,
+so no MCP port or nested Wayland socket is bound.
 
 - Search backend and transient native overlay are implemented.
   `src/native/navigation/search/` binds double-Shift,

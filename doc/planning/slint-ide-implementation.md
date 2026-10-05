@@ -53,6 +53,10 @@ and resumption details are in [the handover][handover].
   Seven guard-removal controls fail as intended and pass after restoration;
   whole-model pointer cancellation is tested separately as a Slint lifecycle behavior.
 - [ ] In-file find.
+  Reference behavior is measured in Chrome 149.0.7827.54 and traced to ICU collation search;
+  the incumbent Helix regex differs on 13 of 29 captured cases.
+  Matcher vetting and the native find UI remain;
+  see [the find matching plan](slint-ide-find-matching.md).
 - [ ] Complete tree parity:
   resizable sidebar and event-driven directory invalidation beyond the current bounded polling implementation.
 - [ ] Required language-intelligence feature paths and synchronization.
@@ -374,8 +378,11 @@ and prevents treating a regular static font screenshot as complete typography su
 
 ## Next action
 
-Finish the outstanding guard-removal controls and final navigation verification,
-then implement combined path/content search and in-file find.
+Combined path/content search is complete and verified in dark and light native sessions.
+In-file find is next:
+its browser reference semantics are measured and traced to ICU collation search,
+the incumbent regex differs on 13 of 29 captured cases,
+and matcher vetting must finish before any dependency change.
 The tree and file-switching paths now work through actual native input.
 The initial syntax slice is implemented;
 annotations and language intelligence follow the remaining reader navigation features.
