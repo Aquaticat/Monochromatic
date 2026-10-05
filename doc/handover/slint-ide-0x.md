@@ -210,13 +210,39 @@ each owned by one subagent:
   the production launch policy stays the identity policy until the bubblewrap leg lands,
   so neither language branch is integrated onto `main` before it;
   otherwise opening a real project would start unconfined servers that write into it.
-- IDE reaction to a live color-scheme switch in the worktree `.claude/worktrees/ide-live-theme`
-  on branch `feat/ide-live-theme`,
-  native probes on MCP ports 9348 and 9349:
-  a headless theme-change test with a guard control,
-  and dark,
+- IDE reaction to a live color-scheme switch:
+  done,
+  landed on `main` as `f158ae458` and its parent.
+  No IDE source change was needed.
+  `src/native/theme_tests.rs` switches dark,
   light,
-  dark switches in the nested compositor.
+  dark through `SlintContext::set_color_scheme`
+  (the call Slint 1.18.1's portal watcher makes)
+  and requires the live source image to equal a cold render,
+  the scheme's syntax and selected-text ink,
+  match rectangles,
+  and tree,
+  find bar,
+  and divider on the scheme's side;
+  a second test re-tints the accent five times per scheme.
+  Both reach the toolkit through `slint::private_unstable_api`,
+  so a Slint upgrade may break only these tests.
+  Five guard-removal controls failed as named
+  (`~/temp/agent/ide-theme-guard-wGG2mw`).
+  In the nested compositor,
+  `color-scheme light` and `color-scheme dark` repainted within one frame,
+  and the return to dark was byte-identical;
+  twelve recorded switches showed no frame with the new palette over the old source image
+  (frames in `~/temp/agent/live-theme-Z50lLh/evidence/ide-native/`).
+  Gate on the integration branch:
+  43 of 43 native tests,
+  lint.
+  Found along the way:
+  the file tree and combined-search rows still draw selected text with the palette's dark-scheme black on blue
+  (`ui/tree.slint`,
+  `ui/search.slint`),
+  unlike the source view's fill-derived ink;
+  fix them with the same rule.
 - Runtime color-scheme switching in `package/cli/nested-wayland-session`,
   through the private portal only,
   plus a read-only analysis of what the IDE needs for a live switch.
@@ -705,10 +731,9 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
   and tested on `main`;
   see `doc/planning/slint-ide-runtime-languages.md`.
 - [ ] Enforce subprocess project-write confinement.
-- [ ] Verify light mode and live system-theme changes using the private portal,
+- [x] Verify light mode and live system-theme changes using the private portal,
   not host KDE settings.
-  The nested compositor can now switch the private preference at runtime;
-  the IDE-side check remains.
+  Verified on 2026-10-05 headless and in the nested compositor.
 - [ ] Finish scoped formatting,
   Rust documentation/line budgets,
   Clippy,

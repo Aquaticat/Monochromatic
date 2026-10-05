@@ -101,10 +101,12 @@ and resumption details are in [the handover][handover].
   per-server process-id namespace policy);
   see [the write confinement plan](slint-ide-write-confinement.md).
   Implementation and its acceptance tests follow the Language module core.
-- [ ] Light mode and live system-theme changes through the private appearance portal.
+- [x] Light mode and live system-theme changes through the private appearance portal.
   The nested compositor switches the private preference at runtime
-  (`color-scheme dark|light` on its control socket);
-  the IDE's live reaction and a headless theme-change test remain.
+  (`color-scheme dark|light` on its control socket),
+  and the IDE repaints within one frame with no IDE change;
+  headless theme tests with guard controls landed on 2026-10-05.
+  Selected rows in the tree and combined search still need the source view's readable ink.
 - [ ] Complete native integration tests,
   scoped lint,
   packaging,
