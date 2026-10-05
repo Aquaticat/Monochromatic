@@ -125,7 +125,15 @@ The corrected guard checks user-0 UID/package,
 `APPLICATION_SUB_PANEL` kind and the `TrackMenuActivity` parent;
 retained positive and wrong-owner/window-kind controls pass.
 Those initial rejections are not native menu activation failures.
-The corrected gesture/dismissal probe is still in progress.
+The corrected inner/light/100% probe passed:
+actual long press opened the intended row's native menu,
+no underlying row tap fired,
+and Android Back dismissed it while retaining the original root/viewport
+geometry.
+Its measured-inset private crop was visually inspected;
+the complete menu and its inline peak value are visible in that context.
+Large-text long-heading probes on both panels are next;
+the full action/context matrix and publication remain incomplete.
 
 ## Independently verifiable queue
 
