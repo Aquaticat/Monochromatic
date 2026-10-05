@@ -301,10 +301,35 @@ fn reply_overtaken_by_a_reload_or_file_switch_is_dropped() {
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
+    // A file switch at equal revisions: only the file generation tells the reply apart.
+    let before_switch = probe.request(RequestKind::Hover, 3);
+    probe.open(&root.join("other.scripted"), "other file\n");
+    probe.until(
+        "the reply for the previous file to be dropped or delivered",
+        |seen| {
+            return seen.worker.fence_counts().other_file == 1
+                || seen
+                    .replies
+                    .iter()
+                    .any(|reply| return reply.request == before_switch);
+        },
+    );
+    assert!(
+        !probe
+            .replies
+            .iter()
+            .any(|reply| return reply.request == before_switch),
+        "a reply for the previous file was accepted"
+    );
+    // A reload of the same file: only the revision tells the reply apart.
     let overtaken = probe.request(RequestKind::Hover, 3);
     probe.reload("changed text\n");
-    probe.until("the overtaken reply to be dropped", |seen| {
-        return seen.worker.fence_counts().stale_revision == 1;
+    probe.until("the overtaken reply to be dropped or delivered", |seen| {
+        return seen.worker.fence_counts().stale_revision == 1
+            || seen
+                .replies
+                .iter()
+                .any(|reply| return reply.request == overtaken);
     });
     assert!(
         !probe
@@ -319,18 +344,6 @@ fn reply_overtaken_by_a_reload_or_file_switch_is_dropped() {
         panic!("hover produced {:?}", answers[0].outcome);
     };
     assert_eq!(hover.text, "line=changed text char=n");
-    let before_switch = probe.request(RequestKind::Hover, 3);
-    probe.open(&root.join("other.scripted"), "other file\n");
-    probe.until("the reply for the previous file to be dropped", |seen| {
-        return seen.worker.fence_counts().other_file == 1;
-    });
-    assert!(
-        !probe
-            .replies
-            .iter()
-            .any(|reply| return reply.request == before_switch),
-        "a reply for the previous file was accepted"
-    );
 }
 
 /// A `-32801` answer for text that was reloaded meanwhile is not retried; the fence drops it as stale.
@@ -353,8 +366,12 @@ fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
     probe.until_ready();
     let overtaken = probe.request(RequestKind::Hover, 3);
     probe.reload("changed text\n");
-    probe.until("the superseded answer to be dropped as stale", |seen| {
-        return seen.worker.fence_counts().stale_revision == 1;
+    probe.until("the superseded answer to be dropped or delivered", |seen| {
+        return seen.worker.fence_counts().stale_revision == 1
+            || seen
+                .replies
+                .iter()
+                .any(|reply| return reply.request == overtaken);
     });
     assert!(
         !probe

@@ -50,7 +50,8 @@ fn result_for_an_old_revision_is_dropped() {
     };
     assert_eq!(
         fence.verdict(stale, Some(&server("rust-analyzer", 2))),
-        FenceVerdict::StaleRevision
+        FenceVerdict::StaleRevision,
+        "a result for an old revision was accepted"
     );
     assert!(
         !fence.admit(stale, Some(&server("rust-analyzer", 2))),
@@ -67,7 +68,8 @@ fn result_for_an_old_file_generation_is_dropped() {
     };
     assert_eq!(
         fence.verdict(other, Some(&server("rust-analyzer", 2))),
-        FenceVerdict::OtherFile
+        FenceVerdict::OtherFile,
+        "a result for an old file generation was accepted"
     );
     assert!(
         !fence.admit(other, Some(&server("rust-analyzer", 2))),
@@ -84,7 +86,8 @@ fn result_from_a_replaced_server_process_is_dropped() {
     };
     assert_eq!(
         fence.verdict(stamp, Some(&server("rust-analyzer", 1))),
-        FenceVerdict::OldServer
+        FenceVerdict::OldServer,
+        "a result from a replaced server process was accepted"
     );
     assert!(
         !fence.admit(stamp, Some(&server("rust-analyzer", 1))),
