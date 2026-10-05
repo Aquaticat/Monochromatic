@@ -51,6 +51,11 @@ const ALBUM = 'https://example.org/album';
 const PICTURE = 'https://example.org/tabby.jpg';
 
 /**
+ Address holding a balanced pair of parentheses, as an encyclopedia writes a title.
+ */
+const WIKI = 'https://cat.example/wiki/Tabby_(cat)';
+
+/**
  How an archive rendered the home address another way.
  */
 const MOVED = 'https://example.net/tabby';
@@ -182,6 +187,34 @@ await describe({
             expect(scanUrlRuns({
               text: 'the httpd log, then https tabby and https:/tabby, then http://tabby.example/nap',
             },),).toStrictEqual(['http://tabby.example/nap',],);
+          },
+        },),
+
+        it({
+          name: 'KEEPS the closing parenthesis that balances an opening one inside a bare address, as the parse '
+            + 'does, and ends the run at one that balances none, and reads an unclosed pair to the next space',
+          fn: async () => {
+            expect(scanUrlRuns({
+              text: `see ${WIKI} and (${WIKI}) and (see ${WIKI}.) and ${WIKI.slice(0, -1,)} here`,
+            },),).toStrictEqual([
+              WIKI,
+              WIKI,
+              WIKI,
+              'https://cat.example/wiki/Tabby_(cat',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'ENDS a run at sentence punctuation that only closing parentheses follow, as the parse\'s trail '
+            + 'rule does, and keeps punctuation an ordinary character follows',
+          fn: async () => {
+            expect(scanUrlRuns({
+              text: 'see https://cat.example/a_(b.) and https://cat.example/c_(d.e) too',
+            },),).toStrictEqual([
+              'https://cat.example/a_(b',
+              'https://cat.example/c_(d.e)',
+            ],);
           },
         },),
 
@@ -318,6 +351,23 @@ await describe({
         },),
 
         it({
+          name: 'KEEPS the balanced closing parenthesis of an autolink literal, a www literal included, '
+            + 'as the parse reads its address',
+          fn: async () => {
+            expect(markdownDestinations({
+              text: `见 ${WIKI}，然后。\n\nSee (${WIKI}) and www.cat.example/wiki/Tabby_(cat).\n`,
+            },),).toStrictEqual({
+              urls: [
+                WIKI,
+                WIKI,
+                'http://www.cat.example/wiki/Tabby_(cat)',
+              ],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
           name: 'READS NO destination from a link, an image or a definition whose destination is empty',
           fn: async () => {
             expect(markdownDestinations({
@@ -401,6 +451,21 @@ await describe({
             expect(check.dropped,).toStrictEqual([HOME,],);
             expect(check.page,).toHaveLength(2,);
             expect(check.findings,).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS a page writing bare the address a source links explicitly, and the reverse, where the '
+            + 'address holds a balanced pair of parentheses',
+          fn: async () => {
+            expect(droppedDestinations({
+              sourceText: `See [the wiki](${WIKI}) now.`,
+              pageText: `See ${WIKI} now.`,
+            },).dropped,).toStrictEqual([],);
+            expect(droppedDestinations({
+              sourceText: `See ${WIKI} now.`,
+              pageText: `See [the wiki](${WIKI}) now.`,
+            },).dropped,).toStrictEqual([],);
           },
         },),
 

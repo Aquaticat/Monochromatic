@@ -37,6 +37,20 @@ function markers({ count, }: { readonly count: number; },): string {
 }
 
 /**
+ Identifiers of the GFM-or-full-width mentions a text makes, in the scan's order.
+
+ @param text - text to scan
+
+ @returns One identifier per mention
+ */
+function identifiersOf({ text, }: { readonly text: string; },): readonly string[] {
+  return footnoteMentions({ text, },)
+    .map(function identifierOf(mention,): string {
+      return mention.identifier;
+    },);
+}
+
+/**
  A passage citing one note twice in GFM, once with a capital, and once in
  the full-width convention, then defining both; a GFM marker followed by its
  separator in the middle of a line stays a reference.
@@ -76,37 +90,77 @@ await describe({
           },
         },),
         it({
+          name: 'COUNTS NO GFM MARKER SHAPE the parse reads as a code span, an image, a comment or the brackets of a '
+            + 'reference link, and counts one in a code block, which a fragment cannot settle for its page',
+          fn: async () => {
+            const text = [
+              'A `nap [^6]` cat ![cat [^5]](u) <!-- note [^4] --> and [^7][cat] see [^1].',
+              '',
+              '[cat]: https://cat.example/',
+              '',
+              '```',
+              '[^2]',
+              '```',
+              '',
+            ].join('\n',);
+            expect(identifiersOf({ text, },),).toEqual(['1', '2',],);
+          },
+        },),
+        it({
+          name: 'COUNTS NO MARKER SHAPE INSIDE A LITERAL after a Han character or a full stop, and counts one beside a '
+            + 'scheme with no domain or inside a link label',
+          fn: async () => {
+            expect(identifiersOf({ text: '猫见https://cat.example/[^9]x 睡 [^3]', },),).toEqual(['3',],);
+            expect(identifiersOf({ text: '猫.www.c.example/[^7]y 睡 [^3]', },),).toEqual(['3',],);
+            expect(identifiersOf({ text: 'A cat https://[^9]x [^3]', },),).toEqual(['9', '3',],);
+            expect(identifiersOf({ text: 'A [see https://c.example/[^9] here](u) [^3]', },),).toEqual(['9', '3',],);
+          },
+        },),
+        it({
           name: 'READS THE EDGES OF A URL as the parse does: a destination balances its own parentheses and takes a '
-            + 'backslash escape, an upper-case literal and a two-letter scheme are URLs, and a shape no URL starts '
-            + '(an unclosed angle, a scheme of one letter or past its length, a literal glued to a word, an '
-            + 'empty destination, a space inside an angle) leaves its marker counted',
+            + 'backslash escape, may follow whitespace, an upper-case literal and a two-letter scheme are URLs, and a '
+            + 'literal after an opening angle is one though no angle closes it',
           fn: async () => {
             /**
-             Texts whose only marker is a URL's, each paired with whether it counts.
+             Texts whose only marker is a URL's, each paired with the identifiers that count.
              */
             const cases: readonly (readonly [string, readonly string[]])[] = [
               ['[a](https://c.example/(x)[^9]y) [^3]', ['3',],],
               [String.raw`[a](https://c.example/\)[^9]) [^3]`, ['3',],],
               ['A HTTPS://C.EXAMPLE/[^9] [^3]', ['3',],],
               ['A <ab:[^9]> [^3]', ['3',],],
+              ['A [a]( [^9]) [^3]', ['3',],],
+              ['A <https://c.example/[^9]', [],],
+            ];
+            expect(cases.map(function counted([text,],): readonly string[] {
+              return identifiersOf({ text, },);
+            },),).toEqual(cases.map(function expected([, identifiers,],): readonly string[] {
+              return identifiers;
+            },),);
+          },
+        },),
+        it({
+          name: 'COUNTS A MARKER SHAPE NO URL HOLDS: a scheme of one letter or past its length, a literal glued to a '
+            + 'word, an angle destination the parse refuses (a space inside it, a line break, no closing angle), and '
+            + 'a space inside an angle autolink',
+          fn: async () => {
+            /**
+             Texts whose marker the parse reads as a reference, each paired with the identifiers that count.
+             */
+            const cases: readonly (readonly [string, readonly string[]])[] = [
               ['A <a:[^9]> [^3]', ['9', '3',],],
               [`A <${'a'.repeat(33,)}:[^9]> [^3]`, ['9', '3',],],
               ['A xhttps://c.example/[^9] [^3]', ['9', '3',],],
-              ['A [a]( [^9]) [^3]', ['9', '3',],],
               ['A [a](<cat [^9] [^3]', ['9', '3',],],
               ['A [a](<cat\n[^9]> [^3]', ['9', '3',],],
               ['A <https://c.example/ [^9]> [^3]', ['9', '3',],],
               ['A <https://c.example/<[^9]> [^3]', ['9', '3',],],
-              ['A <https://c.example/[^9]', ['9',],],
             ];
-            for (const [text, identifiers,] of cases) {
-              expect(
-                footnoteMentions({ text, },)
-                  .map(function identifierOf(mention,): string {
-                    return mention.identifier;
-                  },),
-              ).toEqual(identifiers,);
-            }
+            expect(cases.map(function counted([text,],): readonly string[] {
+              return identifiersOf({ text, },);
+            },),).toEqual(cases.map(function expected([, identifiers,],): readonly string[] {
+              return identifiers;
+            },),);
           },
         },),
         it({
