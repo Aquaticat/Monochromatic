@@ -238,10 +238,8 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
       start,
       end,
     ), },),);
-    /**
-     The run always consumes at least its scheme, so the scan advances to
-     its end.
-     */
+    // The run always consumes at least its scheme, so the scan advances to
+    // its end.
     at = end;
   }
   return runs;

@@ -251,9 +251,7 @@ export function attachClaimFilers(
       ] {
         return [
           member.claimId,
-          /**
-           Filers of this claim, present since the filter kept the claim.
-           */
+          // Filers of this claim, present since the filter kept the claim.
           nonNullishOrThrow(filers[member.claimId],),
         ];
       },),);
