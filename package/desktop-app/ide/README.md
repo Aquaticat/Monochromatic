@@ -404,6 +404,30 @@ and the same fixtures unconfined as the guard control.
  and edit-refusal guards in a disposable copy
 and checks that their named tests fail.
 
+`inspect:language-lifecycle` opens a file,
+sends one hover,
+closes,
+and lets the worker shut down against the same real confined servers.
+It fails on any ERROR-level record,
+on bare shutdown error text such as `context canceled`,
+and on any leftover process.
+Its second part ends the application process with `SIGKILL`
+and records which server and sandbox processes remain after 0, 1, 5, and 10 seconds.
+The quiet-shutdown checks fail at present, for causes outside this package:
+`helix-lsp` logs server standard-error lines,
+the end of that stream,
+and error responses at ERROR
+(`doc/troubleshooting/helix-lsp-transport-error-level-records.md`);
+the TypeScript 7 server reports its own exit as `context canceled`
+(`doc/troubleshooting/typescript-7-lsp-exit-context-canceled.md`);
+and rust-analyzer warns about a user configuration file that does not exist
+(`doc/troubleshooting/rust-analyzer-notify-missing-user-config.md`).
+`tests/language/quiet.rs` is the scripted-server form in the container suite:
+the enforced test allows `helix-lsp`'s end-of-stream record and nothing else at ERROR,
+and the ignored strict test is the acceptance test for whichever handling is adopted.
+`inspect:language-lifecycle-guards` observes both in a disposable copy,
+together with the worker's shutdown request and its wait for servers to end.
+
 ## Language navigation
 
 In the source view,

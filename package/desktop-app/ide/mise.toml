@@ -479,8 +479,8 @@ for (const family of ['Inter Variable', 'JetBrains Mono']) {
 }
 const socket = join(scratch, 'control.sock')
 // IDE_NATIVE_PROJECT and IDE_NATIVE_FILE open an existing disposable project instead of the generated fixture.
-// Language servers run unconfined and may write into the project they analyze, so only a directory
-// below the system temporary directory is accepted.
+// Language servers run confined and cannot write into the project they analyze; a directory below the
+// system temporary directory is still required, so a session never points real servers at a real project.
 const { realpathSync } = await import('node:fs')
 const { sep } = await import('node:path')
 let project = join(scratch, 'project')
