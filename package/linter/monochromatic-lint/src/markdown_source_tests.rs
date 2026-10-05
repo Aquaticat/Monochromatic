@@ -92,6 +92,35 @@ fn mdx_subtrees_are_not_prose_rule_inputs() {
     );
 }
 
+/// The root has no parent and every other reachable node names the container that lists it.
+#[test]
+fn parents_mirror_child_edges_and_stop_at_the_root() {
+    let document: MarkdownSource = MarkdownSource::new(
+        String::from("nested.md"),
+        String::from("> - **deep** text\n\nplain\n"),
+        false,
+    )
+    .expect("nested parse");
+    // The root is checked first and without any ancestor walk: a wrong answer fails here instead of spinning.
+    assert_eq!(document.parent(0), None);
+    // Count the edges so an empty traversal cannot pass silently.
+    let mut edges: usize = 0;
+    for id in document.all_nodes() {
+        for child in document.children(*id) {
+            edges += 1;
+            assert_eq!(document.parent(*child), Some(*id));
+        }
+    }
+    // Every node except the root is exactly one container's child.
+    assert_eq!(edges, document.all_nodes().len() - 1);
+    // Two fixed upward steps prove distinct containers without an unbounded climb.
+    let strong: u32 = node(&document, MdastNodeType::Strong);
+    let paragraph: u32 = document.parent(strong).expect("strong text sits in a paragraph");
+    assert_eq!(document.kind(paragraph), MdastNodeType::Paragraph);
+    let item: u32 = document.parent(paragraph).expect("the paragraph sits in a list item");
+    assert_eq!(document.kind(item), MdastNodeType::ListItem);
+}
+
 /// Empty source still has a usable root and no invalid range.
 #[test]
 fn empty_source_has_a_valid_root() {
