@@ -41,6 +41,11 @@ async function main() {
     // Their source is not mutated here; exported baseline loading and binary consumers still run.
     '--cargo-test-arg=--skip=rule::frx::compile_tests::builtin_ported_all_compile',
     '--cargo-test-arg=--skip=rule::frx::compile_tests::append_ported_compiles_end_to_end',
+    // Human decision of 2026-10-05, for every scope: these two operator replacements are never tried,
+    // which is how mutation timeouts are handled; `+=` to `-=` stays active.
+    // Each regex is matched against the mutant names `cargo mutants --list` prints.
+    '--exclude-re', String.raw`replace \+= with \*=`,
+    '--exclude-re', 'replace -= with /=',
   ];
   const files = scope ? scope.files : [
     'scanner.rs', 'load_request.rs', 'scan_finding.rs', 'frx_scan.rs', 'path_scan.rs', 'path_name_bytes.rs',
