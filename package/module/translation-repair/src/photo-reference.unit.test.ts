@@ -264,20 +264,21 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS the earlier opening quote where two stand unpaired, BREAKS the walk at an unclosed one, '
-        + 'and READS NO ASSET where the rest names no asset directory',
+      name: 'READS BOTH ASSETS where the element quotes one with a single mark and the other with a double, '
+        + 'the earlier opening quote kept, and READS NO ASSET where the path names no photos directory',
       fn: async () => {
-        // Elements with an odd quote pair and a path outside the asset directory.
-        expect(photoReferences({
-          text: "<PhotoScroll photos={[ 'sill.jpg' 'tabby.webp' ]} />",
-        },).length,).toBeGreaterThanOrEqual(0,);
-        expect(photoReferences({
-          text: "<PhotoScroll photos={[ 'sill.jpg",
-        },).length,).toBeGreaterThanOrEqual(0,);
-        const notAsset = photoReferences({
-          text: elementOf({ assets: ['elsewhere/cat.webp',], },),
+        const mixed = photoReferences({
+          text: `<PhotoScroll photos={[ '\${path}/photos/tabby.webp', "\${path}/photos/sill.jpg" ]} />`,
         },);
-        expect(notAsset.length,).toBe(0,);
+        expect(mixed.map(function toName(reference,): string {
+          return reference.assetName;
+        },),).toEqual(['tabby.webp', 'sill.jpg',],);
+        const outside = photoReferences({
+          text: `<PhotoScroll photos={[ '\${path}/photos/tabby.webp', '\${path}/elsewhere/cat.webp' ]} />`,
+        },);
+        expect(outside.map(function toName(reference,): string {
+          return reference.assetName;
+        },),).toEqual(['tabby.webp',],);
       },
     },),
   ],
