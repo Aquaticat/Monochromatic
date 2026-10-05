@@ -14,10 +14,14 @@ use crate::native::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, find, navigation,
     reload, render,
 };
-/// The handle, its setup, and the startup rule.
+/// The handle, its setup, the launch policy seam, and the startup rule.
 use ide_app::{
     language::{
-        LanguageWorker, config::LanguageSetup, enter_project_directory, status::ServerState,
+        LanguageWorker,
+        config::LanguageSetup,
+        enter_project_directory,
+        launch::{LaunchPolicy, launch_directly},
+        status::ServerState,
     },
     workspace::Workspace,
 };
@@ -169,10 +173,39 @@ pub(super) struct LanguageReader {
 /// function reader(project: Project, name: string, definitions: string): LanguageReader
 /// ```
 pub(super) fn reader(project: &Project, name: &str, languages: String) -> LanguageReader {
+    // Why direct launch: these tests run in the build container, whose image has no bubblewrap,
+    // so the production policy would refuse every launch; the server here is this crate's own
+    // scripted binary and the project is a disposable directory.
+    return reader_launching(project, name, languages, launch_directly);
+}
+
+/// What: Open `name` of `project` with the scripted server, started through `launch`.
+///       `LaunchPolicy` is a plain function pointer; sibling: a boxed closure, which could carry data.
+/// Why: A test passes a refusing policy to stand in for the production one refusing,
+///      without depending on what the test machine has installed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function readerLaunching(project: Project, name: string, languages: string, launch: LaunchPolicy): LanguageReader
+/// ```
+pub(super) fn reader_launching(
+    project: &Project,
+    name: &str,
+    languages: String,
+    launch: LaunchPolicy,
+) -> LanguageReader {
     enter_project_directory(&project.root).expect("project as working directory");
+    // What: `..LanguageSetup::unconfined()` fills every field not named here from the unconfined setup.
+    // Why: Only the launch policy and the language definitions differ between tests.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const setup = { ...LanguageSetup.unconfined(), launch, extraLanguages: languages };
+    // ```
     let setup = LanguageSetup {
+        launch,
         extra_languages: Some(languages),
-        ..LanguageSetup::default()
+        ..LanguageSetup::unconfined()
     };
     let worker = LanguageWorker::with_setup(&project.root, setup);
     return reader_with(project, name, worker);
