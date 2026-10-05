@@ -15,6 +15,10 @@ and to grill the plan before any code moves.
 - Q2: extract a pi-free core package; both the pi extension and the MCP server become thin adapters.
 - Q4: full behavioral parity for `web_search` and `web_fetch`, blocklist included and non-negotiable.
 - Q5: keep the tool names `web_search` and `web_fetch`, plus a documented one-surface-per-host rule.
+- Q3: valibot single source in core, guarded valibot to TypeBox transform for the pi adapter;
+  `@monochromatic-dev/mcp-stdio` stays unchanged.
+- Q10: the transform is a dependency-free in-repo subset converter with a fail-loud guard
+  and verdict-agreement tests; no third-party converter is adopted.
 
 Recorded without asking (policy or sibling precedent), each open for veto:
 
@@ -31,17 +35,11 @@ Recorded without asking (policy or sibling precedent), each open for veto:
 
 ## Open frontier
 
-- Q3: where the one tool contract is declared.
-  Re-asked with new evidence; the recommended answer is valibot single source with a guarded
-  valibot to TypeBox transform for the pi adapter.
 - Q6: core package home (`package/module/search-fetch` recommended).
 - Q7: truncation ownership (import pi's `truncateHead`, `formatSize`, `withFileMutationQueue` as
   pure utilities recommended).
 - Q8: truncation delivery to MCP hosts (keep the temp path, document the file-read requirement recommended).
 - Q9: registration and verification targets (README snippets plus live verification against one real host recommended).
-- Q10, new and only meaningful if Q3 lands on valibot single source: transform implementation,
-  dependency-free in-repo converter recommended; any third-party candidate first runs the
-  choosing-technology gates.
 
 ## Evidence
 
@@ -87,7 +85,14 @@ It mirrors both tool parameter schemas in valibot and transforms them with `@sin
 - One package carrying both `pi.extensions` and `bin` (round 1 Q2 option C).
   Rejected: one manifest cannot cleanly answer two hosts' packaging conventions.
 
+## Detour: ask_user_question copy
+
+The user noted the `ask_user_question` tool read as one question per call.
+Fixed as a copy-only change (`f863b7805`): the parameter and tool descriptions now state that one call carries
+one free-form string holding any number of questions, and the user answers them together in one multiline answer.
+No schema or implementation change.
+
 ## Next action
 
-Waiting on user answers for Q3, Q6, Q7, Q8, Q9, Q10.
+Waiting on user answers for Q6, Q7, Q8, Q9, re-asked in one `ask_user_question` call.
 After the frontier empties, restate the shared understanding and wait for confirmation before implementing.
