@@ -3,7 +3,7 @@
 /// Fixtures and real key events.
 use super::test_support::{
     address, caret, definition, definitions, eventually, hover, idle, location, popup, project,
-    reader, reader_with, ready,
+    reader, reader_launching, reader_with, ready,
 };
 /// A tree-row lookup shared with the navigation tests.
 use crate::native::navigation_tests::row;
@@ -15,6 +15,8 @@ use crate::native::navigation_tests::row;
 /// const failure = new Error('simulated');
 /// ```
 use anyhow::anyhow;
+/// What a launch policy receives and returns; the refusing policy of one test is written with them.
+use ide_app::language::launch::{LaunchRequest, ServerLaunch};
 /// Hiding the window after the binding was closed.
 use slint::ComponentHandle;
 /// Child processes are read from the process table; elapsed time bounds shutdown.
@@ -58,6 +60,36 @@ fn missing_server_program_is_named_with_its_remedy() {
             && text.ends_with("After installing it, press Ctrl+B again.");
     });
     assert!(reader.window.get_language_popup_note());
+}
+
+/// What: A launch policy that refuses every server. `_request` is deliberately unused.
+///       `Err(...)` is the failure variant of `Result`; `.to_string()` copies the literal into
+///       an owned `String`, which the policy's return type requires (sibling: borrowed `&str`).
+/// Why: The production policy refuses when bubblewrap or namespaces are unavailable and never
+///      falls back to an unconfined launch; this stands in for that with a fixed reason.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const refuse: LaunchPolicy = () => { throw new Error('simulated refusal'); };
+/// ```
+fn refuse(_request: &LaunchRequest) -> Result<ServerLaunch, String> {
+    return Err("simulated refusal".to_string());
+}
+
+/// A refused launch is explained with its reason, and the window keeps working.
+#[test]
+fn refused_launch_is_explained_with_its_reason() {
+    let fixture = project(&[("main.scripted", TEXT)]);
+    let reader = reader_launching(&fixture, "main.scripted", definitions(&[], None), refuse);
+    definition(&reader);
+    eventually("the refused launch was not explained", || {
+        let text = popup(&reader);
+        return text.starts_with("scripted-ls was not started because its launch was refused:")
+            && text.contains("simulated refusal")
+            && text.ends_with("Language features stay off for this file.");
+    });
+    assert!(reader.window.get_language_popup_note());
+    assert!(reader.window.get_source_has_focus());
 }
 
 /// A feature the server does not offer is named.
