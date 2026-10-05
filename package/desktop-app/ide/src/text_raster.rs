@@ -202,7 +202,15 @@ impl TextRaster {
             };
             let origin = (view.viewport.first, horizontal);
             // Every row shares one baseline, so the first row's is the baseline of all of them.
-            paint_underlines(frame, &mut tile, origin, top_row.baseline, factor);
+            paint_underlines(
+                frame,
+                &mut tile,
+                origin,
+                top_row.baseline,
+                factor,
+                &view.selections,
+                colors.selected,
+            );
         }
         return Ok(SourcePixels {
             width: view.width,

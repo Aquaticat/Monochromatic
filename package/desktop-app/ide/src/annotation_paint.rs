@@ -7,6 +7,10 @@
 use crate::annotation_layout::AnnotationFrame;
 /// Severities as the Language module names them.
 use crate::language::diagnostics::Severity;
+/// Selection coverage and ink blending, shared with selected glyphs.
+use crate::selection_paint;
+/// Selection rectangles in logical source coordinates.
+use crate::shaped_row::ReadingRect;
 
 /// What: Repeat length of the wave, dash, and sparse-dot patterns in logical pixels; `f32` is a 32-bit float
 ///       (sibling `f64`).
@@ -97,6 +101,24 @@ fn offset(severity: Severity, along: f32, scale: f32) -> f32 {
     return AMPLITUDE * scale * wave;
 }
 
+/// What: The inks of one run: its severity ink, the selected-text ink, and the physical selection intervals
+///       of its row; `&'a [(f32, f32)]` lends the intervals for as long as the record lives.
+/// Why: A selected underline is drawn in the selected-text ink, as selected glyphs are, because a severity ink
+///      on the selection fill measured as low as 1.16:1; the line style still names the severity.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Pen = { color: Rgba; selected: Rgba; intervals: [number, number][] };
+/// ```
+struct Pen<'a> {
+    /// Severity ink.
+    color: [u8; 4],
+    /// Selected-text ink.
+    selected: [u8; 4],
+    /// Selected physical intervals on the run's row.
+    intervals: &'a [(f32, f32)],
+}
+
 /// What: Draw one underline run over the physical `span` (left and right edge), centered on physical `line`.
 ///       `&mut Tile` lends the tile for writing; `(f32, f32)` is a pair (tuple) of floats.
 /// Why: Each pixel column is covered in proportion to its overlap with the run; rows are whole pixels.
@@ -104,7 +126,7 @@ fn offset(severity: Severity, along: f32, scale: f32) -> f32 {
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function underline(tile: Tile, span: [number, number], line: number, scale: number,
-///   severity: Severity, color: Rgba): void;
+///   severity: Severity, pen: Pen): void;
 /// ```
 fn underline(
     tile: &mut Tile,
@@ -112,7 +134,7 @@ fn underline(
     line: f32,
     scale: f32,
     severity: Severity,
-    color: [u8; 4],
+    pen: &Pen,
 ) {
     let (left, right) = span;
     // Whole pixel rows keep the line in its full ink; a line split over two rows reads as a paler color.
@@ -133,6 +155,9 @@ fn underline(
         if across <= 0.0 || !lit(severity, along, scale) {
             continue;
         }
+        // The selected part of a column takes the selected-text ink, blended by the selected share of the pixel.
+        let covered = selection_paint::coverage(column, pen.intervals);
+        let color = selection_paint::ink(pen.color, pen.selected, covered, 255);
         let center = line + offset(severity, along, scale);
         let top = (center - thickness / 2.0).round() as i32;
         for row in top..top + thickness as i32 {
@@ -153,13 +178,14 @@ fn underline(
 }
 
 /// What: Draw every underline run of `frame` into `tile`. `origin` pairs the first materialized line with the
-///       tile's logical left edge; `baseline` is the rows' common physical baseline, `scale` physical per logical.
+///       tile's logical left edge; `baseline` is the rows' common physical baseline, `scale` physical per logical;
+///       `selections` are the frame's logical selection rectangles and `selected` the selected-text ink.
 /// Why: The frame's runs are already ordered mildest first, so the worst style ends on top of an overlap.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function paintUnderlines(frame: AnnotationFrame, tile: Tile, origin: [first: number, horizontal: number],
-///   baseline: number, scale: number): void;
+///   baseline: number, scale: number, selections: ReadingRect[], selected: Rgba): void;
 /// ```
 pub fn paint_underlines(
     frame: &AnnotationFrame,
@@ -167,6 +193,8 @@ pub fn paint_underlines(
     origin: (usize, f32),
     baseline: f32,
     scale: f32,
+    selections: &[ReadingRect],
+    selected: [u8; 4],
 ) {
     let (first, horizontal) = origin;
     for run in &frame.underlines {
@@ -175,13 +203,20 @@ pub fn paint_underlines(
         let line = row_y + baseline + DROP * scale;
         let left = (run.x - horizontal) * scale;
         let right = (run.x + run.width - horizontal) * scale;
-        underline(
-            tile,
-            (left, right),
-            line,
-            scale,
-            run.severity,
-            frame.colors.severity(run.severity),
-        );
+        let mut intervals = Vec::new();
+        for rectangle in selections {
+            if rectangle.y == run.row as f32 * 24.0 {
+                intervals.push((
+                    (rectangle.x - horizontal) * scale,
+                    (rectangle.x + rectangle.width - horizontal) * scale,
+                ));
+            }
+        }
+        let pen = Pen {
+            color: frame.colors.severity(run.severity),
+            selected,
+            intervals: &intervals,
+        };
+        underline(tile, (left, right), line, scale, run.severity, &pen);
     }
 }

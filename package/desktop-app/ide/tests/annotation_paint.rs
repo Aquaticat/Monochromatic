@@ -245,6 +245,72 @@ fn hint_labels_paint_after_the_line_end_in_the_hint_ink() {
     }
 }
 
+/// Inside a selection the underline keeps its line style but takes the selected-text ink, as selected glyphs do;
+/// outside the selection it keeps the severity ink.
+#[test]
+fn selected_underlines_take_the_selected_ink() {
+    let source = "ABCDEFHIKLMNOTUVWXZ";
+    let mut document = Document::new(source);
+    // `ReadingPosition` selects the first nine characters, as a drag or Shift+Right would.
+    document.select(ide_app::document::ReadingPosition {
+        anchor: 0,
+        head: 9,
+        viewport: 0,
+    });
+    let mut shaper = TextShaper::new();
+    let viewport = Viewport {
+        first: 0,
+        count: 2,
+        width: 700.0,
+        scale: 1.0,
+    };
+    let mut view = shaper.prepare(&document, viewport, &[]);
+    let visible = Visible {
+        labels: Vec::new(),
+        marks: vec![Mark {
+            start: 0,
+            end: 19,
+            severity: Severity::Error,
+        }],
+    };
+    let frame = lay_out(&document, &view, &visible, &mut shaper, LIGHT);
+    view.annotations = Some(frame);
+    let selected = [255, 255, 255, 255];
+    let colors = CodeColors {
+        foreground: [30, 30, 30, 255],
+        selected,
+        dark: false,
+    };
+    let pixels = TextRaster::new()
+        .paint(&view, colors, 0.0)
+        .expect("source tile");
+    let boundary = view.rows[0].caret_x(9, 1.0) as usize;
+    let end = view.rows[0].caret_x(19, 1.0) as usize;
+    let inside = columns(&view, &pixels, (2, boundary - 2), selected);
+    let inside_severity = columns(&view, &pixels, (2, boundary - 2), LIGHT.error);
+    let outside = columns(&view, &pixels, (boundary + 2, end - 2), LIGHT.error);
+    let lit = |list: &Vec<Option<f32>>| return list.iter().flatten().count();
+    println!(
+        "selected underline: {} selected-ink columns and {} error-ink columns inside, {} error-ink columns outside",
+        lit(&inside),
+        lit(&inside_severity),
+        lit(&outside)
+    );
+    assert!(
+        lit(&inside) > 40,
+        "the selected underline is not in the selected ink"
+    );
+    assert_eq!(
+        lit(&inside_severity),
+        0,
+        "the severity ink shows on the selection fill"
+    );
+    assert!(
+        lit(&outside) > 40,
+        "the unselected underline lost its severity ink"
+    );
+}
+
 /// The same marks painted with the light inks contain the light error ink and not the dark one, and back.
 #[test]
 fn annotation_inks_follow_the_scheme() {
