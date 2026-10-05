@@ -72,9 +72,18 @@ description = "Mutate every processor module against the processor tests after f
 depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --processors"
 
+[tasks."mutation:inferred-constants"]
+description = "Mutate generic constant-slot resolution against the whole suite after full container tests and Clippy"
+depends = ["lint:container"]
+run = "node bin/mutate-container.mjs --inferred-constants"
+
 [tasks."mutation:list:markdown"]
 description = "Inspect the Markdown mutant scope without mutating or building source"
 run = "cargo mutants --list --no-config --file 'src/markdown_*.rs'"
+
+[tasks."mutation:list:inferred-constants"]
+description = "Inspect the constant-slot resolver mutant scope without mutating or building source"
+run = "cargo mutants --list --no-config --file src/rust_inferred_constants.rs"
 
 [tasks."test:container"]
 description = "Run artifact tests in a mount-free, network-disabled 2 GiB / 2 CPU container"
@@ -83,6 +92,14 @@ run = "node bin/test-container.mjs"
 [tasks."test:rust-style"]
 description = "Verify the Rust style rule independently of unfinished Markdown adapters, under the same container bounds"
 run = "node bin/test-container.mjs rust_no_anonymous_functions"
+
+[tasks."test:markdown"]
+description = "Run only the Markdown test modules, the same slice the Markdown mutation scope uses, under the container bounds"
+run = "node bin/test-container.mjs markdown"
+
+[tasks."test:inferred-constants"]
+description = "Run only the constant-slot resolver controls under the container bounds"
+run = "node bin/test-container.mjs rust_inferred_constants"
 
 [tasks."test:processors"]
 description = "Verify processors in a mount-free, network-disabled snapshot with cached native dependencies"
