@@ -57,6 +57,16 @@ The separately authorized API36 Google APIs image acquisition targets an
 owned SDK directory and leaves the main SDK read-only.
 Use of that alternate image is a comparison,
 not a declaration that API37 caused the failures.
+The installed `sdkmanager` delegates to Android CLI;
+its package listing uses slash-form identifiers.
+The acquisition guard's initial semicolon-form search rejected that list,
+not an absent API36 package.
+The observed exact package is
+`system-images/android-36/google_apis/x86_64`,
+version `7.0.0` in the stable listing.
+The corrected direct Android CLI install uses that path,
+`--no-metrics` and an owned SDK root.
+No main-SDK update or original AVD mutation is part of acquisition.
 
 ## Independently verifiable queue
 
