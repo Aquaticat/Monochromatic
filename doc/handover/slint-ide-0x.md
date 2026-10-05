@@ -292,6 +292,48 @@ each owned by one subagent:
   SIGKILL of the application leaving no server behind,
   and navigation in the nested compositor with confined servers against disposable projects below `/tmp`,
   with project tree hashes before and after.
+- Nested compositor output scaling and the closed private bus:
+  done on `main`,
+  commits `a8e60feca` through `dd5a19953` in `package/cli/nested-wayland-session`.
+  `--scale SCALE` at startup and `scale SCALE` on the control socket accept 0.5 to 3 in steps of 1/120;
+  `--size` and `resize` are logical sizes,
+  screenshots and recordings are logical size times scale,
+  and input coordinates stay logical.
+  The client learns the scale through `wp_fractional_scale_v1` with `wp_viewporter`,
+  which winit 0.30.13 requires together.
+  Captures now render into an offscreen texture,
+  because Mesa defers a window resize while an unswapped back buffer exists
+  and frames recorded after a mid-recording scale switch were empty.
+  The private `dbus-daemon` runs from a written configuration with no service directories:
+  it lists only `org.freedesktop.DBus` and answers `ServiceUnknown` at once,
+  where the stock configuration listed 73 activatable names.
+  The package passes 69 tests,
+  lint,
+  Clippy,
+  and its `inspect:clipboard`,
+  `inspect:color-scheme`,
+  `inspect:stalled-parent`,
+  and new `inspect:scale` tasks;
+  release binary sha256 prefix `cc9c5479b3b4346c`.
+  IDE scale migration,
+  verified end to end with `inspect:native dark scroll` and switches 1,
+  2,
+  1.25,
+  1:
+  every settled frame is sharp,
+  the first frame the IDE commits at each scale equals the settled one,
+  and the frame after the round trip equals the start
+  (`~/temp/agent/nws-scale-nasfB8/ide-run-2/`).
+  Worktrees that copied the release binary earlier lack `scale` until recopied.
+  Open:
+  an intermittent `calloop` "Received an event for non-existent source" warning,
+  not attributed;
+  a README link in that package points at `doc/decisions/` instead of `doc/decision/`.
+- Coordinator working-directory hazard:
+  the compositor agent reported its session working directory moving into `.claude/worktrees/ide-integrate`
+  while the coordinating session ran commands there.
+  Keep every coordinator command pinned with `cd /var/home/user/Monochromatic` or `git -C`,
+  and tell agents to pin theirs.
 - Session-limit interruptions:
   the API session limit cut the running agents off twice,
   at about 11:10 and 14:15 on 2026-10-05.
@@ -642,22 +684,12 @@ Queue after the in-flight work:
    and verify all five language feature paths in the nested compositor on `main`,
    confined,
    against disposable projects.
-2. Nested compositor runtime output scaling and closing private-bus service activation,
-   both decided by the user on 2026-10-05
-   (`doc/decision/slint-ide-0x-scope.md`,
-   "Decisions of 2026-10-05"),
-   then the IDE's scale migration verified end to end.
-   Queued because this session's subagent limit is five concurrent agents;
-   the full brief is in the coordinating session's history and must be reissued:
-   work in `package/cli/nested-wayland-session` on `main`,
-   startup option plus runtime control command for integer and fractional scale,
-   tests observed failing first,
-   a `slint-viewer` end-to-end check,
-   then `inspect:native` with scale 1,
-   2,
-   1.25,
-   1 without editing the IDE,
-   and a private `dbus-daemon` configuration with no service directories.
+2. Measure the IDE's scale-change latency in a release build.
+   In the debug build the compositor showed the IDE's previous buffer,
+   scaled and soft,
+   for about 330 ms after a switch from 1 to 2 before the first new frame;
+   a cold glyph cache at the new scale is a guess,
+   not a measured cause.
 3. Confirm the two find flakes are gone with repeated native runs on the final `main`.
    `native_find_paints_visible_matches_only_and_reveals_far_columns` failed 3 of 8 runs on unmodified `8995633b0`
    because the query `n` also yields its `1/301` count;
