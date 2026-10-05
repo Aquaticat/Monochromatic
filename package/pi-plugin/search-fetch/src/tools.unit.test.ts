@@ -15,7 +15,7 @@ import {
   LINKUP_WEB_FETCH_TOOL_NAME,
   LINKUP_WEB_SEARCH_TOOL_NAME,
   type LinkupConfig,
-  type LinkupToolClient,
+  type SearchFetchToolClient,
   type LinkupWebFetchInput,
   type LinkupWebSearchInput,
 } from '../dist/final/node/index.mjs';
@@ -453,7 +453,7 @@ type MockClient = {
   /**
    Client implementation.
    */
-  readonly client: LinkupToolClient;
+  readonly client: SearchFetchToolClient;
   /**
    Recorded search calls.
    */
@@ -553,7 +553,7 @@ function firstFetchInput(mock: MockClient,): LinkupWebFetchInput {
  
  @returns search tool
  */
-function searchToolFrom(client: LinkupToolClient,) {
+function searchToolFrom(client: SearchFetchToolClient,) {
   /**
    Local value for tool.
    */
@@ -575,7 +575,7 @@ function searchToolFrom(client: LinkupToolClient,) {
  
  @returns fetch tool
  */
-function fetchToolFrom(client: LinkupToolClient,) {
+function fetchToolFrom(client: SearchFetchToolClient,) {
   /**
    Local value for tool.
    */

@@ -36,9 +36,8 @@
     "typebox": "*"
   },
   "dependencies": {
-    "@monochromatic-dev/module-caught-value": "workspace:*",
-    "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
+    "@monochromatic-dev/agent-harness-shared-search-fetch": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "catalog:",
