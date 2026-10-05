@@ -6,6 +6,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -96,6 +97,52 @@ await describe({
               small: 1,
               medium: 1,
               large: 1,
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a size that is not a whole number of slots, zero or more, where a fraction '
+            + 'once drew a slot from every band on every pass (two and a half slots asked, nine '
+            + 'handed out)',
+          fn: async () => {
+            for (const size of [2.5, -1, Number.NaN, Number.POSITIVE_INFINITY,]) {
+              /**
+               What the allocation raised, read for its class and its whole
+               wording.
+               */
+              const refusal = caught(function allocate(): unknown {
+                return allocateBandQuota({
+                  available: {
+                    small: 10,
+                    medium: 10,
+                    large: 10,
+                  },
+                  size,
+                },);
+              },);
+              expect(refusal,).toBeInstanceOf(RangeError,);
+              expect(String(refusal,),).toBe(
+                `RangeError: A sample size is a whole number of slots, zero or more; received ${String(size,)}.`,
+              );
+            }
+          },
+        },),
+
+        it({
+          name: 'HANDS OUT NOTHING for a size of zero',
+          fn: async () => {
+            expect(allocateBandQuota({
+              available: {
+                small: 10,
+                medium: 10,
+                large: 10,
+              },
+              size: 0,
+            },),).toEqual({
+              small: 0,
+              medium: 0,
+              large: 0,
             },);
           },
         },),
