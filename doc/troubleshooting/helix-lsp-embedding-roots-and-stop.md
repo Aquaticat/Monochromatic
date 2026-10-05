@@ -70,7 +70,8 @@ if let Some(clients) = self.inner_by_name.get(name) {
 
 Only `Registry::restart_server` removes the tombstone (`helix-lsp/src/lib.rs:661`).
 `Registry::remove_by_id` (`helix-lsp/src/lib.rs:604`) removes one client
-and deletes the name's list when it becomes empty, leaving no tombstone.
+and deletes the name's list when it becomes empty,
+ leaving no tombstone.
 
 ### The `PWD` spelling of the workspace
 
@@ -143,7 +144,8 @@ Patterns that work:
   (`lifecycle::crash_fails_the_pending_request_and_the_next_open_restarts`,
   three processes in one session).
 - Passing the document path to Helix in Helix's spelling of the project root
-  (resolved project path re-rooted at the resolved workspace, then joined to the workspace as Helix spells it):
+  (resolved project path re-rooted at the resolved workspace,
+   then joined to the workspace as Helix spells it):
   `rootUri` is the project in the link spelling,
   and pushed diagnostics for that address are recognized as the displayed file by resolved path
   (`roots::project_reached_through_a_linked_working_directory_is_rooted_at_the_project`).
@@ -166,7 +168,8 @@ Results are listed under "Evidence".
 
 - Never call `Registry::stop` for a server that may be needed again.
   Remove it with `Registry::remove_by_id(id)` and stop it with `Client::force_shutdown()`
-  (`package/desktop-app/ide/src/language/attach.rs`, function `retire`).
+  (`package/desktop-app/ide/src/language/attach.rs`,
+   function `retire`).
   Tradeoff:
   nothing prevents the next `get` from starting the same server again,
   so a refusal that must persist (a root outside the project) is re-checked before every start
@@ -175,7 +178,8 @@ Results are listed under "Evidence".
   resolve it,
   and respell every path below the resolved project root with Helix's spelling
   before handing it to `Registry::get` or building a document address
-  (`package/desktop-app/ide/src/language/root.rs`, type `RootView`).
+  (`package/desktop-app/ide/src/language/root.rs`,
+   type `RootView`).
   Compare documents and targets by resolved path everywhere else.
   Tradeoff:
   server-facing addresses use the link spelling,
@@ -219,7 +223,8 @@ the `lsp-stop` query did return results.
    No.
    The tombstone is documented intent for `:lsp-stop` (`helix-lsp/src/lib.rs:692` to `:696`),
    and the `PWD` preference is documented `pwd -L` intent (`helix-stdx/src/env.rs:22` to `:23`).
-   Inside Helix both are consistent, because Helix never mixes resolved and link-spelled paths.
+   Inside Helix both are consistent,
+    because Helix never mixes resolved and link-spelled paths.
    The mismatch comes from this embedder.
 2. Can upstream fix it?
    Not applicable after constraint 1.
@@ -227,11 +232,13 @@ the `lsp-stop` query did return results.
    No evidence of support for embedding `helix-lsp` outside Helix was found;
    the crate's interfaces mirror the editor's needs.
 4. Would the repo welcome our contribution?
-   Not evaluated, because constraint 1 fails.
+   Not evaluated,
+    because constraint 1 fails.
 5. Will they likely fix it?
    Not evaluated.
 6. Prototype:
-   none, because there is no upstream defect to fix.
+   none,
+    because there is no upstream defect to fix.
 
 Decision:
 do not file.
@@ -251,7 +258,8 @@ Measured on 2026-10-05 with
 Each control passed its unmodified baseline,
 failed with the mutation,
 and passed again after restoring
-(`~/temp/agent/ide-language-guard-uWmw4T/results.json`, scratch that can vanish):
+(`~/temp/agent/ide-language-guard-uWmw4T/results.json`,
+ scratch that can vanish):
 
 - `root-spelling` removed:
   `rootUri` was `Null` where `"file:///tmp/.tmp9SuHqi/link/project"` was expected.
