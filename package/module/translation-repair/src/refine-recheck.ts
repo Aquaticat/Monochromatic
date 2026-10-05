@@ -9,11 +9,6 @@ import { wordForCount, } from './count-word.ts';
 import { collectRefinedAuthors, } from './issue-authors.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
-import {
-  type ReachableQuorum,
-  reachableQuorum,
-  shortBenchStageFinding,
-} from './stage-reachable-quorum.ts';
 import { silentStagesOf, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -25,99 +20,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // gained its exit for a round short of quorum. The settler calls this once,
 // after a rewrite won and before the damage probe, and rolls the whole slice
 // back on anything but a pass.
-
-/**
- Stage label the checker stage's gather writes its findings under.
- */
-const CHECKER_STAGE = 'checker';
-
-/**
- Voices the checker stage's gather closed its round on, which is also the
- number of ballots an issue needs before the round counts as heard on it.
-
- THE STAGE HANDS BACK NO QUORUM, so it is read where its gather left it. On
- a bench whose every seat a provider could serve, that is the bench quorum.
- Where the router refused seats enough to leave the bench short of it, the
- gather closed on fewer (`reachableQuorum`, never below two) and wrote
- that number into its `stage-short-bench` finding. The finding is matched by
- rebuilding it with the producer's own `shortBenchStageFinding` for each
- count of refused seats, never by reading its wording here, so the two
- spellings cannot drift.
-
- @param benchSize - checkers the round seated
-
- @param findings - the checker stage's own findings
-
- @returns Voices the round closed on
-
- @throws {@link Error} when more than one short-bench finding matches, which
- one gather never writes
-
- @example
- ```ts
- const quorum = checkerQuorumClosedOn({ benchSize: 5, findings: checker.findings, },);
- ```
- */
-function checkerQuorumClosedOn(
-  {
-    benchSize,
-    findings,
-  }: {
-    readonly benchSize: number;
-    readonly findings: readonly string[];
-  },
-): number {
-  /**
-   Quorum the gather would close on for each count of refused seats, every
-   seat reachable first.
-   */
-  const quorums = [
-    ...Array.from({ length: benchSize + 1, },)
-      .keys(),
-  ]
-    .map(function withRefused(unreachable,): ReachableQuorum {
-      return reachableQuorum({
-        benchSize,
-        unreachable,
-      },);
-    },);
-
-  /**
-   The short bench this round's findings name, at most one.
-   */
-  const named = quorums.filter(function namedShort(quorum,): boolean {
-    return quorum.short
-      && findings.includes(shortBenchStageFinding({
-        stage: CHECKER_STAGE,
-        quorum,
-        benchSize,
-      },),);
-  },);
-  if (named.length > 1) {
-    throw new Error(
-      'unreachable: the checker stage\'s findings name more than one short bench for one round, '
-        + 'though its gather writes one finding for the quorum it closed on',
-    );
-  }
-
-  /**
-   The short bench the gather closed on, absent where every seat it needed
-   was reachable.
-   */
-  const [shortBench,] = named;
-  if (shortBench !== undefined)
-    return shortBench.needed;
-
-  /**
-   Quorum of the bench with every seat reachable, which the gather closes on
-   whenever it writes no short-bench finding.
-   */
-  const wholeBench = reachableQuorum({
-    benchSize,
-    unreachable: 0,
-  },);
-  return wholeBench.needed;
-}
 
 /**
  Whether a refinement kept every issue the checkers had already confirmed,
@@ -334,10 +236,7 @@ export async function retainsResolvedIssues(
    Ballots an issue needs before this round counts as heard on it: the
    quorum the checker stage closed the round on.
    */
-  const quorum = checkerQuorumClosedOn({
-    benchSize: checkerModelIds.length,
-    findings: checker.findings,
-  },);
+  const { quorum, } = checker;
 
   /**
    This round's reading of one issue it ruled on.
@@ -361,8 +260,10 @@ export async function retainsResolvedIssues(
    Whether the round cast as many ballots on an issue as it closed on.
 
    THE COUNT IS THE READING'S BALLOTS, one per heard checker that ruled on
-   the issue. The `missing-check` findings say the same thing per checker
-   but number the issue on the sheet and name no checker.
+   the issue. The `missing-check` findings say the same thing per checker,
+   each naming the issue by id, the checker and the cause, but are not read
+   here: a finding's wording is for a reader, and the reading holds the
+   ballots themselves.
 
    @param issue - issue among those the round was asked about
 

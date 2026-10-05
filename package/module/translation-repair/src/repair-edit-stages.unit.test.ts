@@ -25,17 +25,21 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  NoProviderForModelError,
   runCheckerStage,
   type AdjudicatedIssue,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type IssueAuthorship,
+  type RosterModelId,
   type SyntheticClient,
   UNATTRIBUTED_TEXT,
 } from '../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
 import {
+  SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
@@ -121,11 +125,72 @@ function checkerClient(
 }
 
 /**
+ Bench of five checkers, the three of `CHECKERS` first.
+ */
+const FIVE_CHECKERS: readonly RosterModelId[] = [
+  ...CHECKERS,
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+];
+
+/**
+ Seats of that bench no provider serves, leaving two reachable.
+ */
+const REFUSED_CHECKERS: readonly RosterModelId[] = [
+  CHECKERS[2],
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+];
+
+/**
+ Client that refuses the given seats as the router does, for a seat no
+ provider serves, and hands every other exchange to the client it wraps.
+
+ @param client - client answering the seats that are served
+
+ @param refused - seats no provider serves
+
+ @returns Client refusing those seats
+
+ @example
+ ```ts
+ const client = refusingSeats({ client: checkerClient({ reportFor, },), refused: REFUSED_CHECKERS, },);
+ ```
+ */
+function refusingSeats(
+  {
+    client,
+    refused,
+  }: {
+    readonly client: SyntheticClient;
+    readonly refused: readonly RosterModelId[];
+  },
+): SyntheticClient {
+  return {
+    ...client,
+    chatJson: async function chatJson<ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> {
+      if (refused.includes(request.modelId,)) {
+        throw new NoProviderForModelError({
+          modelId: request.modelId,
+          reason: 'every provider serving this cat is out of treats',
+        },);
+      }
+      return await client.chatJson(request,);
+    },
+  };
+}
+
+/**
  Runs the checker stage against a scripted client.
 
  @param client - scripted checker client
 
  @param issues - accepted issues under check
+
+ @param checkerModelIds - bench the stage seats, the three-seat roster unless
+ a case seats another
 
  @returns Stage result
 
@@ -140,16 +205,18 @@ async function runStage(
     issues,
     authorship = UNATTRIBUTED_TEXT,
     logger = l,
+    checkerModelIds = CHECKERS,
   }: {
     readonly client: SyntheticClient;
     readonly issues: readonly AdjudicatedIssue[];
     readonly authorship?: IssueAuthorship;
     readonly logger?: typeof l;
+    readonly checkerModelIds?: readonly RosterModelId[];
   },
 ) {
   return await runCheckerStage({
     client,
-    checkerModelIds: CHECKERS,
+    checkerModelIds,
     sourceText: SOURCE_TEXT,
     patchedText: PATCHED_TEXT,
     issues,
@@ -495,6 +562,215 @@ await describe({
         },);
 
         expect(Object.keys(result.tallies,),).toStrictEqual([],);
+      },
+    },),
+
+    it({
+      name: 'NAMES each checker that skipped an issue, so two checkers skipping the second of two issues '
+        + 'leave two findings that tell them apart and name the issue by id',
+      fn: async () => {
+        /**
+         The first checker rules on both issues, the other two on the first
+         alone.
+         */
+        const reports: Readonly<Record<string, unknown>> = {
+          [CHECKERS[0]]: {
+            checks: [
+              {
+                issue: 1,
+                verdict: 'fixed',
+              },
+              {
+                issue: 2,
+                verdict: 'fixed',
+              },
+            ],
+          },
+          [CHECKERS[1]]: { checks: [{ issue: 1, verdict: 'fixed', },], },
+          [CHECKERS[2]]: { checks: [{ issue: 1, verdict: 'fixed', },], },
+        };
+        const result = await runStage({
+          client: checkerClient({ reportFor: (modelId,) => reports[modelId], },),
+          issues: [
+            catIssue({ issueId: 'adjudicated/tense', },),
+            catIssue({ issueId: 'adjudicated/meaning', },),
+          ],
+        },);
+
+        // Sorted, since the order voices arrive in is the gather's, not this stage's.
+        expect(result.findings.toSorted(),).toEqual([
+          `missing-check (adjudicated/meaning, ${CHECKERS[1]}, unanswered)`,
+          `missing-check (adjudicated/meaning, ${CHECKERS[2]}, unanswered)`,
+        ].toSorted(),);
+      },
+    },),
+
+    it({
+      name: 'NAMES the cause when a checker\'s unknown verdict left an issue unanswered, beside the unknown '
+        + 'verdict itself, and the checker that skipped the issue outright as unanswered',
+      fn: async () => {
+        /**
+         The first checker rules on both issues, the second gives the second
+         issue a verdict the tally does not know, the third skips it.
+         */
+        const reports: Readonly<Record<string, unknown>> = {
+          [CHECKERS[0]]: {
+            checks: [
+              {
+                issue: 1,
+                verdict: 'fixed',
+              },
+              {
+                issue: 2,
+                verdict: 'fixed',
+              },
+            ],
+          },
+          [CHECKERS[1]]: {
+            checks: [
+              {
+                issue: 1,
+                verdict: 'fixed',
+              },
+              {
+                issue: 2,
+                verdict: 'mostly',
+              },
+            ],
+          },
+          [CHECKERS[2]]: { checks: [{ issue: 1, verdict: 'fixed', },], },
+        };
+        const result = await runStage({
+          client: checkerClient({ reportFor: (modelId,) => reports[modelId], },),
+          issues: [
+            catIssue({ issueId: 'adjudicated/tense', },),
+            catIssue({ issueId: 'adjudicated/meaning', },),
+          ],
+        },);
+
+        // Sorted, since the order voices arrive in is the gather's, not this stage's.
+        expect(result.findings.toSorted(),).toEqual([
+          'unknown-resolution-verdict (mostly)',
+          `missing-check (adjudicated/meaning, ${CHECKERS[1]}, unknown-verdict)`,
+          `missing-check (adjudicated/meaning, ${CHECKERS[2]}, unanswered)`,
+        ].toSorted(),);
+      },
+    },),
+
+    it({
+      name: 'RETURNS the quorum of two the gather closed on for a bench of three with every seat served',
+      fn: async () => {
+        /**
+         Stage where all three checkers rule on the one issue.
+         */
+        const result = await runStage({
+          client: checkerClient({
+            reportFor: () => ({
+              checks: [
+                {
+                  issue: 1,
+                  verdict: 'fixed',
+                },
+              ],
+            }),
+          },),
+          issues: [catIssue({ issueId: 'adjudicated/tense', },),],
+        },);
+
+        expect(result.quorum,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'RETURNS the quorum of three the gather closed on for a bench of five with every seat served',
+      fn: async () => {
+        /**
+         Stage where all five checkers rule on the one issue.
+         */
+        const result = await runStage({
+          client: checkerClient({
+            reportFor: () => ({
+              checks: [
+                {
+                  issue: 1,
+                  verdict: 'fixed',
+                },
+              ],
+            }),
+          },),
+          issues: [catIssue({ issueId: 'adjudicated/tense', },),],
+          checkerModelIds: FIVE_CHECKERS,
+        },);
+
+        expect(result.quorum,).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'RETURNS the quorum of two the gather closed on for a bench of five whose last three seats no '
+        + 'provider serves, beside the short-bench finding that names the same number',
+      fn: async () => {
+        /**
+         Stage whose two reachable checkers rule on the one issue.
+         */
+        const result = await runStage({
+          client: refusingSeats({
+            client: checkerClient({
+              reportFor: () => ({
+                checks: [
+                  {
+                    issue: 1,
+                    verdict: 'fixed',
+                  },
+                ],
+              }),
+            },),
+            refused: REFUSED_CHECKERS,
+          },),
+          issues: [catIssue({ issueId: 'adjudicated/tense', },),],
+          checkerModelIds: FIVE_CHECKERS,
+        },);
+
+        expect(result.quorum,).toBe(2,);
+        expect(result.heardCheckers,).toBe(2,);
+        expect(result.findings,).toEqual([
+          'stage-short-bench (checker reachable 2 of 5, quorum 2)',
+          `stage-voice-lost (checker ${CHECKERS[2]})`,
+          `stage-voice-lost (checker ${SEAT_HYPER_ONLY})`,
+          `stage-voice-lost (checker ${SEAT_OPENROUTER_ONLY_CHECKER})`,
+          'stage-roster-incomplete (checker 2/5)',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'RETURNS the bench quorum of two when one seat of three is refused, since the two reachable seats '
+        + 'meet it and the gather closes on the bench quorum rather than a short one',
+      fn: async () => {
+        /**
+         Stage whose first two checkers are served and rule on the one issue.
+         */
+        const result = await runStage({
+          client: refusingSeats({
+            client: checkerClient({
+              reportFor: () => ({
+                checks: [
+                  {
+                    issue: 1,
+                    verdict: 'fixed',
+                  },
+                ],
+              }),
+            },),
+            refused: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
+          },),
+          issues: [catIssue({ issueId: 'adjudicated/tense', },),],
+        },);
+
+        expect(result.quorum,).toBe(2,);
+        expect(result.findings.some(function isShortBench(finding,): boolean {
+          return finding.startsWith('stage-short-bench',);
+        },),).toBe(false,);
       },
     },),
   ],

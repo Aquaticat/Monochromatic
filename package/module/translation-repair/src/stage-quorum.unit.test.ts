@@ -544,6 +544,54 @@ await describe({
     },),
 
     it({
+      name: 'HANDS BACK THE QUORUM IT CLOSED ON: six for a bench of eleven every seat of which answers, and two '
+        + 'for the same bench with seven seats no provider serves, the number its short-bench finding names',
+      fn: async () => {
+        /**
+         Gathers over the eleven seats with the named ones refused by the router.
+         */
+        async function gatherWithDry(
+          { drySeats, }: { readonly drySeats: readonly string[]; },
+        ): Promise<{ readonly quorum: number; readonly findings: readonly string[]; }> {
+          /** The round over the bench. */
+          const gather = await gatherStageVoices({
+            client: dryBenchClient({
+              drySeats: [...drySeats,],
+              failingSeat: 'nobody',
+            },),
+            modelIds: [...ELEVEN_SEATS,],
+            messages: [{ role: 'user', content: 'meow', },],
+            signal: new AbortController().signal,
+            exchangeTimeoutMs: 1_000,
+            responseFormat: MEOW_FORMAT,
+            validate: isMeowReply,
+            stage: 'archive-block-review',
+            l,
+            fanOut: 'whole-bench',
+          },);
+          return {
+            quorum: gather.quorum,
+            findings: gather.findings,
+          };
+        }
+        expect(await gatherWithDry({ drySeats: [], },),).toEqual({
+          quorum: 6,
+          findings: [],
+        },);
+        expect(await gatherWithDry({ drySeats: DRY_SEVEN, },),).toEqual({
+          quorum: 2,
+          findings: [
+            'stage-short-bench (archive-block-review reachable 4 of 11, quorum 2)',
+            ...ELEVEN_SEATS
+              .filter(seat => DRY_SEVEN.includes(seat,))
+              .map(seat => `stage-voice-lost (archive-block-review ${seat})`),
+            'stage-roster-incomplete (archive-block-review 4/11)',
+          ],
+        },);
+      },
+    },),
+
+    it({
       name: 'STILL READS A BENCH WITH NO REACHABLE SEAT AS AN OUTAGE, since the floor is two voices and none '
         + 'can answer',
       fn: async () => {

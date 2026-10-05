@@ -48,11 +48,25 @@ export class StatedRefusalError extends Error {
   /**
    @param says - whole message, composed only of authored words, operator
    arguments, environment variable names and numbers computed here
+
+   @param cause - failure the refusal answers, kept for whoever inspects the
+   refusal and never repeated in the message, since a caught failure's own
+   words are nothing this package wrote
    */
   constructor(
-    { says, }: { readonly says: string; },
+    {
+      says,
+      cause,
+    }: {
+      readonly says: string;
+      readonly cause?: unknown;
+    },
   ) {
-    super(says,);
+    super(
+      says,
+      // Conditional spread keeps cause absent when none was supplied.
+      ...((cause === undefined) ? [] : [{ cause, },]),
+    );
     this.name = 'StatedRefusalError';
   }
 }

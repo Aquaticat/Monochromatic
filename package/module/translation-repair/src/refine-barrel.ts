@@ -25,6 +25,12 @@ export {
   type RefineSelectionContext,
   type RefineStageMode,
 } from './refine-selection-context.ts';
+export { refineProbeVerdict, } from './refine-probe-verdict.ts';
+export {
+  applyReply,
+  inRosterOrder,
+  resolveReply,
+} from './refine-stage-replies.ts';
 export {
   type RefineStageResult,
   runRefineStage,

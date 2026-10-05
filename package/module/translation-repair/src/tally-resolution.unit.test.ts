@@ -17,6 +17,12 @@ import {
   tallyResolutionChecks,
   UNATTRIBUTED_TEXT,
 } from '../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
+
+/**
+ Checker whose ballots the resolution cases resolve.
+ */
+const CHECKER = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Issue ids in prompt numbering order for resolution tests.
@@ -60,7 +66,8 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'resolves checks through the index map and records irregularities',
+          name: 'resolves checks through the index map and records every irregularity whole, the issue the '
+            + 'unknown verdict left unanswered named by id and checker with its cause',
           fn: async () => {
             /** Report with one good check, one bad index, one unknown verdict. */
             const ballot = resolveResolutionChecks({
@@ -81,12 +88,74 @@ await describe({
                 ],
               },
               issueIds: ISSUE_IDS,
+              checkerModelId: CHECKER,
             },);
-            expect(ballot.verdicts['adjudicated/whisker'],).toBe('fixed',);
-            expect(ballot.verdicts['adjudicated/paw'],).toBe(undefined,);
-            expect(ballot.findings,).toContain('check-index-out-of-range (9)',);
-            expect(ballot.findings,).toContain('unknown-resolution-verdict (perfect)',);
-            expect(ballot.findings,).toContain('missing-check (2)',);
+            expect(ballot,).toEqual({
+              verdicts: { 'adjudicated/whisker': 'fixed', },
+              findings: [
+                'check-index-out-of-range (9)',
+                'unknown-resolution-verdict (perfect)',
+                `missing-check (adjudicated/paw, ${CHECKER}, unknown-verdict)`,
+              ],
+            },);
+          },
+        },),
+
+        it({
+          name: 'NAMES an issue the checker never mentioned by id and checker as unanswered',
+          fn: async () => {
+            /** Report answering the first issue alone. */
+            const ballot = resolveResolutionChecks({
+              wire: {
+                checks: [
+                  {
+                    issue: 1,
+                    verdict: 'not-fixed',
+                  },
+                ],
+              },
+              issueIds: ISSUE_IDS,
+              checkerModelId: CHECKER,
+            },);
+            expect(ballot,).toEqual({
+              verdicts: { 'adjudicated/whisker': 'not-fixed', },
+              findings: [`missing-check (adjudicated/paw, ${CHECKER}, unanswered)`,],
+            },);
+          },
+        },),
+
+        it({
+          name: 'NAMES an issue the checker answered with an unknown verdict and then with a known one as '
+            + 'answered, keeping the known verdict and recording the unknown one alone',
+          fn: async () => {
+            /** Report giving issue two an unknown verdict, then a known one. */
+            const ballot = resolveResolutionChecks({
+              wire: {
+                checks: [
+                  {
+                    issue: 1,
+                    verdict: 'fixed',
+                  },
+                  {
+                    issue: 2,
+                    verdict: 'perfect',
+                  },
+                  {
+                    issue: 2,
+                    verdict: 'worse',
+                  },
+                ],
+              },
+              issueIds: ISSUE_IDS,
+              checkerModelId: CHECKER,
+            },);
+            expect(ballot,).toEqual({
+              verdicts: {
+                'adjudicated/whisker': 'fixed',
+                'adjudicated/paw': 'worse',
+              },
+              findings: ['unknown-resolution-verdict (perfect)',],
+            },);
           },
         },),
 
@@ -112,9 +181,15 @@ await describe({
                 ],
               },
               issueIds: ISSUE_IDS,
+              checkerModelId: CHECKER,
             },);
-            expect(ballot.verdicts['adjudicated/whisker'],).toBe('fixed',);
-            expect(ballot.findings,).toContain('duplicate-check (1)',);
+            expect(ballot,).toEqual({
+              verdicts: {
+                'adjudicated/whisker': 'fixed',
+                'adjudicated/paw': 'not-fixed',
+              },
+              findings: ['duplicate-check (1)',],
+            },);
           },
         },),
       ],

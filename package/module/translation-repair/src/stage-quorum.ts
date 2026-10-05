@@ -101,8 +101,18 @@ export type StageGather<ValueT,> = {
   readonly quorumMet: boolean;
 
   /**
-   Degradation findings in scorecard-stable wording;
-   empty when quorum was met.
+   Voices the gather closed its round on: the number `quorumMet` compared the
+   heard voices with, and the one a short bench's finding names. Handed back
+   so a caller that needs it (the checker stage, whose recheck counts an
+   issue's ballots against it) never sizes it a second time or reads it back
+   out of a finding's wording.
+   */
+  readonly quorum: number;
+
+  /**
+   Degradation findings in scorecard-stable wording: a short bench, each
+   asked seat that stayed unheard, and the round's shortfall. Empty where
+   every asked seat was heard on a bench no seat of which was refused.
    */
   readonly findings: readonly string[];
 
@@ -581,6 +591,7 @@ export async function gatherStageVoices<ValueT,>(
     return {
       voices,
       quorumMet,
+      quorum: quorum.needed,
       findings: [
         ...shortFindings,
         ...lostFindings,
@@ -599,6 +610,7 @@ export async function gatherStageVoices<ValueT,>(
     return {
       voices,
       quorumMet,
+      quorum: quorum.needed,
       findings: [
         ...shortFindings,
         ...lostFindings,
@@ -612,6 +624,7 @@ export async function gatherStageVoices<ValueT,>(
   return {
     voices,
     quorumMet,
+    quorum: quorum.needed,
     findings: [
       ...shortFindings,
       ...lostFindings,

@@ -2,13 +2,8 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import {
-  applyPatchOperations,
-  type PatchOperation,
-} from './apply-patch.ts';
 import {
   type Candidate,
   producerModelIds,
@@ -21,7 +16,6 @@ import {
   declaredNameRefusalFinding,
   findDroppedDeclaredNames,
 } from './declared-name-survival.ts';
-import { gateParagraphRewrite, } from './inspect-paragraph.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import { buildRefineMessages, } from './refine-prompt.ts';
 import {
@@ -29,10 +23,15 @@ import {
   type RefineStageMode,
 } from './refine-selection-context.ts';
 import {
+  type AppliedReply,
+  applyReply,
+  inRosterOrder,
+  resolveReply,
+  type ResolvedReply,
+} from './refine-stage-replies.ts';
+import {
   isRefineReportWire,
   REFINE_RESPONSE_FORMAT,
-  type RefineResolution,
-  resolveRefineRewrites,
 } from './refine-wire.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import {
@@ -42,7 +41,6 @@ import {
 } from './repair-round-record.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
-import { restoreTypography, } from './restore-typography.ts';
 import { writerRoundGraceMs, } from './writer-grace-override.ts';
 
 //region Refinement stage
@@ -110,66 +108,6 @@ export type RefineStageResult = {
    */
   readonly findings: readonly string[];
 };
-
-/**
- One heard rewriter's reply after the resolver bound it to the sheet and the
- atom gate read each operation.
-
- @example
- ```ts
- const reply: ResolvedReply = { modelId, resolution, passed: [], refusals: [], };
- ```
- */
-type ResolvedReply = {
-  /**
-   Rewriter that sent the reply.
-   */
-  readonly modelId: RosterModelId;
-
-  /**
-   Operations the reply's rewrites bound to, and what the resolver dropped
-   or folded on the way.
-   */
-  readonly resolution: RefineResolution;
-
-  /**
-   Operations whose replacement carried every protected atom through
-   unchanged and in order, quote style restored, in wire order.
-   */
-  readonly passed: readonly PatchOperation[];
-
-  /**
-   One finding per operation the gate refused, credited to the rewriter and
-   naming the paragraph and the kind of refusal, in wire order.
-   */
-  readonly refusals: readonly string[];
-};
-
-/**
- The kind of an atom-gate refusal: its detail up to the parenthetical, which
- is where the gate quotes the atoms it compared.
-
- CUT AS THE EDITOR LANE CUTS ITS REJECTIONS INTO KINDS
- (`repair-editor-stage.ts`), so a refusal's finding carries no atom value: a
- number, a link destination or a foreign run of the paragraph stays in the
- gate's log line and out of the artifact. A changed atom keeps its position
- (`protected atom 2 changed`), and an inspection refusal loses its reason
- (`candidate rejected`); the log line carries both whole.
-
- @param detail - the gate's account of the refusal
-
- @returns The detail's words before its first parenthetical, the whole detail
- where it has none
-
- @example
- ```ts
- gateRefusalKind({ detail: 'protected atom count changed (1 to 0)', },);
- // => 'protected atom count changed'
- ```
- */
-function gateRefusalKind({ detail, }: { readonly detail: string; },): string {
-  return nonNullishOrThrow(detail.split(' (',)[0],);
-}
 
 /**
  Runs the naturalness lane over one repaired slice.
@@ -323,90 +261,23 @@ export async function runRefineStage(
    */
   const resolved = gather.voices
     .map(function toResolved(voice,): ResolvedReply {
-      /**
-       Operations the reply's rewrites bound to, and what the resolver
-       dropped or folded on the way.
-       */
-      const resolution = resolveRefineRewrites({
-        wire: voice.value,
+      return resolveReply({
+        voice,
         envelopes: plan.envelopes,
+        repairedText,
+        definitions,
+        l: rl,
       },);
-
-      /**
-       Each operation the gate passed, quote style restored, or the finding
-       for its refusal.
-       */
-      const judged = resolution
-        .operations
-        .map(function judge(operation,): PatchOperation | string {
-          /**
-           Paragraph this operation replaces, present by the resolver's
-           own contract: `resolveRefineRewrites` binds an operation only
-           to an envelope it found.
-           */
-          const envelope = nonNullishOrThrow(plan.envelopes
-            .find(function matches(candidate,) {
-              return candidate.envelopeId === operation.envelopeId;
-            },),);
-
-          /**
-           Replacement as it will ship, quote style restored, so the gate
-           reads the shipped bytes rather than text a later pass alters.
-           */
-          const candidate = restoreTypography({
-            replacement: operation.newText,
-            replaced: envelope.baseText,
-            convention: repairedText,
-          },);
-
-          /**
-           Structural verdict over the proposed replacement.
-           */
-          const verdict = gateParagraphRewrite({
-            base: envelope.baseText,
-            candidate,
-            definitions,
-          },);
-          if (verdict.kind === 'preserved') {
-            return {
-              ...operation,
-              newText: candidate,
-            };
-          }
-          // THE DETAIL GOES TO THE LOG ALONE, since it quotes the atoms it
-          // compared; the finding names the paragraph by its number on the
-          // sheet, as the resolver's findings do, and the refusal by kind.
-          rl.info(`${voice.modelId}: ${verdict.detail}`,);
-          return `${voice.modelId}: refine-atom-gate-refused (paragraph ${
-            String(plan.envelopes
-              .indexOf(envelope,)
-              + 1,)
-          }, ${gateRefusalKind({ detail: verdict.detail, },)})`;
-        },);
-      return {
-        modelId: voice.modelId,
-        resolution,
-        passed: judged.filter(function wasPassed(outcome,): outcome is PatchOperation {
-          return (typeof outcome) !== 'string';
-        },),
-        refusals: judged.filter(function wasRefused(outcome,): outcome is string {
-          return (typeof outcome) === 'string';
-        },),
-      };
     },);
 
   /**
    The same replies in roster order, so what the stage records against them
    never depends on who answered first.
    */
-  const inRosterOrder = resolved
-    .toSorted(function byRoster(
-      left,
-      right,
-    ) {
-      return refinerModelIds.indexOf(left.modelId,)
-        - refinerModelIds.indexOf(right.modelId,);
-    },);
+  const repliesInRosterOrder = inRosterOrder({
+    replies: resolved,
+    roster: refinerModelIds,
+  },);
 
   /**
    What the resolver recorded against each reply, credited to its rewriter.
@@ -418,7 +289,7 @@ export async function runRefineStage(
    reported the refiner as heard and not proposing, which is what it reports
    for a refiner that proposed nothing.
    */
-  const resolverFindings = inRosterOrder
+  const resolverFindings = repliesInRosterOrder
     .flatMap(function toFindings(reply,): readonly string[] {
       return reply.resolution
         .findings
@@ -438,50 +309,47 @@ export async function runRefineStage(
    line alone, so a rewriter whose every rewrite the gate refused read in the
    artifact as one that proposed nothing.
    */
-  const gateFindings = inRosterOrder.flatMap(function toRefusals(reply,): readonly string[] {
+  const gateFindings = repliesInRosterOrder.flatMap(function toRefusals(reply,): readonly string[] {
     return reply.refusals;
   },);
+
+  /**
+   What the patch made of each reply, in the order the rewriters were heard,
+   which is the order their candidates reach the judges.
+   */
+  const applied = resolved
+    .map(function toApplied(reply,): AppliedReply {
+      return applyReply({
+        reply,
+        repairedText,
+        envelopes,
+      },);
+    },);
 
   /**
    One gated candidate per rewriter that proposed anything surviving, before
    identical rewrites are merged.
    */
-  const proposed = resolved
-    .flatMap(function toCandidate(reply,) {
-      /**
-       Operations of this reply the atom gate passed.
-       */
-      const { passed, } = reply;
-      if (passed.length === 0)
-        return [];
+  const proposed = applied.flatMap(function toCandidates(reply,): readonly Candidate<string>[] {
+    return reply.candidates;
+  },);
 
-      /**
-       This rewriter's whole-slice proposal through the deterministic gate.
-       */
-      const patch = applyPatchOperations({
-        targetText: repairedText,
-        envelopes,
-        operations: passed,
-        // EXEMPT, stated rather than defaulted. This lane rewrites a whole
-        // paragraph for naturalness and has no accepted-issue quotes to license
-        // that, so enforcing preservation here would reject exactly the work
-        // the lane exists to do.
-        preservation: { mode: 'skip', },
-      },);
-      if (patch.applied
-        .length
-        === 0)
-        return [];
-      return [
-        {
-          producer: {
-            kind: 'model',
-            modelId: reply.modelId,
-          },
-          value: patch.patchedText,
-          rendered: patch.patchedText,
-        } satisfies Candidate<string>,
-      ];
+  /**
+   What the patch refused of each reply, each refusal already credited to its
+   rewriter.
+
+   CARRIED INTO THE STAGE'S FINDINGS, as the gate's are. A rewrite that comes
+   out as the paragraph it replaces applies nothing, and dropped without a
+   word it read as a rewriter that proposed nothing. The patch can refuse an
+   operation of this lane for no other reason, and any other reason throws
+   (`refine-stage-replies.ts`).
+   */
+  const patchFindings = inRosterOrder({
+    replies: applied,
+    roster: refinerModelIds,
+  },)
+    .flatMap(function toRejections(reply,): readonly string[] {
+      return reply.rejections;
     },);
 
   /**
@@ -509,6 +377,7 @@ export async function runRefineStage(
     ...gather.findings,
     ...resolverFindings,
     ...gateFindings,
+    ...patchFindings,
     `refine-candidates (${String(gather.voices
       .length,)}/${String(refinerModelIds.length,)} heard, ${
       String(candidates.length,)

@@ -52,24 +52,37 @@ export type ResolutionBallot = {
  Fails closed per item: out-of-range or duplicate references and unknown
  verdicts become findings, and issues left unanswered are recorded.
 
+ An unanswered issue is named by its id and the checker that left it, with
+ the cause:`unanswered` where the report held no check on it, and
+ `unknown-verdict` where every check it held on it carried a verdict the
+ tally does not know (the `unknown-resolution-verdict` finding beside it
+ says which verdict). One finding per checker per issue is written, so two
+ checkers skipping one issue leave two lines that tell them apart; numbering
+ the issue by its place on the sheet left them identical.
+
  @param wire - report as the checker reported it
 
  @param issueIds - issue ids in prompt numbering order
+
+ @param checkerModelId - checker whose report this is, so an unanswered issue
+ names who left it
 
  @returns Resolved ballot with findings as data
 
  @example
  ```ts
- const ballot = resolveResolutionChecks({ wire, issueIds, },);
+ const ballot = resolveResolutionChecks({ wire, issueIds, checkerModelId, },);
  ```
  */
 export function resolveResolutionChecks(
   {
     wire,
     issueIds,
+    checkerModelId,
   }: {
     readonly wire: ResolutionReportWire;
     readonly issueIds: readonly string[];
+    readonly checkerModelId: string;
   },
 ): ResolutionBallot {
   /**
@@ -82,6 +95,12 @@ export function resolveResolutionChecks(
    handed back, as every record filled by a key is (ledger B77).
    */
   const verdicts = new Map<string, ResolutionVerdict>();
+
+  /**
+   Issues some check of this report answered with a verdict the tally does not
+   know, which tells an unanswered issue's two causes apart.
+   */
+  const unknownVerdictFor = new Set<string>();
   for (const check of wire.checks) {
     /**
      Issue id referenced by this check's one-based number.
@@ -97,6 +116,7 @@ export function resolveResolutionChecks(
     }
     if (!isResolutionVerdict(check.verdict,)) {
       findings.push(`unknown-resolution-verdict (${check.verdict})`,);
+      unknownVerdictFor.add(issueId,);
       continue;
     }
     verdicts.set(
@@ -104,9 +124,14 @@ export function resolveResolutionChecks(
       check.verdict,
     );
   }
-  for (const [index, issueId,] of issueIds.entries()) {
-    if (!verdicts.has(issueId,))
-      findings.push(`missing-check (${index + 1})`,);
+  for (const issueId of issueIds) {
+    if (!verdicts.has(issueId,)) {
+      findings.push(`missing-check (${issueId}, ${checkerModelId}, ${
+        unknownVerdictFor.has(issueId,)
+          ? 'unknown-verdict'
+          : 'unanswered'
+      })`,);
+    }
   }
 
   return {

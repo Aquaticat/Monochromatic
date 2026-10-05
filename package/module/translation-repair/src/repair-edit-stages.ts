@@ -62,6 +62,19 @@ export type CheckerStageResult = {
   readonly heardCheckers: number;
 
   /**
+   Voices the stage's gather closed its round on, which is also the number of
+   ballots an issue needs before the round counts as heard on it.
+
+   The bench quorum where every seat the stage seated was one a provider
+   could serve, and on a bench the router left short of it the smaller
+   number the gather wrote into its `stage-short-bench` finding
+   (`reachableQuorum`, never below two). It is the gather's own `quorum`,
+   carried out so a reader of the round never rebuilds it from the findings'
+   wording.
+   */
+  readonly quorum: number;
+
+  /**
    Wire irregularities across checkers in scorecard-stable wording.
    */
   readonly findings: readonly string[];
@@ -95,7 +108,7 @@ export type CheckerStageResult = {
 
  @param l - pipeline logger
 
- @returns Per-issue tallies plus findings
+ @returns Per-issue tallies, the quorum the round closed on, plus findings
 
  @example
  ```ts
@@ -172,6 +185,7 @@ export async function runCheckerStage(
         resolveResolutionChecks({
           wire: voice.value,
           issueIds: plan.issueIds,
+          checkerModelId: voice.modelId,
         },),
       ];
     },),
@@ -280,6 +294,9 @@ export async function runCheckerStage(
     readings,
     heardCheckers: Object.keys(ballots,)
       .length,
+    // The gather's own number, handed on as it closed on it and never sized
+    // here a second time.
+    quorum: gather.quorum,
     findings,
   };
 }
