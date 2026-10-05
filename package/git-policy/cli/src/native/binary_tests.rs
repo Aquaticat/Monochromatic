@@ -24,3 +24,7 @@ mod resolution;
 /// Configuration loading and the fail-closed policy stage.
 #[path = "binary_policy_tests.rs"]
 mod policy;
+
+/// The `git cli-git` management namespace.
+#[path = "binary_management_tests.rs"]
+mod management;

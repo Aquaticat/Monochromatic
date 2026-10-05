@@ -110,7 +110,7 @@ fn configuration_errors_stop_before_git() {
         ),
         (
             r#"{ "policies": { "final-newline": "fatal" } }"#,
-            "Configuration key policies.final-newline has an invalid severity \"fatal\"",
+            "Configuration key policies.final-newline has an invalid severity",
         ),
         (
             r#"{ "landing": { "reserveAfterLostRaces": 0 } }"#,
@@ -131,10 +131,13 @@ fn configuration_errors_stop_before_git() {
         let stderr: String = String::from_utf8_lossy(&observed.stderr).into_owned();
         assert_eq!(observed.code, Some(2), "{content}");
         assert_eq!(observed.stdout, Vec::<u8>::new(), "{content}");
+        // Exactly one config-invalid event, on standard error for a wrapped command.
         assert!(
-            stderr.starts_with(format!("cli-git: {}: ", source.display()).as_str()),
+            stderr.starts_with(format!("{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"config-invalid\",\"message\":\"{}: ", source.display()).as_str()),
             "{content}\n  got: {stderr}"
         );
+        assert!(stderr.ends_with("\"}\n"), "{content}\n  got: {stderr}");
+        assert_eq!(stderr.matches('\n').count(), 1, "{content}");
         assert!(stderr.contains(fragment), "{content}\n  got: {stderr}");
         assert!(
             !stderr.contains("not implemented"),
@@ -154,7 +157,7 @@ fn configuration_errors_stop_before_git() {
     assert!(
         legacy_stderr.starts_with(
             format!(
-                "cli-git: Legacy configuration {} is not executed or read by the native cli-git.",
+                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"config-invalid\",\"message\":\"Legacy configuration {} is not executed or read by the native cli-git.",
                 repo.join("cli-git.config.mjs").display()
             )
             .as_str()
@@ -220,13 +223,12 @@ fn legacy_file_beside_jsonc_is_reported() {
             code: Some(2),
             stdout: Vec::<u8>::new(),
             stderr: format!(
-                "cli-git: Legacy configuration {} is ignored: {} is authoritative for the native \
-                 cli-git. Remove the legacy file once no TypeScript cli-git reads it.\n\
+                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\"}}\n\
                  cli-git: policy execution is not implemented in this native development \
                  executable, so git add was not run. Repository-changing commands still require \
                  the installed cli-git.\n",
-                repo.join("cli-git.config.ts").display(),
-                repo.join(CONFIG_FILE_NAME).display()
+                legacy = repo.join("cli-git.config.ts").display(),
+                jsonc = repo.join(CONFIG_FILE_NAME).display()
             )
             .into_bytes(),
         }

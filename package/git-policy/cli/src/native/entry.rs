@@ -1,4 +1,4 @@
-//! What: Decide what one `git` invocation of the native wrapper does.
+//! What: Decide what one `git` invocation of the native wrapper does, and perform it.
 //! Why: The executable stays thin: it gathers process facts, asks this module for an
 //!      action, and performs it. The decision itself is testable without replacing
 //!      the test process.
@@ -9,16 +9,19 @@
 //! ```
 
 /// Import the sibling modules the decision combines.
+use super::action::{Action, ENGINE_FAILURE_EXIT_CODE, failure, policy_execution_unavailable};
 use super::child_environment::{
     FORWARD_TARGET_VARIABLE, child_environment_overlay, environment_value,
 };
-use super::config_file::{LoadedConfig, ignored_legacy_notice, load_repository_config};
 use super::config_loading::{ConfigLoading, classify_config_loading};
 use super::forwarding::replace_process_with_real_git;
 use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
+use super::invocation_config::{
+    InvocationConfigError, config_invalid_event, legacy_warning_events, load_invocation_config,
+};
+use super::management::plan_management;
 use super::real_git::{ResolutionInputs, process_resolution_inputs, resolve_real_git};
 use super::real_git_candidate::same_file;
-use super::worktree_identity::{WorktreeIdentity, resolve_worktree_identity, worktree_root};
 /// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
 /// Why:  Arguments and environment values are never decoded.
@@ -33,69 +36,20 @@ use std::io::Write;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw OS bytes.
 use std::path::{Path, PathBuf};
 
-/// What: Exit code for a wrapper failure that kept Git from running.
-///       `i32` is a signed 32-bit integer, the type of process exit codes.
-/// Why:  The wrapper's contract reserves 2 for usage, configuration and engine
-///       failures, distinct from 1 for policy findings.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const ENGINE_FAILURE_EXIT_CODE = 2;
-/// ```
-pub const ENGINE_FAILURE_EXIT_CODE: i32 = 2;
-
-/// What: What the executable must do for one invocation.
-///       `Vec<(OsString, OsString)>` is an owned list of name/value pairs.
-/// Why:  Forwarding replaces the process and cannot be exercised inside a unit test;
-///       returning the decision as data lets tests check it directly.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Action = { kind: 'forward'; realGit: string; overlay: [string, string][] }
-///   | { kind: 'exit'; code: number; stderr: string };
-/// ```
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Action {
-    /// Become real Git with the caller's unchanged arguments.
-    Forward {
-        /// The selected real Git executable.
-        real_git: PathBuf,
-        /// Variables added to the inherited environment.
-        overlay: Vec<(OsString, OsString)>,
-    },
-    /// Stop without running the caller's command.
-    Exit {
-        /// Process exit code.
-        code: i32,
-        /// Complete text for standard error, already line-terminated.
-        stderr: String,
-    },
-}
-
-/// What: Build the stop action for a wrapper failure.
-/// Why:  Every failure path prints one line-terminated diagnostic and exits 2.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function failure(message: string): Action;
-/// ```
-fn failure(message: &str) -> Action {
-    return Action::Exit {
-        code: ENGINE_FAILURE_EXIT_CODE,
-        // `format!` builds the owned, line-terminated text.
-        stderr: format!("cli-git: {message}\n"),
-    };
-}
+/// The management namespace: `git cli-git ...` is handled by the wrapper, never by Git.
+pub const MANAGEMENT_COMMAND: &str = "cli-git";
 
 /// What: Explain that another cli-git wrapper selected this executable as real Git.
+///       `&Path` borrows this executable's path for the message.
 /// Why:  Forwarding again would bounce between the two wrappers forever; stopping
-///       names both executables so the user can fix PATH.
+///       names this executable so the user can fix PATH.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function forwardedToSelf(ownExecutable: string): Action;
 /// ```
 fn forwarded_to_self(own_executable: &Path) -> Action {
+    // `format!` builds owned text; `.as_str()` lends it to the helper.
     return failure(
         format!(
             "another cli-git wrapper selected this cli-git executable ({}) as real Git. \
@@ -107,55 +61,14 @@ fn forwarded_to_self(own_executable: &Path) -> Action {
     );
 }
 
-/// What: Load the policy configuration of the repository an invocation selects.
-///       `Result<LoadedConfig, Action>` is the settings, or the stop action to perform.
-/// Why:  Git itself reports which worktree the caller's global options select;
-///       outside a worktree there is no configuration file and defaults apply.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function loadInvocationConfig(realGit, globalPrefix, overlay): LoadedConfig;
-/// ```
-pub fn load_invocation_config(
-    real_git: &Path,
-    global_prefix: &[OsString],
-    overlay: &[(OsString, OsString)],
-) -> Result<LoadedConfig, Action> {
-    // What: `match` on the query `Result`: keep the identity or convert the error.
-    // Why:  A query that cannot run or cannot be interpreted must stop the command.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let identity; try { identity = resolveWorktreeIdentity(...); } catch (e) { return failure(String(e)); }
-    // ```
-    let identity: WorktreeIdentity =
-        match resolve_worktree_identity(real_git, global_prefix, overlay) {
-            Ok(resolved) => resolved,
-            // `Err(...)` is the failure variant carrying the stop action.
-            Err(error) => return Err(failure(error.to_string().as_str())),
-        };
-    // `let Some(root) = ... else { ... };` unwraps the worktree top level or exits.
-    let Some(root) = worktree_root(&identity) else {
-        // `Ok(...)` is the success variant: no worktree means built-in defaults.
-        return Ok(LoadedConfig {
-            config: super::config_schema::CliGitConfig::unconfigured(),
-            source: None,
-            ignored_legacy: Vec::<PathBuf>::new(),
-        });
-    };
-    match load_repository_config(root) {
-        Ok(loaded) => return Ok(loaded),
-        Err(error) => return Err(failure(error.message.as_str())),
-    }
-}
-
 /// What: Decide the action for one invocation from injected process facts.
-///       `&[OsString]` borrows the arguments after the program name.
-/// Why:  Order matters. The recursion check runs before anything else. Commands that
-///       need no policy configuration are forwarded without reading it. Every other
-///       command validates configuration and then stops, because policy execution
-///       is not implemented yet and forwarding it unguarded would silently drop
-///       enforcement.
+///       `&[OsString]` borrows the arguments after the program name;
+///       `&[(OsString, OsString)]` borrows the environment as name/value pairs.
+/// Why:  Order matters. The recursion check runs before anything else. The management
+///       namespace is answered by the wrapper. Commands that need no policy
+///       configuration are forwarded without reading it. Every other command
+///       validates configuration and then stops, because policy execution is not
+///       implemented yet and forwarding it unguarded would silently drop enforcement.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -173,57 +86,72 @@ pub fn plan_invocation(
     {
         return forwarded_to_self(inputs.own_executable.as_path());
     }
+    let layout: GlobalLayout = global_layout(arguments);
+    if layout.outcome == GlobalOutcome::Command
+        && arguments[layout.prefix_len] == MANAGEMENT_COMMAND
+    {
+        // `&arguments[a..]` borrows from index `a` on; `&arguments[..a]` borrows up to it.
+        return plan_management(
+            &arguments[layout.prefix_len + 1..],
+            &arguments[..layout.prefix_len],
+            environment,
+            inputs,
+        );
+    }
+    // What: `match` on the resolver's `Result`: keep the path or stop with its message.
+    // Why:  Without real Git there is nothing to forward to.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let realGit; try { realGit = resolveRealGit(inputs); } catch (e) { return failure(String(e)); }
+    // ```
     let real_git: PathBuf = match resolve_real_git(inputs) {
         Ok(found) => found,
         Err(error) => return failure(error.to_string().as_str()),
     };
     let overlay: Vec<(OsString, OsString)> =
         child_environment_overlay(environment, real_git.as_path());
-    let layout: GlobalLayout = global_layout(arguments);
     // Without a subcommand Git only prints its usage; there is nothing for policy to guard.
     if layout.outcome == GlobalOutcome::NoCommand
         || classify_config_loading(arguments) == ConfigLoading::Skip
     {
         return Action::Forward { real_git, overlay };
     }
-    // `&arguments[..n]` borrows the first `n` arguments: the caller's global options.
-    let loaded: LoadedConfig = match load_invocation_config(
+    match load_invocation_config(
         real_git.as_path(),
         &arguments[..layout.prefix_len],
         overlay.as_slice(),
     ) {
-        Ok(config) => config,
-        Err(action) => return action,
-    };
-    // `String::new()` is empty owned text; `mut` allows appending.
-    let mut stderr: String = String::new();
-    if let Some(source) = &loaded.source {
-        for legacy in &loaded.ignored_legacy {
+        Ok(loaded) => {
+            // `String` is owned text; `mut` allows appending the stop notice.
+            let mut stderr: String = legacy_warning_events(&loaded);
             stderr.push_str(
-                format!(
-                    "cli-git: {}\n",
-                    ignored_legacy_notice(legacy.as_path(), source.as_path())
+                policy_execution_unavailable(
+                    // `.to_string_lossy()` renders the subcommand for the message only.
+                    arguments[layout.prefix_len].to_string_lossy().as_ref(),
                 )
                 .as_str(),
             );
+            return Action::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                // `String::new()` is empty owned text: wrapped commands report on standard error.
+                stdout: String::new(),
+                stderr,
+            };
         }
+        Err(InvocationConfigError::Configuration(error)) => {
+            return Action::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stdout: String::new(),
+                stderr: config_invalid_event(&error),
+            };
+        }
+        Err(InvocationConfigError::Repository(message)) => return failure(message.as_str()),
     }
-    stderr.push_str(
-        format!(
-            "cli-git: policy execution is not implemented in this native development \
-             executable, so git {} was not run. Repository-changing commands still require \
-             the installed cli-git.\n",
-            arguments[layout.prefix_len].to_string_lossy()
-        )
-        .as_str(),
-    );
-    return Action::Exit {
-        code: ENGINE_FAILURE_EXIT_CODE,
-        stderr,
-    };
 }
 
 /// What: Run one invocation with the real process facts and return its exit code.
+///       `i32` is a signed 32-bit integer, the type of process exit codes.
 ///       Returns only when Git was not started; a forwarded command never returns.
 /// Why:  This is everything the executable's `main` does; keeping it in the library
 ///       lets the same code be measured by tests and mutation runs.
@@ -248,35 +176,44 @@ pub fn run_process(arguments: &[OsString], environment: &[(OsString, OsString)])
         Action::Forward { real_git, overlay } => {
             let error: std::io::Error =
                 replace_process_with_real_git(real_git.as_path(), arguments, overlay.as_slice());
-            write_stderr(
+            write_stream(
+                &mut std::io::stderr(),
                 format!("cli-git: cannot start {}: {error}\n", real_git.display()).as_str(),
             );
             return ENGINE_FAILURE_EXIT_CODE;
         }
-        Action::Exit { code, stderr } => {
-            write_stderr(stderr.as_str());
+        Action::Exit {
+            code,
+            stdout,
+            stderr,
+        } => {
+            // `&mut` lends each stream for writing.
+            write_stream(&mut std::io::stdout(), stdout.as_str());
+            write_stream(&mut std::io::stderr(), stderr.as_str());
             return code;
         }
     }
 }
 
-/// What: Write text to standard error, ignoring a closed stream.
+/// What: Write text to an output stream, ignoring a closed stream.
+///       `&mut dyn Write` lends "any writable stream" (`dyn` means the concrete type is
+///       chosen at run time, like a TS interface value).
 /// Why:  The exit code already carries the result; a reader that went away must not
 ///       turn a diagnostic into a panic.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function writeStderr(text: string): void { try { process.stderr.write(text); } catch {} }
+/// function writeStream(stream: Writable, text: string): void { try { stream.write(text); } catch {} }
 /// ```
-fn write_stderr(text: &str) {
+fn write_stream(stream: &mut dyn Write, text: &str) {
     // What: `let _ = ...` deliberately discards the write's `Result`.
     // Why:  There is nowhere left to report a failure to write a diagnostic.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // try { process.stderr.write(text); } catch { /* reader closed */ }
+    // try { stream.write(text); } catch { /* reader closed */ }
     // ```
-    let _ = std::io::stderr().write_all(text.as_bytes());
+    let _ = stream.write_all(text.as_bytes());
 }
 
 /// Decision controls stay out of the release executable.

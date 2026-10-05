@@ -1,7 +1,8 @@
 //! What: Decision controls for one wrapper invocation against real Git 2.56.0.
 //! Why: Inspection commands must be forwarded without reading configuration, every
-//!      other command must validate configuration and then stop, and a wrapper
-//!      selected as real Git must refuse to forward.
+//!      other command must validate configuration and then stop, the management
+//!      namespace must never reach Git, and a wrapper selected as real Git must
+//!      refuse to forward.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,11 +11,11 @@
 #![cfg(unix)]
 
 /// Import the decision under test and shared fixtures.
-use super::{Action, ENGINE_FAILURE_EXIT_CODE, load_invocation_config, plan_invocation};
+use super::{MANAGEMENT_COMMAND, plan_invocation};
+use crate::action::{Action, ENGINE_FAILURE_EXIT_CODE};
 use crate::child_environment::FORWARD_TARGET_VARIABLE;
 use crate::config_file::CONFIG_FILE_NAME;
-use crate::config_schema::CliGitConfig;
-use crate::policy_registry::{PolicyId, Severity};
+use crate::management_arguments::MANAGEMENT_HELP;
 use crate::real_git::{Platform, ResolutionInputs};
 use crate::test_support::{REAL_GIT, executable, fixture, remove, repository};
 use std::ffi::OsString;
@@ -34,13 +35,20 @@ fn inputs(root: &Path) -> ResolutionInputs {
     };
 }
 
+/// Build owned arguments from text.
+fn text(values: &[&str]) -> Vec<OsString> {
+    let mut result: Vec<OsString> = Vec::<OsString>::new();
+    for value in values {
+        result.push(OsString::from(value));
+    }
+    return result;
+}
+
 /// Build `-C <directory> <rest...>` as owned arguments.
 fn in_directory(directory: &Path, rest: &[&str]) -> Vec<OsString> {
     let mut result: Vec<OsString> =
         vec![OsString::from("-C"), directory.as_os_str().to_os_string()];
-    for value in rest {
-        result.push(OsString::from(value));
-    }
+    result.extend(text(rest));
     return result;
 }
 
@@ -63,15 +71,29 @@ fn forward() -> Action {
     };
 }
 
-/// Return the stderr of a stop action with exit code 2; a forward fails the test.
+/// Return the stderr of a stop action with exit code 2 and empty stdout; a forward fails the test.
 fn stopped(action: Action) -> String {
     match action {
-        Action::Exit { code, stderr } => {
+        Action::Exit {
+            code,
+            stdout,
+            stderr,
+        } => {
             assert_eq!(code, ENGINE_FAILURE_EXIT_CODE);
+            assert_eq!(stdout, "", "wrapped commands report on standard error");
             return stderr;
         }
         Action::Forward { .. } => panic!("expected a stop action, got {action:?}"),
     }
+}
+
+/// The stop notice for one subcommand.
+fn not_run(subcommand: &str) -> String {
+    return format!(
+        "cli-git: policy execution is not implemented in this native development executable, \
+         so git {subcommand} was not run. Repository-changing commands still require the \
+         installed cli-git.\n"
+    );
 }
 
 /// Inspection commands, native queries, option errors and a bare `git` are forwarded unchanged.
@@ -88,16 +110,66 @@ fn commands_needing_no_policy_are_forwarded() {
         vec!["-C"],
         vec![],
         vec!["--no-pager"],
+        // The namespace word in any position but the subcommand is an ordinary argument.
+        vec!["log", "cli-git"],
+        vec!["-C", "cli-git", "status"],
+        vec!["--help", "cli-git"],
     ] {
-        let mut owned: Vec<OsString> = Vec::<OsString>::new();
-        for value in &arguments {
-            owned.push(OsString::from(value));
-        }
         assert_eq!(
-            plan_invocation(owned.as_slice(), &[], &resolution),
+            plan_invocation(text(arguments.as_slice()).as_slice(), &[], &resolution),
             forward(),
             "{arguments:?}"
         );
+    }
+    remove(root.as_path());
+}
+
+/// `git cli-git ...` is answered by the wrapper, also behind global options, and never forwarded.
+#[test]
+fn management_namespace_is_answered_by_the_wrapper() {
+    let root: PathBuf = fixture("entry-management");
+    let mut resolution: ResolutionInputs = inputs(root.as_path());
+    // No Git on PATH: help must not need it.
+    resolution.path = OsString::from("nothing-here");
+    assert_eq!(MANAGEMENT_COMMAND, "cli-git");
+    for arguments in [
+        vec!["cli-git", "--help"],
+        vec!["-C", "/somewhere", "-c", "a.b=c", "cli-git", "-h"],
+        vec!["--no-pager", "cli-git", "--help"],
+    ] {
+        assert_eq!(
+            plan_invocation(text(arguments.as_slice()).as_slice(), &[], &resolution),
+            Action::Exit {
+                code: 0,
+                stdout: String::from(MANAGEMENT_HELP),
+                stderr: String::new(),
+            },
+            "{arguments:?}"
+        );
+    }
+    // The global prefix reaches the direct command: it selects the repository whose file is read.
+    resolution.path = OsString::from("/usr/bin");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    std::fs::write(repo.join(CONFIG_FILE_NAME), r#"{ "unknown": 1 }"#).expect("invalid config");
+    match plan_invocation(
+        in_directory(repo.as_path(), &["cli-git", "check", "--all"]).as_slice(),
+        &[],
+        &resolution,
+    ) {
+        Action::Exit {
+            code,
+            stdout,
+            stderr,
+        } => {
+            assert_eq!(code, 2);
+            assert!(stdout.contains("\"code\":\"config-invalid\""), "{stdout}");
+            assert!(
+                stdout.contains("Unknown configuration key: unknown."),
+                "{stdout}"
+            );
+            assert_eq!(stderr, "");
+        }
+        Action::Forward { .. } => panic!("the management namespace is never forwarded"),
     }
     remove(root.as_path());
 }
@@ -134,62 +206,56 @@ fn policy_commands_stop_after_validating_configuration() {
     let root: PathBuf = fixture("entry-required");
     let repo: PathBuf = repository(root.as_path(), "repo");
     let resolution: ResolutionInputs = inputs(root.as_path());
-    let not_run: &str = "cli-git: policy execution is not implemented in this native development \
-                         executable, so git add was not run. Repository-changing commands still \
-                         require the installed cli-git.\n";
     let arguments: Vec<OsString> = in_directory(repo.as_path(), &["add", "file"]);
-    // No configuration file: defaults apply.
+    let source: PathBuf = repo.join(CONFIG_FILE_NAME);
+    let legacy: PathBuf = repo.join("cli-git.config.ts");
+    // No configuration file: unconfigured defaults apply.
     assert_eq!(
         stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
-        not_run
+        not_run("add")
     );
     // A valid file is accepted.
-    std::fs::write(
-        repo.join(CONFIG_FILE_NAME),
-        r#"{ "policies": { "final-newline": "error" } }"#,
-    )
-    .expect("valid config");
+    std::fs::write(&source, r#"{ "policies": { "final-newline": "error" } }"#)
+        .expect("valid config");
     assert_eq!(
         stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
-        not_run
+        not_run("add")
     );
-    // A legacy file beside it is reported before the stop notice.
-    std::fs::write(repo.join("cli-git.config.ts"), "export default {};").expect("legacy config");
+    // A legacy file beside it is one warning event before the stop notice.
+    std::fs::write(&legacy, "export default {};").expect("legacy config");
     assert_eq!(
         stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
         format!(
-            "cli-git: Legacy configuration {} is ignored: {} is authoritative for the native \
-             cli-git. Remove the legacy file once no TypeScript cli-git reads it.\n{not_run}",
-            repo.join("cli-git.config.ts").display(),
-            repo.join(CONFIG_FILE_NAME).display()
+            "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\"}}\n{stop}",
+            legacy = legacy.display(),
+            jsonc = source.display(),
+            stop = not_run("add")
         )
     );
-    // An invalid key stops with the configuration diagnostic and no stop notice.
-    std::fs::write(
-        repo.join(CONFIG_FILE_NAME),
-        r#"{ "policies": { "unknown": "off" } }"#,
-    )
-    .expect("invalid config");
-    let invalid: String = stopped(plan_invocation(arguments.as_slice(), &[], &resolution));
+    // An invalid key is exactly one config-invalid event and no stop notice.
+    std::fs::write(&source, r#"{ "policies": { "unknown": "off" } }"#).expect("invalid config");
+    assert_eq!(
+        stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
+        format!(
+            "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"config-invalid\",\"message\":\"{}: Unknown policy ID: unknown. Shipped policies: require-root, linked-worktree-only, branch-worktree-only, add-explicit, final-newline, markdown/autofix, mono/forbidden-root-context, mono/dependent-version-bump, security/forbidden-strings.\"}}\n",
+            source.display()
+        )
+    );
+    // A legacy file alone demands migration, as a config-invalid event.
+    std::fs::remove_file(&source).expect("remove JSONC");
+    let migration: String = stopped(plan_invocation(arguments.as_slice(), &[], &resolution));
     assert!(
-        invalid.starts_with(
+        migration.starts_with(
             format!(
-                "cli-git: {}: Unknown policy ID: unknown.",
-                repo.join(CONFIG_FILE_NAME).display()
+                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"config-invalid\",\"message\":\"Legacy configuration {} is not executed or read by the native cli-git.",
+                legacy.display()
             )
             .as_str()
         ),
-        "{invalid}"
+        "{migration}"
     );
-    assert!(invalid.ends_with(".\n"), "{invalid}");
-    assert!(!invalid.contains("not implemented"), "{invalid}");
-    // A legacy file alone demands migration.
-    std::fs::remove_file(repo.join(CONFIG_FILE_NAME)).expect("remove JSONC");
-    let legacy: String = stopped(plan_invocation(arguments.as_slice(), &[], &resolution));
-    assert!(
-        legacy.starts_with("cli-git: Legacy configuration ") && legacy.contains("is not executed"),
-        "{legacy}"
-    );
+    assert!(migration.ends_with("\"}\n"), "{migration}");
+    assert_eq!(migration.matches('\n').count(), 1);
     remove(root.as_path());
 }
 
@@ -202,68 +268,14 @@ fn policy_commands_outside_a_worktree_use_defaults() {
     std::fs::create_dir(&plain).expect("plain directory");
     // An invalid file outside any repository is never read.
     std::fs::write(plain.join(CONFIG_FILE_NAME), "invalid").expect("stray file");
-    let message: String = stopped(plan_invocation(
-        in_directory(plain.as_path(), &["init"]).as_slice(),
-        &[],
-        &resolution,
-    ));
-    assert!(
-        message.starts_with("cli-git: policy execution is not implemented")
-            && message.contains("so git init was not run"),
-        "{message}"
-    );
-    let loaded = load_invocation_config(
-        Path::new(REAL_GIT),
-        in_directory(plain.as_path(), &[]).as_slice(),
-        &[],
-    )
-    .expect("defaults outside a worktree");
-    assert_eq!(loaded.config, CliGitConfig::unconfigured());
-    assert_eq!(loaded.source, None);
-    remove(root.as_path());
-}
-
-/// The caller's global options select which repository's configuration is loaded.
-#[test]
-fn configuration_follows_global_repository_selection() {
-    let root: PathBuf = fixture("entry-selection");
-    let first: PathBuf = repository(root.as_path(), "first");
-    let second: PathBuf = repository(root.as_path(), "second");
-    std::fs::create_dir(first.join("nested")).expect("nested directory");
-    std::fs::write(
-        first.join(CONFIG_FILE_NAME),
-        r#"{ "policies": { "add-explicit": "warn" } }"#,
-    )
-    .expect("first config");
-    std::fs::write(
-        second.join(CONFIG_FILE_NAME),
-        r#"{ "policies": { "add-explicit": "off" } }"#,
-    )
-    .expect("second config");
-    for (directory, source, expected) in [
-        (
-            first.join("nested"),
-            first.join(CONFIG_FILE_NAME),
-            Severity::Warn,
-        ),
-        (second.clone(), second.join(CONFIG_FILE_NAME), Severity::Off),
-    ] {
-        let loaded = load_invocation_config(
-            Path::new(REAL_GIT),
-            in_directory(directory.as_path(), &[]).as_slice(),
+    assert_eq!(
+        stopped(plan_invocation(
+            in_directory(plain.as_path(), &["init"]).as_slice(),
             &[],
-        )
-        .expect("selected repository configuration");
-        assert_eq!(loaded.source, Some(source));
-        assert_eq!(
-            loaded
-                .config
-                .policies
-                .setting(PolicyId::AddExplicit)
-                .severity,
-            expected
-        );
-    }
+            &resolution,
+        )),
+        not_run("init")
+    );
     remove(root.as_path());
 }
 
@@ -279,19 +291,27 @@ fn forward_target_naming_this_executable_stops() {
             OsString::from(FORWARD_TARGET_VARIABLE),
             target.into_os_string(),
         )];
-        assert_eq!(
-            stopped(plan_invocation(
-                &[OsString::from("--version")],
-                environment.as_slice(),
-                &resolution
-            )),
-            format!(
-                "cli-git: another cli-git wrapper selected this cli-git executable ({}) as real \
-                 Git. Forwarding again would never reach Git. Remove the extra cli-git from PATH \
-                 or place the real Git executable on PATH.\n",
-                resolution.own_executable.display()
-            )
-        );
+        // Every kind of invocation stops, including the management namespace.
+        for arguments in [
+            vec!["--version"],
+            vec!["add", "x"],
+            vec!["cli-git", "--help"],
+        ] {
+            assert_eq!(
+                stopped(plan_invocation(
+                    text(arguments.as_slice()).as_slice(),
+                    environment.as_slice(),
+                    &resolution
+                )),
+                format!(
+                    "cli-git: another cli-git wrapper selected this cli-git executable ({}) as \
+                     real Git. Forwarding again would never reach Git. Remove the extra cli-git \
+                     from PATH or place the real Git executable on PATH.\n",
+                    resolution.own_executable.display()
+                ),
+                "{arguments:?}"
+            );
+        }
     }
     // A marker naming real Git (inherited by a hook), a missing path or an empty value is not this executable.
     for target in [REAL_GIT, "/nonexistent/git", ""] {
@@ -301,7 +321,7 @@ fn forward_target_naming_this_executable_stops() {
         )];
         assert_eq!(
             plan_invocation(
-                &[OsString::from("--version")],
+                text(&["--version"]).as_slice(),
                 environment.as_slice(),
                 &resolution
             ),
@@ -321,16 +341,19 @@ fn missing_real_git_stops_with_resolution_evidence() {
     std::os::unix::fs::symlink(&resolution.own_executable, root.join("only-wrapper/git"))
         .expect("symlink");
     resolution.path = OsString::from("only-wrapper:missing");
-    assert_eq!(
-        stopped(plan_invocation(
-            &[OsString::from("status")],
-            &[],
-            &resolution
-        )),
-        "cli-git: Could not find a real Git executable after examining 2 PATH candidates and \
-         skipping 1 cli-git wrappers. Ensure Git is installed and PATH/PATHEXT expose its \
-         executable.\n"
-    );
+    for arguments in [vec!["status"], vec!["add", "x"]] {
+        assert_eq!(
+            stopped(plan_invocation(
+                text(arguments.as_slice()).as_slice(),
+                &[],
+                &resolution
+            )),
+            "cli-git: Could not find a real Git executable after examining 2 PATH candidates and \
+             skipping 1 cli-git wrappers. Ensure Git is installed and PATH/PATHEXT expose its \
+             executable.\n",
+            "{arguments:?}"
+        );
+    }
     remove(root.as_path());
 }
 
@@ -346,7 +369,7 @@ fn uninterpretable_identity_output_stops() {
     );
     resolution.path = OsString::from("fake");
     let message: String = stopped(plan_invocation(
-        &[OsString::from("commit")],
+        text(&["commit"]).as_slice(),
         &[],
         &resolution,
     ));

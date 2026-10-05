@@ -6,6 +6,9 @@
 //! // Internal modules used by the forthcoming native entry point and consumer verification.
 //! ```
 
+/// The decision one invocation ends in: become Git, or print and exit.
+pub mod action;
+
 /// Variables added to every real-Git child: lock PID injection and the forward-target marker.
 pub mod child_environment;
 
@@ -30,6 +33,9 @@ pub mod config_schema;
 /// Key-naming typed readers over parsed JSONC values.
 mod config_values;
 
+/// JSONL event rendering for wrapper-made diagnostics.
+pub mod diagnostics;
+
 /// Worktree target classification for worktree-enforcing policies.
 pub mod effective_target;
 
@@ -47,6 +53,15 @@ pub mod git_metadata;
 
 /// Git 2.56.0 global-argument boundaries over unchanged operating-system strings.
 pub mod global_arguments;
+
+/// Configuration of the repository one invocation selects.
+pub mod invocation_config;
+
+/// The `git cli-git` decision: help, retired commands, and direct `check`/`fix`.
+pub mod management;
+
+/// The `git cli-git` argument grammar.
+pub mod management_arguments;
 
 /// The fixed registry of shipped policies.
 pub mod policy_registry;
