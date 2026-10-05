@@ -62,6 +62,15 @@ description = "Mutate the anonymous-function rule with its focused baseline in t
 depends = ["test:rust-style"]
 run = "node bin/mutate-container.mjs --rust-style"
 
+[tasks."mutation:markdown"]
+description = "Mutate native Markdown modules against their tests after a full-suite container baseline"
+depends = ["test:container"]
+run = "node bin/mutate-container.mjs --markdown"
+
+[tasks."mutation:list:markdown"]
+description = "Inspect the Markdown mutant scope without mutating or building source"
+run = "cargo mutants --list --no-config --file 'src/markdown_*.rs'"
+
 [tasks."test:container"]
 description = "Run artifact tests in a mount-free, network-disabled 2 GiB / 2 CPU container"
 run = "node bin/test-container.mjs"

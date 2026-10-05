@@ -8,7 +8,7 @@
 
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::{Edit, Fix};
-use crate::markdown_code::language_insert_offset;
+use crate::markdown_code::fence_marker_end;
 use crate::markdown_finding::finding;
 use crate::markdown_source::MarkdownSource;
 /// Import native code payloads and shared diagnostics/fixes.
@@ -17,7 +17,8 @@ use satteri_ast::mdast::{MdastNodeType, decode_code_data};
 /// Require at least one nonblank line and reject every non-prompt content line.
 fn all_prompts(value: &str) -> bool {
     let mut seen: bool = false;
-    for line in value.split('\n') {
+    // Both decoded LF and preserved bare CR delimit command/output lines; CRLF's empty segment is ignored.
+    for line in value.split(['\n', '\r']) {
         if line.trim().is_empty() {
             continue;
         }
@@ -70,7 +71,7 @@ pub fn commands_show_output(context: &MarkdownSource, severity: Severity) -> Vec
         if context.kind(*id) != MdastNodeType::Code || context.node_span(*id).column != 1 {
             continue;
         }
-        if language_insert_offset(context, *id).is_none() {
+        if fence_marker_end(context, *id).is_none() {
             continue;
         }
         let data = decode_code_data(context.data(*id));

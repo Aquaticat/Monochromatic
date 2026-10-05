@@ -13,29 +13,32 @@ use crate::markdown_source::MarkdownSource;
 /// Import native code data and shared finding construction.
 use satteri_ast::mdast::{MdastNodeType, decode_code_data};
 
-/// Return the opening marker's end using the incumbent written-form classification.
-pub(crate) fn language_insert_offset(context: &MarkdownSource, id: u32) -> Option<usize> {
-    let (start, _) = context.offsets(id);
-    let written = context.slice(id);
-    let trimmed = written.trim_start();
-    if !trimmed.starts_with("```") && !trimmed.starts_with("~~~") {
+/// What: Return a fenced opener's absolute marker end, independent of its language label.
+/// Why: Native fenced-code spans already begin at the marker, excluding indentation/container prefixes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function fenceMarkerEnd(context, id): number | undefined;
+/// ```
+pub(crate) fn fence_marker_end(context: &MarkdownSource, id: u32) -> Option<usize> {
+    // Copy the native start offset and borrow exact authored bytes, not normalized code content.
+    let (start, _): (usize, usize) = context.offsets(id);
+    let written: &str = context.slice(id);
+    if !written.starts_with("```") && !written.starts_with("~~~") {
+        // None means indented code, not a fenced opener lacking a language label.
         return None;
     }
-    let opener = written
-        .split('\n')
-        .next()
-        .expect("a source slice has an opening segment");
-    let marker_and_rest = opener.trim_start();
-    let indentation = opener.len() - marker_and_rest.len();
-    let marker = marker_and_rest.as_bytes()[0];
-    let mut width = 0;
-    for byte in marker_and_rest.bytes() {
+    // Marker presence proves this byte exists; its consecutive run determines the insertion boundary.
+    let marker: u8 = written.as_bytes()[0];
+    let mut width: usize = 0;
+    for byte in written.bytes() {
         if byte != marker {
             break;
         }
         width += 1;
     }
-    return Some(start + indentation + width);
+    // Some carries the verified absolute boundary after the complete marker run.
+    return Some(start + width);
 }
 
 /// Add a language label to an unlabeled fence without changing its body or trailing opener whitespace.
@@ -53,7 +56,7 @@ pub fn fenced_code_language(
         if !data.lang.is_empty() {
             continue;
         }
-        let Some(offset) = language_insert_offset(context, *id) else {
+        let Some(offset) = fence_marker_end(context, *id) else {
             continue;
         };
         let label = if rustdoc { "rust" } else { "text" };

@@ -314,7 +314,13 @@ container exceptions,
 exact messages,
 markup-boundary heading text,
 and native fence offsets.
-The recheck is pending.
+The recheck (`proc_a6c6`) passed 131 tests and failed the new bare-CR output-bearing fence control.
+`all_prompts` split decoded content only on LF;
+Sätteri retained CR in this code value,
+so a command followed by output became one prompt-looking line.
+The checker now splits on either CR or LF,
+while the byte editor still preserves each original line ending.
+A new full gate is pending.
 
 Advisor review supplied those additional controls.
 Its suggested punctuation expansion and registry finding were rejected after checking
@@ -343,7 +349,16 @@ indented,
 quoted,
 list-contained,
 and Unicode-prefixed fences before removing redundant adjustment logic.
+The native fence matrix passed in `proc_a6c6`,
+so redundant indentation adjustment was removed and the helper renamed `fence_marker_end`.
+The mutation campaign also survived strict/adjacent heading-depth comparison mutations;
+regular one-step increases and equal-depth siblings now have explicit controls.
 The final mutation report and further survivor dispositions remain pending.
+A separate `mutation:markdown` task verifies the current Markdown-only scope after a full test baseline;
+it does not replace the existing full-snapshot campaign.
+Reference-definition checking has also been ported,
+with normalized parser identities and source-preserving newline/container deletion tests.
+Its first gate remains pending.
 Semantic fuzz controls now exercise all generated branches through production sessions.
 The first fixture path was not a crate root;
 renaming the fixed metadata path to `/main.rs` made all generator controls pass.
