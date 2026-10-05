@@ -10,7 +10,7 @@
 #![cfg(unix)]
 
 /// The provider under test, the fact types and the real-Git fixture helpers.
-use super::{GitFacts, RepositoryFacts, git_facts};
+use super::{GitFacts, RepositoryFacts, git_facts, head_file_exists};
 use crate::command_test_support::{
     git, git_status, repository, repository_with_tracked_file, start_conflicted_merge,
 };
@@ -243,6 +243,17 @@ fn sequencer_state_is_what_the_head_files_say() {
         facts_in(&[root.as_path()]).sequencer_state(),
         Ok(SequencerState::NotInProgress)
     );
+    // Git prints the target of a linked head file, not the name asked for, so the answer
+    // is refused instead of being read as "nothing in progress".
+    let linked_head: PathBuf = root.join(".git/CHERRY_PICK_HEAD");
+    std::os::unix::fs::symlink("nowhere", &linked_head).expect("linked head file");
+    assert_eq!(
+        facts_in(&[root.as_path()]).sequencer_state(),
+        Err(String::from(
+            "git rev-parse --git-path did not print the three sequencer head paths of one Git directory"
+        ))
+    );
+    std::fs::remove_file(&linked_head).expect("remove linked head file");
     // Outside a repository the path query fails and normal enforcement applies.
     let plain: PathBuf = directory.join("plain");
     std::fs::create_dir(&plain).expect("plain directory");
@@ -398,5 +409,22 @@ fn uninterpretable_answers_are_failures() {
         facts.remote_guess_creates_branch(OsStr::new("topic")),
         Ok(false)
     );
+    remove(root.as_path());
+}
+
+/// A head file is present whatever it is, even a link to nowhere; a missing or empty path is absent.
+#[test]
+fn head_file_presence_does_not_follow_links() {
+    let root: PathBuf = fixture("facts-head-file");
+    let dangling: PathBuf = root.join("dangling");
+    std::os::unix::fs::symlink("nowhere", &dangling).expect("dangling link");
+    let regular: PathBuf = root.join("regular");
+    std::fs::write(&regular, b"").expect("regular file");
+    assert!(head_file_exists(dangling.as_os_str().as_encoded_bytes()));
+    assert!(head_file_exists(regular.as_os_str().as_encoded_bytes()));
+    assert!(!head_file_exists(
+        root.join("missing").as_os_str().as_encoded_bytes()
+    ));
+    assert!(!head_file_exists(b""));
     remove(root.as_path());
 }
