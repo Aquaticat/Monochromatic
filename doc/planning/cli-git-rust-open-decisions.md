@@ -370,7 +370,7 @@ the configuration alone describes the policy.
 
 Against:
 the standalone scanner and the CI workflow still need the variable,
-so the path is written in two places;
+so the path is written in more than one place;
 the option needs a rule for paths that leave the repository;
 a repository that wants no private rules must say so instead of relying on an absent default file.
 
@@ -396,7 +396,7 @@ which also supplies the wrapper itself,
 while C adds a second source and a precedence rule.
 C over B,
 because B alone leaves the standalone scanner and CI on the variable anyway,
-so the path is named twice with no fallback between the two.
+so the path is named in more than one place with no fallback between them.
 
 ## Configuration root in a bare repository
 
@@ -425,7 +425,8 @@ which has no worktree and therefore no top level.
 Settled by evidence:
 no file is read and the defaults apply.
 The determining source is the decision of 2026-10-05.
-A consequence to know:
+A consequence to know,
+by reading:
 in a bare repository the optional policies are off,
 so a push from one is not scanned by `security/forbidden-strings`.
 
@@ -697,7 +698,9 @@ Measured facts for that pick:
   and its manifest marks it passively maintained.
 - [nix][nix] 0.31.3 covers Unix-like systems only.
 - [rustix][rustix] 1.1.5 can send a signal (`src/process/kill.rs`);
-  its handler interface sits in a module the crate hides as experimental (`src/lib.rs:308-323`).
+  its handler interface (`kernel_sigaction`) sits in a module the crate hides,
+  renames periodically,
+  and reserves for implementers of a C library (`src/lib.rs:308-323`).
 - `libc` and `windows-sys` are what [cargo][cargo] uses for the same job.
 
 ### Verdict
@@ -844,7 +847,7 @@ and foreground-child's own documentation says the status there may come out as `
 B over C,
 because shell callers,
 which is what agents and scripts here are,
-cannot tell the two apart,
+cannot tell them apart,
 and B needs no signal interface.
 C over A,
 because A hides that Git was killed,
@@ -1173,7 +1176,7 @@ and gains nothing over Option B.
 
 C over B,
 because a reader acts differently on unreadable content than on a broken installation,
-and the native engine already keeps the two apart.
+and the native engine already keeps them apart.
 B over A,
 because no consumer outside the package matches `plugin-threw`,
 and the name would be wrong from the first native release on.
@@ -1253,7 +1256,9 @@ Read from source on 2026-10-05.
   So the directory in the incumbent's first line is ignored on Windows,
   and `node.exe` is whichever one `PATH` yields (by reading).
 - Git runs a config-based hook command through a shell (`hook.c:612-619`),
-  and `hook.<event>.enabled=false` switches off every config-based hook of that event.
+  and `hook.<event>.enabled=false` switches off every config-based hook of that event
+  (comment at `hook.c:374`;
+  `SPEC.md:2412-2413`).
 - Git itself dispatches on the name it was started under:
   started as `git-<name>` it runs that command (`git.c:949-952`).
 - Every hook manager surveyed writes a shell script and relies on Git for Windows' bundled `sh` there:
@@ -1498,7 +1503,7 @@ or must the repository be quiet first.
   ([Microsoft documentation][datetime-ticks]).
   The incumbent's string can therefore be produced by adding a constant,
   without starting PowerShell.
-  That the two start times are the same value is an inference,
+  That both start times are the same value is an inference,
   to be proven by a fixture on Windows.
 - [psutil][psutil] identifies a process by the same pair:
   "two instances are equal if they have the same PID and creation time" (`docs/api.rst:1111-1114`).
@@ -1901,7 +1906,7 @@ and under A each such move stops work until someone rebuilds the wrapper.
 
 ### The choice
 
-The incumbent adds text of its own after two Git commands.
+The incumbent adds text of its own after certain Git commands.
 After `git --version` it prints a line that lists what the wrapper enforces.
 After a plain `git status` it prints a note about the staging and branching rules,
 having switched off Git's own hints,
@@ -2216,7 +2221,7 @@ no behavior is ever checked.
 
 B over A,
 because the platform-specific code sits in named areas,
-so running those covers the differences without making every change wait on three systems.
+so running those covers the differences without making every change wait on every system.
 A over C,
 because hosted runners are free here and run on every change,
 while C depends on someone remembering.
@@ -2238,7 +2243,7 @@ and a standalone task does it in the release workflow.
 Both use the same TypeScript planning code today.
 Once the policy is in Rust,
 either the task keeps the TypeScript code,
-so the plan exists in two languages,
+so the plan exists in both languages,
 or the task calls the native wrapper.
 
 The hk cleanup:
@@ -2311,12 +2316,12 @@ it uses the path an earlier owner decision already opened.
 
 Against:
 the release workflow has to build or fetch the native executable;
-the equivalence of the two entry points has to be proven first.
+the equivalence of both entry points has to be proven first.
 
 #### Ranking
 
 B over A,
-because the same rule computed by two implementations is the kind of drift the plan's ban on a
+because the same rule computed by separate implementations is the kind of drift the plan's ban on a
 permanent bridge is meant to prevent,
 and the cost of B is a build step,
 paid once.
@@ -2844,7 +2849,7 @@ and the resolution it needs is already on the list of things to port.
   Every statement about Windows hook entries comes from reading Git and Git for Windows source,
   and every statement about macOS process identity from reading the incumbent.
 - That the Windows process start time PowerShell reports equals the `GetProcessTimes` creation time
-  is an inference from the two documented units.
+  is an inference from the documented units of each.
 - Whether reduced Git for Windows distributions ship `sh` was not checked.
 - The incumbent's behavior on a path that is not UTF-8,
   and on a signal sent to the wrapper alone,
@@ -2865,6 +2870,7 @@ and the resolution it needs is already on the list of things to port.
   (rustix from its `v1.1.5` tag),
   not from rendered documentation pages.
 - For lefthook,
+  husky,
   pre-commit,
   hk,
   cargo,
@@ -2874,6 +2880,10 @@ and the resolution it needs is already on the list of things to port.
   hub,
   uv,
   psutil,
+  signal-hook,
+  ctrlc,
+  nix,
+  fail-rs,
   and the Linux kernel,
   the files were read from the default branch on 2026-10-05;
   the release numbers given are the latest release at that time.
@@ -2936,7 +2946,7 @@ Which code should the native wrapper print?"
 Detail:
 "Engine failure codes that lose their source".
 
-#### Dependent-version bump in two languages
+#### A second implementation of the dependent-version bump
 
 Suggested wording:
 "Raising a package's version also bumps the packages that depend on it.
@@ -3371,7 +3381,7 @@ Detail:
 [gfw-src]: https://github.com/git-for-windows/git/tree/v2.56.0.windows.1
 [linux-src]: https://github.com/torvalds/linux
 [lefthook]: https://github.com/evilmartians/lefthook
-[husky]: https://github.com/typicode/husky/tree/v9.1.7
+[husky]: https://github.com/typicode/husky
 [pre-commit]: https://github.com/pre-commit/pre-commit
 [hk]: https://github.com/jdx/hk
 [cargo]: https://github.com/rust-lang/cargo
