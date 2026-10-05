@@ -408,6 +408,30 @@ the last row ends at 748px at 100% and 1483px at 200%,
 above a root bottom of 2074px,
 and the divider between rows measures 2px.
 
+The sixth visit captured all 24 views:
+no column scrolls on either panel at either text size,
+and every launch needed one attempt.
+Fresh inspection of its 12 light/dark pairs found the rows,
+switch positions,
+dark colours and separators as intended,
+with nothing drawn below the last separator.
+The updated viewer built,
+validated and passed its consumer test on those crops in a disposable copy.
+The emulator then crashed during the input stage
+(segmentation fault in the gfxstream GL translator,
+exit status 139),
+before restoration,
+so the guest kept the visit's font scale and night mode.
+Its lock files still named the crashed in-container PID,
+which a new container reused,
+so the first recovery boot was refused as a second instance.
+After confirming no emulator or container remained,
+the stale locks of the owned AVD copy were removed
+and a recovery boot restores the sixth visit's own recorded baseline.
+The crashed owner's records are kept beside the visit.
+A seventh visit repeats the whole run,
+so one visit supplies every published capture and input check.
+
 The viewer builder now expects two rows,
 reads the column end from the last row and the measured divider between the
 rows,
