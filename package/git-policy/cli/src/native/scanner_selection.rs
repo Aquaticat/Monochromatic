@@ -121,28 +121,26 @@ fn lexically_normalized(path: &Path) -> PathBuf {
     return normalized;
 }
 
-/// What: Turn a repository-relative native path into Git's pathname bytes.
+/// What: Turn a repository-relative native path into Git's pathname bytes: its names joined by `/`.
 ///       `Vec<u8>` is an owned byte list (sibling `String` would require UTF-8).
-/// Why:  On Unix a path is already the bytes Git stores, with `/` separators.
+/// Why:  Git stores `/` between names on every system. Joining the names here, instead
+///       of copying the path's own text, gives the same bytes whatever separator the
+///       operating system uses, with one implementation for all of them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const gitPath = relativePath.split(path.sep).join('/');
 /// ```
-#[cfg(unix)]
-fn git_path_bytes(relative: &Path) -> Option<Vec<u8>> {
-    // The trait adds `.as_bytes()`, which views OS text as its raw bytes.
-    use std::os::unix::ffi::OsStrExt;
-    // `Some(...)` is the "present" variant; `.to_vec()` copies the borrowed bytes.
-    return Some(relative.as_os_str().as_bytes().to_vec());
-}
-
-/// Other systems store Git pathnames as UTF-8 with `/` separators; a path that is not UTF-8 names no index entry.
-#[cfg(not(unix))]
-fn git_path_bytes(relative: &Path) -> Option<Vec<u8>> {
-    // A trailing `?` returns `None` when the path is not UTF-8.
-    let text: &str = relative.to_str()?;
-    return Some(text.replace('\\', "/").into_bytes());
+fn git_path_bytes(relative: &Path) -> Vec<u8> {
+    let mut bytes: Vec<u8> = Vec::new();
+    for component in relative.components() {
+        if !bytes.is_empty() {
+            bytes.push(b'/');
+        }
+        // `.as_encoded_bytes()` views one name as bytes: the raw bytes on Unix, UTF-8 elsewhere.
+        bytes.extend_from_slice(component.as_os_str().as_encoded_bytes());
+    }
+    return bytes;
 }
 
 /// What: The rules file's pathname as a candidate would carry it, when it lies inside the repository.
@@ -170,7 +168,8 @@ pub fn rules_candidate_path(rules_path: &Path, repository_root: &Path) -> Option
         // `None` is the "absent" variant: the root itself is not a file.
         return None;
     }
-    return git_path_bytes(relative);
+    // `Some(...)` is the "present" variant.
+    return Some(git_path_bytes(relative));
 }
 
 /// What: Whether a candidate is given to the scanner.
