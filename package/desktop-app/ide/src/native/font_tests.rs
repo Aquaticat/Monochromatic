@@ -40,16 +40,19 @@ fn snapshot(window: &FontProbe) -> Vec<u8> {
         .to_vec();
 }
 
-/// Intermediate weights and true italics visibly change both bundled families and restore cleanly.
+/// Weight/style requests repaint both bundled families; exact face provenance has separate font-stack tests.
 #[test]
-fn native_text_renders_variable_weights_and_real_italic_faces() {
+fn native_text_repaints_for_weight_and_italic_requests() {
     let window = FontProbe::new().expect("headless typography fixture");
     window.show().expect("show typography fixture");
+    window.set_family(SharedString::from("IDE unregistered font control"));
+    let fallback = snapshot(&window);
     for family in ["Inter Variable", "JetBrains Mono"] {
         window.set_family(SharedString::from(family));
         window.set_weight(400);
         window.set_italic(false);
         let regular = snapshot(&window);
+        assert!(regular != fallback, "{family} must differ from the unregistered-family control");
         window.set_weight(537);
         let intermediate = snapshot(&window);
         assert_ne!(
@@ -60,7 +63,7 @@ fn native_text_renders_variable_weights_and_real_italic_faces() {
         let italic = snapshot(&window);
         assert_ne!(
             intermediate, italic,
-            "real italic must affect native {family} pixels"
+            "italic request must affect native {family} pixels"
         );
         window.set_italic(false);
         window.set_weight(400);

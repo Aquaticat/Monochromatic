@@ -44,6 +44,9 @@ mod input;
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
+/// Source typography reaches the actual image and selection bindings.
+#[cfg(test)]
+mod source_font_tests;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;
