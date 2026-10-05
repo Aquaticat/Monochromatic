@@ -126,12 +126,6 @@ impl Session {
         if self.script.hover == Hover::Silent {
             return;
         }
-        if modified {
-            self.send(
-                json!({ "id": id, "error": { "code": -32801, "message": "content modified" } }),
-            );
-            return;
-        }
         let uri = params["textDocument"]["uri"].as_str().unwrap_or("");
         let text = self
             .documents
@@ -145,7 +139,10 @@ impl Session {
             self.script.unit(),
         );
         let line = line_at(text, offset);
-        let answer = if line.trim().is_empty() {
+        let answer = if modified {
+            // The answer a server gives when its own state moved under the request.
+            json!({ "id": id, "error": { "code": -32801, "message": "content modified" } })
+        } else if line.trim().is_empty() {
             json!({ "id": id, "result": null })
         } else {
             // `chars().next()` reads the character at the offset, if any; `map_or` renders it as text.

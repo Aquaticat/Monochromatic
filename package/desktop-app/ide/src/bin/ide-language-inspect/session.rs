@@ -294,14 +294,15 @@ impl Session {
                     first_line: *first,
                     visible_lines: *visible,
                 };
-                self.hints = None;
                 let sent = self.worker.request_hints(self.stamp(), window)?;
                 let least = *minimum;
+                let stamp = self.stamp();
+                // Hints are latest-value state: an unchanged snapshot is not published again, so the
+                // one already held counts when it describes the displayed revision.
                 let enough = move |session: &Session| {
-                    return session
-                        .hints
-                        .as_ref()
-                        .is_some_and(|hints| return hints.hints.len() >= least);
+                    return session.hints.as_ref().is_some_and(|hints| {
+                        return hints.stamp == stamp && hints.hints.len() >= least;
+                    });
                 };
                 json!({ "sent": sent, "enough": self.until(Duration::from_secs(*seconds), &enough)? })
             }
