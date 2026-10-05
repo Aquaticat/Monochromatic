@@ -25,7 +25,6 @@ import {
   type LinkupConfig,
   type LinkupToolDetails,
   type SearchFetchToolClient,
-  type SearchFetchToolUpdate,
 } from '@monochromatic-dev/agent-harness-shared-search-fetch/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { TSchema, } from 'typebox';
@@ -142,7 +141,7 @@ function createLinkupWebSearchTool(options: CreateLinkupToolsOptions,): LinkupTo
         config: options.config,
         rawParams,
         ...(signal === undefined ? {} : { signal, }),
-        ...(onUpdate === undefined ? {} : { onUpdate: forwardUpdate(onUpdate), }),
+        ...(onUpdate === undefined ? {} : { onUpdate, }),
       },);
     },
   },);
@@ -190,33 +189,10 @@ function createLinkupWebFetchTool(options: CreateLinkupToolsOptions,): LinkupToo
         config: options.config,
         rawParams,
         ...(signal === undefined ? {} : { signal, }),
-        ...(onUpdate === undefined ? {} : { onUpdate: forwardUpdate(onUpdate), }),
+        ...(onUpdate === undefined ? {} : { onUpdate, }),
       },);
     },
   },);
-}
-
-/**
- Wrap a Pi update callback into the shared core update callback.
-
- @param callback - Pi callback receiving tool updates
-
- @returns shared update callback forwarding to Pi
-
- @example
- ```ts
- forwardUpdate(onUpdate);
- ```
- */
-function forwardUpdate(
-  callback: AgentToolUpdateCallback<LinkupToolDetails>,
-): (update: SearchFetchToolUpdate) => void {
-  return function forwardToPi(update: SearchFetchToolUpdate,): void {
-    callback({
-      content: update.content,
-      details: update.details,
-    },);
-  };
 }
 
 //endregion Helpers
