@@ -12,7 +12,9 @@ The user paused this session to hand the work to another agent;
 resume the queue on request without waiting for a second authorization.
 
 Current boundary:
-implement in-file find after the completed combined-search gate.
+combined search and in-file find are complete;
+the "Handoff state" section lists the work in flight and the queue.
+Historical record of the combined-search gate:
 `proc_9bf4` passed 119 library/integration tests,
 fourteen native tests,
 and complete package lint.
@@ -45,7 +47,9 @@ The added custom press guard was ineffective and was removed after a rebuilt dis
 The tree's fixed-slot guard remains necessary.
 See [the pointer lifetime investigation](../troubleshooting/slint-repeater-model-pointer-lifetime.md).
 
-In-file find is not implemented yet.
+In-file find was implemented on 2026-10-05;
+the "Handoff state" section records its result.
+The following paragraphs are the research record that preceded it.
 Fresh reference reads confirm that editord delegates Ctrl+F to real Chrome's find-in-page,
 rather than implementing another regular-expression search widget.
 `inspect:find-reference` now probes synthetic Unicode/whitespace cases in an isolated browser profile.
@@ -118,14 +122,22 @@ when a plain conventional solution with existing dependencies meets the stated s
 Work in flight,
 each owned by one subagent:
 
-- In-file find implementation in the main worktree:
-  find bar,
-  worker,
-  match painting,
-  stale-result fencing,
-  headless and nested-compositor verification,
-  guard-removal controls.
-  This agent is the only one editing Rust and Slint sources in the main worktree.
+- Resizable sidebar in the worktree `.claude/worktrees/ide-sidebar`
+  on branch `feat/ide-sidebar-resize`,
+  native probes on MCP ports 9328 and 9329.
+- Source-view reading gate in the worktree `.claude/worktrees/ide-source-keys`
+  on branch `feat/ide-source-keys`,
+  native probes on MCP ports 9338 and 9339:
+  conventional caret and selection keys,
+  two-column tab stops matching editord,
+  boundary coverage,
+  focus traversal,
+  and the dark-mode selection ink
+  (selected text is dark on blue in the dark theme).
+- No agent edits the IDE crate in the main worktree now.
+  `main` is the integration point:
+  the coordinating session cherry-picks each branch and reruns the suite.
+  `inspect:native` takes `IDE_NATIVE_MCP_PORT` so parallel sessions do not collide.
 - Language-server project-write confinement,
   measured on disposable fixtures with mechanisms the host already has;
   result in `doc/planning/slint-ide-write-confinement.md`.
@@ -144,6 +156,44 @@ each owned by one subagent:
 
 Completed in this fan-out:
 
+- In-file find,
+  commits `f51495788` through `4e1c2a808` on `main`.
+  `src/find.rs` holds the single matcher `find_matches`
+  (escaped literal,
+  Unicode case-insensitive,
+  source character ranges);
+  `src/find_worker.rs` runs it on a named thread with one running job and one replaceable waiting request;
+  results carry a `FindIdentity` of file-open generation,
+  content revision,
+  and query generation,
+  and are used only when all parts are current.
+  Bounds:
+  1,000 characters of find text,
+  64 MiB of source,
+  10,000 retained matches.
+  The bar is a layout row under the source view with no buttons:
+  Ctrl+F opens it,
+  Enter and Shift+Enter move with wrap-around,
+  Escape closes it.
+  The active match is the reading selection,
+  so Ctrl+C copies it and reload correspondence reuses the selection mapping.
+  `tests/find_reference.rs` asserts the exact 13 browser-corpus cases that differ.
+  The coordinating session independently reran the combined `main` state:
+  198 library and integration tests,
+  20 native tests,
+  and package lint all pass.
+  Thirty guard-removal controls passed before the runtime cherry-picks
+  (`~/temp/agent/ide-find-guard-xnCvWt/results.json`,
+  `~/temp/agent/ide-find-guard-uRdXAC/results.json`).
+  Dark and light nested-compositor evidence with seat input is in
+  `~/temp/agent/find-impl-c1/evidence/`;
+  the coordinating session inspected the active-match frame in both themes.
+  Open items from it:
+  the toolkit `LineEdit` clear icon shows in the find input,
+  as it does in the search overlay;
+  every accepted match list repaints the source tile;
+  the compositor `screenshot` command returned stale frames while the host session was locked
+  (`doc/troubleshooting/nested-wayland-screenshot-stale-frame.md`).
 - Measured Helix runtime language coverage,
   cherry-picked onto `main` as `953753833` through `9cc81b5f7`.
   The runtime ships 27 grammars for 22 of the 23 `tokei`-measured languages
@@ -341,12 +391,12 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
 - [x] Implement live external refresh and exercise both supplied correspondence examples through the GUI.
 - [x] Implement native tree, file switching, and recent-file reveal/badges.
 - [x] Implement combined path/content search and verify it in dark/light native sessions.
-- [ ] Implement in-file find.
+- [x] Implement in-file find.
   Matching is plain literal case-insensitive substring matching with the existing `regex` dependency;
   the 13 of 29 captured cases where Chrome's ICU collation search differs are deliberate differences.
   The native find bar,
   worker,
-  and match painting are in progress.
+  and match painting are verified headless and in dark and light nested sessions.
 - [ ] Implement runtime syntax and language-server paths:
   definition,
   references,
@@ -460,12 +510,13 @@ and Copy are wired.
 A hidden `TextInput` is only a clipboard bridge,
 not a second text layout.
 
-Unfinished surfaces:
-combined search,
-in-file find,
-LSP,
+Unfinished surfaces as of 2026-10-05:
+LSP wiring
 and subprocess project-write confinement.
-Native tree and file switching are now implemented.
+Native tree,
+file switching,
+combined search,
+and in-file find are implemented.
 Up/down,
 PageUp/PageDown,
 and focus navigation remain incomplete.

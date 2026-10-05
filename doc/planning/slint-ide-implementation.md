@@ -52,14 +52,16 @@ and resumption details are in [the handover][handover].
   Dark/light native input, scoped directory search, content-line opening, and independent failures pass.
   Seven guard-removal controls fail as intended and pass after restoration;
   whole-model pointer cancellation is tested separately as a Slint lifecycle behavior.
-- [ ] In-file find.
+- [x] In-file find.
   The user settled the matcher on 2026-10-05:
   plain literal case-insensitive substring matching with the existing `regex` dependency,
   no vetting run.
   Chrome's ICU collation folding (13 of 29 captured cases) is a recorded deliberate difference.
   The native find bar,
   worker,
-  and match painting are in progress;
+  and match painting pass headless tests,
+  guard-removal controls,
+  and dark and light nested sessions;
   see [the find matching plan](slint-ide-find-matching.md).
 - [ ] Complete tree parity:
   resizable sidebar and event-driven directory invalidation beyond the current bounded polling implementation.

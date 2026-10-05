@@ -170,10 +170,11 @@ and `tests/find_reference.rs` pins the exact differing set so a behavior change 
   plain literal case-insensitive substring matching,
   per the "Decision" section.
   The editord line-DOM probe and the technology-vetting run are dropped.
-- [ ] Implement the native find bar,
+- [x] Implement the native find bar,
   worker,
   and match painting,
   with match ranges tagged by file generation,
   content revision,
   and query identity.
-- [ ] Record the browser-find differences in `package/desktop-app/ide/README.md`.
+  Landed on `main` as `f51495788` through `4e1c2a808`.
+- [x] Record the browser-find differences in `package/desktop-app/ide/README.md`.
