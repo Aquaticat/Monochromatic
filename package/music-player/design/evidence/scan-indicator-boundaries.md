@@ -9,6 +9,9 @@ menu actions,
 D83 overlay placement,
 notification presentation,
 D27 consent choices or D81's Settings-template requirement.
+D84 (2026-10-05) supersedes D27's consent choices:
+true-peak analysis is automatic and not optional.
+D26's scan bar stands and this study is unchanged by it.
 
 D26 selects a bottom-edge 56dp bar with analysis text and counts plus an
 always-rendered 100dp-wide Pause/Resume control.

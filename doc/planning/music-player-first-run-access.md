@@ -13,6 +13,13 @@ Search decisions,
 matcher choices,
 template defaults or IME behavior.
 
+D84 (2026-10-05) supersedes that prompt and its scan answers:
+true-peak analysis is automatic and not optional.
+This plan records the study as it was built before D84;
+its statements about a separate choice to analyse describe that study,
+not current behaviour.
+When analysis runs is not decided by D84.
+
 This continuation is a design-only source audit and authored native study.
 It cannot manufacture source-status signals or bind recovery actions to
 production.
@@ -58,6 +65,7 @@ An available system library opens automatically;
 analysis does not begin merely because it was discovered.
 D27's scan prompt has its recorded scan/dismiss answers,
 and unanalysed music remains playable without invented peak values.
+D84 (2026-10-05) supersedes the scan prompt and those answers.
 
 D9 and D69/D71 require truthful operation/failure boundaries.
 A chosen empty folder does not imply that the device has no music.
@@ -184,6 +192,9 @@ See [the separate install-boundary notes](../troubleshooting/android-37-debug-ap
 
 D10's old `empty-a` statement that the first run analyses every file is
 superseded by D27's separate choice to analyse.
+D84 (2026-10-05) in turn supersedes that separate choice;
+it does not decide when analysis runs,
+so it does not restore the `empty-a` statement either.
 No universal hour/fan prediction is copied from that historical candidate.
 The in-app Settings action is not Android permission settings.
 Source picker cancellation leaves the production callback unused

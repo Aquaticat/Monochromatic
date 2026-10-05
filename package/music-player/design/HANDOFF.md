@@ -2642,6 +2642,8 @@ Settled in session 3 (decisions.md D19–D31,
    four answers:
    Scan once / Always scan / Dismiss once / Dismiss
   forever (D27).
+  D84 (2026-10-05) supersedes the asking and its four answers:
+  true-peak analysis is automatic and not optional.
 - Picker rail adapts to the library's writing systems (D28);
    names are plain text,
   several per line,
