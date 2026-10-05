@@ -13,6 +13,9 @@ and "Built-in policies and scanner integration" sections of
 the behavior inventory is the "Candidate facts" and "forbidden-strings" sections of
 [`cli-git-rust-behavior-ledger.md`](../planning/cli-git-rust-behavior-ledger.md).
 
+Paths starting with `src/` or `bin/` are relative to `package/git-policy/cli/`;
+every other path is repository-relative.
+
 Nothing here is reachable from the executable yet.
 `entry.rs`,
 `management.rs`,
@@ -48,6 +51,9 @@ Oldest first:
 - `a678bdfe6` accept either step noticing an exited reader process
 - `835930d24` pin intent-to-add listing and document the batch_reply fuzz target
 - `abaa364d7` build the rules file pathname from path names on every system
+- `ab9339a50` draft of this document
+- `c2690ad39` run one policy pass through the public candidate and scanner interface
+- `a815718f4` pin the declared-size check against a source that grows after reporting its end
 
 The commit message of `2d2f4c7e4` states wrong counts;
 a corrective commit comment is on GitHub.
@@ -370,6 +376,23 @@ not assumed:
 after one load the rules file and the cache directory are deleted,
 and later scans still report with the loaded rules.
 
+### Public-interface consumer
+
+`candidate_consumer_tests.rs` is a separate test target (`native_candidates`),
+so it can reach only public items,
+as the policy engine will from other modules.
+It runs one whole pass:
+select the rules file with `rules_source`,
+load once,
+list the staged version,
+`scan_version`,
+attribute the finding to its candidate by identity,
+then stage a fix,
+call `invalidate`,
+observe that the earlier version is refused,
+and pass again on the new version with no finding.
+It is the closest control to the ledger's consumer-level test that exists before the executable calls these layers.
+
 ### Differences from the TypeScript policy
 
 - A candidate pathname containing a line break was an engine failure
@@ -449,6 +472,10 @@ Vendoring succeeded from the existing Cargo cache
 (151 packages,
 113 MiB),
 so no `native:dependencies:fetch` task was added.
+It succeeded because this host had already downloaded every archive the scanner's lockfile names.
+A host that has not needs `cargo fetch --locked` in the wrapper package once before the gate,
+and has no task for it;
+that is the case the delegation's `native:dependencies:fetch` task was meant for.
 The image copies the vendored sources with `--chown=1000:1000`:
 `fnv-1.0.7/.travis.yml` is mode `0640` in its archive,
 and the first gate run stopped because the tester could not read it.
@@ -498,6 +525,23 @@ failed ones included.
   Clippy passed.
   Test image `1206b4c7bfccc5b9107e06566ff27e2b4fa5ac8f932fcac466611d4d97100f88`;
   evidence `native-QBnkSC`.
+- `abaa364d7`:
+  396 unit tests and 21 binary-level tests passed,
+  then `podman run` of the test container returned status 127 without a message,
+  and Clippy did not run.
+  Other Podman commands failed with `database is locked` in the same minutes,
+  while other sessions were running containers on the host;
+  the cause of the 127 was not established.
+  This run is not counted as a pass.
+  Evidence `native-1cOzuy`.
+- `c2690ad39`:
+  396 unit tests,
+  21 binary-level tests,
+  1 public-interface consumer test,
+  Clippy passed.
+  The host's load average was above 70 with other sessions' containers,
+  and the unit tests took 147.55 seconds where an unloaded run took 6.03.
+  Evidence `native-81pAf1`.
 - GATE-FINAL-PENDING
 
 ## Mutation testing
@@ -551,11 +595,33 @@ A first choice of planted defect,
 removing the check that fewer content bytes arrived than declared,
 was dropped before it ran:
 a stream that ends early also fails the read of the closing line feed,
-so that removal changes only the message.
+so on a pipe that removal changes only the message.
 The check stays,
-because a byte source that grows after reporting its end could otherwise be read out of step.
+because the reply reader accepts any buffered source:
+`candidate_batch_resume_tests.rs` gives it a source that reports its end and then yields a line feed,
+as a file still being written can,
+and the check is what refuses the shortened content there.
 
 ### Smoke campaign
+
+`GIT_POLICY_NATIVE_IMAGE_TAG=candidates mise run //package/git-policy/cli.fuzz:smoke`
+builds the four targets with AddressSanitizer in a bounded container and fuzzes each for 30 seconds
+with no host mounts,
+no network,
+2 GiB,
+2 CPUs,
+128 PIDs
+and a 4,096-byte input limit.
+
+The first run did not reach the new target.
+`global_arguments` reported 401,541 executions and `config_loading` 142,750,
+each with exit status 0;
+`config_schema` ran,
+and then a Podman command failed with `database is locked`
+and the runner's cleanup failed the same way,
+while other sessions were running containers on the host.
+Three leftover containers of this worktree's run image were removed by hand.
+Evidence `package/git-policy/cli.fuzz/target/verification/campaign-xNWDLy`.
 
 SMOKE-PENDING
 
