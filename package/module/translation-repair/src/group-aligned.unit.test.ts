@@ -16,7 +16,8 @@
 
  A walk handed over whole is read off `groupNodesSealed` itself: its whole
  result where the walk is well formed, and its refusal where a step names a
- block its side lacks, which once grouped a section to nothing.
+ block its side lacks or no step names a block, each of which once grouped a
+ section to nothing.
 
  Fixtures go through `parseDocument`, so the nodes carry the offsets and text
  the aligner really scores on rather than offsets I chose to make a case pass.
@@ -524,7 +525,7 @@ await describe({
         it({
           name: 'returns NO RUNS when one side has no blocks at all, the module\'s '
             + 'stated exception to coverage: nothing two-sided exists to hold the '
-            + 'other side\'s blocks, and the caller\'s own fallback owns that case',
+            + 'other side\'s blocks, and the slicing never groups such a section',
           fn: async () => {
             expect(
               groupWithNothingSealed({
@@ -610,7 +611,7 @@ await describe({
             // one block and none holds both sides. The merger held those blocks
             // waiting for a two-sided run to fold them into, and none ever came, so
             // it returned nothing and the section left the document. Both sides
-            // carry blocks here, so the caller's empty-side fallback never fires.
+            // carry blocks here, so this is not the empty-side exception.
             const runs = groupWithNothingSealed({
               sourceNodes,
               targetNodes,
@@ -779,8 +780,7 @@ await describe({
 
         it({
           name: 'BEGINS A FRESH RUN AT THE STEP AFTER A DECLINE, so the declined block\'s bytes sit '
-            + 'outside both spans instead of between two blocks of one run (ledger T8, the group '
-            + 'cluster)',
+            + 'outside both spans instead of between two blocks of one run',
           fn: async () => {
             /**
              Original blocks, both placed by the pairing.
@@ -1132,6 +1132,50 @@ await describe({
                 },
               ],
             },),).toBe(`Error: unreachable: walk step 2 names original block 9, and there are 2${WALK_INVARIANT}`,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a supplied walk that names no step for a block of either side, in the words of the '
+            + 'refusal for a block the section lacks, an empty walk among them',
+          fn: async () => {
+            /**
+             Why the grouper holds a walk that leaves a block out to be
+             unreachable, as its refusal words it after the block and the count.
+             */
+            const coverageInvariant = ', though alignBlocks walks every one of these blocks and '
+              + 'blockPairingToSteps gives every block of both sides a step';
+            // THE FIRST OF THESE GROUPED TO NOTHING, SILENTLY: the second
+            // original and the translation reached no run, and nothing said so.
+            expect({
+              secondOriginalUnnamed: walkRefusal({
+                steps: [
+                  {
+                    kind: 'source-only',
+                    sourceIndex: 0,
+                  },
+                ],
+              },),
+              translationUnnamed: walkRefusal({
+                steps: [
+                  {
+                    kind: 'source-only',
+                    sourceIndex: 0,
+                  },
+                  {
+                    kind: 'source-only',
+                    sourceIndex: 1,
+                  },
+                ],
+              },),
+              empty: walkRefusal({ steps: [], },),
+            },).toStrictEqual({
+              secondOriginalUnnamed: 'Error: unreachable: no walk step names original block 1, and there are '
+                + `2${coverageInvariant}`,
+              translationUnnamed: 'Error: unreachable: no walk step names translation block 0, and there are '
+                + `1${coverageInvariant}`,
+              empty: `Error: unreachable: no walk step names original block 0, and there are 2${coverageInvariant}`,
+            },);
           },
         },),
       ],

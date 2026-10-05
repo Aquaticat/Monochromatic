@@ -382,6 +382,78 @@ await describe({
     },),
     it({
       name:
+        'ANSWERS MOVED IN THE REFUSAL\'S WORDS where the recorded block pairing names a translation block the '
+        + 'carved text lacks, and carves every section\'s blocks by the deterministic aligner instead',
+      fn: async () => {
+        /**
+         How the run carved it: each of the section's four blocks paired with
+         its counterpart, the last pair naming translation block 3.
+         */
+        const carved = prepareDocumentPair({
+          sourceText: BLOCKY_SOURCE,
+          targetText: BLOCKY_TARGET,
+          blockPairings: new Map([[
+            0,
+            [
+              0,
+              1,
+              2,
+              3,
+            ].map(function samePlace(at,): {
+              readonly source: number;
+              readonly target: number;
+            } {
+              return {
+                source: at,
+                target: at,
+              };
+            },),
+          ],],),
+        },);
+
+        /**
+         Corpus copy the rebuild is handed, with two of its paragraphs joined
+         into one, so its section holds three translation blocks.
+         */
+        const shorterTarget = BLOCKY_TARGET.replace(
+          'sill.\n\nThe cat likes',
+          'sill and likes',
+        );
+
+        /**
+         Rebuild of a file that predates storing its archive, so it carves
+         the corpus copy.
+         */
+        const rebuilt = rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: carved,
+            strip: ['archiveText',],
+          },),
+          sourceText: BLOCKY_SOURCE,
+          targetText: shorterTarget,
+        },);
+        expect({
+          unrecorded: rebuilt.unrecorded,
+          reproduction: rebuilt.reproduction,
+          identity: preparationIdentity({ prepared: rebuilt.prepared, },),
+        },).toStrictEqual({
+          unrecorded: [],
+          reproduction: {
+            kind: 'moved',
+            detail: 'the recorded block pairing does not fit the text carved (pairing names translation block 3, '
+              + 'and there are 3), so every section\'s blocks were carved by the deterministic aligner',
+          },
+          identity: preparationIdentity({
+            prepared: prepareDocumentPair({
+              sourceText: BLOCKY_SOURCE,
+              targetText: shorterTarget,
+            },),
+          },),
+        },);
+      },
+    },),
+    it({
+      name:
         'NAMES every recipe half a file does not record and rebuilds with the deterministic default, '
         + 'which is what every artifact settled before the fields existed looks like',
       fn: async () => {

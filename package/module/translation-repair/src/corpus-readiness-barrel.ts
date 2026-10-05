@@ -67,6 +67,7 @@ export { settledPageArtifact, } from './corpus-run/pass-page-assembly.ts';
 export {
   assertDestinationsComplete,
   DroppedDestinationError,
+  traceDroppedDestinations,
 } from './corpus-run/destination-completeness.ts';
 export {
   assertHeadingsStayDistinct,

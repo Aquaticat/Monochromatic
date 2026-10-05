@@ -4,11 +4,13 @@
  WHAT THESE PIN: the bare-run scanner stops where prose and Markdown stop a
  link and sheds sentence punctuation; the tree reader finds link, image and
  definition destinations under the pipeline's own parse and names a downgrade,
- keeps as written a destination the cut and the shed would leave nothing of,
- and reads no destination where a link carries an empty one; the union
- dedupes across both readers with a trailing slash treated as no difference;
- and the check names exactly the source destinations the page lacks while
- ignoring destinations the page adds.
+ follows an explicit destination as written, cuts and sheds only an autolink
+ literal the way the scanner does, and reads no destination where a link
+ carries an empty one; the union dedupes across both readers with a trailing
+ slash treated as no difference; the check names exactly the source
+ destinations the page lacks while ignoring destinations the page adds; and
+ the trace finds a dropped destination only in the slices that carry it as a
+ destination of their own.
 
  Fixtures are invented addresses and sentences about a bookshop cat, so
  there is no corpus text here.
@@ -26,7 +28,9 @@ import {
   collectDestinations,
   droppedDestinations,
   markdownDestinations,
+  prepareDocumentPair,
   scanUrlRuns,
+  traceDroppedDestinations,
 } from '../../dist/final/node/index.mjs';
 
 //region Fixtures
@@ -50,6 +54,52 @@ const PICTURE = 'https://example.org/tabby.jpg';
  How an archive rendered the home address another way.
  */
 const MOVED = 'https://example.net/tabby';
+
+/**
+ Where each slice of a two-section pair carries a dropped destination, the
+ second slice's row written as the given text and the first left as its
+ archive span.
+
+ @param dropped - destinations the page does not carry
+
+ @param sourceText - original of two sections
+
+ @param targetText - archive of the same two sections
+
+ @param rowText - what the page writes over the second slice
+
+ @returns One trace per dropped destination
+
+ @example
+ ```ts
+ const traces = traceOverTwoSections({ dropped: ['.',], sourceText, targetText, rowText: 'The cat naps.', },);
+ ```
+ */
+function traceOverTwoSections(
+  {
+    dropped,
+    sourceText,
+    targetText,
+    rowText,
+  }: {
+    readonly dropped: readonly string[];
+    readonly sourceText: string;
+    readonly targetText: string;
+    readonly rowText: string;
+  },
+): ReturnType<typeof traceDroppedDestinations> {
+  return traceDroppedDestinations({
+    dropped,
+    slices: prepareDocumentPair({
+      sourceText,
+      targetText,
+    },).slices,
+    replacements: [{
+      sliceIndex: 1,
+      replacementText: rowText,
+    },],
+  },);
+}
 
 //endregion Fixtures
 
@@ -230,6 +280,40 @@ await describe({
               urls: ['---',],
               findings: [],
             },);
+          },
+        },),
+
+        it({
+          name: 'FOLLOWS an explicit destination as written past a full-width comma and past trailing sentence '
+            + 'punctuation, for a link, an image and a definition',
+          fn: async () => {
+            expect(markdownDestinations({
+              text: 'The [first nap](./窗台，一) and the [second](./窗台，二) by ![the shop](./shop.).\n\n'
+                + '[album]: ./相册，二\n',
+            },),).toStrictEqual({
+              urls: [
+                './窗台，一',
+                './窗台，二',
+                './shop.',
+                './相册，二',
+              ],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'CUTS an autolink literal at its first stopper and sheds the punctuation before it, as the '
+            + 'scanner reads the same run',
+          fn: async () => {
+            expect(markdownDestinations({ text: `她的主页：${HOME}，相册。\n\nHer page: ${ALBUM}.;，then\n`, },),)
+              .toStrictEqual({
+                urls: [
+                  HOME,
+                  ALBUM,
+                ],
+                findings: [],
+              },);
           },
         },),
 
@@ -432,6 +516,25 @@ await describe({
         },),
 
         it({
+          name: 'NAMES the second of two explicit links that differ only past a full-width comma, where the '
+            + 'page keeps the first',
+          fn: async () => {
+            expect(droppedDestinations({
+              sourceText: '猫在[一号窗台](./窗台，一)和[二号窗台](./窗台，二)上。',
+              pageText: 'The cat is on [sill one](./窗台，一).',
+            },),).toStrictEqual({
+              source: [
+                './窗台，一',
+                './窗台，二',
+              ],
+              page: ['./窗台，一',],
+              dropped: ['./窗台，二',],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
           name: 'OWES nothing for a source link whose destination is empty, which names nowhere a reader '
             + 'could follow',
           fn: async () => {
@@ -446,6 +549,46 @@ await describe({
               dropped: [],
               findings: [],
             },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: traceDroppedDestinations.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'TRACES a dropped address only to the slices where it stands whole, never to one holding a '
+            + 'longer address it opens',
+          fn: async () => {
+            expect(traceOverTwoSections({
+              dropped: [HOME,],
+              sourceText: `## 一\n\n猫的相册在 ${HOME}-album 。\n\n## 二\n\n猫的[主页](${HOME})。\n`,
+              targetText: `## One\n\nHer album is at ${HOME}-album .\n\n## Two\n\nHer [home page](${HOME}).\n`,
+              rowText: '## Two\n\nHer home page is gone.\n',
+            },),).toStrictEqual([{
+              sourceSlices: [1,],
+              archiveSlices: [1,],
+              shippedSlices: [],
+            },],);
+          },
+        },),
+
+        it({
+          name: 'TRACES a dropped destination as short as a full stop only to the slices that link it, not to '
+            + 'every slice holding a sentence',
+          fn: async () => {
+            expect(traceOverTwoSections({
+              dropped: ['.',],
+              sourceText: '## 一\n\n猫睡了。\n\n## 二\n\n猫在[窗台](.)上。\n',
+              targetText: '## One\n\nThe cat slept.\n\n## Two\n\nThe cat is on the [sill](.).\n',
+              rowText: '## Two\n\nThe cat is on the sill.\n',
+            },),).toStrictEqual([{
+              sourceSlices: [1,],
+              archiveSlices: [1,],
+              shippedSlices: [],
+            },],);
           },
         },),
       ],

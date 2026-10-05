@@ -65,6 +65,26 @@ await describe({
             expect(sameAddress({ url: HOME, },),).toBe(HOME,);
           },
         },),
+
+        it({
+          name: 'KEYS the site root as itself, so it never compares equal to the empty string',
+          fn: async () => {
+            expect({
+              root: sameAddress({ url: '/', },),
+              verdict: judgeDestinationRenderings({
+                source: ['/',],
+                page: ['',],
+                archive: [],
+              },),
+            },).toStrictEqual({
+              root: '/',
+              verdict: {
+                dropped: ['/',],
+                findings: [],
+              },
+            },);
+          },
+        },),
       ],
     },),
 

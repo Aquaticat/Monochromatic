@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
+import { levelCapturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   alignDocumentSections,
   blockPairingQuestion,
@@ -86,6 +87,33 @@ await describe({
         expect(warm.findings).toEqual(cold.findings);
         if (warm.kind !== 'paired') throw new Error('expected warm explicit pairing');
         expect(warm.pairs).toEqual(cold.pairs);
+      },
+    },),
+    it({
+      name: 'MISSES ON A CACHED PAIRING THAT NAMES A BLOCK ITS SECTION LACKS, warns in the refusal\'s words, and buys '
+        + 'the section again',
+      fn: async () => {
+        const fresh = fixture();
+        const bought = await prepareBlockPairing(fresh.input);
+        const f = fixture();
+        const lines: string[] = [];
+        const { key } = blockPairingQuestion({ pair: f.input.pair, modelIds: roster });
+        f.stored.set(key, { pairs: [{ source: 9, target: 0 }], findings: ['an older round'], });
+        const result = await prepareBlockPairing({ ...f.input, l: levelCapturingLogger({ lines }) });
+        expect({
+          result,
+          calls: f.calls.length,
+          stored: f.stored.get(key),
+          warned: lines.filter(line => line.startsWith('warn ')),
+        }).toEqual({
+          result: bought,
+          calls: 2,
+          stored: fresh.stored.get(key),
+          warned: [
+            `warn [prepareBlockPairing] section 7 misses the block-pairing cache: the record under ${key} does not `
+              + 'fit its blocks (pairing names original block 9, and there are 2), so the roster is asked again',
+          ],
+        });
       },
     },),
     it({
