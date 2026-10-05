@@ -44,6 +44,9 @@ mod render;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;
+/// Native font instance changes must repaint rather than reuse stale glyphs.
+#[cfg(test)]
+mod font_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
 /// Bind caret and selection callbacks.
