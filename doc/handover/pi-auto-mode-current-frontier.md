@@ -69,7 +69,8 @@ Returned usage was 59,382 input tokens and 3,729 output tokens.
 At the retained 42 nanoUSD input-token rate,
 modeled maintenance cost was US$0.002494044.
 This is neither an invoice nor a representative per-action average.
-The cumulative recorded semantic subtotal is now US$0.055516382.
+At completion of the cold relevance canary,
+the cumulative recorded semantic subtotal reached US$0.055516382.
 No SDK AgentSession or native tool action was created by this live cache canary.
 
 The outer metadata checker separately emitted a logger verification timeout after reporting completion.
@@ -194,8 +195,9 @@ The separately frozen copied-input interface request was then sent once.
 `max_tokens_exceeded`,
 with no scores or usage returned.
 The 454,012-byte namespace is consumed and was not retried.
-Known modeled semantic spend remains US$0.055516382,
-plus the failed full-rule requests with unquantified billing.
+After that first failure,
+known modeled semantic spend was US$0.055516382,
+plus that failed request with unquantified billing.
 
 Current TypeSafe documentation specifies both 64k tokens for state plus all questions
 and 32k for state plus the longest question.

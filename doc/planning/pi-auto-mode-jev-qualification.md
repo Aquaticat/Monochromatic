@@ -41,8 +41,9 @@ The raw estimates did not exclude rules or authorize actions.
 Returned usage was 59,382 input tokens and 3,729 output tokens.
 At 42 nanoUSD per input token with output unbilled,
 modeled maintenance cost was US$0.002494044.
-The cumulative recorded semantic subtotal becomes US$0.055516382,
-including the earlier US$0.053022338 subtotal.
+At completion of the cold relevance canary,
+the cumulative recorded semantic subtotal reached US$0.055516382,
+including the preceding US$0.053022338 subtotal.
 Invoice amounts,
 Gateway-internal attempts,
 representative workload averages,
@@ -79,8 +80,9 @@ and no retry.
 This was research over archived data,
 not reopening a native judgment or authorizing a tool.
 
-The known modeled semantic subtotal remains US$0.055516382,
-plus two failed full-rule requests whose billing amounts are unknown.
+Before the accepted shared-guidance trial,
+the known modeled semantic subtotal was US$0.055516382.
+The failed full-rule requests' billing amounts remain unknown.
 Do not add a zero charge or fabricate an input-token estimate.
 The [endpoint boundary record](../troubleshooting/llmgateway-systemone-boundaries.md)
 documents the provider's separate total and state-plus-longest-question limits.
