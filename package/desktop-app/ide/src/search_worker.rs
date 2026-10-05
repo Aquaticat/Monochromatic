@@ -2,12 +2,13 @@
 
 /// Search data remains immutable when published to the native thread.
 use crate::{
-    search::SearchResults, search_cancel::SearchCancellation, search_process, workspace::Workspace,
+    search::SearchResults, search_cancel::SearchCancellation, workspace::Workspace,
 };
 /// Startup and unexpected worker failures must not masquerade as no results.
 use anyhow::{Context, Result};
 /// Arc shares immutable requests/replies across threads; the join handle owns shutdown.
 use std::{
+    path::PathBuf,
     sync::Arc,
     thread::{self, JoinHandle},
 };
@@ -17,6 +18,9 @@ use tokio::{
     sync::watch,
 };
 
+/// Per-request directory resolution remains on the reader thread.
+mod request;
+
 /// Public reply is tagged separately from displayed-file or document revisions.
 #[derive(Debug)]
 pub struct SearchReply {
@@ -24,6 +28,8 @@ pub struct SearchReply {
     pub generation: u64,
     /// Original query, retained for diagnostic and stale-result inspection.
     pub query: String,
+    /// Directory actually searched, or the requested scope named in a resolution failure.
+    pub scope: PathBuf,
     /// Filename and content results stay independently usable.
     pub results: SearchResults,
 }
@@ -34,6 +40,8 @@ struct Request {
     generation: u64,
     /// Query is passed as one subprocess argument, never shell source.
     query: String,
+    /// None searches the project root; a selected subtree must resolve inside it before execution.
+    scope: Option<PathBuf>,
     /// Shared one-way cancellation signal reaches both child streams.
     cancellation: SearchCancellation,
 }
@@ -68,15 +76,10 @@ async fn run(
         // if (request) await runSearch(request);
         // ```
         let current = requests.borrow_and_update().clone();
-        if let Some(request) = current
-            && let Some(results) =
-                search_process::search(&workspace, &request.query, &request.cancellation).await
+        if let Some(pending) = current
+            && let Some(reply) = request::run(&workspace, &pending).await
         {
-            replies.send_replace(Some(Arc::new(SearchReply {
-                generation: request.generation,
-                query: request.query.clone(),
-                results,
-            })));
+            replies.send_replace(Some(Arc::new(reply)));
         }
         if let Err(error) = requests.changed().await {
             tracing::debug!(%error, "project search request channel closed");
@@ -138,13 +141,24 @@ impl SearchWorker {
         return Ok(());
     }
 
-    /// Cancel earlier work and publish only the newest desired query.
+    /// Search the fixed project root without an additional selected-directory scope.
     pub fn request(&mut self, query: String) -> Result<u64> {
+        return self.submit(query, None);
+    }
+
+    /// Narrow a query to a selected directory; resolution and containment checks run on the worker.
+    pub fn request_scoped(&mut self, query: String, scope: PathBuf) -> Result<u64> {
+        return self.submit(query, Some(scope));
+    }
+
+    /// Cancel earlier work and publish only the newest desired query and scope together.
+    fn submit(&mut self, query: String, scope: Option<PathBuf>) -> Result<u64> {
         self.clear()?;
         let cancellation = SearchCancellation::new();
         let request = Arc::new(Request {
             generation: self.generation,
             query,
+            scope,
             cancellation: cancellation.clone(),
         });
         self.requests

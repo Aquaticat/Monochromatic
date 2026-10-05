@@ -6,7 +6,6 @@ use crate::{
     search_cancel::SearchCancellation,
     search_collect::{self, Stream},
     search_io,
-    workspace::Workspace,
 };
 /// Diagnostics identify both the query and the failed subprocess operation.
 use anyhow::{Context, Result, bail};
@@ -192,11 +191,10 @@ mod tests;
 
 /// Execute both bounded streams concurrently; a cancelled query never becomes an empty successful reply.
 pub(crate) async fn search(
-    workspace: &Workspace,
+    root: &Path,
     query: &str,
     cancellation: &SearchCancellation,
 ) -> Option<SearchResults> {
-    let root = workspace.root();
     let (path_output, content_output) = tokio::join!(
         execute(
             command(root, query, Stream::Paths),
