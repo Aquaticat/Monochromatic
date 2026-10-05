@@ -340,6 +340,16 @@ run = """
 runCargo(['fmt'])
 """
 
+[tasks."test:language"]
+description = "Check the headless Language module: unit rules and scripted-server sessions"
+usage = 'arg "[filter]" help="Optional test-name filter passed to the test harness"'
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const filter = process.env.usage_filter ? [process.env.usage_filter] : []
+runCargo(['test', '--no-default-features', '--lib', '--test', 'language', ...filter])
+"""
+
 [tasks.mcp]
 depends = ["runtime"]
 description = "Build and run the source-view gate with native headless UI inspection"
