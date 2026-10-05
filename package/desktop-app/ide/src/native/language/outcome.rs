@@ -163,7 +163,11 @@ pub(super) fn choose(
     language: &mut Language,
     index: i32,
 ) {
-    let surface::Shown::List { targets: listed, origin } = &language.shown else {
+    let surface::Shown::List {
+        targets: listed,
+        origin,
+    } = &language.shown
+    else {
         return;
     };
     // `usize::try_from` refuses a negative index instead of wrapping it.

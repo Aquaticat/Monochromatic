@@ -39,7 +39,11 @@ pub(super) enum Verdict {
 ///   return 'apply';
 /// }
 /// ```
-pub(super) fn verdict(pending: &Pending, displayed: DocumentStamp, reply: &LanguageReply) -> Verdict {
+pub(super) fn verdict(
+    pending: &Pending,
+    displayed: DocumentStamp,
+    reply: &LanguageReply,
+) -> Verdict {
     // `Some(reply.request)` wraps the number so it compares with the optional pending number.
     if pending.number != Some(reply.request) || pending.action.kind() != reply.kind {
         return Verdict::OtherRequest;

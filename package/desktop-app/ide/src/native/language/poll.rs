@@ -109,7 +109,9 @@ fn cancel_stale(
     {
         language.hover = None;
     }
-    let Some(pending) = language.action.take_if(|pending| return pending.stamp != displayed)
+    let Some(pending) = language
+        .action
+        .take_if(|pending| return pending.stamp != displayed)
     else {
         return;
     };
@@ -151,7 +153,9 @@ fn replies(language: &mut Language, displayed: DocumentStamp) -> anyhow::Result<
             admitted = true;
             pending.complete = reply.remaining == 0;
             // `push` records the server's answer with the server that gave it.
-            pending.outcomes.push((reply.server.clone(), reply.outcome.clone()));
+            pending
+                .outcomes
+                .push((reply.server.clone(), reply.outcome.clone()));
         }
         if !admitted {
             tracing::debug!(request = reply.request, stamp = ?reply.stamp, "dropped a language reply no request waits for");
@@ -201,7 +205,11 @@ fn snapshots(
             .annotations
             .hints(displayed)
             .map_or(0, |stored| return stored.hints.len());
-        tracing::debug!(count, ?displayed, "stored inlay hints for the displayed text");
+        tracing::debug!(
+            count,
+            ?displayed,
+            "stored inlay hints for the displayed text"
+        );
     }
     if let Some(snapshot) = diagnostics
         && current.annotations.accept_diagnostics(displayed, snapshot)
@@ -210,7 +218,11 @@ fn snapshots(
             .annotations
             .diagnostics(displayed)
             .map_or(0, |stored| return stored.groups.len());
-        tracing::debug!(groups, ?displayed, "stored diagnostics for the displayed text");
+        tracing::debug!(
+            groups,
+            ?displayed,
+            "stored diagnostics for the displayed text"
+        );
     }
     return Ok(());
 }
@@ -236,10 +248,13 @@ fn rest(
     if blocked {
         return;
     }
-    if language.rest.idle()
-        && matches!(language.shown, surface::Shown::Popup { pointer: true, .. })
+    if language.rest.idle() && matches!(language.shown, surface::Shown::Popup { pointer: true, .. })
     {
-        language.shown = surface::dismiss(window, &language.shown, "the pointer rests over no character");
+        language.shown = surface::dismiss(
+            window,
+            &language.shown,
+            "the pointer rests over no character",
+        );
     }
     let Some(character) = language.rest.due() else {
         return;

@@ -18,6 +18,10 @@ mod ui {
 use anyhow::{Context, bail};
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
+/// The Language module's handle, its startup rule, its log directive, and the reload record.
+use ide_app::language::{
+    HELIX_LOG_DIRECTIVE, LanguageWorker, enter_project_directory, sync::DocumentReload,
+};
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
@@ -26,10 +30,6 @@ use ide_app::source_frame::FrameStamp;
 use ide_app::text_raster::TextRaster;
 /// Explicit startup paths retain one canonical project boundary.
 use ide_app::{cli::Options, workspace::Workspace};
-/// The Language module's handle, its startup rule, its log directive, and the reload record.
-use ide_app::language::{
-    HELIX_LOG_DIRECTIVE, LanguageWorker, enter_project_directory, sync::DocumentReload,
-};
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
 /// Toolkit handles and models bridge owned Rust state to the window.

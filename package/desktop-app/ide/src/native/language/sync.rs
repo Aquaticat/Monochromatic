@@ -121,7 +121,11 @@ pub(super) fn update(language: &mut Language, source: &Rc<RefCell<State>>) -> Re
 /// ```ts
 /// function hints(language: Language, window: AppWindow, stamp: DocumentStamp): void
 /// ```
-pub(super) fn hints(language: &mut Language, window: &AppWindow, stamp: DocumentStamp) -> Result<()> {
+pub(super) fn hints(
+    language: &mut Language,
+    window: &AppWindow,
+    stamp: DocumentStamp,
+) -> Result<()> {
     let Some(worker) = language.worker.as_mut() else {
         return Ok(());
     };
@@ -151,7 +155,12 @@ pub(super) fn hints(language: &mut Language, window: &AppWindow, stamp: Document
         return Ok(());
     }
     if worker.request_hints(stamp, wanted)? {
-        tracing::debug!(?stamp, first_line, visible_lines, "reported visible lines for inlay hints");
+        tracing::debug!(
+            ?stamp,
+            first_line,
+            visible_lines,
+            "reported visible lines for inlay hints"
+        );
         language.hints.sent = Some((stamp, wanted));
     }
     return Ok(());
