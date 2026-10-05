@@ -1,16 +1,22 @@
 #!/usr/bin/env node
 // Real-server checks of the headless Language module: all five feature paths, an external reload,
 // and the stale-reply case, against disposable TypeScript and Rust projects on the host.
+// Servers run with the production launch policy, confined by bubblewrap, so the project trees
+// are compared before and after: only the file the plan itself rewrites may change.
 // No server is ever pointed at this repository; it is read only to copy the TypeScript 7 packages.
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { createHash } from 'node:crypto';
+import { cpSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const binary = resolve('target/debug/ide-language-inspect');
 const store = resolve('../../../node_modules/.pnpm');
+// The private agent scratch root, not /tmp: the sandbox replaces /tmp, so a project there is refused.
+const privateRoot = join(homedir(), 'temp', 'agent');
+if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Scratch root must exclude group and other permissions: ' + privateRoot);
 // Language servers report resolved paths, so the fixture root is resolved up front.
-const base = realpathSync(mkdtempSync(join(tmpdir(), 'ide-language-inspect-')));
+const base = realpathSync(mkdtempSync(join(privateRoot, 'ide-language-inspect-')));
 const results = join(base, 'results');
 mkdirSync(results);
 console.log('LANGUAGE_INSPECT_ARTIFACT=' + base);
@@ -133,13 +139,41 @@ const summary = {
   },
   cases: [],
 };
-// Cargo output goes below the fixture, not into the project and not into the real cargo home.
-const env = { ...process.env, CARGO_TARGET_DIR: join(base, 'cargo-target'), CARGO_BUILD_BUILD_DIR: join(base, 'cargo-build') };
+// The application's private state, which holds each server's cargo and cache redirects, goes below the fixture.
+// No cargo redirect is set here: the launch policy sets them inside the sandbox.
+const env = { ...process.env, XDG_CACHE_HOME: join(base, 'app-cache') };
+delete env.CARGO_TARGET_DIR;
+delete env.CARGO_BUILD_BUILD_DIR;
+// Every path with type, size, mode, times, link count, inode, content hash, and link target.
+const snapshot = root => {
+  const entries = {};
+  const walk = directory => {
+    for (const name of readdirSync(directory).sort()) {
+      const path = join(directory, name);
+      const stat = lstatSync(path, { bigint: true });
+      const entry = { mode: Number(stat.mode), size: Number(stat.size), mtime: String(stat.mtimeNs), ctime: String(stat.ctimeNs), nlink: Number(stat.nlink), ino: String(stat.ino) };
+      if (stat.isSymbolicLink()) entry.target = readlinkSync(path);
+      else if (stat.isFile()) entry.sha256 = createHash('sha256').update(readFileSync(path)).digest('hex');
+      entries[path.slice(root.length + 1)] = entry;
+      if (stat.isDirectory()) walk(path);
+    }
+  };
+  walk(root);
+  return entries;
+};
 let failed = false;
 for (const item of cases) {
   const planPath = join(results, item.name + '.plan.json');
   writeFileSync(planPath, JSON.stringify(item.plan, null, 2));
+  // node_modules is a read-only copy for the TypeScript server; its tree is compared too.
+  const before = snapshot(item.plan.project);
   const run = spawnSync(binary, [planPath], { encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024 });
+  const after = snapshot(item.plan.project);
+  const tree = {
+    added: Object.keys(after).filter(key => !(key in before)),
+    removed: Object.keys(before).filter(key => !(key in after)),
+    changed: Object.keys(after).filter(key => key in before && JSON.stringify(before[key]) !== JSON.stringify(after[key])),
+  };
   writeFileSync(join(results, item.name + '.events.jsonl'), run.stdout ?? '');
   writeFileSync(join(results, item.name + '.stderr.txt'), run.stderr ?? '');
   if (run.error) throw run.error;
@@ -181,9 +215,13 @@ for (const item of cases) {
   ];
   const left = leftovers();
   checks.push(['no process is left in the fixture', left.length === 0]);
+  // The plan's reload steps rewrite the displayed file from the application side; nothing else may change.
+  checks.push(['the servers added and removed nothing in the project', tree.added.length === 0 && tree.removed.length === 0]);
+  checks.push(['only the reloaded file changed', tree.changed.every(path => path === item.plan.steps[0].file)]);
   const record = {
     name: item.name,
     exit: run.status,
+    tree,
     staleCase: result('stale'),
     fence: events.find(event => event.done)?.fence,
     leftovers: left,
