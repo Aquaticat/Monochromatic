@@ -49,6 +49,9 @@ mod find_interplay_tests;
 /// Real key events drive the find bar, reloads, file switches, and the search overlay together.
 #[cfg(test)]
 mod find_tests;
+/// Tab traversal between tree, source, and find bar; typing never edits the read-only source.
+#[cfg(test)]
+mod focus_tests;
 /// Native font instance changes must repaint rather than reuse stale glyphs.
 #[cfg(test)]
 mod font_tests;

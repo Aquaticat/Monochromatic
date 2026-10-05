@@ -37,6 +37,9 @@ export component FindBar inherits Rectangle {
     FocusScope {
         width: parent.width;
         height: parent.height;
+        // Only the find input is a focus stop; this scope observes its keys and must not hold focus itself.
+        focus-on-tab-navigation: false;
+        focus-on-click: false;
         capture-key-pressed(event) => {
             if event.text == Key.Return {
                 root.navigate(event.modifiers.shift ? -1 : 1);
