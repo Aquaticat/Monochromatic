@@ -36,26 +36,13 @@ export component SidebarDivider inherits Rectangle {
         border-width: 1px;
         border-color: Palette.foreground;
     }
-    // Prototype divider-gap D: the faint line stays, and a Material 3 style drag handle marks the cell as a
-    // control (androidx DragHandleTokens: 4 by 48 idle, 12 by 52 pressed or dragged, fully rounded).
+    // Hover and drag change weight and ink together with the resize cursor.
     Rectangle {
-        x: 24px;
-        width: 1px;
+        x: root.emphasized ? 23px : 24px;
+        width: root.emphasized ? 3px : 1px;
         height: parent.height;
         background: Palette.foreground;
-        opacity: 0.2;
-    }
-    // Hover, focus, and drag change the handle's weight and ink together with the resize cursor.
-    Rectangle {
-        private property <length> handle-width: grip.pressed ? 12px : (root.emphasized ? 8px : 4px);
-        private property <length> handle-height: grip.pressed ? 52px : 48px;
-        x: (parent.width - self.handle-width) / 2;
-        y: (parent.height - self.handle-height) / 2;
-        width: self.handle-width;
-        height: self.handle-height;
-        border-radius: self.handle-width / 2;
-        background: Palette.foreground;
-        opacity: grip.pressed || keys.has-focus ? 1 : (grip.has-hover ? 0.8 : 0.45);
+        opacity: grip.pressed || keys.has-focus ? 1 : (grip.has-hover ? 0.6 : 0.2);
     }
     // The layout cell owns the 48px minimum; input stays exactly inside those same bounds.
     grip := TouchArea {
@@ -77,10 +64,13 @@ export component SidebarDivider inherits Rectangle {
             root.resize(self.press-value + self.absolute-position.x + self.mouse-x - self.press-pointer);
         }
     }
-    // A pointer press never takes keyboard focus; Tab reaches this zero-size scope between tree and source.
+    // Prototype divider-tab B: not a Tab stop. The window resizes the sidebar with Alt+Shift+Left and
+    // Alt+Shift+Right instead (ui/app.slint); nothing focuses this scope any more.
     keys := FocusScope {
         width: 0px;
         height: 0px;
+        focus-on-tab-navigation: false;
+        focus-on-click: false;
         key-pressed(event) => {
             if event.modifiers.control {
                 root.shortcut(event.text, true, event.modifiers.shift, event.modifiers.alt);

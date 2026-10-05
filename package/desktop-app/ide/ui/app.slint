@@ -166,6 +166,15 @@ export component AppWindow inherits Window {
                 root.find-request();
                 return accept;
             }
+            // Prototype divider-tab B: a hidden window-wide resize shortcut replaces the divider's Tab stop.
+            // JetBrains binds Ctrl+Alt+Shift+arrows, but GNOME's default workspace moves and this host's JuK
+            // global shortcuts already take those, so this drops Ctrl.
+            if event.modifiers.alt && event.modifiers.shift && !event.modifiers.control && root.project-visible
+                && !root.search-open && (event.text == Key.LeftArrow || event.text == Key.RightArrow) {
+                root.sidebar-requested-width = clamp(root.sidebar-width + (event.text == Key.LeftArrow ? -16px : 16px),
+                    root.sidebar-minimum-width, root.sidebar-maximum-width);
+                return accept;
+            }
             // The modal search overlay is the topmost surface while open and handles its own Escape.
             if event.text == Key.Escape && root.find-open && !root.search-open {
                 root.find-dismiss();
