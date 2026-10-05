@@ -375,7 +375,24 @@ evidence `package/linter/monochromatic-lint/target/verification/mutation-n3zXgl`
 The surfaced prompt-scan mutants showed missing controls for `$ ` inside a command.
 A new regression checks embedded prompt-looking text in every newline mode;
 the scanner now uses a newline-retaining standard iterator instead of redundant byte loops.
-The final survivor inventory remains pending.
+The scoped campaign completed:
+315 mutants,
+247 caught,
+39 missed,
+20 unviable,
+and 9 timeouts.
+`mutation-n3zXgl/mutants.out/missed.txt` is the complete survivor inventory.
+Survivors are concentrated in the old manual prompt scanning/opener arithmetic,
+a zero-offset punctuation guard,
+an equivalent parity subtraction,
+malformed-arena guards,
+and node-span length.
+The prompt loops/opener arithmetic have since been simplified,
+punctuation now toggles escape parity rather than subtracting equivalent values,
+and native corruption/zero-offset/exact-length controls were added.
+These dispositions still require mutation reruns;
+the 9 timeout cases are retained separately,
+not reported as ordinary caught results.
 Mutation log matches are context-only;
 terminal outcomes still wake the agent.
 
@@ -431,8 +448,18 @@ The next campaign (`proc_5733`) includes tables and prose.
 Its generator controls passed,
 but the newly added sidecar Clippy stage found `clippy::shadow_unrelated`
 in the existing configuration reconstruction helper.
-The second `source` binding is now named `reconstructed`;
-a retry is pending.
+The second `source` binding is now named `reconstructed`.
+The retry passed (`proc_4875`):
+all generator controls and sidecar Clippy,
+then 147,101 merge executions,
+13,394 configuration executions,
+1,185 anonymous-function executions,
+539 semantic explicit-type executions,
+and 64,366 Markdown/MDX executions including tables and prose.
+Evidence:
+`package/linter/monochromatic-lint.fuzz/target/verification/campaign-KqhBLf`.
+That snapshot includes the later prompt/escape simplifications,
+but not the new exact node-span-length assertion.
 
 Scanner embedding has begun with the structured `ScanFinding` model in
 `package/cli/forbidden-strings/src/scan_finding.rs`.
@@ -443,8 +470,17 @@ Standalone adapters render those canonical records into the existing protocol.
 `CandidateScan`,
 and structured `CacheWarning` accessors are implemented,
 with direct candidate-buffer and redaction controls.
-The first adapter still accepts UTF-8 path strings;
-native non-UTF-8 path support and public loader/consumer verification remain pending.
+The adapter now accepts native `Path` values for candidates and rule loading.
+Component matching uses native bytes;
+only unmatched display text is encoded,
+including explicit escapes for invalid UTF-8.
+New Unix byte-path controls and a public integration consumer cover the boundary,
+but their container gate is still pending.
+The first scanner container attempt (`proc_8f12`) stopped before compilation:
+`cargo vendor --offline` lacked the locked `id-arena 2.3.0` archive.
+A separate `dependencies:fetch` task completed (`proc_83cb`).
+The scanner retry is `proc_9535`,
+with a source snapshot preceding the final native rule-loader/public consumer additions.
 The production executable has not been rebuilt or replaced.
 Next scanner work must share typed findings with the standalone formatter,
 not parse terminal text back into candidate identities.
@@ -460,7 +496,12 @@ Its build entry points/generators were inspected,
 and `EXECUTION.md` records the mount-free,
 network-disabled,
 2 GiB/2 CPU/128 PID boundary.
-`proc_b2d5` is running the owning `test:git-image` task.
+The owning `test:git-image` task passed (`proc_b2d5`).
+Result image:
+`6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`.
+Its `/usr/bin/git --version` probe returned exactly Git 2.56.0.
+Evidence:
+`package/git-policy/cli/target/verification/git-image-xKWiQ6`.
 The fixture excludes Tk UI and localization only;
 Perl/Python helpers,
 curl,

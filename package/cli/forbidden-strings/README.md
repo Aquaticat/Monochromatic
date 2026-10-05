@@ -688,9 +688,12 @@ Findings never contain matched content bytes.
 The inherited binary policy inspects the first 8 KiB when that prefix contains NUL;
 `scanned_bytes` reports that boundary explicitly.
 
-The first adapter currently takes UTF-8 path strings.
-Native non-UTF-8 pathname handling,
-load/consumer integration tests,
+The adapter accepts native `Path` values for rule files and logical candidate names.
+Pathname components are matched as native bytes;
+unmatched non-UTF-8 bytes are escaped only for display,
+and matching components remain fully masked.
+Public loader/consumer controls use a separate process with disposable home/cache state.
+Verification of these additions,
 panic-hook stderr redaction,
 and the full container/mutation/fuzz gates remain pending.
 This is not a production-cutover announcement.

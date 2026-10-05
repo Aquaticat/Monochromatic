@@ -32,6 +32,7 @@ fn bom_and_astral_source_slices_are_exact() {
     let heading = node(&document, MdastNodeType::Heading);
     assert_eq!(document.slice(heading), "# Title");
     assert_eq!(document.node_span(heading).offset, 9);
+    assert_eq!(document.node_span(heading).length, 7);
     assert_eq!(document.node_span(heading).line, 3);
     assert_eq!(document.node_span(heading).column, 1);
     assert_eq!(decode_heading_data(document.data(heading)).depth, 1);
