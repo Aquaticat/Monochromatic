@@ -729,18 +729,34 @@ The corrected rule is in `mistake-prevention.md`,
 The rest of the trial's production diff and its added cases are being read against that rule as this is written;
 the ledger carries what that reading finds.
 
+By the end of 2026-10-05 (UTC) that reading had reached ledger entries `B128` to `B167`,
+with `M113` extended for each removal read against its callers.
+Still being read then:
+the trial's edits to the OpenRouter client,
+the rendering audit's screen and corroboration,
+`preservation-tokens.ts`,
+`retry-stated-wait.ts`,
+`source-only-breaks.ts`,
+`stage-fanout-window.ts` and the export surface;
+and the reviewers' findings on test files no fix had yet touched.
+
 ### Choices the trial made that the owner may veto
 
-- The `gitOutput` catch in `corpus-source.ts` wraps every throwable as `CorpusReadError`
+- The `gitOutput` catch in `corpus-source.ts` wrapped every throwable as `CorpusReadError`
   (`33fc7a459`,
   recorded under "Decisions for the owner to review").
+  Reversed on 2026-10-05 in `ba243b3c3`:
+  the catch wraps a subprocess failure alone again,
+  since the trial's evidence for the wider wrap was incomplete (ledger `B156`).
+  The reversal is as open to veto as the wrap was.
 - Parameters added to production functions so a case could reach a branch:
   `fold` on `anchorLocatedSpan`,
   `needle` on `deleteOneSentence`,
   `anchor` on `insertBorrowedSentence`,
   and `ocrTool` on `readImageWithOcr`.
   The first three are removed again (`fa86b527d`);
-  ledger `M113` says what becomes of the fourth.
+  the fourth gave way to a required program runner in `d550bf04f` (ledger `M113`,
+  `B147`).
 
 ## Trial log
 
