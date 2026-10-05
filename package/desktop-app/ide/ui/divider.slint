@@ -1,6 +1,4 @@
 // Draggable boundary between the project tree and the source view. The owner holds the width and its bounds.
-// Prototype divider-gap B: the divider is split in two. The keyboard half is the 1px layout cell, so Tab order
-// stays tree, divider, source. The pointer half is a 48px overlay centered on the line, above tree and source.
 import { Palette } from "std-widgets.slint";
 
 export component SidebarDivider inherits Rectangle {
@@ -13,6 +11,8 @@ export component SidebarDivider inherits Rectangle {
     callback resize(length);
     callback shortcut(string, bool, bool, bool);
     private property <length> step: 16px;
+    private property <bool> emphasized: grip.has-hover || grip.pressed || keys.has-focus;
+    min-height: 48px;
     forward-focus: keys;
     // Slint 1.18.1 has no splitter or separator role; slider is its adjustable-value role.
     accessible-role: slider;
@@ -28,6 +28,43 @@ export component SidebarDivider inherits Rectangle {
         if text.is-float() { root.resize(text.to-float() * 1px); }
     }
 
+    // Keyboard focus adds a boundary to the heavier line, so focus is never marked by weight alone.
+    Rectangle {
+        visible: keys.has-focus;
+        width: parent.width;
+        height: parent.height;
+        border-width: 1px;
+        border-color: Palette.foreground;
+    }
+    // Hover and drag change weight and ink together with the resize cursor.
+    // Prototype divider-gap C: the line sits on the cell's tree-side edge, so the gap reads as source margin.
+    Rectangle {
+        x: 0px;
+        width: root.emphasized ? 3px : 1px;
+        height: parent.height;
+        background: Palette.foreground;
+        opacity: grip.pressed || keys.has-focus ? 1 : (grip.has-hover ? 0.6 : 0.2);
+    }
+    // The layout cell owns the 48px minimum; input stays exactly inside those same bounds.
+    grip := TouchArea {
+        private property <length> press-pointer;
+        private property <length> press-value;
+        width: parent.width;
+        height: parent.height;
+        mouse-cursor: col-resize;
+        pointer-event(event) => {
+            if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
+                self.press-pointer = self.absolute-position.x + self.mouse-x;
+                self.press-value = root.value;
+            }
+        }
+        moved => {
+            // Any held button reports movement; only a left-button press recorded a drag origin.
+            if !self.pressed { return; }
+            // The divider moves with the width, so the drag is measured in window coordinates from the press.
+            root.resize(self.press-value + self.absolute-position.x + self.mouse-x - self.press-pointer);
+        }
+    }
     // A pointer press never takes keyboard focus; Tab reaches this zero-size scope between tree and source.
     keys := FocusScope {
         width: 0px;
@@ -49,51 +86,6 @@ export component SidebarDivider inherits Rectangle {
                 return reject;
             }
             accept
-        }
-    }
-}
-
-// The pointer half: paints the line and the focus boundary, and takes drags over 48px centered on the line.
-export component SidebarDividerGrip inherits Rectangle {
-    in property <length> value;
-    in property <bool> keyboard-focus;
-    callback resize(length);
-    private property <bool> emphasized: grip.has-hover || grip.pressed || root.keyboard-focus;
-    min-height: 48px;
-
-    // Keyboard focus adds a boundary to the heavier line, so focus is never marked by weight alone.
-    Rectangle {
-        visible: root.keyboard-focus;
-        width: parent.width;
-        height: parent.height;
-        border-width: 1px;
-        border-color: Palette.foreground;
-    }
-    // Hover and drag change weight and ink together with the resize cursor.
-    Rectangle {
-        x: root.emphasized ? 23px : 24px;
-        width: root.emphasized ? 3px : 1px;
-        height: parent.height;
-        background: Palette.foreground;
-        opacity: grip.pressed || root.keyboard-focus ? 1 : (grip.has-hover ? 0.6 : 0.2);
-    }
-    grip := TouchArea {
-        private property <length> press-pointer;
-        private property <length> press-value;
-        width: parent.width;
-        height: parent.height;
-        mouse-cursor: col-resize;
-        pointer-event(event) => {
-            if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
-                self.press-pointer = self.absolute-position.x + self.mouse-x;
-                self.press-value = root.value;
-            }
-        }
-        moved => {
-            // Any held button reports movement; only a left-button press recorded a drag origin.
-            if !self.pressed { return; }
-            // The divider moves with the width, so the drag is measured in window coordinates from the press.
-            root.resize(self.press-value + self.absolute-position.x + self.mouse-x - self.press-pointer);
         }
     }
 }
