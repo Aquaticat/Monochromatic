@@ -149,7 +149,8 @@ pub struct WrapperFlags {
 }
 
 /// What: Split the wrapper occurrences of a parse whose flag list was built as
-///       "own escape hatch first, then the caller's flags".
+///       "own escape hatch first, then the caller's flags". `&[WrapperOccurrence]` borrows
+///       the occurrence list of that parse.
 /// Why:  Every command module builds its list that way, so the caller's indexes are the
 ///       tokenizer's indexes minus one.
 ///
@@ -158,10 +159,10 @@ pub struct WrapperFlags {
 /// const escape = wrapper.filter(w => w.flag === 0).map(w => w.token);
 /// const other = wrapper.filter(w => w.flag > 0).map(w => ({ flag: w.flag - 1, token: w.token }));
 /// ```
-pub fn split_wrapper_flags(parsed: &ParsedOptions) -> WrapperFlags {
+pub fn split_wrapper_flags(occurrences: &[WrapperOccurrence]) -> WrapperFlags {
     let mut escape: Vec<usize> = Vec::<usize>::new();
     let mut other: Vec<WrapperOccurrence> = Vec::<WrapperOccurrence>::new();
-    for occurrence in &parsed.wrapper {
+    for occurrence in occurrences {
         if occurrence.flag == 0 {
             escape.push(occurrence.token);
         } else {

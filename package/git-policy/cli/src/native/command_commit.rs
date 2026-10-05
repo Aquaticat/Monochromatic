@@ -205,7 +205,7 @@ pub fn parse_commit_region(
         pathspec_from_file: final_value(&parsed, PATHSPEC_FROM_FILE),
         pathspec_file_nul: is_enabled(&parsed, PATHSPEC_FILE_NUL),
         pathspecs: positional_tokens(&parsed, region.len()),
-        wrapper: split_wrapper_flags(&parsed),
+        wrapper: split_wrapper_flags(parsed.wrapper.as_slice()),
     });
 }
 

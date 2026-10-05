@@ -71,3 +71,21 @@ pub mod rule_atomic_push;
 
 /// Pure decision of the status-hints transform.
 pub mod rule_status_hints;
+
+/// The Git 2.56.0 option table of `git add` and its bulk-staging facts.
+pub mod command_add;
+
+/// The Git 2.56.0 option table of `git clean` and its deletion facts.
+pub mod command_clean;
+
+/// Wrapper-only escape-hatch spellings shared by several command modules.
+pub mod command_escape_hatch;
+
+/// The Git 2.56.0 option table of `git reset` and its mode.
+pub mod command_reset;
+
+/// `git stash` subcommand dispatch and wrapper-flag positions.
+pub mod command_stash;
+
+/// The Git 2.56.0 option tables of every `git stash` subcommand.
+pub mod command_stash_table;
