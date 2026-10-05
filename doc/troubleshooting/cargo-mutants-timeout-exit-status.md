@@ -432,16 +432,16 @@ so none is drafted.
     nothing has landed since August 2025,
     and nobody has declined it.
 6.  Is a minimal fix prototyped?
-    Partly.
-    Constraints 1 to 5 hold,
-    so a prototype of the maintainer's step list is required before this audit is complete.
-    The patch exists and its exit-status cases are measured;
-    `Prototype` lists the checks that are still open.
+    Yes.
+    The patch exists,
+    its exit-status cases are measured against a pristine build,
+    and its test, format and Clippy results are compared with the pristine tree.
+    `Prototype` names the one check that was not run.
 
 ### Prototype
 
-Written and partly verified on 2026-10-05;
-the audit is not complete until the checks listed as open here are run.
+Written and verified on 2026-10-05,
+except for the item listed as open at the end of this section.
 
 The patch is [cargo-mutants-timeout-exit-status.patch](cargo-mutants-timeout-exit-status.patch),
 a `git diff` against `v27.1.0` from a disposable clone.
@@ -481,21 +481,32 @@ the new end-to-end test and two neighbouring upstream tests passed
 `emit_config_schema`),
 and 270 of 272 unit tests passed.
 
-Open, not yet measured:
+A second run on an image rebuilt from the saved patch compared both trees with the same toolchain
+(rustfmt 1.9.0, clippy 0.1.97, user ID 0):
 
-- The two failing unit tests are `build_dir::test::fail_to_overwrite`
-  and `build_dir::test::fail_to_overwrite_dir_permission_denied`.
-  They expect a permission error and the container runs as root;
-  that they fail the same way on the pristine tree is an inference until it is run.
-- `cargo clippy --all-targets --all-features -- -D warnings` reported 6 errors.
-  The ones read are `useless_borrows_in_formatting` in `src/output.rs`,
-  a file the patch does not touch;
-  the full list was not compared against the pristine tree.
-- `cargo fmt --check` flagged one line of a new test.
-  The saved patch contains the fix;
-  the check was not rerun on it,
-  and the nine cases were measured on the build before that formatting-only change.
-- The whole upstream integration suite was not run.
+- The nine cases gave the same exit statuses again.
+- `cargo fmt --check` exits 0 on the patched tree and on the pristine tree.
+- Unit tests (`cargo test --locked --offline --bin cargo-mutants`):
+  the pristine tree passes 261 and fails 2,
+  the patched tree passes 270 and fails the same 2,
+  `build_dir::test::fail_to_overwrite` and `build_dir::test::fail_to_overwrite_dir_permission_denied`.
+  The 9 added tests all pass.
+  Both failing tests expect a permission error and the container runs as root;
+  that cause is an inference,
+  but the failures are measured as present without the patch.
+- `cargo clippy --all-targets --all-features -- -D warnings` exits 101 on both trees
+  with the same 6 errors at the same positions
+  (`redundant reference in format! argument` at `src/mutant.rs:144:31`
+  and five positions in `src/output.rs`, lines 130 to 140).
+  The patch adds none;
+  upstream's own sources do not pass this Clippy version.
+
+Open, not measured:
+
+- The whole upstream integration suite was not run,
+  and no test runs a timing-out tree through the command line with `--accept=timeout`
+  (upstream's own hang tests are `#[ignore]`);
+  the nine cases cover that path outside the test suite.
 
 The clone,
 the build context and the case log are under `~/temp/agent/upstream-prototype.p0aROR58/`;
