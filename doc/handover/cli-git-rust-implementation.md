@@ -262,6 +262,35 @@ equality on acceptance rests on differential evidence and a partial reading of A
 the reference source is scratch code and has not been through the crate's Clippy configuration.
 The linter executable delegate has the contract and is porting `markdown/lfs-image-url`.
 
+**Processor mutation campaign**:
+the first unrestricted cargo-mutants pass over `src/processors*.rs`,
+run by the main session from the snapshot at `9be97dce4` with image tag `processors-full`
+(`mise run //package/linter/monochromatic-lint:mutation:processors:files`, 2,641 seconds).
+Result:
+380 mutants,
+302 caught,
+52 missed,
+24 unviable,
+2 timeouts.
+Evidence:
+`package/linter/monochromatic-lint/target/verification/mutation-exJwfB`
+(base image `57e310bd9253f1fd6e84437012336fb14c9ecf36fef71091b3fd9fe15beab3f5`).
+Missed by file:
+`processors_spans.rs` 15,
+`processors_docs.rs` 14,
+`processors_rewrite.rs` 12,
+`processors.rs` 3,
+`processors_prepare.rs` 3,
+`processors_projection.rs` 3,
+`processors_fences.rs` 1,
+`processors_model.rs` 1.
+Timeouts:
+`processors_docs.rs:223` and `processors_lines.rs:45`, both `+=` replaced by `*=`.
+The earlier "5 of 5 caught" result came from five planted guard removals
+and does not describe coverage of these modules.
+Disposition is queued for a delegate in the linked worktree `.claude/worktrees/linter-processor-survivors`
+(branch `test/linter-processor-survivors`, based on `9be97dce4`).
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
