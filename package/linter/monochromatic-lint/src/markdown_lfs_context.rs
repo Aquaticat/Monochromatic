@@ -177,15 +177,17 @@ pub fn discover_lfs_image_repo(start: &Path) -> Result<Option<LfsImageRepo>, Lfs
 }
 
 /// What: Whether the rule's `exclude` patterns name a file under lint.
-/// Why: Patterns are relative to the repository root; a file outside the repository is never excluded by them.
+/// Why: Patterns are relative to the repository root; a file outside the repository is never
+/// excluded by them. Only the root is needed, so exclusion is decided before the repository's
+/// endpoint is read and an excluded file is unaffected by an unusable endpoint.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function isExcluded(repo, filePath, exclude): boolean;
+/// function isExcluded(repoRoot, filePath, exclude): boolean;
 /// ```
-pub fn is_excluded(repo: &LfsImageRepo, file_path: &Path, exclude: &PathPatterns) -> bool {
+pub fn is_excluded(repo_root: &Path, file_path: &Path, exclude: &PathPatterns) -> bool {
     let normal: PathBuf = lexical_normal(file_path);
-    let Some(relative): Option<String> = repo_relative(&repo.repo_root, &normal) else {
+    let Some(relative): Option<String> = repo_relative(repo_root, &normal) else {
         return false;
     };
     return exclude.matches(relative.as_str());

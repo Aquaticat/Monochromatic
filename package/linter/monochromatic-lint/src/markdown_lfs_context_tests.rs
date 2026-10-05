@@ -116,39 +116,19 @@ fn a_repository_needs_a_declared_endpoint() {
 #[test]
 fn exclusion_is_relative_to_the_repository_root() {
     let fixture: Fixture = Fixture::new();
-    write_tree(&fixture.path);
-    let repo: LfsImageRepo = repository(&fixture.path);
+    let root: &Path = fixture.path.as_path();
     let file: PathPatterns =
         PathPatterns::new(&[String::from("pkg/README.md")]).expect("pattern compiles");
-    assert!(is_excluded(
-        &repo,
-        &fixture.path.join("pkg/README.md"),
-        &file
-    ));
-    assert!(!is_excluded(&repo, &fixture.path.join("other.md"), &file));
-    assert!(!is_excluded(
-        &repo,
-        Path::new("/elsewhere/README.md"),
-        &file
-    ));
+    assert!(is_excluded(root, &root.join("pkg/README.md"), &file));
+    assert!(is_excluded(root, &root.join("pkg/./x/../README.md"), &file));
+    assert!(!is_excluded(root, &root.join("other.md"), &file));
+    assert!(!is_excluded(root, Path::new("/elsewhere/README.md"), &file));
     let directory: PathPatterns =
         PathPatterns::new(&[String::from("pkg/")]).expect("pattern compiles");
-    assert!(is_excluded(
-        &repo,
-        &fixture.path.join("pkg/README.md"),
-        &directory
-    ));
-    assert!(!is_excluded(
-        &repo,
-        &fixture.path.join("README.md"),
-        &directory
-    ));
+    assert!(is_excluded(root, &root.join("pkg/README.md"), &directory));
+    assert!(!is_excluded(root, &root.join("README.md"), &directory));
     let none: PathPatterns = PathPatterns::new(&[]).expect("empty list compiles");
-    assert!(!is_excluded(
-        &repo,
-        &fixture.path.join("pkg/README.md"),
-        &none
-    ));
+    assert!(!is_excluded(root, &root.join("pkg/README.md"), &none));
 }
 
 /// Tracked, plain, missing, directory and unreferenced paths resolve to their kinds.

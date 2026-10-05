@@ -21,6 +21,10 @@ shadow_unrelated = "deny"
 name = "monochromatic_lint"
 path = "src/lib.rs"
 
+[[bin]]
+name = "monochromatic-lint"
+path = "src/main.rs"
+
 [dependencies]
 # Reuse the repository's comment-preserving parser and exact-number value model.
 monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }

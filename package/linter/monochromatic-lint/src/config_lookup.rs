@@ -206,6 +206,30 @@ pub(crate) fn discover_with_filesystem(
     return Ok(None);
 }
 
+/// What: Read the configuration file of exactly one directory, without consulting its ancestors.
+/// Why: The executable memoizes nearest-file lookup per directory, so each candidate file is read
+/// and parsed once per run instead of once per linted file.
+/// Its patterns resolve against that directory, as in ancestor discovery.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function loadConfigurationAt(directory: Path): ConfigurationSource | undefined;
+/// ```
+pub fn load_configuration_at(directory: &Path) -> Result<Option<ConfigurationSource>, ConfigError> {
+    if !directory.is_absolute() {
+        return Err(ConfigError::new(
+            "Configuration lookup requires an absolute directory.",
+        ));
+    }
+    let candidate: PathBuf = directory.join(CONFIG_NAME);
+    let Some(source): Option<String> = NativeConfigFilesystem.read(&candidate)? else {
+        return Ok(None);
+    };
+    let result: ConfigurationSource =
+        selected(candidate, directory.to_path_buf(), source.as_str())?;
+    return Ok(Some(result));
+}
+
 /// What: Production configuration lookup using the native read-only filesystem.
 /// Why: All runtime calls use the same discovery implementation exercised by the memory-backed tests.
 ///

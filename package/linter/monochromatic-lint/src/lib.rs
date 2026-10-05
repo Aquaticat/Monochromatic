@@ -62,6 +62,9 @@ pub mod markdown_commands;
 /// Used and unique reference definitions with localized removal fixes.
 #[doc(hidden)]
 pub mod markdown_definitions;
+/// Selected Markdown rules over one shared parse, in registry order.
+#[doc(hidden)]
+pub mod markdown_dispatch;
 /// Duplicate headings scoped by their textual ancestor path.
 #[doc(hidden)]
 pub mod markdown_duplicate_headings;
@@ -104,6 +107,9 @@ mod markdown_prose_context;
 /// Heading punctuation checks with complete source escape/entity edits.
 #[doc(hidden)]
 pub mod markdown_punctuation;
+/// Typed Markdown rule selection from validated merged JSONC.
+#[doc(hidden)]
+pub mod markdown_rule_settings;
 /// Add-only prose line breaks with token, delimiter and block guards.
 #[doc(hidden)]
 pub mod markdown_semantic_breaks;
@@ -123,9 +129,42 @@ pub mod path_inputs;
 mod path_inputs_tests;
 /// Internal finalization of matched partial rule settings.
 mod resolved_rules;
+/// Host rules plus always-on processors for one source snapshot.
+#[doc(hidden)]
+pub mod run_check;
+/// Mode selection and the complete lint invocation with injected environment.
+#[doc(hidden)]
+pub mod run_command;
+/// Core processing-failure and refused-fix findings.
+#[doc(hidden)]
+pub mod run_failure;
+/// Per-file read, bounded fix loop and atomic rewrite.
+#[doc(hidden)]
+pub mod run_file;
+/// Per-run sharing of LFS repository facts.
+#[doc(hidden)]
+pub mod run_lfs;
+/// Rule listing, starter configuration and effective-configuration printing.
+#[doc(hidden)]
+pub mod run_modes;
 /// JSONL routing, stdin-fix source output and exit-status accounting.
 #[doc(hidden)]
 pub mod run_output;
+/// Absolute, display and configuration-relative names, and language by extension.
+#[doc(hidden)]
+pub mod run_paths;
+/// Memoized configuration lookup and per-file plans.
+#[doc(hidden)]
+pub mod run_plan;
+/// Real arguments, streams and exit status.
+#[doc(hidden)]
+pub mod run_process;
+/// Bounded worker threads with per-file panic containment.
+#[doc(hidden)]
+pub mod run_workers;
+/// Atomic replacement that keeps permission bits.
+#[doc(hidden)]
+pub mod run_write;
 /// Syntax-only Rust execution without initializing a Cargo workspace.
 #[doc(hidden)]
 pub mod rust_dispatch;
