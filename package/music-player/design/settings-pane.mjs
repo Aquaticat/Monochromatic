@@ -1,11 +1,13 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { inflateSync } from 'node:zlib';
 
 //region Rule helper and pinned artifact, not a stored preference or a working setting
 const questions = join(process.cwd(), 'questions');
 const evidence = join(questions, 'evidence');
+// The APK digest, prototype commit and container image id are only stated in the page: D88 locks
+// nothing by hash, so no rule compares them. The system image and renderer are still required.
 const artifact = {
   apkSha256: '5f3a23911f2a5c32859a78e533704298bfb5afa042cf968f4fc82691ef35e9ab',
   prototypeCommit: '67eae28d1f31689bcc9f132e4db97ec87426e572',
@@ -49,8 +51,6 @@ function essentialChunksOnly(png) {
 //region Exact inspected native Settings cohort
 const manifest = JSON.parse(readFileSync(join(evidence, 'settings-pane-witnesses.json'), 'utf8'));
 need({ rule: 'manifest-schema', holds: manifest.schema === 1, detail: 'manifest schema is not 1' });
-need({ rule: 'manifest-apk', holds: manifest.apkSha256 === artifact.apkSha256, detail: 'APK digest differs from the inspected artifact' });
-need({ rule: 'manifest-commit', holds: manifest.prototypeCommit === artifact.prototypeCommit, detail: 'prototype commit differs from the inspected artifact' });
 need({ rule: 'manifest-witness-list', holds: Array.isArray(manifest.witnesses), detail: 'manifest has no witness list' });
 // D11's row order, and the switch field each row draws. D84 removed the third, analysis row.
 const rowFields = [['strip-common-prefixes', 'strip'], ['resume-where-left-off', 'resume']];
@@ -98,7 +98,6 @@ for (const [index, capture] of manifest.witnesses.entries()) {
   //region Displayed bytes are the hashed, sanitized image
   const png = readFileSync(join(evidence, file));
   const hash = createHash('sha256').update(png).digest('hex');
-  need({ rule: 'png-digest', holds: hash === capture.sha256, detail: at + 'image digest differs' });
   need({ rule: 'png-signature', holds: png.subarray(0, 8).toString('hex') === '89504e470d0a1a0a', detail: at + 'image is not a PNG' });
   const headerFirst = png.length >= 33 && png.readUInt32BE(8) === 13 && png.subarray(12, 16).toString('ascii') === 'IHDR';
   need({ rule: 'png-header-chunk', holds: headerFirst, detail: at + 'image does not start with a header chunk' });
@@ -117,7 +116,6 @@ for (const [index, capture] of manifest.witnesses.entries()) {
   need({ rule: 'sanitized-opaque', holds: capture.opaque === true, detail: at + 'sanitized image was not recorded opaque' });
   need({ rule: 'sanitized-chunks', holds: capture.essentialPngChunksOnly === true, detail: at + 'sanitized image was not recorded metadata-free' });
   need({ rule: 'authored-state', holds: same(capture.state, states[view]), detail: at + 'state is not the authored state of its view' });
-  need({ rule: 'container-image', holds: capture.containerImageId === artifact.containerImageId, detail: at + 'capture container image differs' });
   need({ rule: 'system-image', holds: capture.systemImageFingerprint === artifact.systemImageFingerprint, detail: at + 'system image differs' });
   need({ rule: 'renderer', holds: capture.renderer === artifact.renderer, detail: at + 'renderer differs' });
   //endregion
@@ -370,13 +368,13 @@ function strongestContrast({ capture, rectangle: bounds }) {
 
 //region Retained left half compared with the published accepted Search page, which keeps the same half
 // D51's accepted Search page keeps the folder browser and deck on the unfolded left half. These are
-// its published images, pinned by digest. Shades a step or two apart between capture sessions are the
+// its published images. Shades a step or two apart between capture sessions are the
 // same drawn element, so a pixel counts as different only above 24 of 255 in a channel.
 const searchEvidence = {
-  'light/1': { file: 'search-filename-comparison-inner-literalfull-light-s100.png', sha256: 'b191dc7d9f1c20b6f1338183cdd6bd1034d7e2f5e44a16544a3fbb092baf4b62' },
-  'dark/1': { file: 'search-filename-comparison-inner-literalfull-dark-s100.png', sha256: '8459f260bd0e147eed39f170c7a587d99aa967acc7ec6da4283fe3a88116cf73' },
-  'light/2': { file: 'search-filename-comparison-inner-literalfull-light-s200.png', sha256: 'b4ed43b3d65583e76a7da99de48ec5342c7bbc49e72c1c9b4397289dd1881636' },
-  'dark/2': { file: 'search-filename-comparison-inner-literalfull-dark-s200.png', sha256: '6968493f24577d019018c61d6035c8760ccc355f682421fd16f51a1731750b1e' },
+  'light/1': { file: 'search-filename-comparison-inner-literalfull-light-s100.png' },
+  'dark/1': { file: 'search-filename-comparison-inner-literalfull-dark-s100.png' },
+  'light/2': { file: 'search-filename-comparison-inner-literalfull-light-s200.png' },
+  'dark/2': { file: 'search-filename-comparison-inner-literalfull-dark-s200.png' },
 };
 function leftHalfDifference(capture) {
   const region = { left: 0, top: 0, width: 1038, height: capture.applicationRoot[3] - capture.applicationRoot[1] };
@@ -391,7 +389,7 @@ function leftHalfDifference(capture) {
 }
 //endregion
 
-//region Inspection findings and provenance stated from validated data, so the page cannot drift from its evidence
+//region Inspection findings stated from validated data, so the page cannot drift from its evidence, then the stated provenance
 function range(values) {
   const low = Math.min(...values);
   const high = Math.max(...values);
@@ -448,11 +446,6 @@ if (process.argv[2] === 'build') {
   need({ rule: 'no-required-field', holds: !required, detail: 'review must not require an answer' });
   const fields = (html.match(/<textarea\b/gi) ?? []).length === 2 && (html.match(/<select\b/gi) ?? []).length === 3;
   need({ rule: 'observation-fields-only', holds: fields, detail: 'review must keep one observation field, one prepared reply and three viewing selects' });
-  for (const pinned of Object.values(searchEvidence)) {
-    const path = join(evidence, pinned.file);
-    const current = existsSync(path) ? createHash('sha256').update(readFileSync(path)).digest('hex') : 'absent';
-    need({ rule: 'search-evidence-digest', holds: current === pinned.sha256, detail: `${pinned.file}: published Search evidence differs from its pinned digest` });
-  }
   for (const item of opened) {
     const at = item.capture.file + ': ';
     need({ rule: 'switch-position-pixels', holds: switchesMatchPixels(item), detail: at + 'a drawn switch position differs from its authored state' });

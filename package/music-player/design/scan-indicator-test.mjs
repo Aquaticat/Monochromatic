@@ -1,5 +1,4 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -22,7 +21,6 @@ const builder = join(fixture, 'scan-indicator.mjs');
 const output = join(fixture, 'questions', 'scan-indicator.html');
 const full = 'Analysing true peak · 412 of 1,218';
 const limits = ['-limit', 'thread', '2', '-limit', 'memory', '256MiB'];
-function digest(bytes) { return createHash('sha256').update(bytes).digest('hex'); }
 function invoke({ command, script = builder }) {
   return spawnSync(process.execPath, [script, command], { cwd: fixture, encoding: 'utf8', maxBuffer: 2 * 1024 * 1024 });
 }
@@ -44,16 +42,14 @@ function magick(args) {
 //endregion
 
 //region One or more rejected inputs per builder rule
-// `change` edits one witness of a fresh manifest copy; `image` rewrites that witness's PNG and its
-// recorded digest; `template` rewrites the page template; `afterBuild` runs between build and validate.
+// `change` edits one witness of a fresh manifest copy; `image` rewrites that witness's PNG;
+// `template` rewrites the page template; `afterBuild` runs between build and validate.
 // A case names the single rule that must report it. Cases whose rule runs in `validate` build first.
 const idle = { panel: 'cover', scene: 'idle', scale: 1 };
 const clipped = { panel: 'cover', scene: 'running', scale: 2 };
 const largeResume = { panel: 'inner', scene: 'paused', scale: 2 };
 const cases = [
   { rule: 'manifest-schema', manifest: input => { input.schema = 2; } },
-  { rule: 'manifest-apk', manifest: input => { input.apkSha256 = '60fe847ebbd5d5c6694fbecddb08b87142b6d258137579ff0dee93901541bf29'; } },
-  { rule: 'manifest-commit', manifest: input => { input.prototypeCommit = '56b6170fdec8951c2fa0ef6b173fef3aa9592df0'; } },
   { rule: 'manifest-witness-list', manifest: input => { input.witnesses = { length: 32 }; } },
   { rule: 'witness-record', manifest: input => { input.witnesses[5] = null; } },
   { rule: 'witness-path', at: idle, change: item => { item.file = '../outside.png'; } },
@@ -72,7 +68,6 @@ const cases = [
   { rule: 'crop-record', at: idle, change: item => { delete item.cropPixels; } },
   { rule: 'crop-origin', at: idle, change: item => { item.cropPixels.y++; } },
   { rule: 'crop-size', at: idle, change: item => { item.cropPixels.height--; } },
-  { rule: 'png-digest', at: idle, change: item => { item.sha256 = '0'.repeat(64); } },
   { rule: 'png-signature', at: idle, image: bytes => Buffer.concat([Buffer.from([0x88]), bytes.subarray(1)]) },
   { rule: 'png-header-chunk', at: idle, image: bytes => bytes.subarray(0, 20) },
   { rule: 'png-size', at: idle, image: (bytes, path) => { magick([path, '-crop', '1079x2272+0+0', '+repage', '-strip', '-define', 'png:exclude-chunks=all', 'PNG24:' + path]); return readFileSync(path); } },
@@ -92,7 +87,6 @@ const cases = [
   // Idle views carry no bar text, so only this rule can refuse a changed idle count.
   { rule: 'authored-state', at: idle, change: item => { item.state.done = 1; } },
   { rule: 'authored-state', at: largeResume, change: item => { item.state.phase = 'running'; } },
-  { rule: 'container-image', at: idle, change: item => { item.containerImageId = 'different-image'; } },
   { rule: 'system-image', at: idle, change: item => { item.systemImageFingerprint = 'different-system'; } },
   { rule: 'renderer', at: idle, change: item => { item.renderer = 'different-renderer'; } },
   { rule: 'player-rectangle', at: idle, change: item => { item.player = 'garbage'; } },
@@ -174,7 +168,6 @@ function runCase(testCase) {
     undo.push(() => writeFileSync(path, original));
     const bytes = testCase.image(original, path);
     writeFileSync(path, bytes);
-    item.sha256 = digest(bytes);
   }
   if (testCase.change) testCase.change(item);
   if (testCase.template) {
@@ -261,7 +254,6 @@ try {
       view.cropPixels.y++;
       view.cropPixels.height--;
       magick([imagePath, '-crop', `${view.cropPixels.width}x${view.cropPixels.height}+0+1`, '+repage', '-strip', '-define', 'png:exclude-chunks=all', 'PNG24:' + imagePath]);
-      view.sha256 = digest(readFileSync(imagePath));
       writeFileSync(manifestPath, JSON.stringify(changedInset));
       positive();
       writeFileSync(imagePath, original);
