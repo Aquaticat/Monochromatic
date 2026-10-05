@@ -37,6 +37,17 @@ fn first(context: &MarkdownSource, kind: MdastNodeType) -> u32 {
     panic!("fixture did not create the requested node kind");
 }
 
+/// Walk one node's ancestors through the production bounded walk; a parse never has a parent cycle.
+fn chain(context: &MarkdownSource, id: u32) -> Vec<u32> {
+    // `.expect` unwraps `Ok(list)` or fails the test with this message on `Err`.
+    return context.ancestors(id).expect("an acyclic parse");
+}
+
+/// Answer one ancestry question through the production query, failing the test on a parent cycle.
+fn has_ancestor(context: &MarkdownSource, id: u32, kind: MdastNodeType) -> bool {
+    return context.has_ancestor(id, kind).expect("an acyclic parse");
+}
+
 /// Apply every advertised semantic-break fix once through the production editor.
 fn fixed(source: &str) -> String {
     let context: MarkdownSource = parse(source, false);
@@ -125,7 +136,10 @@ fn paragraph_lookup_climbs_inline_wrappers_and_respects_exclusions() {
             continue;
         }
         texts += 1;
-        assert_eq!(paragraph_for(&nested, *id), Some(paragraph));
+        assert_eq!(
+            paragraph_for(&nested, chain(&nested, *id).as_slice()),
+            Some(paragraph)
+        );
     }
     assert_eq!(texts, 4);
     for source in [
@@ -141,8 +155,9 @@ fn paragraph_lookup_climbs_inline_wrappers_and_respects_exclusions() {
                 excluded = Some(*id);
             }
         }
+        let ancestors: Vec<u32> = chain(&context, excluded.expect("comma text"));
         assert_eq!(
-            paragraph_for(&context, excluded.expect("comma text")),
+            paragraph_for(&context, ancestors.as_slice()),
             None,
             "{source}"
         );
@@ -179,7 +194,7 @@ fn paragraphs_never_nest_inside_paragraphs() {
             }
             paragraphs += 1;
             assert!(
-                !context.has_ancestor(*id, MdastNodeType::Paragraph),
+                !has_ancestor(&context, *id, MdastNodeType::Paragraph),
                 "{source}"
             );
         }
@@ -188,7 +203,7 @@ fn paragraphs_never_nest_inside_paragraphs() {
         // The ancestry query itself can answer yes: paragraph text has a paragraph ancestor.
         let text: u32 = first(&context, MdastNodeType::Text);
         assert!(
-            context.has_ancestor(text, MdastNodeType::Paragraph),
+            has_ancestor(&context, text, MdastNodeType::Paragraph),
             "{source}"
         );
     }

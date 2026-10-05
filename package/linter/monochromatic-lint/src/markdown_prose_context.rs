@@ -10,8 +10,15 @@
 use crate::markdown_source::MarkdownSource;
 use satteri_ast::mdast::MdastNodeType;
 
-/// Find the enclosing paragraph unless a non-prose ancestor excludes this text.
-pub(crate) fn paragraph_for(context: &MarkdownSource, id: u32) -> Option<u32> {
+/// What: Find the enclosing paragraph among a text node's ancestors, unless a non-prose ancestor excludes the text.
+/// Why: The caller walks the ancestors once through the bounded `MarkdownSource::ancestors` and passes them in,
+/// so this lookup and `delimiter_tail` share one walk and neither can loop. `&[u32]` borrows that list read-only.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function paragraphFor(context: MarkdownSource, ancestors: readonly number[]): number | undefined;
+/// ```
+pub(crate) fn paragraph_for(context: &MarkdownSource, ancestors: &[u32]) -> Option<u32> {
     // These ancestors represent content with another syntax or a single-line contract.
     const SKIP: &[MdastNodeType] = &[
         MdastNodeType::Heading,
@@ -29,25 +36,32 @@ pub(crate) fn paragraph_for(context: &MarkdownSource, id: u32) -> Option<u32> {
     ];
     // Option carries a discovered paragraph id, not a synthesized fallback node.
     let mut paragraph: Option<u32> = None;
-    let mut cursor: Option<u32> = context.parent(id);
-    while let Some(parent) = cursor {
-        let kind: MdastNodeType = context.kind(parent);
+    // Visit ancestors nearest first; `*parent` reads the id behind each borrowed `&u32` item.
+    for parent in ancestors {
+        let kind: MdastNodeType = context.kind(*parent);
         if SKIP.contains(&kind) {
             return None;
         }
         // Paragraphs hold only inline content, so at most one ancestor matches and it is also the nearest one.
         if kind == MdastNodeType::Paragraph {
-            paragraph = Some(parent);
+            paragraph = Some(*parent);
         }
-        cursor = context.parent(parent);
     }
     return paragraph;
 }
 
-/// Climb only inline delimiters whose final child is the current tail.
-pub(crate) fn delimiter_tail(context: &MarkdownSource, id: u32) -> u32 {
+/// What: Climb from text node `id` through inline delimiters whose final child is the current tail.
+/// Why: `ancestors` is the same nearest-first list `paragraph_for` reads, from the one bounded walk.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function delimiterTail(context: MarkdownSource, id: number, ancestors: readonly number[]): number;
+/// ```
+pub(crate) fn delimiter_tail(context: &MarkdownSource, id: u32, ancestors: &[u32]) -> u32 {
     let mut tail: u32 = id;
-    while let Some(parent) = context.parent(tail) {
+    // Each ancestor is the parent of the current tail, because the list runs upwards from `id` one level per item.
+    for ancestor in ancestors {
+        let parent: u32 = *ancestor;
         let kind: MdastNodeType = context.kind(parent);
         if kind != MdastNodeType::Strong
             && kind != MdastNodeType::Emphasis

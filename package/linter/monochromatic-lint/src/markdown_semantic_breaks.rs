@@ -12,6 +12,8 @@ use crate::edits::{Edit, Fix};
 /// Import byte-oriented lexical guards and AST boundary helpers.
 use crate::markdown_block_start::starts_block_construct;
 use crate::markdown_break_points::break_offsets;
+/// Import the processing-failure finding a rule reports when the document's structure cannot be walked.
+use crate::markdown_finding::ancestry_failure;
 use crate::markdown_prose_context::{continuation_prefix, delimiter_tail, paragraph_for};
 use crate::markdown_source::MarkdownSource;
 use satteri_ast::mdast::MdastNodeType;
@@ -29,10 +31,22 @@ pub fn semantic_line_breaks(context: &MarkdownSource, severity: Severity) -> Vec
         if context.kind(*id) != MdastNodeType::Text {
             continue;
         }
-        let Some(paragraph): Option<u32> = paragraph_for(context, *id) else {
+        // Walk the ancestors once, bounded; `Err` means the parent index has a cycle and nothing here can be trusted.
+        let ancestors: Vec<u32> = match context.ancestors(*id) {
+            Ok(chain) => chain,
+            Err(error) => {
+                findings.push(ancestry_failure(
+                    context,
+                    "markdown/semantic-line-breaks",
+                    error,
+                ));
+                return findings;
+            }
+        };
+        let Some(paragraph): Option<u32> = paragraph_for(context, ancestors.as_slice()) else {
             continue;
         };
-        let tail: u32 = delimiter_tail(context, *id);
+        let tail: u32 = delimiter_tail(context, *id, ancestors.as_slice());
         let (_, tail_end): (usize, usize) = context.offsets(tail);
         let (_, paragraph_end): (usize, usize) = context.offsets(paragraph);
         let (start, _): (usize, usize) = context.offsets(*id);

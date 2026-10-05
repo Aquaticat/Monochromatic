@@ -7,7 +7,11 @@
 //! ```
 
 /// Import the real guard boundary and installed arena construction API.
-use super::{MarkdownError, traversal};
+use super::{MarkdownError, MarkdownSource, traversal};
+/// Import the finding model and both rules that walk ancestors, to observe how a walk failure is reported.
+use crate::diagnostic::{Diagnostic, Severity};
+use crate::markdown_headings::no_emphasis_as_heading;
+use crate::markdown_semantic_breaks::semantic_line_breaks;
 use satteri_arena::{Arena, Mdast};
 use satteri_ast::mdast::MdastNodeType;
 
@@ -95,4 +99,102 @@ fn child_list_bounds_are_checked_before_borrowing() {
     let mut arena: Arena<Mdast> = valid_arena();
     arena.nodes[0].children_start = 99;
     assert!(rejected(&arena).message.contains("out-of-range child list"));
+}
+
+/// Parse one fixture through the real adapter; these fixtures always parse.
+fn parsed(source: &str) -> MarkdownSource {
+    // `.expect` unwraps `Ok(document)` or fails the test with this message.
+    return MarkdownSource::new(String::from("cycle.md"), String::from(source), false)
+        .expect("fixture parses");
+}
+
+/// Find the only node of one kind, so corruption below targets real parser output rather than guessed ids.
+fn only(document: &MarkdownSource, kind: MdastNodeType) -> u32 {
+    // `Option<u32>` holds the match once found; a second match means the fixture is not what the test assumes.
+    let mut found: Option<u32> = None;
+    for id in document.all_nodes() {
+        if document.kind(*id) == kind {
+            assert_eq!(found, None, "fixture has one node of this kind");
+            found = Some(*id);
+        }
+    }
+    return found.expect("fixture has this node kind");
+}
+
+/// The bounded walk admits the deepest chain a document can hold: every node on one path below the root.
+#[test]
+fn ancestor_walks_reach_the_root_from_the_deepest_possible_node() {
+    let document: MarkdownSource = parsed("*__a__*\n");
+    let text: u32 = only(&document, MdastNodeType::Text);
+    let chain: Vec<u32> = document.ancestors(text).expect("an acyclic parse");
+    assert_eq!(
+        chain,
+        [
+            only(&document, MdastNodeType::Strong),
+            only(&document, MdastNodeType::Emphasis),
+            only(&document, MdastNodeType::Paragraph),
+            0,
+        ]
+    );
+    // Every node of the arena lies on this path, so the walk needs exactly as many passes as there are nodes.
+    assert_eq!(document.parents.len(), chain.len() + 1);
+    assert_eq!(document.ancestors(0), Ok(Vec::<u32>::new()));
+}
+
+/// `traversal` rejects cyclic child graphs before any parent index exists
+/// (`child_graph_rejects_duplicate_invalid_and_cyclic_ids`), so a parent cycle can only appear in the derived
+/// index itself: through a later change to `traversal`, or a mutated `parent` accessor.
+/// This plants one there, then requires the typed error and one processing failure from each ancestry rule.
+#[test]
+fn a_parent_index_cycle_is_a_typed_error_and_a_processing_failure() {
+    let mut document: MarkdownSource = parsed("*a*\n");
+    let paragraph: u32 = only(&document, MdastNodeType::Paragraph);
+    let emphasis: u32 = only(&document, MdastNodeType::Emphasis);
+    let text: u32 = only(&document, MdastNodeType::Text);
+    // Positive control: the intact index climbs text, emphasis, paragraph, root.
+    assert_eq!(document.ancestors(text), Ok(vec![emphasis, paragraph, 0]));
+    assert_eq!(document.has_ancestor(text, MdastNodeType::Paragraph), Ok(true));
+    // Corrupt the derived index: the paragraph's parent becomes the emphasis inside it.
+    // `as usize` widens the u32 id to the index type a Vec takes.
+    document.parents[paragraph as usize] = emphasis;
+    let nodes: usize = document.parents.len();
+    let cycle: String = format!(
+        "has more ancestors than the {nodes} nodes of its document, so the parser's parent index has a cycle and the document's structure cannot be trusted. This is a defect in the linter, not in the file: report it with this file."
+    );
+    // The walk from the text node fails at the text node's own offset, after the `*`.
+    let error: MarkdownError = document.ancestors(text).expect_err("a parent cycle");
+    assert_eq!(error.message, format!("Markdown node {text} {cycle}"));
+    assert_eq!(error.offset, 1);
+    assert_eq!(
+        document.has_ancestor(text, MdastNodeType::ListItem),
+        Err(error.clone())
+    );
+    // Each rule reports exactly one processing failure that names it, at the node whose walk failed.
+    for (findings, rule, node, offset) in [
+        (
+            semantic_line_breaks(&document, Severity::Warn),
+            "markdown/semantic-line-breaks",
+            text,
+            1,
+        ),
+        (
+            no_emphasis_as_heading(&document, Severity::Warn),
+            "markdown/no-emphasis-as-heading",
+            paragraph,
+            0,
+        ),
+    ] {
+        assert_eq!(findings.len(), 1, "{rule}");
+        let failure: &Diagnostic = &findings[0];
+        assert_eq!(failure.code, "core/processing-failure", "{rule}");
+        assert!(failure.processing_failure, "{rule}");
+        assert_eq!(failure.severity, Severity::Error, "{rule}");
+        assert_eq!(failure.fix, None, "{rule}");
+        assert_eq!(
+            failure.message,
+            format!("{rule} could not check this file: Markdown node {node} {cycle}")
+        );
+        assert_eq!(failure.labels[0].span.offset, offset, "{rule}");
+        assert_eq!(failure.filename, "cycle.md", "{rule}");
+    }
 }

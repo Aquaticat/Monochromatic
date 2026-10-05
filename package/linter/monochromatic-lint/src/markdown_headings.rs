@@ -7,7 +7,8 @@
 //! ```
 
 use crate::diagnostic::{Diagnostic, Severity};
-use crate::markdown_finding::finding;
+/// Import node findings and the processing failure reported when the document's structure cannot be walked.
+use crate::markdown_finding::{ancestry_failure, finding};
 use crate::markdown_source::MarkdownSource;
 /// Import native heading data and shared finding construction.
 use satteri_ast::mdast::{MdastNodeType, decode_heading_data};
@@ -77,9 +78,23 @@ const SENTENCE_PUNCTUATION: &[char] = &[
 pub fn no_emphasis_as_heading(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
     let mut findings = Vec::new();
     for id in context.visible_nodes() {
-        if context.kind(*id) != MdastNodeType::Paragraph
-            || context.has_ancestor(*id, MdastNodeType::ListItem)
-        {
+        if context.kind(*id) != MdastNodeType::Paragraph {
+            continue;
+        }
+        // `Ok(found)` answers the bounded ancestry walk; `Err` means the parent index has a cycle, so this rule stops.
+        let in_list: bool = match context.has_ancestor(*id, MdastNodeType::ListItem) {
+            Ok(found) => found,
+            Err(error) => {
+                findings.push(ancestry_failure(
+                    context,
+                    "markdown/no-emphasis-as-heading",
+                    error,
+                ));
+                return findings;
+            }
+        };
+        // List labels such as `- **Note**` are allowed to be emphasis-only.
+        if in_list {
             continue;
         }
         let children = context.children(*id);
