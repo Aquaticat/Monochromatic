@@ -50,11 +50,12 @@ export function strictArguments<const TEntries extends v.ObjectEntries,>(
   /**
    Same entries on a prototype-free object, so `key in entries` sees only declared names.
    */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.assign returns any through its spread overload; the value is the entries argument with its prototype removed
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- Object.assign returns any through its spread overload; the value is the entries argument with its prototype removed */
   const bareEntries = Object.assign(
     Object.create(null,),
     entries,
   ) as TEntries;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return v.strictObject(bareEntries,);
 }
 
