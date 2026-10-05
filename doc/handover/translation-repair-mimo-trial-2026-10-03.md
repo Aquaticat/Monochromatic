@@ -683,6 +683,31 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  00:18 UTC:
+  the next batch's baseline census taken at commit `31f7b5559`:
+  `census written to ~/.cache/translation-repair/coverage/census-pUl33e/census.json`
+  (`~/temp/agent/mimo-trial/census-77.log`),
+  `library source: 101 files, 154 stretches over 354 lines, 4 functions never called`.
+  The nudged batch's allowlist entry went stale with its new test
+  (`31f7b5559`),
+  and one commit message's `--message` split into a stray `-- message`
+  before the pathspec
+  (recorded here rather than amended,
+  ledger GCA).
+  The ranking's first seven clusters carry documented-left arms
+  or the attribution quirk's records.
+  The next actionable cluster is `photo`
+  with 3 stretches over 3 lines in 1 file
+  (`photo-reference.ts:133`,
+  `240`,
+  `303`),
+  then `resolution`,
+  `claim`.
+  This line lands in the trial-log commit that follows `31f7b5559`.
+  Next:
+  the `photo` batch.
+
+- 2026-10-05,
   00:06 UTC:
   the T8 `nudged` batch closed with commit `b487f4d02`:
   3 line stretches over `nudged-reask.ts`,
