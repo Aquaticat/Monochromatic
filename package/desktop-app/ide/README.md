@@ -660,8 +660,9 @@ accepting draws nothing by itself.
 `annotate::set_annotations(window, state, hints, diagnostics)` in `src/native/annotate.rs`,
 both arguments `Option<Arc<...>>`,
 replaces both and renders.
-Nothing calls either from a running language server yet;
-tests and the inspection path below inject snapshots directly.
+For a running language server the caller is the language poll in `src/native/language/poll.rs`,
+through the `accept_` methods;
+tests and the path described under "Inspection" inject snapshots with `set_annotations`.
 
 A snapshot is painted only while its stamp names the displayed text:
 the file generation and the content revision.
