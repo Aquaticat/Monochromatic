@@ -1,4 +1,6 @@
 //! main support for the forbidden-strings scanner.
+/// The standalone process owns panic output; loading the library never changes a host's hook.
+mod process_boundary;
 /// Imports dependencies used by this module.
 // What:     `use forbidden_strings::run_cli_from_env;` imports the
 //           public lib entry point. The crate's library target is
@@ -32,6 +34,19 @@ use forbidden_strings::run_cli_from_env;
 // // No type; just a number.
 // ```
 use std::process::ExitCode;
+
+/// Initialize the existing logger and run the CLI inside the process's unwind boundary.
+fn initialized_cli() -> anyhow::Result<i32> {
+    // Keep all startup logging behavior inside the same failure boundary as rule loading and scanning.
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| return tracing_subscriber::EnvFilter::new("info")),
+        )
+        .with_writer(std::io::stderr)
+        .init();
+    return run_cli_from_env();
+}
 
 /// Implements `main`.
 // What:     `fn main() -> ExitCode` is the program entry point. It
@@ -69,23 +84,8 @@ fn main() -> ExitCode {
     // try { process.exit(code); }
     // catch (e) { console.error(`forbidden-strings: ${e}`); process.exit(2); }
     // ```
-    // Install the stderr tracing subscriber (RUST_LOG, default info); scan findings stay on stdout.
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| return tracing_subscriber::EnvFilter::new("info")),
-        )
-        .with_writer(std::io::stderr)
-        .init();
-    match run_cli_from_env() {
-        Ok(code) => return ExitCode::from(code as u8),
-        Err(e) => {
-            // eprintln, not tracing: this is the user-facing CLI error contract
-            // ("forbidden-strings: <msg>" on stderr) that integration tests assert; a tracing
-            // event's target and level prefix would break that contract. The tracing subscriber
-            // installed above carries the compiler's rule-rejection warnings instead.
-            eprintln!("forbidden-strings: {}", e);
-            return ExitCode::from(2)
-        }
-    }
+    // Install once before logger initialization or worker creation, never around individual concurrent scans.
+    std::panic::set_hook(Box::new(process_boundary::omit_panic_payload));
+    // The hook controls only output; the separate named-operation boundary catches unwinds and returns exit 2.
+    return process_boundary::run(initialized_cli);
 }
