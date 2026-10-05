@@ -60,12 +60,10 @@ pub(crate) fn rule_token(base: usize, names: &[Option<String>], rule_id: usize) 
 
 /// Runs one set's batch matcher under a fail-closed unwind boundary.
 ///
-/// On a normal return the `(line index, rule id)` pairs become findings: a named
-/// rule renders as `PATH:LINE rule=<name>` (its section name), an unnamed rule as
-/// `PATH:LINE rule=N` with `base` added for cross-set disambiguation, and the
-/// 0-based line index rendered 1-based. On a panic the boundary catches it and emits
-/// a single synthetic diagnostic so the file cannot exit clean, matching the
-/// read-error diagnostic precedent; the panic never escapes the scan.
+/// Normal `(line index, rule id)` pairs become typed content findings with one-based
+/// lines and the shared opaque rule identity. A caught panic becomes an explicit
+/// EngineError record, so neither embedded nor standalone callers can treat it as
+/// a clean scan. Terminal rendering happens separately.
 fn scan_one_set<Match>(
     base: usize,
     names: &[Option<String>],
@@ -94,15 +92,12 @@ where
     }
 }
 
-/// Scans one file's bytes against every loaded set, returning redacted findings.
+/// Scan exact file bytes against each loaded set, returning only redacted structured records.
 ///
-/// Splits `buf` into lines once, then runs each set's `line_matches` under the
-/// fail-closed boundary and collects findings in set order (runtime rules before
-/// the builtin baseline): `PATH:LINE rule=<name>` for named rules, `PATH:LINE
-/// rule=N` with the set's base offset for unnamed ones. An empty file yields no
-/// findings. A match on line 2 of `a.txt` from an unnamed runtime rule renders as
-/// `a.txt:2 rule=0`; the same match from a section named `qqq-token` renders as
-/// `a.txt:2 rule=qqq-token`.
+/// Line splitting happens once. Runtime rules precede the builtin baseline,
+/// and each set retains its rule-id offset and configured non-secret names.
+/// Empty input yields no findings. The caller supplies candidate identity and
+/// a sanitized display path outside this content-matching boundary.
 pub(crate) fn scan_content(buf: &[u8], loaded: &LoadedRules) -> Vec<ScanFinding> {
     if buf.is_empty() {
         return Vec::new();

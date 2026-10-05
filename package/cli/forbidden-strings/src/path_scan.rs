@@ -12,6 +12,8 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 
 /// Imports loaded matcher sets and their shared rule-identity formatter.
 use crate::{frx_load::LoadedRules, frx_scan::rule_token};
+/// Import structured results so pathname matching has only one canonical finding model.
+use crate::scan_finding::ScanFinding;
 
 /// Mask substituted for a pathname component that matches any active rule.
 const REDACTED: &str = "[REDACTED]";
@@ -22,6 +24,14 @@ pub(crate) struct PathScan {
     pub(crate) display: String,
     /// Distinct name findings, one for each matching component and rule.
     pub(crate) findings: Vec<String>,
+}
+
+/// Canonical pathname scan returned to embedded callers before terminal rendering.
+pub(crate) struct PathScanRecords {
+    /// Path with every matching component masked and protocol-sensitive characters escaped.
+    pub(crate) display: String,
+    /// Location/rule records without candidate bytes or terminal-format parsing.
+    pub(crate) findings: Vec<ScanFinding>,
 }
 
 /// Discovers the Git root, if cwd or an ancestor has a `.git` entry.
@@ -115,7 +125,7 @@ fn matching_rules(component: &str, loaded: &LoadedRules) -> Result<Vec<String>, 
 /// Component numbers are one-based and ignore the root and navigation markers
 /// (`.`, `..`), which are not directory names. A matcher panic masks the entire
 /// path and returns an engine-error finding instead of printing unsafe input.
-pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
+pub(crate) fn scan_path_records(path: &str, loaded: &LoadedRules) -> PathScanRecords {
     // Git paths use `/`; native external paths use the platform separator.
     let normalized = if cfg!(windows) { path.replace('\\', "/") } else { path.to_string() };
     // `C:filename` is drive-relative: the drive is a prefix, while the
@@ -146,9 +156,9 @@ pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
     let mut position = 0;
     for component in components {
         if component.contains('\n') || component.contains('\r') {
-            return PathScan {
+            return PathScanRecords {
                 display: REDACTED.to_string(),
-                findings: vec![format!("{}: unsupported pathname line break", REDACTED)],
+                findings: vec![ScanFinding::PathnameLineBreak],
             };
         }
         if component.is_empty() || component == "." || component == ".." {
@@ -164,9 +174,9 @@ pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
         }
         position += 1;
         let Ok(rules) = matching_rules(component, loaded) else {
-            return PathScan {
+            return PathScanRecords {
                 display: REDACTED.to_string(),
-                findings: vec![format!("{}: engine error", REDACTED)],
+                findings: vec![ScanFinding::EngineError],
             };
         };
         if rules.is_empty() {
@@ -177,13 +187,24 @@ pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
         }
     }
     let display = displayed.join("/");
-    let mut findings: Vec<String> = Vec::new();
+    let mut findings: Vec<ScanFinding> = Vec::<ScanFinding>::new();
     for (segment, rules) in matches {
         for rule in rules {
-            findings.push(format!("{}:name:{} rule={}", display, segment, rule));
+            findings.push(ScanFinding::Name { component: segment, rule });
         }
     }
-    return PathScan { display, findings };
+    return PathScanRecords { display, findings };
+}
+
+/// Render canonical pathname records for the existing standalone and fuzz text consumers.
+pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
+    // Borrow the rules once; all matching and redaction remains inside the canonical scan.
+    let records: PathScanRecords = scan_path_records(path, loaded);
+    let mut findings: Vec<String> = Vec::<String>::new();
+    for finding in records.findings {
+        findings.push(finding.render(records.display.as_str()));
+    }
+    return PathScan { display: records.display, findings };
 }
 
 /// Unit tests keep the name-matching and masking contract beside its owner.
