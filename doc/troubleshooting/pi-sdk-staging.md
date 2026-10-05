@@ -1,5 +1,131 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Full-rule binding loops and genuine dependency retirement
+
+### Measured failure and bounded remedy
+
+The first 205-rule native action fixture,
+`proc_e496`,
+failed during capture with `GoverningRuleBindingError: Governing-rule binding is no longer current`.
+Its serializer omitted the cause,
+so the original underlying failure remains unestablished.
+Fresh instrumented attempt `proc_7e9b` recorded:
+
+```text
+# program-rule-sdk-diagnostic/controls-private/native-text/hook-failure.json
+DependencyDeadlineError: Original dependency assessment deadline expired
+lastCaptureIndex: 45
+dependencyTraceCalls: 26485
+remainingMs: -0.2679229999994277
+```
+
+The original signal was not aborted,
+and the protected policy digest and mode still matched.
+That observation identifies the diagnostic attempt's deadline failure,
+not every possible source of the earlier wrapped error.
+
+The old resolver repeated complete original dependency validation per binding:
+
+```javascript
+// Private program-rule-sdk-copy/stage-private/child-constructor.mjs:39
+ready();const instruction=instructionBindings.get(bindingHandle);
+```
+
+Its rule reader also invoked the original source callback,
+which performed another `ready()` check.
+The private owner now batches immutable binding work between complete entry and exit checks.
+It keeps the original signal and budget checks per rule,
+and uses separate synchronous segments before and after the transport await.
+No deadline extension or omitted rule is involved.
+
+`proc_ca71` completed all 205 fake estimates and canonical captures,
+recording 628 dependency-trace callbacks and no native tool execution.
+`proc_b707` checked source changes at the exit boundary and across transport await,
+clock expiry,
+reentry,
+and an exact omission of the postcheck.
+The omission produced the authored `Missing expected exception.` witness.
+These are finite Node 26.10.0/SDK 1.0.2 profiles,
+not filesystem atomicity or a representative latency benchmark.
+
+### Keep phase misuse separate from genuine source failure
+
+The follow-up diagnostic `proc_e02b` exposed distinct paths:
+a direct dependency check could fail without retiring captured batch evidence;
+a late attempt to capture more evidence correctly rejected the closed phase
+but incorrectly retired evidence already captured successfully.
+Its closed-phase fixture then failed a stale expectation that the SDK would record no rejection.
+That fixture error does not negate its completed in-hook checks.
+
+The source check now retains its first genuine failure centrally:
+
+```javascript
+// Private program-rule-batch-sdk-copy-v2/stage-private/child-constructor.mjs:36
+function dependencyCheck(read){
+  try{return read();}
+  catch(error){evidenceEligibilityFailure??=Object.freeze({cause:error});throw error;}
+}
+```
+
+Caller phase checks remain outside this catch.
+Canonical evidence authentication still precedes dependency validation.
+`proc_8424` verified direct,
+per-claim,
+and batch retirement after source restoration,
+stable first causes,
+and harmless refusal of late collection calls.
+No model score or retained record became permission.
+
+### Cancellation diagnostics retain their layers
+
+The postcheck-cancellation prefix in `proc_75d4` completed.
+Its await suffix expected cancellation words in the top-level message,
+but the original budget retains distinct failures:
+
+```javascript
+// Private contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs:34
+throw new AggregateError([error,terminal],'Transport failure and judgment boundary failure');
+```
+
+The repaired expectation checked `ProgramRuleTransportError` and `JudgmentCancelledError` separately.
+That suffix then hit another narrow fixture expectation:
+the request observer wraps cancellation in its original-currentness error:
+
+```javascript
+// Private contract/lifecycle/root-lifecycle-retirement-entry/observer.mjs:35
+if(scope.signal?.aborted)throw new RequestObservationStaleError('Observed request was cancelled',{cause:scope.signal.reason});
+```
+
+The surrounding catch emits `Observed request is no longer current` with that cause.
+`proc_7d8a` verified the exact aggregate,
+original native signal,
+observer cause,
+permanent retirement,
+empty worker stderr,
+persisted error outcomes,
+and disposal on the corrected graph.
+The completed postcheck prefix was not replayed.
+
+### Rejected remedies and filing decision
+
+Do not extend or restart the five-second budget,
+drop indexed rules to make the fixture finish,
+cache freshness across an await,
+flatten distinct cancellation errors,
+or treat caller phase misuse as a new source failure.
+The batching remedy changes validation granularity within synchronous owned operations;
+it does not qualify semantic answers or grant permission.
+
+The observed defects and assertion mismatches belong to owned private integration code.
+No Pi or Gateway defect was established.
+Upstream fault,
+fixability,
+supported-use-case claims,
+contribution acceptance,
+and willingness therefore do not justify filing.
+The local changes have the named native controls;
+no upstream issue or comment is warranted.
+
 ## Original claim evidence must not regain eligibility after a dependency failure
 
 ### Symptom and distinct fixture failure

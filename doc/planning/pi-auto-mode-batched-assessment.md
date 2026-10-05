@@ -182,11 +182,16 @@ Batch questions under the same original deadline and attempt budget,
 not one API call or judgment per rule.
 The local selection contract allows up to 512 questions per batch,
 so 205 is within that local bound.
-The current native transport adapter is qualified only for its one-slot and two-slot profiles.
-This is not evidence that a full-rule request meets provider,
+The private action-relation wire now carries all indexed rules with original program/rule identity.
+`proc_ca71` verified a 205-question,
+454,012-byte native request using fake transport and canonical original evidence capture.
+Its original five-second budget was unchanged,
+and no tool executed.
+The real 205-rule relevance canary is a different predicate and input shape.
+Neither result establishes real full-rule action-assessment provider acceptance,
 latency,
 cost,
-or accuracy requirements.
+or accuracy.
 
 The benefit is explicit question coverage of the indexed rules rather than a manually selected set of rule-specific heads.
 The risks are compound rules,

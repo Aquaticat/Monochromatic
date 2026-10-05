@@ -5,7 +5,7 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-04.
+Updated 2026-10-05.
 
 ## Current direction: incremental rule relevance
 
@@ -128,6 +128,75 @@ Semantic relevance qualification and exclusion-cutoff adoption remain separate.
 The accepted direction does not authorize production cutoff adoption,
 installed-plugin cutover,
 or cached action permission.
+
+## Current whole-program rule-assessment boundary
+
+The private experimental predicate `operation_violates_rule`
+binds each original indexed rule to the complete original parent program and prepared group.
+Generic member selectors cannot create another sampling opportunity for the same program/rule pair.
+The fixed question preserves the original rule text,
+heading context,
+complete policy,
+and original main request.
+A negative binary score merges inapplicability and compliance;
+it cannot establish permission or instruction-free fallback.
+No additional code-effect facts are bound by this initial wire,
+and it explicitly marks effect-fact coverage incomplete.
+
+`proc_aaa5` passed 14 synthetic wire modes with all 205 policy rules.
+The authored complete-program request was 452,279 bytes.
+The first native attempt `proc_e496` stopped during evidence capture;
+its wrapper did not retain the underlying cause.
+The separate instrumented attempt `proc_7e9b` recorded
+`DependencyDeadlineError: Original dependency assessment deadline expired`
+at capture index 45,
+with 26,485 dependency-trace callbacks.
+Do not retrospectively assign that cause to the earlier unretained error.
+
+The source owner now performs full original dependency checks around synchronous binding segments,
+keeping per-rule identity and budget checks inside them.
+Freshness is not retained across transport awaits or separate calls.
+An exact issued batch owns its canonical captured evidence array;
+copied and proxied arrays cannot authenticate by their contents.
+`proc_ca71` completed all 205 fake estimates and original evidence records under the unchanged five-second budget:
+one SDK session,
+two local main requests,
+one fake guard attempt,
+628 dependency-trace callbacks,
+and zero tool executions.
+Its native serialized request was 454,012 bytes.
+These counts are scoped observations,
+not a wall-time speedup or real-provider latency claim.
+
+`proc_b707` verified postcheck source change,
+source change across transport await,
+clock expiry,
+reentry rejection,
+and the exact postcheck omission witness.
+`proc_94d8` checked canonical batch identity and inert foreign/proxy inputs.
+`proc_8424` then verified centralized original dependency retirement:
+direct,
+per-claim,
+and batch failures remain retired after source restoration,
+while rejected closed-phase collection calls do not poison valid captured evidence.
+The original failure cause remains stable.
+
+Actual native cancellation at the postcheck was retained from `proc_75d4`.
+The await-cancellation fixtures initially expected the wrong top-level error messages.
+`proc_7d8a` checked the transport/budget aggregate,
+the original observer's cancellation cause,
+the stable retirement cause,
+and unentered members on the corrected graph.
+No provider call or fixture tool execution occurred in these native qualification controls.
+
+Next:
+finish documenting and retaining the corrected native scopes,
+then prepare a separately frozen real whole-program interface assessment or semantic study.
+Any copied-input research remains separate from a live original judgment.
+No paid action-relation request,
+semantic cutoff,
+source-authority admission,
+or production change has been scheduled by these mechanical results.
 
 ## Current approval UI correction
 
