@@ -225,11 +225,29 @@ so the 180 second limit was left unchanged.
 Its log shows the selection took effect:
 369 library tests ran with 9 filtered out,
 then the 10 `binary` tests.
+The 9 are every test in `rust_explicit_types_tests.rs` (1),
+`rust_file_engine_tests.rs` (2),
+`rust_inferred_constants_tests.rs` (1),
+`rust_semantic_session_tests.rs` (3) and `rust_workspace_tests.rs` (2).
+Five of them load or prepare a Cargo workspace;
+`no_semantic_selection_avoids_workspace_initialization` and the three semantic-session tests are quick,
+and are skipped only because they share those modules' names.
 
 ### Dispositions of the first run
 
 `mutation-hQ4LIa` mutated test image
-`f357522ebe2b80d79a5858b5768305f54ba2241629b0d7587184243bcd7633c6`.
+`f357522ebe2b80d79a5858b5768305f54ba2241629b0d7587184243bcd7633c6`
+(`campaign-executable-1.log`):
+188 mutants,
+129 caught,
+6 missed,
+53 unviable,
+0 timeouts,
+exit status 2,
+25 minutes.
+The 53 unviable mutants are mostly replacements with `Default::default()` for types without `Default`
+and `||` in `if let` chains,
+which do not compile.
 Each missed mutant below names its disposition;
 the rerun under `Final campaigns` is the proof for each killing test.
 
