@@ -3,12 +3,14 @@
 
  WHAT THESE PIN: the bare-run scanner stops where prose and Markdown stop a
  link and sheds sentence punctuation; the tree reader finds link, image and
- definition destinations under the pipeline's own parse and names a downgrade; the union
+ definition destinations under the pipeline's own parse and names a downgrade,
+ keeps as written a destination the cut and the shed would leave nothing of,
+ and reads no destination where a link carries an empty one; the union
  dedupes across both readers with a trailing slash treated as no difference;
  and the check names exactly the source destinations the page lacks while
  ignoring destinations the page adds.
 
- Fixtures are invented addresses and two sentences about a bookshop cat, so
+ Fixtures are invented addresses and sentences about a bookshop cat, so
  there is no corpus text here.
 
  @module
@@ -96,6 +98,54 @@ await describe({
             expect(scanUrlRuns({ text: 'no address here, example.org is bare', },),).toStrictEqual([],);
           },
         },),
+
+        it({
+          name: 'READS the earlier scheme at every turn where the two schemes alternate',
+          fn: async () => {
+            expect(scanUrlRuns({
+              text: 'see https://a.example and http://b.example then https://c.example and http://d.example too',
+            },),).toStrictEqual([
+              'https://a.example',
+              'http://b.example',
+              'https://c.example',
+              'http://d.example',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'READS one run where a scheme directly follows a scheme, since no stopper parts them',
+          fn: async () => {
+            expect(scanUrlRuns({
+              text: 'https://http://tabby.example/nap and http://https://tabby.example/purr',
+            },),).toStrictEqual([
+              'https://http://tabby.example/nap',
+              'http://https://tabby.example/purr',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'PASSES OVER an http that opens no scheme and an https without both slashes, and reads the '
+            + 'address after them',
+          fn: async () => {
+            expect(scanUrlRuns({
+              text: 'the httpd log, then https tabby and https:/tabby, then http://tabby.example/nap',
+            },),).toStrictEqual(['http://tabby.example/nap',],);
+          },
+        },),
+
+        it({
+          name: 'SHEDS the sentence punctuation before the stopper that ends a run',
+          fn: async () => {
+            expect(scanUrlRuns({
+              text: 'see https://cat.example. and https://dog.example too',
+            },),).toStrictEqual([
+              'https://cat.example',
+              'https://dog.example',
+            ],);
+          },
+        },),
       ],
     },),
 
@@ -141,6 +191,55 @@ await describe({
 
             expect(read,).toStrictEqual({
               urls: [HOME,],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'KEEPS a destination of sentence punctuation alone as written, the current directory, its '
+            + 'parent and a bare query each apart',
+          fn: async () => {
+            expect(markdownDestinations({
+              text: 'The [tabby](.) naps, the [kitten](..) plays and the [shop](?) opens.',
+            },),).toStrictEqual({
+              urls: [
+                '.',
+                '..',
+                '?',
+              ],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'KEEPS a destination that opens on a stopper as written',
+          fn: async () => {
+            expect(markdownDestinations({ text: 'The [tabby](《猫》) naps.', },),).toStrictEqual({
+              urls: ['《猫》',],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'reads a destination of hyphens whole, which holds no stopper and no sentence punctuation',
+          fn: async () => {
+            expect(markdownDestinations({ text: 'see [cat](---) here', },),).toStrictEqual({
+              urls: ['---',],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'READS NO destination from a link, an image or a definition whose destination is empty',
+          fn: async () => {
+            expect(markdownDestinations({
+              text: 'A [tabby]() who kept ![the shop]() company.\n\n[album]: <>\n',
+            },),).toStrictEqual({
+              urls: [],
               findings: [],
             },);
           },
@@ -311,28 +410,45 @@ await describe({
             },);
           },
         },),
-      ],
-    },),
 
-    it({
-      name: 'READS the earliest run across both schemes, SHEDS a run ending on a stopper, and CUTS a tree '
-        + 'destination to nothing where it is all punctuation',
-      fn: async () => {
-        expect(scanUrlRuns({
-          text: 'see https://a.example and http://b.example too',
-        },),).toStrictEqual(['https://a.example', 'http://b.example',],);
-        expect(scanUrlRuns({
-          text: 'see https://cat.example. and https://dog.example too',
-        },),).toStrictEqual(['https://cat.example', 'https://dog.example',],);
-        expect(markdownDestinations({ text: 'see [cat](.) here', },),).toEqual({
-          urls: ['',],
-          findings: [],
-        },);
-        expect(markdownDestinations({ text: 'see [cat](---) here', },),).toEqual({
-          urls: ['---',],
-          findings: [],
-        },);
-      },
+        it({
+          name: 'NAMES the parent directory a page dropped while it kept the current directory',
+          fn: async () => {
+            const check = droppedDestinations({
+              sourceText: '猫在[窗台](..)上，狗在[垫子](.)上。',
+              pageText: 'The cat is on the sill, the dog on the [mat](.).',
+            },);
+
+            expect(check,).toStrictEqual({
+              source: [
+                '..',
+                '.',
+              ],
+              page: ['.',],
+              dropped: ['..',],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'OWES nothing for a source link whose destination is empty, which names nowhere a reader '
+            + 'could follow',
+          fn: async () => {
+            const check = droppedDestinations({
+              sourceText: '猫在[窗台]()上。',
+              pageText: 'The cat is on the sill.',
+            },);
+
+            expect(check,).toStrictEqual({
+              source: [],
+              page: [],
+              dropped: [],
+              findings: [],
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -245,6 +245,30 @@ await describe({
             ],);
           },
         },),
+        it({
+          name: 'READS the links in order of citation where the two schemes alternate',
+          fn: async () => {
+            expect(citedReferenceUrlsOf({
+              text: '见 https://cats.example/p/a 与 http://cats.example/p/b 与 https://cats.example/p/c 与 http://cats.example/p/d。',
+            },),).toEqual([
+              'https://cats.example/p/a',
+              'http://cats.example/p/b',
+              'https://cats.example/p/c',
+              'http://cats.example/p/d',
+            ],);
+          },
+        },),
+        it({
+          name: 'READS one link where a scheme directly follows a scheme, since no stop character parts them',
+          fn: async () => {
+            expect(citedReferenceUrlsOf({
+              text: 'https://http://cats.example/p/nap 与 http://https://cats.example/p/purr',
+            },),).toEqual([
+              'https://http://cats.example/p/nap',
+              'http://https://cats.example/p/purr',
+            ],);
+          },
+        },),
       ],
     },),
 
