@@ -42,6 +42,36 @@ Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
 
 [listview]: ../../../doc/troubleshooting/slint-listview-random-seek-offset.md
 
+## Combined search
+
+Double-Shift opens transient search.
+Filename matches precede content matches;
+prefix the input with `%` to show only content results.
+Up/Down wrap the selected result,
+Enter or a click opens it,
+and Escape or an outside click closes the overlay.
+Content results navigate to their matching source line.
+The scope is the last-focused tree directory or a focused file's parent,
+falling back to the project root.
+
+Input changes cancel old work immediately and debounce the next search by 150 ms.
+The worker runs filename and content searches concurrently through ripgrep.
+It retains at most 20 filename matches and 30 content matches,
+with at most one matching line per file.
+Filename matching is smart-case literal substring;
+content matching is smart-case regular expression.
+A content-search failure does not discard usable filename results.
+
+Record and retained-diagnostic bounds limit memory,
+not total bytes scanned or query duration.
+The application kills and reaps cancelled search children;
+inherited ripgrep configuration,
+preprocessors,
+and archive decompression are disabled.
+Canonical scope validation is not an OS-enforced filesystem sandbox.
+Native search verification is still in progress;
+in-file find is not implemented yet.
+
 ## Fonts and appearance
 
 Official variable roman and real italic fonts for JetBrains Mono and Inter are bundled under `asset/font`

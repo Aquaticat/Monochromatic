@@ -10,7 +10,27 @@ continue the queue without asking the user to say “continue”.
 The application remains an incomplete read-only workspace reader.
 
 Current boundary:
-continue workspace tree/search/navigation after the verified font fixes.
+finish native combined-search consumer verification and guard controls,
+then implement in-file find.
+The search worker and native overlay are implemented;
+`proc_e023` passed 31 library/search tests and complete package lint.
+`proc_024d` passed all twelve native tests before its unused-import lint failure;
+that import was removed and the following consumer process reran the native gate.
+The dark nested Wayland search probe passes at
+`/tmp/monochromatic-ide-native-H0znPy/search-probe.mjs`.
+Its inspected screenshots cover ordered combined results,
+selection/copy at source line 120,
+and invalid regex diagnostics alongside a usable filename result.
+The first clipboard probe incorrectly treated a not-yet-published selection as a terminal failure;
+it now waits for the expected isolated clipboard value.
+It never inspects or clears the host clipboard.
+`proc_c872` remains the active dark consumer until its control socket is told to quit.
+Light rendering,
+additional native edge tests,
+search guard-removal controls,
+and in-file find remain next.
+
+Historical navigation verification:
 The read-only workspace model's five tests and the lazy tree model's eight tests pass.
 `FileTree` accepts directory snapshots without doing filesystem I/O.
 Opaque directory-request identities now fence replies;
@@ -448,7 +468,16 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
-- Search backend is implemented but not yet bound to the native overlay.
+- Search backend and transient native overlay are implemented.
+  `src/native/navigation/search/` binds double-Shift,
+  150ms debounce,
+  scope capture,
+  independent errors,
+  `%` filtering,
+  close cancellation,
+  and safe result opening.
+  `navigation/line.rs` maps a content result's one-based line to canonical source characters.
+  It retains the current document identity for a same-file hit.
   `search_worker.rs` keeps one latest request/reply,
   cancels superseded queries,
   and joins its owned thread after child cleanup.
@@ -481,10 +510,15 @@ Only the file context and source remain visible in the normal source-view gate.
   Search scope is the last-focused tree directory,
   or the parent of its focused file,
   falling back to the project root.
-  The current worker searches the project root;
-  add per-request scope validation on the background thread before wiring the overlay.
+  The worker now validates per-request directory scopes on its background thread.
+  Scope success/escape/file/missing/recovery tests pass;
+  canonical checking remains vulnerable to filesystem races and is not OS confinement.
 - Installed Slint FocusScope supports `capture-key-pressed` and `capture-key-released`.
-  Use those for global shortcut observation rather than duplicating per-widget key handlers.
+  The overlay uses those for global shortcut observation.
+  Headless tests and real nested-seat double-Shift both exercise them.
+  Search uses the supported `search` accessibility role;
+  `dialog` is rejected by Slint 1.18.1.
+  `inspect:search-accessibility` retains positive and negative controls.
 
 - Final native smoke `proc_4e47` is at port 9318,
   socket `/tmp/monochromatic-ide-native-EGMdAC/control.sock`.
