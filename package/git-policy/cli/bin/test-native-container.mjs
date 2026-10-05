@@ -18,6 +18,10 @@ import {
 } from 'node:path';
 
 import {
+  scannerSnapshotEntries,
+  vendorLockedDependencies,
+} from './native-scanner-snapshot.mjs';
+import {
   NativeVerificationError,
   runCommand,
 } from './native-verification-process.mjs';
@@ -77,6 +81,7 @@ async function copySourceSnapshot({ context }) {
         ),
       };
     }),
+    ...scannerSnapshotEntries({ context }),
     {
       from: resolve('../../../clippy.toml'),
       to: join(
@@ -120,6 +125,7 @@ async function main() {
   // The audited Git 2.56.0 image is the rewrite's selected native consumer baseline.
   const base = '6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a';
   await copySourceSnapshot({ context: context.path });
+  await vendorLockedDependencies({ context: context.path });
   await writeFile(
     join(
       context.path,
@@ -128,6 +134,8 @@ async function main() {
     [
       `FROM ${base}`,
       'COPY package /work/package',
+      'COPY vendor /work/vendor',
+      'COPY cargo-config /work/.cargo',
       'COPY clippy.toml /work/clippy.toml',
       'RUN ["mkdir", "--parents", "/home/tester/.cargo"]',
       'RUN ["chown", "--recursive", "1000:1000", "/work/package", "/home/tester"]',
