@@ -29,6 +29,8 @@ export component AppWindow inherits Window {
     in property <string> project-path;
     in property <string> tree-error;
     in-out property <int> tree-focused-row: -1;
+    out property <length> tree-scroll-y: project-tree.scroll-y;
+    out property <length> tree-viewport-height: project-tree.viewport-height;
     callback tree-activate(int);
     callback tree-navigate(string, int);
     callback tree-shortcut(string, bool, bool, bool);

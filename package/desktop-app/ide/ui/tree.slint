@@ -16,6 +16,8 @@ export component ProjectTree inherits Rectangle {
     in property <string> project-path;
     in property <string> error-message;
     in-out property <int> focused-row: -1;
+    out property <length> scroll-y: view.content-y;
+    out property <length> viewport-height: view.visible-height;
     callback activate(int);
     callback navigate(string, int);
     callback shortcut(string, bool, bool, bool);

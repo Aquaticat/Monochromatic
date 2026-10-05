@@ -62,6 +62,9 @@ mod source_font_tests;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;
+/// Long-distance tree reveal must show the whole target row after native layout.
+#[cfg(test)]
+mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
 /// Bind caret and selection callbacks.
