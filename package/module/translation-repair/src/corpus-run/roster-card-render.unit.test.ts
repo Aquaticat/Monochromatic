@@ -10,6 +10,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -21,6 +22,7 @@ import {
   NOT_LISTED,
   readAsk,
   renderProviderCard,
+  StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 import { lineOf, } from './command-line.test-fixture.ts';
 
@@ -78,6 +80,52 @@ await describe({
           body: { data: 'nothing', },
           servedId: 'mittens-9',
         },),).toBe(NOT_LISTED,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A LISTING THAT CARRIES THE SERVED ID ON TWO ROWS THAT DIFFER, since the card would describe '
+        + 'whichever came first, and READS the row where every row under the id says the same',
+      fn: async () => {
+        /**
+         Row the listing carries twice, word for word.
+         */
+        const row = {
+          id: 'mittens-9',
+          context_window: 200_000,
+          max_output_tokens: 32_000,
+        };
+        /**
+         What reading a listing whose second row under the id carries another ceiling throws.
+         */
+        const refusal = caught(function readApart(): unknown {
+          return listingRowFor({
+            body: {
+              data: [
+                row,
+                {
+                  ...row,
+                  max_output_tokens: 8_000,
+                },
+              ],
+            },
+            servedId: 'mittens-9',
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect(String(refusal,),).toBe(
+          'StatedRefusalError: the listing carries more than one row under mittens-9 and they differ, so which of '
+            + 'them the card would describe cannot be read; read the listing by hand',
+        );
+        expect(listingRowFor({
+          body: {
+            data: [
+              row,
+              { ...row, },
+            ],
+          },
+          servedId: 'mittens-9',
+        },),).toEqual(row,);
       },
     },),
 

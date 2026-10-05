@@ -399,6 +399,52 @@ await describe({
             ],);
           },
         },),
+        it({
+          name: 'COUNTS THE FIRST RENDERING a voice gives a title it answers twice, and NAMES the voice and the title in '
+            + 'a finding rather than passing over the second',
+          fn: async () => {
+            const { lexicon, } = await settled({
+              replies: {
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: {
+                  titles: [{ title: 1, rendering: 'Cat Ballad', }, { title: 1, rendering: 'Song of the Cat', },],
+                },
+                [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: 'Song of the Cat', },], },
+                [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: 'Cat Ballad', },], },
+              },
+            },);
+            // Counting the second answer instead would settle "Song of the Cat"
+            // on two voices, and counting both would tie the two renderings.
+            expect(lexicon,).toEqual({
+              titles: [{ source: '猫之歌', occurrences: 2, rendering: 'Cat Ballad', voices: 2, heard: 3, },],
+              heard: 3,
+              findings: [
+                `${SEAT_SYNTHETIC_TEXT_EVERYWHERE}: duplicate-title-rendering (1)`,
+                'page title lexicon settled 1 of 2 repeated titles from 3 voices',
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'NAMES IN A FINDING a title number the sheet never listed, and settles nothing from that answer',
+          fn: async () => {
+            const { lexicon, } = await settled({
+              replies: {
+                [SEAT_HYPER_ONLY]: {
+                  titles: [{ title: 7, rendering: 'Seventh Nap', }, { title: 0, rendering: 'No Nap', },],
+                },
+              },
+            },);
+            expect(lexicon,).toEqual({
+              titles: [],
+              heard: 3,
+              findings: [
+                `${SEAT_HYPER_ONLY}: title-index-out-of-range (7)`,
+                `${SEAT_HYPER_ONLY}: title-index-out-of-range (0)`,
+                'page title lexicon settled 0 of 2 repeated titles from 3 voices',
+              ],
+            },);
+          },
+        },),
       ],
     },),
 

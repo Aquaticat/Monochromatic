@@ -383,6 +383,23 @@ await describe({
             },);
           },
         },),
+
+        it({
+          name: 'REPORTS a record that writes one field twice as unreadable, whether one count is repeated or two '
+            + 'interleaved records share a line, since the writer writes each field once and reading the later '
+            + 'value would count one call and lose the other',
+          fn: async () => {
+            expect([
+              `${HYPER_TAIL} prompt=9`,
+              `${HYPER_TAIL} SPEND provider=hyper model=${SEAT_HYPER_VISION} prompt=7 completion=3`,
+            ].map(function readingOf(tail,) {
+              return readSpendLine({ line: logged({ tail, },), },);
+            },),).toEqual([
+              'unreadable',
+              'unreadable',
+            ],);
+          },
+        },),
       ],
     },),
 

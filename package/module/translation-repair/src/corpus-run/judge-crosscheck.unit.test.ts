@@ -357,6 +357,55 @@ await describe({
             },),).toEqual(['undecided', 'undecided',],);
           },
         },),
+
+        it({
+          name: 'bars every model that proposed a claim in any chunk of its entry, each once, where two chunks carry '
+            + 'one claim id, since the writer keeps such chunks apart and the last chunk alone would seat the '
+            + 'first chunk\'s author as a judge of its own claim',
+          fn: async () => {
+            const census = buildCrosscheckCensus({
+              entries: [
+                {
+                  id: 'Biscuit',
+                  sliceCritics: [
+                    chunkWith({
+                      claims: [['issue/herring', [SEAT_HYPER_VISION, SEAT_SYNTHETIC_VISION_WITHHELD,],],],
+                    },),
+                    {
+                      ...chunkWith({
+                        claims: [['issue/herring', [SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_VISION,],],],
+                      },),
+                      sliceIndex: 1,
+                    },
+                  ],
+                  issues: [
+                    {
+                      status: 'accepted',
+                      claimIds: ['issue/herring',],
+                    },
+                  ],
+                },
+              ],
+              roster: ROSTER,
+            },);
+
+            expect(census.items,).toEqual([
+              {
+                entryId: 'Biscuit',
+                claimId: 'issue/herring',
+                arm: 'accepted',
+                status: 'accepted',
+                proposers: [SEAT_HYPER_VISION, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
+                judges: [
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                  SEAT_HYPER_OPENROUTER_UNMEASURED,
+                ],
+                barred: [SEAT_HYPER_VISION, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
+              },
+            ],);
+          },
+        },),
       ],
     },),
 

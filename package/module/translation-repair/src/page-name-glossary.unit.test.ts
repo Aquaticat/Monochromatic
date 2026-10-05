@@ -347,5 +347,38 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'PAIRS A LINK WITH THE ARCHIVE LINK AT ITS PLACE among the links to one href, where the archive links '
+        + 'that href under more than one text and as often as the original does',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '[咪咪](https://example.invalid/mimi)的日记在[这里](https://example.invalid/mimi)。',
+          targetText: 'The diary of [Mimi](https://example.invalid/mimi) is [here](https://example.invalid/mimi).',
+        },);
+        // Keyed by href alone, both links took the archive's last text for it.
+        expect(lines.slice(1,),).toEqual([
+          '- 咪咪 (link text, https://example.invalid/mimi): "Mimi"',
+          '- 这里 (link text, https://example.invalid/mimi): "here"',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A LINK WHOSE HREF THE ARCHIVE LINKS UNDER MORE THAN ONE TEXT a different number of times '
+        + 'than the original, since which of them renders it cannot be read, and READS one the archive links '
+        + 'more often under a single text',
+      fn: async () => {
+        expect(pageNameLines({
+          sourceText: '[咪咪](https://example.invalid/mimi)睡了。',
+          targetText: '[Mimi](https://example.invalid/mimi) slept; see [her page](https://example.invalid/mimi).',
+        },),).toEqual([],);
+        expect(pageNameLines({
+          sourceText: '[咪咪](https://example.invalid/mimi)睡了。',
+          targetText: '[Mimi](https://example.invalid/mimi) slept, and [Mimi](https://example.invalid/mimi) woke.',
+        },)
+          .slice(1,),).toEqual([
+          '- 咪咪 (link text, https://example.invalid/mimi): "Mimi"',
+        ],);
+      },
+    },),
   ],
 },);

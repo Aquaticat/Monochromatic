@@ -6,6 +6,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -60,6 +61,46 @@ await describe({
               path: 'x.pageAssembly',
               required: true,
             },),).toThrow(ArtifactParseError,);
+          },
+        },),
+        it({
+          name: 'REFUSES TWO TRIMMED ROWS NAMING ONE SLICE, which the page guard cannot write and whose first the '
+            + 'override reading would take without a word, and READS two rows naming different slices',
+          fn: async () => {
+            /**
+             What reading a section whose two rows both name slice 14 throws.
+             */
+            const refusal = caught(function readRepeat(): unknown {
+              return parsePageAssembly({
+                value: {
+                  trimmed: [
+                    { sliceIndex: 14, replacementText: '[^1]: The note.', },
+                    { sliceIndex: 14, replacementText: '[^1]: Another note.', },
+                  ],
+                  withdrawn: [],
+                  findings: [],
+                },
+                path: 'x.pageAssembly',
+                required: true,
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+            expect(String(refusal,),).toBe(
+              'ArtifactParseError: artifact parse failed at x.pageAssembly.trimmed: expected one row per slice; '
+                + 'slice 14 appears more than once.',
+            );
+            /**
+             The same two texts under two slices, which the guard does write.
+             */
+            const apart = {
+              trimmed: [
+                { sliceIndex: 14, replacementText: '[^1]: The note.', },
+                { sliceIndex: 15, replacementText: '[^1]: Another note.', },
+              ],
+              withdrawn: [],
+              findings: [],
+            };
+            expect(parsePageAssembly({ value: apart, path: 'x.pageAssembly', required: true, },),).toEqual(apart,);
           },
         },),
       ],

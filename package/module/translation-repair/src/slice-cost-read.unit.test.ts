@@ -169,6 +169,26 @@ await describe({
           },
         },),
         it({
+          name:
+            'REFUSES a line that writes one field more than once and names each such field, since the writer '
+            + 'writes each once and reading the later value would report a cost no slice had, as two lines run '
+            + 'together would',
+          fn: async () => {
+            expect(readSliceCosts({
+              log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20 ms=45210 exit=computed\n'
+                + 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20 exit=computed SLICE-COST lane=translate '
+                + 'chunk=5 sourceChars=30 ms=40 exit=resumed',
+            },),).toEqual({
+              rows: [],
+              dropped: [
+                'ms written more than once',
+                'lane written more than once, chunk written more than once, sourceChars written more than once, '
+                + 'ms written more than once, exit written more than once',
+              ],
+            },);
+          },
+        },),
+        it({
           name: 'reports nothing at all, not even a refusal, for a log that mentions no cost',
           fn: async () => {
             const { rows, dropped, } = readSliceCosts({ log: 'three cats, no costs\nnor here', },);

@@ -298,6 +298,35 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES two trimmed replacements naming one slice, which keying them by slice silently forgave: the '
+        + 'ledger would report the later text as what the document carries, and nothing here knows which the '
+        + 'assembly wrote',
+      fn: async () => {
+        /**
+         What trimsOneSliceTwice raised, read for its class and its sentence.
+         */
+        const refusal = caught(function trimsOneSliceTwice() {
+          buildSliceDelivery({
+            slices: preparedSlices(),
+            wordings: laneWordings({ decided: new Map([[0, 'The cat is asleep.',],],), },),
+            changedSliceIndices: [0,],
+            withdrawnSliceIndices: [],
+            trimmedReplacements: [
+              { sliceIndex: 0, replacementText: 'The cat is asleep', },
+              { sliceIndex: 0, replacementText: 'The cat dozes', },
+            ],
+            blocked: false,
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(SliceDeliveryError,);
+        expect(String(refusal,),).toBe(
+          'SliceDeliveryError: slice 0 carries more than one trimmed replacement, so which text the document '
+            + 'holds there cannot be read',
+        );
+      },
+    },),
+    it({
       name: 'reads a slice the archive never translated as a GAP THAT REMAINS, whether the lane tried '
         + 'and could not fill it or had no work to do there at all. Both neighbours read falsely: one says '
         + 'the document carries the archive`s own wording, of which there is none, and the other says '

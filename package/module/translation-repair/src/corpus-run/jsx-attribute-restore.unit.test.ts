@@ -117,5 +117,48 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'LEAVES AN ATTRIBUTE THE ARCHIVE\'S TAG NAMES MORE THAN ONCE as the bench wrote it, since which of the '
+        + 'archive\'s values a reader sees cannot be read, and RESTORES the tag\'s other attribute',
+      fn: async () => {
+        /**
+         Pass over a page whose archive tag names `n` twice and `side` once.
+         */
+        const restored = restoreJsxAttributes({
+          slices: [
+            pair({
+              sliceIndex: 0,
+              source: '<Paw n="五" side="left"/>\n\n猫。',
+              target: '<Paw n="V" n="5" side="left"/>\n\nCat.',
+            },),
+          ],
+          replacements: [
+            {
+              sliceIndex: 0,
+              replacementText: '<Paw n="五" side="LEFT"/>\n\nThe cat.',
+            },
+          ],
+        },);
+        // Taking the archive's first `n`, the pass wrote "V" over the bench's value.
+        expect(restored,).toEqual({
+          replacements: [
+            {
+              sliceIndex: 0,
+              replacementText: '<Paw n="五" side="left"/>\n\nThe cat.',
+            },
+          ],
+          restored: [
+            {
+              sliceIndex: 0,
+              replacementText: '<Paw n="五" side="left"/>\n\nThe cat.',
+            },
+          ],
+          findings: [
+            'jsx-attribute-restored (slice 0: <Paw n="五" side="LEFT"/> to <Paw n="V" n="5" side="left"/>; '
+            + 'a tag attribute is apparatus the archive fixed)',
+          ],
+        },);
+      },
+    },),
   ],
 },);

@@ -225,6 +225,23 @@ await describe({
           },
         },),
         it({
+          name: 'SKIPS A RECORD THAT WRITES ONE FIELD TWICE, a state or a level, as two records run together leave '
+            + 'it, since the writer writes each once and the first state would pass for the reading of both',
+          fn: async () => {
+            expect([
+              'METERS synthetic=wet hyper=dry synthetic=dry',
+              'METERS synthetic=wet hyper=dry hyperBalance=0 hyperBalance=2497',
+            ].map(function readingOf(tail,) {
+              return readMeterLine({
+                line: `[info] [2026-08-24T18:17:35.383Z] [translation-repair] [takeReading] ${tail}`,
+              },);
+            },),).toEqual([
+              'skipped',
+              'skipped',
+            ],);
+          },
+        },),
+        it({
           name: 'counts no level out of a field carrying no separator, since it names no reading',
           fn: async () => {
             expect(readMeterLine({
