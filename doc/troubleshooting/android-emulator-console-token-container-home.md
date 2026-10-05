@@ -213,23 +213,37 @@ queried index.
 That is not evidence that no comparable report exists on Google's
 separate issue tracker.
 
-- **Upstream fault:** no.
-  The source and official guide describe authentication tied to a home
-  token;
-  the observed container and host used different home contexts.
-- **Fixability:** an improved diagnostic could name the client's token
-  location,
-  but there is no demonstrated emulator defect requiring a patch.
-- **Supported use case:** `adb emu` and console authentication are
-  documented;
-  token sharing between differing container homes is not a promised
-  behavior in the cited guide.
-- **Contribution policy:** not assessed because no upstream bug or
-  documentation gap is established for filing.
-- **Likely upstream response:** not assessed;
-  search silence is not a maintainer decision.
-- **Minimal upstream fix prototype:** not applicable because the consumer
-  boundary workaround solved the problem without changing upstream.
+### Upstream fault
+
+No upstream fault is established.
+The source and official guide describe authentication tied to a home token;
+the observed container and host used different home contexts.
+
+### Fixability
+
+An improved diagnostic could name the client's token location,
+but there is no demonstrated emulator defect requiring a patch.
+
+### Supported use case
+
+`adb emu` and console authentication are documented;
+token sharing between differing container homes is not a promised behavior
+in the cited guide.
+
+### Contribution policy
+
+Not assessed because no upstream bug or documentation gap is established
+for filing.
+
+### Likely upstream response
+
+Not assessed;
+search silence is not a maintainer decision.
+
+### Minimal upstream fix prototype
+
+Not applicable because the consumer boundary workaround solved the problem
+without changing upstream.
 
 Nothing additive is ready to send upstream.
 Do not file the following draft as-is:
