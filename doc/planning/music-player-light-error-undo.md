@@ -191,7 +191,19 @@ The guard now gives the same closing window a bounded settling interval
 without additional input and rejects a different ANR window explicitly.
 Recorded settings were restored and the owner exited cleanly;
 absence was checked before the corrected readiness control.
-If the proven input bridge and corrected readiness check cannot establish
+The next retained rejection identified a different startup blocker:
+`Application Not Responding: com.google.android.apps.nexuslauncher`.
+It is not silently classified as the System UI incident.
+The preflight now recognizes only those two observed system-package
+ANR windows,
+retains each fresh hierarchy/screenshot,
+and permits at most two distinct named close actions before rejecting the
+visit.
+The same already-closing window gets settling time,
+not repeated input.
+No recovery is performed after accepted evidence acquisition begins.
+
+If the proven input bridge and bounded known-dialog readiness check cannot establish
 a usable runtime,
 retain the native-verification blocker rather than repeating blind boots.
 The owned runtime is restored/stopped before the next bounded visit,
