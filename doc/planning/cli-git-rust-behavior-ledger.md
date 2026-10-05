@@ -30,7 +30,7 @@ and paths starting with `src/`,
 `perf/`,
 or `bin/` are relative to `package/git-policy/cli/`.
 Every other path is repository-relative.
-A bare line range after a path citation refers to the same file.
+A bare line number or range refers to the file of the nearest preceding citation that carries a line number.
 
 Planning citations:
 "implementation plan" is `doc/planning/cli-git-rust-implementation.md`,
@@ -126,6 +126,28 @@ code lines only.
   `package/git-policy/forbidden-strings` 6 and 633;
   `package/git-policy/markdown-lint` 5 and 600;
   `package/git-policy/api` 6 and 305.
+
+## Tally
+
+Each level-3 heading is one responsibility,
+counted with `rg --multiline --count-matches` over the `Status` and `Native state` points of this file.
+
+- Responsibilities:
+  112.
+- Status:
+  92 retained,
+  20 retired.
+  The retired entries are executable configuration discovery,
+  plugin registration,
+  the 10 trust entries,
+  the 5 authoring entries,
+  older-Git degradation,
+  and the TypeScript unit suites and built-artifact fixtures.
+- Native state at `df25471a9`:
+  8 implemented as library code without an executable,
+  15 in progress,
+  88 absent,
+  and 1 entry (the unit suites) that is itself verification.
 
 ## Entry and dispatch
 
@@ -360,7 +382,8 @@ code lines only.
   promotes common platform locations that `PATH` exposes
   (`package/git/executable/src/platform-paths.ts:10-22`,
   `44-98`),
-  and returns the first executable candidate that is not a wrapper shim (`290-338`).
+  and returns the first executable candidate that is not a wrapper shim
+  (`package/git/executable/src/resolve-real-git.ts:290-338`).
   `isGitPolicySelfShim` (`package/git/executable/src/self-shim.ts:185-246`) returns `false`
   for any ELF,
   PE,
@@ -410,7 +433,7 @@ code lines only.
   `resolveForwardedCommand` (`src/forwarded-command.ts:261-397`) resolves the command a forwarded invocation runs.
   Names in `GIT_BUILTIN_COMMANDS` (`src/git-builtin-commands.ts:17`,
   taken from Git 2.55.0) are never treated as aliases.
-  Other names are looked up as `alias.<name>` and `alias.<name>.command` (`219-259`),
+  Other names are looked up as `alias.<name>` and `alias.<name>.command` (`src/forwarded-command.ts:219-259`),
   split with Git's `split_cmdline` quoting rules (`112-217`),
   and expanded up to 16 times (`28`).
   A value starting with `!` is a shell alias and stays unresolved.
@@ -557,7 +580,7 @@ code lines only.
   `discoverConfig` (`src/trust/config-discovery.ts:142-178`) finds the repository root from the effective directory
   and returns `cli-git.config.mjs`,
   or else `cli-git.config.ts`,
-  rejecting symbolic links and non-regular files (`68-90`).
+  rejecting symbolic links and non-regular files (`src/trust/config-discovery.ts:68-90`).
   The root configuration is `cli-git.config.ts`,
   which imports plugins from `@monochromatic-dev/git-policy-cli/ts` (`cli-git.config.ts:6-12`).
 - Spec:
@@ -1917,7 +1940,8 @@ and lines 295 to 297
 ### final-newline
 
 - Behavior:
-  `finalNewlinePolicy` (`src/policy-engine/final-newline-policy.ts:86-119`) checks each regular or executable candidate.
+  `finalNewlinePolicy` (`src/policy-engine/final-newline-policy.ts:86-119`) checks each regular
+  or executable candidate.
   `normalizeFinalNewline` (`src/policy-engine/final-newline-normalize.ts:108-133`) leaves empty,
   NUL-containing,
   and non-UTF-8 bytes unchanged,
@@ -2298,7 +2322,8 @@ and auto-push as not started.
 ### Invocation capture
 
 - Behavior:
-  `captureInvocationLayout` (`src/policy-engine/commit-transaction-capture.ts:237-379`) records the symbolic `HEAD` target,
+  `captureInvocationLayout` (`src/policy-engine/commit-transaction-capture.ts:237-379`) records
+  the symbolic `HEAD` target,
   the compare-and-swap target ref,
   the conclusion kind,
   the repository root,
@@ -4010,7 +4035,7 @@ Trust-only platform code (`src/trust/registry-io.ts`,
   53 files under `src/trust/fixture`,
   consumer programs and their helpers,
   install the packed tarball in a disposable project and drive the built `git` shim.
-  `test:built:trust` runs `built-trust-consumer.ts` in a bounded `podman` container
+  `test:built:trust` runs `src/trust/fixture/built-trust-consumer.ts` in a bounded `podman` container
   (`package/git-policy/cli/mise.toml:100-131`).
 - Spec:
   `SPEC.md:4254-4283`.
@@ -4315,7 +4340,7 @@ and were not observed at the consumer boundary in this survey.
   pre-forward (`src/bin.ts:277-280`),
   manual push (`336-339`;
   `src/policy-engine/manual-push-lifecycle.ts:236`),
-  and post-commit (`412-415`;
+  and post-commit (`src/bin.ts:412-415`;
   `src/policy-engine/post-commit-lifecycle.ts:140-153`,
   `177-190`).
   A commit with a pre-forward event and a post-commit event therefore repeats `sequence` `0`.
@@ -4475,7 +4500,7 @@ Each names the text that stops short.
   Does `FORBIDDEN_STRINGS_RULES` remain the way to name the rules file?
 - Configuration root.
   The plan says "repository-root" (line 55).
-  The incumbent uses the nearest Git marker above the effective directory
+  The incumbent uses the nearest ancestor of the effective directory that holds a Git marker
   (`src/trust/config-discovery.ts:110-131`),
   which is a linked worktree's own root and ignores `--git-dir` and `--work-tree`.
   Which root does the native wrapper pass to `load_repository_config`,
