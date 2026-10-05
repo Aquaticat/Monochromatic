@@ -48,6 +48,8 @@ pub mod edits;
 pub mod file_discovery;
 /// Prose fix boundary that must not create new Markdown block syntax.
 mod markdown_block_start;
+/// Byte-addressed prose break points and abbreviation exclusions.
+mod markdown_break_points;
 /// Internal code-fence normalization.
 #[doc(hidden)]
 pub mod markdown_code;
