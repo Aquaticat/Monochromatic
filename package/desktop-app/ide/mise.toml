@@ -332,6 +332,15 @@ const filter = process.env.usage_filter ? [process.env.usage_filter] : []
 runCargo(['test', '--no-default-features', '--lib', '--test', 'language', ...filter])
 """
 
+[tasks."inspect:language"]
+description = "Run the five Language feature paths, a reload, and the stale-reply case against real TypeScript and Rust servers on disposable projects"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
+execFileSync('node', ['bin/inspect-language.mjs'], { stdio: 'inherit' })
+"""
+
 [tasks.mcp]
 depends = ["runtime"]
 description = "Build and run the source-view gate with native headless UI inspection"
