@@ -48,6 +48,10 @@ and resumption details are in [the handover][handover].
   file switching,
   and native Ctrl+0 through Ctrl+9 reveal/badges.
   The tested session-local history module exists but is not yet bound to navigation.
+  `Workspace` reads contained directory snapshots;
+  `FileTree` now models lazy expansion and visible rows without filesystem I/O.
+  Its eight tests and scoped lint pass;
+  background directory generations and native bindings remain next.
 - [ ] Required language-intelligence feature paths and synchronization.
 - [ ] Measured Helix-supported runtime languages and project-write confinement.
 - [ ] Light mode and live system-theme changes through the private appearance portal.
@@ -367,8 +371,10 @@ and prevents treating a regular static font screenshot as complete typography su
 
 ## Next action
 
-Implement actual syntax highlighting and annotations in the shared source-view path,
-then continue workspace navigation and language intelligence.
+Connect the tested lazy tree model to generation-fenced background directory reads,
+then bind native file switching and recent-file navigation.
+The initial syntax slice is implemented;
+annotations and language intelligence follow workspace navigation.
 The native source/clipboard/reload checks do not establish completion of the whole application.
 
 [handover]: ../handover/slint-ide-0x.md

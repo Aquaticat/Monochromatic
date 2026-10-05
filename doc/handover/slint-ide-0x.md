@@ -11,7 +11,10 @@ The application remains an incomplete source-view gate.
 
 Current boundary:
 continue workspace tree/search/navigation after the verified font fixes.
-The read-only workspace model is committed and its five tests passed.
+The read-only workspace model's five tests and the lazy tree model's eight tests pass.
+`FileTree` accepts directory snapshots without doing filesystem I/O.
+Next implement directory request generations and background reads,
+then native rows/file switching.
 The procedural-macro and variable-font paths now both pass native font isolation.
 Continue annotations and language intelligence after workspace navigation.
 Actual TypeScript/Rust syntax is now wired and the highlighted native screenshot was inspected.
@@ -111,7 +114,7 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
   CJK/combining/tab boundary coverage,
   source rendering,
   and smooth-wheel acceptance.
-- [ ] Implement live external refresh and exercise both supplied correspondence examples through the GUI.
+- [x] Implement live external refresh and exercise both supplied correspondence examples through the GUI.
 - [ ] Implement tree,
   search,
   in-file find,
@@ -573,7 +576,8 @@ not the older start/end/source iterator shape.
 
 `helix-loader::config::default_lang_config()` supplies the registry.
 Grammar fetching/building exists in `helix-loader::grammar`,
-but the app has not provisioned its runtime yet.
+and the initial Rust/TypeScript/TSX/JavaScript/JSDoc runtime slice is provisioned.
+The remaining measured-language inventory still needs build/runtime coverage.
 Respect each server's text synchronization mode.
 The measured inventory includes TS/JS,
 Rust,
@@ -617,7 +621,29 @@ contained paths,
 sibling-prefix/parent escapes,
 symlinks,
 and invalid directory inputs.
-No tree UI is wired yet.
+`src/file_tree.rs` and its `listing`/`rows` helpers now own lazy expansion,
+visible snapshot order,
+and detached-subtree pruning without filesystem I/O.
+Collapsing a parent retains descendant expansion but suppresses hidden loading requests.
+Directory-to-file replacement discards obsolete child caches.
+Atomic snapshot validation rejects traversal-like names,
+duplicate keys,
+and mismatched paths;
+native byte filenames remain intact.
+`test:tree` passes eight cases;
+Clippy,
+Rust documentation/line budgets,
+and Slint checks pass in `proc_1f80`.
+The model is not yet a generation-fenced async reader or a native tree UI.
+
+Observed-failing guard checks are running in `proc_1d30`.
+The disposable copy is `/home/user/temp/agent/ide-tree-guard-zlIbRv/package`;
+its baseline passed eight tests in `proc_5274`.
+`guard-check.mjs` outside that copy removes guards one at a time,
+checks named failures,
+restores the files,
+and reruns the suite.
+All Cargo work remains bounded by the copied package's container task.
 Canonical path checks do not claim race-proof OS-level read confinement;
 server project-write confinement remains a separate required gate.
 
