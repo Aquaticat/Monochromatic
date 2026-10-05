@@ -260,10 +260,13 @@ await describe({
     },),
 
     it({
-      name: 'COUNTS a stray underscore outside any emphasis, so a mark neither closed nor opened skips nothing',
+      name: 'KEEPS a sentence-opening capitalized word inside underscore emphasis and RESPELLS the same '
+        + 'word outside it, the underscore count deciding what stands in emphasis',
       fn: async () => {
-        expect(respelled({ text: 'The _cat_ napped on the colour of the lonely _.', },),)
-          .toBe('The _cat_ napped on the colour of the lonely _.',);
+        expect(respelled({ text: '_Coloring_ neighborhoods was fun.', },),)
+          .toBe('_Coloring_ neighbourhoods was fun.',);
+        expect(respelled({ text: 'Coloring neighborhoods was fun.', },),)
+          .toBe('Colouring neighbourhoods was fun.',);
       },
     },),
   ],

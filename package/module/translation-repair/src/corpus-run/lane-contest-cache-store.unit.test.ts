@@ -157,8 +157,8 @@ await describe({
     },),
 
     it({
-      name: 'READS an archive name that is absent or names either verdict, and REFUSES a value that is no '
-        + 'record at all',
+      name: 'READS an archive verdict on a BALLOT that is absent or names either verdict, and REFUSES a '
+        + 'ballot naming something else and a value that is no record at all',
       fn: async () => {
         expect(await roundTrip({
           outcome: {
@@ -171,21 +171,27 @@ await describe({
         expect(await roundTrip({
           outcome: {
             choice: 'translate',
-            ballots: [CAT_BALLOT,],
+            ballots: [{ ...CAT_BALLOT, archive: 'publishable', },],
             usable: 1,
             findings: [],
-            archive: 'publishable',
           },
         },),).toBe(true,);
         expect(await roundTrip({
           outcome: {
             choice: 'translate',
-            ballots: [CAT_BALLOT,],
+            ballots: [{ ...CAT_BALLOT, archive: 'flawed', },],
             usable: 1,
             findings: [],
-            archive: 'flawed',
           },
         },),).toBe(true,);
+        expect(await roundTrip({
+          outcome: {
+            choice: 'translate',
+            ballots: [{ ...CAT_BALLOT, archive: 'nonsense', },],
+            usable: 1,
+            findings: [],
+          },
+        },),).toBe(false,);
         expect(await roundTrip({ outcome: 5, },),).toBe(false,);
       },
     },),

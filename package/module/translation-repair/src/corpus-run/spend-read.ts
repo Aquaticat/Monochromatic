@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   isSpendReckoning,
   SPEND_MARKER,
@@ -342,7 +344,11 @@ export function readSpendLine(
     .split(' ',);
 
   // PROSE IS NOT A TRUNCATED RECORD, decided on the first field alone.
-  if (!(fields[0] ?? '').startsWith(FIRST_FIELD,))
+  /**
+   First field of the split, present since the split always yields one.
+   */
+  const firstField = nonNullishOrThrow(fields[0],);
+  if (!firstField.startsWith(FIRST_FIELD,))
     return 'not-a-record';
 
   /**
