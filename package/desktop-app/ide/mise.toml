@@ -420,7 +420,10 @@ writeFileSync(sourceFile, lines.join(String.fromCharCode(10)))
 console.error('IDE_NATIVE_SOCKET=' + socket)
 console.error('IDE_NATIVE_FIXTURE=' + sourceFile)
 const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
-execFileSync(compositor, ['--socket', socket, '--size', '1100x660', '--color-scheme', scheme, '--', resolve('target/debug/monochromatic-ide'), project, '--file', sourceFile], { env, stdio: 'inherit' })
+// IDE_NATIVE_SIZE starts the nested screen at another size; a locked host session ignores the control socket's resize.
+const size = process.env.IDE_NATIVE_SIZE ?? '1100x660'
+if (!/^[1-9][0-9]*x[1-9][0-9]*$/.test(size)) { throw new Error('IDE_NATIVE_SIZE must be WIDTHxHEIGHT') }
+execFileSync(compositor, ['--socket', socket, '--size', size, '--color-scheme', scheme, '--', resolve('target/debug/monochromatic-ide'), project, '--file', sourceFile], { env, stdio: 'inherit' })
 """
 
 [tasks.run]
