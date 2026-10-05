@@ -2168,3 +2168,1541 @@ and lines 295 to 297
   absent in the wrapper.
   The linter rule port is pending:
   the handover work queue lists native LFS URL normalization as open.
+
+## Commit transactions
+
+Every entry in this section is retained by the implementation plan lines 198 to 237,
+which port the transaction state machine and durable protocol explicitly
+and list what to preserve.
+One entry,
+"Older-Git degradation",
+is retired.
+Native state is absent for every entry:
+the handover work queue lists transactions,
+hooks,
+locks,
+replay,
+recovery,
+worktree copy,
+and auto-push as not started.
+
+### Scope and applicability
+
+- Behavior:
+  `runCommitTransaction` (`src/policy-engine/commit-transaction.ts:87-402`) handles every `git commit`
+  that is not a dry run (`109-116`);
+  dry runs and short-circuit forms are forwarded (`src/bin.ts:248-250`).
+  The mode is explicit-path or index
+  (`src/policy-engine/commit-transaction-journal-states.ts:50`).
+  `runCommitTransactionBoundary` (`src/policy-engine/commit-transaction-boundary.ts:34-65`) turns an unexpected error
+  into `transaction-failed`,
+  or `index-lock-unproven-owner`,
+  with exit `2`,
+  and rethrows native Git failures so their exit code is preserved.
+  No configuration key or environment variable disables the transaction.
+- Spec:
+  `SPEC.md:1970-2010`.
+- Consumers:
+  every commit made through the wrapper,
+  by humans and by concurrent agents in one worktree.
+- Status:
+  retained.
+- Rust owner:
+  `transaction.rs` (proposed) with typed states for capture,
+  private preparation,
+  policy convergence,
+  landing,
+  replay,
+  and post-landing completion
+  (implementation plan lines 200 to 206).
+- Consumer-level test:
+  in the standard fixture,
+  run one explicit-path commit,
+  one `--no-only` commit,
+  one `commit -a --no-enforce-only`,
+  and one `git commit --dry-run`;
+  observe one landed commit for each of the first three with native parents and messages,
+  no transaction directory afterward,
+  and plain forwarding for the dry run.
+- Native state:
+  absent.
+
+### Invocation capture
+
+- Behavior:
+  `captureInvocationLayout` (`src/policy-engine/commit-transaction-capture.ts:237-379`) records the symbolic `HEAD` target,
+  the compare-and-swap target ref,
+  the conclusion kind,
+  the repository root,
+  the common Git directory,
+  the real index path,
+  the ref storage format,
+  and the reflog nonce;
+  `captureInvocationBase` (`381-421`) reads the preparation base afterward.
+  Conclusion detection and ref helpers are in
+  `src/policy-engine/commit-transaction-capture-refs.ts:86-246`.
+  A caller-set `GIT_INDEX_FILE`,
+  `GIT_DIR`,
+  `GIT_WORK_TREE`,
+  `--git-dir`,
+  and `--work-tree` are honored.
+- Spec:
+  `SPEC.md:2012-2062`.
+- Consumers:
+  every later transaction phase and recovery.
+- Status:
+  retained.
+- Rust owner:
+  `transaction_capture.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  start a commit held in `pre-commit`,
+  move the branch with a second commit,
+  and release the first;
+  observe that the first replays onto the second rather than re-reading live `HEAD`,
+  and that a detached `HEAD` commit lands by compare-and-swap on `HEAD`.
+- Native state:
+  absent.
+
+### Transaction registry and journal
+
+- Behavior:
+  transactions live under `<git-dir>/cli-git-transactions/<uuid>/`
+  (`src/policy-engine/commit-transaction-registry.ts:45`,
+  `101`).
+  A directory is built under a `.pending` name and published by rename after `owner.json` is complete (`60`,
+  `259-336`);
+  removal renames to `.retired` first (`65`,
+  `338-451`).
+  State files are created exclusively and never rewritten
+  (`src/policy-engine/commit-transaction-journal-states.ts:378-416`):
+  `preparing.json`,
+  `prepared.json`,
+  `index-lock-<n>.json`,
+  `landing-<n>.json`,
+  `ref-updated.json`,
+  and the `index-installed` marker (`30-45`,
+  `312-374`),
+  at journal schema version 2 (`25`).
+  Records are parsed strictly (`src/policy-engine/commit-transaction-journal-parse.ts:140-330`).
+  `owner.json` holds the PID,
+  birth identity,
+  schema version 2,
+  and invocation start time (`src/policy-engine/commit-transaction-owner.ts:28`,
+  `41-65`,
+  `85-120`).
+- Spec:
+  `SPEC.md:2071-2146`.
+- Consumers:
+  recovery,
+  the starvation reservation,
+  capture-order pruning.
+- Status:
+  retained.
+  The implementation plan lines 228 to 233 keep the existing journal and lock formats where practical
+  during the first release,
+  with cross-version fixture verification.
+- Rust owner:
+  `transaction_registry.rs` and `transaction_journal.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  hold a commit in `pre-commit` and list the registry;
+  observe directory mode `0700`,
+  file mode `0600`,
+  one published UUID directory with `owner.json` and `preparing.json`.
+  Then feed journal files written by the incumbent to the native recovery;
+  observe that each state is read without loss.
+- Native state:
+  absent.
+
+### Private index and selection modes
+
+- Behavior:
+  `initializeCommitIndex` (`src/policy-engine/commit-transaction-index.ts:80-176`) builds `<tx>/commit.index`:
+  from the preparation base plus the selected worktree paths for explicit-path commits,
+  or a copy of the real index for index commits.
+  `resolvePrivateCommitArgs` (`src/policy-engine/commit-transaction-selection.ts:149-193`) drops pathspecs,
+  `--git-dir`,
+  `--work-tree`,
+  and the internal `--only`;
+  pathspec files,
+  including stdin and NUL forms,
+  are materialized (`258-287`);
+  interactive and patch selection run native Git once against the private index (`195-256`)
+  and stay read-only for automatic fixes.
+  Index copies keep the source index timestamps
+  (`src/policy-engine/index-file-timestamps.ts:30-86`).
+- Spec:
+  `SPEC.md:2064-2069`,
+  `2497-2529`.
+- Consumers:
+  preparation and landing.
+- Status:
+  retained
+  (implementation plan line 210,
+  "private indexes",
+  and line 221,
+  "real index and worktree isolation").
+- Rust owner:
+  `transaction_private_index.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  commit with partial staging and an unstaged tail,
+  with `--pathspec-from-file=-` and `--pathspec-file-nul`,
+  and with a racily clean same-size edit;
+  observe exact committed,
+  indexed,
+  and worktree bytes,
+  and that `git status` still shows the same-size edit.
+- Native state:
+  absent.
+
+### Shadow repository
+
+- Behavior:
+  `createShadowRepository` (`src/shadow-repository/shadow-repository.ts:75-191`) creates
+  `<git-common-dir>/cli-git/shadow/<transaction-id>`
+  (`src/policy-engine/commit-transaction-capture.ts:477-490`):
+  a private object store whose `info/alternates` names the real store,
+  a snapshot of every real ref (`src/shadow-repository/shadow-refs.ts:158-397`,
+  one `packed-refs` file for the files backend,
+  one `update-ref --stdin` transaction for reftable),
+  a generated `config` that includes the real one and pins `core.worktree`,
+  `gc.auto`,
+  and `maintenance.auto` (`src/shadow-repository/shadow-config.ts:63-222`),
+  and links to every other common-directory entry (`src/shadow-repository/shadow-links.ts:53-322`).
+  On Windows,
+  shared directories are junctions and shared files are copies (`96-125`).
+  Conclusion state is copied in (`src/shadow-repository/shadow-conclusion-state.ts:55-176`).
+- Spec:
+  `SPEC.md:2148-2406`.
+- Consumers:
+  native preparation,
+  replay,
+  hooks that read branch state.
+- Status:
+  retained
+  (implementation plan line 210).
+- Rust owner:
+  `shadow_repository.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  hold a commit in `pre-commit` and from the hook print the branch name,
+  `@{upstream}`,
+  an `includeIf "onbranch:"` value,
+  and `git rev-parse --git-dir`;
+  observe the real branch facts and the shadow path.
+  Run `git gc --prune=now` in the real repository meanwhile;
+  observe the commit lands whole,
+  `git worktree list` never shows the shadow,
+  and no shadow remains afterward.
+  Repeat in LFS,
+  submodule,
+  sparse-checkout,
+  reftable,
+  and SHA-256 repositories.
+- Native state:
+  absent.
+
+### Hook dispatch and hook lock
+
+- Behavior:
+  `writeHookShim` (`src/hook-dispatch/hook-shim-writer.ts:59-130`) writes `<tx>/hooks/dispatch.mjs`,
+  `plan.json`,
+  and executable entries for `pre-commit`,
+  `prepare-commit-msg`,
+  and `commit-msg` whose first line is `#!<process.execPath>`
+  (`src/hook-dispatch/hook-dispatch-plan.ts:33-49`).
+  `computeHookDispatchPlan` (`295-385`) records the repository's `core.hooksPath`,
+  user-disabled events,
+  the caller's config parameters in Git's quoting (`131-285`),
+  the real Git path,
+  the worktree root,
+  the preparation lease,
+  and the hook lock.
+  The generated program (`src/hook-dispatch/hook-dispatch-program.ts:27-238`) restores those parameters,
+  exports an absolute `GIT_WORK_TREE`,
+  takes the hook lock at `<git-common-dir>/cli-git/hook.lock` with its own liveness check (`40-173`),
+  runs `git hook run --ignore-missing <event>`,
+  and propagates the status (`175-221`).
+  `post-commit` has no entry and never runs during preparation.
+  A nested wrapper with a valid preparation lease skips recovery and the hook lock
+  (`src/hook-dispatch/preparation-lease.ts:40-127`).
+- Spec:
+  `SPEC.md:2408-2478`.
+- Consumers:
+  repository hooks,
+  hookdir and config-based.
+- Status:
+  retained
+  (implementation plan lines 211 to 214:
+  hook,
+  editor,
+  signing,
+  and branch identity behavior).
+  The shim is a Node program today;
+  its native form is undetermined
+  (see "Open questions").
+- Rust owner:
+  `hook_dispatch.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  install a hookdir `pre-commit` and a `hook.<name>.command` hook,
+  each appending to a log;
+  commit once and observe each ran once,
+  that a hook in a subdirectory sees the right top level and an absolute `GIT_WORK_TREE`,
+  that two concurrent preparations serialize their hooks by default
+  and overlap with `hooks.concurrentCommits: true`,
+  and that an open message editor does not hold the hook lock.
+- Native state:
+  absent.
+
+### Native preparation
+
+- Behavior:
+  `runNativePreparation` (`src/policy-engine/commit-preparation-native.ts:315-374`) runs native `git commit`
+  with inherited standard streams against the shadow repository,
+  `GIT_INDEX_FILE` naming the private index,
+  `core.hooksPath` naming the shim,
+  and each commit event's `hook.<event>.enabled=false`.
+  Git owns hooks,
+  the editor,
+  templates,
+  message cleanup,
+  and signing.
+  A failure raises `NativeCommitFailedError` with Git's exit code (`106-145`);
+  the prepared commit is read from the shadow `HEAD` (`409-447`).
+- Spec:
+  `SPEC.md:2193-2237`.
+- Consumers:
+  every commit transaction.
+- Status:
+  retained
+  (implementation plan lines 39 to 46 keep native Git responsible for hooks,
+  signing,
+  editors,
+  and sequencer behavior).
+- Rust owner:
+  `transaction_preparation.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  commit with an SSH signing key,
+  with `GIT_EDITOR` set to a script that edits the message,
+  and with a failing `commit-msg` hook;
+  observe a verifiable signature,
+  the edited message,
+  and for the failure Git's exit code with ref,
+  index,
+  and worktree bytes unchanged and no shadow repository left.
+- Native state:
+  absent.
+
+### Preparation policy convergence, added paths, and hook-staged changes
+
+- Behavior:
+  policies run against the private index and patches converge
+  (`src/policy-engine/commit-transaction-convergence.ts:110-276`).
+  A patch for a tracked file that is not a candidate adds the path when `HEAD`,
+  the captured real index,
+  the private index,
+  and the worktree all hold the same blob
+  (`src/policy-engine/commit-transaction-added-paths.ts:248-361`);
+  otherwise the result is `patch-conflict` (`111-149`).
+  After landing,
+  each added path's worktree copy is replaced only while it still holds the original bytes (`401-501`).
+  Hook-staged changes are found by diffing the settled tree against the committed tree
+  (`src/policy-engine/commit-hook-changes.ts:161-245`).
+  A settled tree equal to the base yields `commit-normalization/no-change`
+  (`src/policy-engine/commit-transaction-no-change.ts:76-209`).
+- Spec:
+  `SPEC.md:2480-2502`,
+  `2531-2588`.
+- Consumers:
+  `final-newline`,
+  Markdown autofix,
+  and dependent-version propagation;
+  lint-staged-style hooks.
+- Status:
+  retained.
+- Rust owner:
+  `transaction_convergence.rs` and `transaction_added_paths.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  commit with a `pre-commit` hook that reformats and re-stages a selected file
+  and stages one extra path;
+  observe that the landed tree is what the hook staged,
+  that the real index and worktree are reconciled,
+  and that a worktree edit made after the hook ran is kept with a warning.
+- Native state:
+  absent.
+
+### Landing critical section
+
+- Behavior:
+  `landTransaction` (`src/policy-engine/commit-landing.ts:198-453`) takes the landing lock,
+  or the reserved landing lock (`236-249`),
+  then the real `index.lock` (`250`),
+  checks the symbolic `HEAD` target,
+  reads the target ref,
+  migrates objects,
+  computes the post-index,
+  writes `landing-<n>.json`,
+  and advances the target with
+  `git update-ref -m <reflog message> <target> <new> <old>`
+  (`src/policy-engine/commit-landing-support.ts:192-229`).
+  The reflog message is `commit (cli-git <nonce>): <subject>` (`125-190`).
+  It then writes `ref-updated.json`,
+  removes the pack's `.keep`,
+  installs the post-index through an owner-preserving hard link
+  (`src/policy-engine/commit-transaction-install-link.ts:28-64`),
+  writes `index-installed`,
+  and reproduces conclusion-state cleanup.
+  `landWithReplay` (`src/policy-engine/commit-landing-loop.ts:107-255`) loops on lost races.
+  Every landing-lock acquisition first recovers dead landings
+  (`src/policy-engine/commit-landing-lock.ts:105-248`).
+  Core findings `head-moved` and `branch-switched` come from
+  `src/policy-engine/commit-landing-findings.ts:111-149`.
+- Spec:
+  `SPEC.md:2590-2675`,
+  `3002-3012`.
+- Consumers:
+  every commit transaction;
+  `reference-transaction` hooks see one update of the branch ref.
+- Status:
+  retained
+  (implementation plan lines 215 to 219:
+  compare-and-swap landing).
+- Rust owner:
+  `transaction_landing.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  start 8 commits to disjoint paths together;
+  observe 8 landed commits,
+  each exactly once with its captured bytes,
+  linear native parents,
+  the nonce entry exactly once in the branch reflog and in the `HEAD` reflog,
+  and a clean `git fsck`.
+  Switch branches between preparation and landing;
+  observe `concurrent-commit/branch-switched` with exit `1` and unchanged state.
+- Native state:
+  absent.
+
+### Real index at landing
+
+- Behavior:
+  `computeLandingPostIndex` (`src/policy-engine/commit-landing-index.ts:415-528`) computes the post-index
+  against the then-current real index.
+  Explicit-path commits reset the committed paths to the landed tree.
+  Index commits reuse the private index only when no replay happened and the real index is byte-identical
+  to the captured one;
+  otherwise each landed path is taken only while its real index entry still equals the captured entry.
+- Spec:
+  `SPEC.md:2677-2704`.
+- Consumers:
+  concurrent stagers in the same worktree.
+- Status:
+  retained
+  (implementation plan line 221).
+- Rust owner:
+  `transaction_landing_index.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  hold commit A in `pre-commit`,
+  stage path `p` with a second process,
+  and release A;
+  observe that `p` is still staged after A lands
+  and that the index never stages a revert of landed content.
+- Native state:
+  absent.
+
+### Object migration and pending-object protection
+
+- Behavior:
+  `migrateShadowObjects` (`src/policy-engine/commit-landing-objects.ts:85-165`) pipes
+  `git pack-objects --revs --local --stdout` from the shadow
+  into `git index-pack --stdin --keep=<message>` in the real repository,
+  with the keep message `cli-git <transaction-id>` (`57-59`).
+  `removePackKeep` (`167-235`) and `removeTransactionKeeps` (`237-287`) remove `.keep` files
+  after the compare-and-swap,
+  after a failed one,
+  and during recovery.
+- Spec:
+  `SPEC.md:2706-2749`.
+- Consumers:
+  landing and recovery.
+- Status:
+  retained
+  (implementation plan line 220:
+  protection of pending objects).
+- Rust owner:
+  `transaction_object_migration.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  pause a landing after migration with the phase marker,
+  run `git prune --expire=now` and `git repack -a -d`,
+  then release;
+  observe that the commit lands whole and that no `.keep` with the transaction's message remains.
+- Native state:
+  absent.
+
+### Replay
+
+- Behavior:
+  `replayOrFail` (`src/policy-engine/commit-landing-replay-step.ts:313-343`) replays a prepared commit
+  after a lost race.
+  `mergeReplayTree` (`src/policy-engine/commit-replay.ts:178-271`) runs
+  `git merge-tree --write-tree --name-only -z --merge-base=<base> <current> <prepared>` in the shadow.
+  `writeReplayedCommit` (`353-440`) rewrites an unsigned commit's raw object,
+  replacing only the `tree` and `parent` lines
+  (`src/policy-engine/commit-replay-object.ts:176-271`),
+  and rebuilds a signed commit with `git commit-tree -S`,
+  dropping custom headers and emitting `replay-headers-dropped` (`273-352`).
+  Signing options come from the invocation (`src/policy-engine/commit-replay-options.ts:198-224`).
+  A conflict yields `concurrent-commit/replay-conflict` with the conflicting paths,
+  the winning commit (`src/policy-engine/commit-replay.ts:273-312`),
+  and the prepared commit,
+  which is migrated without `.keep` so it can be cherry-picked.
+- Spec:
+  `SPEC.md:2751-2844`.
+- Consumers:
+  concurrent agents editing one file.
+- Status:
+  retained
+  (implementation plan lines 215 to 219).
+- Rust owner:
+  `transaction_replay.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  land two commits started together that edit non-overlapping hunks of one file,
+  then two that edit the same lines;
+  observe a clean replay with `landing-race-lost` and `commit-replayed` events in the first case,
+  and in the second `concurrent-commit/replay-conflict` with exit `1`,
+  unchanged ref,
+  index,
+  and worktree,
+  and a prepared commit that `git cherry-pick` accepts.
+  Repeat with a non-UTF-8 `i18n.commitEncoding` and with a signed commit carrying a custom header.
+- Native state:
+  absent.
+
+### Subsumption
+
+- Behavior:
+  `subsumeLandedChanges` (`src/policy-engine/commit-replay-subsumption.ts:318-442`) decides,
+  for each path both sides changed (`src/policy-engine/commit-replay-shared-paths.ts:281-332`),
+  whether the prepared bytes already contain the landed change.
+  Text paths are tested by strict reverse application
+  (`src/policy-engine/commit-replay-reverse-apply.ts:331-360`,
+  3 context lines) and by the one-sided extension rule
+  (`src/policy-engine/commit-replay-containment.ts:247-298`);
+  a NUL byte in the first 8,000 bytes marks a blob binary
+  (`src/policy-engine/commit-replay-subsumption-text.ts:40`,
+  `50`,
+  `253-373`).
+  Subsumed paths go into a synthetic merge base.
+- Spec:
+  `SPEC.md:2846-2942`.
+- Consumers:
+  replay.
+- Status:
+  retained
+  (the implementation plan line 217 names replay;
+  `doc/decision/cli-git-concurrent-commits.md` section "Serial landing" holds the owner decision).
+- Rust owner:
+  `replay_subsumption.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run the cases of `SPEC.md:3716-3727` on real repositories;
+  observe each stated outcome,
+  and that the strict reverse check agrees with `git apply --reverse --check` on seeded inputs.
+- Native state:
+  absent.
+
+### Revalidation after replay
+
+- Behavior:
+  `revalidateReplay` (`src/policy-engine/commit-revalidation.ts:205-421`) reads the merged tree into
+  `<tx>/replay-<r>/commit.index`,
+  moves the shadow `HEAD` target,
+  fingerprints declared inputs,
+  re-runs policies against the paths the replayed tree changes,
+  and re-runs `pre-commit` when the tree differs from the last approved one and `--no-verify` is absent
+  (`src/policy-engine/commit-replay-hook.ts:72-127`).
+  A failing re-run exits `1` without an event.
+  Worktree completions are retargeted to the replayed blobs
+  (`src/policy-engine/commit-landing-replay-records.ts:26-90`).
+- Spec:
+  `SPEC.md:2944-3000`.
+- Consumers:
+  replay.
+- Status:
+  retained.
+- Rust owner:
+  `transaction_revalidation.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  make the winning commit introduce content that a policy must fix in the replayed tree;
+  observe the fix in the landed commit,
+  a `fix-summary` after `commit-replayed`,
+  one `pre-commit` re-run,
+  none under `--no-verify`,
+  and nothing landed when the re-run fails.
+- Native state:
+  absent.
+
+### Amend, conclusions, and sequencer state
+
+- Behavior:
+  amend,
+  merge,
+  cherry-pick,
+  and revert conclusions fail with `concurrent-commit/head-moved` when the target moved.
+  Conclusion state (`MERGE_HEAD`,
+  `MERGE_MSG`,
+  `MERGE_MODE`,
+  `SQUASH_MSG`,
+  `AUTO_MERGE`,
+  `CHERRY_PICK_HEAD`,
+  `REVERT_HEAD`,
+  `MERGE_RR`,
+  `sequencer/`;
+  `src/shadow-repository/shadow-conclusion-names.ts:10-55`) is copied into the shadow,
+  with reftable pseudorefs read and written through Git
+  (`src/shadow-repository/shadow-conclusion-files.ts:136-246`).
+  `reproduceConclusionCleanup` (`src/shadow-repository/shadow-conclusion-cleanup.ts:72-261`) removes,
+  in the owning worktree,
+  each entry native Git removed from the shadow,
+  only while it still holds the copied bytes.
+- Spec:
+  `SPEC.md:3002-3069`.
+- Consumers:
+  merge,
+  cherry-pick,
+  and revert workflows.
+- Status:
+  retained.
+- Rust owner:
+  `transaction_conclusion.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  conclude a merge,
+  a cherry-pick,
+  and a revert through the wrapper and through `/usr/bin/git` in twin repositories,
+  in files and reftable formats;
+  observe byte-identical commits and identical Git-directory state afterward,
+  including mid-sequence.
+- Native state:
+  absent.
+
+### Capture order
+
+- Behavior:
+  each capture takes the per-worktree capture lock and a sequence number
+  (`src/policy-engine/commit-capture-order-store.ts:57-72`,
+  `302-395`),
+  and records `captured.json` with the stamp and worktree-captured paths
+  (`src/policy-engine/commit-capture-order-capture.ts:134-286`;
+  `src/policy-engine/commit-capture-order-journal.ts:33`,
+  `245-347`).
+  A landing writes `landed/<oid>.json`
+  (`src/policy-engine/commit-capture-order-records.ts:61-71`,
+  `248-310`,
+  `453-476`).
+  Replay decides each shared path by comparing sequence numbers
+  (`src/policy-engine/commit-capture-order-decision.ts:94-137`;
+  `src/policy-engine/commit-capture-order-replay.ts:60-154`)
+  over the first-parent history (`src/policy-engine/commit-capture-order-history.ts:123-172`).
+  Records are pruned when no published transaction can need them
+  (`src/policy-engine/commit-capture-order-prune.ts:150-217`).
+- Spec:
+  `SPEC.md:3071-3217`.
+- Consumers:
+  replay of commits captured from one worktree.
+- Status:
+  retained
+  (implementation plan lines 215 to 219:
+  capture ordering).
+- Rust owner:
+  `capture_order.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  capture commit A,
+  then commit B rewriting the same line,
+  and land B first;
+  observe that A keeps B's bytes for that path and lands its other paths.
+  Reverse the capture order;
+  observe that the later capture's bytes land.
+  After the last transaction ends,
+  observe no file under `cli-git-captures/landed/`.
+- Native state:
+  absent.
+
+### Starvation reservation
+
+- Behavior:
+  after `landing.reserveAfterLostRaces` lost races a transaction writes `reservation-request`
+  and waits for `reservation.lock`
+  (`src/policy-engine/commit-landing-reservation.ts:68`,
+  `187-332`).
+  Requests are granted oldest invocation first,
+  ties by transaction ID (`145-185`).
+  Other transactions wait before landing while a live reservation exists (`334-365`).
+  A granted reservation emits `landing-reserved`.
+- Spec:
+  `SPEC.md:3265-3307`.
+- Consumers:
+  concurrent commits under contention.
+- Status:
+  retained
+  (implementation plan lines 215 to 219:
+  starvation reservations).
+- Rust owner:
+  `landing_reservation.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture with the default of 1,
+  make one transaction lose a race while others keep landing;
+  observe `landing-reserved` after its `landing-race-lost`,
+  at most 2 lost races for the holder,
+  and release of the reservation when the holder lands,
+  conflicts,
+  or is killed.
+- Native state:
+  absent.
+
+### Post-landing completion
+
+- Behavior:
+  after both locks are released,
+  `concludeCommitTransaction` (`src/policy-engine/commit-transaction-conclusion.ts:168-431`) completes
+  added-path worktree copies (`393`),
+  removes the shadow repository and the transaction directory,
+  runs automatic maintenance (`406`),
+  and runs `post-commit` once (`411`).
+  `runAutoMaintenance` (`src/policy-engine/commit-landing-auto-maintenance.ts:135-267`) mirrors Git's decision
+  from `maintenance.auto`,
+  `gc.auto`,
+  and the detach settings,
+  runs `git maintenance run --auto --quiet`,
+  and ignores its status.
+  `runPostCommitHook` (`src/policy-engine/commit-landing-post-commit-hook.ts:98-160`) runs
+  `git hook run post-commit` in the real worktree under the hook lock,
+  with `GIT_INDEX_FILE`,
+  `GIT_AUTHOR_*`,
+  and `GIT_EDITOR=:`.
+- Spec:
+  `SPEC.md:3219-3263`.
+- Consumers:
+  `post-commit` hooks;
+  later Git commands,
+  whose speed depends on the pack count.
+- Status:
+  retained
+  (implementation plan line 220:
+  post-landing automatic maintenance).
+- Rust owner:
+  `transaction_post_landing.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  land 30 commits in sequence with a counting `post-commit` hook;
+  observe 30 hook runs with the native environment,
+  a bounded pack count,
+  and no background-maintenance text in the JSONL stream.
+- Native state:
+  absent.
+
+### Recovery
+
+- Behavior:
+  `recoverCommitTransaction` (`src/policy-engine/commit-transaction-recovery.ts:127-191`) runs at startup,
+  before configuration loading.
+  `recoverRegisteredTransactions` (`src/policy-engine/commit-transaction-recovery-scan.ts:194-282`)
+  inspects every published directory (`src/policy-engine/commit-transaction-recovery-inspect.ts:118-166`).
+  A live owner is skipped.
+  A dead owner without a landing record loses its `.keep` files,
+  reservation,
+  shadow repository,
+  and directory.
+  A dead owner with a landing record is recovered under the landing lock
+  (`src/policy-engine/commit-transaction-recovery-landing.ts:185-353`):
+  an unlanded attempt is discarded,
+  an interrupted index install is completed from the recorded post-index
+  (`src/policy-engine/commit-transaction-recovery-files.ts:162-238`),
+  and a completed install is recognized
+  (`src/policy-engine/commit-transaction-recovery-completion.ts:98-232`).
+  Before `ref-updated.json` exists,
+  a landing counts only when the target reflog holds the nonce entry
+  (`src/policy-engine/commit-transaction-recovery-reflog.ts:90-157`).
+  Real `index.lock` files are removed only by recorded device and inode
+  (`src/policy-engine/commit-transaction-recovery-evidence.ts:212-270`;
+  `src/policy-engine/commit-transaction-recovery-validation.ts:328-371`).
+  Malformed state fails closed with `CommitTransactionRecoveryError` (`27-49`).
+  The legacy single-journal directory `cli-git-transaction` is still recovered
+  (`src/policy-engine/commit-transaction-registry.ts:50`;
+  `src/policy-engine/commit-transaction-recovery-journaled.ts:60`,
+  `252-430`).
+- Spec:
+  `SPEC.md:3497-3549`,
+  `2145-2146`.
+- Consumers:
+  every wrapper invocation after a crash;
+  `README.md` section "Commit recovery".
+- Status:
+  retained
+  (implementation plan lines 225 and 228 to 233:
+  durable recovery after interruption;
+  old transaction state is never silently discarded,
+  and an unreadable state fails with an actionable recovery diagnostic).
+  Whether the native wrapper recovers the legacy single-journal directory is undetermined
+  (see "Open questions").
+- Rust owner:
+  `transaction_recovery.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  kill the wrapper with `SIGKILL` at each phase marker and each hook point,
+  then run `git status`;
+  observe after recovery that the commit either landed whole or not at all,
+  that the real index matches,
+  and that no shadow repository,
+  transaction directory,
+  lock,
+  `.keep`,
+  or landed-capture record remains.
+  Plant a published directory without a valid owner record;
+  observe exit `2`,
+  the path named,
+  and its contents preserved.
+- Native state:
+  absent.
+
+### Test phase markers
+
+- Behavior:
+  `CLI_GIT_TEST_ONLY_PHASE_SIGNAL=<phase>:kill[:<directory>]` makes the wrapper kill itself at a phase,
+  and `<phase>:pause:<directory>` writes a marker and waits for a release file
+  (`src/policy-engine/commit-transaction-test-phase.ts:37`,
+  `109-234`).
+  The phases are listed at `47-58`.
+  A malformed value fails the invocation (`83-107`).
+- Spec:
+  `SPEC.md:3954-3972`.
+- Consumers:
+  the container end-to-end suite (`e2e/scenario-phase-kill-fixture.ts`,
+  `e2e/scenario-reservation-fixture.ts`,
+  `e2e/scenario-subsumption-fixture.ts`)
+  and the concurrent-commit benchmark (`perf/concurrent-commit-latency-pause.ts`).
+- Status:
+  retained.
+  The implementation plan lines 289 to 291 reuse the existing end-to-end scenarios against the Rust executable,
+  and those scenarios reach landing phases only through these markers.
+  Whether a release build carries them is undetermined
+  (see "Open questions").
+- Rust owner:
+  `transaction_test_phase.rs` (proposed).
+- Consumer-level test:
+  the end-to-end `sigkill-phase-*` scenarios pass against the native executable.
+- Native state:
+  absent.
+
+### Older-Git degradation
+
+- Behavior:
+  the wrapper has no version gate.
+  `replayPlumbingAvailable` (`src/policy-engine/replay-plumbing.ts:118-146`) probes
+  `git merge-tree --write-tree --merge-base` after a first lost race
+  and falls back to `concurrent-commit/head-moved`;
+  automatic maintenance retries without `--detach` on exit `129`
+  (`src/policy-engine/commit-landing-auto-maintenance.ts:45`);
+  a Git without `core.lockfilePid` yields no PID evidence.
+- Spec:
+  `SPEC.md:3551-3618`.
+- Consumers:
+  the end-to-end matrix on Git 2.39.5 and 2.40.0
+  (`package/git-policy/cli/mise.toml:296-358`;
+  `e2e/git-version-fixture.ts`;
+  `e2e/scenario-replay-degradation-fixture.ts`).
+- Status:
+  retired.
+  The implementation plan lines 22 to 25 support the latest stable Git release only
+  and forbid porting older-Git compatibility branches or keeping an old-version test matrix;
+  lines 235 to 237 report missing required Git behavior as an unsupported-environment failure.
+  The rewrite scope lines 105 to 106 state that legacy Git degradation paths are not a parity requirement.
+- Rust owner:
+  none for degradation;
+  the unsupported-environment failure is listed under "Responsibilities the plan adds".
+- Consumer-level test:
+  run the native wrapper against a Git older than the supported release in a container;
+  observe an unsupported-environment failure and no fallback algorithm.
+- Native state:
+  absent.
+
+## Locks
+
+Every entry in this section is retained by the implementation plan lines 222 to 224
+(process-birth-aware locks,
+foreign-lock evidence,
+and cancellation).
+Native state is absent for every entry.
+
+### Owner locks with process-birth identity
+
+- Behavior:
+  `acquireOwnerLock` (`src/owner-lock/owner-lock.ts:499-535`) publishes a lock directory by rename
+  after writing `owner.json` exclusively and syncing it (`150-165`,
+  `205-225`).
+  The record holds schema version 1,
+  a random token,
+  the owner PID,
+  the owner's birth identity,
+  and for the reservation a transaction ID (`src/owner-lock/owner-lock-record.ts:24-63`).
+  An owner is alive only while its PID names a process with the recorded birth identity (`165-171`).
+  A dead owner's lock is retired by renaming it aside before deletion (`src/owner-lock/owner-lock.ts:468-497`).
+  A waiter polls every 20 ms (`69`) without a time limit while the owner lives.
+  Birth identity comes from `/proc/<pid>/stat` on Linux,
+  where states `Z` and `X` count as exited,
+  from `ps -o lstart=` on macOS,
+  and from a PowerShell `Get-Process` start time on Windows
+  (`src/policy-engine/commit-transaction-process-identity.ts:12-70`,
+  `132-159`).
+  The lock paths are the landing lock,
+  the reservation lock,
+  the hook lock,
+  the capture lock,
+  and one push lock per branch.
+- Spec:
+  `SPEC.md:3309-3380`.
+- Consumers:
+  landing,
+  reservation,
+  hook dispatch,
+  capture order,
+  auto-push,
+  direct fix,
+  index-writer coordination.
+- Status:
+  retained.
+- Rust owner:
+  `owner_lock.rs` and `process_identity.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  kill a lock holder,
+  leave a zombie holder under a PID 1 that does not reap,
+  and plant a lock whose PID was reused by a younger process;
+  observe that the next acquirer retires each lock,
+  and that a live holder makes the acquirer wait until it exits.
+- Native state:
+  absent.
+
+### Real index lock
+
+- Behavior:
+  `acquireRealIndexLock` (`src/policy-engine/commit-landing-index-lock.ts:214-352`) creates `<index>.lock` exclusively,
+  writes Git's lock PID file format,
+  and journals the lock's device and inode in `index-lock-<n>.json` right after creation.
+- Spec:
+  `SPEC.md:2597-2602`,
+  `3378-3380`.
+- Consumers:
+  landing and recovery.
+- Status:
+  retained.
+- Rust owner:
+  `index_lock.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  pause a landing inside the critical section and run `/usr/bin/git add` directly;
+  observe that native Git reports the lock held and names the wrapper's PID from the PID file.
+- Native state:
+  absent.
+
+### Foreign index-lock evidence and waiting
+
+- Behavior:
+  `gatherIndexLockEvidence` (`src/index-lock/index-lock-evidence.ts:415-561`) reads the lock's device,
+  inode,
+  and ctime,
+  the Git PID file (`165-315`),
+  and open holders by device and inode:
+  `/proc/<pid>/fd` on Linux (`src/index-lock/index-lock-holders-linux.ts:286-359`,
+  16 concurrent readers),
+  `lsof` on macOS (`src/index-lock/index-lock-holders-darwin.ts:335-372`),
+  and a Restart Manager query through PowerShell on Windows
+  (`src/index-lock/index-lock-holders-win32.ts:31-187`).
+  `classifyIndexLock` (`src/index-lock/index-lock-evidence.ts:366-413`) returns proven alive,
+  dead,
+  or evidence-free.
+  Process start times use a 20 ms resolution on Linux and 1 s on macOS
+  (`src/index-lock/process-start-time.ts:29-54`,
+  `339-376`).
+  `waitForIndexLock` (`src/index-lock/index-lock-wait.ts:270-366`) waits without limit for a proven-alive owner,
+  with polls capped at 100 ms or 500 ms (`71-77`),
+  and otherwise backs off quadratically with jitter (`49-64`,
+  `164-204`) up to `indexLock.unprovenOwnerTimeoutMs`,
+  then raises `IndexLockUnprovenOwnerError` (`82-129`),
+  leaving the lock in place.
+- Spec:
+  `SPEC.md:3400-3448`.
+- Consumers:
+  landing and forwarded index writers.
+- Status:
+  retained.
+- Rust owner:
+  `index_lock_evidence.rs` and `index_lock_wait.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  hold `index.lock` with a native `git commit` waiting in its editor,
+  with a PID file naming an exited process,
+  with no PID file,
+  and with a child that holds the lock file open;
+  observe an unbounded wait with one stderr line naming the holder in the first and last cases,
+  and `index-lock-unproven-owner` with exit `2` after the configured budget in the others,
+  with the lock left in place.
+- Native state:
+  absent.
+
+### Index-writer coordination and landing lease
+
+- Behavior:
+  `isIndexWriter` (`src/index-lock/index-writer-commands.ts:196-235`) classifies the resolved command:
+  15 commands always write the index (`33-49`),
+  and `restore --staged`,
+  `reset` except `--soft`,
+  and `apply --cached` or `--index` write it by option (`68-97`).
+  `coordinateIndexWriter` (`src/index-lock/index-writer-coordination.ts:85-173`) takes the landing lock
+  for a writer against the real index,
+  pre-waits for a foreign `index.lock`,
+  and hands the forwarded Git a `CLI_GIT_LANDING_LEASE`
+  (`src/index-lock/landing-lease.ts:26-110`).
+  A nested invocation whose lease names the same held lock proceeds without it.
+- Spec:
+  `SPEC.md:3450-3495`.
+- Consumers:
+  every forwarded index writer;
+  hooks and `rebase --exec` commands that call the wrapper again.
+- Status:
+  retained.
+- Rust owner:
+  `index_writer_coordination.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run `git add -- a.txt` while a landing is paused inside its critical section;
+  observe that `add` waits and then succeeds.
+  Run `git rebase --exec 'git add -- b.txt'` through the wrapper;
+  observe no self-deadlock.
+- Native state:
+  absent.
+
+### Lock order
+
+- Behavior:
+  the order is reservation check,
+  landing lock,
+  then real `index.lock` (`src/policy-engine/commit-landing.ts:236-250`).
+  No process takes the hook lock or a push lock while holding the landing lock,
+  and none takes another lock while holding the capture lock
+  (`src/policy-engine/commit-capture-order-store.ts:328-395`).
+  The wrapper never deletes a foreign lock.
+- Spec:
+  `SPEC.md:3372-3380`.
+- Consumers:
+  every lock user.
+- Status:
+  retained.
+- Rust owner:
+  the transaction and lock modules together;
+  no separate module.
+- Consumer-level test:
+  the end-to-end reservation,
+  index-writer,
+  and hooked scenarios finish without a stuck process under a bounded timeout,
+  on every seed.
+- Native state:
+  absent.
+
+## Durable formats
+
+### Journal and lock formats
+
+- Behavior:
+  the wrapper writes these durable formats:
+  transaction journal records at schema version 2
+  (`src/policy-engine/commit-transaction-journal-states.ts:25`);
+  transaction `owner.json` at schema version 2 (`src/policy-engine/commit-transaction-owner.ts:28`);
+  owner-lock `owner.json` at schema version 1 (`src/owner-lock/owner-lock-record.ts:29`);
+  `captured.json`,
+  `worktree-id`,
+  `sequence`,
+  and landed-capture records at schema version 1
+  (`src/policy-engine/commit-capture-order-store.ts:57-72`;
+  `src/policy-engine/commit-capture-order-records.ts:71`);
+  `last-pushed` records at schema version 1 (`src/auto-push-record.ts:33`);
+  worktree-copy journals under `cli-git-worktree-copy/v1` (`src/worktree-copy/journal.ts:29-34`)
+  with an `install-log.jsonl` (`src/worktree-copy/install-log.ts:39`);
+  the worktree-copy settlement owner record (`src/worktree-copy/journal-lock-owner.ts:46`,
+  `66-86`);
+  candidate snapshots as length-prefixed binary files
+  (`src/policy-engine/commit-transaction-candidate-snapshot.ts:22-26`,
+  `82-151`);
+  the hook plan `plan.json`;
+  the reflog message `commit (cli-git <nonce>): <subject>`;
+  and the pack keep message `cli-git <transaction-id>`.
+  Private directories are mode `0700` and files `0600`,
+  and reads refuse symbolic links.
+- Spec:
+  `SPEC.md:2083-2146`,
+  `1000-1014`,
+  `1097-1120`,
+  `3088-3159`.
+- Consumers:
+  recovery in every later invocation,
+  including one made by a different wrapper version.
+- Status:
+  retained
+  (implementation plan lines 228 to 233).
+- Rust owner:
+  each format belongs to the module that owns its lifecycle;
+  a `durable_formats` test fixture set proves compatibility.
+- Consumer-level test:
+  write each record with the incumbent in a disposable repository,
+  stop it at a phase marker,
+  and run the native wrapper;
+  observe correct recovery from every incumbent-written state.
+  Feed each parser truncated,
+  oversized,
+  and wrong-schema records;
+  observe a fail-closed diagnostic and preserved bytes.
+- Native state:
+  absent.
+
+## Linked-worktree ignored-state copy
+
+Every entry in this section is retained by the implementation plan lines 239 to 249,
+which port worktree copy as its own lifecycle module
+and preserve the main-worktree bypass
+and the distinction between settlement locks and landing locks.
+Native state is absent for every entry.
+
+### Applicability and main-worktree bypass
+
+- Behavior:
+  `runGitWithWorktreeCopy` (`src/worktree-copy/lifecycle.ts:229-425`) forwards without synchronization
+  when the invocation is a short-circuit form (`278-286`),
+  targets a main worktree or no repository (`295-303`),
+  inherits a valid `CLI_GIT_WORKTREE_COPY_LEASE` (`307-324`),
+  or carries `--no-worktree-copy` in flag position (`259-277`).
+  A command that neither creates nor moves worktrees only recovers pending journals (`325-337`).
+  `git worktree add` and `git worktree move`,
+  after alias resolution,
+  are applicable sources (`src/forwarded-command.ts:399-412`).
+- Spec:
+  `SPEC.md:901-958`.
+- Consumers:
+  agents that create linked worktrees from a linked worktree;
+  `AGENTS.md` rule IWT uses `git worktree add`.
+- Status:
+  retained.
+- Rust owner:
+  `worktree_copy.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run `git worktree add` from the main worktree,
+  from a linked worktree,
+  through an alias,
+  and with `--no-worktree-copy`;
+  observe a copy only for the linked source without the flag,
+  and that the flag never reaches Git.
+- Native state:
+  absent.
+
+### Created-worktree detection
+
+- Behavior:
+  `observeWorktreeRepository` (`src/worktree-copy/git-observer.ts:93-147`) captures the administrative identity set
+  under the common directory before Git runs,
+  and `findCreatedWorktrees` (`src/worktree-copy/git-registry.ts:247-306`) compares it afterward,
+  so a worktree that Git registered before failing still counts.
+- Spec:
+  `SPEC.md:924-937`.
+- Consumers:
+  worktree copy.
+- Status:
+  retained.
+- Rust owner:
+  `worktree_copy_registry.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run `git worktree add` with a `post-checkout` hook that fails;
+  observe that the retained worktree still receives the ignored files and that Git's exit status is preserved.
+- Native state:
+  absent.
+
+### Ignored-state selection
+
+- Behavior:
+  `readIgnoredRoots` (`src/worktree-copy/ignored-paths.ts:354-410`) asks Git for ignored paths
+  under the standard exclusion stack,
+  excludes registered worktrees nested under the source,
+  and reserves the private stage prefix `.cli-git-worktree-copy-` (`src/worktree-copy/snapshot.ts:37`).
+  Repository paths are validated before use (`src/worktree-copy/ignored-paths.ts:34-108`).
+  A bare repository contributes an empty set.
+- Spec:
+  `SPEC.md:939-962`.
+- Consumers:
+  worktree copy.
+- Status:
+  retained
+  (implementation plan line 242:
+  ignored-state selection).
+- Rust owner:
+  `worktree_copy_selection.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  ignore files through a nested `.gitignore`,
+  `info/exclude`,
+  and `core.excludesFile`,
+  including a symbolic link,
+  a FIFO,
+  and a nested registered worktree;
+  observe that files and links are copied,
+  the nested worktree is skipped,
+  and the FIFO produces a copy failure without being opened.
+- Native state:
+  absent.
+
+### Staging with copy-on-write
+
+- Behavior:
+  `stageIgnoredSnapshot` (`src/worktree-copy/snapshot.ts:225-374`) copies the selection into a mode-`0700`
+  sibling directory of the destination,
+  with `COPYFILE_EXCL | COPYFILE_FICLONE` (`47`),
+  which falls back to a full copy.
+  A parent-first manifest is built (`src/worktree-copy/entry-manifest.ts:127-267`),
+  modes are applied,
+  and the source and stage manifests must match exactly
+  (`src/worktree-copy/entry-compare.ts:251-312`).
+- Spec:
+  `SPEC.md:960-978`.
+- Consumers:
+  worktree copy.
+- Status:
+  retained
+  (implementation plan line 243:
+  copy-on-write requests).
+- Rust owner:
+  `worktree_copy_stage.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture on a reflink-capable filesystem and on one without reflinks,
+  copy a tree with executable files and symbolic links;
+  observe identical bytes,
+  modes,
+  and link targets,
+  and that a source file changed during staging blocks the destination.
+- Native state:
+  absent.
+
+### Installation, existing-entry checks, and rollback
+
+- Behavior:
+  `installSnapshot` (`src/worktree-copy/install.ts:247-316`) preflights every existing destination entry
+  and accepts only an exact match (`src/worktree-copy/entry-compare.ts:183-249`).
+  It creates absent entries exclusively,
+  installing a regular file as a hard link to its staged copy and falling back to an exclusive copy
+  (`src/worktree-copy/install-entry.ts:41`,
+  `233-321`),
+  in batches of 512 entries (`src/worktree-copy/install.ts:31`).
+  `rollbackCreated` (`src/worktree-copy/install-rollback.ts:80-171`) removes only transaction-owned paths
+  that still match the stage.
+- Spec:
+  `SPEC.md:980-998`.
+- Consumers:
+  worktree copy.
+- Status:
+  retained
+  (implementation plan line 244:
+  exact existing-entry checks).
+- Rust owner:
+  `worktree_copy_install.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  pre-create one identical and one differing file at destination paths;
+  observe that the identical file is accepted,
+  the differing one is never overwritten,
+  the run exits `2`,
+  and rollback leaves the Git-created worktree and every unowned path in place.
+- Native state:
+  absent.
+
+### Journals and install log
+
+- Behavior:
+  each destination has a journal under `<git-common-dir>/cli-git-worktree-copy/v1`
+  (`src/worktree-copy/journal.ts:74-120`,
+  `317-404`),
+  written through a private no-follow temporary file,
+  file sync,
+  rename,
+  and directory sync where supported (`208-315`).
+  Phases are `staged`,
+  `installing`,
+  and `complete` (`src/worktree-copy/model.ts:213`).
+  Intents and created identities are appended to `install-log.jsonl` inside the stage,
+  one synced line per batch (`src/worktree-copy/install-log.ts:283-385`;
+  `src/worktree-copy/transaction-journal.ts:55-198`).
+  Journal values are validated (`src/worktree-copy/journal-validation.ts:170-272`).
+- Spec:
+  `SPEC.md:1000-1014`.
+- Consumers:
+  worktree-copy recovery.
+- Status:
+  retained
+  (implementation plan line 245:
+  journals).
+- Rust owner:
+  `worktree_copy_journal.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  copy 10,000 ignored files and count journal rewrites and log lines;
+  observe one journal write per phase and a log that grows by batch,
+  not by file.
+- Native state:
+  absent.
+
+### Settlement lock
+
+- Behavior:
+  `acquireWorktreeCopyLock` (`src/worktree-copy/journal-lock.ts:362-457`) serializes installation and recovery
+  per common directory.
+  It waits without limit for an owner proven alive,
+  after one stderr line naming the PID and the lock;
+  an unreadable owner record gets a 1000 ms backoff budget (`53`) and then a failure
+  that leaves the lock in place.
+  Owner records and liveness are in `src/worktree-copy/journal-lock-owner.ts:161-420`.
+  The forwarded Git receives the lease token so nested wrapper invocations forward without the lock
+  (`src/worktree-copy/journal-lock.ts:323-360`).
+- Spec:
+  `SPEC.md:1015-1029`,
+  `3334-3338`.
+- Consumers:
+  worktree copy;
+  hooks that call the wrapper during `git worktree add`.
+- Status:
+  retained
+  (implementation plan lines 248 to 249).
+- Rust owner:
+  `worktree_copy_lock.rs` (proposed),
+  or the shared `owner_lock.rs`.
+- Consumer-level test:
+  in the standard fixture,
+  start two `git worktree add` commands together from one linked worktree,
+  and run concurrent commits in that worktree meanwhile;
+  observe both copies complete,
+  one waiter line,
+  and no commit waiting on the settlement lock.
+- Native state:
+  absent.
+
+### Crash recovery
+
+- Behavior:
+  `recoverPendingWorktreeCopies` (`src/worktree-copy/pending-recovery.ts:66-91`) checks for pending journals
+  without the lock and takes it only to recover.
+  `recoverWorktreeCopyTransactions` (`src/worktree-copy/transaction-recovery.ts:173-200`) validates journal paths
+  and the private stage (`src/worktree-copy/journal-filesystem.ts:178-249`;
+  `src/worktree-copy/private-path.ts:44-73`),
+  discards a transaction whose destination is no longer a linked registration or whose stage is gone,
+  resumes installation otherwise (`src/worktree-copy/transaction-install.ts:83-280`),
+  and resumes completed cleanup (`src/worktree-copy/journal-cleanup.ts:63-109`).
+  Malformed or unsafe state fails closed without deleting it.
+- Spec:
+  `SPEC.md:1031-1064`.
+- Consumers:
+  every later linked-worktree or bare-repository invocation.
+- Status:
+  retained
+  (implementation plan lines 246 to 247:
+  containment validation and crash recovery).
+- Rust owner:
+  `worktree_copy_recovery.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  kill the wrapper during staging,
+  during installation,
+  and during cleanup,
+  then run `git status` in a linked worktree;
+  observe that each transaction reaches an end with one notice line.
+  Plant a journal whose paths escape the common directory;
+  observe a fail-closed diagnostic and nothing deleted outside the validated stage.
+- Native state:
+  absent.
+
+### Summary line and exit codes
+
+- Behavior:
+  after all destinations settle the wrapper writes one summary line to stderr
+  (`src/worktree-copy/lifecycle.ts:153-173`,
+  `394-395`).
+  A copy-only failure exits `2`;
+  when Git also failed,
+  Git's status is kept,
+  or `1` after a signal (`src/bin.ts:443-453`;
+  `src/worktree-copy/errors.ts:30-97`).
+- Spec:
+  `SPEC.md:1066-1073`.
+- Consumers:
+  humans and agents creating worktrees.
+- Status:
+  retained.
+- Rust owner:
+  `worktree_copy.rs` (proposed).
+- Consumer-level test:
+  covered by the applicability,
+  detection,
+  and installation tests,
+  each asserting the exit status and the stderr line.
+- Native state:
+  absent.
+
+## Auto-push
+
+Every entry in this section is retained by the implementation plan line 226
+(current auto-push completion and failure reporting).
+Native state is absent for every entry.
+
+### Trigger, skips, and push arguments
+
+- Behavior:
+  `autoPush` (`src/auto-push.ts:392-497`) runs after every landed commit whose post-commit gate passed
+  (`src/bin.ts:416-422`).
+  It skips silently without an upstream and without an `origin` remote (`src/auto-push.ts:413-431`),
+  skips with a note on a detached `HEAD` (`436-448`),
+  pushes plainly when an upstream exists,
+  and otherwise runs `git push --set-upstream origin HEAD` (`35-47`,
+  `454-456`).
+  The push runs real Git directly,
+  so the wrapper's manual-push lifecycle does not run for it.
+  No configuration key disables auto-push.
+- Spec:
+  `SPEC.md:1094-1167`.
+- Consumers:
+  every commit in this repository
+  (`AGENTS.md` rule APG);
+  agents that must not push twice.
+- Status:
+  retained.
+- Rust owner:
+  `auto_push.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  commit on a branch with an upstream,
+  on a new branch,
+  on a detached `HEAD`,
+  and in a repository without remotes;
+  observe the bare remote's refs and tracking configuration in the first two cases
+  and no coordination file in the last two.
+- Native state:
+  absent.
+
+### Branch keys
+
+- Behavior:
+  `encodeBranchKey` (`src/auto-push-branch-key.ts:89-205`) writes each byte of the ref name outside lowercase letters,
+  digits,
+  `-`,
+  `_`,
+  and `.` as uppercase `%XX`;
+  `decodeBranchKey` (`207-220`) reverses it.
+- Spec:
+  `SPEC.md:1111-1120`.
+- Consumers:
+  push lock and record paths under `<git-common-dir>/cli-git/push/`.
+- Status:
+  retained.
+- Rust owner:
+  `auto_push_branch_key.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  commit on branches named `Feature/A` and `feature/a`;
+  observe two distinct key files on a case-insensitive filesystem,
+  each decoding to its ref name.
+- Native state:
+  absent.
+
+### Last-pushed records
+
+- Behavior:
+  `writeLastPushedRecord` (`src/auto-push-record.ts:202-235`) publishes by rename a record of the last attempt:
+  the resolved tip,
+  the outcome,
+  the lock token and PID,
+  the exit code,
+  and a failed attempt's complete output (`58-101`).
+  An absent or unreadable record reads as no attempt (`152-200`).
+- Spec:
+  `SPEC.md:1097-1110`.
+- Consumers:
+  single-flight joins.
+- Status:
+  retained.
+- Rust owner:
+  `auto_push_record.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  corrupt the record between two commits;
+  observe that the second commit pushes anyway and rewrites a valid record.
+- Native state:
+  absent.
+
+### Single flight and joins
+
+- Behavior:
+  `runSingleFlightPush` (`src/auto-push-single-flight.ts:296-414`) finishes without the lock
+  when the landed commit is an ancestor of the recorded successful tip (`226-294`),
+  otherwise waits for the per-branch push lock (`346`),
+  re-reads the record,
+  joins a covering success or a covering failure recorded after its first read,
+  or pushes and records the attempt.
+  A dead pusher's lock is retired through owner liveness.
+- Spec:
+  `SPEC.md:1122-1167`.
+- Consumers:
+  concurrent landings on one branch.
+- Status:
+  retained.
+- Rust owner:
+  `auto_push_single_flight.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture with a slow `pre-push` hook,
+  land 8 commits together;
+  observe fewer pushes than commits,
+  every landed commit on the remote,
+  and after killing one pusher a takeover push by a waiting joiner.
+- Native state:
+  absent.
+
+### Push output and failure reporting
+
+- Behavior:
+  `filterPushOutput` (`src/auto-push.ts:105-121`) surfaces only `remote:` lines after a clean push
+  and the complete output after a failure.
+  Every affected invocation,
+  owner or joiner,
+  prints the failure and the note at `130`,
+  and the commit command still exits `0`.
+  A coordination failure is reported the same way (`483-496`).
+- Spec:
+  `SPEC.md:1156-1164`,
+  `1572-1575`,
+  `1603`.
+- Consumers:
+  humans and agents reading commit output.
+- Status:
+  retained.
+- Rust owner:
+  `auto_push.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture with a remote that rejects the push,
+  commit from two processes together;
+  observe the complete rejection text and the local-commit note from both,
+  exit `0` from both,
+  and the commits present locally only.
+- Native state:
+  absent.
