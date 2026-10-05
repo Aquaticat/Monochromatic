@@ -143,6 +143,9 @@ async function main() {
       'ENV HOME=/home/tester CARGO_HOME=/home/tester/.cargo CARGO_NET_OFFLINE=true CARGO_BUILD_JOBS=2 CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0',
       'USER 1000:1000',
       'WORKDIR /work/package/git-policy/cli',
+      // Compile once while the image is built. The test run, each planted control and each mutant then rebuild
+      // only what changed, instead of the linked scanner and its dependencies every time.
+      'RUN ["cargo", "test", "--offline", "--locked", "--all-targets", "--no-run"]',
       'CMD ["cargo", "test", "--offline", "--locked", "--all-targets", "--", "--test-threads=2"]',
       '',
     ].join('\n'),
