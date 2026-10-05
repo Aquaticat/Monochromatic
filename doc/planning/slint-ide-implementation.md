@@ -64,7 +64,13 @@ and resumption details are in [the handover][handover].
 - [ ] Complete tree parity:
   resizable sidebar and event-driven directory invalidation beyond the current bounded polling implementation.
 - [ ] Required language-intelligence feature paths and synchronization.
-- [ ] Measured Helix-supported runtime languages and project-write confinement.
+  The compiled `helix-lsp` spike and verified design are in
+  [the language intelligence design](slint-ide-language-intelligence.md);
+  the headless module core is in progress on branch `feat/ide-language-core`.
+- [x] Measured Helix-supported runtime languages.
+  Twenty-seven grammars cover 22 of the 23 measured languages;
+  see [the runtime language record](slint-ide-runtime-languages.md).
+- [ ] Project-write confinement for language-server subprocesses.
 - [ ] Light mode and live system-theme changes through the private appearance portal.
 - [ ] Complete native integration tests,
   scoped lint,

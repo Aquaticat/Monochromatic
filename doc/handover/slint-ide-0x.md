@@ -126,30 +126,87 @@ each owned by one subagent:
   headless and nested-compositor verification,
   guard-removal controls.
   This agent is the only one editing Rust and Slint sources in the main worktree.
-- Full measured Helix runtime language coverage in the separate worktree
-  `/var/home/user/worktrees/ide-runtime-languages`
-  on branch `feat/ide-runtime-languages`,
-  created from `cd54f8b64`.
-  Its commits are cherry-picked onto `main` by the coordinating session;
-  its planning record is `doc/planning/slint-ide-runtime-languages.md`.
 - Language-server project-write confinement,
   measured on disposable fixtures with mechanisms the host already has;
   result in `doc/planning/slint-ide-write-confinement.md`.
-- A compiled `helix-lsp` integration spike for the five feature paths against real TypeScript and Rust servers;
-  result in `doc/planning/slint-ide-language-intelligence.md`.
+- Headless Language module core in the worktree `.claude/worktrees/ide-language-core`
+  on branch `feat/ide-language-core`,
+  created from `44361c867`:
+  the modules,
+  scripted-server tests,
+  and real-server checks specified by `doc/planning/slint-ide-language-intelligence.md`.
+  The coordinating session cherry-picks its commits onto `main`.
+  Native wiring and rendering are a later leg.
+- Runtime color-scheme switching in `package/cli/nested-wayland-session`,
+  through the private portal only,
+  plus a read-only analysis of what the IDE needs for a live switch.
+  IDE-side verification is a later leg.
 
-Claude Code's built-in worktree isolation for subagents failed here:
-the local `WorktreeCreate` hook in `.claude/settings.local.json` runs `cctt`,
-which returned no worktree path.
-The runtime worktree was created with `git worktree add` instead.
+Completed in this fan-out:
+
+- Measured Helix runtime language coverage,
+  cherry-picked onto `main` as `953753833` through `9cc81b5f7`.
+  The runtime ships 27 grammars for 22 of the 23 `tokei`-measured languages
+  (plain text has no grammar),
+  34,607,713 bytes of assets.
+  A recognized language without a bundled grammar now reads as plain text;
+  a bundled grammar that fails to load remains a visible failure;
+  a missing or malformed `manifest.json` fails syntax-engine startup with a named diagnostic.
+  The combined `main` state passed 198 library and integration tests in 34 test binaries
+  (`mise run //package/desktop-app/ide:test`,
+  log kept only in session scratch).
+  Record:
+  `doc/planning/slint-ide-runtime-languages.md`.
+  Its worktree `/var/home/user/worktrees/ide-runtime-languages`
+  (branch `feat/ide-runtime-languages`)
+  is merged and no longer needed.
+- The compiled `helix-lsp` spike and design:
+  `doc/planning/slint-ide-language-intelligence.md`.
+  Adopted there on 2026-10-05:
+  the project's own TypeScript 7 server (`tsc --lsp --stdio`) replaces Helix's default TypeScript entry,
+  because `typescript-language-server` 6.0.0 cannot start without a `tsserver.js` and the repository pins TypeScript 7;
+  `file` targets outside the project root open read-only;
+  `didSave` follows an external reload when the server asks for it.
+  The TypeScript choice was reported to the user as open to veto.
+
+Known constraints from the spike that the native wiring must honor:
+`Registry` derives the LSP root from the process working directory;
+a client used before `initialize` completes panics;
+a failed `initialize` is invisible without a watchdog;
+unconfined rust-analyzer writes `Cargo.lock` and `target/` into the project,
+so real servers run only against disposable projects until confinement is wired in.
+
+Language servers present on this host for measured languages:
+TypeScript and JavaScript,
+Rust,
+Slint,
+and QML.
+Sixteen other measured Helix languages configure servers that are not installed;
+SQL,
+Batch,
+and XML configure none.
+
+Claude Code's built-in worktree isolation for subagents fails here;
+see `doc/troubleshooting/claude-code-worktree-create-hook-no-path.md`,
+written by another session,
+for the cause and the manual `git worktree add` workaround with its provisioning steps.
+The repository `git` shim rejects `git switch --create` inside an existing worktree;
+new branch work needs its own `git worktree add -b`.
 
 Queue after the in-flight work:
 
-1. Annotations and inlay layout,
-   then the LSP feature paths in the app,
-   following the spike and confinement results.
-2. Sidebar resizing and event-driven directory invalidation.
-3. Live system-theme change and physical-output DPI migration.
+1. Native wiring for language intelligence:
+   hover,
+   definition,
+   references,
+   inlay and diagnostics layout in the source view,
+   and the confinement launch wrapper.
+2. Sidebar resizing.
+   Event-driven directory invalidation stays on bounded polling
+   unless an existing dependency already provides file watching,
+   per the proportionality rule.
+3. IDE reaction to a live system-theme change,
+   verified in the nested compositor.
 4. Remaining source-view keyboard navigation,
    tab-width parity,
    and the final package gates.
@@ -297,7 +354,12 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
   hints,
   displayed-file diagnostics,
   and reload synchronization.
-- [ ] Provision measured Helix runtime language coverage and enforce subprocess project-write confinement.
+- [x] Provision measured Helix runtime language coverage.
+  Twenty-seven grammars are built,
+  licensed,
+  and tested on `main`;
+  see `doc/planning/slint-ide-runtime-languages.md`.
+- [ ] Enforce subprocess project-write confinement.
 - [ ] Verify light mode and live system-theme changes using the private portal,
   not host KDE settings.
 - [ ] Finish scoped formatting,
