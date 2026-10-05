@@ -615,6 +615,33 @@ whose message describes only `desktop-app-ide` work;
 that commit's tree holds exactly the test-only state,
 without the fix.
 
+#### Fix verification runs
+
+All runs used the package's own bounded container tasks on Linux.
+Evidence directories are under `package/cli/forbidden-strings/target/verification/`
+unless a fuzz path is named.
+
+- Before the fix,
+  `test:container` on the test-only tree:
+  `test-gV0Dab`,
+  snapshot `91310e945fa27ee624513d56c811c116ed7c902ad80d5aa7669e240b79e01d98`,
+  image `sha256:b7d9943d3b97477971a3ff9d432625c04552520d4269274be6b740039e719d1f`.
+  Its copied `src/path_scan.rs` and `src/path_scan_prefix_tests.rs` hash to the same bytes as commit `8fdbbded9`.
+  The library suite reported 167 passed and 9 failed,
+  and exited `101`;
+  Cargo then stopped,
+  so no other test target ran.
+  Every failure is the masked-display assertion of a positive candidate:
+  for example `//./COM1/VAULTTOKEN_LONG/clean.txt` where `//./COM1/[REDACTED]/clean.txt` is expected,
+  and `//./C\x3a/VAULTTOKEN_LONG/clean.txt` where `//./C\x3a/[REDACTED]/clean.txt` is expected.
+  Those two observed displays are byte-identical to the native Windows probe's.
+- After the fix,
+  `lint:clippy:container` on the fixed tree before the test split:
+  `clippy-DInplu`,
+  snapshot `b2736ad4c2925e1afa9592700f2de8929af20ccc6eeceae265704889ec295ac8`,
+  image `sha256:9270213fb34e7d73af29f3f029033abd0bee97f07a38fe89693e3ddc367cbb95`,
+  exit `0` with no warning.
+
 #### Pending Windows confirmation
 
 - Rebuild and run the Windows `green` and `suite` forms at a snapshot that contains commit `833483171`,
