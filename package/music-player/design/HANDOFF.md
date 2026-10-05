@@ -86,7 +86,8 @@ Full Android lint retains five inherited errors,
 the new row's modifier warnings are gone.
 `evidence/track-menu-boundaries.md` keeps these scopes explicit.
 The remaining light surfaces are Settings and the scan bar;
-continue with the independent scan-indicator study.
+`doc/planning/music-player-light-scan-indicator.md` now records the
+scan-F source audit and isolated state/fit/lifecycle queue.
 D81's Settings-template requirement remains settled while its editor details
 are a separate design problem.
 

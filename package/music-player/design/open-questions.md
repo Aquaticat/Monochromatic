@@ -54,6 +54,8 @@ study and verified 24-pose viewer at `questions/track-menu.html`,
 without production callbacks or a replacement action-list ballot.
 Settings/template editor design and the scan indicator remain independent
 queue items.
+`doc/planning/music-player-light-scan-indicator.md` starts the scan-F study
+without real analysis or revised consent defaults.
 Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
