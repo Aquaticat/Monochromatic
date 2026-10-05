@@ -111,6 +111,14 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--test', 'font_features', '--test', 'inter_features', '--test', 'variable_fonts', '--', '--nocapture'])
 """
 
+[tasks."test:reader-lifecycle"]
+description = "Exercise real disconnected reader channels without crashing worker threads"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--lib'])
+"""
+
 [tasks."test:open"]
 depends = ["runtime"]
 description = "Verify latest-request source opening, project boundaries, cancellation, and syntax revisions"

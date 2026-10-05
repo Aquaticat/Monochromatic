@@ -187,6 +187,11 @@ impl ReloadWorker {
     }
 }
 
+/// Channel-disconnect fixtures exercise stopped-reader admission and polling state.
+#[cfg(test)]
+#[path = "reload_worker_tests.rs"]
+mod tests;
+
 /// Close input before joining, allowing the last bounded reply to complete.
 impl Drop for ReloadWorker {
     /// End the owned thread without leaving a blocked reply sender behind.

@@ -60,6 +60,11 @@ fn opened(reply: ReloadReply) -> Result<OpenedFile> {
     return Ok(OpenedFile { path, document, syntax: reply.syntax });
 }
 
+/// Unexpected reader termination must release pending UI work after reporting its error.
+#[cfg(test)]
+#[path = "file_open_tests.rs"]
+mod tests;
+
 /// Requests and polling never read filesystem contents on the caller's thread.
 impl FileOpener {
     /// Create one reader for new opens while the displayed source can retain its own refresh worker.
