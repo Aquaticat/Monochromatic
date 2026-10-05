@@ -305,10 +305,9 @@ fn non_utf8_name_after_prefix() {
     });
 }
 
-/// A prefix part spelled `.` or `..`, or an empty device name, is still consumed as prefix.
+/// A device name spelled `..` (`DeviceNS("..")`) is consumed as a prefix part.
 #[test]
-fn navigation_spelled_prefix_parts_are_consumed() {
-    // DeviceNS("..")
+fn device_name_spelled_parent_marker_is_prefix() {
     assert_prefix_form(&PrefixForm {
         prefix: br"\\.\..",
         hit: br"\\.\..\VAULTTOKEN_LONG",
@@ -316,7 +315,11 @@ fn navigation_spelled_prefix_parts_are_consumed() {
         clean: br"\\.\..\clean.txt",
         clean_display: "//./../clean.txt",
     });
-    // DeviceNS(""): the prefix is the four bytes `\\.\`.
+}
+
+/// An empty device name (`DeviceNS("")`) leaves the four-byte prefix `\\.\` with the single part `.`.
+#[test]
+fn empty_device_name_prefix_is_one_part() {
     assert_prefix_form(&PrefixForm {
         prefix: br"\\.\",
         hit: br"\\.\\VAULTTOKEN_LONG",
@@ -324,7 +327,11 @@ fn navigation_spelled_prefix_parts_are_consumed() {
         clean: br"\\.\\clean.txt",
         clean_display: "//.//clean.txt",
     });
-    // UNC("server", "..")
+}
+
+/// A UNC share spelled `..` (`UNC("server", "..")`) is consumed as a prefix part.
+#[test]
+fn unc_share_spelled_parent_marker_is_prefix() {
     assert_prefix_form(&PrefixForm {
         prefix: br"\\server\..",
         hit: br"\\server\..\VAULTTOKEN_LONG",
@@ -332,7 +339,12 @@ fn navigation_spelled_prefix_parts_are_consumed() {
         clean: br"\\server\..\clean.txt",
         clean_display: "//server/../clean.txt",
     });
-    // Verbatim("a/./b"): verbatim parsing splits only at backslashes.
+}
+
+/// A verbatim prefix containing `/./` (`Verbatim("a/./b")`) counts the `.` run as a part, because verbatim parsing
+/// splits only at backslashes while the scan splits at both separators.
+#[test]
+fn verbatim_prefix_with_current_marker_run_is_prefix() {
     assert_prefix_form(&PrefixForm {
         prefix: br"\\?\a/./b",
         hit: br"\\?\a/./b\VAULTTOKEN_LONG",
@@ -340,7 +352,11 @@ fn navigation_spelled_prefix_parts_are_consumed() {
         clean: br"\\?\a/./b\clean.txt",
         clean_display: "//?/a/./b/clean.txt",
     });
-    // VerbatimUNC("..", "share")
+}
+
+/// A verbatim UNC server spelled `..` (`VerbatimUNC("..", "share")`) is consumed as a prefix part.
+#[test]
+fn verbatim_unc_server_spelled_parent_marker_is_prefix() {
     assert_prefix_form(&PrefixForm {
         prefix: br"\\?\UNC\..\share",
         hit: br"\\?\UNC\..\share\VAULTTOKEN_LONG",
