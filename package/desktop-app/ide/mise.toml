@@ -174,7 +174,7 @@ const env = {
   XDG_CACHE_HOME: join(scratch, 'cache'),
   XDG_DATA_HOME: join(scratch, 'data'),
 }
-execFileSync('./target/debug/monochromatic-ide', [], { stdio: 'inherit', env })
+execFileSync('./target/debug/monochromatic-ide', [scratch], { stdio: 'inherit', env })
 """
 
 [tasks."inspect:native"]
@@ -215,7 +215,9 @@ for (const family of ['Inter Variable', 'JetBrains Mono']) {
   console.error('System-font isolation: ' + family + ' resolves to ' + fallback)
 }
 const socket = join(scratch, 'control.sock')
-const sourceFile = join(scratch, 'fixture.ts')
+const project = join(scratch, 'project')
+mkdirSync(project)
+const sourceFile = join(project, 'fixture.ts')
 const lines = fixture === 'syntax' ? [
   'const 猫: string = "cat";',
   '// Mixed source scripts keep their shared baseline.',
@@ -231,7 +233,7 @@ writeFileSync(sourceFile, lines.join(String.fromCharCode(10)))
 console.error('IDE_NATIVE_SOCKET=' + socket)
 console.error('IDE_NATIVE_FIXTURE=' + sourceFile)
 const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
-execFileSync(compositor, ['--socket', socket, '--size', '1100x660', '--color-scheme', scheme, '--', resolve('target/debug/monochromatic-ide'), sourceFile], { env, stdio: 'inherit' })
+execFileSync(compositor, ['--socket', socket, '--size', '1100x660', '--color-scheme', scheme, '--', resolve('target/debug/monochromatic-ide'), project, '--file', sourceFile], { env, stdio: 'inherit' })
 """
 
 [tasks.run]

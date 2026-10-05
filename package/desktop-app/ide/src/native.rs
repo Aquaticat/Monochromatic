@@ -22,6 +22,10 @@ use ide_app::source_frame::FrameStamp;
 use ide_app::text_raster::TextRaster;
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
+/// Explicit startup paths retain one canonical project boundary.
+use ide_app::{cli::Options, workspace::Workspace};
+/// Source-open errors identify their input instead of exposing an unlabelled I/O failure.
+use anyhow::{Context, bail};
 /// Toolkit handles and models bridge owned Rust state to the window.
 use slint::{ComponentHandle, SharedString};
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
@@ -123,14 +127,20 @@ impl State {
     }
 }
 
-/// Run the source-view gate against a supplied file or its explicit fixture.
-pub fn run() -> anyhow::Result<()> {
+/// Run one project window after display-independent argument parsing has completed.
+pub fn run(options: Options) -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter("ide_app=debug,monochromatic_ide=debug")
         .init();
-    let file_path = std::env::args().nth(1).map(PathBuf::from);
+    let workspace = Workspace::new(&options.project)?;
+    // Resolve initial-file paths relative to the explicit root, never the caller's ambient cwd.
+    let file_path = if let Some(file) = options.file {
+        Some(workspace.resolve(&file)?)
+    } else {
+        None
+    };
     // What: if let extracts a present command-line argument without unwrap.
-    // Why: The fixture is explicit when no real source file was supplied.
+    // Why: A project without an initial file starts empty rather than displaying fabricated source.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -144,12 +154,16 @@ pub fn run() -> anyhow::Result<()> {
         // ```ts
         // source = await readFile(path, 'utf8');
         // ```
-        (std::fs::read_to_string(path)?, path.display().to_string())
+        let metadata = std::fs::metadata(path)
+            .with_context(|| return format!("Cannot inspect source file {}", path.display()))?;
+        if !metadata.is_file() {
+            bail!("Cannot open source {}: it is not a regular file", path.display());
+        }
+        let text = std::fs::read_to_string(path)
+            .with_context(|| return format!("Cannot read UTF-8 source file {}", path.display()))?;
+        (text, path.display().to_string())
     } else {
-        (
-            "I am a big cat.\nSelect text and use the native Copy action.\n猫 and e\u{301} are grapheme test cases.".to_string(),
-            "Source-view gate fixture".to_string(),
-        )
+        (String::new(), workspace.root().display().to_string())
     };
     let window = AppWindow::new()?;
     let state = Rc::new(RefCell::new(State::new(&source, file_path)));
