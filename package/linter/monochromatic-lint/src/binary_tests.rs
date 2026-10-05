@@ -930,11 +930,14 @@ fn debug_streams_workspace_progress_and_plain_runs_stay_silent() {
     );
     let plain: Run = run(&fixture.path, &["src/lib.rs"], b"");
     assert_eq!((plain.status, plain.stderr.as_str()), (2, ""));
-    assert_eq!(plain.stdout, debug.stdout);
-    assert_eq!(
-        located(plain.stdout.as_str()),
-        ["src/lib.rs core/processing-failure 1 1"]
-    );
+    // The messages quote Cargo's command line, which names a fresh temporary lockfile per run,
+    // so the two runs are compared by finding location and code rather than byte for byte.
+    for output in [&debug, &plain] {
+        assert_eq!(
+            located(output.stdout.as_str()),
+            ["src/lib.rs core/processing-failure 1 1"]
+        );
+    }
 }
 
 /// A write failure other than a closed pipe exits 2 whichever stream failed, instead of the findings' status.
