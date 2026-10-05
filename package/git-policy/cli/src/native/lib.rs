@@ -59,3 +59,15 @@ pub mod rule_commit_only_message;
 
 /// Pure core of the merge, cherry-pick and revert conclusion check.
 pub mod rule_commit_sequencer;
+
+/// The Git 2.56.0 option table of `git push` and its facts.
+pub mod command_push;
+
+/// The Git 2.56.0 option table of `git status`, its facts and the advice-key reading.
+pub mod command_status;
+
+/// Pure decision of the atomic-push transform.
+pub mod rule_atomic_push;
+
+/// Pure decision of the status-hints transform.
+pub mod rule_status_hints;
