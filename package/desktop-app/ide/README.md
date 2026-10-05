@@ -548,9 +548,11 @@ Each note names the reason and the remedy:
   followed,
   while the server reports work in progress,
   by the advice to press the key again when it finishes;
+- a server that was not started because it could not be confined:
+  `typescript-native was not started, so go to definition is not available for this file:`
+  followed by the cause and, last, the remedy the launch policy names;
 - a server that cannot follow external changes,
   a failed start,
-  a launch the policy refused,
   a server root outside the project,
   and a file outside the project with no running server of its language;
 - a file without a recognized language or without a configured server;
