@@ -17,6 +17,7 @@ import {
   DecisionsCardMissingError,
   decisionsCardOf,
   isDecisionSeat,
+  recordOver,
   MODEL_CARDS,
   ROSTER_MODEL_IDS,
 } from '../dist/final/node/index.mjs';
@@ -33,6 +34,27 @@ await describe({
           throw new Error('the roster needs a decision seat and a chat seat for this case',);
         expect(decisionsCardOf({ modelId: decisionSeat, },),).toBe(MODEL_CARDS[decisionSeat].decisions,);
         expect(() => decisionsCardOf({ modelId: chatSeat, },),).toThrow(DecisionsCardMissingError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES keys that repeat, since one record cannot hold one key twice, and BUILDS the record '
+        + 'where they do not',
+      fn: async () => {
+        expect(recordOver({
+          keys: ['cat', 'dog',],
+          of: function weight(): number {
+            return 1;
+          },
+        },),).toEqual({ cat: 1, dog: 1, },);
+        expect(function repeats(): void {
+          recordOver({
+            keys: ['cat', 'cat',],
+            of: function weight(): number {
+              return 1;
+            },
+          },);
+        },).toThrow(RangeError,);
       },
     },),
   ],
