@@ -154,7 +154,7 @@ fn is_advice_key(key: &[u8]) -> bool {
 
 /// What: Byte index of the first (`last == false`) or last (`last == true`) `=` in `bytes`.
 ///       `Option<usize>` is "an index or nothing".
-/// Why:  `-c name=value` splits at the first `=` (config.c:663); `--config-env=name=var`
+/// Why:  `-c name=value` splits at the first `=` (config.c:495); `--config-env=name=var`
 ///       splits at the last (config.c:511).
 ///
 /// In TS you'd write (pseudocode):

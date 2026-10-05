@@ -99,9 +99,10 @@ pub(crate) fn branch_creates(parsed: &ParsedOptions, positional_count: usize) ->
         unset_upstream,
         delete_merged,
     ]);
-    // Listing is explicit, implied by a filter, or the default without names (1083-1092).
-    let list: bool =
-        is_enabled(parsed, LIST) || filtered || (selected == 0 && positional_count == 0);
+    // Listing is explicit or implied by a filter (1088-1091). Git also lists when no action
+    // and no name is given (1083-1086); with no name nothing is created either way, so that
+    // default changes no answer here and is left out.
+    let list: bool = is_enabled(parsed, LIST) || filtered;
     let actions: usize = selected + count_true(&[list]);
     if actions > 1 {
         // Git prints usage and exits (1096-1097).

@@ -147,6 +147,8 @@ fn reports_what_git_refuses() {
     for (values, kind, token) in [
         (vec!["-push"], OptionErrorKind::SingleDashLongOption, 0),
         (vec!["-list"], OptionErrorKind::SingleDashLongOption, 0),
+        (vec!["-pus"], OptionErrorKind::SingleDashLongOption, 0),
+        // Refused by the assumed-push pass, exactly as by Git's top-level pass.
         (vec!["-no-x"], OptionErrorKind::SingleDashLongOption, 0),
         (vec!["--help"], OptionErrorKind::HelpRequested, 0),
         (vec!["--help-all"], OptionErrorKind::HelpRequested, 0),
@@ -182,6 +184,8 @@ fn reports_what_git_refuses() {
             "{values:?}"
         );
     }
+    // Two letters never spell a subcommand word: `-pu` is `--patch --include-untracked`.
+    assert_eq!(region(&["-pu"]).subcommand, StashSubcommand::AssumedPush);
     // `list`, `show` and `store` keep options they do not declare.
     for values in [
         vec!["list", "--oneline"],

@@ -13,7 +13,8 @@ use super::{STATUS_TABLE, StatusRegion, has_status_hints_override, parse_status_
 use crate::command_options::OptionErrorKind;
 use crate::command_test_completion::{git_completion, render_completion};
 use crate::command_test_support::{
-    assert_table_invariants, git, os_arguments, output_text, remove, repository_with_tracked_file,
+    assert_table_invariants, git, git_status, os_arguments, output_text, remove,
+    repository_with_tracked_file,
 };
 use std::ffi::OsString;
 use std::path::PathBuf;
@@ -117,6 +118,8 @@ fn detects_the_advice_key_in_global_options() {
         vec!["-c", "Advice.StatusHints=true"],
         vec!["-c", "ADVICE.STATUSHINTS=false"],
         vec!["-c", "advice.statusHints="],
+        // `-c` splits at the first `=`, so the value may contain more.
+        vec!["-c", "advice.statusHints=a=b"],
         vec![
             "-C",
             "/repo",
@@ -147,6 +150,8 @@ fn ignores_everything_that_does_not_set_the_advice_key() {
         vec!["--config-env=advice.statusHints"],
         vec!["--config-env", "advice.statusHints"],
         vec!["--config-env=a.b=advice.statusHints"],
+        // `--config-env` splits at the last `=`: the key is `advice.statusHints=x`.
+        vec!["--config-env=advice.statusHints=x=HINTS"],
         vec!["-c"],
         vec!["--no-pager", "--bare"],
     ] {
@@ -193,5 +198,29 @@ fn table_and_config_env_match_git() {
         ],
     );
     assert_eq!(output_text(&from_environment), "/usr/bin:/bin");
+    // `-c` keeps everything after the first `=` as the value.
+    let first: Output = git(
+        root.as_path(),
+        &[
+            "-c",
+            "advice.statusHints=a=b",
+            "config",
+            "get",
+            "advice.statusHints",
+        ],
+    );
+    assert_eq!(output_text(&first), "a=b");
+    // `--config-env` takes the variable name after the last `=`, leaving an invalid key.
+    let last: Output = git_status(
+        root.as_path(),
+        &[
+            "--config-env=advice.statusHints=x=PATH",
+            "config",
+            "get",
+            "advice.statusHints",
+        ],
+    );
+    assert!(!last.status.success());
+    assert!(String::from_utf8_lossy(&last.stderr).contains("invalid key: advice.statusHints=x"));
     remove(directory.as_path());
 }

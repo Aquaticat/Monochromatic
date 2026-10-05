@@ -153,46 +153,33 @@ fn grammar_of(subcommand: StashSubcommand) -> (&'static [OptionSpec], ParseMode)
     };
 }
 
-/// What: Refuse a first token that `cmd_stash`'s own option pass refuses.
+/// What: Refuse a first token that spells a subcommand word after one dash.
 ///       `Result<(), OptionError>` is "nothing on success, or a refusal".
-/// Why:  Before assuming `push`, Git's top-level pass shows usage for `--help` and for a
-///       cluster starting with `h`, and applies the typo check against subcommand words,
-///       so `git stash -push` is an error (parse-options.c:622-640, 1067-1072, 1127-1131).
+/// Why:  Before assuming `push`, Git's top-level pass applies the typo check against the
+///       subcommand words, so `git stash -push` is an error (parse-options.c:622-640,
+///       1067-1072, 1127-1131).
+/// Gotcha: That pass also refuses `-no-<x>` and shows usage for `--help` and for a cluster
+///         starting with `h`. The assumed-push pass that follows refuses those tokens with
+///         the same kind at the same index, so they need no check here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function checkTopLevelToken(token: string, index: number): void; // throws OptionError
 /// ```
 fn check_top_level_token(token: &[u8], index: usize) -> Result<(), OptionError> {
-    if token == b"--help" || token == b"--help-all" {
-        return Err(OptionError {
-            kind: OptionErrorKind::HelpRequested,
-            token: index,
-        });
-    }
-    // Only a short cluster reaches the checks below: one dash, then at least one letter.
-    if token.len() < 2 || token[0] != b'-' || token[1] == b'-' {
+    // Git checks clusters of at least three letters: one dash, then three or more bytes.
+    if token.len() < 4 || token[0] != b'-' || token[1] == b'-' {
         return Ok(());
     }
     // `&token[1..]` borrows the letters after the dash.
     let cluster: &[u8] = &token[1..];
-    let mut typo: bool = cluster.len() >= 3 && cluster.starts_with(b"no-");
     for (name, _) in SUBCOMMAND_WORDS {
-        if cluster.len() >= 3 && name.as_bytes().starts_with(cluster) {
-            typo = true;
+        if name.as_bytes().starts_with(cluster) {
+            return Err(OptionError {
+                kind: OptionErrorKind::SingleDashLongOption,
+                token: index,
+            });
         }
-    }
-    if typo {
-        return Err(OptionError {
-            kind: OptionErrorKind::SingleDashLongOption,
-            token: index,
-        });
-    }
-    if cluster[0] == b'h' {
-        return Err(OptionError {
-            kind: OptionErrorKind::HelpRequested,
-            token: index,
-        });
     }
     return Ok(());
 }
