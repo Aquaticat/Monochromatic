@@ -48,7 +48,7 @@ fn install_typescript(root: &Path, version: &str) {
 fn scripted_setup() -> LanguageSetup {
     return LanguageSetup {
         extra_languages: Some(SCRIPTED.to_string()),
-        ..LanguageSetup::default()
+        ..LanguageSetup::unconfined()
     };
 }
 
@@ -69,7 +69,7 @@ fn startable(languages: &Languages, file: &str) -> Vec<String> {
 fn typescript_family_is_served_by_the_projects_own_server() {
     let (_directory, root) = project();
     install_typescript(&root, "7.0.2");
-    let languages = Languages::new(&root, LanguageSetup::default()).expect("registry");
+    let languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
     for language in ["typescript", "tsx", "javascript", "jsx"] {
         assert_eq!(
             languages.configured(language),
@@ -101,7 +101,7 @@ fn typescript_family_is_served_by_the_projects_own_server() {
 #[test]
 fn project_without_typescript_shows_the_missing_executable_reason() {
     let (_directory, root) = project();
-    let languages = Languages::new(&root, LanguageSetup::default()).expect("registry");
+    let languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
     let Some(Unavailable::Missing(reason)) = languages.unavailable(typescript::SERVER) else {
         panic!("the TypeScript server was not reported missing");
     };
@@ -124,7 +124,7 @@ fn project_without_typescript_shows_the_missing_executable_reason() {
 fn project_typescript_before_version_seven_is_missing_too() {
     let (_directory, root) = project();
     install_typescript(&root, "5.9.3");
-    let languages = Languages::new(&root, LanguageSetup::default()).expect("registry");
+    let languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
     let Some(Unavailable::Missing(reason)) = languages.unavailable(typescript::SERVER) else {
         panic!("TypeScript 5 was accepted as a language server");
     };
@@ -137,7 +137,7 @@ fn project_typescript_before_version_seven_is_missing_too() {
 #[test]
 fn registry_is_rebuilt_when_a_missing_program_appears() {
     let (_directory, root) = project();
-    let mut languages = Languages::new(&root, LanguageSetup::default()).expect("registry");
+    let mut languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
     assert!(!languages.refresh("typescript").expect("refresh"));
     install_typescript(&root, "7.0.2");
     assert!(
@@ -284,7 +284,7 @@ fn workspace_helix_configuration_is_never_loaded() {
         "[language-server.rust-analyzer]\ncommand = \"/project/supplied/program\"\n",
     )
     .expect("workspace configuration");
-    let languages = Languages::new(&root, LanguageSetup::default()).expect("registry");
+    let languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
     let loader = languages.loader.load();
     let definition = loader
         .language_server_configs()
@@ -301,7 +301,7 @@ fn malformed_extra_definitions_stop_the_module() {
     let (_directory, root) = project();
     let setup = LanguageSetup {
         extra_languages: Some("[[language".to_string()),
-        ..LanguageSetup::default()
+        ..LanguageSetup::unconfined()
     };
     let Err(error) = Languages::new(&root, setup) else {
         panic!("malformed definitions were accepted");

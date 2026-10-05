@@ -64,8 +64,28 @@ pub struct LanguageSetup {
 /// const defaultSetup: LanguageSetup = { launch: launchDirectly };
 /// ```
 impl Default for LanguageSetup {
-    /// Build the production setup.
+    /// Build the production setup: every server confined by bubblewrap, with private state
+    /// below the user's cache directory.
     fn default() -> Self {
+        return Self {
+            launch: super::confine::launch_confined,
+            state_root: super::confine::default_state_root(),
+            extra_languages: None,
+        };
+    }
+}
+
+/// Setups other than the production one.
+impl LanguageSetup {
+    /// What: A setup whose servers run without any confinement.
+    /// Why: Only for tests with the scripted server and for guard controls on disposable
+    ///      projects; a real server launched this way can write into the project.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static unconfined(): LanguageSetup { return { launch: launchDirectly }; }
+    /// ```
+    pub fn unconfined() -> Self {
         return Self {
             launch: launch_directly,
             state_root: None,
