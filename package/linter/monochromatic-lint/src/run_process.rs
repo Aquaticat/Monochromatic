@@ -34,6 +34,20 @@ use std::{
 /// ```
 fn silent_hook(_info: &PanicHookInfo<'_>) {}
 
+/// What: Whether this invocation silences panics: every run except one with `--debug`.
+/// Why: The process-wide hook is shared by every test in a test binary, so replacing it cannot be
+/// tested in process, and no known input makes the executable panic so a binary-level test could
+/// observe it. Naming the decision lets a test pin it; `parse_and_run` installs the silent hook
+/// exactly when this returns true.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function silencesPanics(debug: boolean): boolean { return !debug; }
+/// ```
+fn silences_panics(debug: bool) -> bool {
+    return !debug;
+}
+
 /// What: Write bytes to a stream, treating a closed pipe as an ordinary end of output.
 /// Why: `monochromatic-lint . | head` closes the pipe early; that is not an error worth reporting.
 /// Returns false when some other write failure occurred.
@@ -67,7 +81,7 @@ fn emit(stream: &mut dyn Write, text: &str) -> bool {
 /// ```
 fn parse_and_run() -> RunOutput {
     let options: CliOptions = CliOptions::parse();
-    if !options.debug {
+    if silences_panics(options.debug) {
         // Box::new moves the function pointer to the heap, as the hook API requires an owned callable.
         std::panic::set_hook(Box::new(silent_hook));
     }

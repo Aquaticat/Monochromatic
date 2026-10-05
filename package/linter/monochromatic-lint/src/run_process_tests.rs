@@ -7,8 +7,8 @@
 //! describe('emit', () => { /* bytes written, closed pipe tolerated, other failures reported */ });
 //! ```
 
-/// Import the stream writer under test.
-use super::emit;
+/// Import the stream writer and the panic-hook decision under test.
+use super::{emit, silences_panics};
 use std::io::{ErrorKind, Write};
 
 /// A stream that records what it receives and can fail on write or on flush with a chosen error.
@@ -81,4 +81,11 @@ fn only_a_closed_pipe_is_tolerated() {
     let mut failed: Stream = stream(Some(ErrorKind::PermissionDenied), None);
     assert!(!emit(&mut failed, "x"));
     assert_eq!(failed.flushes, 0);
+}
+
+/// Panics are silenced on every run except a `--debug` run, which keeps the default hook's location and backtrace.
+#[test]
+fn only_debug_runs_keep_the_default_panic_hook() {
+    assert!(silences_panics(false));
+    assert!(!silences_panics(true));
 }
