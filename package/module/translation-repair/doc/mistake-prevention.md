@@ -2072,6 +2072,12 @@ and a contributor form kept the spaces and link markup the page shows no reader 
 A raw region read in place of nodes is checked against those nodes' own values
 before any span of it is acted on.
 
+The footnote graph read every text node's position and threw on the nodes
+the autolink-literal transform rebuilds without one,
+so the document parse ended on such a page (ledger B159).
+A walk that reads positions off phrasing nodes names which node types it reads
+and refuses the rest loudly.
+
 The rule:
 a question about what a passage's blocks are
 (how many quotes,

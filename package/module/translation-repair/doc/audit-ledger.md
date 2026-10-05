@@ -21860,8 +21860,8 @@ Recurrence:
 "Structure read off the parse":
 a raw region read in place of nodes is checked against those nodes' own values before any span of it is acted on.
 
-Open,
-being fixed:
+Open when this entry was written,
+fixed in B159:
 `collectBlockHits` (`footnote-graph.ts`) reads the start and end of every `text` node through `nonNullishOrThrow`,
 so `A cat ，www.cat.example naps.` makes `parseDocument` throw `Expected non-nullish value, got undefined`,
 with or without a footnote on the page.
@@ -22285,6 +22285,64 @@ Recurrence:
 "Defaults that stand in for an input":
 a reading that failed reaches the verdict as a failure,
 never as an empty value.
+
+### B159: a page holding an untokenized link literal made the document parse throw
+
+Red in `4cf768073`,
+fixed in `b4030dd01`;
+the lead B144 left open.
+
+Found reviewing the B123 fix.
+`collectBlockHits` (`footnote-graph.ts`) read the start and end of every `text` node through `nonNullishOrThrow`,
+and the autolink-literal transform builds text and link nodes with no position,
+so `parseDocument` threw `Expected non-nullish value, got undefined` on `A cat ，www.cat.example naps.`,
+with or without a footnote on the page.
+`parseDocument` runs on every page the pipeline prepares,
+so `prepareDocumentPair`,
+`reorderFootnoteDefinitions`,
+`footnoteRelabelOf` and `relabelArchiveFootnotes` all threw on such a page:
+thirty calls over six pages,
+the fixing agent's probe;
+the lead measured `parseDocument` throwing on three such pages before the red commit.
+
+The fix:
+the graph reads text raw in three shapes,
+a positioned text node's span,
+an unpositioned run's region through `footnote-unpositioned-runs.ts`,
+whose GFM lexemes count only where both brackets fall in text no link separates,
+and a tokenized literal's span for full-width markers alone.
+A full-width marker counts wherever text shows it,
+link text included,
+since micromark and the transform both take a glued `〔N〕` into the link
+and the graph already counted it there.
+The graph no longer reads a GFM shape inside a tokenized literal's URL,
+as the marker reader does not.
+`computeFindings` moved unchanged to `footnote-graph-findings.ts` as `footnoteGraphFindings`,
+since the fix took `footnote-graph.ts` past the line limit.
+The fixing agent read every other reader of node positions over 57 modules:
+none reads a position off a text or link node,
+the two the transform rebuilds.
+
+Measured by the fixing agent:
+a differential fuzz over 12,000 generated pages,
+under the strict and the plain grammar,
+agrees with the B123 oracle and with a decoded-value scan,
+while its control perturbed 2,688;
+and the 279 Markdown files of the pinned corpus read the same before and after,
+none holding an unpositioned node,
+so no cached decision moves.
+
+Open:
+an angle autolink under the plain grammar still reads a marker shape in its URL,
+since its text starts after the `<` and `isAutolinkLiteral` does not take it for a literal;
+and `footnoteMentions` scans raw text,
+counting a `[^9` inside a URL as a mention.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a walk that reads positions off phrasing nodes names which node types it reads
+and refuses the rest loudly.
 
 ## Process mistakes in this audit
 
