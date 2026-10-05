@@ -17,6 +17,7 @@ import {
   type AdjudicatedIssue,
   buildResolutionMessages,
   hashContent,
+  isResolutionReportWire,
   isResolutionVerdict,
   RESOLUTION_VERDICTS,
 } from '../dist/final/node/index.mjs';
@@ -149,6 +150,18 @@ await describe({
           },
         },),
       ],
+    },),
+
+    it({
+      name: 'REFUSES a reply that is no object, a check that is no object, and a check whose issue is no '
+        + 'number, since nothing there binds a verdict to an issue',
+      fn: async () => {
+        expect(isResolutionReportWire(5,),).toBe(false,);
+        expect(isResolutionReportWire({ checks: [5,], },),).toBe(false,);
+        expect(isResolutionReportWire({
+          checks: [{ issue: 'one', verdict: 'fixed', },],
+        },),).toBe(false,);
+      },
     },),
   ],
 },);
