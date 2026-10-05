@@ -83,6 +83,128 @@ const CAT_SETTLEMENT = {
 };
 
 /**
+ One gate ballot preferring what already stood.
+ */
+const STANDING_BALLOT = {
+  choice: 'standing',
+  unsupported: ['consolidated',],
+  unsupportedRaw: ['the consolidation adds a second nap the original never mentions',],
+  dropped: [],
+  droppedRaw: [],
+  reason: 'the standing text says no more than the original does',
+};
+
+/**
+ What the slate judges settled where a slate reached them. The store checks
+ no more of it than that it is a record, since its shape is the translate
+ stage's own contract.
+ */
+const CAT_DECIDED = {
+  text: 'The cat naps in the window.',
+  decision: 'judged',
+  findings: [],
+};
+
+/**
+ A settlement whose gate kept the standing text, as the stage writes one: the
+ gate ships standing, so nothing was wrapped and nothing demoted.
+ */
+const KEPT_SETTLEMENT = {
+  terminal: 'gate-kept-standing',
+  text: 'The cat naps in the window.',
+  floor: CAT_SETTLEMENT.floor,
+  verdicts: CAT_SETTLEMENT.verdicts,
+  decided: CAT_DECIDED,
+  gate: {
+    choice: 'standing',
+    ships: 'standing',
+    ballots: [
+      STANDING_BALLOT,
+      STANDING_BALLOT,
+    ],
+    usable: 2,
+    findings: [],
+  },
+  rewrapped: false,
+  demoted: false,
+  findings: [],
+};
+
+/**
+ A settlement whose gate shipped a consolidation the wrap then found to be
+ the standing text in all but layout, as the stage writes one.
+ */
+const ERASED_SETTLEMENT = {
+  terminal: 'wrap-erased-difference',
+  text: 'The cat naps in the window.',
+  floor: CAT_SETTLEMENT.floor,
+  verdicts: CAT_SETTLEMENT.verdicts,
+  decided: CAT_DECIDED,
+  gate: CAT_SETTLEMENT.gate,
+  rewrapped: true,
+  demoted: true,
+  findings: [],
+};
+
+/**
+ A settlement the validity floor stopped before either round, as the stage
+ writes one.
+ */
+const FLOORED_SETTLEMENT = {
+  terminal: 'incumbent-only',
+  text: 'A cat sleeps by the window.',
+  floor: {
+    kind: 'incumbent-only',
+    refusedModelIds: ['hf:cat/Cat-A',],
+  },
+  verdicts: [
+    {
+      modelId: 'hf:cat/Cat-A',
+      kind: 'invalid',
+      findings: ['the page is 2 blocks and this is 1',],
+    },
+  ],
+  rewrapped: false,
+  demoted: false,
+  findings: [],
+};
+
+/**
+ One honest settlement per way out that ends before the gate: the floored
+ slice, a slice with no standing text and no slate bought, and the three
+ ways a judged slate keeps what stood.
+ */
+const GATELESS_SETTLEMENTS = [
+  FLOORED_SETTLEMENT,
+  {
+    terminal: 'no-standing-text',
+    text: '',
+    floor: {
+      kind: 'incumbent-only',
+      refusedModelIds: [],
+    },
+    verdicts: [],
+    rewrapped: false,
+    demoted: false,
+    findings: [],
+  },
+  ...['slate-endorsed-standing', 'slate-unjudged-standing', 'slate-declined-standing',].map(
+    function toSlateSettlement(terminal,) {
+      return {
+        terminal,
+        text: 'The cat naps in the window.',
+        floor: CAT_SETTLEMENT.floor,
+        verdicts: CAT_SETTLEMENT.verdicts,
+        decided: CAT_DECIDED,
+        rewrapped: false,
+        demoted: false,
+        findings: [],
+      };
+    },
+  ),
+];
+
+/**
  Writes one settlement and reads the directory back through a fresh store.
 
  @param settlement - value to persist, valid or not
@@ -138,6 +260,40 @@ async function roundTrip(
   { settlement, }: { readonly settlement: unknown; },
 ): Promise<boolean> {
   return (await roundTripValue({ settlement, },)) !== undefined;
+}
+
+/**
+ Writes each settlement into a store of its own and reports which a fresh
+ store resumes.
+
+ @param settlements - values to persist, each naming its terminal beside
+ whatever other fields the case gives it
+
+ @returns Whether each was resumed, keyed by its terminal
+
+ @example
+ ```ts
+ const resumed = await resumedByTerminal({ settlements: GATELESS_SETTLEMENTS, },);
+ ```
+ */
+async function resumedByTerminal(
+  {
+    settlements,
+  }: {
+    readonly settlements: readonly {
+      readonly terminal: string;
+      readonly [field: string]: unknown;
+    }[];
+  },
+): Promise<Record<string, boolean>> {
+  return Object.fromEntries(
+    await Promise.all(settlements.map(async function toEntry(settlement,): Promise<[string, boolean,]> {
+      return [
+        settlement.terminal,
+        await roundTrip({ settlement, },),
+      ];
+    },),),
+  );
 }
 
 await describe({
@@ -227,26 +383,7 @@ await describe({
         + 'is the ordinary outcome where every proposal was structurally refused. A store requiring '
         + 'the gate key would re-buy a full roster every run to be told the same thing',
       fn: async () => {
-        expect(await roundTrip({
-          settlement: {
-            terminal: 'incumbent-only',
-            text: 'A cat sleeps by the window.',
-            floor: {
-              kind: 'incumbent-only',
-              refusedModelIds: ['hf:cat/Cat-A',],
-            },
-            verdicts: [
-              {
-                modelId: 'hf:cat/Cat-A',
-                kind: 'invalid',
-                findings: ['the page is 2 blocks and this is 1',],
-              },
-            ],
-            rewrapped: false,
-            demoted: false,
-            findings: [],
-          },
-        },),).toBe(true,);
+        expect(await roundTrip({ settlement: FLOORED_SETTLEMENT, },),).toBe(true,);
       },
     },),
 
@@ -376,7 +513,7 @@ await describe({
             ...CAT_SETTLEMENT,
             gate: {
               ...CAT_SETTLEMENT.gate,
-              ballots: [5,],
+              ballots: [null,],
               usable: 1,
             },
           },
@@ -392,10 +529,13 @@ await describe({
             ...CAT_SETTLEMENT,
             gate: {
               ...CAT_SETTLEMENT.gate,
-              ballots: [{
-                ...CAT_SETTLEMENT.gate.ballots[0],
-                unsupported: [5,],
-              },],
+              ballots: [
+                {
+                  ...CAT_BALLOT,
+                  unsupported: ['the other one',],
+                },
+              ],
+              usable: 1,
             },
           },
         },),).toBe(false,);
@@ -408,60 +548,125 @@ await describe({
         expect(await roundTrip({
           settlement: {
             ...CAT_SETTLEMENT,
-            floor: 5,
-          } as unknown as Parameters<typeof roundTrip>[0]['settlement'],
+            floor: null,
+          },
         },),).toBe(false,);
       },
     },),
 
     it({
-      name: 'REFUSES A GATE OUTCOME THAT IS NO RECORD, ABSENT still standing where no gate ran',
+      name: 'REFUSES A GATE OUTCOME THAT IS NO RECORD, since nothing there says what the gate settled',
       fn: async () => {
         expect(await roundTrip({
           settlement: {
             ...CAT_SETTLEMENT,
-            gate: 5,
-          } as unknown as Parameters<typeof roundTrip>[0]['settlement'],
-        },),).toBe(false,);
-        expect(await roundTrip({
-          settlement: {
-            ...CAT_SETTLEMENT,
-            gate: undefined,
+            gate: null,
           },
-        },),).toBe(true,);
+        },),).toBe(false,);
       },
     },),
 
     it({
-      name: 'READS BOTH SHIPPINGS the gate names, consolidated and standing',
+      name: 'RESUMES A SETTLEMENT WHOSE GATE KEPT THE STANDING TEXT, and one whose wrap erased the '
+        + 'difference, each beside the gate the stage writes with it',
       fn: async () => {
-        expect(await roundTrip({
-          settlement: {
-            ...CAT_SETTLEMENT,
-            gate: {
-              ...CAT_SETTLEMENT.gate,
-              ships: 'consolidated',
-            },
-          },
-        },),).toBe(true,);
-        expect(await roundTrip({
-          settlement: {
-            ...CAT_SETTLEMENT,
-            gate: {
-              ...CAT_SETTLEMENT.gate,
-              ships: 'standing',
-            },
-          },
-        },),).toBe(true,);
+        expect(await roundTrip({ settlement: KEPT_SETTLEMENT, },),).toBe(true,);
+        expect(await roundTrip({ settlement: ERASED_SETTLEMENT, },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'RESUMES EVERY TERMINAL THAT ENDS BEFORE THE GATE with no gate beside it',
+      fn: async () => {
+        expect(await resumedByTerminal({ settlements: GATELESS_SETTLEMENTS, },),).toEqual({
+          'incumbent-only': true,
+          'no-standing-text': true,
+          'slate-endorsed-standing': true,
+          'slate-unjudged-standing': true,
+          'slate-declined-standing': true,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A TERMINAL ONLY THE GATE WRITES when no gate stands beside it, since a consolidation '
+        + 'ships through the gate alone and this record says none was asked',
+      fn: async () => {
+        expect(
+          await resumedByTerminal({
+            settlements: [CAT_SETTLEMENT, ERASED_SETTLEMENT, KEPT_SETTLEMENT,].map(function withoutGate(settlement,) {
+              /**
+               The settlement with its gate taken out, every other field as the
+               stage wrote it.
+               */
+              const { gate: _gate, ...gateless } = settlement;
+              return gateless;
+            },),
+          },),
+        ).toEqual({
+          'consolidated': false,
+          'wrap-erased-difference': false,
+          'gate-kept-standing': false,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A GATE BESIDE A TERMINAL THAT ENDS BEFORE IT, since the stage asks no gate on those '
+        + 'five ways out',
+      fn: async () => {
+        expect(
+          await resumedByTerminal({
+            settlements: GATELESS_SETTLEMENTS.map(function withGate(settlement,) {
+              return {
+                ...settlement,
+                gate: CAT_SETTLEMENT.gate,
+              };
+            },),
+          },),
+        ).toEqual({
+          'incumbent-only': false,
+          'no-standing-text': false,
+          'slate-endorsed-standing': false,
+          'slate-unjudged-standing': false,
+          'slate-declined-standing': false,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A GATE SHIPPING THE RENDERING ITS TERMINAL DOES NOT NAME: standing under a '
+        + 'consolidation or an erased difference, consolidated under a kept standing',
+      fn: async () => {
+        expect(
+          await resumedByTerminal({
+            settlements: [
+              {
+                ...CAT_SETTLEMENT,
+                gate: KEPT_SETTLEMENT.gate,
+              },
+              {
+                ...ERASED_SETTLEMENT,
+                gate: KEPT_SETTLEMENT.gate,
+              },
+              {
+                ...KEPT_SETTLEMENT,
+                gate: CAT_SETTLEMENT.gate,
+              },
+            ],
+          },),
+        ).toEqual({
+          'consolidated': false,
+          'wrap-erased-difference': false,
+          'gate-kept-standing': false,
+        },);
       },
     },),
 
     it({
       name: 'REFUSES A SETTLEMENT THAT IS NO RECORD AT ALL',
       fn: async () => {
-        expect(await roundTrip({
-          settlement: 5 as unknown as Parameters<typeof roundTrip>[0]['settlement'],
-        },),).toBe(false,);
+        expect(await roundTrip({ settlement: null, },),).toBe(false,);
       },
     },),
   ],

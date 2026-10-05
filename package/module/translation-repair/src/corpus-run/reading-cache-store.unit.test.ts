@@ -344,20 +344,28 @@ await describe({
 
     it({
       name: 'REFUSES a readings list that is no array, an unavailable verdict whose kept readers are no '
-        + 'array, and one whose reason is no string',
+        + 'array, and one whose reason is no string or none of the three the pair ends at',
       fn: async () => {
         const badList = await roundTrip({
           record: { kind: 'corroborated', readings: 5, overlap: 0.71, },
         },);
         expect(badList.has(KEY,),).toBe(false,);
+
+        // EVERY UNAVAILABLE RECORD HERE SAYS IT IS NOT TRANSIENT, as a stable
+        // verdict does, so the guard's closing line passes it and only the
+        // field each record breaks can refuse it.
         const badReaders = await roundTrip({
-          record: { kind: 'unavailable', perReader: 5, reason: 'one-reader-only', },
+          record: { kind: 'unavailable', perReader: 5, reason: 'one-reader-only', transient: false, },
         },);
         expect(badReaders.has(KEY,),).toBe(false,);
-        const badReason = await roundTrip({
-          record: { kind: 'unavailable', perReader: [], reason: 5, },
+        const numberReason = await roundTrip({
+          record: { kind: 'unavailable', perReader: [], reason: 5, transient: false, },
         },);
-        expect(badReason.has(KEY,),).toBe(false,);
+        expect(numberReason.has(KEY,),).toBe(false,);
+        const readerReason = await roundTrip({
+          record: { kind: 'unavailable', perReader: [], reason: 'reader-failed', transient: false, },
+        },);
+        expect(readerReason.has(KEY,),).toBe(false,);
       },
     },),
   ],

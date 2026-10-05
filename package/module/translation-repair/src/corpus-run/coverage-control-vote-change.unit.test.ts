@@ -36,9 +36,11 @@ import {
 import {
   coverageControlHolds,
   type ChatJsonRequest,
+  type CoverageControlRow,
   messageText,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
+import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import {
   coverageControlCasesAt,
   coverageControlClient,
@@ -98,10 +100,140 @@ const CASES = coverageControlCasesAt({
  */
 const BLIND_CLIENT = coverageControlClient({ quote: QUOTED, },);
 
+/**
+ Translation the quoted sentence fills but for its last two characters, a
+ space and one letter: 36 characters holding a sentence of 34, so no window
+ clear of the sentence can take a cut of the sentence's own length.
+ */
+const TIGHT_TRANSLATION = `${QUOTED} x`;
+
+/**
+ Three cases with no room for a decoy cut, distinguished only by where they
+ sit.
+ */
+const TIGHT_CASES = coverageControlCasesAt({
+  where: ['tight-0', 'tight-1', 'tight-2',],
+  sourcePassage: SOURCE_PASSAGE,
+  translationText: TIGHT_TRANSLATION,
+},);
+
+/**
+ Client whose vote follows what the sheet shows: full coverage quoting
+ `QUOTED` where the sheet still carries the rendering, none with an empty
+ quote where it does not, the two never contradicting.
+
+ @param carries - whether a sheet, read as one text, still carries the
+ rendering in this client's judgement
+
+ @returns Client answering every coverage round by that judgement
+
+ @example
+ ```ts
+ const client = sheetReadingClient({ carries: function showsQuote(sheet,) { return sheet.includes(QUOTED,); }, },);
+ ```
+ */
+function sheetReadingClient(
+  { carries, }: { readonly carries: (sheet: string) => boolean; },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused by the coverage control',);
+    },
+    chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,) => {
+      /**
+       Sheet as one text, where the rendering rides or does not.
+       */
+      const sheet = request.messages
+        .map(function toContent(message,) {
+          return messageText({ message, },);
+        },)
+        .join('\n',);
+      /**
+       Whether this client reads the sheet as still carrying the rendering.
+       */
+      const carried = carries(sheet,);
+      const scripted: unknown = {
+        coverage: carried ? 'full' : 'none',
+        quote: carried ? QUOTED : '',
+        reason: 'fixture',
+      };
+      if (!request.validate(scripted,))
+        return {
+          kind: 'schema-mismatch',
+          rawText: '',
+          detail: 'fixture',
+        };
+      return {
+        kind: 'ok',
+        value: scripted as ValueT,
+        rawText: JSON.stringify(scripted,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused by the coverage control',);
+    },
+  };
+}
+
+/**
+ Client whose vote follows the quoted rendering on the sheet. A wire that sees
+ the damage, and sees nothing else.
+ */
+const MOVING_CLIENT = sheetReadingClient({
+  carries: function showsQuote(sheet,): boolean {
+    return sheet.includes(QUOTED,);
+  },
+},);
+
+/**
+ Client that calls the passage covered only while the sheet shows one of the
+ two translations whole. A wire answering the damage rather than the
+ question: any cut, targeted or not, moves its vote.
+ */
+const DAMAGE_READING_CLIENT = sheetReadingClient({
+  carries: function showsAWholePage(sheet,): boolean {
+    return sheet.includes(TRANSLATION,) || sheet.includes(TIGHT_TRANSLATION,);
+  },
+},);
+
+/**
+ Rows the control records for cases alike in everything but where they sit.
+
+ @param where - location label per row, in the order the cases were offered
+
+ @param row - every other field, the same for each of them
+
+ @returns One row per label
+
+ @example
+ ```ts
+ const rows = rowsAt({ where: ['slice-0', 'slice-1',], row, },);
+ ```
+ */
+function rowsAt(
+  {
+    where,
+    row,
+  }: {
+    readonly where: readonly string[];
+    readonly row: Omit<CoverageControlRow, 'where'>;
+  },
+): readonly CoverageControlRow[] {
+  return where.map(function toRow(oneWhere,): CoverageControlRow {
+    return {
+      where: oneWhere,
+      ...row,
+    };
+  },);
+}
+
 //endregion Fixtures
 
 await describe({
   name: coverageControlHolds.name,
+  // ONE AT A TIME: the no-decoy case diverts the process-wide `console.log`
+  // (ledger B79), and every case here prints through it.
+  concurrency: 1,
   children: [
     it({
       name: 'REFUSES to hold when deleting the rendering changed no vote, which is the reading the '
@@ -178,15 +310,28 @@ await describe({
           exchangeTimeoutMs: 30_000,
           l,
         },);
-        expect(control.rows,).toHaveLength(0,);
-        expect(control.refusals.length,).toBeGreaterThan(0,);
-        expect(control.refusals[0]?.reason,).toBe('not-carried',);
+        expect(control,).toEqual({
+          held: false,
+          sawAbsenceOnTarget: 0,
+          sawAbsenceOnDecoy: 0,
+          decoysTaken: 0,
+          rows: [],
+          refusals: ['slice-0', 'slice-1', 'slice-2',].map(function toRefusal(where,) {
+            return {
+              where,
+              reason: 'not-carried',
+              verdict: 'absent',
+              absent: 3,
+              offeredSpans: 0,
+            };
+          },),
+        },);
       },
     },),
 
     it({
-      name: 'RECORDS A REFUSAL when the evidence cut empties the translation, since nothing is left '
-        + 'to ask the roster about',
+      name: 'RECORDS A cut-left-nothing REFUSAL when the spans the roster anchored on are the whole '
+        + 'translation, since nothing is left to ask it about',
       fn: async () => {
         /**
          Cases whose anchored span is the whole translation.
@@ -204,94 +349,212 @@ await describe({
           exchangeTimeoutMs: 30_000,
           l,
         },);
-        expect(control.rows,).toHaveLength(0,);
-        expect(control.refusals[0]?.reason,).toBe('evidence-not-locatable',);
+        expect(control,).toEqual({
+          held: false,
+          sawAbsenceOnTarget: 0,
+          sawAbsenceOnDecoy: 0,
+          decoysTaken: 0,
+          rows: [],
+          refusals: [
+            {
+              where: 'envelope/whole',
+              reason: 'cut-left-nothing',
+              verdict: 'carried',
+              absent: 0,
+              offeredSpans: 3,
+            },
+          ],
+        },);
       },
     },),
 
     it({
-      name: 'RECORDS A REFUSAL when no window clear of the anchored span can take a decoy cut of the '
-        + 'same size',
+      name: 'RECORDS A ROW whose decoy reads no-room when no window clear of the anchored span can take '
+        + 'a cut of the same size',
       fn: async () => {
-        /**
-         Quoted rendering filling all but one character of the translation.
-         */
-        const tight = `${QUOTED} x`;
         const control = await coverageControlHolds({
-          client: coverageControlClient({ quote: QUOTED, },),
+          client: BLIND_CLIENT,
           cases: coverageControlCasesAt({
             where: ['envelope/tight',],
             sourcePassage: SOURCE_PASSAGE,
-            translationText: tight,
+            translationText: TIGHT_TRANSLATION,
           },),
           modelIds: [...MODEL_IDS,],
           signal: AbortSignal.timeout(120_000,),
           exchangeTimeoutMs: 30_000,
           l,
         },);
-        expect(control.rows,).toHaveLength(1,);
-        expect(control.refusals,).toHaveLength(0,);
-        expect(JSON.stringify(control.rows[0],).includes('no-room',),).toBe(true,);
+        expect(control,).toEqual({
+          held: false,
+          sawAbsenceOnTarget: 0,
+          sawAbsenceOnDecoy: 0,
+          decoysTaken: 0,
+          rows: rowsAt({
+            where: ['envelope/tight',],
+            row: {
+              before: 'carried',
+              after: 'split',
+              absentBefore: 0,
+              absentAfter: 0,
+              decoy: 'no-room',
+              absentAfterDecoy: 0,
+              decoyAt: -1,
+              removedSpans: 3,
+              removedChars: 34,
+            },
+          },),
+          refusals: [],
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES to hold when no case had room for a decoy cut, and prints why, since a control that '
+        + 'never ran its decoy half has not shown the roster quiet on an unrelated cut',
+      fn: async (ctx,) => {
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+        const control = await coverageControlHolds({
+          client: MOVING_CLIENT,
+          cases: TIGHT_CASES,
+          modelIds: [...MODEL_IDS,],
+          signal: AbortSignal.timeout(120_000,),
+          exchangeTimeoutMs: 30_000,
+          l,
+        },);
+
+        // The targeted cut moved every vote, so only the decoy half is
+        // missing: this case fails on that half and on nothing else.
+        expect(control,).toEqual({
+          held: false,
+          sawAbsenceOnTarget: 3,
+          sawAbsenceOnDecoy: 0,
+          decoysTaken: 0,
+          rows: rowsAt({
+            where: ['tight-0', 'tight-1', 'tight-2',],
+            row: {
+              before: 'carried',
+              after: 'absent',
+              absentBefore: 0,
+              absentAfter: 3,
+              decoy: 'no-room',
+              absentAfterDecoy: 0,
+              decoyAt: -1,
+              removedSpans: 3,
+              removedChars: 34,
+            },
+          },),
+          refusals: [],
+        },);
+        expect(printed.lines,).toEqual([
+          ...['tight-0', 'tight-1', 'tight-2',].map(function toLine(where,) {
+            return `COVERAGE control ${where}: carried -> absent, absence votes 0 -> 3, cut 3 spans of 34 `
+              + 'chars; DECOY of the same size at -1: no-room, absence votes 0';
+          },),
+          'COVERAGE control CANNOT HOLD: a decoy cut was taken on none of 3 damaged cases, no page having '
+          + 'room for one clear of the spans the roster anchored on, so nothing shows whether an unrelated '
+          + 'cut of the same size moves the vote too',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES to hold when the one decoy cut taken moved the vote, counting the cases with no room '
+        + 'for one as no decoy at all rather than as decoys that stayed quiet',
+      fn: async () => {
+        const control = await coverageControlHolds({
+          client: DAMAGE_READING_CLIENT,
+          cases: [
+            ...coverageControlCasesAt({
+              where: ['slice-0',],
+              sourcePassage: SOURCE_PASSAGE,
+              translationText: TRANSLATION,
+            },),
+            ...TIGHT_CASES.slice(
+              0,
+              2,
+            ),
+          ],
+          modelIds: [...MODEL_IDS,],
+          signal: AbortSignal.timeout(120_000,),
+          exchangeTimeoutMs: 30_000,
+          l,
+        },);
+
+        // One decoy was taken and it moved every vote, so the decoy half has
+        // shown the wire answering the damage; the two rows with no room add
+        // nothing to either side of that.
+        expect(control,).toEqual({
+          held: false,
+          sawAbsenceOnTarget: 3,
+          sawAbsenceOnDecoy: 1,
+          decoysTaken: 1,
+          rows: [
+            ...rowsAt({
+              where: ['slice-0',],
+              row: {
+                before: 'carried',
+                after: 'absent',
+                absentBefore: 0,
+                absentAfter: 3,
+                decoy: 'absent',
+                absentAfterDecoy: 3,
+                decoyAt: 105,
+                removedSpans: 3,
+                removedChars: 34,
+              },
+            },),
+            ...rowsAt({
+              where: ['tight-0', 'tight-1',],
+              row: {
+                before: 'carried',
+                after: 'absent',
+                absentBefore: 0,
+                absentAfter: 3,
+                decoy: 'no-room',
+                absentAfterDecoy: 0,
+                decoyAt: -1,
+                removedSpans: 3,
+                removedChars: 34,
+              },
+            },),
+          ],
+          refusals: [],
+        },);
       },
     },),
 
     it({
       name: 'HOLDS when the absence vote moves with the targeted cut and never with the decoy one',
       fn: async () => {
-        /**
-         Client whose vote follows the quoted rendering on the sheet.
-         */
-        const moving: SyntheticClient = {
-          chatText: async () => {
-            throw new Error('chatText unused by the coverage control',);
-          },
-          chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,) => {
-            /**
-             Sheet as one text, where the rendering rides or does not.
-             */
-            const sheet = request.messages
-              .map(function toContent(message,) {
-                return messageText({ message, },);
-              },)
-              .join('\n',);
-            /**
-             Reply claiming what the sheet shows: coverage with the quote,
-             and none with an empty one, the two never contradicting.
-             */
-            const carries = sheet.includes(QUOTED,);
-            const scripted: unknown = {
-              coverage: carries ? 'full' : 'none',
-              quote: carries ? QUOTED : '',
-              reason: 'fixture',
-            };
-            if (!request.validate(scripted,))
-              return {
-                kind: 'schema-mismatch',
-                rawText: '',
-                detail: 'fixture',
-              };
-            return {
-              kind: 'ok',
-              value: scripted as ValueT,
-              rawText: JSON.stringify(scripted,),
-            };
-          },
-          quotas: async () => {
-            throw new Error('quotas unused by the coverage control',);
-          },
-        };
         const control = await coverageControlHolds({
-          client: moving,
+          client: MOVING_CLIENT,
           cases: CASES,
           modelIds: [...MODEL_IDS,],
           signal: AbortSignal.timeout(120_000,),
           exchangeTimeoutMs: 30_000,
           l,
         },);
-        expect(control.rows.length,).toBeGreaterThan(0,);
-        expect(control.sawAbsenceOnTarget,).toBeGreaterThan(0,);
-        expect(control.sawAbsenceOnDecoy,).toBe(0,);
-        expect(control.held,).toBe(true,);
+        expect(control,).toEqual({
+          held: true,
+          sawAbsenceOnTarget: 3,
+          sawAbsenceOnDecoy: 0,
+          decoysTaken: 3,
+          rows: rowsAt({
+            where: ['slice-0', 'slice-1', 'slice-2',],
+            row: {
+              before: 'carried',
+              after: 'absent',
+              absentBefore: 0,
+              absentAfter: 3,
+              decoy: 'carried',
+              absentAfterDecoy: 0,
+              decoyAt: 105,
+              removedSpans: 3,
+              removedChars: 34,
+            },
+          },),
+          refusals: [],
+        },);
       },
     },),
   ],
