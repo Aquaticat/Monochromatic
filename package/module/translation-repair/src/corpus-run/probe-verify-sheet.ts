@@ -39,7 +39,9 @@ export type VerifyItem = {
   readonly relabelCase: RelabelCase;
 
   /**
-   Admissible claims the unlabelled probe raised.
+   Claims the unlabelled probe raised. A sheet that prints claims is handed
+   only those the screen corroborated; the damage sample keeps every claim for
+   its manifest and prints none.
    */
   readonly claims: readonly ScreenedDefectClaim[];
 
@@ -139,9 +141,18 @@ export function orderBlind(
 /**
  Renders one claim as the reviewer's stated finding.
 
- @param claim - screened claim
+ The side quoted is the side the screen corroborated the claim on, read off
+ the claim's own admissibility. Choosing it by whether the raw omitted text
+ was empty disagreed with the screen, which reads a side of spaces as no
+ anchor: such a claim was printed as dropped wording over a blank quote
+ (ledger B128).
+
+ @param claim - claim the screen corroborated
 
  @returns Markdown lines for this claim
+
+ @throws {@link Error} when the screen did not corroborate the claim, which
+ no sheet that prints claims is handed
 
  @example
  ```ts
@@ -149,17 +160,28 @@ export function orderBlind(
  ```
  */
 function renderClaim({ claim, }: { readonly claim: ScreenedDefectClaim; },): string {
+  if ((claim.admissibility !== 'corroborated') && (claim.admissibility !== 'removal-corroborated')) {
+    throw new Error(
+      `unreachable: a claim the screen read as ${claim.admissibility} on a sheet, though the probe hands a sheet only claims the screen corroborated, each with one anchored side to quote`,
+    );
+  }
+
   /**
-   Wording the claim anchors on, from whichever side it quoted.
+   Whether the screen corroborated the claim on wording the edit dropped.
    */
-  const quoted = claim.omittedText === '' ? claim.evidence : claim.omittedText;
+  const removal = claim.admissibility === 'removal-corroborated';
+
+  /**
+   Wording the claim anchors on, as the prober wrote it.
+   */
+  const quoted = removal ? claim.omittedText : claim.evidence;
 
   /**
    Which direction the claim runs, in plain words.
    */
-  const direction = claim.omittedText === ''
-    ? 'wording the edit ADDED or altered'
-    : 'wording the edit DROPPED';
+  const direction = removal
+    ? 'wording the edit DROPPED'
+    : 'wording the edit ADDED or altered';
 
   return [
     `-   Says the edit introduced: ${claim.category}`,

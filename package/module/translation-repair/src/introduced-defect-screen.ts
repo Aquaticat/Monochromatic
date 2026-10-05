@@ -5,6 +5,7 @@ import {
   isIntroducedDefectVerdict,
 } from './introduced-defect-wire.ts';
 import { normalizePunctuation, } from './quote-normalize.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { flattenSpace, } from './sheet-line-text.ts';
 
 //region Introduced-defect screening
@@ -192,6 +193,11 @@ function asScreened({ text, }: { readonly text: string; },): string {
  Screening each and taking the better answer would let a prober launder a
  contradicted anchor by attaching a second one.
 
+ A side is an anchor when it shows a reader something, which is asked of
+ `rendersAsNothing` and never of an empty-string comparison: a side holding
+ only spaces, a zero-width space or a filler quotes nothing, and counting it
+ made a one-sided claim read as anchored both ways (ledger B128).
+
  @param evidence - wording quoted from the replacement, for added damage
 
  @param omittedText - wording quoted from the replaced text, for dropped
@@ -218,15 +224,17 @@ export function screenEvidence(
   },
 ): ClaimAdmissibility {
   /**
-   Added-wording anchor, folded and collapsed as both texts are compared.
+   Whether the claim quotes wording the edit added. A side that shows a
+   reader nothing is no anchor, asked as the package asks it of any text a
+   model wrote (ledgers B40 and B128).
    */
-  const added = asScreened({ text: evidence, },);
+  const quotesAdded = !rendersAsNothing({ text: evidence, },);
 
   /**
-   Dropped-wording anchor, likewise.
+   Whether the claim quotes wording the edit dropped, asked the same way.
    */
-  const dropped = asScreened({ text: omittedText, },);
-  if ((added === '') === (dropped === ''))
+  const quotesDropped = !rendersAsNothing({ text: omittedText, },);
+  if (quotesAdded === quotesDropped)
     return 'unanchored';
 
   /**
@@ -238,11 +246,20 @@ export function screenEvidence(
    Replaced text both directions are checked against.
    */
   const before = asScreened({ text: region.before, },);
-  if (dropped === '') {
+  if (quotesAdded) {
+    /**
+     Added-wording anchor, folded and collapsed as both texts are compared.
+     */
+    const added = asScreened({ text: evidence, },);
     if (!after.includes(added,))
       return 'unanchored';
     return before.includes(added,) ? 'contradicted' : 'corroborated';
   }
+
+  /**
+   Dropped-wording anchor, folded and collapsed likewise.
+   */
+  const dropped = asScreened({ text: omittedText, },);
   if (!before.includes(dropped,))
     return 'unanchored';
   return after.includes(dropped,) ? 'contradicted' : 'removal-corroborated';
@@ -259,7 +276,7 @@ export function screenEvidence(
 
  @param issues - accepted issues of the chunk
 
- @returns Flattened target-side quotes, empty strings dropped
+ @returns Target-side quotes as the screen compares text, blank ones dropped
 
  @example
  ```ts
@@ -289,7 +306,7 @@ function collectPriorQuotes(
               return span.side === 'target';
             },)
             .map(function toText(span,) {
-              return flattenSpace({ text: span.quotedText, },);
+              return asScreened({ text: span.quotedText, },);
             },);
         },);
     },)
@@ -359,13 +376,24 @@ function countsAsDamage(
  per region, because added-wording claims quote the AFTER text and never
  collided.
 
- @param quoted - wording the claim anchors on, already flattened
+ Both quotes arrive as the differential read them, through `asScreened`
+ (ledgers B24 and B128), and the claim's quote is the side the differential
+ corroborated. A quote chosen here by any other rule can disagree with the
+ verdict it is checked under: a claim corroborated on its evidence, with an
+ omitted side of spaces, was once checked on those spaces and so restated
+ nothing.
 
- @param priorQuotes - flattened target-side quotes of the served issues
+ @param quoted - side the differential corroborated the claim on, as
+ `asScreened` returns it
+
+ @param priorQuotes - target-side quotes of the served issues, likewise
 
  @param removal - whether the claim anchors on wording the edit dropped
 
  @returns Whether the claim restates an accepted issue
+
+ @throws {@link Error} when the quote is blank, which no claim the
+ differential corroborated carries
 
  @example
  ```ts
@@ -383,24 +411,19 @@ function restatesPriorIssue(
     readonly removal: boolean;
   },
 ): boolean {
-  if (quoted === '')
-    return false;
-  /**
-   The claim's quote through the evidence fold, as its anchor was read
-   (ledger B24).
-   */
-  const folded = normalizePunctuation({ text: quoted, },);
+  // A blank quote would sit inside every prior quote and dismiss the claim.
+  if (quoted === '') {
+    throw new Error(
+      'unreachable: a claim counted as damage quotes nothing, though screenEvidence corroborates a claim only on a side that is not blank once screened',
+    );
+  }
 
   return priorQuotes
-    .some(function overlaps(priorQuote,) {
-      /**
-       The accepted issue's quote through the same fold.
-       */
-      const prior = normalizePunctuation({ text: priorQuote, },);
+    .some(function overlaps(prior,) {
       if (removal)
-        return prior.includes(folded,);
+        return prior.includes(quoted,);
 
-      return prior.includes(folded,) || folded.includes(prior,);
+      return prior.includes(quoted,) || quoted.includes(prior,);
     },);
 }
 
@@ -572,11 +595,18 @@ export function screenIntroducedDefects(
         } = entry.check;
 
         /**
-         Wording the claim anchors on, from whichever side it quoted.
+         Whether the differential corroborated the claim on wording the edit
+         dropped.
          */
-        const quoted = flattenSpace({
-          text: omittedText === '' ? evidence : omittedText,
-        },);
+        const removal = anchored === 'removal-corroborated';
+
+        /**
+         Wording the differential corroborated the claim on, read as it read
+         it. Choosing the side by the raw omitted text took a side of spaces
+         for the quote (ledger B128). Read only where the claim counts as
+         damage.
+         */
+        const quoted = asScreened({ text: removal ? omittedText : evidence, },);
 
         return {
           modelId: entry.modelId,
@@ -594,7 +624,7 @@ export function screenIntroducedDefects(
               && restatesPriorIssue({
                 quoted,
                 priorQuotes,
-                removal: anchored === 'removal-corroborated',
+                removal,
               },)
             ? 'pre-existing'
             : anchored,
