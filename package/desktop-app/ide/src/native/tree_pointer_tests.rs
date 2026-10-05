@@ -35,5 +35,18 @@ fn windowed_row_rebinding_cancels_an_in_progress_click() {
     window.window().take_snapshot().expect("rebound scrolled window");
     window.window().dispatch_event(WindowEvent::PointerReleased { position: point, button: PointerEventButton::Left });
     assert_eq!(activated.get(), -1, "pointer release activated a different row after window rebinding");
+    window.window().dispatch_event(WindowEvent::PointerPressed { position: point, button: PointerEventButton::Left });
+    let replacement: Vec<_> = (0..60).map(|index| {
+        return TreeEntry { label: SharedString::from(format!("replacement-{index}.txt")), ..TreeEntry::default() };
+    }).collect();
+    window.set_tree_entries(ModelRc::from(Rc::new(VecModel::from(replacement))));
+    window.window().take_snapshot().expect("replaced row identities");
+    window.window().dispatch_event(WindowEvent::PointerReleased { position: point, button: PointerEventButton::Left });
+    assert_eq!(activated.get(), -1, "model replacement redirected a held click at the same row index");
+    // The guard must still admit an ordinary new click after replacement.
+    window.window().dispatch_event(WindowEvent::PointerPressed { position: point, button: PointerEventButton::Left });
+    window.window().dispatch_event(WindowEvent::PointerReleased { position: point, button: PointerEventButton::Left });
+    let expected = ((point.y - 32.0 - window.get_tree_scroll_y()) / 48.0).floor() as i32;
+    assert_eq!(activated.get(), expected);
     window.hide().expect("close native tree");
 }
