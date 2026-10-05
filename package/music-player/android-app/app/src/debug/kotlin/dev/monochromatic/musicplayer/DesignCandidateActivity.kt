@@ -905,7 +905,8 @@ private fun CoverTrackList(modifier: Modifier, candidate: String, palette: Candi
             // ```
             if (tracks[index].title !in omittedTitles) {
                 TrackRow(index = index, track = tracks[index], candidate = candidate, palette = palette,
-                    interactionModifier = trackInteraction?.invoke(index, tracks[index]))
+                    modifier = trackInteraction?.invoke(index, tracks[index])
+                        ?: Modifier.clickable(role = Role.Button, onClick = {}))
             }
         }
     }
@@ -2147,7 +2148,8 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
                             candidate = candidate,
                             palette = palette,
                             informationStartInset = informationStartInset,
-                            interactionModifier = trackInteraction?.invoke(index, tracks[index]),
+                            modifier = trackInteraction?.invoke(index, tracks[index])
+                                ?: Modifier.clickable(role = Role.Button, onClick = {}),
                         )
                     }
                 }
@@ -2167,7 +2169,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
 @Suppress("DEPRECATION")
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette,
-    informationStartInset: Dp = 0.dp, interactionModifier: Modifier? = null) {
+    modifier: Modifier = Modifier, informationStartInset: Dp = 0.dp) {
     val playing = index == 0
     val currentTrackCue = if (candidate.startsWith("a11y-") || candidate.startsWith("dark-") || candidate.startsWith("cover-")) {
         "container"
@@ -2295,12 +2297,11 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             leadingIconColor = MaterialTheme.colorScheme.primary,
             supportingColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
-        modifier = Modifier
+        // The row's caller supplies one input owner through the standard outermost modifier boundary.
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 72.dp)
             .then(currentRowOutline)
-            // A supplied debug modifier owns both tap and long-press; null retains the prior click behavior.
-            .then(interactionModifier ?: Modifier.clickable(role = Role.Button, onClick = {}))
             .then(trackSemanticsModifier),
     )
     if (palette.rowDividers) {
