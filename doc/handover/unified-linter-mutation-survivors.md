@@ -69,6 +69,7 @@ Four dispositions are used.
   the reasoning is given and the redundant code was removed rather than excluded.
 - Detected by timeout means the mutation makes a loop non-terminating,
   so no test that reaches it can finish.
+  It is used only for the two loops outside this delegation.
 
 Proof is the scoped rerun,
 not a manual edit:
@@ -118,19 +119,19 @@ Locations are `line:column` as recorded by the named campaign.
 
 - `15:62: replace || with && in boundary` was missed in `mutation-p3QH2L`.
   Still generated at `15:62`.
-  Killed:
-  LF and CR stop being marker boundaries,
-  and `recognizes_the_incumbent_block_start_catalog` fails on ` #\n`,
+  Killed by `recognizes_the_incumbent_block_start_catalog`.
+  Under the mutant LF and CR stop being marker boundaries,
+  which its cases ` #\n`,
   ` #\r`,
-  ` 12.\r` and ` 9)\n`.
+  ` 12.\r` and ` 9)\n` require.
   Those cases were added in `111e02fec`,
   after the campaign's snapshot.
   PENDING_BLOCK_1562
 - `15:44: replace || with && in boundary` was missed in `mutation-p3QH2L`.
   Still generated at `15:44`.
-  Killed:
-  a tab stops being a marker boundary,
-  and the same test fails on ` #\t heading` and ` 3)\t item`.
+  Killed by the same test.
+  Under the mutant a tab stops being a marker boundary,
+  which its cases ` #\t heading` and ` 3)\t item` require.
   PENDING_BLOCK_1544
 - `36:23: replace || with && in starts_block_construct` was missed in `mutation-p3QH2L`.
   Removed in `111e02fec`.
@@ -350,25 +351,28 @@ PENDING_SOURCE_TEXT
 
 The same two mutants are recorded at `319:9` in `mutation-p3QH2L`,
 and are still generated there.
-Detected by timeout.
+Killed by the new `parents_mirror_child_edges_and_stop_at_the_root`,
+which checks the contract without an ancestor walk:
+the root has no parent,
+and every child names the node that lists it.
+The `--markdown-parent` scope plants the mutants of `parent` and runs only that control.
+Both are caught there in under a second
+(`mutation-BmlHMt`,
+`caught.txt` lines 2 and 3).
+
+The Markdown scope still reports the same two as timeouts,
+because other tests in the same binary spin.
 `parent` is the only way an ancestor walk ends:
 `has_ancestor`,
 `paragraph_for` and `delimiter_tail` climb until it returns `None`.
 A constant answer makes the root,
 or node 1,
 its own ancestor,
-so each of those walks spins in every test that reaches it.
+so each of those walks never finishes,
+and one unfinished test keeps the test binary alive until the 180 second limit.
 Bounding the walks would add a guard against a cycle
 that `traversal` already makes impossible,
 so the walks were left alone.
-
-`parents_mirror_child_edges_and_stop_at_the_root` pins the contract without a walk:
-the root has no parent,
-and every child names the node that lists it.
-The `--markdown-parent` scope plants the same mutants and runs only that control.
-Both are caught there in under a second
-(`mutation-BmlHMt`,
-`caught.txt` lines 2 and 3).
 PENDING_PARENT_LOG
 
 ### `src/markdown_tables.rs`
@@ -472,6 +476,9 @@ the package tasks and this document.
 `mise run //package/linter/monochromatic-lint:mutation:inferred-constants` ran the gate as its dependency chain.
 `test:container` passed 217 tests in 138.78 seconds,
 and `lint:container` finished Clippy with `-D warnings` and no finding.
+The log of both steps,
+including the image ID,
+is `gate-survivors-1e257034b.log` beside the evidence directories.
 That first chain stopped before mutating,
 as "Constant-slot scope" explains.
 The campaigns were then started with `mise run --skip-deps`,
@@ -517,6 +524,13 @@ PENDING_MD_SCOPE
 
 ### Controls shown to fail
 
+Each new control failed under at least one planted mutant.
+The count is the number of mutants under which the per-mutant log records the control as failed.
+
+- `rust_inferred_constants::tests::holes_resolve_against_the_parameter_in_their_own_slot` failed under 12,
+  every viable mutant of `mutation-yE1SL2`.
+- `markdown_source::tests::parents_mirror_child_edges_and_stop_at_the_root` failed under 4,
+  every mutant of `mutation-BmlHMt`.
 PENDING_CONTROLS
 
 ## Open items
@@ -574,16 +588,20 @@ with `--inferred-constants` and `--markdown-parent` scopes in `bin/mutate-contai
 
 ### Existing rustdoc findings
 
-`lint:rust` reports 85 `builtin(require-rustdoc)` findings on this branch.
-All of them are on lines that predate it,
-mostly `use` lines that share one comment.
+`lint:rust` reports 85 `builtin(require-rustdoc)` findings at `3f0cb5b2c`,
+and no other finding.
+Ten are in files this branch touched
+(`markdown_commands.rs`,
+`markdown_prose_context.rs` and `markdown_tables.rs`),
+and `git blame` attributes each of those lines to the branch's base commit.
+Most are `use` lines that share one comment.
 None was added or fixed here.
 
 ## Commits
 
 The branch holds these commits after `9be97dce4`,
 in order,
-followed by the commit that adds this document.
+followed by the commits that add this document.
 
 - `fc703a336` adds the `--inferred-constants` scope and the focused test tasks.
 - `87af1a4af` scans block-start markers over slices.
