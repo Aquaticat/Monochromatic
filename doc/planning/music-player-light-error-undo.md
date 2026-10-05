@@ -22,6 +22,27 @@ The unresolved work is carrying that current behavior into the light
 surface and verified Fold geometry,
 not asking about pill colour or spacing below their hard floors.
 
+## Fresh emulator recovery authorized by the human
+
+The previous guest is no longer the default capture target.
+Its repeated System UI/launcher ANRs,
+separate graphics failures and contained OOM event do not establish that
+Pixel Fold emulation or one system image is inherently defective.
+Agent-authored readiness,
+path and scope mistakes also prolonged verification.
+
+The authorized recovery is to provision fresh owned Pixel 9 Pro Fold
+profiles,
+verify boot/ADB/basic rendering before installing the debug APK,
+and compare a fresh current API37 image with an independently acquired
+API36 Google APIs image if needed.
+Keep the emulator binary,
+device profile,
+APK and resource bounds recorded;
+do not conflate a multi-variable improvement with an isolated root cause.
+The current source APK and D83 requirements are unchanged by this
+infrastructure work.
+
 ## Independently verifiable queue
 
 - [x] Inspect the accepted dark error/toast candidates,
@@ -53,7 +74,11 @@ restore the original identity or location.
 A failed trash request does not qualify for a successful-trash toast.
 Unknown failure causes do not receive an invented generic Retry action.
 
-Native work may use only the owned disposable Fold under 6GiB/2CPU bounds;
+The human now authorizes installing and provisioning fresh Pixel 9 Fold
+emulators and acquiring other system images as needed.
+This supersedes the restriction to reusing `Fold_No_Hardware_Probe`.
+Keep original user AVDs untouched and preserve the rejected guest evidence.
+Native visits retain 6GiB/2CPU bounds;
 browser checks stay within 2GiB/2CPU.
 The existing first-run debug host disables production entry points and
 services and can supply the same isolation boundary for this study.
