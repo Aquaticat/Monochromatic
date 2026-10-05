@@ -422,12 +422,18 @@ The emulator then crashed during the input stage
 exit status 139),
 before restoration,
 so the guest kept the visit's font scale and night mode.
-Its lock files still named the crashed in-container PID,
-which a new container reused,
-so the first recovery boot was refused as a second instance.
-After confirming no emulator or container remained,
-the stale locks of the owned AVD copy were removed
-and a recovery boot restores the sixth visit's own recorded baseline.
+The crash left lock files in the owned AVD copy,
+and the first recovery boot was refused as a second instance.
+After `podman ps` and `pgrep` showed no container or emulator,
+those two lock files were deleted
+and a recovery boot restored the sixth visit's own recorded baseline.
+Deleting them,
+with only those two owner checks,
+departed from the verified workaround in
+`doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`,
+which moves the files to a backup after wider owner checks;
+that document now records this recurrence and the departure.
+Why the lock blocked the boot is not established.
 The crashed owner's records are kept beside the visit.
 A seventh visit repeats the whole run,
 so one visit supplies every published capture and input check.

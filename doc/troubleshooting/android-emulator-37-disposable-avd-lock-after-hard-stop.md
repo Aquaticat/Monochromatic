@@ -189,6 +189,58 @@ See [the console-token boundary](android-emulator-console-token-container-home.m
 for why the owning container's ADB avoids the previously observed host
 authentication mismatch.
 
+## Recurrence after an emulator crash in an owned Fold container (2026-10-05)
+
+Android Emulator 37.2.12.0 (build_id 16428233) ran the owned AVD copy
+`Pixel9ProFold_Fresh_5FXdOc` in the 6 GiB/2 CPU container
+`music-player-settings-pane-fold`.
+The emulator received `SIGSEGV` mid-session,
+so no shutdown ran;
+see [the separate crash record](android-emulator-37-software-renderer-sigsegv.md).
+The next writable boot of that same AVD copy returned the quoted FATAL and
+exited `1` before guest boot.
+
+The AVD directory held an empty `multiinstance.lock` and a three-byte
+`hardware-qemu.ini.lock`,
+both last modified when the crashed boot started.
+The three bytes were ASCII `31` and a NUL.
+The emulator logged itself as `pid 31` inside the container in every owner
+log of that session that reached a graceful shutdown.
+That is consistent with a process-ID liveness check passing on a reused ID
+in the new container,
+but the installed binary is not mapped to source,
+so the failed lock condition is still not established.
+
+This recovery **departed from the verified workaround** in two ways.
+The owner check used only `podman ps --all` and `pgrep`,
+which found no container of that name and no emulator process for that AVD;
+`adb devices`,
+`lsof`,
+`fuser` and `lslocks` were not run.
+Both lock files were then deleted,
+not moved to a private backup.
+Their names,
+sizes,
+times and the content quoted here are the only record of them.
+Follow the workaround section,
+not this departure.
+
+After the deletion the same bounded container command booted.
+The guest still carried the crashed visit's font scale `2.0`,
+so its user data survived.
+That visit's recorded baseline was restored and read back,
+the owning namespace's `adb emu kill` was accepted,
+the owner exited `0` and no container or emulator process remained.
+
+After that clean shutdown the AVD directory again held an empty
+`multiinstance.lock` and no `hardware-qemu.ini.lock`,
+and the next writable boot succeeded with it present.
+An empty `multiinstance.lock` alone therefore did not block a writable boot
+here.
+A boot with only `hardware-qemu.ini.lock` present was not tried,
+so that file is implicated,
+not isolated.
+
 ## Verified workaround and tradeoffs
 
 For this **disposable AVD only**,

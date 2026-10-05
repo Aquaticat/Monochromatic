@@ -82,12 +82,18 @@ fifth and sixth visits each failed:
 a killed hierarchy dump during a startup dialog,
 a late configuration change that recreated the host,
 and an emulator segmentation fault in the GL translator.
-The sixth crashed before restoration and left stale AVD lock files naming a
-reused process ID,
-so the next boot was refused as a second instance.
+The sixth crashed before restoration and left lock files in the owned AVD
+copy,
+and the next boot was refused as a second instance.
 With no emulator or container running,
-those locks were removed from the owned AVD copy and a recovery boot restored
-that visit's own baseline.
+those locks were deleted and a recovery boot restored that visit's own
+baseline.
+That deletion skipped the backup and the wider owner checks that
+`doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`
+prescribes;
+follow that document next time.
+The crash itself is in
+`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`.
 `restore-stop-fresh-fold.ts` now allows 120 s for `podman inspect`,
 and every Settings launch is watched and relaunched within a bound if the
 host is created again.

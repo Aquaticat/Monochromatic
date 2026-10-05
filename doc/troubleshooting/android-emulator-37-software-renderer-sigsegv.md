@@ -221,6 +221,57 @@ Time: 0.008
 OK (2 tests)
 ```
 
+## Separate incident: mid-session SIGSEGV under llvmpipe in a container (2026-10-05)
+
+This is recorded here as the nearest topic.
+It is not shown to be the SwiftShader boot crash:
+the emulator version,
+renderer and timing all differ.
+
+Android Emulator 37.2.12.0 (build_id 16428233) ran an owned Pixel 9 Pro Fold
+AVD copy headlessly under Xvfb in `podman run --memory=6g --cpus=2`,
+with `-gpu host -feature -Vulkan -memory 4096 -cores 2`.
+Startup reported:
+
+```text
+# Android Emulator startup diagnostic
+ERROR        | Your GPU cannot be used for hardware rendering. Consider using software rendering.
+INFO         | Graphics Adapter Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))
+```
+
+The guest booted and worked for about 16 minutes,
+through 24 screenshot captures,
+then the emulator crashed during scripted touch input.
+The container's shell printed `Segmentation fault (core dumped)` and the
+emulator command returned `139`.
+`coredumpctl info` names the emitter and signal:
+
+```text
+# coredumpctl info 2301587
+Executable: .../emulator/qemu/linux-x86_64/qemu-system-x86_64-headless
+Signal: 11 (SEGV)
+Stack trace of thread 229:
+#0  0x00007fc75dd89adc n/a (/usr/lib/x86_64-linux-gnu/libc.so.6 + 0x19badc)
+```
+
+Only that frame was resolved,
+so the faulting emulator code is not identified.
+The owner log's last lines before the fault were repeated
+`gles_v2_imp.cpp:... error null ctx` messages from the GL translator.
+An earlier visit with the same command that completed normally logged the
+same message,
+so those lines do not distinguish the crash.
+Host load averaged about 40 to 50 at the time;
+no out-of-memory event was looked for.
+
+The same container command completed whole visits before and after this
+crash,
+so it is intermittent on this host.
+No workaround was verified;
+the visit was repeated.
+A crash leaves the guest's changed settings and the AVD's lock in place;
+see [the lock recurrence](android-emulator-37-disposable-avd-lock-after-hard-stop.md).
+
 ## Verified workarounds
 
 Use `-gpu host` for this Linux host.
