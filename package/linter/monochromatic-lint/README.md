@@ -53,8 +53,8 @@ Select the rule explicitly in the ordered JSONC configuration:
 
 The rule implementation and schema entry exist;
 the new executable and production cutover remain unfinished.
-`mise run //package/linter/monochromatic-lint:test:rust-style` verifies this slice
-without claiming that unfinished Markdown adapters have passed.
+`mise run //package/linter/monochromatic-lint:test:rust-style` verifies this slice.
+Markdown adapters have since passed their own container, Clippy, and fuzz gates.
 
 ## Explicit Rust types
 
@@ -114,11 +114,12 @@ and bare CR.
 Reference-definition deletion keeps adjacent container lines separate.
 The grouped editor refuses a nonempty-to-empty file rewrite.
 
-Pipe-table conversion,
-semantic line breaks,
-LFS image URLs,
-embedded Rust/rustdoc processors,
-and the complete executable remain in progress.
+Pipe-table conversion and semantic line breaks are implemented.
+LFS image URL handling is owned by the native linter's commit-time adapter
+and its URL normalization dependency is still under vetting.
+Embedded Rust/rustdoc processors are implemented in `processors.rs`
+with host-mapped findings and container-preserving fix projection;
+their executable integration and the complete executable remain in progress.
 Production Rust and Markdown commands have not been replaced.
 
 ## Verification
@@ -127,10 +128,8 @@ Package tasks cover type checking,
 unit tests,
 and mount-free container tests.
 The remaining CLI,
-rule,
-processor,
-mutation,
-and fuzz gates are tracked in the execution document;
+consumer migration,
+and mutation-survivor disposition gates are tracked in the execution document;
 their absence is not a completion claim.
 `mutation:markdown` runs full container tests and Clippy before scoped native Markdown mutation.
 The fuzz sidecar includes counted Markdown/MDX fixtures,
