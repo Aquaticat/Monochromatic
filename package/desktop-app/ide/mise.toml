@@ -110,6 +110,14 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--test', 'font_features', '--test', 'inter_features', '--test', 'variable_fonts', '--', '--nocapture'])
 """
 
+[tasks."test:cli"]
+description = "Verify native-path argument grammar and executable help without display startup"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--test', 'cli_args', '--test', 'cli_process'])
+"""
+
 [tasks."test:tree"]
 description = "Exercise lazy tree snapshots, native names, expansion, and invalid reply rejection"
 shell = "node --input-type=module-typescript -e"
