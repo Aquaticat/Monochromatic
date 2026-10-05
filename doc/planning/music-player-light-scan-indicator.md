@@ -74,6 +74,36 @@ the executable study must actually exercise that boundary rather than
 crediting the caption as lifecycle evidence.
 No historical candidate is rewritten by this continuation.
 
+## Isolated preparation and verification
+
+Prototype `a10baf8b4` adds validated immutable scan records and checked
+synthetic events.
+The 21 pure fixture tests passed,
+along with fresh unknown-scene,
+completed-bar,
+paused-progress and stalled-running mutants.
+Each mutant produced its intended assertion failure;
+exact restoration and the complete unit task followed.
+The authored final step actually enters a completed state and removes bar
+visibility;
+no worker outcome is implied.
+
+Prototype `56b6170fd` adds the isolated native host and accepted scan-F row.
+The full unit task and APK build are running;
+no native fit or input acceptance is claimed yet.
+The host uses explicit same-instance debug events for start/progress,
+while Pause/Resume are native button actions.
+The inspected installed SDK `Activity.onNewIntent` contract pauses/resumes
+the existing top activity without recreating it when SINGLE_TOP is used.
+The original scene intent is retained.
+Installed Material3 `1.5.0-alpha27` source and class declarations expose the
+classic outlined button,
+its content padding and label style;
+the study keeps 100dp width,
+56dp bar height and a 48dp control floor.
+Text-layout diagnostics will decide fit,
+not source inspection or guessed text width.
+
 ## Independently verifiable queue
 
 - [x] Identify D26's selected bar,
