@@ -67,7 +67,8 @@ import java.util.Locale
  * ```
  */
 @Composable
-internal fun ScanIndicatorBar(state: ScanIndicatorState, onAction: (String) -> Unit, onMeasure: (String) -> Unit) {
+internal fun ScanIndicatorBar(state: ScanIndicatorState, onAction: (String) -> Unit, onMeasure: (String) -> Unit,
+    controlPaddingDp: Int = 0) {
     // What: val is a read-only binding; Java's locale-aware integer formatter emits grouped whole counts.
     // Why: Wider-count probes change actual status text without estimating analysis duration or locale policy.
     //
@@ -110,10 +111,20 @@ internal fun ScanIndicatorBar(state: ScanIndicatorState, onAction: (String) -> U
                 onAction(if (state.phase == "paused") "resume" else "pause")
             }, modifier = Modifier.width(100.dp).heightIn(min = 48.dp)
                 .scanIndicatorMeasure("control", onMeasure),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
+                contentPadding = PaddingValues(horizontal = controlPaddingDp.dp, vertical = 8.dp)) {
                 Text(text = control, maxLines = 1,
                     onTextLayout = { layout ->
                         onMeasure("ScanIndicator.text:control:$control:lines=${layout.lineCount},overflow=${layout.hasVisualOverflow}")
+                        // What: Native layout exposes its constrained size, intrinsic text width and overflow axes.
+                        // Why: The paired padding probe can distinguish wrapping/clipping from a guessed font-width problem.
+                        //
+                        // In TS you\'d write (pseudocode):
+                        // ```ts
+                        // log({ size: layout.size, intrinsic: layout.paragraph.maxIntrinsicWidth, overflowWidth, overflowHeight });
+                        // ```
+                        onMeasure("ScanIndicator.control-fit:$control:padding=$controlPaddingDp,size=${layout.size}," +
+                            "intrinsic=${layout.multiParagraph.maxIntrinsicWidth},widthOverflow=${layout.didOverflowWidth}," +
+                            "heightOverflow=${layout.didOverflowHeight}")
                     })
             }
         }

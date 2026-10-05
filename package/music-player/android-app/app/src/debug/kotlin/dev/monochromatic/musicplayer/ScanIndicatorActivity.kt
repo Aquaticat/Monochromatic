@@ -85,7 +85,19 @@ class ScanIndicatorActivity : ComponentActivity() {
         val scene: String = intent.getStringExtra("scene")
             ?: throw IllegalArgumentException("Scan-indicator study requires an explicit scene.")
         state = scanIndicatorFixture(scene)
+        // What: getIntExtra reads one explicit diagnostic padding input, otherwise using accepted source padding.
+        // Why: The rejected 12dp draft remains a same-APK control, not a product setting or silent fallback.
+        //
+        // In TS you\'d write (pseudocode):
+        // ```ts
+        // const controlPaddingDp = intent.getIntExtra("study-control-padding-dp", 0);
+        // ```
+        val controlPaddingDp: Int = intent.getIntExtra("study-control-padding-dp", 0)
+        if (controlPaddingDp != 0 && controlPaddingDp != 12) {
+            throw IllegalArgumentException("Unknown authored scan control padding: $controlPaddingDp")
+        }
         Log.i("ScanIndicator", "ScanIndicatorActivity.onCreate: authored scene=$scene")
+        Log.i("ScanIndicator", "ScanIndicator.control-padding-dp:$controlPaddingDp")
         enableEdgeToEdge()
         // What: Trailing lambdas supply native children and event callbacks.
         // Why: The actual player uses its verified role provider while state remains entirely local.
@@ -98,7 +110,8 @@ class ScanIndicatorActivity : ComponentActivity() {
             MaterialTheme(colorScheme = lightFeedbackColorScheme()) {
                 ScanIndicatorStudy(state = state,
                     onAction = { event -> dispatch(event) },
-                    onMeasure = { event -> Log.i("ScanIndicator", "ScanIndicatorActivity.onMeasure: $event") })
+                    onMeasure = { event -> Log.i("ScanIndicator", "ScanIndicatorActivity.onMeasure: $event") },
+                    controlPaddingDp = controlPaddingDp)
             }
         }
     }

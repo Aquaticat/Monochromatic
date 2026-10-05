@@ -53,7 +53,8 @@ import androidx.compose.ui.unit.dp
  * ```
  */
 @Composable
-internal fun ScanIndicatorStudy(state: ScanIndicatorState, onAction: (String) -> Unit, onMeasure: (String) -> Unit) {
+internal fun ScanIndicatorStudy(state: ScanIndicatorState, onAction: (String) -> Unit, onMeasure: (String) -> Unit,
+    controlPaddingDp: Int = 0) {
     // What: val binds this render's native theme; LaunchedEffect runs when the immutable state changes.
     // Why: A logged callback alone does not establish that its resulting state was composed.
     //
@@ -84,7 +85,8 @@ internal fun ScanIndicatorStudy(state: ScanIndicatorState, onAction: (String) ->
                         trackViewportModifier = Modifier.scanIndicatorMeasure("viewport", onMeasure))
                 }
                 if (scanIndicatorVisible(state)) {
-                    ScanIndicatorBar(state = state, onAction = onAction, onMeasure = onMeasure)
+                    ScanIndicatorBar(state = state, onAction = onAction, onMeasure = onMeasure,
+                        controlPaddingDp = controlPaddingDp)
                 }
             }
         }
