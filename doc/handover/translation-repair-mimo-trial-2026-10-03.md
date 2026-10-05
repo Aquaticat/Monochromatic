@@ -683,6 +683,21 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  01:00 UTC:
+  the next batch's baseline census taken at commit `455622520`:
+  `census written to ~/.cache/translation-repair/coverage/census-2aJKLC/census.json`
+  (`~/temp/agent/mimo-trial/census-80.log`),
+  `library source: 100 files, 150 stretches over 350 lines, 4 functions never called`.
+  The ranking's first eight clusters carry documented-left arms
+  or the attribution quirk's records.
+  The next actionable cluster is `corpus-run/canadian`
+  with 3 stretches over 3 lines in 2 files,
+  then `corpus-run/publish`.
+  This line lands in the trial-log commit that follows `455622520`.
+  Next:
+  the `corpus-run/canadian` batch's remaining arms.
+
+- 2026-10-05,
   00:54 UTC:
   the T8 `claim` batch left its 3 arms documented
   (`claim-panel-voters.ts:54`,
