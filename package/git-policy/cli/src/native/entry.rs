@@ -216,7 +216,12 @@ fn write_stream(stream: &mut dyn Write, text: &str) {
     let _ = stream.write_all(text.as_bytes());
 }
 
-/// Decision controls stay out of the release executable.
+/// Stop controls for a looping, missing or uninterpretable real Git.
+#[cfg(test)]
+#[path = "entry_stop_tests.rs"]
+mod stop_tests;
+
+/// Decision controls and the shared fixtures stay out of the release executable.
 #[cfg(test)]
 #[path = "entry_tests.rs"]
 mod tests;

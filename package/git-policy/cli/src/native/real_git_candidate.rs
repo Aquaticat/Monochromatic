@@ -336,7 +336,12 @@ pub fn classify_candidate(candidate: &Path, own_executable: &Path) -> CandidateK
     return CandidateKind::RealGit;
 }
 
-/// Disposable-directory controls stay out of the release executable.
+/// Controls for the header, marker, identity and content primitives.
+#[cfg(test)]
+#[path = "real_git_candidate_primitive_tests.rs"]
+mod primitive_tests;
+
+/// Disposable-directory classification controls stay out of the release executable.
 #[cfg(test)]
 #[path = "real_git_candidate_tests.rs"]
 mod tests;

@@ -192,7 +192,17 @@ pub fn parse_config(source: &str) -> Result<CliGitConfig, ConfigError> {
     return Ok(config);
 }
 
-/// Schema acceptance and rejection controls stay out of the release executable.
+/// Acceptance controls stay out of the release executable.
+#[cfg(test)]
+#[path = "config_parse_acceptance_tests.rs"]
+mod acceptance_tests;
+
+/// Structural rejection controls and the shared rejection helpers.
 #[cfg(test)]
 #[path = "config_parse_tests.rs"]
 mod tests;
+
+/// Invalid-value rejection controls.
+#[cfg(test)]
+#[path = "config_parse_value_tests.rs"]
+mod value_tests;

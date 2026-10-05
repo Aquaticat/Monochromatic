@@ -268,7 +268,12 @@ pub fn child_environment_overlay(
     return overlay;
 }
 
-/// Byte-level controls stay out of the release executable.
+/// Lookup and count-parsing controls, checked against real Git.
+#[cfg(test)]
+#[path = "child_environment_count_tests.rs"]
+mod count_tests;
+
+/// Overlay controls and the shared environment builder stay out of the release executable.
 #[cfg(test)]
 #[path = "child_environment_tests.rs"]
 mod tests;
