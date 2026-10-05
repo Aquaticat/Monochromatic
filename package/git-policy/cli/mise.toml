@@ -1,3 +1,7 @@
+[tasks."test:git-image"]
+description = "Build the audited Git 2.56.0 release in the bounded Rust test image"
+run = "node bin/build-git-test-image.mjs"
+
 [tasks.run]
 description = "Run git wrapper CLI"
 run = "node src/index.ts"
