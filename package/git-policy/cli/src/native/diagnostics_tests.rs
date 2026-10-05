@@ -22,6 +22,7 @@ fn failure_codes_have_stable_wire_spellings() {
         (EngineFailureCode::ConfigInvalid, "config-invalid"),
         (EngineFailureCode::CoreIncomplete, "core-incomplete"),
         (EngineFailureCode::ContentUnavailable, "content-unavailable"),
+        (EngineFailureCode::PolicyIncomplete, "policy-incomplete"),
         (EngineFailureCode::PatchInvalid, "patch-invalid"),
         (EngineFailureCode::PatchConflict, "patch-conflict"),
         (EngineFailureCode::FixCycle, "fix-cycle"),
