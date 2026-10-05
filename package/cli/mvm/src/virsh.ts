@@ -18,7 +18,11 @@ import {
   LibvirtSessionUnavailableError,
   LibvirtUnresponsiveError,
 } from './libvirt-errors.ts';
-import { libvirtTools, } from './libvirt-tools.ts';
+import {
+  libvirtTools,
+  toolNotFoundRemedy,
+  VIRSH_COMMAND_ENV,
+} from './libvirt-tools.ts';
 import {
   CommandFailedError,
   CommandTimedOutError,
@@ -68,6 +72,8 @@ const CANNOT_CONNECT = 'failed to connect to the hypervisor';
  
  @throws {@link LibvirtUnresponsiveError} when virsh is still running at its deadline
  
+ @throws {@link ExecutableNotFoundError} when the command's executable does not exist; the message says how to configure another
+ 
  @throws {@link CommandFailedError} when virsh exits with non-zero code for another reason
  
  @example
@@ -108,6 +114,11 @@ export async function virsh({
       command,
       deadlineMs,
       env: VIRSH_ENV,
+      notFoundRemedy: toolNotFoundRemedy({
+        command: tool,
+        tool: 'virsh',
+        variable: VIRSH_COMMAND_ENV,
+      },),
     },);
   }
   catch (error) {

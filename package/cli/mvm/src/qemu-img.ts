@@ -4,7 +4,11 @@
  @module
  */
 
-import { libvirtTools, } from './libvirt-tools.ts';
+import {
+  libvirtTools,
+  QEMU_IMG_COMMAND_ENV,
+  toolNotFoundRemedy,
+} from './libvirt-tools.ts';
 import { spawn, } from './spawn.ts';
 
 /**
@@ -15,7 +19,7 @@ import { spawn, } from './spawn.ts';
 
  @returns Trimmed stdout output
 
- @throws {@link ExecutableNotFoundError} when the command's executable does not exist
+ @throws {@link ExecutableNotFoundError} when the command's executable does not exist; the message says how to configure another
 
  @throws {@link CommandFailedError} when qemu-img exits with non-zero code
 
@@ -39,5 +43,10 @@ export async function qemuImg({ args, }: { readonly args: readonly string[]; },)
       ...args,
     ],
     command,
+    notFoundRemedy: toolNotFoundRemedy({
+      command: tool,
+      tool: 'qemu-img',
+      variable: QEMU_IMG_COMMAND_ENV,
+    },),
   },);
 }

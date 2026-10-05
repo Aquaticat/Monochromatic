@@ -7,7 +7,11 @@
  @module
  */
 
-import { readFile, } from 'node:fs/promises';
+import {
+  mkdir,
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -136,5 +140,113 @@ await describe({
     },),
 
     //endregion Detected Flatpak
+
+    //region Missing tools
+
+    it({
+      name: 'names virsh and how to configure it when neither virsh nor the Flatpak exists, without a stack',
+      fn: async () => {
+        await using sandbox = await createSandbox({},);
+        const result = await runCli({
+          args: ['list',],
+          sandbox,
+        },);
+        expect(result.exitCode,).toBe(1,);
+        expect(result.stderr,).toContain('The executable `virsh` was not found in any directory of PATH',);
+        expect(result.stderr,).toContain('mvm runs virsh as ["virsh"]',);
+        expect(result.stderr,).toContain('set MVM_VIRSH_COMMAND to a JSON array',);
+        expect(result.stderr,).toContain('org.virt_manager.virt-manager Flatpak',);
+        expect(result.stderr,).toContain('The MCP server reads MVM_VIRSH_COMMAND from its own environment',);
+        expect(result.stderr,).not.toContain('dist/final/node',);
+        expect(result.stderr,).not.toContain('\n    at ',);
+      },
+    },),
+
+    it({
+      name: 'keeps the stack and the cause when --verbose is given',
+      fn: async () => {
+        await using sandbox = await createSandbox({},);
+        const result = await runCli({
+          args: [
+            '--verbose',
+            'list',
+          ],
+          sandbox,
+        },);
+        expect(result.exitCode,).toBe(1,);
+        expect(result.stderr,).toContain('ExecutableNotFoundError',);
+        expect(result.stderr,).toContain('\n    at ',);
+        expect(result.stderr,).toContain('ENOENT',);
+      },
+    },),
+
+    it({
+      name: 'says that the configured virsh executable does not exist',
+      fn: async () => {
+        await using sandbox = await createSandbox({},);
+        const result = await runCli({
+          args: ['list',],
+          env: { MVM_VIRSH_COMMAND: '["/no/such/dir/virsh","--quiet"]', },
+          sandbox,
+        },);
+        expect(result.exitCode,).toBe(1,);
+        expect(result.stderr,).toContain('The executable /no/such/dir/virsh does not exist',);
+        expect(result.stderr,).toContain('because MVM_VIRSH_COMMAND names it',);
+      },
+    },),
+
+    it({
+      name: 'names qemu-img and its variable when only qemu-img is missing',
+      fn: async () => {
+        await using sandbox = await createSandbox({},);
+        const images = join(
+          sandbox.home,
+          '.local',
+          'share',
+          'mvm',
+          'images',
+        );
+        await mkdir(
+          images,
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            images,
+            'template-ubuntu.qcow2',
+          ),
+          '',
+        );
+        const result = await runCli({
+          args: [
+            'create',
+            'dev',
+          ],
+          env: fakeVirshEnv(sandbox,),
+          sandbox,
+        },);
+        expect(result.exitCode,).toBe(1,);
+        expect(result.stderr,).toContain('The executable `qemu-img` was not found in any directory of PATH',);
+        expect(result.stderr,).toContain('set MVM_QEMU_IMG_COMMAND to a JSON array',);
+      },
+    },),
+
+    it({
+      name: 'reports a missing virsh from the interactive shell command instead of exiting quietly',
+      fn: async () => {
+        await using sandbox = await createSandbox({},);
+        const result = await runCli({
+          args: [
+            'shell',
+            'dev',
+          ],
+          sandbox,
+        },);
+        expect(result.exitCode,).toBe(1,);
+        expect(result.stderr,).toContain('The executable `virsh` was not found in any directory of PATH',);
+      },
+    },),
+
+    //endregion Missing tools
   ],
 },);

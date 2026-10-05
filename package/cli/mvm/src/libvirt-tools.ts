@@ -581,3 +581,50 @@ export function libvirtTools(): Promise<LibvirtTools> {
 }
 
 //endregion Resolution
+
+//region Advice for a missing tool
+
+/**
+ Explains what to do when a tool's executable does not exist.
+
+ @param command - Command mvm tried to run the tool with
+
+ @param tool - Executable name of the tool, `virsh` or `qemu-img`
+
+ @param variable - Environment variable that configures the tool's command
+
+ @returns Advice text of several lines
+
+ @example
+ ```ts
+ toolNotFoundRemedy({ command: { argv: ['virsh'], origin: 'path' }, tool: 'virsh', variable: 'MVM_VIRSH_COMMAND' });
+ ```
+ */
+export function toolNotFoundRemedy({
+  command,
+  tool,
+  variable,
+}: {
+  readonly command: ToolCommand;
+  readonly tool: string;
+  readonly variable: string;
+},): string {
+  /**
+   Why mvm ran this command, by where the command came from.
+   */
+  const reason = {
+    environment: `${variable} names it`,
+    flatpak: `${variable} is not set, virsh is not on PATH, and the ${VIRT_MANAGER_FLATPAK} Flatpak is installed`,
+    path: `${variable} is not set, so the bare name is looked up on PATH`,
+  }[command.origin];
+  return [
+    `mvm runs ${tool} as ${JSON.stringify(command.argv,)}, because ${reason}.`,
+    'Any one of these makes it available:',
+    `- install the host package that provides \`${tool}\`, so that it is on PATH;`,
+    `- install the ${VIRT_MANAGER_FLATPAK} Flatpak, whose virsh and qemu-img mvm then uses;`,
+    `- set ${variable} to a JSON array holding the executable and its leading arguments, for example ${variable}='["flatpak","run","--command=${tool}","${VIRT_MANAGER_FLATPAK}"]'.`,
+    `The MCP server reads ${variable} from its own environment, which is set where the server is registered, not in a shell profile.`,
+  ].join('\n',);
+}
+
+//endregion Advice for a missing tool

@@ -216,3 +216,61 @@ export class CommandTimedOutError extends Error {
 }
 
 //endregion Errors
+
+//region Recognizing a missing executable
+
+/**
+ Error code the operating system reports when an executable does not exist.
+ */
+const MISSING_EXECUTABLE_CODE = 'ENOENT';
+
+/**
+ Reads the `code` property of a caught value, when it has one.
+
+ @param value - Caught value or its cause
+
+ @returns The code, or `''` when the value carries none
+
+ @example
+ ```ts
+ codeOf(Object.assign(new Error('spawn x ENOENT'), { code: 'ENOENT' })); // => 'ENOENT'
+ ```
+ */
+function codeOf(value: unknown,): string {
+  if (((typeof value) === 'object') && (value !== null)
+    && ('code' in value)
+    && ((typeof value.code) === 'string')) {
+    return value.code;
+  }
+  return '';
+}
+
+/**
+ Checks whether a caught spawn failure means the executable does not exist.
+ Covers the error `node:child_process` emits and a `nano-spawn` error, which carries it as its cause.
+
+ @param error - Value caught from a failed spawn
+
+ @returns Whether the operating system reported a missing executable
+
+ @example
+ ```ts
+ try {
+   await nanoSpawn('ssh', ['-V']);
+ }
+ catch (error) {
+   if (isMissingExecutable(error)) throw new ExecutableNotFoundError({ cause: error, executable: 'ssh', remedy: '' });
+ }
+ ```
+ */
+export function isMissingExecutable(error: unknown,): boolean {
+  if (codeOf(error,) === MISSING_EXECUTABLE_CODE) {
+    return true;
+  }
+  return ((typeof error) === 'object')
+    && (error !== null)
+    && ('cause' in error)
+    && (codeOf(error.cause,) === MISSING_EXECUTABLE_CODE);
+}
+
+//endregion Recognizing a missing executable

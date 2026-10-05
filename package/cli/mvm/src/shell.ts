@@ -6,7 +6,15 @@ import {
   validateName,
   VM_PREFIX,
 } from './config.ts';
-import { libvirtTools, } from './libvirt-tools.ts';
+import {
+  libvirtTools,
+  toolNotFoundRemedy,
+  VIRSH_COMMAND_ENV,
+} from './libvirt-tools.ts';
+import {
+  ExecutableNotFoundError,
+  isMissingExecutable,
+} from './spawn-errors.ts';
 
 /**
  Logger root for mvm after removing the package log shim.
@@ -25,6 +33,8 @@ const l = tagged({ tag: 'mvm', },);
  Press `Ctrl+]` to disconnect from the console.
 
  @param name - VM name without the mvm- prefix
+
+ @throws {@link ExecutableNotFoundError} when the command that runs virsh does not exist
 
  @example
  ```ts
@@ -73,6 +83,18 @@ export async function shell({ name, }: { readonly name: string; },): Promise<voi
     );
   }
   catch (error: unknown) {
+    if (isMissingExecutable(error,)) {
+      rl.debug(`executable ${command} does not exist`,);
+      throw new ExecutableNotFoundError({
+        cause: error,
+        executable: command,
+        remedy: toolNotFoundRemedy({
+          command: tool,
+          tool: 'virsh',
+          variable: VIRSH_COMMAND_ENV,
+        },),
+      },);
+    }
     if ((error !== null)
       && (error !== undefined)
       && ((typeof error) === 'object')

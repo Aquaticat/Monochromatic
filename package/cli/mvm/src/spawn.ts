@@ -26,6 +26,7 @@ import {
   CommandFailedError,
   CommandTimedOutError,
   ExecutableNotFoundError,
+  isMissingExecutable,
   renderCommandLine,
 } from './spawn-errors.ts';
 
@@ -155,11 +156,6 @@ async function openCapture(): Promise<Capture> {
 //region Exit
 
 /**
- Error code the operating system reports when the executable does not exist.
- */
-const MISSING_EXECUTABLE_CODE = 'ENOENT';
-
-/**
  How a command ended: an exit status, or the name of the signal that ended it.
  */
 type Ending = {
@@ -219,11 +215,7 @@ async function endingOf({
     };
   }
   catch (error) {
-    if (((typeof error) === 'object')
-      && (error !== null)
-      && ('code' in error)
-      && (error.code === MISSING_EXECUTABLE_CODE))
-    {
+    if (isMissingExecutable(error,)) {
       rl.debug(`executable ${command} does not exist`,);
       throw new ExecutableNotFoundError({
         cause: error,

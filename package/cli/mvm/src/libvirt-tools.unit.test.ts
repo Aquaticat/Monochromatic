@@ -10,12 +10,14 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import nanoSpawn from 'nano-spawn';
 
 import {
   chooseLibvirtTools,
   CommandFailedError,
   CommandTimedOutError,
   ExecutableNotFoundError,
+  isMissingExecutable,
   LibvirtUnresponsiveError,
   parseToolCommand,
   spawn,
@@ -340,6 +342,49 @@ await describe({
             );
             expect((error as Error).message,).toContain('...(4700 more characters)',);
             expect((error as Error).message.length,).toBeLessThan(1_000,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: isMissingExecutable.name,
+      children: [
+        it({
+          name: 'recognizes the error node:child_process emits for a missing executable',
+          fn: async () => {
+            expect(
+              isMissingExecutable(Object.assign(
+              new Error('spawn virsh ENOENT',),
+              { code: 'ENOENT', },
+            ),),
+            ).toBe(true,);
+          },
+        },),
+        it({
+          name: 'recognizes a nano-spawn failure for a missing executable, which carries the cause',
+          fn: async () => {
+            const error = await caught(() => nanoSpawn('mvm-test-no-such-executable',));
+            expect(isMissingExecutable(error,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'does not take a command that ran and failed for a missing executable',
+          fn: async () => {
+            const error = await caught(() =>
+              nanoSpawn(
+                process.execPath,
+                [
+                  '--eval',
+                  'process.exit(2)',
+                ],
+              )
+            );
+            expect(isMissingExecutable(error,),).toBe(false,);
+            expect(
+              isMissingExecutable(new Error('other',),),
+            ).toBe(false,);
+            expect(isMissingExecutable('ENOENT',),).toBe(false,);
           },
         },),
       ],
