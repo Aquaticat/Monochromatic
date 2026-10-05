@@ -83,10 +83,21 @@ true black remains the dark background under standing standard 7.
 The whole-map keyboard proposal lists `Ctrl ,` for Settings,
 but that proposal is not adopted.
 
-`package/music-player/design/md3-tokens.md` holds verified switch values
-with a note to re-check them if switches become prominent.
+`package/music-player/design/md3-tokens.md` held switch values with a note
+to re-check them if switches become prominent.
 This pane makes them prominent,
-so the re-check precedes any drawing.
+so the re-check was done on 2026-10-05 against the current token files.
+The 52 by 32px track and 24px selected handle of settings-a match.
+Its unselected switch does not:
+the mock draws a 24px handle with no track outline,
+while the token file gives a 16px handle and a 2px outline.
+The switch's 40px state layer is below the 48dp layout floor,
+so the row or switch target must supply that floor.
+Draw the study with the platform's Material 3 switch,
+not a copy of the mock's off state.
+The same re-check read 10px for the list item's top and bottom space,
+where `md3-tokens.md` had recorded 12px;
+that file now holds both readings and changes no drawn surface.
 
 ## Interactions the audit cannot settle
 
@@ -145,7 +156,7 @@ not a verbal question.
 - [x] Identify D11's selected pane,
   the later decisions that changed its content,
   and the production Settings boundary.
-- [ ] Re-check the MD3 switch and list-row values against the current
+- [x] Re-check the MD3 switch and list-row values against the current
   specification source and record them in `md3-tokens.md`.
 - [ ] Build pure authored Settings state and an isolated native host using
   the accepted player and the proposed Fold placement,
@@ -174,5 +185,4 @@ Original AVDs remain untouched.
 Every visit records original settings before mutation,
 restores those exact fields and verifies owner shutdown and runtime absence.
 
-The next action is the MD3 switch re-check,
-followed by the authored state fixture and isolated native host.
+The next action is the authored state fixture and isolated native host.

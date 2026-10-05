@@ -179,9 +179,14 @@ Keep D81's template editor out of that fit study;
 its fields,
 grammar and controls are undesigned and need the human.
 
+The MD3 switch and list-row re-check is also done and recorded in
+`md3-tokens.md`:
+draw the platform's Material 3 switch,
+because the mock's unselected switch does not match the token file.
+
 How to respond:
-continue the queue directly with the MD3 switch re-check,
-then the authored Settings fixture and isolated native host.
+continue the queue directly with the authored Settings fixture and isolated
+native host.
 Do not reopen the scan padding question,
 re-run scan capture,
 or offer Settings-template or scan-policy ballots.
