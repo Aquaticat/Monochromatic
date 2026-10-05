@@ -17,7 +17,7 @@ import type { CommandLineOf, } from './command-lines.ts';
 import {
   type CensusArguments,
   censusFileText,
-  readBaselineCensus,
+  readBaselineFile,
   readCensusArguments,
 } from './coverage-census-input.ts';
 import { invariantThrowRowsOf, } from './coverage-census-invariant.ts';
@@ -340,13 +340,7 @@ async function runCoverageCensus({ line, }: { readonly line: CommandLineOf<'cove
     .map(async function readBaseline(path,): Promise<Baseline> {
     return {
       path,
-      census: readBaselineCensus({
-        path,
-        text: await readFile(
-          path,
-          'utf8',
-        ),
-      },),
+      census: await readBaselineFile({ path, },),
     };
   },),);
   /**

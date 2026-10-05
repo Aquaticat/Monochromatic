@@ -95,6 +95,9 @@ export function nodeBounds(node: TreeNode,): RawBounds | typeof NO_NODE_BOUNDS {
  micromark tokenized spans exactly that text, with no label bracket before
  it, and one the autolink-literal transform built carries no span at all.
  A GFM marker shape inside such text is part of the URL (ledger B123).
+ An angle autolink is no literal here: its span starts at its `<`, and
+ {@link isAngleAutolink} tells it, which only a walk under the plain grammar
+ meets (the strict grammar refuses the page, so the marker reader never does).
 
  @param node - node a walk is about to descend into
 
@@ -126,6 +129,43 @@ export function isAutolinkLiteral(node: TreeNode,): boolean {
    */
   const firstBounds = nodeBounds(first,);
   return (firstBounds !== NO_NODE_BOUNDS) && (firstBounds.start === bounds.start);
+}
+
+/**
+ Whether a link is an angle autolink, `<https://cat.example/x>`, which the
+ plain grammar tokenizes and the strict grammar refuses, so only a graph read
+ under the plain grammar meets one. Its node span starts at the `<`, one
+ character before its text, so {@link isAutolinkLiteral} does not take it for
+ a literal; a link with a label starts at the `[`, and no other link starts
+ at a `<`. A GFM marker shape inside its text is part of the URL.
+
+ @param node - node a walk is about to descend into
+
+ @param text - exact masked body supplied to the parser, which the node's span indexes
+
+ @returns Whether the node is a link whose raw begins at an angle bracket
+
+ @example
+ ```ts
+ if (!isAngleAutolink({ node, text, },)) descend();
+ ```
+ */
+export function isAngleAutolink(
+  {
+    node,
+    text,
+  }: {
+    readonly node: TreeNode;
+    readonly text: string;
+  },
+): boolean {
+  if (node.type !== 'link')
+    return false;
+  /**
+   The link's own span, absent on a link the transform built.
+   */
+  const bounds = nodeBounds(node,);
+  return (bounds !== NO_NODE_BOUNDS) && (text[bounds.start] === '<');
 }
 
 /**

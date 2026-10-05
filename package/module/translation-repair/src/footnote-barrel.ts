@@ -62,6 +62,10 @@ export {
   FootnoteOverflowError,
   MAX_SLICE_IDENTIFIERS,
 } from './footnote-mentions.ts';
+export {
+  insideUrlSpan,
+  urlSpansOf,
+} from './footnote-url-spans.ts';
 export type {
   FootnoteConvention,
   FootnoteDefinitionHit,

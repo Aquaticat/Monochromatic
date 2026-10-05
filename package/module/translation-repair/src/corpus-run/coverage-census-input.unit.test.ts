@@ -11,6 +11,9 @@
  @module
  */
 
+import { writeFile, } from 'node:fs/promises';
+import { join, } from 'node:path';
+
 import {
   caught,
   DEFAULT_CONCURRENCY,
@@ -27,9 +30,11 @@ import {
   markerCount,
   PASS_MARKER,
   readBaselineCensus,
+  readBaselineFile,
   readCensusArguments,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
@@ -491,6 +496,94 @@ await describe({
               stretches: [STRETCH,],
               loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
             },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: readBaselineFile.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS A CENSUS FILE the operator named, as readBaselineCensus reads its text',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'census-baseline-', },);
+            /**
+             Where the earlier census stands.
+             */
+            const path = join(
+              scratch.path,
+              'census.json',
+            );
+            await writeFile(
+              path,
+              JSON.stringify({
+                format: CENSUS_FORMAT,
+                head: 'abc',
+                clean: true,
+                stretches: [STRETCH,],
+                invariantThrows: [],
+                loadedSources: ['src/nap.ts',],
+              },),
+            );
+            expect(await readBaselineFile({ path, },),).toEqual({
+              head: 'abc',
+              stretches: [STRETCH,],
+              loadedSources: new Set(['src/nap.ts',],),
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES A BASELINE THAT IS NOT THERE as its own refusal naming the file and the filesystem code, '
+            + 'where the read\'s own error reached the command',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'census-baseline-', },);
+            /**
+             A path nothing stands at.
+             */
+            const path = join(
+              scratch.path,
+              'purr.json',
+            );
+            /**
+             What the read raised, taken as data.
+             */
+            let refusal: unknown;
+            try {
+              await readBaselineFile({ path, },);
+            }
+            catch (error) {
+              refusal = error;
+            }
+            expect(refusal,).toBeInstanceOf(CensusBaselineError,);
+            expect(String(refusal,),).toBe(
+              `CensusBaselineError: baseline ${path} does not read as a census this command wrote: it could not be `
+              + 'read (ENOENT)',
+            );
+          },
+        },),
+        it({
+          name: 'REFUSES A BASELINE THAT IS A DIRECTORY as its own refusal naming the path and the filesystem code, '
+            + 'and keeps the failure as the refusal\'s cause',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'census-baseline-', },);
+            /**
+             What the read raised, taken as data.
+             */
+            let refusal: unknown;
+            try {
+              await readBaselineFile({ path: scratch.path, },);
+            }
+            catch (error) {
+              refusal = error;
+            }
+            expect(refusal,).toBeInstanceOf(CensusBaselineError,);
+            expect(String(refusal,),).toBe(
+              `CensusBaselineError: baseline ${scratch.path} does not read as a census this command wrote: it could `
+              + 'not be read (EISDIR)',
+            );
+            expect((refusal as Error).cause,).toBeInstanceOf(Error,);
           },
         },),
       ],

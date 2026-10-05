@@ -5,6 +5,7 @@ import type { RootContent, } from 'mdast';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import { footnoteGraphFindings, } from './footnote-graph-findings.ts';
 import {
+  isAngleAutolink,
   isAutolinkLiteral,
   NO_NODE_BOUNDS,
   nodeBounds,
@@ -420,9 +421,13 @@ function collectBlockHits(
       },);
     }
 
-    if (isAutolinkLiteral(node,)) {
-      // A tokenized literal's text is its URL: full-width markers only. A
-      // rebuilt one carries no span, its text read with its run.
+    if (isAutolinkLiteral(node,) || isAngleAutolink({
+      node,
+      text: bodyText,
+    },)) {
+      // A tokenized literal's or an angle autolink's text is its URL:
+      // full-width markers only. A rebuilt literal carries no span, its text
+      // read with its run.
       if (bounds !== NO_NODE_BOUNDS) {
         collectRegionHits({
           regionStart: bounds.start,

@@ -1,3 +1,5 @@
+import { readFile, } from 'node:fs/promises';
+
 import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   isJsonArray,
@@ -14,6 +16,7 @@ import {
   unmappedSourceOf,
 } from './coverage-census-report.ts';
 import type { MappedFunction, } from './coverage-lines.ts';
+import { filesystemReason, } from './directory-listing.ts';
 
 //region Coverage census input
 // Ledger T8: what the coverage census is asked to do, read from its command
@@ -269,6 +272,8 @@ export class CensusBaselineError extends Error {
 
    @param says - what in it did not read
 
+   @param cause - failure the read raised, where the file could not be read at all
+
    @example
    ```ts
    new CensusBaselineError({ path: '/tmp/census.json', says: 'it has no stretches', },);
@@ -277,11 +282,17 @@ export class CensusBaselineError extends Error {
   constructor({
     path,
     says,
+    cause,
   }: {
     readonly path: string;
     readonly says: string;
+    readonly cause?: unknown;
   },) {
-    super(`baseline ${path} does not read as a census this command wrote: ${says}`,);
+    super(
+      `baseline ${path} does not read as a census this command wrote: ${says}`,
+      // Conditional spread keeps cause absent when none was supplied.
+      ...((cause === undefined) ? [] : [{ cause, },]),
+    );
     this.name = 'CensusBaselineError';
   }
 }
@@ -452,6 +463,67 @@ export function readBaselineCensus(
     stretches,
     loadedSources: new Set(loadedSources,),
   };
+}
+
+/**
+ Reads the text of the file the operator named as a baseline.
+
+ @param path - file read, named in the refusal
+
+ @returns The file's contents
+
+ @throws CensusBaselineError where the read fails, with the failure as its cause
+
+ @example
+ ```ts
+ const text = await baselineTextOf({ path: 'census.json', },);
+ ```
+ */
+async function baselineTextOf({ path, }: { readonly path: string; },): Promise<string> {
+  try {
+    return await readFile(
+      path,
+      'utf8',
+    );
+  } catch (error) {
+    /**
+     Why the read failed, as a bounded token: a filesystem code or a class name.
+     */
+    const reason = filesystemReason({ error, },);
+    throw new CensusBaselineError({
+      path,
+      says: `it could not be read (${reason})`,
+      cause: error,
+    },);
+  }
+}
+
+/**
+ Reads an earlier census from the file the operator named.
+
+ @param path - file read, named in any refusal
+
+ @returns Its commit, stretches and loaded sources
+
+ @throws CensusBaselineError where the file cannot be read at all (it is not
+ there, is a directory, or is not readable), naming the path and the filesystem
+ code and never the system's own message, and for every shape
+ {@link readBaselineCensus} refuses
+
+ @example
+ ```ts
+ const { head, stretches, loadedSources, } = await readBaselineFile({ path, },);
+ ```
+ */
+export async function readBaselineFile({ path, }: { readonly path: string; },): Promise<BaselineCensus> {
+  /**
+   The file's contents, absent only by a refusal.
+   */
+  const text = await baselineTextOf({ path, },);
+  return readBaselineCensus({
+    path,
+    text,
+  },);
 }
 
 //endregion Coverage census input

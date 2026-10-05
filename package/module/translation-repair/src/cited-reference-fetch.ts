@@ -27,24 +27,35 @@ export const REFERENCE_TEXT_CHARACTERS = 4_000;
  Raised when the endpoint refuses or answers in a shape the reader cannot
  use.
 
+ NAMES THE HTTP STATUS OR THE CHECK THAT FAILED AND NOTHING THE ENDPOINT
+ WROTE: the sentence is built here from a phrase each throw site authors, so
+ a log line repeats it whole and an operator reads the status, where an
+ endpoint's body never reaches one.
+
  @example
  ```ts
- throw new CitedReferenceFetchError({ message: 'contents responded 401', },);
+ throw new CitedReferenceFetchError({ detail: 'responded 401', },);
  ```
  */
 export class CitedReferenceFetchError extends Error {
   /**
+   Declares this message safe to forward: the status or the check that
+   failed, never a body, a url or the key.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    Builds the refusal.
 
-   @param message - what went wrong, never carrying the key
+   @param detail - phrase the throw site authors, an HTTP status or the check the answer failed, never text read from the answer
 
    @example
    ```ts
-   throw new CitedReferenceFetchError({ message: 'contents responded 401', },);
+   throw new CitedReferenceFetchError({ detail: 'responded 401', },);
    ```
    */
-  constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  constructor({ detail, }: { readonly detail: string; },) {
+    super(`contents ${detail}`,);
     this.name = 'CitedReferenceFetchError';
   }
 }
@@ -182,9 +193,9 @@ function failureOf({ statuses, }: { readonly statuses: unknown; },): string {
  */
 export function fetchedOf({ parsed, }: { readonly parsed: unknown; },): FetchedReference {
   if (!isJsonRecord(parsed,))
-    throw new CitedReferenceFetchError({ message: 'contents answered with a body that is not an object', },);
+    throw new CitedReferenceFetchError({ detail: 'answered with a body that is not an object', },);
   if (!isJsonArray(parsed.results,))
-    throw new CitedReferenceFetchError({ message: 'contents answered without a results array', },);
+    throw new CitedReferenceFetchError({ detail: 'answered without a results array', },);
   /**
    Failure tag, empty on success.
    */
@@ -283,13 +294,9 @@ export async function fetchCitedReference(
     },
   );
   if (!response.ok) {
-    /**
-     Body text for the error, which never carries the key.
-     */
-    const body = await response.text();
-    throw new CitedReferenceFetchError({
-      message: `contents responded ${String(response.status,)} for ${url}: ${body}`,
-    },);
+    // The body is not read: it is the endpoint's own words, which a refusal
+    // must not carry (ledger B166).
+    throw new CitedReferenceFetchError({ detail: `responded ${String(response.status,)}`, },);
   }
   /**
    Parsed body.

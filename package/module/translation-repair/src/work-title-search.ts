@@ -38,24 +38,35 @@ export const HIGHLIGHT_CHARACTERS = 300;
  Raised when the search endpoint refuses or answers in a shape the reader
  cannot use.
 
+ NAMES THE HTTP STATUS OR THE CHECK THAT FAILED AND NOTHING THE ENDPOINT
+ WROTE: the sentence is built here from a phrase each throw site authors, so
+ a log line repeats it whole and an operator reads the status, where an
+ endpoint's body (which can quote a key's owner or a page) never reaches one.
+
  @example
  ```ts
- throw new WorkTitleLookupError({ message: 'search responded 401', },);
+ throw new WorkTitleLookupError({ detail: 'responded 401', },);
  ```
  */
 export class WorkTitleLookupError extends Error {
   /**
+   Declares this message safe to forward: the status or the check that
+   failed, never a body, a query or the key.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    Builds the refusal.
 
-   @param message - what went wrong, never carrying the key
+   @param detail - phrase the throw site authors, an HTTP status or the check the answer failed, never text read from the answer
 
    @example
    ```ts
-   throw new WorkTitleLookupError({ message: 'search responded 401', },);
+   throw new WorkTitleLookupError({ detail: 'responded 401', },);
    ```
    */
-  constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  constructor({ detail, }: { readonly detail: string; },) {
+    super(`search ${detail}`,);
     this.name = 'WorkTitleLookupError';
   }
 }
@@ -168,31 +179,23 @@ export async function searchWorkTitle(
     },
   );
   if (!response.ok) {
-    /**
-     Body text for the error, which never carries the key.
-     */
-    const body = await response.text();
-    throw new WorkTitleLookupError({
-      message: `search responded ${String(response.status,)} for ${query}: ${body}`,
-    },);
+    // The body is not read: it is the endpoint's own words, which a refusal
+    // must not carry (ledger B166).
+    throw new WorkTitleLookupError({ detail: `responded ${String(response.status,)}`, },);
   }
   /**
    Parsed body.
    */
   const parsed: unknown = await response.json();
   if (!isJsonRecord(parsed,)) {
-    throw new WorkTitleLookupError({
-      message: `search answered with a body that is not an object for ${query}`,
-    },);
+    throw new WorkTitleLookupError({ detail: 'answered with a body that is not an object', },);
   }
   /**
    Results field.
    */
   const { results, } = parsed;
   if (!Array.isArray(results,)) {
-    throw new WorkTitleLookupError({
-      message: `search answered without a results array for ${query}`,
-    },);
+    throw new WorkTitleLookupError({ detail: 'answered without a results array', },);
   }
   /**
    Results as unknowns, each narrowed.

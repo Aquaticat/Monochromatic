@@ -42,6 +42,7 @@ export {
   markerCount,
   PASS_MARKER,
   readBaselineCensus,
+  readBaselineFile,
   readCensusArguments,
 } from './corpus-run/coverage-census-input.ts';
 export {

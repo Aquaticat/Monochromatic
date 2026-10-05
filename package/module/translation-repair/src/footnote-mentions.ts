@@ -3,6 +3,10 @@ import {
   scanGfmReferenceLiterals,
 } from './footnote-graph.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
+import {
+  insideUrlSpan,
+  urlSpansOf,
+} from './footnote-url-spans.ts';
 
 //region Footnote mentions
 // Attribution input for the assembly guard: how often one text mentions each
@@ -187,6 +191,12 @@ export type FootnoteMention = {
 /**
  Every footnote mention a text makes, with its ROLE.
 
+ A GFM marker shape inside a link's URL (an inline destination, an angle
+ autolink or a bare literal) is no mention, as the footnote graph and the
+ relabel read it (ledger B159): the attribution guard compares mentions of
+ an original and its candidate, and a URL's spelling is no footnote. A
+ full-width marker there still counts, as the graph counts it.
+
  Role matters for attribution: a slice that turns `[^1]: the note` into prose
  saying `see[^1]` mentions the identifier exactly as often as before, and only
  the role says it changed. Every mention is listed, including a definition's
@@ -213,10 +223,20 @@ export function footnoteMentions(
    Mentions across both conventions.
    */
   const mentions: FootnoteMention[] = [];
+  /**
+   Where the text keeps link URLs, whose GFM marker shapes are not mentions.
+   */
+  const urlSpans = urlSpansOf({ text, },);
   for (const [convention, hits, separator, markerLength,] of [
     [
       'gfm',
-      scanGfmReferenceLiterals({ slice: text, },),
+      scanGfmReferenceLiterals({ slice: text, },)
+        .filter(function outsideUrls(hit,): boolean {
+          return !insideUrlSpan({
+            spans: urlSpans,
+            offset: hit.localOffset,
+          },);
+        },),
       ':',
       GFM_MARKER_PUNCTUATION,
     ],

@@ -89,6 +89,7 @@ const MARKED_CLASSES: readonly string[] = [
   'CensusBaselineError',
   'CheckerIndependenceError',
   'CheckerQuorumError',
+  'CitedReferenceFetchError',
   'CollapsedHeadingError',
   'ConsolidationLedgerGapError',
   'ContributorCompletenessError',
@@ -188,6 +189,7 @@ const MARKED_CLASSES: readonly string[] = [
   'WindowEvidenceError',
   'WithheldSlateAbsenceError',
   'WordingCoherenceError',
+  'WorkTitleLookupError',
   'WritingBenchUnreachableError',
 ];
 
