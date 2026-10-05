@@ -2,7 +2,10 @@ import {
   prepareDocumentPair,
   type PreparedDocumentPair,
 } from '../document-preparation.ts';
-import type { BlockPair, } from '../pair-blocks-wire.ts';
+import {
+  type BlockPair,
+  requireBlockPairingRefusal,
+} from '../pair-blocks-wire.ts';
 import type { SectionPair, } from '../pair-sections-wire.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V12,
@@ -37,6 +40,16 @@ import { carveDivergence, } from './artifact-two-lane-rebuild-rows.ts';
 // rebuilds with slices 13 and 14 moved). So the rebuild compares its carve with
 // the rows the run recorded and says where it departs
 // (`artifact-two-lane-rebuild-rows.ts` says why rows rather than identity).
+//
+// A RECIPE THAT DOES NOT FIT ITS TEXT IS A MOVED CARVE, NOT A CRASH. The
+// recorded block pairing names blocks by index, and the text the rebuild
+// carves can parse into fewer blocks than the run's did: an artifact that
+// predates storing its archive is carved over the corpus copy, and a parser
+// change moves block boundaries. `blockPairingToSteps` refuses a pair naming a
+// block its section lacks, and the rebuild answers `moved` in that refusal's
+// words, so a republish leaves the page and says why, and the instruments
+// that walk every settled artifact (`carveSettled`, the rendering audit) go on
+// to the next one instead of stopping on this one.
 
 /**
  One half of the pairing recipe a settled artifact may fail to record.
@@ -88,7 +101,10 @@ export type PairingRecipe = {
  */
 export type RebuiltPreparation = {
   /**
-   Slicing carved over the two texts with every recorded recipe half applied.
+   Slicing carved over the two texts with every recorded recipe half applied;
+   where the recorded block pairing names a block the carved text lacks, with
+   the deterministic aligner's blocks in every section instead, the way an
+   artifact that records no block pairing is carved.
    */
   readonly prepared: PreparedDocumentPair;
 
@@ -122,7 +138,8 @@ export type RebuildReproduction =
     readonly kind: 'moved';
 
     /**
-     First departure from the recorded rows.
+     First departure from the recorded rows, or the refusal of a recorded
+     block pairing that does not fit the text carved.
      */
     readonly detail: string;
   };
@@ -257,8 +274,6 @@ export function recipeOf(
 /**
  Carves a document pair with the recipe a settled artifact records.
 
- @param artifact - parsed artifact naming the recipe
-
  CARVES OVER THE ARCHIVE THE ARTIFACT STORED (ledger A18). A pass reshapes
  the archive before it carves (`passArchiveText`, a heading relabel,
  `repairArchiveBlocks`) and the artifact stores the text it carved, so the
@@ -267,6 +282,14 @@ export function recipeOf(
  carves as moved that the stored archive reproduces, and left shihai4h's
  republished page 9 characters short.
 
+ A RECORDED BLOCK PAIRING THAT NAMES A BLOCK THE TEXT LACKS is refused while
+ the carve converts it, and the artifact is then carved again as one that
+ records no block pairing: every section's blocks by the deterministic
+ aligner, not only the refused section's. The refusal names the block and the
+ count, not the section, and a pairing that does not fit one section's blocks
+ says the text parsed otherwise than the run's, which makes the pairings that
+ still fit by count no better evidence of the run's blocks.
+
  @param artifact - parsed artifact naming the recipe
 
  @param sourceText - whole original, as read at the artifact's own commit
@@ -274,7 +297,13 @@ export function recipeOf(
  @param targetText - archive English at the artifact's own commit, carved
  only where the artifact predates storing the text it carved
 
- @returns Preparation and the recipe halves that had to be defaulted
+ @returns Preparation and the recipe halves that had to be defaulted, and
+ `moved` in the refusal's words where the recorded block pairing names a
+ block the carved text lacks
+
+ @throws Error when the carve refuses a block pairing for an artifact that
+ records none, which no carve does: only a recorded pairing names blocks by
+ index
 
  @example
  ```ts
@@ -313,43 +342,83 @@ export function rebuildPreparation(
    Archive text the carve runs over.
    */
   const targetText = (storedArchive.kind === 'stored') ? storedArchive.text : corpusTarget;
-  /**
-   Slicing carved from the recipe.
-   */
-  const prepared = prepareDocumentPair({
-    sourceText,
-    targetText,
-    includeFrontMatter: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V5,
-    ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
-    // SEALED AGAIN ONLY FROM THE GENERATION THAT SEALED, read off the
-    // version rather than the record: the spans are recomputed from the
-    // archive text because the block correction round moves offsets, and an
-    // older file's slicing never sealed anything.
-    sealArchiveOriginal: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V12,
-    ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
-    ...((blockPairings === undefined) ? {} : { blockPairings, }),
-  },);
-  /**
-   First departure from the run's recorded carve, empty for none. The repair
-   lane's ledger records it, a row for every slice the run carved.
-   */
-  const divergence = carveDivergence({
-    rows: artifact
-      .lanes
-      .repair
-      .delivery,
-    slices: prepared.slices,
-  },);
-  return {
-    prepared,
-    unrecorded,
-    reproduction: (divergence === '')
-      ? { kind: 'reproduced', }
-      : {
-        kind: 'moved',
-        detail: divergence,
+  try {
+    /**
+     Slicing carved from the recipe.
+     */
+    const prepared = prepareDocumentPair({
+      sourceText,
+      targetText,
+      includeFrontMatter: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V5,
+      ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
+      // SEALED AGAIN ONLY FROM THE GENERATION THAT SEALED, read off the
+      // version rather than the record: the spans are recomputed from the
+      // archive text because the block correction round moves offsets, and an
+      // older file's slicing never sealed anything.
+      sealArchiveOriginal: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V12,
+      ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
+      ...((blockPairings === undefined) ? {} : { blockPairings, }),
+    },);
+    /**
+     First departure from the run's recorded carve, empty for none. The repair
+     lane's ledger records it, a row for every slice the run carved.
+     */
+    const divergence = carveDivergence({
+      rows: artifact
+        .lanes
+        .repair
+        .delivery,
+      slices: prepared.slices,
+    },);
+    return {
+      prepared,
+      unrecorded,
+      reproduction: (divergence === '')
+        ? { kind: 'reproduced', }
+        : {
+          kind: 'moved',
+          detail: divergence,
+        },
+    };
+  }
+  catch (error) {
+    // Only the carve throws a pairing refusal; anything else propagates.
+    /**
+     Why the recorded block pairing does not fit the text carved.
+     */
+    const { message: refusal, } = requireBlockPairingRefusal({ error, },);
+    // ONE CARVE AGAIN, NEVER MORE: the artifact read as one that records no
+    // block pairing hands the carve no pairing to refuse.
+    if (blockPairings === undefined)
+      throw new Error(
+        'unreachable: the carve refused a block pairing, though this artifact records none and only a recorded '
+          + 'pairing names blocks by index',
+        { cause: error, },
+      );
+    /**
+     The same artifact carved as one that records no block pairing.
+     */
+    const { prepared, } = rebuildPreparation({
+      artifact: {
+        ...artifact,
+        preparation: {
+          ...artifact.preparation,
+          blockPairing: { kind: 'unrecorded', },
+        },
       },
-  };
+      sourceText,
+      targetText: corpusTarget,
+    },);
+    return {
+      prepared,
+      unrecorded,
+      reproduction: {
+        kind: 'moved',
+        detail: `the recorded block pairing does not fit the text carved (${refusal}), so every section's `
+          + 'blocks were carved by the deterministic aligner',
+      },
+    };
+  }
 }
 
 //endregion Preparation rebuilt from a settled artifact

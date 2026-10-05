@@ -259,6 +259,61 @@ function positionsAfterDecline(
 }
 
 /**
+ Refuses a walk that leaves a block of one side named by no step.
+
+ A BLOCK NO STEP NAMES IS IN NO RUN. Nothing downstream of the walk reads the
+ node lists again, so such a block left its section silently: a walk of one
+ original-only step over two originals and one translation grouped to no runs
+ at all. Checked after every step's blocks are read, so a step naming a block
+ its side lacks keeps `blockAtStep`'s refusal.
+
+ @param walk - steps in document order, each already read against the blocks
+
+ @param side - which side's blocks to account for, for the refusal
+
+ @param count - blocks that side carries
+
+ @throws Error when a block of the side is named by no step, which no walk
+ built in this package leaves: `alignBlocks` walks from the far corner of
+ these very blocks to the origin, one block of a side or both at every move,
+ and `blockPairingToSteps` gives every original a step and every translation
+ block one
+
+ @example
+ ```ts
+ assertWalkNamesSide({ walk, side: 'original', count: 2, },);
+ ```
+ */
+function assertWalkNamesSide(
+  {
+    walk,
+    side,
+    count,
+  }: {
+    readonly walk: readonly AlignmentStep[];
+    readonly side: 'original' | 'translation';
+    readonly count: number;
+  },
+): void {
+  /**
+   Indices of this side some step names.
+   */
+  const named = new Set(walk.flatMap(function indexOnSide(step,): readonly number[] {
+    if (side === 'original')
+      return (step.kind === 'target-only') ? [] : [step.sourceIndex,];
+    return (step.kind === 'source-only') ? [] : [step.targetIndex,];
+  },),);
+  for (let index = 0; index < count; index += 1) {
+    if (!named.has(index,))
+      throw new Error(
+        `unreachable: no walk step names ${side} block ${String(index,)}, and there are ${String(count,)}, though `
+          + 'alignBlocks walks every one of these blocks and blockPairingToSteps gives every block of both sides '
+          + 'a step',
+      );
+  }
+}
+
+/**
  Walks the steps into open runs, closing on budget, on a decline, on a change
  of kind and on either side of a sealed block.
 
@@ -280,7 +335,7 @@ function positionsAfterDecline(
  @returns Open runs in document order, sealed ones marked
 
  @throws Error when a step names a block its side lacks, in `blockAtStep`'s
- words, before any run is built
+ words, or no step names a block of a side, before any run is built
 
  @example
  ```ts
@@ -357,6 +412,16 @@ function walkIntoRuns(
           },),
         ],
     };
+  },);
+  assertWalkNamesSide({
+    walk,
+    side: 'original',
+    count: sourceNodes.length,
+  },);
+  assertWalkNamesSide({
+    walk,
+    side: 'translation',
+    count: targetNodes.length,
   },);
 
   /**
@@ -581,8 +646,10 @@ function walkIntoRuns(
  beside the ids of the originals the sealed blocks took with them
 
  @throws Error when a step names a block its side lacks, in `blockAtStep`'s
- words: `blockPairingToSteps` refuses a pairing that would build such a
- step, so only a walk built another way can carry one
+ words, or no step names a block of a side: `blockPairingToSteps` refuses a
+ pairing that would build the first and names every block of both sides,
+ and `alignBlocks` walks every block, so only a walk built another way can
+ carry either
 
  @example
  ```ts

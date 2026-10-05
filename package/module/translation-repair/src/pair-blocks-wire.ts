@@ -363,6 +363,94 @@ function pairClass(
 }
 
 /**
+ Whether an index names one of a side's blocks: a whole number from zero up
+ to, and not including, how many blocks the side carries.
+
+ @param index - block index a pair names
+
+ @param count - blocks the side carries
+
+ @returns Whether the side has a block at that index
+
+ @example
+ ```ts
+ namesBlock({ index: 3, count: 1, },);
+ // => false
+ ```
+ */
+function namesBlock(
+  {
+    index,
+    count,
+  }: {
+    readonly index: number;
+    readonly count: number;
+  },
+): boolean {
+  return Number.isInteger(index,)
+    && (index >= 0)
+    && (index < count);
+}
+
+/**
+ Refuses a pairing that names a block its side does not carry.
+
+ THE ONE WORDING of this refusal. A pairing reaches the blocks three ways: a
+ model's reply ({@link readBlockPairing}), a record the block-pairing cache
+ kept (`prepareBlockPairing`), and a settled artifact's recipe carved over a
+ text the run may have parsed into other blocks (`blockPairingToSteps`). Each
+ checks here, so a pairing that does not fit its blocks reads the same
+ wherever it was found.
+
+ @param pairs - correspondences about to be read against the blocks
+
+ @param sourceCount - original blocks
+
+ @param targetCount - translation blocks
+
+ @throws BlockPairingError naming the first block no side carries, and how
+ many blocks that side has
+
+ @example
+ ```ts
+ assertPairsNameBlocks({ pairs: [{ source: 0, target: 3, },], sourceCount: 2, targetCount: 1, },);
+ // throws: pairing names translation block 3, and there are 1
+ ```
+ */
+export function assertPairsNameBlocks(
+  {
+    pairs,
+    sourceCount,
+    targetCount,
+  }: {
+    readonly pairs: readonly BlockPair[];
+    readonly sourceCount: number;
+    readonly targetCount: number;
+  },
+): void {
+  for (const pair of pairs) {
+    if (
+      !namesBlock({
+        index: pair.source,
+        count: sourceCount,
+      },)
+    )
+      throw new BlockPairingError({
+        message: `pairing names original block ${String(pair.source,)}, and there are ${String(sourceCount,)}`,
+      },);
+    if (
+      !namesBlock({
+        index: pair.target,
+        count: targetCount,
+      },)
+    )
+      throw new BlockPairingError({
+        message: `pairing names translation block ${String(pair.target,)}, and there are ${String(targetCount,)}`,
+      },);
+  }
+}
+
+/**
  Reads a model's pairing, refusing anything that cannot be used as one.
 
  REFUSES RATHER THAN REPAIRS. A pairing that runs backwards, names a block
@@ -410,16 +498,11 @@ export function readBlockPairing(
    Pairs in the order the model gave them.
    */
   const { pairs, } = value;
-  for (const pair of pairs) {
-    if ((pair.source < 0) || (pair.source >= sourceCount))
-      throw new BlockPairingError({
-        message: `pairing names original block ${String(pair.source,)}, and there are ${String(sourceCount,)}`,
-      },);
-    if ((pair.target < 0) || (pair.target >= targetCount))
-      throw new BlockPairingError({
-        message: `pairing names translation block ${String(pair.target,)}, and there are ${String(targetCount,)}`,
-      },);
-  }
+  assertPairsNameBlocks({
+    pairs,
+    sourceCount,
+    targetCount,
+  },);
 
   // MONOTONE ON BOTH SIDES, AND A REPEAT ON EITHER IS A REAL CORRESPONDENCE.
   //

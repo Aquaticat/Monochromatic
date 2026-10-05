@@ -148,7 +148,8 @@ function placeHeldRuns(
 
   /**
    Run absorbing them, absent when nothing settled yet can carry them, which
-   leaves them held for a later run or for the caller's one-sided fallback.
+   leaves them held for a later run, or, after the last run, out of every run
+   (`mergeOneSidedRuns` says when that happens).
    */
   const host = merged[at];
   if ((host === undefined) || (at < lastSealedAt))
@@ -345,8 +346,19 @@ export function mergeOneSidedRuns(
   // `assertSliceCoverage` then refused the document.
   //
   // The module's stated exception survives as the case `placeHeldRuns` cannot
-  // settle: a section with no two-sided run at all leaves the blocks held and
-  // returns without them, which is the caller's one-sided fallback.
+  // settle: with no run to host them (no run at all, or, for held translation
+  // blocks, no paired run, or none behind the last sealed run), the blocks
+  // stay held and this returns without them, saying nothing. A section one
+  // side of which has no blocks is that case (`group-aligned.unit.test.ts`
+  // pins it), and
+  // `subdivideSealedChunkPair` never groups one: an empty translation side is
+  // an insertion it slices by the original, and every aligned chunk holds a
+  // block. NO CALLER FALLS BACK ANY MORE: the one-slice fallback
+  // `subdivideSealedChunkPair` kept for such a section went in T8's
+  // seventeenth batch (its own comment says so). A section that reaches here
+  // another way loses those blocks from its slices, and
+  // `prepareDocumentPair`'s `assertSliceCoverage` is what refuses that; a
+  // caller of `subdivideChunkPair` alone has no such check.
   placeHeldRuns({
     merged,
     heldSource,

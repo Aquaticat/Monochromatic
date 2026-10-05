@@ -213,8 +213,10 @@ function blockAt(
   },
 ): DocumentNode {
   // A PAIR NAMES A BLOCK OF THE CHUNK IT WAS ASKED ABOUT: the roster's reads are
-  // range-checked against these sides by `readBlockPairing`, and the cached
-  // ones are those reads, kept under a key of these blocks' text.
+  // range-checked against these sides by `readBlockPairing`, and
+  // `prepareBlockPairing` checks a cached record against them through the same
+  // `assertPairsNameBlocks` before it splits the record, missing on one that
+  // does not fit.
   return nonNullishOrThrow(nodes[index],);
 }
 

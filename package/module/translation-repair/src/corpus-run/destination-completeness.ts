@@ -1,6 +1,10 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
-import type { DestinationCheck, } from './dropped-destinations.ts';
+import { sameAddress, } from './destination-renderings.ts';
+import {
+  collectDestinations,
+  type DestinationCheck,
+} from './dropped-destinations.ts';
 
 //region Destination completeness
 // THE REFUSAL TRACES WHAT IT REFUSES (ledger E1). It used to say only how many
@@ -10,6 +14,15 @@ import type { DestinationCheck, } from './dropped-destinations.ts';
 // archive span carries it, and whose shipped text carries it: the address
 // itself is corpus content and goes to the run log, the slice indices go into
 // the message.
+//
+// A SLICE CARRIES A DESTINATION WHERE IT READS AS ONE: the readers that found
+// the drop (`collectDestinations`) read the slice's own text, and the slice
+// carries the address when one of the destinations they read is that address,
+// a trailing slash aside, as `sameAddress` keys it. A search for the address
+// as a substring traced a dropped `https://example.org/a` to a slice holding
+// only `https://example.org/ab`, and a dropped `.` to every slice holding a
+// full stop, the shipped text included, which then read as keeping what the
+// page dropped.
 
 /**
  Where one dropped destination sits among the slices.
@@ -37,42 +50,6 @@ export type DroppedDestinationTrace = Readonly<{
 }>;
 
 /**
- Whether a text carries an address, a trailing slash aside, as
- `sameAddress` treats two spellings.
-
- @param text - text to search
-
- @param address - destination to look for
-
- @returns Whether it is there
-
- @example
- ```ts
- carries({ text: 'see https://example.org/', address: 'https://example.org', },); // true
- ```
- */
-function carries(
-  {
-    text,
-    address,
-  }: {
-    readonly text: string;
-    readonly address: string;
-  },
-): boolean {
-  /**
-   The address less a trailing slash.
-   */
-  const bare = address.endsWith('/',)
-    ? address.slice(
-      0,
-      -1,
-    )
-    : address;
-  return text.includes(bare,);
-}
-
-/**
  One side of one slice: its index and the text that side carries.
 
  @example
@@ -93,9 +70,75 @@ type SliceText = Readonly<{
 }>;
 
 /**
- Slices whose text on one side carries an address.
+ One side of one slice: its index and the keys of the destinations its text
+ carries.
 
- @param side - every slice's text on that side
+ @example
+ ```ts
+ const side: SliceDestinations = { sliceIndex: 4, keys: new Set(['https://example.org/tabby',],), };
+ ```
+ */
+type SliceDestinations = Readonly<{
+  /**
+   Slice the text belongs to.
+   */
+  sliceIndex: number;
+
+  /**
+   Destinations that side carries there, each as `sameAddress` keys it.
+   */
+  keys: ReadonlySet<string>;
+}>;
+
+/**
+ Reads every slice's text on one side for the destinations it carries, by
+ the readers the check reads whole pages with.
+
+ @param texts - every slice's text on that side
+
+ @param side - which side, for the readers
+
+ @returns Each slice's destination keys, in slice order
+
+ @example
+ ```ts
+ const originals = destinationsOfSide({ texts: originalTexts, side: 'source', },);
+ ```
+ */
+function destinationsOfSide(
+  {
+    texts,
+    side,
+  }: {
+    readonly texts: readonly SliceText[];
+    readonly side: 'source' | 'page' | 'archive';
+  },
+): readonly SliceDestinations[] {
+  return texts.map(function readSlice({
+    sliceIndex,
+    text,
+  },): SliceDestinations {
+    return {
+      sliceIndex,
+      keys: new Set(
+        collectDestinations({
+          text,
+          side,
+        },)
+          .urls
+          .map(function keyOf(url,): string {
+            return sameAddress({ url, },);
+          },),
+      ),
+    };
+  },);
+}
+
+/**
+ Slices whose text on one side carries an address as a destination of its
+ own.
+
+ @param side - every slice's destinations on that side
 
  @param address - destination to look for
 
@@ -111,16 +154,17 @@ function slicesCarrying(
     side,
     address,
   }: {
-    readonly side: readonly SliceText[];
+    readonly side: readonly SliceDestinations[];
     readonly address: string;
   },
 ): readonly number[] {
+  /**
+   The address as the readers' destinations are keyed.
+   */
+  const key = sameAddress({ url: address, },);
   return side
-    .filter(function carriesIt({ text, },): boolean {
-      return carries({
-        text,
-        address,
-      },);
+    .filter(function carriesIt({ keys, },): boolean {
+      return keys.has(key,);
     },)
     .map(function indexOf({ sliceIndex, },): number {
       return sliceIndex;
@@ -136,7 +180,8 @@ function slicesCarrying(
 
  @param replacements - rows the page writes, by slice
 
- @returns One trace per dropped destination, in the order given
+ @returns One trace per dropped destination, in the order given, none
+ without reading a slice when nothing was dropped
 
  @example
  ```ts
@@ -154,6 +199,10 @@ export function traceDroppedDestinations(
     readonly replacements: readonly SliceReplacement[];
   },
 ): readonly DroppedDestinationTrace[] {
+  // EVERY PUBLISH TRACES, and almost every page drops nothing; reading every
+  // slice's three texts for destinations is then work nobody reads.
+  if (dropped.length === 0)
+    return [];
   /**
    Every slice's original.
    */
@@ -192,18 +241,39 @@ export function traceDroppedDestinations(
         text: row.replacementText,
       };
   },);
+  /**
+   Destinations every slice's original carries.
+   */
+  const originalDestinations = destinationsOfSide({
+    texts: originals,
+    side: 'source',
+  },);
+  /**
+   Destinations every slice's archive span carries.
+   */
+  const archiveDestinations = destinationsOfSide({
+    texts: archives,
+    side: 'archive',
+  },);
+  /**
+   Destinations every slice's shipped text carries.
+   */
+  const shippedDestinations = destinationsOfSide({
+    texts: shipped,
+    side: 'page',
+  },);
   return dropped.map(function trace(address,): DroppedDestinationTrace {
     return {
       sourceSlices: slicesCarrying({
-        side: originals,
+        side: originalDestinations,
         address,
       },),
       archiveSlices: slicesCarrying({
-        side: archives,
+        side: archiveDestinations,
         address,
       },),
       shippedSlices: slicesCarrying({
-        side: shipped,
+        side: shippedDestinations,
         address,
       },),
     };

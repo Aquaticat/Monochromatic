@@ -59,9 +59,14 @@ export type DestinationRenderingVerdict = {
  Address with a trailing slash shed, so two spellings of one address compare
  equal.
 
+ THE SITE ROOT KEEPS ITS SLASH. `/` is the slash alone, and shed it read as
+ the empty string, the key of a destination written with nothing in it,
+ which names nowhere; the root and that compared equal.
+
  @param url - address as written
 
- @returns Address without a trailing slash
+ @returns Address without a trailing slash, or the slash alone for the site
+ root
 
  @example
  ```ts
@@ -69,7 +74,7 @@ export type DestinationRenderingVerdict = {
  ```
  */
 export function sameAddress({ url, }: { readonly url: string; },): string {
-  return url.endsWith('/',)
+  return (url.endsWith('/',) && (url !== '/'))
     ? url.slice(
       0,
       -1,

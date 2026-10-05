@@ -25,6 +25,13 @@ import type { ArtifactSectionPairing, } from './artifact-two-lane-contract.ts';
 // the agreement filter is a subset of one such reply, so a stored pairing that
 // breaks either was not written by this pipeline. Refusing a shape the producer
 // CAN emit would reject valid artifacts, which is worse than checking nothing.
+//
+// A BLOCK INDEX IS NOT BOUNDED HERE, because nothing here could bound it: the
+// record carries no block counts, and the blocks a pair names exist only once
+// the rebuild has parsed the text it carves, which may be the corpus copy
+// rather than the archive the run carved. That check stands where the pairing
+// meets those blocks, in `blockPairingToSteps`, and `rebuildPreparation`
+// reads its refusal as a moved carve.
 
 /**
  What an artifact says about the pairing its slicing was built on.

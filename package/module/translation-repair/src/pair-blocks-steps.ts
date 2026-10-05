@@ -1,7 +1,7 @@
 import type { AlignmentStep, } from './align-blocks-walk.ts';
 import {
+  assertPairsNameBlocks,
   type BlockPair,
-  BlockPairingError,
 } from './pair-blocks-wire.ts';
 import { pairUnpartneredGaps, } from './unpartnered-gap-steps.ts';
 
@@ -20,18 +20,20 @@ import { pairUnpartneredGaps, } from './unpartnered-gap-steps.ts';
 // grouper measures characters per step and a block counted twice would inflate
 // a run past its budget and cut the document somewhere it should not.
 //
-// A PAIRING THAT NAMES A BLOCK ITS SIDE LACKS IS REFUSED HERE, in the words
-// `readBlockPairing` refuses a model's reply with. That reader checks a reply
-// against the blocks its sheet numbered, but a pairing also arrives from a
-// settled artifact's recipe (`corpus-run/artifact-two-lane-rebuild.ts`), which
-// `parseBlockPairing` checks for shape, order and section, never against the
-// blocks of the text it is then carved over, and that text's section may hold
-// fewer blocks than the pairing names. Converted unrefused, a pair
-// naming a translation block past the last became a step naming no block and
-// steps for every index before it, and a pair naming an original past the
-// last vanished while its translation block was still counted as claimed, so
-// that block reached no step at all. Every pairing passes through here on its
-// way to the grouper, so this is the one place that sees them all.
+// A PAIRING THAT NAMES A BLOCK ITS SIDE LACKS IS REFUSED HERE, through
+// `assertPairsNameBlocks` (`pair-blocks-wire.ts`), the check `readBlockPairing`
+// reads a model's reply through. That reader checks a reply against the blocks
+// its sheet numbered, but a pairing also arrives from a settled artifact's
+// recipe (`corpus-run/artifact-two-lane-rebuild.ts`), which `parseBlockPairing`
+// checks for shape, order and section, never against the blocks of the text it
+// is then carved over, and that text's section may hold fewer blocks than the
+// pairing names; `rebuildPreparation` reads the refusal as a moved carve.
+// Converted unrefused, a pair naming a translation block past the last became
+// a step naming no block and steps for every index before it, and a pair
+// naming an original past the last vanished while its translation block was
+// still counted as claimed, so that block reached no step at all. Every
+// pairing passes through here on its way to the grouper, so this is the one
+// place that sees them all.
 
 /**
  Converts a pairing into monotone alignment steps covering both sides.
@@ -202,87 +204,6 @@ function bareBlockPairingSteps(
   }
   emitUnclaimedTargetsBefore(targetCount,);
   return steps;
-}
-
-/**
- Whether an index names one of a side's blocks: a whole number from zero up
- to, and not including, how many blocks the side carries.
-
- @param index - block index a pair names
-
- @param count - blocks the side carries
-
- @returns Whether the side has a block at that index
-
- @example
- ```ts
- namesBlock({ index: 3, count: 1, },);
- // => false
- ```
- */
-function namesBlock(
-  {
-    index,
-    count,
-  }: {
-    readonly index: number;
-    readonly count: number;
-  },
-): boolean {
-  return Number.isInteger(index,)
-    && (index >= 0)
-    && (index < count);
-}
-
-/**
- Refuses a pairing that names a block its side does not carry.
-
- @param pairs - correspondences about to become steps
-
- @param sourceCount - original blocks
-
- @param targetCount - translation blocks
-
- @throws BlockPairingError naming the first block no side carries, and how
- many blocks that side has
-
- @example
- ```ts
- assertPairsNameBlocks({ pairs: [{ source: 0, target: 3, },], sourceCount: 2, targetCount: 1, },);
- // throws: pairing names translation block 3, and there are 1
- ```
- */
-function assertPairsNameBlocks(
-  {
-    pairs,
-    sourceCount,
-    targetCount,
-  }: {
-    readonly pairs: readonly BlockPair[];
-    readonly sourceCount: number;
-    readonly targetCount: number;
-  },
-): void {
-  for (const pair of pairs) {
-    if (
-      !namesBlock({
-        index: pair.source,
-        count: sourceCount,
-      },)
-    )
-      throw new BlockPairingError({
-        message: `pairing names original block ${String(pair.source,)}, and there are ${String(sourceCount,)}`,
-      },);
-    if (
-      !namesBlock({
-        index: pair.target,
-        count: targetCount,
-      },)
-    )
-      throw new BlockPairingError({
-        message: `pairing names translation block ${String(pair.target,)}, and there are ${String(targetCount,)}`,
-      },);
-  }
 }
 
 /**
