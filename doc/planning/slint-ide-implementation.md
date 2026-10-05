@@ -84,7 +84,13 @@ and resumption details are in [the handover][handover].
 - [ ] Required language-intelligence feature paths and synchronization.
   The compiled `helix-lsp` spike and verified design are in
   [the language intelligence design](slint-ide-language-intelligence.md);
-  the headless module core is in progress on branch `feat/ide-language-core`.
+  the headless module core landed on `main` on 2026-10-05
+  (scripted-server tests and 18 of 18 real-server checks each for TypeScript 7 and rust-analyzer).
+  The bubblewrap launch policy,
+  native wiring,
+  and source-view rendering of hover,
+  hints,
+  and diagnostics remain.
 - [x] Measured Helix-supported runtime languages.
   Twenty-seven grammars cover 22 of the 23 measured languages;
   see [the runtime language record](slint-ide-runtime-languages.md).

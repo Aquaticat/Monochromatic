@@ -129,7 +129,9 @@ each owned by one subagent:
   since integrated),
   `feat/ide-source-keys` at `b59b15b59` (8 commits,
   since integrated),
-  `feat/ide-language-core` at `652d383dd` (7 commits).
+  `feat/ide-language-core` at `652d383dd` (7 commits;
+  12 through `00dd01956` were integrated,
+  and later commits on that branch carry the bubblewrap leg).
   All three agents were cut off by an API session limit at about 11:10
   and resumed at 11:48 from their transcripts.
   If this session ends,
@@ -146,18 +148,36 @@ each owned by one subagent:
   resolve them additively.
   Guard-removal proofs are taken on branch state;
   rerun every `inspect:*-guards` task once on the final `main`.
+  When another session has files staged in the main checkout,
+  `git cherry-pick` refuses to run there
+  ("your local changes would be overwritten by cherry-pick").
+  The language-core integration therefore ran in the provisioned worktree `.claude/worktrees/ide-integrate`
+  on branch `integrate/ide-language-core`:
+  cherry-pick,
+  gate,
+  `git rebase main` when other sessions moved `main` meanwhile,
+  confirm `git rev-parse <commit>:package/desktop-app/ide` is unchanged from the gated commit,
+  then `git merge --ff-only` from the main checkout.
+  Whether a fast-forward preserves another session's staged files was not tested,
+  because their files had been committed by then.
 - No agent edits the IDE crate in the main worktree now.
   `main` is the integration point:
   the coordinating session cherry-picks each branch and reruns the suite.
   `inspect:native` takes `IDE_NATIVE_MCP_PORT` so parallel sessions do not collide.
-- Headless Language module core in the worktree `.claude/worktrees/ide-language-core`
-  on branch `feat/ide-language-core`,
-  created from `44361c867`:
-  the modules,
-  scripted-server tests,
-  and real-server checks specified by `doc/planning/slint-ide-language-intelligence.md`.
-  The coordinating session cherry-picks its commits onto `main`.
-  Native wiring and rendering are a later leg.
+- Bubblewrap launch policy for the Language module,
+  continuing on branch `feat/ide-language-core` after `00dd01956`
+  in the worktree `.claude/worktrees/ide-language-core`:
+  the adopted argument list,
+  `--clearenv` with an allowlist if both real servers still pass,
+  the confinement acceptance tests,
+  and a confined `inspect:language` run.
+- IDE reaction to a live color-scheme switch in the worktree `.claude/worktrees/ide-live-theme`
+  on branch `feat/ide-live-theme`,
+  native probes on MCP ports 9348 and 9349:
+  a headless theme-change test with a guard control,
+  and dark,
+  light,
+  dark switches in the nested compositor.
 - Runtime color-scheme switching in `package/cli/nested-wayland-session`,
   through the private portal only,
   plus a read-only analysis of what the IDE needs for a live switch.
@@ -165,6 +185,51 @@ each owned by one subagent:
 
 Completed in this fan-out:
 
+- Headless Language module core,
+  integrated onto `main` through `770c8f3a6` from `feat/ide-language-core` commits `8ee886976` through `00dd01956`.
+  `ide_app::language::LanguageWorker` runs `helix-lsp` on one long-lived `ide-language` thread;
+  commands are non-blocking
+  (`Ok(false)` means the 64-entry queue is full; resend next tick)
+  and replies,
+  status,
+  diagnostics,
+  and hint snapshots are polled;
+  every result carries a `DocumentStamp` of file generation and revision,
+  and the handle drops stale ones and counts them.
+  The package README section "Language module" lists the API and states.
+  Deviations from the design,
+  recorded in the agent report and `doc/troubleshooting/helix-lsp-embedding-roots-and-stop.md`:
+  `Registry::stop` leaves a tombstone that blocks restarts,
+  so servers are retired with `remove_by_id` and `force_shutdown`;
+  paths are respelled through Helix's `PWD`-derived workspace,
+  because `/home` links to `/var/home` here and a resolved path otherwise yields `rootUri: null`;
+  superseded answers retry at most three times while their text is displayed;
+  the unversioned-diagnostics hold falls back after 2 s,
+  a chosen,
+  unmeasured value.
+  The TypeScript override requires the project's `package.json` to name TypeScript 7 or later,
+  otherwise the state is `MissingExecutable` with a remedy;
+  workspace and user Helix configuration are never loaded.
+  Lockfile change:
+  two direct dependency edges (`arc-swap`,
+  `futures-util`),
+  no new package or version.
+  Gate in the integration worktree on the identical IDE tree:
+  44 test binaries with no failures,
+  41 of 41 native tests,
+  lint.
+  Real servers on disposable projects
+  (`inspect:language`):
+  18 of 18 checks each for TypeScript 7.0.2 and rust-analyzer,
+  evidence in `~/temp/agent/ide-language-core-evidence-20261005/inspect-passing/`;
+  that run is unconfined and rust-analyzer wrote `Cargo.lock` into its disposable project.
+  Eleven guard-removal controls passed
+  (`~/temp/agent/ide-language-guard-FpVQz5/results.json`,
+  `~/temp/agent/ide-language-guard-uWmw4T`).
+  Native wiring must call `language::enter_project_directory` right after `Workspace::new` at startup,
+  add `HELIX_LOG_DIRECTIVE` to the log filter,
+  build `DocumentReload::from_reload` before `Document::apply_reload` consumes the reload,
+  and accept that dropping the handle blocks up to about 1 s while servers exit.
 - Resizable sidebar,
   cherry-picked onto `main` as `365699eef` through `2187b8ebd` from `feat/ide-sidebar-resize`,
   plus the integration fix `0123ec0ba`.
@@ -192,6 +257,14 @@ Completed in this fan-out:
   or long content shrinks the sidebar.
   The tab stop and the 48px cell changed `main`'s source pointer and focus test expectations,
   updated in `0123ec0ba`.
+  The first gate on `main` after this stopped on the known flaky paint test;
+  `4ab83c59e` fixed both find flakes at their cause
+  (the waits now also require the active match to spell the whole query),
+  and the rerun passed 234 library and integration tests,
+  41 of 41 native tests,
+  and lint.
+  One passing run does not prove the flake gone;
+  repeated native runs on the final `main` are part of the closing gate.
   Eight guard-removal controls passed on the branch
   (`~/temp/agent/ide-sidebar-guard-hJqYf7/results.json`).
   Dark,
@@ -425,19 +498,15 @@ Queue after the in-flight work:
    or similar),
    so event-driven refresh needs a new dependency;
    that question went to the user.
-3. IDE reaction to a live system-theme change,
-   verified in the nested compositor with `color-scheme light` and `color-scheme dark` on the control socket,
-   plus a headless theme-change test.
-   Unblocked now that the sidebar and source-key branches are on `main`.
-4. Two flaky native find tests,
-   diagnosed by the sidebar agent from eight runs each in disposable copies:
-   `native_find_paints_visible_matches_only_and_reveals_far_columns` failed 3 of 8 runs on unmodified `8995633b0`;
-   its `1/301` status wait can be satisfied by the reply for the first typed character,
-   because the query `n` also yields 301 matches on that fixture.
+3. Confirm the two find flakes are gone with repeated native runs on the final `main`.
+   `native_find_paints_visible_matches_only_and_reveals_far_columns` failed 3 of 8 runs on unmodified `8995633b0`
+   because the query `n` also yields its `1/301` count;
    `native_find_recomputes_after_external_reload_and_follows_selection_correspondence`
-   failed 1 of 8 with selection `(2, 5)` instead of `(2, 6)`;
-   not yet diagnosed.
-5. The final package gates:
+   failed 1 of 8 with selection `(2, 5)`,
+   because the prefix `am ` also yields `1/1`.
+   `4ab83c59e` adds `status_for`,
+   which also waits for the active match to spell the whole query.
+4. The final package gates:
    guard-removal reruns on the final `main`,
    packaging,
    consumer-boundary checks,
