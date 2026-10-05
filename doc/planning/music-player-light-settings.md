@@ -17,6 +17,11 @@ Re-analyse lives on the track menu.
 D21 added a fourth row for the command bar's global hotkey,
 and D47 superseded that command bar together with its row.
 Do not transfer the fourth row to this pane.
+D84 (2026-10-05) removes the third row:
+true-peak analysis is automatic and not optional,
+so Settings provides no analysis switch.
+D85 (2026-10-05) removes the closing sentence.
+The pane now holds two rows.
 
 The accepted source is
 `package/music-player/design/candidates/settings-a.dc.html`.
@@ -42,6 +47,7 @@ D11 records these rows and mock states:
 - `Analyse true peak in the background`,
   off in the mock;
   off means each track is measured just before it plays.
+  D84 removes this row.
 
 ## Initial executable-source audit
 
@@ -114,6 +120,11 @@ answer.
 The fit study can draw the row in both positions without settling this.
 Raise it with the human only if a built state shows a concrete conflict.
 
+The human resolved this on 2026-10-05 by withdrawing the row (D84):
+analysis is automatic and not optional,
+which also supersedes D27's ask-before-analysing prompt and its four answers.
+When analysis runs is not decided by D84.
+
 ### Title prefixes, templates and Search
 
 The first row changes displayed titles.
@@ -133,6 +144,10 @@ The closing sentence was accepted before D81 and says the pane holds
 everything.
 Do not invent a template entry.
 Record that the closing sentence depends on the 11e design round.
+
+D85 (2026-10-05) removes the closing sentence,
+so nothing in this pane now depends on the 11e round;
+the template entry itself stays undesigned.
 
 ### Placement on the Fold
 
@@ -330,10 +345,44 @@ builder,
 test and evidence digests;
 `evidence/settings-pane-boundaries.md` holds the scope.
 
-This Settings item is complete within its declared design/debug scope.
-Every light surface in the original queue now has its own inspected native
-study.
+That three-row publication completed the item within its declared
+design/debug scope,
+then D84 and D85 withdrew its third row and closing sentence.
+
+## Two-row rebuild after D84 and D85
+
+Prototype `17c739da6` removes the analysis field,
+row and toggle and the closing paragraph;
+the former analysis event now falls through to the unknown-event rejection.
+Prototype `67eae28d1` adds a mixed switch record to `rowPositionsFollowState`,
+because both authored scenes set the two remaining fields equal
+and only a mixed record tells the rows' fields apart.
+The complete unit task passed with 12 Settings fixture tests.
+Fresh unknown-scene,
+copy-drift,
+row-position-swap,
+unknown-event,
+cross-row-toggle and reinstated-analysis-toggle mutants each failed their
+intended test,
+and the restored complete unit task passed.
+The APK SHA-256 is
+`5f3a23911f2a5c32859a78e533704298bfb5afa042cf968f4fc82691ef35e9ab`.
+Android lint keeps the five inherited errors and reports no Settings finding.
+
+The viewer builder now expects two rows,
+reads the column end from the last row and the measured divider between the
+rows,
+and re-measures from the images that nothing is drawn between the last row
+and the application root bottom.
+
+- [x] Remove the analysis row and the closing sentence from the prototype,
+  with fixture tests and mutants.
+- [x] Build the two-row APK and lint it.
+- [ ] Capture both panels in light and dark at 100% and 200% text,
+  and exercise every input again.
+- [ ] Inspect every light/dark pair afresh and record the findings.
+- [ ] Replace the withdrawn three-row evidence with the inspected two-row
+  cohort and rebuild and verify the viewer.
+
 D81's template editor (`open-questions.md` 11e) is the next design item and
-needs the human's direction;
-whether the third row reflects a D27 answer and whether the closing sentence
-survives a template entry wait for that round.
+needs the human's direction.
