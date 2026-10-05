@@ -115,7 +115,7 @@ description = "Exercise lazy tree snapshots, native names, expansion, and invali
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['test', '--no-default-features', '--test', 'file_tree', '--test', 'file_tree_validation', '--test', 'file_tree_requests'])
+runCargo(['test', '--no-default-features', '--test', 'file_tree', '--test', 'file_tree_validation', '--test', 'file_tree_requests', '--test', 'directory_worker'])
 """
 
 [tasks."test:raster"]
