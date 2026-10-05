@@ -1237,7 +1237,13 @@ All on disposable fixtures and a disposable home,
    the generated `command`,
    `args`,
    and `environment` equal the expected lists;
-  no workspace-derived token appears except `STATE`;
+  no workspace-derived token appears except `STATE`,
+  the read-only project bind-back
+  (`--ro-bind PROJECT PROJECT`,
+  plus Helix's `PWD` spelling when it lies below a replaced directory),
+  which the user required on 2026-10-05 so projects below `/tmp` and `/run` work,
+  and the project's own TypeScript 7 launcher after `--`,
+  which the adopted TypeScript server requires;
    the server path is absolute.
 - Rust write denial:
    a fixture whose `build.rs` and proc macro try to write the project,

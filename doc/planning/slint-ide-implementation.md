@@ -94,13 +94,12 @@ and resumption details are in [the handover][handover].
 - [x] Measured Helix-supported runtime languages.
   Twenty-seven grammars cover 22 of the 23 measured languages;
   see [the runtime language record](slint-ide-runtime-languages.md).
-- [ ] Project-write confinement for language-server subprocesses.
-  The mechanism is measured and adopted
-  (bubblewrap wrapper,
+- [x] Project-write confinement for language-server subprocesses.
+  Bubblewrap,
   no network,
-  per-server process-id namespace policy);
+  per-server process-id namespace policy,
+  and a read-only project bind-back are the default on `main` since 2026-10-05;
   see [the write confinement plan](slint-ide-write-confinement.md).
-  Implementation and its acceptance tests follow the Language module core.
 - [x] Light mode and live system-theme changes through the private appearance portal.
   The nested compositor switches the private preference at runtime
   (`color-scheme dark|light` on its control socket),

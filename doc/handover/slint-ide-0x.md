@@ -164,13 +164,38 @@ each owned by one subagent:
   `main` is the integration point:
   the coordinating session cherry-picks each branch and reruns the suite.
   `inspect:native` takes `IDE_NATIVE_MCP_PORT` so parallel sessions do not collide.
-- Bubblewrap launch policy for the Language module,
-  continuing on branch `feat/ide-language-core` after `00dd01956`
-  in the worktree `.claude/worktrees/ide-language-core`:
-  the adopted argument list,
-  `--clearenv` with an allowlist if both real servers still pass,
-  the confinement acceptance tests,
-  and a confined `inspect:language` run.
+- Bubblewrap launch policy for the Language module:
+  done,
+  landed on `main` through `34e41e424`
+  (branch commits `6789cfd9f` through `b9f877b23`).
+  `LanguageSetup::default()` confines every server with `/usr/bin/bwrap`
+  (no network,
+  `--clearenv` plus an allowlist that keeps `RUSTUP_TOOLCHAIN`,
+  a process-id namespace except for the TypeScript servers,
+  per-project per-server state under the cache directory,
+  type acquisition off)
+  and binds the project back read-only last,
+  so projects below `/tmp`,
+  `/run`,
+  and `/dev` work;
+  only `/proc` is refused.
+  `PROJECT_MOUNT` in `src/language/confine/project.rs` is the single place a 1.x write mode would change.
+  Every failure is `LaunchRefused` with a remedy;
+  nothing falls back to an unconfined launch,
+  so the native UI must show that state.
+  Measured:
+  `inspect:language-confinement` 114 of 114 checks,
+  including fixtures below `/tmp` and `/run/user/1000`;
+  confined `inspect:language` 20 of 20 for TypeScript and 21 of 21 for Rust,
+  with the project tree unchanged and two `rustc` `E0308` diagnostics from `cargo check`
+  now that the Rust fixture has a `Cargo.lock`.
+  Gate on the identical IDE tree:
+  44 test binaries with no failures,
+  43 of 43 native tests,
+  lint.
+  Notes:
+  `doc/troubleshooting/bubblewrap-project-paths-and-working-directory.md`;
+  the TypeScript servers can still signal host processes because they run without a process-id namespace.
 - Native language navigation in the worktree `.claude/worktrees/ide-lsp-nav`
   on branch `feat/ide-lsp-navigation`
   (MCP ports 9358 and 9359):
@@ -206,10 +231,10 @@ each owned by one subagent:
   the record lands on `main` in `package/desktop-app/ide/design/`,
   local files only,
   and the questions are asked after it exists.
-- Integration order constraint:
-  the production launch policy stays the identity policy until the bubblewrap leg lands,
-  so neither language branch is integrated onto `main` before it;
-  otherwise opening a real project would start unconfined servers that write into it.
+- Integration order constraint,
+  now satisfied:
+  the bubblewrap leg is on `main`,
+  so the navigation and annotation branches may land once their gates pass.
 - IDE reaction to a live color-scheme switch:
   done,
   landed on `main` as `f158ae458` and its parent.
@@ -547,8 +572,7 @@ new branch work needs its own `git worktree add -b`.
 
 Queue after the in-flight work:
 
-1. Integrate the bubblewrap leg,
-   then the navigation and annotation branches,
+1. Integrate the navigation and annotation branches,
    then connect hints and diagnostics snapshots to the renderer,
    and verify all five language feature paths in the nested compositor against disposable projects.
 2. Nested compositor runtime output scaling and closing private-bus service activation,
@@ -730,7 +754,9 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
   licensed,
   and tested on `main`;
   see `doc/planning/slint-ide-runtime-languages.md`.
-- [ ] Enforce subprocess project-write confinement.
+- [x] Enforce subprocess project-write confinement.
+  Bubblewrap by default since `34e41e424`;
+  114 acceptance checks pass on disposable fixtures.
 - [x] Verify light mode and live system-theme changes using the private portal,
   not host KDE settings.
   Verified on 2026-10-05 headless and in the nested compositor.
