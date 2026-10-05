@@ -15,6 +15,8 @@ use crate::native::navigation_tests::row;
 /// const failure = new Error('simulated');
 /// ```
 use anyhow::anyhow;
+/// Hiding the window after the binding was closed.
+use slint::ComponentHandle;
 /// Child processes are read from the process table; elapsed time bounds shutdown.
 use std::{fs, time::Instant};
 

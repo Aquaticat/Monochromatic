@@ -388,6 +388,15 @@ arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
 run = "node bin/inspect-language-guards.mjs"
 
+[tasks."inspect:language-navigation-guards"]
+description = "Remove native language-navigation guards only in a disposable copy and observe named regression failures"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[only]" help="Comma-separated guard names to run; default is every guard"
+'''
+run = "node bin/inspect-language-navigation-guards.mjs"
+
 [tasks.mcp]
 depends = ["runtime"]
 description = "Build and run the source-view gate with native headless UI inspection"
@@ -450,9 +459,20 @@ for (const family of ['Inter Variable', 'JetBrains Mono']) {
   console.error('System-font isolation: ' + family + ' resolves to ' + fallback)
 }
 const socket = join(scratch, 'control.sock')
-const project = join(scratch, 'project')
+// IDE_NATIVE_PROJECT and IDE_NATIVE_FILE open an existing disposable project instead of the generated fixture.
+// Language servers run unconfined and may write into the project they analyze, so only a directory
+// below the system temporary directory is accepted.
+const { realpathSync } = await import('node:fs')
+const { sep } = await import('node:path')
+let project = join(scratch, 'project')
+let sourceFile = join(project, 'fixture.ts')
+if (process.env.IDE_NATIVE_PROJECT) {
+  project = realpathSync(process.env.IDE_NATIVE_PROJECT)
+  if (!project.startsWith(realpathSync(tmpdir()) + sep)) { throw new Error('IDE_NATIVE_PROJECT must be a disposable directory below ' + tmpdir()) }
+  sourceFile = realpathSync(resolve(project, process.env.IDE_NATIVE_FILE ?? ''))
+  if (!sourceFile.startsWith(project + sep)) { throw new Error('IDE_NATIVE_FILE must name a file inside IDE_NATIVE_PROJECT') }
+} else {
 mkdirSync(project)
-const sourceFile = join(project, 'fixture.ts')
 const lines = fixture === 'syntax' ? [
   'const 猫: string = "cat";',
   '// Mixed source scripts keep their shared baseline.',
@@ -465,6 +485,7 @@ const lines = fixture === 'syntax' ? [
 ] : ['I am a big cat.', 'Select text and use the native Copy action.', '猫 and é are grapheme test cases.']
 if (fixture === 'scroll') { for (let index = 0; index < 200; index++) { lines.push('Line ' + String(index + 4) + ': smooth pixel scrolling, 猫 and Latin.') } }
 writeFileSync(sourceFile, lines.join(String.fromCharCode(10)))
+}
 console.error('IDE_NATIVE_SOCKET=' + socket)
 console.error('IDE_NATIVE_FIXTURE=' + sourceFile)
 const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
