@@ -196,16 +196,68 @@ each owned by one subagent:
   Notes:
   `doc/troubleshooting/bubblewrap-project-paths-and-working-directory.md`;
   the TypeScript servers can still signal host processes because they run without a process-id namespace.
-- Native language navigation in the worktree `.claude/worktrees/ide-lsp-nav`
-  on branch `feat/ide-lsp-navigation`
-  (MCP ports 9358 and 9359):
-  startup wiring of `LanguageWorker`,
-  reload and open plumbing,
-  definition,
-  references,
-  hover,
-  and server-state messages,
-  following editord's bindings.
+- Native language navigation:
+  done,
+  landed on `main` through `d92a57d21`
+  (branch commits `e98f8b243` through `9aa5b8531`,
+  plus the coordinator's integration fix).
+  `native::run` enters the project directory right after `Workspace::new`,
+  starts `LanguageWorker`,
+  and keeps the window working if either fails.
+  Bindings,
+  from editord unless noted:
+  Ctrl+B for definition at the caret
+  (falling back to references when the only target is the caret's own line),
+  Ctrl+click for definition under the pointer,
+  Ctrl+Q for hover at the caret
+  (JetBrains Quick Documentation;
+  editord has no keyboard hover),
+  and hover after the pointer rests 350 ms.
+  Several targets open a location list beside the caret line;
+  `file` targets outside the project open read-only with an "Outside project" tag,
+  no tree reveal,
+  and no history slot.
+  Server and document states produce a note only after an explicit action;
+  the sentences are in `src/native/language/message.rs` and the README section "Language navigation".
+  The package README lists every deliberate difference from editord.
+  Integration finding:
+  the build image has no `bwrap`,
+  so window tests must launch the scripted server with `launch_directly`,
+  as `tests/language/support.rs` does;
+  the branch's tests used `LanguageSetup::default()`,
+  which became confinement after they were written,
+  and all failed with "the scripted server did not become ready" until `d92a57d21`.
+  That commit also adds a window test and guard entry for a refused launch,
+  the state a user without bubblewrap reaches.
+  Gate on the integration branch:
+  44 library and integration test binaries with no failures
+  (run before the test-only fix,
+  which does not touch them),
+  75 of 75 native tests,
+  lint;
+  the `launch-refused-explained` guard control failed when removed and passed when restored
+  (`~/temp/agent/ide-language-navigation-guard-KZntea`).
+  The branch's own evidence:
+  12 guard controls
+  (`~/temp/agent/ide-language-navigation-guard-reiHcb`,
+  `~/temp/agent/ide-language-navigation-guard-RKSEkB`)
+  and seat-input sessions against disposable TypeScript 7 and Rust projects in
+  `~/temp/agent/ide-lsp-nav-evidence/`,
+  taken unconfined before confinement landed;
+  the coordinating session inspected the TypeScript hover and Rust references frames.
+  Still to do for this feature:
+  rerun the nested sessions on `main`,
+  where servers are confined;
+  stop language-server shutdown from logging bare errors
+  (`context canceled`,
+  `StreamClosed`,
+  and rust-analyzer's "notify error: No path was found" all land at ERROR through `helix_lsp`),
+  which the repository's cleanup rule forbids;
+  selected rows of the location list use the palette's selected-text ink like the tree and search list.
+  Snapshots for the annotation renderer are stored in `State::annotations`
+  and read with `Annotations::hints(stamp)` and `Annotations::diagnostics(stamp)`;
+  accepting one triggers no render yet,
+  and the frame stamp does not include hints or diagnostics.
 - Inlay hints and diagnostics rendering inside the source layout in the worktree `.claude/worktrees/ide-lsp-annotations`
   on branch `feat/ide-lsp-annotations`
   (MCP ports 9368 and 9369),
@@ -231,10 +283,14 @@ each owned by one subagent:
   the record lands on `main` in `package/desktop-app/ide/design/`,
   local files only,
   and the questions are asked after it exists.
-- Integration order constraint,
-  now satisfied:
-  the bubblewrap leg is on `main`,
-  so the navigation and annotation branches may land once their gates pass.
+- Session-limit interruptions:
+  the API session limit cut the running agents off twice,
+  at about 11:10 and 14:15 on 2026-10-05.
+  Each time their worktrees held committed work and nothing was left running;
+  the coordinating session checked each worktree with `git status`,
+  checked for leftover processes and bound MCP ports,
+  and resumed every agent from its transcript with a message stating the measured state.
+  The compositor agent works in the main checkout and had uncommitted edits at the second cutoff.
 - IDE reaction to a live color-scheme switch:
   done,
   landed on `main` as `f158ae458` and its parent.
@@ -572,9 +628,11 @@ new branch work needs its own `git worktree add -b`.
 
 Queue after the in-flight work:
 
-1. Integrate the navigation and annotation branches,
-   then connect hints and diagnostics snapshots to the renderer,
-   and verify all five language feature paths in the nested compositor against disposable projects.
+1. Integrate the annotation branch,
+   then connect `State::annotations` to its renderer,
+   and verify all five language feature paths in the nested compositor on `main`,
+   confined,
+   against disposable projects.
 2. Nested compositor runtime output scaling and closing private-bus service activation,
    both decided by the user on 2026-10-05
    (`doc/decision/slint-ide-0x-scope.md`,

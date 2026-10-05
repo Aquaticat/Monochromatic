@@ -86,11 +86,15 @@ and resumption details are in [the handover][handover].
   [the language intelligence design](slint-ide-language-intelligence.md);
   the headless module core landed on `main` on 2026-10-05
   (scripted-server tests and 18 of 18 real-server checks each for TypeScript 7 and rust-analyzer).
-  The bubblewrap launch policy,
-  native wiring,
-  and source-view rendering of hover,
-  hints,
-  and diagnostics remain.
+  Bubblewrap confinement and native navigation
+  (definition,
+  references,
+  hover,
+  and server-state notes)
+  landed the same day.
+  Source-view rendering of hints and diagnostics,
+  quiet server shutdown,
+  and the confined nested-session check of all five paths remain.
 - [x] Measured Helix-supported runtime languages.
   Twenty-seven grammars cover 22 of the 23 measured languages;
   see [the runtime language record](slint-ide-runtime-languages.md).
