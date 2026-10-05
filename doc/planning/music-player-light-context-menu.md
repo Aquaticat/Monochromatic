@@ -63,6 +63,35 @@ Any deciding Slint behavior must be rechecked against its cited source and
 installed version before reuse.
 The immediate visual study remains native Compose on the Fold target.
 
+## Native API and fixture preparation
+
+Installed Material3 is `1.5.0-alpha27`.
+Its source archive was acquired from the URL in the installed Gradle module
+metadata and matched SHA-256
+`d6621ebb05d76d72ae7fd4cbd38a7766461bf658b45056fc2e55d2fcff55be8b`.
+The installed AAR also matched its metadata digest.
+The inspected `Menu.kt` declaration provides the existing classic
+`DropdownMenu`/`DropdownMenuItem` path,
+with a focusable popup,
+native outside/Back dismissal and a vertically scrollable content column.
+This is API/source preparation,
+not native fit or input-delivery verification.
+The grouped Expressive alternative is not substituted for the accepted
+classic menu.
+
+The owned prototype now shares its unchanged default track records between
+panels and exposes an optional row interaction modifier.
+A supplied modifier replaces the default click owner rather than stacking
+long-press handling over a competing clickable owner.
+The fixture records the actual source index and row data;
+duplicate visible names are not identity keys.
+Ordinary,
+lower-anchor,
+long-name and duplicate-identity inputs are authored controls,
+not template presets or live library state.
+Pure tests and fresh unknown-scene,
+unknown-action and target-identity mutants are in progress.
+
 ## Independently verifiable queue
 
 - [x] Identify D7's explicit actions and distinguish historical design from
