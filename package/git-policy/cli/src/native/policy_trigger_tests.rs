@@ -8,10 +8,7 @@
 //! ```
 
 /// The table under test and the registry it is keyed by.
-use super::{
-    Trigger, policy_reads_candidates, policy_runs_on, policy_triggers, trigger_is_ported,
-    trigger_name,
-};
+use super::{Trigger, policy_runs_on, policy_triggers, trigger_is_ported, trigger_name};
 use crate::policy_registry::{POLICY_REGISTRY, PolicyId};
 
 /// The five triggers in the order the incumbent declares them.
@@ -89,27 +86,6 @@ fn every_policy_declares_the_incumbent_triggers() {
             );
         }
     }
-}
-
-/// Exactly the five content policies read candidates; the four command policies never do.
-#[test]
-fn content_policies_are_the_ones_reading_candidates() {
-    let mut reading: Vec<PolicyId> = Vec::<PolicyId>::new();
-    for descriptor in POLICY_REGISTRY {
-        if policy_reads_candidates(descriptor.id) {
-            reading.push(descriptor.id);
-        }
-    }
-    assert_eq!(
-        reading,
-        [
-            PolicyId::FinalNewline,
-            PolicyId::MarkdownAutofix,
-            PolicyId::ForbiddenRootContext,
-            PolicyId::DependentVersionBump,
-            PolicyId::ForbiddenStrings,
-        ]
-    );
 }
 
 /// Only the forwarded-command and direct-command lifecycles are ported.

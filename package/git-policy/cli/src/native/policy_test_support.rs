@@ -9,6 +9,8 @@
 //! ```
 
 /// The facts interface and the fact types the script answers with.
+use super::config_schema::PolicyConfig;
+use super::policy_registry::{PolicyId, Severity};
 use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
 use super::rule_commit_index::IndexVsHead;
@@ -28,13 +30,19 @@ pub(crate) struct ScriptedFacts {
     pub(crate) sequencer: Result<SequencerState, String>,
     /// The answer to `remote_guess_creates_branch`.
     pub(crate) remote_guess: Result<bool, String>,
-    /// Every fact asked for, in call order; a remote guess is logged with its target.
+    /// Every fact asked for, in call order; the location is logged once, and a remote
+    /// guess with its target.
     pub(crate) asked: Vec<String>,
 }
 
 impl RepositoryFacts for ScriptedFacts {
     fn location(&mut self) -> Result<RepositoryLocation, String> {
-        self.asked.push(String::from("location"));
+        // The real provider remembers the location, so a repeated question starts no
+        // process; the script logs the question once for the same reason.
+        let name: String = String::from("location");
+        if !self.asked.contains(&name) {
+            self.asked.push(name);
+        }
         return self.location.clone();
     }
 
@@ -96,4 +104,19 @@ pub(crate) fn scripted_facts() -> ScriptedFacts {
         remote_guess: Ok(false),
         asked: Vec::<String>::new(),
     };
+}
+
+/// A copy of `config` with one policy's severity replaced.
+pub(crate) fn with_severity(
+    config: &PolicyConfig,
+    policy: PolicyId,
+    severity: Severity,
+) -> PolicyConfig {
+    let mut changed: PolicyConfig = config.clone();
+    for setting in &mut changed.settings {
+        if setting.id == policy {
+            setting.severity = severity;
+        }
+    }
+    return changed;
 }

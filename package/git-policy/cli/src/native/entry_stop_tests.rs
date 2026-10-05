@@ -63,7 +63,7 @@ fn forward_target_naming_this_executable_stops() {
                 environment.as_slice(),
                 &resolution
             ),
-            forward(),
+            forward(text(&["--version"])),
             "{target:?}"
         );
     }

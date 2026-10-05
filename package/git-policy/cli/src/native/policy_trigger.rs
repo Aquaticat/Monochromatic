@@ -125,29 +125,6 @@ pub fn policy_runs_on(id: PolicyId, trigger: Trigger) -> bool {
     return policy_triggers(id).contains(&trigger);
 }
 
-/// What: Whether a policy derives every finding from candidate content, that is, from the
-///       files a command would stage, commit, publish or check.
-/// Why:  Such a policy reports nothing for a lifecycle without candidates, and cannot be
-///       evaluated at all where candidates exist but reading them is not ported.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const readsCandidates = policy.check.toString().includes('context.git.candidates()'); // conceptually
-/// ```
-pub fn policy_reads_candidates(id: PolicyId) -> bool {
-    match id {
-        PolicyId::RequireRoot
-        | PolicyId::LinkedWorktreeOnly
-        | PolicyId::BranchWorktreeOnly
-        | PolicyId::AddExplicit => return false,
-        PolicyId::FinalNewline
-        | PolicyId::MarkdownAutofix
-        | PolicyId::ForbiddenRootContext
-        | PolicyId::DependentVersionBump
-        | PolicyId::ForbiddenStrings => return true,
-    }
-}
-
 /// What: Whether this executable implements the lifecycle a trigger belongs to.
 /// Why:  The post-commit and manual-push lifecycles need a landed commit and a push probe
 ///       that are not ported. The engine answers those triggers with a typed

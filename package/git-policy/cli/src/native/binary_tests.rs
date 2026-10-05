@@ -1,5 +1,5 @@
 //! What: Consumer-level controls that start the built native executable.
-//! Why: Forwarding, self-exclusion and fail-closed behaviour are promises about the
+//! Why: Forwarding, self-exclusion, policy decisions and refusals are promises about the
 //!      program a caller runs as `git`, so they are checked through that program
 //!      against real Git 2.56.0, never only through library functions.
 //!
@@ -21,9 +21,21 @@ mod forwarding;
 #[path = "binary_resolution_tests.rs"]
 mod resolution;
 
-/// Configuration loading and the fail-closed policy stage.
+/// Configuration loading and the read-only fast path.
 #[path = "binary_policy_tests.rs"]
 mod policy;
+
+/// Wrapper controls, escape hatches and commands Git refuses.
+#[path = "binary_controls_tests.rs"]
+mod controls;
+
+/// The refusal frontier: commands that need work this executable does not do.
+#[path = "binary_frontier_tests.rs"]
+mod frontier;
+
+/// The pre-forward built-in policies and the fixed transforms.
+#[path = "binary_builtin_tests.rs"]
+mod builtin;
 
 /// The `git cli-git` management namespace.
 #[path = "binary_management_tests.rs"]

@@ -220,6 +220,24 @@ pub mod policy_checks;
 /// The fixed argument transforms of a forwarded command, in order.
 pub mod policy_transforms;
 
+/// One complete pass: built-in policies, fixed transforms, optional policies.
+pub mod policy_pass;
+
+/// The names of the commands built into Git 2.56.0.
+pub mod git_builtins;
+
+/// The work of the installed cli-git that is not ported, and the refusal notice.
+pub mod unported;
+
+/// Durable commit-transaction and worktree-copy state left in a repository.
+pub mod pending_state;
+
+/// Which commands need unported work: commits, worktree copies, aliases and leases.
+pub mod refusal_frontier;
+
+/// The lifecycle of one wrapped Git command, from refusals to forwarding.
+pub mod wrapped_command;
+
 /// A scripted repository-facts provider for unit tests; never in the release build.
 #[cfg(test)]
 mod policy_test_support;

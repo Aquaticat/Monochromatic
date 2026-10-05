@@ -10,6 +10,9 @@
 
 /// Import the shared fixtures and bounded process helpers.
 use super::support::{Fixture, Observed, bounded, fixture, observe, remove, repository, wrapped};
+use git_policy_cli::management::DIRECT_CANDIDATES_NEED;
+use git_policy_cli::policy_registry::PolicyId;
+use git_policy_cli::unported::{Unported, unported_notice};
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 
@@ -165,16 +168,24 @@ fn retired_trust_commands_explain_and_change_nothing() {
     remove(&fixture);
 }
 
-/// A direct command reports configuration problems as events on standard output and never runs Git on the repository.
+/// A direct command reports configuration problems as events on standard output, runs the
+/// ported policies, and refuses instead of calling unread files clean.
 #[test]
-fn direct_commands_validate_then_stop() {
+fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
     let fixture: Fixture = fixture("management-direct");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    let nested: PathBuf = repo.join("nested");
+    std::fs::create_dir(&nested).expect("nested directory");
     std::fs::write(repo.join("file.txt"), b"no final newline").expect("file");
-    let stop: &str = "cli-git: policy execution is not implemented in this native development \
-                      executable, so git cli-git check was not run. Repository-changing commands \
-                      still require the installed cli-git.\n";
-    // Well-formed, from another directory through the global prefix.
+    let refusal: String = unported_notice(
+        &Unported::PolicyNeeds {
+            policy: PolicyId::FinalNewline,
+            needs: DIRECT_CANDIDATES_NEED,
+        },
+        "cli-git check",
+    );
+    // Well-formed, from another directory through the global prefix: the content policy
+    // cannot read the selected files, so the command stops instead of reporting a clean result.
     let repo_text: String = repo.to_string_lossy().into_owned();
     for arguments in [
         vec!["-C", repo_text.as_str(), "cli-git", "check", "--all"],
@@ -194,11 +205,108 @@ fn direct_commands_validate_then_stop() {
             Observed {
                 code: Some(2),
                 stdout: Vec::<u8>::new(),
-                stderr: stop.as_bytes().to_vec(),
+                stderr: refusal.as_bytes().to_vec(),
             },
             "{arguments:?}"
         );
     }
+    // A ported policy answers for real: clean at the top level, a finding on standard output below it.
+    assert_eq!(
+        run(
+            &fixture,
+            repo.as_path(),
+            &["cli-git", "check", "--all", "--policy", "require-root"]
+        ),
+        Observed {
+            code: Some(0),
+            stdout: Vec::<u8>::new(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    let finding: String = format!(
+        "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"require-root\",\"severity\":\"error\",\"code\":\"require-root/not-at-root\",\"message\":\"cli-git: not at the root of the git repository. Repo root is {root} but effective cwd is {root}/nested. Tip: cd to {root} or pass -C {root} before the subcommand.\",\"fix\":\"none\"}}\n",
+        root = repo.display()
+    );
+    assert_eq!(
+        run(
+            &fixture,
+            nested.as_path(),
+            &["cli-git", "check", "--all", "--policy", "require-root"]
+        ),
+        Observed {
+            code: Some(1),
+            stdout: finding.clone().into_bytes(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    // The first error stops the pass; keep-going written before the namespace reaches the
+    // content policy, which then refuses after the finding was reported.
+    assert_eq!(
+        run(&fixture, nested.as_path(), &["cli-git", "check", "--all"]),
+        Observed {
+            code: Some(1),
+            stdout: finding.clone().into_bytes(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    assert_eq!(
+        run(
+            &fixture,
+            nested.as_path(),
+            &["--cli-git-keep-going", "cli-git", "check", "--all"]
+        ),
+        Observed {
+            code: Some(2),
+            stdout: finding.into_bytes(),
+            stderr: refusal.as_bytes().to_vec(),
+        }
+    );
+    // An escape written before the namespace skips its policy.
+    assert_eq!(
+        run(
+            &fixture,
+            nested.as_path(),
+            &[
+                "--no-enforce-require-root",
+                "cli-git",
+                "check",
+                "--all",
+                "--policy",
+                "require-root"
+            ]
+        ),
+        Observed {
+            code: Some(0),
+            stdout: Vec::<u8>::new(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    // A direct fix has no ported policy to run; with the content policy selected it refuses.
+    assert_eq!(
+        run(
+            &fixture,
+            repo.as_path(),
+            &["cli-git", "fix", "--all", "--policy", "require-root"]
+        ),
+        Observed {
+            code: Some(0),
+            stdout: Vec::<u8>::new(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    let fix: Observed = run(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]);
+    assert_eq!(fix.code, Some(2));
+    assert_eq!(fix.stdout, Vec::<u8>::new());
+    assert_eq!(
+        stderr_text(&fix),
+        unported_notice(
+            &Unported::PolicyNeeds {
+                policy: PolicyId::FinalNewline,
+                needs: DIRECT_CANDIDATES_NEED,
+            },
+            "cli-git fix",
+        )
+    );
     // An unknown selected policy: one config-invalid event on standard output.
     let unknown: Observed = run(
         &fixture,
@@ -232,7 +340,24 @@ fn direct_commands_validate_then_stop() {
         "{}",
         stdout_text(&invalid)
     );
-    // `fix` changed nothing.
+    // A registered commit transaction stops a direct command before any policy.
+    std::fs::write(&source, "{}").expect("valid config");
+    let registry: PathBuf = repo.join(".git/cli-git-transactions");
+    std::fs::create_dir_all(registry.join("0123-transaction")).expect("registry entry");
+    assert_eq!(
+        run(
+            &fixture,
+            repo.as_path(),
+            &["cli-git", "check", "--all", "--policy", "require-root"]
+        ),
+        Observed {
+            code: Some(2),
+            stdout: Vec::<u8>::new(),
+            stderr: unported_notice(&Unported::TransactionRecovery(registry), "cli-git check")
+                .into_bytes(),
+        }
+    );
+    // Nothing a direct command did changed the file.
     assert_eq!(
         std::fs::read(repo.join("file.txt")).expect("file"),
         b"no final newline"

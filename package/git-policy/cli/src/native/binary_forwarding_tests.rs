@@ -94,7 +94,8 @@ fn argument_bytes_reach_git_unchanged() {
     let mut path: OsString = fixture.root.join("bin").into_os_string();
     path.push(":");
     path.push(fixture.root.join("probe"));
-    let mut probe_arguments: Vec<OsString> = text_arguments(&["rev-parse"]);
+    // `version` needs no repository fact, so the probe is started once, with the caller's arguments.
+    let mut probe_arguments: Vec<OsString> = text_arguments(&["version"]);
     probe_arguments.extend(adversarial.iter().cloned());
     let probed: Observed = observe(
         bounded(
@@ -105,7 +106,7 @@ fn argument_bytes_reach_git_unchanged() {
         .args(probe_arguments.as_slice()),
         b"",
     );
-    let mut expected: Vec<u8> = b"11\0rev-parse\0".to_vec();
+    let mut expected: Vec<u8> = b"11\0version\0".to_vec();
     for argument in &adversarial {
         expected.extend_from_slice(argument.as_bytes());
         expected.push(0);
@@ -309,7 +310,7 @@ fn environment_overlay_reaches_git() {
         .env("GIT_CONFIG_KEY_0", "user.name")
         .env("GIT_CONFIG_VALUE_0", "Caller Value")
         .env("RAW_VALUE", OsStr::from_bytes(b"raw-\xff"))
-        .arg("status"),
+        .arg("version"),
         b"",
     );
     let mut expected: Vec<u8> = b"2\0user.name\0Caller Value\0core.lockfilePid\0true\0".to_vec();

@@ -185,6 +185,49 @@ pub fn repository(fixture: &Fixture, name: &OsStr) -> PathBuf {
     return root;
 }
 
+/// Run a wrapped command in a directory, with empty standard input, and return what the caller saw.
+pub fn run_wrapped(fixture: &Fixture, directory: &Path, arguments: &[&str]) -> Observed {
+    return observe(wrapped(fixture).current_dir(directory).args(arguments), b"");
+}
+
+/// Run real Git directly in a directory, with empty standard input, and return what the caller saw.
+pub fn run_direct(fixture: &Fixture, directory: &Path, arguments: &[&str]) -> Observed {
+    return observe(direct(fixture).current_dir(directory).args(arguments), b"");
+}
+
+/// Real Git's porcelain status of a repository, untracked files included, as text.
+pub fn porcelain(fixture: &Fixture, repo: &Path) -> String {
+    let output: Output = git(
+        fixture,
+        repo,
+        &["status", "--porcelain=v1", "--untracked-files=all"],
+    );
+    return String::from_utf8_lossy(&output.stdout).into_owned();
+}
+
+/// What a caller sees when a command stops with exit status 2 and this text on standard error.
+pub fn stopped_with(stderr: &str) -> Observed {
+    return Observed {
+        code: Some(2),
+        stdout: Vec::<u8>::new(),
+        stderr: stderr.as_bytes().to_vec(),
+    };
+}
+
+/// What a caller sees when a command succeeds without printing anything.
+pub fn silent_success() -> Observed {
+    return Observed {
+        code: Some(0),
+        stdout: Vec::<u8>::new(),
+        stderr: Vec::<u8>::new(),
+    };
+}
+
+/// Standard error of an observed command as text.
+pub fn stderr_of(observed: &Observed) -> String {
+    return String::from_utf8_lossy(&observed.stderr).into_owned();
+}
+
 /// What: Write an executable file, as a PATH candidate, through a child `tee` process.
 /// Why:  Controls run on several threads. If this process opened the file for writing, a
 ///       child forked by another control at that moment would inherit the open file until
