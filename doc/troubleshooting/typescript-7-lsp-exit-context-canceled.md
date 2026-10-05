@@ -255,29 +255,30 @@ Tracker searches on 2026-10-05:
   It is the synchronous API case.
   The fix touches `tsc/internal/api/server.go` only and treats a cancellation during an expected shutdown as success.
   The language server path was not changed.
-- `microsoft/TypeScript`, issues, `lsp exit notification exit code` and `language server shutdown exit stderr`: nothing.
+- `microsoft/TypeScript`, issues,
+  `lsp exit notification exit code` and `language server shutdown exit stderr`: nothing.
 - `microsoft/typescript-go` (the closed staging repository), issues, `context canceled`:
   #4809, closed, about the parent-process watchdog; `exit notification` and `lsp exit code shutdown`: nothing.
 - Pull requests in `microsoft/typescript-go` for `exit notification context canceled`: nothing.
 
 No report of the `exit` notification case was found, so a new issue is the fitting artifact.
 
-1. Is it really upstream's fault?
-   Yes. The protocol asks for status 0 after `shutdown` and `exit`,
-   and a normal end is reported as an error.
-2. Can upstream fix it?
-   Yes. Two small changes in one function.
-3. Are they supporting this use case?
-   Yes. `--lsp --stdio` is the product's language server, and `shutdown` then `exit` is the protocol's shutdown.
-4. Would the repo welcome our contribution?
-   `CONTRIBUTING.md` ("Use of AI Assistance") has no objection to AI coding tools,
-   requires disclosure in a pull request, forbids bulk agent-driven contributions and automated comments,
-   and accepts bug-fix pull requests only for issues labelled "help wanted".
-   A single issue filed by a human, with disclosure, fits; a pull request needs an approved issue first.
-5. Will they likely fix it?
-   Likely: the same message on the API surface was fixed within days of [#64242][ts-64242].
-6. Have we prototyped a minimal fix compatible with their architecture?
-   Yes.
+1.  Is it really upstream's fault?
+    Yes. The protocol asks for status 0 after `shutdown` and `exit`,
+    and a normal end is reported as an error.
+2.  Can upstream fix it?
+    Yes. Two small changes in one function.
+3.  Are they supporting this use case?
+    Yes. `--lsp --stdio` is the product's language server, and `shutdown` then `exit` is the protocol's shutdown.
+4.  Would the repo welcome our contribution?
+    `CONTRIBUTING.md` ("Use of AI Assistance") has no objection to AI coding tools,
+    requires disclosure in a pull request, forbids bulk agent-driven contributions and automated comments,
+    and accepts bug-fix pull requests only for issues labelled "help wanted".
+    A single issue filed by a human, with disclosure, fits; a pull request needs an approved issue first.
+5.  Will they likely fix it?
+    Likely: the same message on the API surface was fixed within days of [#64242][ts-64242].
+6.  Have we prototyped a minimal fix compatible with their architecture?
+    Yes.
 
 Prototype:
 [`typescript-7-lsp-exit-context-canceled.patch`](typescript-7-lsp-exit-context-canceled.patch),
@@ -318,9 +319,9 @@ typescript@7.0.2 (also `main` at ca197b7b: `Run` and `handleExit` are unchanged)
 
 ### Steps
 
-1. Start `tsc --lsp --stdio`, send `initialize` and `initialized`.
-2. Send `shutdown`, wait for its response.
-3. Send the `exit` notification.
+1.  Start `tsc --lsp --stdio`, send `initialize` and `initialized`.
+2.  Send `shutdown`, wait for its response.
+3.  Send the `exit` notification.
 
 ### Actual
 

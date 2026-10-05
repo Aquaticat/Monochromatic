@@ -261,24 +261,24 @@ The three records are judged separately.
 
 ### The end-of-stream record
 
-1. Is it really upstream's fault?
-   Yes, as an inconsistency:
-   the response reader treats `StreamClosed` as a normal end and the standard-error reader logs it as an error,
-   for the same event.
-2. Can upstream fix it?
-   Yes. One match arm.
-3. Are they supporting this use case?
-   Yes. It happens inside Helix as well, after `:lsp-stop`, `:lsp-restart`, and any server exit;
-   embedding is not required to see it.
-4. Would the repo welcome our contribution?
-   `docs/CONTRIBUTING.md` welcomes contributions of any size and states no rule about AI assistance;
-   `.github/ISSUE_TEMPLATE/bug_report.yaml` and `enhancement.md` state none either.
-   Tracker searches for `LLM generated` and `AI generated pull requests policy` found no stated ban.
-   A filing must still disclose assistance and name what a human verified.
-5. Will they likely fix it?
-   No signal against it: no won't-fix, no stated non-goal, no declined request.
-6. Have we prototyped a minimal fix compatible with their architecture?
-   Yes.
+1.  Is it really upstream's fault?
+    Yes, as an inconsistency:
+    the response reader treats `StreamClosed` as a normal end and the standard-error reader logs it as an error,
+    for the same event.
+2.  Can upstream fix it?
+    Yes. One match arm.
+3.  Are they supporting this use case?
+    Yes. It happens inside Helix as well, after `:lsp-stop`, `:lsp-restart`, and any server exit;
+    embedding is not required to see it.
+4.  Would the repo welcome our contribution?
+    `docs/CONTRIBUTING.md` welcomes contributions of any size and states no rule about AI assistance;
+    `.github/ISSUE_TEMPLATE/bug_report.yaml` and `enhancement.md` state none either.
+    Tracker searches for `LLM generated` and `AI generated pull requests policy` found no stated ban.
+    A filing must still disclose assistance and name what a human verified.
+5.  Will they likely fix it?
+    No signal against it: no won't-fix, no stated non-goal, no declined request.
+6.  Have we prototyped a minimal fix compatible with their architecture?
+    Yes.
 
 Prototype, applied to a fresh clone at the pinned revision
 (`~/temp/agent/upstream-prototype.pGRX48oY/helix`, origin `https://github.com/helix-editor/helix.git`):
@@ -358,33 +358,33 @@ passes with it and fails again when the change is reverted. A human has reviewed
 
 ### Standard-error lines at ERROR
 
-1. Is it really upstream's fault?
-   No.
-   Helix's default log level is `Warn` (`helix-term/src/main.rs:9`),
-   so logging standard error at `error!` is what makes a failing server's output visible in the editor's log
-   without a verbosity flag.
-   The level is a choice that fits the editor.
-2. Can upstream fix it? Not applicable after constraint 1.
-3. Are they supporting this use case? Embedding `helix-lsp` outside Helix is not a documented use.
-4. Would the repo welcome our contribution? Not evaluated.
-5. Will they likely fix it? Not evaluated.
-6. Prototype: none.
+1.  Is it really upstream's fault?
+    No.
+    Helix's default log level is `Warn` (`helix-term/src/main.rs:9`),
+    so logging standard error at `error!` is what makes a failing server's output visible in the editor's log
+    without a verbosity flag.
+    The level is a choice that fits the editor.
+2.  Can upstream fix it? Not applicable after constraint 1.
+3.  Are they supporting this use case? Embedding `helix-lsp` outside Helix is not a documented use.
+4.  Would the repo welcome our contribution? Not evaluated.
+5.  Will they likely fix it? Not evaluated.
+6.  Prototype: none.
 
 Decision: do not file.
 
 ### Error responses at ERROR
 
-1. Is it really upstream's fault?
-   No.
-   Recording every failed request at the transport is a consistent choice for the editor;
-   the source makes no distinction between error codes.
-   An embedder that reports every failed request itself sees the record as a duplicate,
-   which is a difference in needs, not a defect.
-2. Can upstream fix it? Not applicable after constraint 1.
-3. Are they supporting this use case? Not a documented use.
-4. Would the repo welcome our contribution? Not evaluated.
-5. Will they likely fix it? Not evaluated.
-6. Prototype: none.
+1.  Is it really upstream's fault?
+    No.
+    Recording every failed request at the transport is a consistent choice for the editor;
+    the source makes no distinction between error codes.
+    An embedder that reports every failed request itself sees the record as a duplicate,
+    which is a difference in needs, not a defect.
+2.  Can upstream fix it? Not applicable after constraint 1.
+3.  Are they supporting this use case? Not a documented use.
+4.  Would the repo welcome our contribution? Not evaluated.
+5.  Will they likely fix it? Not evaluated.
+6.  Prototype: none.
 
 Decision: do not file.
 

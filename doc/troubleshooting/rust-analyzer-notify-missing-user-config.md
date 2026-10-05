@@ -240,22 +240,22 @@ so the report describes this behavior on another platform.
 The watched entry and the `watch` function are unchanged on `master`
 (`ce37b245369ade4e2a18063ae4d60a17606c6d26`, compared on 2026-10-05).
 
-1. Is it really upstream's fault?
-   Yes. The server watches a path it has no reason to expect, and the maintainer's report says so.
-2. Can upstream fix it?
-   Yes, for example by watching the file only when it exists, or by watching its directory.
-3. Are they supporting this use case?
-   Yes. Server-side watching is a documented value of `files.watcher`.
-4. Would the repo welcome our contribution?
-   Not in the form this session can produce.
-   `AI_POLICY.md` on `master` allows AI as a tool with disclosure,
-   but requires comments to maintainers and issue descriptions to be written by humans in their own words,
-   and forbids issues and pull requests opened by autonomous agents.
-   A drafted comment would break that rule.
-5. Will they likely fix it?
-   Plausible: a maintainer opened the report; nothing has happened in the thread since.
-6. Have we prototyped a minimal fix?
-   No. Constraint 4 fails, so no prototype was built.
+1.  Is it really upstream's fault?
+    Yes. The server watches a path it has no reason to expect, and the maintainer's report says so.
+2.  Can upstream fix it?
+    Yes, for example by watching the file only when it exists, or by watching its directory.
+3.  Are they supporting this use case?
+    Yes. Server-side watching is a documented value of `files.watcher`.
+4.  Would the repo welcome our contribution?
+    Not in the form this session can produce.
+    `AI_POLICY.md` on `master` allows AI as a tool with disclosure,
+    but requires comments to maintainers and issue descriptions to be written by humans in their own words,
+    and forbids issues and pull requests opened by autonomous agents.
+    A drafted comment would break that rule.
+5.  Will they likely fix it?
+    Plausible: a maintainer opened the report; nothing has happened in the thread since.
+6.  Have we prototyped a minimal fix?
+    No. Constraint 4 fails, so no prototype was built.
 
 Decision: do not file, and post no comment.
 What the existing thread lacks is the cause:
