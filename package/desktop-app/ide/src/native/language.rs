@@ -2,8 +2,9 @@
 //!
 //! This module owns the window's one `LanguageWorker`. A 20 ms timer keeps the worker told about
 //! the displayed file, polls status, replies, and snapshots, and applies a reply only while it
-//! still answers the request it was sent for and describes the displayed text. Inlay hints and
-//! diagnostics are stored for the source renderer; this module does not draw them.
+//! still answers the request it was sent for and describes the displayed text. Accepted inlay hints
+//! and diagnostics go into `State::annotations`, the library's `ide_app::annotation::Annotations`,
+//! which the source renderer reads with the stamp of the text it draws; this module does not draw them.
 
 /// One source owner, one window, and the navigation state that opens other files.
 use super::{AppWindow, State, navigation::Navigation};
@@ -43,8 +44,6 @@ use std::{
 
 /// Window callbacks: keys, pointer, list choices, and dismissal.
 mod actions;
-/// Latest accepted inlay hints and diagnostics, for the source renderer.
-mod annotations;
 /// The native checks every reply passes before it is applied.
 mod guard;
 /// Hover content as plain text.
@@ -64,13 +63,12 @@ mod sync;
 /// Places a target names, and opening them.
 mod targets;
 
-/// The source renderer reads hints and diagnostics through this store in `State`, asking with
-/// the stamp of the text it draws: `DocumentStamp { file: state.file_generation,
-/// revision: state.document.revision() }`.
-pub(super) use annotations::Annotations;
 /// The file-open path places the caret at a target once its file is shown.
 pub(super) use targets::{Jump, place};
 
+/// Server hints and diagnostics painted by the poll, and the problem card yielding to the popup.
+#[cfg(test)]
+mod annotation_wiring_tests;
 /// Ctrl+B, Ctrl+click, and the references fallback through real window events.
 #[cfg(test)]
 mod definition_tests;

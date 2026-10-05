@@ -10,12 +10,14 @@
 mod ui {
     // Use the toolkit's supported re-export syntax rather than editing generated Rust.
     slint::slint! {
-        export { AppWindow, SourceSelection } from "../ui/app.slint";
+        export { AppWindow, SourceMarker, SourceSelection } from "../ui/app.slint";
     }
 }
 
 /// Source-open errors identify their input instead of exposing an unlabelled I/O failure.
 use anyhow::{Context, bail};
+/// Hint and diagnostic snapshots with their position index.
+use ide_app::annotation::Annotations;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
 /// The Language module's handle, its startup rule, its log directive, and the reload record.
@@ -45,6 +47,14 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
+/// Inlay hints and diagnostics: the snapshot setter, visible subset, marker rows, and caret card.
+mod annotate;
+/// Rendered annotation pixels in both schemes, untouched source pixels, and visible-only repaints.
+#[cfg(test)]
+mod annotation_paint_tests;
+/// Injected hint and diagnostic snapshots through real key and pointer events.
+#[cfg(test)]
+mod annotation_tests;
 /// Real key events drive caret movement, Shift selection, paging, and caret-following scroll.
 #[cfg(test)]
 mod caret_tests;
@@ -64,6 +74,9 @@ mod focus_tests;
 mod font_tests;
 /// Source selection and keyboard callbacks.
 mod input;
+/// Inspection-only hint and diagnostic injection from a JSON file; debug builds only.
+#[cfg(debug_assertions)]
+mod inspect;
 /// Go to definition, references, and hover through the Language module.
 mod language;
 /// Project tree and asynchronous successful-file navigation.
@@ -168,8 +181,9 @@ struct State {
     find: Option<FindResults>,
     /// The latest accepted external reload the Language module has not been told about yet.
     language_reload: Option<DocumentReload>,
-    /// Latest accepted inlay hints and diagnostics; read them with the displayed stamp.
-    annotations: language::Annotations,
+    /// Latest accepted hint and diagnostic snapshots, stored by the language poll;
+    /// painted and handed out only while they describe the displayed file and revision.
+    annotations: Annotations,
     /// The displayed file lies outside the project; it was opened read-only from a language target.
     outside_project: bool,
     /// Where the caret goes once the file of a language target is installed.
@@ -201,7 +215,7 @@ impl State {
             frame_stamp: None,
             find: None,
             language_reload: None,
-            annotations: language::Annotations::default(),
+            annotations: Annotations::default(),
             outside_project: false,
             pending_jump: None,
         };
@@ -287,6 +301,9 @@ pub fn run(options: Options) -> anyhow::Result<()> {
         language_worker,
     );
     render(&window, &state);
+    // Debug builds started with `IDE_INSPECT_ANNOTATIONS` show that file's hints and diagnostics; see `inspect`.
+    #[cfg(debug_assertions)]
+    inspect::inject(&window, &state)?;
     if state.borrow().file_path.is_none() {
         window.invoke_focus_tree();
     }

@@ -126,10 +126,24 @@ pub(super) fn definitions(variables: &[(&str, &str)], command: Option<&str>) -> 
     );
     let program_text = program.display().to_string();
     let chosen = command.unwrap_or(&program_text);
-    let mut environment = String::from("IDE_SCRIPTED_PUSH = '0'");
-    for (name, value) in variables {
-        environment.push_str(&format!(", IDE_SCRIPTED_{name} = '{value}'"));
+    // What: `Vec<String>` is a growable list of owned strings (sibling: a fixed array `[String; N]`);
+    //       `iter().any(...)` asks whether one pair names `PUSH`; `*name` reads the borrowed name.
+    // Why: The server pushes a diagnostic on every publish unless told not to. Tests that do not
+    //      ask for it turn it off, and a test that names `PUSH` decides alone: an inline TOML
+    //      table refuses the same key twice.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const entries: string[] = variables.some(([name]) => name === 'PUSH') ? [] : ["IDE_SCRIPTED_PUSH = '0'"];
+    // ```
+    let mut entries: Vec<String> = Vec::new();
+    if !variables.iter().any(|(name, _value)| return *name == "PUSH") {
+        entries.push(String::from("IDE_SCRIPTED_PUSH = '0'"));
     }
+    for (name, value) in variables {
+        entries.push(format!("IDE_SCRIPTED_{name} = '{value}'"));
+    }
+    let environment = entries.join(", ");
     return format!(
         r#"
 [language-server.{SERVER}]

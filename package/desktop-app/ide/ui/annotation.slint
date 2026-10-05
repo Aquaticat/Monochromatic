@@ -1,0 +1,96 @@
+// Inlay hints and diagnostics of the displayed file. Native code positions every element from the shaped rows;
+// this markup only draws severity markers, hint label boxes, and the card for the problems at the caret.
+import { Palette } from "std-widgets.slint";
+
+// One severity marker after a line's text: a box in the severity ink with the severity's letter.
+export struct SourceMarker {
+    x: float,
+    y: float,
+    // 0 error, 1 warning, 2 information, 3 hint.
+    severity: int,
+}
+
+// Severity inks per scheme: the WinUI system critical and caution fill colors, the fluent accent pair this
+// toolkit style uses for information, and a neutral gray.
+// Each reaches at least 5:1 against the scheme's background, so letters on them and underlines in them stay legible.
+export global AnnotationInk {
+    out property <bool> dark: Palette.color-scheme == ColorScheme.dark;
+    out property <color> error: self.dark ? #FF99A4 : #C42B1C;
+    out property <color> warning: self.dark ? #FCE100 : #9D5D00;
+    out property <color> information: self.dark ? #60CDFF : #005FB8;
+    out property <color> suggestion: self.dark ? #B4B4B4 : #616161;
+    // Hint labels: the source ink at 70 percent over a box of the source ink at 8 percent.
+    out property <brush> hint: Palette.foreground.with-alpha(0.7);
+    out property <brush> hint-box: Palette.foreground.with-alpha(0.08);
+    public pure function severity(level: int) -> color {
+        if level == 0 { return self.error; }
+        if level == 1 { return self.warning; }
+        if level == 2 { return self.information; }
+        return self.suggestion;
+    }
+    public pure function letter(level: int) -> string {
+        if level == 0 { return "E"; }
+        if level == 1 { return "W"; }
+        if level == 2 { return "I"; }
+        return "H";
+    }
+}
+
+// The marker's letter, not only its color, names the severity.
+export component SeverityMarker inherits Rectangle {
+    in property <int> severity;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: AnnotationInk.severity(root.severity);
+    // Markers repeat what the caret card and its accessible text say, so they are not read separately.
+    accessible-role: none;
+    Text {
+        width: parent.width;
+        height: parent.height;
+        text: AnnotationInk.letter(root.severity);
+        color: Palette.background;
+        font-size: 12px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        accessible-role: none;
+    }
+}
+
+// The problems at the caret, worst first, each spelled out with its severity, code, and source.
+export component ProblemCard inherits Rectangle {
+    in property <string> text;
+    in property <int> severity;
+    in property <length> widest: 560px;
+    width: min(root.widest, content.preferred-width + 2 * root.inset + root.stripe);
+    height: content.preferred-height + 2 * root.inset;
+    private property <length> inset: 8px;
+    private property <length> stripe: 4px;
+    background: Palette.alternate-background;
+    border-width: 1px;
+    border-color: Palette.border;
+    border-radius: 6px;
+    drop-shadow-blur: 6px;
+    drop-shadow-color: #00000040;
+    // The worst severity's ink as a stripe along the left edge; the text names every severity in words.
+    Rectangle {
+        x: 0px;
+        width: root.stripe;
+        height: parent.height;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+        background: AnnotationInk.severity(root.severity);
+    }
+    content := Text {
+        x: root.stripe + root.inset;
+        y: root.inset;
+        width: root.width - root.stripe - 2 * root.inset;
+        text: root.text;
+        color: Palette.foreground;
+        font-size: 13px;
+        wrap: word-wrap;
+        accessible-role: AccessibleRole.text;
+        accessible-label: root.text;
+    }
+}

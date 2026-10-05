@@ -1,9 +1,10 @@
-//! One language tick: synchronize, read status, send due requests, apply replies, store snapshots.
+//! One language tick: synchronize, read status, send due requests, apply replies, store snapshots,
+//! and repaint the source when a snapshot was stored.
 
 /// The state, the request record, and the steps of a tick.
 use super::{Action, Language, Pending, guard, message, outcome, surface, sync};
-/// The window, the source, and the navigation that opens other files.
-use crate::native::{AppWindow, State, navigation::Navigation};
+/// The window, the source, the navigation that opens other files, and the source repaint.
+use crate::native::{AppWindow, State, navigation::Navigation, render};
 /// The identity of the displayed text and the requests the worker takes.
 use ide_app::language::{identity::DocumentStamp, reply::PositionRequest};
 /// What: `Rc<RefCell<T>>` is the window's shared, borrow-checked state.
@@ -179,27 +180,32 @@ fn finish(
     }
 }
 
-/// What: Store new hints and diagnostics that describe the displayed text.
-/// Why: The source renderer reads them from `State`; this module does not draw them.
+/// What: Store new hints and diagnostics that describe the displayed text, and answer whether
+///       either was stored. `anyhow::Result<bool>` is "yes or no, or the worker's error".
+/// Why: Storing draws nothing: the source renderer reads the store from `State` when it runs,
+///      so the tick repaints once when this answers yes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function snapshots(language: Language, source: Shared<State>, displayed: DocumentStamp): void
+/// function snapshots(language: Language, source: Shared<State>, displayed: DocumentStamp): boolean
 /// ```
 fn snapshots(
     language: &mut Language,
     source: &Rc<RefCell<State>>,
     displayed: DocumentStamp,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<bool> {
     let Some(worker) = language.worker.as_mut() else {
-        return Ok(());
+        return Ok(false);
     };
     let hints = worker.try_take_hints()?;
     let diagnostics = worker.try_take_diagnostics()?;
     let mut current = source.borrow_mut();
+    // `mut` lets either branch record that the store now holds something new to paint.
+    let mut accepted = false;
     if let Some(snapshot) = hints
         && current.annotations.accept_hints(displayed, snapshot)
     {
+        accepted = true;
         // The accessor the renderer uses reports what was stored.
         let count = current
             .annotations
@@ -214,6 +220,7 @@ fn snapshots(
     if let Some(snapshot) = diagnostics
         && current.annotations.accept_diagnostics(displayed, snapshot)
     {
+        accepted = true;
         let groups = current
             .annotations
             .diagnostics(displayed)
@@ -224,7 +231,7 @@ fn snapshots(
             "stored diagnostics for the displayed text"
         );
     }
-    return Ok(());
+    return Ok(accepted);
 }
 
 /// What: Ask for hover information where the pointer has rested long enough.
@@ -294,6 +301,8 @@ pub(super) fn tick(
         return;
     }
     let displayed = surface::displayed(&source.borrow());
+    // Set by the steps when new hints or diagnostics were stored; read after them to repaint once.
+    let mut repaint = false;
     // A closure returning `anyhow::Result<()>` lets `?` stop the steps at the first worker error.
     let mut steps = || -> anyhow::Result<()> {
         sync::update(language, source)?;
@@ -312,7 +321,7 @@ pub(super) fn tick(
         finish(window, source, navigation, language);
         // A references request made by a finished definition goes out in the same tick.
         send(language, false, displayed)?;
-        snapshots(language, source, displayed)?;
+        repaint = snapshots(language, source, displayed)?;
         if language.synced == Some(displayed) {
             sync::hints(language, window, displayed)?;
         }
@@ -321,6 +330,18 @@ pub(super) fn tick(
     if let Err(error) = steps() {
         stop(window, source, language, &error);
         return;
+    }
+    // What: `render` rebuilds the source image and its overlays from `State`.
+    // Why: Accepted hints and diagnostics are only stored by the steps; without this call they
+    //      would stay invisible until some unrelated event repainted the source.
+    //      No `State` borrow is held here, which `render` needs because it borrows mutably.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (repaint) render(window, source);
+    // ```
+    if repaint {
+        render(window, source);
     }
     let state = source.borrow();
     let reason = surface::stale(window, &state, &language.shown, language.rest.over());
