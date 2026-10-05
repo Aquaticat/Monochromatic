@@ -224,6 +224,19 @@ recorded preflight settles only the observed system-package startup dialogs;
 no dialog dismissal occurs during accepted acquisition.
 This is a harness correction to test,
 not an asserted ANR root cause.
+Its first attempt still rejected a System UI window at the first held
+scene after the brief preflight had passed.
+The retained log confirms process `1534` created both the pending warm-up
+activity and the new missing-file activity;
+process retention worked but did not prevent this later focus loss.
+The capture loop aborted without publishing or continuing the cohort.
+The next diagnostic observes startup without app launches,
+settings writes or touches for a bounded interval,
+then retains that same live guest for recovery and acquisition rather
+than automatically introducing another cold start.
+The native-container bridge is ADB touch;
+the optional gRPC helper is not used because its Python dependency is
+absent in this image.
 
 Final held-pose acquisition keeps the runtime configuration fixed,
 with actual adapter,
