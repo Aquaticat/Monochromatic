@@ -115,7 +115,7 @@ not source inspection or guessed text width.
 
 - [x] Identify D26's selected bar,
   its state transitions and the production loading/analysis boundaries.
-- [ ] Build pure authored scan state and an isolated native host using the
+- [x] Build pure authored scan state and an isolated native host using the
   accepted player,
   without calling production analysis or persistence.
 - [ ] Measure light/dark fit on both panels at 100% and 200% text,
@@ -172,9 +172,35 @@ APK SHA-256 is
 `c06ec80240e41641fee1fdec79313a8294b9595544740145f4fa6f2b1f77ddf1`.
 Repeated Android lint still has the inherited errors and no new scan-file
 finding.
-A separate owned visit must reproduce the 12dp rejection and prove the
-source-padding result with unchanged outer slots.
-No fix or universal fit is claimed from the code change alone.
+A separate owned visit reproduced the 12dp rejection and proved the
+source-padding result in the same APK.
+For inner/light/200% Resume,
+native intrinsic text width was 233.5px.
+The padded draft laid out 186 × 91px and reported height overflow under its
+single-line limit;
+source padding laid out 234 × 91px with neither overflow axis set.
+The measured outer bar/control slots and player geometry were identical.
+This establishes the paired padding result,
+not a universal text-fit claim.
+
+The subsequent native button probe passed on both panels at 200% in light:
+Pause and Resume each fired once in the same activity,
+control text fit,
+active geometry stayed unchanged and changed-rectangle controls failed.
+The status stayed on one line;
+it was ellipsized on cover and not inner.
+Measured app-area crops and bar details were inspected:
+Resume occupies most of its fixed slot at this scale,
+and the cover's total count is not fully visible under accepted ellipsis.
+No claim of fully visible counts or universal glyph/accessibility acceptance
+follows from layout rectangles.
+
+The same live guest is now acquiring the complete 32-pose state cohort and
+native start/pause/resume/progress/completion controls across all eight
+environments.
+Only completion of that run,
+exact restoration,
+fresh sanitization/inspection and viewer verification can close publication.
 Authored completion removes the row at the next composition;
 this introduces no production dwell-time or animation requirement.
 The separator preserves scan-F's existing `border-top` rather than adding
