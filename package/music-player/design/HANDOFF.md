@@ -48,15 +48,25 @@ Rules and cases added after that rehearsal are not yet rehearsed:
 `title-contrast-pixels`,
 `back-contrast-pixels` and `left-half-search`.
 
-### What was running when this stopped
+### Native visits on the fixed APK
 
-A second owned visit on the fixed APK was started in the background.
-Its driver restores the recorded guest fields,
-stops the guest and verifies runtime absence by itself,
-whether or not a stage fails.
+The second owned visit installed the fixed APK and reached the app,
+then failed before its first capture:
+a 15 s bound on `podman inspect` expired while host load was near 50.
+It restored the recorded guest fields exactly,
+its owner exited `0` and no container or emulator process remained.
+It captured nothing,
+so it supplies no evidence.
+The bound is now 120 s,
+and a timed-out or failed inspection now reads as unknown rather than absent,
+so it can no longer pass the runtime-absence check.
+
+A third visit is running from the same APK.
 Private scratch state is under `~/temp/agent/settings-pane-native-private`,
-in `study-second` and `runtime-second`.
-First check `runtime-second/visit-output.log` for the closing marker,
+in `study-third` and `runtime-third`.
+Its driver restores the recorded guest fields,
+stops the guest and verifies runtime absence whether or not a stage fails.
+First check `runtime-third/visit-output.log` for the closing marker,
 then `restoration.json`,
 `owner-exit.json` and `runtime-absence.json`.
 If any is missing,
