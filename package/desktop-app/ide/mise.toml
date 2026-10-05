@@ -370,6 +370,15 @@ runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
 execFileSync('node', ['bin/inspect-language.mjs'], { stdio: 'inherit' })
 """
 
+[tasks."inspect:language-lifecycle"]
+description = "Check on real confined servers that open, one request, close, and shutdown log no ERROR-level record or bare shutdown error, and that SIGKILL of the application leaves no server or sandbox process"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
+execFileSync('node', ['bin/inspect-language-lifecycle.mjs'], { stdio: 'inherit' })
+"""
+
 [tasks."inspect:language-confinement"]
 description = "Run the write-confinement acceptance tests: real servers in bubblewrap on disposable projects, escape and delegation probes, fail-closed cases, and the unconfined guard control"
 shell = "node --input-type=module-typescript -e"
