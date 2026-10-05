@@ -9,7 +9,7 @@
 /// Import the existing diagnostic and localized edit boundaries.
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::Edit;
-use crate::markdown_finding::finding;
+use crate::markdown_finding::{finding, structure_failure};
 use crate::markdown_source::MarkdownSource;
 /// Import native text decoding and heading kinds.
 use satteri_ast::mdast::{MdastNodeType, decode_string_ref_data};
@@ -124,7 +124,28 @@ pub fn no_trailing_punctuation(context: &MarkdownSource, severity: Severity) -> 
         if context.kind(*id) != MdastNodeType::Heading {
             continue;
         }
-        let text_nodes: Vec<u32> = context.text_nodes(*id);
+        // What: `match` unwraps `Ok(nodes)`, the heading's text nodes from the bounded descendant walk, or
+        // handles `Err(error)`, which means the document's child index has a cycle.
+        // Why: A heading whose text nodes cannot be listed was not checked, so the rule reports one
+        // processing failure that names it and stops.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // let textNodes: number[];
+        // try { textNodes = context.textNodes(id); }
+        // catch (error) { findings.push(structureFailure(context, rule, error)); return findings; }
+        // ```
+        let text_nodes: Vec<u32> = match context.text_nodes(*id) {
+            Ok(nodes) => nodes,
+            Err(error) => {
+                findings.push(structure_failure(
+                    context,
+                    "markdown/no-trailing-punctuation",
+                    error,
+                ));
+                return findings;
+            }
+        };
         let Some(last): Option<&u32> = text_nodes.last() else {
             continue;
         };

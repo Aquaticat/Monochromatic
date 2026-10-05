@@ -13,7 +13,7 @@ use crate::edits::{Edit, Fix};
 use crate::markdown_block_start::starts_block_construct;
 use crate::markdown_break_points::break_offsets;
 /// Import the processing-failure finding a rule reports when the document's structure cannot be walked.
-use crate::markdown_finding::ancestry_failure;
+use crate::markdown_finding::structure_failure;
 use crate::markdown_prose_context::{continuation_prefix, delimiter_tail, paragraph_for};
 use crate::markdown_source::MarkdownSource;
 use satteri_ast::mdast::MdastNodeType;
@@ -35,7 +35,7 @@ pub fn semantic_line_breaks(context: &MarkdownSource, severity: Severity) -> Vec
         let ancestors: Vec<u32> = match context.ancestors(*id) {
             Ok(chain) => chain,
             Err(error) => {
-                findings.push(ancestry_failure(
+                findings.push(structure_failure(
                     context,
                     "markdown/semantic-line-breaks",
                     error,

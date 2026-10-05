@@ -36,7 +36,7 @@ fn bom_and_astral_source_slices_are_exact() {
     assert_eq!(document.node_span(heading).line, 3);
     assert_eq!(document.node_span(heading).column, 1);
     assert_eq!(decode_heading_data(document.data(heading)).depth, 1);
-    assert_eq!(document.text_content(heading), "Title");
+    assert_eq!(document.text_content(heading), Ok(String::from("Title")));
     assert_eq!(document.filename, "source.md");
     assert!(!document.mdx);
 }

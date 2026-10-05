@@ -7,7 +7,8 @@
 //! ```
 
 use crate::diagnostic::{Diagnostic, Severity};
-use crate::markdown_finding::finding;
+/// Import node findings and the processing failure reported when the document's structure cannot be walked.
+use crate::markdown_finding::{finding, structure_failure};
 use crate::markdown_source::MarkdownSource;
 /// Import native heading data and shared finding construction.
 use satteri_ast::mdast::{MdastNodeType, decode_heading_data};
@@ -24,7 +25,28 @@ pub fn no_duplicate_heading(context: &MarkdownSource, severity: Severity) -> Vec
             continue;
         }
         let depth: u8 = decode_heading_data(context.data(*id)).depth;
-        let text: String = context.text_content(*id);
+        // What: `match` unwraps `Ok(text)`, the heading's text from the bounded descendant walk, or handles
+        // `Err(error)`, which means the document's child index has a cycle.
+        // Why: A heading whose text cannot be read was not checked, so the rule reports one processing
+        // failure that names it and stops, instead of comparing headings by partial text.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // let text: string;
+        // try { text = context.textContent(id); }
+        // catch (error) { findings.push(structureFailure(context, rule, error)); return findings; }
+        // ```
+        let text: String = match context.text_content(*id) {
+            Ok(collected) => collected,
+            Err(error) => {
+                findings.push(structure_failure(
+                    context,
+                    "markdown/no-duplicate-heading",
+                    error,
+                ));
+                return findings;
+            }
+        };
         while let Some((previous_depth, _)) = ancestors.last() {
             if *previous_depth < depth {
                 break;
