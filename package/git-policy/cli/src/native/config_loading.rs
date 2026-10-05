@@ -185,9 +185,7 @@ fn mixed_command(arguments: &[OsString], branch: bool) -> ConfigLoading {
                 } else if !branch && *letter == b'n' {
                     listing = true;
                     numeric_lines = true;
-                } else if branch && b"vqrai".contains(letter) {
-                    continue;
-                } else if !branch && *letter == b'i' {
+                } else if (branch && b"vqrai".contains(letter)) || (!branch && *letter == b'i') {
                     continue;
                 } else {
                     return ConfigLoading::Required;
