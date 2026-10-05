@@ -34,7 +34,10 @@ oldest first:
 - `6099569b5` correct Git 2.56.0 source line citations in the option tables
 - `994c75662` port branch, checkout and switch branch-creation facts
 - `bcaea0145` port the require-root decision core with git config scope facts
-- the commit that adds this document
+- `2421befae` refuse sequencer path output with one or two trailing bytes
+- `fe851e3b4` draft of this document
+- `fa8a56d2a` drop branches planted mutations showed to be equivalent and pin equals splitting
+- the commit that completes this document
 
 Two commit messages state a wrong count;
 each has a corrective commit comment on GitHub.
@@ -311,8 +314,9 @@ Line numbers refer to the Git 2.56.0 source at commit
 
 - The last of `--short`, `--porcelain` and `--long` decides the format;
   `--sh` is ambiguous in `git status` (`--short`, `--show-stash`).
-- `--config-env=advice.statusHints=VAR` is an explicit override like `-c`
-  (`config.c:511`, `663`).
+- `--config-env=advice.statusHints=VAR` is an explicit override like `-c`.
+  The key ends at the first `=` for `-c` and at the last `=` for `--config-env`
+  (`config.c:495`, `511`).
 
 ### Add
 
@@ -395,11 +399,11 @@ Line numbers refer to the Git 2.56.0 source at commit
 ### Gate
 
 `GIT_POLICY_NATIVE_IMAGE_TAG=command-parser mise run //package/git-policy/cli:native:test:container`
-at `bcaea0145`:
+at `fa8a56d2a`:
 186 tests passed,
 0 failed;
 Clippy passed (`{"tests":true,"clippy":true}`).
-Image `ec365b3412dd27b32f238b5d8be73433483a18582904b1b62bf67ce798964ffb`,
+Image `652d51b9db43dc06c6e48534930eacbca425c37108d6cd107633a00151ac5255`,
 built from the audited Git 2.56.0 base
 `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`,
 run with `--network=none`, `--memory=2g`, `--cpus=2` and `--pids-limit=128`.
@@ -436,13 +440,49 @@ which predates this branch and comes from `Cargo.toml`, which this branch does n
 
 ### Planted mutations
 
-MUTATION_RESULTS
+The scratch harness exports one commit with `git archive`,
+applies one textual change to one guard,
+and runs the package's container runner on the copy;
+a mutation counts as killed only when a test fails,
+never when only compilation or Clippy fails.
+
+- Tokenizer, at `3d61c74ed`:
+  31 mutations;
+  30 killed by tests.
+  The survivor removed the lone `-h` special case,
+  which is equivalent for tables without an `h` letter;
+  `a_lone_h_is_help_even_when_declared` in `command_options_short_tests.rs` now kills it.
+- Ported families, at `bcaea0145`:
+  83 mutations over the commit, commit-only, sequencer, index, push, atomic-push,
+  status, status-hints, rewrite, add, reset, clean, stash, branch, checkout, switch,
+  config and require-root guards;
+  78 killed by tests, 5 survived.
+- The 5 survivors:
+  - Dropping the length-remainder check of `sequencer_head_paths` survived
+    because no case had one or two trailing bytes;
+    `2421befae` adds both.
+  - Swapping first and last `=` in `equals_index` survived
+    because no case had a second `=`;
+    `fa8a56d2a` adds `-c advice.statusHints=a=b` and `--config-env=advice.statusHints=x=VAR`
+    with real-Git controls (`config.c:495`, `511`).
+  - Weakening the `-no-` typo check and the `-h` check before an assumed `git stash push`
+    survived because the assumed-push pass refuses those tokens with the same kind and index;
+    `fa8a56d2a` removes both checks as equivalent and adds the three-letter typo boundary.
+  - Dropping the default-listing term of the `git branch` action count survived
+    because with no name nothing is created either way;
+    `fa8a56d2a` removes the term as equivalent.
+- Follow-up, at `fa8a56d2a`:
+  the two remaining survivor guards and three new mutations of the stash typo boundary;
+  all 5 killed by tests.
 
 ## Integration notes
 
 - Edit outside the owned files, in `global_arguments.rs`:
 
   ```diff
+  --- a/package/git-policy/cli/src/native/global_arguments.rs
+  +++ b/package/git-policy/cli/src/native/global_arguments.rs
+  @@ -37 +37 @@
   -const VALUE_OPTIONS: &[&[u8]] = &[
   +pub(crate) const VALUE_OPTIONS: &[&[u8]] = &[
   ```
