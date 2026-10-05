@@ -112,7 +112,8 @@ fn served_values(proxy: &zbus::blocking::Proxy<'_>) -> anyhow::Result<[u32; 3]> 
 /// Decodes one `SettingChanged` body exactly as Slint 1.18.1 does, plus its wire signature.
 fn decode_setting_changed(message: &zbus::Message) -> anyhow::Result<(String, String, u32, String)> {
     let body = message.body();
-    let signature = body.signature().to_string();
+    // The wire header carries the body signature without the outer tuple parentheses.
+    let signature = body.signature().to_string_no_parens();
     let (namespace, key, value): (String, String, OwnedValue) = body.deserialize()?;
     return Ok((namespace, key, value.downcast_ref::<u32>()?, signature))
 }

@@ -139,6 +139,22 @@ pub fn run(config: Config) -> Result<i32> {
         .transpose()
         .context("starting isolated nested appearance")?;
 
+    // What:     `.as_ref()` borrows the optional portal; `.map(...)` reads its address when
+    //           present; `.to_owned()` copies that borrowed text into an owned `String`.
+    // Why:      The portal moves into the state next, and the child spawn below borrows the
+    //           whole state mutably, so the address must not keep borrowing the portal.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const privateBusAddress = appearancePortal?.busAddress();
+    // ```
+    let private_bus_address = appearance_portal
+        .as_ref()
+        .map(|portal| return portal.bus_address().to_owned());
+
+    // Keep the portal reachable from control commands and alive for the whole session.
+    state.appearance_portal = appearance_portal;
+
     // What:     `let isolation = Isolation { enabled: config.isolate, cpu_quota_percent:
     //           config.app_cpu_quota, cpu_weight: config.app_cpu_weight };`. Assemble the
     //           CPU-isolation settings from the parsed config.
@@ -154,7 +170,7 @@ pub fn run(config: Config) -> Result<i32> {
         &mut state,
         &config.child_command,
         &isolation,
-        appearance_portal.as_ref().map(AppearancePortal::bus_address),
+        private_bus_address.as_deref(),
     )?;
 
     // What:     `state.backend.window().request_redraw();`. Kick off the first frame.

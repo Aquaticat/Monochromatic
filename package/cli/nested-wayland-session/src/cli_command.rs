@@ -47,7 +47,10 @@ pub(super) fn command() -> Command {
     let mut scheme = Arg::new("color-scheme");
     scheme = scheme.long("color-scheme").value_name("SCHEME");
     scheme = scheme.value_parser(["dark", "light"]);
-    scheme = scheme.help("Give the child a private appearance portal without changing the host theme");
+    scheme = scheme.help(
+        "Give the child a private appearance portal without changing the host theme; \
+         the color-scheme control command switches it while the child runs"
+    );
     command = command.arg(scheme);
 
     let mut isolate = Arg::new("isolate");

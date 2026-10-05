@@ -41,8 +41,8 @@ fn color_scheme_rejects_missing_unknown_and_extra_values() {
         "color-scheme dark\0",
         "color-scheme \"dark\"",
     ] {
-        // err extracts the failure message; expect stops the test when parsing succeeded.
-        let message = parse_command(command).err().expect(command);
+        // expect_err extracts the failure message and stops the test when parsing succeeded.
+        let message = parse_command(command).expect_err(command);
         assert!(message.contains("color-scheme"), "{command:?}: {message}");
         assert!(!message.starts_with("unknown command"), "{command:?}: {message}");
     }
@@ -52,7 +52,7 @@ fn color_scheme_rejects_missing_unknown_and_extra_values() {
 #[test]
 fn color_scheme_lookalike_verbs_are_unknown_commands() {
     for command in ["color-scheme=dark", "colorscheme dark", "color_scheme dark", "--color-scheme dark"] {
-        let message = parse_command(command).err().expect(command);
+        let message = parse_command(command).expect_err(command);
         assert!(message.starts_with("unknown command"), "{command:?}: {message}");
     }
 }

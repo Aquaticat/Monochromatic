@@ -27,6 +27,9 @@ use std::{ffi::OsString, process::Child, sync::Arc};
 /// Clipboard management globals are owned by this nested display, never the host.
 use crate::handler::clipboard::ClipboardProtocols;
 
+/// The private Settings portal is owned by this session, never shared with the host.
+use crate::appearance_portal::AppearancePortal;
+
 /// What:     A grouped `use` of Smithay items. Each path names a type used below; the
 ///           braces just avoid repeating the common `smithay::...` prefix.
 /// Why:      Bring the compositor building blocks into scope.
@@ -213,6 +216,16 @@ pub struct Compositor {
 
     /// Deadline for force-stopping client that ignores compositor close request.
     pub shutdown_deadline: Option<std::time::Instant>,
+
+    /// The private appearance portal, when `--color-scheme` started one.
+    ///
+    /// What:     `pub appearance_portal: Option<AppearancePortal>`. `Some` owns the private
+    ///           session bus and its Settings service; `None` means the hosted client
+    ///           inherited its usual session bus.
+    /// Why:      The `color-scheme` control command has only `&mut Compositor`, so the
+    ///           handle it switches must be reachable from state. Dropping the state stops
+    ///           the private bus and removes its socket directory.
+    pub appearance_portal: Option<AppearancePortal>,
 
     /// The hosted app's exit code once it has exited, else `None`.
     ///
@@ -444,6 +457,7 @@ impl Compositor {
             _dmabuf_feedback: pieces.dmabuf_feedback,
             child: None,
             shutdown_deadline: None,
+            appearance_portal: None,
             child_exit_code: None,
             recorder: None,
             loop_handle,

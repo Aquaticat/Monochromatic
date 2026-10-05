@@ -398,8 +398,16 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             }
         }
         Command::ColorScheme(preference) => {
-            // Scaffold only: no private portal is reachable from the control thread yet.
-            return crate::control_color_scheme::switch(None, preference);
+            // What:     `.as_ref()` turns the owned optional portal into an optional borrow,
+            //           so the state keeps owning it.
+            // Why:      Only the private portal started by `--color-scheme` is ever switched;
+            //           without one the helper refuses instead of reaching another bus.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return switchColorScheme(state.appearancePortal, preference);
+            // ```
+            return crate::control_color_scheme::switch(state.appearance_portal.as_ref(), preference);
         }
         Command::Quit => {
             // Ask hosted client to close before tearing down its Wayland connection.

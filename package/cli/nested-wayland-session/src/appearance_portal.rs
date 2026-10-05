@@ -12,10 +12,23 @@ use std::path::PathBuf;
 /// Imports private-bus process and pipe construction.
 use std::process::{Child, ChildStdout, Command, Stdio};
 
-/// Imports unique fixture sequence and address-reader channel.
+/// What:     A grouped `use` of thread-safe primitives. `Arc<T>` is a shared owner of one heap
+///           value, freed when its last owner goes away (siblings: single-owner `Box<T>`,
+///           single-thread `Rc<T>`). `AtomicU32` and `AtomicU64` are integer cells several
+///           threads may read and write without a lock (sibling: `Mutex<u32>`, which locks).
+///           `Ordering` selects how strictly those accesses are sequenced. `mpsc` is a
+///           channel between threads.
+/// Why:      The D-Bus service thread reads the served value while the compositor thread
+///           switches it, so both need the same cell. The sequence counter keeps fixture
+///           paths unique, and the channel bounds the private-bus address read.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Arc<AtomicU32> ~ a Uint32Array over a SharedArrayBuffer, used through Atomics.
+/// ```
 use std::sync::{
-    atomic::{AtomicU64, Ordering},
-    mpsc,
+    atomic::{AtomicU32, AtomicU64, Ordering},
+    mpsc, Arc,
 };
 
 /// Imports bounded startup duration for private daemon address.
@@ -24,8 +37,19 @@ use std::time::Duration;
 /// Imports shared error context and result channel.
 use anyhow::{Context, Result};
 
-/// Imports zbus blocking service builder and owned variant value.
-use zbus::{blocking::Connection, zvariant::OwnedValue};
+/// What:     Import the blocking D-Bus connection and two variant types. `OwnedValue` owns a
+///           dynamically typed D-Bus value for method replies; `Value` is the same wrapper
+///           for a value serialized immediately, here the signal body.
+/// Why:      Portal settings travel as D-Bus variants, so a typed integer must be wrapped.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Variant = { signature: string; value: unknown };
+/// ```
+use zbus::{
+    blocking::Connection,
+    zvariant::{OwnedValue, Value},
+};
 
 /// Stores portal well-known bus name.
 const PORTAL_BUS_NAME: &str = "org.freedesktop.portal.Desktop";
@@ -35,6 +59,9 @@ const PORTAL_OBJECT_PATH: &str = "/org/freedesktop/portal/desktop";
 
 /// Stores Settings interface name used by method calls and the change signal.
 const SETTINGS_INTERFACE: &str = "org.freedesktop.portal.Settings";
+
+/// Stores signal name announcing one changed setting to subscribed toolkits.
+const SETTING_CHANGED_SIGNAL: &str = "SettingChanged";
 
 /// Stores appearance namespace read by desktop toolkits.
 const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
@@ -101,10 +128,10 @@ pub enum SwitchOutcome {
 }
 
 /// Minimal Settings interface serving only deterministic appearance color scheme.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 struct PortalSettings {
-    /// Value returned for appearance color-scheme reads.
-    preference: ColorSchemePreference,
+    /// Portal value returned for appearance color-scheme reads; runtime switches replace it.
+    served_value: Arc<AtomicU32>,
 }
 
 /// Implements XDG Settings methods consumed by Slint and other toolkits.
@@ -132,7 +159,7 @@ impl PortalSettings {
             APPEARANCE_NAMESPACE.to_owned(),
             HashMap::from([(
                 COLOR_SCHEME_KEY.to_owned(),
-                OwnedValue::from(self.preference.portal_value()),
+                OwnedValue::from(self.served_value.load(Ordering::SeqCst)),
             )]),
         )]);
     }
@@ -143,7 +170,7 @@ impl PortalSettings {
     /// Returns configured scheme or rejects unsupported setting reads.
     fn read_setting(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
         if namespace == APPEARANCE_NAMESPACE && key == COLOR_SCHEME_KEY {
-            return Ok(OwnedValue::from(self.preference.portal_value()));
+            return Ok(OwnedValue::from(self.served_value.load(Ordering::SeqCst)));
         }
         return Err(zbus::fdo::Error::NotSupported(format!(
             "nested appearance portal does not provide {namespace}/{key}",
@@ -280,9 +307,11 @@ impl Drop for PrivateBus {
 
 /// Holds isolated bus and Settings service for hosted-client lifetime.
 pub struct AppearancePortal {
-    /// Live zbus service connection,
+    /// Live zbus service connection owning the portal name,
     /// dropped before its bus.
-    _connection: Connection,
+    connection: Connection,
+    /// Portal value shared with the Settings interface served on `connection`.
+    served_value: Arc<AtomicU32>,
     /// Private bus lifetime owner.
     bus: PrivateBus,
 }
@@ -292,20 +321,90 @@ impl AppearancePortal {
     /// Starts private session bus and deterministic Settings service.
     pub fn start(preference: ColorSchemePreference) -> Result<Self> {
         let bus = PrivateBus::start()?;
+        // What:     `Arc::new(AtomicU32::new(...))` allocates one shared integer cell holding the
+        //           initial portal value. `Arc::clone(&served_value)` creates a second owner of
+        //           that same cell, not a copy of the number; `&` lends the first owner.
+        // Why:      The service answers reads from the cell this handle later switches.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const servedValue = new Uint32Array(new SharedArrayBuffer(4));
+        // const settings = { servedValue }; // same buffer, second reference
+        // ```
+        let served_value = Arc::new(AtomicU32::new(preference.portal_value()));
+        let settings = PortalSettings { served_value: Arc::clone(&served_value) };
         let connection = zbus::blocking::connection::Builder::address(bus.address.as_str())?
             .name(PORTAL_BUS_NAME)?
-            .serve_at(PORTAL_OBJECT_PATH, PortalSettings { preference })?
+            .serve_at(PORTAL_OBJECT_PATH, settings)?
             .build()
             .context("starting private XDG Settings portal")?;
         tracing::info!(?preference, "started isolated XDG appearance portal");
-        return Ok(Self { bus, _connection: connection });
+        return Ok(Self { connection, served_value, bus });
     }
 
     /// Serves `preference` from now on and notifies subscribed clients on the private bus.
     ///
-    /// Scaffold only: the runtime switch is not implemented yet.
-    pub fn set_color_scheme(&self, _preference: ColorSchemePreference) -> Result<SwitchOutcome> {
-        return Ok(SwitchOutcome::Unchanged);
+    /// What:     `pub fn set_color_scheme(&self, preference: ColorSchemePreference) ->
+    ///           Result<SwitchOutcome>`. `&self` lends this handle read-only; the shared cell
+    ///           is still writable because atomics change through a shared reference.
+    /// Why:      Toolkits such as Slint read the value once, then follow `SettingChanged`.
+    ///           The signal leaves on the connection that owns the portal name, because
+    ///           subscribers filter by that sender. No other bus is ever opened here.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// setColorScheme(preference: ColorSchemePreference): SwitchOutcome {
+    ///   const value = portalValue(preference);
+    ///   const previous = Atomics.exchange(this.servedValue, 0, value);
+    ///   if (previous === value) return "unchanged";
+    ///   this.connection.emitSignal("SettingChanged", [namespace, key, variant(value)]);
+    ///   return "changed";
+    /// }
+    /// ```
+    pub fn set_color_scheme(&self, preference: ColorSchemePreference) -> Result<SwitchOutcome> {
+        let value = preference.portal_value();
+        // What:     `swap` stores the new value and returns the one it replaced, as one step.
+        //           `Ordering::SeqCst` is the strictest sequencing: every thread sees one order.
+        // Why:      Reads answered after this line already serve the value the signal announces.
+        let previous = self.served_value.swap(value, Ordering::SeqCst);
+        // The portal emits SettingChanged when a setting changes; repeating a value changes nothing.
+        if previous == value {
+            tracing::debug!(?preference, "isolated appearance already served; no signal emitted");
+            return Ok(SwitchOutcome::Unchanged);
+        }
+        // What:     `emit_signal(destination, path, interface, member, body)`. `None::<&str>` is
+        //           the absent destination, spelled with its type because nothing else names
+        //           it; absence makes the signal a broadcast. `&(...)` lends a three-element
+        //           tuple as the body. `Value::from(value)` wraps the integer in a variant, so
+        //           the wire signature is `ssv`, not `ssu`.
+        // Why:      Slint deserializes exactly (string, string, variant) and silently skips
+        //           any other body shape.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const emitted = tryEmit(connection, undefined, path, iface, "SettingChanged", body);
+        // ```
+        let emitted = self.connection.emit_signal(
+            None::<&str>,
+            PORTAL_OBJECT_PATH,
+            SETTINGS_INTERFACE,
+            SETTING_CHANGED_SIGNAL,
+            &(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY, Value::from(value)),
+        );
+        // What:     `if let Err(error) = emitted` runs the block only for the failure variant.
+        // Why:      A switch nobody was told about is not a switch: restore the old value so a
+        //           retry emits again instead of answering unchanged.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (emitted instanceof Error) { Atomics.store(this.servedValue, 0, previous); throw emitted; }
+        // ```
+        if let Err(error) = emitted {
+            self.served_value.store(previous, Ordering::SeqCst);
+            return Err(error).context("emitting SettingChanged on the private appearance bus");
+        }
+        tracing::info!(?preference, "switched isolated appearance and emitted SettingChanged");
+        return Ok(SwitchOutcome::Changed);
     }
 
     /// Returns private session bus address for hosted-child environment.

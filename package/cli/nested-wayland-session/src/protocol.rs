@@ -28,6 +28,10 @@ use crate::appearance_portal::ColorSchemePreference;
 #[path = "protocol_wheel.rs"]
 mod wheel;
 
+/// Runtime appearance parsing shares the startup option's value names.
+#[path = "protocol_color_scheme.rs"]
+mod color_scheme;
+
 /// Which pointer button a click uses.
 ///
 /// What:     `pub enum PointerButton { Left, Right, Middle }`. A closed set of three
@@ -333,6 +337,7 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         "resize" => return parse_resize(&mut tokens),
         "drop-file" => return parse_drop_file(&mut tokens),
         "record" => return parse_record(&mut tokens),
+        "color-scheme" => return color_scheme::parse(&mut tokens),
         other => return Err(format!("unknown command: {other}")),
     }
 }
