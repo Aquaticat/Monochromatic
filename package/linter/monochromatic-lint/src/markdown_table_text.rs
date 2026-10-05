@@ -13,7 +13,7 @@
 /// ```ts
 /// function trimSpace(character): boolean { return character.trim() === ''; }
 /// ```
-fn trim_space(character: char) -> bool {
+pub(crate) fn trim_space(character: char) -> bool {
     // These scalar values are the ECMAScript trim characters; u32 conversion is unnecessary for membership.
     const CHARACTERS: &[char] = &[
         '\u{0009}', '\u{000a}', '\u{000b}', '\u{000c}', '\u{000d}', '\u{0020}', '\u{00a0}',

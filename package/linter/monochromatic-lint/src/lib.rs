@@ -70,6 +70,27 @@ mod markdown_finding;
 /// Internal report-only heading checks.
 #[doc(hidden)]
 pub mod markdown_headings;
+/// Repository `.lfsconfig` endpoint declarations.
+#[doc(hidden)]
+pub mod markdown_lfs_config;
+/// Repository discovery and per-file LFS target resolution.
+#[doc(hidden)]
+pub mod markdown_lfs_context;
+/// The single LFS endpoint normalizer.
+#[doc(hidden)]
+pub mod markdown_lfs_endpoint;
+/// Object URLs for images whose target is LFS-tracked.
+#[doc(hidden)]
+pub mod markdown_lfs_image_url;
+/// Pointer and content object ids.
+mod markdown_lfs_oid;
+/// Gitignore-syntax matching for tracked paths and rule exclusions.
+#[doc(hidden)]
+pub mod markdown_lfs_patterns;
+/// SHA-256 of smudged file bytes.
+mod markdown_lfs_sha256;
+/// Lexical classification of image destinations.
+mod markdown_lfs_target;
 /// Internal link normalization checks.
 #[doc(hidden)]
 pub mod markdown_links;
