@@ -1,7 +1,7 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
 import { Palette } from "std-widgets.slint";
 import { ProjectTree, TreeEntry } from "tree.slint";
-import { SidebarDivider } from "divider.slint";
+import { SidebarDivider, SidebarDividerGrip } from "divider.slint";
 import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
 import "../asset/font/InterVariable.ttf";
@@ -58,8 +58,10 @@ export component AppWindow inherits Window {
     out property <bool> sidebar-divider-has-focus: sidebar-divider.has-focus;
     private property <length> sidebar-minimum-width: 160px;
     private property <length> source-minimum-width: 240px;
-    // The divider is its own layout cell at the minimum interactive size, so it never covers tree rows or source.
-    private property <length> divider-width: 48px;
+    // Prototype divider-gap B: the layout cell is only the 1px line. The 48px grab area is an overlay
+    // centered on it that covers 24px of tree rows and 23px of the source column.
+    private property <length> divider-width: 1px;
+    private property <length> divider-grab-width: 48px;
 
     in-out property <bool> search-open;
     in-out property <string> search-query;
@@ -196,6 +198,8 @@ export component AppWindow inherits Window {
             navigate(key, index) => { root.tree-navigate(key, index); }
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
+        // The 1px layout cell holds the keyboard half, so Tab order stays tree, divider, source.
+        // The grip overlay after this layout paints the line centered on this cell.
         sidebar-divider := SidebarDivider {
             // An invisible divider takes no pointer input and is not a Tab stop.
             visible: root.project-visible;
@@ -377,6 +381,19 @@ export component AppWindow inherits Window {
                 font-weight: 600;
                 wrap: word-wrap;
             }
+        }
+    }
+    // Declared after the layout so it is above the tree and the source and takes the pointer first.
+    SidebarDividerGrip {
+        visible: root.project-visible;
+        x: project-tree.width - root.divider-grab-width / 2;
+        y: 0px;
+        width: root.divider-grab-width;
+        height: parent.height;
+        value: root.sidebar-width;
+        keyboard-focus: sidebar-divider.has-focus;
+        resize(width) => {
+            root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);
         }
     }
     Rectangle {
