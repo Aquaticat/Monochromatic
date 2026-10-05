@@ -1,7 +1,7 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
 import { Palette } from "std-widgets.slint";
 import { ProjectTree, TreeEntry } from "tree.slint";
-import { SidebarDivider } from "divider.slint";
+import { SidebarDivider, SidebarDividerGrip } from "divider.slint";
 import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
 import { LanguagePopup } from "hover.slint";
@@ -63,8 +63,13 @@ export component AppWindow inherits Window {
     out property <bool> sidebar-divider-has-focus: sidebar-divider.has-focus;
     private property <length> sidebar-minimum-width: 160px;
     private property <length> source-minimum-width: 240px;
-    // The divider is its own layout cell at the minimum interactive size, so it never covers tree rows or source.
-    private property <length> divider-width: 48px;
+    // The divider's layout cell is only its 1px line. Its pointer zone is the grip placed over the layout,
+    // which also covers the tree's last columns and the source column's first ones (`SidebarDividerGrip.reach`).
+    private property <length> divider-width: 1px;
+    // Drag, keys, and accessibility actions cannot store a width outside the range that can be shown now.
+    function resize-sidebar(width: length) {
+        root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);
+    }
 
     in-out property <bool> search-open;
     in-out property <string> search-query;
@@ -258,18 +263,16 @@ export component AppWindow inherits Window {
             navigate(key, index) => { root.tree-navigate(key, index); }
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
+        // The keyboard half of the divider: this cell keeps the Tab order tree, divider, source.
         sidebar-divider := SidebarDivider {
-            // An invisible divider takes no pointer input and is not a Tab stop.
+            // An invisible divider is not a Tab stop.
             visible: root.project-visible;
             min-width: root.project-visible ? root.divider-width : 0px;
             max-width: root.project-visible ? root.divider-width : 0px;
             value: root.sidebar-width;
             minimum: root.sidebar-minimum-width;
             maximum: root.sidebar-maximum-width;
-            resize(width) => {
-                // Drag and keys cannot store a width outside the range that can be shown now.
-                root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);
-            }
+            resize(width) => { root.resize-sidebar(width); }
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
         VerticalLayout {
@@ -519,6 +522,18 @@ export component AppWindow inherits Window {
                 wrap: word-wrap;
             }
         }
+    }
+    // The pointer half of the divider. It is declared after the layout, so inside its zone it is above the
+    // tree and the source and takes the pointer first; the language and search surfaces are above it.
+    SidebarDividerGrip {
+        // An invisible grip takes no pointer input.
+        visible: root.project-visible;
+        x: project-tree.width - self.reach;
+        y: 0px;
+        height: parent.height;
+        value: root.sidebar-width;
+        keyboard-focus: sidebar-divider.has-focus;
+        resize(width) => { root.resize-sidebar(width); }
     }
     language-popup := LanguagePopup {
         text: root.language-popup-text;
