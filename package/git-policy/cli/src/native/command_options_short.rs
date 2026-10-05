@@ -74,7 +74,7 @@ fn spells_long_option(table: &[OptionSpec], cluster: &[u8]) -> bool {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function unknownLetter({ table, token, position, index, mode, parsed }): number; // throws
+/// function unknownLetter({ table, token, position, index, mode, parsed }): boolean; // throws
 /// ```
 fn unknown_letter(
     table: &[OptionSpec],
@@ -83,7 +83,7 @@ fn unknown_letter(
     index: usize,
     mode: ParseMode,
     parsed: &mut ParsedOptions,
-) -> Result<usize, OptionError> {
+) -> Result<bool, OptionError> {
     // The typo check runs for an unknown first letter only (1068-1069).
     if position == 1 && spells_long_option(table, &token[1..]) {
         return Err(OptionError {
@@ -98,9 +98,10 @@ fn unknown_letter(
         });
     }
     if mode.keep_unknown {
-        // Git keeps the rest of the token as one argument for the command to forward.
+        // Git keeps the rest of the token as one argument for the command to forward;
+        // the next token is not its value.
         parsed.unknown.push(index);
-        return Ok(1);
+        return Ok(false);
     }
     return Err(OptionError {
         kind: OptionErrorKind::UnknownOption,
@@ -108,13 +109,13 @@ fn unknown_letter(
     });
 }
 
-/// What: Read the cluster at `index` and return how many tokens it used (1 or 2).
+/// What: Read the cluster at `index` and say whether it took the next token as a value.
 /// Why:  A value-taking letter ends the cluster: the rest of the token, or else the next
-///       token, is its value.
+///       token, is its value. Only the second case makes the caller pass over a token.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function scanShortCluster({ args, index, table, mode, parsed }): number; // throws OptionError
+/// function scanShortCluster({ args, index, table, mode, parsed }): boolean; // throws OptionError
 /// ```
 pub(crate) fn scan_short_cluster(
     arguments: &[OsString],
@@ -122,7 +123,7 @@ pub(crate) fn scan_short_cluster(
     table: &[OptionSpec],
     mode: ParseMode,
     parsed: &mut ParsedOptions,
-) -> Result<usize, OptionError> {
+) -> Result<bool, OptionError> {
     // `.as_encoded_bytes()` lends the raw bytes of the token without decoding them.
     let token: &[u8] = arguments[index].as_encoded_bytes();
     // Byte 0 is the dash; letters start at byte 1.
@@ -151,12 +152,9 @@ pub(crate) fn scan_short_cluster(
             token: index,
         });
         if let Some(taken) = value {
-            if let OptionValue::Detached { .. } = taken {
-                // The next token was the value.
-                return Ok(2);
-            }
-            // The rest of this token was the value.
-            return Ok(1);
+            // `matches!(x, pattern)` is true when `x` has that shape: the next token was
+            // the value. Otherwise the rest of this token was.
+            return Ok(matches!(taken, OptionValue::Detached { .. }));
         }
         // After the first letter, remaining letters get the typo check once (1082-1083).
         if position == 2 && position < token.len() && spells_long_option(table, &token[1..]) {
@@ -166,7 +164,7 @@ pub(crate) fn scan_short_cluster(
             });
         }
     }
-    return Ok(1);
+    return Ok(false);
 }
 
 /// Cluster arity, typo-check and help cases.

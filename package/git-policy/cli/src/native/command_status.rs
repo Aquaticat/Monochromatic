@@ -206,33 +206,37 @@ fn sets_advice_key(parameter: &[u8], from_environment: bool) -> bool {
 /// function parseStatusPreRegion(pre: readonly string[]): { hasStatusHintsOverride: boolean };
 /// ```
 pub fn has_status_hints_override(global_prefix: &[OsString]) -> bool {
-    let mut index: usize = 0;
-    while index < global_prefix.len() {
+    // The value-taking option whose value is the token being visited, when there is one.
+    // `Option<&[u8]>` is "borrowed bytes or nothing"; `mut` allows setting and clearing it.
+    let mut awaiting_value: Option<&[u8]> = None;
+    // `for argument in global_prefix` borrows each token once, in order, so the scan
+    // always ends: an option only marks the next token as its value.
+    for argument in global_prefix {
         // `.as_encoded_bytes()` lends the raw bytes; nothing is decoded or copied.
-        let token: &[u8] = global_prefix[index].as_encoded_bytes();
+        let token: &[u8] = argument.as_encoded_bytes();
+        // `if let Some(option) = ...` runs only while a value is awaited.
+        if let Some(option) = awaiting_value {
+            // `None` is the "absent" case: this token settles the option.
+            awaiting_value = None;
+            if option == b"-c" && sets_advice_key(token, false) {
+                return true;
+            }
+            if option == b"--config-env" && sets_advice_key(token, true) {
+                return true;
+            }
+            continue;
+        }
         // `.strip_prefix(...)` returns the remainder when the bytes start with the prefix.
         if let Some(joined) = token.strip_prefix(b"--config-env=") {
             if sets_advice_key(joined, true) {
                 return true;
             }
-            index += 1;
             continue;
         }
-        if !VALUE_OPTIONS.contains(&token) {
-            index += 1;
-            continue;
+        if VALUE_OPTIONS.contains(&token) {
+            // `Some(x)` is the "present" case: the next token is this option's value.
+            awaiting_value = Some(token);
         }
-        // The next token is this option's value; a missing one ends the scan.
-        if index + 1 < global_prefix.len() {
-            let value: &[u8] = global_prefix[index + 1].as_encoded_bytes();
-            if token == b"-c" && sets_advice_key(value, false) {
-                return true;
-            }
-            if token == b"--config-env" && sets_advice_key(value, true) {
-                return true;
-            }
-        }
-        index += 2;
     }
     return false;
 }
