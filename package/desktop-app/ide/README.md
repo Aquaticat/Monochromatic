@@ -100,6 +100,8 @@ At sidebar width `W` those are the tree's last columns `W-2` and `W-1`,
 the line at `W`,
 and the source column's first columns `W+1` and `W+2`.
 A press there starts a drag and does nothing else.
+The zone takes presses only:
+a wheel turn over it scrolls the tree or the source under it.
 
 The zone is narrower than the 48 px minimum that every other interactive element of this application keeps.
 The user decided this on 2026-10-05 for this one element:
@@ -189,6 +191,7 @@ clicks on the zone and on the pixels beside it at the default,
 narrowest,
 and widest widths,
 a tree scroll-bar drag from the last column left of the zone,
+a wheel turn over the zone's tree columns and source columns,
 and the rendered columns of every state.
 `inspect:sidebar-guards` removes each width bound,
 each edge of the zone,
@@ -468,7 +471,9 @@ Read from `widgets/common/lineedit-base.slint` and `widgets/fluent/lineedit.slin
   which is black in the dark scheme and white in the light one.
   The source view and selected rows choose their ink from the fill instead;
   see [Selected text ink](#selected-text-ink).
-- A text wider than the box scrolls so that the caret stays 24 px inside the text area.
+- A text wider than the box scrolls with the caret:
+  while the caret moves through the text it stays 24 px inside the text area,
+  and the end of the text reaches the area's edge.
 - A right click opens a menu with Undo,
   Redo,
   Cut,

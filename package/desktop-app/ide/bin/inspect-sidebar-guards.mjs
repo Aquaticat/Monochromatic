@@ -36,7 +36,8 @@ const cases = [
   { name: 'left-button-only', file: 'ui/divider.slint', before: '            if !self.pressed { return; }\n', after: '', test: 'divider_ignores_plain_clicks_and_other_buttons_and_keeps_keyboard_focus', failure: 'a right-button drag resized the sidebar' },
   // The layout clamp: the source cell keeps its minimum and is never the cell that shrinks first.
   { name: 'source-minimum', file: 'ui/app.slint', before: '            min-width: root.source-minimum-width;\n', after: '', test: resize, failure: 'the sidebar did not shrink to keep the source minimum' },
-  { name: 'source-preferred', file: 'ui/app.slint', before: '            preferred-width: root.source-minimum-width;\n', after: '', test: resize, failure: 'a long source diagnostic narrowed the sidebar' },
+  // The file label and a diagnostic can both prefer more width than the window; the label is checked first.
+  { name: 'source-preferred', file: 'ui/app.slint', before: '            preferred-width: root.source-minimum-width;\n', after: '', test: resize, failure: 'narrowed the sidebar' },
   { name: 'sidebar-minimum', file: 'ui/app.slint', before: 'min-width: root.project-visible ? root.sidebar-minimum-width : 0px;', after: 'min-width: 0px;', test: resize, failure: 'the sidebar shrank below its minimum' },
   { name: 'maximum-floor', file: 'ui/app.slint', before: 'max(root.sidebar-minimum-width,\n        root.width - root.divider-width - root.source-minimum-width)', after: '(root.width - root.divider-width - root.source-minimum-width)', test: resize, failure: 'the reported maximum fell below the minimum' },
   // The pointer zone is the line's column and two columns on each side: no wider and no narrower.

@@ -279,9 +279,10 @@ fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
         pixels(&filled, cell) == short,
         "a text wider than the box was drawn inside the clear cell"
     );
-    // The toolkit keeps the caret 24px before the end of the text area, which ends where the cell starts.
-    // The last character lies in the 18 columns before the caret's own columns.
-    let last = [left - 45, left - 27, top + 12, top + 36];
+    // The toolkit's scrolling keeps the caret 24px inside the text area while it moves through the text,
+    // and lets the end of the text reach the area's edge, which is where the cell starts.
+    // The last character lies in the columns before the caret's own two.
+    let last = [left - 16, left - 3, top + 12, top + 36];
     type_text(window, "M");
     status(window, "No matches");
     let ended = frame(window);
