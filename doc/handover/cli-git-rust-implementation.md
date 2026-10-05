@@ -46,7 +46,8 @@ Main session work since the delegates started:
 
 ### Delegate outcomes
 
-**Scanner embedding verification**
+#### Scanner embedding verification
+
 (`doc/handover/scanner-native-verification.md`,
 commit `f0635c911`):
 complete.
@@ -66,7 +67,8 @@ two Windows-native prefix-detection mutants survive on Linux;
 the full mutation gate stays non-green pending Windows-native verification.
 Scoped paths are committed and clean.
 
-**Native LFS URL evaluation**
+#### Native LFS URL evaluation
+
 (`doc/planning/native-lfs-url-normalization-evaluation.md`,
 commit `afa351721`):
 blocked before candidate vetting by the private-helper permission gate.
@@ -83,7 +85,8 @@ With the newly accepted trust rule the queue can resume at
 frozen discovery queries and candidate screening.
 Do not treat the Rust `url` family or Ada bindings as preselected winners.
 
-**Processors**
+#### Processors
+
 (`doc/handover/unified-linter-processors.md`):
 implemented and committed (`ff5706ef3`),
 verified at 203 native tests (33 processor tests),
@@ -190,8 +193,9 @@ which unions `src/native/lib.rs` and reruns both package gates on the integrated
 
 ### Delegate results
 
-**Behavior ledger**:
-complete,
+#### Behavior ledger
+
+Complete,
 [`cli-git-rust-behavior-ledger.md`](../planning/cli-git-rust-behavior-ledger.md),
 last commit `ab7ff3f89`.
 It records 112 responsibilities:
@@ -228,8 +232,9 @@ The ledger also measured the incumbent with `tokei` 15.0.0, tests and fixtures e
 of which `policy-engine` is 135 files and 18,582 lines
 and worktree copy is 25 files and 3,755 lines.
 
-**LFS URL normalizer**:
-selected,
+#### LFS URL normalizer
+
+Selected,
 see the `Selected owner` section of
 [`native-lfs-url-normalization-evaluation.md`](../planning/native-lfs-url-normalization-evaluation.md)
 (commits `eeb3f5e75`, `5c39793e1`, `c8da20019`, `78350705c`).
@@ -249,7 +254,7 @@ The delegate reports no case where both accept and return different strings
 across the fixture, a 2,160-case matrix, and 1,000,000 seeded random inputs,
 with 12 single-fault variants of the normalizer each failing at least one fixture case.
 
-Open to veto:
+Accepted by the user on 2026-10-05 (see `User decisions 2026-10-05`):
 the 289 native-only rejections are a deliberate behavior change.
 Endpoints such as `ssh://` schemes, IPv6 literals, Unicode hosts, and dot segments
 get a named error natively instead of the incumbent's normalized output.
@@ -262,8 +267,9 @@ equality on acceptance rests on differential evidence and a partial reading of A
 the reference source is scratch code and has not been through the crate's Clippy configuration.
 The linter executable delegate has the contract and is porting `markdown/lfs-image-url`.
 
-**Processor mutation campaign**:
-the first unrestricted cargo-mutants pass over `src/processors*.rs`,
+#### Processor mutation campaign
+
+The first unrestricted cargo-mutants pass over `src/processors*.rs`,
 run by the main session from the snapshot at `9be97dce4` with image tag `processors-full`
 (`mise run //package/linter/monochromatic-lint:mutation:processors:files`, 2,641 seconds).
 Result:
@@ -291,8 +297,9 @@ and does not describe coverage of these modules.
 Disposition is queued for a delegate in the linked worktree `.claude/worktrees/linter-processor-survivors`
 (branch `test/linter-processor-survivors`, based on `9be97dce4`).
 
-**Scanner Windows-native verification**:
-the two retained survivors at `package/cli/forbidden-strings/src/path_name_bytes.rs:36` are caught on native Windows
+#### Scanner Windows-native verification
+
+The two retained survivors at `package/cli/forbidden-strings/src/path_name_bytes.rs:36` are caught on native Windows
 by the existing test `path_scan::tests::windows_volume_prefix_is_not_name_segment`.
 Detail and evidence:
 `doc/handover/scanner-native-verification.md`, section `Windows-native follow-up` (commit `0fa9f3761`),
@@ -338,8 +345,9 @@ Host notes from that run:
   The delegate ran `slmgr.vbs /rearm` on the disposable overlay only;
   the template is unchanged.
 
-**Linter executable**:
-complete,
+#### Linter executable
+
+Complete,
 evidence in [`unified-linter-executable.md`](unified-linter-executable.md)
 (commits `2cdcea1f3`, `9adb2f918`, `c46396109`, `6b260a81e`, `4b6d46b9a`, `2aab0b324`, `a4b2f08dc`).
 `monochromatic-lint` builds as a binary with orchestration, stdin fixing, every designed flag,
@@ -401,8 +409,9 @@ a fuzz campaign longer than the smoke,
 and a file-size limit (the incumbent skips files over 5 MiB).
 Commit `a4b2f08dc` is scoped `docs(handover)` but also changes both package READMEs.
 
-**Linter Markdown and constant-slot mutation survivors**:
-dispositioned on branch `test/linter-mutation-survivors` (head `4fa031de1`),
+#### Linter Markdown and constant-slot mutation survivors
+
+Dispositioned on branch `test/linter-mutation-survivors` (head `4fa031de1`),
 evidence in [`unified-linter-mutation-survivors.md`](unified-linter-mutation-survivors.md).
 Several survivors were redundant guards or hand-stepped index arithmetic;
 those were restructured (slice scans, `rfind`, a parity flag) rather than excluded,
@@ -428,8 +437,9 @@ That and the two loops are queued.
 The delegate also noted that cargo-mutants 27.1.0 needs `-- -- a b` to pass two test filters,
 and that the unscoped suite's 139 seconds leave about 41 seconds of margin under the 180-second mutant timeout.
 
-**Processor mutation survivors**:
-dispositioned on branch `test/linter-processor-survivors`,
+#### Processor mutation survivors
+
+Dispositioned on branch `test/linter-processor-survivors`,
 evidence in [`unified-linter-processor-survivors.md`](unified-linter-processor-survivors.md)
 and `package/linter/monochromatic-lint/target/verification/processor-survivors-mutation-w00nRd`.
 All 52 missed mutants were planted by hand from their recorded spans;
@@ -452,8 +462,9 @@ turning `/// Alpha.\r\n` into `/// Alpha.\rX\n`,
 and no test pinned which refusal fired.
 It is now pinned.
 
-**Integration of both survivor branches**:
-landed on `main` at `7e10fefd0` and pushed.
+#### Integration of both survivor branches
+
+Landed on `main` at `7e10fefd0` and pushed.
 The main session cherry-picked 18 commits from `test/linter-mutation-survivors`
 and 8 from `test/linter-processor-survivors` (excluding their shared `9be97dce4`, applied once)
 onto a branch in the linked worktree `.claude/worktrees/integrate-linter`.
@@ -483,8 +494,9 @@ Choices the main session settled, open to veto:
 - The fence line-count simplification stays,
   because the repository removes provably redundant code instead of recording mutant exclusions.
 
-**Scanner device-namespace fail-open**:
-fixed on `main` (`833483171`),
+#### Scanner device-namespace fail-open
+
+Fixed on `main` (`833483171`),
 detail in `doc/handover/scanner-native-verification.md`.
 The cause was broader than the Windows run reported:
 any Windows prefix part spelled `.` or `..`,
@@ -510,8 +522,9 @@ and the `#[cfg(windows)]` test, which has never been compiled.
 A concurrent session's commit `8fdbbded9` (`test(desktop-app-ide): ...`) swept in the 17 pre-fix tests;
 the delegate posted a corrective commit comment on it rather than amending.
 
-**Native wrapper foundation**:
-complete on `main`,
+#### Native wrapper foundation
+
+Complete on `main`,
 evidence in [`cli-git-native-foundation.md`](cli-git-native-foundation.md)
 (17 commits from `df25471a9` to `48a1b5756`).
 Delivered:
@@ -570,8 +583,9 @@ Oxlint reports 2 errors (banned `spawnSync`, banned `try...finally`) and several
 the linter package's runner scripts share the pattern.
 Windows and macOS code paths were never compiled.
 
-**Native command parser and rule cores**:
-complete on branch `feat/cli-git-native-command-parser`,
+#### Native command parser and rule cores
+
+Complete on branch `feat/cli-git-native-command-parser`,
 evidence in [`cli-git-native-command-parser.md`](cli-git-native-command-parser.md).
 It ports Git 2.56.0 `parse-options` tokenization,
 the facts of `commit`, `push`, `status`, `add`, `reset`, `clean`, `stash`, `config` and branch creation,
@@ -606,7 +620,8 @@ Open questions it raised, with the main session's working answers (open to veto)
 - Wrapper controls before the subcommand must be stripped from the global prefix before any rule runs;
   the policy engine owns that.
 
-**Wrapper runner lint**:
+#### Wrapper runner lint
+
 `bin/test-native-container.mjs` and `bin/mutate-native-container.mjs` now pass Oxlint with no errors or warnings
 (commits `6bc2f15f3`, `9b99e49f3`, `9cd9935d5`; detail in the foundation document's
 `Runners under the Oxlint configuration` section).
@@ -627,8 +642,9 @@ The configuration-level fix (a tsconfig that includes `bin/**/*.mjs`) changes sh
 that file-enforcer may own,
 so it needs its own change after checking `file-enforcer.config.ts`.
 
-**Engine phase launched**:
-the policy engine with the pre-forward built-ins and argv transforms (main checkout,
+#### Engine phase launched
+
+The policy engine with the pre-forward built-ins and argv transforms (main checkout,
 evidence `doc/handover/cli-git-native-policy-engine.md`)
 and the candidate content layer with the scanner adapter (worktree `.claude/worktrees/cli-git-candidates`,
 branch `feat/cli-git-native-candidates`, evidence `doc/handover/cli-git-native-candidates.md`).
@@ -644,8 +660,9 @@ and staged-versus-worktree byte isolation for the scanner.
 The optional policies follow once both land.
 The wrapper's 16 spinning mutation timeouts wait until the engine delegate releases the native modules.
 
-**Second API session limit and file-enforcer manifests**:
-all four running delegates stopped again on the API session limit and were resumed from their transcripts.
+#### Second API session limit and file-enforcer manifests
+
+All four running delegates stopped again on the API session limit and were resumed from their transcripts.
 The engine and candidate delegates had not written anything yet.
 The linter mutation runner and the scanner's Windows virtual machine (`mvm-wbase-20261005`) kept running
 through the interruption;
@@ -662,11 +679,37 @@ The main session committed its output as `ff3559d89`,
 with the fuzz lockfile regenerated through `mise run //package/git-policy/cli.fuzz:lock`
 (adds `derive_arbitrary` and its four proc-macro crates only).
 
-Proposed `AGENTS.md` change, not applied:
-rule `WC2` tells agents to check `file-enforcer.config.ts` before editing root config.
-Extend it to package `Cargo.toml` files,
-which file-enforcer also normalizes,
-so a new crate's manifest is generated or run through it before its first commit.
+Rule `WC2` in `AGENTS.md` now covers package `Cargo.toml` files (`0ae51048d`);
+see `User decisions 2026-10-05`.
+
+### User decisions 2026-10-05
+
+Asked through the question tool, with context restated, as rule `QRX` requires.
+
+- No parity rule goes into `AGENTS.md`.
+  The main session proposed a rule that choices settled by a parity measurement against an incumbent
+  are adopted with evidence instead of waiting for acceptance.
+  The user declined:
+  "AGENTS.md are read by all types of agents and adding this rule is inviting lesser, weaker agents to bomb me."
+  Rejected idea; do not re-propose.
+  The correction in `User correction: no vetting decision gate` still stands for this session's work.
+- Rule `WC2` is extended to package `Cargo.toml` files (`0ae51048d`, with the regenerated `CLAUDE.md`).
+  The rule stays at 197 characters, inside the tagged-rule budget.
+- file-enforcer gets no check mode.
+  The user:
+  "Check mode is delibrately not built because it'd go against file-enforcer's naming and philosophy."
+  The issue was framed around where enforcement should run instead:
+  [#607](https://github.com/Aquaticat/Monochromatic/issues/607),
+  "file-enforcer: new managed files can be committed before they are enforced".
+  Do not propose a drift-reporting mode.
+- `cctt` is unregistered from `WorktreeCreate`,
+  in `.claude/settings.local.json` and the terminal-title README (`495f36355`).
+  Built-in worktree isolation works again;
+  an isolated worktree branches from `origin/main`, not local `main`,
+  and has no `node_modules` or scanner binary, so it still needs provisioning before its first commit.
+  Detail: `doc/troubleshooting/claude-code-worktree-create-hook-no-path.md`, section `Fix applied`.
+- The restricted LFS URL normalizer is kept.
+  The 289 endpoint forms the old linter accepts and the native one refuses are accepted as a behavior change.
 
 ### User correction: no vetting decision gate
 
@@ -685,7 +728,8 @@ that is verification, not a decision for the user.
 
 ### Environment findings
 
-- Tool-managed worktree isolation fails in this repository:
+- Tool-managed worktree isolation failed in this repository until the registration was removed
+  (see `User decisions 2026-10-05`):
   `.claude/settings.local.json` registers `cctt` (the terminal-title plugin) for the `WorktreeCreate` hook.
   A command hook on that event must create the worktree and print its path;
   `cctt` prints none,

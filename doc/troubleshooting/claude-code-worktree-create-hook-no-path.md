@@ -2,10 +2,11 @@
 
 ## Status
 
-Diagnosed on 2026-10-05.
-The cause is this repository's hook registration, not a Claude Code defect.
-A workaround is in use;
-the fix is proposed in "Proposed fix" and not applied.
+Diagnosed and fixed on 2026-10-05.
+The cause was this repository's hook registration, not a Claude Code defect.
+The user chose to remove the registration;
+"Fix applied" records the change and what built-in isolation provides afterwards.
+The manual-worktree section stays because an isolated worktree still needs provisioning before its first commit.
 
 ## Symptom
 
@@ -205,20 +206,41 @@ Tradeoffs:
   a registered command hook replaces the default,
   it does not decorate it.
 
-## Proposed fix
+## Fix applied
 
-Not applied:
-`.claude/settings.local.json` is the user's local configuration,
-and the README change alters what the plugin tells every installer to register.
+On 2026-10-05 the user chose removal over teaching the hook to create worktrees
+(that alternative would move worktree location, branch naming and setup into a title plugin).
 
-- Remove the `WorktreeCreate` entry from `.claude/settings.local.json`
-  and from the settings example in `package/claude-code-plugin/terminal-title/README.md`,
-  along with the `WorktreeCreate` title in that README's event list.
-- Decide `WorktreeRemove` separately after probing whether a non-deleting hook leaves worktrees behind.
-- Alternative that keeps the title:
-  make the handler create the worktree and print its path.
-  That moves worktree policy (location, branch naming, ignored-state copying) into a title plugin,
-  which is a larger ownership change than removing two registrations.
+- The `WorktreeCreate` entry is removed from `.claude/settings.local.json`;
+  a comparison against a backup showed no other difference.
+- `package/claude-code-plugin/terminal-title/README.md` no longer lists `WorktreeCreate` in its event examples
+  or its settings example,
+  and says why it must stay unregistered (commit `495f36355`).
+- The title handler still has its `WorktreeCreate` branch;
+  it is unreachable while the event is unregistered.
+
+Verified in the same session, without restarting Claude Code:
+an Agent launch with `isolation: "worktree"` started,
+which had failed twice before the change.
+A read-only probe inside it reported:
+
+- root `.claude/worktrees/agent-<id>` on branch `worktree-agent-<id>`;
+- `HEAD` at `origin/main` (`aa5f9d2bc`) while local `main` was at `8cd4e9721`,
+  so unpushed local commits are absent from an isolated worktree;
+- no `node_modules` and no `package/cli/forbidden-strings/target/release/forbidden-strings`,
+  so its first commit would hit the scanner failure described under "Verified workarounds" until provisioned;
+- a clean status: the main checkout's uncommitted files are not carried over.
+
+After the probe returned, the worktree directory and its branch were gone.
+`cctt` is still registered on `WorktreeRemove`,
+so a non-deleting hook there did not prevent removal of an unchanged worktree.
+Removal of a worktree that has commits was not tested.
+
+Not done, and a decision for the user:
+Claude Code's `worktree` settings can branch from local `HEAD` (`baseRef: "head"`)
+and symlink directories from the main checkout (`symlinkDirectories`),
+which might remove the provisioning step.
+Neither is configured or tested here.
 
 ## Upstream filing decision
 
