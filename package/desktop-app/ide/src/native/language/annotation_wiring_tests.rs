@@ -20,12 +20,22 @@ use slint::Model;
 /// and returns one hint after `alpha`.
 const TEXT: &str = "alpha beta\ngamma delta\n";
 
+/// What: The scripted server's setting that makes it push its warning on every publish;
+///       `&[(&str, &str)]` is a borrowed list of borrowed name and value pairs.
+/// Why: The shared test definitions turn pushed diagnostics off unless a test names `PUSH`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const PUSHED: [string, string][] = [['PUSH', '1']];
+/// ```
+const PUSHED: &[(&str, &str)] = &[("PUSH", "1")];
+
 /// The server's hints and diagnostics appear with no key, pointer, scroll, or reload after them:
 /// the poll that stores a snapshot also repaints the source.
 #[test]
 fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
     let fixture = project(&[("main.scripted", TEXT)]);
-    let reader = reader(&fixture, "main.scripted", definitions(&[], None));
+    let reader = reader(&fixture, "main.scripted", definitions(PUSHED, None));
     ready(&reader);
     eventually(
         "accepted hints and diagnostics were stored but never painted",
@@ -41,7 +51,7 @@ fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
 #[test]
 fn caret_problem_card_yields_to_the_hover_popup() {
     let fixture = project(&[("main.scripted", TEXT)]);
-    let reader = reader(&fixture, "main.scripted", definitions(&[], None));
+    let reader = reader(&fixture, "main.scripted", definitions(PUSHED, None));
     ready(&reader);
     eventually("the server's diagnostic was not painted", || {
         return reader.window.get_source_markers().row_count() > 0;
