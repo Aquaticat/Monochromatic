@@ -698,6 +698,29 @@ so a fresh context resumes from this file alone.
   the `corpus-run/canadian` batch's remaining arms.
 
 - 2026-10-05,
+  01:10 UTC:
+  the `corpus-run/canadian` second pass closed with commit `52a5e2c9c`:
+  the date cases given leading dates,
+  three arms left documented
+  (the year-refused return,
+  the runs-on comma,
+  and the underscore count:
+  the cases assert their rewrites,
+  the lines' returns the census's attribution leaves cold).
+  The reach census reads `ran 0, still cold 2`
+  (`~/temp/agent/mimo-trial/reach-canadian2.log`).
+  Counts at the close:
+  the full suite 1,564 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-canadian2-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-canadian2-scans.log`).
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/publish` cluster
+  (the ranking's next at `census-2aJKLC`).
+
+- 2026-10-05,
   00:54 UTC:
   the T8 `claim` batch left its 3 arms documented
   (`claim-panel-voters.ts:54`,

@@ -7085,6 +7085,29 @@ The reach census was not run for a landed case;
 none landed.
 No B entry found.
 
+The sixty-eighth cluster of that census,
+`corpus-run/canadian` (second pass),
+against `census-2aJKLC` at `11ae619cb`:
+3 line stretches over `canadian-date-read-leading.ts`
+and `canadian-spelling-capital.ts`
+(`52a5e2c9c`).
+Landed:
+the date cases given leading dates
+(the reads run on the document's leading date;
+the earlier shapes sat mid-sentence).
+Left:
+the year-refused return
+(`259`),
+the runs-on comma
+(`335`),
+and the underscore count
+(`463`):
+the cases assert their rewrites,
+the three lines' returns the census's attribution leaves cold.
+The reach census (`~/temp/agent/mimo-trial/reach-canadian2.log`)
+reads `ran 0, still cold 2`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
