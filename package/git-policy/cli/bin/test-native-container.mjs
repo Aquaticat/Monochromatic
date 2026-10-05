@@ -5,6 +5,9 @@ import { cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
+/** Concurrent worktrees set GIT_POLICY_NATIVE_IMAGE_TAG so one snapshot never runs another's image. */
+const testImage = `localhost/git-policy-native-test:${process.env.GIT_POLICY_NATIVE_IMAGE_TAG ?? 'development'}`;
+
 /** Failed setup or execution cannot masquerade as native verification. */
 class NativeVerificationError extends Error {}
 
@@ -48,8 +51,8 @@ async function main() {
       'CMD ["cargo", "test", "--offline", "--locked", "--all-targets", "--", "--test-threads=2"]',
       '',
     ].join('\n'));
-    run({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/git-policy-native-test:development', context] });
-    const image = run({ command: 'podman', args: ['image', 'inspect', 'localhost/git-policy-native-test:development', '--format', '{{.Id}}'], capture: true }).trim();
+    run({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', testImage, context] });
+    const image = run({ command: 'podman', args: ['image', 'inspect', testImage, '--format', '{{.Id}}'], capture: true }).trim();
     const limits = ['--rm', '--init', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128'];
     await writeFile(join(evidence, 'manifest.json'), JSON.stringify({ base, image, limits, user: '1000:1000' }, null, 2) + '\n');
     console.log(`Native wrapper verification evidence: ${evidence}`);

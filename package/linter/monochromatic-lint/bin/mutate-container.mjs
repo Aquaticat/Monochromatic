@@ -9,6 +9,13 @@ import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promi
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+/** Concurrent worktrees set MONOCHROMATIC_LINT_IMAGE_TAG so one snapshot never runs another's image. */
+const imageTag = process.env.MONOCHROMATIC_LINT_IMAGE_TAG ?? 'development';
+/** Already tested source snapshot this campaign mutates. */
+const testImage = `localhost/monochromatic-lint-test:${imageTag}`;
+/** Campaign image layered over the tested snapshot. */
+const mutationImage = `localhost/monochromatic-lint-mutation:${imageTag}`;
+
 /** Verification failures keep the failing operation visible. */
 class VerificationError extends Error {}
 
@@ -41,7 +48,7 @@ async function main() {
   let container;
   try {
     const base = podman({
-      args: ['image', 'inspect', 'localhost/monochromatic-lint-test:development', '--format', '{{.Id}}'],
+      args: ['image', 'inspect', testImage, '--format', '{{.Id}}'],
       capture: true,
     }).stdout.trim();
     if (!/^[a-f0-9]{64}$/u.test(base))
@@ -75,13 +82,13 @@ async function main() {
       args: [
         'build', '--network=none', '--http-proxy=false', '--pull=never',
         '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000',
-        '--tag', 'localhost/monochromatic-lint-mutation:development', context,
+        '--tag', mutationImage, context,
       ],
     });
     container = podman({
       args: [
         'create', '--init', '--network=none', '--memory=2g', '--cpus=2',
-        '--pids-limit=128', 'localhost/monochromatic-lint-mutation:development',
+        '--pids-limit=128', mutationImage,
       ],
       capture: true,
     }).stdout.trim();
