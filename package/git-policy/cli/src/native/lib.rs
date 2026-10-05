@@ -89,3 +89,18 @@ pub mod command_stash;
 
 /// The Git 2.56.0 option tables of every `git stash` subcommand.
 pub mod command_stash_table;
+
+/// Branch-creation facts of `git branch`, `git checkout` and `git switch`.
+pub mod command_branch_create;
+
+/// Which action a tokenized `git branch` region selects.
+mod command_branch_mode;
+
+/// The complete Git 2.56.0 option table of `git branch`.
+pub mod command_branch_table;
+
+/// Explicit creation and the remote-guess candidate of `git checkout` and `git switch`.
+mod command_branch_target;
+
+/// The complete Git 2.56.0 option tables of `git checkout` and `git switch`.
+pub mod command_checkout_table;
