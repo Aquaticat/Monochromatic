@@ -3,6 +3,17 @@
 /// Injected elapsed time keeps double-Shift tests independent of wall-clock adjustments and sleep timing.
 use std::time::Duration;
 
+/// What: Rust's Unicode whitespace predicate includes NEXT LINE and excludes the byte-order mark.
+/// Why: The reference's JavaScript trim does the reverse, so copied queries need these explicit boundaries.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const inputSpace = (character: string) => character.trim() === '';
+/// ```
+fn input_space(character: char) -> bool {
+    return character == '\u{feff}' || (character != '\u{0085}' && character.is_whitespace());
+}
+
 /// Normalized query and the presentation-only content filter.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SearchInput {
@@ -17,7 +28,8 @@ impl SearchInput {
     /// Empty input and a bare content-only prefix clear results rather than start a search.
     pub fn parse(raw: &str) -> Option<Self> {
         let content_only = raw.starts_with('%');
-        let query = raw.strip_prefix('%').unwrap_or(raw).trim();
+        // Borrow the stripped view when a percent prefix exists; otherwise keep the original raw input.
+        let query = raw.strip_prefix('%').unwrap_or(raw).trim_matches(input_space);
         if query.is_empty() {
             return None;
         }
