@@ -149,6 +149,17 @@ Console shutdown was accepted after that equality check,
 and the next runtime waits for matching container/process absence.
 The AOSP control uses `Pixel9ProFold_AOSP36_UipH6W` on port `5580`,
 within the inspected ADB emulator scan range.
+Its initial baseline passed before the APK was installed,
+and the same capped container's `emulator-check accel` reported
+`KVM (version 12) is installed and usable.`
+The first app probe rejected the inherited Google-image posture identifier
+`0`:
+AOSP `print-states` reports `1=CLOSED`,
+`2=HALF_OPENED` and `3=OPENED`.
+The harness now uses those measured identifiers and the supported `state`
+command for this image.
+That rejected command is a harness portability error,
+not evidence of another AOSP ANR or failed app layout.
 
 ## Independently verifiable queue
 
