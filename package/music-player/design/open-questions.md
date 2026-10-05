@@ -54,8 +54,10 @@ study and verified 24-pose viewer at `questions/track-menu.html`,
 without production callbacks or a replacement action-list ballot.
 Settings/template editor design and the scan indicator remain independent
 queue items.
-`doc/planning/music-player-light-scan-indicator.md` starts the scan-F study
-without real analysis or revised consent defaults.
+`doc/planning/music-player-light-scan-indicator.md` records the scan-F study:
+native capture and action checks are complete,
+with sanitized crops ready and viewer publication remaining.
+No real analysis or revised consent defaults are included.
 Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
@@ -1123,8 +1125,12 @@ not still awaiting a light version.
 D7's track menu now has its own 24-pose light/dark native publication in
 `questions/track-menu.html`,
 with seven action intents and input/dismissal checks recorded separately.
-The Settings pane and scan bar remain to be drawn in light;
-do not credit other studies as evidence for those surfaces.
+The scan indicator has a captured 32-pose light/dark native cohort and
+native action matrix recorded in
+`evidence/scan-indicator-boundaries.md`;
+sanitized crops are ready and viewer publication remains.
+The Settings pane remains to be drawn in light;
+do not credit other studies as evidence for that surface.
 
 ### 11e. Custom display templating: Settings requirement settled, details open
 

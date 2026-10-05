@@ -78,6 +78,13 @@ native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
 Settings/template editor design and the scan indicator remain independent
 queue items.
+The scan indicator now has a measured native study in progress:
+`evidence/scan-indicator-boundaries.md` records the accepted scan-F bar,
+the rejected 12dp padding correction,
+the 32-pose cohort and the native action matrix.
+Sanitized crops are ready;
+inspection,
+viewer publication and consumer verification remain.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds

@@ -12,7 +12,12 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
-## Current design queue: light track-menu publication complete
+## Handoff: scan-F native capture complete, publication in progress
+
+This record is the continuation state for the next agent session.
+The human is handing the queue to Claude Opus.
+Continue substantive authorized work;
+do not stop at a status-only report or invent another preference ballot.
 
 The filename evidence and its configurable-support correction are complete.
 The human directed continued work rather than another status-only stop.
@@ -85,11 +90,70 @@ Full Android lint retains five inherited errors,
 65 warnings and two hints;
 the new row's modifier warnings are gone.
 `evidence/track-menu-boundaries.md` keeps these scopes explicit.
-The remaining light surfaces are Settings and the scan bar;
-`doc/planning/music-player-light-scan-indicator.md` now records the
-scan-F source audit and isolated state/fit/lifecycle queue.
+
+The remaining light surfaces are Settings and the scan indicator.
+`doc/planning/music-player-light-scan-indicator.md` and
+`evidence/scan-indicator-boundaries.md` record the scan-F source audit,
+state model,
+measured padding correction and native verification.
 D81's Settings-template requirement remains settled while its editor details
 are a separate design problem.
+
+## Scan-F handoff state and next action
+
+Current artifact:
+prototype `25a95411750c5c5356631fc508513c42a81ad1c4`,
+APK SHA-256
+`c06ec80240e41641fee1fdec79313a8294b9595544740145f4fa6f2b1f77ddf1`
+in the owned private study directory.
+
+Completed:
+21 pure fixture tests with four fresh guard-removal mutants;
+same-APK proof that the rejected 12dp button padding clips Resume at
+inner/light/200% while scan-F's source padding fits the same intrinsic text
+in the unchanged 100dp slot;
+the full 32-pose cohort across both panels,
+themes and text scales;
+and the native action matrix in all eight environments.
+Native Pause/Resume fired exactly once each,
+authored progress stayed stable while paused,
+the active bar reserved 137px of player height,
+completion removed the whole bar and returned the player to the idle
+baseline in geometry and app pixels.
+Changed-pixel and changed-geometry controls were rejected.
+The guest's recorded fields were restored,
+the owner exited `0` and matching native runtimes are absent.
+
+What to inspect first:
+`evidence/scan-indicator-boundaries.md` for scope and limits;
+the plan's current-state section for the exact remaining queue;
+the private `verified-crops/manifest.json` and
+`native-actions/manifest.json` for measured records.
+
+What remains:
+make and visually inspect the light/dark full-region pairs,
+bind a fresh inspection record to the exact crop hashes,
+publish the witness manifest and scoped native verification,
+build and validate `questions/scan-indicator.html`,
+run consumer tests and guard-removal proofs,
+run four-context offline browser verification and inspect screenshots,
+publish the review-verification digest,
+then close the plan,
+README,
+this handover and open-questions.
+Extend `verify-first-run-final-documents.ts` to learn the scan artifact.
+
+How to respond:
+continue the queue directly with the inspection-pair step.
+Do not reopen the padding question,
+re-run native capture,
+or offer Settings-template or scan-policy ballots.
+Full Android lint retains five inherited errors,
+65 warnings and two hints;
+preserve that stated limitation.
+Real analysis,
+production implementation,
+native accessibility and Firefox acceptance remain outside this evidence.
 
 ## Filename investigation record (started 2026-09-29)
 

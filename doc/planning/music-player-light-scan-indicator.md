@@ -118,10 +118,10 @@ not source inspection or guessed text width.
 - [x] Build pure authored scan state and an isolated native host using the
   accepted player,
   without calling production analysis or persistence.
-- [ ] Measure light/dark fit on both panels at 100% and 200% text,
+- [x] Measure light/dark fit on both panels at 100% and 200% text,
   including Pause/Resume labels and count-width stress.
   Preserve the accepted label ellipsis and current layout floors.
-- [ ] Exercise native Pause/Resume,
+- [x] Exercise native Pause/Resume,
   progress changes and disappearance after authored completion.
   Verify stable active geometry and exact return to the no-bar baseline;
   record any deliberate appearance/disappearance reservation separately.
@@ -195,13 +195,58 @@ and the cover's total count is not fully visible under accepted ellipsis.
 No claim of fully visible counts or universal glyph/accessibility acceptance
 follows from layout rectangles.
 
-The same live guest is now acquiring the complete 32-pose state cohort and
-native start/pause/resume/progress/completion controls across all eight
-environments.
-Only completion of that run,
-exact restoration,
-fresh sanitization/inspection and viewer verification can close publication.
 Authored completion removes the row at the next composition;
 this introduces no production dwell-time or animation requirement.
 The separator preserves scan-F's existing `border-top` rather than adding
 a new status surface.
+
+## Current artifact and publication state
+
+Prototype `25a954117` is the current source,
+with APK SHA-256
+`c06ec80240e41641fee1fdec79313a8294b9595544740145f4fa6f2b1f77ddf1`
+in the owned private study directory.
+The complete 32-pose cohort covers both panels,
+light/dark and 100%/200% text across idle,
+running,
+paused and wide-count scenes.
+Six cover 200% active views report the accepted one-line status ellipsis.
+
+The native action matrix passed in all eight panel/theme/scale environments:
+actual Pause/Resume buttons fired exactly once each in the same activity,
+authored start/progress events arrived without recreation,
+paused progress did not advance,
+active player geometry and app pixels stayed unchanged,
+the fixed bar/control slot stayed unchanged,
+completion removed the whole bar,
+and the completed player matched the idle baseline in geometry and app
+pixels.
+Changed-pixel and changed-geometry controls were rejected.
+The active bar reserves 137px of player height at 390dpi;
+that is scan-F's own row reservation,
+not a floating-overlay result.
+
+The guest's recorded fields were restored exactly,
+the owner exited `0` and the matching container/QEMU are absent.
+Full Android lint still reports the same five inherited errors,
+65 warnings and two hints;
+no finding names a `ScanIndicator` source file.
+Sanitization is complete:
+32 measured-inset crops with retained-RGB proofs are ready under the
+private study directory.
+`questions/scan-indicator.template.html` is prepared but not yet bound to
+witnesses.
+
+Remaining publication work:
+make and inspect the light/dark full-region pairs,
+bind a fresh inspection record to the exact crop hashes,
+publish the witness manifest and scoped native verification,
+build and validate `scan-indicator.html`,
+run consumer tests and guard-removal proofs,
+run four-context offline browser verification,
+inspect the resulting screenshots,
+publish the review-verification digest,
+then close README,
+HANDOFF and open-questions.
+The document verifier must also learn this artifact.
+No new preference answer is required.
