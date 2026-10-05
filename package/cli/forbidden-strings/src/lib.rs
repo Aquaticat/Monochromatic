@@ -35,6 +35,10 @@ mod walk;
 mod frx_load;
 /// Registers the `frx_scan` child module: the forbidden-regex line scan.
 mod frx_scan;
+/// Shared structured findings keep embedded policies independent of terminal formatting.
+mod scan_finding;
+/// Public findings contain only source locations and non-secret rule identities.
+pub use scan_finding::ScanFinding;
 /// Registers component-level pathname matching and masked display labels.
 mod path_scan;
 /// Registers runtime cache envelope, path, warning, and publication implementation.

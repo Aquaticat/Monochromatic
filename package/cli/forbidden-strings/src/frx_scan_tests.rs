@@ -1,6 +1,7 @@
 // Line-splitting edge-case and fail-closed unit tests for the frx scan path.
 
 use super::{line_starts, scan_file, scan_one_set};
+use crate::ScanFinding;
 use std::panic::AssertUnwindSafe;
 
 // Creates a fresh temp dir under the OS temp root, keyed by label and pid.
@@ -66,8 +67,13 @@ fn line_starts_empty_buffer_is_just_the_zero_start() {
 fn scan_one_set_normal_return_formats_and_offsets() {
     // Unnamed (line index, rule id) pairs render 1-based with the base offset added.
     let matcher = AssertUnwindSafe(|| vec![(0usize, 0usize), (2usize, 1usize)]);
-    let hits = scan_one_set("a.txt", 5, &[], matcher);
-    assert_eq!(hits, vec!["a.txt:1 rule=5".to_string(), "a.txt:3 rule=6".to_string()]);
+    let hits = scan_one_set(5, &[], matcher);
+    assert_eq!(hits, vec![
+        ScanFinding::Content { line: 1, rule: String::from("5") },
+        ScanFinding::Content { line: 3, rule: String::from("6") },
+    ]);
+    assert_eq!(hits[0].render("a.txt"), "a.txt:1 rule=5");
+    assert_eq!(hits[1].render("a.txt"), "a.txt:3 rule=6");
 }
 
 #[test]
@@ -76,11 +82,13 @@ fn scan_one_set_named_rules_render_names_and_skip_offset() {
     // falls back to the offset numeric id.
     let names = vec![Some("qqq-named".to_string()), None];
     let matcher = AssertUnwindSafe(|| vec![(0usize, 0usize), (1usize, 1usize)]);
-    let hits = scan_one_set("a.txt", 5, &names, matcher);
-    assert_eq!(
-        hits,
-        vec!["a.txt:1 rule=qqq-named".to_string(), "a.txt:2 rule=6".to_string()],
-    );
+    let hits = scan_one_set(5, &names, matcher);
+    assert_eq!(hits, vec![
+        ScanFinding::Content { line: 1, rule: String::from("qqq-named") },
+        ScanFinding::Content { line: 2, rule: String::from("6") },
+    ]);
+    assert_eq!(hits[0].render("a.txt"), "a.txt:1 rule=qqq-named");
+    assert_eq!(hits[1].render("a.txt"), "a.txt:2 rule=6");
 }
 
 #[test]
@@ -91,9 +99,10 @@ fn scan_one_set_engine_panic_fails_closed() {
     let previous = std::panic::take_hook();
     std::panic::set_hook(Box::new(|_| {}));
     let matcher = AssertUnwindSafe(|| -> Vec<(usize, usize)> { panic!("synthetic engine fault") });
-    let hits = scan_one_set("a.txt", 0, &[], matcher);
+    let hits = scan_one_set(0, &[], matcher);
     std::panic::set_hook(previous);
-    assert_eq!(hits, vec!["a.txt: engine error".to_string()]);
+    assert_eq!(hits, vec![ScanFinding::EngineError]);
+    assert_eq!(hits[0].render("a.txt"), "a.txt: engine error");
 }
 
 #[test]

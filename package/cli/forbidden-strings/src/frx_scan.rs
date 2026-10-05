@@ -21,6 +21,8 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 
 /// Imports the loaded rule sets scanned against each file.
 use crate::frx_load::LoadedRules;
+/// Import the canonical result model shared by standalone and embedded callers.
+use crate::scan_finding::ScanFinding;
 
 /// Builds the line-start offsets `RegexSet::line_matches` requires for `buf`.
 ///
@@ -65,27 +67,29 @@ pub(crate) fn rule_token(base: usize, names: &[Option<String>], rule_id: usize) 
 /// a single synthetic diagnostic so the file cannot exit clean, matching the
 /// read-error diagnostic precedent; the panic never escapes the scan.
 fn scan_one_set<Match>(
-    path: &str,
     base: usize,
     names: &[Option<String>],
     matcher: Match,
-) -> Vec<String>
+) -> Vec<ScanFinding>
 where
     Match: FnOnce() -> Vec<(usize, usize)> + std::panic::UnwindSafe,
 {
     match catch_unwind(matcher) {
         Ok(pairs) => {
-            return pairs
-                .into_iter()
-                .map(|(line_index, rule_id)| {
-                    return format!("{}:{} rule={}", path, line_index + 1, rule_token(base, names, rule_id));
-                })
-                .collect()
+            // Own only location and rule identity; matched bytes never enter a finding.
+            let mut findings: Vec<ScanFinding> = Vec::<ScanFinding>::new();
+            for (line_index, rule_id) in pairs {
+                findings.push(ScanFinding::Content {
+                    line: line_index + 1,
+                    rule: rule_token(base, names, rule_id),
+                });
+            }
+            return findings
         }
         Err(_) => {
             // Fail closed: a caught engine panic becomes a redacted synthetic finding
             // so the run reports the file and exits non-zero instead of clean.
-            return vec![format!("{}: engine error", path)]
+            return vec![ScanFinding::EngineError]
         }
     }
 }
@@ -99,19 +103,35 @@ where
 /// findings. A match on line 2 of `a.txt` from an unnamed runtime rule renders as
 /// `a.txt:2 rule=0`; the same match from a section named `qqq-token` renders as
 /// `a.txt:2 rule=qqq-token`.
-pub fn scan_file(path: &str, buf: &[u8], loaded: &LoadedRules) -> Vec<String> {
+pub(crate) fn scan_content(buf: &[u8], loaded: &LoadedRules) -> Vec<ScanFinding> {
     if buf.is_empty() {
         return Vec::new();
     }
     let starts = line_starts(buf);
-    let mut hits: Vec<String> = Vec::new();
+    let mut hits: Vec<ScanFinding> = Vec::<ScanFinding>::new();
     for scan_set in loaded.iter_sets() {
         // AssertUnwindSafe: the borrows captured here (the set, `buf`, `starts`) are
         // read-only, so a caught unwind leaves no observable broken invariant.
         let matcher = AssertUnwindSafe(|| return scan_set.matcher.line_matches(buf, &starts));
-        hits.extend(scan_one_set(path, scan_set.base, &scan_set.names, matcher));
+        hits.extend(scan_one_set(scan_set.base, &scan_set.names, matcher));
     }
     return hits
+}
+
+/// What: Preserve the standalone text protocol by rendering canonical content records.
+/// Why: Embedded callers use scan_content directly, without parsing terminal strings.
+///
+/// In TS you\'d write (pseudocode):
+/// ```ts
+/// function scanFile(safeDisplayPath, bytes, loaded): string[];
+/// ```
+pub fn scan_file(path: &str, buf: &[u8], loaded: &LoadedRules) -> Vec<String> {
+    // Vec owns the variable-length terminal records, independently of the borrowed file bytes.
+    let mut lines: Vec<String> = Vec::<String>::new();
+    for finding in scan_content(buf, loaded) {
+        lines.push(finding.render(path));
+    }
+    return lines;
 }
 
 /// Registers the line-splitting edge-case and fail-closed tests (sidecar, lint-exempt).
