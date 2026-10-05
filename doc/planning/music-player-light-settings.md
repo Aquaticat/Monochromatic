@@ -208,8 +208,39 @@ The merged manifest disables the production activity and services,
 removes WorkManager initialization and exports `SettingsPaneActivity`.
 The player's own Settings button is not wired;
 the study opens the page from an authored scene or an explicit debug event.
-No native fit,
-input or placement evidence exists yet.
+
+## First native visit and what inspection rejected
+
+The first owned visit installed APK `40d0b0e4…` and captured both panels in
+light and dark at 100% and 200% text.
+Every measured rule passed:
+72dp header,
+48dp Back target,
+52 by 32dp switches,
+rows above the 48dp floor,
+no text overflow and no information inside the fold connector.
+At 200% text the column scrolls on both panels,
+so each open state also has an end-of-column capture.
+
+Fresh inspection of those captures then rejected the build for publication.
+In the dark theme the header's Back glyph and title,
+and the retained deck's title and transport buttons,
+were drawn black on the dark page.
+Nothing above them supplied a content colour;
+the accepted Search page is hosted inside a filled region that does.
+Each separator was also one pixel different across the fold connector,
+because the opaque row fill began after the connector inset.
+Measured rectangles could not show either defect.
+
+Prototype `483f16cdd` puts the opened study in the same kind of filled region,
+names the header's colour and makes the row fill transparent.
+Its complete unit task and APK build passed.
+The current APK SHA-256 is
+`85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50`.
+The first visit's captures are superseded and stay private;
+they are not publication inputs.
+A second visit must capture,
+measure and inspect this build.
 
 ## Boundaries and next action
 
@@ -226,8 +257,8 @@ Original AVDs remain untouched.
 Every visit records original settings before mutation,
 restores those exact fields and verifies owner shutdown and runtime absence.
 
-The next action is an owned native visit:
-install the exact APK,
-measure fit on both panels,
+The next action is the second owned native visit on APK `85e4a208…`:
+capture and measure both panels,
 themes and text scales,
-and exercise the switches and both Back paths.
+exercise the switches and both Back paths,
+then inspect every capture afresh before any publication.
