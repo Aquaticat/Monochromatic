@@ -2,10 +2,10 @@
 
 /// Native source state and tree presentation share one event-loop thread.
 use super::{AppWindow, Navigation, State, line, present};
-/// Reuse the same revision-aware classification application as external reloads.
-use crate::native::{reload::apply_syntax, render};
 /// A language target names a file and a place in it; the caret goes there once the file is shown.
 use crate::native::language::{Jump, place};
+/// Reuse the same revision-aware classification application as external reloads.
+use crate::native::{reload::apply_syntax, render};
 /// Identity exhaustion reports an error rather than reusing an obsolete file generation.
 use anyhow::{Context, Result};
 /// New source documents arrive only after successful project-boundary resolution and reading.

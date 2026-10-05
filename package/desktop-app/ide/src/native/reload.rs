@@ -10,12 +10,12 @@
 use super::{AppWindow, State, render};
 /// Worker creation failure must surface rather than silently disabling external refresh.
 use anyhow::Result;
+/// An accepted reload is copied for the Language module before the document consumes it.
+use ide_app::language::sync::DocumentReload;
 /// Background replies retain the file generation and source base revision.
 use ide_app::reload_worker::{ReloadReply, ReloadRequest, ReloadWorker, SyntaxReply};
 /// Reset source classifications without mutating a snapshot shared with the previous frame.
 use ide_app::source_style::SourceStyles;
-/// An accepted reload is copied for the Language module before the document consumes it.
-use ide_app::language::sync::DocumentReload;
 /// Timer callbacks and weak window references belong to the toolkit event loop.
 use slint::{ComponentHandle, Timer, TimerMode};
 /// Rc/RefCell stay UI-local; Instant schedules reads without changing wall-clock state.

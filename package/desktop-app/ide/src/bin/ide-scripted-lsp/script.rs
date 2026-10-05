@@ -1,5 +1,13 @@
 //! Settings of one scripted-server run, read once from `IDE_SCRIPTED_*` environment variables.
 
+/// What: `Value` is a decoded JSON value of any shape, like TS's `unknown` from `JSON.parse`.
+/// Why: Tests hand whole definition and reference results to the server as JSON text.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Value = unknown;
+/// ```
+use serde_json::Value;
 /// What: `env` reads process environment variables; `PathBuf` is an owned filesystem path
 ///       (sibling: borrowed `&Path`).
 /// Why: Tests configure the server through the same `environment` table real servers receive.
@@ -9,14 +17,6 @@
 /// import { env } from 'node:process';
 /// ```
 use std::{env, path::PathBuf};
-/// What: `Value` is a decoded JSON value of any shape, like TS's `unknown` from `JSON.parse`.
-/// Why: Tests hand whole definition and reference results to the server as JSON text.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Value = unknown;
-/// ```
-use serde_json::Value;
 
 /// What: A closed set of names for the column unit of protocol positions. `Copy` lets a value
 ///       be passed like a number.
