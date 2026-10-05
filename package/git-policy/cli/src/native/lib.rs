@@ -186,3 +186,15 @@ pub mod wrapper_controls;
 
 /// Removal of every wrapper control from one invocation, by position.
 pub mod wrapper_invocation;
+
+/// Lifecycle triggers and the trigger set of every shipped policy.
+pub mod policy_trigger;
+
+/// Policy events and their JSON Lines rendering.
+pub mod policy_events;
+
+/// Ordered policy execution for one lifecycle point.
+pub mod policy_engine;
+
+/// The bounded loop that repeats a pass after corrections changed candidate content.
+pub mod policy_convergence;

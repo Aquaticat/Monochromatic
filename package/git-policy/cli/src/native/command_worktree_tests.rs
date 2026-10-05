@@ -54,15 +54,14 @@ fn only_the_first_word_selects_the_action() {
 /// Count the worktrees real Git has registered for a repository.
 fn registered(repo: &std::path::Path) -> usize {
     let listing: Output = git(repo, &["worktree", "list", "--porcelain"]);
-    return String::from_utf8_lossy(&listing.stdout)
-        .lines()
-        .filter(is_worktree_line)
-        .count();
-}
-
-/// Named predicate: a porcelain line that starts one worktree record.
-fn is_worktree_line(line: &&str) -> bool {
-    return line.starts_with("worktree ");
+    let mut count: usize = 0;
+    // Each registered worktree starts one porcelain record with a `worktree <path>` line.
+    for line in String::from_utf8_lossy(&listing.stdout).lines() {
+        if line.starts_with("worktree ") {
+            count += 1;
+        }
+    }
+    return count;
 }
 
 /// Real Git 2.56.0 takes the word after `worktree` as the action, never an abbreviation or a later word.
