@@ -6,12 +6,17 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { applyFootnoteRelabel, } from '../dist/final/node/index.mjs';
+import {
+  applyFootnoteRelabel,
+  documentLabels,
+  FootnoteRewriteError,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: '',
@@ -64,31 +69,31 @@ await describe({
           },
         },),
         it({
-          name: 'bounds a run at both the head and the tail of its parent, the whole paragraph one '
-            + 'untokenized literal',
+          name: 'relabels a marker at each end of a run that is its whole paragraph, the run bounded by '
+            + 'the paragraph at its head and at its tail',
           fn: async () => {
             /**
-             Paragraph whose only child is the untokenized literal, so the
-             run sits at both bounds of its parent's children.
+             Paragraph whose every child the transform rebuilt, a marker
+             opening at the paragraph's first character and another closing
+             at its last.
              */
-            const text = 'A cat[^1] naps.\n\n[^1]: The cat.\n\n[www.example.com\n';
-            const expected = 'A cat[^2] naps.\n\n[^2]: The cat.\n\n[www.example.com\n';
+            const text = '[^9]，www.example.com [^8]\n';
             expect(applyFootnoteRelabel({
               text,
-              map: [{ from: '1', to: '2', },],
-            },),).toBe(expected,);
+              map: [{ from: '9', to: '10', }, { from: '8', to: '7', },],
+            },),).toBe('[^10]，www.example.com [^7]\n',);
           },
         },),
         it({
-          name: 'bounds a run between its positioned neighbours, the literal riding mid-paragraph with its '
-            + 'own marker relabelled by raw text',
+          name: 'relabels a reference in a run that follows a positioned call and ends its paragraph, the '
+            + 'reference set off from the literal by a space',
           fn: async () => {
             /**
-             One paragraph whose untokenized literal sits between
-             positioned text nodes, its own marker riding the run.
+             One paragraph whose untokenized literal follows a call that
+             keeps its positions, the run reaching the paragraph's end.
              */
-            const text = 'A cat[^1] naps ，www.example.com[^9] tail.\n\n[^1]: The cat.\n';
-            const expected = 'A cat[^2] naps ，www.example.com[^10] tail.\n\n[^2]: The cat.\n';
+            const text = 'A cat[^1] naps ，www.example.com [^9] tail.\n\n[^1]: The cat.\n';
+            const expected = 'A cat[^2] naps ，www.example.com [^10] tail.\n\n[^2]: The cat.\n';
             expect(applyFootnoteRelabel({
               text,
               map: [{ from: '1', to: '2', }, { from: '9', to: '10', },],
@@ -96,33 +101,43 @@ await describe({
           },
         },),
         it({
-          name: 'bounds a run against the positioned inline node that follows it, the literal beside an '
-            + 'emphasis that keeps its positions',
+          name: 'relabels a marker touching each bound of a run that sits between two positioned emphasis '
+            + 'nodes',
           fn: async () => {
             /**
-             The literal's rebuilt nodes run up to an emphasis node, which
-             keeps its positions and bounds the run's far side.
+             The run opens where the first emphasis closes and closes where
+             the second opens, a marker against each of those bounds.
              */
-            const text = '，www.example.com[^9] *tail* naps.\n';
-            const expected = '，www.example.com[^10] *tail* naps.\n';
+            const text = '*Paw*[^8]，www.example.com [^9]*tail* naps.\n';
             expect(applyFootnoteRelabel({
               text,
-              map: [{ from: '9', to: '10', },],
-            },),).toBe(expected,);
+              map: [{ from: '8', to: '7', }, { from: '9', to: '10', },],
+            },),).toBe('*Paw*[^7]，www.example.com [^10]*tail* naps.\n',);
           },
         },),
         it({
-          name: 'relabels a literal-looking reference riding with an autolink literal micromark did not '
+          name: 'relabels a marker ending where a positioned emphasis begins, the run bounded at its head '
+            + 'by the paragraph and at its tail by the emphasis',
+          fn: async () => {
+            const text = '，www.example.com [^9]*tail* naps.\n';
+            expect(applyFootnoteRelabel({
+              text,
+              map: [{ from: '9', to: '10', },],
+            },),).toBe('，www.example.com [^10]*tail* naps.\n',);
+          },
+        },),
+        it({
+          name: 'relabels a literal-looking reference set off from an autolink literal micromark did not '
             + 'tokenize, since an undefined call stays in its text (ledger B123)',
           fn: async () => {
             /**
-             Pages whose untokenized literal holds an undefined reference:
-             micromark's call tokenizer refuses an identifier no definition
-             names, so `[^9]` stays in the rebuilt text (ledger B123).
+             Pages whose rebuilt text holds an undefined reference after the
+             literal: micromark's call tokenizer refuses an identifier no
+             definition names, so `[^9]` stays in the text (ledger B123).
              */
             const texts = [
-              'A cat[^1] naps.\n\n[^1]: The cat.\n\n，www.example.com[^9] tail.\n',
-              'A cat[^1] naps.\n\n[^1]: The cat.\n\n[www.example.com[^9]\n',
+              'A cat[^1] naps.\n\n[^1]: The cat.\n\n，www.example.com [^9] tail.\n',
+              'A cat[^1] naps.\n\n[^1]: The cat.\n\n[www.example.com [^9]\n',
             ];
             for (const text of texts) {
               expect(applyFootnoteRelabel({
@@ -134,7 +149,7 @@ await describe({
         },),
         it({
           name: 'keeps an escaped opening beside an autolink literal byte-identical while the footnote '
-            + 'relabels (ledger B123)',
+            + 'relabels, and reads no label off it (ledger B123)',
           fn: async () => {
             const text = 'A cat[^1] naps.\n\n[^1]: The cat.\n\n，www.example.com \\[^9\\]\n';
             const expected = 'A cat[^2] naps.\n\n[^2]: The cat.\n\n，www.example.com \\[^9\\]\n';
@@ -142,11 +157,14 @@ await describe({
               text,
               map: [{ from: '1', to: '2', },],
             },),).toBe(expected,);
+            // The relabel names only `1`, so the inventory is what shows the
+            // escaped shape was read as no marker.
+            expect(documentLabels({ text, },),).toEqual(['1',],);
           },
         },),
         it({
-          name: 'keeps malformed openings beside an autolink literal byte-identical, since none of them '
-            + 'is a marker (ledger B123)',
+          name: 'keeps malformed openings beside an autolink literal byte-identical and reads no label off '
+            + 'them, since none of them is a marker (ledger B123)',
           fn: async () => {
             const text = 'A cat[^1] naps.\n\n[^1]: The cat.\n\n，www.example.com[^] [^a b] [^x\n';
             const expected = 'A cat[^2] naps.\n\n[^2]: The cat.\n\n，www.example.com[^] [^a b] [^x\n';
@@ -154,6 +172,35 @@ await describe({
               text,
               map: [{ from: '1', to: '2', },],
             },),).toBe(expected,);
+            expect(documentLabels({ text, },),).toEqual(['1',],);
+          },
+        },),
+        it({
+          name: 'relabels a reference beside a link whose label is empty and keeps the same shape in that '
+            + 'link\'s destination',
+          fn: async () => {
+            const text = 'A cat [](https://cat.example/[^9]) naps [^9].\n';
+            expect(applyFootnoteRelabel({
+              text,
+              map: [{ from: '9', to: '10', },],
+            },),).toBe('A cat [](https://cat.example/[^9]) naps [^10].\n',);
+          },
+        },),
+        it({
+          name: 'refuses a map naming a marker shape inside a URL micromark tokenized as an autolink '
+            + 'literal, whose text is the URL itself',
+          fn: async () => {
+            const refusal = caught(function relabelsTheUrl(): unknown {
+              return applyFootnoteRelabel({
+                text: 'A cat naps https://cat.example/[^9]x tail.\n',
+                map: [{ from: '9', to: '10', },],
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(FootnoteRewriteError,);
+            expect(String(refusal,),).toBe(
+              'FootnoteRewriteError: footnote rewrite: a changing map identifier is absent from the current '
+                + 'active document; rebuild correspondence before retrying',
+            );
           },
         },),
       ],
