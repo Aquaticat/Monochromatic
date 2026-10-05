@@ -432,15 +432,74 @@ so none is drafted.
     nothing has landed since August 2025,
     and nobody has declined it.
 6.  Is a minimal fix prototyped?
-    Not yet.
+    Partly.
     Constraints 1 to 5 hold,
     so a prototype of the maintainer's step list is required before this audit is complete.
-    It is queued in the session that wrote this document
-    and its patch and verification output will be recorded under `Prototype`.
+    The patch exists and its exit-status cases are measured;
+    `Prototype` lists the checks that are still open.
 
 ### Prototype
 
-Not yet run.
+Written and partly verified on 2026-10-05;
+the audit is not complete until the checks listed as open here are run.
+
+The patch is [cargo-mutants-timeout-exit-status.patch](cargo-mutants-timeout-exit-status.patch),
+a `git diff` against `v27.1.0` from a disposable clone.
+It adds `--accept` and an `accept` configuration key with the values `timeout` and `missed`,
+combines command-line and configuration values,
+and makes `LabOutcome::exit_code` skip the timeout and missed branches for accepted outcomes.
+Printing,
+the summary line
+and `mutants.out` are unchanged.
+
+It departs from the maintainer's step list in one place:
+the value type is a new enum with two variants instead of `SummaryOutcome`,
+because the other `SummaryOutcome` values cannot cause a failing exit status
+and its serialized names are part of the JSON output.
+
+Measured in a container without network,
+2 GiB of memory and 2 CPUs,
+rustc 1.97.0,
+with a pristine `v27.1.0` build and the patched build side by side
+(the fixture of `Verification`,
+plus a variant with an untested function for missed mutants):
+
+- Pristine, timeout only: exit 3.
+- Patched, timeout only, no option: exit 3.
+- Patched, timeout only, `--accept=timeout`: exit 0.
+- Patched, timeout and missed, `--accept=timeout`: exit 2.
+- Patched, timeout and missed, `--accept=timeout,missed`: exit 0.
+- Patched, timeout only, `accept = ["timeout"]` in `.cargo/mutants.toml`: exit 0.
+- Patched, timeout and missed, `--accept=missed`: exit 3.
+- Pristine with `--accept=timeout`: usage error, exit 1.
+- Pristine with the configuration key: `unknown field`, exit 1.
+
+Also measured on the patched tree:
+the new end-to-end test and two neighbouring upstream tests passed
+(`accept_missed_exits_successfully_with_uncaught_mutant_in_factorial`,
+`uncaught_mutant_in_factorial`,
+`emit_config_schema`),
+and 270 of 272 unit tests passed.
+
+Open, not yet measured:
+
+- The two failing unit tests are `build_dir::test::fail_to_overwrite`
+  and `build_dir::test::fail_to_overwrite_dir_permission_denied`.
+  They expect a permission error and the container runs as root;
+  that they fail the same way on the pristine tree is an inference until it is run.
+- `cargo clippy --all-targets --all-features -- -D warnings` reported 6 errors.
+  The ones read are `useless_borrows_in_formatting` in `src/output.rs`,
+  a file the patch does not touch;
+  the full list was not compared against the pristine tree.
+- `cargo fmt --check` flagged one line of a new test.
+  The saved patch contains the fix;
+  the check was not rerun on it,
+  and the nine cases were measured on the build before that formatting-only change.
+- The whole upstream integration suite was not run.
+
+The clone,
+the build context and the case log are under `~/temp/agent/upstream-prototype.p0aROR58/`;
+the image is `localhost/cargo-mutants-accept-prototype:v27.1.0`.
 
 ### Comment draft
 
