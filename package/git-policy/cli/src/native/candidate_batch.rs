@@ -368,3 +368,8 @@ pub fn read_batch_reply(
 #[cfg(test)]
 #[path = "candidate_batch_tests.rs"]
 mod tests;
+
+/// A byte source that reports its end and later yields more bytes.
+#[cfg(test)]
+#[path = "candidate_batch_resume_tests.rs"]
+mod resume_tests;
