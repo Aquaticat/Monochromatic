@@ -37,11 +37,12 @@ function podman({ args, capture = false, allowFailure = false }) {
 /** Build and run the tool over an immutable input image, then retain its complete report. */
 async function main() {
   const options = process.argv.slice(2);
-  if (options.length > 1 || (options.length === 1 && !['--rust-style', '--markdown', '--processors'].includes(options[0])))
-    throw new VerificationError('Only --rust-style, --markdown or --processors is accepted.');
+  if (options.length > 1 || (options.length === 1 && !['--rust-style', '--markdown', '--processors', '--inferred-constants'].includes(options[0])))
+    throw new VerificationError('Only --rust-style, --markdown, --processors or --inferred-constants is accepted.');
   const rustStyle = options[0] === '--rust-style';
   const markdown = options[0] === '--markdown';
   const processors = options[0] === '--processors';
+  const inferredConstants = options[0] === '--inferred-constants';
   const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-mutation-'));
   const evidenceRoot = join(process.cwd(), 'target', 'verification');
   await mkdir(evidenceRoot, { recursive: true });
@@ -73,6 +74,9 @@ async function main() {
     // Every processor module, not only the planted guard removals of the mutation:processors task.
     if (processors)
       command.push('--file', 'src/processors*.rs', '--cargo-test-arg=processors');
+    // No test filter: the semantic conformance suite in other test modules also exercises this resolver.
+    if (inferredConstants)
+      command.push('--file', 'src/rust_inferred_constants.rs');
     await writeFile(join(context, 'Containerfile'), [
       '# The tested image ID binds this campaign to an exact source snapshot.',
       `FROM ${base}`,
