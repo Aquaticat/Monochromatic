@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Observe the committed live color-scheme regression failing after guard removal in a disposable package copy.
+// Observe the committed live color-scheme and accent regressions failing after guard removal in a disposable package copy.
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -23,17 +23,20 @@ cpSync(origin, source, { recursive: true, filter: path => !['target', '.git', 'n
 mkdirSync(join(source, 'target'), { recursive: true });
 console.log('THEME_GUARD_ARTIFACT=' + artifact);
 
-const test = 'live_color_scheme_repaints_source_overlays_tree_find_bar_and_divider';
+const scheme = 'live_color_scheme_repaints_source_overlays_tree_find_bar_and_divider';
+const accent = 'accent_color_change_keeps_the_source_image_current';
 const stale = 'the live source image differs from a cold render';
 const cases = [
   // The markup notices a scheme flip; without it nothing asks native code to repaint the source image.
-  { name: 'scheme-change-handler', file: 'ui/app.slint', before: '    changed dark-scheme => { root.theme-changed(); }\n', after: '', failure: stale },
+  { name: 'scheme-change-handler', file: 'ui/app.slint', before: '    changed dark-scheme => { root.theme-changed(); }\n', after: '', test: scheme, failure: stale },
   // Native code repaints when told; a handler that does nothing leaves the old pixels in place.
-  { name: 'theme-repaint', file: 'src/native/render.rs', before: '            render(&active, &theme_state);\n', after: '', failure: stale },
+  { name: 'theme-repaint', file: 'src/native/render.rs', before: '            render(&active, &theme_state);\n', after: '', test: scheme, failure: stale },
   // Syntax ink variants follow the scheme only through this raster input.
-  { name: 'syntax-scheme-input', file: 'src/native/render.rs', before: 'dark: window.get_dark_scheme(),', after: 'dark: true,', failure: 'light: keyword ink for this scheme is missing' },
+  { name: 'syntax-scheme-input', file: 'src/native/render.rs', before: 'dark: window.get_dark_scheme(),', after: 'dark: true,', test: scheme, failure: 'light: keyword ink for this scheme is missing' },
   // Selected-text ink is chosen from the drawn fill; the palette's own ink is black in the dark scheme.
-  { name: 'selected-ink-from-fill', file: 'src/native/render.rs', before: 'selected: legible_ink(\n            rgba(window.get_selection_fill().color()),\n            rgba(window.get_selected_foreground().color()),\n        ),', after: 'selected: rgba(window.get_selected_foreground().color()),', failure: 'dark: selected glyphs are not painted with the ink chosen from the selection fill' },
+  { name: 'selected-ink-from-fill', file: 'src/native/render.rs', before: 'selected: legible_ink(\n            rgba(window.get_selection_fill().color()),\n            rgba(window.get_selected_foreground().color()),\n        ),', after: 'selected: rgba(window.get_selected_foreground().color()),', test: scheme, failure: 'dark: selected glyphs are not painted with the ink chosen from the selection fill' },
+  // An ink that depends on the accent-tinted fill itself goes stale, because only a scheme flip repaints.
+  { name: 'accent-dependent-ink', file: 'src/native/render.rs', before: 'selected: legible_ink(\n            rgba(window.get_selection_fill().color()),\n            rgba(window.get_selected_foreground().color()),\n        ),', after: 'selected: rgba(window.get_selection_fill().color()),', test: accent, failure: stale },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
@@ -41,6 +44,7 @@ const selected = only ? cases.filter(item => only.has(item.name)) : cases;
 if (only && selected.length !== only.size) throw new Error('Unknown guard name in: ' + process.env.usage_only);
 const results = [];
 const run = (item, phase) => {
+  const test = item.test;
   const result = spawnSync('podman', [
     'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
     '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
@@ -61,8 +65,8 @@ const run = (item, phase) => {
   if (!accepted) throw new Error('Unexpected ' + phase + ' result for ' + item.name + '; inspect ' + artifact);
   console.log(JSON.stringify(results.at(-1)));
 };
-// Every guard edits the same test's inputs, so one unmodified run is the baseline for all of them.
-run({ name: 'unmodified' }, 'baseline');
+// One unmodified run per test is the baseline for every guard of that test.
+for (const test of new Set(selected.map(item => item.test))) run({ name: 'unmodified-' + test, test }, 'baseline');
 for (const item of selected) {
   const path = join(source, item.file);
   const original = readFileSync(path, 'utf8');
@@ -74,6 +78,6 @@ for (const item of selected) {
     run(item, 'removed');
   } finally { writeFileSync(path, original); }
 }
-// One restored run after the last guard shows the copy builds and passes again with every guard back.
-run({ name: 'all-restored' }, 'restored');
+// One restored run per test after the last guard shows the copy builds and passes again with every guard back.
+for (const test of new Set(selected.map(item => item.test))) run({ name: 'restored-' + test, test }, 'restored');
 console.log('Theme guard controls passed: ' + artifact + ' (' + selected.length + ' of ' + cases.length + ' guards)');

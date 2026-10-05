@@ -153,15 +153,9 @@ fn region(frame: &SharedPixelBuffer<Rgba8Pixel>, bounds: [usize; 4]) -> (f32, f3
     return (total / count, darkest, lightest);
 }
 
-/// Check one scheme: live image equals a cold render, role and selected inks, overlays, and chrome.
-fn assert_scheme(reader: &Reader, dark: bool) -> Vec<u8> {
+/// The displayed source image equals a cold render, and selected glyphs use the ink chosen from the fill.
+fn assert_current(reader: &Reader, name: &str) -> SharedPixelBuffer<Rgba8Pixel> {
     let window = &reader.window;
-    let name = if dark { "dark" } else { "light" };
-    assert_eq!(
-        window.get_dark_scheme(),
-        dark,
-        "{name}: Palette.color-scheme did not change"
-    );
     let live = source_pixels(window);
     // A cold render after forgetting the previous frame is what this scheme looks like from startup.
     reader.source.borrow_mut().frame_stamp = None;
@@ -169,20 +163,7 @@ fn assert_scheme(reader: &Reader, dark: bool) -> Vec<u8> {
     let cold = source_pixels(window);
     assert!(
         live.as_bytes() == cold.as_bytes(),
-        "{name}: the live source image differs from a cold render; the scheme change did not re-rasterize"
-    );
-    let (own, other) = if dark {
-        (KEYWORD_DARK, KEYWORD_LIGHT)
-    } else {
-        (KEYWORD_LIGHT, KEYWORD_DARK)
-    };
-    assert!(
-        has_ink(&live, own),
-        "{name}: keyword ink for this scheme is missing"
-    );
-    assert!(
-        !has_ink(&live, other),
-        "{name}: keyword ink of the other scheme remains"
+        "{name}: the live source image differs from a cold render; the palette change did not re-rasterize"
     );
     let selected = legible_ink(
         rgba(window.get_selection_fill().color()),
@@ -196,6 +177,32 @@ fn assert_scheme(reader: &Reader, dark: bool) -> Vec<u8> {
     assert!(
         inks.iter().all(|ink| return *ink == selected),
         "{name}: selected glyphs are not painted with the ink chosen from the selection fill"
+    );
+    return live;
+}
+
+/// Check one scheme: current source image, the scheme's keyword ink, overlays, and window chrome.
+fn assert_scheme(reader: &Reader, dark: bool) -> Vec<u8> {
+    let window = &reader.window;
+    let name = if dark { "dark" } else { "light" };
+    assert_eq!(
+        window.get_dark_scheme(),
+        dark,
+        "{name}: Palette.color-scheme did not change"
+    );
+    let live = assert_current(reader, name);
+    let (own, other) = if dark {
+        (KEYWORD_DARK, KEYWORD_LIGHT)
+    } else {
+        (KEYWORD_LIGHT, KEYWORD_DARK)
+    };
+    assert!(
+        has_ink(&live, own),
+        "{name}: keyword ink for this scheme is missing"
+    );
+    assert!(
+        !has_ink(&live, other),
+        "{name}: keyword ink of the other scheme remains"
     );
     assert!(
         window.get_source_matches().row_count() >= 1,
@@ -258,9 +265,14 @@ fn assert_scheme(reader: &Reader, dark: bool) -> Vec<u8> {
     return live.as_bytes().to_vec();
 }
 
-/// Dark, light, and dark again repaint everything without input, and return to identical source pixels.
-#[test]
-fn live_color_scheme_repaints_source_overlays_tree_find_bar_and_divider() {
+/// What: The answer is a pair: the disposable directory (`TempDir`, deleted when dropped) and the reader.
+/// Why: The directory must outlive the reader's file workers, so the caller keeps both.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function themedReader(): [TempDir, Reader];
+/// ```
+fn themed_reader() -> (tempfile::TempDir, Reader) {
     let fixture = tempfile::tempdir().expect("disposable theme project");
     let text = "const label = \"needle and needle\";\nconst count = 1;\n";
     fs::write(fixture.path().join("theme.ts"), text).expect("theme fixture");
@@ -277,6 +289,15 @@ fn live_color_scheme_repaints_source_overlays_tree_find_bar_and_divider() {
     chord(window, Key::Control, "f");
     type_text(window, "needle");
     status_for(window, "needle", "1/2");
+    return (fixture, reader);
+}
+
+/// Dark, light, and dark again repaint everything without input, and return to identical source pixels.
+#[test]
+fn live_color_scheme_repaints_source_overlays_tree_find_bar_and_divider() {
+    // `_fixture` keeps the directory alive until the test ends.
+    let (_fixture, reader) = themed_reader();
+    let window = &reader.window;
     switch(window, ColorScheme::Dark);
     let first_dark = assert_scheme(&reader, true);
     switch(window, ColorScheme::Light);
@@ -292,4 +313,45 @@ fn live_color_scheme_repaints_source_overlays_tree_find_bar_and_divider() {
         "returning to dark did not restore the dark source image"
     );
     window.hide().expect("close theme window");
+}
+
+/// An accent change re-tints the selection fill without flipping the scheme; the source image stays current.
+///
+/// The portal watcher applies an accent with `SlintContext::set_accent_color`
+/// (`i-slint-backend-winit-1.18.1/xdg_desktop_settings.rs:139`), which no scheme-flip handler observes.
+#[test]
+fn accent_color_change_keeps_the_source_image_current() {
+    let (_fixture, reader) = themed_reader();
+    let window = &reader.window;
+    for scheme in [ColorScheme::Dark, ColorScheme::Light] {
+        switch(window, scheme);
+        let dark = window.get_dark_scheme();
+        // Saturated, pale, neutral, and near-black accents, each a different hue and lightness.
+        for accent in [
+            [255, 215, 0],
+            [144, 238, 144],
+            [255, 255, 255],
+            [220, 20, 60],
+            [20, 20, 20],
+        ] {
+            let before = rgba(window.get_selection_fill().color());
+            WindowInner::from_pub(window.window())
+                .context()
+                .set_accent_color(Color::from_rgb_u8(accent[0], accent[1], accent[2]));
+            update_timers_and_animations();
+            let fill = rgba(window.get_selection_fill().color());
+            let name = format!("accent {accent:?}, fill {fill:?}");
+            assert_ne!(
+                fill, before,
+                "{name}: the accent did not re-tint the selection fill"
+            );
+            assert_eq!(
+                window.get_dark_scheme(),
+                dark,
+                "{name}: an accent change flipped the scheme"
+            );
+            assert_current(&reader, &name);
+        }
+    }
+    window.hide().expect("close accent window");
 }
