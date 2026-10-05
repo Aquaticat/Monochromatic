@@ -169,10 +169,15 @@ pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
     let mut state: [u32; 8] = INITIAL;
     // Whole blocks come straight from the input without copying.
     let whole: usize = bytes.len() / 64 * 64;
-    let mut offset: usize = 0;
-    while offset < whole {
-        compress(&mut state, &bytes[offset..offset + 64]);
-        offset += 64;
+    // What: `chunks_exact(64)` hands out consecutive borrowed 64-byte slices of the whole-block prefix.
+    // Why: The slices come from the standard library, so there is no hand-stepped offset whose mutation could spin.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (let offset = 0; offset < whole; offset += 64) compress(state, bytes.subarray(offset, offset + 64));
+    // ```
+    for block in bytes[..whole].chunks_exact(64) {
+        compress(&mut state, block);
     }
     // The tail holds the remaining bytes, the 0x80 marker, zero padding and the 64-bit bit length.
     let rest: &[u8] = &bytes[whole..];

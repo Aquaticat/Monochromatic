@@ -212,8 +212,19 @@ pub(crate) fn object_url_parts(url: &str, object_base: &str) -> Option<ObjectUrl
 pub(crate) fn relative_link(from_directory: &Path, to: &Path) -> String {
     let from: Vec<Component<'_>> = from_directory.components().collect::<Vec<Component<'_>>>();
     let target: Vec<Component<'_>> = to.components().collect::<Vec<Component<'_>>>();
+    // Count the leading components both paths share.
     let mut shared: usize = 0;
-    while shared < from.len() && shared < target.len() && from[shared] == target[shared] {
+    // What: `zip` walks both component lists in step, as pairs, and stops at the shorter list by itself.
+    // Why: The pair walk needs no bounds checks or hand-stepped index, so no mutation of the count can make it spin.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (let i = 0; i < Math.min(from.length, target.length) && from[i] === target[i]; i++) shared++;
+    // ```
+    for (left, right) in from.iter().zip(target.iter()) {
+        if left != right {
+            break;
+        }
         shared += 1;
     }
     let mut parts: Vec<String> = Vec::<String>::new();
