@@ -483,13 +483,18 @@ const scriptedPlan = scriptedPlanFor(scriptedProject);
     ? readFileSync(join(scriptedState, 'tmp', 'scripted-report.jsonl'), 'utf8').split('\n').filter(Boolean).map(line => JSON.parse(line)) : [];
   const audit = lines.find(line => line.audit)?.audit;
   const writes = Object.fromEntries((audit?.writes ?? []).map(entry => [entry.path, entry]));
+  const initialize = lines.find(line => line.received === 'initialize')?.params;
   record('scripted-pwd-alias', [
     ['the scripted server answered through the sandbox', outcome.result('hover').matched === true],
-    ['the server started in Helix\'s spelling below /tmp, which exists inside', audit?.cwd === alias],
-    ['a write through that spelling failed with error 30', writes[aliasVictim]?.errno === 30],
+    ['Helix gave the server its PWD spelling below /tmp as the root', initialize?.rootPath === alias],
+    // Error 30, not 2: the spelling exists inside (bound back) and is read-only.
+    ['that spelling exists inside and a write through it failed with error 30', writes[aliasVictim]?.errno === 30],
+    // bubblewrap clears the environment while parsing options, before it records the working directory,
+    // so the server starts in the canonical spelling of the same directory (bubblewrap.c 0.12.0 lines 2476 and 3247).
+    ['the server started in the project directory', audit?.cwd === scriptedProject],
     ['the project tree is identical', empty(treeDiff(before, snapshot(scriptedProject)))],
     ['no process carrying the session marker remains', marked(scriptedMarker).length === 0],
-  ], { alias, cwd: audit?.cwd, writes: audit?.writes });
+  ], { alias, rootPath: initialize?.rootPath, rootUri: initialize?.rootUri, cwd: audit?.cwd, writes: audit?.writes });
 }
 // endregion
 
