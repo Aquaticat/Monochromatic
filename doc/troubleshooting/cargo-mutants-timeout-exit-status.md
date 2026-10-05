@@ -593,7 +593,8 @@ The 9 added unit tests and the added CLI test pass.
 fail in that container with and without the patch (it runs as root),
 and clippy 0.1.97 with `-D warnings` reports the same 6 `useless_borrows_in_formatting` errors
 in `src/mutant.rs` and `src/output.rs` with and without the patch.
-The full integration suite was not run.
+The 26 integration tests whose names contain `show_help`, `completions`, `config` or `option` pass;
+the other 114 were not run.
 
 ### A workaround that needs no change
 
