@@ -110,12 +110,19 @@ const DUPLICATE: GradeVerdict = 'duplicate';
 /**
  Verdicts a recorded pre-grade may carry, which are exactly the verdicts a
  sheet reader produces.
+
+ KEYED BY `GradeVerdict` rather than listed, so the compiler refuses a verdict
+ the sheet reader gains and this lacks. The list it replaced was written six
+ days before `duplicate` joined the sheet's verdicts and never gained it, so a
+ blind pre-grade marking a repeated defect had its whole file refused, though
+ round three's pre-grader met seven such items and said so in its notes.
  */
-const KNOWN_VERDICTS = [
-  'real-defect',
-  'false-positive',
-  'unscored',
-] as const satisfies readonly GradeVerdict[];
+const KNOWN_VERDICTS: Readonly<Record<GradeVerdict, true>> = {
+  'real-defect': true,
+  'false-positive': true,
+  unscored: true,
+  duplicate: true,
+};
 
 /**
  Guards an untrusted verdict string from a recorded pre-grade file.
@@ -138,7 +145,10 @@ function isGradeVerdict(value: unknown,): value is GradeVerdict {
   if ((typeof value) !== 'string')
     return false;
 
-  return (KNOWN_VERDICTS as readonly string[]).includes(value,);
+  return Object.hasOwn(
+    KNOWN_VERDICTS,
+    value,
+  );
 }
 
 /**
@@ -229,6 +239,13 @@ function unscoredPositions(
 
 /**
  Scores a blind pre-grade against the human's grades.
+
+ A PRE-GRADE THAT DECLINED OR MARKED A DUPLICATE where the human scored the
+ item counts as a disagreement, named in `disagreed` like any other: it did
+ not give the item's answer, and a rate that decides whether the pre-grader
+ may filter a later round must not shrink its denominator by the items the
+ pre-grader passed on. Where the human declined or marked the duplicate, the
+ item is out of the denominator whatever the pre-grade said.
 
  @param agent - pre-grades, keyed by sheet position
 

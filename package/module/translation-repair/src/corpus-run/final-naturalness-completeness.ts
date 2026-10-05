@@ -13,9 +13,18 @@ import { parseNaturalnessReview, } from './artifact-two-lane-read-naturalness-re
  no-loop design is accepted as recorded, and every other absent review fails
  closed.
 
+ THE CONTEST AND THE CONSOLIDATION BOTH RAN on every artifact this is handed:
+ `persistSettledEntry` is its one caller, and the pass hands that only what
+ `settledEntryArtifact` writes, a contested selection over a settled
+ consolidation. Any other pairing is a writer this guard was never shown, so
+ it is refused out loud rather than read as nothing to review.
+
  @param artifact - in-memory artifact before page or artifact persistence
 
  @throws {@link NaturalnessCompletenessError} when body polish lacks approval
+
+ @throws Error when the artifact records its contest as other than contested
+ or its consolidation as other than settled, which no persisted artifact does
 
  @example
  ```ts
@@ -32,39 +41,28 @@ export function assertFinalNaturalnessComplete(
     consolidation,
     laneSelection,
   } = artifact;
-  if (consolidation.kind !== 'settled') {
-    if (laneSelection.kind !== 'contested')
-      return;
-    /**
-     First contested body slice proving final naturalness never ran.
-     */
-    const missing = laneSelection
-      .slices
-      .find(function body(slice,): boolean {
-        /**
-         Syntax eligibility recorded only for front matter.
-         */
-        const { eligibility, } = slice;
-        return eligibility?.syntax !== 'front-matter';
-      },);
-    if (missing !== undefined)
-      throw new NaturalnessCompletenessError({ sliceIndex: missing.sliceIndex, },);
-    return;
-  }
+  // LOUD RATHER THAN READ AS NOTHING TO REVIEW. Until this check an artifact
+  // whose contest and consolidation never ran passed unrefused, with no body
+  // slice reviewed, and one whose consolidation alone never ran was refused as
+  // a naturalness shortfall it never had; neither pairing reaches persistence.
+  if ((laneSelection.kind !== 'contested') || (consolidation.kind !== 'settled'))
+    throw new Error(
+      `unreachable: the artifact handed to persistence records its contest as ${laneSelection.kind} and its `
+        + `consolidation as ${consolidation.kind}, though settledEntryArtifact, its one writer, records them as `
+        + 'contested and settled',
+    );
   /**
    Contest syntax by slice, absent for ordinary body text.
    */
-  const syntaxBySlice = new Map((laneSelection.kind === 'contested')
-    ? laneSelection
-      .slices
-      .map(function syntax(slice,) {
-        return [
-          slice.sliceIndex,
-          slice.eligibility
-            ?.syntax,
-        ] as const;
-      },)
-    : [],);
+  const syntaxBySlice = new Map(laneSelection
+    .slices
+    .map(function syntax(slice,) {
+      return [
+        slice.sliceIndex,
+        slice.eligibility
+          ?.syntax,
+      ] as const;
+    },),);
   for (const slice of consolidation.slices) {
     /**
      Recorded final polish for this consolidated slice.

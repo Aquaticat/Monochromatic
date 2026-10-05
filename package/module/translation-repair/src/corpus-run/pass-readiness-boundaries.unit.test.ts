@@ -157,7 +157,23 @@ function declinedArtifact(): SettledArtifact {
         usable: 10,
       },],
     },
-    consolidation: { kind: 'not-run', },
+    // SETTLED, AS EVERY PERSISTED ARTIFACT'S IS: `settledEntryArtifact`, the one
+    // writer persistence is handed, records a contested selection over a settled
+    // consolidation, and the naturalness guard throws its invariant on any other
+    // pairing. The slice carries no polish, which is what that guard refuses once
+    // the final-selection guard has let the declined archive through.
+    consolidation: {
+      kind: 'settled',
+      slices: [{
+        sliceIndex: 0,
+        terminal: 'gate-kept-standing',
+        shipped: { kind: 'unchanged', },
+        rewrapped: false,
+        demoted: false,
+        verdicts: [],
+        gate: { kind: 'not-asked', },
+      },],
+    },
   } as unknown as SettledArtifact;
 }
 
