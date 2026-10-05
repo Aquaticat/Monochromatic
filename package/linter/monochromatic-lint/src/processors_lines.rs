@@ -38,24 +38,36 @@ pub(crate) fn physical_lines(source: &str) -> Vec<PhysicalLine> {
     let mut result: Vec<PhysicalLine> = Vec::new();
     // Borrow bytes instead of decoding characters; newline delimiters are ASCII.
     let bytes: &[u8] = source.as_bytes();
-    let mut cursor: usize = 0;
     let mut start: usize = 0;
-    while cursor < bytes.len() {
-        if bytes[cursor] != b'\n' && bytes[cursor] != b'\r' {
-            cursor += 1;
+    // What: `enumerate()` pairs each borrowed byte with its index, like `bytes.forEach((byte, index) => ...)`;
+    // `*byte` reads the `u8` value behind the `&u8` reference.
+    // Why: The loop visits each byte exactly once with no hand-stepped cursor, so no mutation of a step can spin.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const [index, byte] of bytes.entries()) { ... }
+    // ```
+    for (index, byte) in bytes.iter().enumerate() {
+        if *byte != b'\n' && *byte != b'\r' {
             continue;
         }
-        let content_end: usize = cursor;
-        if bytes[cursor] == b'\r' && bytes.get(cursor + 1) == Some(&b'\n') {
-            cursor += 1;
+        // A CR directly followed by LF is the first half of one CRLF ending; that LF closes the line.
+        // `bytes.get` returns None past the end instead of panicking, and `Some(&b'\n')` compares a borrowed LF.
+        if *byte == b'\r' && bytes.get(index + 1) == Some(&b'\n') {
+            continue;
         }
-        cursor += 1;
+        // The content ends at this byte, or at the CR before it when this LF closes a CRLF pair.
+        // Only a CRLF pair leaves a CR at the end of the current line, because a bare CR always closes its own line.
+        let mut content_end: usize = index;
+        if bytes[start..index].ends_with(b"\r") {
+            content_end = index - 1;
+        }
         result.push(PhysicalLine {
             start,
             content_end,
-            end: cursor,
+            end: index + 1,
         });
-        start = cursor;
+        start = index + 1;
     }
     if start < bytes.len() {
         result.push(PhysicalLine {

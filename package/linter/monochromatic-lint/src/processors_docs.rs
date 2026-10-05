@@ -172,13 +172,68 @@ fn block_doc(child: &mut Mapping, source: &str, token: &DocToken) -> Result<(), 
     return Ok(());
 }
 
+/// What: Decide whether `next` continues the line-comment run that `previous` belongs to.
+/// Why: A run is one virtual Markdown file, so the same prefix, a whitespace-only gap and exactly one
+/// line ending must all hold; block comments never join anything, because each block is its own file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function joinsRun(source: string, previous: DocToken, next: DocToken): boolean;
+/// ```
+fn joins_run(source: &str, previous: &DocToken, next: &DocToken) -> bool {
+    // A block's prefix starts with `/*`; equal prefixes then also rule out a block before a line comment.
+    if next.prefix.starts_with("/*") || next.prefix != previous.prefix {
+        return false;
+    }
+    // Borrow the authored bytes between the two tokens; range syntax is a checked byte slice.
+    let gap: &str = &source[previous.end..next.start];
+    // Code or an ordinary comment between the two doc comments splits the run.
+    if !gap.trim().is_empty() {
+        return false;
+    }
+    // Exactly one newline joins a run; blank lines split it. CRLF counts once, as one physical line ending.
+    let mut endings: usize = 0;
+    for line in physical_lines(gap) {
+        if line.content_end != line.end {
+            endings += 1;
+        }
+    }
+    return endings == 1;
+}
+
+/// What: Split the comments into extraction units: each block comment alone, each line-comment run together.
+/// Why: A fixed `for` range closes a unit wherever the next comment does not join it,
+/// so no mutation of an index step can make the grouping loop forever.
+/// `'tokens` says every returned slice borrows from `comments`, like a view that must not outlive its array.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function units(source: string, comments: DocToken[]): DocToken[][];
+/// ```
+fn units<'tokens>(source: &str, comments: &'tokens [DocToken]) -> Vec<&'tokens [DocToken]> {
+    // Owned list of borrowed slices; `&[DocToken]` is a view into `comments`, unlike an owned `Vec<DocToken>` copy.
+    let mut result: Vec<&'tokens [DocToken]> = Vec::new();
+    let mut unit_start: usize = 0;
+    // `1..=len` is an inclusive range: each index is a boundary candidate between `index - 1` and `index`,
+    // and the final `len` always closes the last unit. An empty list yields an empty range and no unit.
+    for index in 1..=comments.len() {
+        let closes: bool =
+            index == comments.len() || !joins_run(source, &comments[index - 1], &comments[index]);
+        if closes {
+            result.push(&comments[unit_start..index]);
+            unit_start = index;
+        }
+    }
+    return result;
+}
+
 /// Extract adjacent line runs and individual authored blocks; ordinary gaps split runs.
 pub(crate) fn docs(parent: &Arc<Mapping>) -> Result<Vec<Mapping>, ProcessorError> {
     let comments: Vec<DocToken> = tokens(parent);
     let mut result: Vec<Mapping> = Vec::new();
-    let mut index: usize = 0;
-    while index < comments.len() {
-        let token: &DocToken = &comments[index];
+    for unit in units(parent.text.as_str(), comments.as_slice()) {
+        // Every unit holds at least one comment; its first comment names and anchors the virtual file.
+        let token: &DocToken = &unit[0];
         let block: bool = token.prefix.starts_with("/*");
         let anchor: usize = if block {
             token.start
@@ -197,33 +252,14 @@ pub(crate) fn docs(parent: &Arc<Mapping>) -> Result<Vec<Mapping>, ProcessorError
         );
         if block {
             block_doc(&mut child, parent.text.as_str(), token)?;
-            index += 1;
         } else {
+            // Only the run's first comment can follow code: later members follow a newline-only gap.
             let before: &str = &parent.text[anchor..token.start];
             if !before.trim_matches([' ', '\t']).is_empty() {
                 return Err(parent.error("A Rustdoc line comment following code on the same physical line has no safe reusable container prefix."));
             }
-            let run_start: usize = index;
-            index += 1;
-            while index < comments.len() {
-                let previous: &DocToken = &comments[index - 1];
-                let next: &DocToken = &comments[index];
-                let gap: &str = &parent.text[previous.end..next.start];
-                // Exactly one newline joins a run; blank lines and ordinary comments split it.
-                let mut endings: usize = 0;
-                for line in physical_lines(gap) {
-                    if line.content_end != line.end {
-                        endings += 1;
-                    }
-                }
-                if next.prefix != token.prefix || !gap.trim().is_empty() || endings != 1 {
-                    break;
-                }
-                index += 1;
-            }
-            let run: &[DocToken] = &comments[run_start..index];
-            let margin: usize = run_margin(parent.text.as_str(), run);
-            for comment in run {
+            let margin: usize = run_margin(parent.text.as_str(), unit);
+            for comment in unit {
                 line_doc(&mut child, parent.text.as_str(), comment, margin);
             }
         }

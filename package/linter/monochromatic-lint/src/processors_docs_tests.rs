@@ -130,6 +130,51 @@ fn processors_strip_only_the_common_margin_from_undecorated_block_docs() {
     );
 }
 
+/// Extract every Rustdoc input of a host as owned (virtual name, exact virtual text) pairs, in extraction order.
+fn named_texts(host: &str) -> Vec<(String, String)> {
+    // Owned pairs outlive the extracted inputs, so assertions compare plain strings.
+    let mut result: Vec<(String, String)> = Vec::new();
+    for input in inputs(host, ProcessorLanguage::Rust) {
+        result.push((String::from(input.filename()), String::from(input.source())));
+    }
+    return result;
+}
+
+/// Adjacent doc comments are separate virtual files unless they form one line-comment run:
+/// two adjacent block docs with the same prefix, an inner line doc directly followed by an outer one,
+/// and an outer line doc directly followed by a block doc each stay apart.
+#[test]
+fn processors_keep_adjacent_blocks_and_changed_prefixes_in_separate_virtual_files() {
+    // Each tuple is (host, expected virtual files as (name, text)); the line number in a name is the comment's first line.
+    let cases: [(&str, [(&str, &str); 2]); 3] = [
+        (
+            "/** Alpha. */\n/** Beta. */\nfn item() {}\n",
+            [("host/1.md", "Alpha. "), ("host/2.md", "Beta. ")],
+        ),
+        (
+            "//! Inner.\n/// Outer.\nfn item() {}\n",
+            [("host/1.md", "Inner.\n"), ("host/2.md", "Outer.\n")],
+        ),
+        (
+            "/// Outer.\n/** Block. */\nfn item() {}\n",
+            [("host/1.md", "Outer.\n"), ("host/2.md", "Block. ")],
+        ),
+    ];
+    for (host, expected) in cases {
+        // Owned expectation pairs compare by value with the extracted owned pairs.
+        let mut wanted: Vec<(String, String)> = Vec::new();
+        for (name, text) in expected {
+            wanted.push((String::from(name), String::from(text)));
+        }
+        assert_eq!(named_texts(host), wanted, "{host}");
+    }
+    // The positive control: two outer line docs on consecutive lines are one run and one virtual file.
+    assert_eq!(
+        named_texts("/// Alpha.\n/// Beta.\nfn item() {}\n"),
+        [(String::from("host/1.md"), String::from("Alpha.\nBeta.\n"))]
+    );
+}
+
 /// Decorated block lines lose their star and one space; a bare star line becomes an empty virtual line.
 #[test]
 fn processors_strip_star_decoration_and_keep_relative_indentation_in_block_docs() {
