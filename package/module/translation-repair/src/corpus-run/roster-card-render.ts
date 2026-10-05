@@ -1,5 +1,8 @@
+import { isDeepStrictEqual, } from 'node:util';
+
 import { isJsonRecord, } from '../json-guard.ts';
 import type { CardProvider, } from '../model-card-derive.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { isUnsignedNumberText, } from '../whole-number-text.ts';
 
 //region Roster card rendering
@@ -97,11 +100,20 @@ export function fieldAt(
  Finds the row naming one served id in a listing body of the
  `{ data: [...] }` shape every provider here answers with.
 
+ EVERY ROW UNDER THE ID IS READ, NOT THE FIRST. The listing is a provider's
+ reply, and nothing in it makes an id name one row: rows that say the same
+ are one answer, and rows that differ are two sets of fields under one name,
+ of which the card would describe whichever the provider happened to list
+ first.
+
  @param body - decoded listing
 
  @param servedId - spelling the provider serves the model under
 
  @returns The row, or {@link NOT_LISTED} where the listing has none
+
+ @throws {@link StatedRefusalError} When the listing carries the id on rows
+ that differ, so no one row is the model's
 
  @example
  ```ts
@@ -128,12 +140,29 @@ export function listingRowFor(
    */
   const named = rows.filter(isRow,);
   /**
-   Row carrying the served id, if any.
+   First row carrying the served id, if any, and every further one.
    */
-  const row = named.find(function is(candidate,): boolean {
+  const [row, ...others] = named.filter(function is(candidate,): boolean {
     return candidate.id === servedId;
   },);
-  return row ?? NOT_LISTED;
+  if (row === undefined)
+    return NOT_LISTED;
+  /**
+   Whether every further row under the id says what the first says.
+   */
+  const agree = others.every(function saysTheSame(other,): boolean {
+    return isDeepStrictEqual(
+      other,
+      row,
+    );
+  },);
+  if (!agree) {
+    throw new StatedRefusalError({
+      says: `the listing carries more than one row under ${servedId} and they differ, so which of them the card `
+        + 'would describe cannot be read; read the listing by hand',
+    },);
+  }
+  return row;
 }
 
 /**

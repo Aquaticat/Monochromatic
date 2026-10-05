@@ -101,6 +101,16 @@ export type SliceDeliveryFault = {
   readonly sliceIndex: number;
 } | {
   /**
+   Two trimmed replacements name one slice.
+   */
+  readonly kind: 'trim-repeats';
+
+  /**
+   Slice named twice.
+   */
+  readonly sliceIndex: number;
+} | {
+  /**
    A set counts a slice twice.
    */
   readonly kind: 'set-repeats';
@@ -253,6 +263,10 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
       String(fault.sliceIndex,)
     } carries a trimmed replacement and is not named as shipped, so the trim describes text the document `
       + 'does not carry';
+  if (fault.kind === 'trim-repeats')
+    return `slice ${
+      String(fault.sliceIndex,)
+    } carries more than one trimmed replacement, so which text the document holds there cannot be read`;
   if (fault.kind === 'set-repeats')
     return `the ${fault.set} set names ${String(fault.named,)} ${
       wordForCount({

@@ -105,7 +105,8 @@ function sameTagSequence(
 
  @param archiveTag - tag as the archive writes it
 
- @returns One rewrite per attribute whose values differ
+ @returns One rewrite per attribute whose values differ and which the
+ archive's tag names once
 
  @example
  ```ts
@@ -124,13 +125,18 @@ function attributeRewrites(
   return pageTag.attributes
     .flatMap(function differing(attribute,): readonly AttributeRewrite[] {
       /**
-       Archive's attribute of the same name, if it carries one.
+       Archive's first attribute of the same name, if it carries one, and
+       every further one. GATHERED, NOT THE FIRST ALONE: the archive's tag is
+       text a person wrote, and nothing makes an attribute's name unique in
+       it. Which of two values a reader of the page sees depends on what
+       renders the tag, so neither is the value the archive fixed, and the
+       attribute stays as the bench wrote it.
        */
-      const archived = archiveTag.attributes
-        .find(function sameName(candidate,): boolean {
+      const [archived, ...others] = archiveTag.attributes
+        .filter(function sameName(candidate,): boolean {
           return candidate.name === attribute.name;
         },);
-      if (archived === undefined)
+      if ((archived === undefined) || (others.length > 0))
         return [];
       if (archived.value === attribute.value)
         return [];

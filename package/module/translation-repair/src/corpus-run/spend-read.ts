@@ -273,9 +273,16 @@ function spacedMarkerIn(
  a run log is supposed to do that, which is exactly why the reader must not
  depend on it not happening.
 
+ A NAME WRITTEN TWICE IS REPORTED, NOT SETTLED BY ORDER. `reportSpend` writes
+ each field once, so a tail naming one twice is a damaged record: two
+ interleaved records sharing a line, or a line cut and resumed. Setting the
+ name again kept the later value, which read one call out of such a line and
+ lost the other while reporting a clean record.
+
  @param fields - space-delimited pieces of the tail
 
- @returns Every piece that split, keyed by name
+ @returns Every piece that split, keyed by name, or that the tail writes some
+ name more than once
 
  @example
  ```ts
@@ -284,7 +291,7 @@ function spacedMarkerIn(
  */
 function namedFields(
   { fields, }: { readonly fields: readonly string[]; },
-): ReadonlyMap<string, string> {
+): ReadonlyMap<string, string> | 'field-repeats' {
   /**
    Fields collected so far.
    */
@@ -295,12 +302,14 @@ function namedFields(
      Name and value of this piece.
      */
     const pair = fieldOf({ field, },);
-    if (pair !== 'not-a-field') {
-      named.set(
-        pair.name,
-        pair.value,
-      );
-    }
+    if (pair === 'not-a-field')
+      continue;
+    if (named.has(pair.name,))
+      return 'field-repeats';
+    named.set(
+      pair.name,
+      pair.value,
+    );
   }
 
   return named;
@@ -355,6 +364,11 @@ export function readSpendLine(
    Every field that split, keyed by name.
    */
   const named = namedFields({ fields, },);
+
+  // A RECORD, SINCE ITS FIRST FIELD READ, AND NOT ONE CALL'S: counted as a
+  // hole rather than read for whichever value stood last.
+  if (named === 'field-repeats')
+    return 'unreadable';
 
   /**
    Provider named, checked against the ones a record may carry.

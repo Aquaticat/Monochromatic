@@ -141,8 +141,8 @@ function parseTrimmed(
 
  @returns The section, empty on an older artifact
 
- @throws {@link ArtifactParseError} when a required section is absent or any
- field is the wrong shape
+ @throws {@link ArtifactParseError} when a required section is absent, any
+ field is the wrong shape, or two trimmed rows name one slice
 
  @example
  ```ts
@@ -181,20 +181,43 @@ export function parsePageAssembly(
     allowed: PAGE_ASSEMBLY_KEYS,
     path,
   },);
+  /**
+   Rows giving the text the page carries, as recorded.
+   */
+  const trimmed = requireArray({
+    value: record.trimmed,
+    path: `${path}.trimmed`,
+  },)
+    .map(function toReplacement(
+      entry,
+      at,
+    ): SliceReplacement {
+      return parseTrimmed({
+        value: entry,
+        path: `${path}.trimmed[${String(at,)}]`,
+      },);
+    },);
+
+  /**
+   Slices a row has already named. ONE ROW PER SLICE is what the page guard
+   writes: its own trims, which the splice already holds to one per slice,
+   then the rows of a map keyed by slice for the slices its trims do not
+   name. `pageAssemblyOverrideAt` takes the first row naming a slice on that
+   footing, so a file holding two is refused here, where it is read, rather
+   than answered with whichever stands first.
+   */
+  const named = new Set<number>();
+  for (const row of trimmed) {
+    if (named.has(row.sliceIndex,)) {
+      throw new ArtifactParseError({
+        path: `${path}.trimmed`,
+        reason: `one row per slice; slice ${String(row.sliceIndex,)} appears more than once`,
+      },);
+    }
+    named.add(row.sliceIndex,);
+  }
   return {
-    trimmed: requireArray({
-      value: record.trimmed,
-      path: `${path}.trimmed`,
-    },)
-      .map(function toReplacement(
-        entry,
-        at,
-      ): SliceReplacement {
-        return parseTrimmed({
-          value: entry,
-          path: `${path}.trimmed[${String(at,)}]`,
-        },);
-      },),
+    trimmed,
     withdrawn: requireArray({
       value: record.withdrawn,
       path: `${path}.withdrawn`,
@@ -283,7 +306,8 @@ export function pageAssemblyOverrideAt(
   /**
    The trimmed replacement for this slice, if any: READ FIRST, because a slice
    the guard took back carries one where a page pass rewrote the archive text
-   standing there (ledger K5), and that text is what the page carries.
+   standing there (ledger K5), and that text is what the page carries. At most
+   one row names a slice, which `parsePageAssembly` refuses a file over.
    */
   const trimmed = pageAssembly
     .trimmed

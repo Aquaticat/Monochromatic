@@ -5,6 +5,7 @@ import {
   declaredNameNote,
   type DeclaredNamePair,
 } from './linked-title-declared-name.ts';
+import { renderedLinks, } from './page-name-link-rendering.ts';
 import { visibleText, } from './page-visible-text.ts';
 import {
   htmlHeadings,
@@ -156,7 +157,8 @@ export function linksOf({ text, }: { readonly text: string; },): readonly Link[]
 /**
  Pairs read off links both documents carry under one href, where the
  source's text is Han, short enough to be a name or a title, and the
- archive's differs.
+ archive's differs. Which archive link renders a source link is read by
+ `renderedLinks`, which leaves out a link whose rendering cannot be read.
 
  @param sourceText - whole original document
 
@@ -179,31 +181,16 @@ function linkedTextPairs(
   },
 ): readonly PageName[] {
   /**
-   Archive's links.
+   Source's links the archive's text for the same href can be read for, each
+   with that text: the archive's link at its place where the archive links
+   the href under more than one text, since an href names no one link.
    */
-  const archiveLinks = linksOf({ text: targetText, },);
-  /**
-   Archive link text by href.
-   */
-  const rendered = new Map<string, string>(archiveLinks.map(function byHref(link,): readonly [
-    string,
-    string,
-  ] {
-    return [
-      link.href,
-      link.text,
-    ];
-  },),);
-  /**
-   Source's links.
-   */
-  const sourceLinks = linksOf({ text: sourceText, },);
-  return sourceLinks.flatMap(function toPair(link,): readonly PageName[] {
-    /**
-     Archive's text under the same href, absent when the archive lacks it.
-     */
-    const rendering = rendered.get(link.href,);
-    if ((rendering === undefined) || (rendering === link.text))
+  const rendered = renderedLinks({
+    sourceLinks: linksOf({ text: sourceText, },),
+    archiveLinks: linksOf({ text: targetText, },),
+  },);
+  return rendered.flatMap(function toPair(link,): readonly PageName[] {
+    if (link.rendering === link.text)
       return [];
     if (!carriesHan({ text: link.text, },))
       return [];
@@ -211,7 +198,7 @@ function linkedTextPairs(
       return [];
     return [{
       source: link.text,
-      rendering,
+      rendering: link.rendering,
       evidence: `link text, ${link.href}`,
     },];
   },);

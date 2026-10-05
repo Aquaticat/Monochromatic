@@ -75,18 +75,44 @@ export type SliceCostReading = {
 };
 
 /**
- Splits one marker-bearing line into its `key=value` pairs.
-
- @param line - whole log line, including whatever the logger prefixed
-
- @returns Pairs found after the marker, later duplicates overwriting earlier
+ What one marker-bearing line carries after the marker.
 
  @example
  ```ts
- const fields = fieldsOf({ line, },);
+ const { fields, repeated, }: LineFields = fieldsOf({ line, },);
  ```
  */
-function fieldsOf({ line, }: { readonly line: string; },): ReadonlyMap<string, string> {
+type LineFields = {
+  /**
+   Pairs read off the line, each name with the first value written under it.
+   */
+  readonly fields: ReadonlyMap<string, string>;
+
+  /**
+   Names the line writes more than once, each listed once, in the order the
+   repeats stand on the line.
+   */
+  readonly repeated: ReadonlySet<string>;
+};
+
+/**
+ Splits one marker-bearing line into its `key=value` pairs.
+
+ A NAME WRITTEN TWICE IS REPORTED, NOT SETTLED BY ORDER. `armSliceCost` writes
+ each field once, so a line naming one twice is two lines run together or a
+ line cut and resumed. Setting the name again kept the later value, which
+ built a row out of two slices' fields and reported a cost no slice had.
+
+ @param line - whole log line, including whatever the logger prefixed
+
+ @returns Pairs found after the marker, beside every name written more than once
+
+ @example
+ ```ts
+ const { fields, repeated, } = fieldsOf({ line, },);
+ ```
+ */
+function fieldsOf({ line, }: { readonly line: string; },): LineFields {
   /**
    Where the cost report starts, past anything the logger put in front.
    */
@@ -101,6 +127,11 @@ function fieldsOf({ line, }: { readonly line: string; },): ReadonlyMap<string, s
    Pairs read so far.
    */
   const fields = new Map<string, string>();
+
+  /**
+   Names met a second time so far.
+   */
+  const repeated = new Set<string>();
   for (const token of body.split(' ',)) {
     /**
      Where this token separates its name from its value.
@@ -109,16 +140,28 @@ function fieldsOf({ line, }: { readonly line: string; },): ReadonlyMap<string, s
     if (split <= 0)
       continue;
 
+    /**
+     Name this token is written under.
+     */
+    const name = token.slice(
+      0,
+      split,
+    );
+    if (fields.has(name,)) {
+      repeated.add(name,);
+      continue;
+    }
+
     fields.set(
-      token.slice(
-        0,
-        split,
-      ),
+      name,
       token.slice(split + 1,),
     );
   }
 
-  return fields;
+  return {
+    fields,
+    repeated,
+  };
 }
 
 /**
@@ -459,9 +502,27 @@ export function readSliceCosts({ log, }: { readonly log: string; },): SliceCostR
       continue;
 
     /**
+     Pairs the line carries, beside every name it writes more than once.
+     */
+    const {
+      fields,
+      repeated,
+    } = fieldsOf({ line, },);
+    if (repeated.size > 0) {
+      /**
+       Each repeated name, said as a dropped line's reason lists a field.
+       */
+      const reasons = [...repeated,].map(function writtenTwice(name,): string {
+        return `${name} written more than once`;
+      },);
+      dropped.push(reasons.join(', ',),);
+      continue;
+    }
+
+    /**
      What this line yielded.
      */
-    const read = readLine({ fields: fieldsOf({ line, },), },);
+    const read = readLine({ fields, },);
     if (read.kind === 'dropped') {
       dropped.push(read.reason,);
       continue;

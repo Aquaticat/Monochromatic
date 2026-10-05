@@ -234,6 +234,58 @@ function firstFieldReads(
 }
 
 /**
+ Whether the text after the marker names one field more than once.
+
+ `takeReading` WRITES EACH STATE AND EACH LEVEL UNDER ITS OWN NAME, ONCE, so a
+ tail naming one twice is two records run together or a line cut and resumed.
+ A state is read off the first field carrying its provider's name, which
+ passed the first record's state off as the reading of both.
+
+ @param tail - everything after the marker
+
+ @returns Whether some field name stands on the line twice
+
+ @example
+ ```ts
+ namesAFieldTwice({ tail: 'synthetic=wet hyper=dry synthetic=dry', },);
+ // => true
+ ```
+ */
+function namesAFieldTwice(
+  { tail, }: { readonly tail: string; },
+): boolean {
+  /**
+   Field names met so far.
+   */
+  const seen = new Set<string>();
+
+  for (const field of tail.split(' ',)) {
+    /**
+     Where this field's name stops and its value starts.
+     */
+    const at = field.indexOf(FIELD_SEPARATOR,);
+
+    if (at === NOT_FOUND)
+      continue;
+
+    /**
+     Name this field is written under.
+     */
+    const name = field.slice(
+      0,
+      at,
+    );
+
+    if (seen.has(name,))
+      return true;
+
+    seen.add(name,);
+  }
+
+  return false;
+}
+
+/**
  Reads every field the record carries that is not one of the two states.
 
  DEFINED BY WHAT A VALUE IS NOT, so a field added to the record later is
@@ -395,6 +447,13 @@ export function readMeterLine(
   },);
 
   if ((synthetic === 'absent') || (hyper === 'absent'))
+    return 'skipped';
+
+  // TWO RECORDS RUN TOGETHER ARE A HOLE, counted as one, and never the first
+  // record's reading: which moment either state belongs to cannot be read.
+  // Asked once both required states have read, so a record whose first
+  // reading of a state is absent is still skipped for that.
+  if (namesAFieldTwice({ tail, },))
     return 'skipped';
 
   /**

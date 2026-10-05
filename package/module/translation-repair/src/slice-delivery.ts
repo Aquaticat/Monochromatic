@@ -190,7 +190,8 @@ function assertNoRepeat(
 
  @throws {@link SliceDeliveryError} when the wordings do not cover the
  preparation one for one, when an index set names a slice twice or names one
- the preparation never produced, or when a slice's reports contradict
+ the preparation never produced, when two trimmed replacements name one
+ slice, or when a slice's reports contradict
 
  @throws {@link WordingCoherenceError} when a slice's record contradicts
  itself, by way of {@link decideDelivery}
@@ -267,6 +268,28 @@ export function buildSliceDelivery(
         },
       },);
     }
+  }
+  /**
+   Slices a trimmed replacement has named so far.
+   */
+  const trimmedSlices = new Set<number>();
+  for (const replacement of trimmedReplacements) {
+    // ONE TRIM PER SLICE, CHECKED AGAINST THE LIST for the reason the two
+    // index sets are: keying the texts by slice is what makes a second
+    // replacement for one slice disappear, and the ledger would report the
+    // later text as what the document carries with nothing here knowing which
+    // the assembly wrote. The guard that trims hands over rows the splice
+    // already held to one per slice, which is a fact about that caller and
+    // not about this signature.
+    if (trimmedSlices.has(replacement.sliceIndex,)) {
+      throw new SliceDeliveryError({
+        fault: {
+          kind: 'trim-repeats',
+          sliceIndex: replacement.sliceIndex,
+        },
+      },);
+    }
+    trimmedSlices.add(replacement.sliceIndex,);
   }
   /**
    Text the document carries at each trimmed slice, by slice.

@@ -185,6 +185,84 @@ export function isPageTitleLexiconWire(value: unknown,): value is PageTitleLexic
 }
 
 /**
+ One voice's renderings resolved against the sheet's numbering.
+
+ @example
+ ```ts
+ const answers: PageTitleAnswers = { renderings: new Map([[1, 'Song of the Cat',],],), findings: [], };
+ ```
+ */
+export type PageTitleAnswers = {
+  /**
+   Rendering by title number, the first the voice gave each.
+   */
+  readonly renderings: ReadonlyMap<number, string>;
+  /**
+   One finding per answer the settlement does not count.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ Resolves one voice's renderings against the sheet's numbering.
+
+ NOTHING MAKES A TITLE NUMBER UNIQUE IN A REPLY: the list is what a model
+ wrote, and the guard admits any list of numbered renderings. A voice that
+ answers one title twice has given two renderings where the settlement counts
+ one per voice, so the first it gave is the one counted and the repeat is a
+ finding, as a panel ballot's repeated verdict is. A number the sheet never
+ listed names no title, so nothing is settled from it and it is a finding too.
+
+ @param wire - reply as the voice gave it
+
+ @param asked - how many titles the sheet numbered, from one
+
+ @returns Rendering per title number with findings as data
+
+ @example
+ ```ts
+ const answers = resolvePageTitleAnswers({ wire: { titles: [{ title: 1, rendering: 'Cat Song', },], }, asked: 1, },);
+ ```
+ */
+export function resolvePageTitleAnswers(
+  {
+    wire,
+    asked,
+  }: {
+    readonly wire: PageTitleLexiconWire;
+    readonly asked: number;
+  },
+): PageTitleAnswers {
+  /**
+   Findings accumulated across every item of the reply.
+   */
+  const findings: string[] = [];
+
+  /**
+   Renderings keyed by title number; first occurrence wins.
+   */
+  const renderings = new Map<number, string>();
+  for (const item of wire.titles) {
+    if ((item.title < 1) || (item.title > asked)) {
+      findings.push(`title-index-out-of-range (${String(item.title,)})`,);
+      continue;
+    }
+    if (renderings.has(item.title,)) {
+      findings.push(`duplicate-title-rendering (${String(item.title,)})`,);
+      continue;
+    }
+    renderings.set(
+      item.title,
+      item.rendering,
+    );
+  }
+  return {
+    renderings,
+    findings,
+  };
+}
+
+/**
  Structured output constraint for lexicon replies.
  */
 export const PAGE_TITLE_LEXICON_RESPONSE_FORMAT: JsonSchemaResponseFormat = {

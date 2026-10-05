@@ -106,7 +106,8 @@ async function fetchListing(
  @param line - the card's command line, read whole by `reportingRefusals`
 
  @throws {@link StatedRefusalError} When the listing does not name the
- served id, which is the answer a typo or a retired model gets
+ served id, which is the answer a typo or a retired model gets, or names it
+ on rows that differ, by way of `listingRowFor`
 
  @example
  ```ts

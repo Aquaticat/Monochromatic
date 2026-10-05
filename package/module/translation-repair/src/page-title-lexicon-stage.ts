@@ -11,7 +11,9 @@ import {
   buildPageTitleLexiconMessages,
   isPageTitleLexiconWire,
   PAGE_TITLE_LEXICON_RESPONSE_FORMAT,
+  type PageTitleAnswers,
   type PageTitleLexiconWire,
+  resolvePageTitleAnswers,
 } from './page-title-lexicon-wire.ts';
 import type { RepeatedTitleSpan, } from './page-title-spans.ts';
 import { straightenQuotes, } from './quote-normalize.ts';
@@ -108,6 +110,25 @@ export type PageTitleLexicon = {
    What the round reported.
    */
   readonly findings: readonly string[];
+};
+
+/**
+ One voice's reply resolved against the sheet's numbering, under its name.
+
+ @example
+ ```ts
+ const voice: ResolvedVoice = { modelId: 'glm-5.3', answers: { renderings: new Map(), findings: [], }, };
+ ```
+ */
+type ResolvedVoice = {
+  /**
+   Seat that answered, which its findings are reported under.
+   */
+  readonly modelId: RosterModelId;
+  /**
+   Its renderings by title number, with what reading the reply found.
+   */
+  readonly answers: PageTitleAnswers;
 };
 
 /**
@@ -349,6 +370,21 @@ export async function settlePageTitles(
    */
   const heard = voices.length;
   /**
+   Each voice's renderings by title number, in roster order. Read once per
+   voice rather than searched once per title, so a voice answering one title
+   twice or numbering a title the sheet never listed is a finding under its
+   name instead of an answer passed over.
+   */
+  const resolved = voices.map(function resolvedOf(voice,): ResolvedVoice {
+    return {
+      modelId: voice.modelId,
+      answers: resolvePageTitleAnswers({
+        wire: voice.value,
+        asked: spans.length,
+      },),
+    };
+  },);
+  /**
    Each title's settled rendering, where some voice gave one.
    */
   const titles = spans.flatMap(function settle(
@@ -358,17 +394,14 @@ export async function settlePageTitles(
     /**
      Each voice's rendering of this title, empty where it gave none.
      */
-    const answers = voices.map(function answerOf(voice,): string {
+    const answers = resolved.map(function answerOf(voice,): string {
       /**
-       This voice's entry for the title, if any.
+       This voice's rendering of the title, if it gave one.
        */
-      const entry = voice.value
-        .titles
-        .find(function forTitle(item,): boolean {
-          return item.title === (at
-            + 1);
-        },);
-      return (entry === undefined) ? '' : unwrapped({ rendering: entry.rendering, },);
+      const rendering = voice.answers
+        .renderings
+        .get(at + 1,);
+      return (rendering === undefined) ? '' : unwrapped({ rendering, },);
     },);
     return mostGiven({ answers, },)
       .map(function toSettled(chosen,): SettledPageTitle {
@@ -389,6 +422,13 @@ export async function settlePageTitles(
     heard,
     findings: [
       ...gather.findings,
+      ...resolved.flatMap(function findingsOf(voice,): readonly string[] {
+        return voice.answers
+          .findings
+          .map(function underItsVoice(finding,): string {
+            return `${voice.modelId}: ${finding}`;
+          },);
+      },),
       `page title lexicon settled ${String(titles.length,)} of ${String(spans.length,)} repeated ${
         wordForCount({
           count: spans.length,

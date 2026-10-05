@@ -224,17 +224,28 @@ export function buildCrosscheckCensus(
    */
   const enumerated = entries.flatMap(function toItems(entry,): readonly CrosscheckItem[] {
     /**
-     Proposers of each attributed claim in this entry.
+     Proposers of each attributed claim in this entry, across every chunk.
+
+     MERGED, each model once, in the order first met. Two chunks can carry one
+     claim id, and the writer keeps their proposers apart
+     (`critic-attribution.ts`), so nothing makes a claim id unique across an
+     entry's chunks: setting the claim's list at each chunk let the last
+     chunk replace the others, which seated an earlier chunk's author as a
+     judge of its own claim. A set, since the seating asks who authored the
+     claim and never how often.
      */
-    const proposersOf = new Map<string, readonly string[]>();
+    const proposersOf = new Map<string, Set<string>>();
     for (const chunk of entry.sliceCritics ?? []) {
       for (const attribution of chunk.claimAttributions) {
+        /**
+         Authors earlier chunks gave this claim, which this chunk's authors join.
+         */
+        const merged = proposersOf.get(attribution.claimId,) ?? new Set<string>();
+        for (const proposer of attribution.proposers)
+          merged.add(proposer.modelId,);
         proposersOf.set(
           attribution.claimId,
-          attribution.proposers
-            .map(function toId(proposer,): string {
-              return proposer.modelId;
-            },),
+          merged,
         );
       }
     }
@@ -249,7 +260,7 @@ export function buildCrosscheckCensus(
           /**
            Authors of this claim, known present by `isAttributed`.
            */
-          const proposers = proposersOf.get(claimId,) ?? [];
+          const proposers = [...(proposersOf.get(claimId,) ?? []),];
 
           /**
            Who may re-examine this claim and who authored it.
