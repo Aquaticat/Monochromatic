@@ -37,7 +37,7 @@ use std::{
 /// ```ts
 /// type LaunchRequest = { server: string; executable: string; args: string[];
 ///                        environment: Record<string, string>; settings?: unknown;
-///                        projectRoot: string; stateRoot?: string };
+///                        projectRoot: string; projectSpellings: string[]; stateRoot?: string };
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct LaunchRequest {
@@ -53,6 +53,9 @@ pub struct LaunchRequest {
     pub settings: Option<Value>,
     /// Canonical project root.
     pub project_root: PathBuf,
+    /// Other spellings of the project root that servers are given, such as the one Helix derives
+    /// from `PWD` when the project was reached through a symbolic link.
+    pub project_spellings: Vec<PathBuf>,
     /// Private application state directory outside the project, when the application has one.
     pub state_root: Option<PathBuf>,
 }
@@ -179,13 +182,14 @@ pub fn resolve_executable(command: &str, root: &Path) -> Option<PathBuf> {
 
 /// What: Resolve as much of a path as exists. `canonicalize` fails for a missing path, so the
 ///       nearest existing ancestor is resolved and the missing tail is appended again.
-/// Why: A state directory that does not exist yet must still be compared by its real location.
+/// Why: A state directory that does not exist yet must still be compared, and bound inside a
+///      sandbox, by its real location, even when a variable spells it through a symbolic link.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function resolveExisting(path: string): string
 /// ```
-fn resolve_existing(path: &Path) -> PathBuf {
+pub fn resolve_existing(path: &Path) -> PathBuf {
     // `mut` allows walking up until an existing ancestor is found.
     let mut existing = path;
     let mut tail: Vec<&std::ffi::OsStr> = Vec::new();

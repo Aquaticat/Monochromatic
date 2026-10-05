@@ -2,8 +2,8 @@
 //! nor anything it starts can write project files. If confinement cannot be set up, the server
 //! is refused; there is no fallback to an unconfined launch.
 
-/// The seam's input and output types.
-use super::launch::{LaunchRequest, ServerLaunch};
+/// The seam's input and output types, and the state-path checks shared with `prepare`.
+use super::launch::{LaunchRequest, ServerLaunch, check_state_directory, resolve_existing};
 /// What: `Command` starts a child process and waits for it; `OnceLock` holds a value computed once.
 /// Why: The namespace probe runs bubblewrap once per process and remembers the answer.
 ///
@@ -18,6 +18,8 @@ use std::{
     sync::OnceLock,
 };
 
+/// How the project is mounted inside the sandbox.
+pub mod project;
 /// The bubblewrap command line, without system access.
 pub mod recipe;
 
@@ -26,11 +28,6 @@ pub const BUBBLEWRAP: &str = "/usr/bin/bwrap";
 
 /// A program that exists on the host and does nothing, used to test sandbox creation.
 const PROBE_PROGRAM: &str = "/usr/bin/true";
-
-/// Locations the sandbox replaces with its own: the private `/tmp`, an empty `/run`, and fresh
-/// `/dev` and `/proc`. A path below one of them does not exist inside the sandbox (measured: a
-/// project below `/tmp` was missing inside, and present when the `/tmp` bind was left out).
-pub const REPLACED_LOCATIONS: [&str; 4] = ["/tmp", "/run", "/dev", "/proc"];
 
 /// Result of the sandbox probe with a process-id namespace, computed once per process.
 static PROBE_WITH_PID: OnceLock<Result<(), String>> = OnceLock::new();
@@ -126,19 +123,49 @@ pub fn default_state_root() -> Option<PathBuf> {
     return Some(cache.join("monochromatic-ide").join("language"));
 }
 
-/// What: The replaced location a path lies in, if any. `Path::starts_with` compares whole
-///       components, so `/tmpfoo` is not below `/tmp`.
-/// Why: A project there would be invisible to its server, which would then answer nothing
-///      without saying why; a state directory there would not be the one the server writes.
+/// What: Refuse a path below `/proc`. `what` names the path and `remedy` the fix in the message.
+/// Why: No directory a user creates can lie there, the sandbox mounts a fresh process file
+///      system, and bubblewrap cannot create a mount point in it; every other location works,
+///      because the project and private state are bound again after the replacements.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const replacedLocation = (path: string) => REPLACED_LOCATIONS.find(top => path === top || path.startsWith(top + '/'));
+/// function checkOutsideProc(path: string, what: string, remedy: string): void // throws to refuse
 /// ```
-fn replaced_location(path: &Path) -> Option<&'static str> {
-    return REPLACED_LOCATIONS
-        .into_iter()
-        .find(|location| return path.starts_with(location));
+fn check_outside_proc(path: &Path, what: &str, remedy: &str) -> Result<(), String> {
+    if path.starts_with(project::PROCESS_FILE_SYSTEM) {
+        return Err(format!(
+            "{what} {} is below /proc, where no directory a user creates can exist and the language-server sandbox mounts a fresh process file system. {remedy}",
+            path.display()
+        ));
+    }
+    return Ok(());
+}
+
+/// What: The private state directory of the requested server, below the resolved state root,
+///       or the refusal reason.
+/// Why: The state root is resolved first, so a variable that reaches `/tmp` or the project
+///      through a symbolic link is compared and bound by its real location.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function privateState(request: LaunchRequest): string // throws to refuse
+/// ```
+pub fn private_state(request: &LaunchRequest) -> Result<PathBuf, String> {
+    let server = &request.server;
+    let Some(state_root) = request.state_root.as_ref() else {
+        return Err(format!(
+            "no private state directory is available for {server} (neither XDG_CACHE_HOME nor HOME is an absolute path), so it is not started. Set HOME or XDG_CACHE_HOME and restart the application"
+        ));
+    };
+    let resolved = resolve_existing(state_root);
+    let remedy = format!(
+        "{server} is not started. Point XDG_CACHE_HOME or HOME at a directory outside the project and outside /proc, then restart the application"
+    );
+    check_outside_proc(&resolved, "the private state directory", &remedy)?;
+    check_state_directory(&resolved, &request.project_root)
+        .map_err(|reason| return format!("{reason}, so {remedy}"))?;
+    return Ok(state_directory(&resolved, &request.project_root, server));
 }
 
 /// What: Start bubblewrap once with the server's namespaces around a program that does nothing.
@@ -177,12 +204,13 @@ fn probe(bubblewrap: &str, pid_namespace: bool) -> Result<(), String> {
 /// function confineWith(request: LaunchRequest, bubblewrap: string): ServerLaunch // throws to refuse
 /// ```
 pub fn confine_with(request: &LaunchRequest, bubblewrap: &str) -> Result<ServerLaunch, String> {
-    if let Some(location) = replaced_location(&request.project_root) {
-        return Err(format!(
-            "the project {} is below {location}, which the language-server sandbox replaces with its own directory, so {} would not see the project and is not started. Open the project from a directory outside /tmp, /run, /dev, and /proc",
-            request.project_root.display(),
-            request.server
-        ));
+    let reopen = format!(
+        "{} is not started. Open the project from a directory outside /proc",
+        request.server
+    );
+    check_outside_proc(&request.project_root, "the project", &reopen)?;
+    for spelling in &request.project_spellings {
+        check_outside_proc(spelling, "the project spelling", &reopen)?;
     }
     let executable = std::fs::metadata(bubblewrap)
         .is_ok_and(|found| return found.is_file() && found.permissions().mode() & 0o111 != 0);
@@ -192,19 +220,7 @@ pub fn confine_with(request: &LaunchRequest, bubblewrap: &str) -> Result<ServerL
             request.server
         ));
     }
-    let Some(state_root) = request.state_root.as_ref() else {
-        return Err(format!(
-            "no private state directory is available for {} (neither XDG_CACHE_HOME nor HOME is an absolute path), so it is not started. Set HOME or XDG_CACHE_HOME and restart the application",
-            request.server
-        ));
-    };
-    if let Some(location) = replaced_location(state_root) {
-        return Err(format!(
-            "the private state directory {} is below {location}, which the language-server sandbox replaces with its own directory, so {} is not started. Point XDG_CACHE_HOME or HOME at a directory outside /tmp, /run, /dev, and /proc and restart the application",
-            state_root.display(),
-            request.server
-        ));
-    }
+    let state = private_state(request)?;
     let pid_namespace = !recipe::NO_PID_NAMESPACE.contains(&request.server.as_str());
     let cell = if pid_namespace {
         &PROBE_WITH_PID
@@ -221,7 +237,6 @@ pub fn confine_with(request: &LaunchRequest, bubblewrap: &str) -> Result<ServerL
             inherited.push((name.to_string(), value));
         }
     }
-    let state = state_directory(state_root, &request.project_root, &request.server);
     return recipe::recipe(request, &state, bubblewrap, &inherited);
 }
 

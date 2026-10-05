@@ -6,6 +6,8 @@
 use super::launch::{
     LaunchPolicy, LaunchRequest, ServerLaunch, launch_directly, resolve_executable,
 };
+/// Helix's spelling of the project root, which servers are given.
+use super::root::RootView;
 /// Errors name the operation that failed.
 use anyhow::{Context, Result};
 /// What: `ArcSwap` is a cell holding a shared pointer that can be replaced atomically.
@@ -214,6 +216,20 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
         .try_into()
         .context("Cannot decode the language definitions")?;
     typescript::apply(&mut configuration, root);
+    // What: Helix's spelling of the root, when it differs from the canonical one; `ok()` drops
+    //       the refusal, which the start reports on its own.
+    // Why: Helix gives servers this spelling, so a confined server must find the project there.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const spellings = [discoverRoot(root)?.helix].filter(spelling => spelling && spelling !== root);
+    // ```
+    let spellings: Vec<PathBuf> = RootView::discover(root)
+        .ok()
+        .map(|view| return view.helix().to_path_buf())
+        .filter(|spelling| return spelling.as_path() != root)
+        .into_iter()
+        .collect();
     let mut unavailable: HashMap<String, Unavailable> = HashMap::new();
     let mut definitions: HashMap<String, Definition> = HashMap::new();
     // `iter_mut` walks the table handing out modifiable borrows of each definition.
@@ -227,6 +243,7 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
                 environment: definition.environment.clone(),
                 settings: definition.config.clone(),
                 project_root: root.to_path_buf(),
+                project_spellings: spellings.clone(),
                 state_root: setup.state_root.clone(),
             };
             // Calling the function pointer held in `setup.launch`; a refusal becomes `Refused`.

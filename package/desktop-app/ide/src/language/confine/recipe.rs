@@ -3,8 +3,11 @@
 //! The shape is the one adopted in `doc/planning/slint-ide-write-confinement.md`
 //! ("Recommended launch shape"): the whole file system read-only, one private state directory
 //! and a private `/tmp` writable, `/run` hidden, no network, and a cleared environment that
-//! receives only an allowlist.
+//! receives only an allowlist. The project is then bound again read-only at its own path, so a
+//! project below `/tmp`, `/run`, or `/dev` stays visible.
 
+/// How the project is mounted inside.
+use super::project::project_binds;
 /// The seam's input and output types.
 use crate::language::launch::{LaunchRequest, ServerLaunch};
 /// What: `Value` is any JSON value; `json!` builds one from literal syntax.
@@ -210,7 +213,8 @@ pub fn recipe(
         directories.push(state.join("build"));
     }
     let mut args = isolation(!NO_PID_NAMESPACE.contains(&server));
-    // The writable binds come after the read-only root bind on purpose.
+    // The writable binds come after the read-only root bind on purpose, and the project binds
+    // after the `/tmp` and `/run` replacements, because a later mount covers an earlier one.
     for part in [
         "--bind".to_string(),
         format!("{state_text}/tmp"),
@@ -218,10 +222,14 @@ pub fn recipe(
         "--bind".to_string(),
         state_text.to_string(),
         state_text.to_string(),
-        "--clearenv".to_string(),
     ] {
         args.push(part);
     }
+    args.extend(project_binds(
+        &request.project_root,
+        &request.project_spellings,
+    )?);
+    args.push("--clearenv".to_string());
     for (name, value) in environment {
         args.push("--setenv".to_string());
         args.push(name);
