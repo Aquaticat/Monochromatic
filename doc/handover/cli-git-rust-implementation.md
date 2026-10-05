@@ -228,6 +228,40 @@ The ledger also measured the incumbent with `tokei` 15.0.0, tests and fixtures e
 of which `policy-engine` is 135 files and 18,582 lines
 and worktree copy is 25 files and 3,755 lines.
 
+**LFS URL normalizer**:
+selected,
+see the `Selected owner` section of
+[`native-lfs-url-normalization-evaluation.md`](../planning/native-lfs-url-normalization-evaluation.md)
+(commits `eeb3f5e75`, `5c39793e1`, `c8da20019`, `78350705c`).
+The owner is a standard-library-only function in the linter crate,
+`lfs_object_base(endpoint: &str) -> Result<String, LfsUrlRejection>`,
+restricted to plain ASCII `http` and `https` endpoints,
+with 12 named rejections in a fixed evaluation order.
+It adds no crate;
+the Rust `url` crate would have added 8 to the linter lockfile and was never built or measured.
+`fixtures/lfs-url-parity.json` holds 868 endpoint cases and 73 `.lfsconfig` cases captured from the incumbent
+on Node v26.10.0 with Ada 4.0.0.
+The main session recounted the endpoint cases from the file:
+459 accepted with the incumbent's exact output,
+289 that the incumbent accepts and the native function rejects,
+and 120 that both reject.
+The delegate reports no case where both accept and return different strings
+across the fixture, a 2,160-case matrix, and 1,000,000 seeded random inputs,
+with 12 single-fault variants of the normalizer each failing at least one fixture case.
+
+Open to veto:
+the 289 native-only rejections are a deliberate behavior change.
+Endpoints such as `ssh://` schemes, IPv6 literals, Unicode hosts, and dot segments
+get a named error natively instead of the incumbent's normalized output.
+This repository's endpoint and every endpoint in the incumbent's tests are in the accepted class.
+
+Limits the delegate stated:
+only Linux x64 was measured;
+equality on acceptance rests on differential evidence and a partial reading of Ada's host path, not a proof
+(reading the source found a host-length divergence that 1,000,000 random inputs had missed);
+the reference source is scratch code and has not been through the crate's Clippy configuration.
+The linter executable delegate has the contract and is porting `markdown/lfs-image-url`.
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
