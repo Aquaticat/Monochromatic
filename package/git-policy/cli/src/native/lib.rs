@@ -177,3 +177,24 @@ pub mod command_config;
 
 /// Pure decision of the require-root policy.
 pub mod rule_require_root;
+
+/// The one failure type of the candidate layer and its closed list of causes.
+pub mod candidate_error;
+
+/// Validated Git object names and the file modes a candidate can carry.
+pub mod candidate_object;
+
+/// Pure framing of one `git cat-file --batch` reply.
+pub mod candidate_batch;
+
+/// Pure parsing of raw NUL-delimited changed-path records.
+pub mod candidate_record;
+
+/// The long-lived object reader that answers every blob read of an invocation.
+pub mod candidate_reader;
+
+/// Immutable candidate versions: identity, pathname, mode, change and object per path.
+pub mod candidate_version;
+
+/// Per-invocation listing, lazy bytes and invalidation of candidate versions.
+pub mod candidate_store;
