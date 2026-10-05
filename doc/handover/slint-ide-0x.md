@@ -523,11 +523,15 @@ each owned by one subagent:
   while the coordinating session ran commands there.
   Keep every coordinator command pinned with `cd /var/home/user/Monochromatic` or `git -C`,
   and tell agents to pin theirs.
-- Inlay hint placement,
+- Inlay hint and diagnostic placement,
   decided by the user on 2026-10-05 and not started yet:
   hints move from boxes after the line end to virtual rows above the code line,
-  like editord;
-  the scope record has the user's words under "Interface decisions (inlay hints)".
+  like editord,
+  and diagnostic messages go on virtual rows there too,
+  replacing the lettered marker and the caret card unless the user keeps either;
+  the rows must read as belonging to the code line beneath them,
+  through spacing;
+  the scope record has the user's words under "Interface decisions (inlay hints and diagnostics)".
   The worktree `.claude/worktrees/ide-hint-rows` on branch `feat/ide-hint-rows` is provisioned
   (MCP ports 9424 and 9425),
   and the agent's complete brief is kept at `~/temp/agent/ide-gate-logs-20261005/agent-w-hint-rows-brief.md`.
@@ -538,7 +542,8 @@ each owned by one subagent:
   Its second phase produces the comparison frames for UI batch 3:
   hint row look,
   label shortening,
-  and diagnostic rows.
+  marker and card beside the diagnostic rows,
+  and the wording of a diagnostic row.
 - Session-limit recovery at 18:50 on 2026-10-05:
   all five agents had been cut off;
   their worktrees held the work described in the next item,

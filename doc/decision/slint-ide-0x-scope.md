@@ -140,7 +140,7 @@ Inlay placement was delegated to the agent:
 choose the implementation supported by evidence,
 not an assumed presentation preference.
 The user ended that delegation on 2026-10-05 after seeing the built result;
-the placement is now the one recorded under "Interface decisions (inlay hints)".
+the placement is now the one recorded under "Interface decisions (inlay hints and diagnostics)".
 
 ## Decisions of 2026-10-05
 
@@ -256,7 +256,7 @@ with frames in `package/desktop-app/ide/design/screenshots/2026-10-05-ui-batch-2
   and the references list draw white text on the blue selection fill in both schemes (option B),
   the same rule as selected source text.
 
-### Interface decisions (inlay hints)
+### Interface decisions (inlay hints and diagnostics)
 
 The agent had placed hints in boxes after the end of their code line,
 because that placement moves no source text
@@ -274,11 +274,30 @@ like what editord does."
   hinted lines are taller,
   so rows beneath move when hints arrive.
   The implementation limits that movement and measures what remains.
-- Not decided by this answer,
+- Diagnostic messages go on virtual rows above their line as well,
+  every message always visible as in editord.
+  The agent had said diagnostics would stay as built
+  (underline,
+  lettered marker after the line end,
+  a card at the caret);
+  the user answered:
+  "Diiagnostics should be on virtual lines too."
+- A block of virtual rows must look like it belongs to the code line beneath it,
+  not to the line before:
+  "Virtual lines should look like they belong to the next line,
+  not to the previous line,
+  by tuning spacing."
+  So the rows sit tight against their own line and a larger gap separates them from the previous line.
+- Derived by the agent from the two answers and open to the user's veto:
+  nothing that annotates a line is drawn on the code line or after its end,
+  so the lettered marker and the caret card go;
+  the underline under the marked characters stays.
+- Not decided by these answers,
   and to be asked with built screenshots:
-  whether diagnostic messages also get always-visible rows above the line as in editord,
   the look of the hint row,
-  and whether labels are shortened as editord shortens them.
+  whether hint labels are shortened as editord shortens them,
+  whether the marker or the card stay beside the rows,
+  and the wording of a diagnostic row.
 
 ### Agent rule decisions
 

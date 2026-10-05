@@ -23,8 +23,8 @@ Answers are given in the chat and then recorded in `doc/handover/slint-ide-0x.md
 - Status: history.
   The user saw these frames and rejected the end-of-line hint placement on 2026-10-05:
   hints move to virtual rows above the code line,
-  like editord.
-  Diagnostic marks and the caret card are unchanged by that answer.
+  like editord,
+  and diagnostic messages go on virtual rows too.
 
 What the frames show,
 from the `inspect:native <scheme> annotations` scene with injected hints and diagnostics
