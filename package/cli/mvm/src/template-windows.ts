@@ -27,7 +27,10 @@ import {
   WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS,
 } from './config.ts';
 import { domainXml, } from './domain-xml.ts';
-import { waitForGuestExecStatus, } from './guest-exec-status.ts';
+import {
+  DEFAULT_GUEST_EXEC_LIMITS,
+  runGuestCommand,
+} from './guest-exec.ts';
 import {
   ensureImage,
   ensureVirtioWin,
@@ -231,7 +234,7 @@ const GUEST_EXEC_POLL_MS = 500;
 
 /**
  Runs a PowerShell command inside the template VM via guest agent and waits for completion.
- Uses virsh directly because {@link exec} reads VM metadata which doesn't
+ Uses {@link runGuestCommand} rather than {@link exec}, which reads VM metadata that doesn't
  exist yet during template creation.
  
  @param command - PowerShell command string
@@ -249,48 +252,19 @@ async function guestExecWait({
   readonly command: string;
 },): Promise<number> {
   /**
-   Full VM name with prefix.
+   Result that belongs to this command; only its exit status is used.
    */
-  const fullName = `${VM_PREFIX}${TEMPLATE_VM_NAME}`;
-
-  /**
-   Raw JSON returned by `guest-exec`; contains the pid used to poll for completion.
-   */
-  const startResult = await virsh({
-    args: [
-      'qemu-agent-command',
-      fullName,
-      JSON.stringify({
-        execute: 'guest-exec',
-        arguments: {
-          path: 'powershell.exe',
-          arg: [
-            '-NoProfile',
-            '-NonInteractive',
-            '-Command',
-            command,
-          ],
-          'capture-output': true,
-        },
-      },),
-    ],
+  const result = await runGuestCommand({
+    command,
+    domain: `${VM_PREFIX}${TEMPLATE_VM_NAME}`,
+    limits: {
+      ...DEFAULT_GUEST_EXEC_LIMITS,
+      pollIntervalMs: GUEST_EXEC_POLL_MS,
+    },
+    osFamily: 'windows',
+    shell: 'powershell.exe',
   },);
-  /**
-   Guest process id assigned by the QEMU guest agent; used to poll exec status.
-   */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
-  const { pid, } = (JSON.parse(startResult,) as { return: { pid: number; }; }).return;
-
-  /**
-   Completed status after serial QEMU guest-agent polling.
-   */
-  const status = await waitForGuestExecStatus({
-    fullName,
-    pid,
-    pollIntervalMs: GUEST_EXEC_POLL_MS,
-  },);
-  return status.exitcode
-    ?? 0;
+  return result.exitCode;
 }
 
 /**

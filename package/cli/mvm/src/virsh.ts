@@ -14,14 +14,21 @@ import {
 import { spawn, } from './spawn.ts';
 
 /**
+ Environment virsh runs with: the `C` locale, so that state names such as
+ `shut off` and error texts read by this package do not change with the
+ caller's language settings.
+ */
+const VIRSH_ENV = { LC_ALL: 'C', } as const;
+
+/**
  Runs a virsh command against the system QEMU/KVM connection.
- 
+
  @param args - Array of command-line arguments for virsh
- 
+
  @returns Trimmed stdout output
- 
+
  @throws Error when virsh exits with non-zero code
- 
+
  @example
  ```ts
  const output = await virsh({ args: ['list', '--all'] });
@@ -35,6 +42,7 @@ export function virsh({ args, }: { readonly args: readonly string[]; },): Promis
       LIBVIRT_URI,
       ...args,
     ],
+    env: VIRSH_ENV,
   },);
 }
 

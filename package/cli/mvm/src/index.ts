@@ -12,6 +12,7 @@
  @module
  */
 
+export * from './agent-command.ts';
 export * from './backend/registry.ts';
 export type {
   Backend,
@@ -23,8 +24,16 @@ export * from './create.ts';
 export * from './destroy.ts';
 export * from './exec.ts';
 export * from './file-transfer.ts';
+export * from './guest-exec-errors.ts';
+export * from './guest-exec.ts';
 export * from './list.ts';
 export * from './meta.ts';
 export * from './registry.ts';
 export * from './run.ts';
 export * from './update.ts';
+/**
+ Guest agent readiness and shutdown waits, exposed for built-artifact verification.
+
+ @internal
+ */
+export * from './virsh-wait.ts';
