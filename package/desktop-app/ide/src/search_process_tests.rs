@@ -12,7 +12,12 @@ use tokio::process::Command;
 /// Construct a silent child that would otherwise outlive the regression test.
 fn sleeper() -> Command {
     let mut command = Command::new("sleep");
-    command.arg("60").stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).kill_on_drop(true);
+    command
+        .arg("60")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true);
     return command;
 }
 
@@ -25,19 +30,35 @@ async fn cancellation_interrupts_silent_pipes_and_reaps_the_child() {
     let child = sleeper().spawn().expect("silent child");
     let pid = child.id().expect("live child pid");
     let proc_path = format!("/proc/{pid}");
-    assert!(std::path::Path::new(&proc_path).exists(), "positive process-lifetime control");
+    assert!(
+        std::path::Path::new(&proc_path).exists(),
+        "positive process-lifetime control"
+    );
     let result = tokio::time::timeout(Duration::from_secs(3), async {
         let (output, ()) = tokio::join!(
-            consume(child, fixture.path(), "silent", Stream::Paths, &cancellation, signal),
+            consume(
+                child,
+                fixture.path(),
+                "silent",
+                Stream::Paths,
+                &cancellation,
+                signal
+            ),
             async {
                 tokio::time::sleep(Duration::from_millis(20)).await;
                 cancellation.cancel();
             }
         );
         return output;
-    }).await.expect("cancelled search must not wait for child EOF").expect("cancelled stream cleanup");
+    })
+    .await
+    .expect("cancelled search must not wait for child EOF")
+    .expect("cancelled stream cleanup");
     assert!(result.is_none());
-    assert!(!std::path::Path::new(&proc_path).exists(), "owned child was not reaped");
+    assert!(
+        !std::path::Path::new(&proc_path).exists(),
+        "owned child was not reaped"
+    );
 }
 
 /// A signal cancelled before startup prevents even an invalid executable from being spawned.
@@ -46,10 +67,29 @@ async fn pre_cancelled_search_skips_process_start_and_live_spawn_errors_are_visi
     let fixture = tempfile::tempdir().expect("disposable root");
     let cancelled = SearchCancellation::default();
     cancelled.cancel();
-    assert!(execute(Command::new("ide-nonexistent-search-executable"), fixture.path(), "query", Stream::Paths, &cancelled)
-        .await.expect("pre-cancelled outcome").is_none());
-    assert!(execute(Command::new("ide-nonexistent-search-executable"), fixture.path(), "query", Stream::Paths, &SearchCancellation::new())
-        .await.is_err());
+    assert!(
+        execute(
+            Command::new("ide-nonexistent-search-executable"),
+            fixture.path(),
+            "query",
+            Stream::Paths,
+            &cancelled
+        )
+        .await
+        .expect("pre-cancelled outcome")
+        .is_none()
+    );
+    assert!(
+        execute(
+            Command::new("ide-nonexistent-search-executable"),
+            fixture.path(),
+            "query",
+            Stream::Paths,
+            &SearchCancellation::new()
+        )
+        .await
+        .is_err()
+    );
 }
 
 /// A completed process needs no further signal, and its already reaped status remains available.
@@ -70,14 +110,39 @@ async fn production_command_ignores_external_ripgrep_configuration() {
     let config = fixture.path().join("ripgrep.conf");
     fs::write(&config, "--pre\n/usr/bin/false\n").expect("external config fixture");
     let mut affected = Command::new("rg");
-    affected.args(["--json", "--", "needle"]).arg(&root).env("RIPGREP_CONFIG_PATH", &config);
-    affected.stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).kill_on_drop(true);
-    let control = execute(affected, &root, "needle", Stream::Contents, &SearchCancellation::new()).await;
-    assert!(control.is_err(), "positive control did not honor preprocessing configuration");
+    affected
+        .args(["--json", "--", "needle"])
+        .arg(&root)
+        .env("RIPGREP_CONFIG_PATH", &config);
+    affected
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true);
+    let control = execute(
+        affected,
+        &root,
+        "needle",
+        Stream::Contents,
+        &SearchCancellation::new(),
+    )
+    .await;
+    assert!(
+        control.is_err(),
+        "positive control did not honor preprocessing configuration"
+    );
     let mut protected = command(&root, "needle", Stream::Contents);
     // Reintroduce the environment value to verify --no-config independently of env_remove.
     protected.env("RIPGREP_CONFIG_PATH", &config);
-    let result = execute(protected, &root, "needle", Stream::Contents, &SearchCancellation::new())
-        .await.expect("configuration-disabled search").expect("uncancelled result");
+    let result = execute(
+        protected,
+        &root,
+        "needle",
+        Stream::Contents,
+        &SearchCancellation::new(),
+    )
+    .await
+    .expect("configuration-disabled search")
+    .expect("uncancelled result");
     assert_eq!(result.len(), 1);
 }

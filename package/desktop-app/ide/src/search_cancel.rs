@@ -46,5 +46,7 @@ impl SearchCancellation {
 /// Default construction has the same active state as new.
 impl Default for SearchCancellation {
     /// Construct an active signal using the same initialization as new.
-    fn default() -> Self { return Self::new(); }
+    fn default() -> Self {
+        return Self::new();
+    }
 }

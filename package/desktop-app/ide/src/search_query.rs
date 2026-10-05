@@ -19,8 +19,15 @@ impl PathQuery {
         let lowered = query.to_lowercase();
         let case_sensitive = lowered != query;
         // to_string owns the original query only when the lowercase copy cannot be used.
-        let needle = if case_sensitive { query.to_string() } else { lowered };
-        return Self { case_sensitive, needle };
+        let needle = if case_sensitive {
+            query.to_string()
+        } else {
+            lowered
+        };
+        return Self {
+            case_sensitive,
+            needle,
+        };
     }
 
     /// Test a project-relative native path without changing the path identity stored in the result.

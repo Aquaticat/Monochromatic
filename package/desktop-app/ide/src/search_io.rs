@@ -11,7 +11,10 @@ use tokio::io::{AsyncBufRead, AsyncBufReadExt, AsyncRead, AsyncReadExt};
 const MAX_DIAGNOSTIC_BYTES: usize = 64 * 1024;
 
 /// Read one NUL-delimited filename or newline-delimited JSON record with a hard allocation bound.
-pub(crate) async fn record<R: AsyncBufRead + Unpin>(reader: &mut R, delimiter: u8) -> Result<Option<Vec<u8>>> {
+pub(crate) async fn record<R: AsyncBufRead + Unpin>(
+    reader: &mut R,
+    delimiter: u8,
+) -> Result<Option<Vec<u8>>> {
     // What: Vec owns one variable-length bounded record; take wraps the borrowed reader with a byte ceiling.
     // Why: Checking length only after an unlimited read_until would already have allocated the oversized record.
     //
@@ -21,11 +24,20 @@ pub(crate) async fn record<R: AsyncBufRead + Unpin>(reader: &mut R, delimiter: u
     // ```
     let mut bytes = Vec::new();
     let mut bounded = reader.take((MAX_SEARCH_RECORD + 2) as u64);
-    let count = bounded.read_until(delimiter, &mut bytes).await.context("Cannot read ripgrep output")?;
-    if count == 0 { return Ok(None); }
-    if bytes.last() == Some(&delimiter) { bytes.pop(); }
+    let count = bounded
+        .read_until(delimiter, &mut bytes)
+        .await
+        .context("Cannot read ripgrep output")?;
+    if count == 0 {
+        return Ok(None);
+    }
+    if bytes.last() == Some(&delimiter) {
+        bytes.pop();
+    }
     if bytes.len() > MAX_SEARCH_RECORD {
-        bail!("One ripgrep output record exceeds the {MAX_SEARCH_RECORD}-byte search limit. Filename results may still be available; open the file from the tree or narrow the query to avoid this matching line");
+        bail!(
+            "One ripgrep output record exceeds the {MAX_SEARCH_RECORD}-byte search limit. Filename results may still be available; open the file from the tree or narrow the query to avoid this matching line"
+        );
     }
     return Ok(Some(bytes));
 }
@@ -37,15 +49,22 @@ pub(crate) async fn diagnostic<R: AsyncRead + Unpin>(mut reader: R) -> Result<St
     // A fixed stack buffer avoids allocating another record for each diagnostic fragment.
     let mut chunk = [0; 4096];
     loop {
-        let count = reader.read(&mut chunk).await.context("Cannot read ripgrep diagnostic output")?;
-        if count == 0 { break; }
+        let count = reader
+            .read(&mut chunk)
+            .await
+            .context("Cannot read ripgrep diagnostic output")?;
+        if count == 0 {
+            break;
+        }
         let accepted = count.min(MAX_DIAGNOSTIC_BYTES - retained.len());
         retained.extend_from_slice(&chunk[..accepted]);
         truncated = truncated || accepted < count;
     }
     // Invalid diagnostic bytes are display text only, never file identities or source positions.
     let mut text = String::from_utf8_lossy(&retained).into_owned();
-    if truncated { text.push_str("\nRipgrep diagnostic output was truncated after 65536 bytes."); }
+    if truncated {
+        text.push_str("\nRipgrep diagnostic output was truncated after 65536 bytes.");
+    }
     return Ok(text);
 }
 

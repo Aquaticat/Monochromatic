@@ -1,13 +1,17 @@
 //! Streaming collectors apply result limits without buffering the complete ripgrep output.
 
 /// Record decoders preserve native paths and distinguish protocol metadata from matches.
-use crate::{search::{MAX_CONTENT_RESULTS, MAX_PATH_RESULTS, SearchHit, SearchKind}, search_io, search_protocol, search_query::PathQuery};
+use crate::{
+    search::{MAX_CONTENT_RESULTS, MAX_PATH_RESULTS, SearchHit, SearchKind},
+    search_io, search_protocol,
+    search_query::PathQuery,
+};
 /// A malformed record stops its own stream with an actionable error.
 use anyhow::{Context, Result};
-/// Buffered async child pipes feed one bounded record at a time.
-use tokio::io::AsyncBufRead;
 /// The canonical project root bounds both stream types.
 use std::path::Path;
+/// Buffered async child pipes feed one bounded record at a time.
+use tokio::io::AsyncBufRead;
 
 /// The two read-only ripgrep operations have different record delimiters and matching rules.
 #[derive(Clone, Copy, Debug)]
@@ -27,7 +31,12 @@ pub(crate) struct Collected {
 }
 
 /// Consume bounded records until EOF or the stream's result cap, without spawning or owning a child process.
-pub(crate) async fn collect<R: AsyncBufRead + Unpin>(mut reader: R, root: &Path, query: &str, stream: Stream) -> Result<Collected> {
+pub(crate) async fn collect<R: AsyncBufRead + Unpin>(
+    mut reader: R,
+    root: &Path,
+    query: &str,
+    stream: Stream,
+) -> Result<Collected> {
     let (delimiter, maximum) = match stream {
         Stream::Paths => (0, MAX_PATH_RESULTS),
         Stream::Contents => (b'\n', MAX_CONTENT_RESULTS),
@@ -43,13 +52,25 @@ pub(crate) async fn collect<R: AsyncBufRead + Unpin>(mut reader: R, root: &Path,
         // const record = await nextRecord(reader); if (record === undefined) return { hits, capped: false };
         // ```
         let Some(bytes) = search_io::record(&mut reader, delimiter).await? else {
-            return Ok(Collected { hits, capped: false });
+            return Ok(Collected {
+                hits,
+                capped: false,
+            });
         };
         let hit = match stream {
             Stream::Paths => {
                 let path = search_protocol::filename(root, &bytes)?;
-                let relative = path.strip_prefix(root).context("Validated search path lost its project prefix")?;
-                if matcher.matches(relative) { Some(SearchHit { path, kind: SearchKind::Path }) } else { None }
+                let relative = path
+                    .strip_prefix(root)
+                    .context("Validated search path lost its project prefix")?;
+                if matcher.matches(relative) {
+                    Some(SearchHit {
+                        path,
+                        kind: SearchKind::Path,
+                    })
+                } else {
+                    None
+                }
             }
             Stream::Contents => search_protocol::content(root, &bytes)?,
         };

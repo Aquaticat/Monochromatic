@@ -1,13 +1,21 @@
 //! Latest-query search worker cancels and reaps old ripgrep children before running the newest request.
 
 /// Search data remains immutable when published to the native thread.
-use crate::{search::SearchResults, search_cancel::SearchCancellation, search_process, workspace::Workspace};
+use crate::{
+    search::SearchResults, search_cancel::SearchCancellation, search_process, workspace::Workspace,
+};
 /// Startup and unexpected worker failures must not masquerade as no results.
 use anyhow::{Context, Result};
-/// One retained request/reply avoids unbounded queues while async process I/O stays off the GUI thread.
-use tokio::{runtime::{Builder, Runtime}, sync::watch};
 /// Arc shares immutable requests/replies across threads; the join handle owns shutdown.
-use std::{sync::Arc, thread::{self, JoinHandle}};
+use std::{
+    sync::Arc,
+    thread::{self, JoinHandle},
+};
+/// One retained request/reply avoids unbounded queues while async process I/O stays off the GUI thread.
+use tokio::{
+    runtime::{Builder, Runtime},
+    sync::watch,
+};
 
 /// Public reply is tagged separately from displayed-file or document revisions.
 #[derive(Debug)]
@@ -45,7 +53,11 @@ pub struct SearchWorker {
 }
 
 /// Process each latest request directly; intermediate queued queries are replaced rather than accumulated.
-async fn run(workspace: Workspace, mut requests: watch::Receiver<Option<Arc<Request>>>, replies: watch::Sender<Option<Arc<SearchReply>>>) {
+async fn run(
+    workspace: Workspace,
+    mut requests: watch::Receiver<Option<Arc<Request>>>,
+    replies: watch::Sender<Option<Arc<SearchReply>>>,
+) {
     loop {
         // What: clone releases the watch borrow before await while sharing the immutable request allocation.
         // Why: Holding a watch read lock during subprocess work would block UI publication of a newer query.
@@ -57,10 +69,13 @@ async fn run(workspace: Workspace, mut requests: watch::Receiver<Option<Arc<Requ
         // ```
         let current = requests.borrow_and_update().clone();
         if let Some(request) = current
-            && let Some(results) = search_process::search(&workspace, &request.query, &request.cancellation).await
+            && let Some(results) =
+                search_process::search(&workspace, &request.query, &request.cancellation).await
         {
             replies.send_replace(Some(Arc::new(SearchReply {
-                generation: request.generation, query: request.query.clone(), results,
+                generation: request.generation,
+                query: request.query.clone(),
+                results,
             })));
         }
         if let Err(error) = requests.changed().await {
@@ -71,29 +86,54 @@ async fn run(workspace: Workspace, mut requests: watch::Receiver<Option<Arc<Requ
 }
 
 /// Move a validated runtime and the owned channel endpoints into a named background thread.
-fn spawn(runtime: Runtime, workspace: Workspace, requests: watch::Receiver<Option<Arc<Request>>>, replies: watch::Sender<Option<Arc<SearchReply>>>) -> Result<JoinHandle<()>> {
-    return thread::Builder::new().name("ide-project-search".to_string()).spawn(move || {
-        runtime.block_on(run(workspace, requests, replies));
-    }).context("Cannot start the project search worker");
+fn spawn(
+    runtime: Runtime,
+    workspace: Workspace,
+    requests: watch::Receiver<Option<Arc<Request>>>,
+    replies: watch::Sender<Option<Arc<SearchReply>>>,
+) -> Result<JoinHandle<()>> {
+    return thread::Builder::new()
+        .name("ide-project-search".to_string())
+        .spawn(move || {
+            runtime.block_on(run(workspace, requests, replies));
+        })
+        .context("Cannot start the project search worker");
 }
 
 /// Search ownership couples latest-result filtering with cancellation and process cleanup.
 impl SearchWorker {
     /// Start the worker without starting ripgrep or scanning the workspace.
     pub fn new(workspace: Workspace) -> Result<Self> {
-        let runtime = Builder::new_current_thread().enable_all().build().context("Cannot initialize project search I/O")?;
+        let runtime = Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .context("Cannot initialize project search I/O")?;
         let (request_sender, request_receiver) = watch::channel(None);
         let (reply_sender, reply_receiver) = watch::channel(None);
         let thread = spawn(runtime, workspace, request_receiver, reply_sender)?;
-        return Ok(Self { requests: Some(request_sender), replies: reply_receiver, cancellation: None, generation: 0, thread: Some(thread) });
+        return Ok(Self {
+            requests: Some(request_sender),
+            replies: reply_receiver,
+            cancellation: None,
+            generation: 0,
+            thread: Some(thread),
+        });
     }
 
     /// Clear pending work and invalidate unread replies without manufacturing an empty successful search.
     pub fn clear(&mut self) -> Result<()> {
-        let generation = self.generation.checked_add(1).context("Search request identity exhausted; restart the application")?;
-        if let Some(cancellation) = self.cancellation.take() { cancellation.cancel(); }
+        let generation = self
+            .generation
+            .checked_add(1)
+            .context("Search request identity exhausted; restart the application")?;
+        if let Some(cancellation) = self.cancellation.take() {
+            cancellation.cancel();
+        }
         self.generation = generation;
-        self.requests.as_ref().context("Project search worker is closed")?.send(None)
+        self.requests
+            .as_ref()
+            .context("Project search worker is closed")?
+            .send(None)
             .context("Project search worker stopped; restart the application")?;
         return Ok(());
     }
@@ -102,23 +142,42 @@ impl SearchWorker {
     pub fn request(&mut self, query: String) -> Result<u64> {
         self.clear()?;
         let cancellation = SearchCancellation::new();
-        let request = Arc::new(Request { generation: self.generation, query, cancellation: cancellation.clone() });
-        self.requests.as_ref().context("Project search worker is closed")?.send(Some(request))
+        let request = Arc::new(Request {
+            generation: self.generation,
+            query,
+            cancellation: cancellation.clone(),
+        });
+        self.requests
+            .as_ref()
+            .context("Project search worker is closed")?
+            .send(Some(request))
             .context("Cannot submit project search; restart the application")?;
         self.cancellation = Some(cancellation);
-        tracing::debug!(generation = self.generation, "published latest project search request");
+        tracing::debug!(
+            generation = self.generation,
+            "published latest project search request"
+        );
         return Ok(self.generation);
     }
 
     /// Poll without waiting; outdated replies are consumed but never exposed as current results.
     pub fn try_take(&mut self) -> Result<Option<Arc<SearchReply>>> {
-        if !self.replies.has_changed().context("Project search worker stopped unexpectedly; restart the application")? {
+        if !self
+            .replies
+            .has_changed()
+            .context("Project search worker stopped unexpectedly; restart the application")?
+        {
             return Ok(None);
         }
         let reply = self.replies.borrow_and_update().clone();
         if let Some(current) = reply {
-            if current.generation == self.generation { return Ok(Some(current)); }
-            tracing::debug!(generation = current.generation, "discarded stale project search reply");
+            if current.generation == self.generation {
+                return Ok(Some(current));
+            }
+            tracing::debug!(
+                generation = current.generation,
+                "discarded stale project search reply"
+            );
         }
         return Ok(None);
     }
@@ -128,9 +187,13 @@ impl SearchWorker {
 impl Drop for SearchWorker {
     /// Stop child work before closing input and joining the worker thread.
     fn drop(&mut self) {
-        if let Some(cancellation) = self.cancellation.take() { cancellation.cancel(); }
+        if let Some(cancellation) = self.cancellation.take() {
+            cancellation.cancel();
+        }
         self.requests.take();
-        let Some(worker) = self.thread.take() else { return; };
+        let Some(worker) = self.thread.take() else {
+            return;
+        };
         if let Err(error) = worker.join() {
             tracing::error!(?error, "project search worker panicked during shutdown");
         }

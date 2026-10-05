@@ -1,17 +1,21 @@
 //! Decode ripgrep records without replacing native path bytes or silently discarding malformed matches.
 
-/// Display previews use existing Helix grapheme boundaries rather than cutting combining sequences.
-use helix_core::unicode::segmentation::UnicodeSegmentation;
 /// Search results retain typed navigation metadata and bounded previews.
 use crate::search::{MAX_PREVIEW_GRAPHEMES, SearchHit, SearchKind};
 /// Parsing failures identify the ripgrep protocol surface and affected project.
 use anyhow::{Context, Result, bail};
 /// Ripgrep represents non-UTF-8 bytes with the standard padded base64 alphabet.
 use base64::{Engine, engine::general_purpose::STANDARD};
+/// Display previews use existing Helix grapheme boundaries rather than cutting combining sequences.
+use helix_core::unicode::segmentation::UnicodeSegmentation;
 /// Deserialize only needed fields while retaining envelope types for explicit metadata handling.
 use serde::Deserialize;
 /// Native paths preserve arbitrary Unix filename bytes; components reject traversal-shaped results.
-use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::{Component, Path, PathBuf}};
+use std::{
+    ffi::OsString,
+    os::unix::ffi::OsStringExt,
+    path::{Component, Path, PathBuf},
+};
 
 /// Ripgrep emits exactly one of text or base64 bytes for each path or line field.
 #[derive(Deserialize)]
@@ -36,11 +40,17 @@ impl TextOrBytes {
         // throw new Error('Expected exactly one payload');
         // ```
         match (self.text, self.bytes) {
-            (Some(text), None) => { return Ok(text.into_bytes()); }
-            (None, Some(encoded)) => {
-                return STANDARD.decode(encoded).context("Invalid base64 bytes in ripgrep JSON");
+            (Some(text), None) => {
+                return Ok(text.into_bytes());
             }
-            _ => { bail!("Ripgrep JSON must contain exactly one text or bytes payload"); }
+            (None, Some(encoded)) => {
+                return STANDARD
+                    .decode(encoded)
+                    .context("Invalid base64 bytes in ripgrep JSON");
+            }
+            _ => {
+                bail!("Ripgrep JSON must contain exactly one text or bytes payload");
+            }
         }
     }
 }
@@ -96,7 +106,10 @@ struct Match {
 /// Validate a native result lexically; actual file activation separately resolves symlink containment.
 fn path(root: &Path, bytes: Vec<u8>) -> Result<PathBuf> {
     if bytes.is_empty() || bytes.contains(&0) {
-        bail!("Ripgrep returned an empty or NUL-containing path for project {}", root.display());
+        bail!(
+            "Ripgrep returned an empty or NUL-containing path for project {}",
+            root.display()
+        );
     }
     // What: OsString::from_vec retains Unix filename bytes instead of requiring UTF-8 String.
     // Why: Display labels must never become the identity used to open a search result.
@@ -106,11 +119,23 @@ fn path(root: &Path, bytes: Vec<u8>) -> Result<PathBuf> {
     // const resultPath = nativePathFromBytes(bytes);
     // ```
     let result = PathBuf::from(OsString::from_vec(bytes));
-    let relative = result.strip_prefix(root).with_context(|| return format!(
-        "Ripgrep returned path {} outside project {}", result.display(), root.display()
-    ))?;
-    if relative.as_os_str().is_empty() || relative.components().any(|part| return !matches!(part, Component::Normal(_))) {
-        bail!("Ripgrep returned non-child path {} for project {}", result.display(), root.display());
+    let relative = result.strip_prefix(root).with_context(|| {
+        return format!(
+            "Ripgrep returned path {} outside project {}",
+            result.display(),
+            root.display()
+        );
+    })?;
+    if relative.as_os_str().is_empty()
+        || relative
+            .components()
+            .any(|part| return !matches!(part, Component::Normal(_)))
+    {
+        bail!(
+            "Ripgrep returned non-child path {} for project {}",
+            result.display(),
+            root.display()
+        );
     }
     return Ok(result);
 }
@@ -123,13 +148,19 @@ pub fn filename(root: &Path, record: &[u8]) -> Result<PathBuf> {
 
 /// Decode one JSON record; expected metadata has no content result, while unknown or malformed events are errors.
 pub fn content(root: &Path, record: &[u8]) -> Result<Option<SearchHit>> {
-    let event: Event = serde_json::from_slice(record).context("Cannot decode ripgrep JSON record")?;
+    let event: Event =
+        serde_json::from_slice(record).context("Cannot decode ripgrep JSON record")?;
     let matched = match event {
         Event::Match(matched) => matched,
-        Event::Begin(_) | Event::End(_) | Event::Context(_) | Event::Summary(_) => { return Ok(None); }
+        Event::Begin(_) | Event::End(_) | Event::Context(_) | Event::Summary(_) => {
+            return Ok(None);
+        }
     };
     if matched.line_number == 0 {
-        bail!("Ripgrep returned a zero source line for project {}", root.display());
+        bail!(
+            "Ripgrep returned a zero source line for project {}",
+            root.display()
+        );
     }
     let target = path(root, matched.path.decode()?)?;
     let line = matched.lines.decode()?;
@@ -142,7 +173,12 @@ pub fn content(root: &Path, record: &[u8]) -> Result<Option<SearchHit>> {
     } else {
         (text.to_string(), false)
     };
-    return Ok(Some(SearchHit { path: target, kind: SearchKind::Content {
-        line: matched.line_number, preview, truncated,
-    } }));
+    return Ok(Some(SearchHit {
+        path: target,
+        kind: SearchKind::Content {
+            line: matched.line_number,
+            preview,
+            truncated,
+        },
+    }));
 }

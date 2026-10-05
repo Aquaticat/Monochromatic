@@ -1,23 +1,46 @@
 //! Read-only ripgrep commands stream concurrently and are explicitly reaped on limits, cancellation, and failures.
 
 /// Independent stream outcomes retain useful filename matches when content search fails.
-use crate::{search::{SearchHit, SearchResults}, search_cancel::SearchCancellation, search_collect::{self, Stream}, search_io, workspace::Workspace};
+use crate::{
+    search::{SearchHit, SearchResults},
+    search_cancel::SearchCancellation,
+    search_collect::{self, Stream},
+    search_io,
+    workspace::Workspace,
+};
 /// Diagnostics identify both the query and the failed subprocess operation.
 use anyhow::{Context, Result, bail};
-/// Child pipes and process lifetime use Tokio's cancellable I/O rather than blocking the native event loop.
-use tokio::{io::BufReader, process::{Child, Command}};
 /// Native project paths and stdio configuration never pass through shell interpolation.
-use std::{path::Path, process::{ExitStatus, Stdio}};
+use std::{
+    path::Path,
+    process::{ExitStatus, Stdio},
+};
+/// Child pipes and process lifetime use Tokio's cancellable I/O rather than blocking the native event loop.
+use tokio::{
+    io::BufReader,
+    process::{Child, Command},
+};
 
 /// Construct only the required search operation, excluding inherited preprocessing or decompression commands.
 fn command(root: &Path, query: &str, stream: Stream) -> Command {
     let mut command = Command::new("rg");
     command.current_dir(root);
     command.env_remove("RIPGREP_CONFIG_PATH");
-    command.args(["--no-config", "--no-pre", "--no-search-zip", "--threads", "1", "--line-buffered"]);
+    command.args([
+        "--no-config",
+        "--no-pre",
+        "--no-search-zip",
+        "--threads",
+        "1",
+        "--line-buffered",
+    ]);
     match stream {
-        Stream::Paths => { command.args(["--files", "--null", "--"]); }
-        Stream::Contents => { command.args(["--json", "--smart-case", "--max-count", "1", "--", query]); }
+        Stream::Paths => {
+            command.args(["--files", "--null", "--"]);
+        }
+        Stream::Contents => {
+            command.args(["--json", "--smart-case", "--max-count", "1", "--", query]);
+        }
     }
     command.arg(root);
     command.stdin(Stdio::null());
@@ -30,18 +53,32 @@ fn command(root: &Path, query: &str, stream: Stream) -> Command {
 
 /// Stop an owned process and reap it before returning a capped or cancelled result.
 async fn stop(child: &mut Child) -> Result<ExitStatus> {
-    if let Some(status) = child.try_wait().context("Cannot inspect ripgrep completion")? {
+    if let Some(status) = child
+        .try_wait()
+        .context("Cannot inspect ripgrep completion")?
+    {
         return Ok(status);
     }
     child.kill().await.context("Cannot stop and reap ripgrep")?;
     // Tokio caches a completed child's status, so this returns the status reaped by kill.
-    return child.wait().await.context("Cannot obtain stopped ripgrep status");
+    return child
+        .wait()
+        .await
+        .context("Cannot obtain stopped ripgrep status");
 }
 
 /// The prepared command seam lets tests exercise pipe/cancellation behavior without a shell script.
-async fn execute(mut command: Command, root: &Path, query: &str, stream: Stream, cancellation: &SearchCancellation) -> Result<Option<Vec<SearchHit>>> {
+async fn execute(
+    mut command: Command,
+    root: &Path,
+    query: &str,
+    stream: Stream,
+    cancellation: &SearchCancellation,
+) -> Result<Option<Vec<SearchHit>>> {
     let signal = cancellation.subscribe();
-    if cancellation.is_cancelled() { return Ok(None); }
+    if cancellation.is_cancelled() {
+        return Ok(None);
+    }
     tracing::debug!(?stream, query, root = %root.display(), "starting ripgrep search stream");
     let child = command.spawn().with_context(|| return format!(
         "Cannot start ripgrep for query {query:?} in {}. Install ripgrep and ensure rg is available on PATH", root.display()
@@ -50,9 +87,22 @@ async fn execute(mut command: Command, root: &Path, query: &str, stream: Stream,
 }
 
 /// Own and reap an already spawned child; tests can observe its PID without introducing a production debug callback.
-async fn consume(mut child: Child, root: &Path, query: &str, stream: Stream, cancellation: &SearchCancellation, mut signal: tokio::sync::watch::Receiver<bool>) -> Result<Option<Vec<SearchHit>>> {
-    let stdout = child.stdout.take().context("Ripgrep stdout pipe was not created")?;
-    let stderr_pipe = child.stderr.take().context("Ripgrep stderr pipe was not created")?;
+async fn consume(
+    mut child: Child,
+    root: &Path,
+    query: &str,
+    stream: Stream,
+    cancellation: &SearchCancellation,
+    mut signal: tokio::sync::watch::Receiver<bool>,
+) -> Result<Option<Vec<SearchHit>>> {
+    let stdout = child
+        .stdout
+        .take()
+        .context("Ripgrep stdout pipe was not created")?;
+    let stderr_pipe = child
+        .stderr
+        .take()
+        .context("Ripgrep stderr pipe was not created")?;
     // What: spawn drains stderr concurrently while select waits for stdout or cancellation.
     // Why: A full stderr pipe must not deadlock a child whose stdout is being parsed.
     //
@@ -100,19 +150,38 @@ async fn consume(mut child: Child, root: &Path, query: &str, stream: Stream, can
             return Err(error);
         }
     };
-    let stderr = diagnostics.await.context("Ripgrep diagnostic reader stopped unexpectedly")??;
+    let stderr = diagnostics
+        .await
+        .context("Ripgrep diagnostic reader stopped unexpectedly")??;
     if cancellation.is_cancelled() {
-        tracing::debug!(?stream, "discarding cancelled search stream after process cleanup");
+        tracing::debug!(
+            ?stream,
+            "discarding cancelled search stream after process cleanup"
+        );
         return Ok(None);
     }
-    let Some(collected) = output.with_context(|| return format!("Cannot read {stream:?} search results for query {query:?}"))? else {
+    let Some(collected) = output.with_context(|| {
+        return format!("Cannot read {stream:?} search results for query {query:?}");
+    })?
+    else {
         return Ok(None);
     };
     if !collected.capped && !status.success() && status.code() != Some(1) {
-        bail!("Ripgrep {stream:?} search for query {query:?} in {} exited with {status}: {}", root.display(), stderr.trim());
+        bail!(
+            "Ripgrep {stream:?} search for query {query:?} in {} exited with {status}: {}",
+            root.display(),
+            stderr.trim()
+        );
     }
-    if !stderr.is_empty() { tracing::debug!(?stream, diagnostic = stderr, "ripgrep diagnostic output"); }
-    tracing::debug!(?stream, results = collected.hits.len(), capped = collected.capped, "completed ripgrep search stream");
+    if !stderr.is_empty() {
+        tracing::debug!(?stream, diagnostic = stderr, "ripgrep diagnostic output");
+    }
+    tracing::debug!(
+        ?stream,
+        results = collected.hits.len(),
+        capped = collected.capped,
+        "completed ripgrep search stream"
+    );
     return Ok(Some(collected.hits));
 }
 
@@ -122,21 +191,43 @@ async fn consume(mut child: Child, root: &Path, query: &str, stream: Stream, can
 mod tests;
 
 /// Execute both bounded streams concurrently; a cancelled query never becomes an empty successful reply.
-pub(crate) async fn search(workspace: &Workspace, query: &str, cancellation: &SearchCancellation) -> Option<SearchResults> {
+pub(crate) async fn search(
+    workspace: &Workspace,
+    query: &str,
+    cancellation: &SearchCancellation,
+) -> Option<SearchResults> {
     let root = workspace.root();
     let (path_output, content_output) = tokio::join!(
-        execute(command(root, query, Stream::Paths), root, query, Stream::Paths, cancellation),
-        execute(command(root, query, Stream::Contents), root, query, Stream::Contents, cancellation)
+        execute(
+            command(root, query, Stream::Paths),
+            root,
+            query,
+            Stream::Paths,
+            cancellation
+        ),
+        execute(
+            command(root, query, Stream::Contents),
+            root,
+            query,
+            Stream::Contents,
+            cancellation
+        )
     );
-    if cancellation.is_cancelled() { return None; }
+    if cancellation.is_cancelled() {
+        return None;
+    }
     let paths = match path_output {
         Ok(Some(hits)) => Ok(hits),
-        Ok(None) => { return None; }
+        Ok(None) => {
+            return None;
+        }
         Err(error) => Err(error),
     };
     let contents = match content_output {
         Ok(Some(hits)) => Ok(hits),
-        Ok(None) => { return None; }
+        Ok(None) => {
+            return None;
+        }
         Err(error) => Err(error),
     };
     return Some(SearchResults { paths, contents });
