@@ -160,7 +160,7 @@ not a verbal question.
   specification source and record them in `md3-tokens.md`.
 - [x] Build pure authored Settings state with checked toggle events,
   without persistence or production wiring.
-- [ ] Build an isolated native host using the accepted player and the
+- [x] Build an isolated native host using the accepted player and the
   proposed Fold placement.
 - [ ] Measure light/dark fit on both panels at 100% and 200% text,
   including the long supporting lines and both switch positions.
@@ -184,6 +184,24 @@ copy-drift,
 row-position-swap,
 unknown-event and cross-row-toggle mutants each failed their intended test.
 Exact restoration and a freshly executed complete unit task followed.
+
+Prototype `1cf2f2cb3` adds the isolated native host.
+Each row is the platform's Material 3 list item with a display-only switch;
+the whole row is the two-state control,
+so the row supplies the 48dp floor rather than the switch's 40dp state layer.
+Both text lines may wrap.
+The page header follows the accepted Search header:
+a 48dp Back target and a one-line title in a 72dp bar.
+The unfolded arrangement reuses the Search page's deck host and folder
+browser on the left;
+the cover page is full width.
+The complete unit task and APK build passed.
+APK SHA-256 is
+`2faeddc682baf92aaf3d0bfcb4f5c53d4c1d29dc6d2803b2fe46e40513305ee1`.
+The merged manifest disables the production activity and services,
+removes WorkManager initialization and exports `SettingsPaneActivity`.
+The player's own Settings button is not wired;
+the study opens the page from an authored scene or an explicit debug event.
 No native fit,
 input or placement evidence exists yet.
 
@@ -202,4 +220,8 @@ Original AVDs remain untouched.
 Every visit records original settings before mutation,
 restores those exact fields and verifies owner shutdown and runtime absence.
 
-The next action is the authored state fixture and isolated native host.
+The next action is an owned native visit:
+install the exact APK,
+measure fit on both panels,
+themes and text scales,
+and exercise the switches and both Back paths.
