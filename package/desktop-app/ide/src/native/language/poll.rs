@@ -323,7 +323,7 @@ pub(super) fn tick(
         send(language, false, displayed)?;
         repaint = snapshots(language, source, displayed)?;
         if language.synced == Some(displayed) {
-            sync::hints(language, window, displayed)?;
+            sync::hints(language, window, source, displayed)?;
         }
         return Ok(());
     };

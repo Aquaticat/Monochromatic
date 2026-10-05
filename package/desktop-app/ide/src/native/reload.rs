@@ -7,7 +7,7 @@
 /// ```ts
 /// import { state, render } from '../native';
 /// ```
-use super::{AppWindow, State, render};
+use super::{AppWindow, State, render, rows};
 /// Worker creation failure must surface rather than silently disabling external refresh.
 use anyhow::Result;
 /// An accepted reload is copied for the Language module before the document consumes it.
@@ -87,8 +87,11 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
             return;
         }
     };
-    let fractional_row = (-window.get_scroll_y()).max(0.0) % 24.0;
+    let offset = (-window.get_scroll_y()).max(0.0);
     let mut current = state.borrow_mut();
+    // How far the view's top edge lies below the top of the top line's code row; negative inside its virtual rows.
+    let top_line = current.row_map.line_at(offset);
+    let within = offset - current.row_map.code_top(top_line);
     let mut redraw = current.file_error.is_some();
     let mut mapped_viewport = None;
     if let Some(reload) = update {
@@ -102,13 +105,15 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
         current.language_reload = Some(language_reload);
         let position = current.document.position();
         let first = current.document.text().char_to_line(position.viewport);
-        let lines = current.document.text().len_lines();
         current.first = first.saturating_sub(1);
         current.document_width = 0.0;
         current.styles = SourceStyles::from([]);
         current.syntax_revision = None;
         current.syntax_error = None;
-        mapped_viewport = Some((first, lines));
+        // The new text has its own vertical mapping; the line the view started in keeps its place in the view.
+        rows::refresh(&mut current);
+        let target = (current.row_map.code_top(first) + within).max(0.0);
+        mapped_viewport = Some((target, current.row_map.height()));
         redraw = true;
     }
     current.file_error = None;
@@ -116,10 +121,10 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
         redraw = apply_syntax(&mut current, syntax) || redraw;
     }
     drop(current);
-    if let Some((first, lines)) = mapped_viewport {
+    if let Some((target, extent)) = mapped_viewport {
         // Update extent before offset so the old height cannot clamp a mapped viewport.
-        window.set_total_lines(lines as i32);
-        window.set_scroll_y(-(first as f32 * 24.0 + fractional_row));
+        window.set_content_extent(extent);
+        window.set_scroll_y(-target);
     }
     if redraw {
         render(window, state);

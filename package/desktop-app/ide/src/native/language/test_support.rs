@@ -137,7 +137,10 @@ pub(super) fn definitions(variables: &[(&str, &str)], command: Option<&str>) -> 
     // const entries: string[] = variables.some(([name]) => name === 'PUSH') ? [] : ["IDE_SCRIPTED_PUSH = '0'"];
     // ```
     let mut entries: Vec<String> = Vec::new();
-    if !variables.iter().any(|(name, _value)| return *name == "PUSH") {
+    if !variables
+        .iter()
+        .any(|(name, _value)| return *name == "PUSH")
+    {
         entries.push(String::from("IDE_SCRIPTED_PUSH = '0'"));
     }
     for (name, value) in variables {

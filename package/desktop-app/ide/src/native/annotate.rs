@@ -26,6 +26,8 @@ use ide_app::annotation_layout::{AnnotationColors, AnnotationFrame};
 use ide_app::language::{
     diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot, identity::DocumentStamp,
 };
+/// Marker and box rows are placed on their lines' code rows by the vertical mapping.
+use ide_app::row_map::{CODE_ROW, RowMap};
 /// Window property access.
 use slint::SharedString;
 /// What: `Rc<RefCell<State>>` is the UI thread's shared source state; `Arc` is the shared snapshot pointer.
@@ -134,14 +136,17 @@ pub(super) fn visible(current: &State) -> Arc<Visible> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function rows(frame: AnnotationFrame): [SourceMarker[], SourceSelection[]];
+/// function rows(frame: AnnotationFrame, map: RowMap): [SourceMarker[], SourceSelection[]];
 /// ```
-pub(super) fn rows(frame: &AnnotationFrame) -> (Vec<SourceMarker>, Vec<SourceSelection>) {
+pub(super) fn rows(
+    frame: &AnnotationFrame,
+    map: &RowMap,
+) -> (Vec<SourceMarker>, Vec<SourceSelection>) {
     let mut markers = Vec::new();
     for marker in &frame.markers {
         markers.push(SourceMarker {
             x: marker.x,
-            y: marker.row as f32 * 24.0,
+            y: map.code_top(marker.row),
             // `i32::from` widens the byte rank to the toolkit's integer.
             severity: i32::from(rank(marker.severity)),
         });
@@ -150,9 +155,9 @@ pub(super) fn rows(frame: &AnnotationFrame) -> (Vec<SourceMarker>, Vec<SourceSel
     for hint in &frame.hints {
         boxes.push(SourceSelection {
             x: hint.x,
-            y: hint.row as f32 * 24.0,
+            y: map.code_top(hint.row),
             width: hint.width,
-            height: 24.0,
+            height: CODE_ROW,
         });
     }
     return (markers, boxes);

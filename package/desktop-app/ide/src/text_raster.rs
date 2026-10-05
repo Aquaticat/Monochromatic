@@ -3,7 +3,7 @@
 /// Hint text starts this far inside its label box.
 use crate::annotation_layout::LABEL_PADDING;
 /// Diagnostic underline styles and the tile both they and glyphs are drawn into.
-use crate::annotation_paint::{Tile, paint_underlines};
+use crate::annotation_paint::{Tile, TilePlace, paint_underlines};
 /// Bounded glyph images prevent repeating outline rasterization on every viewport update.
 use crate::glyph_cache::{GlyphCache, GlyphKey};
 /// Selection color follows geometry rather than recoloring an entire ligature glyph.
@@ -148,10 +148,11 @@ impl TextRaster {
         let mut bytes = vec![0; length as usize];
         let factor = view.viewport.scale;
         for row in &view.rows {
-            let row_y = (row.row - view.viewport.first) as f32 * 24.0 * factor;
+            // Rows are placed by the frame's vertical mapping, relative to the top of the tile.
+            let row_y = (row.top - view.origin) * factor;
             let mut selected_intervals = Vec::new();
             for rectangle in &view.selections {
-                if rectangle.y == row.row as f32 * 24.0 {
+                if rectangle.y == row.top {
                     selected_intervals.push((
                         (rectangle.x - horizontal) * factor,
                         (rectangle.x + rectangle.width - horizontal) * factor,
@@ -184,7 +185,7 @@ impl TextRaster {
             && let Some(top_row) = view.rows.first()
         {
             for hint in &frame.hints {
-                let row_y = (hint.row - view.viewport.first) as f32 * 24.0 * factor;
+                let row_y = (view.map.code_top(hint.row) - view.origin) * factor;
                 let left = (hint.x + LABEL_PADDING - horizontal) * factor;
                 let origin = (left, row_y + hint.baseline_shift);
                 let mut tile = Tile {
@@ -200,14 +201,18 @@ impl TextRaster {
                 width: view.width,
                 height: view.height,
             };
-            let origin = (view.viewport.first, horizontal);
             // Every row shares one baseline, so the first row's is the baseline of all of them.
+            let place = TilePlace {
+                top: view.origin,
+                left: horizontal,
+                scale: factor,
+                baseline: top_row.baseline,
+            };
             paint_underlines(
                 frame,
                 &mut tile,
-                origin,
-                top_row.baseline,
-                factor,
+                place,
+                &view.map,
                 &view.selections,
                 colors.selected,
             );

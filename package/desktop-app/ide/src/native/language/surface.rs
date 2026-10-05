@@ -5,8 +5,8 @@
 //! and, for a pointer hover, when the pointer leaves both the source and the popup. The list
 //! closes on Escape, an outside click, a choice, a reload, and a file switch.
 
-/// The window, its generated row type, and the source state.
-use crate::native::{AppWindow, State, ui::ReferenceEntry};
+/// The window, its generated row type, the source state, and the vertical placement of the anchoring line.
+use crate::native::{AppWindow, State, rows, ui::ReferenceEntry};
 /// Locations and the stamp they belong to.
 use ide_app::language::{identity::DocumentStamp, reply::Target};
 /// Toolkit models for the list rows.
@@ -90,8 +90,10 @@ pub(super) fn displayed(state: &State) -> DocumentStamp {
     };
 }
 
-/// What: Tell the window which character the surface belongs to: its line and its x.
-/// Why: The markup turns these into window coordinates that follow layout and scrolling.
+/// What: Tell the window which character the surface belongs to: its line, its x, and where everything that
+///       line owns lies vertically.
+/// Why: The markup turns these into window coordinates that follow layout and scrolling; the vertical place
+///      comes from the row map, so the surface covers neither the code row nor the line's virtual rows.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -111,6 +113,9 @@ fn anchor(window: &AppWindow, state: &State, position: usize) {
     }
     window.set_language_anchor_x(x);
     window.set_language_anchor_line(line as i32);
+    let (top, height) = rows::anchor_place(&state.row_map, line as i32);
+    window.set_language_anchor_y(top);
+    window.set_language_anchor_height(height);
 }
 
 /// What: Show `text` in the popup beside the line of `position`.

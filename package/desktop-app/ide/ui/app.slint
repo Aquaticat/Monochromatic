@@ -79,10 +79,6 @@ export component AppWindow inherits Window {
     callback search-dismiss;
     public function focus-search() { search-panel.focus-query(); }
     public function reset-search-scroll() { search-panel.reset-scroll(); }
-    public function reveal-source-line(line: int) {
-        scroll.content-x = 0px;
-        scroll.content-y = -min(max(0, line) * root.line-height, max(0px, scroll.content-height - scroll.height));
-    }
 
     in-out property <bool> find-open;
     in-out property <string> find-query;
@@ -104,12 +100,18 @@ export component AppWindow inherits Window {
     // The anchoring character: logical x from the start of the text, and its zero-based source line.
     in property <float> language-anchor-x;
     in property <int> language-anchor-line;
+    // Where everything that line owns lies, from the top of the text: its virtual rows and its code row.
+    // Native code computes both from its vertical mapping; this markup has no row arithmetic.
+    in property <float> language-anchor-y;
+    in property <float> language-anchor-height: 24;
     out property <bool> language-popup-has-pointer: language-popup.pointer-inside;
     out property <bool> language-popup-below: language-popup.placed-below;
     out property <length> language-popup-y: language-popup.y;
     out property <length> language-popup-height: language-popup.height;
-    // Top of the anchoring line in window coordinates; the popup and the list never cover that line.
-    out property <length> language-anchor-top: code-focus.absolute-position.y + root.language-anchor-line * root.line-height + scroll.content-y;
+    // Top of the anchoring line, with its virtual rows, in window coordinates; the popup and the list never cover
+    // that line or the rows that belong to it.
+    out property <length> language-anchor-top: code-focus.absolute-position.y + root.language-anchor-y * 1px + scroll.content-y;
+    private property <length> language-anchor-bottom: root.language-anchor-top + root.language-anchor-height * 1px;
     private property <length> language-anchor-left: code-focus.absolute-position.x + root.gutter-width + root.language-anchor-x * 1px + scroll.content-x;
     in-out property <bool> references-open;
     in property <string> references-title;
@@ -123,8 +125,10 @@ export component AppWindow inherits Window {
     in property <bool> file-outside-project;
     callback definition-request;
     callback hover-request;
-    callback definition-at-pointer(int, float);
-    callback pointer-moved(int, float);
+    // Pointer positions are logical pixels from the top of the text and from the start of a line's text;
+    // native code maps the vertical one to a source line.
+    callback definition-at-pointer(float, float);
+    callback pointer-moved(float, float);
     callback pointer-exited;
     callback language-dismiss;
     callback references-choose(int);
@@ -170,24 +174,28 @@ export component AppWindow inherits Window {
     in property <string> selected-text;
     in property <string> file-label: "Source-view verification";
     in property <string> error-message;
-    in property <int> total-lines: 1;
+    // Height of the whole text with its virtual rows, the code-row top of each materialized line, and the first
+    // materialized line: all from native code's vertical mapping.
+    in property <float> content-extent: 24;
+    in property <[float]> line-tops;
+    in property <int> first-line;
     in property <int> selection-anchor;
     in property <int> selection-head;
     in-out property <length> scroll-y: 0px;
     in-out property <length> scroll-x: 0px;
     out property <float> viewport-height: scroll.height / 1px;
     out property <float> viewport-width: (scroll.width - root.gutter-width) / 1px;
-    private property <length> line-height: 24px;
+    // Height of one code row; where rows are is decided by native code alone.
+    private property <length> code-row: 24px;
     private property <length> gutter-width: 56px;
     private property <length> font-size: 15px;
     // Converting a physical pixel tracks display scale even when logical window size is unchanged.
     private property <length> physical-pixel: 1phx;
     changed physical-pixel => { root.scale-changed(); }
-    private property <int> first-visible: max(0, floor((0px - root.scroll-y) / root.line-height) - 1);
 
     // A press places the caret or, repeated quickly, selects a word or a line; a drag reports further hits.
-    callback pointer-press(int, float, bool);
-    callback pointer-hit(int, float, bool);
+    callback pointer-press(float, float, bool);
+    callback pointer-hit(float, float, bool);
     callback key-input(string, bool, bool, bool);
     callback viewport-changed(float, float, float, float);
     callback theme-changed;
@@ -353,7 +361,7 @@ export component AppWindow inherits Window {
                     width: parent.width;
                     height: parent.height;
                     content-width: max(self.width, root.document-width * 1px + root.gutter-width);
-                    content-height: max(self.height, root.total-lines * root.line-height);
+                    content-height: max(self.height, root.content-extent * 1px);
                     content-y <=> root.scroll-y;
                     content-x <=> root.scroll-x;
                     // A mouse drag selects text. Panning by mouse drag would take a quick drag away from selection;
@@ -416,13 +424,13 @@ export component AppWindow inherits Window {
                         source: root.source-image;
                     }
 
-                    for row in ceil(scroll.height / root.line-height) + 2: Text {
-                        visible: row + root.first-visible < root.total-lines;
+                    // One number per materialized line, on that line's code row, never on its virtual rows.
+                    for top[index] in root.line-tops: Text {
                         x: 0px;
-                        y: (row + root.first-visible) * root.line-height;
+                        y: top * 1px;
                         width: root.gutter-width - 12px;
-                        height: root.line-height;
-                        text: row + root.first-visible + 1;
+                        height: root.code-row;
+                        text: root.first-line + index + 1;
                         horizontal-alignment: right;
                         vertical-alignment: center;
                         color: Palette.foreground;
@@ -434,7 +442,7 @@ export component AppWindow inherits Window {
                     // One marker after the text of each line where a diagnostic starts, showing the worst severity.
                     for marker in root.source-markers: SeverityMarker {
                         x: root.gutter-width + marker.x * 1px;
-                        y: marker.y * 1px + (root.line-height - self.height) / 2;
+                        y: marker.y * 1px + (root.code-row - self.height) / 2;
                         severity: marker.severity;
                     }
 
@@ -443,7 +451,7 @@ export component AppWindow inherits Window {
                         x: root.gutter-width + root.caret-x * 1px;
                         y: root.caret-y * 1px;
                         width: 2px;
-                        height: root.line-height - 4px;
+                        height: root.code-row - 4px;
                         background: Palette.foreground;
                     }
 
@@ -455,7 +463,7 @@ export component AppWindow inherits Window {
                         severity: root.caret-problem-severity;
                         widest: max(48px, scroll.width - root.gutter-width - 16px);
                         private property <length> line-top: root.caret-y * 1px - 2px;
-                        private property <length> below: self.line-top + root.line-height + 2px;
+                        private property <length> below: self.line-top + root.code-row + 2px;
                         private property <length> view-top: -scroll.content-y;
                         private property <length> view-left: -scroll.content-x;
                         y: self.below + self.height <= self.view-top + scroll.height ? self.below
@@ -471,17 +479,17 @@ export component AppWindow inherits Window {
                         pointer-event(event) => {
                             if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
                                 code-focus.focus();
-                                root.pointer-press(floor(self.mouse-y / root.line-height),
+                                root.pointer-press(self.mouse-y / 1px,
                                     max(0, (self.mouse-x - root.gutter-width) / 1px),
                                     event.modifiers.shift);
                                 // Ctrl+click asks for the definition of the character under the pointer.
                                 if event.modifiers.control && !event.modifiers.shift && !event.modifiers.alt {
-                                    root.definition-at-pointer(floor(self.mouse-y / root.line-height),
+                                    root.definition-at-pointer(self.mouse-y / 1px,
                                         (self.mouse-x - root.gutter-width) / 1px);
                                 }
                             } else if event.kind == PointerEventKind.move && !self.pressed {
                                 // A resting pointer asks for hover information; x is negative over the line numbers.
-                                root.pointer-moved(floor(self.mouse-y / root.line-height),
+                                root.pointer-moved(self.mouse-y / 1px,
                                     (self.mouse-x - root.gutter-width) / 1px);
                             }
                         }
@@ -491,7 +499,7 @@ export component AppWindow inherits Window {
                         moved => {
                             // Only a drag with the left button extends; other buttons never started a selection.
                             if !self.pressed { return; }
-                            root.pointer-hit(floor(self.mouse-y / root.line-height),
+                            root.pointer-hit(self.mouse-y / 1px,
                                 max(0, (self.mouse-x - root.gutter-width) / 1px), true);
                         }
                     }
@@ -525,7 +533,7 @@ export component AppWindow inherits Window {
         note: root.language-popup-note;
         anchor-x: root.language-anchor-left;
         anchor-top: root.language-anchor-top;
-        anchor-bottom: root.language-anchor-top + root.line-height;
+        anchor-bottom: root.language-anchor-bottom;
         area-width: root.width;
         area-height: root.height;
     }
@@ -541,7 +549,7 @@ export component AppWindow inherits Window {
             selected-row <=> root.references-selected;
             anchor-x: root.language-anchor-left;
             anchor-top: root.language-anchor-top;
-            anchor-bottom: root.language-anchor-top + root.line-height;
+            anchor-bottom: root.language-anchor-bottom;
             area-width: root.width;
             area-height: root.height;
             choose(index) => { root.references-choose(index); }

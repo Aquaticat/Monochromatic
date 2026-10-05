@@ -6,6 +6,8 @@ use crate::annotation_layout::AnnotationFrame;
 use crate::document::Document;
 /// Variable roman and real italic blobs retain stable cache identities.
 use crate::font_asset::code_faces;
+/// The one vertical mapping: where each line's code row starts and how tall rows and the caret are.
+use crate::row_map::{CARET_HEIGHT, CARET_INSET, CODE_ROW, RowMap};
 /// What: `pub use` re-exports the row types under this module's name.
 /// Why: Callers written against `shaped_text` keep their imports while row geometry lives in its own file.
 ///
@@ -76,6 +78,11 @@ pub struct ShapedView {
     pub width: u32,
     /// Physical raster height.
     pub height: u32,
+    /// Top of the raster in logical pixels from the top of the text: the top of the first materialized
+    /// line's block.
+    pub origin: f32,
+    /// The vertical mapping this frame was shaped against; rows outside the frame are placed by it.
+    pub map: RowMap,
     /// Shared logical selection rectangles drive both native backgrounds and glyph clipping.
     pub selections: Vec<ReadingRect>,
     /// In-file find rectangles from the same row geometry; filled by the native renderer.
@@ -170,7 +177,8 @@ impl TextShaper {
             FontStyle::Normal
         };
         builder.push_default(StyleProperty::FontStyle(style));
-        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(24.0)));
+        // Glyphs are set on a line box as tall as one code row; where that row sits is the row map's business.
+        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(CODE_ROW)));
         builder.push_default(StyleProperty::Brush(0));
         builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
             Cow::Borrowed(&self.typography.features),
@@ -202,7 +210,7 @@ impl TextShaper {
         )));
         // The real italic face is registered with the roman one, so no slant is synthesized.
         builder.push_default(StyleProperty::FontStyle(FontStyle::Italic));
-        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(24.0)));
+        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(CODE_ROW)));
         builder.push_default(StyleProperty::Brush(HINT_ROLE));
         builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
             Cow::Borrowed(&self.typography.features),
@@ -247,14 +255,16 @@ impl TextShaper {
     }
 
     /// Shape one source line with syntax roles on a given common baseline.
+    /// `place` pairs the line with the top of its code row in logical pixels.
     fn shape_row(
         &mut self,
         document: &Document,
-        row: usize,
+        place: (usize, f32),
         scale: f32,
         styles: &[StyleSpan],
         baseline: f32,
     ) -> ShapedRow {
+        let (row, top) = place;
         let text = document.text();
         let source_start = text.line_to_char(row);
         let source = text.line(row).to_string();
@@ -281,6 +291,7 @@ impl TextShaper {
             .baseline;
         return ShapedRow {
             row,
+            top,
             source_start,
             projection,
             layout,
@@ -291,18 +302,39 @@ impl TextShaper {
 
     /// Shape one arbitrary source line for reading geometry, without syntax colors.
     /// Caret movement uses it for lines outside the materialized viewport; `row` is clamped to the last line.
+    /// The row has no vertical position: its `top` is zero, and only its horizontal geometry is meaningful.
     pub fn row(&mut self, document: &Document, row: usize, scale: f32) -> ShapedRow {
         let last = document.text().len_lines().saturating_sub(1);
         let baseline = self.baseline(scale);
-        return self.shape_row(document, row.min(last), scale, &[], baseline);
+        return self.shape_row(document, (row.min(last), 0.0), scale, &[], baseline);
     }
 
-    /// Prepare a visible viewport using native font advances rather than character cells.
+    /// Prepare a visible viewport of a text without virtual rows: line `n` starts at `n` code rows.
     pub fn prepare(
         &mut self,
         document: &Document,
         viewport: Viewport,
         styles: &[StyleSpan],
+    ) -> ShapedView {
+        let map = RowMap::plain(document.text().len_lines());
+        return self.prepare_rows(document, viewport, styles, &map);
+    }
+
+    /// What: Prepare a visible viewport using native font advances rather than character cells, with every
+    ///       row placed by `map`. `&RowMap` lends the vertical mapping; the view keeps its own copy.
+    /// Why: Lines with virtual rows above them start lower than their line number alone says; the frame,
+    ///      its selection rectangles, and its raster all take row positions from this one mapping.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// prepareRows(document: Document, viewport: Viewport, styles: StyleSpan[], map: RowMap): ShapedView;
+    /// ```
+    pub fn prepare_rows(
+        &mut self,
+        document: &Document,
+        viewport: Viewport,
+        styles: &[StyleSpan],
+        map: &RowMap,
     ) -> ShapedView {
         let text = document.text();
         let last = viewport
@@ -312,16 +344,22 @@ impl TextShaper {
         let baseline = self.baseline(viewport.scale);
         let mut rows = Vec::new();
         for row in viewport.first..last {
-            rows.push(self.shape_row(document, row, viewport.scale, styles, baseline));
+            let place = (row, map.code_top(row));
+            rows.push(self.shape_row(document, place, viewport.scale, styles, baseline));
         }
         let width = (viewport.width.max(1.0) * viewport.scale).ceil() as u32;
-        let height = ((last.saturating_sub(viewport.first).max(1) as f32) * 24.0 * viewport.scale)
-            .ceil() as u32;
+        // The raster spans every materialized line with its block; an empty frame is still one row tall.
+        let origin = map.block_top(viewport.first);
+        let extent = (map.block_top(last) - origin).max(CODE_ROW);
+        let height = (extent * viewport.scale).ceil() as u32;
         let mut view = ShapedView {
             rows,
             viewport,
             width,
             height,
+            origin,
+            // `clone` copies the mapping so the frame stays consistent while the window's own map moves on.
+            map: map.clone(),
             selections: Vec::new(),
             matches: Vec::new(),
             annotations: None,
@@ -356,9 +394,9 @@ impl ShapedView {
         }
         return ReadingRect {
             x,
-            y: row as f32 * 24.0 + 2.0,
+            y: self.map.code_top(row) + CARET_INSET,
             width: 2.0,
-            height: 20.0,
+            height: CARET_HEIGHT,
         };
     }
 
@@ -376,9 +414,9 @@ impl ShapedView {
             if start <= row_end && end > row_end {
                 result.push(ReadingRect {
                     x: shaped.caret_x(row_end, self.viewport.scale),
-                    y: shaped.row as f32 * 24.0,
+                    y: shaped.top,
                     width: TERMINATOR_MARK,
-                    height: 24.0,
+                    height: CODE_ROW,
                 });
             }
         }

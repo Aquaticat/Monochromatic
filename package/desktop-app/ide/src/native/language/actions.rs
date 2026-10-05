@@ -124,13 +124,13 @@ fn bind_pointer(owner: &AppWindow, source: &Rc<RefCell<State>>, language: &Rc<Re
     let click_state = Rc::clone(source);
     let click_language = Rc::clone(language);
     let click_window = owner.as_weak();
-    owner.on_definition_at_pointer(move |line, x| {
+    owner.on_definition_at_pointer(move |y, x| {
         let Some(window) = click_window.upgrade() else {
             return;
         };
         // A Ctrl+click past the end of a line or on the line numbers asks nothing, as in editord.
-        let Some(character) = pointer::character_at(&click_state.borrow(), line, x) else {
-            tracing::debug!(line, x, "Ctrl+click over no source character");
+        let Some(character) = pointer::character_at(&click_state.borrow(), y, x) else {
+            tracing::debug!(y, x, "Ctrl+click over no source character");
             return;
         };
         with(&click_language, |current| {
@@ -145,8 +145,8 @@ fn bind_pointer(owner: &AppWindow, source: &Rc<RefCell<State>>, language: &Rc<Re
     });
     let move_state = Rc::clone(source);
     let move_language = Rc::clone(language);
-    owner.on_pointer_moved(move |line, x| {
-        let character = pointer::character_at(&move_state.borrow(), line, x);
+    owner.on_pointer_moved(move |y, x| {
+        let character = pointer::character_at(&move_state.borrow(), y, x);
         with(&move_language, |current| current.rest.moved(character));
     });
     let exit_language = Rc::clone(language);

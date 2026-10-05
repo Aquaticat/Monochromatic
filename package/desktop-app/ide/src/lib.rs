@@ -24,6 +24,9 @@ pub mod tab_stop;
 /// Two-pass shaping that widens each tab's stand-in space to its stop.
 mod tab_layout;
 
+/// The one mapping between vertical pixels and source lines, with blocks of virtual rows above annotated lines.
+pub mod row_map;
+
 /// One shaped row with its caret, hit-test, and range geometry.
 pub mod shaped_row;
 

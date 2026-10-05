@@ -7,7 +7,7 @@
 /// ```ts
 /// import { type State, AppWindow, SourceSelection } from '../native';
 /// ```
-use super::{AppWindow, State, annotate, find::present::present, ui::SourceSelection};
+use super::{AppWindow, State, annotate, find::present::present, rows, ui::SourceSelection};
 /// Hints and diagnostic marks are positioned against the frame's shaped rows.
 use ide_app::annotation_layout::lay_out;
 /// Match rectangles come from the same shaped rows as selection rectangles.
@@ -55,7 +55,11 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         ),
         dark: window.get_dark_scheme(),
     };
+    // The window names the line a language surface belongs to; the map places it.
+    let anchor_line = window.get_language_anchor_line();
     let mut current = state.borrow_mut();
+    // No frame is painted against a map that no longer describes the displayed text.
+    rows::refresh(&mut current);
     let first = current.first;
     let horizontal = current.horizontal;
     let viewport = Viewport {
@@ -102,9 +106,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
             styles,
             shaper,
             raster,
+            row_map,
             ..
         } = &mut *current;
-        let mut view = shaper.prepare(document, viewport, styles);
+        let mut view = shaper.prepare_rows(document, viewport, styles, row_map);
         view.matches = rectangles(
             &view,
             &ranges,
@@ -124,7 +129,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         rendered_matches = Some(marks);
         // Annotations are positioned after shaping and never change the rows that reading geometry uses.
         let frame = lay_out(document, &view, &shown, shaper, inks);
-        rendered_annotations = Some(annotate::rows(&frame));
+        rendered_annotations = Some(annotate::rows(&frame, row_map));
         // `Some(frame)` hands the positioned annotations to the raster with the rows they belong to.
         view.annotations = Some(frame);
         // Propagate raster failure visibly rather than retaining misleading old source pixels.
@@ -161,8 +166,9 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     }
     let position = document.position();
     let revision = document.revision();
-    let lines = document.text().len_lines();
     let selected = document.selected_text();
+    // The tile starts at the top of the first materialized line's block.
+    let origin = view.origin;
     let mut document_width = current.document_width;
     // Trailing blanks count as width, and the caret after the widest line needs room inside the scroll range.
     for row in &view.rows {
@@ -189,6 +195,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         notices.push(message.as_str());
     }
     let diagnostic = notices.join("\n");
+    let placement = rows::measure(&current, anchor_line);
     drop(current);
 
     if let Some(pixels) = rendered_pixels {
@@ -200,10 +207,12 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         );
         window.set_source_image(slint::Image::from_rgba8_premultiplied(buffer));
         window.set_image_x(horizontal);
-        window.set_image_y(first as f32 * 24.0);
         window.set_image_width(pixels.width as f32 / factor);
         window.set_image_height(pixels.height as f32 / factor);
     }
+    // Rows above the tile can change without a repaint; the image and the line numbers follow the map.
+    window.set_image_y(origin);
+    rows::present(window, placement);
     window.set_error_message(SharedString::from(diagnostic));
     window.set_source_selections(ModelRc::from(Rc::new(VecModel::from(selections))));
     window.set_selection_is_match(found.active.is_some());
@@ -227,7 +236,6 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         window.set_source_text(SharedString::from(source));
     }
     window.set_selected_text(SharedString::from(selected));
-    window.set_total_lines(lines as i32);
     window.set_selection_anchor(position.anchor as i32);
     window.set_selection_head(position.head as i32);
     tracing::debug!(

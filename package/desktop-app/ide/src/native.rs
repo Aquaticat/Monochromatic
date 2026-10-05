@@ -26,6 +26,8 @@ use ide_app::language::{
 };
 /// The displayed file is reread on change notifications, or on the old timer while unwatched.
 use ide_app::refresh_policy::SourceRefresh;
+/// The one vertical mapping between pixels and source lines.
+use ide_app::row_map::RowMap;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
@@ -37,7 +39,7 @@ use ide_app::{cli::Options, workspace::Workspace};
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
 /// Toolkit handles and models bridge owned Rust state to the window.
-use slint::{ComponentHandle, SharedString};
+use slint::{ComponentHandle, SharedString, VecModel};
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
 /// Why: Callbacks need the same document without cross-thread Arc/Mutex overhead.
 ///
@@ -99,6 +101,8 @@ mod refresh_latency_tests;
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
+/// The window's side of the vertical mapping between pixels and source lines.
+mod rows;
 /// Replacement search queries cannot redirect an in-progress result click.
 #[cfg(test)]
 mod search_pointer_tests;
@@ -185,6 +189,17 @@ struct State {
     presented_revision: Option<u64>,
     /// Last materialized image inputs; reset when changing the displayed file.
     frame_stamp: Option<FrameStamp>,
+    /// Where every line of the displayed text is vertically; kept current by `rows::refresh`.
+    row_map: RowMap,
+    /// What: `Rc<VecModel<f32>>` is a shared, growable toolkit list of floats.
+    /// Why: The window draws one line number per entry at that vertical position; the list is updated in
+    ///      place while scrolling.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// lineTops: ArrayModel<number>;
+    /// ```
+    line_tops: Rc<VecModel<f32>>,
     /// Accepted in-file matches; painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
     /// The latest accepted external reload the Language module has not been told about yet.
@@ -204,8 +219,11 @@ struct State {
 impl State {
     /// Retain source ownership and initialize viewport resources without changing the filesystem.
     fn new(source: &str, file_path: Option<PathBuf>) -> Self {
+        let document = Document::new(source);
+        // A new text has no virtual rows yet: every line starts at its number times one code row.
+        let row_map = RowMap::plain(document.text().len_lines());
         return Self {
-            document: Document::new(source),
+            document,
             file_path,
             file_generation: 1,
             file_error: None,
@@ -223,6 +241,8 @@ impl State {
             shaped: None,
             presented_revision: None,
             frame_stamp: None,
+            row_map,
+            line_tops: rows::line_model(),
             find: None,
             language_reload: None,
             annotations: Annotations::default(),
