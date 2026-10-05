@@ -15,6 +15,9 @@ Those survivors are retained,
 not excluded.
 A Windows-native follow-up caught both of them with an existing test.
 `Windows-native follow-up` records that run and the separate Windows findings it left open.
+Its device-namespace finding is now fixed and tested on Linux with supplied native prefixes;
+native Windows confirmation of that fix is pending.
+`Device-namespace pathnames` records the fix.
 
 ## Requirements preserved
 
@@ -210,6 +213,8 @@ both mutants are caught on native Windows by `path_scan::tests::windows_volume_p
 Controls,
 provenance,
 and the findings that run left open are in `Windows-native follow-up`.
+The later device-namespace fix changes `src/path_scan.rs` but not `prefix_parts`;
+a mutation rerun over the changed scan is pending.
 
 ### Unviable mutants
 
@@ -257,10 +262,13 @@ an existing `#[cfg(windows)]` test that the Linux campaigns cannot execute.
 No test code was added,
 because neither mutant survived.
 
-The same run produced two findings that remain open and were not changed here:
+The same run produced two findings that it did not change:
 the unmutated suite is not green on Windows,
 and device-namespace pathnames are not name-scanned.
 `Unmutated Windows baseline` and `Device-namespace pathnames` record them.
+The baseline finding remains open.
+The device-namespace finding was fixed afterwards,
+pending native Windows confirmation.
 
 ### Target and toolchain
 
@@ -419,8 +427,18 @@ passed 151 library tests and failed the same six tests.
 
 ### Device-namespace pathnames
 
-This finding is open and is scanner behavior,
+This finding was scanner behavior,
 not a test artifact.
+It is fixed and tested on Linux with supplied native prefixes;
+native Windows confirmation is pending.
+`Windows observation` keeps what the Windows run measured,
+and the later subsections record the confirmed mechanism,
+the fix,
+its tests,
+and what remains.
+
+#### Windows observation
+
 A disposable probe test,
 never committed,
 printed the scan of one forbidden directory name under each native path form on unmutated source.
@@ -458,6 +476,153 @@ without consuming a prefix part.
 The unconsumed part then skips the first real name.
 Verbatim forms are unaffected because `?` is not a navigation marker.
 The probe output is `logs/probe-baseline.log` in the evidence directory.
+
+#### Confirmed mechanism
+
+Linux tests that supply the native prefix bytes confirm that source reading's cause;
+its scope was too narrow.
+`count_prefix_parts` counts every non-empty run between `/` or `\` in the native prefix,
+including the `.` of `\\.\`.
+`scan_normalized_records` classified `.` and `..` as navigation markers before the prefix skip,
+so a prefix part spelled that way was displayed without being consumed,
+and the leftover count consumed the first real name.
+
+The cause is not specific to `\\.\`:
+any prefix part spelled `.` or `..` had the same effect,
+including in verbatim forms.
+`parse_prefix` in the standard library's `library/std/src/sys/path/windows_prefix.rs`,
+read in the installed `nightly-2026-09-22` source,
+produces such parts for these inputs,
+each now a test case:
+
+- `\\.\..\NAME`:
+  `DeviceNS("..")`.
+- `\\.\\NAME`:
+  `DeviceNS("")`,
+  whose 4-byte prefix `\\.\` has the single part `.`.
+- `\\server\..\NAME`:
+  `UNC("server", "..")`.
+- `\\?\a/./b\NAME`:
+  `Verbatim("a/./b")`,
+  because verbatim parsing splits only at backslashes.
+- `\\?\UNC\..\share\NAME`:
+  `VerbatimUNC("..", "share")`.
+
+So the recorded sentence that verbatim forms are unaffected holds only when no verbatim prefix part is spelled `.` or `..`.
+
+#### Fix
+
+Commit `833483171` reorders the component loop of `scan_normalized_records` in `src/path_scan.rs`.
+Empty components are still displayed and skipped first;
+then every non-empty component consumes a prefix part while the counted prefix remains,
+whatever its bytes;
+only after the prefix are `.` and `..` classified as navigation markers.
+A prefix part therefore means the same on both sides,
+a non-empty run between separators,
+and rustdoc on `count_prefix_parts` and `scan_normalized_records` states that contract.
+The agreement relies on the standard library ending every prefix at a separator or the end of input
+(`parse_next_component` and `parse_drive_exact` in the same file),
+and on `normalize_bytes` inserting the separator after a drive-relative `C:`.
+Linux behavior cannot change:
+`prefix_parts` still returns `0` on non-Windows targets.
+
+#### Tests
+
+`src/path_scan_prefix_tests.rs` drives the production composition on every host:
+`normalize_bytes` with Windows semantics,
+`count_prefix_parts` on the raw native prefix bytes,
+and `scan_normalized_records`.
+Only native `Component::Prefix` detection is replaced:
+each fixture supplies the byte prefix that `parse_prefix` and `Prefix::len` in `library/std/src/path.rs` produce for its path,
+and a helper rejects a fixture prefix that is not a byte prefix of its path.
+`normalize_bytes` and `count_prefix_parts` became `pub(crate)` so this sibling module can call them.
+
+Every form asserts that a forbidden name directly after the prefix is masked and reported as `name:1`,
+and that a clean control under the same prefix stays visible with no finding.
+Before-fix results come from the test-only tree,
+after-fix results from the fixed tree;
+`Fix verification runs` names both evidence directories.
+
+Failed before the fix and pass after it:
+
+- `device_namespace_port_prefix_form`:
+  `\\.\COM1`.
+- `device_namespace_drive_prefix_form`:
+  `\\.\C:`.
+- `device_namespace_pipe_name_with_dots`:
+  `\\.\pipe\NAME.with.dots`,
+  the pipe name following the `\\.\pipe` prefix.
+- `device_name_containing_dots`:
+  `\\.\device.with.dots\NAME`,
+  a device name that is one prefix part.
+- `navigation_markers_after_prefix_are_not_names`:
+  `.` and `..` after `\\.\COM1` and after `\\server\share`.
+- `empty_components_after_prefix_are_not_names`:
+  repeated separators after `\\.\COM1`.
+- `mixed_separators_keep_prefix_boundary`:
+  `//.\COM1/NAME\…`,
+  and `\\?/C:\NAME`,
+  which the standard library parses as `UNC("?", "C:")` because a slash cancels verbatim parsing.
+- `non_utf8_name_after_prefix`:
+  the WTF-8 bytes of an unpaired surrogate after `\\.\COM1`,
+  the non-UTF-8 form a Windows `OsStr` can hold.
+- `navigation_spelled_prefix_parts_are_consumed`:
+  the five inputs in `Confirmed mechanism`.
+
+Passed before and after,
+as controls for prefix forms the Windows run already found correct:
+`drive_prefix_form`,
+`drive_relative_prefix_form`,
+`unc_backslash_prefix_form`,
+`unc_slash_prefix_form`,
+`verbatim_drive_prefix_form`,
+`verbatim_unc_prefix_form`,
+`verbatim_name_prefix_form`,
+and `prefix_without_following_component`,
+which covers `\\.\COM1`,
+`\\.\COM1\`,
+`\\?\UNC\server`,
+`\\server\share`,
+and `C:` with nothing after the prefix.
+
+`path_name_bytes::tests::prefix_parts_count_navigation_spellings_and_device_markers` pins the counting side of the contract
+for `\\.\COM1`,
+`\\.\C:`,
+`\\.\`,
+`\\.\..`,
+`\\server\..`,
+and `\\?\a/./b`.
+It passed before and after the fix,
+because counting did not change.
+
+`path_scan::tests::windows_device_namespace_prefix_is_not_name_segment` is a `#[cfg(windows)]` test through the native parser:
+`\\.\COM1`,
+`\\.\C:`,
+and `\\.\pipe\NAME.with.dots`,
+plus a clean `\\.\COM1` control.
+Only the Linux target is installed on this host,
+so it has never been compiled.
+
+The test files reached the repository inside concurrent commit `8fdbbded9`,
+whose message describes only `desktop-app-ide` work;
+that commit's tree holds exactly the test-only state,
+without the fix.
+
+#### Pending Windows confirmation
+
+- Rebuild and run the Windows `green` and `suite` forms at a snapshot that contains commit `833483171`,
+  as in `Controls and results`,
+  and confirm that `windows_device_namespace_prefix_is_not_name_segment` compiles and passes
+  and `windows_volume_prefix_is_not_name_segment` still passes.
+- Rerun the disposable probe at the same snapshot
+  and expect `name:1` with a masked name for both device-namespace forms.
+- The retained scratch drivers in the evidence directory
+  (`prepare.mjs`,
+  `drive.mjs`,
+  and `sequence.mjs`)
+  hash a fixed variant set and name a destroyed VM,
+  so they need adapting rather than rerunning as-is.
+  `Host bridges` and `doc/troubleshooting/mvm-libvirt-flatpak-only-host.md` describe what this host needs first.
 
 ### Host bridges
 
@@ -505,8 +670,12 @@ The scratch drivers are retained in the evidence directory.
 
 ### Decisions left to the main agent
 
-- Whether and where to fix device-namespace name scanning,
-  with a test for that form.
+- Device-namespace name scanning is fixed in `scan_normalized_records`,
+  with Linux supplied-prefix tests for every prefix form.
+  Remaining:
+  native Windows confirmation (`Pending Windows confirmation`)
+  and a mutation rerun over the changed `src/path_scan.rs`,
+  because the full campaign's report predates the fix and no package task mutates the pathname files alone.
 - Triage of the non-compiling integration target and the six failing baseline tests.
 - Whether to add a recurring Windows test job once the baseline is green.
 
