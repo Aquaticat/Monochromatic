@@ -129,6 +129,68 @@ so it is not suitable when a session must stay active.
 No token copy,
 console-auth disablement or host-home mutation is needed.
 
+## Explicit existing-server boundary for a namespace client
+
+A later ADB `37.0.1-15733141` control used a client entering only an owned
+container's user/network namespaces.
+The server starts inside the bounded container before the emulator.
+The client keeps the generated runtime home for console authentication and
+uses numeric loopback explicitly:
+
+```text
+# Inside the owned network namespace; connect to its existing server.
+adb -H 127.0.0.1 -P 5037 -s emulator-5582 get-state
+```
+
+The same source revision's `socket_spec.cpp:155` to `158` treats only an
+empty hostname or literal `localhost` as local for server-start decisions:
+
+```cpp
+// socket_spec.cpp, comparable checked source
+static bool tcp_host_is_local(std::string_view hostname) {
+    // FIXME
+    return hostname.empty() || hostname == "localhost";
+}
+```
+
+`client/adb_client.cpp:257` to `261` rejects a missing nonlocal server
+rather than launching a replacement:
+
+```cpp
+// client/adb_client.cpp, comparable checked source
+bool local = is_local_socket_spec(__adb_server_socket_spec);
+if (fd == -2 && !local) {
+    fprintf(stderr, "* cannot start server on remote host\n");
+    return false;
+}
+```
+
+An actual disposable 2 GiB/2 CPU control first started a default local
+server on unused port `5049`,
+observed `daemon started successfully`,
+and killed it.
+The explicit `-H 127.0.0.1 -P 5049 get-state` negative then returned:
+
+```text
+# Installed ADB diagnostic after the positive server was stopped.
+* cannot start server on remote host
+error: cannot connect to daemon at tcp:127.0.0.1:5049: failed to connect to '127.0.0.1:5049': Connection refused
+```
+
+It did not print a daemon-start success.
+This verifies the missing-server boundary in that control,
+not every ADB lifecycle condition.
+The initial help guard inspected stdout alone and was corrected to include
+stderr;
+that rejected probe was a harness mistake,
+not evidence that the flags were absent.
+The numeric-loopback connection stays inside the entered namespace;
+ADB's word `remote` describes its startup classification.
+The tradeoff is intentional:
+a missing server must be restarted by its bounded owner,
+not silently spawned by an outside client.
+No third-party source was changed and no upstream defect is claimed.
+
 ## What does not work
 
 - Host `adb emu kill` with the container's console port visible through
