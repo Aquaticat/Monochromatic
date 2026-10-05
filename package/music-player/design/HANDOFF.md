@@ -12,6 +12,95 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
+## Handoff: Settings withdrawn, template editor round open (2026-10-05)
+
+Purpose:
+tell the next session what changed after the two-row Settings publication,
+what the human decided,
+and what is unfinished.
+This section is newer than `Handoff: two-row Settings publication complete (2026-10-05)`.
+
+### What the human decided
+
+- D86:
+  prefix stripping and resume are always on and are not settings.
+  The published two-row Settings study is withdrawn and kept as a record.
+- D87:
+  the Settings page stays and is empty.
+  No study of the empty page is built.
+- D88:
+  nothing is locked by hash.
+  Page,
+  template,
+  builder,
+  test,
+  manifest and report digests are gone from the published review records.
+- D89:
+  the template language and editor follow KWGT with stated omissions.
+  `doc/planning/music-player-template-editor.md` holds the observations,
+  the kept and omitted features,
+  and the entries still open.
+
+### Asked of the human and not yet answered
+
+- Whether D88 also removes the builders' two remaining digest checks:
+  each embedded screenshot against its manifest digest,
+  and the manifest's APK digest against a value written in the builder.
+  The agent recommended removing both.
+- Whether the entries under `Still open` in the template-editor note are the
+  human's to pick or the agent's.
+  Absent an answer they become built variants in the editor study.
+
+### Unfinished
+
+The first-run rebuild has no captures.
+The prototype copy is corrected (prototype commit `61e2cf776`,
+APK SHA-256 `c6d6e9b38faee5895881b87cf055343d9904f4ab4d9b765aeecfdbd10f68521b`),
+and its fixture tests pass.
+The eighth emulator visit ran twice and kept nothing:
+under a host load between 50 and 100 the system raised
+`Pixel Launcher isn't responding` over the study each time,
+and answering `Wait` did not clear it within four attempts per scene.
+The capture refused correctly.
+`questions/first-run-access.html` therefore still shows the withdrawn sentence.
+
+The withdrawn Settings viewer rebuilt and validated unchanged.
+Its consumer test was started and its result was not read;
+its browser check was not rerun after the withdrawal notice,
+and its review record still describes the page before the notice.
+`README.md` and `evidence/settings-pane-boundaries.md` still present the
+two-row study as current.
+
+The editor study is not started.
+Production `Track` holds only `uri` and `displayPath`;
+where the row gets duration and true peak was not yet traced,
+and the field inventory must come from what the app has.
+
+### For the next emulator visit
+
+- Build one debug APK holding both the first-run host and the new editor host,
+  and capture both in one boot.
+- The first reading of `font_scale` must be `1.0`.
+  The sixth visit's crash recovery left `2.0` on disk,
+  and the seventh and eighth visits recorded `2.0` as their baseline.
+  The eighth visit restored to the first visit's baseline and now asks the
+  guest to write pending data before the console kill.
+  Whether that persists is unproven until a boot reads it.
+- `podman` answered `database is locked` while other work held its database,
+  which cost the eighth visit its automatic restoration.
+  `restore-stop-fresh-fold.ts` now finds the container's first process from
+  the process list when `podman` does not answer,
+  and `fold-direct.ts` reaches the guest the same way.
+- `run-settings-pane-visit.ts resume <stage>` runs a stage on a guest that is
+  already bootstrapped in the same boot.
+- The driver's leftover-emulator check now includes the study's ports.
+- Hiding system error dialogs through the `hide_error_dialogs` global setting
+  is an untested idea for the launcher dialog,
+  not a verified remedy.
+- The scratch publishers for review records still write page digests,
+  and `verify-first-run-final-documents.ts` still fails on a digest mismatch.
+  Write the next publication without either.
+
 ## Handoff: two-row Settings publication complete (2026-10-05)
 
 Purpose:
