@@ -44,8 +44,18 @@ fn query_prefix_and_trimming_follow_the_reference_order() {
 /// JavaScript trims the byte-order mark but retains NEXT LINE, unlike Rust's default whitespace predicate.
 #[test]
 fn query_trimming_retains_javascript_whitespace_semantics() {
-    assert_eq!(SearchInput::parse("\u{feff}needle\u{feff}").expect("BOM-padded input").query, "needle");
-    assert_eq!(SearchInput::parse("\u{0085}").expect("NEXT LINE remains a pattern").query, "\u{0085}");
+    assert_eq!(
+        SearchInput::parse("\u{feff}needle\u{feff}")
+            .expect("BOM-padded input")
+            .query,
+        "needle"
+    );
+    assert_eq!(
+        SearchInput::parse("\u{0085}")
+            .expect("NEXT LINE remains a pattern")
+            .query,
+        "\u{0085}"
+    );
 }
 
 /// The second release must precede the 400ms boundary; successful gestures reset the pair.

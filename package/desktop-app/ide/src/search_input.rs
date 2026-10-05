@@ -29,7 +29,10 @@ impl SearchInput {
     pub fn parse(raw: &str) -> Option<Self> {
         let content_only = raw.starts_with('%');
         // Borrow the stripped view when a percent prefix exists; otherwise keep the original raw input.
-        let query = raw.strip_prefix('%').unwrap_or(raw).trim_matches(input_space);
+        let query = raw
+            .strip_prefix('%')
+            .unwrap_or(raw)
+            .trim_matches(input_space);
         if query.is_empty() {
             return None;
         }

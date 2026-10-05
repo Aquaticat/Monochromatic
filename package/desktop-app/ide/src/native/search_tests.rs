@@ -156,6 +156,30 @@ fn native_search_orders_results_filters_contents_and_reveals_source_lines() {
     reader.window.hide().expect("close search reader");
 }
 
+/// An asynchronous open and a later same-file request must not move keyboard focus behind the open overlay.
+#[test]
+fn pending_file_open_does_not_steal_search_input_focus() {
+    let fixture = tempfile::tempdir().expect("disposable pending-open project");
+    fs::write(fixture.path().join("pending.txt"), "pending source").expect("source fixture");
+    let reader = reader(fixture.path());
+    wait_until(|| return row(&reader.window, "pending.txt").is_some());
+    let target = row(&reader.window, "pending.txt").expect("pending source row");
+    reader.window.invoke_tree_activate(target);
+    open(&reader.window);
+    assert!(!reader.window.get_source_available(), "control requires the source reply to remain pending until after overlay activation");
+    wait_until(|| return reader.window.get_source_text() == "pending source");
+    reader.window.window().dispatch_event(WindowEvent::KeyPressed { text: "n".into() });
+    reader.window.window().dispatch_event(WindowEvent::KeyReleased { text: "n".into() });
+    assert_eq!(reader.window.get_search_query(), "n", "asynchronous source install stole query focus");
+    reader.window.invoke_tree_activate(row(&reader.window, "pending.txt").expect("current file row"));
+    reader.window.window().dispatch_event(WindowEvent::KeyPressed { text: "e".into() });
+    reader.window.window().dispatch_event(WindowEvent::KeyReleased { text: "e".into() });
+    assert_eq!(reader.window.get_search_query(), "ne", "same-file request stole query focus");
+    assert_eq!(reader.window.get_source_text(), "pending source");
+    reader.window.invoke_search_dismiss();
+    reader.window.hide().expect("close pending-open reader");
+}
+
 /// Tree-selected scope stays fixed during a query, and closing invalidates late result publication.
 #[test]
 fn native_search_scopes_to_tree_directory_and_close_clears_pending_results() {

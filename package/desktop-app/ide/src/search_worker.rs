@@ -195,6 +195,11 @@ impl SearchWorker {
     }
 }
 
+/// In-memory channel controls make stale-reply rejection independent of child execution timing.
+#[cfg(test)]
+#[path = "search_worker_tests.rs"]
+mod tests;
+
 /// Cancellation wakes async pipe reads even if ripgrep has produced no records.
 impl Drop for SearchWorker {
     /// Stop child work before closing input and joining the worker thread.

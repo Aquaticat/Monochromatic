@@ -56,6 +56,9 @@ mod navigation_tests;
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
+/// Replacement search queries cannot redirect an in-progress result click.
+#[cfg(test)]
+mod search_pointer_tests;
 /// Combined search exercises native key capture, real ripgrep, scope, and source-line navigation.
 #[cfg(test)]
 mod search_tests;
