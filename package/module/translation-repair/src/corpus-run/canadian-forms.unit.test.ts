@@ -461,17 +461,17 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES a date whose year is too short and one whose sentence names no year, and SETS OFF the '
-        + 'year on both sides where the sentence runs on',
+      name: 'LEAVES a leading date whose year is too short and one whose sentence names no year, and SETS '
+        + 'OFF the year on both sides where the sentence runs on',
       fn: async () => {
         expect([
           rewritten({ text: 'On 3 May 20, the cat napped.', },),
-          rewritten({ text: 'The cat napped on May 3 by the window.', },),
-          rewritten({ text: 'The cat was born on May 3, 2026 in a box.', },),
+          rewritten({ text: 'May 3 by the window, the cat napped.', },),
+          rewritten({ text: 'May 3, 2026 in a box, the cat was born.', },),
         ],).toEqual([
           'On May 3 20, the cat napped.',
-          'The cat napped on May 3 by the window.',
-          'The cat was born on May 3, 2026, in a box.',
+          'May 3 by the window, the cat napped.',
+          'May 3, 2026, in a box, the cat was born.',
         ],);
       },
     },),
