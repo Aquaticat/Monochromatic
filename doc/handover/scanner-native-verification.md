@@ -899,6 +899,258 @@ The unviable mutants are compiler rejections:
 and `scan_path`,
 and `` `||` operators are not supported in let chain conditions `` for `logical_path`.
 
+### Windows virtual machine and bridges
+
+The `mvm` MCP tools still cannot reach libvirt on this host,
+so the run used the scratch bridges of `Host bridges` again,
+adapted in `/home/user/temp/agent/scanner-windows-baseline-20261005/`:
+
+- The `virsh` and `qemu-img` shims ran the virt-manager Flatpak's tools,
+  first on `PATH` for the `mvm` CLI only.
+- The session daemon was started explicitly with
+  `flatpak run --command=virtqemud org.virt_manager.virt-manager --verbose`,
+  in the background with both streams redirected to a log file rather than a pipe.
+  A following `virsh list --all` through the shim returned at once.
+- `mvm --verbose --backend libvirt create --image windows wbase-20261005` created the overlay disk
+  from the cached template and defined the domain,
+  then failed at start with `Unable to find a satisfying virtiofsd`, as before.
+  The domain was undefined and redefined from a copy of the generated XML
+  without its `filesystem` and `memoryBacking` elements,
+  then started.
+- Bounds: 4 virtual CPUs,
+  8192 MiB of memory,
+  and a 40 GiB qcow2 overlay over `template-windows.qcow2`,
+  user-mode networking only.
+  The template's SHA-256 before the run was
+  `0ff984dc6b93c3b4577d0836bae5cf76b1b905e4a7ceecce16ee066e23c40cb9`.
+- The guest reported `License Status: Notification` with reason `0xC004F00F`.
+  `slmgr.vbs /rearm` ran on the overlay only,
+  followed by a reboot;
+  afterwards `slmgr.vbs /xpr` reported that time-based activation expires on 2027-04-03.
+- Files reached the guest from a scratch Node server bound to host loopback port 18432,
+  which the guest reaches at `10.0.2.2`.
+  It serves only the run's private `serve/` directory,
+  answers GET only,
+  and refuses traversal outside that directory.
+  The guest verified every download's SHA-256 before use.
+
+`mvm exec` proved unreliable under guest load.
+While the guest extracted MinGW-w64,
+one status poll failed with
+`error: guest agent command timed out: guest agent didn't respond to command within '5' seconds`,
+and `mvm exec` exited `1`.
+The guest command itself completed:
+`guest-exec-status` for the same guest process later reported exit `0` and the verified archive hash.
+The run therefore drives the guest agent directly
+(`guest-exec` and `guest-exec-status` through the `virsh` shim,
+with a 60-second agent timeout and retried polls)
+instead of `mvm exec`.
+
+The guest is the template's Windows Server 2025 Standard Evaluation,
+version `10.0.26100.1742`,
+with the earlier run's toolchain:
+`rustc 1.97.0 (2d8144b78 2026-07-07)` and `cargo 1.97.0` for host `x86_64-pc-windows-gnu`,
+MinGit `2.56.0.windows.1`,
+and WinLibs MinGW-w64 with GCC `16.2.0` and binutils `2.47`.
+The MinGit and MinGW-w64 archives were checked against the hashes the earlier run recorded;
+`rustup-init.exe` hashed to
+`6d5b5709addc0122c916d8c810da8d8a7b086a5d64fa805ef404d506392aadc8`,
+the value the earlier run logged.
+Commands run as `nt authority\system`;
+the temporary directory is `C:\WINDOWS\SystemTemp\`.
+
+### Whole Windows suite before triage
+
+Snapshot `s1` holds the scanner and engine compiled inputs at `3b85b4269`
+plus the tracked `forbidden-strings.append.txt`:
+128 files,
+source hash `14b251e8895d22367db75404df8b04d5841a1a122bfa78f31975e6be032a2a20`,
+archive hash `1cef886be8041f2025f7257124e708bf63bccd0c68686715586a35b78196ca2e`,
+with no uncommitted change under those paths.
+The command was
+`cargo test --locked --all-features --all-targets --no-fail-fast -- --test-threads=1`,
+with no `--skip` filter.
+
+It exited `101`.
+Every target compiled,
+including `tests/integration.rs` for the first time on Windows:
+
+- Library:
+  174 passed,
+  5 failed.
+- `src/main.rs`:
+  4 passed.
+- `tests/embedding.rs`:
+  2 passed.
+- `tests/embedding_warnings.rs`:
+  1 passed,
+  1 failed.
+- `tests/integration.rs`:
+  39 passed,
+  1 failed.
+- `tests/path_names.rs`:
+  8 passed.
+
+No test was ignored or filtered out,
+and both shipped-corpus conformance tests passed.
+`windows_device_namespace_prefix_is_not_name_segment` compiled and passed,
+`windows_volume_prefix_is_not_name_segment` passed,
+and the new `windows_locked_file_read_error_surfaces_as_hit` passed.
+The failures were the six recorded by the earlier run
+and `cache_write_failure_keeps_scan_correct` in `tests/integration.rs`,
+which had never compiled there.
+
+The library count differs from Linux's 180 by the platform-gated tests:
+three `#[cfg(unix)]` tests are absent on Windows
+(`symlink_name_is_not_replaced_by_target`,
+`publication_enforces_private_modes`,
+and `native_path_bytes_are_not_replaced_before_matching`),
+and the two `#[cfg(windows)]` prefix tests are absent on Linux.
+Each platform compiles one of the two read-error integration tests.
+
+### Windows probe
+
+A disposable probe,
+appended to a copy of `src/path_scan_tests.rs` in the guest and removed afterwards,
+printed the Windows behavior each failure depends on.
+The restored file's hash was checked.
+
+- `Path::is_absolute` is false for `/private/cache`,
+  `/xdg/cache`,
+  `/home/user`,
+  and `/Users/alice`,
+  each of which has a root but no prefix.
+- `PathBuf::from("/cache")` joined with three names renders
+  `/cache\forbidden-strings\v0\rules.bin`.
+- `canonicalize` of the temporary directory returns `\\?\C:\Windows\SystemTemp`:
+  a verbatim prefix,
+  and `Windows` where the input spells `WINDOWS`.
+  `current_dir` returns the non-verbatim `C:\w\src\s1\package\cli\forbidden-strings`.
+- `logical_path` relativizes a file to `nested\test.txt`
+  when file and root are both verbatim or both non-verbatim.
+  It keeps the full input when one is verbatim and the other is not,
+  and when the root differs only in letter case.
+- `fs::metadata` and `fs::read` of a path under a regular file fail with `NotFound`,
+  raw OS error `3`,
+  "The system cannot find the path specified."
+  A path under an absent directory fails with the same kind and code.
+  `create_dir_all` through the regular file fails with `AlreadyExists`,
+  raw OS error `183`.
+
+The same probe printed every pathname form of `Windows observation`
+and the five navigation-spelled forms of `Confirmed mechanism`;
+`Prefix-fix confirmation` records those lines.
+
+### Triage of the Windows baseline failures
+
+- `runtime_cache::path::tests::absolute_override_wins`,
+  `native_platform_roots_are_derived`,
+  and `xdg_resolution_follows_base_directory_spec`.
+  Cause:
+  `platform_absolute_path` in `src/runtime_cache/path.rs` validates the XDG and macOS branches
+  with the host's `Path::is_absolute`,
+  and Windows rules make the tests' Unix paths relative,
+  so those branches return `InvalidOverride` or `Unavailable`.
+  `current_platform` selects the platform with `cfg!`,
+  so a Windows build never reaches those branches.
+  Classification:
+  tests that assume Unix host path rules;
+  not a production defect.
+  Fix in `fe805727c`:
+  the Unix-target assertions moved,
+  unchanged,
+  into `#[cfg(unix)]` tests
+  (`absolute_unix_override_wins`,
+  `xdg_resolution_follows_base_directory_spec`,
+  and `macos_native_root_is_derived`),
+  and the Windows-target assertions run on every host
+  (`absolute_windows_override_wins` and `windows_native_root_is_derived`).
+  The function's rustdoc,
+  "Validates path with selected target semantics",
+  is accurate only on Unix hosts;
+  `Decisions left` proposes a byte-explicit Unix branch,
+  not applied because no Windows defect requires it.
+- `runtime_cache::path::tests::source_bytes_select_content_addressed_path`.
+  Cause:
+  the test compared the rendered artifact path with a `/`-separated string,
+  and Windows renders the joined components with `\`.
+  Classification:
+  test assumes the Unix separator.
+  Fix in `fe805727c`:
+  the test strips the root and asserts the exact component sequence below it:
+  `forbidden-strings`,
+  `v` plus the package version,
+  the compile target's operating system and architecture,
+  a 64-character lowercase hexadecimal digest,
+  and `rules.bin`.
+  The version and platform are spelled independently of the helpers that build them.
+  This asserts more on Linux than the two string-prefix checks it replaces.
+- `path_scan::tests::absolute_path_under_root_uses_relative_name`.
+  Cause:
+  the test built its root with `canonicalize` but its file from the plain temporary path;
+  on Windows the canonical root is verbatim and differently cased,
+  so `strip_prefix` fails and `logical_path` returns the input.
+  The expected value also assumed `/` in the relative name,
+  while Windows returns `nested\test.txt`.
+  Classification:
+  test assumes Unix `canonicalize` and separators.
+  Production takes its root from `current_dir`,
+  which is non-verbatim on Windows.
+  Fix in `fe805727c`:
+  each of the canonical and the plain root is paired with a file path built from it,
+  the expected name is `nested` joined with `test.txt` in the host's spelling,
+  and the pathname scan of that name must display `nested/test.txt` on both platforms.
+  The residual,
+  recorded but not changed:
+  a verbatim argument under a non-verbatim root,
+  or a root differing only in letter case,
+  is not relativized.
+  Every supplied segment is then still scanned and masked,
+  so it lengthens the display but does not skip a name.
+- `public_warning_paths_preserve_scan_results_without_emitting_terminal_json` (`blocked` mode),
+  and `cache_write_failure_keeps_scan_correct`.
+  Cause:
+  both block the cache by making the cache root a regular file.
+  `read_artifact` in `src/runtime_cache/publish.rs` maps only `NotFound` to `Missing`.
+  Linux reports `ENOTDIR` for a path under a regular file,
+  which becomes `unreadable`;
+  Windows reports error `3`,
+  `NotFound`,
+  exactly as for an absent directory,
+  which becomes `missing`.
+  Both platforms then report `write-failed` and keep the correct scan result.
+  Classification:
+  needs the human's decision,
+  because the reason tokens are a cross-package protocol
+  (`package/git-policy/forbidden-strings/src/cache-warning.ts` enumerates them)
+  and no documented reason clearly owns a blocked root:
+  `Missing` is "Expected content-addressed artifact did not exist",
+  `Unreadable` is "Existing artifact could not be read completely",
+  and `CacheRootUnavailable` is "Per-user cache root could not be resolved or used".
+  Neither source nor tests were changed for these two;
+  `Decisions left` lists the options.
+
+### Prefix-fix confirmation
+
+At `s1`,
+which contains `833483171`,
+the probe printed `name:1` with the name masked for all 18 forms:
+the 12 forms of `Windows observation`,
+`\\.\pipe\NAME.with.dots`,
+and the five inputs of `Confirmed mechanism`.
+For example `\\.\COM1\VAULTTOKEN_LONG\clean.txt` now displays `//./COM1/[REDACTED]/clean.txt`
+with finding `//./COM1/[REDACTED]/clean.txt:name:1 rule=0`,
+and `\\.\\VAULTTOKEN_LONG`,
+whose native prefix is `\\.\` (`DeviceNS("")`, one part),
+displays `//.//[REDACTED]`.
+For each probed form that `src/path_scan_prefix_tests.rs` also covers,
+the raw native prefix the probe printed equals the bytes that fixture supplies.
+Three fixture forms were not probed:
+`\\.\device.with.dots`,
+`//.\COM1`,
+and `\\?/C:`.
+`windows_device_namespace_prefix_is_not_name_segment` compiled and passed in the whole-suite run.
+
 ## Matcher-state audit
 
 Reuse is not inferred solely from `&self`.
