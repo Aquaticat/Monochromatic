@@ -56,7 +56,7 @@ Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
 
 Drag the divider between the tree and the source to resize the tree.
 The width starts at 256 px,
-stays between 160 px and the window width minus the divider and a 240 px source column,
+stays between 160 px and the window width minus the divider's 1 px line and a 240 px source column,
 and lasts for the session only.
 A window too narrow for the chosen width shows the tree narrower,
 down to 160 px,
@@ -77,20 +77,95 @@ and set-value actions;
 Slint 1.18.1 has no splitter or separator role.
 A pointer press never takes keyboard focus.
 
-The idle divider is a faint 1 px line.
-Hover shows the column-resize cursor and a 3 px line in stronger ink;
-a drag keeps the 3 px line in full ink;
-keyboard focus adds a boundary around the whole divider.
+The divider is a 1 px line with no strip beside it.
+Each state is marked by more than color:
+
+- at rest,
+  one faint column;
+- under the pointer,
+  the column-resize cursor and three columns in stronger ink;
+- during a drag,
+  the cursor and three columns in full ink;
+- with keyboard focus,
+  three columns in the accent color
+  and a 5 px by 48 px handle in the same color in the middle of the line.
 
 ### Divider hit area
 
-The divider is its own 48 px layout cell between the tree and the source,
-and its pointer area is exactly that cell.
-It never overlaps tree rows,
-the tree scrollbar,
-or source text,
-so the last tree pixel and the first source pixel keep their own clicks.
-The cost is 47 px of permanent spacing beside the 1 px line.
+The divider's layout cell is its 1 px line,
+so the tree and the source column meet at it.
+Its pointer zone is 5 px wide over the whole window height:
+the line's column and two columns on each side.
+At sidebar width `W` those are the tree's last columns `W-2` and `W-1`,
+the line at `W`,
+and the source column's first columns `W+1` and `W+2`.
+A press there starts a drag and does nothing else.
+
+The zone is narrower than the 48 px minimum that every other interactive element of this application keeps.
+The user decided this on 2026-10-05 for this one element:
+the application runs on desktops only,
+every desktop has a pointer and a keyboard,
+dragging the divider is rare,
+and the width is also adjustable by keyboard.
+The exception does not extend to any other element.
+
+What the zone covers,
+measured in `ui/tree.slint`,
+`ui/app.slint`,
+and the toolkit's fluent scroll bar (Slint 1.18.1 `widgets/fluent/scrollview.slint`):
+
+- Tree columns `W-2` and `W-1`.
+  Rows span the whole tree width,
+  and their text ends 12 px before the edge,
+  so a row loses two columns of padding as a click target.
+  When the tree overflows,
+  its 14 px scroll bar lies over columns `W-14` to `W-1`.
+  The thumb is drawn in columns `W-6` and `W-5`,
+  or `W-10` to `W-5` under the pointer,
+  and the arrow buttons take columns `W-11` to `W-4`,
+  so the zone covers none of them.
+  The bar scrolls by a drag that starts anywhere on its width;
+  such a drag can no longer start on its last two columns.
+- Source columns `W+1` and `W+2`.
+  They are the first two of the 56 px line-number gutter.
+  Line numbers are right-aligned and end 12 px before the text,
+  and a gutter click puts the caret at the start of its line from any gutter column.
+  Source text and selection rectangles start at `W+57`.
+  Above and under the source view the zone lies in the 12 px padding of the file label and of the find bar.
+
+### Pointer zone precedent
+
+The zone's width follows desktop toolkits,
+read from their sources on 2026-10-05:
+
+- Qt gives a splitter handle narrower than 4 px a grab area of 4 or 5 px:
+  `QSplitterHandle::resizeEvent` adds `(5 - handleWidth) / 2` px of margin on each side,
+  5 px for a 1 px handle
+  (`qt/qtbase` at `f127f11f`, `src/widgets/widgets/qsplitter.cpp` lines 208 to 221).
+  KDE's Breeze style sets the handle width to 1 px
+  (`KDE/breeze` at `fab6402a`, `kstyle/breezemetrics.h` line 169),
+  so Breeze applications show a 1 px line with that 5 px grab area.
+  Once the pointer is on a handle,
+  Breeze also places a 24 px square proxy under it that keeps the drag reachable
+  (`kstyle/breezesplitterproxy.cpp` line 312,
+  `SplitterProxyWidth` 12 in `kstyle/breeze.kcfg`).
+  Qt's Fusion style uses a 4 px handle
+  (`src/widgets/styles/qfusionstyle.cpp` lines 2630 to 2632).
+- Visual Studio Code's sash is 4 px wide and centered on the boundary
+  (`microsoft/vscode` at `729f257f`,
+  `workbench.sash.size` default 4 in `src/vs/workbench/contrib/sash/browser/sash.contribution.ts` lines 22 to 26,
+  `src/vs/base/browser/ui/sash/sash.ts` lines 147 and 667).
+- GTK 4 extends a paned separator's pointer area by 6 px on every side unless `wide-handle` is set
+  (`GNOME/gtk` at `c2a232c4`, `gtk/gtkpaned.c` lines 131 and 297 to 310),
+  and libadwaita draws the separator 1 px wide
+  (`GNOME/libadwaita` at `19098711`, `src/stylesheet/widgets/_paned.scss` lines 2 to 4),
+  which makes 13 px.
+
+Qt's 5 px for a 1 px handle is used.
+Visual Studio Code's 4 px cannot be centered on a 1 px line.
+GTK's 6 px on the tree side would cover the scroll bar's thumb in columns `W-6` and `W-5`.
+Three columns on each side would still clear the thumb and the arrow buttons;
+four would cover the buttons' last column.
 
 ### Differences from editord
 
@@ -108,11 +183,16 @@ and keyboard adjustment.
 
 ### Sidebar checks
 
-`test:native` drives the divider with real pointer and key events,
-including clicks on the pixels on both sides of it at the default,
+`test:native` drives the divider with real pointer and key events:
+a drag from each of the zone's five columns and from the first column on each side of it,
+clicks on the zone and on the pixels beside it at the default,
 narrowest,
-and widest widths.
-`inspect:sidebar-guards` removes each width bound in a disposable copy
+and widest widths,
+a tree scroll-bar drag from the last column left of the zone,
+and the rendered columns of every state.
+`inspect:sidebar-guards` removes each width bound,
+each edge of the zone,
+and each keyboard-focus mark in a disposable copy
 and checks that its named test fails.
 
 ## Combined search

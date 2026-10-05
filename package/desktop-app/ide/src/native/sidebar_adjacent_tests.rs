@@ -6,8 +6,14 @@ use super::sidebar_tests::{
     DIVIDER, HEADER, MINIMUM, REACH, SOURCE_MINIMUM, click, drag_to, fixture, motion, press,
     release, settle,
 };
-/// Window ownership for closing the fixture, and the left pointer button for a scrollbar drag.
-use slint::{ComponentHandle, platform::PointerEventButton};
+/// Bounded waiting while the toolkit eases a wheel scroll, shared with the find tests.
+use super::find_tests::eventually;
+/// Window ownership for closing the fixture, the left pointer button for a scrollbar drag, and the
+/// wheel event a windowing backend reports.
+use slint::{
+    ComponentHandle, LogicalPosition,
+    platform::{PointerEventButton, WindowEvent},
+};
 
 /// The last tree pixel left of the zone activates its row, a click on any of the zone's five columns does
 /// nothing, and the first source pixel right of the zone places the caret, at the default, narrowest, and
@@ -152,5 +158,55 @@ fn tree_windowing_and_scrollbar_follow_the_sidebar_width() {
             );
         }
     }
+    window.hide().expect("close sidebar window");
+}
+
+/// A wheel turn over the zone's tree columns scrolls the tree, and over its source columns the source:
+/// the divider takes presses there, not the wheel.
+#[test]
+fn wheel_over_the_divider_zone_scrolls_what_lies_under_it() {
+    let shared = fixture(60);
+    let window = &shared.window;
+    let tree_before = window.get_tree_scroll_y();
+    // What: `WindowEvent::PointerScrolled { .. }` is one variant of the event union, built with named
+    // fields; a negative `delta_y` is a wheel turn toward the user, which moves content up.
+    // Why: The position is the zone's first column, which lies over the tree's last columns.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // window.dispatchEvent({ kind: 'wheel', position: { x: 254.5, y: 300 }, deltaX: 0, deltaY: -96 });
+    // ```
+    window.window().dispatch_event(WindowEvent::PointerScrolled {
+        position: LogicalPosition::new(256.0 - REACH + 0.5, 300.0),
+        delta_x: 0.0,
+        delta_y: -96.0,
+    });
+    // What: `|| return ...` is a zero-argument arrow function that `eventually` calls until it holds.
+    // Why: The toolkit eases a wheel scroll over several frames.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // eventually(message, () => window.treeScrollY < treeBefore);
+    // ```
+    eventually(
+        "a wheel turn over the zone's tree columns did not scroll the tree",
+        || return window.get_tree_scroll_y() < tree_before,
+    );
+    let source_before = window.get_scroll_y();
+    // The zone's last column lies over the source column's first columns.
+    window.window().dispatch_event(WindowEvent::PointerScrolled {
+        position: LogicalPosition::new(256.0 + DIVIDER + REACH - 0.5, 300.0),
+        delta_x: 0.0,
+        delta_y: -96.0,
+    });
+    eventually(
+        "a wheel turn over the zone's source columns did not scroll the source",
+        || return window.get_scroll_y() < source_before,
+    );
+    assert_eq!(
+        window.get_sidebar_width(),
+        256.0,
+        "a wheel turn over the zone resized the sidebar"
+    );
     window.hide().expect("close sidebar window");
 }

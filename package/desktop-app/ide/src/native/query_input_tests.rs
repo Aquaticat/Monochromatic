@@ -171,6 +171,13 @@ fn find_box_context_menu_runs_each_entry() {
         window.get_find_has_focus(),
         "closing the menu did not return keyboard focus to the find box"
     );
+    // The toolkit's undo history holds a replaced selection as two steps: its removal and the insertion.
+    menu(window, UNDO);
+    assert_eq!(
+        window.get_find_query(),
+        "",
+        "the menu's Undo did not take back the typed character"
+    );
     menu(window, UNDO);
     assert_eq!(
         window.get_find_query(),
@@ -178,11 +185,13 @@ fn find_box_context_menu_runs_each_entry() {
         "the menu's Undo did not restore the replaced find text"
     );
     menu(window, REDO);
+    menu(window, REDO);
     assert_eq!(
         window.get_find_query(),
         "x",
         "the menu's Redo did not repeat the replacement"
     );
+    menu(window, UNDO);
     menu(window, UNDO);
     menu(window, SELECT_ALL);
     menu(window, COPY);

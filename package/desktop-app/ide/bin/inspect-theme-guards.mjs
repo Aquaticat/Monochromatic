@@ -36,6 +36,8 @@ const cases = [
   // Selected-text ink is chosen from the drawn fill; the palette's own ink is black in the dark scheme.
   { name: 'selected-ink-from-fill', file: 'src/native/render.rs', before: 'selected: legible_ink(\n            rgba(window.get_selection_fill().color()),\n            rgba(window.get_selected_foreground().color()),\n        ),', after: 'selected: rgba(window.get_selected_foreground().color()),', test: scheme, failure: 'dark: selected glyphs are not painted with the ink chosen from the selection fill' },
   // An ink that depends on the accent-tinted fill itself goes stale, because only a scheme flip repaints.
+  // Selected rows take the same chosen ink; the palette's own, their fallback, is black in the dark scheme.
+  { name: 'row-ink-from-fill', file: 'src/native/render.rs', before: '    window.set_selected_row_ink(slint::Brush::from(slint::Color::from_argb_u8(\n        colors.selected[3],\n        colors.selected[0],\n        colors.selected[1],\n        colors.selected[2],\n    )));\n', after: '', test: 'selected_rows_use_the_ink_chosen_from_the_fill_with_measured_contrast', failure: 'selected row text is not drawn in the ink chosen from the selection fill' },
   { name: 'accent-dependent-ink', file: 'src/native/render.rs', before: 'selected: legible_ink(\n            rgba(window.get_selection_fill().color()),\n            rgba(window.get_selected_foreground().color()),\n        ),', after: 'selected: rgba(window.get_selection_fill().color()),', test: accent, failure: stale },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.

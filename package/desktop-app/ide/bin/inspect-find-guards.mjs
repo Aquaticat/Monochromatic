@@ -34,6 +34,8 @@ const replaceOne = (text, before, after, occurrence = 0) => {
   return text.slice(0, start) + after + text.slice(start + before.length);
 };
 const equality = 'assertion `left == right` failed';
+const clearCell = 'find_clear_cell_is_48px_and_every_part_of_it_clears';
+const clearEdges = 'find_clear_cell_ends_at_its_edges_and_hides_without_focus_or_text';
 const cases = [
   // Reply identity: each component of the three-part tag is removed separately.
   { name: 'identity-file', file: 'src/find_worker.rs', before: 'return self.file == wanted.file', after: 'return true', test: 'reply_for_another_file_generation_is_rejected', failure: 'a reply for another file generation was accepted' },
@@ -70,6 +72,13 @@ const cases = [
   { name: 'find-input-focus', file: 'src/native/navigation/open.rs', before: 'if window.get_find_has_focus() {', after: 'if false {', native: true, test: 'native_find_recomputes_for_a_switched_file_and_keeps_input_focus', failure: 'a file open moved keyboard focus out of the find input' },
   { name: 'no-file-ignored', file: 'src/native/find/session.rs', before: 'if !window.get_source_available() {', after: 'if false {', native: true, test: 'native_find_reports_refused_text_and_clears_for_empty_text', failure: 'Ctrl+F opened the find bar without a displayed file' },
   { name: 'search-overlay-modal', file: 'src/native/find/session.rs', before: 'if window.get_search_open() {', after: 'if false {', native: true, test: 'native_find_and_search_overlay_close_topmost_first', failure: 'Ctrl+F took keyboard focus from the modal search overlay' },
+  // The find box's clear control: a 48px cell that is a click target everywhere, reports the edit,
+  // and is shown only with text and keyboard focus.
+  { name: 'clear-cell-size', file: 'ui/query-input.slint', before: 'private property <length> clear-size: 48px;', after: 'private property <length> clear-size: 16px;', native: true, test: clearCell, failure: 'below 48 by 48' },
+  { name: 'clear-target-fills-cell', file: 'ui/query-input.slint', before: 'clear-touch := TouchArea {\n                    width: 100%;\n                    height: 100%;', after: 'clear-touch := TouchArea {\n                    x: 16px;\n                    y: 16px;\n                    width: 16px;\n                    height: 16px;', native: true, test: clearCell, failure: 'down the clear cell did not clear the find text' },
+  { name: 'clear-reports-edit', file: 'ui/query-input.slint', before: '        root.edited("");\n', after: '', native: true, test: clearCell, failure: 'clearing did not update the find results' },
+  { name: 'clear-needs-text', file: 'ui/query-input.slint', before: 'root.text != "" && root.enabled && input.has-focus;', after: 'root.enabled && input.has-focus;', native: true, test: clearEdges, failure: 'the clear control is shown for empty find text' },
+  { name: 'clear-needs-focus', file: 'ui/query-input.slint', before: 'root.text != "" && root.enabled && input.has-focus;', after: 'root.text != "" && root.enabled;', native: true, test: clearEdges, failure: 'the clear control is shown without keyboard focus in the box' },
   { name: 'escape-topmost', file: 'ui/app.slint', before: 'root.find-open && !root.search-open {', after: 'root.find-open {', native: true, test: 'native_find_and_search_overlay_close_topmost_first', failure: 'Escape did not close the topmost search overlay' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
