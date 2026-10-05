@@ -6,6 +6,8 @@
 //! // Check an independently counted fixture on every draw, then lint arbitrary UTF-8 in both modes.
 //! ```
 
+use monochromatic_lint::diagnostic::{Diagnostic, Severity, Span};
+use monochromatic_lint::edits::{Fix, apply_fixes};
 /// Import production rule entry points rather than duplicate their recognition logic.
 use monochromatic_lint::markdown_code::fenced_code_language;
 use monochromatic_lint::markdown_commands::commands_show_output;
@@ -16,8 +18,6 @@ use monochromatic_lint::markdown_links::{link_image_style, no_bare_urls};
 use monochromatic_lint::markdown_punctuation::no_trailing_punctuation;
 /// Import the real parser, source spans and atomic fix applier.
 use monochromatic_lint::markdown_source::MarkdownSource;
-use monochromatic_lint::diagnostic::{Diagnostic, Severity, Span};
-use monochromatic_lint::edits::{Fix, apply_fixes};
 
 /// What: A plain named function pointer; no captured closure or per-input executable configuration.
 /// Why: The pure rules share one parse while the fence rule receives its explicit rustdoc flag.
@@ -54,8 +54,15 @@ const CASES: &[(&str, usize)] = &[
 fn findings(context: &MarkdownSource) -> Vec<Diagnostic> {
     // The fixed array borrows no captured state; Vec collects the unknown number of actual findings.
     let checkers: [Checker; 9] = [
-        heading_increment, single_h1, no_emphasis_as_heading, no_bare_urls, link_image_style,
-        commands_show_output, no_duplicate_heading, no_trailing_punctuation, reference_definitions,
+        heading_increment,
+        single_h1,
+        no_emphasis_as_heading,
+        no_bare_urls,
+        link_image_style,
+        commands_show_output,
+        no_duplicate_heading,
+        no_trailing_punctuation,
+        reference_definitions,
     ];
     let mut result: Vec<Diagnostic> = Vec::<Diagnostic>::new();
     for checker in checkers {
@@ -104,7 +111,10 @@ fn check_source(source: &str, mdx: bool) -> Option<usize> {
             assert!(MarkdownSource::new(String::from("fixed.md"), applied.source, mdx).is_ok());
         }
         Err(error) => {
-            assert_eq!(error.message, "Autofix would replace non-empty file with empty output; leaving file unchanged.");
+            assert_eq!(
+                error.message,
+                "Autofix would replace non-empty file with empty output; leaving file unchanged."
+            );
         }
     }
     // Some distinguishes a successfully checked clean input from a typed parser rejection.

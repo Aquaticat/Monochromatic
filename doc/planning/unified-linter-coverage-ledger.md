@@ -64,6 +64,33 @@ they are not incumbent parity work:
   Preserve `_` for unnameable function-item types.
   Do not mistake unresolved standalone snippet calls for verified annotation coverage.
 
+## Native implementation verification
+
+The active implementation record is
+[`cli-git-rust-implementation.md`](../handover/cli-git-rust-implementation.md).
+On 2026-10-04,
+CLI grammar,
+native literal/glob discovery,
+Rust dispatch,
+and JSONL/stdin-fix output routing passed their 121-test container suite and Clippy.
+
+Subsequent Markdown ports add commands-show-output,
+duplicate headings,
+trailing punctuation,
+and reference-definition use/uniqueness.
+The current recorded test gate passed 138 tests (`proc_02be`);
+Clippy then rejected late initialization in definition classification.
+That branch has been restructured without a suppression;
+its renewed gate and scoped mutation campaign are pending.
+A bare-CR output-bearing shell-example regression was caught and corrected before this test pass.
+
+The current full mutation campaign still covers the older semantic-session snapshot.
+Its surfaced fence-indentation and heading-depth survivors led to native offset controls,
+removal of redundant indentation adjustment,
+and explicit adjacent/equal-heading tests.
+No final mutation completion is claimed yet.
+The new Markdown/MDX ASAN target is also awaiting its first campaign result.
+
 ## Rust linter
 
 Packages:
