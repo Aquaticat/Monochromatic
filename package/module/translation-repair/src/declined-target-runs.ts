@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { AlignmentStep, } from './align-blocks-walk.ts';
 import type { DocumentNode, } from './document-node.ts';
 import { blockPairingToSteps, } from './pair-blocks-steps.ts';
@@ -179,22 +181,17 @@ export function declinedTargetBlocks(
   const insideRendering = blocksInsideRendering({ steps, },);
 
   return steps
-    .filter(function isDeclined(step,): boolean {
+    .filter(function isDeclined(step,): step is Extract<AlignmentStep, { readonly kind: 'target-only'; }> {
       return (step.kind === 'target-only')
         && (step.continuesPairing !== true)
         && (!claimed.has(step.targetIndex,))
         && (!insideRendering.has(step.targetIndex,));
     },)
     .flatMap(function toNode(step,): readonly DocumentNode[] {
-      /**
-       Block the step names, absent when the step indexes past the sequence.
-       */
-      const node = (step.kind === 'target-only')
-        ? targetNodes[step.targetIndex]
-        : undefined;
-      return (node === undefined)
-        ? []
-        : [ node, ];
+      // Block the step names; the isDeclined filter keeps only target-only
+      // steps and the alignment indexes this very node list, so the read is
+      // present.
+      return [nonNullishOrThrow(targetNodes[step.targetIndex],),];
     },);
 }
 

@@ -102,5 +102,17 @@ await describe({
         },),],).toEqual([],);
       },
     },),
+
+    it({
+      name: 'DECLINES NOTHING where the source side holds no block at all, so no pairing exists to leave a '
+        + 'block unclaimed',
+      fn: async () => {
+        expect([...declinedTargetIdsOfPairing({
+          pairs: [],
+          sourceNodes: [],
+          targetNodes: parseDocument({ text: 'A cat naps on the mat.', },).nodes,
+        },),],).toEqual([],);
+      },
+    },),
   ],
 },);
