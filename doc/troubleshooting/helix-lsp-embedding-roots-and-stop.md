@@ -246,4 +246,14 @@ Both behaviors are intended inside Helix. Recorded only so a future embedder-sup
 
 ## Evidence
 
-- Guard controls: see the result recorded in the hand-off report of the Language core leg.
+Measured on 2026-10-05 with
+`mise run //package/desktop-app/ide:inspect:language-guards "$CACHE" '' root-spelling,stop-tombstone`.
+Each control passed its unmodified baseline,
+failed with the mutation,
+and passed again after restoring
+(`~/temp/agent/ide-language-guard-uWmw4T/results.json`, scratch that can vanish):
+
+- `root-spelling` removed:
+  `rootUri` was `Null` where `"file:///tmp/.tmp9SuHqi/link/project"` was expected.
+- `stop-tombstone` removed:
+  the request after the crash answered `NoServer` where `Starting` was expected.
