@@ -510,6 +510,102 @@ and the `#[cfg(windows)]` test, which has never been compiled.
 A concurrent session's commit `8fdbbded9` (`test(desktop-app-ide): ...`) swept in the 17 pre-fix tests;
 the delegate posted a corrective commit comment on it rather than amending.
 
+**Native wrapper foundation**:
+complete on `main`,
+evidence in [`cli-git-native-foundation.md`](cli-git-native-foundation.md)
+(17 commits from `df25471a9` to `48a1b5756`).
+Delivered:
+the typed `cli-git.config.jsonc` schema and loader,
+real-Git resolution with self-exclusion,
+Unix `exec` forwarding verified byte for byte against Git 2.56.0,
+the child environment,
+JSONL `engine-failure` and `configuration-warning` events,
+the `git cli-git check|fix` grammar,
+retired trust commands that explain themselves,
+a bounded mutation runner,
+and the `package/git-policy/cli.fuzz` sidecar with three ASAN targets.
+The native executable stops every repository-changing command with exit 2,
+because policy execution does not exist yet;
+it is not installed and does not shadow `git`.
+The main session read the final gate evidence
+(`package/git-policy/cli/target/verification/native-dtC4QT`):
+tests and Clippy passed on image `16f09e939ecefa1a500520d1b4ed0d9745e1f373305101cbb02743dcb1fc212a`;
+the delegate reports 145 unit and 21 binary-level tests.
+Both ledger findings are acted on:
+every registry default equals the incumbent's `defaultSeverity`, pinned by a test,
+and `resolution::wrapper_never_selects_itself_or_a_copy_of_itself` drives the built binary through
+symlinks, hard links and byte copies earlier and later on `PATH`,
+with a planted guard removal that makes it fail.
+Mutation:
+the last full campaign (`native-mutation-3CvHMl`) had 513 mutants,
+429 caught,
+56 unviable,
+11 missed and 17 timeouts;
+one missed mutant was later killed by a 64 KiB bound control,
+8 of the remaining 10 are in `#[cfg(not(unix))]` code the Linux gate never compiles,
+and 2 are documented as equivalent.
+Fuzz smoke:
+975,367, 359,412 and 49,392 executions on the three targets with no crash.
+A flaky "Text file busy" fixture failure was diagnosed (another test thread forking while a script was open for writing)
+and fixed by writing fixtures through child processes:
+74 failures in 400 runs at 16 threads before, 0 after.
+
+Open to veto (detail in the foundation document):
+namespaced policy names;
+"option C" defaults, where the 4 policies that came from plugins are off when no `cli-git.config.jsonc` exists;
+a bare severity accepted for option-taking policies;
+the configuration root following `--git-dir` and `--work-tree`;
+a legacy `.ts` config beside JSONC reported on every configuration-loading command;
+symlinked configuration rejected and a 1 MiB size cap;
+retired trust commands exiting 0;
+exit 2 for every wrapper failure;
+the new `configuration-warning` event;
+the plugin and trust failure codes dropped.
+Dependency needs recorded, not solved:
+forwarding a signal from a waiting wrapper to its Git child needs signal handling the standard library lacks
+(`signal-hook` or `libc`);
+that is a technology choice for the transaction phase, where the wrapper waits instead of `exec`ing.
+Oxlint reports 2 errors (banned `spawnSync`, banned `try...finally`) and several warnings in
+`bin/test-native-container.mjs` and `bin/mutate-native-container.mjs`;
+the linter package's runner scripts share the pattern.
+Windows and macOS code paths were never compiled.
+
+**Native command parser and rule cores**:
+complete on branch `feat/cli-git-native-command-parser`,
+evidence in [`cli-git-native-command-parser.md`](cli-git-native-command-parser.md).
+It ports Git 2.56.0 `parse-options` tokenization,
+the facts of `commit`, `push`, `status`, `add`, `reset`, `clean`, `stash`, `config` and branch creation,
+and the pure cores of commit-only, atomic-push, status-hints, require-root and the index and sequencer checks,
+with no process spawning or filesystem access.
+Its gate passed 186 tests and Clippy.
+Real-Git oracles:
+2,591 argument lists against `git rev-parse --parseopt`,
+29 option tables against `--git-completion-helper-all`,
+and 625 `branch`, `checkout` and `switch` argument lists run against a fixture repository.
+Hand-planted mutations:
+114 in the first rounds with every survivor killed or its branch removed as unable to change an answer.
+Integrated on `main` at `7d103c174` and pushed:
+one merge commit `0a1959a3b` (the only conflict was the module list in `src/native/lib.rs`, resolved as the union),
+then `e23f6fa18` removed the duplicated escape-hatch module in favor of `escape_hatch.rs`
+and shared the identical test helpers `REAL_GIT` and `remove`.
+The merged tree passed the wrapper gate with 322 unit and 21 binary-level tests and Clippy
+(image tag `integrate-cli-git`, evidence `native-g7bnkQ`).
+Landing merged `main` in once more (`7d103c174`);
+the wrapper paths were verified byte-identical to the gated head before the fast-forward.
+Open questions it raised, with the main session's working answers (open to veto):
+
+- A parser `OptionError` means Git itself refuses the command:
+  forward it unchanged and let Git report the error, as the delegate recommends,
+  so the wrapper never invents a different diagnosis of an invalid command.
+- Require-root compares against the top level Git reports,
+  matching the foundation's choice that the configuration root follows `--git-dir` and `--work-tree`;
+  the incumbent's nearest-marker walk is recorded as the difference.
+- Branch-creation facts read option names and argument counts only,
+  so `--track=bogus` still counts as creation:
+  keep rejecting it, because Git refuses it anyway and the policy's job is the worktree-first rule.
+- Wrapper controls before the subcommand must be stripped from the global prefix before any rule runs;
+  the policy engine owns that.
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
