@@ -109,7 +109,13 @@ fn matching_rules(component: &[u8], loaded: &LoadedRules) -> Result<Vec<String>,
 pub(crate) fn scan_path_records(path: &Path, loaded: &LoadedRules) -> PathScanRecords {
     // Retain every non-separator native byte, including invalid UTF-8, until the matcher has inspected it.
     let normalized: Vec<u8> = normalized_path(path);
-    let mut remaining_prefix: usize = prefix_parts(path);
+    return scan_normalized_records(&normalized, prefix_parts(path), loaded);
+}
+
+/// Scan already normalized bytes and an explicitly counted native prefix, preserving one shared policy implementation.
+fn scan_normalized_records(normalized: &[u8], prefix_count: usize, loaded: &LoadedRules) -> PathScanRecords {
+    // usize counts native prefix components, not bytes; the caller has already identified their boundary.
+    let mut remaining_prefix: usize = prefix_count;
     let mut displayed: Vec<String> = Vec::<String>::new();
     let mut matches: Vec<(usize, Vec<String>)> = Vec::new();
     let mut position = 0;

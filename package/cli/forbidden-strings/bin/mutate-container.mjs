@@ -8,7 +8,7 @@ import { run, snapshot, ScannerVerificationError } from './container-snapshot.mj
 async function main() {
   if (process.argv.length !== 2) throw new ScannerVerificationError('This task accepts no arguments.');
   const command = [
-    'cargo', 'mutants', '--in-place', '--baseline', 'run', '--no-config', '--no-shuffle', '--colors=never',
+    'cargo', 'mutants', '--in-place', '--all-features', '--baseline', 'run', '--no-config', '--no-shuffle', '--colors=never',
     '--build-timeout', '300', '--timeout', '120', '--output', '/work/mutation-report',
     '--cargo-arg=--offline', '--cargo-arg=--locked',
     '--cargo-test-arg=--', '--cargo-test-arg=--test-threads=1',
@@ -19,7 +19,7 @@ async function main() {
   ];
   for (const file of [
     'scanner.rs', 'load_request.rs', 'scan_finding.rs', 'frx_scan.rs', 'path_scan.rs', 'path_name_bytes.rs',
-    'frx_load.rs', 'process_boundary.rs', 'runtime_cache/mod.rs', 'runtime_cache/warning.rs',
+    'frx_load.rs', 'process_boundary.rs', 'main.rs', 'runtime_cache/mod.rs', 'runtime_cache/warning.rs',
   ]) command.push('--file', `src/${file}`);
   const fixture = await snapshot({ command, name: 'mutation', tool: 'cargo-mutants' });
   let container;

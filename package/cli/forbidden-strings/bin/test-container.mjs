@@ -12,7 +12,7 @@ async function main() {
   const clippy = options[0] === '--clippy';
   const command = clippy
     ? ['cargo', 'clippy', '--offline', '--locked', '--all-targets', '--all-features', '--', '-D', 'warnings']
-    : ['cargo', 'test', '--offline', '--locked', '--all-targets', '--', '--test-threads=1'];
+    : ['cargo', 'test', '--offline', '--locked', '--all-targets', '--all-features', '--', '--test-threads=1'];
   const fixture = await snapshot({ command, name: clippy ? 'clippy' : 'test', toolchain: clippy });
   try {
     const result = run({ command: 'podman', args: ['run', '--rm', ...fixture.limits, fixture.image], allowFailure: true, transcript: fixture.evidence });

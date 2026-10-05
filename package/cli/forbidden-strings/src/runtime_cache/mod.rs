@@ -170,6 +170,11 @@ pub(crate) fn compile_rules_file_to_cache(rules_path: &str) -> Result<()> {
     return Ok(())
 }
 
+/// Source-snapshot publication checks and optional fuzz exports need executed positive/negative controls.
+#[cfg(test)]
+#[path = "verification_tests.rs"]
+mod verification_tests;
+
 /// Re-exports fuzz-only envelope decoder entry point.
 #[cfg(feature = "fuzzing")]
 pub fn decode_artifact_for_fuzzing(

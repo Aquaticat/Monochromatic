@@ -11,9 +11,15 @@ use std::path::{Component, Path};
 
 /// Normalize native separator bytes while retaining every non-separator byte for matching.
 pub(crate) fn normalized_path(path: &Path) -> Vec<u8> {
-    // The platform's encoded bytes remain read-only; Vec owns the normalized copy.
-    let mut bytes: Vec<u8> = path.as_os_str().as_encoded_bytes().to_vec();
-    if cfg!(windows) {
+    // Borrow native bytes without display conversion; target semantics are explicit for host-independent controls.
+    return normalize_bytes(path.as_os_str().as_encoded_bytes(), cfg!(windows));
+}
+
+/// Normalize bytes with explicit target separator semantics so Windows branches are testable on Unix.
+fn normalize_bytes(native: &[u8], windows: bool) -> Vec<u8> {
+    // Vec owns a normalized copy; the caller's native bytes remain unchanged.
+    let mut bytes: Vec<u8> = native.to_vec();
+    if windows {
         for byte in &mut bytes {
             if *byte == b'\\' { *byte = b'/'; }
         }
@@ -30,9 +36,16 @@ pub(crate) fn prefix_parts(path: &Path) -> usize {
     if !cfg!(windows) { return 0; }
     // Native parsing identifies drive/UNC prefixes; arbitrary colon-containing names remain ordinary components.
     let Some(Component::Prefix(prefix)) = path.components().next() else { return 0; };
+    // Native prefix detection stays platform-owned; counting its separator-delimited parts is platform-independent.
+    return count_prefix_parts(prefix.as_os_str().as_encoded_bytes());
+}
+
+/// Count all parts of an already identified native volume prefix without requiring that platform's Path parser.
+fn count_prefix_parts(prefix: &[u8]) -> usize {
     let mut count: usize = 0;
     let mut in_component: bool = false;
-    for byte in prefix.as_os_str().as_encoded_bytes() {
+    // Iterate borrowed bytes once; both native Windows separators terminate a prefix part.
+    for byte in prefix {
         if *byte == b'/' || *byte == b'\\' {
             in_component = false;
         } else if !in_component {
@@ -77,3 +90,8 @@ pub(crate) fn safe_component(component: &[u8]) -> String {
     }
     return safe;
 }
+
+/// Host-independent controls execute Windows normalization/counting and native display edges.
+#[cfg(test)]
+#[path = "path_name_bytes_tests.rs"]
+mod tests;

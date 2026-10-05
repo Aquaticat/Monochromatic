@@ -1,7 +1,8 @@
 //! Component-level matching, redaction, and path selection tests.
 
 /// Imports production name scanner and logical-path selection.
-use super::{logical_path, scan_path};
+use super::{logical_path, scan_path, scan_normalized_records};
+use crate::ScanFinding;
 
 /// Compiles runtime rules in memory without touching any user-owned cache.
 fn load_rules(text: &str) -> crate::frx_load::LoadedRules {
@@ -125,6 +126,24 @@ fn external_name_keeps_supplied_segments() {
     assert_eq!(logical_path("/external/private/file.txt", None), "/external/private/file.txt");
     let root = std::path::Path::new("/repository");
     assert_eq!(logical_path("/external/private/file.txt", Some(root)), "/external/private/file.txt");
+}
+
+/// Explicit native-prefix boundaries exercise shared policy on every verification host.
+#[test]
+fn supplied_volume_prefix_skips_each_part_before_counting_names() {
+    let loaded = load_rules("VAULTTOKEN_LONG\n");
+    let drive = scan_normalized_records(b"C:/VAULTTOKEN_LONG/VAULTTOKEN_LONG", 1, &loaded);
+    assert_eq!(drive.display, "C\\x3a/[REDACTED]/[REDACTED]");
+    assert_eq!(drive.findings, vec![
+        ScanFinding::Name { component: 1, rule: String::from("0") },
+        ScanFinding::Name { component: 2, rule: String::from("0") },
+    ]);
+    let network = scan_normalized_records(b"//VAULTTOKEN_LONG/VAULTTOKEN_LONG/VAULTTOKEN_LONG", 2, &loaded);
+    assert_eq!(network.display, "//VAULTTOKEN_LONG/VAULTTOKEN_LONG/[REDACTED]");
+    assert_eq!(network.findings, vec![ScanFinding::Name { component: 1, rule: String::from("0") }]);
+    let navigation = scan_normalized_records(b".//../VAULTTOKEN_LONG", 0, &loaded);
+    assert_eq!(navigation.display, ".//../[REDACTED]");
+    assert_eq!(navigation.findings, vec![ScanFinding::Name { component: 1, rule: String::from("0") }]);
 }
 
 /// Native Windows volume markers are not searchable directory-name segments.

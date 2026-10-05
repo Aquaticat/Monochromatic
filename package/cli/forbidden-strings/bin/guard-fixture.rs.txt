@@ -20,7 +20,7 @@ fn standalone_faults_have_real_exit_two_and_redacted_output() {
     }
     let help: Output = command("--help");
     assert!(help.status.success());
-    assert!(String::from_utf8_lossy(&help.stdout).contains("Usage:"));
+    assert!(String::from_utf8_lossy(&help.stdout).contains("USAGE:"));
 }
 
 fn host_hook(_information: &std::panic::PanicHookInfo<'_>) {
@@ -29,6 +29,8 @@ fn host_hook(_information: &std::panic::PanicHookInfo<'_>) {
 
 #[test]
 fn public_loader_discards_partial_rules_and_preserves_host_hook() {
+    // This disposable consumer owns its hook; the library must leave it installed during loading.
+    let previous = std::panic::take_hook();
     std::panic::set_hook(Box::new(host_hook));
     let root: PathBuf = PathBuf::from(std::env::var_os("SCANNER_GUARD_HOME").expect("disposable home"));
     let fault: PathBuf = root.join("fixture-load-panic");
@@ -43,4 +45,5 @@ fn public_loader_discards_partial_rules_and_preserves_host_hook() {
     let scanner: Scanner = Scanner::load(healthy.as_path(), false, true).expect("recovered same-thread load");
     assert_eq!(scanner.scan(8, Path::new("safe"), b"HEALTHY_FIXTURE_LONG").findings,
         vec![ScanFinding::Content { line: 1, rule: String::from("0") }]);
+    std::panic::set_hook(previous);
 }
