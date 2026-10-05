@@ -194,7 +194,9 @@ Exact retained RGB,
 changed-byte sensitivity,
 opacity,
 essential PNG chunks and dimensions passed.
-No digest is recorded or compared (D88).
+No digest of an image is recorded,
+and nothing is compared with a digest (D88);
+the manifest states the APK digest and commit that produced the captures.
 Raw status-bearing frames,
 hierarchies and logs remain private.
 

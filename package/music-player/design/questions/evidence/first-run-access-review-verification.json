@@ -108,7 +108,7 @@
     "renderedStatements": [
       "True-peak analysis is automatic and not optional (D84)",
       "offer no choice about analysis",
-      "No digest is recorded or compared (D88)"
+      "No digest of an image is recorded, and nothing is compared with a digest (D88)"
     ],
     "renderedAbsent": [
       "choose whether to analyse",

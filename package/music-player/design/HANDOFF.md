@@ -103,8 +103,9 @@ one template for the track row's supporting line,
 KWGT's spelling,
 the field list,
 the default template and the states to capture.
-The human was told this in chat and had not objected when this was written;
-that is not an acceptance.
+The proposal and the D90 picks were put to the human in chat on 2026-10-05,
+and the human had not answered when this was written.
+Silence is not an acceptance.
 Still to do:
 the debug Compose host and fixture in the prototype worktree,
 its unit tests and mutants,

@@ -19,6 +19,10 @@ The builder now has 94 rules and its consumer test rejects 130 changed inputs;
 both passed on the withdrawn page,
 as did a four-context offline browser check,
 and the review record carries that recheck.
+One diagnostic became worse with the removal and was left so on a withdrawn study:
+if one of the Search images the left half is compared with is missing,
+validation now stops with the file system's own `ENOENT` and no rule name,
+and a Search image with a byte added after its end is accepted.
 
 ## Purpose and accepted pane
 

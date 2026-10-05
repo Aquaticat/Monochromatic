@@ -476,8 +476,10 @@ then wrote the 24 PNGs,
 `questions/evidence/settings-pane-witnesses.json` and
 `questions/evidence/settings-pane-native-verification.json` in one commit.
 Eight changed publisher inputs were rejected before any public write.
-The viewer's 99 rules each have at least one rejected consumer input among
+At publication the viewer's 99 rules each had at least one rejected consumer input among
 135 and a deletion proof;
+D88 later removed its digest rules,
+which leaves 94 rules and 130 rejected inputs;
 its in-process PNG decoder matched ImageMagick byte for byte on all 28 images
 it reads.
 Four offline Chromium contexts passed with no axe violations,
