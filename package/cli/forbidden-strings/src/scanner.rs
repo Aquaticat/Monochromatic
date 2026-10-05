@@ -6,15 +6,19 @@
 //! // Load one scanner, then scan immutable candidate identities, names and bytes.
 //! ```
 
-/// Import the existing loader, content matcher, pathname masker and redacted result model.
+/// Import the existing loader's rule sets that one scanner owns.
 use crate::frx_load::LoadedRules;
 /// The loader's named unwind boundary returns no partial ruleset after a panic.
 use crate::load_request;
+/// Imports the content matcher that reports line findings for one candidate's bytes.
 use crate::frx_scan::scan_content;
+/// Imports the pathname masker and its display-plus-findings result.
 use crate::path_scan::{PathScanRecords, scan_path_records};
+/// Imports the binary-probe length and the structured finding model returned to callers.
 use crate::{BIN_PROBE_SIZE, ScanFinding};
-/// Import the incumbent load-error channel and fixed-token cache diagnostics.
+/// Import the incumbent load-error channel.
 use anyhow::Result;
+/// Imports the fixed-token cache diagnostic retained from loading.
 use crate::runtime_cache::CacheWarning;
 /// Native paths preserve operating-system encoding until matching/display boundaries.
 use std::path::Path;

@@ -6,8 +6,9 @@
 //! // Configure process output once, then guard the named startup operation.
 //! ```
 
-/// Import the existing application error type and operating-system exit-code wrapper.
+/// Import the existing application error type.
 use anyhow::Result;
+/// Imports the process exit status returned once the guarded operation settles.
 use std::process::ExitCode;
 
 /// What: Omit default panic payload output; the operation's catch boundary supplies the redacted diagnostic.

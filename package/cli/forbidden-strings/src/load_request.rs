@@ -8,10 +8,13 @@
 
 /// Import the existing loader and its established error channel.
 use crate::frx_load::{self, LoadedRules};
+/// Imports the shipped baseline's precompiled engine bytes and rule names passed to every load.
 use crate::{BUILTIN_NAMES, BUILTIN_PRECOMPILED};
+/// Imports the loader's error channel and the macro building its fixed redacted messages.
 use anyhow::{anyhow, Result};
-/// Import owned native paths and a per-thread value slot.
+/// Import a per-thread value slot.
 use std::cell::Cell;
+/// Imports borrowed caller paths and the owned copy a pending request keeps.
 use std::path::{Path, PathBuf};
 
 /// Owned arguments crossing the no-capture callback boundary.
