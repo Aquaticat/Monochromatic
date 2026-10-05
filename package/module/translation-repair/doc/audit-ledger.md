@@ -7027,6 +7027,29 @@ The reach census (`~/temp/agent/mimo-trial/reach-nudged.log`)
 reads `ran 0, still cold 3`.
 No B entry found.
 
+The sixty-fifth cluster of that census,
+`photo`,
+against `census-pUl33e` at `9cb5622`:
+3 line stretches over `photo-reference.ts`
+(`8284b4b4f`,
+`b5cae5d8a`).
+Landed:
+the unclosed-quote break cased,
+the not-an-asset case,
+and the odd-pair case.
+Left:
+the earlier-quote preference
+(`133`)
+and the not-an-asset arm
+(`303`):
+the cases' shapes did not reach them.
+The reach census (`~/temp/agent/mimo-trial/reach-photo.log`)
+reads `ran 1, still cold 2`.
+The case's fixture note sat before an expect statement
+as a TSDoc block (ledger B19);
+fixed forward (`b5cae5d8a`).
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

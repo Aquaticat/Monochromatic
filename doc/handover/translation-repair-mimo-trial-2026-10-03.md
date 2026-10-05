@@ -683,6 +683,35 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  00:31 UTC:
+  the T8 `photo` batch closed with commits `8284b4b4f`,
+  `b5cae5d8a`:
+  3 line stretches over `photo-reference.ts`,
+  one cased
+  (the unclosed-quote break),
+  two left documented
+  (the earlier-quote preference
+  and the not-an-asset arm:
+  the cases' shapes did not reach them).
+  A TSDoc block before an expect statement tripped
+  the attachment scan (ledger B19),
+  fixed forward.
+  The reach census reads `ran 1, still cold 2`
+  (`~/temp/agent/mimo-trial/reach-photo.log`).
+  Counts at the close:
+  the full suite 1,564 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-photo-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-photo-scans2.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `b5cae5d8a`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `resolution` cluster
+  (the ranking's next at `census-pUl33e`).
+
+- 2026-10-05,
   00:18 UTC:
   the next batch's baseline census taken at commit `31f7b5559`:
   `census written to ~/.cache/translation-repair/coverage/census-pUl33e/census.json`
