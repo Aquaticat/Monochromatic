@@ -255,6 +255,14 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--test', 'find', '--test', 'find_navigation', '--test', 'find_worker', '--test', 'find_reference', '--test', 'find_paint', '--test', 'source_frame'])
 """
 
+[tasks."test:annotations"]
+description = "Check inlay-hint and diagnostic layout, painting, stale-snapshot rejection, and the measured placement probe"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'annotation_placement', '--', '--nocapture'])
+"""
+
 [tasks."inspect:find-regex"]
 description = "Print the production plain matcher's per-case comparison against captured Chromium find cases"
 shell = "node --input-type=module-typescript -e"
