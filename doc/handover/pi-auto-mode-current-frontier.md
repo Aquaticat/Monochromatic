@@ -7,6 +7,55 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-04.
 
+## Current direction: incremental rule relevance
+
+The user selected policy-change-time relevance classification
+and clarified that changed rules go in one API call,
+with independent questions inside that batch.
+Do not reopen the one-question-versus-one-call discussion.
+Use the [incremental cache contract](../planning/pi-auto-mode-batched-assessment.md#incremental-rule-relevance-cache-direction).
+
+The private cache now extends the incumbent policy selector and exact Markdown index.
+`proc_7d12` passed 12 control groups.
+Its first control used the actual protected policy read-only:
+205 indexed rules in one synthetic classifier batch,
+then no classifier call on warm refresh or on a new owner loading the persisted entries.
+Single-rule edits and additions selected only those rules;
+deletion required no new classification.
+Heading changes invalidated affected descendants,
+and changed unclassified context widened invalidation.
+
+Controls also covered worktree overlays,
+namespace/profile changes,
+same-source single-flight refresh,
+stale asynchronous results,
+invalid replies,
+cancellation,
+diagnostic-sink failure,
+malformed cache entries,
+and duplicate rule IDs rejected by the incumbent indexer.
+These are cache mechanics,
+not semantic relevance qualification.
+All indexed rules remain candidates;
+no low score is admitted as an exclusion.
+
+Git namespace derivation is being checked separately.
+The first run `proc_cd11` completed actual-repository and HTTPS controls,
+then exposed missing explicit SSH hostname normalization.
+Fresh v2 normalizes hostname only,
+preserves transport and path spelling,
+and reruns the failed suffix in disposable Git fixtures.
+The original failure is retained.
+No network fetch or production Git mutation belongs in namespace lookup.
+
+Next:
+complete namespace verification,
+connect the fixed Jev relevance transport,
+then wire refresh through the existing resource lifecycle with original cancellation and budget.
+The accepted direction does not authorize production cutoff adoption,
+installed-plugin cutover,
+or cached action permission.
+
 ## Current approval UI correction
 
 Use the working auto-mode Pi TUI,
