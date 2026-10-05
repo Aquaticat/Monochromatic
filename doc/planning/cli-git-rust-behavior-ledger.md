@@ -1054,3 +1054,1117 @@ and lines 295 to 297
   none.
 - Native state:
   absent.
+
+## Management commands
+
+### Namespace dispatch, grammar, and help
+
+- Behavior:
+  the wrapper owns an invocation only when the parsed subcommand is exactly `cli-git` (`src/bin.ts:147-148`).
+  `parseManagementArgs` (`src/management-parser.ts:175-265`) accepts `--help` or `-h`,
+  `trust [--yes]`,
+  `untrust`,
+  `status`,
+  and `check` or `fix` with repeatable `--policy <id>`,
+  `--all`,
+  and pathspecs.
+  `runManagementCommand` (`src/management.ts:136-316`) prints usage to stderr and exits `2` on a refusal (`149-152`),
+  prints help to stdout and exits `0` (`153-156`),
+  and requires exactly one scope for `check` and `fix`:
+  `--all`,
+  or a non-empty pathspec list after `--` (`171-198`).
+  Help returns before real-Git resolution and recovery (`src/bin.ts:159-174`).
+- Spec:
+  `SPEC.md:796-833`.
+- Consumers:
+  humans and agents running `git cli-git`;
+  `.github/workflows/final-newline.yml:38-39` runs a fixture that calls the direct check.
+- Status:
+  retained for the namespace,
+  help,
+  `check`,
+  and `fix`.
+  The implementation plan lines 107 to 112 preserve `check` and `fix`,
+  and line 438 lists the surviving management-command documentation.
+- Rust owner:
+  `management_arguments.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run `git cli-git --help`,
+  `git cli-git check`,
+  `git cli-git check --all -- a.txt`,
+  `git cli-git check a.txt`,
+  and `git add cli-git`;
+  observe help on stdout with exit `0`,
+  exit `2` for the three malformed scopes,
+  and ordinary staging of a file named `cli-git`.
+- Native state:
+  in progress
+  (management-command skeleton).
+
+### Direct check
+
+- Behavior:
+  `git cli-git check` loads configuration with `forceLoad` (`src/management.ts:99-118`),
+  projects the selected worktree bytes into a private index
+  (`src/policy-engine/direct-check-facts.ts:66-111`),
+  runs the engine with the `direct-check` trigger and the optional `--policy` filter (`src/management.ts:291-307`),
+  writes events to stdout,
+  and returns the engine's exit code (`311-315`).
+  `--all` becomes the pathspec `:/` (`234-236`).
+- Spec:
+  `SPEC.md:1209-1213`.
+- Consumers:
+  `src/trust/fixture/final-newline-workflow.ts`,
+  run by `.github/workflows/final-newline.yml:38-39`;
+  agents checking policies without committing.
+- Status:
+  retained.
+- Rust owner:
+  `management_check.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  write a worktree file that violates one policy and differs from its staged copy,
+  then run `git cli-git check --policy final-newline -- a.txt`;
+  observe one `finding` event on stdout for the worktree bytes,
+  exit `0` or `1` by severity,
+  and unchanged index and worktree bytes.
+- Native state:
+  absent.
+
+### Direct fix
+
+- Behavior:
+  `runDirectFix` (`src/policy-engine/direct-fix.ts:238-272`) holds the landing lock (`181`),
+  snapshots the real index,
+  converges patches on private candidate state
+  (`src/policy-engine/direct-fix-convergence.ts:103-309`,
+  at most 8 changed passes,
+  `33`),
+  replaces only changed worktree files (`src/policy-engine/direct-fix-install.ts:230-339`),
+  verifies that every real index blob is unchanged,
+  and emits findings plus one `fix-summary`.
+- Spec:
+  `SPEC.md:1215-1227`,
+  `837`.
+- Consumers:
+  humans and agents applying fixes;
+  the `dependent-version-bump` policy declares the `direct-fix` trigger for this command
+  (`src/optional/repository-policy/dependent-version-bump-policy.ts:253-258`).
+- Status:
+  retained.
+- Rust owner:
+  `management_fix.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  stage one version of a file,
+  leave a different fixable version in the worktree,
+  and run `git cli-git fix -- a.txt` while a concurrent wrapped commit lands;
+  observe the fixed worktree bytes,
+  a byte-identical real index,
+  one `fix-summary` on stdout,
+  and exit `0`.
+- Native state:
+  absent.
+
+## Policy engine
+
+### Registry, order, and triggers
+
+- Behavior:
+  `BUILT_IN_POLICIES` (`src/policy-engine/built-ins.ts:21-27`) fixes the built-in order:
+  `require-root`,
+  `linked-worktree-only`,
+  `branch-worktree-only`,
+  `add-explicit`,
+  `final-newline`.
+  `runPolicyEngine` (`src/policy-engine/engine.ts:157-420`) runs built-ins (`279-311`),
+  then fixed transforms for the `pre-forward` trigger only (`315-326`),
+  then plugin policies in registration order (`354-375`).
+  A policy runs only for the triggers it declares (`src/policy-engine/policy-stage.ts:135-137`);
+  the trigger set is `pre-forward`,
+  `post-commit`,
+  `manual-push`,
+  `direct-check`,
+  and `direct-fix` (`src/api/policy-types.ts:31-36`).
+- Spec:
+  `SPEC.md:1229-1244`,
+  `3992-3999`.
+- Consumers:
+  every lifecycle.
+- Status:
+  retained as a fixed typed registry of shipped policies with stable ordering
+  (implementation plan lines 103 to 106).
+- Rust owner:
+  `policy_registry.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  make one command violate two policies and pass `--cli-git-keep-going`;
+  observe the findings in registry order with increasing `sequence`.
+- Native state:
+  absent.
+
+### Severities, defaults, and unsafe warnings
+
+- Behavior:
+  the effective severity is the configured value or the policy default (`src/policy-engine/policy-stage.ts:145`);
+  `off` skips the policy (`146-147`).
+  A `warn` setting on a policy that is not warn-safe emits a `configuration-warning` event,
+  even when the check is clean (`151`,
+  `209-214`).
+  Defaults:
+  `final-newline` is `warn`;
+  the other four built-ins are `error`
+  (`src/policy-engine/final-newline-policy.ts:88`;
+  `src/policy-engine/require-root-policy.ts:24`;
+  `src/policy-engine/linked-worktree-policy.ts:21`;
+  `src/policy-engine/branch-worktree-policy.ts:21`;
+  `src/policy-engine/add-explicit-policy.ts:21`).
+  `branch-worktree-only` and `final-newline` are warn-safe.
+- Spec:
+  `SPEC.md:1352-1366`,
+  `4000-4004`.
+- Consumers:
+  the root configuration sets three severities (`cli-git.config.ts:33-57`).
+- Status:
+  retained.
+  The implementation plan lines 68 to 69 let repository settings disable policies
+  or change permitted severities without consent.
+- Rust owner:
+  `policy_registry.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  set `add-explicit` to `warn` and run `git add .`;
+  observe a `finding` with severity `warn`,
+  a `configuration-warning` with code `warn-unsafe`,
+  and that Git staged the files.
+- Native state:
+  absent.
+
+### Stage execution and stopping
+
+- Behavior:
+  `runPolicyStage` (`src/policy-engine/policy-stage.ts:103-257`) runs one policy at a time.
+  Without `--cli-git-keep-going`,
+  the first error finding stops the stage (`223-231`).
+  A thrown check emits `plugin-threw` and stops (`162-177`);
+  an invalid finding emits `policy-incomplete` and stops (`183-184`,
+  `233-248`).
+  A proposed patch ends the stage so convergence can restart (`215-222`).
+  The direct-check filter and escaped IDs skip policies (`138-141`).
+- Spec:
+  `SPEC.md:387-398`,
+  `1246-1252`.
+- Consumers:
+  every lifecycle.
+- Status:
+  retained.
+  `plugin-threw` loses its plugin meaning with a fixed registry;
+  see "Open questions".
+- Rust owner:
+  `policy_engine.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run a command that violates the first and third policies,
+  with and without `--cli-git-keep-going`;
+  observe one finding and exit `1` without the flag,
+  and both findings and exit `1` with it.
+- Native state:
+  absent.
+
+### Finding validation
+
+- Behavior:
+  `findingsAreValid` (`src/policy-engine/policy-stage.ts:60-71`) requires a non-empty `code` and `message`.
+  `createFindingEvent` prefixes the code with the policy ID (`src/policy-engine/events.ts:410`).
+- Spec:
+  `SPEC.md:562-574`.
+  The spec also requires kebab-case codes and an in-range byte location;
+  the engine checks neither
+  (see "Spec and code disagreements").
+- Consumers:
+  JSONL consumers.
+- Status:
+  retained as structured findings from typed policies
+  (implementation plan lines 103 to 106).
+- Rust owner:
+  `policy_findings.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  trigger a finding that carries a location;
+  observe `byteStart` and `byteEnd` inside the candidate's byte length
+  and a code of the form `<policy-id>/<code>`.
+- Native state:
+  absent.
+
+### Patch validation and application
+
+- Behavior:
+  `validatePolicyPatch` (`src/policy-engine/commit-transaction-patch.ts:122-209`) accepts one textual unified diff
+  for exactly the declared path,
+  with one `index` header naming the candidate's blob revision and mode `100644` or `100755` (`62-106`),
+  and rejects rename,
+  copy,
+  mode,
+  and binary directives (`21-32`,
+  `203-207`) and paths with traversal or line breaks (`134-143`).
+  `applyPolicyPatches` (`src/policy-engine/apply-policy-patches.ts:247-342`) applies patches in order
+  through `git apply --cached --3way` on the private index
+  (`src/policy-engine/commit-transaction-git.ts:248-291`).
+  The built-in and optional policies build patches with
+  `createFinalNewlinePatch` (`src/policy-engine/final-newline-patch.ts:70-129`)
+  and `createFullContentPatch` (`src/optional/markdown-lint/full-content-patch.ts:114-171`).
+- Spec:
+  `SPEC.md:576-626`.
+- Consumers:
+  commit transactions and direct fix.
+- Status:
+  retained.
+  The patch is no longer supplied by untrusted plugin code,
+  but the candidate edit path stays
+  (implementation plan lines 103 to 112).
+- Rust owner:
+  `policy_patches.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  commit a file whose fix conflicts with a concurrent edit of the same lines;
+  observe exit `2` with `patch-conflict`,
+  no patch bytes in the event,
+  and unchanged ref,
+  index,
+  and worktree bytes.
+- Native state:
+  absent.
+
+### Bounded fix passes
+
+- Behavior:
+  `convergeCommitPolicies` (`src/policy-engine/commit-transaction-convergence.ts:110-276`) restarts the whole order
+  after each changed candidate state,
+  with at most 8 changed passes (`32`).
+  Candidate states are serialized to private files and compared byte for byte
+  (`src/policy-engine/commit-transaction-candidate-snapshot.ts:82-247`).
+  A repeated non-adjacent state is `fix-cycle`;
+  a changed last pass is `fix-pass-limit`
+  (`src/policy-engine/commit-transaction-results.ts:128-157`,
+  `233-248`).
+  Direct fix uses the same limit (`src/policy-engine/direct-fix-convergence.ts:33`).
+- Spec:
+  `SPEC.md:1254-1277`.
+- Consumers:
+  commit transactions,
+  revalidation after replay,
+  and direct fix.
+- Status:
+  retained
+  (implementation plan line 106,
+  "bounded fixing passes").
+- Rust owner:
+  `policy_convergence.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  commit a file that needs two different policy fixes;
+  observe one `fix-summary` with `passes` equal to the changed passes,
+  the committed bytes fully fixed,
+  and no finding for the corrected problems.
+- Native state:
+  absent.
+
+### JSONL events
+
+- Behavior:
+  events are compact JSON objects,
+  one per line,
+  with `schemaVersion: 1` (`src/policy-engine/events.ts:23`,
+  `588-598`).
+  Types:
+  `finding` (`33`),
+  `engine-failure` with 15 codes (`88-103`,
+  `113`),
+  `commit-landed` (`156`),
+  `core-finding` (`195`),
+  `configuration-warning` (`250`),
+  `fix-summary` (`289`),
+  and the concurrency events `landing-race-lost`,
+  `landing-reserved`,
+  `commit-replayed`,
+  and `replay-headers-dropped` (`src/policy-engine/events-concurrency.ts:33-178`).
+  `withFixSummary` appends the summary with sorted unique paths (`src/policy-engine/fix-summary.ts:28-100`).
+- Spec:
+  `SPEC.md:1279-1575`.
+- Consumers:
+  agents and scripts reading wrapper stderr or management stdout;
+  the end-to-end suite checks exit codes against events
+  (`e2e/jsonl-event-fixture.ts`).
+- Status:
+  retained
+  (implementation plan lines 107 to 112).
+  The trust-only codes `config-untrusted`,
+  `config-changed`,
+  `trust-consent-unavailable`,
+  and `trust-failed` lose their emitters.
+- Rust owner:
+  `policy_events.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  drive one event of each retained type and parse stderr line by line;
+  observe field sets equal to `SPEC.md:1296-1575`,
+  no JSON `null`,
+  and LF termination.
+- Native state:
+  absent.
+
+### Stream routing and exit codes
+
+- Behavior:
+  wrapper policy events go to stderr (`src/bin.ts:219-224`,
+  `277-280`,
+  `336-339`,
+  `412-415`,
+  `433-438`);
+  `check` and `fix` events go to stdout (`src/management.ts:219-224`,
+  `261-265`,
+  `311-314`).
+  When Git does not run,
+  exit `0` means clean or warnings only,
+  `1` means error findings,
+  and `2` means an engine failure (`src/policy-engine/engine.ts:308`,
+  `347`,
+  `392`,
+  `417`).
+  A landed commit followed by a blocked post-commit gate exits `2` (`src/bin.ts:416-417`).
+- Spec:
+  `SPEC.md:1577-1622`.
+- Consumers:
+  every caller that branches on the exit status or separates Git output from events.
+- Status:
+  retained
+  (implementation plan lines 107 to 112).
+- Rust owner:
+  `policy_events.rs` and `wrapper_main.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  capture stdout and stderr separately for a blocked wrapped command and for `git cli-git check`;
+  observe events only on stderr for the first and only on stdout for the second,
+  with the exit codes of `SPEC.md:1588-1622`.
+- Native state:
+  absent.
+
+### Candidate facts
+
+- Behavior:
+  each lifecycle builds lazy Git facts for the policy context:
+  `git add` predicts the staged delta in a private index
+  (`src/policy-engine/add-policy-facts.ts:116-261`;
+  `src/policy-engine/add-staged-delta.ts:38-216`);
+  commit transactions read the private commit index
+  (`src/policy-engine/commit-transaction-candidates.ts:316-367`)
+  and tracked files (`src/policy-engine/commit-transaction-tracked-files.ts:166-294`);
+  post-commit reads the landed commit's delta
+  (`src/policy-engine/post-commit-facts.ts:130-198`);
+  manual push reads newly published content
+  (`src/policy-engine/manual-push-candidates.ts:330-426`);
+  direct commands read selected worktree bytes
+  (`src/policy-engine/direct-check-facts.ts:66-111`).
+  Blob bytes load through one `git cat-file --batch` process (`src/policy-engine/blob-batch.ts:205-270`).
+- Spec:
+  `SPEC.md:336-385`,
+  `597-605`.
+- Consumers:
+  every content policy.
+- Status:
+  retained.
+  The implementation plan lines 93 to 99 require immutable candidate versions,
+  lazy batched Git facts,
+  candidate bytes rather than live worktree bytes,
+  and no Git process per file.
+- Rust owner:
+  `candidate_facts.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  stage clean bytes,
+  then write a forbidden string to the worktree copy only,
+  and commit the staged path with `--no-only`;
+  observe a clean commit,
+  and with `strace` a fixed number of Git processes for 1 and for 100 candidate files.
+- Native state:
+  absent.
+
+### Policy read sets and input fingerprints
+
+- Behavior:
+  inside a commit transaction each policy run records what it read:
+  the candidate list,
+  the paths whose bytes it loaded,
+  tracked-file requests,
+  and the `headOid`,
+  `landedCommitOid`,
+  and `pushUpdates` values (`src/policy-engine/policy-read-set.ts:126-159`,
+  `400-494`).
+  Declared external inputs are fingerprinted:
+  worktree pathspecs,
+  executables,
+  revisions,
+  and environment variables
+  (`src/policy-engine/policy-input-fingerprint.ts:367-448`;
+  `src/policy-engine/policy-input-executable.ts:215-261`).
+  After a replay,
+  `decideRerun` (`src/policy-engine/policy-read-tracking.ts:253-310`) reuses a recorded run
+  when it proposed no patch,
+  its inputs hold,
+  and its reads replay to the same identities
+  (`src/policy-engine/policy-read-validation.ts:254-293`).
+  Unrestricted policies always re-run.
+- Spec:
+  `SPEC.md:400-560`.
+- Consumers:
+  revalidation after replay.
+- Status:
+  retained
+  (implementation plan lines 215 to 219 list policy read sets;
+  lines 143 to 146 require a replay that changes a declared input to invalidate the policy result).
+  The authoring-facing `inputs` declaration and its schema
+  (`src/trust/policy-inputs-schema.ts:163-330`) retire with the authoring API;
+  the shipped policies' declarations become fixed data.
+- Rust owner:
+  `policy_read_set.rs` and `policy_inputs.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  force a lost landing race with a disjoint winning commit,
+  then with a winning commit that changes the scanner rules file;
+  observe through debug logs or a counting scanner fixture that the context-only policy is reused in the first case
+  and that the scanner re-runs in the second.
+- Native state:
+  absent.
+
+### Pre-forward lifecycle
+
+- Behavior:
+  `runPreForwardPolicyEngine` (`src/policy-engine/pre-forward-engine.ts:34-77`) strips wrapper controls,
+  builds add candidate facts when the command is `git add`,
+  and runs the engine.
+  A blocking result prevents forwarding (`src/bin.ts:273-286`);
+  the transformed arguments replace the raw ones (`291`).
+- Spec:
+  `SPEC.md:889-899`.
+- Consumers:
+  every wrapped command that loads configuration and is not a commit transaction.
+- Status:
+  retained.
+- Rust owner:
+  `lifecycle_pre_forward.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run `git add -- CONTEXT.md` at the repository root;
+  observe a `forbidden-root-context` finding on stderr,
+  exit `1`,
+  and an unchanged index.
+- Native state:
+  absent.
+
+### Post-commit lifecycle
+
+- Behavior:
+  `runPostCommitLifecycle` (`src/policy-engine/post-commit-lifecycle.ts:101-195`) uses the landed commit ID
+  passed from the transaction,
+  runs `post-commit` policies against the landed delta,
+  and on a blocking result appends `commit-landed` with outcome `post-commit-blocked` (`160-171`).
+  A setup failure emits `content-unavailable` plus `commit-landed` (`173-194`).
+  Only a clean or warning-only result reaches auto-push (`src/bin.ts:416-422`).
+- Spec:
+  `SPEC.md:1075-1092`,
+  `1558-1575`.
+- Consumers:
+  auto-push,
+  which this gate guards.
+- Status:
+  retained.
+- Rust owner:
+  `lifecycle_post_commit.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  land a commit whose content passes pre-forward only because of a one-time escape flag;
+  observe the commit present locally,
+  the causal finding,
+  a final `commit-landed` event,
+  exit `2`,
+  and no push to the bare remote.
+- Native state:
+  absent.
+
+### Manual-push lifecycle
+
+- Behavior:
+  `runManualPushGate` (`src/policy-engine/manual-push-gate.ts:45-87`) applies to `git push`
+  that is not a dry run and has an enabled `manual-push` policy.
+  `probeManualPushUpdates` (`src/policy-engine/manual-push-probe.ts:184-208`) runs a private
+  `--dry-run` push whose generated `pre-push` hook records Git's update records
+  (`src/policy-engine/manual-push-hook.ts:344-405`),
+  and validates remote values with `git ls-remote --refs`.
+  The published set comes from remote-tracking refs and prior values
+  (`src/policy-engine/manual-push-published.ts:105-304`);
+  candidates are each newly published commit's delta,
+  or the final tree when nothing is known to be published
+  (`src/policy-engine/manual-push-descriptors.ts:204-392`;
+  `src/policy-engine/manual-push-candidates.ts:330-426`),
+  with at most 4 concurrent per-update processes (`37`).
+- Spec:
+  `SPEC.md:1169-1207`,
+  `4020-4041`.
+- Consumers:
+  `forbidden-strings`,
+  `final-newline`,
+  and Markdown autofix declare the `manual-push` trigger;
+  `perf/manual-push-latency-benchmark.ts` measures it.
+- Status:
+  retained
+  (implementation plan lines 107 to 109 name manual-push checks).
+  The generated `pre-push` hook is a Node program today;
+  its native form is undetermined
+  (see "Open questions").
+- Rust owner:
+  `lifecycle_manual_push.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  push a branch whose newest commit adds a forbidden string,
+  first to a remote that already has its parent and then to an empty remote;
+  observe a blocked push with exit `1` in both cases,
+  a scan of only the newest commit's delta in the first,
+  and a bounded process count for a 1,000-commit history.
+- Native state:
+  absent.
+
+## Built-in policies and fixed transforms
+
+### Git command region parsers
+
+- Behavior:
+  `parseArgv` (`src/parser/argv.ts:240-415`) is a shared region parser over declared flags and value options.
+  `expandAbbreviations` (`src/abbrev.ts:52-114`) lists the unambiguous long-option abbreviations Git accepts.
+  Per-command parsers produce the facts the rules use:
+  `parseAddRegion` (`src/parser/add.ts:258-313`),
+  `parseCommitRegion` (`src/parser/commit.ts:212-291`) with `normaliseCommitArgs`
+  (`src/parser/commit-normalise.ts:165-288`),
+  `parsePushRegion` (`src/parser/push.ts:64-96`),
+  `parseStatusPreRegion` and `parseStatusPostRegion` (`src/parser/status.ts:83-157`),
+  `parseStashRegion` (`src/parser/stash.ts:96-128`),
+  `parseCleanRegion` (`src/parser/clean.ts:144-232`) with `scanCleanOptionOrder`
+  (`src/parser/clean-option-order.ts:430-438`),
+  `parseResetRegion` (`src/parser/reset.ts:127-197`),
+  and `parseBranchCreationRegion` (`src/parser/branch-create.ts:108-217`).
+- Spec:
+  `SPEC.md:777-797`;
+  `doc/handover/cli-git-cac-migration.md` records why the package owns its parser.
+- Consumers:
+  every built-in policy and fixed transform,
+  the commit transaction,
+  and the manual-push gate.
+- Status:
+  retained.
+  The implementation plan lines 47 to 49 require Git-specific token classification
+  rather than an unrelated option grammar.
+- Rust owner:
+  `command_*.rs`,
+  one module per command,
+  owned by the command-parser delegate.
+- Consumer-level test:
+  in the standard fixture,
+  run each documented abbreviation and clustered short form through the native wrapper and through `/usr/bin/git`
+  for the same repository state;
+  observe that the wrapper's decision matches what Git then does
+  (for example `git commit --am` amends and `git clean --dry` deletes nothing).
+- Native state:
+  in progress
+  (queued delegate;
+  no `command_*.rs` file at `40436cd01`).
+
+### require-root
+
+- Behavior:
+  `requireRoot` (`src/rule/require-root.ts:130-191`) rejects a command whose effective directory
+  is inside a repository but not at its root.
+  It exempts `init`,
+  `clone`,
+  `version`,
+  and `help` (`24-29`),
+  `config` with `--global`,
+  `--system`,
+  `--list`,
+  or `-l` (`34-39`,
+  `159-170`),
+  and a directory outside any repository (`175-179`).
+  Policy metadata:
+  default `error`,
+  warn-unsafe,
+  triggers `pre-forward` and `direct-check` (`src/policy-engine/require-root-policy.ts:22-31`).
+- Spec:
+  `SPEC.md:3992-4008`.
+- Consumers:
+  every wrapped command.
+- Status:
+  retained
+  (implementation plan lines 116 to 120).
+- Rust owner:
+  `rule_require_root.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run `git status` from a subdirectory,
+  from the root,
+  with `-C <root>`,
+  and outside any repository;
+  observe exit `1` with a `require-root` finding only in the first case.
+- Native state:
+  in progress
+  (queued rule-core delegate).
+
+### linked-worktree-only
+
+- Behavior:
+  `checkLinkedWorktree` (`src/policy-engine/linked-worktree-check.ts:237-308`) rejects every `git stash`,
+  `git clean` that is neither a dry run nor interactive,
+  and `git reset` with a destructive mode (`138-175`),
+  unless the target is a linked worktree or an allowlisted tool cache (`298-307`).
+  Messages are in `src/policy-engine/linked-worktree-messages.ts:52-109`.
+  Policy metadata:
+  default `error`,
+  warn-unsafe,
+  trigger `pre-forward` (`src/policy-engine/linked-worktree-policy.ts:19-25`).
+- Spec:
+  `SPEC.md:3992-4008`.
+- Consumers:
+  agents and humans in the main worktree;
+  `e2e/README.md:525-528` records that it blocks lint-staged's `git stash` in a main worktree.
+- Status:
+  retained
+  (implementation plan lines 116 to 120).
+- Rust owner:
+  `rule_linked_worktree.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run `git stash`,
+  `git clean -fd`,
+  `git clean -nd`,
+  and `git reset --hard` in a main worktree and in a linked worktree;
+  observe rejection with exit `1` only for the three destructive forms in the main worktree.
+- Native state:
+  in progress
+  (queued rule-core delegate).
+
+### Allowed worktree directories
+
+- Behavior:
+  `classifyEffectiveTarget` (`src/effective-target.ts:62-86`) returns `allowlisted`
+  when the repository's Git directory lies under a baked-in tool cache.
+  The only entry is uv's cache:
+  `UV_CACHE_DIR`,
+  or `XDG_CACHE_HOME/uv`,
+  or `<home>/.cache/uv` (`src/allowed-worktree-dirs.ts:60-102`).
+  Membership resolves each root through `realpath` and tests segment-aware containment (`144-164`,
+  `247-281`).
+- Spec:
+  no `SPEC.md` section states it.
+- Consumers:
+  uv,
+  whose internal `git reset --hard` in its cache would otherwise be rejected (`src/allowed-worktree-dirs.ts:43-48`).
+- Status:
+  retained.
+  The implementation plan does not name it;
+  it is part of the linked-worktree policy's accepted behavior.
+- Rust owner:
+  `allowed_worktree_directories.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  create a repository under a disposable `UV_CACHE_DIR` and one beside it with the same prefix,
+  then run `git reset --hard` in each;
+  observe success in the first and rejection in the second.
+- Native state:
+  absent.
+
+### branch-worktree-only
+
+- Behavior:
+  `checkBranchWorktree` (`src/policy-engine/branch-worktree-check.ts:101-188`) rejects branch creation
+  in the current worktree:
+  explicit forms of `branch`,
+  `checkout`,
+  and `switch` (`145-146`),
+  and the remote-tracking guess of `git switch <name>` and `git checkout <name>`,
+  probed against real Git (`src/policy-engine/branch-worktree-remote-guess.ts:158-227`).
+  Policy metadata:
+  default `error`,
+  warn-safe,
+  trigger `pre-forward` (`src/policy-engine/branch-worktree-policy.ts:19-25`).
+- Spec:
+  `SPEC.md:3992-4008`.
+- Consumers:
+  agents and humans;
+  the status note names the allowed form `git worktree add -b` (`src/post-command-output.ts:96-101`).
+- Status:
+  retained
+  (implementation plan lines 116 to 120).
+- Rust owner:
+  `rule_branch_worktree.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture with one remote branch `topic` and no local one,
+  run `git switch -c x`,
+  `git switch topic`,
+  `git branch --list`,
+  and `git worktree add -b y ../y`;
+  observe rejection of the first two only.
+- Native state:
+  in progress
+  (queued rule-core delegate).
+
+### add-explicit
+
+- Behavior:
+  `checkAddExplicit` (`src/policy-engine/add-explicit-check.ts:77-137`) rejects `git add`
+  with the bulk tokens `.`,
+  `*`,
+  `-A`,
+  or `-u` (`src/parser/add.ts:23-41`),
+  naming the matched tokens (`src/policy-engine/add-explicit-check.ts:121-133`).
+  Policy metadata:
+  default `error`,
+  warn-unsafe,
+  trigger `pre-forward` (`src/policy-engine/add-explicit-policy.ts:19-25`).
+- Spec:
+  `SPEC.md:3992-4008`.
+- Consumers:
+  agents and humans;
+  `AGENTS.md:1338` (rule CLG).
+- Status:
+  retained
+  (implementation plan lines 116 to 120).
+- Rust owner:
+  `rule_add_explicit.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  run `git add .`,
+  `git add -A`,
+  `git add --pathspec-from-file -A` with a pathspec file named `-A`,
+  and `git add -- a.txt`;
+  observe rejection of the first two and staging by the last two.
+- Native state:
+  in progress
+  (queued rule-core delegate).
+
+### final-newline
+
+- Behavior:
+  `finalNewlinePolicy` (`src/policy-engine/final-newline-policy.ts:86-119`) checks each regular or executable candidate.
+  `normalizeFinalNewline` (`src/policy-engine/final-newline-normalize.ts:108-133`) leaves empty,
+  NUL-containing,
+  and non-UTF-8 bytes unchanged,
+  and otherwise requires exactly one terminal LF.
+  `isFinalNewlineExcluded` (`72-93`) preserves five path families.
+  Where patches apply,
+  the finding carries a patch (`src/policy-engine/final-newline-policy.ts:60-74`).
+  Policy metadata:
+  default `warn`,
+  warn-safe,
+  all five triggers,
+  no external inputs (`86-98`).
+- Spec:
+  `SPEC.md:4061-4087`.
+- Consumers:
+  every commit in this repository;
+  `.github/workflows/final-newline.yml`.
+- Status:
+  retained
+  (implementation plan lines 116 to 120).
+- Rust owner:
+  `rule_final_newline.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  commit a text file without a terminal LF,
+  one with three,
+  a CRLF file,
+  a binary file,
+  an empty file,
+  and a file under `x/dist/final/node/`;
+  observe exact committed bytes:
+  the first three end in one LF with interior bytes untouched,
+  and the others are unchanged.
+- Native state:
+  in progress
+  (queued rule-core delegate).
+
+### atomic-push transform
+
+- Behavior:
+  `atomicPush` (`src/rule/atomic-push.ts:48-89`) inserts `--atomic` after `push`
+  unless the caller passed `--atomic` or `--no-atomic`.
+- Spec:
+  `SPEC.md:1242-1244`.
+- Consumers:
+  every wrapped `git push`.
+- Status:
+  retained
+  (implementation plan lines 121 to 123).
+- Rust owner:
+  `rule_atomic_push.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture with a remote hook that rejects one of two refs,
+  run `git push origin a b` and `git push --no-atomic origin a b`;
+  observe that the remote takes neither ref in the first case and one in the second.
+- Native state:
+  in progress
+  (queued rule-core delegate).
+
+### commit-only transform
+
+- Behavior:
+  `commitOnly` (`src/rule/commit-only.ts:222-418`) inserts `-o` after `commit`.
+  It rejects `-a` or `--all` (`all-flag`,
+  `302-306`),
+  a pathless commit outside a merge,
+  cherry-pick,
+  or revert conclusion (`pathspec-required`,
+  `319-343`),
+  and a pathless `--amend` or `--allow-empty` while the index differs from `HEAD`
+  (`staged-changes-ignored`,
+  `363-393`).
+  It skips insertion for an explicit `-o`,
+  `--only`,
+  or `--no-only` (`346-349`),
+  for include,
+  interactive,
+  or patch selection (`351-357`),
+  and for `--no-enforce-only` (`284-299`).
+  The checks query real Git (`src/rule/commit-index-check.ts:65-110`;
+  `src/rule/commit-sequencer-check.ts:108-176`).
+  Rejections are `core-finding` events (`src/policy-engine/fixed-transforms.ts:123-133`).
+- Spec:
+  `SPEC.md:1368-1396`,
+  `2516-2529`.
+- Consumers:
+  every wrapped `git commit`;
+  `AGENTS.md:1338` (rule CLG) and rule CPN.
+- Status:
+  retained
+  (implementation plan lines 121 to 123).
+- Rust owner:
+  `rule_commit_only.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  stage `b.txt`,
+  then run `git commit -m x -- a.txt`,
+  `git commit -m x`,
+  `git commit -a -m x`,
+  and `git commit --amend --no-edit`;
+  observe that the first commits only `a.txt` and leaves `b.txt` staged,
+  and that the other three exit `1` with the three `commit-only/*` codes.
+- Native state:
+  in progress
+  (queued rule-core delegate).
+
+### status-hints-off transform
+
+- Behavior:
+  `statusHintsOff` (`src/rule/status-hints-off.ts:105-137`) inserts `-c advice.statusHints=false`
+  before `status` unless the caller set that key with a global `-c` (`56-71`).
+- Spec:
+  `SPEC.md:1242-1244`.
+- Consumers:
+  every wrapped `git status`.
+- Status:
+  retained
+  (implementation plan lines 121 to 123).
+- Rust owner:
+  `rule_status_hints.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture with one unstaged change,
+  run `git status` and `git -c advice.statusHints=true status`;
+  observe Git's `use "git add"` hint only in the second.
+- Native state:
+  in progress
+  (queued rule-core delegate).
+
+## Optional policies
+
+### forbidden-strings
+
+- Behavior:
+  `forbiddenStringsPolicy` (`src/optional/forbidden-strings/index.ts:112-156`,
+  canonical source `package/git-policy/forbidden-strings/src/index.ts`) scans candidate bytes.
+  `materializeCandidates` writes candidate bytes to temporary files with at most 64 concurrent lanes
+  (`src/optional/forbidden-strings/materialize-candidates.ts:21`,
+  `97-236`);
+  `scanCandidates` starts the scanner executable with an argument array
+  (`src/optional/forbidden-strings/scan-candidates.ts:273-387`);
+  `parseScannerOutput` turns exit `1` output into redacted findings
+  (`src/optional/forbidden-strings/scanner-output.ts:323-361`).
+  Options:
+  `executable` (default `forbidden-strings`) and `builtinRules` (default `true`)
+  (`src/optional/forbidden-strings/index.ts:40-49`).
+  Declared inputs:
+  the executable,
+  `FORBIDDEN_STRINGS_RULES`,
+  and the rules file (`78-101`).
+  Policy metadata:
+  default `error`,
+  warn-unsafe,
+  triggers `pre-forward`,
+  `post-commit`,
+  `manual-push`,
+  and `direct-check` (`116-124`).
+- Spec:
+  `SPEC.md:4016-4059`.
+- Consumers:
+  the root configuration (`cli-git.config.ts:45-57`),
+  which points `executable` at the Rust scanner under `package/cli/forbidden-strings/target/release/`;
+  root `mise.toml:1321-1327` sets `FORBIDDEN_STRINGS_RULES`;
+  `.github/workflows/forbidden-strings.yml` runs the standalone scanner independently.
+- Status:
+  retained
+  (implementation plan lines 124 and 128 to 152).
+  The scanner is linked in-process through its library interface;
+  the temporary content files,
+  the scanner child process,
+  and stderr parsing are removed (lines 148 to 152).
+  The `executable` option retires:
+  the rewrite scope lines 126 to 131 forbid arbitrary program selection through JSONC.
+- Rust owner:
+  `policy_forbidden_strings.rs` (proposed),
+  over the `Scanner` interface in `package/cli/forbidden-strings/src`.
+- Consumer-level test:
+  in the standard fixture,
+  commit a file with a planted built-in-rule match and a clean control,
+  with a different string in the worktree copy than in the staged copy;
+  observe exit `1`,
+  a redacted finding for the staged bytes only,
+  no matched bytes in any output,
+  and with `strace` no scanner child process and no temporary content file.
+- Native state:
+  absent in the wrapper.
+  The scanner's embedding interface is implemented and verified
+  (`doc/handover/scanner-native-verification.md`).
+
+### forbidden-root-context
+
+- Behavior:
+  `forbiddenRootContext` (`src/optional/repository-policy/index.ts:114-148`,
+  canonical source `package/git-policy/repository/src/index.ts`) reports a non-deleted candidate
+  at exactly `CONTEXT.md` (`97-103`).
+  Policy metadata:
+  default `error`,
+  warn-safe,
+  triggers `pre-forward` and `direct-check`,
+  no external inputs (`115-123`).
+- Spec:
+  `SPEC.md:4010-4014`.
+- Consumers:
+  the root configuration (`cli-git.config.ts:44`);
+  `AGENTS.md` rule SK3 states the no-context-file convention it enforces.
+- Status:
+  retained
+  (implementation plan line 125).
+- Rust owner:
+  `policy_forbidden_root_context.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture,
+  commit a new root `CONTEXT.md`,
+  a nested `a/CONTEXT.md`,
+  and a deletion of a root `CONTEXT.md`;
+  observe rejection of the first only.
+- Native state:
+  absent.
+
+### Dependent-version propagation
+
+- Behavior:
+  `dependentVersionBump` (`src/optional/repository-policy/dependent-version-bump-policy.ts:247-271`,
+  canonical source `package/git-policy/repository/src`) runs for commits that modify a workspace manifest
+  (`179-191`).
+  It plans patch-level bumps for publishable dependents
+  (`src/optional/repository-policy/dependent-bump-workflow.ts:297-391`;
+  `src/optional/repository-policy/dependent-version-bump.ts:153-353`),
+  reading manifests through `trackedFiles`,
+  publishable names from `package/config/pnpr/config.yaml`
+  (`src/optional/repository-policy/publishable-names.ts:11`,
+  `39-82`),
+  and source imports (`src/optional/repository-policy/source-imports.ts:39-267`).
+  Each stale dependent is a finding with a full-content patch for a tracked file that is not a candidate,
+  so the fix adds the path to the commit
+  (`src/optional/repository-policy/dependent-version-bump-policy.ts:204-226`).
+  Policy metadata:
+  default `error`,
+  warn-unsafe,
+  triggers `pre-forward`,
+  `direct-check`,
+  and `direct-fix` (`247-258`).
+  The root configuration does not list it,
+  so it runs at its default severity.
+- Spec:
+  `SPEC.md:531-532`,
+  `607-623`,
+  `2531-2559`;
+  `doc/planning/cli-git-policy-added-paths.md`.
+- Consumers:
+  every commit that bumps a workspace package version.
+  The standalone task `//package/git-policy/repository:bump:dependents`,
+  called by the root `changeset:version` task (`mise.toml:1193-1197`),
+  shares the planning code (`package/git-policy/repository/src/bump-dependents-worktree.ts`).
+- Status:
+  retained
+  (implementation plan line 125).
+- Rust owner:
+  `policy_dependent_version.rs` (proposed).
+- Consumer-level test:
+  in the standard fixture with three workspace manifests where `b` depends on `a`,
+  bump `a` and commit only `a`'s manifest;
+  observe that the landed commit also bumps `b`,
+  that `b`'s worktree and index entries match the commit,
+  and that a dirty `b` manifest instead yields `patch-conflict` with exit `2`.
+- Native state:
+  absent.
+
+### Markdown autofix
+
+- Behavior:
+  `markdownLintPolicy` (`src/optional/markdown-lint/index.ts:93-141`,
+  canonical source `package/git-policy/markdown-lint/src`) sends each Markdown candidate
+  through the configured command in stdin fix mode
+  (`src/optional/markdown-lint/rewrite-candidates.ts:594-632`),
+  reports `markdown-autofix` with a full-content patch or `markdown-violation` (`34-39`),
+  and treats exit `2` or any other status as a failure.
+  Options:
+  `command` (default `node package/cli/markdown-lint/src/cli.ts`),
+  `rules` (default `lfs-image-url`),
+  and `exclude` (`src/optional/markdown-lint/index.ts:46-81`).
+  Policy metadata:
+  default `warn`,
+  warn-safe,
+  all five triggers,
+  unrestricted inputs (`97-109`).
+- Spec:
+  `SPEC.md:547-552`.
+- Consumers:
+  the root configuration (`cli-git.config.ts:33-43`),
+  which runs only `lfs-image-url` and excludes `package/ssg/`.
+- Status:
+  retained as current commit-time Markdown normalization
+  (implementation plan line 126).
+  Lines 181 to 189 replace the configured command with the coordinated installation's native linter,
+  called with `--config`,
+  `--stdin`,
+  `--stdin-filename`,
+  and `--fix`;
+  repository JSONC cannot choose the executable.
+  The `command` option retires
+  (rewrite scope lines 126 to 131).
+- Rust owner:
+  `policy_markdown.rs` (proposed),
+  calling the binary of `package/linter/monochromatic-lint`.
+- Consumer-level test:
+  in the standard fixture with `.lfsconfig` and an LFS-tracked image,
+  commit a Markdown file that links the image,
+  including an astral-character and a BOM variant;
+  observe the landed bytes with the rewritten object URL,
+  one `fix-summary`,
+  and an untouched file under an excluded path.
+- Native state:
+  absent in the wrapper.
+  The linter rule port is pending:
+  the handover work queue lists native LFS URL normalization as open.
