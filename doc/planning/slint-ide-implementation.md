@@ -338,6 +338,28 @@ This identifies a rendering integration risk,
 not a claim that Slint cannot implement the required viewer.
 The proposed first gate must establish the usable implementation before the rest of the app depends on it.
 
+## Font bundle correction and proposed verification guidance
+
+The user's requirement is now explicit:
+prefer the official variable font assets and include real italics for both families.
+The earlier static Regular/SemiBold subset was too narrow.
+The font asset README records the replacement files,
+axis ranges,
+checksums,
+and the current toolkit optical-size boundary.
+
+Proposed `AGENTS.md` edit,
+not applied:
+tighten `VUB` to make font fidelity part of consumer-boundary verification.
+Suggested replacement body:
+
+> Verify built, deployed, or installed artifacts through their real consumers.
+> For fonts, prefer variable assets and real italics;
+> exercise axes, features, and reading geometry.
+
+This keeps the existing consumer-verification obligation
+and prevents treating a regular static font screenshot as complete typography support.
+
 ## Next action
 
 Implement actual syntax highlighting and annotations in the shared source-view path,

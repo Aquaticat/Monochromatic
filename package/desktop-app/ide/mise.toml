@@ -95,11 +95,11 @@ runCargo(['test', '--no-default-features', '--lib', '--tests'])
 """
 
 [tasks."test:native"]
-description = "Exercise native window events using the real markup on the headless backend"
+description = "Exercise native window events and fonts in process-isolated headless tests"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'test', '--features', 'slint/mcp', '--bin', 'monochromatic-ide'])
+runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide'])
 """
 
 [tasks."test:fonts"]
