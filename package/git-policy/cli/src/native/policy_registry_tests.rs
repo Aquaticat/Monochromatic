@@ -35,14 +35,19 @@ fn registry_order_and_names_are_stable() {
     );
 }
 
-/// Each identity has exactly one row carrying its incumbent default and warn-safety.
+/// Every policy's default severity is pinned to the incumbent definition's `defaultSeverity`.
+/// Sources: `src/policy-engine/{require-root,linked-worktree,branch-worktree,add-explicit,final-newline}-policy.ts`,
+/// `src/optional/markdown-lint/index.ts`, `src/optional/repository-policy/index.ts`,
+/// `src/optional/repository-policy/dependent-version-bump-policy.ts`, `src/optional/forbidden-strings/index.ts`.
 #[test]
 fn every_identity_resolves_to_its_declared_row() {
-    for (id, name, default_severity, warn_safe, accepts_options) in [
+    // (identity, name, incumbent defaultSeverity, warnSafe, accepts options, needs a configuration file)
+    let expected: [(PolicyId, &str, Severity, bool, bool, bool); 9] = [
         (
             PolicyId::RequireRoot,
             "require-root",
             Severity::Error,
+            false,
             false,
             false,
         ),
@@ -52,6 +57,7 @@ fn every_identity_resolves_to_its_declared_row() {
             Severity::Error,
             false,
             false,
+            false,
         ),
         (
             PolicyId::BranchWorktreeOnly,
@@ -59,11 +65,13 @@ fn every_identity_resolves_to_its_declared_row() {
             Severity::Error,
             true,
             false,
+            false,
         ),
         (
             PolicyId::AddExplicit,
             "add-explicit",
             Severity::Error,
+            false,
             false,
             false,
         ),
@@ -73,43 +81,69 @@ fn every_identity_resolves_to_its_declared_row() {
             Severity::Warn,
             true,
             false,
+            false,
         ),
         (
             PolicyId::MarkdownAutofix,
             "markdown/autofix",
-            Severity::Off,
+            Severity::Warn,
+            true,
             true,
             true,
         ),
         (
             PolicyId::ForbiddenRootContext,
             "mono/forbidden-root-context",
-            Severity::Off,
+            Severity::Error,
             true,
             false,
+            true,
         ),
         (
             PolicyId::DependentVersionBump,
             "mono/dependent-version-bump",
-            Severity::Off,
+            Severity::Error,
             false,
             false,
+            true,
         ),
         (
             PolicyId::ForbiddenStrings,
             "security/forbidden-strings",
-            Severity::Off,
+            Severity::Error,
             false,
             true,
+            true,
         ),
-    ] {
+    ];
+    assert_eq!(
+        expected.len(),
+        POLICY_REGISTRY.len(),
+        "every registry row is pinned"
+    );
+    for (id, name, default_severity, warn_safe, accepts_options, needs_configuration_file) in
+        expected
+    {
         let descriptor = policy_descriptor(id);
         assert_eq!(descriptor.id, id);
         assert_eq!(descriptor.name, name);
         assert_eq!(descriptor.default_severity, default_severity, "{name}");
         assert_eq!(descriptor.warn_safe, warn_safe, "{name}");
         assert_eq!(descriptor.accepts_options, accepts_options, "{name}");
+        assert_eq!(
+            descriptor.needs_configuration_file, needs_configuration_file,
+            "{name}"
+        );
         assert_eq!(policy_by_name(name), Some(descriptor));
+    }
+    // No shipped policy defaults to off: an unlisted policy must never silently stop.
+    for descriptor in POLICY_REGISTRY {
+        assert_ne!(
+            descriptor.default_severity,
+            Severity::Off,
+            "{}",
+            descriptor.name
+        );
     }
     let mut seen: usize = 0;
     for first in POLICY_REGISTRY {

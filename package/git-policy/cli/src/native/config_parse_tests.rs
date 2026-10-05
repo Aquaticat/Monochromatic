@@ -67,7 +67,8 @@ fn empty_documents_equal_the_defaults() {
     }
 }
 
-/// The direct translation of this repository's TypeScript configuration loads to exact settings.
+/// The direct translation of this repository's TypeScript `policies` map loads to the
+/// severities the incumbent applies, including the unlisted `mono/dependent-version-bump`.
 #[test]
 fn repository_translation_loads_exact_settings() {
     let config: CliGitConfig = parse_config(
@@ -76,7 +77,6 @@ fn repository_translation_loads_exact_settings() {
             // Rewrites Markdown image links that point at LFS-tracked files.
             "markdown/autofix": ["warn", { "rules": ["lfs-image-url"], "exclude": ["package/ssg/"] }],
             "mono/forbidden-root-context": "error",
-            "mono/dependent-version-bump": "error",
             "security/forbidden-strings": ["error", { "builtinRules": true }],
           },
         }"#,
@@ -90,7 +90,8 @@ fn repository_translation_loads_exact_settings() {
         (PolicyId::FinalNewline, Severity::Warn, false),
         (PolicyId::MarkdownAutofix, Severity::Warn, true),
         (PolicyId::ForbiddenRootContext, Severity::Error, true),
-        (PolicyId::DependentVersionBump, Severity::Error, true),
+        // Not listed in the root configuration, yet enforced at its default today.
+        (PolicyId::DependentVersionBump, Severity::Error, false),
         (PolicyId::ForbiddenStrings, Severity::Error, true),
     ] {
         assert_eq!(
@@ -117,6 +118,80 @@ fn repository_translation_loads_exact_settings() {
         }
     );
     assert_eq!(config.concurrency, CliGitConfig::defaults().concurrency);
+}
+
+/// A repository without a configuration file runs the built-ins only; a configured one
+/// runs every shipped policy at its incumbent default unless the file says otherwise.
+#[test]
+fn unconfigured_and_configured_defaults_differ_only_for_plugin_era_policies() {
+    let configured: CliGitConfig = CliGitConfig::defaults();
+    let unconfigured: CliGitConfig = CliGitConfig::unconfigured();
+    assert_eq!(unconfigured.concurrency, configured.concurrency);
+    assert_eq!(
+        unconfigured.policies.forbidden_strings,
+        configured.policies.forbidden_strings
+    );
+    assert_eq!(
+        unconfigured.policies.markdown_autofix,
+        configured.policies.markdown_autofix
+    );
+    for (id, without_file, with_file) in [
+        (PolicyId::RequireRoot, Severity::Error, Severity::Error),
+        (
+            PolicyId::LinkedWorktreeOnly,
+            Severity::Error,
+            Severity::Error,
+        ),
+        (
+            PolicyId::BranchWorktreeOnly,
+            Severity::Error,
+            Severity::Error,
+        ),
+        (PolicyId::AddExplicit, Severity::Error, Severity::Error),
+        (PolicyId::FinalNewline, Severity::Warn, Severity::Warn),
+        (PolicyId::MarkdownAutofix, Severity::Off, Severity::Warn),
+        (
+            PolicyId::ForbiddenRootContext,
+            Severity::Off,
+            Severity::Error,
+        ),
+        (
+            PolicyId::DependentVersionBump,
+            Severity::Off,
+            Severity::Error,
+        ),
+        (PolicyId::ForbiddenStrings, Severity::Off, Severity::Error),
+    ] {
+        assert_eq!(
+            unconfigured.policies.setting(id),
+            PolicySetting {
+                id,
+                severity: without_file,
+                explicit: false
+            }
+        );
+        assert_eq!(
+            configured.policies.setting(id),
+            PolicySetting {
+                id,
+                severity: with_file,
+                explicit: false
+            }
+        );
+    }
+    assert_eq!(unconfigured.policies.settings.len(), POLICY_REGISTRY.len());
+    // An explicit "off" in a file is the way to stop a shipped policy.
+    let disabled: CliGitConfig =
+        parse_config(r#"{ "policies": { "mono/dependent-version-bump": "off" } }"#)
+            .expect("explicit off");
+    assert_eq!(
+        disabled.policies.setting(PolicyId::DependentVersionBump),
+        PolicySetting {
+            id: PolicyId::DependentVersionBump,
+            severity: Severity::Off,
+            explicit: true
+        }
+    );
 }
 
 /// Every policy accepts every severity word, and the setting is marked explicit.

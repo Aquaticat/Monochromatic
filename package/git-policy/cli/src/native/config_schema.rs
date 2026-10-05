@@ -168,7 +168,8 @@ pub struct ConcurrencyConfig {
 }
 
 /// What: The complete validated configuration of one repository.
-/// Why:  An absent file and an empty `{}` both yield exactly `CliGitConfig::defaults()`.
+/// Why:  An empty `{}` file yields `CliGitConfig::defaults()`; a repository without a
+///       file yields `CliGitConfig::unconfigured()`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -214,15 +215,39 @@ impl ConcurrencyConfig {
 
 /// Defaults and lookup for policy settings.
 impl PolicyConfig {
-    /// What: Build registry-default severities and default options.
-    /// Why:  A repository that configures nothing behaves as an unconfigured one did:
-    ///       built-ins at their declared severities, every other policy off.
+    /// What: Build the settings of a repository whose configuration file mentions no policy.
+    /// Why:  Every shipped policy then runs at its incumbent default severity, exactly as
+    ///       an unlisted policy of a registered plugin did.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// static defaults(): PolicyConfig;
     /// ```
     pub fn defaults() -> PolicyConfig {
+        return PolicyConfig::with_configuration_file(true);
+    }
+
+    /// What: Build the settings of a repository that has no configuration file.
+    /// Why:  The incumbent ran only its built-in policies there; the formerly
+    ///       plugin-provided policies stay off until a configuration file exists.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static unconfigured(): PolicyConfig;
+    /// ```
+    pub fn unconfigured() -> PolicyConfig {
+        return PolicyConfig::with_configuration_file(false);
+    }
+
+    /// What: Build default settings for a repository with or without a configuration file.
+    ///       `bool` is `true`/`false`, exactly TS `boolean`.
+    /// Why:  One builder keeps both default sets derived from the same registry rows.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static withConfigurationFile(present: boolean): PolicyConfig;
+    /// ```
+    fn with_configuration_file(present: bool) -> PolicyConfig {
         // What: `Vec::<PolicySetting>::with_capacity(n)` is an empty list with room for
         //       `n` rows; `mut` permits `push`.
         // Why:  One row per registry policy, known up front.
@@ -235,9 +260,15 @@ impl PolicyConfig {
             Vec::<PolicySetting>::with_capacity(POLICY_REGISTRY.len());
         // `for ... in` borrows each registry row in order.
         for descriptor in POLICY_REGISTRY {
+            // A policy that needs a configuration file is off when there is none.
+            let severity: Severity = if descriptor.needs_configuration_file && !present {
+                Severity::Off
+            } else {
+                descriptor.default_severity
+            };
             settings.push(PolicySetting {
                 id: descriptor.id,
-                severity: descriptor.default_severity,
+                severity,
                 explicit: false,
             });
         }
@@ -281,8 +312,8 @@ impl PolicyConfig {
 
 /// Whole-configuration defaults.
 impl CliGitConfig {
-    /// What: Build the configuration of a repository without `cli-git.config.jsonc`.
-    /// Why:  Absence of the file is ordinary and must behave identically to `{}`.
+    /// What: Build the configuration an empty `{}` file produces.
+    /// Why:  Parsing starts from these values and replaces only what the file states.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -291,6 +322,20 @@ impl CliGitConfig {
     pub fn defaults() -> CliGitConfig {
         return CliGitConfig {
             policies: PolicyConfig::defaults(),
+            concurrency: ConcurrencyConfig::defaults(),
+        };
+    }
+
+    /// What: Build the configuration of a repository without `cli-git.config.jsonc`.
+    /// Why:  Absence of the file is ordinary: built-in policies and default tuning apply.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static unconfigured(): CliGitConfig;
+    /// ```
+    pub fn unconfigured() -> CliGitConfig {
+        return CliGitConfig {
+            policies: PolicyConfig::unconfigured(),
             concurrency: ConcurrencyConfig::defaults(),
         };
     }

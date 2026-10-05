@@ -38,17 +38,36 @@ fn rejection(root: &Path) -> String {
         .message;
 }
 
-/// A repository without any configuration file gets the registry defaults.
+/// A repository without any configuration file runs built-ins only; an empty file
+/// registers every shipped policy at its incumbent default.
 #[test]
-fn absent_configuration_yields_defaults() {
+fn absent_configuration_yields_unconfigured_defaults() {
     let root: PathBuf = fixture("absent");
     assert_eq!(
         load_repository_config(root.as_path()),
         Ok(LoadedConfig {
-            config: CliGitConfig::defaults(),
+            config: CliGitConfig::unconfigured(),
             source: None,
             ignored_legacy: Vec::<PathBuf>::new(),
         })
+    );
+    assert_eq!(
+        CliGitConfig::unconfigured()
+            .policies
+            .setting(PolicyId::ForbiddenStrings)
+            .severity,
+        Severity::Off
+    );
+    std::fs::write(root.join(CONFIG_FILE_NAME), "{}").expect("write empty object");
+    let configured: LoadedConfig = load_repository_config(root.as_path()).expect("empty file");
+    assert_eq!(configured.config, CliGitConfig::defaults());
+    assert_eq!(
+        configured
+            .config
+            .policies
+            .setting(PolicyId::ForbiddenStrings)
+            .severity,
+        Severity::Error
     );
     remove(root.as_path());
 }
