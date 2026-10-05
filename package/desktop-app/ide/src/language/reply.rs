@@ -86,7 +86,10 @@ pub struct OpenTarget {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Target {
     /// The reader may open this file.
-    Open(OpenTarget),
+    Open(
+        /// The validated file and where in it the target is.
+        OpenTarget,
+    ),
     /// The reader must not open this address; `uri` is shown with the reason.
     Unavailable {
         /// Address exactly as the server sent it.
@@ -134,7 +137,10 @@ pub enum RequestFailure {
     /// The server process ended while the request was pending.
     StreamClosed,
     /// Anything else, such as an answer that does not decode.
-    Other(String),
+    Other(
+        /// What went wrong, in the client's or the decoder's words.
+        String,
+    ),
 }
 
 /// Every way one server can answer one position request.
@@ -149,9 +155,15 @@ pub enum RequestFailure {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RequestOutcome {
     /// Definition or reference targets; never an empty list.
-    Locations(Vec<Target>),
+    Locations(
+        /// One entry per location the server returned, in the server's order.
+        Vec<Target>,
+    ),
     /// Hover content.
-    Hover(HoverText),
+    Hover(
+        /// The content and the range it describes.
+        HoverText,
+    ),
     /// The server answered successfully with nothing at this position.
     Empty,
     /// The server is running but does not offer this feature.
@@ -165,7 +177,10 @@ pub enum RequestOutcome {
     /// The server gave up because its own state changed (`-32801` or `-32800`), even after retries.
     Superseded,
     /// The request failed.
-    Failed(RequestFailure),
+    Failed(
+        /// The class of the failure.
+        RequestFailure,
+    ),
 }
 
 /// One server's answer to one position request.

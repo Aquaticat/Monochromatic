@@ -35,17 +35,16 @@ fn follow_reloads(root: &Path, probe: &mut Probe, name: &str) -> Vec<Value> {
     probe.open(&file, CAT_BEFORE);
     probe.until_ready();
     support::server_text_until(root, CAT_BEFORE);
-    let mut version = 0;
     let mut lines = Vec::new();
-    for text in [
+    // Each reload raises the protocol version by one, starting from the `didOpen` version zero.
+    for (version, text) in (1_i64..).zip([
         CAT_AFTER,
         HUMAN_BEFORE,
         HUMAN_AFTER,
         ACCENT_BEFORE,
         ACCENT_AFTER,
-    ] {
+    ]) {
         probe.reload(text);
-        version += 1;
         lines = support::report_until(root, "the reloaded text", |seen| {
             return support::server_text(seen) == Some((version, text.to_string()));
         });

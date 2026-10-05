@@ -42,9 +42,15 @@ pub enum Effect {
     RefreshDiagnostics,
     /// Hand these file-watcher registrations to helix-lsp's file-event handler. The tuple pairs
     /// a registration identifier with its options.
-    RegisterWatchers(Vec<(String, lsp::DidChangeWatchedFilesRegistrationOptions)>),
+    RegisterWatchers(
+        /// Registration identifier and options of each watcher.
+        Vec<(String, lsp::DidChangeWatchedFilesRegistrationOptions)>,
+    ),
     /// Remove these file-watcher registrations.
-    UnregisterWatchers(Vec<String>),
+    UnregisterWatchers(
+        /// Registration identifiers to remove.
+        Vec<String>,
+    ),
 }
 
 /// What: The reply plus its side effect and a short policy word for the log. `Result<Value,
