@@ -22,7 +22,8 @@ pub const WRAPPER: &str = env!("CARGO_BIN_EXE_cli-git-native");
 pub const REAL_GIT: &str = "/usr/bin/git";
 
 /// Seconds after which a wrapped command is killed; real commands here finish in milliseconds.
-pub const TIME_BOUND_SECONDS: &str = "20";
+/// The bound is short so a mutant that loops fails every affected control quickly.
+pub const TIME_BOUND_SECONDS: &str = "5";
 
 /// The signal that ends `timeout --signal=KILL` itself when the bound was hit: it kills
 /// the command, then re-raises the same signal on itself.

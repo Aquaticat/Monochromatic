@@ -62,12 +62,12 @@ fn time_bound_detects_a_forwarding_loop() {
     std::fs::create_dir(fixture.root.join("loop")).expect("directory");
     let looping: PathBuf = fixture.root.join("loop/git");
     executable(looping.as_path(), b"#!/bin/sh\nexec \"$0\" \"$@\"\n");
-    // Two seconds are ample to prove the bound fires; real commands finish in milliseconds.
+    // One second is ample to prove the bound fires; real commands finish in milliseconds.
     let status = bounded_for(
         &fixture,
         looping.as_path(),
         path_of(&fixture, &["loop"]).as_os_str(),
-        "2",
+        "1",
     )
     .arg("--version")
     .status()
