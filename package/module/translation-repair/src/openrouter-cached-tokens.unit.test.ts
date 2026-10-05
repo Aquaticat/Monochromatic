@@ -70,7 +70,7 @@ await describe({
             + 'data: 5\n\n'
             + 'data: {"usage":{"prompt_tokens_details":{"cached_tokens":1.5}}}\n\n'
             + 'data: [DONE]\n\n',
-        },),).toBe(3072,);
+        },),).toBe(3_072,);
       },
     },),
   ],
