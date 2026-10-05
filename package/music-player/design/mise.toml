@@ -473,6 +473,21 @@ description = "Exercise menu cohort, heading, input, crop and no-ballot guards o
 dir = "{{config_root}}"
 run = "node track-menu-test.mjs"
 
+[tasks."build:scan-indicator"]
+description = "Build the evidence-only native D26 scan-indicator viewer from inspected witnesses"
+dir = "{{config_root}}"
+run = "node scan-indicator.mjs build"
+
+[tasks."lint:scan-indicator"]
+description = "Validate exact scan-indicator images, authored states, bar slot and status-reading boundaries"
+dir = "{{config_root}}"
+run = "node scan-indicator.mjs validate"
+
+[tasks."test:scan-indicator"]
+description = "Exercise scan cohort, authored-state, bar-slot, status-reading and no-ballot guards on disposable copies"
+dir = "{{config_root}}"
+run = "node scan-indicator-test.mjs"
+
 [tasks."test:first-run:access"]
 description = "Exercise first-run review image, metadata, cohort and ballot guards in disposable fixtures"
 dir = "{{config_root}}"
