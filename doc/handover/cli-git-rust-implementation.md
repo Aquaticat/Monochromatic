@@ -338,6 +338,69 @@ Host notes from that run:
   The delegate ran `slmgr.vbs /rearm` on the disposable overlay only;
   the template is unchanged.
 
+**Linter executable**:
+complete,
+evidence in [`unified-linter-executable.md`](unified-linter-executable.md)
+(commits `2cdcea1f3`, `9adb2f918`, `c46396109`, `6b260a81e`, `4b6d46b9a`, `2aab0b324`, `a4b2f08dc`).
+`monochromatic-lint` builds as a binary with orchestration, stdin fixing, every designed flag,
+core processing findings, panic containment and mode-preserving atomic writes.
+All 17 designed rules have an implementation and tests;
+`markdown/lfs-image-url` was ported against `fixtures/lfs-url-parity.json`
+(all 868 endpoint and 73 configuration cases).
+The main session read the final gate log for source commit `2aab0b324`:
+`lint:container` exit 0,
+335 library tests and 10 executable tests passed,
+Clippy clean,
+image `59eb21a45a09dfd956606f040fb66aec6fa3393f608dbdba4e899cfc7c559173`.
+The fuzz sidecar gained an `orchestration` target;
+a 30-second smoke of all six targets exited 0
+(`package/linter/monochromatic-lint.fuzz/target/verification/campaign-IvsNWV`).
+
+Differential comparison against both incumbents over this repository,
+read-only, with fixes only in throwaway worktrees:
+
+- Rust:
+  all 185 findings under the draft configuration match the incumbent exactly, spans included;
+  the incumbent's other 222 are hidden by the draft's added `**/*.fuzz/**` and `doc/audit/**` exemptions,
+  and without them both report 407.
+- Markdown:
+  of about 52,000 findings, 623 differ,
+  all in 9 files after their first character outside the Basic Multilingual Plane:
+  607 are the incumbent's issue #559 offset bug
+  and 16 are the same positions in different column units.
+- Fixes:
+  byte-identical to the incumbent with #559 corrected,
+  except one fuzz seed where the native rule removes a trailing `\.` completely;
+  a second fix pass changes nothing.
+
+Open to veto, from that document's `Decisions open for veto` section:
+exit 2 for processing findings and for a missing configuration,
+the `core/*` finding codes,
+per-file LFS root discovery,
+an in-crate SHA-256,
+strict JSON for `--print-config`,
+and UTF-16 Markdown columns.
+
+What the draft configuration would do to this repository at cutover,
+which the user needs to see before the cutover step:
+
+- `rust/no-anonymous-functions` at `error` reports 1,215 findings in `.rs` files
+  and 207 more in Markdown snippets and doc tests,
+  with no burn-down block covering either.
+- Snippet `require-rustdoc` warnings number 1,142 in 200 files
+  (the design estimated 905);
+  710 are the file-level rustdoc requirement.
+- `--fix` under the draft rewrites 693 `.rs` files (comment lines only) and 185 Markdown files,
+  and rustdoc line-break fixes leave two spaces after `///`.
+
+Not done:
+a mutation campaign over the new orchestration modules,
+Windows and release-build runs,
+a fuzz campaign longer than the smoke,
+85 `require-rustdoc` findings in the crate's own older modules,
+and a file-size limit (the incumbent skips files over 5 MiB).
+Commit `a4b2f08dc` is scoped `docs(handover)` but also changes both package READMEs.
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
@@ -372,8 +435,10 @@ that is verification, not a decision for the user.
 
 - [x] Unified-linter foundation: JSONC schema, ordered merge, command interface, and artifact tests.
 - [ ] Unified-linter Rust and Markdown/MDX rules, processors, fix mapping, and consumer parity.
-  Rules and processors are implemented;
-  executable orchestration, stdin/fix/output/exit integration, and consumer migration remain.
+  Rules, processors and the executable are implemented and gated;
+  differential comparison is recorded under `Resumption 2026-10-05`.
+  Remaining: orchestration mutation campaign, processor and Markdown survivor dispositions,
+  and consumer migration.
 - [x] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
 - [x] Forbidden-strings structured embedding interface and standalone parity.
   The two Windows-native survivors are caught on Windows (GNU ABI, differential against a red baseline).
