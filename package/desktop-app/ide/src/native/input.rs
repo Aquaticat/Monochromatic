@@ -139,6 +139,21 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             position.anchor = start;
             position.head = end;
         }
+        // What: `?pressed.granularity` logs the value in its debug form, as a named field.
+        // Why: Which unit a press selected is the branch decision that explains a later drag.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // logger.debug('source pointer press', { line, extend, granularity, head: position.head });
+        // ```
+        tracing::debug!(
+            line,
+            extend,
+            granularity = ?pressed.granularity,
+            anchor = position.anchor,
+            head = position.head,
+            "source pointer press"
+        );
         drop(pressed);
         current.document.select(position);
         drop(current);
@@ -292,6 +307,14 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         if !shift {
             position.anchor = position.head;
         }
+        tracing::debug!(
+            control,
+            shift,
+            anchor = position.anchor,
+            head = position.head,
+            paged = scrolled,
+            "source caret key"
+        );
         current.document.select(position);
         drop(current);
         follow(&window, &state, scrolled);
