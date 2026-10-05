@@ -353,6 +353,15 @@ fn debug_notes_stay_on_standard_error() {
         "{}",
         debug.stderr
     );
+    // Exactly the one linted file is named as selected; the ignored one is not.
+    assert!(
+        debug
+            .stderr
+            .contains("monochromatic-lint: debug: a.md: selected for linting\n"),
+        "{}",
+        debug.stderr
+    );
+    assert_eq!(debug.stderr.matches(": selected for linting").count(), 1);
     assert!(
         debug
             .stderr

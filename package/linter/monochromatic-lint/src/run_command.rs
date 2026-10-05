@@ -54,7 +54,11 @@ fn plan_files(
             Err(error) => return Err(SetupError::from_display(&error)),
         };
         match planned {
-            Planned::Lint { plan } => plans.push(*plan),
+            Planned::Lint { plan } => {
+                // Naming every selected file lets a `--debug` reader see exactly what was linted.
+                notes.push(format!("{}: selected for linting", plan.display));
+                plans.push(*plan);
+            }
             Planned::Ignored => {
                 notes.push(format!(
                     "{}: ignored by configuration",
