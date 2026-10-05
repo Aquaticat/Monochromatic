@@ -470,7 +470,10 @@ Each note names the reason and the remedy:
 - an empty answer:
   `No definition found.`,
   `No usages found.`,
-  or `No hover information at this position.`;
+  or `No hover information at this position.`,
+  followed,
+  while the server reports work in progress,
+  by the advice to press the key again when it finishes;
 - a server that cannot follow external changes,
   a failed start,
   a launch the policy refused,
@@ -505,7 +508,8 @@ and on a reload of the same file the note asks to try again.
 The popup and the list close when the displayed text changes,
 and a language target waiting for its file is dropped by any later open.
 Pointer hover and key actions use separate request slots,
-so hovering never replaces a pending Ctrl+B.
+so hovering never replaces a pending Ctrl+B,
+and a resting pointer's late answer never replaces the location list or a note.
 
 ### Synchronization and annotations
 
