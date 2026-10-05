@@ -250,6 +250,11 @@ It counts each failed run by what it left:
 a zombie,
 a process still running,
 or no child (for example a server that was not ready in time).
+The counting was checked with a copy of the task whose second variant removes the reaping and adds no pause:
+of 10 runs each, 7 and 8 were counted as zombies, and none with the reaping.
+A short run can show nothing:
+60 runs at sixteen at a time found no leftover process with either variant on 2026-10-05,
+while the measurements listed in "Measurements" used 600 runs each with a separate script and prebuilt binaries.
 
 The guard control removes the reaping call and expects a zombie from the test whose server must be killed:
 
