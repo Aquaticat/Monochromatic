@@ -226,6 +226,104 @@ Its log shows the selection took effect:
 369 library tests ran with 9 filtered out,
 then the 10 `binary` tests.
 
+### Dispositions of the first run
+
+`mutation-hQ4LIa` mutated test image
+`f357522ebe2b80d79a5858b5768305f54ba2241629b0d7587184243bcd7633c6`.
+Each missed mutant below names its disposition;
+the rerun under `Final campaigns` is the proof for each killing test.
+
+- `src/run_check.rs:126:13: delete field explicit_types from struct RustRuleSettings expression in HostChecker<'run>::check_rust_root`.
+  Equivalent, and the redundant code is removed.
+  `check_syntax_rules` reads only `max_lines`,
+  `rustdoc` and `no_anonymous_functions`,
+  so clearing `explicit_types` in a copy of the settings changed nothing.
+  `check_rust_root` now passes the settings through.
+- `src/run_finish.rs:49:5: replace debug_progress with ()`.
+  Not equivalent:
+  `--debug` loses the workspace progress lines.
+  No test loaded a workspace with `--debug`.
+  The new binary test `debug_streams_workspace_progress_and_plain_runs_stay_silent`
+  points `rust/require-explicit-types` at an unparsable `Cargo.toml`:
+  rust-analyzer reports `discovering sysroot` before Cargo rejects the manifest,
+  so the run stays quick.
+  It requires that line on standard error with `--debug`,
+  an empty standard error without it,
+  and one processing finding with status 2 in both runs.
+  The first version also compared both runs' standard output byte for byte
+  and failed in `gate-mutation-close-3.log`,
+  because the message quotes Cargo's command line,
+  which names a fresh temporary lockfile per run;
+  the runs are now compared by location and code.
+- `src/run_process.rs:70:8: delete ! in parse_and_run`.
+  Not equivalent,
+  but visible only when a panic happens:
+  the silent hook would be installed for `--debug` runs only,
+  and a contained panic would print the default message on standard error,
+  which carries JSONL in `--stdin --fix` mode.
+  No known input makes the executable panic,
+  and the process-wide hook cannot be replaced inside a test binary without affecting every other test.
+  The decision is now the named function `silences_panics`,
+  and `only_debug_runs_keep_the_default_panic_hook` pins both answers.
+  What remains untested is that `parse_and_run` calls `set_hook` when it returns true;
+  cargo-mutants generates no mutant for that call.
+- `src/run_process.rs:111:22: replace || with && in run_process`.
+  Not equivalent:
+  a failed write to one stream would no longer change the exit status.
+  The new binary test `a_failing_output_stream_exits_two` sends standard output,
+  then standard error under `--debug`,
+  to `/dev/full`,
+  and requires status 2 instead of the findings' status 1 each time.
+- `src/run_workers.rs:37:37: replace * with +`
+  (`WORKER_STACK_BYTES` becomes 8 bytes more than 1 MiB).
+  Not equivalent:
+  input that needs more than 1 MiB of stack overflows a worker and aborts the process.
+  The other three mutants of the constant leave a few kilobytes or less,
+  and ordinary test input already overflowed those workers:
+  their logs end in `thread '<unknown>' has overflowed its stack`.
+- `src/run_workers.rs:254:16: replace <= with > in process_plans`.
+  Not equivalent for the same reason:
+  with two or more files the plans run on the calling thread instead of on workers,
+  and the calling thread of a test has 2 MiB of stack.
+  Output order and content are otherwise unchanged.
+
+Both stack mutants are killed by the new
+`workers_parse_nesting_deeper_than_a_default_thread_stack_holds`,
+which lints two files nested 1,200 parentheses deep at a limit of two.
+Under either mutant the test binary aborts with a stack overflow,
+so the per-mutant log shows the overflow line rather than a named failing test.
+The depth comes from a calibration of the debug executable in the bounded container,
+varying the main thread's stack with `ulimit -s`
+(scratch harness, not committed;
+134 is the abort status, 0 a completed run):
+
+- 1,000 parentheses:
+  2,048 KiB aborts,
+  4,096 KiB completes.
+- 1,200 parentheses:
+  3,072 KiB aborts,
+  4,096 KiB completes.
+- 1,400 parentheses:
+  4,096 KiB aborts,
+  5,120 KiB completes.
+- 1,600 parentheses:
+  5,120 KiB aborts,
+  6,144 KiB completes.
+- 2,000 parentheses:
+  4,096 KiB aborts,
+  8,192 KiB completes.
+- 4,000 parentheses:
+  8,192 KiB aborts.
+
+So 1,200 levels need between 3 and 4 MiB:
+twice the margin below the 8 MiB worker stack,
+and more than the 2 MiB a test thread or a 1 MiB mutant stack holds.
+The margin is a property of this toolchain's unoptimized parser frames;
+a release build needs less stack,
+so the test can only become easier to pass there.
+Markdown nesting did not recurse in the same calibration:
+block quotes and lists 4,000 levels deep completed at a 256 KiB stack.
+
 ## Remaining
 
 ### Never-mutated files outside this brief
