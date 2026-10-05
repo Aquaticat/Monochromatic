@@ -102,6 +102,9 @@ mod source_font_tests;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;
+/// A live system color-scheme change repaints source ink, find overlays, and window chrome.
+#[cfg(test)]
+mod theme_tests;
 /// Windowed rows must not redirect an in-progress click after scrolling.
 #[cfg(test)]
 mod tree_pointer_tests;
