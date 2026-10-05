@@ -272,6 +272,29 @@ the visit was repeated.
 A crash leaves the guest's changed settings and the AVD's lock in place;
 see [the lock recurrence](android-emulator-37-disposable-avd-lock-after-hard-stop.md).
 
+### Second occurrence the same day
+
+The same container command crashed again later on 2026-10-05,
+about a quarter of an hour after its start,
+after twelve first-run study states had been captured.
+The emulator's output again ended with `Segmentation fault (core dumped)`
+and the owner exited with status 1.
+`coredumpctl list --since 19:00` reported `No coredumps found`,
+so no stack was read this time.
+The host's one-minute load average had risen from under 1 to between 70
+and 96 during the visit,
+driven by other work on the host.
+That both crashes came under heavy load is an observation,
+not an established cause.
+
+The next boot's first reading of `font_scale` was `2.0`,
+the value the capture had set before the crash,
+so a crash leaves the last written guest setting on disk.
+The remedy that was used is not a fix for the crash:
+the capture now keeps each finished state in one cohort folder and a later
+boot continues from the first missing state,
+with each view naming the boot that made it.
+
 ## Verified workarounds
 
 Use `-gpu host` for this Linux host.

@@ -241,6 +241,34 @@ A boot with only `hardware-qemu.ini.lock` present was not tried,
 so that file is implicated,
 not isolated.
 
+### Second recurrence the same day, workaround followed
+
+After the emulator crash described as the second occurrence in
+[the segmentation-fault record](android-emulator-37-software-renderer-sigsegv.md),
+the owned AVD copy again held `hardware-qemu.ini.lock` (content `31`
+and a NUL byte) and an empty `multiinstance.lock`.
+`podman ps` for both owned container names,
+`pgrep` for the AVD name and for an ADB client on the study port,
+and `fuser` on both lock files and the user data image found no owner.
+Both files were then moved to a backup folder outside the AVD directory,
+and the next boot of the same bounded container started normally.
+
+### A restored setting can be lost at the console kill
+
+A related finding from the same day,
+recorded here because it concerns what a stop leaves behind.
+The restore step set `font_scale` back,
+read it back as `1.0`,
+and then stopped the guest with the console's `kill`.
+Two later boots first read `2.0`.
+After the restore step was changed to run `sync` in the guest,
+wait eight seconds and run `sync` again before the console kill,
+the next boot first read `1.0`.
+That is one confirming boot,
+not a proof,
+and a read-back before shutdown says nothing about what the next boot reads:
+the next boot's first reading is the check.
+
 ## Verified workaround and tradeoffs
 
 For this **disposable AVD only**,
