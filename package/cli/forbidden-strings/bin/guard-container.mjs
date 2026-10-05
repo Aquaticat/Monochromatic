@@ -11,7 +11,7 @@ function replace({ source, oldText, newText }) {
 }
 
 /** Fault injection and disabled guards exist only in copied container source, never production configuration. */
-async function inject({ context, scanner, variant }) {
+async function inject({ context, scanner, variant, test }) {
   const root = join(context, scanner);
   const mainPath = join(root, 'src/main.rs');
   let main = await readFile(mainPath, 'utf8');
@@ -51,17 +51,18 @@ async function inject({ context, scanner, variant }) {
     await writeFile(path, replace({ source: await readFile(path, 'utf8'),
       oldText: 'catch_unwind(matcher)', newText: 'Ok::<Vec<(usize, usize)>, ()>(matcher())' }));
   }
-  const test = await readFile(join(import.meta.dirname, 'guard-fixture.rs.txt'));
   await writeFile(join(root, 'tests/panic_contract.rs'), test);
 }
 
 /** Every disabled variant must fail the previously passing assertion, not merely fail compilation. */
 async function main() {
   if (process.argv.length !== 2) throw new ScannerVerificationError('This task accepts no arguments.');
+  // Freeze the committed consumer once: edits during a multi-variant campaign must not change its assertions.
+  const test = await readFile(join(import.meta.dirname, 'guard-fixture.rs.txt'));
   for (const variant of ['protected', 'without-output-hook', 'without-process-catch', 'without-load-catch', 'without-content-catch', 'without-name-catch']) {
     const fixture = await snapshot({ name: `guard-${variant}`,
       command: ['cargo', 'test', '--offline', '--locked', '--test', 'panic_contract', '--', '--nocapture', '--test-threads=1'],
-      transform: async ({ context, scanner }) => await inject({ context, scanner, variant }),
+      transform: async ({ context, scanner }) => await inject({ context, scanner, variant, test }),
     });
     try {
       const result = run({ command: 'podman', args: ['run', '--rm', ...fixture.limits,

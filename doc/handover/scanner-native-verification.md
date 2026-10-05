@@ -100,6 +100,14 @@ its compilation scheduling role is distinct from scan hits/scratch.
 This evidence is stronger than inferring immutability from `&self`.
 The malformed-offset test establishes recovery from its injected bounds fault,
 not from every possible future engine defect.
+The audit also followed `Engine::matches` into its backends:
+`dfa/table.rs:236` keeps DFA state local;
+`counting/run.rs:50` creates current/next `State` buffers per call;
+`counting/product.rs:298` creates its thread vector per call.
+`regex/batch.rs:521` and `regex/batch.rs:522` allocate the hit vector and `CheckedFull` scratch locally.
+The global CPU cache is at `parallel.rs:160`,
+not in these matching paths.
+All engine paths in this paragraph are under `package/rust-module/forbidden-regex/src/`.
 
 ## Independent review and remaining work
 
@@ -133,22 +141,105 @@ The fixture assertion was corrected from the existing binary contract tests.
 This was a test expectation error,
 not a production scanner failure.
 
+The release consumer suite passed on snapshot `6abe8fdc5f431d1c5da0845f64535a3a322e4012e876fea52cd86edd1ed22419`:
+158 library tests,
+2 binary-boundary tests,
+2 embedding tests,
+2 public cache-warning tests,
+40 CLI integration tests,
+and 8 pathname tests.
+Evidence is `package/cli/forbidden-strings/target/verification/release-test-TsLNHP`,
+image `sha256:32bb9011eca6c543a4ce84ff6c8d6f63c1d96a54df2afc80afdde475393d8b55`.
+`cargo test --release --offline --locked --all-targets --all-features` used the actual release profile.
+The only later compiled-input difference is a test loop binding rename correcting `clippy::shadow_reuse`;
+production source matches this snapshot.
+
+`verify:markdown` rendered all changed Markdown through the installed CommonMark HTML-tree pipeline.
+It exposed pre-existing README emphasis delimiters split across line endings;
+those spans now render correctly.
+Rendered trees and readable text are retained in `target/verification/docs`.
+
+The strengthened ASan target passed 256,297 runs in 121 seconds,
+with 1176 coverage edges,
+6514 feature signals,
+and a retained 840-input corpus.
+Evidence is `package/cli/forbidden-strings.fuzz/target/verification/embedding-fuzz-E8GGvr`.
+Snapshot digest is `7d6c74c860a4fbb425578ebb7a729f750333729fd5aa65dd70b2e5f594255eeb`;
+image is `sha256:58c7fc36223bc580b21abff353a7eab74bfea77cb9699a23d445c3ac9730fb4f`.
+Both corpus and artifact retrieval completed successfully.
+This fuzzer compiles the final production scanner and strengthened oracle;
+the inventory's later warning-test binding rename is not compiled by this target.
+
+The final all-target/all-feature Clippy gate passed with warnings denied
+and zero compiled-input differences from the current tree.
+Evidence is `package/cli/forbidden-strings/target/verification/clippy-NGxzJY`.
+
+## Export-to-evidence map
+
+- `Scanner::load`:
+  `tests/embedding.rs` covers runtime/cache-hit loads,
+  explicit missing files with and without builtins,
+  implicit missing files with builtins,
+  invalid runtime rules,
+  and non-UTF-8 Unix rule-file paths through cache publication/reload.
+  Disposable `panic_contract.rs` covers a panic after constructing runtime rules,
+  rejection of the partial scanner,
+  host-hook preservation,
+  and later same-thread loading.
+- `Scanner::scan` and `CandidateScan`:
+  `scanner_tests.rs` and `scanner_boundary_tests.rs` cover identity,
+  immutable snapshots,
+  colliding redacted labels,
+  native bytes,
+  binary-prefix edges,
+  and explicit pathname failures.
+  `path_scan_tests.rs` and `path_name_bytes_tests.rs` execute supplied Windows prefix policy on Linux.
+  The strengthened `fuzz_embedding` predicts every fixed-rule content/name finding independently.
+- `ScanFinding` rendering:
+  `frx_scan_tests.rs`,
+  `path_scan_tests.rs`,
+  and binary integration tests preserve ordinary line/name/error output.
+  Disposable public-scan controls inject faults after actual matcher work,
+  require explicit `EngineError` findings rather than partial hits,
+  then compare later scans with their pre-fault result.
+- `Scanner::cache_warnings` and `CacheWarning`:
+  public consumer tests exercise missing artifacts,
+  hits,
+  corrupted-artifact repair,
+  unreadable cache roots,
+  write failures,
+  unavailable roots,
+  and invalid relative configuration.
+  `warning_tests.rs` verifies every closed reason/recovery token and exact JSON rendering.
+  `verification_tests.rs` exercises changed/missing source revalidation and both fuzz-codec verdicts.
+- Feature-gated construction:
+  all-feature release tests execute accepted/rejected `load_from_text`
+  and `scanner_from_text_for_fuzzing` calls.
+  The ASan target exercises the production hybrid matcher rather than the old regex-only in-memory loader.
+- Standalone process boundary:
+  binary integration tests check ordinary stdout/stderr and real exit codes.
+  Disposable startup/worker fault controls check actual executable exit `2`,
+  empty stdout,
+  and exact redacted stderr.
+  Independent output-hook and catch removal controls must fail after rebuilding.
+
+## Terminal work queue
+
 Current work queue:
 
-- Finish container tests and inspect exact results.
+- Finish the mutation campaign and guarded/disabled consumer fixtures,
+  then archive their terminal outcomes.
 - Finish the mutation campaign and classify every survivor,
   timeout,
   and unviable mutant.
   Its initial snapshot predates the fuzz-construction changes.
-- Execute feature-gated construction success and failure tests.
-- Verify exported cache-warning propagation through isolated public consumers.
+- Retain the completed feature-gated construction and public warning evidence in the final branch map.
 - Execute protected/disabled real-executable and public-loader panic fixtures.
 - Reconcile final source inventories with tests,
   Clippy,
   mutation,
   and fuzz campaigns.
-- Update scanner and sidecar READMEs,
-  then render-check all changed Markdown.
+- Replace progress wording with terminal campaign outcomes and rerender updated evidence.
 
 ## Limitations and rejected conclusions
 

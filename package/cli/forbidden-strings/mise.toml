@@ -22,6 +22,10 @@ run = "node bin/test-container.mjs --release"
 description = "Prove real executable and public-loader panic guards with passing and disabled disposable variants"
 run = "node bin/guard-container.mjs"
 
+[tasks."test:mutation:startup:container"]
+description = "Re-test startup filter mutations with the full all-feature baseline and complete retained outcomes"
+run = "node bin/mutate-container.mjs --startup"
+
 [tasks."test:mutation:container"]
 description = "Mutation-test embedding owners in a bounded mount-free snapshot, retaining every outcome"
 run = "node bin/mutate-container.mjs"

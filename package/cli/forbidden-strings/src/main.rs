@@ -93,3 +93,8 @@ fn main() -> ExitCode {
     // The hook controls only output; the separate named-operation boundary catches unwinds and returns exit 2.
     return process_boundary::run(initialized_cli);
 }
+
+/// Process-isolated filter controls do not alter production startup or the embedding host's environment.
+#[cfg(test)]
+#[path = "main_logging_tests.rs"]
+mod logging_tests;

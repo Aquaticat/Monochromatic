@@ -6,7 +6,10 @@ import { run, snapshot, ScannerVerificationError } from './container-snapshot.mj
 
 /** Scoped mutations retain the baseline, all policy branches and the complete scanner consumer suite. */
 async function main() {
-  if (process.argv.length !== 2) throw new ScannerVerificationError('This task accepts no arguments.');
+  const options = process.argv.slice(2);
+  if (options.length > 1 || (options.length === 1 && options[0] !== '--startup'))
+    throw new ScannerVerificationError('Only --startup is accepted.');
+  const startup = options[0] === '--startup';
   const command = [
     'cargo', 'mutants', '--in-place', '--all-features', '--baseline', 'run', '--no-config', '--no-shuffle', '--colors=never',
     '--build-timeout', '300', '--timeout', '120', '--output', '/work/mutation-report',
@@ -17,11 +20,12 @@ async function main() {
     '--cargo-test-arg=--skip=rule::frx::compile_tests::builtin_ported_all_compile',
     '--cargo-test-arg=--skip=rule::frx::compile_tests::append_ported_compiles_end_to_end',
   ];
-  for (const file of [
+  const files = startup ? ['main.rs'] : [
     'scanner.rs', 'load_request.rs', 'scan_finding.rs', 'frx_scan.rs', 'path_scan.rs', 'path_name_bytes.rs',
     'frx_load.rs', 'process_boundary.rs', 'main.rs', 'runtime_cache/mod.rs', 'runtime_cache/warning.rs',
-  ]) command.push('--file', `src/${file}`);
-  const fixture = await snapshot({ command, name: 'mutation', tool: 'cargo-mutants' });
+  ];
+  for (const file of files) command.push('--file', `src/${file}`);
+  const fixture = await snapshot({ command, name: startup ? 'startup-mutation' : 'mutation', tool: 'cargo-mutants' });
   let container;
   let reportPreserved = false;
   try {
