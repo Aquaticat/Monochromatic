@@ -188,6 +188,46 @@ this session allows 5 concurrent subagents.
 Their branches are cherry-picked onto `main` by the main session,
 which unions `src/native/lib.rs` and reruns both package gates on the integrated tree.
 
+### Delegate results
+
+**Behavior ledger**:
+complete,
+[`cli-git-rust-behavior-ledger.md`](../planning/cli-git-rust-behavior-ledger.md),
+last commit `ab7ff3f89`.
+It records 112 responsibilities:
+92 retained and 20 retired,
+each retirement cited to the planning text.
+Line numbers are valid at `cd54f8b64` for the TypeScript source and `SPEC.md`,
+and at `df25471a9` for native files.
+The delegate reports 632 `path:line` citations checked by script for existing files and in-range lines,
+and no advisor review (the tool was overloaded).
+The main session spot-checked one claim against source:
+`package/git/executable/src/self-shim.ts:212` returns `false` from the self-shim test for any native executable header,
+so the TypeScript resolver would accept a native wrapper as real Git.
+That is a cutover item for the resolver's surviving TypeScript consumers.
+
+Findings sent on to the wrapper foundation delegate:
+
+- the native registry gave the optional policies an `Off` default,
+  while the incumbent runs `mono/dependent-version-bump` at `error` without the root configuration listing it;
+- the Rust resolver must prove by a binary-level test that it never resolves to a copy of itself.
+
+The ledger's `Open questions` section lists 21 behaviors the planning documents do not determine,
+and its `Spec and code disagreements` section lists 13.
+Working default for both:
+the incumbent's behavior where the ledger does not list it as a defect,
+Git's own convention where it does,
+each recorded as open to veto by the delegate that implements it.
+None blocks the slices in flight.
+The first ones that will need the user are in the transaction phase:
+the native form of the generated hook entries (Node scripts today),
+and whether lock birth-identity strings must match the incumbent's so both versions judge each other's locks.
+
+The ledger also measured the incumbent with `tokei` 15.0.0, tests and fixtures excluded:
+312 files and 40,559 code lines,
+of which `policy-engine` is 135 files and 18,582 lines
+and worktree copy is 25 files and 3,755 lines.
+
 ### User correction: no vetting decision gate
 
 The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
