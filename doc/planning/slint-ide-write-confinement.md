@@ -1148,6 +1148,30 @@ This is a policy question;
    A > B,
    because rust-analyzer is the server with heavy child trees and it works with the namespace.
 
+### Adopted on 2026-10-05
+
+The coordinating session adopted the bubblewrap launch shape with the first-ranked option for both questions.
+All three choices were reported to the user as open to veto.
+
+- Mechanism:
+  the bubblewrap wrapper from "Recommended launch shape".
+  `/usr/bin/bwrap` is already on the host,
+  so nothing new is installed.
+  No formal technology-vetting run was made,
+  following the user's proportionality direction of 2026-10-05;
+  the five-candidate measurement in this document is the evidence.
+- Network:
+  option A,
+  no network,
+  with automatic type acquisition switched off.
+- Process-id namespace:
+  option A,
+  on by default and off for the measured TypeScript servers.
+- Follow-up for the implementation leg:
+  test clearing the inherited environment (`--clearenv` plus an allowlist),
+  because servers otherwise inherit credential variables from the application;
+  keep it only if both real servers still pass their checks.
+
 ## Residual risks
 
 - Reads are unrestricted.

@@ -73,6 +73,12 @@ and resumption details are in [the handover][handover].
   Twenty-seven grammars cover 22 of the 23 measured languages;
   see [the runtime language record](slint-ide-runtime-languages.md).
 - [ ] Project-write confinement for language-server subprocesses.
+  The mechanism is measured and adopted
+  (bubblewrap wrapper,
+  no network,
+  per-server process-id namespace policy);
+  see [the write confinement plan](slint-ide-write-confinement.md).
+  Implementation and its acceptance tests follow the Language module core.
 - [ ] Light mode and live system-theme changes through the private appearance portal.
 - [ ] Complete native integration tests,
   scoped lint,

@@ -138,9 +138,6 @@ each owned by one subagent:
   `main` is the integration point:
   the coordinating session cherry-picks each branch and reruns the suite.
   `inspect:native` takes `IDE_NATIVE_MCP_PORT` so parallel sessions do not collide.
-- Language-server project-write confinement,
-  measured on disposable fixtures with mechanisms the host already has;
-  result in `doc/planning/slint-ide-write-confinement.md`.
 - Headless Language module core in the worktree `.claude/worktrees/ide-language-core`
   on branch `feat/ide-language-core`,
   created from `44361c867`:
@@ -156,6 +153,36 @@ each owned by one subagent:
 
 Completed in this fan-out:
 
+- Language-server write confinement,
+  measured and specified but not yet implemented:
+  `doc/planning/slint-ide-write-confinement.md`.
+  Five candidates were measured with real rust-analyzer and TypeScript servers on disposable fixtures;
+  ranking:
+  bubblewrap,
+  an `unshare` script,
+  a systemd transient unit,
+  podman,
+  Landlock through `setpriv`.
+  Adopted on 2026-10-05 and reported to the user as open to veto:
+  the bubblewrap wrapper (`/usr/bin/bwrap` is already on the host),
+  no network for confined servers,
+  and a process-id namespace except for the TypeScript servers.
+  Under that shape the project tree stayed byte-identical,
+  build scripts and procedural macros got `EROFS` on the project,
+  and hover and definition still answered.
+  Constraints the implementation must honor:
+  build server configuration in code and never load workspace or user Helix language configuration;
+  resolve the server executable to an absolute path;
+  never fall back to an unconfined launch;
+  keep per-project,
+  per-server private state outside the project and not an ancestor of it;
+  start servers from the long-lived language worker thread.
+  Unconfined servers also write outside the project by default:
+  cargo and npm caches in the home directory,
+  and both TypeScript servers run `npm install` for type acquisition.
+  Servers inherit the application environment,
+  credential variables included;
+  clearing it is a follow-up to test in the implementation leg.
 - In-file find,
   commits `f51495788` through `4e1c2a808` on `main`.
   `src/find.rs` holds the single matcher `find_matches`
