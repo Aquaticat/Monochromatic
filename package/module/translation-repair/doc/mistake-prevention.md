@@ -153,7 +153,12 @@ and a red case sat the same way behind red cases in the file's first suite,
 so it could not be seen failing (M97);
 and the attribution reader's cases for generations 2 and 3 wrote each record's index as generation 4 does,
 so they agreed with a decoder that read one spelling for every generation,
-while 42 stored artifacts those generations wrote were refused (ledger B107).
+while 42 stored artifacts those generations wrote were refused (ledger B107);
+and cases another contributor added asserted a prefix of a damaged heading (ledger B133),
+an empty result that holds with or without the check named (ledger B130),
+a comparison over a fixture with nothing to compare (ledger B131),
+or the wrong result as the intended one (ledger B128,
+B139).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -209,6 +214,8 @@ and every suite after it goes unrun and unreported;
 A mutant whose case prints no FAIL line is still read as surviving
 only once that case's suite printed its pass line,
 and a red case counts as red only from its own FAIL line.
+A case over a pass that rewrites text asserts the whole text it returns,
+and a case named for a check feeds the check an input only that check decides.
 When one side of a compared pair becomes derived from the other,
 every guard comparing them is re-read:
 one that can no longer fail goes,
@@ -1259,7 +1266,10 @@ since the lint leaves `no-unused-vars` off and nothing else reads tests (ledger 
 and 16,856 lines ended in whitespace,
 nearly all TSDoc blank lines holding one space,
 though `.editorconfig` forbids it,
-since no configured check enforces that for TypeScript (ledger B119).
+since no configured check enforces that for TypeScript (ledger B119);
+and a commit made on its named tests alone,
+its message putting the lint off to a change that then went to agents,
+shipped a lint warning to the twelve agent checkouts made from it (ledger M114).
 
 The rule:
 read a region with the Read tool before editing it.
@@ -1269,6 +1279,9 @@ Lint,
 type check and the named tests run after the final edit of a commit,
 in that order,
 and the commit follows only a clean run of all three (M46).
+A commit that defers its whole-suite gates says so,
+and starts them in the background in the call after it;
+"with the next change" names no time (M114).
 The named tests of a commit touching the package's source,
 docs,
 README or task file include the package-wide source scans,
@@ -1400,6 +1413,11 @@ when it was stopped (M96).
 A background suite written as `<suite> > <log> || echo "exit $?"` printed its fallback into the task output,
 not the log,
 and the task reported exit 0 while the log held a failing scan (ledger B103).
+With that rule written,
+a script making agent worktrees failed at its first worktree twice behind the same fallback,
+its task reported exit 0,
+its log went unread,
+and an agent was sent to a worktree that did not exist (ledger M114).
 
 The rule:
 a task that must not run with a fan-out parent is named outside the parent's prefix,
@@ -1413,6 +1431,12 @@ A background run appends its exit status to its own log
 (`<suite> > <log> 2>&1 || echo "suite exit $?" >> <log>`)
 and is read by its `[FAIL]` markers and that line,
 never by the task's reported status.
+A command that sets up what a later step uses
+(a worktree,
+a build,
+an install)
+is read by its log before that step starts,
+and a path an agent is sent to is listed in the call that sends it.
 A scratch scan lists its files from git's index,
 or walks with a bound that skips `node_modules`,
 and runs with a heap cap (`node --max-old-space-size=512`);
@@ -1545,6 +1569,12 @@ though production hands it an exact slice and no test reached it (T8's eighteent
 The attribution reader read every missing or malformed field but one as empty,
 though every generation that settled an artifact writes each of them,
 and credited a proposer its own chunk had not heard (ledger B106).
+Two readers made an empty string stand for an input and then compared it as a key:
+a directory id with no Latin letter read as empty,
+as did any alias in another script,
+so the id stood on an alias that was not it (ledger B131);
+and a link destination the trim cut to nothing compared equal to every other one it emptied,
+so a page that dropped the parent directory and kept the current one dropped nothing (ledger B139).
 
 The rule:
 a call states every input that decides what a floor refuses,
@@ -1573,8 +1603,12 @@ Each exported function has a name no other file exports,
 chosen for its role and its boundary.
 Text is sliced by index,
 never grown a character at a time.
+A trim or reading that can come out empty says what the empty result means,
+and an empty reading is never compared as a key:
+one key never stands for two inputs a reader would follow to two places.
 
 What enforces it:
+`directory-id-name.unit.test.ts` and `dropped-destinations.unit.test.ts` hold inputs whose readings are empty;
 `floor-inputs-stated.unit.test.ts` fails on a production call leaving a floor input or gate flag out,
 unless the call is named with its reason or sits in a named measurement file,
 and on a named call or file that no longer leaves anything out;
@@ -1807,11 +1841,23 @@ under a message blaming the rename;
 the move's other refusals (prose among the definitions,
 a container across them) leave the definitions standing with a note and the rename applied.
 A bounded probe over generated pages reached the throw 156 times in 2,000 (T8's eighteenth batch).
+A fix for a span checked against the first of two nodes sharing an id made the anchor validator throw,
+where every other defect it finds comes back as a rejection,
+and a caller's gate turns any rejection into a named refusal of the claim;
+the throw bypassed both,
+and the whole suite on `9ff566830` went red on a caller's case (ledger B129).
 
 The rule:
 a step that can refuse on input a page can carry refuses as its sibling refusals do,
 leaving the steps that held applied,
 and a throw stays only for a broken invariant.
+A module whose contract returns its refusals as data
+refuses a new case as data too,
+under a kind of its own;
+a fix that turns such a refusal into a throw changes the contract,
+and runs the whole suite,
+every caller's cases with it,
+before it is committed.
 Before a step's throw is kept as unreachable,
 a bounded probe over generated input counts what reaches it,
 beside a count of what passed the step,
@@ -1897,6 +1943,9 @@ the intake fold emptied it,
 and an empty candidate reached the judges;
 a zero-width reason met "Reason before vote" the same way (ledger B40).
 The docs of the two backstops said no such text could reach them.
+The introduced-defect screen asked whether a claim's side was blank of trimmed text,
+so a one-sided claim with a zero-width space or a Hangul filler on its other side
+read as anchored both ways and was set aside as a wire fault (ledger B128).
 
 The rule:
 whether text a model wrote shows a reader anything is asked of `rendersAsNothing` (`renders-as-nothing.ts`),
@@ -1917,7 +1966,8 @@ spelled as escapes.
 What enforces it:
 habit and review;
 `renders-as-nothing.unit.test.ts` pins the reading,
-and each check's invisible-only case fails if it returns to `trim()`.
+and each check's invisible-only case fails if it returns to `trim()`
+(the screen's is "READS A SIDE THAT SHOWS A READER NOTHING AS NO ANCHOR").
 No scan finds the old shape:
 a check can store a trimmed value in one statement and compare it in another,
 as the panel ballot's did,
@@ -2140,6 +2190,10 @@ the text accumulator scan sees only a `let` begun as text and grown in a loop.
 The guard written then read folds and reassigned bindings,
 and five loops that grouped or queued by key set a map entry to a copy of what it held at every repeat,
 among them the cap census's queue of a label's streams (ledger B74).
+A scan for the next web address searched for each of two schemes apart from its cursor,
+so a scheme the text lacked was read for to the text's end at every address,
+and the scan cost the square of the text while its summary called it one linear pass;
+a reader of the same two schemes beside it had searched for their shared stem once (ledger B137).
 
 The rule:
 a fold or loop over its input appends to what it builds,
@@ -2160,6 +2214,11 @@ or that walks a fixed table,
 may rebuild,
 and says so where the guard names it.
 A summary that calls a pass linear is read against the pass.
+A loop that looks for the next of several needles from its cursor looks for all of them in one search,
+or for what they share,
+never for each apart to the text's end at every step;
+where the package already has such a search,
+the loop calls it (`nextSchemeStart` in `scheme-start-scan.ts`).
 
 What enforces it:
 `fold-copies.unit.test.ts` fails on a `reduce` or `reduceRight` callback that copies its accumulator
@@ -2172,6 +2231,10 @@ or sets a map entry to a copy of what the map's `get` read there,
 unless the fold is named with why its copies are bounded or are its meaning,
 and on a named fold that no longer copies;
 `disjoint-splice.unit.test.ts` holds the one-pass writer to the old splice's text and its refusals.
+A search that reads the text again at every step is not a copy,
+so the scan cannot see it;
+review reads a scan's searches against its cursor,
+and `scheme-start-scan.unit.test.ts` holds the one scheme search's answers.
 
 ## Numbers read back from text
 
@@ -2333,6 +2396,10 @@ so a delta typed `constructor` was routed with `Object.prototype` as its channel
 an asset named `tabby.constructor` read as usable,
 a claim with that status was filed under the `Object` function as its arm,
 and a count for `__proto__` was never written (ledger B77).
+A lookup took the first node carrying an id,
+on the unstated assumption that ids are unique,
+and a document repeating an id had a sound span checked against the wrong node
+and rejected as stale (ledger B129).
 
 The rule:
 a table looked up by text is a `ReadonlyMap`,
@@ -2346,6 +2413,19 @@ so the compiler refuses a lookup by unchecked text;
 an exported table needs an annotation under `isolatedDeclarations`,
 which widens its keys,
 so an exported table looked up by text is a map.
+A lookup that takes the first element matching a key
+(`find`,
+`indexOf`,
+or a map built from pairs where a later pair replaces an earlier one)
+names what makes the key unique:
+the function that builds the collection,
+or the check upstream that refuses a repeat.
+Where neither does,
+because the collection comes from a model's reply,
+a file,
+or a caller the signature lets build anything,
+the lookup gathers every match and says what two mean,
+in the refusal form its module already uses.
 
 What enforces it:
 `text-keyed-tables.unit.test.ts`,
@@ -2359,6 +2439,8 @@ by annotation or by a cast)
 whose value is an object literal at a module's top or `{}` anywhere,
 or that is written through a computed key;
 the red cases in each site's test file hold the inherited names.
+`validate-issue.unit.test.ts` and `critic-wire.unit.test.ts` hold a document repeating an id;
+first-match lookups elsewhere are held by habit and review.
 Out of the scan's reach,
 and read once by a typed census recorded in ledger B77:
 a table built by `Object.fromEntries` or handed back from a function and then read by text,
@@ -2423,6 +2505,11 @@ the logger's stamps in sibling cases took the stepped time too (ledger M100).
 Thirteen other test files wrote environment variables,
 `console` methods or the working directory in suites that ran their cases at once,
 where a restore finishing out of order could leave a sibling's value behind (ledger B79).
+A fixture that diverted `console.warn` to read the lines a piece of work logged
+caught the logger's own report of a sink it could not verify,
+since the logger starts on a process's first line and that line fell inside the divert;
+on a loaded machine the report failed a cache case,
+and the fixture's message had called the state unreachable (ledger B140).
 
 The rule:
 a case that replaces a global replaces it only for itself:
@@ -2439,6 +2526,11 @@ happens only in a suite run one case at a time,
 even when no await falls between the write and its restore today.
 Before writing such a fixture,
 read how the runner schedules cases.
+A case that replaces a process-wide writer starts every logger that writes through it before the replacement:
+the built package's logger and the test framework's,
+each flushed so its sinks are verified,
+so a logger's report of its own reaches the writer it was meant for
+and never reads as a line the work logged.
 A guard-off whose process does not exit is a finding,
 and a guard runner ends each file after a bound.
 
@@ -2448,7 +2540,9 @@ which `source-scans` runs,
 fails on a write to a process global in a test or test fixture
 that is not inside a case every suite around which runs one case at a time,
 following helpers called by name to their cases;
-`wall-clock-stub.unit.test.ts` holds a sibling case that reads the real clock while another case holds a stepped one.
+`wall-clock-stub.unit.test.ts` holds a sibling case that reads the real clock while another case holds a stepped one;
+`console-warn-lines.unit.test.ts` runs the warn-lines fixture in a child process whose file sink cannot verify
+(added in `7ecd53897`).
 Out of the scan's reach:
 a write through an alias such as `const env = process.env`,
 and a case made by a function the suite's text only calls.
@@ -2628,6 +2722,13 @@ and ended the call as if no provider had budget,
 166 times on Uekawakuyuurei while Synthetic's meter read wet (ledger B124).
 Each layer's own test held its half;
 no test ran a refusal through both.
+The same shape sat inside one module:
+the introduced-defect screen decides which side of a prober's claim it anchors on,
+and two later readers,
+the quote compared with the accepted issues and the grading sheet's direction,
+decided again by whether the raw omitted text was empty,
+so a claim padded with spaces was counted as introduced damage and shown to a grader as dropped wording
+(ledger B128).
 
 The rule:
 where one event is read by two layers,
@@ -2642,12 +2743,20 @@ held for no time,
 read dry until paid).
 A layer that folds in an earlier layer's evidence reads what that layer decided,
 such as the hold it set,
+or the side a screen's verdict names,
 not the raw event the decision was made from.
+A reader that can only be handed what the decision admitted
+throws `unreachable:` for anything else,
+rather than deciding it a second way.
 
 What enforces it:
 `provider-router.unit.test.ts` holds "ASKS A WET REFUSER AGAIN",
 which runs the refusal through the real budget layer and the router;
-`budget-hold-wait.unit.test.ts` holds the reading for a refuser with no hold.
+`budget-hold-wait.unit.test.ts` holds the reading for a refuser with no hold;
+`introduced-defect-screen.unit.test.ts` holds the padded claim beside the same claim with an empty side,
+and `probe-verify-sheet.unit.test.ts` holds
+"NAMES a claim the screen corroborated on its evidence as added"
+and the refusal of a claim the screen did not corroborate.
 
 ## One field carrying two kinds of text
 
@@ -2759,6 +2868,16 @@ M113).
 One removal changed a result for an input the signature admits
 (ledger B127):
 the guard had also been covering sizes that were not whole numbers.
+One conversion of a fallback into `nonNullishOrThrow` rested on a proof that named one of two line markers,
+and a log line of the other ended the cap census (ledger B132).
+The census itself was the pressure:
+it counted an `unreachable:` throw no test drives as code no test ran,
+for ever (ledger M115).
+A reader that skipped a step naming a block its side lacks,
+on the belief that no walk names one,
+grouped such a walk into nothing,
+and a pairing read off a stored artifact could build one,
+since the check on a model's reply had vouched for another list (ledger B138).
 
 The rule:
 a state no input produces is refused out loud,
@@ -2784,9 +2903,81 @@ and refuse those at the function's entry.
 never a replacement for a message that named what broke.
 A parameter that lets a case force a value the function derives for itself is not a seam
 (the rule for seams is under "Tests touching the real world").
+A fallback over text read from a file is dead only when every line the reader accepts carries what the fallback covers,
+and the proof names each reader that hands lines on.
+An index read off a stored record is checked against the list it indexes where the record becomes steps,
+since the reader of the reply it was copied from vouched for another list.
+
+The census counts an invariant throw apart from cold code:
+a cold stretch that is nothing but `throw new Error('unreachable: ...',)`,
+or a throw of a class whose name ends in `InvariantError`,
+with only braces,
+`else` and its guarding `if` head beside it,
+is listed under the invariant throws,
+and no row,
+total or baseline reading counts it.
+Its census file is format 3;
+a format 2 baseline is refused by name and taken again,
+since it holds those throws among the cold code with nothing to tell them by.
+An invariant written another way
+(a call beside the throw,
+a message joined with `+`,
+`nonNullishOrThrow`)
+stays cold or goes unseen,
+so the shapes the count reads are the shapes an invariant is written in.
 
 What enforces it:
 review of every removed guard against this list.
 `sample-draw.unit.test.ts` holds
 "REFUSES a size that is not a whole number of slots",
 the one case here an honest input reaches.
+`coverage-invariant-throw.unit.test.ts` holds the shapes the census reads as an invariant throw and the ones it keeps cold,
+and `coverage-census-input.unit.test.ts` the refusal of a format 2 baseline.
+`pair-blocks-steps.unit.test.ts` holds the refusal of a pairing naming a block its side lacks.
+
+## Files a later run reads back
+
+What happened:
+the lookup cache and the reference cache parsed their files with no catch,
+read every read failure as "no file",
+and wrote in place.
+A lookup file cut short took its title's evidence away on every later run,
+since the caller caught the parser's error as a failed lookup and nothing rewrote the file;
+a reference file cut short failed the entry citing its page on every run;
+and a directory standing at a record's path had the record bought on every run and never kept
+(ledger B134,
+B135).
+A lane's generation marker was rewritten in place on every open,
+also when it already named the running generation,
+and a write the disk refused would have left it empty,
+so the next open discarded the lane's paid slices (ledger B136).
+The same audit found the window trial ledger joining a resumed run's first row onto a torn last line,
+and three coverage census readers whose `@throws` promise their own class
+running `JSON.parse` bare (ledger B135,
+open).
+
+The rule:
+a file this package writes and a later run parses is written through `writeFileAtomic`.
+Its reader tells a path nothing stands at from a file that is there,
+takes a parse failure as data and says so,
+naming the file and never its text,
+since V8's refusal can quote the text it refused,
+and raises a named error for a file that is there and cannot be read,
+since a miss would buy the record again and then meet the same path at the write.
+A reader that must refuse a damaged file says so in its doc and names the file in its message.
+An append-only ledger that tolerates a torn last line repairs it before it appends again.
+A file that vouches for paid work,
+such as a generation marker,
+is rewritten only when what it says has changed,
+and then atomically.
+
+What enforces it:
+`lookup-cache.unit.test.ts` and `reference-cache.unit.test.ts` hold a file cut short,
+an empty file,
+JSON of another shape,
+an absent file and a directory at the path;
+`slice-cache-namespace.unit.test.ts` holds the restamp by replacement and the reopen that writes nothing.
+No scan holds every `JSON.parse` of a file to a catch or a failure-as-data helper,
+nor every plain `writeFile` to a reviewed list;
+until one does,
+a new reader or writer of such a file is reviewed against this rule.

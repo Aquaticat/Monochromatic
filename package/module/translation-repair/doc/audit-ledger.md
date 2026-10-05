@@ -20899,6 +20899,764 @@ Recurrence:
 `mistake-prevention.md`,
 "Guards a census wants gone".
 
+### B128: a claim's quoted side chosen again, by its raw text
+
+Red in `0938d6a21`,
+fixed in `9ff566830`.
+Found on 2026-10-05 (UTC) by an independent reviewer
+reading the cases the MiMo trial added,
+one of which asserted the wrong result as the intended one;
+it was reproduced on the built package before anything changed.
+The trial changed neither production file
+(`git diff 28303c42a 7f069adc9 --stat` printed nothing for them):
+the defect is older than the trial.
+
+A prober's claim of introduced damage quotes one of two sides,
+wording the edit added (`evidence`)
+or wording it dropped (`omittedText`),
+and `screenEvidence` (`introduced-defect-screen.ts`) decides which by the screened text of each.
+Two readers decided again,
+by whether the raw `omittedText` was the empty string:
+
+- `toClaim`,
+  in the same module,
+  chose the quote that `restatesPriorIssue` compares with the accepted issues.
+  A claim corroborated on its evidence,
+  its omitted side three spaces,
+  was compared on the spaces,
+  restated nothing,
+  and stayed `corroborated`:
+  counted as damage the edit introduced,
+  though its evidence restated an accepted issue.
+  The same claim with an empty omitted side was `pre-existing`
+  (probe of the unfixed build).
+  The wire guard admits any string in `omittedText`.
+- `renderClaim` (`corpus-run/probe-verify-sheet.ts`) chose the quote and the direction a human grader is shown:
+  the same claim was printed as "wording the edit DROPPED" over a quote of three spaces
+  (same probe).
+
+`screenEvidence` itself asked whether a side was blank of trimmed text,
+which keeps every invisible character that is not whitespace.
+A one-sided claim with a zero-width space (`U+200B`) or a Hangul filler (`U+3164`) on its other side
+read as anchored both ways and was called `unanchored`,
+so a claim of real damage was set aside as a wire fault
+(the red run printed `unanchored` for both).
+That is the question "Text that shows nothing" gives to `rendersAsNothing` (ledger B40),
+asked here of an empty-string comparison.
+The red run of the two test files printed 3 [PASS] and 6 [FAIL] lines for the screen
+and 3 [PASS] and 4 [FAIL] lines for the sheet.
+
+The fix:
+`screenEvidence` asks `rendersAsNothing` of each side.
+`toClaim` takes the side from the verdict it holds
+and compares the screened text the differential read,
+with the prior quotes through the same screen;
+`renderClaim` takes the side from the claim's recorded admissibility.
+`restatesPriorIssue` returned false for a blank quote;
+no corroborated claim reaches it blank now,
+and a blank quote that ran on would sit inside every prior quote and dismiss the claim,
+so the return is an `unreachable:` throw.
+`renderClaim` throws likewise for a claim the screen did not corroborate:
+`probe-verify.ts` hands a sheet only corroborated claims,
+and the damage sample strips claims before formatting.
+
+The trial's case,
+"KEEPS a corroborated claim whose quoted side flattens to nothing out of the prior-issue dismissal",
+pinned the defect,
+and could not have failed on the guard it named:
+its issue carried an id the region did not serve,
+so no prior quote was ever compared.
+It is replaced.
+The sheet test's fixture marked every claim `corroborated`,
+one of them carrying both sides,
+which the screen calls `unanchored`;
+it takes each claim's admissibility now.
+
+Whether a corpus run ever met such a claim was not measured:
+no stored probe artifact was read for a padded or invisible omitted side.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal" and "Text that shows nothing".
+
+### B129: a span checked against the first node of a repeated id
+
+Red in `4185c097a`;
+fixed in `e9ad88d97` by a throw that broke a caller's contract,
+and corrected in `ca7677605`.
+Found on 2026-10-05 (UTC) reading `validate-issue.ts`.
+`validateSpanAnchor` found the node a span names with a search that stops at the first node carrying that id.
+Handed a document with a second node under the id,
+it checked a span built against the second node against the first:
+a correct span over a copy of a parsed document in which every block carried the span's id
+came back `stale-node-hash`,
+"the base drifted",
+for a base that had not
+(probe of the unfixed build of `80e129926`).
+A rejection is fed back to the model that wrote the claim,
+so the wrong kind would have sent it a retry prompt about an anchor that was sound.
+
+No run was harmed:
+`parseDocument` ids its blocks `block/<index>` (`document-node.ts`),
+and the one production caller of `validateIssueClaim`,
+`resolveCriticIssue` (`critic-wire.ts`),
+passes parsed documents.
+The function is exported and its `AnchorTarget` parameter admits a hand-built document,
+which is how the case builds one without a cast.
+
+The first fix,
+`e9ad88d97`,
+gathered every node under the id and threw an `unreachable:` error naming the side and the id
+before any rejection was decided.
+It was committed on its own test file,
+and the whole suite run on `9ff566830` printed 1564 [PASS] and 3 [FAIL] lines:
+a `critic-wire.unit.test.ts` case,
+"refuses a claim when caller-supplied documents list two nodes sharing one id whose hashes disagree",
+hands `resolveCriticIssue` such a document and expects the claim refused with a reason.
+That case had pinned the mislabel,
+`anchor-validation (stale-node-hash)`.
+It also showed the design the throw cut across:
+this module's contract is that a defect of a claim's anchors comes back as data,
+and `resolveCriticIssue` ends on a gate that turns any rejection into a named refusal of the claim.
+A throw for one kind of document defect bypassed both.
+
+The fix as it stands:
+the repeated id is a rejection of its own kind,
+`repeated-node-id`,
+whose detail says the document lists the id more than once,
+so the label is true,
+nothing throws,
+and the gate's refusal reads `anchor-validation (repeated-node-id)`.
+Both cases were changed to expect that first and failed against the throwing build;
+on `ca7677605` the whole suite printed 1564 [PASS] and 0 [FAIL] lines,
+the lint read `Found 0 warnings and 0 errors.`
+and the scans 35 [PASS] lines.
+No production reader branches on the rejection kind:
+`AnchorRejectionKind` appears outside `validate-issue.ts` only in the package index's export list and in tests.
+
+The process lesson:
+a fix that turns a module's rejection-as-data into a throw changes its contract,
+and runs against every caller's cases,
+by the whole suite,
+before it is committed.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation" and "Tables keyed by text".
+
+### B130: a code span after an escaped backtick left unprotected
+
+Red in `b1fd99dc2`,
+fixed in `52c5ca829`.
+Found on 2026-10-05 (UTC) reading the T8 trial's cases in `prose-ranges.unit.test.ts`,
+where an independent reviewer found one asserting an empty result for a bare double backtick,
+a result that holds with or without the check the case named.
+`constructEnd` (`corpus-run/prose-ranges.ts`) answered "no construct" for any backtick whose previous character was a backtick.
+The check dates from `1873b23dc`,
+when code spans were found by a hand scan.
+They come off the parse now,
+in `codeSpans`,
+keyed by the starts the parse gives its spans,
+and the one span whose opening backtick follows a backtick is the span after an escaped backtick,
+which the check hid:
+in a sentence holding an escaped backtick directly before a code span,
+the parse reads the span at offsets 8 to 14 and `protectedRanges` returned none,
+so a prose rewrite could reach inside it.
+The red run printed 1 [PASS] and 2 [FAIL] lines,
+the case failing with `expected [] to deeply equal [ { start: 8, end: 14 } ]`.
+
+No page was harmed as far as the corpus shows:
+at the pinned commit no Markdown file holds an escaped backtick directly before a backtick
+(`rg` counted 0 files,
+against 7 holding any backtick);
+a model's wording could.
+
+The fix:
+the backtick arm asks the parse's spans alone.
+The file's cases for a bare double backtick and for a fenced block return the same ranges with the check gone.
+The trial's other four cases in the file asserted a length,
+or a length of zero or more;
+each asserts its whole range list now,
+on inputs the reviewer's mutants tell apart
+(a closing brace inside a line comment,
+inside a template literal,
+and inside a block comment that never closes).
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse" and "Guards that cannot fail".
+
+### B131: a directory id with no Latin letter stood on any alias without one
+
+Red in `cd37ea51a`,
+fixed in `dc4d651a1`.
+Found on 2026-10-05 (UTC) by an independent reviewer,
+behind a T8 trial case whose source fixture carried no alias,
+so the comparison it named never ran.
+`directoryIdNameStands` (`corpus-run/directory-id-name.ts`) asks whether the source's own aliases carry the directory id
+by comparing Latin letters alone (`latinLettersOf`).
+An id with no Latin letter reads as the empty string,
+and so does an alias in another script:
+the two compared equal,
+and the id stood as the page's visible name.
+The red case gives an id of punctuation,
+one of digits and one in Han each a source whose only alias is a different Han name:
+`expected [ true, true, true ] to deeply equal [ false, false, false ]`,
+1 [PASS] and 2 [FAIL] lines.
+
+No page was harmed as far as the corpus shows:
+the reviewer counted 93 entry directories at the pinned commit,
+none named without an ASCII letter;
+that count was not repeated.
+
+The fix:
+an alias carries the id where it is the id character for character,
+or where the id has Latin letters and the alias's Latin letters equal them.
+The first arm keeps an id in another script standing on its own alias,
+which the letters rule alone would drop once an empty reading stopped matching.
+Three sibling cases fed their guards values the code after the guard refuses anyway;
+each now also feeds the value only the guard stops.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input".
+
+### B132: a spend record with no logger prefix ended the cap census
+
+Red in `66fa8de2e`,
+fixed in `83942a8b4`.
+Found on 2026-10-05 (UTC) deciding the T8 hunks of `corpus-run/cap-census-read.ts`,
+and independently by a review of the trial's cases.
+The trial turned `stampOf`'s `line.split('] [',)[1] ?? ''` into `nonNullishOrThrow(...)`,
+on the reason that both line markers carry the bracket the split reads.
+The stream marker does (`'] [reportStreamProgress] stream '`);
+the spend marker is `'SPEND '`,
+and `readSpendLine` reads a record at the start of a line or behind any space.
+So `readCapLog` handed `stampOf` a spend line with no `] [`,
+and the census threw `Expected non-nullish value, got undefined`,
+where B73's rule is that a line whose stamp the logger did not write is left out and counted.
+The red run printed 3 [PASS] and 3 [FAIL] lines.
+No run log was read,
+so whether a census ever met such a line is not known;
+the spend reader documents the bare form as one it reads.
+
+The fix:
+`stampOf` returns `unstamped` where the line has no second bracket,
+and a `cap-census.unit.test.ts` case pins a bare spend line and one behind `[info] `
+as left out and counted.
+The same file's wrong-unit case could not tell a stream line read from one skipped;
+it now follows each misread stream line with its spend line.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B133: a parenthesis that was no gloss took the handle's gloss beside it
+
+Red in `5f931f0a2`,
+fixed in `754e50dd2`.
+Found on 2026-10-05 (UTC) by a review of the T8 trial's cases,
+behind a case named "PLACES NO GLOSS" that asserted a prefix of the damaged heading.
+`appearancesIn` (`corpus-run/handle-gloss-place.ts`) read a handle followed by a parenthesis that was no gloss
+(empty,
+never closed,
+or closed only by a mark on a later line)
+as an appearance with no gloss.
+Where that appearance was the handle's earliest,
+`placeOne` wrote the gloss another appearance carried in front of the open parenthesis,
+and stripped it from the appearance that had it:
+a heading `### Ten: Jinmao (Brocade Cat` over a signature carrying `Jinmao (Brocade Cat)` became
+`### Ten: Jinmao (Brocade Cat) (Brocade Cat`.
+The same happened across two slices and for `Jinmao ()`.
+The defect is older than the trial,
+whose case pinned it.
+Whether a shipped page ever carried a doubled gloss was not measured.
+
+The fix:
+such an appearance is left out,
+as the module's rule for a parenthesis holding markup already had it (ledger A6),
+and the scan goes on from the handle's end,
+since the closing mark may belong to another appearance's gloss.
+The case asserts the three pages come back whole with no finding,
+and was red at `5f931f0a2` (1 [PASS] and 2 [FAIL] lines);
+a second case asserts whole that a handle inside a longer word is no appearance,
+which the old `toContain` could not tell from a gloss written after it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B134: a lookup cache file cut short took its title's evidence away on every later run
+
+Red in `8c7426a44`,
+fixed in `971c8bec8`.
+Found on 2026-10-05 (UTC) by a delegated agent
+reading `readCachedLookup` (`lookup-cache.ts`) against its own `@returns`,
+"a miss when the file is absent or is not a record".
+The read ran `JSON.parse` on the file's text with no catch,
+so a file cut short raised a `SyntaxError` out of `lookupWorkTitle` (`work-title-lookup.ts`).
+`workTitleLookupLines` caught it with every other failed lookup,
+logged that the title's lookup failed and contributes no line,
+with the parser's words and no path,
+and returned no line for the title.
+Nothing was bought and nothing rewrote the file,
+so every later run met it and the title never had its evidence again.
+V8's refusal can quote ten characters of the text it refused,
+so that warning could carry a cache file's opening.
+An empty file,
+which a write refused before its first byte leaves,
+read as absent with no line,
+and `textOrNothing` read every other read failure as absent too,
+at debug level:
+with a directory at the record's path,
+the title was bought on each of two runs and never kept.
+The write was a plain `writeFile`,
+which truncates before it writes:
+under a per-process file-size limit standing in for a full disk,
+a plain write left 512 bytes of a longer record at the cache path.
+These are the agent's measurements,
+on its builds of `f0f449765` and of `7f069adc9`,
+whose cache modules are the tip's.
+
+No run was harmed as far as this machine's cache shows:
+the agent counted 58 lookup records and 14 reference records,
+all whole,
+none empty;
+the run logs were not searched.
+
+The fix:
+`cacheFileText` answers `CACHE_FILE_ABSENT` only where nothing stands at the path (`isMissingPathError`)
+and raises `CacheFileUnreadableError`,
+whose message names the filesystem code and the path,
+for any other read failure;
+`readCachedLookup` takes the parse failure as data (`parseModelJson`),
+warns `cached lookup at <path> does not parse as JSON; ignoring it` and misses,
+so the caller buys the record once and the write replaces the file;
+`writeCachedLookup` writes through `writeFileAtomic`.
+The class is listed among the classes whose message names only a code and a path
+(`message-names-only.unit.test.ts`).
+
+Red on the tree of `8c7426a44`:
+both cache test files exit 1 at load,
+since the cases assert the class the fix adds.
+The per-case reds are the agent's,
+on the build before the class existed.
+The whole suite on `971c8bec8` printed 1581 [PASS] and 0 [FAIL] lines,
+the lint `Found 0 warnings and 0 errors.`
+and the scans 35 [PASS] lines.
+
+Open to the owner's veto:
+a file that is there and cannot be read is a refusal,
+not a miss,
+since a miss buys the record and then meets the same path at the write,
+paying on every run and keeping nothing;
+that is the package's rule in `missing-path-error.ts`,
+and what `readAttemptMap`,
+`readNamespaceGeneration` and `readPayloadText` do.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back".
+
+### B135: a reference cache file cut short failed the entry citing its page on every run
+
+Red in `8c7426a44`,
+fixed in `971c8bec8`,
+with B134,
+whose twin `readCachedReference` (`reference-cache.ts`) is.
+`citedReferenceBlock` (`cited-reference-lookup.ts`) reads every cited page's cache file before it buys anything,
+outside the catch that turns one page's failed fetch into a line,
+so the `SyntaxError` of one file cut short rejected the whole block:
+on the agent's build of `f0f449765`,
+a raw `SyntaxError` and no transport call.
+The rejection leaves `preparePassEntry` and is tallied by `runEntryPipeline`
+as an entry error naming no file
+(read off `tally-error-text.ts` by the agent,
+not run end to end),
+on every run until someone found the file and deleted it.
+A directory at a page's path read as a miss instead:
+the page was bought on each of two runs,
+its record never kept,
+and its line said it could not be fetched.
+
+The fix:
+`readCachedReference` reads through `cacheFileText`,
+takes the parse failure as data and misses with
+`cached reference at <path> does not parse as JSON; ignoring it`,
+so the page is bought once and its file replaced;
+a path that is there and cannot be read raises `CacheFileUnreadableError`,
+which rejects the block before anything is bought
+and reaches the tally line with the code and the path;
+`writeCachedReference` writes through `writeFileAtomic`.
+`reference-cache.unit.test.ts` is new,
+so `reference-cache.ts` leaves the own-tests allowlist.
+
+Open to the owner's veto:
+for a work title the existing catch in `workTitleLookupLines` turns the refusal into no line,
+with a warning naming code and path;
+for a cited page the block rejects and the entry is tallied as an error.
+The asymmetry is the callers' existing design.
+
+Open,
+found by the same agent's audit of every `JSON.parse` of a file and every plain writer:
+`readTrialLedger` (`corpus-run/window-trial-ledger.ts`) tolerates a line that does not parse only when it is the last,
+and `appendTrialRow` appends a row with no newline before it,
+so after a torn last line the first row a resumed run appends is joined onto the fragment and lost,
+and a second makes the read throw a raw `SyntaxError`
+(the agent's measurement:
+one row and a fragment read as 1 row,
+1 again after one appended row,
+and a `SyntaxError` after two),
+handed to the agent that owns that module;
+`readBaselineCensus` (`corpus-run/coverage-census-input.ts`),
+`bundleScriptsOf` (`corpus-run/coverage-file.ts`) and `readSourceMap` (`corpus-run/coverage-lines.ts`)
+each run `JSON.parse` bare while each `@throws` promises its own class,
+and `census.json` is written by a plain `writeFile`;
+`writeFileAtomic` leaves `<path>.<pid>.partial` behind when its write fails (the agent's measurement);
+`runs-lock.ts` creates the lock empty and then writes it,
+and a starter that finds it unreadable takes it over,
+so a second pass starting between the two could evict a live holder
+(an inference from the code order,
+not measured);
+`work-title-lookup.ts` and `cited-reference-lookup.ts` log `String(error,)` of whatever they caught,
+and V8's message for a provider body that is not JSON quotes ten characters of it,
+where `refusalText` exists for that;
+and `BedrockLedgerShapeError` names the ledger line and not the ledger's path.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back".
+
+### B136: a lane's generation marker restamped in place on every open
+
+Red in `83355d3a3`,
+fixed in `fa2813de4`.
+Found on 2026-10-05 (UTC) by the agent of B134 in the same audit.
+`openNamespacedCache` (`corpus-run/slice-cache-namespace.ts`) rewrote its lane's marker with a plain `writeFile` on every open,
+also when the marker already named the running generation,
+and a comment called the failure direction safe.
+It was safe for correctness and not for cost.
+A plain write truncates before it writes,
+a marker left empty reads as another generation,
+and the open that meets it discards every slice the lane holds for that entry,
+which are then bought again.
+The agent measured both halves:
+under a file-size limit a marker holding `nap-3` read back empty after a refused write,
+and an open over an emptied marker logged the discard of the lane's two cached slices.
+The repair lane's cache is the first an entry opens,
+so a disk filling up mid-run could empty that marker for each entry attempted meanwhile.
+
+Making the write atomic and nothing else is wrong:
+the agent tried it,
+and a `pass-entry.unit.test.ts` case that resumes from a cache directory it may only read failed,
+since a temporary file cannot be created there.
+
+The red run printed 2 [PASS] and 4 [FAIL] lines:
+a reader holding the marker open was shown the later bytes
+(`expected 'nap-4\n' to equal 'nap-3\n'`),
+and a reopen under the generation the marker names failed with `EACCES` in a directory it may only read.
+
+The fix:
+the restamp happens only where the marker does not already name the running generation,
+which is where the open has just discarded and the lane holds nothing to lose,
+and it goes through `writeFileAtomic`,
+so a refused write leaves the earlier marker whole.
+The patch is the agent's;
+the restamp was folded into the discard's own block,
+which tests the same condition.
+The whole suite on `fa2813de4` printed 1582 [PASS] and 0 [FAIL] lines,
+the lint `Found 0 warnings and 0 errors.`
+and the scans 35 [PASS] lines.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back".
+
+### B137: a scan its summary called one linear pass read the text again at every address
+
+Pinned in `855553c3b`,
+changed in `4008eeb99`.
+Found on 2026-10-05 (UTC) reading the MiMo trial's production diff.
+`scanUrlRuns` (`corpus-run/dropped-destinations.ts`) found the next address through `nearestScheme`,
+which searched for each of the two schemes apart with `indexOf` and took the nearer answer.
+A scheme the text lacks,
+or carries only far ahead,
+was read for to the text's end at every run,
+so the scan cost the square of the text,
+while its TSDoc called it one linear pass.
+`cited-reference-scan.ts` already scanned for the same two schemes in one pass,
+by searching for the stem both share and testing each stem where it stood.
+Measured by a delegated agent on its build of `80e129926`,
+over a text repeating one `https://` address,
+median of five calls a size with other work sharing the machine:
+2,000 runs 34 ms,
+4,000 runs 132 ms,
+8,000 runs 543 ms,
+16,000 runs 2,168 ms,
+four times the time at every doubling
+(spread at 4,000 runs 136 to 178 ms).
+
+No page was harmed:
+the scan's results were right,
+and a page of the pinned corpus is far shorter than the texts measured.
+
+The fix:
+`scheme-start-scan.ts` holds the one search,
+`nextSchemeStart`,
+and both readers call it,
+each keeping its own stop characters and trimming.
+The same script then read 0.6,
+1.2,
+2.4 and 5.2 ms at those sizes.
+Both readers' whole output is the same before and after over 30,079 texts
+(79 written by hand for the shapes a scheme search can get wrong,
+30,000 from a seeded mix of tokens):
+the recorded outputs differ in no line,
+and a control that lower-cases the text first differs in 9,784.
+A text with no scheme and many bare `http` stems costs about twice what it did
+(0.30 ms against 0.13 ms at 132,000 characters).
+No test asserts a timing;
+the cases pinning both readers were committed green in `855553c3b` and stay green.
+The whole suite on `4008eeb99` printed 1584 [PASS] and 3 [FAIL] lines,
+all three from one lookup-cache case and its suites (ledger B140),
+the lint `Found 0 warnings and 0 errors.`
+and the scans 35 [PASS] lines.
+
+Open to the owner's veto,
+both the agent's choices:
+"no scheme from here" is the text's length,
+where the two readers disagreed before,
+so a caller that forgets the test reads an empty run,
+which `scanUrlRuns`' guard and `withoutTrailingPunctuation` both refuse;
+and a stem that opens no scheme is passed by one character,
+so the step does not depend on the stem having no self-overlap.
+
+Recurrence:
+`mistake-prevention.md`,
+"Loops that copy what they built".
+
+### B138: a pairing naming a block its section lacks was grouped as though it named a neighbour
+
+Red in `3a7a72502`,
+fixed in `e71249a76`.
+Found on 2026-10-05 (UTC) reading the MiMo trial's production diff
+(ledger M113 had recorded the empty result as found and not yet decided).
+`groupNodesSealed` (`group-aligned.ts`) takes a walk of steps,
+each naming a block by its index,
+and `walkIntoRuns` read a step's block as `[nodes[index]].filter(isPresent)`:
+a step naming a block its side lacks became a step carrying no block there.
+`renderedSpan` (`group-source-anchor.ts`) documented the same tolerance.
+What followed depended on the walk,
+by a delegated agent's probes of its build of `80e129926`:
+one paired step naming translation block 3 of 1 returned no runs at all,
+since `mergeOneSidedRuns` held the one-sided run for a neighbour and found none to host it;
+with a paired neighbour the original joined that neighbour's run instead;
+a translation-only step past the last block threw `Expected non-nullish value, got undefined`;
+and an original-only step past the last original returned an insertion of no blocks.
+
+A walk is built by `blockPairingToSteps` (`pair-blocks-steps.ts`),
+which checked nothing.
+`readBlockPairing` refuses such a pair in a model's reply,
+but a pairing also arrives from a settled artifact's recipe,
+which `parseBlockPairing` checks for shape,
+order and section,
+never against the blocks of the text the rebuild carves.
+On the agent's build,
+an artifact recording a pair with translation block 3,
+rebuilt over a section of 3 blocks,
+came back from `rebuildPreparation` as a moved carve with the pair dropped and the rest regrouped,
+and nothing named the pairing.
+
+No settled artifact was misread,
+measured by the agent over the 466 artifact files under 477 artifacts directories on this machine:
+268 read as version 2,
+238 of them record a block pairing,
+none of 9,536 recorded pairs names a block the section it is rebuilt over lacks,
+and every rebuild answers the same before and after the fix
+(249 reproduced,
+17 moved).
+
+The fix:
+`blockPairingToSteps` refuses a pair that names no block of its side with a `BlockPairingError`,
+in `readBlockPairing`'s words,
+`pairing names translation block 3, and there are 1`.
+Every walk the package builds then names only blocks it is grouped over,
+and the readers say so:
+`blockAtStep` (`group-source-anchor.ts`) reads the block a step names
+and throws an `unreachable:` error naming the step,
+the side,
+the index and the count where there is none;
+`walkIntoRuns` reads every step through it before anything else reads the walk,
+so each shape gets the one message,
+and `renderedSpan` reads through it too.
+The guard M113 restored in `anchorOffsets` stays,
+its closing clause reworded,
+since a walk pairing past the translation blocks no longer reaches it.
+The red run printed three [FAIL] cases in `pair-blocks-steps.unit.test.ts`
+and two in `group-aligned.unit.test.ts`,
+each because the call returned where the case expected a throw.
+
+Open to the owner's veto:
+the walk reader throws `unreachable:` although `groupNodesSealed` is exported and its signature admits any walk,
+where B127's reading would give a named `RangeError`;
+and on the rebuild path a recipe that does not fit its text now throws where it came back as a moved carve.
+`rebuildPage` catches it;
+`carveSettled`,
+`rendering-audit-settled-input.ts` and `slice-census-entry.ts` do not,
+so one such artifact would stop those instruments.
+
+Open:
+a catch of `BlockPairingError` in `rebuildPreparation` answering `moved` in the refusal's words,
+so those instruments go on;
+`slice-cache-store.ts` says a cached pairing is re-read through `readBlockPairing`,
+and it is not unless media adjacency widens it,
+with the same claim leaned on in `pair-media-adjacency.ts` and `pair-definition-order.ts`,
+so on that warm path an index outside the lists is refused only by `nonNullishOrThrow`;
+`readBlockPairing` and `assertPairsNameBlocks` word one refusal in two files;
+`groupNodesSealed` does not check that a supplied walk covers every block,
+and a walk of one original-only step over two originals and one translation returns no runs
+(the agent's probe of the fixed build;
+every walk the package builds covers both sides,
+and `prepareDocumentPair`'s coverage assertion catches the rest);
+and the comment closing `mergeOneSidedRuns` names a caller's one-sided fallback that no longer exists.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B139: a link destination the trim emptied compared equal to every other one it emptied
+
+Red in `855553c3b`,
+fixed in `987f767dd`.
+Found on 2026-10-05 (UTC) by an independent review of the MiMo trial's cases,
+whose case pinned the wrong result.
+`trimDestination` (`corpus-run/dropped-destinations.ts`) cuts a destination at its first stopper
+and sheds trailing sentence punctuation,
+for an address that prose ran into.
+A tree destination made of that punctuation,
+or opening on a stopper,
+was cut to the empty string and still recorded,
+so the current directory,
+its parent,
+a bare query and a link with no destination all read as one destination:
+a source linking the parent directory and the current one,
+against a page that kept only the current one,
+reported nothing dropped.
+A recorded empty destination was also found by the trace in every slice,
+since every text includes the empty string
+(read off `destination-completeness.ts` by the agent that fixed it,
+not run).
+The red run printed 4 [PASS] and 8 [FAIL] lines,
+five of them cases.
+
+No page was harmed,
+by the agent's count over the pinned corpus:
+`git grep` at the pin finds no page line whose link destination is empty,
+is sentence punctuation alone,
+or opens on a stopper,
+against 331 lines in 173 files for a destination opening on a web scheme;
+reference definitions were not searched.
+
+The fix:
+where the cut and the shed would leave nothing,
+the destination stands as written,
+so `trimDestination` answers the empty string only for an empty destination;
+a scanned run never reaches that line,
+since it opens with its scheme.
+`markdownDestinations` leaves an empty destination out:
+it names nowhere a reader could follow,
+and no page owes it.
+The trial's case asserted `urls: ['']` for a link to the current directory,
+under a name that also claimed an assertion it did not make;
+its four assertions are four cases now,
+each named for what it asserts.
+
+Open to the owner's veto,
+both the agent's choices:
+the destination stands as written rather than cut at its first stopper,
+which would still read a destination opening on a stopper as the empty string;
+and an empty destination is recorded on neither side,
+so a source link with no destination that a page drops is no longer reported by this check,
+though the slice rule still protects the link as an atom.
+
+Open:
+`trimDestination` still cuts an explicit destination at a stopper where something precedes it,
+so two explicit links differing only past a full-width comma read as one,
+where the cut is right for an autolink literal only;
+`carries` (`destination-completeness.ts`) searches by substring,
+so a dropped destination as short as `.` is traced to every slice holding a full stop;
+and `sameAddress('/')` is the empty string (`destination-renderings.ts`),
+so the site root's key was the empty destination's,
+and a source linking `/` against a page with an empty link reported nothing dropped before this fix
+(the agent's probes).
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input".
+
+### B140: a logger's own report read as a line the package logged
+
+Red in `7ecd53897`,
+fixed in `4640ab83a` and `22afb6c89`.
+Found on 2026-10-05 (UTC) when the whole suite on `4008eeb99` failed the `lookup-cache.unit.test.ts` case
+"MISSES on a file cut short inside its record,
+and WARNS that it does not parse,
+naming the file and none of its text"
+with `unreachable: the console sink wrote a line without its level and timestamp tags: logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`.
+The same case had passed in the two whole-suite runs before,
+on `971c8bec8` and `fa2813de4`.
+`warnLinesDuring` (`console-warn-lines.test-fixture.ts`,
+added in `8c7426a44`) diverts `console.warn` around a piece of work
+and reads every line the console sink wrote.
+The package logger is built on a process's first line and verifies its sinks then;
+a sink it cannot verify it reports on `console.warn` itself,
+untagged.
+Where a test process logged its first line inside the divert,
+that report landed in it,
+and the fixture threw on a line without the sink's tags.
+Entry 3 is the file sink,
+and another session was running mutation and fuzz jobs on the machine at the time
+(both from `7ecd53897`'s message).
+The fixture's message called the state unreachable;
+a loaded machine reached it.
+Reproduced without load in a throwaway checkout of `4008eeb99` by making the log directory read-only:
+the same case failed the same way,
+the report naming `EACCES`.
+
+The red case runs the fixture in a child process whose working directory holds a regular file
+where the file sink wants its log directory,
+so the sink's verify fails at once and the child's first line is logged inside the divert:
+0 [PASS] and 2 [FAIL] lines at `7ecd53897`.
+
+The fix:
+`4640ab83a` flushes the built package's root logger before the fixture replaces `console.warn`,
+so the logger verifies its sinks first
+and a report of one it could not verify reaches the console it was written for,
+outside the divert.
+A line without the console sink's tags still makes the fixture throw,
+since it is no line the package logged,
+and the message no longer calls that unreachable,
+because the logger can still report a sink failing during the work.
+A test process holds a second logger,
+module-logger's default,
+which the test framework writes through,
+while the build bundles its own copy;
+`22afb6c89` flushes that one too.
+Which of the two reported in the run on `4008eeb99` is not known,
+and a verify of the second running past its limit into an open divert was not reproduced:
+an attempt in a child process did not land the report inside the divert.
+Flushing it before the divert waits its verification out whenever it started,
+so the order no longer rests on timing.
+These facts are from the three commits' messages;
+the whole suite had not run on `22afb6c89` when its message was written.
+It ran afterwards in a fresh checkout of `22afb6c89`:
+1585 [PASS] and 0 [FAIL] lines,
+the lint clean and 35 scans passing.
+
+Recurrence:
+`mistake-prevention.md`,
+"Globals a case replaces".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -22181,7 +22939,21 @@ Each is restored as a throw whose message opens `unreachable:` and says what was
   as though they were the marker;
 - `scanUrlRuns` (`corpus-run/dropped-destinations.ts`) left its cursor where it stood
   for a run that consumed nothing,
-  which is a loop without an end.
+  which is a loop without an end;
+- `describeRows` (`corpus-run/bench-report.ts`) returned `'no rows'` for an empty group,
+  and with the return gone an empty group printed `NaNms per slice`;
+  `summarizeBench` groups rows by a width and a pass read off those same rows,
+  so no group is empty (restored in `f3b0d5db3`);
+- `restoreHeading` and `restoreSignature` (`corpus-run/contributor-name-restore.ts`)
+  returned `UNCHANGED` where the rebuilt line equals the line,
+  and with the arms gone such a line read as rewritten,
+  with a finding restoring it to itself;
+  a rebuild equal to its line means the written name already is the rendering,
+  which `carriesRendering` has answered before either is called
+  (restored in `f3b0d5db3`;
+  the writing agent measured 98,576 Han code points through the pinyin reader
+  and 400,000 seeded pages through the built pass,
+  neither reaching the throws).
 
 Named errors flattened to `nonNullishOrThrow`,
 whose whole message is `Expected non-nullish value, got undefined`.
@@ -22190,7 +22962,21 @@ and `nonNullishOrThrow`'s throwing arm lives in another package,
 outside the count.
 The two `unreachable:` throws of `coverage-candidates.ts`,
 naming the matcher and the aligner,
-are back with their words.
+are back with their words,
+and in `f3b0d5db3` two more,
+each `RenderingAuditInvariantError`:
+`withCitedReferences` (`corpus-run/rendering-audit-settled-buy.ts`) names the entry and the slice
+whose page was never read for references,
+and `subjectsOf` (`corpus-run/rendering-audit-settled-subject.ts`) refuses a row that passed the decided filter and is not decided.
+The trial had removed that throw behind a type predicate,
+which the compiler does not check against the filter's body,
+and left the `@throws` describing it;
+the filter returns `boolean` again.
+
+One conversion of a fallback into `nonNullishOrThrow` was a regression,
+not a flattened invariant:
+`stampOf` in the cap census,
+ledger B132.
 
 Parameters added to production functions so that a case could reach a branch,
 every one defaulting to the production value,
@@ -22239,16 +23025,192 @@ Removals read against their callers that stand:
 - `anchorOffsets` reads its walk through `nonNullishOrThrow` inside a loop bounded by the walk's own length,
   an element read that never had words of its own.
 
-Found beside these and not yet decided:
-`groupNodesSealed` returns no runs at all,
+Test cases the trial added that could not fail,
+read by three independent reviews of its test additions:
+`33ea944b4` corrects eight corpus-run test files
+(`published-page-check`,
+`meter-sample-read`,
+`meter-dry-span`,
+`final-selection-completeness`,
+`list-spread-restore`,
+`rendering-audit-settled-input`,
+`slice-census-entry`
+and `spend-read`),
+each case now asserting a whole result on an input where the code it names decides it,
+and case names lose the tags naming the T8 batch and cluster that wrote them,
+which said nothing about what a case asserts.
+`f3b0d5db3` corrects the test files of its own modules the same way.
+The production defects such cases pinned as intended,
+or could not see,
+are B128,
+B130,
+B131,
+B133 and B139.
+
+Found beside these:
+`groupNodesSealed` returned no runs at all,
 without a word,
 for a supplied walk pairing past the translation blocks
 (two source blocks,
 one translation block,
 a paired step naming the fourth:
-`{"runs":[],"sealedSourceIds":[]}` on the build of `7f069adc9`).
+`{"runs":[],"sealedSourceIds":[]}` on the build of `7f069adc9`);
+decided and fixed as B138.
+
+Open,
+found by the agent that wrote `f3b0d5db3`:
+the slice census sizes an added block by the block the aligner left over,
+so an added paragraph of 42 or of 213 characters reads as 39,
+since `estimateExpansion` (`align-blocks.ts`) divides a section's whole translation by its whole original
+and the added block raises the length expected of every rendering
+(the cause read off the source,
+not measured in a fork;
+`slice-census-entry.unit.test.ts` asserts the column only where it reads right);
+`restoreHeading` cuts the page title at its last colon to find the prefix,
+so a rendering that holds a colon is written twice into its heading,
+`### Three: Mao: Cat` becoming `### Three: Mao: Mao: Cat` with a restore reported
+(the agent's probe;
+the code is older than the trial,
+and which colon ends a prefix is a design choice);
+`finalSelectionFindings` reads an artifact whose contest never ran as nothing to report,
+an arm no production input reaches,
+since `settledEntryArtifact` writes its kinds as literals;
+`censusEntry` counts translation-only blocks with the deterministic aligner even under a settled recipe,
+so a settled row mixes two carves (read,
+not probed);
+and `readLists` (`list-spread-restore.ts`) drops a list whose item has no offsets,
+silently,
+which would move every later list's position
+(the parser sets positions on what it parses,
+an inference).
 
 Prevention:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### M114: a commit left without its lint, and a setup command read by its task status
+
+Status:
+both happened on 2026-10-05 (UTC) and were caught the same day.
+
+The commit.
+`f0f449765` corrected eight test files and was made on named tests alone;
+its message said the whole suite,
+the lint and the scans would run with the following change.
+Work went to agents instead,
+and the gates started only when a reviewer's advice asked for them.
+Run on that commit itself,
+they passed the suite and the scans and read `Found 1 warning and 0 errors.`:
+an expectation written `3072` where the lint wants `3_072`
+(`openrouter-cached-tokens.unit.test.ts`).
+`30c9bd8e6` fixed it,
+sixteen minutes after the commit by the two commit stamps.
+Twelve agent worktrees then stood at `f0f449765` (`git worktree list`),
+so each agent's lint reported the warning and each had to be told it was known.
+
+The setup command.
+The script that creates agent worktrees was run under `mise exec --`,
+where `git` is the plain program and not the repository's wrapper;
+plain `git` does not know `--no-worktree-copy`,
+and the script stopped at its first worktree,
+twice.
+Each run was in the background behind `|| echo "exit $?"`,
+so its task reported exit code 0.
+The report was taken for the result,
+neither log was read,
+and an agent was launched into a worktree that did not exist.
+It was found when a `cd` into another of those worktrees failed;
+the worktrees were then made without `mise exec --` and the agent was told.
+`mistake-prevention.md` already had the rule,
+under "Tasks,
+builds and bulk output" (ledger B103):
+a background run is read by its own log,
+never by the task's reported status.
+
+Prevention:
+a commit that defers its gates starts them in the background in the call after it;
+"with the next change" names no time.
+A command that sets up what a later step uses is read by its log before that step starts,
+and a path an agent is sent to is listed in the call that sends it.
+
+### M115: an invariant throw counted as code no test ran
+
+Status:
+found 2026-10-05 (UTC) on review of M112,
+fixed in `c1f846ddb`.
+The delegated agent that wrote the change drafted this entry under the code M113,
+which was taken by then.
+M112's prevention said the dead branch comes out rather than throwing from it,
+and that an `unreachable:` throw counts as one more uncased line.
+That inverts the package's rule,
+under which a broken invariant throws `new Error('unreachable: ...',)`,
+and it made the census a standing reason to delete every such guard:
+no honest input reaches one,
+so each read as code no unit test ran for ever.
+By the agent's count,
+`rg --fixed-strings 'unreachable:' src --glob '!*.test.ts' --count-matches` printed 42 in 24 files,
+29 of them keys and type members named `unreachable`;
+the unminified coverage build held 13 such throws,
+and the whole-suite census `census-aU1H0y` at `9fe80a109` left nine of them cold:
+`src/artifact-change-sets.ts` 212 to 215,
+`src/artifact-read.ts` 138 to 150,
+`src/budget-hold-wait.ts` 188 to 191,
+`src/chunk-measure.ts` 245 to 248,
+`src/cited-reference-scan.ts` 272 to 277,
+`src/corpus-run/published-page-check.ts` 556,
+`src/dedupe-issues.ts` 160,
+`src/splice-slices.ts` 263
+and `src/transient-retry.ts` 584 to 585.
+
+The census now reads each cold stretch's own text in the coverage bundle in one linear pass
+(`coverage-stretch-atoms.ts`,
+`coverage-invariant-throw.ts`).
+A stretch in which every statement throws `new Error(...)` whose first argument is one string or template literal beginning `unreachable:`,
+or a class whose name ends in `InvariantError`,
+is an invariant throw;
+braces,
+a semicolon,
+`else` and the `if` head guarding a throw may stand in it,
+and anything else keeps the whole stretch cold,
+as do a slash the pass cannot tell for a division or a pattern
+and a function no process called.
+`placeTally` places such stretches apart,
+so no row,
+total or baseline reading counts one,
+and the report prints their count beside the cold counts and lists each by source,
+lines and class thrown.
+The census file is format 3 (`CENSUS_FORMAT`) and keeps them under `invariantThrows`;
+`readBaselineCensus` refuses format 2 by name,
+since its stretches hold invariant throws among the cold code with no text to tell them by,
+and read against a run that leaves them out each would read as ran.
+Replayed through the changed build with no test run
+(a replay script in the agent's scratch),
+`census-aU1H0y` reads library source as 83 files and 110 stretches over 273 lines,
+with nine invariant throws,
+which is the 90 files,
+119 stretches and 309 lines it recorded.
+None of the nine is of the class form,
+whose six throws tests reach.
+
+A whole-suite census of the change has not been taken on the branch yet.
+The one the agent ran refused on a failing suite:
+`bench-sample-draw.unit.test.ts` reaches `git` through a shim whose `git-policy-cli` build its checkout lacked.
+Of the 286 `census.json` files under the package's coverage cache on this machine,
+none was written after `c1f846ddb`,
+so every stored baseline is format 2,
+and the next census is taken without one and becomes the baseline.
+
+Prevention:
+an `unreachable:` throw stays,
+the census counts it apart,
+and a guard is never removed to close a stretch.
+A stretch closes by a case that reaches it,
+or,
+where no honest input does,
+it is left to the invariant count.
+This supersedes M112's prevention,
+and T8's rule that a span no runtime value can reach is removed as dead code is read with it:
+a span that guards an invariant is not dead code.
 `mistake-prevention.md`,
 "Guards a census wants gone".
 
