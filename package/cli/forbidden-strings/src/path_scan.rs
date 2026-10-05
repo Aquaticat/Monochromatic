@@ -103,9 +103,9 @@ fn matching_rules(component: &[u8], loaded: &LoadedRules) -> Result<Vec<String>,
 
 /// Scans each logical component and masks every component with a matching rule.
 ///
-/// Component numbers are one-based and ignore the root and navigation markers
-/// (`.`, `..`), which are not directory names. A matcher panic masks the entire
-/// path and returns an engine-error finding instead of printing unsafe input.
+/// Component numbers are one-based and ignore the root, every native volume-prefix
+/// part, and navigation markers (`.`, `..`), which are not directory names. A matcher
+/// panic masks the entire path and returns an engine-error finding instead of printing unsafe input.
 pub(crate) fn scan_path_records(path: &Path, loaded: &LoadedRules) -> PathScanRecords {
     // Retain every non-separator native byte, including invalid UTF-8, until the matcher has inspected it.
     let normalized: Vec<u8> = normalized_path(path);
@@ -113,6 +113,10 @@ pub(crate) fn scan_path_records(path: &Path, loaded: &LoadedRules) -> PathScanRe
 }
 
 /// Scan already normalized bytes and an explicitly counted native prefix, preserving one shared policy implementation.
+///
+/// The first `prefix_count` non-empty components are prefix parts whatever their bytes,
+/// so the skip agrees by construction with `count_prefix_parts`, which counts non-empty separator-delimited runs.
+/// Every later non-empty component other than `.` or `..` is a name.
 fn scan_normalized_records(normalized: &[u8], prefix_count: usize, loaded: &LoadedRules) -> PathScanRecords {
     // usize counts native prefix components, not bytes; the caller has already identified their boundary.
     let mut remaining_prefix: usize = prefix_count;
@@ -126,14 +130,20 @@ fn scan_normalized_records(normalized: &[u8], prefix_count: usize, loaded: &Load
                 findings: vec![ScanFinding::PathnameLineBreak],
             };
         }
-        if component.is_empty() || component == b"." || component == b".." {
+        // Empty components come from repeated or leading separators; they are neither names nor prefix parts.
+        if component.is_empty() {
             displayed.push(safe_component(component));
             continue;
         }
-        // Skip every component of the native volume prefix, including UNC
-        // server and share names. The root separator was already skipped.
+        // Skip every component of the native volume prefix, including UNC server and share names,
+        // before classifying navigation markers: the `.` of `\\.\COM1` is a prefix part, not navigation.
+        // A prefix part is any non-empty component whatever its bytes, exactly what `count_prefix_parts` counts.
         if remaining_prefix > 0 {
             remaining_prefix -= 1;
+            displayed.push(safe_component(component));
+            continue;
+        }
+        if component == b"." || component == b".." {
             displayed.push(safe_component(component));
             continue;
         }

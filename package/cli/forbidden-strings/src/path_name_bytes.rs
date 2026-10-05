@@ -41,6 +41,13 @@ pub(crate) fn prefix_parts(path: &Path) -> usize {
 }
 
 /// Count all parts of an already identified native volume prefix without requiring that platform's Path parser.
+///
+/// A part is a non-empty byte run between `/` or `\` separators, whatever its bytes,
+/// so the `.` of `\\.\COM1` and a `..` share name each count once.
+/// The pathname scan consumes exactly this many non-empty components before classifying navigation markers.
+/// Windows's parser ends every prefix at a separator or the end of input,
+/// and `normalize_bytes` inserts the separator after a drive-relative `C:`,
+/// so the last part never merges with the first name.
 pub(crate) fn count_prefix_parts(prefix: &[u8]) -> usize {
     let mut count: usize = 0;
     let mut in_component: bool = false;
