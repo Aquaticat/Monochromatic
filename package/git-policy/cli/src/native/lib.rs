@@ -104,3 +104,12 @@ mod command_branch_target;
 
 /// The complete Git 2.56.0 option tables of `git checkout` and `git switch`.
 pub mod command_checkout_table;
+
+/// The Git 2.56.0 option groups of `git config`.
+pub mod command_config_table;
+
+/// The form and file scope of a `git config` region.
+pub mod command_config;
+
+/// Pure decision of the require-root policy.
+pub mod rule_require_root;
