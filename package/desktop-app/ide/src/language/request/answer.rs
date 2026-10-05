@@ -179,13 +179,13 @@ fn unanswered(
         return;
     };
     if ticket.attempt < MAX_RETRIES {
-        tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, attempt = ticket.attempt + 1, %error, "request stayed unanswered; sending it again");
+        tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, attempt = ticket.attempt + 1, %error, "request was superseded or timed out; sending it again");
         let mut again = ticket;
         again.attempt += 1;
         worker.timer(delay, Internal::Retry(Box::new(again)));
         return;
     }
-    tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, %error, "request stayed unanswered through its retries; it is asked again when the server next sends anything");
+    tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, %error, "request was superseded or timed out through all its retries; it is asked again when the server next sends anything");
     record(worker, &ticket, true);
 }
 
