@@ -36,7 +36,7 @@ fn read_failed(window: &AppWindow, state: &Rc<RefCell<State>>, message: String) 
 }
 
 /// Accept classifications only for the installed source revision, without hiding parser failures.
-fn apply_syntax(current: &mut State, reply: SyntaxReply) -> bool {
+pub(super) fn apply_syntax(current: &mut State, reply: SyntaxReply) -> bool {
     if reply.revision != current.document.revision() {
         tracing::debug!(
             revision = reply.revision,

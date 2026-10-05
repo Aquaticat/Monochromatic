@@ -115,6 +115,9 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         None
     };
     let mut notices = Vec::new();
+    if let Some(message) = &current.navigation_error {
+        notices.push(message.as_str());
+    }
     if let Some(message) = &current.file_error {
         notices.push(message.as_str());
     }

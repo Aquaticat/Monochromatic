@@ -33,11 +33,13 @@ export component AppWindow inherits Window {
     callback tree-shortcut(string, bool, bool, bool);
     public function reveal-tree(index: int) { project-tree.reveal(index); }
     public function focus-source() { code-focus.focus(); }
+    public function focus-tree() { project-tree.focus(); }
     public function reset-source-scroll() {
         scroll.content-x = 0px;
         scroll.content-y = 0px;
     }
 
+    in property <bool> source-available: true;
     in property <image> source-image;
     in property <[SourceSelection]> source-selections;
     in property <float> image-x;
@@ -124,6 +126,7 @@ export component AppWindow inherits Window {
         }
 
         code-focus := FocusScope {
+            visible: root.source-available;
             vertical-stretch: 1;
             focus-on-click: true;
             accessible-role: text-input;
@@ -138,6 +141,7 @@ export component AppWindow inherits Window {
                 } else if event.modifiers.control && (event.text == "a" || event.text == "A") {
                     root.select-all-request();
                 } else {
+                    root.tree-shortcut(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
                     root.key-input(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
                 }
                 accept

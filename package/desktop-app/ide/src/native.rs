@@ -44,6 +44,8 @@ use ui::AppWindow;
 mod font_tests;
 /// Source selection and keyboard callbacks.
 mod input;
+/// Project tree and asynchronous successful-file navigation.
+mod navigation;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
@@ -73,6 +75,8 @@ struct State {
     file_generation: u64,
     /// A failed refresh retains source and displays an actionable error only while needed.
     file_error: Option<String>,
+    /// New-file open failures remain visible independently of the displayed file's refresh result.
+    navigation_error: Option<String>,
     /// Last revision whose highlighting result was accepted, including plain-text or failed results.
     syntax_revision: Option<u64>,
     /// Highlight failures remain distinct from file-read failures.
@@ -110,6 +114,7 @@ impl State {
             file_path,
             file_generation: 1,
             file_error: None,
+            navigation_error: None,
             syntax_revision: None,
             syntax_error: None,
             styles: SourceStyles::from([]),
@@ -163,9 +168,10 @@ pub fn run(options: Options) -> anyhow::Result<()> {
             .with_context(|| return format!("Cannot read UTF-8 source file {}", path.display()))?;
         (text, path.display().to_string())
     } else {
-        (String::new(), workspace.root().display().to_string())
+        (String::new(), String::new())
     };
     let window = AppWindow::new()?;
+    window.set_source_available(file_path.is_some());
     let state = Rc::new(RefCell::new(State::new(&source, file_path)));
     window.set_file_label(SharedString::from(label));
     bind_pointer(&window, &state);
@@ -174,7 +180,11 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     // Retain the timer until window shutdown; its Drop also closes and joins the worker.
     let _reload_timer = reload::bind(&window, &state)?;
     bind_appearance(&window, &state);
+    let _navigation_timer = navigation::bind(&window, &state, workspace)?;
     render(&window, &state);
+    if state.borrow().file_path.is_none() {
+        window.invoke_focus_tree();
+    }
     window.run()?;
     // What: Ok(()) reports success without a payload; Err would carry a failure.
     // Why: Clean window closure is not a process error.
