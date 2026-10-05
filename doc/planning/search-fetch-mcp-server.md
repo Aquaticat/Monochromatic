@@ -1,6 +1,6 @@
 # Repackage pi search fetch as an MCP server
 
-Status: design grilling in progress.
+Status: design grilling finished; frontier empty, awaiting the user's confirmation of the shared understanding.
 This records the interview state, measured evidence, and the open frontier.
 Nothing is implemented yet.
 
@@ -41,13 +41,19 @@ Recorded without asking (policy or sibling precedent), each open for veto:
 - Schema strictness is behavior: the shared schema must stay an open object so `collectIgnoredKeys`
   keeps warning on ignored `web_fetch` knobs instead of the host rejecting them.
 
+- Q9: README snippets cover generic stdio and open-codereview.ai only;
+  live verification runs against OpenCodeReview (`ocr` on PATH), configured by the agent.
+- Q11: full response delivery is both mechanisms: an inline `resource_link` in the tool result
+  and a dynamic resource via `resources/list` plus `resources/read`, with the resource URI in the text output.
+- Q12: the truncation port lives in its own package `package/agent-harness-shared/truncate`,
+  named `@monochromatic-dev/agent-harness-shared-truncate`, differential-tested against pi's helpers
+  with pi in devDependencies only.
+- Q13: no `AGENTS.md` edit; the user enforces the rg rule another way.
+
 ## Open frontier
 
-- Q11: MCP resource delivery mechanism, given OpenCodeReview renders non-text content as
-  `[unsupported content type: ...]`. Options: dynamic resource via `resources/list` and `resources/read`
-  with the URI in the text output, inline `resource_link`, or reverting to temp path only.
-- Q12: where the ported truncation module lives: inside the core package or its own `package/module/...` package.
-- Q13: proposed `AGENTS.md` `RGT` tightening after the rg misuse incident (see Evidence hygiene).
+Empty.
+The design tree is fully visited; implementation waits for the user's confirmation of the shared understanding.
 
 ## Evidence
 
@@ -125,5 +131,22 @@ No schema or implementation change.
 
 ## Next action
 
-Waiting on user answers for Q11, Q12, Q13, asked in one `ask_user_question` call.
+Restate the shared understanding and wait for explicit confirmation before implementing.
+
+Implementation shape confirmed by the interview, with recorded defaults open for veto:
+
+- `package/agent-harness-shared/truncate`: neutral truncation port, differential-tested against pi's
+  `truncateHead` and `formatSize`.
+- `package/agent-harness-shared/search-fetch`: config loading, provider fallback, blocklist domain policy,
+  gh URL plans, markdown data-URL filtering, tool specs (valibot source), output formatting,
+  and the in-repo valibot to TypeBox subset converter with a fail-loud guard.
+- `package/pi-plugin/search-fetch`: slim pi adapter (converted TypeBox parameters, `label`, `promptSnippet`,
+  `registerTool`).
+- `package/mcp/search-fetch`: `@monochromatic-dev/mcp-search-fetch`, bin `search-fetch-mcp`, on `mcp-stdio`,
+  tools `web_search` and `web_fetch`, truncated output with temp path plus inline `resource_link` plus URI text.
+- `@monochromatic-dev/mcp-stdio`: grows a resources surface (`resources/list`, `resources/read` dispatch) beyond
+  the unchanged schema path.
+- Recorded defaults: resource URI scheme `search-fetch://response/<id>` backed by the same temp file,
+  bounded in-memory index of recent responses; verification runs a scripted MCP client round trip
+  (tools/list, tools/call, resources/read) and one live `ocr` review with both tools called.
 After the frontier empties, restate the shared understanding and wait for confirmation before implementing.
