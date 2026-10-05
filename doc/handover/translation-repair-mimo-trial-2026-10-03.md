@@ -683,6 +683,133 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-05,
+  01:49 UTC:
+  CORRECTION OF THE RECORD,
+  and the investigation it re-opens.
+  Eight ledger paragraphs explain uncovered lines
+  as "the census's attribution" leaving them cold
+  (ledger lines 6515,
+  6602,
+  6889,
+  6949,
+  6987,
+  7020,
+  7065,
+  7106).
+  That explanation was never verified,
+  and each of the eight is now re-opened.
+  The claims stand as UNRESOLVED until re-verified.
+  What the re-verification established so far:
+
+- The test harness logs one visible line per suite,
+  not per case.
+  Per-case `[PASS]` lines are debug level,
+  and empty-name suites log at debug too
+  (`package/module/test/src/describe.ts`,
+  "Empty-name suites are invisible wrappers").
+  Consequence:
+  counting `[PASS]` lines counts named suites,
+  so an earlier reading
+  (`3 passes, my case never ran`)
+  was wrong,
+  and every earlier case count read off those lines
+  was wrong with it.
+
+- `isJsonRecord` is only
+  object and non-null and not-array
+  (`package/module/translation-repair/src/json-guard.ts`),
+  so a check element like `{ issue: 'one', verdict: 'fixed' }`
+  passes it and reaches the type guard behind it.
+
+- The coverage-census verdict line derives its words
+  from the baseline's stretch boundaries
+  matched against the run's own merged cold byte spans.
+  Adjacent statements merge into one span
+  (the reach run's own JSON shows
+  `resolution-wire.ts` 328 to 331 as one span `[11812..11892]`).
+  The run's own census JSON
+  (the `census written to ...` path)
+  is the ground truth;
+  the verdict line is derived and can misattribute.
+
+- Verified about the `resolution` case
+  (`resolution-wire.unit.test.ts`):
+  the case runs.
+  Its first two calls turned the baseline-cold lines 321 and 348 hot
+  in the reach run's own census
+  (`census-qIxdKv`),
+  and no other case in that file touches those guards.
+  The whole-suite censuses taken after the case landed
+  (`census-5tlfGG`,
+  `census-hCZX4J`)
+  list `resolution-wire.ts` clean.
+
+- UNRESOLVED about that case:
+  whether its third call executes the `return false` at
+  `resolution-wire.ts:328`.
+  Two hypotheses remain open:
+  the coverage build's source-map attribution drops that
+  statement's bytes,
+  or a code-path reason not yet found.
+  The decisive experiment,
+  not yet run:
+  a single-case scratch test carrying only that call,
+  run under the reach census,
+  read against its own census JSON,
+  with a minimal synthetic module of the same guard shape
+  as the tool's positive control,
+  in a throwaway worktree.
+
+- The sites still to re-verify,
+  in the order they will be taken:
+  ledger 7106 (`canadian-date-read-leading.ts` 259 and 335,
+  `canadian-spelling-capital.ts` 463),
+  7020 (`nudged-reask.ts` 147 and 153),
+  6987 (`lane-contest-cache-store.ts` 59 to 61),
+  6949 (`lookup-cache.ts` 193,
+  221,
+  321 to 324),
+  6889 (`model-content.ts` 36),
+  6602 (`slice-cache-namespace.ts` 266 and 378),
+  6515 (`spend-read.ts` 238 and 345).
+  Each takes a focused case,
+  the reach census's own JSON,
+  and where a tool gap is claimed,
+  a minimal reproduction before the claim is written.
+
+- Reporting standard from here:
+  COMPLETED means a case landed,
+  the run including the case shows the line hot,
+  and the assertion distinguishes the branch where one exists.
+  ATTEMPTED means a case landed and the cause of a cold line
+  is identified.
+  UNRESOLVED means the cause is not found,
+  and it is recorded as unresolved rather than explained.
+  A passing suite is not branch evidence.
+  Contrary evidence is kept in place beside the correction.
+
+- Also corrected:
+  reach runs select narrow test file sets,
+  so lines other drivers exercise are cold there on purpose
+  (the `cold since then (ran there)` rows);
+  earlier paragraphs mixed those rows into the same claim
+  as the stuck lines,
+  and the re-verification separates them.
+
+- Environment:
+  throwaway worktrees are available for verification runs
+  (the owner's word),
+  and the tool-behavior reproductions will use one
+  so the trial tree stays clean.
+  No execution limit of any kind was reported by the runtime;
+  earlier notes claiming one are retracted.
+
+  Next:
+  the decisive experiment for `resolution-wire.ts:328`
+  in a throwaway worktree,
+  then the seven sites in the order named.
+
+- 2026-10-05,
   01:18 UTC:
   the next batch's baseline census taken at commit `abb99ceb7`:
   `census written to ~/.cache/translation-repair/coverage/census-cLOz3U/census.json`
