@@ -1,9 +1,9 @@
 //! Lazy, filesystem-free tree presentation over read-only directory snapshots.
 
-/// Invalid tree operations report affected paths instead of silently changing unrelated rows.
-use anyhow::{Result, bail};
 /// Directory metadata retains native filenames and filesystem enumeration order.
 use crate::workspace::DirectoryEntry;
+/// Invalid tree operations report affected paths instead of silently changing unrelated rows.
+use anyhow::{Result, bail};
 /// What: Maps own cached snapshots; sets own expansion state; Path borrows names and PathBuf owns them.
 /// Why: Unlike a recursive node graph, these let background results update one directory independently.
 ///
@@ -12,7 +12,10 @@ use crate::workspace::DirectoryEntry;
 /// const directories = new Map<string, DirectoryEntry[]>();
 /// const expanded = new Set<string>();
 /// ```
-use std::{collections::{BTreeMap, BTreeSet}, path::{Path, PathBuf}};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    path::{Path, PathBuf},
+};
 
 /// Validate and replace individual directory snapshots without performing I/O.
 mod listing;
@@ -74,7 +77,11 @@ impl FileTree {
         // ```ts
         // return { root: ownedRoot, directories: new Map(), expanded };
         // ```
-        return Self { root: owned_root, directories: BTreeMap::new(), expanded };
+        return Self {
+            root: owned_root,
+            directories: BTreeMap::new(),
+            expanded,
+        };
     }
 
     /// Borrow a known entry from its parent's snapshot, including collapsed descendants.
@@ -106,7 +113,10 @@ impl FileTree {
             bail!("Cannot expand unknown tree entry {}", path.display());
         };
         if !entry.is_directory {
-            bail!("Cannot expand {}: its directory entry is not a directory", path.display());
+            bail!(
+                "Cannot expand {}: its directory entry is not a directory",
+                path.display()
+            );
         }
         if self.expanded.remove(path) {
             tracing::debug!(path = %path.display(), "collapsed tree directory");

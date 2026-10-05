@@ -7,7 +7,10 @@ use crate::workspace::DirectoryEntry;
 /// Invalid snapshots are errors, not partial updates or empty-directory fallbacks.
 use anyhow::{Result, bail};
 /// Sets detect duplicate paths without changing input order; paths retain non-UTF-8 names.
-use std::{collections::BTreeSet, path::{Component, Path}};
+use std::{
+    collections::BTreeSet,
+    path::{Component, Path},
+};
 
 /// Check one snapshot independently so a rejected reply cannot partly update expansion state.
 fn validate(directory: &Path, entries: &[DirectoryEntry]) -> Result<()> {
@@ -31,11 +34,19 @@ fn validate(directory: &Path, entries: &[DirectoryEntry]) -> Result<()> {
         let valid_name = matches!(components.next(), Some(Component::Normal(name)) if name == entry.name.as_os_str())
             && components.next().is_none();
         if !valid_name || entry.path != directory.join(&entry.name) {
-            bail!("Invalid tree entry {} in directory {}", entry.path.display(), directory.display());
+            bail!(
+                "Invalid tree entry {} in directory {}",
+                entry.path.display(),
+                directory.display()
+            );
         }
         // Lend each path while validating; the set does not outlive this snapshot borrow.
         if !seen.insert(&entry.path) {
-            bail!("Duplicate tree entry {} in directory {}", entry.path.display(), directory.display());
+            bail!(
+                "Duplicate tree entry {} in directory {}",
+                entry.path.display(),
+                directory.display()
+            );
         }
     }
     // What: Ok(()) reports validation success without producing another copy of the snapshot.
@@ -63,7 +74,10 @@ impl FileTree {
             // ```
             if let Some(entry) = self.entry(directory) {
                 if !entry.is_directory {
-                    bail!("Cannot list non-directory tree entry {}", directory.display());
+                    bail!(
+                        "Cannot list non-directory tree entry {}",
+                        directory.display()
+                    );
                 }
             } else {
                 bail!("Cannot list unknown tree directory {}", directory.display());
@@ -110,10 +124,14 @@ impl FileTree {
         // keepPathsWhere(path => !ancestors(path).some(parent => removed.has(parent)));
         // ```
         self.directories.retain(|path, _entries| {
-            return !path.ancestors().any(|parent| return removed.contains(parent));
+            return !path
+                .ancestors()
+                .any(|parent| return removed.contains(parent));
         });
         self.expanded.retain(|path| {
-            return !path.ancestors().any(|parent| return removed.contains(parent));
+            return !path
+                .ancestors()
+                .any(|parent| return removed.contains(parent));
         });
         tracing::debug!(path = %directory.display(), entries = entries.len(), "applied tree directory snapshot");
         // Copy only the directory key; move the already ordered entries into the cache.

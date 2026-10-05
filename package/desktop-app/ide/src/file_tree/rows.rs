@@ -48,7 +48,11 @@ impl FileTree {
             // ```ts
             // rows.push({ entry: { ...entry }, depth, expanded });
             // ```
-            rows.push(TreeRow { entry: entry.clone(), depth, expanded });
+            rows.push(TreeRow {
+                entry: entry.clone(),
+                depth,
+                expanded,
+            });
             if expanded {
                 // Borrow a loaded snapshot; a still-missing one has no visible children yet.
                 if let Some(children) = self.directories.get(&entry.path) {

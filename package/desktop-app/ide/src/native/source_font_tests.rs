@@ -18,12 +18,7 @@ use slint::{ComponentHandle, platform::update_timers_and_animations};
 use std::{cell::RefCell, rc::Rc};
 
 /// Install a new immutable shaper, invalidate its frame, and capture the real source view.
-fn capture(
-    window: &AppWindow,
-    state: &Rc<RefCell<State>>,
-    weight: f32,
-    italic: bool,
-) -> Vec<u8> {
+fn capture(window: &AppWindow, state: &Rc<RefCell<State>>, weight: f32, italic: bool) -> Vec<u8> {
     // What: borrow_mut lends the state exclusively until this inner block ends.
     // Why: Release the borrow before toolkit setters can invoke rendering callbacks.
     //
@@ -83,9 +78,15 @@ fn source_typography_repaints_without_changing_selection() {
     // Lend the window/state while each independent pixel buffer remains owned by the test.
     let regular = capture(&window, &state, 400.0, false);
     let weighted = capture(&window, &state, 527.5, false);
-    assert!(regular != weighted, "source weight must change displayed ink");
+    assert!(
+        regular != weighted,
+        "source weight must change displayed ink"
+    );
     let italic = capture(&window, &state, 527.5, true);
-    assert!(weighted != italic, "source italic request must change displayed ink");
+    assert!(
+        weighted != italic,
+        "source italic request must change displayed ink"
+    );
     assert_eq!(window.get_selected_text(), "=");
     assert_eq!(window.get_selection_anchor(), 1);
     assert_eq!(window.get_selection_head(), 2);

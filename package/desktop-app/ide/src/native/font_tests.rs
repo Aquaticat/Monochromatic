@@ -52,7 +52,10 @@ fn native_text_repaints_for_weight_and_italic_requests() {
         window.set_weight(400);
         window.set_italic(false);
         let regular = snapshot(&window);
-        assert!(regular != fallback, "{family} must differ from the unregistered-family control");
+        assert!(
+            regular != fallback,
+            "{family} must differ from the unregistered-family control"
+        );
         window.set_weight(537);
         let intermediate = snapshot(&window);
         assert_ne!(
