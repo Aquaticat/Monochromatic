@@ -558,7 +558,20 @@ failed ones included.
   stopped by hand while the image was being built,
   because the runner was about to change.
   It produced no result.
-- GATE-FINAL-PENDING
+- Final run,
+  on the sources of `a815718f4` with the runner of `d34761d35`:
+  398 unit tests in the library,
+  0 unit tests in the executable,
+  21 binary-level tests (`native_binary`),
+  1 public-interface consumer test (`native_candidates`),
+  Clippy passed,
+  exit status 0.
+  The image build compiled the test targets in 4 minutes 16 seconds;
+  the test container then found them built in 10.22 seconds.
+  The unit tests took 63.82 seconds with the host's load average between 70 and 106.
+  Test image `9ffa5c481579a9f6501944626169fbb599602ce8458e0aa19f052c840ee65721`;
+  evidence `native-fm9zle`.
+  The commits after `a815718f4` change only the runner and this document.
 
 ## Mutation testing
 
@@ -843,8 +856,12 @@ No `.ts` file and nothing under `package/cli/forbidden-strings` was edited.
 
 ## Failed or skipped
 
-- Three of the first five gate runs failed;
-  each is listed under "Gate results" with its cause.
+- Of the gate runs,
+  four failed,
+  one ended with a Podman status 127 whose cause was not established,
+  and one was stopped by hand;
+  each is listed under "Gate results".
+  The first fuzz smoke run failed on a Podman error before it reached the new target.
 - The control for a request written to an exited process could not be made to observe one fixed step,
   for the reason given there.
   The write-failure branch of `ObjectReader::request` is reached only when the pipe has no other holder.
