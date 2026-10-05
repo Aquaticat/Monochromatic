@@ -236,6 +236,11 @@ and Clippy inside a bounded container.
 Consumer migration and mutation-survivor disposition gates are tracked in the execution document;
 their absence is not a completion claim.
 `mutation:markdown` runs full container tests and Clippy before scoped native Markdown mutation.
+`mutation:executable` does the same for the orchestration modules,
+the executable's entry point,
+and Rust rule selection;
+`mutation:processors:files` does the same for the processor modules.
+A campaign with a missed or timed-out mutant exits nonzero and is not a passing gate.
 The fuzz sidecar includes counted Markdown/MDX fixtures,
 raw source,
 reparsing of accepted fixed output,
