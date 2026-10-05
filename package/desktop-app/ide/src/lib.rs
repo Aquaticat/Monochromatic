@@ -54,6 +54,9 @@ pub mod file_tree;
 /// Bounded background directory reads apply only current tree-request replies.
 pub mod directory_worker;
 
+/// Startup argument grammar is independent of filesystem and native display initialization.
+pub mod cli;
+
 /// Unmodified variable and real italic font assets with stable source-font identities.
 pub mod font_asset;
 
