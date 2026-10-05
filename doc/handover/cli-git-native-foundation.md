@@ -65,6 +65,56 @@ Test image
 `606ad8d2e58639ca1729aa18cdc5f77223d389eb1f4150b87620e27f3a4d9d77`;
 evidence `package/git-policy/cli/target/verification/native-SyV2Pq`.
 
+### Slice 3, diagnostics and management commands
+
+Commit `5b25df929`.
+The gate passed 134 unit tests,
+21 binary-level tests,
+and Clippy.
+Test image
+`515ceb783017f1184decb7c12c34ab838a30e1a7a17d5507f22ff3a9730e31c4`;
+evidence `package/git-policy/cli/target/verification/native-HpTEoj`.
+
+### Test file split
+
+Commit `1bc84492a` moved controls out of four test files that exceeded 300 code lines.
+No control changed:
+the gate passed the same 134 unit tests and 21 binary-level tests,
+and Clippy.
+Test image
+`9424eaeacf326c05863fe00e5bb87bcac3bd08ac452fc68646bd9c865b70b0c8`;
+evidence `package/git-policy/cli/target/verification/native-YF1758`.
+
+### Controls added after the first mutation campaign
+
+Commit `6fb148913`.
+The gate passed 144 unit tests,
+21 binary-level tests,
+and Clippy.
+Test image
+`ef4b26e1b68250ee7f3f628b018cd5b7d1867c1af5b6b38e0acfc585ef53ffc7`;
+evidence `package/git-policy/cli/target/verification/native-zJK04f`.
+
+### Registry lookup and fixture writer
+
+Commit `cba0702fe` replaced an indexed loop in `policy_descriptor` with a `for` loop.
+The gate passed 144 unit tests,
+21 binary-level tests,
+and Clippy.
+Test image
+`11f544e29a261417dd283a9e4ebac0988acf4c1118dc43486c0c063213da472c`;
+evidence `package/git-policy/cli/target/verification/native-1Kehi5`.
+
+Commit `de15ea3ea` changed how tests write the executables they run;
+"Intermittent test failure" gives the reason.
+The gate passed the same 144 unit tests and 21 binary-level tests,
+and Clippy.
+Test image
+`15bd4395ea94c2f2cde8cc7957baf037ee7d0c7054c91633ff318172b8bd1a8a`;
+evidence `package/git-policy/cli/target/verification/native-8EIyYT`.
+
+Evidence directories live under the ignored `target` directory of this worktree and are not committed.
+
 ## Configuration
 
 ### Shape
@@ -127,7 +177,7 @@ pinned by `every_identity_resolves_to_its_declared_row`:
 `final-newline` and `markdown/autofix` are `warn`,
 every other policy is `error`.
 
-### Choices open to veto
+### Configuration choices open to veto
 
 #### Policy names
 
@@ -279,12 +329,123 @@ so a count such as `" 2"` lost the injection.
 
 ### Worktree identity
 
-`worktree_identity.rs` runs one query,
-`git <global options> rev-parse --path-format=absolute --is-bare-repository --git-dir --git-common-dir --show-toplevel`.
+`worktree_identity.rs` runs one query:
+
+```sh
+git <global options> rev-parse --path-format=absolute --is-bare-repository --git-dir --git-common-dir --show-toplevel
+```
+
 Git applies `-C` chains through symbolic links itself;
 the incumbent's lexical `-C` resolution is not ported.
 Output with a line count other than the expected one is rejected,
 so a path containing a line feed fails closed instead of being misparsed.
+
+## Diagnostics and management commands
+
+### Events
+
+`diagnostics.rs` renders JSON Lines events with the incumbent's field order
+(`schemaVersion`,
+`sequence`,
+`type`,
+`code`,
+`message`),
+so a consumer of the incumbent's events parses them unchanged.
+`json_string` escapes as `JSON.stringify` does;
+`diagnostics_tests.rs` covers quotes,
+backslashes,
+the short escapes,
+the lowest and highest remaining control characters,
+and text that tries to end its JSON string or its line.
+The `config_schema` fuzz target decodes every rendered rejection back to its message.
+
+A rejected configuration is one `engine-failure` event with code `config-invalid` and exit status 2:
+on standard error for a wrapped Git command,
+on standard output for `git cli-git check` and `git cli-git fix`.
+A legacy file beside the JSONC file is one `configuration-warning` event
+with code `legacy-config-ignored` and a `path` field,
+on the same stream.
+
+### Management namespace
+
+`git cli-git` is answered by the wrapper and never reaches Git,
+also when Git global options such as `-C <dir>` precede it.
+The word `cli-git` in any other position is an ordinary argument.
+
+```text
+Usage: git cli-git check (--all | -- <pathspec>...) [--policy <id>]...
+       git cli-git fix (--all | -- <pathspec>...) [--policy <id>]...
+       git cli-git --help
+```
+
+`check` and `fix` require exactly one scope.
+A malformed invocation prints the usage or the specific refusal on standard error and exits 2.
+`--policy` accepts shipped policy IDs only;
+an unknown ID is a `config-invalid` event.
+A well-formed `check` or `fix` resolves real Git,
+validates the selected worktree's configuration,
+reports legacy files,
+and then stops with exit status 2 and the notice that policy execution is not implemented.
+`--help` and `-h` print help on standard output with exit status 0,
+without resolving Git or reading a repository.
+
+`trust`,
+`untrust`,
+and `status` still parse.
+Each prints that it is retired,
+that JSONC configuration is data and runs no repository-supplied code,
+and that existing trust records are neither changed nor read.
+
+### Diagnostics choices open to veto
+
+#### Retired trust commands
+
+They exit 0,
+with the explanation on standard error,
+or on standard output for `--help`.
+The caller asked to approve or revoke code execution;
+no code execution exists,
+so nothing failed.
+The alternative is exit status 2,
+so that a script still calling `git cli-git trust --yes` notices.
+The ledger leaves both the status and the stream open.
+
+#### Exit status 2 for wrapper failures
+
+A missing real Git,
+a malformed management invocation,
+an invalid configuration,
+a repository that cannot be inspected,
+and the unimplemented policy stage all exit 2.
+The incumbent exited 1 for some of these,
+which the ledger lists as a defect.
+
+#### Configuration warning event
+
+`configuration-warning` is a new event type that `SPEC.md` does not define.
+The incumbent's `warn-unsafe` warning names a policy and a trigger;
+a stale legacy file has neither,
+so the event carries `path`.
+The alternative is prose on standard error.
+A path that is not UTF-8 is rendered with replacement characters in `message` and `path`.
+
+#### Failure codes
+
+`EngineFailureCode` keeps the incumbent's spellings for configuration,
+content,
+patch,
+fix-loop,
+transaction,
+and index-lock failures.
+The plugin and trust codes are dropped.
+Which code reports a failing built-in policy is left to the policy engine.
+
+#### Policy selection
+
+`--policy` is checked against the registry before Git is resolved,
+so a mistyped ID fails the same way in and outside a repository.
+Selecting a shipped policy that the configuration turns off is not rejected here;
+what that should do belongs to policy execution.
 
 ## What the executable does today
 
@@ -292,6 +453,7 @@ so a path containing a line feed fails closed instead of being misparsed.
 `main.rs` only collects arguments and environment.
 
 - A wrapper named by the forward-target marker stops.
+- `git cli-git` is handled as described under "Management namespace".
 - Real Git is resolved;
   failure exits 2 with the resolver's counts.
   The incumbent exited 1 there;
@@ -305,8 +467,368 @@ so a path containing a line feed fails closed instead of being misparsed.
   and stops with exit 2 and a notice that policy execution is not implemented.
   Forwarding it unguarded would drop enforcement silently.
 
+## Mutation testing
+
+### Runner
+
+Commit `07ca5b9bb`.
+`mise run //package/git-policy/cli:native:mutation` runs the gate and then `bin/mutate-native-container.mjs`.
+`mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/<name>.rs'`
+runs the runner alone over the named files against the last gate image.
+The runner builds on the gate's image,
+so a campaign is bound to the exact source snapshot the gate tested.
+It runs cargo-mutants 27.1.0,
+copied from the host Cargo home with its SHA-256 recorded in the manifest,
+in a mount-free,
+network-disabled container bounded to 2 GiB,
+2 CPUs,
+and 128 PIDs,
+with a 300-second build bound and a 90-second test bound per mutant.
+It reads no cargo-mutants configuration (`--no-config`) and excludes no mutant.
+It exits nonzero when any mutant is missed or times out.
+
+### Planted controls
+
+Before a campaign the runner removes five guards,
+one at a time,
+and requires a named control to fail for each.
+A campaign whose planted removal goes unnoticed is rejected.
+
+- Self-exclusion by identity and content:
+  noticed by `resolution::wrapper_never_selects_itself_or_a_copy_of_itself`.
+- The forward-target marker check:
+  noticed by `resolution::different_wrapper_build_stops_instead_of_looping`.
+- The stop before the policy stage:
+  noticed by `policy::repository_changing_commands_are_not_run`.
+- Unknown top-level key rejection:
+  noticed by `config_parse::tests::unknown_and_retired_top_level_keys_are_named`.
+- The legacy migration diagnostic:
+  noticed by `config_file::tests::legacy_configuration_alone_requires_migration`.
+
+The first runner version reported the three binary-level controls as not noticed:
+Cargo stopped after the unit tests failed and never ran them.
+The planted run now passes `--no-fail-fast`,
+and all five are noticed in every run recorded here.
+
+### Full campaign
+
+Sources as of commit `07ca5b9bb`,
+gate image `7fbc07a48a6e3d6287d73fedff1cd2bc98e7ef9e97fec46a150cb6043bc2eb8e`.
+Of 518 mutants,
+422 were caught,
+56 did not compile,
+23 were missed,
+and 17 timed out.
+The runner exited nonzero,
+as it must.
+Evidence `package/git-policy/cli/target/verification/native-mutation-q6xDu5`.
+
+### Survivors killed by new controls
+
+Of the 23 missed mutants,
+13 showed behavior no control observed.
+Commit `6fb148913` adds 10 controls for them.
+
+- `config_loading.rs`,
+  9 mutants in `branch` and `tag` classification:
+  whether `--format` and `--sort` imply a listing,
+  which short letters are presentation for which command,
+  whether a lone `-` is a name,
+  and the content of the explicit long mutation list.
+  Controls `only_commit_filters_imply_listing`,
+  `short_letters_are_judged_per_command`,
+  and `mutating_long_forms_are_listed_per_command`.
+- `config_error.rs`,
+  the `Display` implementation:
+  `display_prints_exactly_the_message`.
+- `config_schema.rs`,
+  `markdown_rule_name`,
+  2 mutants:
+  `markdown_rule_names_are_exact_in_both_directions`.
+- `escape_hatch.rs`,
+  the separator bound:
+  `separator_is_never_removed`.
+
+A scoped campaign over those four files on the sources of commit `6fb148913`
+(gate image `ef4b26e1b68250ee7f3f628b018cd5b7d1867c1af5b6b38e0acfc585ef53ffc7`)
+tested 101 mutants:
+88 caught,
+10 did not compile,
+3 timed out,
+none missed.
+Evidence `package/git-policy/cli/target/verification/native-mutation-wEnLMl`.
+
+Through `classify_config_loading` alone the `mutating_long` mutant cannot be observed:
+a long option on no list already requires configuration,
+so the explicit mutation list is a second guard.
+The new control therefore pins the private list directly.
+
+### Survivor removed with its code
+
+The full campaign missed `<` to `<=` in the indexed loop of `policy_descriptor`.
+Every `PolicyId` has a row,
+and both forms stop the program on a missing one,
+so no control could tell them apart.
+Commit `cba0702fe` uses a `for` loop,
+which has no bound to mutate.
+`mise run //package/git-policy/cli:native:mutation -- --file src/native/policy_registry.rs`,
+the chained gate and runner,
+then tested 19 mutants on the sources of commit `de15ea3ea`:
+15 caught,
+3 did not compile,
+1 timed out,
+none missed.
+Evidence `package/git-policy/cli/target/verification/native-mutation-o095Rt`;
+gate evidence `native-1NQvVP`.
+
+### Survivors left
+
+#### Code not compiled on Linux
+
+The `#[cfg(not(unix))]` variants of
+`forwarding::outcome_of`,
+`forwarding::replace_process_with_real_git`,
+`git_metadata::path_from_git_bytes`,
+`real_git_candidate::is_executable`,
+and `real_git_candidate::same_inode` hold 8 missed mutants.
+The Linux gate does not compile those bodies,
+so no control in it can observe them.
+They stay open until a Windows gate exists.
+
+#### Equivalent mutant
+
+`real_git_candidate.rs`,
+`read_up_to`,
+`filled < limit` to `filled <= limit`:
+the one extra iteration reads into an empty buffer,
+which returns zero bytes and ends the loop the same way.
+`script_inspection_bound_is_exact` pins the bound from both sides.
+
+#### Timeouts
+
+In the full campaign 17 mutants change how a loop advances
+(`+=` to `*=` or `-=`,
+`-=` to `/=`)
+in `child_environment.rs`,
+`config_loading.rs`,
+`escape_hatch.rs`,
+`global_arguments.rs`,
+`management_arguments.rs`,
+`policy_registry.rs`,
+`real_git.rs`,
+and `real_git_candidate.rs`.
+Each makes a loop never finish,
+so the test run does not end and is stopped at the 90-second bound.
+cargo-mutants reports that as a timeout,
+neither caught nor missed.
+The mutation is detected,
+but only by the bound.
+The change to `policy_descriptor` removed one of the 17 with its loop.
+
+### Intermittent test failure
+
+The first chained run over `policy_registry.rs` stopped at its unmutated baseline:
+`entry::stop_tests::uninterpretable_identity_output_stops` failed with "Text file busy".
+Evidence `package/git-policy/cli/target/verification/native-mutation-LugJHy`.
+The test process had written a fixture script itself.
+A child forked by another test thread at that moment inherits the script open for writing
+until it starts its own program,
+and running the script inside that window fails.
+Commit `de15ea3ea` has fixture scripts written by a child `tee` and wrapper copies made by a child `cp`,
+so the test process never holds an executable open for writing.
+
+That was the only such failure seen in the gate runs and campaigns recorded here.
+A mutant caught only by that failure would have been counted as caught;
+none was identified,
+and the full campaign was not repeated to rule it out.
+
+## Fuzzing
+
+### Sidecar
+
+Commits `789eb07b4` and `744f82ede`.
+`package/git-policy/cli.fuzz` (crate `git-policy-cli-fuzz`) holds three AddressSanitizer targets over pure functions;
+none starts Git or touches a repository.
+
+- `global_arguments` checks `global_layout`:
+  arguments unchanged,
+  repeatable result,
+  a boundary token of the kind the outcome claims,
+  a global prefix that names no command on its own,
+  and no effect from anything after a decided boundary.
+- `config_loading` checks `classify_config_loading`:
+  only native queries,
+  option errors,
+  and an independently restated inspection list skip configuration,
+  and any `branch` or `tag` invocation given a mutating flag in first position requires it.
+- `config_schema` builds a valid `cli-git.config.jsonc` together with the settings it must parse to,
+  compares the parser's result with that expectation,
+  restates accepted documents canonically,
+  and decodes every rejection's `config-invalid` line back to its message.
+  UTF-8 inputs are also parsed as written.
+
+Each target feeds its bytes both raw (split at NUL for arguments) and through a structured generator.
+The invariants live in the helper library,
+so the generator controls call exactly what the fuzzer calls.
+
+### Controls
+
+`mise run //package/git-policy/cli.fuzz:test` passes 7 generator controls;
+they count that the generators reach every layout outcome,
+both loading decisions,
+and non-default accepted configurations.
+`mise run //package/git-policy/cli.fuzz:test:planted` plants five defects one at a time in a temporary copy
+and requires a control to fail for each:
+a mutating `branch` letter accepted as presentation,
+a bare `git` skipping configuration,
+an unconsumed global option value,
+`warn` read as `error`,
+and a rejected `landing` section.
+All five were noticed;
+evidence `package/git-policy/cli.fuzz/target/verification/planted-ZR7zvL`.
+A first attempt removed `d` from the `branch` mutation letters only and was not noticed,
+correctly:
+an unlisted letter already requires configuration,
+so that edit changes no behavior.
+
+### Smoke campaign
+
+`mise run //package/git-policy/cli.fuzz:smoke` builds with the nightly compiler mounted read-only
+(`rustc 1.100.0-nightly (1303417c4 2026-09-21)`,
+cargo-fuzz 0.13.2),
+runs the controls and Clippy in the container,
+then fuzzes each target for 30 seconds with no host mounts,
+no network,
+2 GiB,
+2 CPUs,
+128 PIDs,
+and a 4,096-byte input limit.
+A target passes only with exit status 0 and at least one executed unit.
+Base image `62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884`.
+
+The run on the committed sources reported
+905,203 executions for `global_arguments`,
+376,745 for `config_loading`,
+and 19,954 for `config_schema`,
+each with exit status 0 and no artifact;
+evidence `package/git-policy/cli.fuzz/target/verification/campaign-WmBqbc`.
+An earlier run,
+before the token tables moved to their own module,
+reported 676,836,
+295,227,
+and 29,590;
+evidence `campaign-j0BpUV`.
+
+### Limits
+
+These are 30-second smoke runs,
+not a long campaign,
+and coverage was not measured.
+Real-Git resolution,
+forwarding,
+configuration file reading,
+and the management grammar have no fuzz target.
+The sidecar depends on `libfuzzer-sys` 0.4,
+as the existing fuzz sidecars do.
+`file-enforcer` was not run for the new package.
+
+## Module map
+
+The policy engine can build on these modules of `package/git-policy/cli/src/native`.
+Every public item has rustdoc.
+
+- `policy_registry`:
+  `PolicyId`,
+  `Severity`,
+  `PolicyDescriptor`,
+  `POLICY_REGISTRY`,
+  `policy_by_name`,
+  `policy_descriptor`,
+  `severity_from_name`,
+  `severity_name`.
+- `config_schema`:
+  `CliGitConfig`,
+  `PolicyConfig` with `setting(id)`,
+  the option and concurrency records,
+  and the `defaults()` and `unconfigured()` constructors.
+- `config_parse`:
+  `parse_config(source)`.
+- `config_file`:
+  `load_repository_config(root)` returning `LoadedConfig`.
+- `config_error`:
+  `ConfigError`.
+- `invocation_config`:
+  `load_invocation_config(real_git, global_prefix, overlay)`,
+  `config_invalid_event`,
+  `legacy_warning_events`.
+- `real_git` and `real_git_candidate`:
+  `ResolutionInputs`,
+  `process_resolution_inputs`,
+  `resolve_real_git`,
+  `classify_candidate`.
+- `child_environment`:
+  `child_environment_overlay`,
+  `lockfile_pid_overlay`,
+  `parse_config_count`.
+- `forwarding`:
+  `git_command`,
+  `run_real_git` returning `ChildOutcome`,
+  `exit_code`,
+  `replace_process_with_real_git`.
+- `git_metadata`:
+  `run_metadata_git`,
+  `strip_git_line`,
+  `path_from_git_bytes`.
+- `worktree_identity`:
+  `WorktreeIdentity`,
+  `resolve_worktree_identity`,
+  `worktree_root`.
+- `effective_target`:
+  `EffectiveTarget`,
+  `classify_effective_target`,
+  `default_allowed_worktree_dirs`.
+- `escape_hatch`:
+  `strip_escape_hatch`.
+- `diagnostics`:
+  `EngineFailureCode`,
+  `render_engine_failure`,
+  `render_configuration_warning`,
+  `json_string`.
+- `action`:
+  `Action`,
+  `failure`,
+  `ENGINE_FAILURE_EXIT_CODE`.
+- `management_arguments` and `management`:
+  `parse_management_arguments`,
+  `plan_management`.
+- `entry`:
+  `plan_invocation`,
+  which returns an `Action` without side effects,
+  and `run_process`,
+  which performs it.
+
+Policy execution replaces the stop notice in `entry::plan_invocation` and `management::plan_management`;
+both already hold the validated `LoadedConfig` at that point.
+
+## Dependency needs
+
+No third-party crate was added to the wrapper,
+and its `Cargo.lock` is unchanged.
+Needs that the standard library does not cover,
+recorded instead of solved:
+
+- Forwarding a signal from a waiting wrapper to its Git child needs signal handling,
+  which the standard library does not offer.
+  A crate such as `signal-hook` or direct `libc` calls would be a technology decision.
+- Executable detection by `access(2)`,
+  which honors access control lists and the caller's identity,
+  needs `libc`.
+  Mode bits are used instead.
+- The verification tools are cargo-mutants 27.1.0 and cargo-fuzz 0.13.2 from the host Cargo home.
+
 ## Not ported
 
+- Policy execution of any kind.
 - Startup transaction recovery,
   which the incumbent runs before almost every command including `status`.
 - The built-in policies and fixed transforms the incumbent runs on inspection commands without configuration,
@@ -335,8 +857,51 @@ so a path containing a line feed fails closed instead of being misparsed.
   so a `target` directory on `PATH` cannot shadow Git.
   Installation wiring gives it the `git` name.
 - The root `cli-git.config.jsonc` translation is shown under "Shape" and is not created here.
+- `SPEC.md` still describes plugins,
+  trust,
+  and executable configuration.
+  It needs the JSONC schema,
+  the retired trust commands,
+  and the `configuration-warning` event if those choices stand;
+  this delegation does not edit it.
+
+## Failed or skipped
+
+- The full mutation campaign ends nonzero,
+  because the survivors listed under "Survivors left" remain.
+  No mutant was excluded to change that.
+- No full campaign was repeated on the final sources.
+  The files whose controls or code changed after the full campaign were rerun in the two scoped campaigns;
+  the other files are unchanged since it.
+- `native:mutation`,
+  the task that chains the gate and the runner,
+  was run only with a one-file scope.
+  The full campaign used the gate and `native:mutation:scoped` as separate commands.
+- Slice 1 was gated before its commit,
+  but that run's evidence directory was not recorded by name.
+- The registry default correction was gated only together with slice 2.
+- Windows and macOS code paths were never compiled or run.
+- Fuzzing was limited to 30-second smoke runs.
+- `file-enforcer` and the repository-wide lint were not run;
+  the 300-code-line limit was checked with a line count,
+  not with the linter.
+- The container scripts are not clean under the package's Oxlint configuration.
+  `mise run //package/git-policy/cli:lint:oxlint:paths` over the two scripts in `bin` reports 11 errors:
+  3 on `bin/test-native-container.mjs`,
+  which predates this delegation,
+  and 8 on `bin/mutate-native-container.mjs`
+  (synchronous process calls,
+  regular expressions,
+  `try` with `finally`,
+  and arrow functions).
+  They were left as written,
+  in the style of the linter package's container scripts.
+  The fuzz sidecar's two scripts were not linted;
+  that package has no Oxlint task.
 
 ## Next action
 
-Slice 3:
-JSONL diagnostics and the management-command skeleton.
+The policy engine:
+replace the stop notice in `entry::plan_invocation` and `management::plan_management` with policy execution,
+starting from the validated `LoadedConfig`.
+Decide the choices listed as open to veto before that code depends on them.
