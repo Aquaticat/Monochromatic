@@ -126,6 +126,49 @@ pub(super) fn eventually(message: &str, mut ready: impl FnMut() -> bool) {
     }
 }
 
+/// What: `fn status_for(window: &AppWindow, query: &str, expected: &str)` takes three borrowed values
+///       (`&` lends them; the caller keeps ownership) and waits for one combined condition:
+///       the bar shows `expected`, and the active match, which is the reading selection,
+///       spells the whole `query` ignoring case.
+/// Why:  Typing sends one find request per character, and a reply for a shorter prefix can
+///       show the same count; `n` and `needle` both give 301 matches in the paint fixture,
+///       and `am ` and `am a` both give one in the reload fixture. Waiting on the count alone
+///       let those tests assert against the prefix's results and fail intermittently.
+/// Gotcha: Only use this after typing, with an `expected` count whose active index is at least 1;
+///         a `0/N` count has no active match, so the selection never spells the query.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function statusFor(window: AppWindow, query: string, expected: string): void {
+///   eventually(`results for "${query}" did not arrive`, () =>
+///     window.findStatus === expected &&
+///     window.selectedText.toLowerCase() === query.toLowerCase());
+/// }
+/// ```
+pub(super) fn status_for(window: &AppWindow, query: &str, expected: &str) {
+    // What: `format!` builds a `String` from a template, like a TS template literal.
+    // Why: The failure message names the query whose results never arrived.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const message = `results for "${query}" did not reach ${expected}`;
+    // ```
+    let message = format!("results for {query:?} did not reach {expected}");
+    // What: `&message` lends the text; `|| return ...` is a zero-argument arrow function.
+    //       `.to_lowercase()` returns a new lower-cased `String` and leaves the original unchanged.
+    // Why: Find is case-insensitive, so the active match may differ from the query only in case.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // eventually(message, () => window.findStatus === expected
+    //   && window.selectedText.toLowerCase() === query.toLowerCase());
+    // ```
+    eventually(&message, || {
+        return window.get_find_status() == expected
+            && window.get_selected_text().to_lowercase() == query.to_lowercase();
+    });
+}
+
 /// Let several polling ticks and any worker reply pass before asserting that nothing changed.
 pub(super) fn settle() {
     let start = Instant::now();
@@ -162,7 +205,7 @@ fn native_find_opens_types_steps_wraps_reveals_and_closes() {
     );
     type_text(window, "needle");
     assert_eq!(window.get_find_query(), "needle");
-    status(window, "1/3");
+    status_for(window, "needle", "1/3");
     assert_eq!(selection(&reader), (6, 12));
     assert!(window.get_selection_is_match());
     assert_eq!(
@@ -279,7 +322,7 @@ fn native_find_recomputes_after_external_reload_and_follows_selection_correspond
     let window = &reader.window;
     chord(window, Key::Control, "f");
     type_text(window, "am a");
-    status(window, "1/1");
+    status_for(window, "am a", "1/1");
     assert_eq!(selection(&reader), (2, 6));
     let revision = reader.source.borrow().document.revision();
     fs::write(&path, "A new first line\nI am a big cat\n").expect("prefix reload");
@@ -332,7 +375,7 @@ fn native_find_paints_visible_matches_only_and_reveals_far_columns() {
     let window = &reader.window;
     chord(window, Key::Control, "f");
     type_text(window, "needle");
-    status(window, "1/301");
+    status_for(window, "needle", "1/301");
     let rows = reader.source.borrow().count;
     let painted = window.get_source_matches().row_count();
     assert!(

@@ -1,7 +1,9 @@
 //! In-file find beside file switching and the modal search overlay, through real window key events.
 
 /// The complete reader fixture and key helpers of the find tests.
-use super::find_tests::{chord, eventually, key, reader, selection, settle, status, type_text};
+use super::find_tests::{
+    chord, eventually, key, reader, selection, settle, status, status_for, type_text,
+};
 /// Bounded waits and tree-row lookup shared with the navigation tests.
 use super::navigation_tests::{row, wait_until};
 /// Real toolkit key events reach the same capture scopes as seat input.
@@ -34,7 +36,7 @@ fn native_find_recomputes_for_a_switched_file_and_keeps_input_focus() {
     wait_until(|| return row(window, "beta.txt").is_some());
     chord(window, Key::Control, "f");
     type_text(window, "needle");
-    status(window, "1/2");
+    status_for(window, "needle", "1/2");
     let generation = reader.source.borrow().file_generation;
     window.invoke_tree_activate(row(window, "beta.txt").expect("second file row"));
     wait_until(|| return reader.source.borrow().file_generation > generation);
@@ -95,7 +97,7 @@ fn native_find_and_search_overlay_close_topmost_first() {
     let window = &reader.window;
     chord(window, Key::Control, "f");
     type_text(window, "needle");
-    status(window, "1/2");
+    status_for(window, "needle", "1/2");
     key(window, Key::Shift);
     key(window, Key::Shift);
     assert!(
@@ -194,7 +196,7 @@ fn native_find_reports_refused_text_and_clears_for_empty_text() {
         "empty find text must show no count"
     );
     type_text(window, "needle");
-    status(window, "1/1");
+    status_for(window, "needle", "1/1");
     window.invoke_find_edited("n".repeat(1001).into());
     wait_until(|| return window.get_find_error() != "");
     assert!(window.get_find_error().contains("at most 1000 characters"));
