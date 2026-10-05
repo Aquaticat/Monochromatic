@@ -641,6 +641,22 @@ unless a fuzz path is named.
   snapshot `b2736ad4c2925e1afa9592700f2de8929af20ccc6eeceae265704889ec295ac8`,
   image `sha256:9270213fb34e7d73af29f3f029033abd0bee97f07a38fe89693e3ddc367cbb95`,
   exit `0` with no warning.
+- After the fix,
+  `smoke:embedding:container` in the fuzz sidecar:
+  `package/cli/forbidden-strings.fuzz/target/verification/embedding-fuzz-HWNmVN`,
+  snapshot `08fce78006d3b4ccb619345108503177d6631ed26dabac245cfa230c88a7672b`,
+  image `sha256:f797ef626d32049c0a5cf08093b89a8211d173c05acc0b75d37c6c4d963c6730`.
+  It passed 272,348 runs in 121 seconds,
+  with 1181 coverage edges,
+  6293 feature signals,
+  a retained 835-file corpus,
+  and no crash artifact;
+  its copied `src/path_scan.rs` is the fixed file.
+  The target builds native Unix paths,
+  where `prefix_parts` is `0`,
+  so the reordered prefix branch is never entered there:
+  this shows no Linux pathname regression,
+  not anything about Windows prefixes.
 
 #### Pending Windows confirmation
 
