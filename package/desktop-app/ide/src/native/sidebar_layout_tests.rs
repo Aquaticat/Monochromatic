@@ -5,8 +5,8 @@ use super::sidebar_tests::{
     DIVIDER, GUTTER, HEADER, MINIMUM, SOURCE_MINIMUM, click, drag_to, fixture, motion, press,
     release, resize, settle,
 };
-/// Generated window and search row types from the shipped markup.
-use super::{AppWindow, ui::SearchEntry};
+/// Generated window and search row types from the shipped markup, and the single rendering boundary.
+use super::{AppWindow, render, ui::SearchEntry};
 /// Toolkit models and the left pointer button for a drag that must not resize.
 use slint::{ComponentHandle, ModelRc, VecModel, platform::PointerEventButton};
 /// What: `Rc` is a shared pointer for one thread (sibling `Arc` works across threads); `Cell` holds a
@@ -130,6 +130,24 @@ fn window_resize_shrinks_the_sidebar_and_restores_the_request() {
         256.0,
         "a long file label narrowed the sidebar"
     );
+    // What: `borrow_mut()` lends the shared state for one change; `Some(text)` stores a present diagnostic.
+    // Why: A long diagnostic under the source is the widest content the source column can prefer.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // source.current.fileError = 'unreadable '.repeat(200);
+    // ```
+    shared.source.borrow_mut().file_error = Some("unreadable ".repeat(200));
+    render(window, &shared.source);
+    settle(window);
+    assert_eq!(
+        window.get_sidebar_width(),
+        256.0,
+        "a long source diagnostic narrowed the sidebar"
+    );
+    shared.source.borrow_mut().file_error = None;
+    render(window, &shared.source);
+    settle(window);
     let widest = 1100.0 - DIVIDER - SOURCE_MINIMUM;
     drag_to(window, widest);
     assert_eq!(window.get_sidebar_width(), widest, "widest sidebar control");
