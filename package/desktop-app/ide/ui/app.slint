@@ -1,6 +1,7 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
 import { Palette } from "std-widgets.slint";
 import { ProjectTree, TreeEntry } from "tree.slint";
+import { SidebarDivider } from "divider.slint";
 import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
 import "../asset/font/InterVariable.ttf";
@@ -45,6 +46,19 @@ export component AppWindow inherits Window {
         scroll.content-x = 0px;
         scroll.content-y = 0px;
     }
+
+    // Session-local sidebar width. The request is only ever assigned; the layout derives the shown width from it,
+    // so a narrow window shrinks what is shown without losing the request.
+    out property <length> sidebar-requested-width: 256px;
+    out property <length> sidebar-width: project-tree.width;
+    // Read by the divider only, never by a size binding: the window width itself depends on layout sizes.
+    out property <length> sidebar-maximum-width: max(root.sidebar-minimum-width,
+        root.width - root.divider-width - root.source-minimum-width);
+    out property <bool> sidebar-divider-has-focus: sidebar-divider.has-focus;
+    private property <length> sidebar-minimum-width: 160px;
+    private property <length> source-minimum-width: 240px;
+    // The divider is its own layout cell at the minimum interactive size, so it never covers tree rows or source.
+    private property <length> divider-width: 48px;
 
     in-out property <bool> search-open;
     in-out property <string> search-query;
@@ -159,8 +173,12 @@ export component AppWindow inherits Window {
         spacing: 0px;
         project-tree := ProjectTree {
             visible: root.project-visible;
-            min-width: root.project-visible ? 256px : 0px;
-            max-width: root.project-visible ? 256px : 0px;
+            // Only this cell can shrink below its preferred width, so a narrow window takes space from the
+            // sidebar down to its minimum while the source keeps its own minimum.
+            min-width: root.project-visible ? root.sidebar-minimum-width : 0px;
+            preferred-width: root.project-visible ? root.sidebar-requested-width : 0px;
+            max-width: root.project-visible ? root.sidebar-requested-width : 0px;
+            horizontal-stretch: 0;
             entries: root.tree-entries;
             project-label: root.project-label;
             project-path: root.project-path;
@@ -171,12 +189,25 @@ export component AppWindow inherits Window {
             navigate(key, index) => { root.tree-navigate(key, index); }
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
-        Rectangle {
-            width: root.project-visible ? 1px : 0px;
-            background: Palette.foreground;
-            opacity: 0.2;
+        sidebar-divider := SidebarDivider {
+            visible: root.project-visible;
+            enabled: root.project-visible;
+            min-width: root.project-visible ? root.divider-width : 0px;
+            max-width: root.project-visible ? root.divider-width : 0px;
+            value: root.sidebar-width;
+            minimum: root.sidebar-minimum-width;
+            maximum: root.sidebar-maximum-width;
+            resize(width) => {
+                // Drag and keys cannot store a width outside the range that can be shown now.
+                root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);
+            }
+            shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
         VerticalLayout {
+            // Preferred equals minimum: this cell takes all remaining width and is never the one that shrinks.
+            min-width: root.source-minimum-width;
+            preferred-width: root.source-minimum-width;
+            horizontal-stretch: 1;
             spacing: 0px;
             Rectangle {
                 height: 32px;

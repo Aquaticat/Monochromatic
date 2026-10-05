@@ -1,0 +1,94 @@
+// Draggable boundary between the project tree and the source view. The owner holds the width and its bounds.
+import { Palette } from "std-widgets.slint";
+
+export component SidebarDivider inherits Rectangle {
+    // Width currently given to the sidebar, and the range the owner accepts.
+    in property <length> value;
+    in property <length> minimum;
+    in property <length> maximum;
+    in property <bool> enabled: true;
+    out property <bool> has-focus: keys.has-focus;
+    // The owner clamps the requested width; this component never stores one.
+    callback resize(length);
+    callback shortcut(string, bool, bool, bool);
+    private property <length> step: 16px;
+    private property <bool> emphasized: grip.has-hover || grip.pressed || keys.has-focus;
+    min-height: 48px;
+    forward-focus: keys;
+    // Slint 1.18.1 has no splitter or separator role; slider is its adjustable-value role.
+    accessible-role: slider;
+    accessible-label: "Sidebar width";
+    accessible-orientation: horizontal;
+    accessible-enabled: root.enabled;
+    accessible-value: root.value / 1px;
+    accessible-value-minimum: root.minimum / 1px;
+    accessible-value-maximum: root.maximum / 1px;
+    accessible-value-step: root.step / 1px;
+    accessible-action-increment => { root.resize(root.value + root.step); }
+    accessible-action-decrement => { root.resize(root.value - root.step); }
+    accessible-action-set-value(text) => {
+        if text.is-float() { root.resize(text.to-float() * 1px); }
+    }
+
+    // Keyboard focus adds a boundary to the heavier line, so focus is never marked by weight alone.
+    Rectangle {
+        visible: keys.has-focus;
+        width: parent.width;
+        height: parent.height;
+        border-width: 1px;
+        border-color: Palette.foreground;
+    }
+    // Hover and drag change weight and ink together with the resize cursor.
+    Rectangle {
+        x: root.emphasized ? 23px : 24px;
+        width: root.emphasized ? 3px : 1px;
+        height: parent.height;
+        background: Palette.foreground;
+        opacity: grip.pressed || keys.has-focus ? 1 : (grip.has-hover ? 0.6 : 0.2);
+    }
+    // The layout cell owns the 48px minimum; input stays exactly inside those same bounds.
+    grip := TouchArea {
+        private property <length> press-pointer;
+        private property <length> press-value;
+        width: parent.width;
+        height: parent.height;
+        enabled: root.enabled;
+        mouse-cursor: col-resize;
+        pointer-event(event) => {
+            if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
+                self.press-pointer = self.absolute-position.x + self.mouse-x;
+                self.press-value = root.value;
+            }
+        }
+        moved => {
+            // Any held button reports movement; only a left-button press recorded a drag origin.
+            if !self.pressed { return; }
+            // The divider moves with the width, so the drag is measured in window coordinates from the press.
+            root.resize(self.press-value + self.absolute-position.x + self.mouse-x - self.press-pointer);
+        }
+    }
+    // A pointer press never takes keyboard focus; Tab reaches this zero-size scope between tree and source.
+    keys := FocusScope {
+        width: 0px;
+        height: 0px;
+        enabled: root.enabled;
+        key-pressed(event) => {
+            if event.modifiers.control {
+                root.shortcut(event.text, true, event.modifiers.shift, event.modifiers.alt);
+                return accept;
+            }
+            if event.text == Key.LeftArrow {
+                root.resize(root.value - root.step);
+            } else if event.text == Key.RightArrow {
+                root.resize(root.value + root.step);
+            } else if event.text == Key.Home {
+                root.resize(root.minimum);
+            } else if event.text == Key.End {
+                root.resize(root.maximum);
+            } else {
+                return reject;
+            }
+            accept
+        }
+    }
+}
