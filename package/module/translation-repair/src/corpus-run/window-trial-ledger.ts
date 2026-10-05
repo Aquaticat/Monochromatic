@@ -1,11 +1,19 @@
 import {
   appendFile,
   mkdir,
+  open,
 } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+import { wordForCount, } from '../count-word.ts';
+import { errorName, } from '../error-name.ts';
 import { isJsonRecord, } from '../json-guard.ts';
+import { contextRoot, } from '../log-context.ts';
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { readTextOrEmptyIfMissing, } from '../read-text-if-present.ts';
+import { writeFileAtomic, } from './atomic-write.ts';
 
 //region Window trial ledger
 // What a window trial has already bought, kept on disk as it is bought.
@@ -177,21 +185,364 @@ function isWindowTrialRow(value: unknown,): value is WindowTrialRow {
 }
 
 /**
- Reads every completed arm from a ledger, tolerating a torn final line.
+ Logger root for the ledger, under the window trial's own tag.
+ */
+const l = contextRoot({ tag: 'window-trial', },);
+
+/**
+ A ledger line that ends in a newline and does not parse.
+
+ NAMES THE FILE AND THE LINE NUMBER, NEVER THE LINE. A row carries the winning
+ text of its arm, which is corpus wording, and the parser's own refusal quotes
+ the text it stopped in, so a refusal repeating either could carry a passage
+ into a log. Until 2026-10-05 the parser's `SyntaxError` left here as it was.
+
+ @example
+ ```ts
+ throw new TrialLedgerLineError({ path, line: 7, failure: 'SyntaxError', },);
+ ```
+ */
+class TrialLedgerLineError extends Error {
+  /**
+   Declares this message safe to forward: it names the file, a line number
+   and the class of the parse refusal, and repeats none of the line.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Names the line by its number and says what could have written it and what
+   an operator can do, since no later read gets past it.
+
+   @param path - ledger file the line sits in
+
+   @param line - one-based number of the line, as an editor counts it
+
+   @param failure - class name of the parse refusal, never its message
+   */
+  constructor(
+    {
+      path,
+      line,
+      failure,
+    }: {
+      readonly path: string;
+      readonly line: number;
+      readonly failure: string;
+    },
+  ) {
+    super(
+      `window trial ledger ${path}: line ${String(line,)} ends in a newline and does not parse as JSON `
+        + `(${failure}). A kill mid-append leaves only an unterminated last line, which the next append removes, `
+        + 'so this line was written by something else: a build that appended a row onto such a fragment, or two '
+        + 'runs appending at once. What it bought cannot be read from here. Remove that line by hand to buy its '
+        + 'arms again, or move the ledger aside to start a fresh one.',
+    );
+    this.name = 'TrialLedgerLineError';
+  }
+}
+
+/**
+ What one ledger line turned out to hold.
+ */
+type LineReading =
+  | {
+    /**
+     A completed arm, every field this ledger reads present and typed.
+     */
+    readonly kind: 'row';
+
+    /**
+     That arm.
+     */
+    readonly row: WindowTrialRow;
+  }
+  | {
+    /**
+     Whole JSON that is no row of this build's shape, which is what a row an
+     older build wrote under other field names reads as.
+     */
+    readonly kind: 'not-a-row';
+  }
+  | {
+    /**
+     Text the parser refused.
+     */
+    readonly kind: 'unparsed';
+
+    /**
+     Class name of the refusal, never its message, which quotes the line.
+     */
+    readonly failure: string;
+  };
+
+/**
+ Reads one line of a ledger.
+
+ @param line - line without its newline
+
+ @returns Row it holds, or which of the two ways it holds none
+
+ @example
+ ```ts
+ const reading = readLine({ line: '{"protocol":"abc123"}', },);
+ ```
+ */
+function readLine({ line, }: { readonly line: string; },): LineReading {
+  try {
+    /**
+     Parsed line, guarded before it is trusted.
+     */
+    const parsed: unknown = JSON.parse(line,);
+    return isWindowTrialRow(parsed,)
+      ? {
+        kind: 'row',
+        row: parsed,
+      }
+      : { kind: 'not-a-row', };
+  }
+  catch (error) {
+    // THE CLASS NAME IS ALL THAT LEAVES HERE. The parser's message quotes the
+    // text it refused, and a ledger line carries an arm's winning text.
+    return {
+      kind: 'unparsed',
+      failure: errorName({ error, },),
+    };
+  }
+}
+
+/**
+ One non-blank line of a ledger, with where it sits.
+ */
+type PlacedLine = {
+  /**
+   One-based number of the line, as an editor counts it.
+   */
+  readonly number: number;
+
+  /**
+   Whether a newline ends it. Only the text after the last newline of the
+   file has none, and `appendTrialRow` writes every row with one, so a line
+   without is what a kill mid-append leaves.
+   */
+  readonly ended: boolean;
+
+  /**
+   What the line holds.
+   */
+  readonly reading: LineReading;
+};
+
+/**
+ Reads every non-blank line of a ledger's text.
+
+ @param text - whole ledger
+
+ @returns Lines in append order, each with its number and whether it ends
+
+ @example
+ ```ts
+ const lines = placedLines({ text, },);
+ ```
+ */
+function placedLines({ text, }: { readonly text: string; },): readonly PlacedLine[] {
+  /**
+   Every line, the last being whatever follows the final newline: nothing
+   where the ledger ends at a line boundary.
+   */
+  const lines = text.split('\n',);
+
+  return lines.flatMap(function toPlaced(
+    line,
+    lineIndex,
+  ): readonly PlacedLine[] {
+    if (line.trim() === '')
+      return [];
+    return [
+      {
+        number: lineIndex + 1,
+        ended: lineIndex < (lines.length - 1),
+        reading: readLine({ line, },),
+      },
+    ];
+  },);
+}
+
+/**
+ What one read of a ledger found, with what it left out.
+ */
+type TrialLedgerAccount = {
+  /**
+   Completed arms, in the order they were appended.
+   */
+  readonly rows: readonly WindowTrialRow[];
+
+  /**
+   Whole lines that are no row of this build's shape, which no tally counts.
+
+   A ROW AN OLDER BUILD WROTE IS ONE. The row gained its judge counts and its
+   position, and its slice index was renamed, so rows written before each of
+   those lack a field this reader requires. They stay in the file, which is
+   append-only, and each was bought under a protocol no later run resumes.
+   */
+  readonly leftOut: number;
+
+  /**
+   Whether the ledger ends in a line a kill mid-append cut short, whose arm is
+   not among the rows and is bought again.
+   */
+  readonly tornTail: boolean;
+};
+
+/**
+ Reads a ledger and accounts for every line it did not take as a row.
 
  A TORN LAST LINE IS EXPECTED rather than exceptional: the process this guards
- against is one killed mid-append, so the last line may be a fragment. It is
- dropped and the arm is re-bought, which costs one arm. A torn line ANYWHERE
- ELSE would mean interleaved writers, which this refuses rather than repairs,
- because a ledger two runs appended to concurrently cannot be trusted to say
- what was bought.
+ against is one killed mid-append, so the text after the last newline may be a
+ fragment. It is left out, said, and its arm is re-bought, which costs one
+ arm; `appendTrialRow` removes the fragment before it appends.
+
+ A LINE THAT ENDS IN A NEWLINE AND DOES NOT PARSE IS REFUSED, wherever it
+ sits. A single cut-off append cannot leave one, so it was written by
+ something this ledger does not allow for: two runs appending at once, or a
+ build from before 2026-10-05, whose resumed run appended its first row onto
+ the fragment and so wrote one unreadable line holding both.
+
+ A WHOLE LINE THAT IS NO ROW IS LEFT OUT AND COUNTED, never refused and never
+ dropped without a word: older builds wrote rows of other shapes into this
+ same file.
+
+ @param path - ledger file
+
+ @returns Rows in the order they were appended, how many whole lines were no
+ row, and whether the last line was torn; no rows where the file is absent
+
+ @throws {@link TrialLedgerLineError} when a line that ends in a newline does
+ not parse, naming its number and none of its text
+
+ @example
+ ```ts
+ const { rows, leftOut, tornTail, } = await accountTrialLedger({ path, },);
+ ```
+ */
+export async function accountTrialLedger(
+  { path, }: { readonly path: string; },
+): Promise<TrialLedgerAccount> {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const al = tagged({
+    tag: accountTrialLedger.name,
+    l,
+  },);
+
+  /**
+   Every non-blank line, read. An absent ledger holds none: that is the
+   ordinary state before the first arm is bought.
+   */
+  const placed = placedLines({ text: await readTextOrEmptyIfMissing({ path, },), },);
+
+  /**
+   Lines the parser refused, each with whether a newline ends it.
+   */
+  const unparsed = placed.flatMap(function toUnparsed(one,): readonly {
+    readonly number: number;
+    readonly ended: boolean;
+    readonly failure: string;
+  }[] {
+    /**
+     What this line holds.
+     */
+    const { reading, } = one;
+    if (reading.kind !== 'unparsed')
+      return [];
+    return [
+      {
+        number: one.number,
+        ended: one.ended,
+        failure: reading.failure,
+      },
+    ];
+  },);
+
+  /**
+   Earliest refused line that a newline ends, which no cut-off append leaves.
+   */
+  const unreadable = unparsed.find(function isEnded(one,): boolean {
+    return one.ended;
+  },);
+  if (unreadable !== undefined)
+    throw new TrialLedgerLineError({
+      path,
+      line: unreadable.number,
+      failure: unreadable.failure,
+    },);
+
+  /**
+   Refused text after the last newline, which is what a kill mid-append leaves.
+   */
+  const torn = unparsed.find(function isUnended(one,): boolean {
+    return !one.ended;
+  },);
+  if (torn !== undefined)
+    al.warn(
+      `${path}: line ${String(torn.number,)}, the last, has no newline and does not parse (${torn.failure}), as a `
+        + 'kill mid-append leaves it; its arm is not counted and is bought again, and the next append removes '
+        + 'the fragment',
+    );
+
+  /**
+   Whole lines that are no row of this build's shape.
+   */
+  const leftOut = placed.filter(function isNoRow(one,): boolean {
+    /**
+     What this line holds.
+     */
+    const { reading, } = one;
+    return reading.kind === 'not-a-row';
+  },);
+
+  /**
+   Earliest of them, absent where every whole line is a row.
+   */
+  const [firstLeftOut,] = leftOut;
+  if (firstLeftOut !== undefined)
+    al.warn(
+      `${path}: left out ${String(leftOut.length,)} whole ${
+        wordForCount({
+          count: leftOut.length,
+          one: 'line that is',
+          many: 'lines that are',
+        },)
+      } no trial row of this build's shape, the earliest at line ${
+        String(firstLeftOut.number,)
+      }; a build from before a row field was added or renamed wrote such rows, each under a protocol no later run `
+        + 'resumes, and no line is removed from the ledger',
+    );
+
+  return {
+    rows: placed.flatMap(function toRow(one,): readonly WindowTrialRow[] {
+      /**
+       What this line holds.
+       */
+      const { reading, } = one;
+      return (reading.kind === 'row') ? [reading.row,] : [];
+    },),
+    leftOut: leftOut.length,
+    tornTail: torn !== undefined,
+  };
+}
+
+/**
+ Reads every completed arm from a ledger, for a caller that prints no account
+ of what the read left out. `accountTrialLedger` does the reading and says
+ through its logger what it left out and why.
 
  @param path - ledger file
 
  @returns Rows in the order they were appended, empty when the file is absent
 
- @throws {@link SyntaxError} when a line other than the last fails to parse,
- which means something other than a clean kill wrote to this file
+ @throws {@link TrialLedgerLineError} when a line that ends in a newline does
+ not parse, naming its number and none of its text
 
  @example
  ```ts
@@ -202,50 +553,181 @@ export async function readTrialLedger(
   { path, }: { readonly path: string; },
 ): Promise<readonly WindowTrialRow[]> {
   /**
-   Whole ledger, empty when nothing has been bought yet: absent is the
-   ordinary state before the first arm is bought.
+   Rows, with what was left out of them already said.
    */
-  const text = await readTextOrEmptyIfMissing({ path, },);
-  if (text === '')
-    return [];
-
-  /**
-   Every non-empty line, in append order.
-   */
-  const lines = text.split('\n',)
-    .filter(function present(line,): boolean {
-      return line.trim() !== '';
-    },);
-
-  return lines.flatMap(function toRow(
-    line,
-    lineIndex,
-  ): readonly WindowTrialRow[] {
-    /**
-     Whether this is the last line, which is the only one allowed to be torn.
-     */
-    const isLast = lineIndex === (lines.length - 1);
-    try {
-      /**
-       Parsed line, guarded before it is trusted.
-       */
-      const parsed: unknown = JSON.parse(line,);
-      return isWindowTrialRow(parsed,) ? [parsed,] : [];
-    }
-    catch (error) {
-      if (isLast && (error instanceof SyntaxError))
-        return [];
-      throw error;
-    }
-  },);
+  const { rows, } = await accountTrialLedger({ path, },);
+  return rows;
 }
 
 /**
- Appends one completed arm.
+ Last character of a file, read without reading the rest.
+
+ @param path - file to read
+
+ @returns Its last byte as text, empty where the file is empty or absent
+
+ @throws Whatever opening or reading it raised other than its absence
+
+ @example
+ ```ts
+ const ended = (await lastByteOf({ path, },)) === '\n';
+ ```
+ */
+async function lastByteOf({ path, }: { readonly path: string; },): Promise<string> {
+  try {
+    /**
+     The open file, closed once its last byte is read.
+     */
+    await using handle = await open(path,);
+
+    /**
+     Bytes the file holds.
+     */
+    const { size, } = await handle.stat();
+    if (size === 0)
+      return '';
+
+    /**
+     Buffer the last byte is read into.
+     */
+    const buffer = Buffer.alloc(1,);
+
+    /**
+     Bytes the read filled.
+     */
+    const { bytesRead, } = await handle.read(
+      buffer,
+      0,
+      1,
+      size - 1,
+    );
+    return buffer.toString(
+      'utf8',
+      0,
+      bytesRead,
+    );
+  }
+  catch (error) {
+    rethrowUnlessMissingPath({ error, },);
+    return '';
+  }
+}
+
+/**
+ Makes a ledger end at a line boundary, so the row appended next starts a line
+ of its own.
+
+ WHY AN APPEND HAS TO LOOK FIRST. A kill mid-append leaves text with no
+ newline after it, and `appendFile` writes straight after whatever is there.
+ Until 2026-10-05 the first row a resumed run appended was joined onto that
+ fragment: the line did not parse, so the row was lost and its arm bought
+ again, and once a second row followed it the unreadable line was no longer
+ the last and every later read of the ledger threw.
+
+ A FRAGMENT IS REMOVED, by writing the ledger again without it. It recorded an
+ arm that never completed, which is bought again whether the fragment stays
+ or goes. A WHOLE LINE THAT LOST ONLY ITS NEWLINE is given one and keeps what
+ it bought.
+
+ ONE WRITER IS ASSUMED, as everywhere in this file: a second run appending at
+ the same moment could have its unfinished row taken for a fragment.
+
+ @param path - ledger file, absent before the first arm is bought
+
+ @example
+ ```ts
+ await endAtLineBoundary({ path, },);
+ ```
+ */
+async function endAtLineBoundary({ path, }: { readonly path: string; },): Promise<void> {
+  /**
+   Last character of the ledger, empty before the first arm is bought.
+   */
+  const last = await lastByteOf({ path, },);
+
+  // THE ORDINARY CASE COSTS ONE BYTE: a ledger every append ended with its
+  // newline needs nothing, and only one a kill cut short is read whole.
+  if ((last === '') || (last === '\n'))
+    return;
+
+  /**
+   Whole ledger, read only because it does not end in a newline.
+   */
+  const text = await readTextOrEmptyIfMissing({ path, },);
+
+  /**
+   Where the text after the last newline begins: the start of the file where
+   it holds no newline at all.
+   */
+  const tailAt = text.lastIndexOf('\n',) + 1;
+
+  /**
+   That text, which no newline ends.
+   */
+  const tail = text.slice(tailAt,);
+  if (tail.trim() === '')
+    return;
+
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const el = tagged({
+    tag: endAtLineBoundary.name,
+    l,
+  },);
+
+  /**
+   One-based number of the unended line: one more than the newlines before it.
+   */
+  const number = text
+    .slice(
+      0,
+      tailAt,
+    )
+    .split('\n',)
+    .length;
+
+  /**
+   What that line holds.
+   */
+  const reading = readLine({ line: tail, },);
+  if (reading.kind === 'unparsed') {
+    // ATOMIC, so a kill during this write leaves the ledger as it was, with
+    // every completed row in it.
+    await writeFileAtomic({
+      path,
+      text: text.slice(
+        0,
+        tailAt,
+      ),
+    },);
+    el.warn(
+      `${path}: removed line ${String(number,)}, a last line a kill mid-append cut short (${reading.failure}), so `
+        + 'the row appended now starts a line of its own; the arm that line was recording is bought again',
+    );
+    return;
+  }
+
+  await appendFile(
+    path,
+    '\n',
+  );
+  el.info(
+    `${path}: line ${String(number,)}, the last, was whole and had no newline; ended it before appending, and it `
+      + 'keeps what it holds',
+  );
+}
+
+/**
+ Appends one completed arm, on a line of its own.
 
  CALLED THE MOMENT THE ARM COMPLETES, never batched. What this protects
  against is the process not reaching the end, so anything held in memory to
  write later is exactly what is lost.
+
+ THE LEDGER'S LAST BYTE IS READ BEFORE EACH APPEND, to see that it ends at a
+ line boundary (`endAtLineBoundary`); the whole ledger is read only where it
+ does not, which is once after a kill.
 
  @param path - ledger file
 
@@ -269,6 +751,7 @@ export async function appendTrialRow(
     dirname(path,),
     { recursive: true, },
   );
+  await endAtLineBoundary({ path, },);
   await appendFile(
     path,
     `${JSON.stringify(row,)}\n`,

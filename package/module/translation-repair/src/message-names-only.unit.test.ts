@@ -172,6 +172,7 @@ const MARKED_CLASSES: readonly string[] = [
   'SyntheticRequestTooLargeError',
   'TranslateAbsenceError',
   'TranslationRepairInterruptedError',
+  'TrialLedgerLineError',
   'UnfoldedTranslationError',
   'UnknownArtifactGenerationError',
   'UnmeasurableRepairError',

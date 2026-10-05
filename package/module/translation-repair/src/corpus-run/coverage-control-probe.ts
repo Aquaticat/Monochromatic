@@ -218,12 +218,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-control-
     refusals,
     sawAbsenceOnTarget,
     sawAbsenceOnDecoy,
+    decoysTaken,
   } = control;
 
   /**
    Cases the roster declined to call covered before anything was damaged.
 
-   REPORTED SEPARATELY FROM ANCHORING FAILURES because these are the wire
+   REPORTED SEPARATELY FROM CUTS THAT LEFT NOTHING because these are the wire
    voting absence on text nobody touched, which is a stronger reading than any
    damaged case can give.
    */
@@ -249,9 +250,9 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-control-
         one: 'cut',
         many: 'cuts',
       },)
-    } and on ${String(sawAbsenceOnDecoy,)} equally large ${
+    } and on ${String(sawAbsenceOnDecoy,)} of ${String(decoysTaken,)} equally large ${
       wordForCount({
-        count: sawAbsenceOnDecoy,
+        count: decoysTaken,
         one: 'cut',
         many: 'cuts',
       },)
@@ -268,7 +269,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-control-
       String(notCarried.length,)
     } because the roster never called them covered, ${
       String(refusals.length - notCarried.length,)
-    } because its evidence could not be found in the page`,
+    } because the spans the roster anchored on were the whole page`,
   );
 
   if (notCarried.length > 0)
@@ -290,6 +291,15 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-control-
       'NOTHING WAS DAMAGED on this entry, so it says nothing either way about whether a '
         + 'deleted rendering is noticed. Read the refusals this probe printed instead: they are what the '
         + 'roster says about this page as it stands.',
+    );
+    return;
+  }
+
+  if (decoysTaken === 0) {
+    console.log(
+      'NO DECOY CUT COULD BE TAKEN on any damaged case, so whether the absence votes follow the '
+        + 'passage or any cut of the same size was never asked; the targeted cuts printed here show '
+        + 'only whether an absence vote is reachable.',
     );
     return;
   }

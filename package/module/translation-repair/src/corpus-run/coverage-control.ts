@@ -137,11 +137,12 @@ export type CoverageControlRow = {
 /**
  Why a case could not be damaged.
 
- TWO OPPOSITE MEANINGS used to print as one line saying "not damageable", and
+ TWO DIFFERENT MEANINGS used to print as one line saying "not damageable", and
  the difference is the whole question. A roster that did not say `carried` is
  a roster VOTING ABSENCE on undamaged corpus text, which is the strongest form
- of the thing this control was built to look for. A quote that cannot be found
- in the page is an anchoring problem and says nothing about coverage.
+ of the thing this control was built to look for. A cut that leaves nothing of
+ the page is a page with no second question in it, and says nothing about
+ coverage.
  */
 export type CoverageControlRefusal = {
   /**
@@ -151,10 +152,18 @@ export type CoverageControlRefusal = {
 
   /**
    `not-carried` when the roster declined to call it covered before any damage
-   was done; `evidence-not-locatable` when it did, but none of the spans it
-   offered could be found in the page to delete.
+   was done; `cut-left-nothing` when it did, and deleting the spans it anchored
+   on deleted every character of the translation, so no page was left to ask
+   it about a second time.
+
+   THE SPANS OF A CARRIED VERDICT ARE ALWAYS FOUND, so there is no reason for
+   spans that could not be: a carried verdict's evidence is the page's own
+   text for each region a full claim anchored (`judgeCoverage`), which
+   `tryCase` checks before it cuts. Until 2026-10-05 the emptied page was
+   reported as `evidence-not-locatable`, the name of that unreachable state,
+   when every span it offered had been found.
    */
-  readonly reason: 'not-carried' | 'evidence-not-locatable';
+  readonly reason: 'not-carried' | 'cut-left-nothing';
 
   /**
    Verdict the roster reached on the undamaged page.
@@ -196,7 +205,8 @@ type DecoyReading = {
 export type CoverageControlResult = {
   /**
    Whether a majority of tried cases voted absence once their rendering was
-   deleted.
+   deleted, at least one equally large cut was taken elsewhere, and no more
+   than half of the cuts taken elsewhere drew the vote too.
    */
   readonly held: boolean;
 
@@ -211,6 +221,17 @@ export type CoverageControlResult = {
    which a sound wire keeps at zero.
    */
   readonly sawAbsenceOnDecoy: number;
+
+  /**
+   Cases an equally large cut was taken on at all.
+
+   A page with no room for one clear of the anchored spans takes none and
+   records `no-room`, which carries no absence vote and so reads like a decoy
+   that stayed quiet. The decoy half is therefore judged over this count
+   rather than over the rows, and a control where it is zero never ran its
+   decoy half and does not hold whatever its targeted cuts showed.
+   */
+  readonly decoysTaken: number;
 
   /**
    Every case the control managed to damage and re-ask.
@@ -234,13 +255,18 @@ export type CoverageControlResult = {
  actually asking about, and a version that quietly returned the text unchanged
  would turn the whole gate into a formality that passes whatever it is handed.
 
+ BLANK ANSWERS TWO STATES: no span was present, and the spans were the whole
+ document. A caller that has to tell them apart checks that its spans are
+ present before it cuts, as `tryCase` does.
+
  @internal
 
  @param text - document to cut from
 
  @param spans - exact document text of each region to remove
 
- @returns Text with every span gone, or blank when no span was present
+ @returns Text with every span gone; blank when no span was present, and
+ blank too when the spans were all of it
 
  @example
  ```ts
@@ -310,7 +336,10 @@ export function withoutSpans(
 
  @param l - logger
 
- @returns Row for this case, or nothing when it could not be damaged
+ @returns Row for this case, or the refusal saying why it could not be damaged
+
+ @throws Error when a carried verdict offers no span, or one the translation
+ does not hold, which `judgeCoverage` cannot produce
 
  @example
  ```ts
@@ -377,6 +406,27 @@ async function tryCase(
   const { text: standingText, } = probe.translation;
 
   /**
+   Whether every span the roster anchored on is text this translation holds.
+
+   A CARRIED VERDICT ALWAYS OFFERS SUCH SPANS. `judgeCoverage` calls a passage
+   carried only on at least one full claim it could anchor, and fills
+   `evidence` with the document's own text from the first anchor of each such
+   claim to its last. The document it was handed is this translation
+   (`runCoverageStage` passes it through), and an anchor is a located quote's
+   share of one block, which `locateQuote` never makes from an empty quote.
+   */
+  const everySpanPresent = (evidence.length > 0)
+    && evidence.every(function isPresent(span,): boolean {
+      return (span !== '') && standingText.includes(span,);
+    },);
+  if (!everySpanPresent)
+    throw new Error(
+      'unreachable: a carried verdict offered no span, or a span that is blank or is not in the translation it '
+        + 'was judged against; judgeCoverage fills evidence with that translation\'s own text for each full '
+        + 'claim it anchored, so every span can be found and cut',
+    );
+
+  /**
    Translation with every span the roster anchored on taken out.
    */
   const damagedText = withoutSpans({
@@ -384,10 +434,14 @@ async function tryCase(
     spans: evidence,
   },);
 
+  // BLANK HERE MEANS EVERY CHARACTER WENT. `withoutSpans` answers blank for a
+  // document no span was present in as well, which `everySpanPresent` has
+  // ruled out, so this is a page the anchored spans covered whole: nothing of
+  // it remains to ask the roster about a second time.
   if (damagedText === '')
     return {
       where: probe.where,
-      reason: 'evidence-not-locatable',
+      reason: 'cut-left-nothing',
       verdict: beforeVerdict.kind,
       absent: beforeVerdict.absent,
       offeredSpans: evidence.length,
@@ -619,6 +673,30 @@ export async function coverageControlHolds(
     },)
     .length;
 
+  /**
+   Cases a decoy cut was taken on: every row but those whose page had no room
+   for one.
+   */
+  const decoysTaken = rows
+    .filter(function tookDecoy(row,): boolean {
+      return row.decoy !== 'no-room';
+    },)
+    .length;
+
+  // SAID WHERE THE ROWS ARE PRINTED, since a reader of this run otherwise sees
+  // only that the control did not hold, beside targeted cuts that all moved.
+  if ((rows.length > 0) && (decoysTaken === 0))
+    console.log(
+      `COVERAGE control CANNOT HOLD: a decoy cut was taken on none of ${String(rows.length,)} damaged ${
+        wordForCount({
+          count: rows.length,
+          one: 'case',
+          many: 'cases',
+        },)
+      }, no page having room for one clear of the spans the roster anchored on, so nothing shows whether an `
+        + 'unrelated cut of the same size moves the vote too',
+    );
+
   // A MAJORITY RATHER THAN UNANIMITY on the targeted cut, for the same reason
   // the editor width control uses one: a passage may be genuinely paraphrased
   // somewhere else in the document, and demanding a clean sweep would fail a
@@ -628,6 +706,15 @@ export async function coverageControlHolds(
   // only shown the vote reachable; one that votes it on the decoy too is
   // answering the damage rather than the question, and its absence votes carry
   // no information about coverage either way.
+  //
+  // A DECOY HALF THAT NEVER RAN IS NOT A QUIET ONE. A row whose page had no
+  // room for a decoy cut records `no-room` and no absence vote, and until
+  // 2026-10-05 the decoy half was taken over every row, so such a row counted
+  // exactly as a decoy that was taken and moved nothing: a control made only
+  // of such rows held, and so did one whose single decoy drew the vote beside
+  // two rows with no room. The decoy half is now taken over the decoys that
+  // ran, and at least one has to have run.
+  //
   // NO ROWS CANNOT HOLD. A page offering nothing to damage has not shown the
   // absence vote reachable UNDER DAMAGE, whatever its refusals say on their own,
   // and reporting that as a held control would be the empty-run claim this
@@ -635,9 +722,11 @@ export async function coverageControlHolds(
   return {
     held: (rows.length > 0)
       && ((sawAbsenceOnTarget * 2) > rows.length)
-      && ((sawAbsenceOnDecoy * 2) <= rows.length),
+      && (decoysTaken > 0)
+      && ((sawAbsenceOnDecoy * 2) <= decoysTaken),
     sawAbsenceOnTarget,
     sawAbsenceOnDecoy,
+    decoysTaken,
     rows,
     refusals,
   };

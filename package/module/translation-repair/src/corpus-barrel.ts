@@ -264,6 +264,7 @@ export {
 
 //endregion Corpus run barrel
 export {
+  accountTrialLedger,
   appendTrialRow,
   completedArms,
   readTrialLedger,

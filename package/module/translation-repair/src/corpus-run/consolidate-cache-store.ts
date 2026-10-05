@@ -1,3 +1,4 @@
+import type { GateShipped, } from '../consolidate-gate-stage.ts';
 import type {
   ConsolidationSettlement,
   ConsolidationTerminal,
@@ -30,21 +31,71 @@ import {
 // nothing else in the way. Refusing it costs one re-asked slice.
 
 /**
- Ways a settlement can leave the stage, as the terminal names them.
+ One way a settlement can leave the stage, beside what the stage writes for a
+ gate on that way out.
+ */
+type WrittenTerminal = {
+  /**
+   Way out, as the settlement's terminal names it.
+   */
+  readonly terminal: ConsolidationTerminal;
+
+  /**
+   Rendering the settlement's gate ships, or `not-asked` where the stage
+   leaves before the gate and the settlement carries none.
+   */
+  readonly gate: GateShipped | 'not-asked';
+};
+
+/**
+ Ways a settlement can leave the stage, as the terminal names them, each with
+ the gate the stage writes beside it.
 
  SPELLED OUT RATHER THAN INFERRED, because this is a stored value: a union
  gaining a member should make an older cache file readable, not silently
  widen what this accepts to whatever the current source happens to say.
+
+ THE GATE COLUMN IS READ OFF THE STAGE. `settleConsolidation` leaves with no
+ gate on five terminals: no standing text, a slate with nothing valid on it,
+ and the three ways a judged slate keeps what stands. Every other settlement
+ is `gateAndShip`'s, which always records its gate and names the terminal from
+ what that gate ships: `gate-kept-standing` where it ships the standing text,
+ and where it ships the consolidation, `consolidated` or, once the wrap finds
+ the two alike, `wrap-erased-difference`.
  */
-const SETTLEMENT_TERMINALS: readonly ConsolidationTerminal[] = [
-  'incumbent-only',
-  'no-standing-text',
-  'slate-endorsed-standing',
-  'slate-unjudged-standing',
-  'slate-declined-standing',
-  'gate-kept-standing',
-  'wrap-erased-difference',
-  'consolidated',
+const SETTLEMENT_TERMINALS: readonly WrittenTerminal[] = [
+  {
+    terminal: 'incumbent-only',
+    gate: 'not-asked',
+  },
+  {
+    terminal: 'no-standing-text',
+    gate: 'not-asked',
+  },
+  {
+    terminal: 'slate-endorsed-standing',
+    gate: 'not-asked',
+  },
+  {
+    terminal: 'slate-unjudged-standing',
+    gate: 'not-asked',
+  },
+  {
+    terminal: 'slate-declined-standing',
+    gate: 'not-asked',
+  },
+  {
+    terminal: 'gate-kept-standing',
+    gate: 'standing',
+  },
+  {
+    terminal: 'wrap-erased-difference',
+    gate: 'consolidated',
+  },
+  {
+    terminal: 'consolidated',
+    gate: 'consolidated',
+  },
 ];
 
 /**
@@ -131,7 +182,8 @@ function isSlateFloor(value: unknown,): boolean {
  ABSENT IS VALID and is not the same as empty. A slice the floor stopped never
  reached the gate, so its settlement carries no gate; a gate that ran and
  heard nobody carries one with no ballots. The terminal tells them apart, and
- a store that required the key would refuse every floored slice.
+ a store that required the key would refuse every floored slice. Whether
+ absence is right for the settlement in hand is `gateFitsTerminal`'s question.
 
  @param value - parsed cache entry
 
@@ -159,6 +211,46 @@ function isGateOutcomeOrAbsent(value: unknown,): boolean {
     && ((typeof value.usable) === 'number')
     && (value.usable === ballots.length)
     && Array.isArray(value.findings,);
+}
+
+/**
+ Whether a gate outcome is the one the stage writes beside a terminal.
+
+ THE TERMINAL AND THE GATE ARE ONE FACT WRITTEN TWICE, so a record where they
+ disagree is a record the stage did not write, and this store exists to
+ refuse those. The record built from a settlement hands its `text` to the
+ assembly whenever the terminal reads `consolidated`: until 2026-10-05 a file
+ corrupted or hand-edited into that terminal with no gate beside it was
+ resumed, shipped its text, and left an artifact saying no gate was asked.
+ Refusing it costs one re-asked slice.
+
+ CALLED ONLY ON A GATE `isGateOutcomeOrAbsent` HAS PASSED, so a gate that is
+ present is a record whose `ships` names one of the two renderings.
+
+ @param gate - gate field of a parsed cache entry, its shape already checked
+
+ @param written - what the stage writes for a gate beside the entry's terminal
+
+ @returns Whether the gate is absent where the stage asks none, and ships the
+ rendering the terminal names where it asks one
+
+ @example
+ ```ts
+ const fits = gateFitsTerminal({ gate: parsed.gate, written: 'not-asked', },);
+ ```
+ */
+function gateFitsTerminal(
+  {
+    gate,
+    written,
+  }: {
+    readonly gate: unknown;
+    readonly written: WrittenTerminal['gate'];
+  },
+): boolean {
+  if (written === 'not-asked')
+    return gate === undefined;
+  return isJsonRecord(gate,) && (gate.ships === written);
 }
 
 /**
@@ -204,18 +296,24 @@ function isConsolidationSettlement(value: unknown,): value is ConsolidationSettl
   const { findings, } = value;
 
   /**
-   Whether that terminal is a way this stage can actually leave.
+   That terminal as this schema writes it, with the gate the stage records
+   beside it; absent where the terminal is no way this stage can leave.
    */
-  const named = SETTLEMENT_TERMINALS.some(function matches(known,): boolean {
-    return known === terminal;
+  const named = SETTLEMENT_TERMINALS.find(function matches(known,): boolean {
+    return known.terminal === terminal;
   },);
-  return named
-    && ((typeof value.text) === 'string')
+  if (named === undefined)
+    return false;
+  return ((typeof value.text) === 'string')
     && isSlateFloor(value.floor,)
     && Array.isArray(verdicts,)
     && verdicts.every(isProposalVerdict,)
     && ((decided === undefined) || isJsonRecord(decided,))
     && isGateOutcomeOrAbsent(value.gate,)
+    && gateFitsTerminal({
+      gate: value.gate,
+      written: named.gate,
+    },)
     && ((typeof value.rewrapped) === 'boolean')
     && ((typeof value.demoted) === 'boolean')
     && Array.isArray(findings,)

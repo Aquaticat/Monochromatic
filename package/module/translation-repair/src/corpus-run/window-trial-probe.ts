@@ -21,6 +21,7 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import {
+  accountTrialLedger,
   completedArms,
   readTrialLedger,
 } from './window-trial-ledger.ts';
@@ -435,8 +436,35 @@ async function main(): Promise<void> {
       String(bought.refused,)
     } refused`,
   );
+
+  /**
+   What the ledger holds now the walk is over, with what the read left out of
+   the rows every line of this report is counted from.
+   */
+  const {
+    rows: ledgerRows,
+    leftOut,
+    tornTail,
+  } = await accountTrialLedger({ path: ledgerPath, },);
+  l.info(
+    `ledger read for this report: ${String(ledgerRows.length,)} ${
+      wordForCount({
+        count: ledgerRows.length,
+        one: 'row',
+        many: 'rows',
+      },)
+    } under every protocol; ${String(leftOut,)} whole ${
+      wordForCount({
+        count: leftOut,
+        one: 'line',
+        many: 'lines',
+      },)
+    } left out as no trial row of this build; last line ${
+      tornTail ? 'cut short by a kill and not counted' : 'whole'
+    }`,
+  );
   for (const report of reportWindowTrial({
-    rows: await readTrialLedger({ path: ledgerPath, },),
+    rows: ledgerRows,
     protocol,
   },)) {
     l.info(
