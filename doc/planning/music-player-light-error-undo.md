@@ -190,7 +190,15 @@ Those are separate failures.
 The current bounded control keeps that init configuration and selects the
 installed emulator's documented `swangle` backend,
 using ANGLE with SwiftShader rather than the prior GLES path.
-It has no successful guest/capture result yet.
+That control booted and reported ANGLE with SwiftShader,
+but its first cover capture was blocked by a Pixel Launcher ANR.
+Recorded fields were restored and the runtime exited cleanly.
+It is not a graphics-stability or cover-verification pass.
+
+The next bounded renderer control exposes the host's existing render node
+and requests `-gpu host` with the same native-library environment and caps.
+Actual adapter output must be inspected before claiming hardware rendering;
+the earlier host request resolved to llvmpipe without a render node.
 Exact unowned fresh-AVD locks were preserved after positive owner checks;
 no original AVD or third-party source was changed.
 
