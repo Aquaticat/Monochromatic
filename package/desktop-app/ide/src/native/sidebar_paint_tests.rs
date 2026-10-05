@@ -21,8 +21,11 @@ use slint::{
 /// The replacement tree model is shared with the window like the fixture's own model.
 use std::rc::Rc;
 
-/// Pixel row used for divider state checks, inside the tree rows and the source lines.
+/// Pixel row used for divider state checks, inside the tree rows and the source lines,
+/// above the handle that keyboard focus draws in the middle of the line.
 const ROW: usize = 300;
+/// Pixel row through the middle of that handle, which is 48px tall and centered in the 660px window.
+const HANDLE_ROW: usize = 330;
 
 /// What: `&SharedPixelBuffer<Rgba8Pixel>` lends the frame; the four `usize` bounds are whole pixels
 /// (`usize` is the index type, siblings `u32` and `i32`); the answer is `true` when any pixel inside
@@ -63,17 +66,17 @@ fn pixel(frame: &SharedPixelBuffer<Rgba8Pixel>, x: usize, y: usize) -> Rgba8Pixe
 }
 
 /// What: The answer is a growable array (`Vec<usize>`, sibling fixed array `[usize; N]`) of the pixel
-/// columns between `left` and `right` on `ROW` that differ from `background`.
-/// Why: The divider's line weight is the number of adjacent painted columns; its boundary is two more.
+/// columns from 248 up to 264 on `row` that differ from `background`.
+/// Why: The divider's line weight is the number of adjacent painted columns. At the default width the
+/// line is column 256, so this span holds the five-column zone and five untouched columns on each side.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function columns(frame: Frame, left: number, right: number, background: Pixel): number[];
+/// function columns(frame: Frame, row: number, background: Pixel): number[];
 /// ```
 fn columns(
     frame: &SharedPixelBuffer<Rgba8Pixel>,
-    left: usize,
-    right: usize,
+    row: usize,
     background: Rgba8Pixel,
 ) -> Vec<usize> {
     // What: `Vec::new()` is an empty growable array; `mut` allows pushing into it.
@@ -84,8 +87,8 @@ fn columns(
     // const found: number[] = [];
     // ```
     let mut found = Vec::new();
-    for x in left..right {
-        if pixel(frame, x, ROW) != background {
+    for x in 248..264 {
+        if pixel(frame, x, row) != background {
             found.push(x);
         }
     }
@@ -111,8 +114,8 @@ fn frame(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
     return rendered;
 }
 
-/// Idle is one faint column; hover, drag, and keyboard focus are three columns in stronger ink;
-/// keyboard focus adds a boundary at both edges of the divider cell.
+/// Idle is one faint column; hover and drag are three columns in stronger ink; keyboard focus is three
+/// columns in another color with a five-column handle in the middle of the line.
 #[test]
 fn divider_states_change_line_weight_and_ink() {
     let shared = fixture(6);
@@ -124,42 +127,47 @@ fn divider_states_change_line_weight_and_ink() {
     // const window = shared.window;
     // ```
     let window = &shared.window;
-    // The divider cell spans columns 256 to 303 at the default width; its line is centered on 280.
+    // At the default width the line is pixel column 256 and its pointer zone spans columns 254 to 258.
     motion(window, 800.0, 500.0);
     let idle = frame(window);
-    let background = pixel(&idle, 260, ROW);
+    let background = pixel(&idle, 250, ROW);
     assert_eq!(
-        columns(&idle, 256, 304, background),
-        [280],
+        columns(&idle, ROW, background),
+        [256],
         "the idle divider is not a single pixel column"
     );
-    let idle_ink = pixel(&idle, 280, ROW);
-    motion(window, 280.0, ROW as f32);
+    let idle_ink = pixel(&idle, 256, ROW);
+    motion(window, 256.5, ROW as f32);
     let hovered = frame(window);
     assert_eq!(
-        columns(&hovered, 256, 304, background),
-        [279, 280, 281],
+        columns(&hovered, ROW, background),
+        [255, 256, 257],
         "hover did not widen the line to three columns"
     );
-    let hover_ink = pixel(&hovered, 280, ROW);
+    let hover_ink = pixel(&hovered, 256, ROW);
     assert_ne!(hover_ink, idle_ink, "hover did not change the line's ink");
-    press(window, 280.0, ROW as f32, PointerEventButton::Left);
+    press(window, 256.5, ROW as f32, PointerEventButton::Left);
     let dragged = frame(window);
     assert_eq!(
-        columns(&dragged, 256, 304, background),
-        [279, 280, 281],
+        columns(&dragged, ROW, background),
+        [255, 256, 257],
         "a held press did not keep the line at three columns"
     );
-    let drag_ink = pixel(&dragged, 280, ROW);
+    let drag_ink = pixel(&dragged, 256, ROW);
     assert_ne!(
         drag_ink, hover_ink,
         "a held press did not strengthen the line's ink beyond hover"
     );
-    release(window, 280.0, ROW as f32, PointerEventButton::Left);
+    assert_eq!(
+        columns(&dragged, HANDLE_ROW, background),
+        [255, 256, 257],
+        "a drag drew the keyboard-focus handle"
+    );
+    release(window, 256.5, ROW as f32, PointerEventButton::Left);
     motion(window, 800.0, 500.0);
     assert_eq!(
-        columns(&frame(window), 256, 304, background),
-        [280],
+        columns(&frame(window), ROW, background),
+        [256],
         "leaving the divider did not return it to idle"
     );
     window.invoke_focus_tree();
@@ -170,14 +178,30 @@ fn divider_states_change_line_weight_and_ink() {
     );
     let focused = frame(window);
     assert_eq!(
-        columns(&focused, 256, 304, background),
-        [256, 279, 280, 281, 303],
-        "keyboard focus did not paint a three-column line inside a boundary"
+        columns(&focused, ROW, background),
+        [255, 256, 257],
+        "keyboard focus did not paint a three-column line"
+    );
+    let focus_ink = pixel(&focused, 256, ROW);
+    assert!(
+        focus_ink != drag_ink && focus_ink != hover_ink && focus_ink != idle_ink,
+        "keyboard focus does not have a line color of its own"
     );
     assert_eq!(
-        pixel(&focused, 280, ROW),
-        drag_ink,
-        "keyboard focus does not use the strongest line ink"
+        columns(&focused, HANDLE_ROW, background),
+        [254, 255, 256, 257, 258],
+        "keyboard focus did not draw its handle across the five-column zone"
+    );
+    assert_eq!(
+        pixel(&focused, 256, HANDLE_ROW),
+        focus_ink,
+        "the keyboard-focus handle does not use the focus color"
+    );
+    key(window, Key::Tab);
+    assert_eq!(
+        columns(&frame(window), HANDLE_ROW, background),
+        [256],
+        "leaving the divider by Tab did not return it to idle"
     );
     window.hide().expect("close sidebar window");
 }
@@ -208,8 +232,8 @@ fn long_names_and_slot_badges_stay_inside_the_narrowest_sidebar() {
     // Leave the divider so its hover emphasis does not change the line's width.
     motion(window, 800.0, 500.0);
     let rendered = frame(window);
-    // The window background, sampled in the divider cell away from its line.
-    let background = pixel(&rendered, 164, ROW);
+    // The window background, sampled in the tree below its only row.
+    let background = pixel(&rendered, 150, ROW);
     let top = HEADER as usize;
     let bottom = top + 48;
     // Depth 2 puts the badge column at 40..64 and the name from 64 to 12px before the sidebar edge.
@@ -225,14 +249,14 @@ fn long_names_and_slot_badges_stay_inside_the_narrowest_sidebar() {
         !painted(&rendered, [148, 160, top, bottom], background),
         "the long name painted into the row's trailing padding"
     );
-    // The idle line is the single pixel column 24px into the divider cell.
+    // The idle line is the single pixel column right after the 160px sidebar; the first line number
+    // of the source gutter beside it starts more than 20px further right.
     assert!(
-        !painted(&rendered, [160, 184, top, bottom], background)
-            && !painted(&rendered, [185, 208, top, bottom], background),
-        "the long name painted over the divider"
+        !painted(&rendered, [161, 180, top, bottom], background),
+        "the long name painted past the divider"
     );
     assert!(
-        painted(&rendered, [184, 185, top, bottom], background),
+        painted(&rendered, [160, 161, top, bottom], background),
         "the divider line is not painted"
     );
     window.hide().expect("close sidebar window");
