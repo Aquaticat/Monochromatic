@@ -74,10 +74,29 @@ pub const STALL_THRESHOLD: Duration = Duration::from_millis(50);
 /// Decide whether the fallback timer must send frame callbacks.
 ///
 /// What:     `pub fn parent_stalled(recording: bool, since_presented: Duration) -> bool`.
-///           A pure function of two plain values.
-/// Why:      Scaffold only: fallback pacing is not implemented yet.
-pub fn parent_stalled(_recording: bool, _since_presented: Duration) -> bool {
-    return false;
+///           A pure function of two plain values, so tests need no display or clock.
+/// Why:      While recording, the recorder's own timer already sends frame callbacks at the
+///           requested rate, and a second sender would raise the client above that rate.
+///           Otherwise the fallback takes over once the parent has been silent long enough.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parentStalled(recording: boolean, sincePresentedMs: number): boolean {
+///   return !recording && sincePresentedMs >= STALL_THRESHOLD_MS;
+/// }
+/// ```
+///
+/// @example
+/// ```ts
+/// parentStalled(false, 50); // => true
+/// parentStalled(false, 49); // => false
+/// parentStalled(true, 3_600_000); // => false
+/// ```
+pub fn parent_stalled(recording: bool, since_presented: Duration) -> bool {
+    if recording {
+        return false;
+    }
+    return since_presented >= STALL_THRESHOLD;
 }
 
 /// When the parent last presented, and whether the fallback is currently pacing the client.

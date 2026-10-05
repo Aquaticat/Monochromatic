@@ -4,14 +4,16 @@
 //! (the one hosted window) into it with Smithay's `render_output` helper, submits the
 //! frame, and sends frame-callbacks so the client draws its next frame.
 
-/// What:     `use std::time::Duration;`. A span of time.
+/// What:     `use std::time::{Duration, Instant};`. `Duration` is a span of time; `Instant` is
+///           a monotonic timestamp (sibling: the adjustable wall clock `SystemTime`).
 /// Why:      Frame callbacks report elapsed time; `Duration::ZERO` is the throttle hint.
+///           Each presentation to the parent is timestamped for stall detection.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// // Duration ~ a millisecond count.
+/// // Duration ~ a millisecond count; Instant ~ performance.now().
 /// ```
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 /// What:     Grouped `use` of the render-element type, the GLES renderer, the
 ///           `render_output` helper, and the `Rectangle` geometry type.
@@ -137,6 +139,16 @@ pub fn redraw(state: &mut Compositor) {
     //           on swap failure.
     // Why:      Actually show the composited frame in the nested window.
     state.backend.submit(Some(&[damage])).unwrap();
+
+    // What:     `Instant::now()` reads the monotonic clock; the pacing record stores it.
+    // Why:      Only a frame the parent accepted counts as presentation. While these keep
+    //           arriving, the fallback timer stays idle and this path owns the cadence.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // state.framePacing.parentPresented(performance.now());
+    // ```
+    state.frame_pacing.parent_presented(Instant::now());
 
     // What:     `send_frame_callbacks(state);`. Tell the client its last frame was shown so
     //           it draws the next one, and refresh space/popup bookkeeping.

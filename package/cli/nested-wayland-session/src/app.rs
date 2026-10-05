@@ -173,6 +173,11 @@ pub fn run(config: Config) -> Result<i32> {
         private_bus_address.as_deref(),
     )?;
 
+    // What:     Register the fallback pacing timer, lending the loop handle and the state.
+    // Why:      A locked or hidden parent window stops delivering redraws; the hosted client
+    //           must keep receiving frame callbacks so screenshots show its current frame.
+    crate::frame_pacing::register(&loop_handle, &mut state);
+
     // What:     `state.backend.window().request_redraw();`. Kick off the first frame.
     // Why:      Rendering is self-sustaining after the first request, but something has
     //           to request the initial one.
