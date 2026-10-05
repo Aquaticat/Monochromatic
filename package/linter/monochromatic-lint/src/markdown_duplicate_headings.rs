@@ -6,11 +6,11 @@
 //! // Maintain the heading ancestor stack and compare [ancestor path, depth, text] identities.
 //! ```
 
+use crate::diagnostic::{Diagnostic, Severity};
+use crate::markdown_finding::finding;
+use crate::markdown_source::MarkdownSource;
 /// Import native heading data and shared finding construction.
 use satteri_ast::mdast::{MdastNodeType, decode_heading_data};
-use crate::diagnostic::{Diagnostic, Severity};
-use crate::markdown_source::MarkdownSource;
-use crate::markdown_finding::finding;
 /// Use ordered structural keys rather than encoding relationships into delimiter strings.
 use std::collections::BTreeSet;
 
@@ -35,8 +35,12 @@ pub fn no_duplicate_heading(context: &MarkdownSource, severity: Severity) -> Vec
         ancestors.push((depth, text.clone()));
         if !seen.insert(ancestors.clone()) {
             findings.push(finding(
-                context, *id, "markdown/no-duplicate-heading", severity,
-                format!("Duplicate heading \"{text}\" among sibling headings."), None,
+                context,
+                *id,
+                "markdown/no-duplicate-heading",
+                severity,
+                format!("Duplicate heading \"{text}\" among sibling headings."),
+                None,
             ));
         }
     }

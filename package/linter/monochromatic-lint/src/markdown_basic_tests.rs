@@ -161,7 +161,11 @@ fn fence_spans_preserve_native_marker_boundaries() {
         ("  ~~~\nx\n  ~~~\n", 2, "  ~~~text\nx\n  ~~~\n"),
         ("> ~~~\n> x\n> ~~~\n", 2, "> ~~~text\n> x\n> ~~~\n"),
         ("- ~~~\n  x\n  ~~~\n", 2, "- ~~~text\n  x\n  ~~~\n"),
-        ("🚀\n\n   ~~~\nx\n   ~~~\n", 9, "🚀\n\n   ~~~text\nx\n   ~~~\n"),
+        (
+            "🚀\n\n   ~~~\nx\n   ~~~\n",
+            9,
+            "🚀\n\n   ~~~text\nx\n   ~~~\n",
+        ),
     ] {
         let context: MarkdownSource = document(source, false);
         let mut code_nodes: usize = 0;

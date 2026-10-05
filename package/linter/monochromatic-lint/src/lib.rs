@@ -63,11 +63,11 @@ pub mod markdown_headings;
 /// Internal link normalization checks.
 #[doc(hidden)]
 pub mod markdown_links;
+/// Owned Markdown line and UTF-16 position indexes.
+mod markdown_positions;
 /// Heading punctuation checks with complete source escape/entity edits.
 #[doc(hidden)]
 pub mod markdown_punctuation;
-/// Owned Markdown line and UTF-16 position indexes.
-mod markdown_positions;
 /// Internal native Markdown/MDX parser interface.
 #[doc(hidden)]
 pub mod markdown_source;

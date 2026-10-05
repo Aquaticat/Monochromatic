@@ -6,13 +6,13 @@
 //! // Check decoded code content, then remove only actual authored '$ ' prefixes using byte edits.
 //! ```
 
-/// Import native code payloads and shared diagnostics/fixes.
-use satteri_ast::mdast::{MdastNodeType, decode_code_data};
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::{Edit, Fix};
 use crate::markdown_code::language_insert_offset;
 use crate::markdown_finding::finding;
 use crate::markdown_source::MarkdownSource;
+/// Import native code payloads and shared diagnostics/fixes.
+use satteri_ast::mdast::{MdastNodeType, decode_code_data};
 
 /// Require at least one nonblank line and reject every non-prompt content line.
 fn all_prompts(value: &str) -> bool {
@@ -42,7 +42,11 @@ fn prompt_edits(source: &str, start: usize, end: usize) -> Vec<Edit> {
     let mut edits: Vec<Edit> = Vec::<Edit>::new();
     while line_start < end {
         if bytes[line_start..end].starts_with(b"$ ") {
-            edits.push(Edit { start: line_start, end: line_start + 2, replacement: String::new() });
+            edits.push(Edit {
+                start: line_start,
+                end: line_start + 2,
+                replacement: String::new(),
+            });
         }
         let mut next: usize = line_start;
         while next < end && bytes[next] != b'\n' && bytes[next] != b'\r' {
@@ -88,8 +92,12 @@ pub fn commands_show_output(context: &MarkdownSource, severity: Severity) -> Vec
         body += 1;
         let edits: Vec<Edit> = prompt_edits(context.source.as_str(), body, end);
         let mut diagnostic: Diagnostic = finding(
-            context, *id, "markdown/commands-show-output", severity,
-            String::from("Shell prompts with no shown output; remove the `$ ` prompts."), None,
+            context,
+            *id,
+            "markdown/commands-show-output",
+            severity,
+            String::from("Shell prompts with no shown output; remove the `$ ` prompts."),
+            None,
         );
         if !edits.is_empty() {
             diagnostic.fix = Some(Fix { edits });

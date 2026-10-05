@@ -6,9 +6,9 @@
 //! // Walk one literal input root; glob expansion and per-file configuration matching are separate boundaries.
 //! ```
 
+use ignore::overrides::{Override, OverrideBuilder};
 /// Import gitignore-aware traversal and its override-pattern compiler.
 use ignore::{DirEntry, WalkBuilder};
-use ignore::overrides::{Override, OverrideBuilder};
 /// Import deterministic path deduplication and native filesystem types.
 use std::collections::BTreeSet;
 use std::ffi::OsStr;
@@ -60,7 +60,9 @@ fn not_git_metadata(entry: &DirEntry) -> bool {
 /// Add one exclusion using the walker's inverse-polarity override grammar.
 fn add_exclusion(builder: &mut OverrideBuilder, pattern: &str) -> Result<(), FileDiscoveryError> {
     if let Err(error) = builder.add(format!("!{pattern}").as_str()) {
-        return Err(FileDiscoveryError { message: format!("Cannot compile file-discovery exclusion {pattern:?}: {error}.") });
+        return Err(FileDiscoveryError {
+            message: format!("Cannot compile file-discovery exclusion {pattern:?}: {error}."),
+        });
     }
     return Ok(());
 }
@@ -74,18 +76,33 @@ fn overrides(options: &DiscoveryOptions) -> Result<Override, FileDiscoveryError>
     }
     match builder.build() {
         Ok(value) => return Ok(value),
-        Err(error) => return Err(FileDiscoveryError { message: format!("Cannot build file-discovery exclusions: {error}.") }),
+        Err(error) => {
+            return Err(FileDiscoveryError {
+                message: format!("Cannot build file-discovery exclusions: {error}."),
+            });
+        }
     }
 }
 
 /// Read supported files from an explicit file or directory, preserving native path bytes and stable ordering.
-pub fn discover_literal_path(path: &Path, options: &DiscoveryOptions) -> Result<Vec<PathBuf>, FileDiscoveryError> {
+pub fn discover_literal_path(
+    path: &Path,
+    options: &DiscoveryOptions,
+) -> Result<Vec<PathBuf>, FileDiscoveryError> {
     if !path.is_absolute() || !options.cwd.is_absolute() {
-        return Err(FileDiscoveryError { message: String::from("File discovery requires an absolute input path and invocation directory.") });
+        return Err(FileDiscoveryError {
+            message: String::from(
+                "File discovery requires an absolute input path and invocation directory.",
+            ),
+        });
     }
     let metadata: std::fs::Metadata = match std::fs::metadata(path) {
         Ok(value) => value,
-        Err(error) => return Err(FileDiscoveryError { message: format!("Cannot inspect lint input {}: {error}.", path.display()) }),
+        Err(error) => {
+            return Err(FileDiscoveryError {
+                message: format!("Cannot inspect lint input {}: {error}.", path.display()),
+            });
+        }
     };
     if metadata.is_file() {
         // Preserve the incumbent's explicit-file behavior: naming a file bypasses traversal ignores.
@@ -95,7 +112,12 @@ pub fn discover_literal_path(path: &Path, options: &DiscoveryOptions) -> Result<
         return Ok(Vec::<PathBuf>::new());
     }
     if !metadata.is_dir() {
-        return Err(FileDiscoveryError { message: format!("Lint input {} is neither a regular file nor a directory.", path.display()) });
+        return Err(FileDiscoveryError {
+            message: format!(
+                "Lint input {} is neither a regular file nor a directory.",
+                path.display()
+            ),
+        });
     }
     let mut builder: WalkBuilder = WalkBuilder::new(path);
     builder.current_dir(options.cwd.clone());
@@ -108,7 +130,12 @@ pub fn discover_literal_path(path: &Path, options: &DiscoveryOptions) -> Result<
         builder.overrides(overrides(options)?);
         for ignore in &options.ignore_paths {
             if let Some(error) = builder.add_ignore(ignore) {
-                return Err(FileDiscoveryError { message: format!("Cannot read file-discovery ignore file {}: {error}.", ignore.display()) });
+                return Err(FileDiscoveryError {
+                    message: format!(
+                        "Cannot read file-discovery ignore file {}: {error}.",
+                        ignore.display()
+                    ),
+                });
             }
         }
     }
@@ -116,10 +143,19 @@ pub fn discover_literal_path(path: &Path, options: &DiscoveryOptions) -> Result<
     for result in builder.build() {
         let entry: DirEntry = match result {
             Ok(value) => value,
-            Err(error) => return Err(FileDiscoveryError { message: format!("Cannot walk lint input {}: {error}.", path.display()) }),
+            Err(error) => {
+                return Err(FileDiscoveryError {
+                    message: format!("Cannot walk lint input {}: {error}.", path.display()),
+                });
+            }
         };
         if let Some(error) = entry.error() {
-            return Err(FileDiscoveryError { message: format!("Cannot apply ignore rules while walking {}: {error}.", entry.path().display()) });
+            return Err(FileDiscoveryError {
+                message: format!(
+                    "Cannot apply ignore rules while walking {}: {error}.",
+                    entry.path().display()
+                ),
+            });
         }
         let Some(kind): Option<std::fs::FileType> = entry.file_type() else {
             continue;

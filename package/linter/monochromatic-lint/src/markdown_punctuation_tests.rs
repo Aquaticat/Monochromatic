@@ -37,7 +37,10 @@ fn localized_fixes_preserve_delimiters_and_unicode() {
     ] {
         let findings: Vec<Diagnostic> = check(source);
         assert_eq!(findings.len(), 1, "{source}");
-        assert_eq!(findings[0].message, "Heading ends with punctuation; remove the trailing punctuation.");
+        assert_eq!(
+            findings[0].message,
+            "Heading ends with punctuation; remove the trailing punctuation."
+        );
         let fix: Fix = findings[0].fix.clone().expect("mapped suffix");
         let output: String = apply_fixes(source, &[fix])
             .expect("apply localized fix")

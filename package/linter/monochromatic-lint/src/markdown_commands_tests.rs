@@ -28,7 +28,10 @@ fn prompt_only_examples_preserve_authored_source() {
             format!("```sh{newline}$ echo 🚀{newline}{newline}$ pwd{newline}```{newline}");
         let findings: Vec<Diagnostic> = check(source.as_str());
         assert_eq!(findings.len(), 1);
-        assert_eq!(findings[0].message, "Shell prompts with no shown output; remove the `$ ` prompts.");
+        assert_eq!(
+            findings[0].message,
+            "Shell prompts with no shown output; remove the `$ ` prompts."
+        );
         let fix: Fix = findings[0].fix.clone().expect("mapped prefix fixes");
         assert_eq!(fix.edits.len(), 2);
         let output: String = apply_fixes(source.as_str(), &[fix])

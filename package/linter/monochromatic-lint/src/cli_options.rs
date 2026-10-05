@@ -8,9 +8,9 @@
 
 /// Import the incumbent CLI parser's trait and declaration macro.
 use clap::Parser;
+use std::num::NonZeroUsize;
 /// Import native path storage and a strictly positive worker-count type.
 use std::path::PathBuf;
-use std::num::NonZeroUsize;
 
 /// What: Parsed command options, with absence retained for discovery and default selection.
 /// Why: Repository configuration remains data-only and cannot add executables, plugins or a rule-selection CLI.
@@ -20,7 +20,11 @@ use std::num::NonZeroUsize;
 /// type CliOptions = { paths: Path[]; config?: Path; fix: boolean; stdin: boolean; ... };
 /// ```
 #[derive(Parser, Debug, Eq, PartialEq)]
-#[command(name = "monochromatic-lint", version, about = "Lint Rust, Markdown and MDX with repository-owned policies.")]
+#[command(
+    name = "monochromatic-lint",
+    version,
+    about = "Lint Rust, Markdown and MDX with repository-owned policies."
+)]
 pub struct CliOptions {
     /// Literal paths or path globs; execution supplies '.' only when this list is empty outside stdin mode.
     #[arg(value_name = "PATH", conflicts_with = "stdin")]

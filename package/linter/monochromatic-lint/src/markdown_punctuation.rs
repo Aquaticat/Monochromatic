@@ -96,7 +96,11 @@ fn punctuation_edit(written: &str, count: usize, start: usize, end: usize) -> Op
     // ```
     let relative: usize = suffix_start(written, count)?;
     // Return an owned edit only for a complete mapping; the empty string requests deletion.
-    return Some(Edit { start: start + relative, end, replacement: String::new() });
+    return Some(Edit {
+        start: start + relative,
+        end,
+        replacement: String::new(),
+    });
 }
 
 /// Report heading punctuation while keeping the original heading and inline delimiters intact.

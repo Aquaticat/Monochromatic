@@ -30,8 +30,8 @@ fn defaults_do_not_invent_a_positional_stdin_conflict() {
     assert!(defaults.config.is_none());
     assert!(defaults.concurrency.is_none());
     assert!(!defaults.stdin);
-    let stdin: CliOptions = parse(&["--stdin", "--stdin-filename", "doc/notes.mdx", "--fix"])
-        .expect("stdin fixer");
+    let stdin: CliOptions =
+        parse(&["--stdin", "--stdin-filename", "doc/notes.mdx", "--fix"]).expect("stdin fixer");
     assert!(stdin.paths.is_empty());
     assert!(stdin.stdin && stdin.fix);
     assert_eq!(stdin.stdin_filename, Some(PathBuf::from("doc/notes.mdx")));
@@ -41,15 +41,40 @@ fn defaults_do_not_invent_a_positional_stdin_conflict() {
 #[test]
 fn repeated_paths_and_flags_remain_separate_values() {
     let parsed: CliOptions = parse(&[
-        "--config=rules.jsonc", "--concurrency", "2", "--max-warnings=0",
-        "--ignore-pattern", "first/**", "--ignore-pattern", "second/**",
-        "--ignore-path", "one.ignore", "--ignore-path", "two.ignore",
-        "--no-ignore", "--quiet", "--silent", "--debug", "--no-error-on-unmatched-pattern",
-        "--", "--literal.rs", "path with spaces.md",
-    ]).expect("valid typed options");
-    assert_eq!(parsed.paths, [PathBuf::from("--literal.rs"), PathBuf::from("path with spaces.md")]);
+        "--config=rules.jsonc",
+        "--concurrency",
+        "2",
+        "--max-warnings=0",
+        "--ignore-pattern",
+        "first/**",
+        "--ignore-pattern",
+        "second/**",
+        "--ignore-path",
+        "one.ignore",
+        "--ignore-path",
+        "two.ignore",
+        "--no-ignore",
+        "--quiet",
+        "--silent",
+        "--debug",
+        "--no-error-on-unmatched-pattern",
+        "--",
+        "--literal.rs",
+        "path with spaces.md",
+    ])
+    .expect("valid typed options");
+    assert_eq!(
+        parsed.paths,
+        [
+            PathBuf::from("--literal.rs"),
+            PathBuf::from("path with spaces.md")
+        ]
+    );
     assert_eq!(parsed.ignore_patterns, ["first/**", "second/**"]);
-    assert_eq!(parsed.ignore_paths, [PathBuf::from("one.ignore"), PathBuf::from("two.ignore")]);
+    assert_eq!(
+        parsed.ignore_paths,
+        [PathBuf::from("one.ignore"), PathBuf::from("two.ignore")]
+    );
     assert_eq!(parsed.max_warnings, Some(0));
     assert_eq!(parsed.concurrency.expect("selected workers").get(), 2);
     assert!(parsed.quiet && parsed.silent && parsed.debug && parsed.no_ignore);
@@ -76,7 +101,12 @@ fn inconsistent_modes_and_invalid_values_are_rejected() {
     }
     assert!(parse(&["--rules"]).expect("rule listing").rules);
     assert!(parse(&["--init"]).expect("configuration initializer").init);
-    assert_eq!(parse(&["--print-config", "input.rs"]).expect("effective file config").print_config, Some(PathBuf::from("input.rs")));
+    assert_eq!(
+        parse(&["--print-config", "input.rs"])
+            .expect("effective file config")
+            .print_config,
+        Some(PathBuf::from("input.rs"))
+    );
 }
 
 /// Help and version are parser-controlled terminal outcomes, not lint runs.
@@ -96,6 +126,7 @@ fn native_non_utf8_path_arguments_are_preserved() {
     use std::os::unix::ffi::OsStringExt;
     let raw: OsString = OsString::from_vec(vec![b'n', 255, b'.', b'r', b's']);
     let arguments: Vec<OsString> = vec![OsString::from("monochromatic-lint"), raw.clone()];
-    let parsed: CliOptions = CliOptions::try_parse_from::<Vec<OsString>, OsString>(arguments).expect("native path");
+    let parsed: CliOptions =
+        CliOptions::try_parse_from::<Vec<OsString>, OsString>(arguments).expect("native path");
     assert_eq!(parsed.paths, [PathBuf::from(raw)]);
 }
