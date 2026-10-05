@@ -54,11 +54,14 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.SpanStyle
 // Apply that span while appending the peak text.
 import androidx.compose.ui.text.withStyle
+// The accepted heading is one line with visible ellipsis when its full title cannot fit.
+import androidx.compose.ui.text.style.TextOverflow
 
 /**
  * What: A named composable receives one immutable target and callbacks returning Unit, Kotlin's void.
  * Why: Opening or selecting a menu does not itself claim playback, clipboard or storage success.
- * Native popup content scrolls if its complete heading and action rows exceed the available height.
+ * The accepted one-line heading may ellipsize; full authored identity stays in the model and diagnostics.
+ * Native popup content scrolls if its action rows exceed the available height.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -85,6 +88,8 @@ internal fun TrackMenuPopup(
     ) {
         Text(
             text = target.track.title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth()
@@ -92,7 +97,7 @@ internal fun TrackMenuPopup(
                 .trackMenuMeasure("heading", onEvent),
             onTextLayout = { result ->
                 // What: A trailing lambda receives the actual native text layout result.
-                // Why: A rectangle alone does not prove that the full heading was laid out without overflow.
+                // Why: Record actual one-line truncation instead of claiming the complete title is visible.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
