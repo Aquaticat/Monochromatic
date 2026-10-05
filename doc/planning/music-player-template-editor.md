@@ -437,6 +437,55 @@ Each is captured on both Fold panels,
 in light and dark,
 at 100% and 200% text.
 
+### Baseline layout being built
+
+`package/music-player/design/template-editor-scenes.mjs` holds the states:
+`list`,
+`default`,
+`help`,
+`unknown-field`,
+`open-formula`,
+`custom` and `no-library`.
+`help`,
+`unknown-field` and `open-formula` hold focus in the field with the keyboard open.
+
+The Settings page lists the template under a `Templates` heading:
+`Track row supporting line`,
+with the line it currently produces as its supporting text.
+Opening it shows the editor on the same page column,
+titled `Supporting line`,
+with a way back to Settings.
+On the unfolded panel the page takes the right half and the folder browser
+and deck stay on the left,
+as the withdrawn Settings study placed its page (adopted from D50 and D51).
+
+The editor,
+top to bottom:
+
+- `Preview`:
+  two track rows,
+  one analysed and one not,
+  then a note saying where they come from.
+- `Template`:
+  an outlined field in a monospace face.
+  Under it,
+  error lines with an error icon when the template is invalid,
+  otherwise the signature and argument description when the caret is inside a call.
+- `Fields`:
+  one row per field with its name,
+  its value for the first preview row and what it inserts.
+- `Reset to default`,
+  offered only when the template differs from the default.
+
+Typing is not connected in the study;
+each state is authored.
+What this baseline cannot show before it is captured is how much of it stays
+visible above the keyboard,
+most of all the preview while typing at 200% text.
+That is the first thing to look at,
+and a concern to answer with a built variant,
+not a question in words.
+
 The study is debug-only and authored:
 each state's template text,
 preview,
