@@ -188,6 +188,8 @@ const cases = [
   { rule: 'output-current', phase: 'validate', afterBuild: () => { writeFileSync(output, readFileSync(output, 'utf8').replace('Design evidence only.', 'Changed output.')); } },
   { rule: 'required-statement', phase: 'validate', template: text => text.replace('Reset 100% dp', 'Reset zoom') },
   { rule: 'required-statement', phase: 'validate', template: text => text.replace('it was not separately chosen', 'it was chosen') },
+  // D86 withdrew both rows; a page that drops the withdrawal notice would present them as current.
+  { rule: 'required-statement', phase: 'validate', template: text => text.replace('It is not a current design to review', 'It is the current design') },
   { rule: 'single-form', phase: 'validate', template: text => text.replace('<dialog id="preview"', '<form></form><dialog id="preview"') },
   { rule: 'single-inline-script', phase: 'validate', template: text => text.replace('<dialog id="preview"', '<script src=extra.js></script><dialog id="preview"') },
   { rule: 'no-unresolved-slot', phase: 'validate', template: text => text.replace('<dialog id="preview"', '__SETTINGS_PANE_EXTRA__<dialog id="preview"') },

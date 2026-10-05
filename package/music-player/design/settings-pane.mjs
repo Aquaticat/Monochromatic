@@ -431,7 +431,7 @@ if (process.argv[2] === 'build') {
   console.log('Built offline native Settings-pane evidence from exact inspected witnesses.');
 } else if (process.argv[2] === 'validate') {
   need({ rule: 'output-current', holds: readFileSync(output, 'utf8') === html, detail: 'output differs from its template and evidence' });
-  for (const marker of ['color-scheme: light dark', 'D11 is settled; no new preference ballot',
+  for (const marker of ['color-scheme: light dark', 'Withdrawn by D86; no new preference ballot', 'It is not a current design to review',
     'Every switch position is authored debug state', 'it was not separately chosen', 'id="inspection-findings"',
     'Settings has no analysis switch', 'Also read by eye', 'id="provenance"', 'No production implementation is authorized', 'id="final-notes"',
     'Native pixels', 'Reset 100% dp']) {

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>D11 native Settings-pane evidence</title>
+<title>Withdrawn two-row Settings-pane evidence</title>
 <style>
 :root { color-scheme: light dark; --color-surface: #fcf9ff; --color-card: #f0edf5; --color-text: #201e26;
   --color-muted: #56515e; --color-line: #756e81; --color-focus: #554184; --color-selected: #e5dafa; }
@@ -60,11 +60,15 @@ dialog h2 { margin-block-start: 0; }
 </head>
 <body>
 <header>
-<p class="summary-text">Design evidence only. D11 is settled; no new preference ballot.</p>
-<h1>The accepted Settings pane on the Fold, in light and dark</h1>
-<p>Purpose: inspect the accepted Settings page's two switch rows, built natively for both Fold panels.
-D84 removed settings-a's third row, because true-peak analysis is automatic and not optional,
-and D85 removed its closing sentence.
+<p class="summary-text">Design evidence only. Withdrawn by D86; no new preference ballot.</p>
+<h1>The withdrawn two-row Settings pane on the Fold, in light and dark</h1>
+<p class="note"><strong>Withdrawn on 2026-10-05.</strong> D86 makes prefix stripping and resume always on, so neither
+is a setting and neither row below is part of the design. Settings now has no decided content; D81 places template
+configuration there, and that is not designed yet. This page is kept as a record of what was built and measured:
+the page's placement on the Fold, its header and both ways back. It is not a current design to review.</p>
+<p>What this page recorded: the Settings page with two switch rows, built natively for both Fold panels.
+D84 had removed settings-a's third row, because true-peak analysis is automatic and not optional,
+and D85 its closing sentence; D86 then removed the two rows shown here.
 Each row is the platform's Material 3 list item with a 52 by 32dp switch, and the whole row is the control.
 The page header is 72dp high with a 48dp Back target, as on the accepted Search page.
 Both text lines of a row may wrap; nothing is shrunk to fit.</p>
@@ -114,8 +118,8 @@ bottom navigation remains. Logical dp uses the measured 390dpi density, not your
 Back are recorded separately from the static images.</p>
 <div class="gallery">
 <figure data-scene="closed" data-position="none"><h3>Player before Settings opens</h3><button type="button" class="preview-button"><img alt="Accepted native player with Settings closed"><span>Open closed-player baseline</span></button><figcaption></figcaption></figure>
-<figure data-scene="accepted" data-position="start"><h3>Settings in the accepted mock state</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched on"><span>Open accepted switch positions</span></button><figcaption></figcaption></figure>
-<figure data-scene="inverse" data-position="start"><h3>Every switch in its other position</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched off"><span>Open opposite switch positions</span></button><figcaption></figcaption></figure>
+<figure data-scene="accepted" data-position="start"><h3>Both withdrawn rows switched on</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched on"><span>Open accepted switch positions</span></button><figcaption></figcaption></figure>
+<figure data-scene="inverse" data-position="start"><h3>Both withdrawn rows switched off</h3><button type="button" class="preview-button"><img alt="Native Settings page with prefix stripping and resume switched off"><span>Open opposite switch positions</span></button><figcaption></figcaption></figure>
 </div></section>
 <details><summary>Read the verification boundary</summary>
 <p>The host extends ComponentActivity, not MainActivity. Its merged manifest disables production entry and
