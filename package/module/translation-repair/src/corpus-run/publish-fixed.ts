@@ -11,6 +11,7 @@ import {
 import type {
   Logger,
 } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type {
   ChunkPair,
@@ -312,13 +313,13 @@ export async function publishFixedPage(
     .dropped
     .entries()) {
     /**
-     This address's trace.
+     This address's trace, present since the traces walk the same list.
      */
-    const trace = traces[at];
+    const trace = nonNullishOrThrow(traces[at],);
     l.warn(
       `entry ${entryId}: page drops source destination ${address}; original carries it in slices `
-        + `[${(trace?.sourceSlices ?? []).join(', ',)}], archive in [${(trace?.archiveSlices ?? []).join(', ',)}], `
-        + `shipped text in [${(trace?.shippedSlices ?? []).join(', ',)}]`,
+        + `[${(trace.sourceSlices).join(', ',)}], archive in [${(trace.archiveSlices).join(', ',)}], `
+        + `shipped text in [${(trace.shippedSlices).join(', ',)}]`,
     );
   }
   // THE CONTENT CHECKS REPORT, THEY DO NOT REFUSE (the owner, 2026-09-27): a
