@@ -126,6 +126,17 @@ is the one built for `de15ea3ea`,
 which confirms the inputs are identical.
 Evidence `package/git-policy/cli/target/verification/native-vWfYMM`.
 
+### Script inspection bound
+
+Commit `57eee2061` adds one control;
+these are the final wrapper sources of this delegation.
+The gate passed 145 unit tests,
+21 binary-level tests,
+and Clippy.
+Test image
+`16f09e939ecefa1a500520d1b4ed0d9745e1f373305101cbb02743dcb1fc212a`;
+evidence `package/git-policy/cli/target/verification/native-dtC4QT`.
+
 Evidence directories live under the ignored `target` directory of this worktree and are not committed.
 
 ## Configuration
@@ -523,7 +534,7 @@ Cargo stopped after the unit tests failed and never ran them.
 The planted run now passes `--no-fail-fast`,
 and all five are noticed in every run recorded here.
 
-### Full campaign
+### First full campaign
 
 Sources as of commit `07ca5b9bb`,
 gate image `7fbc07a48a6e3d6287d73fedff1cd2bc98e7ef9e97fec46a150cb6043bc2eb8e`.
@@ -535,6 +546,9 @@ and 17 timed out.
 The runner exited nonzero,
 as it must.
 Evidence `package/git-policy/cli/target/verification/native-mutation-q6xDu5`.
+This campaign ran before the fix described under "Intermittent test failure",
+and its caught count is inflated;
+"Full campaign on the fixed tree" replaces it.
 
 ### Survivors killed by new controls
 
@@ -578,7 +592,7 @@ The new control therefore pins the private list directly.
 
 ### Survivor removed with its code
 
-The full campaign missed `<` to `<=` in the indexed loop of `policy_descriptor`.
+The first full campaign missed `<` to `<=` in the indexed loop of `policy_descriptor`.
 Every `PolicyId` has a row,
 and both forms stop the program on a missing one,
 so no control could tell them apart.
@@ -608,18 +622,26 @@ The Linux gate does not compile those bodies,
 so no control in it can observe them.
 They stay open until a Windows gate exists.
 
-#### Equivalent mutant
+#### Equivalent mutants
 
-`real_git_candidate.rs`,
-`read_up_to`,
-`filled < limit` to `filled <= limit`:
-the one extra iteration reads into an empty buffer,
-which returns zero bytes and ends the loop the same way.
+- `real_git_candidate.rs`,
+  `read_up_to`,
+  `filled < limit` to `filled <= limit`:
+  the one extra iteration reads into an empty buffer,
+  which returns zero bytes and ends the loop the same way.
+- `real_git_candidate.rs`,
+  `classify_candidate`,
+  `MAX_SCRIPT_INSPECTION_BYTES + 1 - header.len()` to `+ header.len()`:
+  the script read may take 8 more bytes,
+  but any script longer than the bound is still rejected by the length check that follows,
+  and a shorter one is read in full either way.
+
 `script_inspection_bound_is_exact` pins the bound from both sides.
 
 #### Timeouts
 
-In the full campaign 17 mutants change how a loop advances
+In the full campaign on the fixed tree 17 mutants timed out.
+16 change how a loop advances
 (`+=` to `*=` or `-=`,
 `-=` to `/=`)
 in `child_environment.rs`,
@@ -629,14 +651,19 @@ in `child_environment.rs`,
 `management_arguments.rs`,
 `policy_registry.rs`,
 `real_git.rs`,
-and `real_git_candidate.rs`.
-Each makes a loop never finish,
-so the test run does not end and is stopped at the 90-second bound.
-cargo-mutants reports that as a timeout,
+and `real_git_candidate.rs`,
+so that the loop never finishes.
+The 17th,
+`filled += count` to `filled *= count` in `read_up_to`,
+keeps every read at the start of the buffer,
+so classifying a large executable reads all of it in 4-byte pieces;
+`other_executables_are_real_git` was still running at the bound.
+In the scoped rerun that same mutant finished inside the bound and was caught.
+The test run is stopped at the 90-second bound,
+and cargo-mutants reports that as a timeout,
 neither caught nor missed.
 The mutation is detected,
 but only by the bound.
-The change to `policy_descriptor` removed one of the 17 with its loop.
 
 ### Intermittent test failure
 
@@ -671,8 +698,54 @@ After the fix
 0 of 400 runs failed.
 The rate at the gate's 2 threads was not measured.
 
-The full campaign ran before the fix,
-so some of its caught mutants may have been caught by this failure instead of by a control.
+The first full campaign ran before the fix,
+and its result was inflated by this failure:
+three mutants it counted as caught were missed or timed out on the fixed tree.
+One of them is equivalent,
+so a spurious failure is the only way it could have been caught.
+
+### Full campaign on the fixed tree
+
+Sources of commit `de15ea3ea`,
+gate image `15bd4395ea94c2f2cde8cc7957baf037ee7d0c7054c91633ff318172b8bd1a8a`.
+Of 513 mutants
+(5 fewer than before,
+because `policy_descriptor` lost its index),
+429 were caught,
+56 did not compile,
+11 were missed,
+and 17 timed out.
+The runner exited nonzero,
+as it must.
+Evidence `package/git-policy/cli/target/verification/native-mutation-3CvHMl`.
+
+The expected result was 9 missed:
+the 8 in code not compiled on Linux and the `read_up_to` equivalent mutant.
+The 2 others had been counted as caught in the first campaign:
+
+- `64 * 1024` to `64 + 1024` in `MAX_SCRIPT_INSPECTION_BYTES`.
+  The bound control is written in terms of the constant,
+  so any value passed it.
+  Commit `57eee2061` adds `script_inspection_bound_matches_the_incumbent`:
+  a 64 KiB launcher with its marker in the last bytes must be recognised,
+  matching the incumbent bound in `package/git/executable/src/self-shim.ts`.
+- The `classify_candidate` read limit,
+  an equivalent mutant listed under "Survivors left".
+
+The third,
+the `read_up_to` timeout,
+is described under "Timeouts".
+
+A chained gate and scoped campaign over `real_git_candidate.rs` on the sources of commit `57eee2061`
+tested 64 mutants:
+55 caught,
+2 did not compile,
+1 timed out,
+and 6 missed,
+which are the 4 not compiled on Linux and the 2 equivalent mutants.
+Evidence `package/git-policy/cli/target/verification/native-mutation-2mwlb7`.
+
+After these runs the missed mutants are exactly the 8 in code not compiled on Linux and the 2 equivalent mutants.
 
 ## Fuzzing
 
@@ -750,6 +823,17 @@ reported 676,836,
 295,227,
 and 29,590;
 evidence `campaign-j0BpUV`.
+
+On the final tree
+(commit `6c2af1b34`,
+after the registry and fixture changes in the subject)
+the smoke campaign reported 975,367,
+359,412,
+and 49,392 executions,
+each with exit status 0 and no artifact;
+evidence `campaign-y7YxHb`.
+`test:planted` again noticed all five planted defects;
+evidence `planted-qPq6go`.
 
 ### Limits
 
@@ -902,13 +986,14 @@ recorded instead of solved:
 - The full mutation campaign ends nonzero,
   because the survivors listed under "Survivors left" remain.
   No mutant was excluded to change that.
-- No full campaign was repeated on the final sources.
-  The files whose controls or code changed after the full campaign were rerun in the two scoped campaigns;
-  the other files are unchanged since it.
+- The last full campaign ran on the sources of `de15ea3ea`.
+  Commit `57eee2061` only adds a control,
+  verified by the scoped campaign over `real_git_candidate.rs`;
+  no full campaign ran on it.
 - `native:mutation`,
   the task that chains the gate and the runner,
   was run only with a one-file scope.
-  The full campaign used the gate and `native:mutation:scoped` as separate commands.
+  Both full campaigns used the gate and `native:mutation:scoped` as separate commands.
 - Slice 1 was gated before its commit,
   but that run's evidence directory was not recorded by name.
 - The registry default correction was gated only together with slice 2.
