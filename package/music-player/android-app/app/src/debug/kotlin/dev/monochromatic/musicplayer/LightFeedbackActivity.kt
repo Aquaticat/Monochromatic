@@ -57,7 +57,7 @@ import androidx.compose.ui.platform.LocalContext
  * ```
  */
 @Composable
-private fun lightFeedbackColorScheme(): ColorScheme {
+internal fun lightFeedbackColorScheme(): ColorScheme {
     // What: val stores a read-only Boolean, rather than var's replaceable binding.
     // Why: Keep this render pass's system-theme choice consistent.
     //
