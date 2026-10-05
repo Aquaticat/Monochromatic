@@ -1,0 +1,255 @@
+{
+  "schema": 1,
+  "scope": "Freshly inspected authored native Settings switch states and their offline viewer, not a new ballot, a stored preference or native accessibility acceptance.",
+  "htmlSha256": "843461ba0e0be897dfbe0b721d4ca869631657d89cbf0263b1588d45082033bd",
+  "templateSha256": "df23bad044b16b32b24608ba6aae64d856d650e3f108ba6eed07b2bb98026a27",
+  "builderSha256": "cbc4cc9cda27b783348d7492bf741da4401b8525998f49aabb34e214a433385c",
+  "consumerTestSha256": "362b29a9b58913579c03553a0cc4c7c999d41434bfc1eed4bb4e6e1383862f90",
+  "manifestSha256": "0b0ccee906df242838ca31fdf6e5f06b69a9de6c3a6d18131d88e187d56b76c6",
+  "nativeVerificationSha256": "6f4633ed39c7936767cd7c0086efd0a3378e2763b3282c252eae35bb8fb5ccd5",
+  "browserCliVersion": "0.38.1",
+  "browserContainerImageId": "4b8805002ee369c81b7826b941afc52c0c9678a0d0e427a0fefd1684b78b5f94",
+  "firefoxESR140Exercised": false,
+  "resourceBounds": {
+    "memoryGiB": 2,
+    "cpu": 2
+  },
+  "imagesDecodedAndOpened": 32,
+  "contexts": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "mode": "light",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "systemThemeFollowed": true,
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "fitNotesMatchWitnessState": true,
+      "scrollNoteMatchesViews": true,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "mode": "dark",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "systemThemeFollowed": true,
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "fitNotesMatchWitnessState": true,
+      "scrollNoteMatchesViews": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "light",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "systemThemeFollowed": true,
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "fitNotesMatchWitnessState": true,
+      "scrollNoteMatchesViews": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "dark",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "systemThemeFollowed": true,
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "fitNotesMatchWitnessState": true,
+      "scrollNoteMatchesViews": true,
+      "overflow": false
+    }
+  ],
+  "offline": true,
+  "browserEngine": "Chromium",
+  "noPolicyVotes": true,
+  "consoleErrors": 0,
+  "renderedFindingsChecked": true,
+  "renderedProvenanceChecked": true,
+  "limits": "All distinct previews opened in the first desktop/light interaction pass; availability, fit notes, the scroll note, observations and representative modal/zoom/pan controls exercised in all four contexts. Axe audits are closed-page only, not native acceptance.",
+  "browsersClosed": true,
+  "ownedRuntimeAbsenceVerified": true,
+  "productionSourceAndAcceptedSearchReviewUnchanged": true,
+  "guardRemovalProofs": {
+    "rulesDeclared": 106,
+    "rulesDeletedAndNoticed": 106,
+    "positiveAndRestored": "Settings-pane consumer: 105 rules, 142 rejected inputs, script encoding and positive controls passed.",
+    "outcomes": {
+      "accepted": 55,
+      "caughtByAnotherCheck": 51
+    },
+    "reportSha256": "ba3c6eeb0f70b60b4bee9058bb2d6a20f19599a3580d07f04a764f2089fb5d8a"
+  },
+  "publicationPreflight": {
+    "fixtures": [
+      {
+        "name": "positive",
+        "intendedOutcome": true,
+        "exitStatus": 0,
+        "diagnostic": "ALL_PUBLICATION_PREFLIGHTS_PASSED",
+        "publicWrites": 0
+      },
+      {
+        "name": "inspection-hash",
+        "intendedOutcome": true,
+        "exitStatus": 1,
+        "diagnostic": "Current inspection hash binding differs.",
+        "publicWrites": 0
+      },
+      {
+        "name": "authored-state",
+        "intendedOutcome": true,
+        "exitStatus": 1,
+        "diagnostic": "Current cohort context or native assertions differ",
+        "publicWrites": 0
+      },
+      {
+        "name": "restoration",
+        "intendedOutcome": true,
+        "exitStatus": 1,
+        "diagnostic": "Exact recorded fields not restored.",
+        "publicWrites": 0
+      },
+      {
+        "name": "owner-exit",
+        "intendedOutcome": true,
+        "exitStatus": 1,
+        "diagnostic": "Owner exit record differs.",
+        "publicWrites": 0
+      },
+      {
+        "name": "late-action-context",
+        "intendedOutcome": true,
+        "exitStatus": 1,
+        "diagnostic": "Exact current-artifact action evidence incomplete.",
+        "publicWrites": 0
+      },
+      {
+        "name": "replay-manifest-binding",
+        "intendedOutcome": true,
+        "exitStatus": 1,
+        "diagnostic": "Offline action replay differs from the live manifest.",
+        "publicWrites": 0
+      },
+      {
+        "name": "lint-commit",
+        "intendedOutcome": true,
+        "exitStatus": 1,
+        "diagnostic": "Retained lint report differs from the stated limitation.",
+        "publicWrites": 0
+      }
+    ]
+  },
+  "publicationPreflightSha256": "9e03ae5d3abc5e0031e0a75540e94ac8c568d147ae6fa2a1fe4550db58baf6a4",
+  "rendererScreenshotsInspected": [
+    {
+      "file": "review-1440-light.png",
+      "sha256": "2ebe5d950447c8cedc4f4bb21610c475c772158c394a0af9637784b372424a61"
+    },
+    {
+      "file": "review-1440-dark.png",
+      "sha256": "55964fab24a3152409087ceb9e43323f2441dcc630f73537f6c0d7e1a3c9424e"
+    },
+    {
+      "file": "review-390-light.png",
+      "sha256": "bde4c2c937be99ab91a3b2bd8be8c89c4539ab50011eece8575a5edb035fce93"
+    },
+    {
+      "file": "review-390-dark.png",
+      "sha256": "2892e8e11c33affc0e96954b0f44a9f0c53da534fa26ef4ca5e7f626de60e50f"
+    },
+    {
+      "file": "gallery-1440-light.png",
+      "sha256": "fcdf1b453bf74a68035ccb9de1b12c6890cab26c86a61526b4f5d0251af0c2ad"
+    },
+    {
+      "file": "gallery-1440-dark.png",
+      "sha256": "76691b595b8e16ebdaa02f2647a77a9f31b02f516e49bf59751b91d284ff2d88"
+    },
+    {
+      "file": "gallery-390-light.png",
+      "sha256": "d6f18348de63cb73c612ad2aaf07a719880c678d46c20ac8531087bb50e673a1"
+    },
+    {
+      "file": "gallery-390-dark.png",
+      "sha256": "b6d9cc6bb29d7c4c005179281683bc729236779b6f414da5496cf850521de99e"
+    },
+    {
+      "file": "boundary-1440-light.png",
+      "sha256": "1971f42752f3ae7bc268bb358eb9a238ca238a3d4da6c6a8a6db2c780fc21ae5"
+    },
+    {
+      "file": "boundary-1440-dark.png",
+      "sha256": "eca16c59544ce3fada9aebdbc20c27036b6e7a27569fc7008b259dd43341622a"
+    },
+    {
+      "file": "boundary-390-light.png",
+      "sha256": "9021457282684db91c92b00f1f57456f92ae7e40f2c4160e5342a6fb696159ea"
+    },
+    {
+      "file": "boundary-390-dark.png",
+      "sha256": "6535f18a05d0ccc85994806cd7956f87ac62b05c5afdfa2665a0b6dad3868d42"
+    },
+    {
+      "file": "modal-1440-light.png",
+      "sha256": "f67eca2e7f11af735d47af74909b0653fb97ab09e76ab9c666150129bbeb171a"
+    },
+    {
+      "file": "modal-1440-dark.png",
+      "sha256": "8581e5267b830c628d2a9b686fc5982b6a70d04940976f36a50f1297faf38e13"
+    },
+    {
+      "file": "modal-390-light.png",
+      "sha256": "385651aeffdff62b808ef7302ddb98889e30ac9ebf9bb54bfb7ca195ccf1a033"
+    },
+    {
+      "file": "modal-390-dark.png",
+      "sha256": "9a8b41542cc0d971f0869d71d238a6fae69ddc8babcc5105541fa4345c3ba418"
+    }
+  ],
+  "verificationLimits": [
+    "Closed-page axe checks only; no open-dialog, Firefox ESR140 or native accessibility acceptance.",
+    "Every switch position is authored debug state; no preference is stored, no prefix is stripped, no session is restored and no analysis runs.",
+    "Rectangles and line counts are device layout reports, not glyph metrics; switch positions, header contrast and the retained left half are re-measured from the embedded pixels.",
+    "The Fold placement follows D50, D51 and the existing Settings behaviour; it was adopted, not separately chosen.",
+    "Synthetic changed-inset and changed-witness fixtures are validation controls, not extra Android captures.",
+    "Full Android lint retains five inherited errors; no finding names a Settings study file."
+  ]
+}
