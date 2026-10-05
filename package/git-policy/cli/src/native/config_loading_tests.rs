@@ -6,8 +6,8 @@
 //! // Cover listing, mutation, separator and opaque-value paths independently.
 //! ```
 
-/// Import actual classification and native argument ownership.
-use super::{ConfigLoading, classify_config_loading};
+/// Import actual classification, the private mutation list and native argument ownership.
+use super::{ConfigLoading, classify_config_loading, mutating_long};
 use std::ffi::OsString;
 
 /// Build one exact argv vector and classify it without side effects.
@@ -150,4 +150,125 @@ fn option_values_and_separators_remain_opaque() {
         classify(&["-c", "alias.command=commit", "command"]),
         ConfigLoading::Required
     );
+}
+
+/// A commit filter lists even with a pattern; `--format` and `--sort` never turn a name into a pattern.
+#[test]
+fn only_commit_filters_imply_listing() {
+    for args in [
+        vec!["branch", "--contains", "HEAD", "feature-*"],
+        vec!["branch", "--merged=main", "feature-*"],
+        vec![
+            "branch",
+            "--no-contains",
+            "HEAD",
+            "--sort",
+            "-name",
+            "feature-*",
+        ],
+        vec!["tag", "--points-at", "HEAD", "v*"],
+        vec!["tag", "--sort=-creatordate", "--merged", "main", "v*"],
+    ] {
+        assert_eq!(classify(args.as_slice()), ConfigLoading::Skip, "{args:?}");
+    }
+    for args in [
+        vec!["branch", "--sort", "-name", "new-branch"],
+        vec!["branch", "--sort=-name", "new-branch"],
+        vec!["branch", "--format", "%(refname)", "new-branch"],
+        vec!["tag", "--format=%(refname)", "new-tag"],
+        vec!["tag", "--sort", "-creatordate", "new-tag"],
+        vec!["tag", "--sort"],
+    ] {
+        assert_eq!(
+            classify(args.as_slice()),
+            ConfigLoading::Required,
+            "{args:?}"
+        );
+    }
+}
+
+/// Each short letter keeps its own command's meaning; a lone dash is a name, not a flag cluster.
+#[test]
+fn short_letters_are_judged_per_command() {
+    for args in [
+        vec!["tag", "-v", "v1"],
+        vec!["tag", "-i"],
+        vec!["tag", "-il", "V*"],
+        vec!["tag", "-n", "v*"],
+        vec!["tag", "-n12", "v*"],
+        vec!["branch", "-vvr"],
+        vec!["branch", "-qai"],
+        vec!["branch", "-rl", "origin/*"],
+    ] {
+        assert_eq!(classify(args.as_slice()), ConfigLoading::Skip, "{args:?}");
+    }
+    for args in [
+        // Verbose is presentation for `branch`, so the name is still created.
+        vec!["branch", "-v", "new-branch"],
+        vec!["branch", "-qr", "new-branch"],
+        // `-n` and `-x` are not `branch` listing letters.
+        vec!["branch", "-n"],
+        vec!["branch", "-n3"],
+        // Ignore-case is presentation for `tag`, so the name is still created.
+        vec!["tag", "-i", "new-tag"],
+        vec!["tag", "-x"],
+        vec!["tag", "-q"],
+        vec!["tag", "-r"],
+        // After the line count only digits may follow.
+        vec!["tag", "-n3l"],
+        vec!["tag", "-n3d", "v1"],
+        // A lone dash is a positional name for both commands.
+        vec!["branch", "-"],
+        vec!["tag", "-"],
+    ] {
+        assert_eq!(
+            classify(args.as_slice()),
+            ConfigLoading::Required,
+            "{args:?}"
+        );
+    }
+}
+
+/// The explicit mutation list holds each command's own long forms and nothing else.
+#[test]
+fn mutating_long_forms_are_listed_per_command() {
+    for name in [
+        "--copy",
+        "--delete",
+        "--delete-merged",
+        "--edit-description",
+        "--force",
+        "--move",
+        "--set-upstream",
+        "--set-upstream-to",
+        "--unset-upstream",
+        "--create-reflog",
+    ] {
+        assert!(mutating_long(name.as_bytes(), true), "branch {name}");
+    }
+    for name in [
+        "--annotate",
+        "--delete",
+        "--edit",
+        "--force",
+        "--sign",
+        "--local-user",
+        "--message",
+        "--file",
+        "--trailer",
+        "--create-reflog",
+    ] {
+        assert!(mutating_long(name.as_bytes(), false), "tag {name}");
+    }
+    // Listing forms, abbreviations and the other command's forms are not in either list.
+    for name in ["--list", "--del", "--delete=x", "--contains", "", "--"] {
+        assert!(!mutating_long(name.as_bytes(), true), "branch {name}");
+        assert!(!mutating_long(name.as_bytes(), false), "tag {name}");
+    }
+    for name in ["--annotate", "--edit", "--sign", "--message", "--file"] {
+        assert!(!mutating_long(name.as_bytes(), true), "branch {name}");
+    }
+    for name in ["--copy", "--move", "--set-upstream-to", "--delete-merged"] {
+        assert!(!mutating_long(name.as_bytes(), false), "tag {name}");
+    }
 }

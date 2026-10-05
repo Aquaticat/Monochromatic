@@ -372,3 +372,8 @@ pub fn markdown_rule_name(rule: MarkdownRule) -> &'static str {
         MarkdownRule::LfsImageUrl => return "lfs-image-url",
     }
 }
+
+/// Value controls stay out of the release executable.
+#[cfg(test)]
+#[path = "config_schema_tests.rs"]
+mod tests;

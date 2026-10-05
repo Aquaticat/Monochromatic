@@ -209,3 +209,21 @@ fn other_tokens_and_native_bytes_are_supported() {
         ]
     );
 }
+
+/// The separator itself is outside the wrapper region: it survives even a token spelled like it.
+#[test]
+fn separator_is_never_removed() {
+    for values in [
+        vec!["commit", "--", "path"],
+        vec!["commit", "--message", "--", "--", "path"],
+        vec!["commit", "--"],
+        vec!["commit", "--", "--", "--"],
+    ] {
+        let input: Vec<OsString> = arguments(values.as_slice());
+        assert_eq!(
+            strip_escape_hatch(input.as_slice(), 0, &["--message"], PATHSPEC_SEPARATOR),
+            input,
+            "{values:?}"
+        );
+    }
+}

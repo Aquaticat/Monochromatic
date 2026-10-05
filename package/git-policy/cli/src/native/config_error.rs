@@ -83,3 +83,8 @@ impl std::fmt::Display for ConfigError {
 /// // `extends Error` already provides this in TypeScript.
 /// ```
 impl std::error::Error for ConfigError {}
+
+/// Message controls stay out of the release executable.
+#[cfg(test)]
+#[path = "config_error_tests.rs"]
+mod tests;
