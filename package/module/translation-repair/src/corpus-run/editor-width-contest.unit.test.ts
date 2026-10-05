@@ -1,4 +1,5 @@
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -120,6 +121,29 @@ await describe({
             ).toBe('none',);
           },
         },),
+
+        it({
+          name: 'REFUSES A COMPOSITE WHOSE SHIPPED TEXT IS NEITHER SEAT\'S, since the two seats are the only '
+            + 'composites on the slate and a winner ships one of their patches',
+          fn: async function aThirdWordingFromACompositeIsRefused() {
+            const refusal = caught(function act(): unknown {
+              return seatThatWon({
+                shippedProducer: {
+                  kind: 'composite',
+                  contributors: [],
+                },
+                shipped: 'a third wording neither arm offered',
+                first: armOffering(UNTOUCHED,),
+                second: armOffering(REWRITTEN,),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(Error,);
+            expect(String(refusal,),).toBe(
+              'Error: unreachable: the stage shipped a composite whose text is neither seat\'s, and the two '
+                + 'seats are the only composites on the slate',
+            );
+          },
+        },),
       ],
     },),
 
@@ -148,24 +172,6 @@ await describe({
           },
         },),
       ],
-    },),
-
-    it({
-      name: 'READS THE SEAT AS NONE where the shipped text matches neither arm, so the contest reports '
-        + 'no winner rather than picking one',
-      fn: async function aThirdWordingWinsNothing() {
-        expect(
-          seatThatWon({
-            shippedProducer: {
-              kind: 'composite',
-              contributors: [],
-            },
-            shipped: 'a third wording neither arm offered',
-            first: armOffering(UNTOUCHED,),
-            second: armOffering(REWRITTEN,),
-          },),
-        ).toBe('none',);
-      },
     },),
   ],
 },);
