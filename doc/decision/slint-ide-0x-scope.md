@@ -183,6 +183,19 @@ quotations are the user's words.
 - The Slint grammar ships its `LICENSES/` texts plus the copyright lines extracted from its source headers.
 - Final binary and asset size is not a constraint for this package:
   "final bin size isn't a constraint on this specific package."
+- Projects under `/tmp` and `/run`
+  (including removable drives under `/run/media`)
+  get full language support:
+  "We gotta support projects in /tmp and /run properly.
+  Read-only is just 0.x .
+  We will build in write in 1.x".
+  The sandbox binds the project back at its own path,
+  read-only in 0.x;
+  the launch policy keeps that mount in one place so a 1.x write mode can change it.
+- The language-server environment allowlist keeps `RUSTUP_TOOLCHAIN`,
+  so the server uses the toolchain of the shell that started the IDE.
+- Slint's black-on-blue dark selected-text ink is not filed upstream by an agent;
+  issue #606 in this repository reminds the user to raise it with Slint.
 - UI questions are presented with screenshots of every option,
   stored as local files in the repository rather than a network service:
   "These are useful records that shouldn't depend on a network service to be available."
