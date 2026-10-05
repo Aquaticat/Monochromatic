@@ -372,7 +372,7 @@ const env = {
   ...process.env,
   HELIX_RUNTIME: resolve('target/debug/runtime'),
   SLINT_BACKEND: 'winit',
-  SLINT_MCP_PORT: scheme === 'dark' ? '9318' : '9319',
+  SLINT_MCP_PORT: process.env.IDE_NATIVE_MCP_PORT ?? (scheme === 'dark' ? '9318' : '9319'),
   FONTCONFIG_FILE: fontConfig,
   XDG_CONFIG_HOME: join(scratch, 'config'),
   XDG_CACHE_HOME: join(scratch, 'cache'),
