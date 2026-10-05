@@ -46,6 +46,8 @@ pub mod edits;
 /// Native source-file discovery with explicit ignore and failure boundaries.
 #[doc(hidden)]
 pub mod file_discovery;
+/// Prose fix boundary that must not create new Markdown block syntax.
+mod markdown_block_start;
 /// Internal code-fence normalization.
 #[doc(hidden)]
 pub mod markdown_code;
