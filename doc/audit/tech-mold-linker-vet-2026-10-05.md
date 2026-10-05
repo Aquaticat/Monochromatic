@@ -2,8 +2,10 @@
 
 Status:
 in progress;
-hard gates, targeted evidence, and upstream-side validation (phases N2, B, C1, C2) are complete;
-the consumer-boundary phase E is pending, then scoring and sensitivity.
+hard gates, targeted evidence, upstream-side validation (phases N2, B, C1, C2), and the phase E
+consumer-boundary first pass are complete;
+phase E2 supplemental controls are running under documented host-load saturation;
+scoring and sensitivity follow.
 
 Lifecycle phase:
 finalist validation.
@@ -114,6 +116,11 @@ Measured on 2026-10-05 on the dev host (Fedora 44, kernel 7.2.7, x86_64, 16 core
   rustup-toolchain default is inferred to be the self-contained rust-lld from the host probe
   plus upstream issue #1708 (rustup rustc 1.99 on Ubuntu 26.04 defaults to rust-lld);
   the inference is labeled, not measured.
+- Toolchain refinement measured during phase E: cargo builds inside the repository and its
+  worktrees resolve through mise's nightly Rust, whose self-contained linker reports
+  `Linker: LLD 22.1.8` in output `.comment` sections; a bare `rustc` invocation outside mise used
+  the rustup default nightly with LLD 23.1.1. Repository-scoped builds therefore consume
+  rust-lld 22.1.8; both are the same self-contained-linker mechanism.
 - Linker configuration today:
   - repository root `.cargo/config.toml` sets environment only (Zig cache dir, Slint flag),
     no linker or rustflags;
@@ -419,6 +426,20 @@ Access date for all URLs and API calls: 2026-10-05. Clone path for all `path:lin
   16.2.1), the `-B` prefix method for older GCC, `mold -run` LD_PRELOAD interception, the
   `setup-mold` GitHub Action, and `.comment`-section verification via `readelf -p .comment`.
 - Man page: `docs/mold.md` in the clone, published online and updated by `update-manpage.yml`.
+- `mise registry` lists mold as `aqua:rui314/mold`; `mise ls-remote aqua:rui314/mold` on
+  2026-10-05 lists up to 2.42.1 only, so installing 3.0.0 through the repository's usual mise
+  tooling is not yet possible; a 3.0.0 install today means the GitHub release tarball with a
+  sha256 pin, a source build, or waiting for registry and distro propagation (Fedora carries
+  2.40.4).
+- Documented compatibility limits (`docs/mold.md`, "Compatibility" and "Build reproducibility"
+  sections): mold is a drop-in replacement for the GNU linkers for user-land linking;
+  linker-script support is deliberately minimal (sufficient for glibc's `libc.so` linker script)
+  with no plans to extend it, while the 3.x goal per release notes is closing remaining GNU ld
+  gaps including linker scripts (upstream PR #1590 for `PROVIDE` is open); mold output is
+  deterministic and carries no host-specific defaults.
+- Issue #1708 rechecked around 19:45 UTC: still open, still zero comments; the prebuilt-tarball
+  install path sidesteps it entirely, since it affects only from-source builds under rustup
+  toolchains whose default driver is rust-lld.
 
 ## Execution manifests
 
@@ -477,7 +498,8 @@ private scratch volume), network enabled only during the fetch phase, `--network
   by the tag-to-commit mapping, the verified asset digest, the matching embedded commit hash in
   both the prebuilt and the source-built binary (phases C1, C2), and the inspected green tag CI.
   If skipped, the reason is recorded.
-- Phase E (consumer boundary, host, incumbent tooling): pending. Disposable git worktree of this
+- Phase E (consumer boundary, host, incumbent tooling): executed, first pass (950 s total,
+  driver `~/temp/agent/phase-e.mjs`). Disposable git worktree of this
   repository created at commit `b8ade98f5` (`~/temp/agent/wt-mold-eval`; concurrent sessions
   committed to main during this evaluation, the worktree stays pinned). Isolation probe measured
   first: the `CARGO_TARGET_DIR` environment variable overrides the host-level `build.build-dir`
@@ -500,6 +522,15 @@ private scratch volume), network enabled only during the fetch phase, `--network
   `package/music-player/desktop-app` cannot receive env `RUSTFLAGS` because its
   `.cargo/config.toml` sets target-table rustflags that take precedence; mold integration for
   that crate is an adoption-time config edit, recorded as SC3 evidence instead of a test run.
+  Deviations discovered during execution and folded into phase E2: the host `build.build-dir`
+  setting shares intermediates across RUSTFLAGS variants and `CARGO_BUILD_DIR` is ignored
+  (measured probe: the override directory stayed empty after a forced recompile), so cold-build
+  numbers are contaminated (the `git-policy-cli` pair, 21.9 s versus 1.7 s, is excluded as
+  uninterpretable) and relink runs can absorb occasional cross-arm recompiles; phase E2 gives
+  every arm a private `CARGO_HOME` (registry symlinked, no config file) plus a private
+  `CARGO_TARGET_DIR`. The host was also under active load from a concurrent agent session
+  throughout (repository reflog shows feature commits landing mid-run); phase E captured no load
+  data, phase E2 tags every timing run with before/after `/proc/loadavg`.
 - Phase E2 (supplemental controls and boundary probes, host, after phase E to avoid CPU
   contention with timing runs): three-arm relink control on `forbidden-strings` adding
   `-fuse-ld=bfd` (GNU ld) alongside rust-lld and mold, with per-run load-average capture;
@@ -514,8 +545,12 @@ private scratch volume), network enabled only during the fetch phase, `--network
   `@monochromatic-dev/git-policy-cli/dist/final/node/index.mjs`, which drives the native binary;
   the invocation pattern is taken from that source); a `mise registry` check for a mold backend
   (result on 2026-10-05: `aqua:rui314/mold` exists; the `mise latest` query is recorded in E2);
-  and a recheck of upstream issue #1708 (still zero comments as of 19:0x) and the release list
-  (no 3.0.x patch) before finalization.
+  and a recheck of upstream issue #1708 (still zero comments as of 19:45 UTC) and the release
+  list (no 3.0.x patch) before finalization. Execution note: the first E2 cold builds ran at
+  host loadavg 50-80 on 16 cores (concurrent session activity); every E2 timing run carries
+  load tags, and runs whose load differs materially between arms are filtered or discarded in
+  the analysis; non-timing probes (precedence, guard invocation, nextest, markers) are
+  load-insensitive.
 
 Undeclared command, write, or network endpoint discovered during any phase stops that phase for
 manifest update and inspection before continuing.
@@ -559,7 +594,46 @@ manifest update and inspection before continuing.
   `find -maxdepth 2`, one level too shallow for `registry/src/<index>/<crate>/build.rs`.
   Fixes: `set -eux` payloads, the committed provisioned image for offline phases, `maxdepth 3`,
   and full reruns. The invalid runs are excluded from evidence.
-- Phase E (consumer boundary): pending.
+- Phase E (consumer-boundary first pass, host, 950 s): completed; timing caveats recorded in
+  "Execution manifests".
+  - Correctness: the full `forbidden-strings` `cargo test --locked` suite passes under mold
+    exactly as under rust-lld (2 + 40 + 8 tests, 0 failures, identical summaries in both arms).
+    The other two crates fail identically under both linkers, so no failure is attributable to
+    mold: `git-policy-cli` shows 312 passed / 10 failed in both arms, and the failures are
+    git-differential tests (for example
+    `command_add::tests::table_and_bulk_spellings_match_git`,
+    `command_branch_create::git_tests::tables_match_git`,
+    `command_options::git_tests::keep_dashdash_mode_matches_git`) asserting the crate's option
+    tables against the installed git 2.55.0, while the worktree is pinned to `b8ade98f5`,
+    which predates concurrent in-flight `feat(git-policy-cli)` work on main;
+    `monochromatic-lint` shows 378 passed / 4 failed in both arms, and a clean rerun of the same
+    suite passed 382 / 0 (elapsed 173.97 s under host load versus 0.79 s during phase E),
+    identifying the 4 as load-sensitive flakes, linker-neutral.
+  - Linker markers: every mold-arm binary carries
+    `mold 3.0.0 (8de38c35a2df16a25f7ff87ac3ad07156a925beb; compatible with GNU ld)` in
+    `.comment`; every incumbent-arm binary carries `Linker: LLD 22.1.8`. This proves
+    `-C link-arg=-fuse-ld=mold` overrides rustc's self-contained `-B gcc-ld` shim on the host.
+  - Binary sizes (debug): `forbidden-strings` 83,785,504 bytes; `monochromatic-lint`
+    541,142,680 bytes; `cli-git-native` 7,679,464 bytes.
+  - Relink cycles (touch crate root, rebuild; median of 5 runs per arm; phase E isolation
+    caveats apply): `forbidden-strings` rust-lld 472 ms versus mold 591 ms (mold about 25
+    percent slower; per-run lld 446/465/472/543 plus a 1169 ms first-run outlier, mold
+    481/504/591/665/812); `git-policy-cli` rust-lld 145 ms versus mold 317 ms with
+    non-overlapping bands (lld 129-179, mold 264-483), consistent with upstream issue #1696
+    (thread-setup overhead on small links, open); `monochromatic-lint` rust-lld 4192 ms versus
+    mold 4007 ms, within noise, with two unexplained 21 s mold outliers (21105/21553 ms)
+    plausibly contention spikes.
+  - Cold builds (n=1 per arm, contaminated by shared intermediates, recorded not scored):
+    `forbidden-strings` lld 56.2 s / mold 49.5 s; release fat-LTO profile lld 61.8 s /
+    mold 61.9 s, identical within a second and compile-dominated; `monochromatic-lint`
+    mold-first 81.4 s / lld 65.3 s; `git-policy-cli` excluded as uninterpretable.
+  - CLI boundary: mold-linked `forbidden-strings --version` and `--help` exit 0
+    (`forbidden-strings 0.4.1`), `monochromatic-lint` exits 0 (`monochromatic-lint 0.1.0`),
+    `cli-git-native --version` exits 0 (prints `git version 2.55.0`). The real guard invocation
+    runs in phase E2.
+  - Test-suite wall times diverged under load (`forbidden-strings` 160.6 s in the lld arm versus
+    232.1 s in the mold arm) while summaries stayed identical; treated as contention noise, not
+    a linker effect.
 
 ## Score arithmetic
 
@@ -598,7 +672,7 @@ Pending. The recommendation is stated only after validation, scoring, and sensit
 
 ## Open items
 
-- Run phase E, then phase E2; decide on phase D.
+- Finish phase E2 and filter its timing runs by load tag; decide on phase D.
 - Measure or label the CI ubuntu runner incumbent before any adoption decision (the inference is
   recorded in "Context").
 - Freeze ratings against the SC1 anchors, run the one-at-a-time sensitivity matrix, and if an
