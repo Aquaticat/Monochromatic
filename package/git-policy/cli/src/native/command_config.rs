@@ -160,7 +160,9 @@ pub fn config_table(form: ConfigForm) -> Vec<OptionSpec> {
 ///       failure `B`"; `wrapper_flags` are the caller's wrapper-only spellings.
 /// Why:  Git looks at the first token only to pick the form. A subcommand word selects its
 ///       table; a leading `--` is dropped by that first look, so the form without a
-///       subcommand then reads the rest as options again (config.c:1643-1660).
+///       subcommand then reads the rest as options again (config.c:1643-1660). Leading
+///       wrapper flags are skipped first, because the wrapper removes them before Git
+///       runs: `git config --cli-git-keep-going list` reaches Git as `git config list`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -170,17 +172,33 @@ pub fn parse_config_region(
     region: &[OsString],
     wrapper_flags: &[&[u8]],
 ) -> Result<ConfigRegion, OptionError> {
+    let mut wrapper: Vec<WrapperOccurrence> = Vec::<WrapperOccurrence>::new();
+    // Region index of the first token that is not a wrapper flag.
+    let mut first: usize = 0;
+    while first < region.len() {
+        let token: &[u8] = region[first].as_encoded_bytes();
+        // Index of the matching wrapper flag; the list length means "none".
+        let mut flag: usize = 0;
+        while flag < wrapper_flags.len() && wrapper_flags[flag] != token {
+            flag += 1;
+        }
+        if flag == wrapper_flags.len() {
+            break;
+        }
+        wrapper.push(WrapperOccurrence { flag, token: first });
+        first += 1;
+    }
     let mut form: ConfigForm = ConfigForm::Legacy;
     // Region index of the first token the form's own parser reads.
-    let mut offset: usize = 0;
-    // `if let Some(first) = ...` runs only when the region has a first token.
-    if let Some(first) = region.first() {
-        let word: &[u8] = first.as_encoded_bytes();
+    let mut offset: usize = first;
+    // `if let Some(found) = ...` runs only when a token follows the wrapper flags.
+    if let Some(found) = region.get(first) {
+        let word: &[u8] = found.as_encoded_bytes();
         if let Some(named) = form_of_word(word) {
             form = named;
-            offset = 1;
+            offset = first + 1;
         } else if word == b"--" {
-            offset = 1;
+            offset = first + 1;
         }
     }
     let mode: ParseMode = if form == ConfigForm::List || form == ConfigForm::Edit {
@@ -203,8 +221,6 @@ pub fn parse_config_region(
             });
         }
     };
-    let mut wrapper: Vec<WrapperOccurrence> =
-        Vec::<WrapperOccurrence>::with_capacity(parsed.wrapper.len());
     for occurrence in &parsed.wrapper {
         wrapper.push(WrapperOccurrence {
             flag: occurrence.flag,

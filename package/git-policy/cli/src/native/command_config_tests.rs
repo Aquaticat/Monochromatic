@@ -171,6 +171,16 @@ fn reports_wrapper_flags_by_region_position() {
         (vec!["a", "--no-enforce-require-root"], vec![]),
         (vec!["set", "a", "--no-enforce-require-root"], vec![]),
         (vec!["-f", "--no-enforce-require-root", "a"], vec![]),
+        // Leading flags are skipped before the form is picked.
+        (
+            vec![
+                "--no-enforce-require-root",
+                "--no-enforce-require-root",
+                "list",
+            ],
+            vec![0, 1],
+        ),
+        (vec!["--no-enforce-require-root", "--", "a"], vec![0]),
     ] {
         let found: ConfigRegion =
             parse_config_region(os_arguments(values.as_slice()).as_slice(), &flags)
@@ -188,6 +198,35 @@ fn reports_wrapper_flags_by_region_position() {
         }
         assert_eq!(tokens, expected, "{values:?}");
     }
+    // The wrapper removes leading flags, so Git sees `config list --global` and
+    // `config -- --global a`: the form and the scope are read after the flags.
+    let keep_going: [&[u8]; 2] = [b"--no-enforce-require-root", b"--cli-git-keep-going"];
+    let listed: ConfigRegion = parse_config_region(
+        os_arguments(&["--cli-git-keep-going", "list", "--global"]).as_slice(),
+        &keep_going,
+    )
+    .expect("valid region");
+    assert_eq!(
+        (listed.form, listed.global, listed.lists),
+        (List, true, true)
+    );
+    assert_eq!(
+        listed.wrapper,
+        vec![WrapperOccurrence { flag: 1, token: 0 }]
+    );
+    let separated: ConfigRegion = parse_config_region(
+        os_arguments(&["--cli-git-keep-going", "--", "--global", "a"]).as_slice(),
+        &keep_going,
+    )
+    .expect("valid region");
+    assert_eq!((separated.form, separated.global), (Legacy, true));
+    // A refusal after leading flags names its region index.
+    let refused: OptionError = parse_config_region(
+        os_arguments(&["--cli-git-keep-going", "get", "-l"]).as_slice(),
+        &keep_going,
+    )
+    .expect_err("refused");
+    assert_eq!((refused.kind, refused.token), (UnknownOption, 2));
 }
 
 /// A region Git refuses is reported as refused, at its region token index.

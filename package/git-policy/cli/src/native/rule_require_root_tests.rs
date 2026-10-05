@@ -155,6 +155,7 @@ fn exempts_config_by_its_file_scope() {
         "config set --system a.b c",
         "config -- --global user.name",
         "config --no-enforce-require-root --global user.name",
+        "config --no-enforce-require-root list",
         "-C sub config --glob user.name",
     ] {
         assert_eq!(
@@ -167,6 +168,7 @@ fn exempts_config_by_its_file_scope() {
         "config user.name",
         "config user.name --global",
         "config set user.name --system",
+        "config --no-enforce-require-root set user.name --global",
         "config -f --global user.name",
         "config --global --no-global user.name",
         "config get user.name",
