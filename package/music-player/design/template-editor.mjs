@@ -130,6 +130,10 @@ if (process.argv[2] === 'build') {
     '$mi(track)$ of $mi(total)$ $mi(peak)$']) {
     if (!html.includes(marker)) throw new Error(`Template editor review is missing ${marker}.`);
   }
+  // The page tells the published cohort's own capture story: it names how many visits contributed views, read
+  // from the views' records, so a republished cohort cannot keep the previous cohort's account.
+  const visits = new Set(manifest.witnesses.map(capture => capture.visit)).size;
+  if (!html.includes(`${visits} visits contributed views`)) throw new Error(`Template editor review does not name its ${visits} visits.`);
   // Every authored scene has its figure, so a captured state cannot go unshown.
   for (const state of scenes) {
     if (template.split(`<figure data-scene="${state.id}">`).length !== 2) throw new Error(`Template editor review shows no figure for ${state.id}.`);

@@ -114,6 +114,8 @@ try {
   // The version awaiting approval (D97) must stay on the page, and every captured scene must have its figure.
   refusedPage({ change: page => page.replace('For approval: which lines get a template', 'Also built'), diagnostic: 'is missing For approval: which lines get a template' });
   refusedPage({ change: page => page.replace('<figure data-scene="playing">', '<figure data-scene="playing-old">'), diagnostic: 'shows no figure for playing' });
+  // A page still telling an earlier cohort's capture story names a visit count its views do not have.
+  refusedPage({ change: page => page.replace(/\d+ visits contributed views/u, '3 visits contributed views'), diagnostic: 'does not name its' });
   if (invoke('build').status !== 0 || invoke('validate').status !== 0) throw new Error('Restored template did not validate.');
   const output = join(fixture, 'questions', 'template-editor.html');
   writeFileSync(output, readFileSync(output, 'utf8').replace('Every state is authored', 'Changed output'));

@@ -10,7 +10,7 @@
   },
   "consumerTest": {
     "task": "//package/music-player/design:test:template-editor",
-    "result": "Template editor review consumer: positive, 20 rejected manifests, 7 rejected pages and a changed-output check passed."
+    "result": "Template editor review consumer: positive, 20 rejected manifests, 8 rejected pages and a changed-output check passed."
   },
   "referenceTests": {
     "task": "//package/music-player/design:test:template-reference",

@@ -142,10 +142,11 @@ apart. Folder names and every title stay as they are.</li>
 <details><summary>Read what was and was not checked</summary>
 <p>The host is a debug activity, not the player. The merged debug manifest disables the production launcher, playback
 and sweep services. Each view was captured with a fresh hierarchy, exactly one creation of the host since its launch,
-and the keyboard open only for the scenes whose state holds focus. The views were captured over three visits:
-the first ended in a segmentation fault of the emulator after 25 views, the second when one guest command exceeded its
-time bound, and the third completed the set and shut down cleanly. Views finished before an interruption were kept,
-and each view's record names its visit.</p>
+and the keyboard open only for the scenes whose state holds focus. 7 visits contributed views, out of many attempts
+while other work held the host's load average between about 45 and 100 on its 16 cores. The others ended without a
+new view: boots longer than their bound, launches reported as timed out, not-responding dialogs and lost focus; the
+system's memory-pressure killer also stopped the loop running them once. Views finished before an interruption were
+kept, and each view's record names its visit. The last visit captured the remaining 37 views and shut down cleanly.</p>
 <p>Whether a text is in view is read from its rectangle in the hierarchy, the page's scrolling window and the keyboard's
 own frame; hierarchy rectangles are not ink bounds. A text whose rectangle touches an edge of the window is reported as
 at the edge, because the hierarchy cannot tell cut from flush. Where the page rests with the keyboard open is where
