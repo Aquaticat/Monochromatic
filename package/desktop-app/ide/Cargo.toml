@@ -54,6 +54,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [dev-dependencies]
 tempfile = "3"
+# Slint's element handles let the native tests read roles, labels, values, and states and invoke
+# accessible actions, as an assistive tool would. The crate is internal to Slint and has no semver
+# guarantee; its README requires an exact `=` version equal to the resolved `slint` version (1.18.1).
+# Raise both together.
+i-slint-backend-testing = "=1.18.1"
 
 [build-dependencies]
 slint-build = "1.17.0"

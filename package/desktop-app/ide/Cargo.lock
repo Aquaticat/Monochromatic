@@ -2514,6 +2514,7 @@ dependencies = [
  "helix-core",
  "helix-loader",
  "helix-lsp",
+ "i-slint-backend-testing",
  "notify",
  "parley",
  "serde",
