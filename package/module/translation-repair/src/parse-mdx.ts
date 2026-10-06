@@ -9,6 +9,17 @@ import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import {
+  firstNestingExcess,
+  isStackOverflow,
+  NestingBoundError,
+  nestingAccount,
+  nestingRefusalAccount,
+} from './nesting-bound.ts';
+import {
+  type NestingExcess,
+  STACK_OVERFLOW_ACCOUNT,
+} from './nesting-vocabulary.ts';
 import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
 
 //region MDX parsing
@@ -43,6 +54,10 @@ import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
  ```
  */
 function mdxRefusalSite({ cause, }: { readonly cause: unknown; },): string {
+  if (cause instanceof NestingBoundError)
+    return `because it is ${nestingAccount({ excess: cause.excess, },)}`;
+  if (isStackOverflow(cause,))
+    return `because it is ${STACK_OVERFLOW_ACCOUNT}`;
   if (!Error.isError(cause,))
     return `at ${NAMED_POSITION_UNSTATED}`;
 
@@ -195,7 +210,8 @@ export class MdxParseError extends Error {
    DOES NOT CARRY THE PARSER ERROR AS `cause`, for the reason
    `FrontMatterParseError` records: a cause chain is rendered by Node's
    uncaught-exception reporter, and `parse-document.ts` used to stringify this
-   one straight into a stored finding.
+   one straight into a stored finding. THE ONE EXCEPTION is the engine's own
+   stack exhaustion, whose message is fixed text that quotes nothing.
 
    @param cause - underlying micromark/remark error, read for position and rule
 
@@ -221,6 +237,9 @@ export class MdxParseError extends Error {
       `MDX body refused to parse ${mdxRefusalSite({ cause, },)}; corpus documents`
         + ' compile as MDX upstream, so failure signals corruption or an'
         + ' unsupported construct.',
+      // The stack exhaustion alone rides along as the cause: its message is
+      // fixed engine text, so the chain a reporter renders quotes nothing.
+      isStackOverflow(cause,) ? { cause, } : undefined,
     );
     this.name = 'MdxParseError';
     /**
@@ -516,14 +535,19 @@ function countDropped(
 /**
  Parses MDX body text into an mdast tree with positions on every node.
 
+ A BODY NESTED PAST THE BOUND IS REFUSED BEFORE THE PARSER READS IT
+ (`nesting-bound.ts`), so the outcome of a deeply nested reply does not depend
+ on how much stack the caller has left; a stack exhaustion that gets past the
+ bound is the same refusal, with the exhaustion as its cause.
+
  @param body - MDX source with front matter already split away
 
  @returns mdast root whose node positions are body-relative character offsets in the body as written, a leading
  byte order mark counted
 
- @throws {@link MdxParseError} when source refuses to parse as MDX, and for
- any other failure inside the grammar too, a stack overflow on deep nesting
- among them
+ @throws {@link MdxParseError} when source refuses to parse as MDX, when it
+ nests past the bound, and for any other failure inside the grammar too, a
+ stack overflow on deep nesting among them
 
  @example
  ```ts
@@ -531,6 +555,18 @@ function countDropped(
  ```
  */
 export function parseMdxBody({ body, }: { readonly body: string; },): Root {
+  /**
+   Where the body passes the nesting bound, when it does.
+   */
+  const nesting = firstNestingExcess({
+    body,
+    grammar: 'mdx',
+  },);
+  if (nesting.kind === 'beyond')
+    throw new MdxParseError({
+      cause: new NestingBoundError({ excess: nesting, },),
+      droppedColumns: droppedWidth({ body, },),
+    },);
   /**
    Tree the grammar built, positions still short of a leading byte order mark.
    */
@@ -587,6 +623,61 @@ export function requireMdxRefusal({ error, }: { readonly error: unknown; },): Md
 }
 
 /**
+ Signals plain markdown text that nests too deeply to read.
+
+ A `RangeError` by class, as the stack exhaustion it replaces was, so a reader
+ of that class keeps working; it is this class and no other `RangeError` that
+ {@link requireMarkdownRefusal} reads as the plain grammar's refusal.
+
+ @example
+ ```ts
+ throw new MarkdownParseError({ reading: excess, },);
+ ```
+ */
+export class MarkdownParseError extends RangeError {
+  /**
+   Declares this message safe to forward: it states which measure passed the
+   bound and where, and repeats no document text.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Builds the refusal from where the body passed the bound, or from the stack
+   exhaustion that was caught, quoting nothing of the body either way.
+
+   THE PLACE IS IN THE MESSAGE AND NOWHERE ELSE. No reader of this refusal
+   asks for a line or a column apart from its words, where a reader of the
+   strict grammar's does (`strict-refusal-offset.ts`), so this class carries
+   neither as a field.
+
+   @param reading - where the body passed the bound, or `'stack-exhausted'`
+
+   @param cause - the stack exhaustion that was caught, whose message is fixed
+   engine text, absent for a body refused by the bound
+
+   @example
+   ```ts
+   new MarkdownParseError({ reading: excess, },);
+   ```
+   */
+  public constructor(
+    {
+      reading,
+      cause,
+    }: {
+      readonly reading: NestingExcess | 'stack-exhausted';
+      readonly cause?: RangeError;
+    },
+  ) {
+    super(
+      `Plain markdown body refused to parse because it is ${nestingRefusalAccount({ reading, },)}.`,
+      (cause === undefined) ? undefined : { cause, },
+    );
+    this.name = 'MarkdownParseError';
+  }
+}
+
+/**
  Parses body text as plain markdown (GFM, no MDX extensions).
  Tolerant fallback grammar: markdown has no syntax error,
  so constructs the MDX grammar rejects (raw HTML, brace expressions)
@@ -594,7 +685,10 @@ export function requireMdxRefusal({ error, }: { readonly error: unknown; },): Md
 
  NOT TOTAL: the parser descends once per nesting level, so thousands of nested
  quotation markers exhaust its stack (`translate-skeleton-page.ts` reports such
- a page as unread). A catch acting on that refusal alone narrows with
+ a page as unread). A body nested past the bound (`nesting-bound.ts`) is
+ refused before the parser reads it, so the outcome does not depend on how deep
+ the caller stands; an exhaustion that gets past the bound is refused the same
+ way. A catch acting on that refusal alone narrows with
  {@link requireMarkdownRefusal}.
 
  @param body - markdown source with front matter already split away
@@ -602,7 +696,8 @@ export function requireMdxRefusal({ error, }: { readonly error: unknown; },): Md
  @returns mdast root whose node positions are body-relative character offsets in the body as written, a leading
  byte order mark counted
 
- @throws {@link RangeError} when nesting exhausts the parser's stack
+ @throws {@link MarkdownParseError} when the body nests past the bound or
+ nesting exhausts the parser's stack
 
  @example
  ```ts
@@ -611,12 +706,35 @@ export function requireMdxRefusal({ error, }: { readonly error: unknown; },): Md
  */
 export function parseMarkdownBody({ body, }: { readonly body: string; },): Root {
   /**
+   Where the body passes the nesting bound, when it does.
+   */
+  const nesting = firstNestingExcess({
+    body,
+    grammar: 'markdown',
+  },);
+  if (nesting.kind === 'beyond')
+    throw new MarkdownParseError({ reading: nesting, },);
+  /**
    Tree the grammar built, positions still short of a leading byte order mark.
    */
-  const root = unified()
-    .use(remarkParse,)
-    .use(remarkGfm,)
-    .parse(body,);
+  const root = (function parseLoosely(): Root {
+    try {
+      return unified()
+        .use(remarkParse,)
+        .use(remarkGfm,)
+        .parse(body,);
+    }
+    catch (error) {
+      // Only the engine's stack exhaustion is this grammar's refusal; any
+      // other failure is an unexpected state that must keep propagating.
+      if (!isStackOverflow(error,))
+        throw error;
+      throw new MarkdownParseError({
+        reading: 'stack-exhausted',
+        cause: error,
+      },);
+    }
+  })();
   countDropped({
     root,
     body,
@@ -628,26 +746,27 @@ export function parseMarkdownBody({ body, }: { readonly body: string; },): Root 
  The plain grammar's refusal a catch around {@link parseMarkdownBody} holds,
  for a catch that acts on the refusal alone.
 
- A RANGE ERROR IS THE REFUSAL: plain markdown has no syntax error, so the one
- way it refuses a text is a nesting deep enough to exhaust the stack, which V8
- raises as a `RangeError`. Where the strict grammar turns every failure into
- an {@link MdxParseError}, this one lets any other failure propagate
- (ledger B100).
+ THE PLAIN GRAMMAR'S OWN REFUSAL IS THE ONE READ: plain markdown has no syntax
+ error, so the one way it refuses a text is a nesting too deep to read, which
+ {@link parseMarkdownBody} raises as a {@link MarkdownParseError}. Where the
+ strict grammar turns every failure into an {@link MdxParseError}, this one
+ lets any other failure propagate, any other `RangeError` among them (ledger
+ B100).
 
  @param error - what the catch caught
 
  @returns The refusal
 
- @throws The caught value unchanged when it is anything but a `RangeError`,
- an unexpected state that must keep propagating
+ @throws The caught value unchanged when it is anything but the plain
+ grammar's refusal, an unexpected state that must keep propagating
 
  @example
  ```ts
  const refusal = requireMarkdownRefusal({ error, },);
  ```
  */
-export function requireMarkdownRefusal({ error, }: { readonly error: unknown; },): RangeError {
-  if (error instanceof RangeError)
+export function requireMarkdownRefusal({ error, }: { readonly error: unknown; },): MarkdownParseError {
+  if (error instanceof MarkdownParseError)
     return error;
   throw error;
 }

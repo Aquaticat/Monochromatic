@@ -262,7 +262,7 @@ export function readMarkdownGround(
   } = readPageSkeleton({ text: pageText, },);
   // A PAGE NEITHER GRAMMAR READS is not the candidate's fault either, and the
   // block floor has nothing to stand on: plain markdown refuses a page only
-  // when reading it exhausts the parser, nesting past its stack.
+  // when it nests past the parse bound or reading it exhausts the parser.
   if (page.kind === 'unparseable')
     return {
       kind: 'blind',

@@ -169,9 +169,9 @@ export type RepairDocument = {
 
  @returns mdast root plus downgrade findings when the strict grammar failed
 
- @throws {@link RangeError} when plain markdown refuses the body too, its
- nesting having exhausted the parser's stack (`parse-mdx.ts`
- `requireMarkdownRefusal`)
+ @throws {@link import('./parse-mdx.ts').MarkdownParseError} when plain markdown refuses the body too,
+ its nesting being past the parse bound or having exhausted the parser's stack
+ (`parse-mdx.ts` `requireMarkdownRefusal`)
 
  @example
  ```ts
@@ -230,8 +230,8 @@ export function parseBodyTolerant(
 
  @throws {@link import('./front-matter.ts').FrontMatterParseError} when fenced YAML refuses to parse
 
- @throws {@link RangeError} when plain markdown refuses the body too, its
- nesting having exhausted the parser's stack
+ @throws {@link import('./parse-mdx.ts').MarkdownParseError} when plain markdown refuses the body too,
+ its nesting being past the parse bound or having exhausted the parser's stack
 
  @example
  ```ts

@@ -2,7 +2,10 @@ import {
   type Link,
   linksOf,
 } from './page-name-glossary.ts';
-import { parseMarkdownBody, } from './parse-mdx.ts';
+import {
+  parseMarkdownBody,
+  requireMarkdownRefusal,
+} from './parse-mdx.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 import {
@@ -112,15 +115,20 @@ function wordedCounts({ text, }: { readonly text: string; },): ReadonlyMap<strin
 
 /**
  Atoms of a rendering: the strict grammar's where it reads the text, plain
- markdown's where it refuses.
+ markdown's where it refuses, none where neither reads it.
 
- A THROW FROM PLAIN MARKDOWN PROPAGATES. CommonMark reads every input, so a
- throw is an unexpected state rather than a grammar disagreement, which is how
- {@link readSliceSkeleton} treats any error but the grammar's own refusal.
+ A TEXT NESTED TOO DEEPLY TO READ CARRIES NO ATOMS HERE. Plain markdown reads
+ every input but one nested past the parse bound (`nesting-bound.ts`), which it
+ refuses with a {@link MarkdownParseError}; that refusal is the grammar's own
+ and not an unexpected state, and the floor that reads the candidate's shape
+ (`translate-validate.ts`) refuses the same text with its own finding. Any
+ other throw from plain markdown propagates, as {@link readSliceSkeleton}
+ treats any error but the grammar's own refusal.
 
  @param text - rendering to read
 
- @returns Atoms in document order under the grammar that read the text
+ @returns Atoms in document order under the grammar that read the text,
+ empty for a text no grammar reads
 
  @example
  ```ts
@@ -135,7 +143,15 @@ function renderingAtoms({ text, }: { readonly text: string; },): readonly Protec
   if (read.kind === 'read')
     return read.skeleton
       .atoms;
-  return walkAtoms({ root: parseMarkdownBody({ body: text, },), },);
+  try {
+    return walkAtoms({ root: parseMarkdownBody({ body: text, },), },);
+  }
+  catch (error) {
+    // Only the plain grammar's refusal reads as no atoms; anything else is
+    // an unexpected state that must keep propagating.
+    requireMarkdownRefusal({ error, },);
+    return [];
+  }
 }
 
 /**

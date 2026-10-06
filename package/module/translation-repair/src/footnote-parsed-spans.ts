@@ -460,8 +460,8 @@ function plainReading(
     },);
   }
   catch (error) {
-    // Only the plain grammar's own refusal, a nesting that exhausts its
-    // stack, reads as nothing known; anything else is an unexpected state
+    // Only the plain grammar's own refusal, a nesting past the parse bound
+    // or one that exhausts its stack, reads as nothing known; anything else is an unexpected state
     // that must keep propagating.
     requireMarkdownRefusal({ error, },);
     return NO_PLAIN_READING;

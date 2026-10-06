@@ -158,8 +158,8 @@ function frontMatterEnd({ text, }: { readonly text: string; },): number {
  callers ask where blocks and code spans are, which the plain reading still
  answers.
 
- A BODY PLAIN MARKDOWN REFUSES TOO, nested deep enough to exhaust its
- parser's stack, reads as having no blocks at all (ledger B100): no code span
+ A BODY PLAIN MARKDOWN REFUSES TOO, nested past the parse bound or deep
+ enough to exhaust its parser's stack, reads as having no blocks at all (ledger B100): no code span
  or sentence start is read off it, so its backticks are prose to the callers,
  and the Han residue floor, which reads every original, page and candidate
  through this, still answers rather than throwing.

@@ -31,6 +31,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  MarkdownParseError,
   MdxParseError,
   namesWithoutQuoting,
   parseMarkdownBody,
@@ -38,8 +39,15 @@ import {
   requireMarkdownRefusal,
   requireMdxRefusal,
 } from '../dist/final/node/index.mjs';
+import { caughtAtStackEdge, } from './stack-edge.test-fixture.ts';
 
 //region MDX refusal disclosure tests
+
+/**
+ How every refusal of the strict grammar ends, the account before it varying.
+ */
+const REFUSAL_ENDING = '; corpus documents compile as MDX upstream, so failure signals corruption or an unsupported '
+  + 'construct.';
 
 /**
  Tag name appearing nowhere else in this file, so an assertion of absence
@@ -392,7 +400,7 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'RETURNS the stack exhaustion plain markdown raises on deep nesting, the same object (ledger B100)',
+          name: 'RETURNS the refusal plain markdown raises on deep nesting, the same object (ledger B100)',
           fn: async () => {
             /**
              What plain markdown throws on thousands of nested quotation markers.
@@ -401,8 +409,29 @@ await describe({
               parseMarkdownBody({ body: `${'>'.repeat(16_000,)} cat`, },);
             },);
 
-            expect(refusal,).toBeInstanceOf(RangeError,);
+            expect(refusal,).toBeInstanceOf(MarkdownParseError,);
             expect(requireMarkdownRefusal({ error: refusal, },),).toBe(refusal,);
+          },
+        },),
+        it({
+          name: 'RETHROWS a RangeError that is not the plain grammar\'s refusal, the engine\'s own stack exhaustion '
+            + 'among them, since only the refusal parseMarkdownBody raises is a fact about a text',
+          fn: async () => {
+            /**
+             A range failure from anywhere else in the package.
+             */
+            const stray = new RangeError('the cat is not a position in the slices',);
+            /**
+             What the engine raises where some other code runs out of stack.
+             */
+            const exhaustion = new RangeError('Maximum call stack size exceeded',);
+
+            expect(caught(function narrowStray(): void {
+              requireMarkdownRefusal({ error: stray, },);
+            },),).toBe(stray,);
+            expect(caught(function narrowExhaustion(): void {
+              requireMarkdownRefusal({ error: exhaustion, },);
+            },),).toBe(exhaustion,);
           },
         },),
         it({
@@ -423,6 +452,197 @@ await describe({
             expect(caught(function narrowString(): void {
               requireMarkdownRefusal({ error: 'hairball', },);
             },),).toBe('hairball',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'nesting bound',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES a body nested 257 quotation markers deep before the strict grammar reads it, naming the '
+            + 'place and quoting nothing',
+          fn: async () => {
+            /**
+             What the strict grammar throws on a body one marker past the bound.
+             */
+            const refusal = caught(function parseTooDeep(): void {
+              parseMdxBody({ body: `${'>'.repeat(257,)} cat`, },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(MdxParseError,);
+            expect(String(refusal,),).toBe(
+              'MdxParseError: MDX body refused to parse because it is nested too deeply to read: its container '
+                + `markers pass the bound of 256 at line 1, column 257${REFUSAL_ENDING}`,
+            );
+            expect(namesWithoutQuoting(refusal,),).toBe(true,);
+            expect(refusal,).toMatchObject({ line: 1, column: 257, },);
+          },
+        },),
+        it({
+          name: 'READS a body nested 256 quotation markers deep, the last depth the bound allows',
+          fn: async () => {
+            expect(parseMdxBody({ body: `${'>'.repeat(256,)} cat`, },).children
+              .map(function kindOf(node,): string {
+                return node.type;
+              },),).toEqual(['blockquote',],);
+          },
+        },),
+        it({
+          name: 'NAMES the column of a refused body as written, a leading byte order mark counted',
+          fn: async () => {
+            expect(caught(function parseTooDeepAfterMark(): void {
+              parseMdxBody({ body: `\uFEFF${'>'.repeat(257,)} cat`, },);
+            },),).toMatchObject({ line: 1, column: 258, },);
+          },
+        },),
+        it({
+          name: 'REFUSES open brackets, open tags and open braces past the bound by the same rule',
+          fn: async () => {
+            /**
+             What the strict grammar throws on 257 open brackets.
+             */
+            const brackets = caught(function parseTooManyBrackets(): void {
+              parseMdxBody({ body: `${'['.repeat(257,)}cat`, },);
+            },);
+            /**
+             What it throws on 257 open tags.
+             */
+            const tags = caught(function parseTooManyTags(): void {
+              parseMdxBody({ body: `${'<div>'.repeat(257,)}cat`, },);
+            },);
+            /**
+             What it throws on 257 open braces.
+             */
+            const braces = caught(function parseTooManyBraces(): void {
+              parseMdxBody({ body: `${'{'.repeat(257,)}1`, },);
+            },);
+
+            expect(String(brackets,),).toBe(
+              `MdxParseError: MDX body refused to parse because it is nested too deeply to read: its brackets pass `
+                + `the bound of 256 at line 1, column 257${REFUSAL_ENDING}`,
+            );
+            expect(String(tags,),).toBe(
+              `MdxParseError: MDX body refused to parse because it is nested too deeply to read: its open tags pass `
+                + `the bound of 256 at line 1, column 1285${REFUSAL_ENDING}`,
+            );
+            expect(String(braces,),).toBe(
+              `MdxParseError: MDX body refused to parse because it is nested too deeply to read: its open braces `
+                + `pass the bound of 256 at line 1, column 257${REFUSAL_ENDING}`,
+            );
+          },
+        },),
+        it({
+          name: 'REFUSES a body that exhausts the stack from a shallow text, with the exhaustion as its cause, where '
+            + 'the raw parser throws the engine\'s RangeError itself',
+          fn: async () => {
+            /**
+             Text well under the bound, so only the stack left decides it.
+             */
+            const body = `${'>'.repeat(200,)} cat`;
+            /**
+             What the parser alone throws from the edge of the stack.
+             */
+            const raw = caughtAtStackEdge({
+              run: function parseRaw(): unknown {
+                return unified()
+                  .use(remarkParse,)
+                  .use(remarkMdx,)
+                  .use(remarkGfm,)
+                  .parse(body,);
+              },
+            },);
+            /**
+             What the strict grammar throws from the edge of the stack.
+             */
+            const refusal = caughtAtStackEdge({
+              run: function parseStrict(): unknown {
+                return parseMdxBody({ body, },);
+              },
+            },);
+
+            expect(raw,).toBeInstanceOf(RangeError,);
+            expect(refusal,).toBeInstanceOf(MdxParseError,);
+            expect(String(refusal,),).toBe(
+              'MdxParseError: MDX body refused to parse because it is nested too deeply to read: the parser '
+                + `exhausted its stack${REFUSAL_ENDING}`,
+            );
+            expect(Error.isError(refusal,) ? refusal.cause : undefined,).toBeInstanceOf(RangeError,);
+          },
+        },),
+        it({
+          name: 'REFUSES a body nested 257 quotation markers deep before plain markdown reads it, as a RangeError '
+            + 'of its own class naming the place',
+          fn: async () => {
+            /**
+             What plain markdown throws on a body one marker past the bound.
+             */
+            const refusal = caught(function parseTooDeep(): void {
+              parseMarkdownBody({ body: `${'>'.repeat(257,)} cat`, },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(MarkdownParseError,);
+            expect(refusal,).toBeInstanceOf(RangeError,);
+            expect(String(refusal,),).toBe(
+              'MarkdownParseError: Plain markdown body refused to parse because it is nested too deeply to read: '
+                + 'its container markers pass the bound of 256 at line 1, column 257.',
+            );
+          },
+        },),
+        it({
+          name: 'READS a body nested 256 quotation markers deep under plain markdown, the last depth the bound allows',
+          fn: async () => {
+            expect(parseMarkdownBody({ body: `${'>'.repeat(256,)} cat`, },).children
+              .map(function kindOf(node,): string {
+                return node.type;
+              },),).toEqual(['blockquote',],);
+          },
+        },),
+        it({
+          name: 'READS 300 open tags and 300 open braces under plain markdown, which nests over neither',
+          fn: async () => {
+            expect(parseMarkdownBody({ body: `${'<div>'.repeat(300,)}cat`, },).children.length,).toBe(1,);
+            expect(parseMarkdownBody({ body: `${'{'.repeat(300,)}1`, },).children.length,).toBe(1,);
+          },
+        },),
+        it({
+          name: 'REFUSES plain markdown that exhausts the stack from a shallow text, with the exhaustion as its cause, '
+            + 'where the raw parser throws the engine\'s RangeError itself',
+          fn: async () => {
+            /**
+             Text well under the bound, so only the stack left decides it.
+             */
+            const body = `${'>'.repeat(200,)} cat`;
+            /**
+             What the parser alone throws from the edge of the stack.
+             */
+            const raw = caughtAtStackEdge({
+              run: function parseRaw(): unknown {
+                return unified()
+                  .use(remarkParse,)
+                  .use(remarkGfm,)
+                  .parse(body,);
+              },
+            },);
+            /**
+             What plain markdown throws from the edge of the stack.
+             */
+            const refusal = caughtAtStackEdge({
+              run: function parseLoosely(): unknown {
+                return parseMarkdownBody({ body, },);
+              },
+            },);
+
+            expect(raw,).toBeInstanceOf(RangeError,);
+            expect(raw,).not.toBeInstanceOf(MarkdownParseError,);
+            expect(refusal,).toBeInstanceOf(MarkdownParseError,);
+            expect(String(refusal,),).toBe(
+              'MarkdownParseError: Plain markdown body refused to parse because it is nested too deeply to read: '
+                + 'the parser exhausted its stack.',
+            );
+            expect(Error.isError(refusal,) ? refusal.cause : undefined,).toBeInstanceOf(RangeError,);
           },
         },),
       ],

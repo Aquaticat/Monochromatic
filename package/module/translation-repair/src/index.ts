@@ -80,12 +80,33 @@ export {
   selfPreference,
 } from './self-preference.ts';
 export {
+  MarkdownParseError,
   MdxParseError,
   parseMarkdownBody,
   parseMdxBody,
   requireMarkdownRefusal,
   requireMdxRefusal,
 } from './parse-mdx.ts';
+export {
+  firstNestingExcess,
+  isStackOverflow,
+} from './nesting-bound.ts';
+export {
+  type ScanState,
+  scanInline,
+} from './nesting-inline-count.ts';
+export {
+  blanksEnd,
+  containerPrefixOf,
+  fenceOf,
+  indentationOf,
+  isRuleLine,
+  NO_FENCE,
+} from './nesting-line-lexing.ts';
+export {
+  DELIMITER_BOUND,
+  NESTING_BOUND,
+} from './nesting-vocabulary.ts';
 export { treeNodes, } from './mdast-tree-nodes.ts';
 export { type ParseFinding, } from './parse-document.ts';
 export {

@@ -1,6 +1,8 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import type { DocumentNode, } from './document-node.ts';
 import { parseDocument, } from './parse-document.ts';
+import { requireMarkdownRefusal, } from './parse-mdx.ts';
 
 //region Soft break fold
 // SHOWS A PROSE PARAGRAPH THE WAY IT RENDERS, for a judge whose decision must
@@ -90,6 +92,9 @@ function foldParagraph({ text, }: { readonly text: string; },): string {
  Folds every top-level paragraph's soft breaks into spaces, leaving every
  other block and every hard break exactly as written.
 
+ A PASSAGE NESTED TOO DEEPLY TO READ is returned as written: its paragraphs
+ cannot be located, and the text is one a floor refuses anyway.
+
  @param text - Markdown passage
 
  @returns Same passage as its paragraphs render, one line each
@@ -102,13 +107,24 @@ function foldParagraph({ text, }: { readonly text: string; },): string {
  */
 export function foldSoftBreaks({ text, }: { readonly text: string; },): string {
   /**
-   Body paragraphs in source order.
+   Body paragraphs in source order, none for a text nested too deeply to read.
    */
-  const paragraphs = parseDocument({ text, },)
-    .nodes
-    .filter(function isBodyParagraph(node,): boolean {
-      return (node.zone === 'body') && (node.kind === 'paragraph');
-    },);
+  const paragraphs = (function readParagraphs(): readonly DocumentNode[] {
+    try {
+      return parseDocument({ text, },)
+        .nodes
+        .filter(function isBodyParagraph(node,): boolean {
+          return (node.zone === 'body') && (node.kind === 'paragraph');
+        },);
+    }
+    catch (error) {
+      // Only the plain grammar's refusal, a nesting too deep to read, shows
+      // the text as written: no paragraph can be located in it. Anything
+      // else keeps propagating.
+      requireMarkdownRefusal({ error, },);
+      return [];
+    }
+  })();
   /**
    Where each stretch between paragraphs begins.
    */
