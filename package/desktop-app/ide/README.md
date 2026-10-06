@@ -744,11 +744,17 @@ ranges give the lowest and highest run.
 Runs of one build differed by at most 0.84 ms of CPU and 17 read calls per second.
 With 100 expanded folders one pass over the 101 shown directories took 2.02 s,
 so the 1 s build reads without pause,
-and every directory was listed in each interval.
-The 10 s build's own cost grows with the tree,
-from 2.5 to 26 ms of CPU per second,
-so that part is not sweep cost.
-The IDE logs at debug level by default,
+and every directory was listed once per pass.
+There the 1 s build does 40 more listings per second than the 10 s build,
+for about 19 ms more CPU and about 870 more system calls per second:
+about 22 calls per listing,
+of which 8 are `readlink` (path resolution) and 4 are `write` (log lines).
+The 10 s build's cost also grows with the tree,
+from 2.5 to 26 ms of CPU per second;
+it sweeps too,
+at 10 listings per second with 100 folders,
+and what else grows with the tree was not separated.
+The IDE always logs at debug level (the filter is fixed in `src/native.rs`),
 four lines per listing:
 9,
 52,
