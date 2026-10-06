@@ -1,3 +1,5 @@
+import { readTagName, } from './mdx-tag-name.ts';
+
 //region Inline container tags
 // LEDGER X10 (NIGHT81473140 slice 22). The lone-tag masker
 // (`mask-container-tags.ts`) paired only lines that are one tag and nothing
@@ -27,64 +29,6 @@ export type InlineContainerTag = {
    */
   readonly startOffset: number;
 };
-
-/**
- Whitespace the strict grammar steps over inside a tag, between its name and
- an attribute or its closing bracket: `markdownLineEndingOrSpace` or
- `unicodeWhitespace` of `micromark-util-character` in
- `micromark-extension-mdx-jsx` 3.0.2 (`factory-tag.js`), the second being the
- ECMAScript `\s`. Measured against `parseMdxBody` over every code point of the
- Basic Multilingual Plane, and seven beyond it, as the separator of an opener
- and of a closer, the grammar steps over exactly these twenty-five and refuses
- every other, a zero-width space, a next line mark and a Hangul filler among
- them.
- */
-const TAG_WHITESPACE: ReadonlySet<string> = new Set([
-  '\t',
-  '\n',
-  '\u{000B}',
-  '\u{000C}',
-  '\r',
-  ' ',
-  '\u{00A0}',
-  '\u{1680}',
-  '\u{2000}',
-  '\u{2001}',
-  '\u{2002}',
-  '\u{2003}',
-  '\u{2004}',
-  '\u{2005}',
-  '\u{2006}',
-  '\u{2007}',
-  '\u{2008}',
-  '\u{2009}',
-  '\u{200A}',
-  '\u{2028}',
-  '\u{2029}',
-  '\u{202F}',
-  '\u{205F}',
-  '\u{3000}',
-  '\u{FEFF}',
-],);
-
-/**
- Whether a character is whitespace to the strict grammar inside a tag: the one
- test both container tag readers share, so neither steps over fewer or more
- than the grammar does.
-
- @param character - one UTF-16 unit of a tag
-
- @returns True for whitespace the grammar steps over between a name and the
- rest of the tag
-
- @example
- ```ts
- isTagWhitespace({ character: '\u{00A0}', },); // true
- ```
- */
-export function isTagWhitespace({ character, }: { readonly character: string; },): boolean {
-  return TAG_WHITESPACE.has(character,);
-}
 
 /**
  Offset of the `>` ending a tag, stepping over quoted attribute values and
@@ -149,33 +93,6 @@ export function tagEnd(
 }
 
 /**
- Characters that end an element name apart from whitespace: the tag's end, a
- self-closing slash, or the text's end.
- */
-const NAME_ENDERS: ReadonlySet<string> = new Set([
-  '',
-  '>',
-  '/',
-],);
-
-/**
- Whether a character ends an element name, so `<blockquote` is not read out
- of `<blockquotes`.
-
- @param character - character after the name, empty at the text's end
-
- @returns Whether the name ends there
-
- @example
- ```ts
- endsName({ character: '>', },); // true
- ```
- */
-function endsName({ character, }: { readonly character: string; },): boolean {
-  return NAME_ENDERS.has(character,) || isTagWhitespace({ character, },);
-}
-
-/**
  The inline opener or closer of one name at one `<`, or none.
 
  @param text - slice to read
@@ -203,33 +120,27 @@ function tagAt(
   },
 ): readonly InlineContainerTag[] {
   /**
-   Whether the tag closes its element.
+   The name the grammar reads after this `<`, empty where it reads none.
    */
-  const closes = text.charAt(at + 1,) === '/';
-  /**
-   Offset the name starts at.
-   */
-  const nameStart = at + (closes ? 2 : 1);
-  if (text.slice(
-    nameStart,
-    nameStart + name.length,
-  ) !== name)
-    return [];
-  if (!endsName({ character: text.charAt(nameStart + name.length,), },))
+  const [reading,] = readTagName({
+    text,
+    at,
+  },);
+  if ((reading === undefined) || (reading.name !== name))
     return [];
   /**
    Offset of the `>` ending the tag.
    */
   const end = tagEnd({
     text,
-    from: nameStart + name.length,
+    from: reading.end,
   },);
   if (end === (-1))
     return [];
-  if ((!closes) && (text.charAt(end - 1,) === '/'))
+  if ((!reading.closes) && (text.charAt(end - 1,) === '/'))
     return [];
   return [{
-    kind: closes ? 'close' : 'open',
+    kind: reading.closes ? 'close' : 'open',
     name,
     startOffset: at,
   },];

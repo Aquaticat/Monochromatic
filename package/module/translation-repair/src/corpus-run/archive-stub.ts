@@ -1,4 +1,5 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import { leadingMarkWidth, } from '../front-matter.ts';
 import { maskHtmlComments, } from '../mask-html-comments.ts';
 
 //region Archive stub markers
@@ -289,7 +290,10 @@ export function stripStubMarkersWithOrigins(
   /**
    Whether the document opens with front matter.
    */
-  const opensWithFrontMatter = lines[0] === FRONT_MATTER_FENCE;
+  const opensWithFrontMatter = lines[0] === `${text.slice(
+    0,
+    leadingMarkWidth({ text, },),
+  )}${FRONT_MATTER_FENCE}`;
 
   // ONE PASS THAT APPENDS. The scan was a fold that copied every line kept so
   // far at each line, so the pass this function's summary calls linear cost

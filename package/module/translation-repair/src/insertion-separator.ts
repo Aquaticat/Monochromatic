@@ -1,3 +1,4 @@
+import { leadingMarkWidth, } from './front-matter.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Insertion separator
@@ -244,9 +245,10 @@ export function composeInsertion(
 
   /**
    Line endings the archive already provides before this boundary, which are
-   kept and only topped up.
+   kept and only topped up. A boundary after nothing but a byte order mark is
+   the start of the document, since the mark is no content, so it needs none.
    */
-  const kept = (before === '')
+  const kept = (before.slice(leadingMarkWidth({ text: before, },),) === '')
     ? BLOCK_SEPARATOR_LINES
     : trailingLineEndings({
       text: before,

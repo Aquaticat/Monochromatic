@@ -1,5 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { leadingMarkWidth, } from '../front-matter.ts';
 import { foldInvisibleVariants, } from '../invisible-variants.ts';
 import {
   type ArchiveRetainedLine,
@@ -10,7 +11,8 @@ import {
 // Archive English enters every pass stage through one transform: the
 // invisible-variant fold, then the stub-marker strip (`archive-stub.ts`), in
 // that order so a marker spelled with an invisible variant is folded before it
-// is read. Preparation, both lanes, the artifact's stored archive and the
+// is read. A byte order mark opening the archive is no content and is not
+// folded. Preparation, both lanes, the artifact's stored archive and the
 // published page all describe the text this returns, so no later check has to
 // know a marker was ever there.
 
@@ -42,9 +44,19 @@ export function passArchiveWithOrigins(
   readonly lines: readonly ArchiveRetainedLine[]
 } {
   /**
+   The byte order mark the archive opens with, which is no content of the
+   page: the fold leaves it where it stands, as every reader of the page
+   reads it, so an archive nothing else changes comes back byte for byte. A
+   mark anywhere else is still folded away.
+   */
+  const mark = text.slice(
+    0,
+    leadingMarkWidth({ text, },),
+  );
+  /**
    Visible text from shared fold.
    */
-  const { text: folded, } = foldInvisibleVariants({ text, },);
+  const { text: folded, } = foldInvisibleVariants({ text: text.slice(mark.length,), },);
   /**
    Folded text without placeholder paragraphs, and what was removed.
    */
@@ -52,7 +64,7 @@ export function passArchiveWithOrigins(
     text: stripped,
     stripped: markers,
     lines,
-  } = stripStubMarkersWithOrigins({ text: folded, },);
+  } = stripStubMarkersWithOrigins({ text: `${mark}${folded}`, },);
   for (const marker of markers) {
     l.warn(
       `archive: stripped stub marker ${JSON.stringify(marker.text,)} at line ${String(marker.lineNumber,)}: a `

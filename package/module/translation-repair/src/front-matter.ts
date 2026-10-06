@@ -18,13 +18,14 @@ import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
 
  @example
  ```ts
- const block: FrontMatterBlock = { raw: '---\nname: x\n---\n', data: { name: 'x', }, };
+ const block: FrontMatterBlock = { raw: '---\nname: x\n---\n', data: { name: 'x', }, startOffset: 0, };
  ```
  */
 export type FrontMatterBlock = {
   /**
    Exact source slice spanning both fence lines, preserved code unit for code
    unit after decoding, which is what keeps every downstream offset valid.
+   A byte order mark opening the page is not part of it.
    */
   readonly raw: string;
 
@@ -32,6 +33,13 @@ export type FrontMatterBlock = {
    Parsed YAML value; typed `unknown` because corpus metadata shapes vary per entry.
    */
   readonly data: unknown;
+
+  /**
+   Offset of the opening fence in the text as written: zero, or one where the
+   page opens with a byte order mark, which is no content and stays where the
+   original had it.
+   */
+  readonly startOffset: number;
 };
 
 /**
@@ -44,12 +52,14 @@ export type FrontMatterBlock = {
  */
 export type SplitMdxDocument = {
   /**
-   Present only when source opens with a well-terminated `---` fence pair.
+   Present only when source opens with a well-terminated `---` fence pair,
+   after a byte order mark if it opens with one.
    */
   readonly frontMatter?: FrontMatterBlock;
 
   /**
-   MDX source following front matter; equals whole input when front matter is absent.
+   MDX source following front matter; equals whole input when front matter is absent,
+   a byte order mark opening it included.
    */
   readonly body: string;
 
@@ -63,6 +73,31 @@ export type SplitMdxDocument = {
 //endregion Front matter model
 
 //region Front matter splitting
+
+/**
+ The byte order mark a page may open with, which is no content of the page.
+ */
+const BYTE_ORDER_MARK = '\uFEFF';
+
+/**
+ How many characters of a page's start are a byte order mark, which is not
+ content: front matter opens after it, and whatever the package writes for
+ the page keeps it where the original had it.
+
+ @param text - whole document text as written
+
+ @returns One when the text opens with the mark, otherwise zero
+
+ @example
+ ```ts
+ const width = leadingMarkWidth({ text: '\uFEFF---\nname: Mittens\n---\n', },);
+ ```
+ */
+export function leadingMarkWidth({ text, }: { readonly text: string; },): number {
+  return text.startsWith(BYTE_ORDER_MARK,)
+    ? BYTE_ORDER_MARK.length
+    : 0;
+}
 
 /**
  Describes where a YAML refusal stopped, quoting nothing it read.
@@ -178,7 +213,8 @@ export function requireFrontMatterRefusal({ error, }: { readonly error: unknown;
 const FRONT_MATTER_FENCE = '---';
 
 /**
- Opening sequence a document must start with for front matter to exist.
+ Opening sequence a document must start with, after any byte order mark, for
+ front matter to exist.
  */
 const FENCE_OPEN = `${FRONT_MATTER_FENCE}\n`;
 
@@ -228,19 +264,32 @@ type FenceSet = {
 
  @param text - whole document text
 
+ @param start - where the opening fence stands, after any leading mark
+
  @returns Fence strings to match with
 
  @example
  ```ts
- const fences = fencesFor({ text, },);
+ const fences = fencesFor({ text, start: 0, },);
  ```
  */
-function fencesFor({ text, }: { readonly text: string; },): FenceSet {
+function fencesFor(
+  {
+    text,
+    start,
+  }: {
+    readonly text: string;
+    readonly start: number;
+  },
+): FenceSet {
   /**
    Opening fence spelled with a carriage return.
    */
   const carriageOpen = `${FRONT_MATTER_FENCE}\r\n`;
-  if (!text.startsWith(carriageOpen,)) {
+  if (!text.startsWith(
+    carriageOpen,
+    start,
+  )) {
     return {
       open: FENCE_OPEN,
       closeInner: FENCE_CLOSE_INNER,
@@ -290,6 +339,8 @@ function parseFrontMatterYaml(
 
  @param text - full document source
 
+ @param start - where the opening fence stands, after any leading mark
+
  @param closeStart - index of newline beginning closing fence sequence
 
  @param rawEnd - end index (exclusive) of raw front matter slice
@@ -303,17 +354,19 @@ function parseFrontMatterYaml(
 
  @example
  ```ts
- buildSplit({ text: '---\nname: n\n---\n', closeStart: 11, rawEnd: 16, openLength: 4, },);
+ buildSplit({ text: '---\nname: n\n---\n', start: 0, closeStart: 11, rawEnd: 16, openLength: 4, },);
  ```
  */
 function buildSplit(
   {
     text,
+    start,
     closeStart,
     rawEnd,
     openLength,
   }: {
     readonly text: string;
+    readonly start: number;
     readonly closeStart: number;
     readonly rawEnd: number;
     readonly openLength: number;
@@ -324,7 +377,7 @@ function buildSplit(
    */
   const data: unknown = parseFrontMatterYaml({
     yamlSource: text.slice(
-      openLength,
+      start + openLength,
       closeStart,
     ),
   },);
@@ -332,10 +385,11 @@ function buildSplit(
   return {
     frontMatter: {
       raw: text.slice(
-        0,
+        start,
         rawEnd,
       ),
       data,
+      startOffset: start,
     },
     body: text.slice(rawEnd,),
     bodyOffset: rawEnd,
@@ -349,6 +403,11 @@ function buildSplit(
  Unterminated fences are treated as body text:
  remark parses stray `---` lines as thematic breaks,
  so returning whole input preserves that interpretation instead of guessing.
+
+ A byte order mark opening the text is not content:
+ the opening fence is read after it, the mark stays outside the raw slice,
+ and every offset the split names indexes the text as written.
+ A mark anywhere else is content and is left alone.
 
  @param text - full document source possibly opening with YAML front matter
 
@@ -365,10 +424,21 @@ function buildSplit(
  */
 export function splitFrontMatter({ text, }: { readonly text: string; },): SplitMdxDocument {
   /**
+   Where the opening fence stands: after a byte order mark opening the text.
+   */
+  const start = leadingMarkWidth({ text, },);
+
+  /**
    Fences spelled with this document's own line ending.
    */
-  const fences = fencesFor({ text, },);
-  if (!text.startsWith(fences.open,))
+  const fences = fencesFor({
+    text,
+    start,
+  },);
+  if (!text.startsWith(
+    fences.open,
+    start,
+  ))
     return {
       body: text,
       bodyOffset: 0,
@@ -385,13 +455,18 @@ export function splitFrontMatter({ text, }: { readonly text: string; },): SplitM
   } = fences;
 
   /**
-   Where the search for a closing fence begins: at the opening fence's own
-   line break, so empty front matter still terminates.
+   Offset of the opening fence's own line break, counted from the fence.
    */
-  const searchFrom = open.length - closeInner.indexOf(
+  const breakInFence = open.length - closeInner.indexOf(
     FRONT_MATTER_FENCE,
     0,
   );
+
+  /**
+   Where the search for a closing fence begins: at the opening fence's own
+   line break, so empty front matter still terminates.
+   */
+  const searchFrom = start + breakInFence;
 
   /**
    Index of the line break beginning the closing fence; -1 when only an
@@ -405,6 +480,7 @@ export function splitFrontMatter({ text, }: { readonly text: string; },): SplitM
   if (closeStart !== (-1)) {
     return buildSplit({
       text,
+      start,
       closeStart,
       rawEnd: closeStart + closeInner.length,
       openLength: open.length,
@@ -423,9 +499,10 @@ export function splitFrontMatter({ text, }: { readonly text: string; },): SplitM
   // minus one: subtracting one assumes a single-character terminator, so under
   // CRLF the bound landed one past the line break and `---\r\n---` was refused
   // outright. Every other CRLF shape parsed, which is what kept this hidden.
-  if (text.endsWith(closeEof,) && (eofCloseStart >= FRONT_MATTER_FENCE.length)) {
+  if (text.endsWith(closeEof,) && (eofCloseStart >= (start + FRONT_MATTER_FENCE.length))) {
     return buildSplit({
       text,
+      start,
       closeStart: eofCloseStart,
       rawEnd: text.length,
       openLength: open.length,

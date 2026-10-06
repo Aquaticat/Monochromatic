@@ -1,13 +1,15 @@
+import { isAsciiAlphanumeric, } from '../ascii-letters.ts';
 import {
-  isAsciiAlphanumeric,
-  isAsciiLetter,
-} from '../ascii-letters.ts';
+  isTagWhitespace,
+  readTagName,
+} from '../mdx-tag-name.ts';
 
 //region Tag attributes
 // A JSX OR HTML TAG READ FOR ITS QUOTED ATTRIBUTES, by index scan: the name
-// after `<`, then attribute names with their quoted values up to `>` or
-// `/>`. A tag whose attribute is not a quoted string (an expression in
-// braces, a bare word) is not read at all, so nothing is restored inside it.
+// after `<` as the grammar reads one (`mdx-tag-name.ts`), then attribute names
+// with their quoted values up to `>` or `/>`. A tag whose attribute is not a
+// quoted string (an expression in braces, a bare word) is not read at all, so
+// nothing is restored inside it.
 
 /**
  Opening of a tag.
@@ -44,16 +46,6 @@ const NAME_MARKS: ReadonlySet<string> = new Set([
   '-',
   '.',
   ':',
-],);
-
-/**
- Whitespace a tag may carry between its parts.
- */
-const SPACES: ReadonlySet<string> = new Set([
-  ' ',
-  '\t',
-  '\n',
-  '\r',
 ],);
 
 /**
@@ -124,7 +116,7 @@ export type TagReading = {
 };
 
 /**
- Whether a character may continue a tag or attribute name.
+ Whether a character may continue an attribute name.
 
  @param character - one character
 
@@ -163,7 +155,7 @@ function pastWhitespace(
   },
 ): number {
   for (let at = from; at < text.length; at += 1) {
-    if (!SPACES.has(text.charAt(at,),))
+    if (!isTagWhitespace({ character: text.charAt(at,), },))
       return at;
   }
   return text.length;
@@ -291,15 +283,21 @@ function readTagAt(
     readonly at: number;
   },
 ): TagReading {
-  if (!isAsciiLetter({ character: text.charAt(at + 1,), },))
+  /**
+   The name the strict grammar reads after the bracket, empty where it reads
+   none, where the tag closes an element, or where a character it refuses
+   stands in the name.
+   */
+  const [reading,] = readTagName({
+    text,
+    at,
+  },);
+  if ((reading === undefined) || reading.closes)
     return NO_TAG;
   /**
    Offset just past the tag name.
    */
-  const nameEnd = pastName({
-    text,
-    from: at + 1,
-  },);
+  const nameEnd = reading.end;
   /**
    Attributes read so far.
    */
@@ -314,10 +312,7 @@ function readTagAt(
     const character = text.charAt(cursor,);
     if (character === TAG_CLOSE)
       return {
-        name: text.slice(
-          at + 1,
-          nameEnd,
-        ),
+        name: reading.name,
         text: text.slice(
           at,
           cursor + 1,

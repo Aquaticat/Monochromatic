@@ -4,6 +4,7 @@ import type {
 } from 'mdast';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import { leadingMarkWidth, } from '../front-matter.ts';
 import { maskHtmlComments, } from '../mask-html-comments.ts';
 import { maskLoneContainerTags, } from '../mask-container-tags.ts';
 import { opensMdxTag, } from '../mdx-tag-start.ts';
@@ -117,7 +118,9 @@ function pastMarker(
 }
 
 /**
- Where a text's front matter ends, zero when it opens with none.
+ Where a text's front matter ends, zero when it opens with none. A byte order
+ mark opening the text is no content: the front matter opens after it, and the
+ range the end bounds holds the mark.
 
  @param text - text under scan
 
@@ -130,12 +133,24 @@ function pastMarker(
  ```
  */
 function frontMatterEnd({ text, }: { readonly text: string; },): number {
-  if (!text.startsWith(FRONT_MATTER_FENCE,))
+  /**
+   Where the opening fence stands, after a leading byte order mark.
+   */
+  const start = leadingMarkWidth({ text, },);
+  if (!text.startsWith(
+    FRONT_MATTER_FENCE,
+    start,
+  ))
     return 0;
+  /**
+   Offset of the opening fence's line break, where the closing fence's search
+   begins.
+   */
+  const fenceBreak = (start + FRONT_MATTER_FENCE.length) - 1;
   return pastMarker({
     text,
     marker: `\n${FRONT_MATTER_FENCE}`,
-    from: FRONT_MATTER_FENCE.length - 1,
+    from: fenceBreak,
   },);
 }
 

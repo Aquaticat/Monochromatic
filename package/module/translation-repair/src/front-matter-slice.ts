@@ -1,5 +1,6 @@
 import type {
   ChunkPair,
+  ContentChunk,
   SliceSyntax,
 } from './chunk-document.ts';
 import { makeInsertionChunk, } from './chunk-placement.ts';
@@ -26,11 +27,50 @@ export type FrontMatterSliceResult = {
 };
 
 /**
+ The span one document's metadata fills: its exact bytes, from its opening
+ fence, which a leading byte order mark does not move into the slice.
+
+ @param block - metadata of one document
+
+ @returns Content chunk over exactly those bytes
+
+ @example
+ ```ts
+ const chunk = metadataChunk({ block, },);
+ ```
+ */
+function metadataChunk({ block, }: { readonly block: FrontMatterBlock; },): ContentChunk {
+  /**
+   Exact metadata bytes and where the opening fence stands.
+   */
+  const {
+    raw,
+    startOffset,
+  } = block;
+  return {
+    kind: 'content',
+    sliceIndex: 0,
+    nodes: [],
+    startOffset,
+    endOffset: startOffset + raw.length,
+    text: raw,
+  };
+}
+
+/**
  Creates front-matter slice when both documents declare one.
+
+ The spans start where each block's opening fence stands, so a byte order mark
+ opening a page stays outside the slice and no rewrite of the metadata
+ reaches it.
 
  @param source - original front matter
 
  @param target - translation front matter
+
+ @param targetInsertionOffset - where metadata is inserted when the translation
+ has none: after the byte order mark its page opens with, zero where it opens
+ with none
 
  @returns Tagged syntax-bearing pair,
  insertion pair for source-only metadata,
@@ -45,47 +85,27 @@ export function frontMatterSlice(
   {
     source,
     target,
+    targetInsertionOffset = 0,
   }: {
     readonly source?: FrontMatterBlock;
     readonly target?: FrontMatterBlock;
+    readonly targetInsertionOffset?: number;
   },
 ): FrontMatterSliceResult {
   if (source === undefined)
     return { kind: 'none', };
 
-  /**
-   Exact source metadata bytes.
-   */
-  const { raw: sourceRaw, } = source;
-  /**
-   Exact target metadata bytes when archive already carries metadata.
-   */
-  const targetRaw = target?.raw;
   return {
     kind: 'paired',
     slice: {
       syntax: 'front-matter',
-      source: {
-        kind: 'content',
-        sliceIndex: 0,
-        nodes: [],
-        startOffset: 0,
-        endOffset: sourceRaw.length,
-        text: sourceRaw,
-      },
-      target: (targetRaw === undefined)
+      source: metadataChunk({ block: source, },),
+      target: (target === undefined)
         ? makeInsertionChunk({
           sliceIndex: 0,
-          offset: 0,
+          offset: targetInsertionOffset,
         },)
-        : {
-          kind: 'content',
-          sliceIndex: 0,
-          nodes: [],
-          startOffset: 0,
-          endOffset: targetRaw.length,
-          text: targetRaw,
-        },
+        : metadataChunk({ block: target, },),
     },
   };
 }

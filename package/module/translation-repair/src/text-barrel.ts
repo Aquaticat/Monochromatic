@@ -65,6 +65,7 @@ export {
   latinWordSpans,
   lowerCaseLatinWords,
 } from './latin-letters.ts';
+export { readTagName, } from './mdx-tag-name.ts';
 export { opensMdxTag, } from './mdx-tag-start.ts';
 export {
   carriesName,

@@ -8,6 +8,7 @@ import { maskHtmlComments, } from '../mask-html-comments.ts';
 import { maskInvisibleLines, } from '../mask-invisible-lines.ts';
 import { parseBodyTolerant, } from '../parse-document.ts';
 import type { DeepReadonlyData, } from '../readonly-data.ts';
+import { isAsciiLetter, } from '../ascii-letters.ts';
 import { nextSchemeStart, } from '../scheme-start-scan.ts';
 import {
   judgeDestinationRenderings,
@@ -40,7 +41,8 @@ import {
 //
 // AN EXPLICIT DESTINATION IS FOLLOWED AS WRITTEN. Only an address prose ran
 // into, a bare run the scanner reads or an autolink literal the tree builds,
-// is cut at its first stopper and shed of sentence punctuation; a destination
+// is cut at its first stopper and where the parse's trail rule begins its
+// trail (sentence punctuation, a character reference, a closing bracket); a destination
 // written between parentheses, angle brackets or after a definition's label
 // ends where its author ended it. Cut too, two explicit links that differ only
 // past a full-width comma read as one, and a page keeping either was taken
@@ -54,8 +56,8 @@ import {
 // destination the trimming emptied, and `traceDroppedDestinations` found it in
 // every slice, the shipped text included, since every text holds the empty
 // string. A destination that carries something never reads as the empty
-// string: an explicit one stands as written, and the trim of an address prose
-// ran into never empties it (`trimDestination`).
+// string: an explicit one stands as written, and the cut of an address prose
+// ran into never empties it (`literalAddress`).
 //
 // THE SITE'S OWN GRAMMAR IS NOT THIS ONE. The corpus repo compiles a page with
 // MDX 3 and remark-math after rewriting HTML comments into JSX comments
@@ -87,7 +89,9 @@ type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
  Characters that end a bare run: whitespace, Markdown and HTML delimiters, and
  the full-width punctuation Chinese prose sets a link off with. A closing
  parenthesis ends a run only where it balances no opening one of the run
- (`addressEnd`).
+ (`addressEnd`). A closing square bracket is no stopper: the parse keeps one
+ inside an address and ends the address at it only as its trail rule reads one
+ (`readTrail`).
  */
 const RUN_STOPPERS: ReadonlySet<string> = new Set([
   ' ',
@@ -95,7 +99,6 @@ const RUN_STOPPERS: ReadonlySet<string> = new Set([
   '\n',
   '\r',
   ')',
-  ']',
   '>',
   '<',
   '"',
@@ -121,8 +124,8 @@ const RUN_STOPPERS: ReadonlySet<string> = new Set([
  emphasis closes with follow a link more often than they belong to one: the
  marks the parse's trail rule reads as no part of an address
  (`micromark-extension-gfm-autolink-literal` 2.1.0, `tokenizeTrail`), less
- the quotation marks, which end a run as stoppers, and the character
- reference and bracket forms it also reads.
+ the quotation marks, which end a run as stoppers. The rule's character
+ reference and bracket forms are read by `readTrail`.
  */
 const RUN_TRAILERS: ReadonlySet<string> = new Set([
   '.',
@@ -134,6 +137,29 @@ const RUN_TRAILERS: ReadonlySet<string> = new Set([
   '*',
   '_',
   '~',
+],);
+
+/**
+ What after a closing square bracket ends the parse's trail there, as the
+ text's end does: an opening parenthesis or bracket, or whitespace.
+ */
+const BRACKET_ENDERS: ReadonlySet<string> = new Set([
+  '(',
+  '[',
+  ' ',
+  '\t',
+  '\n',
+  '\r',
+],);
+
+/**
+ Characters a trail may begin at, which the scan reads the trail of before it
+ decides the address goes on.
+ */
+const TRAIL_STARTS: ReadonlySet<string> = new Set([
+  ...RUN_TRAILERS,
+  '&',
+  ']',
 ],);
 
 /**
@@ -225,13 +251,10 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
       from: start,
     },);
 
-    runs.push(trimDestination({
-      url: text.slice(
-        start,
-        end,
-      ),
-      cut: end - start,
-    },),);
+    runs.push(text.slice(
+      start,
+      end,
+    ),);
     // The run always consumes at least its scheme, so the scan advances to
     // its end. LOUD IF IT EVER DOES NOT: a scheme opening on a stopper would
     // leave the cursor where it stood and this loop running for ever (ledger
@@ -247,20 +270,53 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
 }
 
 /**
- Where a run of sentence punctuation and closing parentheses ends.
-
- @param text - text holding the run
-
- @param from - offset of the run's first character
-
- @returns Offset of the first character after the run, the text's length when it reaches the end
+ What the parse's trail rule makes of the characters from an offset on.
 
  @example
  ```ts
- const end = trailRunEnd({ text: 'a.).b', from: 1, },);
+ const trail: TrailReading = { ends: true, stop: 5, };
  ```
  */
-function trailRunEnd(
+type TrailReading = {
+  /**
+   Whether the characters are the trail of the address: only what the rule
+   reads as trailing, then an end. The address stops where they begin.
+   */
+  readonly ends: boolean;
+
+  /**
+   Offset the rule read up to: where it met an end, or the first character
+   that made the characters part of the address.
+   */
+  readonly stop: number;
+};
+
+/**
+ Reads the trail of an address from an offset, as the parse reads it
+ (`micromark-extension-gfm-autolink-literal` 2.1.0, `tokenizeTrail`).
+
+ THE TRAIL IS A RUN OF THREE KINDS OF ITEM: a mark of sentence punctuation or
+ emphasis or a closing parenthesis; a character reference, `&` and ASCII
+ letters and `;` (one that is not well formed is no item and is part of the
+ address, so `&amp` before a space and `&#35;` stay in it); and `]`, which
+ ends the trail where whitespace, `(`, `[` or the text's end follows it and
+ is otherwise one more item. The run is the trail only when an end follows
+ it: whitespace, `<` or any other stopper of the scanner, or the text's end.
+ Anything else makes every character of it part of the address.
+
+ @param text - text holding the address
+
+ @param from - offset of the first character that may start the trail
+
+ @returns Whether the characters from `from` are the trail, and where the
+ reading stopped
+
+ @example
+ ```ts
+ const trail = readTrail({ text: 'a&amp;).b', from: 1, },); // { ends: false, stop: 8 }
+ ```
+ */
+function readTrail(
   {
     text,
     from,
@@ -268,16 +324,56 @@ function trailRunEnd(
     readonly text: string;
     readonly from: number;
   },
-): number {
-  for (let at = from; at < text.length; at += 1) {
+): TrailReading {
+  for (let at = from; at < text.length;) {
     /**
-     Character under the scan.
+     Character under the reading.
      */
     const character = text.charAt(at,);
-    if (!(RUN_TRAILERS.has(character,) || (character === ')')))
-      return at;
+    if (RUN_TRAILERS.has(character,) || (character === ')')) {
+      at += 1;
+      continue;
+    }
+    if (character === '&') {
+      /**
+       Offset past the reference's letters.
+       */
+      let letters = at + 1;
+      while (isAsciiLetter({ character: text.charAt(letters,), },))
+        letters += 1;
+      if ((letters === (at + 1)) || (text.charAt(letters,) !== ';')) {
+        return {
+          ends: false,
+          stop: letters,
+        };
+      }
+      at = letters + 1;
+      continue;
+    }
+    if (character === ']') {
+      /**
+       Offset of the character after the bracket, which decides whether the
+       bracket ends the trail or is one more item of it.
+       */
+      const after = at + 1;
+      if ((after >= text.length) || BRACKET_ENDERS.has(text.charAt(after,),)) {
+        return {
+          ends: true,
+          stop: after,
+        };
+      }
+      at = after;
+      continue;
+    }
+    return {
+      ends: RUN_STOPPERS.has(character,),
+      stop: at,
+    };
   }
-  return text.length;
+  return {
+    ends: true,
+    stop: text.length,
+  };
 }
 
 /**
@@ -291,12 +387,11 @@ function trailRunEnd(
  linking it explicitly name one destination; a `)` that balances none, as the
  one closing a parenthesis set around the address, still ends it.
 
- SENTENCE PUNCTUATION BEFORE A CLOSING PARENTHESIS ENDS THE ADDRESS AT THE
- PUNCTUATION when the run of such marks and parentheses reaches the address's
- end, as the parse's trail rule reads it (`tokenizeTrail`): `(see Tabby_(cat).)`
- holds `Tabby_(cat)` and `(cat.)` holds `(cat`. A run followed by an ordinary
- character is part of the address. One pass over the characters; a run that
- turned out to be no trail is not looked at again.
+ THE TRAIL ENDS THE ADDRESS WHERE IT BEGINS, as the parse's trail rule reads it
+ (`readTrail`): `(see Tabby_(cat).)` holds `Tabby_(cat)` and `(cat.)` holds
+ `(cat`, and a character reference or a closing square bracket ends an
+ address as it ends the parse's. A run that turned out to be no trail is not
+ looked at again: one pass over the characters.
 
  @param text - text holding the address
 
@@ -333,17 +428,17 @@ function addressEnd(
       at += 1;
       continue;
     }
-    if (RUN_TRAILERS.has(character,) && (at >= noTrailBefore)) {
+    if (TRAIL_STARTS.has(character,) && (at >= noTrailBefore)) {
       /**
-       Where the run of sentence punctuation and closing parentheses from here ends.
+       What the parse's trail rule makes of the characters from here.
        */
-      const runEnd = trailRunEnd({
+      const trail = readTrail({
         text,
         from: at,
       },);
-      if ((runEnd === text.length) || RUN_STOPPERS.has(text.charAt(runEnd,),))
+      if (trail.ends)
         return at;
-      noTrailBefore = runEnd;
+      noTrailBefore = trail.stop;
     }
     if (RUN_STOPPERS.has(character,))
       return at;
@@ -354,61 +449,50 @@ function addressEnd(
 
 /**
  Address as a reader would follow it where prose ran into it: cut at the first
- stopper, trailing sentence punctuation shed.
+ stopper and where the trail begins.
 
  A GFM autolink literal runs until whitespace, so in Chinese prose it swallows
  the full-width comma or stop after the address; the scanner never does, and
  the two readers must agree on the address or the union counts one link twice.
 
- ONLY AN ADDRESS PROSE RAN INTO COMES HERE: a scanned run, which opens where
- `nextSchemeStart` found a scheme, and an autolink literal, whose destination
- the parse writes as the address it read when that opens with its scheme, and
- with `http://` or `mailto:` put before a `www.` address or an email address
- (`mdast-util-gfm-autolink-literal`). Both open on a letter, which neither
- the cut nor the shed removes, so neither is ever emptied. An explicit
- destination never comes here: emptied, `.`, `..` and a destination opening
- on a stopper read as one empty string (ledger B139), and cut, two that
- differ past a stopper read as one.
+ ONLY AN AUTOLINK LITERAL COMES HERE, whose destination the parse writes as the
+ address it read when that opens with its scheme, and with `http://` or
+ `mailto:` put before a `www.` address or an email address
+ (`mdast-util-gfm-autolink-literal`). It opens on a letter, which the cut
+ never removes, so it is never emptied. An explicit destination never comes
+ here: emptied, `.`, `..` and a destination opening on a stopper read as one
+ empty string (ledger B139), and cut, two that differ past a stopper read as
+ one.
 
- @param url - address as the scan or an autolink literal produced it
+ @param url - address as the autolink literal produced it
 
- @param cut - where the address ends in it: the whole of a scanned run, which
- `addressEnd` already cut in the page's text where the characters after it
- could be read, and the first stopper of an autolink literal's address
+ @returns Address ending where the scanner's address ends in the same text
 
- @returns Address ending where a reader's address ends
-
- @throws Error when the cut and the shed would leave nothing, which no
- address opening on a scheme's letter allows
+ @throws Error when the cut leaves nothing, which no address opening on a
+ scheme's letter allows
 
  @example
  ```ts
- const clean = trimDestination({ url: 'https://example.org/a\uff0c', cut: 21, },);
+ const clean = literalAddress({ url: 'https://example.org/a\uff0c', },);
  ```
  */
-function trimDestination(
-  {
-    url,
-    cut: cutAt,
-  }: {
-    readonly url: string;
-    readonly cut: number;
-  },
-): string {
-  // ONE CUT: step back from where the address ends over the trailing sentence
-  // punctuation, then slice once, rather than copying the address once per
-  // mark shed (ledger B70).
-  for (let cut = cutAt; cut > 0; cut -= 1) {
-    if (!RUN_TRAILERS.has(url.charAt(cut - 1,),)) {
-      return url.slice(
-        0,
-        cut,
-      );
-    }
+function literalAddress({ url, }: { readonly url: string; },): string {
+  /**
+   Where the address ends in the literal.
+   */
+  const end = addressEnd({
+    text: url,
+    from: 0,
+  },);
+  if (end === 0) {
+    throw new Error(
+      'unreachable: the cut at the first stopper and the trail left nothing of an autolink literal, '
+        + 'though one opens on the letter of a scheme',
+    );
   }
-  throw new Error(
-    'unreachable: the cut at the first stopper and the shed of sentence punctuation left nothing of an address, '
-      + 'though only a scanned run and an autolink literal are trimmed, and both open on the letter of a scheme',
+  return url.slice(
+    0,
+    end,
   );
 }
 
@@ -482,13 +566,7 @@ export function markdownDestinations(
        written with no destination.
        */
       const destination = ((node.type === 'link') && isAutolinkLiteral(node,))
-        ? trimDestination({
-          url: node.url,
-          cut: addressEnd({
-            text: node.url,
-            from: 0,
-          },),
-        },)
+        ? literalAddress({ url: node.url, },)
         : node.url;
       // AN EMPTY DESTINATION IS NOT READ: it names nowhere a reader could
       // follow, so no page owes it.

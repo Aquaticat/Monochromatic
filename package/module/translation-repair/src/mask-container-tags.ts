@@ -1,9 +1,11 @@
 import {
   inlineContainerTags,
-  isTagWhitespace,
   tagEnd,
 } from './inline-container-tags.ts';
-import { isAsciiLetter, } from './ascii-letters.ts';
+import {
+  isTagWhitespace,
+  readTagName,
+} from './mdx-tag-name.ts';
 
 //region Lone container tag masking
 // A container's opening tag is owned by the first block inside it and its
@@ -93,25 +95,38 @@ type PairingTag = Readonly<{
 }>;
 
 /**
- Offset where an element name ends in the text after a tag's bracket and
- slash.
+ Whether a text holds nothing but whitespace the strict grammar steps over.
 
- @param body - text after the opening bracket, and after the slash of a closer
+ @param text - text to read
 
- @returns Offset of the first whitespace the strict grammar steps over, or the
- length when there is none
+ @returns True for a text of whitespace alone, the empty text included
 
  @example
  ```ts
- nameEndOf({ body: 'details open', },); // 7
+ isWhitespaceOnly({ text: ' \t', },); // true
  ```
  */
-function nameEndOf({ body, }: { readonly body: string; },): number {
-  for (let at = 0; at < body.length; at += 1) {
-    if (isTagWhitespace({ character: body.charAt(at,), },))
-      return at;
-  }
-  return body.length;
+function isWhitespaceOnly({ text, }: { readonly text: string; },): boolean {
+  return Array.from(text,)
+    .every(function isWhitespace(character,): boolean {
+      return isTagWhitespace({ character, },);
+    },);
+}
+
+/**
+ Whether a text holds an angle bracket, which a tag's own brackets enclose none of.
+
+ @param text - text between a tag's brackets
+
+ @returns True when it holds `<` or `>`
+
+ @example
+ ```ts
+ holdsBracket({ text: 'details open', },); // false
+ ```
+ */
+function holdsBracket({ text, }: { readonly text: string; },): boolean {
+  return text.includes('<',) || text.includes('>',);
 }
 
 /**
@@ -159,58 +174,39 @@ function tagOnLine(
   if (selfClosing)
     return [];
 
-  /**
-   Text between the angle brackets.
-   */
-  const inner = trimmed.slice(
-    1,
-    -1,
-  );
-  if (inner.includes('<',) || inner.includes('>',))
+  if (holdsBracket({
+    text: trimmed.slice(
+      1,
+      -1,
+    ),
+  },))
     return [];
 
   /**
-   Whether the tag closes its element.
+   The name the strict grammar reads after the opening bracket, empty where it
+   reads none (a character it refuses in a name included).
    */
-  const closes = inner.startsWith('/',);
-
-  /**
-   Text after the closing slash, or the whole inner text for an opener.
-   */
-  const body = closes ? inner.slice(1,) : inner;
-  if (!isAsciiLetter({ character: body.charAt(0,), },))
+  const [reading,] = readTagName({
+    text: trimmed,
+    at: 0,
+  },);
+  if (reading === undefined)
     return [];
-
-  /**
-   Where the name ends: at the first whitespace the strict grammar steps over
-   between a name and an attribute or the closing bracket, or the end.
-   */
-  const nameEnd = nameEndOf({ body, },);
-
-  /**
-   Element name as written.
-   */
-  const name = body.slice(
-    0,
-    nameEnd,
-  );
 
   // A closer may carry whitespace before its bracket (`</details >`), which
   // the strict grammar reads as closing the element; anything else past the
   // name names no element.
-  /**
-   Whether only whitespace follows the name.
-   */
-  const bareAfterName = Array.from(body.slice(nameEnd,),)
-    .every(function isWhitespace(character,): boolean {
-      return isTagWhitespace({ character, },);
-    },);
-  if (closes && (!bareAfterName))
+  if (reading.closes && (!isWhitespaceOnly({
+    text: trimmed.slice(
+      reading.end,
+      -1,
+    ),
+  },)))
     return [];
 
   return [{
-    kind: closes ? 'close' : 'open',
-    name,
+    kind: reading.closes ? 'close' : 'open',
+    name: reading.name,
     text: trimmed,
     startOffset: lineStart,
     endOffset: lineStart + trimmed.length,
@@ -218,27 +214,8 @@ function tagOnLine(
 }
 
 /**
- Whether a text holds nothing but whitespace the strict grammar steps over.
-
- @param text - text to read
-
- @returns True for a text of whitespace alone, the empty text included
-
- @example
- ```ts
- isWhitespaceOnly({ text: ' \t', },); // true
- ```
- */
-function isWhitespaceOnly({ text, }: { readonly text: string; },): boolean {
-  return Array.from(text,)
-    .every(function isWhitespace(character,): boolean {
-      return isTagWhitespace({ character, },);
-    },);
-}
-
-/**
  Where a tag that crosses a line break ends, when the line it opens on is the
- head of one: a `<` and a letter or a slash and a letter, with no bracket
+ head of one: a `<` and a name or a slash and a name, with no bracket
  ending the tag on that line.
 
  THE STRICT GRAMMAR STEPS OVER A LINE BREAK between a name and an attribute or
@@ -274,17 +251,20 @@ function multiLineTagEnd(
   if (text.charAt(lineStart,) !== '<')
     return -1;
   /**
-   Offset of the character after the bracket, and the slash of a closer.
+   The name the strict grammar reads after the bracket, empty where it reads none.
    */
-  const nameAt = lineStart + (text.charAt(lineStart + 1,) === '/' ? 2 : 1);
-  if (!isAsciiLetter({ character: text.charAt(nameAt,), },))
+  const [reading,] = readTagName({
+    text,
+    at: lineStart,
+  },);
+  if (reading === undefined)
     return -1;
   /**
    Offset of the bracket ending the tag, which must stand past this line.
    */
   const close = tagEnd({
     text,
-    from: nameAt,
+    from: reading.end,
   },);
   if (close < lineEnd)
     return -1;

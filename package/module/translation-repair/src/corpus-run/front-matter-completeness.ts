@@ -1,6 +1,9 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import { isInsertionChunk, } from '../chunk-placement.ts';
-import { splitFrontMatter, } from '../front-matter.ts';
+import {
+  leadingMarkWidth,
+  splitFrontMatter,
+} from '../front-matter.ts';
 import { validateFrontMatterTranslation, } from '../front-matter-translation.ts';
 import { archiveFrontMatterStands, } from './archive-front-matter.ts';
 import {
@@ -211,6 +214,18 @@ export function assertFrontMatterComplete(
    */
   const archiveFrontMatter = archiveMetadata?.raw ?? '';
   /**
+   Where the metadata slice has to start in the original: at its opening
+   fence, after any byte order mark the page opens with.
+   */
+  const sourceStart = source.frontMatter
+    .startOffset;
+  /**
+   Where the metadata slice has to start in the archive: at its opening fence,
+   or, where it has none, after the byte order mark its page opens with, which
+   is where the preparation inserts.
+   */
+  const targetStart = archiveMetadata?.startOffset ?? leadingMarkWidth({ text: archiveText, },);
+  /**
    Source span metadata slice claims.
    */
   const { source: sourceSlice, } = metadataSlice;
@@ -224,10 +239,10 @@ export function assertFrontMatterComplete(
   const misplaced = (slices.at(0,) !== metadataSlice)
     || (sourceSlice.sliceIndex !== 0)
     || (targetSlice.sliceIndex !== 0)
-    || (sourceSlice.startOffset !== 0)
-    || (targetSlice.startOffset !== 0)
-    || (sourceSlice.endOffset !== sourceFrontMatter.length)
-    || (targetSlice.endOffset !== archiveFrontMatter.length)
+    || (sourceSlice.startOffset !== sourceStart)
+    || (targetSlice.startOffset !== targetStart)
+    || (sourceSlice.endOffset !== (sourceStart + sourceFrontMatter.length))
+    || (targetSlice.endOffset !== (targetStart + archiveFrontMatter.length))
     || (sourceSlice.text !== sourceFrontMatter)
     || (targetSlice.text !== archiveFrontMatter)
     || ((archivePresent) && isInsertionChunk(targetSlice,))

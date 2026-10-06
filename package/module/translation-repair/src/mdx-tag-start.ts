@@ -1,4 +1,9 @@
 import { codePointAt, } from './code-points.ts';
+import {
+  isTagWhitespace,
+  leavesBracketAsText,
+  startsTagName,
+} from './mdx-tag-name.ts';
 
 //region MDX tag start
 // WHETHER A `<` OPENS A TAG, answered as the MDX compiler the corpus is built
@@ -6,8 +11,10 @@ import { codePointAt, } from './code-points.ts';
 // the states `startAfter` and `nameBefore`): a space, a tab or a line end right
 // after `<` leaves it text; any other whitespace is stepped over; then `/`
 // opens a closing tag, `>` a fragment, and a character that can start an
-// identifier (`$`, `_`, or Unicode ID_Start, Han included) an element. Anything
-// else fails the page's compile, so no tag opens there either.
+// identifier (`$`, `_`, or Unicode ID_Start of the first plane, Han included)
+// an element. Anything else fails the page's compile, so no tag opens there
+// either; a letter past U+FFFF is two units to the compiler, neither of them a
+// letter (`mdx-tag-name.ts`).
 //
 // Three scanners kept their own answer (audit area six, 2026-09-28; ledger
 // B18): the typography mask took ASCII letters and `/`, the markup atom scan
@@ -17,33 +24,6 @@ import { codePointAt, } from './code-points.ts';
 // with) a tag to one. An HTML comment is none of these: the corpus's build
 // rewrites `<!--` into a JSX comment before compiling, and each scanner reads
 // comments by their own opener.
-
-/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with one class and no quantifier, so the test is bounded and cannot backtrack; Unicode ID_Start has no string API */
-/**
- A character that can start an identifier, as `estree-util-is-identifier-name`
- 3.0.0 reads one for the MDX compiler (`startRe`).
- */
-const IDENTIFIER_START = /^[$_\p{ID_Start}]$/u;
-/* oxlint-enable no-restricted-syntax/no-regex */
-
-/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with one class and no quantifier, so the test is bounded and cannot backtrack; Unicode White_Space has no string API short of listing it */
-/**
- Whitespace the compiler steps over between `<` and a tag's name, as
- `micromark-util-character` reads it (`unicodeWhitespace`).
- */
-const WHITESPACE = /^\s$/u;
-/* oxlint-enable no-restricted-syntax/no-regex */
-
-/**
- Characters right after `<` that leave it text: markdown's space, tab and
- line endings.
- */
-const LEAVES_TEXT: ReadonlySet<string> = new Set([
-  ' ',
-  '\t',
-  '\n',
-  '\r',
-],);
 
 /**
  Offset past the whitespace the compiler steps over, starting at an offset.
@@ -71,10 +51,12 @@ function pastWhitespace({
    Offset moved past each whitespace code point.
    */
   let at = from;
-  while (WHITESPACE.test(codePointAt({
-    text,
-    at,
-  },),)) {
+  while (isTagWhitespace({
+    character: codePointAt({
+      text,
+      at,
+    },),
+  },)) {
     at += codePointAt({
       text,
       at,
@@ -86,14 +68,18 @@ function pastWhitespace({
 
 /**
  Whether the `<` at an offset opens a tag the MDX compiler reads: a closing
- tag, a fragment or an element.
+ tag, a fragment or an element, by the first character of its name alone:
+ an angle autolink (`<https://cat.example>`) must stay a span the scanners
+ protect, and a name the grammar refuses further on leaves the page uncompilable,
+ so protecting it to its bracket is the safe side. What a name is, whole, is
+ `readTagName` (`mdx-tag-name.ts`).
 
  @param text - text being read
 
  @param at - offset of the `<`
 
- @returns False where the compiler reads `<` as text, and where it refuses
- the page
+ @returns False where the compiler reads `<` as text, and where the first
+ character of what follows can start no tag, so it refuses the page
 
  @example
  ```ts
@@ -116,20 +102,17 @@ export function opensMdxTag({
     text,
     at: at + 1,
   },);
-  if ((next === '') || LEAVES_TEXT.has(next,))
+  if ((next === '') || leavesBracketAsText({ character: next, },))
     return false;
   /**
    First character past any whitespace the compiler steps over.
    */
-  const first = codePointAt({
+  const first = text.charAt(pastWhitespace({
     text,
-    at: pastWhitespace({
-      text,
-      from: at + 1,
-    },),
-  },);
+    from: at + 1,
+  },),);
   return (first === '/') || (first === '>')
-    || IDENTIFIER_START.test(first,);
+    || startsTagName({ character: first, },);
 }
 
 //endregion MDX tag start

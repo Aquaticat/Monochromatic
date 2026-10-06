@@ -25,6 +25,7 @@ import type {
   PreparedDocumentPair,
   UnclaimedTargetBlock,
 } from './prepared-document-pair.ts';
+import { leadingMarkWidth, } from './front-matter.ts';
 import { frontMatterSlice, } from './front-matter-slice.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
 import { assertContainerIntegrity, } from './container-integrity.ts';
@@ -294,6 +295,10 @@ export function prepareDocumentPair(
     ? frontMatterSlice({
       ...(sourceDocument.frontMatter === undefined ? {} : { source: sourceDocument.frontMatter, }),
       ...(targetDocument.frontMatter === undefined ? {} : { target: targetDocument.frontMatter, }),
+      // A translation opening with a byte order mark and carrying no metadata
+      // takes the metadata after the mark, so the mark stays the page's first
+      // character.
+      targetInsertionOffset: leadingMarkWidth({ text: targetText, },),
     },)
     : { kind: 'none' as const, };
   if (metadataSlice.kind === 'paired')

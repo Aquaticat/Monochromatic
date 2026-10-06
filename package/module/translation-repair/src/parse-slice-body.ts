@@ -5,11 +5,12 @@ import {
   maskLoneContainerTags,
 } from './mask-container-tags.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
+import { maskInvisibleLines, } from './mask-invisible-lines.ts';
 import { parseMdxBody, } from './parse-mdx.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
 
 /**
- Parses slice syntax with offset-preserving comment and lone-container masks.
+ Parses slice syntax with offset-preserving invisible-line, comment and lone-container masks.
  Structural admission and the model-facing break display share this grammar;
  neither treats literals inside expressions or code as prose line breaks.
 
@@ -29,9 +30,15 @@ export function parseSliceBody({ text, }: { readonly text: string; },): {
   readonly tags: readonly LoneContainerTag[];
 } {
   /**
+   A line showing nothing yet not blank to CommonMark becomes spaces first, as
+   `parseDocument` does, so the slice has the blocks the page has and no
+   paragraph is welded to the next by a line only a reader cannot see.
+   */
+  const { masked: unwelded, } = maskInvisibleLines({ text, },);
+  /**
    Comments become same-length whitespace, so no position moves.
    */
-  const { masked: withoutComments, } = maskHtmlComments({ text, },);
+  const { masked: withoutComments, } = maskHtmlComments({ text: unwelded, },);
   /**
    A container half remains an atom without making the body unparseable.
    */
