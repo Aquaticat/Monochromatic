@@ -66,6 +66,10 @@ mod syntax_error;
 /// Language-server feature paths run on one worker thread and are polled; server edits are refused.
 pub mod language;
 
+/// The log: warnings by default and `RUST_LOG` for detail, helix-lsp records labelled by what they
+/// are, and a writer thread so no logging thread waits for the output.
+pub mod logging;
+
 /// Inlay hints and diagnostics of the displayed file, reduced to the materialized rows; stale snapshots paint nothing.
 pub mod annotation;
 
