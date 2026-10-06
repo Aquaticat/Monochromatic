@@ -662,6 +662,13 @@ and every message the server writes adds a `sent` line.
 Each session keeps its project and report in `/dev/shm` when that exists:
 the scripted server writes its report before it answers,
 and on a disk the rest of the machine keeps busy one write blocked it for up to 10 seconds.
+The file-opening, reload, directory, and search worker tests take their fixtures from `tests/memory_fixture`,
+and the native external-reload tests from `memory_project` in `src/native/find_tests.rs`, both in `/dev/shm` when it exists:
+on btrfs, reading a fresh file or creating and removing files waits for filesystem transactions,
+which took longer than these tests wait while the machine flushed.
+The native external-reload tests also wait for the displayed file's watch before they change it,
+and change it as an atomic save does (`replace_file`),
+because an in-place write can be read after its truncation and before its text.
 `IDE_LANGUAGE_TEST_LOG=1` makes a session print the worker's debug log
 and the helix-lsp protocol log to standard error.
 `inspect:language` runs all five feature paths,
