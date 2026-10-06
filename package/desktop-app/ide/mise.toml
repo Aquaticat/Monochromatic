@@ -124,7 +124,7 @@ if (existsSync(output) && existsSync(stamp) && readFileSync(stamp, 'utf8').trim(
   rmSync(output + '.new', { force: true })
   // --frozen: the locked graph, crate sources from the ide-cargo volume (the fetch task fills it), and no network.
   // --fail: a crate whose license cannot be determined or is not accepted by about.toml stops the task.
-  runBounded(['cargo-about', '-c', 'never', 'generate', '--frozen', '--fail', '--config', 'about.toml', '--output-file', output + '.new', 'about.json.hbs'])
+  runBounded(['cargo-about', '--color', 'never', 'generate', '--frozen', '--fail', '--config', 'about.toml', '--output-file', output + '.new', 'about.json.hbs'])
   const list = JSON.parse(readFileSync(output + '.new', 'utf8'))
   if (!Array.isArray(list.licenses) || list.licenses.length === 0) throw new Error('cargo-about wrote no license text to ' + output + '.new')
   renameSync(output + '.new', output)
