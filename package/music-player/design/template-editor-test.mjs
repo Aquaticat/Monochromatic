@@ -89,7 +89,8 @@ try {
     diagnostic: 'is fixed in the rows layout but is not in view' });
   reject({ change: input => { const item = input.witnesses[ended].drawn.at(-1); item.bounds = []; item.inView = false; }, diagnostic: "the page's end is not in view" });
   reject({ change: input => { input.witnesses.splice(pinnedRows, 1); }, diagnostic: 'requires every authored scene under every condition' });
-  reject({ change: input => { input.witnesses[typing].keyboardTop -= 200; input.witnesses[typing].viewBottom -= 200; }, diagnostic: 'do not share one keyboard edge' });
+  // One pixel is enough to differ from the panel's other views and too little to change what this view keeps in view.
+  reject({ change: input => { input.witnesses[typing].keyboardTop -= 1; input.witnesses[typing].viewBottom -= 1; }, diagnostic: 'do not share one keyboard edge' });
   if (invoke('build').status !== 0) throw new Error('Restored evidence build failed.');
   // The page must keep its one question with each layout offered once, its ranking and its assumptions.
   const template = readFileSync(templatePath, 'utf8');

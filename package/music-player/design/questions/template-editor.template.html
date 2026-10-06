@@ -76,8 +76,8 @@ this page is decided by being shown.</p>
 and the preview, error lines and help it draws are checked against a reference that computes what the grammar yields.
 The app has a duration only for the playing track today and draws no supporting line yet, so this previews a line the
 app cannot fill for every row.</p>
-<p>The buttons emit debug events only. No template is stored and no row of the player changes. No production
-implementation is authorized.</p>
+<p>The buttons emit debug events only. No template is stored and no row of the player changes.
+No production implementation is authorized.</p>
 </header>
 <section aria-labelledby="environment-title">
 <h2 id="environment-title">Inspect the same native conditions</h2>
@@ -139,8 +139,8 @@ keyboard is open; that is a separate concern, named at the end of this page.</p>
 <p>The two preview rows are the first thing on one scrolling page.</p>
 <ul><li>For: the simplest page, with nothing fixed but the header, so the field and its lines get all the height when
 they need it.</li>
-<li>Against: at 200% text the preview is not in view while typing, so the result of a keystroke is seen only after
-scrolling back.</li></ul>
+<li>Against: at 200% text, typing inside a call scrolls the preview out of view on both panels, so the result of a
+keystroke is seen only after scrolling back.</li></ul>
 <ul class="measured" data-measured="flow"></ul>
 <div class="gallery">
 <figure data-scene="help" data-option="flow"><h3>Typing inside a call</h3><button type="button" class="preview-button"><img alt="Typing inside a call with the preview at the top of the scrolling page"><span>Open: typing inside a call</span></button><figcaption></figcaption></figure>
@@ -154,8 +154,8 @@ scrolling back.</li></ul>
 preview fixed above the formula field.</p>
 <ul><li>For: the result of every keystroke stays in view at every size, drawn as the track row it will become, title
 and line.</li>
-<li>Against: it takes the most height. At 200% text less of the help under the field fits, and at rest the scrolling
-part of the page is shorter.</li></ul>
+<li>Against: it takes the most height. At 200% text the help under the field no longer fits on the inner panel, where
+only the top of its first line shows, and its sentence is cut on the cover panel.</li></ul>
 <ul class="measured" data-measured="rows"></ul>
 <div class="gallery">
 <figure data-scene="rows-help" data-option="rows"><h3>Typing inside a call</h3><button type="button" class="preview-button"><img alt="Typing inside a call with both preview rows fixed under the header"><span>Open: typing inside a call</span></button><figcaption></figcaption></figure>
@@ -167,10 +167,10 @@ part of the page is shorter.</li></ul>
 <label><input type="radio" name="layout" value="lines"> Take this: only the result lines stay in view</label>
 <p>Only what the template yields for the two files stays fixed, one line each, without the rows' titles. KWGT's own
 preview is one such line.</p>
-<ul><li>For: the result stays in view for less height than two whole rows, so more of the field's help fits at 200%
-text.</li>
+<ul><li>For: the result stays in view for less height than two whole rows. At 200% text the whole help still fits on the
+cover panel, and its first line on the inner panel.</li>
 <li>Against: the lines no longer look like track rows, and only their order says which file each belongs to; the note
-that explains the second line scrolls away.</li></ul>
+that explains the second line scrolls with the page.</li></ul>
 <ul class="measured" data-measured="lines"></ul>
 <div class="gallery">
 <figure data-scene="lines-help" data-option="lines"><h3>Typing inside a call</h3><button type="button" class="preview-button"><img alt="Typing inside a call with the two result lines fixed under the header"><span>Open: typing inside a call</span></button><figcaption></figcaption></figure>
@@ -178,7 +178,13 @@ that explains the second line scrolls away.</li></ul>
 <figure data-scene="lines-open-formula" data-option="lines"><h3>A formula left open</h3><button type="button" class="preview-button"><img alt="A formula left open with the two result lines fixed under the header"><span>Open: a formula left open</span></button><figcaption></figcaption></figure>
 <figure data-scene="lines-custom" data-option="lines"><h3>At rest, with a changed template</h3><button type="button" class="preview-button"><img alt="The editor at rest with the two result lines fixed under the header"><span>Open: the editor at rest</span></button><figcaption></figcaption></figure>
 </div></section>
-<p id="ranking">__RANKING__</p>
+<p id="ranking">Ranking: result lines fixed, then both rows fixed, then the baseline. Result lines over both rows: each
+keeps the result in view at every size, and at 100% text each also keeps the field and its lines in view. At 200% text
+the rows leave no room for the help on the inner panel and cut it on the cover panel, while the lines keep its first
+line on the inner panel and all of it on the cover panel. What the rows add is the two titles, which a template never
+changes. Both rows over the baseline: at 200% text the baseline loses the preview while typing inside a call, and
+showing the result of each keystroke is what the preview is for; the rows lose help instead, which can be scrolled to
+while the result stays in view.</p>
 <label><input type="radio" name="layout" value="none"> None of these; I say what instead in the last field</label>
 </fieldset>
 <details><summary>Read what was and was not checked</summary>
