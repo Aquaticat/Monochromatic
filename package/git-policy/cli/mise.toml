@@ -2,6 +2,10 @@
 description = "Run native wrapper tests and Clippy in bounded Git 2.56.0 containers"
 run = "node bin/test-native-container.mjs"
 
+[tasks."native:interop"]
+description = "Build the image holding Git 2.56.0, Node, the incumbent and the release native wrapper, then run `-- <driver> [arguments]` from native-interop/ in it"
+run = "node bin/interop-native-container.mjs"
+
 [tasks."native:mutation"]
 description = "Run the gate, plant guard removals, then run cargo-mutants over the native wrapper in bounded containers"
 run = ["node bin/test-native-container.mjs", "node bin/mutate-native-container.mjs"]
