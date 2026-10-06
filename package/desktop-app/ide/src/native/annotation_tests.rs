@@ -220,7 +220,7 @@ pub(super) fn painted(reader: &Reader) -> (usize, usize, usize) {
 }
 
 /// One complete left click at a window point.
-fn click(window: &AppWindow, position: LogicalPosition) {
+pub(super) fn click(window: &AppWindow, position: LogicalPosition) {
     window.window().dispatch_event(WindowEvent::PointerPressed {
         position,
         button: PointerEventButton::Left,

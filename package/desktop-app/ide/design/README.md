@@ -17,6 +17,126 @@ Answers are given in the chat and then recorded in `doc/handover/slint-ide-0x.md
 
 ## Index
 
+### 2026-10-05 UI batch 3
+
+- Screenshots: `screenshots/2026-10-05-ui-batch-3/`
+- Status: awaiting the user's answers.
+  The coordinating session asks the questions; no question page was built.
+  Until the answers, the branch `feat/ide-hint-rows` ships option `a` of every question
+  except `diagnostic-text`, where it ships `b`.
+- How the frames were made: section "How the 2026-10-05 UI batch 3 screenshots were produced".
+
+Every option is a real build.
+`<question>-<option>-<scheme>.png` is a whole 1400 by 1000 window of the `annotations` scene,
+and `<question>-<option>-<scheme>-crop.png` is the part that differs,
+cut at the same rectangle for every option of a question.
+Line numbers in the list name the scene's source lines.
+
+#### Hint row look (`hint-look`)
+
+- `a`, shipped: Inter at 13 px in the source ink at 70 percent, without a box, as editord draws hints.
+  Gains: the user's stated reference;
+  the narrower proportional face lets more hints share a row
+  (line 3 takes 2 hint rows, line 4 takes 5);
+  typeface, size, and row already set hints apart from code.
+  Costs: type names are not shown in the code's typeface.
+- `b`: the source family's real italic at 13 px in the same ink,
+  each label in a box of the source ink at 8 percent with 5 px padding,
+  as the end-of-line build drew hints.
+  Gains: types read in the code's family;
+  the box marks a label as inserted text.
+  Costs: wider labels and box padding put line 3 on 4 hint rows and line 4 on 6,
+  so line 4 stands 48 px lower and line 14 leaves the window;
+  stacked boxes form a dense block over short calls.
+
+Ranking: `a` > `b`,
+because `a` is the reference the user named and needs fewer rows for the same hints,
+while the box of `b` repeats a distinction the row placement already makes.
+
+#### Hint labels (`hint-labels`)
+
+- `a`, shipped: labels as the server sent them, such as `: number` and `width:`.
+  Gains: the colon tells a type from a parameter name,
+  which matters more on a row of its own than inside a line;
+  no rewriting that depends on a hint kind some servers leave out.
+  Costs: one or two characters more per label.
+- `b`: editord's stripping of a type hint's leading `: ` and a parameter hint's trailing `:`.
+  Gains: shorter, quieter labels, as in editord.
+  Costs: `number` (a type) and `width` (a parameter) look alike;
+  a server that leaves the kind out gets unstripped labels next to stripped ones.
+  In this scene the shorter labels saved no row.
+
+Ranking: `a` > `b`,
+because the colon is the only sign of what a hint names once it stands on its own row,
+and stripping saved no row in the measured scene.
+
+#### Hint packing (`hint-packing`)
+
+- `a`, shipped: editord's packing.
+  A hint stays on the current row when it starts 8 px after the previous hint's end,
+  otherwise it opens a new row that later hints continue.
+  Gains: rows read in source order, top to bottom;
+  the brief named editord's packing.
+  Costs: a call with several short arguments takes a row per argument:
+  line 4 takes 5 hint rows.
+- `b`: each hint takes the first row with room.
+  Gains: line 4 takes 2 hint rows,
+  so line 5 stands 48 px higher,
+  and hints arriving move later lines less.
+  Costs: rows no longer follow source order
+  (on line 4 the first row holds `shape:`, `height:`, `dx:`, and `dy:`, the second `width:` and `scale:`);
+  differs from editord.
+
+Ranking: `b` > `a`,
+because every hint stands at the x of its own character in both,
+so source order on rows adds little,
+while `b` saves rows exactly where blocks grow tallest.
+The default stays `a` until the user answers, because the brief asked for editord's packing.
+
+#### The caret card beside message rows and gutter letters (`diagnostic-rows`)
+
+The user decided for message rows,
+and on 2026-10-06 for a plain severity letter in front of the line number instead of an icon or a boxed marker,
+so the lettered box after the line end that this question first offered is gone.
+What is left is whether the earlier caret card stays beside them.
+The frames show the caret inside the string of line 7.
+
+- `a`, shipped: message rows and gutter letters only.
+  Gains: one place for every message;
+  nothing covers code or changes with the caret.
+  Costs: the full text of a message cut by the row caps is reachable only through the accessible description.
+- `b`: the same plus the card listing the problems at the caret,
+  under the caret's line or over it when the view ends first.
+  Gains: shows the full text of every problem at the caret,
+  also of a message cut by the caps.
+  Costs: covers the lines under the caret line and their rows while the caret is in a range,
+  in the frames the first message rows of line 8;
+  repeats the rows for every message that was not cut.
+
+Ranking: `a` > `b`,
+because `a` covers nothing and repeats nothing,
+while the text `b` adds is already on screen except for messages cut by a cap.
+A narrower `b` that opens the card only for a message cut by a cap would keep that gain at a smaller cost;
+it is not built.
+
+#### Message row text (`diagnostic-text`)
+
+- `a`: editord's wording, `error(ts): Type 'string' is not assignable to type 'number'.`
+  Gains: shorter;
+  line 8's information message fits one row instead of two in this scene.
+  Costs: drops the code (`2322`), which people search for;
+  the lower-case severity word reads less as a label.
+- `b`, shipped: the wording of the earlier caret card,
+  `Error 2322 (ts): Type 'string' is not assignable to type 'number'.`
+  Gains: keeps the code;
+  the capitalized severity word is the row's second channel besides ink;
+  the same text starts the accessible description.
+  Costs: a few characters longer, so long messages wrap a little sooner.
+
+Ranking: `b` > `a`,
+because the code is the one part a reader cannot reconstruct from the message,
+and the length difference cost one row in the scene.
+
 ### 2026-10-05 hint rows
 
 - Screenshots: `screenshots/2026-10-05-hint-rows/`
@@ -332,3 +452,62 @@ because neighbouring fixture lines look alike.
   and later lines 52, 94, 120, and 146 px,
   each by the blocks that appeared before it inside the window.
   The 1228 px of blocks that appeared before the window moved nothing.
+
+## How the 2026-10-05 UI batch 3 screenshots were produced
+
+### Builds
+
+Every option is a real build of the application.
+Options that the branch `feat/ide-hint-rows` ships are built from the prototype commit `c1edfcf40`,
+whose sources equal `feat/ide-hint-rows` at `970eebaae`, the build with the gutter letters.
+Every other option is one commit on the branch `prototype/ide-hint-row-variants`,
+in the worktree `.claude/worktrees/ide-hint-row-variants`.
+The tree of each commit is `c1edfcf40` plus only that option
+(each commit restores the files of the previous option),
+so checking one commit out builds that option alone.
+The branch is throwaway prototype code and is never merged.
+
+- `diagnostic-text` `a`, `ad6a6fac0`: editord wording without the code.
+- `hint-look` `b`, `c9873c837`: the source family italic in a box.
+- `hint-labels` `b`, `65184fbff`: editord label stripping.
+- `hint-packing` `b`, `d5736b7ed`: each hint on the first row with room.
+- `diagnostic-rows` `b`, `fce7a8852`: rows and gutter letters plus the caret card.
+
+The same options were first built on `fb0824037`, before the gutter letters,
+together with a lettered box after the line end that the user's decision of 2026-10-06 retired
+(commits `46704e4c2` to `9d24ffcca`);
+their frames were replaced by the frames of these builds.
+
+### Command, fixture, and window size
+
+Each frame set comes from a fresh session of the package's native inspection task,
+run in the worktree that holds the build:
+
+```sh
+# package/desktop-app/ide/mise.toml, task inspect:native
+IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-app/ide:inspect:native dark annotations
+IDE_NATIVE_MCP_PORT=9425 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-app/ide:inspect:native light annotations
+```
+
+- Fixture: `annotations`, the 239-line scene with 92 injected hints and 23 diagnostics
+  that the entry "2026-10-05 hint rows" describes.
+- Window: 1400 by 1000 at scale 1; every frame is checked to be 1400 by 1000 pixels.
+- Sessions: one per build and scheme, each quit through the compositor control socket.
+
+### Input and capture
+
+- Input is seat input through the compositor control socket (`click` and `key`).
+  The first frame of a session follows a click on line 1 and Ctrl+Home;
+  `diagnostic-rows` uses the second frame, after a click inside the string of line 7.
+- A frame is kept once three screenshots 1.2 s apart are byte-identical.
+- The stored files are re-encoded losslessly without ancillary chunks.
+- Crop rectangles, in pixels of the whole frame (left, top, right, bottom):
+  `hint-look`, `hint-labels`, and `hint-packing` 300, 30, 1100, 350;
+  `diagnostic-rows` 300, 290, 1400, 790;
+  `diagnostic-text` 300, 380, 1400, 950.
+- Measured on the frames by the ink of the gutter's line numbers,
+  the code row of line 5 stands at y 339 in the shipped build,
+  387 with `hint-look` `b`,
+  339 with `hint-labels` `b`,
+  and 291 with `hint-packing` `b`;
+  line 8 stands at 559 in the shipped build and 543 with `diagnostic-text` `a`.

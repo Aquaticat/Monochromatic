@@ -202,12 +202,6 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     document_width = document_width.max(annotate::extent(view.annotations.as_ref()) + CARET_ROOM);
     current.document_width = document_width;
     let problems = annotate::problems(&current);
-    // Prototype variant: the worst severity at the caret colors the card's stripe.
-    let worst = current
-        .annotations
-        .at(annotate::displayed(&current), current.document.position().head)
-        .first()
-        .map_or(0, |problem| return i32::from(ide_app::annotation::rank(problem.mark.severity)));
     let updated_source = if current.presented_revision != Some(revision) {
         current.presented_revision = Some(revision);
         Some(current.document.text().to_string())
@@ -254,7 +248,6 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         window.set_source_matches(ModelRc::from(Rc::new(VecModel::from(marks))));
     }
     annotate::present_problems(window, problems);
-    window.set_caret_problem_severity(worst);
     if let Some(status) = found.status {
         window.set_find_status(SharedString::from(status.label));
         window.set_find_status_detail(SharedString::from(status.detail));

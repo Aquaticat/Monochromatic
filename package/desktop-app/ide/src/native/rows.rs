@@ -196,7 +196,17 @@ pub(super) fn settle(current: &mut State, scale: f32, view: (f32, f32, f32, f32)
     let same_text = current
         .row_key
         .is_some_and(|(stamp, _, _)| return stamp == layout.key.0);
-    if kept != offset && same_text && scrolling(current) {
+    // What: `abs()` is the distance without its sign; the window's offset differs from the last one placed when
+    //       a scroll step is under way whose change handler has not run yet.
+    // Why: Under load a render can come between a wheel animation's last step and its change handler; that step
+    //      is scrolling too, and the rows must not cut it short.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const moving = Math.abs(offset - current.offset) > 0.01;
+    // ```
+    let moving = (offset - current.offset).abs() > 0.01;
+    if kept != offset && same_text && (moving || scrolling(current)) {
         tracing::debug!(
             offset,
             "rows above the view wait until scrolling has stopped"
@@ -302,6 +312,8 @@ pub(super) struct Placement {
     marks: Vec<i32>,
     /// The persistent severity-mark model.
     mark_model: Rc<VecModel<i32>>,
+    /// Number of lines, whose last number sets the width of the gutter's number column.
+    lines: usize,
     /// Top and height of everything the anchoring line owns.
     anchor: (f32, f32),
 }
@@ -351,6 +363,7 @@ pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
         model: Rc::clone(&current.line_tops),
         marks,
         mark_model: Rc::clone(&current.line_marks),
+        lines: map.lines(),
         anchor: anchor_place(map, anchor_line),
     };
 }
@@ -398,6 +411,8 @@ pub(super) fn present(window: &AppWindow, placement: Placement) {
     // ```
     window.set_line_tops(ModelRc::from(Rc::clone(model)));
     window.set_line_marks(ModelRc::from(Rc::clone(&placement.mark_model)));
+    // `try_from` turns the count into the toolkit's 32-bit integer; a count past its range reads as its largest.
+    window.set_line_count(i32::try_from(placement.lines).unwrap_or(i32::MAX));
     window.set_first_line(placement.first as i32);
     let (top, height) = placement.anchor;
     window.set_language_anchor_y(top);

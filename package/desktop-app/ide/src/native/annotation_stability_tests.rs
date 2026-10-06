@@ -39,8 +39,10 @@ use std::{fs, sync::Arc};
 const LINE: usize = 16;
 /// The gutter, severity letters and line numbers, starts this far left of the text.
 const GUTTER: f32 = super::sidebar_tests::GUTTER;
-/// Width of the gutter's severity-letter column, at its left edge.
-const LETTERS: f32 = 16.0;
+/// Advance of one line-number digit at the gutter's 15 px.
+const DIGIT: f32 = 9.0;
+/// Space between a line number and the text.
+const NUMBER_GAP: f32 = 12.0;
 /// Rows of a code row above its underline band; glyphs without descenders end there.
 const ABOVE_UNDERLINE: usize = 17;
 
@@ -137,10 +139,24 @@ fn band(shown: &SharedPixelBuffer<Rgba8Pixel>, y: f32) -> &[Rgba8Pixel] {
     return &shown.as_slice()[start..end];
 }
 
+/// What: Pixels of a band left of line `line`'s number, where its severity letter stands, in files of fewer than
+///       1000 lines.
+/// Why: The letter stands 4 px before the line's own number, so its place depends on the number's digit count.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function letterRoom(line: number): number;
+/// ```
+fn letter_room(line: usize) -> usize {
+    // `to_string().len()` counts the digits of the one-based line number.
+    let digits = (line + 1).to_string().len();
+    return (GUTTER - NUMBER_GAP - DIGIT * digits as f32) as usize;
+}
+
 /// What: Check that line `line`'s code row has the same pixels in `after` as in `before`, each at the place
 ///       its own mapping gives, and answer how far the line moved. `rows` limits the compared part of the row.
 /// Why: A line's number and text may move as a whole, never change; the distance is what the tests pin. The
-///      gutter's severity-letter column is left out: a letter comes and goes with its line's diagnostics, also
+///      gutter's severity letter is left out: a letter comes and goes with its line's diagnostics, also
 ///      while a reload holds the space of rows that are not painted.
 ///
 /// In TS you'd write (pseudocode):
@@ -155,8 +171,8 @@ fn moved(
 ) -> f32 {
     let from = TEXT_TOP + before.1.code_top(line);
     let to = TEXT_TOP + after.1.code_top(line);
-    // The letter column is the first `LETTERS` pixels of a band.
-    let skip = LETTERS as usize;
+    // Everything left of the line's number is where its letter may stand.
+    let skip = letter_room(line);
     for row in 0..rows {
         assert!(
             band(before.0, from + row as f32)[skip..] == band(after.0, to + row as f32)[skip..],
@@ -446,6 +462,31 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
         y += 1.0;
     }
     assert_eq!(shown.block_height(104), row);
+    // A scroll step whose change handler has not run yet is scrolling too: rows that arrive in the render
+    // right after it wait, and are shown once scrolling has stopped.
+    idle();
+    let resting = -window.get_scroll_y();
+    window.set_scroll_y(-(resting + 3.0));
+    inject(
+        &reader,
+        vec![
+            hint(at(10, 4), "a:"),
+            hint(at(20, 4), "c:"),
+            hint(at(104, 4), "b:"),
+        ],
+        Vec::new(),
+    );
+    assert_eq!(
+        map(&reader).block_height(20),
+        0.0,
+        "rows above the view were shown during a scroll step whose change handler had not run yet"
+    );
+    eventually(
+        "rows that waited for a scroll step were never shown",
+        || {
+            return reader.source.borrow().row_map.block_height(20) == row;
+        },
+    );
 }
 
 /// After an external change the old rows are not painted, but their space stays, so no line moves; when the
