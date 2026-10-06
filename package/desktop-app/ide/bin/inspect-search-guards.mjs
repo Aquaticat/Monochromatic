@@ -10,6 +10,12 @@ if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Guard scratch r
 if (!process.env.usage_cache) throw new Error('Provide the disposable Cargo target-cache directory');
 const cache = realpathSync(process.env.usage_cache);
 if (!cache.startsWith(realpathSync(privateRoot) + sep) || !statSync(cache).isDirectory()) throw new Error('Target cache must be a disposable directory below ' + privateRoot);
+// A private Cargo home copy keeps disposable builds off the shared volume's package-cache lock.
+let cargoHome = 'ide-cargo';
+if (process.env.usage_cargo) {
+  cargoHome = realpathSync(process.env.usage_cargo);
+  if (!cargoHome.startsWith(realpathSync(privateRoot) + sep) || !statSync(cargoHome).isDirectory()) throw new Error('Cargo home copy must be a disposable directory below ' + privateRoot);
+}
 const artifact = mkdtempSync(join(privateRoot, 'ide-search-guard-'));
 const source = join(artifact, 'package');
 const origin = process.cwd();
@@ -41,8 +47,14 @@ const cases = [
   // Whole-model replacement recreates Slint's repeated rows; this is a lifecycle control, not a custom guard.
   { name: 'model-replacement-click', native: true, test: 'replacement_query_cancels_a_held_result_click', control: true },
   { name: 'pending-open-focus', file: 'src/native/navigation/open.rs', before: 'if !window.get_search_open() {', after: 'if true {', occurrence: 1, native: true, test: 'pending_file_open_does_not_steal_search_input_focus', failure: 'asynchronous source install stole query focus' },
+  // The search box's clear control reports the emptied query, so the results are removed with it.
+  { name: 'clear-reports-edit', file: 'ui/query-input.slint', before: '        root.edited("");\n', after: '', native: true, test: 'search_clear_cell_is_48px_clears_the_query_and_results_and_keeps_focus', failure: 'clearing the query left search results' },
   { name: 'same-file-focus', file: 'src/native/navigation/open.rs', before: 'if !window.get_search_open() {', after: 'if true {', native: true, test: 'pending_file_open_does_not_steal_search_input_focus', failure: 'same-file request stole query focus' },
 ];
+// An optional comma-separated list reruns only the named guards, for example after adding one.
+const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
+const selected = only ? cases.filter(item => only.has(item.name)) : cases;
+if (only && selected.length !== only.size) throw new Error('Unknown guard name in: ' + process.env.usage_only);
 const results = [];
 const run = (item, phase) => {
   const command = item.native
@@ -51,7 +63,7 @@ const run = (item, phase) => {
   const result = spawnSync('podman', [
     'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
     '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
-    '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', 'ide-cargo:/cargo',
+    '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
     '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2', '--env', 'SLINT_EMIT_DEBUG_INFO=1',
     '--env', 'SLINT_BACKEND=headless', '--env', 'SLINT_MCP_PORT=0', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
     'localhost/monochromatic/ide', ...command,
@@ -67,7 +79,7 @@ const run = (item, phase) => {
   if (!accepted) throw new Error('Unexpected ' + phase + ' result for ' + item.name + '; inspect ' + artifact);
   console.log(JSON.stringify(results.at(-1)));
 };
-for (const item of cases) {
+for (const item of selected) {
   run(item, 'baseline');
   if (item.control) continue;
   const path = join(source, item.file);
@@ -80,4 +92,4 @@ for (const item of cases) {
   } finally { writeFileSync(path, original); }
   run(item, 'restored');
 }
-console.log('Search guard controls passed: ' + artifact);
+console.log('Search guard controls passed: ' + artifact + ' (' + selected.length + ' of ' + cases.length + ' guards)');

@@ -26,6 +26,10 @@ mod sync;
 #[path = "language/requests.rs"]
 mod requests;
 
+/// Hint and pull-diagnostics requests asked again after a timeout.
+#[path = "language/again.rs"]
+mod again;
+
 /// Replies to server requests; refusal of server-initiated edits.
 #[path = "language/policy.rs"]
 mod policy;
@@ -33,6 +37,10 @@ mod policy;
 /// Crash, restart, file switches, launch refusal, and shutdown.
 #[path = "language/lifecycle.rs"]
 mod lifecycle;
+
+/// What a clean open, request, close, and shutdown leave in the log and the process table.
+#[path = "language/quiet.rs"]
+mod quiet;
 
 /// Working directory and enclosing-tree root handling.
 #[path = "language/roots.rs"]

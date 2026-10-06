@@ -31,8 +31,8 @@ use slint::{
 /// Disposable fixtures and shared snapshot pointers.
 use std::{fs, sync::Arc};
 
-/// Source text starts right of the 256 px tree, its 48 px divider cell, and the 56 px line-number gutter.
-pub(super) const TEXT_LEFT: f32 = 360.0;
+/// Source text starts right of the 256 px tree, the divider's 1 px line, and the 56 px line-number gutter.
+pub(super) const TEXT_LEFT: f32 = 313.0;
 /// Source rows start below the 32 px file label.
 pub(super) const TEXT_TOP: f32 = 32.0;
 

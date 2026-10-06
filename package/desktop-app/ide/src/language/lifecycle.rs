@@ -2,6 +2,8 @@
 
 /// Starting and attaching servers is its own step.
 use super::attach;
+/// A reload renews what each server may be asked again for.
+use super::owed::Owed;
 /// Requests that follow every open and change.
 use super::request;
 /// The spelling Helix uses for paths below the project root.
@@ -240,6 +242,9 @@ pub(super) fn reload(worker: &mut Worker, mut reload: DocumentReload) {
     // Index loop: the body changes one record while reading the document.
     for index in 0..worker.session.servers.len() {
         let record = &mut worker.session.servers[index];
+        // `Owed::default()` builds the empty record: the new text is asked about afresh, and
+        // answers owed for the previous text are no longer wanted.
+        record.owed = Owed::default();
         // A server still starting receives the current text through its eventual `didOpen`.
         if !record.attached || !record.opened || record.state == ServerState::Unsynchronized {
             continue;

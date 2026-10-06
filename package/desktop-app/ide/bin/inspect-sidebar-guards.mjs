@@ -25,6 +25,8 @@ console.log('SIDEBAR_GUARD_ARTIFACT=' + artifact);
 
 const drag = 'divider_drag_resizes_and_stops_at_both_bounds';
 const resize = 'window_resize_shrinks_the_sidebar_and_restores_the_request';
+const zone = 'divider_zone_takes_drags_on_five_columns_only';
+const states = 'divider_states_change_line_weight_and_ink';
 const stored = 'root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);';
 const cases = [
   // The stored request: drag and keys cannot keep a width that cannot be shown now.
@@ -34,9 +36,18 @@ const cases = [
   { name: 'left-button-only', file: 'ui/divider.slint', before: '            if !self.pressed { return; }\n', after: '', test: 'divider_ignores_plain_clicks_and_other_buttons_and_keeps_keyboard_focus', failure: 'a right-button drag resized the sidebar' },
   // The layout clamp: the source cell keeps its minimum and is never the cell that shrinks first.
   { name: 'source-minimum', file: 'ui/app.slint', before: '            min-width: root.source-minimum-width;\n', after: '', test: resize, failure: 'the sidebar did not shrink to keep the source minimum' },
-  { name: 'source-preferred', file: 'ui/app.slint', before: '            preferred-width: root.source-minimum-width;\n', after: '', test: resize, failure: 'a long source diagnostic narrowed the sidebar' },
+  // The file label and a diagnostic can both prefer more width than the window; the label is checked first.
+  { name: 'source-preferred', file: 'ui/app.slint', before: '            preferred-width: root.source-minimum-width;\n', after: '', test: resize, failure: 'narrowed the sidebar' },
   { name: 'sidebar-minimum', file: 'ui/app.slint', before: 'min-width: root.project-visible ? root.sidebar-minimum-width : 0px;', after: 'min-width: 0px;', test: resize, failure: 'the sidebar shrank below its minimum' },
   { name: 'maximum-floor', file: 'ui/app.slint', before: 'max(root.sidebar-minimum-width,\n        root.width - root.divider-width - root.source-minimum-width)', after: '(root.width - root.divider-width - root.source-minimum-width)', test: resize, failure: 'the reported maximum fell below the minimum' },
+  // The pointer zone is the line's column and two columns on each side: no wider and no narrower.
+  { name: 'zone-not-wider', file: 'ui/divider.slint', before: 'out property <length> reach: 2px;', after: 'out property <length> reach: 3px;', test: zone, failure: 'outside the zone, resized the sidebar' },
+  { name: 'zone-not-narrower', file: 'ui/divider.slint', before: 'out property <length> reach: 2px;', after: 'out property <length> reach: 1px;', test: zone, failure: 'did not start a drag' },
+  // Keyboard focus on the 1px line is marked by a color of its own and by a handle.
+  { name: 'focus-color', file: 'ui/divider.slint', before: 'background: root.keyboard-focus ? Palette.accent-background : Palette.foreground;', after: 'background: Palette.foreground;', test: states, failure: 'keyboard focus does not have a line color of its own' },
+  { name: 'focus-handle', file: 'ui/divider.slint', before: '        visible: root.keyboard-focus;\n', after: '        visible: false;\n', test: states, failure: 'keyboard focus did not draw its handle' },
+  // Without a project the pointer half takes no input over the source.
+  { name: 'hidden-grip', file: 'ui/app.slint', before: '        visible: root.project-visible;\n        x: project-tree.width - self.reach;', after: '        x: project-tree.width - self.reach;', test: 'hidden_project_has_no_divider', failure: 'the first window pixel is not source without a project' },
   // Without a project there is no divider to focus.
   { name: 'hidden-divider', file: 'ui/app.slint', before: '            visible: root.project-visible;\n            min-width: root.project-visible ? root.divider-width : 0px;', after: '            min-width: root.project-visible ? root.divider-width : 0px;', test: 'hidden_project_has_no_divider', failure: 'reached the divider of a hidden project' },
 ];

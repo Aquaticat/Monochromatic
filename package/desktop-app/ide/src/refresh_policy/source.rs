@@ -69,8 +69,9 @@ impl SourceRefresh {
         }
     }
 
-    /// True when a read should start now: the first read, missing highlighting, a settled or quiet
-    /// change, or the timer. `highlight_missing` says the displayed revision has no accepted highlighting.
+    /// True when a read should start now: the first read, a settled or quiet change, missing
+    /// highlighting, or the timer. `highlight_missing` says the displayed revision has no accepted highlighting.
+    /// While an unfinished write is waiting, neither highlighting nor the timer starts a read.
     pub fn due(&self, now: Instant, highlight_missing: bool) -> bool {
         // What: `let ... else` binds `Some(last)` or returns early when there was no read yet.
         // Why: The first read happens immediately, as it did under polling.
@@ -85,24 +86,30 @@ impl SourceRefresh {
         // Requests outside the timers wait this long after the previous read started, so a file
         // rewritten many times per second, or one that cannot be read, is not reread on every tick.
         let rested = now.saturating_duration_since(last) >= REREAD_GAP;
-        if highlight_missing && rested {
-            return true;
-        }
-        if let Some(since) = self.pending_since
-            && rested
-        {
+        // What: `if let Some(since) = ...` runs only while a notification is unread; every path in it returns.
+        // Why: An unread notification alone decides. A timer or a highlighting request must not read a
+        //      file whose write is unfinished; that wait ends by itself within `WRITE_WAIT_LIMIT`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.pendingSince !== undefined) return rested && (settled || quiet || waitedLongEnough);
+        // ```
+        if let Some(since) = self.pending_since {
+            if !rested {
+                return false;
+            }
             match self.unsettled_at {
                 None => {
                     return true;
                 }
                 Some(at) => {
-                    if now.saturating_duration_since(at) >= WRITE_QUIET
-                        || now.saturating_duration_since(since) >= WRITE_WAIT_LIMIT
-                    {
-                        return true;
-                    }
+                    return now.saturating_duration_since(at) >= WRITE_QUIET
+                        || now.saturating_duration_since(since) >= WRITE_WAIT_LIMIT;
                 }
             }
+        }
+        if highlight_missing && rested {
+            return true;
         }
         let interval = if self.watched {
             SAFETY_SWEEP

@@ -71,13 +71,15 @@ fn state(action: Action, row: &ServerStatus) -> Option<String> {
     let server = &row.server.name;
     let key = action.key();
     let title = heading(action.kind());
+    let wanted = feature(action.kind());
     // `Some(format!(...))` returns the sentence for a state that needs one.
     return match &row.state {
         ServerState::MissingExecutable { reason } => Some(format!(
             "{title} needs {server}, which is not available: {reason}. After installing it, press {key} again."
         )),
+        // Every reason the launch policy gives ends with its remedy, so the reason comes last.
         ServerState::LaunchRefused { reason } => Some(format!(
-            "{server} was not started because its launch was refused: {reason}. Language features stay off for this file."
+            "{server} was not started, so {wanted} is not available for this file: {reason}."
         )),
         ServerState::FailedToStart { reason } => Some(format!(
             "{server} failed to start: {reason}. Press {key} again to start it again."

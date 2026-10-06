@@ -21,9 +21,9 @@ use std::{
 };
 
 /// The retained timer owns navigation until the test window is released.
-struct Reader {
+pub(super) struct Reader {
     /// Native consumer window, including the actual imported search markup.
-    window: AppWindow,
+    pub(super) window: AppWindow,
     /// Source state lets assertions inspect canonical character positions, not pixel guesses.
     source: Rc<RefCell<State>>,
     /// Drop ends polling and releases the worker owners.
@@ -31,7 +31,7 @@ struct Reader {
 }
 
 /// Bind a source-empty reader so the first successful search result controls initial installation.
-fn reader(root: &Path) -> Reader {
+pub(super) fn reader(root: &Path) -> Reader {
     let workspace = Workspace::new(root).expect("disposable workspace");
     let window = AppWindow::new().expect("native search window");
     let source = Rc::new(RefCell::new(State::new("", None)));
@@ -69,7 +69,7 @@ fn key(window: &AppWindow, key: Key) {
 }
 
 /// Two native Shift releases should focus the transient query input from either tree or source.
-fn open(window: &AppWindow) {
+pub(super) fn open(window: &AppWindow) {
     key(window, Key::Shift);
     key(window, Key::Shift);
     assert!(
