@@ -54,4 +54,47 @@ export const ORACLE_SOURCE_SPAN = '不吃罐头';
  */
 export const ORACLE_CANDIDATE_SPAN = 'They eat canned food';
 
+/**
+ One arm of the instrument: a rendering to audit, its label and what a
+ working instrument should conclude.
+
+ @example
+ ```ts
+ const arm: AuditArm = { candidateText: FLIPPED_CANDIDATE, arm: 'flipped', expectation: 'defect', };
+ ```
+ */
+export type AuditArm = {
+  /**
+   Rendering under audit.
+   */
+  readonly candidateText: string;
+
+  /**
+   Label for the arm.
+   */
+  readonly arm: string;
+
+  /**
+   What a working instrument should conclude, printed only; nothing branches
+   on it.
+   */
+  readonly expectation: string;
+};
+
+/**
+ Both arms, in the order they run.
+ */
+export const AUDIT_ARMS: readonly AuditArm[] = [
+  {
+    candidateText: FLIPPED_CANDIDATE,
+    arm: 'flipped',
+    expectation: 'agreement at either tier on the oracle span',
+  },
+  {
+    candidateText: CLEAN_CANDIDATE,
+    arm: 'clean',
+    expectation: 'agreement at neither tier',
+  },
+];
+
 //endregion Audit sensitivity inputs

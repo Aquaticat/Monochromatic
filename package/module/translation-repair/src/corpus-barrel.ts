@@ -11,7 +11,8 @@
 // POOLING AND GENERATION IDENTITY LEFT for `generation-barrel.ts` on the same
 // grounds when this file in turn reached the budget. `index.ts` composes both,
 // so nothing importing the package sees the seam. What an operator types to a
-// bench or probe left for `probe-args-barrel.ts` the same way.
+// bench or probe left for `probe-args-barrel.ts` the same way, and the writer
+// of a graded sheet and its manifest for `probe-barrel.ts`.
 
 export {
   probeRosterWith,
@@ -174,7 +175,6 @@ export {
   markupFraction,
 } from './corpus-run/markup-slice.ts';
 export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
-export { writeSheetPair, } from './corpus-run/sheet-write.ts';
 export {
   parseRunJson,
   readRunJson,

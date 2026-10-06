@@ -137,6 +137,59 @@ export {
   type SensitivityArm,
 } from './corpus-run/probe-sensitivity-arms.ts';
 export { gatherControlCases, } from './corpus-run/probe-relabel-control.ts';
+export { nowAsIso, } from './corpus-run/probe-run-clock.ts';
+export { singleRegionTally, } from './corpus-run/probe-single-tally.ts';
+export {
+  sensitivityArmLines,
+  sensitivityNotes,
+  sensitivityOpening,
+} from './corpus-run/probe-sensitivity-print.ts';
+export { runSensitivity, } from './corpus-run/probe-sensitivity-run.ts';
+export {
+  otherDisclosure,
+  probePair,
+} from './corpus-run/probe-relabel-pair.ts';
+export {
+  relabelCaseLines,
+  relabelClaimLines,
+  relabelCounts,
+  relabelGathered,
+  relabelNotes,
+  relabelRebuilt,
+} from './corpus-run/probe-relabel-print.ts';
+export { runProbeRelabel, } from './corpus-run/probe-relabel-run.ts';
+export {
+  ABSENT_ISSUE,
+  ALL_FIXED_PATCHED_TEXT,
+  ALL_FIXED_SOURCE_TEXT,
+  DEFECTIVE_TEXT,
+  MEANING_ISSUE,
+  MIXED_SHEET_PATCHED_TEXT,
+  SINGLE_ISSUE_CASES,
+  SOURCE_TEXT as CHECKER_SOURCE_TEXT,
+  TENSE_ISSUE,
+} from './corpus-run/checker-sensitivity-input.ts';
+export {
+  CHECKER_NOTE,
+  sheetCheckLine,
+  singleCheckLine,
+} from './corpus-run/checker-sensitivity-print.ts';
+export {
+  checkAllFixedSheet,
+  checkMixedSheet,
+  checkOne,
+  runCheckerSensitivity,
+} from './corpus-run/checker-sensitivity-run.ts';
+export {
+  collectFlagged,
+  keepAdmissible,
+} from './corpus-run/probe-verify-collect.ts';
+export {
+  runProbeVerify,
+  verifyOpening,
+  VERIFY_BLIND_NOTE,
+  verifyWrote,
+} from './corpus-run/probe-verify-run.ts';
 export {
   formatVerifyManifest,
   formatVerifySheet,
@@ -144,5 +197,12 @@ export {
   orderBlind,
   type VerifyItem,
 } from './corpus-run/probe-verify-sheet.ts';
+// THE WRITER OF A SHEET AND ITS MANIFEST sits here beside the sheet it writes
+// for: it left `corpus-barrel.ts` when that file reached its line budget, and
+// the probes and samples that write a graded sheet are who asks for it.
+export {
+  assertSheetPairFree,
+  writeSheetPair,
+} from './corpus-run/sheet-write.ts';
 
 //endregion Probe barrel

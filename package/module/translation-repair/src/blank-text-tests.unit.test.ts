@@ -1199,17 +1199,17 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/audit-sensitivity.ts#meetsOracle': {
+  'corpus-run/audit-sensitivity-oracle.ts#meetsOracle': {
     tests: 1,
     why: AUDIT_FOCUS,
   },
-  'corpus-run/audit-sensitivity.ts#reportVoice': {
+  'corpus-run/audit-sensitivity-oracle.ts#shownText': {
+    tests: 1,
+    why: AUDIT_FOCUS,
+  },
+  'corpus-run/audit-sensitivity-print.ts#voiceLines': {
     tests: 1,
     why: ASSEMBLED,
-  },
-  'corpus-run/audit-sensitivity.ts#shownText': {
-    tests: 1,
-    why: AUDIT_FOCUS,
   },
   'corpus-run/blockquote-paragraphs.ts#blockquoteParagraphs': {
     tests: 2,

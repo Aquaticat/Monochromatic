@@ -109,4 +109,22 @@ export {
   printVoices,
 } from './corpus-run/rendering-audit-settled-print.ts';
 
+export {
+  AUDIT_ARMS,
+  ORACLE_CANDIDATE_SPAN,
+  ORACLE_SOURCE_SPAN,
+  SOURCE_TEXT as AUDIT_SOURCE_TEXT,
+} from './corpus-run/audit-sensitivity-input.ts';
+export {
+  pointsAtOracle,
+  shownText,
+  sightedVoices,
+} from './corpus-run/audit-sensitivity-oracle.ts';
+export {
+  armLines,
+  keptLine,
+  voiceLines,
+} from './corpus-run/audit-sensitivity-print.ts';
+export { runAuditSensitivity, } from './corpus-run/audit-sensitivity-run.ts';
+
 //endregion Audit barrel

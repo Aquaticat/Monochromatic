@@ -1,29 +1,11 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
-
-import { wordForCount, } from '../count-word.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
-import { writeSheetPair, } from './sheet-write.ts';
-import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
-import {
-  type ScreenedDefectClaim,
-  UPHELD_ADMISSIBILITY,
-} from '../introduced-defect-screen.ts';
-import {
-  gatherRelabelCases,
-  type RelabelCase,
-} from './probe-relabel-case.ts';
+import { gatherRelabelCases, } from './probe-relabel-case.ts';
 import { gatherControlCases, } from './probe-relabel-control.ts';
-import {
-  formatVerifyManifest,
-  formatVerifySheet,
-  type VerifyItem,
-} from './probe-verify-sheet.ts';
+import { runProbeVerify, } from './probe-verify-run.ts';
 import {
   createRunClient,
   resolveRunsDir,
   RUN_CORPUS_PIN,
-  RUN_MODELS,
-  RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 
 //region Probe verify
@@ -42,131 +24,7 @@ import {
 // quotes that text and lands outside the repository.
 
 /**
- Admissible claims, which are the only ones worth putting to a human.
-
- A contradicted claim is one the differential already refuted, and an
- unanchored one quotes nothing checkable. Asking about either would spend a
- reader's attention on a claim the deterministic screen has already settled.
-
- @param claims - screened claims of one region
-
- @returns Claims the screen corroborated
-
- @example
- ```ts
- const admissible = keepAdmissible({ claims, },);
- ```
- */
-function keepAdmissible(
-  { claims, }: { readonly claims: readonly ScreenedDefectClaim[]; },
-): readonly ScreenedDefectClaim[] {
-  return claims
-    .filter(function isAdmissible(claim,) {
-      return UPHELD_ADMISSIBILITY.has(claim.admissibility,);
-    },);
-}
-
-/**
- Probes one region with the accepted issues withheld.
-
- @param relabelCase - region and its surrounding texts
-
- @returns Admissible claims raised, empty when the probe found nothing
-
- @example
- ```ts
- const claims = await probeWithheld({ relabelCase, },);
- ```
- */
-async function probeWithheld(
-  { relabelCase, }: { readonly relabelCase: RelabelCase; },
-): Promise<readonly ScreenedDefectClaim[]> {
-  /**
-   Report for this single region, with nothing labelled pre-existing.
-   */
-  const report = await runIntroducedDefectProbe({
-    client: createRunClient(),
-    proberModelIds: RUN_MODELS.checkerModelIds,
-    sourceText: relabelCase.sourceText,
-    baselineText: relabelCase.baselineText,
-    regions: [relabelCase.region,],
-    issues: [],
-    identityContext: '',
-    signal: new AbortController().signal,
-    perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-    l: tagged({ tag: 'probe-verify', },),
-  },);
-
-  /**
-   Screened tally of the single region.
-   */
-  const [tally,] = report.regions;
-
-  return keepAdmissible({ claims: tally?.claims ?? [], },);
-}
-
-/**
- Probes every case and keeps the ones the probe flagged.
-
- @param cases - regions to probe
-
- @param kind - which set these came from, for the manifest
-
- @returns Sheet items, one per flagged region
-
- @example
- ```ts
- const items = await collectFlagged({ cases, kind: 'control', },);
- ```
- */
-async function collectFlagged(
-  {
-    cases,
-    kind,
-  }: {
-    readonly cases: readonly RelabelCase[];
-    readonly kind: 'damaged' | 'control';
-  },
-): Promise<readonly VerifyItem[]> {
-  /**
-   Items gathered so far.
-   */
-  const items: VerifyItem[] = [];
-  // Sequential so this never competes with a running corpus pass for the
-  // per-model stream slots.
-  /* oxlint-disable no-await-in-loop -- sequential by design, see comment */
-  for (const relabelCase of cases) {
-    /**
-     Admissible claims on this region.
-     */
-    const claims = await probeWithheld({ relabelCase, },);
-    console.log(
-      `VERIFY ${kind} ${relabelCase.entryId} ${
-        String(claims.length,)
-      } admissible ${
-        wordForCount({
-          count: claims.length,
-          one: 'claim',
-          many: 'claims',
-        },)
-      }`,
-    );
-    if (claims.length === 0)
-      continue;
-
-    items.push({
-      relabelCase,
-      claims,
-      kind,
-    },);
-  }
-  /* oxlint-enable no-await-in-loop */
-
-  return items;
-}
-
-/**
- Builds the blind verification sheet and its scoring manifest.
+ Hands the run's directory, pin and client builder to the verification.
 
  @example
  ```ts
@@ -174,80 +32,15 @@ async function collectFlagged(
  ```
  */
 async function main(): Promise<void> {
-  /**
-   Run artifact root for this checkout.
-   */
-  const dir = await resolveRunsDir();
-
-  /**
-   Manifest the damaged positions index into.
-   */
-  const manifestPath =
-    `${dir}/sample-manifest-milestone-three-precision-round-three.json`;
-
-  /**
-   Regions a human read as damaged.
-   */
-  const damaged = await gatherRelabelCases({
-    manifestPath,
+  await runProbeVerify({
+    dir: await resolveRunsDir(),
     pin: RUN_CORPUS_PIN,
+    newClient: createRunClient,
+    gather: {
+      damaged: gatherRelabelCases,
+      controls: gatherControlCases,
+    },
   },);
-
-  /**
-   Regions from the same entries that nobody read.
-   */
-  const controls = await gatherControlCases({
-    manifestPath,
-    damaged,
-    pin: RUN_CORPUS_PIN,
-  },);
-  console.log(
-    `VERIFY probing ${String(damaged.length,)} damaged and ${
-      String(controls.length,)
-    } control ${
-      wordForCount({
-        count: controls.length,
-        one: 'region',
-        many: 'regions',
-      },)
-    }, issues withheld`,
-  );
-
-  /**
-   Flagged regions from both sets.
-   */
-  const items = [
-    ...await collectFlagged({
-      cases: damaged,
-      kind: 'damaged',
-    },),
-    ...await collectFlagged({
-      cases: controls,
-      kind: 'control',
-    },),
-  ];
-
-  await writeSheetPair({
-    dir,
-    sheetName: 'probe-verify-sheet.md',
-    manifestName: 'probe-verify-manifest.json',
-    sheet: formatVerifySheet({ items, },),
-    manifest: formatVerifyManifest({ items, },),
-  },);
-
-  console.log(
-    `VERIFY wrote ${String(items.length,)} ${
-      wordForCount({
-        count: items.length,
-        one: 'item',
-        many: 'items',
-      },)
-    } to ${dir}/probe-verify-sheet.md`,
-  );
-  console.log(
-    'NOTE the sheet is blind and its manifest is not. Grade the sheet without '
-      + 'opening the manifest, or the answer stops meaning anything.',
-  );
 }
 
 // Guarded so this runs only when INVOKED. Unguarded it ran on IMPORT, so

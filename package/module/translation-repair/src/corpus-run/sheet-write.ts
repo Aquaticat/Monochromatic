@@ -45,6 +45,56 @@ async function exists({ path, }: { readonly path: string; },): Promise<boolean> 
 }
 
 /**
+ Refuses when either file of a sheet pair is already in the directory.
+
+ Callable before the work that fills the pair, so a rerun that would be
+ refused at the write is refused before that work is paid for.
+
+ @param dir - directory the pair would land in
+
+ @param sheetName - sheet file name
+
+ @param manifestName - manifest file name
+
+ @throws {@link StatedRefusalError} when either file is already there, naming
+ the first found, the sheet before the manifest
+
+ @example
+ ```ts
+ await assertSheetPairFree({ dir, sheetName: 'damage-sheet.md', manifestName: 'damage-manifest.json', },);
+ ```
+ */
+export async function assertSheetPairFree(
+  {
+    dir,
+    sheetName,
+    manifestName,
+  }: {
+    readonly dir: string;
+    readonly sheetName: string;
+    readonly manifestName: string;
+  },
+): Promise<void> {
+  for (const path of [
+    join(
+      dir,
+      sheetName,
+    ),
+    join(
+      dir,
+      manifestName,
+    ),
+  ]) {
+    /* oxlint-disable no-await-in-loop -- two files, checked in order so the refusal names the first one found */
+    if (await exists({ path, },))
+      throw new StatedRefusalError({
+        says: `${path} already exists; grade or move it before rerunning, since a rerun would replace a grader's work`,
+      },);
+    /* oxlint-enable no-await-in-loop */
+  }
+}
+
+/**
  Writes a sheet and its manifest, refusing to replace either.
 
  @param dir - directory both land in
@@ -96,17 +146,11 @@ export async function writeSheetPair(
     dir,
     manifestName,
   );
-  for (const path of [
-    sheetPath,
-    manifestPath,
-  ]) {
-    /* oxlint-disable no-await-in-loop -- two files, checked in order so the refusal names the first one found */
-    if (await exists({ path, },))
-      throw new StatedRefusalError({
-        says: `${path} already exists; grade or move it before rerunning, since a rerun would replace a grader's work`,
-      },);
-    /* oxlint-enable no-await-in-loop */
-  }
+  await assertSheetPairFree({
+    dir,
+    sheetName,
+    manifestName,
+  },);
   await writeFileAtomic({
     path: manifestPath,
     text: manifest,

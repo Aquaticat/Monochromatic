@@ -632,7 +632,7 @@ function floorInputOmissions({ files, }: { readonly files: readonly SourceText[]
  in one is theirs.
  */
 const MEASUREMENT_FILES: Readonly<Record<string, string>> = {
-  'corpus-run/checker-sensitivity.ts': 'asks whether the resolution checkers can say no, on cat-themed sheets',
+  'corpus-run/checker-sensitivity-run.ts': 'asks whether the resolution checkers can say no, on cat-themed sheets',
   'corpus-run/coverage-control.ts': 'asks the coverage roster about a passage before and after its anchors are cut',
   'corpus-run/coverage-probe.ts': 'asks the coverage roster about the passages the aligners refuse to pair',
   'corpus-run/editor-calibrate.ts': 'ranks every model on the editor\'s job over drawn slices',
