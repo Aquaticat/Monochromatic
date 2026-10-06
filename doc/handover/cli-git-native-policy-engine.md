@@ -192,6 +192,38 @@ Commit `24cfeaaee`:
 441 unit and 36 binary-level tests,
 evidence `native-sgFHN6`.
 
+### Shared command reading and single-body platform functions
+
+Commits `e0042aeda` and `37d362484`:
+443 unit and 37 binary-level tests.
+The tree was gated four times under separate image tags,
+one per part of the first mutation campaign over every file,
+evidence `native-xi1ELC`,
+`native-uKOShH`,
+`native-aa2VKI`
+and `native-nKKJSe`.
+A fifth gate build ended in a Podman error and was started again;
+see "Podman under concurrent use".
+
+### Option scanners that say whether they took the next token
+
+Commit `08847be01`:
+443 unit and 37 binary-level tests,
+evidence `native-TEGRqD`.
+
+### Final tree
+
+Commit `348d94cbe` is the last one that changes `package/git-policy/cli/src/native/`:
+442 unit and 37 binary-level tests,
+evidence `native-eqKHwb`.
+The unit count is one lower because `detects_the_escape_hatch` left with the function it tested;
+the other follow-up commits extend tests that already existed.
+This gate also covers commits `66a3e9b9c`,
+`52cc1494b`
+and `5e5972f64`,
+which had been checked on the host only.
+Its image is the one the second mutation campaign runs against.
+
 ### Tests run on the host
 
 The delegation asked that repository-changing checks run only inside the container.
@@ -803,6 +835,27 @@ The binary-level commit test now pins those four forms against real Git.
 `GitFacts::location` asks the same question with one more output line.
 It is kept for its real-Git tests.
 
+### The repository's Rust linter is not part of the gate
+
+The gate lints with Clippy only.
+`mise run //package/git-policy/cli:native:lint:rust`,
+added in commit `4133d2900`,
+runs `package/linter/rust` over `src/native/`,
+which checks the code-line budget and required rustdoc.
+On the tree of commit `348d94cbe` it exits nonzero with 263 findings,
+all of the rule `require-rustdoc` and none about the line budget:
+212 on `use` statements,
+33 on fields,
+9 on functions,
+8 on constants
+and 1 on an impl block.
+The 9 functions are the trait methods of `RepositoryFacts` implementations and one `check` method;
+the 8 constants and the impl block are in test support.
+Nothing was changed in response.
+The delegation's gate does not include this linter
+and its brief does not ask for it;
+the findings are listed under "What remains".
+
 ## Mutation testing
 
 ### Runner changes
@@ -1005,11 +1058,262 @@ split by the standard library,
 and the three rule cores that read a command's own options take both from it.
 `command_tokens_split_after_the_global_options` tests the split.
 
-### Final tree
+### Podman under concurrent use
+
+Several sessions used Podman on this host at the same time as these runs.
+Two failures came from that,
+and neither is a test result:
+
+- `podman rm failed ... database is locked`,
+  during the planted controls of evidence `native-mutation-u9lW01`.
+- A gate build that ended with
+  `Error: committing container for step ... Args:[mkdir --parents /home/tester/.cargo] ...`
+  `unpacking failed (error: exit status 1; output: mkdir /home: no such file or directory)`,
+  when four gate builds committed their layers at once.
+
+Each run was started again once and then succeeded.
+The second campaign over every file gates once
+and gives the one image a tag per part with `podman tag`,
+so no two builds of the same layers run side by side.
+
+### First campaign over every file
+
+Tree of commit `37d362484`,
+after the two exclusions:
+1244 mutants in 67 files,
+split by file into four parts of 311 that ran side by side,
+each against a gate image of its own tag.
+The 12 other files of `src/native/` hold option tables,
+module declarations
+and test support,
+and cargo-mutants finds nothing to change in them.
+
+The foundation's full campaign had 513 mutants,
+because it ran before the command parser and the rule cores were merged.
+[`cli-git-native-command-parser.md`](cli-git-native-command-parser.md)
+records planted textual mutations for those modules
+under "Planted mutations",
+so this was the first run of cargo-mutants over them.
+
+- Part 0
+  (evidence `native-mutation-gYTjCf`,
+  unmutated test time 29 seconds):
+  274 caught,
+  32 unviable,
+  1 missed,
+  4 timeouts.
+- Part 1
+  (evidence `native-mutation-GHKGah`,
+  unmutated test time 33 seconds):
+  287 caught,
+  22 unviable,
+  0 missed,
+  2 timeouts.
+- Part 2
+  (evidence `native-mutation-INArmn`,
+  unmutated test time 29 seconds):
+  271 caught,
+  39 unviable,
+  1 missed,
+  0 timeouts.
+- Part 3
+  (evidence `native-mutation-Q70PBa`,
+  unmutated test time 23 seconds):
+  264 caught,
+  41 unviable,
+  3 missed,
+  3 timeouts.
+
+Together:
+1096 caught,
+134 unviable,
+5 missed
+and 9 timeouts.
+The second reading set no caught mutant aside in any part.
+The 14 mutants that were not caught are dispositioned under
+"Missed mutants of the first campaign",
+"Mutants that stalled the option scanner"
+and "Timeouts caused by a stalled host".
+
+### Missed mutants of the first campaign
+
+#### A wrapper-flag lookup only tests called
+
+`command_options_query.rs`,
+`==` to `!=` in `has_wrapper_flag`.
+No production code called the function,
+and its tests did not tell the two forms apart.
+Commit `66a3e9b9c` removes the function;
+the tests that used it now assert on the parsed record.
+
+#### The shortest answer the sequencer path reader accepts
+
+`rule_commit_sequencer.rs`,
+`<` to `<=` in the length guard of `sequencer_head_paths`.
+The guard is right as written,
+and no test gave an answer of exactly the shortest accepted length.
+Commit `52cc1494b` adds a test:
+the three bare names `MERGE_HEAD`,
+`CHERRY_PICK_HEAD`
+and `REVERT_HEAD`,
+each ended by a line feed,
+are accepted,
+and the same answer one byte shorter is refused.
+Planting the mutant fails that test;
+with the source restored it passes.
+
+#### A length comparison the typo check already makes
+
+`command_options_short.rs`,
+`<` to `<=` in `scan_short_cluster`.
+The condition read `position == 2 && position < token.len() && spells_long_option(...)`.
+`spells_long_option` returns false for a cluster shorter than three letters,
+so the middle term never changed the result
+and the mutant was equivalent.
+Commit `5e5972f64` removes the term.
+
+#### A second detector of the commit-only hatch
+
+`rule_commit_only.rs`,
+`+` to `*` in `has_commit_only_escape_hatch`.
+The function had no production caller:
+the hatch is found and removed by position in `wrapper_controls.rs`.
+Commit `348d94cbe` removes the function and its test.
+
+#### Stash words without a dash
+
+`command_stash.rs`,
+`||` to `&&` in `check_top_level_token`.
+The condition decides whether a leading word that is not a subcommand makes Git assume `push`.
+No test gave a word that satisfies one side of the condition only.
+Commit `348d94cbe` adds the words `xpush`,
+`apus` followed by a path,
+and `xlist`,
+each of which Git reads as an assumed `push`.
+Planting the mutant fails the test;
+with the source restored it passes.
+
+### Mutants that stalled the option scanner
+
+Four timeouts were real:
+
+- `command_options_long.rs`,
+  `accept` replaced by `Ok(0)`.
+- `command_options_long.rs`,
+  `scan_long_option` replaced by `Ok(0)`.
+- `command_options_short.rs`,
+  `unknown_letter` replaced by `Ok(0)`.
+- `command_options_short.rs`,
+  `scan_short_cluster` replaced by `Ok(0)`.
+
+Each of these functions returned how many tokens it had read,
+and `parse_options` advanced its index by that count.
+A count of zero left the tokenizer on the same token for ever.
+The logs show it:
+11 to 17 test result lines,
+then `command_add::tests::... has been running for over 60 seconds`.
+
+Commit `08847be01` removes the count.
+The four functions return `Result<bool, OptionError>`,
+where `true` means that the next token was the option's value,
+and `parse_options` visits each token once in a `for` loop over the slice
+and skips a token flagged as a value.
+No return value can hold the loop on a token.
+`command_status::has_status_hints_override` stepped an index in the same way
+and now visits each token once,
+remembering the option that awaits a value.
+This is the fourth and fifth loop rewritten for the reason given under "The three rewritten loops".
+
+### Timeouts caused by a stalled host
+
+Five timeouts were not caused by the mutant:
+
+- `forwarding.rs`,
+  `exit_code` replaced by `-1`.
+- `repository_facts.rs`,
+  `!` deleted in `sequencer_state`.
+- `config_loading.rs`,
+  `+` to `*` in `mixed_command`.
+- `command_config.rs`,
+  `+=` to `-=` in `parse_config_region`.
+- `child_environment.rs`,
+  `==` to `!=` in `parse_config_count`.
+
+None of them can hold a loop.
+The first two replace a return value and invert a plain branch.
+The third changes `index + 1 == arguments.len()`,
+a comparison inside a `for` loop over the slice.
+The fourth steps a counter down from zero,
+which fails at once with an arithmetic overflow,
+because the test profile checks integer overflow.
+The fifth changes which byte counts as a sign,
+after which the index still only moves forward.
+
+Every part stalled at the same two moments,
+although the parts ran different mutants of different files in separate containers:
+
+- From 19:30:17 to 19:31:47,
+  parts 0,
+  1
+  and 3 each had a mutant in its test phase,
+  and all three reached the limit of 90 seconds in the same second:
+  the mutants of `forwarding.rs`,
+  `config_loading.rs`
+  and `child_environment.rs`.
+  Part 2 caught its mutant of that moment after 89.7 seconds of test time.
+- From 20:11:03 to 20:12:36,
+  parts 0 and 1 reached the limit within three seconds of each other:
+  the mutants of `repository_facts.rs` and `command_config.rs`.
+  Part 2 caught its mutant of that moment after 84.6 seconds,
+  and part 3 caught two in a row after 61.6 and 47.1 seconds.
+- In parts 0,
+  1
+  and 3 the mutant before the first stall,
+  the stalled one
+  and the two after it end in the same second or one second apart:
+  19:30:11,
+  19:31:47,
+  19:32:13 or 19:32:14,
+  and 19:32:31.
+- No log has a test that ran for over 60 seconds.
+  When the limit came,
+  the unit target was still printing results:
+  334,
+  79,
+  371,
+  109
+  and 354 of 443,
+  in the order of the list of five.
+- Away from the two moments a caught mutant fails in the unit target after about 5 seconds,
+  the median of every part.
+  The unmutated run,
+  which also runs the binary-level target,
+  took 23 to 33 seconds.
+
+The times are the modification times of the mutant logs in the four evidence directories,
+and the durations are those of `outcomes.json`.
+The user journal of the host shows other sessions' Podman at work in both moments:
+a container removed at 19:29:40 and another at 19:30:11,
+the seconds at which three parts finished a mutant,
+and a container creation that took 8 seconds at 20:11:45.
+What stalled the host was not established.
+The reading is that a wait shared by the whole host,
+not processor load from the campaign,
+held the tests,
+so running fewer parts side by side would not avoid it.
+
+All five files are in the second campaign,
+which is the test of this reading.
+
+### Second campaign over every file
 
 Pending:
-a campaign over every file of `src/native/` on the tree of commit `37d362484`,
-in four parts that run side by side under their own gate images.
+the tree of commit `348d94cbe`,
+1208 mutants in 67 files after the two exclusions.
+The exclusions remove 26 of 1234 mutants,
+25 of the kind `replace += with *=`
+and 1 of the kind `replace -= with /=`,
+and no other mutant.
 
 ## Fuzzing
 
@@ -1090,6 +1394,15 @@ In order:
   the shared command split and the Windows type-check task.
 - `4133d2900`: a task that runs the repository's Rust linter over the native source.
 - `090c147e7`: the `policy-incomplete` failure code.
+- `08847be01`: option scanners that say whether they took the next token,
+  and the status scan that visits each token once.
+- `66a3e9b9c`: removal of a wrapper-flag lookup only tests called.
+- `52cc1494b`: the test of the shortest answer the sequencer path reader accepts.
+- `5e5972f64`: removal of a length comparison the typo check already makes.
+- `348d94cbe`: the stash words without a dash,
+  and removal of the second detector of the commit-only hatch.
+
+Commits that only change this document are not listed.
 
 ## Superseded passages elsewhere
 
@@ -1196,6 +1509,22 @@ each has a sibling `*_tests.rs`.
   `real_git_candidate.rs`:
   one body per platform-specific function,
   and the bounded read without a loop.
+- `diagnostics.rs`:
+  the failure code `policy-incomplete`.
+
+### Changed command parser modules
+
+- `command_options.rs`,
+  `command_options_long.rs`,
+  `command_options_short.rs`:
+  the scanners return whether the next token was a value,
+  and `parse_options` visits each token once.
+- `command_status.rs`:
+  the status-hints scan visits each token once.
+- `command_options_query.rs`:
+  `has_wrapper_flag` removed.
+- `rule_commit_only.rs`:
+  `has_commit_only_escape_hatch` removed.
 
 ### Binary-level tests
 
@@ -1243,4 +1572,9 @@ each has a sibling `*_tests.rs`.
   which needs forwarding that waits for Git instead of replacing the process.
 - Fix application for direct fix.
 - Scope validation for direct commands.
+- A path that reports `policy-incomplete`:
+  the code and its spelling test exist,
+  and no shipped policy ported so far has machinery of its own that can fail.
+- The 263 `require-rustdoc` findings of the repository's Rust linter,
+  if the wrapper is to pass that linter.
 - A decision on each item under "Choices open to veto" and "Forwarded with a known omission".
