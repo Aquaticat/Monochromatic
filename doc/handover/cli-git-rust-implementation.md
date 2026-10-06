@@ -195,12 +195,13 @@ Every delegate in that list has reported;
 `Delegate results` has each outcome.
 Running at the last update of this document (2026-10-06, relaunched at 08:10):
 
-- Candidate content layer
-  (linked worktree `.claude/worktrees/cli-git-candidates`, branch `feat/cli-git-native-candidates`):
-  review and commit the inherited failure-code mapping,
-  merge current `main` again,
-  gate the merged tree with fuzz and mutation.
-  The main session fast-forwards `main` to the gated merge.
+- Content policies over candidates
+  (linked worktree `.claude/worktrees/cli-git-content-policies`, branch `feat/cli-git-native-content-policies`):
+  the `git add` and worktree candidate sources,
+  the failure code carried to the event,
+  `final-newline`, `security/forbidden-strings` with `rulesFile`, and `mono/forbidden-root-context`,
+  with a differential test against the incumbent.
+  Evidence: `doc/handover/cli-git-native-content-policies.md` on that branch.
 - Scanner Windows suite through the `mvm` command-line program (no repository code changes):
   the run that would show the Windows suite green,
   recorded in `doc/handover/scanner-native-verification.md`.
@@ -936,10 +937,19 @@ evidence in `doc/handover/cli-git-native-candidates.md` on that branch.
   tracked non-candidate files,
   multi-commit listings for manual push,
   and worktree bytes for direct `check`.
-- Merging into `main` conflicts in six files where both sides added entries at one place.
-  The delegate is merging `main` into its branch,
-  gating the merged tree and applying the failure-code mapping;
-  the main session fast-forwards `main` afterwards.
+- Landed on `main` on 2026-10-06 as `c6cab0800`, a fast-forward to a merge of `main` into the branch.
+  The merged tree was gated at `571fe1003`:
+  523 unit, 37 binary-level and 1 public-interface test, Clippy
+  (image `8ff0051a5b9a132ffa5ef1b01347039511d7ad3098a79831116d30ff0f1919e4`);
+  the failure-code mapping's campaign had 0 missed and 0 timeouts,
+  eight hand-planted mapping defects were all noticed,
+  and every fuzz target's smoke run exited 0.
+  Before the fast-forward the landing script proved that every path the gate image reads
+  (`package/git-policy`, `package/cli/forbidden-strings`, `package/rust-module`, `clippy.toml`)
+  was byte-identical to `571fe1003`.
+  The worktree, the local branch and the remote branch are removed.
+- The failure-code mapping (`scanner_failure_code.rs`) is pure and has no caller yet;
+  the branch's handover section `What the engine must add` lists what the content-policy phase wires.
 
 #### mvm on a Flatpak-only libvirt host
 
@@ -1320,7 +1330,7 @@ that is verification, not a decision for the user.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
   for commands that need no commit transaction:
   on `main`, final engine tree `348d94cbe` (`Native policy engine`).
-- [ ] Merge the candidate content layer into `main` after its merged-tree gate.
+- [x] Merge the candidate content layer into `main` (`c6cab0800`).
 - [ ] Content policies over candidates:
   the missing candidate sources (`git add` staged delta, worktree bytes for direct `check`, manual-push listings),
   the five built-in content policies,
