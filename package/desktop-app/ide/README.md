@@ -1940,6 +1940,24 @@ Every other `helix-lsp` record keeps its level,
 including error answers with any other code and failures to read or write a server's streams.
 `RUST_LOG=helix_lsp=debug` shows the re-labelled records together with the protocol messages.
 
+Each server's last standard-error lines are kept whatever the log shows (`src/logging/stderr_tail.rs`):
+the newest 8 lines per server, each cut to 512 bytes at a character boundary and then marked ` [cut]`.
+`helix-lsp` passes every line on as an ERROR record, so they are kept unless the log is off entirely.
+When a server process ends without being asked to, during its start or after it,
+the worker's warning `language server process ended` lists them in its `stderr_tail` field, oldest first.
+That warning waits up to 1 s for the end of the server's standard error,
+because `helix-lsp` can report the end of the process before its last lines;
+the session state does not wait, and a warning still waiting when the worker stops is written then.
+When the worker stops a server that did not answer `initialize` in time,
+the start-deadline error is followed by the warning
+`language server wrote this to standard error before it was stopped`
+with the lines so far, and only when there are some.
+A clean shutdown, and a server the worker stops for any other reason, log nothing more.
+The lines appear only in the log, never in a note in the window.
+`helix-lsp` names a line's server by its configured name only, so two processes of one name share a tail;
+lines a process writes after its lines were reported, or after the worker stopped it,
+are dropped until its standard error ends, so they are never reported as a later process's words.
+
 Records go through a queue to one writer thread (`src/logging/background.rs`),
 so no thread of the application, the interface thread included, waits for the output.
 A reader that stops reading, or a disk that holds an append for seconds, blocks only that writer thread.
@@ -1959,6 +1977,13 @@ Checks:
 among them `logging::background::tests::a_blocked_output_never_delays_the_logging_thread`,
 which logs 5000 records through the real subscriber while the output stalls for 4 s;
 `inspect:language-lifecycle-guards` makes the full queue wait for room and observes that test fail.
+The kept lines have unit tests in `src/logging/stderr_tail_tests.rs` and `src/language/attach/report_tests.rs`,
+and scripted-server tests in `tests/language/quiet.rs`:
+a server that writes a line at its start and one right before it exits with status 7,
+one that exits with status 3 when `initialize` arrives, one that never answers `initialize`,
+and the clean lifetime, which must log neither the field nor an ended-server record.
+The guard tool stops keeping lines, stops waiting for the end of the stream,
+and reports the lines on a clean shutdown, and observes the named test fail each time.
 `mise run //package/desktop-app/ide:inspect:log-stall <cache> [cargo] [seconds] [port]`
 runs the IDE in the nested compositor with every application record on
 and its standard output on a FIFO that is never read,

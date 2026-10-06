@@ -25,6 +25,9 @@
 /// ```
 use tracing_log::{AsLog, AsTrace, log};
 
+/// Each server's last standard-error lines are kept from the records seen here.
+use super::stderr_tail;
+
 /// The module that writes all three record shapes.
 const TRANSPORT_TARGET: &str = "helix_lsp::transport";
 
@@ -76,15 +79,45 @@ impl Shape {
     }
 }
 
-/// What: Name the shape of one record, or nothing when it keeps its level. `&str` arguments are
-///       borrowed text (sibling: `String`, which owns its text; nothing here needs to keep it).
+/// What: One record that has a shape, with the parts of its text the worker needs. `'text` says
+///       the fields borrow the record's text and live no longer than it.
+/// Why: The server's name keys its kept standard-error lines (`stderr_tail.rs`).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Matched = { shape: Shape; server: string; line: string };
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Matched<'text> {
+    /// Which shape the record has.
+    pub shape: Shape,
+    /// The server's configured name, which helix-lsp writes first.
+    pub server: &'text str,
+    /// For a standard-error line, the line in helix-lsp's quoted form without the outer quotes;
+    /// empty for the other shapes.
+    pub line: &'text str,
+}
+
+/// What: Name the shape of one record, or nothing when it keeps its level.
+/// Why: Callers that need only the level ask this; see [`matched`].
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const shape = (target: string, level: Level, text: string) => matched(target, level, text)?.shape;
+/// ```
+pub fn shape(target: &str, level: log::Level, text: &str) -> Option<Shape> {
+    return matched(target, level, text).map(|found| return found.shape);
+}
+
+/// What: Match one record against the shapes and split out the server's name. `&str` arguments
+///       are borrowed text (sibling: `String`, which owns its text; nothing here needs to keep it).
 /// Why: Only ERROR records from helix-lsp's transport are candidates, and only these exact forms.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function shape(target: string, level: Level, text: string): Shape | undefined
+/// function matched(target: string, level: Level, text: string): Matched | undefined
 /// ```
-pub fn shape(target: &str, level: log::Level, text: &str) -> Option<Shape> {
+pub fn matched<'text>(target: &str, level: log::Level, text: &'text str) -> Option<Matched<'text>> {
     if level != log::Level::Error || target != TRANSPORT_TARGET {
         return None;
     }
@@ -95,22 +128,34 @@ pub fn shape(target: &str, level: log::Level, text: &str) -> Option<Shape> {
     // ```ts
     // const at = text.indexOf(separator); if (at > 0 && text.endsWith('"')) return 'serverStderrLine';
     // ```
-    if let Some((name, line)) = text.split_once(STDERR_LINE)
+    if let Some((name, quoted)) = text.split_once(STDERR_LINE)
         && !name.is_empty()
-        && line.ends_with('"')
+        && let Some(line) = quoted.strip_suffix('"')
     {
-        return Some(Shape::ServerStderrLine);
+        return Some(Matched {
+            shape: Shape::ServerStderrLine,
+            server: name,
+            line,
+        });
     }
     if let Some(name) = text.strip_suffix(END_OF_STDERR)
         && !name.is_empty()
     {
-        return Some(Shape::EndOfServerStderr);
+        return Some(Matched {
+            shape: Shape::EndOfServerStderr,
+            server: name,
+            line: "",
+        });
     }
     for marker in MOOT_ANSWERS {
         if let Some((name, _message)) = text.split_once(marker)
             && !name.is_empty()
         {
-            return Some(Shape::MootAnswer);
+            return Some(Matched {
+                shape: Shape::MootAnswer,
+                server: name,
+                line: "",
+            });
         }
     }
     return None;
@@ -140,6 +185,8 @@ impl log::Log for Relabel {
 
     /// What: Convert one record to a `tracing` event, at the lowered level when it has one of the
     ///       shapes. `format_trace` checks the subscriber's filter for the level it is given.
+    ///       A standard-error line and the end of that stream are also handed to `stderr_tail`,
+    ///       whether or not the filter writes them.
     /// Why: Only an ERROR record from the transport is formatted to text for the check; every
     ///      other record goes through unchanged and without extra work.
     fn log(&self, record: &log::Record<'_>) {
@@ -149,10 +196,15 @@ impl log::Log for Relabel {
         }
         // `to_string` formats the record's message once, for the shape check and the new record.
         let text = record.args().to_string();
-        let Some(found) = shape(record.target(), record.level(), &text) else {
+        let Some(found) = matched(record.target(), record.level(), &text) else {
             forward(record);
             return;
         };
+        match found.shape {
+            Shape::ServerStderrLine => stderr_tail::remember(found.server, found.line),
+            Shape::EndOfServerStderr => stderr_tail::ended(found.server),
+            Shape::MootAnswer => {}
+        }
         // What: Build the same record with another level. `format_args!` must be used inside the
         //       expression that consumes it, so the record is built and forwarded in one statement.
         // Why: Text, target, module, file, and line stay exactly as helix-lsp wrote them.
@@ -164,7 +216,7 @@ impl log::Log for Relabel {
         forward(
             &log::Record::builder()
                 .args(format_args!("{text}"))
-                .level(found.level())
+                .level(found.shape.level())
                 .target(record.target())
                 .module_path(record.module_path())
                 .file(record.file())

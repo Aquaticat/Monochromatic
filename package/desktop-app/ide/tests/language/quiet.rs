@@ -1,5 +1,6 @@
 //! Quiet lifetime: what a clean open, one request, close, and shutdown leave in the application
-//! log and in the process table.
+//! log and in the process table; and what a server that crashes or fails to start leaves there,
+//! with the last lines it wrote to standard error.
 //!
 //! The log is captured through the application's own pipeline (`ide_app::logging::install`): the
 //! same subscriber and the same bridge that re-labels helix-lsp's `log` records. Only the writer is
@@ -68,6 +69,21 @@ fn records_at(text: &str, level: &str) -> Vec<String> {
     return found;
 }
 
+/// The field of the worker's records that lists a server's last standard-error lines.
+const TAIL_FIELD: &str = "stderr_tail=";
+
+/// The worker's record of a server process that ended without being asked to.
+const ENDED: &str = "language server process ended";
+
+/// The whole lines of the log that contain `text`.
+fn records_with(log: &str, text: &str) -> Vec<String> {
+    return log
+        .lines()
+        .filter(|line| return line.contains(text))
+        .map(str::to_string)
+        .collect();
+}
+
 /// Assert that a record with this level and this ending is in the log.
 fn assert_record(text: &str, level: &str, ending: &str) {
     assert!(
@@ -81,10 +97,15 @@ fn assert_record(text: &str, level: &str, ending: &str) {
 /// One clean lifetime in which the server produces all three record shapes helix-lsp logs at ERROR
 /// for a healthy server: a line on standard error at shutdown, as TypeScript 7's server writes
 /// `context canceled`; a `-32801` answer that the worker asks again for; and the end of standard
-/// error when the process ends. Returns the whole log.
+/// error when the process ends. The server also writes a line at its start, so the worker holds
+/// kept lines that a clean shutdown must not report. Returns the whole log.
 fn log_of_a_clean_lifetime(root: &Path) -> String {
     let capture = capture_the_log();
-    let variables = [("STDERR", "context canceled"), ("HOVER", "modified-once")];
+    let variables = [
+        ("STDERR_AT_START", "scripted server starting"),
+        ("STDERR", "context canceled"),
+        ("HOVER", "modified-once"),
+    ];
     let mut probe = Probe::new(root, support::scripted(root, &variables, 3));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
@@ -150,6 +171,17 @@ fn clean_lifetime_logs_no_error_level_record() {
         "DEBUG",
         "helix_lsp::transport: scripted-ls err: <- StreamClosed",
     );
+    // A clean shutdown logs nothing extra: no ended-server record and no kept lines.
+    assert_record(
+        &text,
+        "INFO",
+        r#"helix_lsp::transport: scripted-ls err <- "scripted server starting\n""#,
+    );
+    let extra = records_with(&text, TAIL_FIELD);
+    assert!(
+        extra.is_empty() && records_with(&text, ENDED).is_empty(),
+        "a clean shutdown logged the server's last lines or an ended-server record: {extra:#?}"
+    );
 }
 
 /// helix-lsp records the bridge does not know keep ERROR: here a server that refuses `initialize`,
@@ -181,5 +213,127 @@ fn unknown_helix_error_records_keep_their_level() {
         &text,
         "ERROR",
         "helix_lsp: failed to initialize language server: protocol error: InternalError: scripted initialize failure",
+    );
+}
+
+/// A server that writes a line at its start and another right before it exits with status 7, in
+/// the middle of a hover request: one warning names the server and holds both lines, oldest first.
+/// The last line arrives just before the end, so the record waits for it.
+#[test]
+fn a_crashed_server_is_logged_with_its_last_stderr_lines() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "quiet::a_crashed_server_is_logged_with_its_last_stderr_lines",
+            support::standard,
+        );
+        return;
+    };
+    let capture = capture_the_log();
+    let variables = [
+        ("STDERR_AT_START", "scripted server starting"),
+        ("STDERR", "panicked at the hover request"),
+        ("HOVER", "crash"),
+    ];
+    let mut probe = Probe::new(&root, support::scripted(&root, &variables, 3));
+    probe.open(&root.join("file.scripted"), "alpha\n");
+    probe.until_ready();
+    let _crashing = probe.request(RequestKind::Hover, 1);
+    probe.until("the exited state", |seen| {
+        return seen.state(SERVER) == Some(&ServerState::Exited);
+    });
+    drop(probe);
+    support::children_until_none();
+    let text = capture.text();
+    let ended = records_with(&text, ENDED);
+    assert_eq!(ended.len(), 1, "not one ended-server record:\n{text}");
+    assert!(
+        ended[0].contains(" WARN ")
+            && ended[0].ends_with(
+                r#"server=scripted-ls was_ready=true stderr_tail=["scripted server starting", "panicked at the hover request"]"#
+            ),
+        "the ended-server record lacks the server's last lines: {}",
+        ended[0]
+    );
+}
+
+/// A server that writes a line and exits with status 3 when `initialize` arrives: the warning
+/// says it never finished starting and holds the line.
+#[test]
+fn a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "quiet::a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines",
+            support::standard,
+        );
+        return;
+    };
+    let capture = capture_the_log();
+    let variables = [
+        ("STDERR_AT_START", "cannot read the configuration"),
+        ("INIT", "exit"),
+    ];
+    let mut probe = Probe::new(&root, support::scripted(&root, &variables, 3));
+    probe.open(&root.join("file.scripted"), "alpha\n");
+    probe.until("the failed-start state", |seen| {
+        return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
+    });
+    drop(probe);
+    support::children_until_none();
+    let text = capture.text();
+    let ended = records_with(&text, ENDED);
+    assert_eq!(ended.len(), 1, "not one ended-server record:\n{text}");
+    assert!(
+        ended[0].ends_with(
+            r#"server=scripted-ls was_ready=false stderr_tail=["cannot read the configuration"]"#
+        ),
+        "the ended-server record lacks the server's last lines: {}",
+        ended[0]
+    );
+}
+
+/// A server that writes a line and never answers `initialize`: the start-deadline error is followed
+/// by a warning that holds the line; the worker stopped the server itself, so there is no
+/// ended-server record and nothing it writes while it is stopped is reported.
+#[test]
+fn a_timed_out_start_is_logged_with_its_stderr_lines() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "quiet::a_timed_out_start_is_logged_with_its_stderr_lines",
+            support::standard,
+        );
+        return;
+    };
+    let capture = capture_the_log();
+    let variables = [
+        ("STDERR_AT_START", "indexing the workspace"),
+        ("STDERR", "asked to stop"),
+        ("INIT", "hang"),
+    ];
+    let mut probe = Probe::new(&root, support::scripted(&root, &variables, 1));
+    probe.open(&root.join("file.scripted"), "alpha\n");
+    probe.until("the failed-start state", |seen| {
+        return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
+    });
+    drop(probe);
+    support::children_until_none();
+    let text = capture.text();
+    assert_record(
+        &text,
+        "ERROR",
+        "language server did not answer initialize in time and is stopped server=scripted-ls seconds=1",
+    );
+    assert_record(
+        &text,
+        "WARN",
+        r#"language server wrote this to standard error before it was stopped server=scripted-ls stderr_tail=["indexing the workspace"]"#,
+    );
+    assert_eq!(
+        records_with(&text, TAIL_FIELD).len(),
+        1,
+        "the stopped server's lines were reported more than once:\n{text}"
+    );
+    assert!(
+        records_with(&text, ENDED).is_empty(),
+        "a server the worker stopped was logged as ended:\n{text}"
     );
 }
