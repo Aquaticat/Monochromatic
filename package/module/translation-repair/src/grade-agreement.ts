@@ -253,8 +253,9 @@ function unscoredPositions(
 
  @returns Agreement over the items the human scored
 
- @throws {@link StatedRefusalError} when the two sets cover different sheet positions,
- which would silently compare one round's grades against another's
+ @throws {@link StatedRefusalError} when the pre-grades name a sheet position
+ more than once, or the two sets cover different sheet positions, which would
+ silently compare one round's grades against another's
 
  @example
  ```ts
@@ -271,19 +272,31 @@ export function scoreGradeAgreement(
   },
 ): AgreementTally {
   /**
-   Pre-grades by sheet position.
+   Pre-grades by sheet position; a map until read, as every record filled by
+   a key is (ledger B77).
    */
-  const byIndex = new Map(agent.map(function toEntry(item,) {
-    return [
+  const byIndex = new Map<number, GradedItem['verdict']>();
+  for (const item of agent) {
+    // A POSITION NAMED TWICE IS REFUSED where the map is built: the later
+    // verdict would replace the first, and a file carrying one row too many
+    // for it passes the length comparison with the right size.
+    if (byIndex.has(item.index,)) {
+      throw new StatedRefusalError({
+        says: `pre-grades name sheet position ${
+          String(item.index,)
+        } more than once, so which verdict belongs to it cannot be read`,
+      },);
+    }
+    byIndex.set(
       item.index,
       item.verdict,
-    ] as const;
-  },),);
-  if (byIndex.size !== human.length)
+    );
+  }
+  if (agent.length !== human.length)
     throw new StatedRefusalError({
-      says: `pre-grades cover ${String(byIndex.size,)} ${
+      says: `pre-grades cover ${String(agent.length,)} ${
         wordForCount({
-          count: byIndex.size,
+          count: agent.length,
           one: 'item',
           many: 'items',
         },)

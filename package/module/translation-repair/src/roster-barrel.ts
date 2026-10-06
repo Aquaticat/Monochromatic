@@ -38,6 +38,7 @@ export {
   holdSet,
   isDecisionSeat,
   keyedBy,
+  recordOfDistinctIds,
   recordOver,
   ROSTER_CARDS,
   type RosterCard,

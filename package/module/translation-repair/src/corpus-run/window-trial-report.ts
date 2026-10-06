@@ -1,3 +1,4 @@
+import { wordForCount, } from '../count-word.ts';
 import type { WindowTrialRow, } from './window-trial-ledger.ts';
 
 //region Window trial report
@@ -94,7 +95,7 @@ export type Transitions = {
 
  @example
  ```ts
- const report: ClassReport = { sliceClass: 'relocation-high', arms: [], transitions, bandTransitions, pairedExcess: 0.2, entries: 9, incomplete: 0, degraded: 0, };
+ const report: ClassReport = { sliceClass: 'relocation-high', arms: [], transitions, bandTransitions, pairedExcess: 0.2, entries: 9, incomplete: 0, degraded: 0, repeated: 0, };
  ```
  */
 export type ClassReport = {
@@ -161,6 +162,17 @@ export type ClassReport = {
    comparison was being pulled by lost voices rather than by evidence.
    */
   readonly degraded: number;
+
+  /**
+   Slices left out because the ledger holds two rows for one of their arms.
+
+   SEPARATE FROM {@link ClassReport.incomplete} because the two say different
+   things. A missing arm is a run that stopped. A repeated arm is a ledger
+   that two runs or a hand wrote to, so no row of that arm can be taken as the
+   one the protocol bought, and a class where this is not zero rests on a
+   ledger that was not written the way the runner writes it.
+   */
+  readonly repeated: number;
 };
 
 /**
@@ -351,25 +363,54 @@ function entriesOf(
 }
 
 /**
+ One class's rows grouped by slice.
+ */
+type SliceGroups = {
+  /**
+   One map per slice, keyed by arm, for the slices no arm of which repeats.
+   */
+  readonly slices: readonly ReadonlyMap<string, WindowTrialRow>[];
+
+  /**
+   Slices left out because the ledger holds more than one row for one of
+   their arms.
+   */
+  readonly repeated: number;
+};
+
+/**
  Groups one class's rows into per-slice arm maps.
+
+ A SLICE WITH TWO ROWS FOR ONE ARM IS LEFT OUT WHOLE AND COUNTED. The runner
+ skips an arm it already holds, so a ledger carries one row per arm unless
+ two runs appended to one file or a line was added by hand; the later row is
+ not more right than the earlier, and keeping either would credit a
+ measurement the protocol did not buy once. The ledger is append-only, so the
+ repeat cannot be removed, and a refusal would leave the whole report unread
+ for want of a repair nobody may make; the count says how much was left out.
 
  @param rows - rows of one class
 
- @returns One map per slice, keyed by arm
+ @returns One map per slice, keyed by arm, and how many slices were left out
 
  @example
  ```ts
- const bySlice = groupBySlice({ rows, },);
+ const { slices, repeated, } = groupBySlice({ rows, },);
  ```
  */
 function groupBySlice(
   { rows, }: { readonly rows: readonly WindowTrialRow[]; },
-): readonly ReadonlyMap<string, WindowTrialRow>[] {
+): SliceGroups {
   /**
    Arms per slice, keyed by entry and slice together since two entries can
    both carry a slice at the same index.
    */
   const bySlice = new Map<string, Map<string, WindowTrialRow>>();
+
+  /**
+   Slices some arm of which the ledger holds twice.
+   */
+  const repeatedKeys = new Set<string>();
   for (const row of rows) {
     /**
      This slice's identity across entries.
@@ -380,6 +421,8 @@ function groupBySlice(
      Arms recorded for it so far.
      */
     const arms = bySlice.get(key,) ?? new Map<string, WindowTrialRow>();
+    if (arms.has(row.arm,))
+      repeatedKeys.add(key,);
     arms.set(
       row.arm,
       row,
@@ -389,7 +432,75 @@ function groupBySlice(
       arms,
     );
   }
-  return [...bySlice.values(),];
+  return {
+    slices: [...bySlice,]
+      .filter(function notRepeated([key,],): boolean {
+        return !repeatedKeys.has(key,);
+      },)
+      .map(function toArms([, arms,],): ReadonlyMap<string, WindowTrialRow> {
+        return arms;
+      },),
+    repeated: repeatedKeys.size,
+  };
+}
+
+/**
+ Decimal places the paired estimate is printed to.
+
+ Two, because the draw cannot resolve a third: at the size measured here the
+ spread on this estimate is larger than a hundredth, and printing more digits
+ would suggest a precision the sample does not have.
+ */
+const EXCESS_DIGITS = 2;
+
+/**
+ The log line the window trial prints for one class's report.
+
+ @param report - one class's report
+
+ @returns The line, naming the paired excess, the arm rates, the transitions
+ against the band, and how many slices were left out and why
+
+ @example
+ ```ts
+ l.info(windowTrialReportLine({ report, },),);
+ ```
+ */
+export function windowTrialReportLine(
+  { report, }: { readonly report: ClassReport; },
+): string {
+  return `${report.sliceClass}: window moved replacement by ${
+    report.pairedExcess
+      .toFixed(EXCESS_DIGITS,)
+  } over ${String(report.entries,)} ${
+    wordForCount({
+      count: report.entries,
+      one: 'entry',
+      many: 'entries',
+    },)
+  }; ${
+    report.arms
+      .map(function toRate(rate,): string {
+        return `${rate.arm} ${String(rate.replaced,)}/${String(rate.trials,)}`;
+      },)
+      .join(' ',)
+  }; wide moved ${String(report.transitions
+    .replaceToKeep,)} down and ${
+    String(report.transitions
+      .keepToReplace,)
+  } up, against a band of ${String(report.bandTransitions
+    .replaceToKeep,)} down and ${
+    String(report.bandTransitions
+      .keepToReplace,)
+  } up; ${String(report.incomplete,)} incomplete, ${
+    String(report.degraded,)
+  } dropped for a short panel, ${String(report.repeated,)} ${
+    wordForCount({
+      count: report.repeated,
+      one: 'slice',
+      many: 'slices',
+    },)
+  } left out for an arm the ledger holds twice`;
 }
 
 /**
@@ -441,7 +552,10 @@ export function reportWindowTrial(
     /**
      Every slice of this class, as arm maps.
      */
-    const bySlice = groupBySlice({ rows: mine.filter(function inClass(row,): boolean {
+    const {
+      slices: bySlice,
+      repeated,
+    } = groupBySlice({ rows: mine.filter(function inClass(row,): boolean {
       return row.sliceClass === sliceClass;
     },), },);
 
@@ -495,6 +609,7 @@ export function reportWindowTrial(
       entries: entriesOf({ triples, },),
       incomplete: bySlice.length - complete.length,
       degraded: complete.length - triples.length,
+      repeated,
     };
   },);
 }

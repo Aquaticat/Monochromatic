@@ -24,6 +24,10 @@ export {
   type StageGather,
 } from './stage-quorum.ts';
 export {
+  repeatedRosterIds,
+  StageRosterRepeatError,
+} from './stage-roster-repeat.ts';
+export {
   CUT_SHORT_RECOVERY_NUDGE,
   OFF_SHAPE_RECOVERY_NUDGE,
   RECOVERY_NUDGES,

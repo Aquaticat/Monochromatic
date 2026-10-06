@@ -20,6 +20,8 @@ export {
 export {
   type ClaimAdmissibility,
   type RegionDefectTally,
+  resolveProberChecks,
+  type ResolvedProberChecks,
   screenEvidence,
   screenIntroducedDefects,
   type ScreenedDefectClaim,

@@ -19,6 +19,7 @@ import {
   DecisionsCardMissingError,
   decisionsCardOf,
   isDecisionSeat,
+  recordOfDistinctIds,
   recordOver,
   MODEL_CARDS,
   ROSTER_MODEL_IDS,
@@ -39,6 +40,43 @@ await describe({
               throw new Error('the roster needs a decision seat and a chat seat for this case',);
             expect(decisionsCardOf({ modelId: decisionSeat, },),).toBe(MODEL_CARDS[decisionSeat].decisions,);
             expect(() => decisionsCardOf({ modelId: chatSeat, },),).toThrow(DecisionsCardMissingError,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: recordOfDistinctIds.name,
+      children: [
+        it({
+          name: 'BUILDS the record where every id appears once, and REFUSES an id that repeats, naming the id '
+            + 'and whose rows they are, since the later row would replace the earlier and drop a card',
+          fn: async () => {
+            expect(recordOfDistinctIds({
+              entries: [
+                ['cat', 3,],
+                ['kitten', 6,],
+              ],
+              owner: 'tabby cards',
+            },),).toEqual({
+              cat: 3,
+              kitten: 6,
+            },);
+            /**
+             What building over a repeated id throws.
+             */
+            const refusal = caught(function repeats(): void {
+              recordOfDistinctIds({
+                entries: [
+                  ['cat', 3,],
+                  ['kitten', 6,],
+                  ['cat', 9,],
+                ],
+                owner: 'tabby cards',
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(RangeError,);
+            expect(String(refusal,),).toBe('RangeError: tabby cards carry the id cat more than once',);
           },
         },),
       ],

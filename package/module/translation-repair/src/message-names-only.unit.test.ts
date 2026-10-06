@@ -164,6 +164,7 @@ const MARKED_CLASSES: readonly string[] = [
   'SliceRecordContradictionError',
   'SourceMapFileError',
   'SpendCeilingOverrideError',
+  'StageRosterRepeatError',
   'StatedRefusalError',
   'StreamCutShortError',
   'StreamBoundError',
@@ -370,6 +371,8 @@ const NAMED_PARTS: Record<string, string> = {
   'WORDING_FAULT_SENTENCES[fault]': 'one of five fixed phrases, keyed by a closed fault kind',
   'rightId': 'envelope id',
   'role': 'roster role name this package defines',
+  'stage': 'stage label the calling stage passes to its gather: a literal, a function name or a constant this '
+    + 'package defines',
   'says': 'authored phrase saying what in a coverage census input did not read, at every throw site; it names at '
     + 'most a script URL under the package\'s own build directory, a bundle name and offsets (the coverage census, '
     + 'ledger T8)',

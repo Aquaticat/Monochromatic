@@ -713,7 +713,6 @@ const ALLOWLIST: readonly string[] = [
   'src/front-matter-repair.ts',
   'src/front-matter-translation.ts',
   'src/gfm-marker-spans.ts',
-  'src/grade-agreement.ts',
   'src/grading-sheet.ts',
   'src/group-merge.ts',
   'src/group-nodes.ts',

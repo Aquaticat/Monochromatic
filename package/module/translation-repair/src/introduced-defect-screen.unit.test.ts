@@ -18,6 +18,7 @@ import {
   flattenSpace,
   type IntroducedDefectCheckWire,
   type RepairRegion,
+  resolveProberChecks,
   screenEvidence,
   screenIntroducedDefects,
 } from '../dist/final/node/index.mjs';
@@ -338,6 +339,60 @@ await describe({
                 region: curly,
               },),
             ).toBe('removal-corroborated',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: resolveProberChecks.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'KEEPS THE FIRST CHECK A PROBER CAST ON A REGION WITH A KNOWN VERDICT and names each later one '
+            + 'as a duplicate-check finding under its prober, passing over a check whose verdict the screen '
+            + 'does not know without a finding',
+          fn: async () => {
+            /**
+             Checks resolved over one prober that answered region one three times and an unknown verdict once.
+             */
+            const resolved = resolveProberChecks({
+              ballots: {
+                'hf:cat/one': [
+                  catCheck({ verdict: 'purring', region: 1, },),
+                  catCheck({ verdict: 'uncertain', region: 1, },),
+                  catCheck({ verdict: 'no-introduced-defect-found', region: 1, },),
+                  catCheck({ verdict: 'uncertain', region: 2, },),
+                  catCheck({ verdict: 'uncertain', region: 1, },),
+                ],
+                'hf:cat/two': [catCheck({ verdict: 'uncertain', region: 1, },),],
+              },
+            },);
+            expect(resolved.findings,).toEqual([
+              'hf:cat/one: duplicate-check (1)',
+              'hf:cat/one: duplicate-check (1)',
+            ],);
+            expect(resolved.checks
+              .get('hf:cat/one',)
+              ?.get(1,)
+              ?.verdict,).toBe('uncertain',);
+            expect([...resolved.checks
+              .get('hf:cat/one',)
+              ?.keys() ?? [],],).toEqual([1, 2,],);
+          },
+        },),
+
+        it({
+          name: 'WRITES NO FINDING FOR PROBERS THAT CAST ONE CHECK PER REGION',
+          fn: async () => {
+            expect(resolveProberChecks({
+              ballots: {
+                'hf:cat/one': [
+                  catCheck({ verdict: 'uncertain', region: 1, },),
+                  catCheck({ verdict: 'uncertain', region: 2, },),
+                ],
+              },
+            },).findings,).toEqual([],);
           },
         },),
       ],

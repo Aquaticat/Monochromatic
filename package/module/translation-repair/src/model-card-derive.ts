@@ -368,6 +368,51 @@ export function recordOver<Key extends string, Value>(
 }
 
 /**
+ Record over entries whose ids must each appear once.
+
+ @param entries - id and value pairs, in the order they were read
+
+ @param owner - whose entries these are, so the refusal says where the repeat sits
+
+ @returns The record, with its keys widened to `string`
+
+ @throws When an id appears more than once, since the later row would replace
+ the earlier and drop it without a word
+
+ @example
+ ```ts
+ const record = recordOfDistinctIds({ entries: [['cat', 3,], ['kitten', 6,],], owner: 'tabby cards', },);
+ ```
+ */
+export function recordOfDistinctIds<Value>(
+  {
+    entries,
+    owner,
+  }: {
+    readonly entries: readonly (readonly [
+      string,
+      Value,
+    ])[];
+    readonly owner: string;
+  },
+): Readonly<Record<string, Value>> {
+  /**
+   Values by id; a map until handed back, as every record filled by a key is
+   (ledger B77).
+   */
+  const byId = new Map<string, Value>();
+  for (const [id, value,] of entries) {
+    if (byId.has(id,))
+      throw new RangeError(`${owner} carry the id ${id} more than once`,);
+    byId.set(
+      id,
+      value,
+    );
+  }
+  return Object.fromEntries(byId,);
+}
+
+/**
  Record over one provider's served spellings, each row read off the card
  that carries the spelling.
 
@@ -377,8 +422,10 @@ export function recordOver<Key extends string, Value>(
 
  @returns The record, read under that provider's served-id union
 
- @throws When a served spelling on the roster's list has no card, or a
- card's spelling is off the list
+ @throws When a served spelling on the roster's list has no card, a
+ card's spelling is off the list, or two cards carry one spelling, which
+ the key check after the build could not see since the later card would
+ have replaced the earlier
 
  @example
  ```ts
@@ -401,19 +448,22 @@ export function servedRecord<Provider extends CardProvider, Row>(
   /**
    Record with its keys widened to `string`, as `Object.fromEntries` types it.
    */
-  const built: Readonly<Record<string, Row>> = Object.fromEntries(served.map(function entry(card,): readonly [
-    string,
-    Row,
-  ] {
-    /**
-     This provider's side of the card.
-     */
-    const side = SIDE_OF[provider](card,);
-    return [
-      side.id,
-      toRow(card,),
-    ];
-  },),);
+  const built: Readonly<Record<string, Row>> = recordOfDistinctIds({
+    entries: served.map(function entry(card,): readonly [
+      string,
+      Row,
+    ] {
+      /**
+       This provider's side of the card.
+       */
+      const side = SIDE_OF[provider](card,);
+      return [
+        side.id,
+        toRow(card,),
+      ];
+    },),
+    owner: `${provider} cards`,
+  },);
   /**
    Spellings the roster lists for this provider.
    */

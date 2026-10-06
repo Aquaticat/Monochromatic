@@ -26,6 +26,7 @@ import {
 import {
   gatherStageVoices,
   NoProviderForModelError,
+  StageRosterRepeatError,
   CUT_SHORT_RECOVERY_NUDGE,
   OFF_SHAPE_RECOVERY_NUDGE,
   type ChatJsonOutcome,
@@ -33,6 +34,7 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
@@ -476,6 +478,73 @@ await describe({
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.findings,).toHaveLength(0,);
         expect(calls[SEAT_HYPER_OPENROUTER_VISION_EDITOR],).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A ROSTER THAT SEATS ONE MODEL TWICE, naming the stage and the repeated id, before any '
+        + 'seat is asked',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** What the gather rejected with. */
+        const refusal = await rejectionOf(async function gatherOverRepeatedSeat(): Promise<unknown> {
+          return gatherStageVoices({
+            client: flakyClient({ failuresByModel: {}, calls, },),
+            modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+            messages: [{ role: 'user', content: 'meow', },],
+            signal: new AbortController().signal,
+            exchangeTimeoutMs: 1_000,
+            responseFormat: MEOW_FORMAT,
+            validate: isMeowReply,
+            stage: 'panel',
+            l,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(StageRosterRepeatError,);
+        expect(String(refusal,),).toBe(
+          `StageRosterRepeatError: the panel roster seats these models more than once: [${
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR
+          }]; a repeated id is one model counted as several voices, which meets quorum on fewer `
+            + 'independent voices than the roster size promises, and the ballots keyed by model id would '
+            + 'keep only one of its replies',
+        );
+        expect(calls,).toEqual({},);
+      },
+    },),
+
+    it({
+      name: 'NAMES EVERY REPEATED ID ONCE, in the order each first repeats, however often it is seated',
+      fn: async () => {
+        /** What the gather rejected with. */
+        const refusal = await rejectionOf(async function gatherOverRepeatedSeats(): Promise<unknown> {
+          return gatherStageVoices({
+            client: flakyClient({ failuresByModel: {}, calls: {}, },),
+            modelIds: [
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            ],
+            messages: [{ role: 'user', content: 'meow', },],
+            signal: new AbortController().signal,
+            exchangeTimeoutMs: 1_000,
+            responseFormat: MEOW_FORMAT,
+            validate: isMeowReply,
+            stage: 'page-title',
+            l,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(StageRosterRepeatError,);
+        // The sentence is pinned by the case that seats one id twice; this
+        // case pins which ids it lists and in what order.
+        /** Refusal built from the ids the roster repeats, in that order. */
+        const expected = new StageRosterRepeatError({
+          stage: 'page-title',
+          duplicated: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
+        },);
+        expect(String(refusal,),).toBe(String(expected,),);
       },
     },),
 

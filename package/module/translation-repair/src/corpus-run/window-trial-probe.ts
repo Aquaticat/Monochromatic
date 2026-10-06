@@ -28,6 +28,7 @@ import {
 import {
   reportWindowTrial,
   TRIAL_ARMS,
+  windowTrialReportLine,
 } from './window-trial-report.ts';
 import {
   controlSlices,
@@ -66,15 +67,6 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
  breadth is worth more here than depth.
  */
 const CONTROLS_PER_ENTRY = 1;
-
-/**
- Decimal places the paired estimate is printed to.
-
- Two, because the draw cannot resolve a third: at the size measured here the
- spread on this estimate is larger than a hundredth, and printing more digits
- would suggest a precision the sample does not have.
- */
-const EXCESS_DIGITS = 2;
 
 /**
  Refusals in a row that end the run.
@@ -467,34 +459,7 @@ async function main(): Promise<void> {
     rows: ledgerRows,
     protocol,
   },)) {
-    l.info(
-      `${report.sliceClass}: window moved replacement by ${
-        report.pairedExcess
-          .toFixed(EXCESS_DIGITS,)
-      } over ${String(report.entries,)} ${
-        wordForCount({
-          count: report.entries,
-          one: 'entry',
-          many: 'entries',
-        },)
-      }; ${
-        report.arms
-          .map(function toRate(rate,) {
-            return `${rate.arm} ${String(rate.replaced,)}/${String(rate.trials,)}`;
-          },)
-          .join(' ',)
-      }; wide moved ${String(report.transitions
-        .replaceToKeep,)} down and ${
-        String(report.transitions
-          .keepToReplace,)
-      } up, against a band of ${String(report.bandTransitions
-        .replaceToKeep,)} down and ${
-        String(report.bandTransitions
-          .keepToReplace,)
-      } up; ${String(report.incomplete,)} incomplete, ${
-        String(report.degraded,)
-      } dropped for a short panel`,
-    );
+    l.info(windowTrialReportLine({ report, },),);
   }
 }
 

@@ -277,6 +277,7 @@ export {
   reportWindowTrial,
   type Transitions,
   TRIAL_ARMS,
+  windowTrialReportLine,
 } from './corpus-run/window-trial-report.ts';
 export {
   CONTROL_CLASS,

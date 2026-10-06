@@ -22,6 +22,7 @@ import {
   reportWindowTrial,
   TRIAL_ARMS,
   type WindowTrialRow,
+  windowTrialReportLine,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -395,6 +396,46 @@ await describe({
       },
     },),
     it({
+      name: 'LEAVES OUT A SLICE WHOSE ARM THE LEDGER HOLDS TWICE and counts it as repeated, since a later row '
+        + 'replacing an earlier one would credit a measurement the protocol did not buy once',
+      fn: async () => {
+        /**
+         One whole slice, and one whose wide arm carries a second row that says the opposite.
+         */
+        const rows = [
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: false, wide: false, },),
+          ...tripleFor({ sliceIndex: 1, narrowFirst: true, narrowSecond: true, wide: true, },),
+          rowFor({ sliceIndex: 1, arm: TRIAL_ARMS.wide, shipped: false, },),
+        ];
+
+        expect(reportWindowTrial({ rows, protocol: 'protocol-one', },),).toEqual([{
+          sliceClass: 'relocation',
+          arms: [
+            { arm: TRIAL_ARMS.narrowFirst, trials: 1, replaced: 1, },
+            { arm: TRIAL_ARMS.narrowSecond, trials: 1, replaced: 0, },
+            { arm: TRIAL_ARMS.wide, trials: 1, replaced: 0, },
+          ],
+          transitions: {
+            replaceToKeep: 1,
+            keepToReplace: 0,
+            heldReplace: 0,
+            heldKeep: 0,
+          },
+          bandTransitions: {
+            replaceToKeep: 1,
+            keepToReplace: 0,
+            heldReplace: 0,
+            heldKeep: 0,
+          },
+          pairedExcess: 0.5,
+          entries: 1,
+          incomplete: 0,
+          degraded: 0,
+          repeated: 1,
+        },],);
+      },
+    },),
+    it({
       name: 'reports every arm over the SAME complete-triple population, so the three rates are '
         + 'comparable rather than each being taken over whatever that arm happened to finish',
       fn: async () => {
@@ -406,6 +447,35 @@ await describe({
         const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
         for (const rate of report?.arms ?? [])
           expect(rate.trials,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'PRINTS THE SLICES LEFT OUT FOR AN ARM THE LEDGER HOLDS TWICE beside the incomplete and degraded counts, '
+        + 'with the noun agreeing with the count',
+      fn: async () => {
+        /** Report of a class where two slices were left out for a repeated arm. */
+        const [report,] = reportWindowTrial({
+          rows: [
+            ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: false, wide: false, },),
+            ...tripleFor({ sliceIndex: 1, narrowFirst: true, narrowSecond: true, wide: true, },),
+            rowFor({ sliceIndex: 1, arm: TRIAL_ARMS.wide, shipped: false, },),
+            ...tripleFor({ sliceIndex: 2, narrowFirst: true, narrowSecond: true, wide: true, },),
+            rowFor({ sliceIndex: 2, arm: TRIAL_ARMS.wide, shipped: false, },),
+          ],
+          protocol: 'protocol-one',
+        },);
+        if (report === undefined)
+          throw new Error('the fixture ledger holds one class',);
+        expect(windowTrialReportLine({ report, },),).toBe(
+          'relocation: window moved replacement by 0.50 over 1 entry; narrow-a 1/1 narrow-b 0/1 wide 0/1; '
+            + 'wide moved 1 down and 0 up, against a band of 1 down and 0 up; 0 incomplete, 0 dropped for a '
+            + 'short panel, 2 slices left out for an arm the ledger holds twice',
+        );
+        expect(windowTrialReportLine({ report: { ...report, repeated: 1, }, },),).toBe(
+          'relocation: window moved replacement by 0.50 over 1 entry; narrow-a 1/1 narrow-b 0/1 wide 0/1; '
+            + 'wide moved 1 down and 0 up, against a band of 1 down and 0 up; 0 incomplete, 0 dropped for a '
+            + 'short panel, 1 slice left out for an arm the ledger holds twice',
+        );
       },
     },),
   ],

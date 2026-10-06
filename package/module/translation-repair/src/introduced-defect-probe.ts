@@ -15,6 +15,7 @@ import {
 } from './introduced-defect-wire.ts';
 import {
   type RegionDefectTally,
+  resolveProberChecks,
   screenIntroducedDefects,
 } from './introduced-defect-screen.ts';
 import type { RepairRegion, } from './repair-region.ts';
@@ -64,7 +65,9 @@ export type IntroducedDefectReport = {
   readonly configuredProbers: number;
 
   /**
-   Wire irregularities across probers in scorecard-stable wording.
+   Wire irregularities across probers in scorecard-stable wording: the
+   gather's own, then a `<model id>: duplicate-check (<region>)` for each
+   later check a prober cast on a region it had answered.
    */
   readonly findings: readonly string[];
 };
@@ -315,7 +318,11 @@ export async function runIntroducedDefectProbe(
     heardProbers: Object.keys(ballots,)
       .length,
     configuredProbers: proberModelIds.length,
-    findings: gather.findings,
+    findings: [
+      ...gather.findings,
+      ...resolveProberChecks({ ballots, },)
+        .findings,
+    ],
   };
 }
 

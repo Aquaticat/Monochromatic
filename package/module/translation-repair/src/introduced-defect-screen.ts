@@ -497,6 +497,86 @@ type CastCheck = Readonly<{
 }>;
 
 /**
+ Every prober's checks resolved to one per region, with what the resolution
+ passed over.
+
+ @example
+ ```ts
+ const resolved: ResolvedProberChecks = { checks: new Map(), findings: [], };
+ ```
+ */
+export type ResolvedProberChecks = {
+  /**
+   Per prober, the check kept for each one-based region number.
+   */
+  readonly checks: ReadonlyMap<string, ReadonlyMap<number, IntroducedDefectCheckWire>>;
+
+  /**
+   Wire irregularities in scorecard-stable wording, each under its prober.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ Resolves each prober's checks once into the first check per region carrying
+ a verdict the screen knows.
+
+ A check carrying a verdict outside the closed vocabulary is a wire fault and
+ is passed over, as the screen always did. A later check on a region the
+ prober already answered is a `duplicate-check` finding and is not counted,
+ as `resolveResolutionChecks` (`tally-resolution.ts`) does for the checkers.
+
+ @param ballots - checks per prober, keyed by model id
+
+ @returns Kept checks per prober and the findings, `<model id>: duplicate-check (<region>)`
+
+ @example
+ ```ts
+ const { checks, findings, } = resolveProberChecks({ ballots, },);
+ ```
+ */
+export function resolveProberChecks(
+  { ballots, }: { readonly ballots: Readonly<Record<string, readonly IntroducedDefectCheckWire[]>>; },
+): ResolvedProberChecks {
+  /**
+   Findings accumulated across every prober.
+   */
+  const findings: string[] = [];
+
+  /**
+   Kept checks per prober, in the order the probers are keyed. A map until
+   handed back, as every record filled by a key is (ledger B77).
+   */
+  const checks = new Map<string, ReadonlyMap<number, IntroducedDefectCheckWire>>();
+  for (const [modelId, wire,] of Object.entries(ballots,)) {
+    /**
+     This prober's kept check per region; first occurrence wins.
+     */
+    const kept = new Map<number, IntroducedDefectCheckWire>();
+    for (const check of wire) {
+      if (!isIntroducedDefectVerdict(check.verdict,))
+        continue;
+      if (kept.has(check.region,)) {
+        findings.push(`${modelId}: duplicate-check (${check.region})`,);
+        continue;
+      }
+      kept.set(
+        check.region,
+        check,
+      );
+    }
+    checks.set(
+      modelId,
+      kept,
+    );
+  }
+  return {
+    checks,
+    findings,
+  };
+}
+
+/**
  Screens every prober ballot into one tally per region.
 
  A check naming a region outside the sheet, or carrying a verdict outside the
@@ -526,6 +606,11 @@ export function screenIntroducedDefects(
     readonly issues?: readonly AdjudicatedIssue[];
   },
 ): readonly RegionDefectTally[] {
+  /**
+   Each prober's checks resolved once, so every region reads the same first
+   check of a prober.
+   */
+  const resolved = resolveProberChecks({ ballots, },);
   return regions.map(function toTally(
     region,
     index,
@@ -540,24 +625,21 @@ export function screenIntroducedDefects(
     /**
      One check per prober on this region, paired with its prober.
 
-     ONE PER PROBER, THE FIRST WITH A VERDICT THE SCREEN KNOWS. The sheet asks
-     for one check per region; a prober answering twice used to count twice
-     and a prober skipping the region counted nowhere, so the printed tallies
-     could exceed the probers heard or fall short of them.
+     ONE PER PROBER, THE FIRST WITH A VERDICT THE SCREEN KNOWS, resolved once
+     for every region by `resolveProberChecks`. The sheet asks for one check
+     per region; a prober answering twice used to count twice and a prober
+     skipping the region counted nowhere, so the printed tallies could exceed
+     the probers heard or fall short of them.
      */
-    const cast = Object
-      .entries(ballots,)
+    const cast = [...resolved.checks,]
       .flatMap(function toChecks([
         modelId,
-        checks,
+        byRegion,
       ],): readonly CastCheck[] {
         /**
          First check this prober cast here with a known verdict.
          */
-        const first = checks.find(function isThisRegion(check,): boolean {
-          return (check.region === (index + 1))
-            && isIntroducedDefectVerdict(check.verdict,);
-        },);
+        const first = byRegion.get(index + 1,);
         return (first === undefined)
           ? []
           : [

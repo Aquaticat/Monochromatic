@@ -9,7 +9,10 @@ import {
   type ArtifactRecord,
   readArtifactRecords,
 } from './probe-relabel-artifact.ts';
-import type { RelabelCase, } from './probe-relabel-case.ts';
+import {
+  holdingSlices,
+  type RelabelCase,
+} from './probe-relabel-case.ts';
 
 //region Probe relabel control
 // Builds the arm that decides whether the damaged-region result means anything.
@@ -128,7 +131,9 @@ function byLengthDistance<Region extends { readonly before: string; },>(
 
  @returns Control cases, at most {@link CONTROL_REGIONS_PER_ENTRY} per entry
 
- @throws {@link ArtifactParseError} when an artifact or manifest is malformed
+ @throws {@link ArtifactParseError} when an artifact or manifest is malformed,
+ or when more than one slice of an entry carries a candidate region's replaced
+ text, which leaves the slice production sent unreadable
 
  @example
  ```ts
@@ -279,12 +284,10 @@ export async function gatherControlCases(
       /**
        Slice whose translation carries this region.
        */
-      const holder = slices
-        .find(function holdsBefore(slice,) {
-          return slice.target
-            .text
-            .includes(region.before,);
-        },);
+      const [holder,] = holdingSlices({
+        slices,
+        before: region.before,
+      },);
       if (holder === undefined)
         continue;
 

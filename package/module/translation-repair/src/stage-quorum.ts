@@ -23,6 +23,10 @@ import {
   type SharedRoundRequest,
 } from './stage-recovery-round.ts';
 import { runGatherRound, } from './stage-round.ts';
+import {
+  repeatedRosterIds,
+  StageRosterRepeatError,
+} from './stage-roster-repeat.ts';
 import { stageQuorumUnmetFinding, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -213,6 +217,9 @@ type RoundsOutcome<ValueT,> = {
 
  @returns Heard voices plus quorum verdict and degradation findings
 
+ @throws {@link StageRosterRepeatError} when the roster seats one model more
+ than once, before any seat is asked
+
  @example
  ```ts
  const gather = await gatherStageVoices({ ..., stage: 'critic', l, },);
@@ -251,6 +258,17 @@ export async function gatherStageVoices<ValueT,>(
     readonly decision?: StageDecision;
   }>,
 ): Promise<StageGather<ValueT>> {
+  /**
+   Ids the roster seats more than once, which every role's readers collapse
+   into one model while the quorum counts them as several voices.
+   */
+  const duplicated = repeatedRosterIds({ modelIds, },);
+  if (duplicated.length > 0)
+    throw new StageRosterRepeatError({
+      stage,
+      duplicated,
+    },);
+
   /**
    Voices a quorum needs: at least half the roster, rounded up, sized on
    the seats a wet provider serves once the router has named the rest.

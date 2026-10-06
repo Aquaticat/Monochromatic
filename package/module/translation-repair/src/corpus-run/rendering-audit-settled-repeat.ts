@@ -1,3 +1,5 @@
+import { isJsonRecord, } from '../json-guard.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
   sameAuditedText,
   textIdentityOf,
@@ -106,6 +108,44 @@ export type AuditRepeatPair = {
 };
 
 /**
+ Reads a row's slice index under the name its generation wrote it.
+
+ A run written before the rename of 2026-08-24 (`49e5a41cd`, "as generation 4")
+ carries `chunkIndex` where this generation writes `sliceIndex`. The rename
+ changed the field's name and nothing it holds: the rows of both generations
+ describe the global slice index, so an older run pairs with a newer one by
+ this value like any other.
+
+ @param row - one row of a run file
+
+ @returns Its `chunkIndex` when it carries no numeric `sliceIndex` and a numeric
+ `chunkIndex`, otherwise its `sliceIndex`
+
+ @example
+ ```ts
+ const index = sliceIndexOf({ row, },);
+ ```
+ */
+function sliceIndexOf(
+  { row, }: { readonly row: SettledAuditRow; },
+): number {
+  /**
+   The row as the file wrote it, whatever the cast claims.
+   */
+  const written: unknown = row;
+  if (!isJsonRecord(written,))
+    return row.sliceIndex;
+
+  /**
+   The slice index under the earlier generation's name.
+   */
+  const { chunkIndex, } = written;
+  if (((typeof written.sliceIndex) !== 'number') && ((typeof chunkIndex) === 'number'))
+    return chunkIndex;
+  return row.sliceIndex;
+}
+
+/**
  Names the subject one row describes, run set included.
 
  ONE BUILDER, used by both the map and the lookup. Spelling the key twice is
@@ -127,8 +167,110 @@ function subjectKey(
   return [
     row.runSet,
     row.entryId,
-    String(row.sliceIndex,),
+    String(sliceIndexOf({ row, },),),
   ].join(SLOT_SEPARATOR,);
+}
+
+/**
+ Whether a row carries the three parts a subject key joins, as the types the
+ key reads them in.
+
+ @param row - one row of a run file, as the cast calls it
+
+ @returns Whether its run set and entry id are text and its slice index, under either generation's name, a number
+
+ @example
+ ```ts
+ const named = namesItsSubject({ row, },);
+ ```
+ */
+function namesItsSubject(
+  { row, }: { readonly row: unknown; },
+): boolean {
+  return isJsonRecord(row,)
+    && ((typeof row.runSet) === 'string')
+    && ((typeof row.entryId) === 'string')
+    && (((typeof row.sliceIndex) === 'number') || ((typeof row.chunkIndex) === 'number'));
+}
+
+/**
+ Keys one run's rows by subject, refusing a row that names no subject and a
+ subject two rows name.
+
+ THE ROWS COME FROM A RUN FILE THE READER CASTS RATHER THAN CHECKS, so the
+ parts of the key are checked here, where they are joined. A later row under
+ a key the map already holds would replace the earlier, and an earlier run
+ naming a subject twice would pair its later row with both and count one
+ audit twice in the band. The refusal names positions, never a run set, an
+ entry or a slice, which came out of a file.
+
+ @param rows - rows of one run
+
+ @param which - which run these are, `earlier` or `later`, for the refusal
+
+ @returns Each row under its subject key
+
+ @throws {@link StatedRefusalError} when a row names its subject by anything
+ but a text run set, a text entry id and a numeric slice index, or when two
+ rows name one subject
+
+ @example
+ ```ts
+ const bySubject = rowsBySubject({ rows, which: 'later', },);
+ ```
+ */
+function rowsBySubject(
+  {
+    rows,
+    which,
+  }: {
+    readonly rows: readonly SettledAuditRow[];
+    readonly which: 'earlier' | 'later';
+  },
+): ReadonlyMap<string, SettledAuditRow> {
+  /**
+   Rows by subject key.
+   */
+  const byKey = new Map<string, SettledAuditRow>();
+
+  /**
+   Position of the row that first named each subject.
+   */
+  const firstAt = new Map<string, number>();
+  for (const [position, row,] of rows.entries()) {
+    if (!namesItsSubject({ row, },)) {
+      throw new StatedRefusalError({
+        says: `row ${String(position,)} of the ${which} run does not name its subject by a text run set, `
+          + 'a text entry id and a numeric slice index',
+      },);
+    }
+
+    /**
+     Subject this row names.
+     */
+    const key = subjectKey({ row, },);
+
+    /**
+     Position of an earlier row naming the same subject, when there is one.
+     */
+    const seenAt = firstAt.get(key,);
+    if (seenAt !== undefined) {
+      throw new StatedRefusalError({
+        says: `the ${which} run names one subject on two rows, row ${String(seenAt,)} and row ${
+          String(position,)
+        }, so which of them the pairing should read cannot be told`,
+      },);
+    }
+    firstAt.set(
+      key,
+      position,
+    );
+    byKey.set(
+      key,
+      row,
+    );
+  }
+  return byKey;
 }
 
 /**
@@ -218,7 +360,7 @@ function repeatPairOf(
 ): AuditRepeatPair {
   return {
     entryId: left.entryId,
-    sliceIndex: left.sliceIndex,
+    sliceIndex: sliceIndexOf({ row: left, },),
     auditsArchiveText: left.auditsArchiveText,
     left: repeatSideOf({ row: left, },),
     right: repeatSideOf({ row: right, },),
@@ -255,7 +397,7 @@ export function auditRepeatsWithin(
      */
     const slot = [
       row.entryId,
-      String(row.sliceIndex,),
+      String(sliceIndexOf({ row, },),),
     ].join(SLOT_SEPARATOR,);
     bySlot.set(
       slot,
@@ -319,6 +461,9 @@ export function auditRepeatsWithin(
 
  @returns Pairs, slots whose text moved, and slots nobody can vouch for
 
+ @throws {@link StatedRefusalError} when a run's row names no subject, or
+ when either run names one subject on two rows
+
  @example
  ```ts
  const { paired, textMoved, unverifiable, } = auditRepeatsAcross({ first, second, },);
@@ -340,20 +485,24 @@ export function auditRepeatsAcross(
   /**
    Later run, reachable by slot.
    */
-  const laterBySlot = new Map(second.map(function bySlot(row,): [
-    string,
-    SettledAuditRow,
-  ] {
-    return [
-      subjectKey({ row, },),
-      row,
-    ];
-  },),);
+  const laterBySlot = rowsBySubject({
+    rows: second,
+    which: 'later',
+  },);
+
+  /**
+   Earlier run keyed the same way, so a subject it names twice is refused
+   before it pairs with the later row twice.
+   */
+  const earlierBySlot = rowsBySubject({
+    rows: first,
+    which: 'earlier',
+  },);
 
   /**
    Slots both runs hold, split by whether the text also agreed.
    */
-  const matched = first.flatMap(function join(row,): readonly {
+  const matched = [...earlierBySlot.values(),].flatMap(function join(row,): readonly {
     readonly left: SettledAuditRow;
     readonly right: SettledAuditRow;
   }[] {
@@ -436,7 +585,7 @@ export function auditRepeatsAcross(
 function nameOf(
   { left, }: { readonly left: SettledAuditRow; },
 ): string {
-  return `${left.runSet}/${left.entryId}#${String(left.sliceIndex,)}`;
+  return `${left.runSet}/${left.entryId}#${String(sliceIndexOf({ row: left, },),)}`;
 }
 
 //endregion Settled audit repeat readings

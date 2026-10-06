@@ -139,6 +139,63 @@ type GatheringCase = Omit<RelabelCase, 'positions'> & {
 };
 
 /**
+ Finds the slices whose translation contains a region's replaced text, which
+ can be none or one and never more.
+
+ EVERY SLICE IS GATHERED, never the first taken: a short replaced text can
+ stand in more than one slice, and a prompt rebuilt from whichever came first
+ asks the prober about a passage production may not have sent.
+
+ @param slices - slices of the pair, from the preparation
+
+ @param before - replaced text to locate
+
+ @returns An empty list when no slice carries the text, otherwise the one that does
+
+ @throws {@link ArtifactParseError} when more than one slice carries the text,
+ naming the text's length and never the text
+
+ @example
+ ```ts
+ const [holder,] = holdingSlices({ slices, before, },);
+ ```
+ */
+export function holdingSlices<SliceT extends { readonly target: { readonly text: string; }; }>(
+  {
+    slices,
+    before,
+  }: {
+    readonly slices: readonly SliceT[];
+    readonly before: string;
+  },
+): readonly SliceT[] {
+  /**
+   Slices whose translation carries the replaced text.
+   */
+  const holders = slices
+    .filter(function holdsBefore(slice,): boolean {
+      return slice.target
+        .text
+        .includes(before,);
+    },);
+  if (holders.length > 1) {
+    // NAMES THE LOOKUP, NEVER THE TEXT, for the reason `locateSlice` gives.
+    throw new ArtifactParseError({
+      path: `slice holding the replaced text of ${String(before.length,)} ${
+        wordForCount({
+          count: before.length,
+          one: 'character',
+          many: 'characters',
+        },)
+      }`,
+      reason:
+        'present in one slice; more than one slice carries it, so which of them production sent cannot be read',
+    },);
+  }
+  return holders;
+}
+
+/**
  Finds the slice whose translation contains a region's replaced text.
 
  Located by CONTENT rather than by the recorded chunk index, because an index
@@ -156,7 +213,8 @@ type GatheringCase = Omit<RelabelCase, 'positions'> & {
 
  @throws {@link ArtifactParseError} when no slice carries the replaced text,
  which means slicing no longer reproduces the run and every later comparison
- would use a different prompt than production sent
+ would use a different prompt than production sent, or when more than one
+ does, which leaves the slice production sent unreadable
 
  @example
  ```ts
@@ -194,14 +252,12 @@ export function locateSlice(
   },);
 
   /**
-   First slice whose translation carries the replaced text.
+   The one slice whose translation carries the replaced text, if any does.
    */
-  const holder = slices
-    .find(function holdsBefore(slice,) {
-      return slice.target
-        .text
-        .includes(before,);
-    },);
+  const [holder,] = holdingSlices({
+    slices,
+    before,
+  },);
   if (holder === undefined) {
     // NAMES THE LOOKUP, NEVER THE TEXT. `ArtifactParseError` carries
     // `messageNamesOnly`, which `reportingRefusals` reads as permission to

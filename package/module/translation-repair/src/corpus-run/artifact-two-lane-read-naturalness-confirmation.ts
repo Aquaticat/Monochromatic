@@ -118,22 +118,37 @@ export function parseNaturalnessConfirmations(
   }
   /**
    Each confirmation beside the decisive review of its exact candidate,
-   refusing one that matches none.
+   refusing one that matches none and one that matches more than one.
    */
-  const matches = confirmations.map(function matchOf(confirmation,): ConfirmationMatch {
+  const matches = confirmations.map(function matchOf(
+    confirmation,
+    at,
+  ): ConfirmationMatch {
     /**
-     Decisive review of the same candidate and paragraphs.
+     Decisive reviews of the same candidate and paragraphs. More than one
+     means a correction chain returned to a candidate it had reviewed, and a
+     confirmation that fits two rounds names neither.
      */
-    const decisive = rounds.find(function sameCandidate(round,): boolean {
+    const sameCandidates = rounds.filter(function sameCandidate(round,): boolean {
       return (round.candidateDigest === confirmation.candidateDigest)
         && (round.candidateText === confirmation.candidateText)
         && (JSON.stringify(round.paragraphDigests,)
           === JSON.stringify(confirmation.paragraphDigests,));
     },);
+    /**
+     The first of them, the only one when the confirmation is sound.
+     */
+    const [decisive,] = sameCandidates;
     if (decisive === undefined) {
       throw new ArtifactParseError({
         path: `${path}.confirmations`,
         reason: 'exact candidate and paragraph identities of one decisive review round',
+      },);
+    }
+    if (sameCandidates.length > 1) {
+      throw new ArtifactParseError({
+        path: `${path}.confirmations[${String(at,)}]`,
+        reason: 'a confirmation that fits one decisive review round, not several',
       },);
     }
     return {

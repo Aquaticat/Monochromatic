@@ -322,6 +322,9 @@ function readRecordedTally({ value, }: { readonly value: unknown; },): readonly 
 
  @returns Rendered tally per envelope, empty when the record was never probed
 
+ @throws {@link ArtifactParseError} when a region is malformed or repeats an
+ envelope id an earlier region of the record carries
+
  @example
  ```ts
  const recorded = readRecordedTallies({ record, },);
@@ -339,15 +342,38 @@ function readRecordedTallies(
   if (!('regions' in probe))
     return {};
 
-  return Object.fromEntries(
-    requireArray({
-      value: probe.regions,
-      path: 'introducedDefects.regions',
-    },)
-      .map(function toTally(entry,) {
-        return readRecordedTally({ value: entry, },);
-      },),
-  );
+  /**
+   Regions the probe block records.
+   */
+  const regions = requireArray({
+    value: probe.regions,
+    path: 'introducedDefects.regions',
+  },);
+
+  /**
+   Rendered tally per envelope id, first met first; a map until handed back,
+   as every record filled by a key is (ledger B77).
+   */
+  const tallies = new Map<string, string>();
+  for (const [at, entry,] of regions.entries()) {
+    /**
+     Envelope id and rendered counts of this region.
+     */
+    const [envelopeId, line,] = readRecordedTally({ value: entry, },);
+    // NAMES THE POSITION, NEVER THE ID: the record is a stored file, and a
+    // refusal of this class is printed whole.
+    if (tallies.has(envelopeId,)) {
+      throw new ArtifactParseError({
+        path: `introducedDefects.regions[${String(at,)}].envelopeId`,
+        reason: 'an envelope id no earlier region of this record carries',
+      },);
+    }
+    tallies.set(
+      envelopeId,
+      line,
+    );
+  }
+  return Object.fromEntries(tallies,);
 }
 
 /**
