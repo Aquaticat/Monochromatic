@@ -701,3 +701,83 @@ the new default template,
 and a changed-template scene whose second row ends with the separator an empty peak leaves.
 Its review page shows the decided design and asks nothing.
 The next concern of the round is reaching the field list while the keyboard is open.
+
+## Which rows get templates: the agent's version (2026-10-06)
+
+D97 asks for one built version,
+the agent's own design,
+and the human's approval.
+Nothing here is decided until then.
+
+### Where supporting text appears
+
+From the design decisions:
+
+- Track rows in the folder's track list:
+  a title and a supporting line (C2, D35).
+  This is the template the editor already studies.
+- The playing track in the deck:
+  a title and a subtitle that counts the track's place in its folder,
+  as in `6 of 10` (D5),
+  and adds the true peak once it is measured (D27).
+- Search results:
+  a title and the parent folder as supporting text,
+  which D77 requires so that equal names stay apart.
+- Folder cells of the picker:
+  one name each,
+  with no supporting line (D3).
+
+### The version
+
+- Two templates,
+  listed under `Templates` in Settings:
+  `Track rows` and `Playing track`.
+- `Track rows` is the template studied so far,
+  default `$tf(mi(len), m:ss)$ $mi(peak)$`.
+- `Playing track` is the deck's subtitle,
+  default `$mi(track)$ of $mi(total)$ $mi(peak)$`,
+  which reads `1 of 16 −1.2 dBTP`,
+  and `1 of 16` before analysis.
+  Its fields are the seven track fields and two more:
+  `track`,
+  the track's place in its folder,
+  and `total`,
+  how many tracks the folder holds.
+  `mi(track)` follows KWGT,
+  whose documentation gives it as the current track in the playlist;
+  `total` is the player's own word.
+  `pos` is not used for the place,
+  because KWGT gives `mi(pos)` as the playback position in seconds.
+- Its preview draws the deck's title and subtitle,
+  centred as the deck draws them,
+  for the same two files as the track rows' preview.
+- Search results are not templated:
+  their supporting line is the parent folder D77 requires,
+  and a template could remove it.
+- Folder cells and every title stay as they are,
+  as D81 implies no title customization.
+
+Why two and not one:
+a single template for both would either lose the deck's place in the folder
+or put it on every track row.
+foobar2000,
+the music player most known for templates,
+also keeps the now-playing surfaces apart from the playlist:
+its Default User Interface preferences set
+"how to display information about the currently played track in various places:
+main window title,
+status bar,
+tooltip of the notification area icon"
+([Hydrogenaudio knowledgebase](https://wiki.hydrogenaudio.org/index.php?title=Foobar2000:Preferences:Default_User_Interface)).
+
+What this costs:
+a second entry in Settings and two more fields to learn.
+The deck's default drops the middle dot,
+as the track rows' default does under D93.
+
+### Built
+
+The editor study gains the `Playing track` editor,
+the Settings page lists both templates,
+the left pane's deck shows the new default,
+and the state previously called `no-library` becomes `empty-library` under D95.
