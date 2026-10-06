@@ -34,8 +34,6 @@ use std::{
     sync::Arc,
 };
 
-/// rust-analyzer's own file watching leaves out the project's `node_modules` directories.
-pub mod rust_analyzer;
 /// The TypeScript family is served by the project's own TypeScript 7 server.
 mod typescript;
 
@@ -238,10 +236,6 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
     for (name, definition) in configuration.language_server.iter_mut() {
         let command = definition.command.clone();
         let outcome = locate(name, &command, root).and_then(|executable| {
-            // Only a rust-analyzer that will be launched is worth walking the project for.
-            if name == rust_analyzer::SERVER {
-                rust_analyzer::exclude_node_modules(&mut definition.config, root, &spellings);
-            }
             let request = LaunchRequest {
                 server: name.clone(),
                 executable,

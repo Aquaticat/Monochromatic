@@ -4,8 +4,7 @@
 // lost or failed watches, unsettled-write waiting, collapse unwatching, the extra read after a new watch,
 // retries and failures reported once, the watch limit as one state with backoff, the reread schedules,
 // the displayed file outside the project, the quiet requirement of reads no write notification asked for,
-// rust-analyzer's node_modules exclusion, and the native wiring that turns notifications into reads and
-// keeps a save in progress off the screen. A case with `lib` runs a library unit test.
+// and the native wiring that turns notifications into reads and keeps a save in progress off the screen. A case with `lib` runs a library unit test.
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -77,10 +76,6 @@ const cases = [
   { name: 'reread-classified', file: 'src/change_watch/watch_thread.rs', before: 'published.pending.source = Some(SourceChange::Reread);', after: 'published.pending.source = Some(SourceChange::Settled);', integration: watch, test: 'entries::a_newly_displayed_file_in_a_watched_folder_is_reported_once', failure: 'the newly displayed file was reported as a finished write' },
   { name: 'reread-needs-quiet', file: 'src/refresh_policy/source.rs', before: 'return self.pending_since.is_some() && self.notified;', after: 'return self.pending_since.is_some();', integration: quiet, test: 'a_reread_with_no_write_behind_it_requires_quiet', failure: 'a reread with no write behind it skipped the quiet check' },
   { name: 'reread-keeps-wait', file: 'src/refresh_policy/source.rs', before: '            SourceChange::Reread => {\n                if first {', after: '            SourceChange::Reread => {\n                self.unsettled_at = None;\n                if first {', integration: quiet, test: 'a_reread_with_no_write_behind_it_requires_quiet', failure: 'a reread ended the wait for an unfinished write' },
-  // rust-analyzer's own watching leaves the project's node_modules directories out.
-  { name: 'ra-node-modules-excluded', file: 'src/language/config.rs', before: 'rust_analyzer::exclude_node_modules(&mut definition.config, root, &spellings);', after: '', lib: true, test: 'language::config::rust_analyzer::tests::the_built_configuration_hides_node_modules_from_rust_analyzer', failure: "the project's node_modules directories were not excluded" },
-  { name: 'ra-walk-prunes', file: 'src/language/config/rust_analyzer.rs', before: 'const PRUNED: [&str; 2] = ["target", ".git"];', after: 'const PRUNED: [&str; 0] = [];', lib: true, test: 'language::config::rust_analyzer::tests::node_modules_directories_are_found_without_entering_them', failure: 'the walk entered a node_modules, target, .git, or a link' },
-  { name: 'ra-walk-not-entering', file: 'src/language/config/rust_analyzer.rs', before: '                }\n                continue;\n            }\n            if PRUNED', after: '                }\n            }\n            if PRUNED', lib: true, test: 'language::config::rust_analyzer::tests::node_modules_directories_are_found_without_entering_them', failure: 'the walk entered a node_modules, target, .git, or a link' },
   // Reread schedules.
   { name: 'settled-now', file: 'src/refresh_policy/source.rs', before: '                None => {\n                    return true;', after: '                None => {\n                    return false;', integration: policy, test: 'unfinished_writes_wait_for_quiet_within_a_limit', failure: 'a finished write was not read at once' },
   { name: 'write-quiet', file: 'src/refresh_policy/source.rs', before: '>= WRITE_QUIET', after: '>= WRITE_WAIT_LIMIT', integration: policy, test: 'unfinished_writes_wait_for_quiet_within_a_limit', failure: 'a quiet unfinished write was not read' },

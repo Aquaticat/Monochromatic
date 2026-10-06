@@ -4,7 +4,8 @@
 // can be watched. The host's limit is never touched; the namespace and its limit end with the session.
 // The script expands every folder with real keys, then checks that the IDE logged the limit once, made only a
 // few failing watch calls (counted by strace) instead of one per folder per sweep, still listed a file created
-// in an unwatched folder through the timers and the safety sweep, and logged once when the limit was raised.
+// in an unwatched folder through the timers and the safety sweep, retried at once when the tree was scrolled
+// (Home moves the selection from the last row to the first), and logged once when the limit was raised.
 import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
 import { closeSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, realpathSync, rmSync, statfsSync, statSync, writeFileSync } from 'node:fs';
@@ -168,6 +169,22 @@ try {
   results.failed_watch_calls_in_window = trace.filter(line => line.includes('ENOSPC')).length;
   results.created_file_listed_after_ms = listing ? stampOf(listing) - createdAt : null;
   save();
+  // Scrolling retries the watches at once: by now the backoff waits at least 16 s, so a call within a second
+  // of the key comes from the scroll. The expansion left the selection on the last row, so Home scrolls.
+  const scrollTrace = join(artifact, 'strace-scroll.txt');
+  const scrollTracer = spawn('strace', ['--follow-forks', '--timestamps=format:unix,precision:ms', '--trace=inotify_add_watch', '--output=' + scrollTrace, '--attach=' + pid], { stdio: 'ignore' });
+  const scrollTraced = once(scrollTracer, 'exit');
+  await wait(1500);
+  const scrolledAt = Date.now();
+  await key(socketPath, 'home');
+  await wait(1500);
+  scrollTracer.kill('SIGINT');
+  await scrollTraced;
+  const scrollCalls = readFileSync(scrollTrace, 'utf8').split('\n').filter(line => line.includes('inotify_add_watch(')).map(line => Math.round(Number(line.match(/^(?:\d+\s+)?(\d+\.\d+)/)?.[1]) * 1000));
+  results.scroll_retry_lines = own().filter(line => line.includes('the tree scrolled while shown folders lack a watch') && stampOf(line) >= scrolledAt).length;
+  results.watch_calls_before_scroll = scrollCalls.filter(at => at < scrolledAt).length;
+  results.first_watch_call_after_scroll_ms = scrollCalls.filter(at => at >= scrolledAt).map(at => at - scrolledAt)[0] ?? null;
+  save();
   // Raise the namespace's limit from inside the namespace, then wait for a retry to watch everything.
   const raised = spawnSync('nsenter', ['--target', String(pid), '--user', '--preserve-credentials', 'sh', '-c', 'echo 1000 > /proc/sys/user/max_inotify_watches'], { encoding: 'utf8' });
   results.raise_status = raised.status;
@@ -194,6 +211,8 @@ if (results.limit_warnings !== 1) failures.push('expected one limit warning, saw
 if (results.directory_failure_warnings !== 0) failures.push('per-directory failure warnings: ' + results.directory_failure_warnings);
 if (results.created_file_listed_after_ms === null || results.created_file_listed_after_ms > 2500) failures.push('the file in an unwatched folder was not listed within 2.5 s');
 if (results.failed_watch_calls_in_window > 10) failures.push('too many failing watch calls: ' + results.failed_watch_calls_in_window);
+if (results.scroll_retry_lines < 1 || results.first_watch_call_after_scroll_ms === null || results.first_watch_call_after_scroll_ms > 1000) failures.push('scrolling did not retry the watches within a second');
+if (results.watch_calls_before_scroll !== 0) failures.push('watch calls in the 1.5 s before the scroll: ' + results.watch_calls_before_scroll);
 if (results.available_again_lines !== 1) failures.push('expected one line when watches became available, saw ' + results.available_again_lines);
 if (failures.length) throw new Error('Watch-limit control failed: ' + failures.join('; ') + '; inspect ' + artifact);
 console.log('Watch-limit control passed: ' + artifact);

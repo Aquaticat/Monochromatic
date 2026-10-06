@@ -1463,20 +1463,21 @@ The IDE keeps watching every expanded folder.
 
 The language servers count against the same limit.
 Helix's built-in rust-analyzer definition sets `files.watcher = "server"`,
-so rust-analyzer watches every directory below each workspace package by itself.
-It leaves out each package's `target` and `.git`,
-but not `node_modules`:
-on a disposable 40-crate workspace whose first crate holds a `node_modules` of 2001 directories,
+so rust-analyzer watches by itself:
+it asks notify for a recursive watch of each workspace package's directory (`vfs-notify`),
+and notify then watches every directory below it,
+whatever rust-analyzer's own exclusions say.
+On a disposable 40-crate workspace whose first crate holds a `node_modules` of 2001 directories,
 it held 3081 watches,
-1080 for sources and 2001 for `node_modules` (`inspect:server-watches`, directories identified by inode).
-When rust-analyzer is about to start,
-the IDE walks the project once,
-without entering `node_modules`,
-`target`,
-`.git`,
-or symbolic links,
-and adds every `node_modules` directory to `files.excludeDirs`,
-by absolute path for each spelling of the root.
+1080 for sources and 2001 for `node_modules` (`inspect:server-watches`, directories identified by inode);
+the workspace's `target` and `.git`,
+outside every package directory,
+held none.
+Adding the `node_modules` directory to `files.excludeDirs` left the count at 3081 in two runs,
+so the IDE sets no exclusion.
+Only client-side watching (`files.watcher = "client"`) takes rust-analyzer's watches away (0 measured),
+and the IDE does not yet report changes of files it does not display to servers,
+so it keeps Helix's setting.
 The TypeScript 7 server held no watches:
 Helix declares client-side file watching,
 which TypeScript 7.0.2 then uses instead of its own watcher (`internal/lsp/server.go`),
@@ -1489,12 +1490,16 @@ which holds an inotify watch and warns when the limit is reached.
 
 A positive control runs the IDE in a disposable user namespace whose own watch limit is 4
 (`inspect:watch-limit`, 12 expanded folders, the host limit untouched):
+in each of two runs,
 one warning,
 no per-folder warning,
-4 refused watch calls in 60 s with 59 sweeps,
-a file created in an unwatched folder listed after 629 ms,
-and one line 63.8 s after the namespace limit was raised,
+4 and 3 refused watch calls in 60 s with 59 and 60 sweeps,
+a file created in an unwatched folder listed after 629 and 751 ms,
+and one line 63.8 and 61.3 s after the namespace limit was raised,
 the backoff's longest wait.
+In the second run,
+Home in the tree scrolled it and retried the watches 43 ms later,
+with no watch call in the 1.5 s before.
 
 ### Threading and shutdown
 
@@ -1706,7 +1711,6 @@ no further adds,
 the backoff and its cap,
 immediate retries,
 and the displayed file's folder first.
-`language/config/rust_analyzer_tests.rs` checks the `node_modules` walk and the settings rust-analyzer is given.
 `inspect:watch-guards` removes each guard in a disposable copy and requires its named test to fail.
 `inspect:idle-cost`,
 `inspect:refresh-latency`,

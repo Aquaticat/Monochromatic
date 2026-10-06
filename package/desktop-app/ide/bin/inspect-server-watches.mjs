@@ -5,8 +5,8 @@
 // large `node_modules` and `.git`. Watched directories are classified by inode into source, target,
 // `.git`, `node_modules`, and outside the project. Every process the headless Language module
 // starts is sampled from /proc (inotify descriptors and their `wd:` lines) while the servers load.
-// A rust-analyzer run with server-side watching (`files.watcher = "server"`) is the positive control that
-// shows the probe sees server watches; a further run adds `files.excludeDirs` to measure what exclusion saves.
+// Helix's built-in rust-analyzer definition watches on the server side, which is the positive control that
+// shows the probe sees server watches; a run with client-side watching shows the alternative.
 // No server is ever pointed at this repository; it is read only to copy the TypeScript 7 packages.
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
@@ -148,16 +148,16 @@ delete env.CARGO_TARGET_DIR;
 delete env.CARGO_BUILD_BUILD_DIR;
 // Helix's built-in definition sets `files.watcher = "server"`, so production rust-analyzer watches by itself.
 const clientWatching = '[language-server.rust-analyzer.config.files]\nwatcher = "client"\n';
-// Extra definitions replace the whole `files` table, so the control repeats Helix's `watcher` setting.
-const nodeModulesExcluded = '[language-server.rust-analyzer.config.files]\nwatcher = "server"\nexcludeDirs = ["crates/c000/node_modules"]\n';
 const selected = process.env.SERVER_WATCH_CASES ? new Set(process.env.SERVER_WATCH_CASES.split(',')) : undefined;
 const allCases = [
   { name: 'rust-production', project: rust, file: 'crates/c000/src/lib.rs' },
   { name: 'rust-client-watching', project: rust, file: 'crates/c000/src/lib.rs', extra_languages: clientWatching },
-  { name: 'rust-node-modules-excluded', project: rust, file: 'crates/c000/src/lib.rs', extra_languages: nodeModulesExcluded },
   { name: 'typescript-production', project: ts, file: 'src/g00/f00.ts' },
 ];
-const cases = allCases.filter(item => !selected || selected.has(item.name));
+// SERVER_WATCH_ROUNDS repeats the selected cases in order, so two cases alternate and runs of one case can be compared.
+const rounds = Number(process.env.SERVER_WATCH_ROUNDS ?? '1');
+const chosen = allCases.filter(item => !selected || selected.has(item.name));
+const cases = Array.from({ length: rounds }, (_, round) => chosen.map(item => ({ ...item, name: rounds > 1 ? item.name + '-' + (round + 1) : item.name }))).flat();
 // Directory inodes of each project, classified, so watched inodes can be named.
 const classify = root => {
   const kinds = new Map();

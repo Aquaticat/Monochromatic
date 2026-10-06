@@ -46,6 +46,10 @@ pub(super) fn scrolled(window: &AppWindow, navigation: &mut Navigation, now: Ins
         .scroll_retry
         .is_none_or(|at| return now.saturating_duration_since(at) >= SCROLL_RETRY_GAP);
     if unwatched && rested {
+        tracing::debug!(
+            offset,
+            "the tree scrolled while shown folders lack a watch; retrying their watches now"
+        );
         navigation.scroll_retry = Some(now);
         navigation.watcher.retry_now();
     }
