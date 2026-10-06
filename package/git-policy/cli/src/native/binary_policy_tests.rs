@@ -1,7 +1,7 @@
-//! What: Configuration and fail-closed controls through the built executable.
-//! Why: Commands that could change a repository must not reach Git while policy
-//!      execution is missing, configuration errors must stop them first, and
-//!      inspection commands must never read configuration at all.
+//! What: Configuration loading and the read-only fast path through the built executable.
+//! Why: Configuration errors must stop a guarded command before Git, and a read-only
+//!      command must never read configuration nor start more Git processes than the one
+//!      question of where it runs.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,13 +10,17 @@
 
 /// Import the shared fixtures and bounded process helpers.
 use super::support::{
-    Fixture, Observed, direct, fixture, git, observe, remove, repository, wrapped,
+    Fixture, Observed, bounded, direct, executable, fixture, git, observe, remove, repository,
+    wrapped,
 };
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 
 /// The only configuration file the native wrapper reads.
 const CONFIG_FILE_NAME: &str = "cli-git.config.jsonc";
+
+/// The one question a command asks Git about where it runs, as the spawn log records it.
+const LOCATION_QUERY: &str = "rev-parse --path-format=absolute --is-bare-repository --git-dir --git-common-dir --show-toplevel --show-prefix";
 
 /// Run a wrapped command in a repository and return what the caller saw.
 fn run_wrapped(fixture: &Fixture, repo: &Path, arguments: &[&str]) -> Observed {
@@ -33,57 +37,108 @@ fn status(fixture: &Fixture, repo: &Path) -> Vec<u8> {
     .stdout;
 }
 
-/// Repository-changing commands stop with exit status 2 and leave the repository untouched.
+/// Run a wrapped command whose real Git is a shim that logs every start, and return what
+/// the caller saw with the log: one line per Git process, holding its arguments.
+fn run_counted(fixture: &Fixture, repo: &Path, arguments: &[&str]) -> (Observed, String) {
+    let log: PathBuf = fixture.root.join("spawn.log");
+    std::fs::write(&log, b"").expect("empty spawn log");
+    let mut path: OsString = fixture.root.join("bin").into_os_string();
+    path.push(":");
+    path.push(fixture.root.join("shim"));
+    let observed: Observed = observe(
+        bounded(
+            fixture,
+            fixture.root.join("bin/git").as_path(),
+            path.as_os_str(),
+        )
+        .env("CLI_GIT_TEST_SPAWN_LOG", &log)
+        .current_dir(repo)
+        .args(arguments),
+        b"",
+    );
+    let logged: String = std::fs::read_to_string(&log).expect("spawn log");
+    return (observed, logged);
+}
+
+/// A read-only command starts Git once to ask where it runs, or not at all, and never reads configuration.
 #[test]
-fn repository_changing_commands_are_not_run() {
-    let fixture: Fixture = fixture("fail-closed");
+fn read_only_commands_start_at_most_the_location_query() {
+    let fixture: Fixture = fixture("fast-path-count");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
-    std::fs::write(repo.join("file.txt"), b"content\n").expect("file");
-    let before: Vec<u8> = status(&fixture, repo.as_path());
-    assert_eq!(before, b"?? file.txt\n");
-    let head_before: Vec<u8> = git(&fixture, repo.as_path(), &["rev-parse", "HEAD"]).stdout;
-    for (arguments, subcommand) in [
-        (vec!["add", "file.txt"], "add"),
-        (
-            vec!["commit", "--allow-empty", "--message=blocked"],
-            "commit",
-        ),
-        (vec!["branch", "created"], "branch"),
-        (vec!["tag", "v1"], "tag"),
-        (vec!["config", "user.name", "Changed"], "config"),
-        (vec!["-c", "alias.st=status", "st"], "st"),
-        (vec!["update-ref", "refs/heads/moved", "HEAD"], "update-ref"),
+    std::fs::create_dir(fixture.root.join("shim")).expect("shim directory");
+    executable(
+        fixture.root.join("shim/git").as_path(),
+        b"#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$CLI_GIT_TEST_SPAWN_LOG\"\nexec /usr/bin/git \"$@\"\n",
+    );
+    // Invalid configuration and a legacy file: reading either would stop the command.
+    std::fs::write(repo.join(CONFIG_FILE_NAME), "this is not JSONC").expect("invalid");
+    std::fs::write(
+        repo.join("cli-git.config.ts"),
+        "throw new Error('executed');\n",
+    )
+    .expect("legacy");
+    // Commands exempt from require-root: the forwarded command is the only Git process.
+    for arguments in [
+        vec!["--version"],
+        vec!["version"],
+        vec!["--exec-path"],
+        vec!["help", "--no-such-option"],
     ] {
-        let observed: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        let (observed, logged) = run_counted(&fixture, repo.as_path(), arguments.as_slice());
+        assert_eq!(
+            logged,
+            format!("{}\n", arguments.join(" ")),
+            "{arguments:?}"
+        );
         assert_eq!(
             observed,
-            Observed {
-                code: Some(2),
-                stdout: Vec::<u8>::new(),
-                stderr: format!(
-                    "cli-git: policy execution is not implemented in this native development \
-                     executable, so git {subcommand} was not run. Repository-changing commands \
-                     still require the installed cli-git.\n"
-                )
-                .into_bytes(),
-            },
+            observe(
+                direct(&fixture)
+                    .current_dir(&repo)
+                    .args(arguments.as_slice()),
+                b""
+            ),
             "{arguments:?}"
         );
     }
-    assert_eq!(status(&fixture, repo.as_path()), before);
-    assert_eq!(
-        git(&fixture, repo.as_path(), &["rev-parse", "HEAD"]).stdout,
-        head_before
+    // Other read-only commands: one question about the location, then the forwarded command.
+    for (arguments, forwarded) in [
+        (vec!["log", "--oneline"], "log --oneline"),
+        (vec!["rev-parse", "HEAD"], "rev-parse HEAD"),
+        (vec!["branch", "--list"], "branch --list"),
+        (vec!["tag", "--list"], "tag --list"),
+        (vec!["diff", "--stat"], "diff --stat"),
+        (
+            vec!["status", "--porcelain=v1"],
+            "-c advice.statusHints=false status --porcelain=v1",
+        ),
+        (vec!["--cli-git-keep-going", "ls-files"], "ls-files"),
+    ] {
+        let (observed, logged) = run_counted(&fixture, repo.as_path(), arguments.as_slice());
+        assert_eq!(observed.code, Some(0), "{arguments:?}");
+        assert_eq!(
+            logged,
+            format!("{LOCATION_QUERY}\n{forwarded}\n"),
+            "{arguments:?}"
+        );
+    }
+    // Positive control: a guarded command does read the configuration, and stops on it
+    // after the same single question, without ever starting the command itself.
+    let (stopped, stopped_log) =
+        run_counted(&fixture, repo.as_path(), &["reset", "--soft", "HEAD"]);
+    assert_eq!(stopped.code, Some(2));
+    assert!(
+        String::from_utf8_lossy(&stopped.stderr).contains("\"code\":\"config-invalid\""),
+        "{:?}",
+        String::from_utf8_lossy(&stopped.stderr)
     );
-    assert_eq!(
-        git(
-            &fixture,
-            repo.as_path(),
-            &["for-each-ref", "--format=%(refname)"]
-        )
-        .stdout,
-        b"refs/heads/main\n"
-    );
+    assert_eq!(stopped_log, format!("{LOCATION_QUERY}\n"));
+    // Positive control: with valid configuration the same guarded command is counted twice.
+    std::fs::write(repo.join(CONFIG_FILE_NAME), "{}").expect("valid");
+    std::fs::remove_file(repo.join("cli-git.config.ts")).expect("remove legacy");
+    let (ran, ran_log) = run_counted(&fixture, repo.as_path(), &["reset", "--soft", "HEAD"]);
+    assert_eq!(ran.code, Some(0));
+    assert_eq!(ran_log, format!("{LOCATION_QUERY}\nreset --soft HEAD\n"));
     remove(&fixture);
 }
 
@@ -205,9 +260,10 @@ fn inspection_commands_never_read_configuration() {
     remove(&fixture);
 }
 
-/// A valid configuration with a legacy file beside it reports the legacy file, then stops as usual.
+/// A legacy file beside a valid JSONC file is reported by `git cli-git check` only: an
+/// ordinary configuration-loading command and `git cli-git fix` print nothing about it.
 #[test]
-fn legacy_file_beside_jsonc_is_reported() {
+fn legacy_file_beside_jsonc_is_reported_by_check_only() {
     let fixture: Fixture = fixture("legacy-notice");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
     std::fs::write(
@@ -216,22 +272,64 @@ fn legacy_file_beside_jsonc_is_reported() {
     )
     .expect("valid configuration");
     std::fs::write(repo.join("cli-git.config.ts"), "export default {};\n").expect("legacy");
-    let observed: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "anything"]);
-    assert_eq!(
-        observed,
-        Observed {
-            code: Some(2),
-            stdout: Vec::<u8>::new(),
-            stderr: format!(
-                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\"}}\n\
-                 cli-git: policy execution is not implemented in this native development \
-                 executable, so git add was not run. Repository-changing commands still require \
-                 the installed cli-git.\n",
-                legacy = repo.join("cli-git.config.ts").display(),
-                jsonc = repo.join(CONFIG_FILE_NAME).display()
-            )
-            .into_bytes(),
-        }
+    std::fs::write(repo.join("cli-git.config.mjs"), "export default {};\n").expect("legacy");
+    // Positive control: the configuration really is loaded by this ordinary command.
+    let ordinary: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "anything"]);
+    assert_eq!(ordinary.code, Some(2));
+    assert_eq!(ordinary.stdout, Vec::<u8>::new());
+    let ordinary_stderr: String = String::from_utf8_lossy(&ordinary.stderr).into_owned();
+    assert!(!ordinary_stderr.contains("egacy"), "{ordinary_stderr}");
+    assert!(
+        !ordinary_stderr.contains("cli-git.config.ts"),
+        "{ordinary_stderr}"
     );
+    assert!(
+        !ordinary_stderr.contains("configuration-warning"),
+        "{ordinary_stderr}"
+    );
+    let fix: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]);
+    assert_eq!(fix.code, Some(2));
+    assert_eq!(fix.stdout, Vec::<u8>::new());
+    assert!(
+        !String::from_utf8_lossy(&fix.stderr).contains("egacy"),
+        "{:?}",
+        String::from_utf8_lossy(&fix.stderr)
+    );
+    let check: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "check", "--all"]);
+    assert_eq!(check.code, Some(2));
+    assert_eq!(
+        String::from_utf8_lossy(&check.stdout),
+        format!(
+            "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {mjs} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{mjs}\"}}\n\
+             {{\"schemaVersion\":1,\"sequence\":1,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {ts} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{ts}\"}}\n",
+            mjs = repo.join("cli-git.config.mjs").display(),
+            ts = repo.join("cli-git.config.ts").display(),
+            jsonc = repo.join(CONFIG_FILE_NAME).display()
+        )
+    );
+    assert!(
+        !String::from_utf8_lossy(&check.stderr).contains("egacy"),
+        "{:?}",
+        String::from_utf8_lossy(&check.stderr)
+    );
+    // Without the JSONC file the legacy files are a migration error on every command.
+    std::fs::remove_file(repo.join(CONFIG_FILE_NAME)).expect("remove JSONC");
+    for arguments in [
+        vec!["add", "anything"],
+        vec!["cli-git", "fix", "--all"],
+        vec!["cli-git", "check", "--all"],
+    ] {
+        let migration: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        assert_eq!(migration.code, Some(2), "{arguments:?}");
+        let text: String = format!(
+            "{}{}",
+            String::from_utf8_lossy(&migration.stdout),
+            String::from_utf8_lossy(&migration.stderr)
+        );
+        assert!(
+            text.contains("\"code\":\"config-invalid\",\"message\":\"Legacy configuration "),
+            "{arguments:?}: {text}"
+        );
+    }
     remove(&fixture);
 }

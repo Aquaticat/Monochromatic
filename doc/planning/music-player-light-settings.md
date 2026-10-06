@@ -21,7 +21,14 @@ D84 (2026-10-05) removes the third row:
 true-peak analysis is automatic and not optional,
 so Settings provides no analysis switch.
 D85 (2026-10-05) removes the closing sentence.
-The pane now holds two rows.
+The pane then held two rows.
+
+D86 (2026-10-05) made both remaining rows always-on behaviour and not settings,
+and D87 keeps the Settings page and leaves it empty,
+with no study of the empty page.
+The two-row study this plan produced is therefore withdrawn and kept as a record.
+Everything this plan says about the two-row pane is history,
+and this item is closed.
 
 The accepted source is
 `package/music-player/design/candidates/settings-a.dc.html`.
@@ -339,10 +346,10 @@ its pixel rules decode PNGs in process,
 matching ImageMagick byte for byte on all 36 images they read.
 Four offline Chromium contexts passed with no axe violations,
 and all sixteen screenshots were inspected.
-`questions/evidence/settings-pane-review-verification.json` binds the
+`questions/evidence/settings-pane-review-verification.json` records that check of the
 viewer,
 builder,
-test and evidence digests;
+test and evidence;
 `evidence/settings-pane-boundaries.md` holds the scope.
 
 That three-row publication completed the item within its declared
@@ -422,15 +429,76 @@ The emulator then crashed during the input stage
 exit status 139),
 before restoration,
 so the guest kept the visit's font scale and night mode.
-Its lock files still named the crashed in-container PID,
-which a new container reused,
-so the first recovery boot was refused as a second instance.
-After confirming no emulator or container remained,
-the stale locks of the owned AVD copy were removed
-and a recovery boot restores the sixth visit's own recorded baseline.
+The crash left lock files in the owned AVD copy,
+and the first recovery boot was refused as a second instance.
+After `podman ps` and `pgrep` showed no container or emulator,
+those two lock files were deleted
+and a recovery boot restored the sixth visit's own recorded baseline.
+Deleting them,
+with only those two owner checks,
+departed from the verified workaround in
+`doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`,
+which moves the files to a backup after wider owner checks;
+that document now records this recurrence and the departure.
+Why the lock blocked the boot is not established.
 The crashed owner's records are kept beside the visit.
 A seventh visit repeats the whole run,
 so one visit supplies every published capture and input check.
+
+## Two-row publication and completion
+
+The seventh visit completed every stage.
+Its 24 views have the same geometry as the sixth visit's,
+every launch needed one attempt and nothing scrolls.
+Row toggles,
+the Back target,
+one authored reopen and system Back passed in all eight environments,
+and the 72 retained input captures were replayed offline and reproduced
+every field of the live manifest.
+Recorded guest fields were restored on the first readback,
+the owner exited `0` and no matching runtime remains.
+
+Fresh inspection of its 12 light/dark pairs matched the sixth visit's.
+It also found one capture artifact:
+the first screenshot of the visit,
+the inner closed player in light at 100% text,
+shows no gesture handle in the system's navigation strip,
+alone among the visit's 96 screenshots.
+The same state captured later shows the handle.
+The cause was not established;
+the strip is below the measured application root,
+no rule or comparison reads it,
+and the viewer and boundary document state it.
+
+The publisher removed the withdrawn three-row files only after each matched
+the hash its own witness file recorded,
+then wrote the 24 PNGs,
+`questions/evidence/settings-pane-witnesses.json` and
+`questions/evidence/settings-pane-native-verification.json` in one commit.
+Eight changed publisher inputs were rejected before any public write.
+At publication the viewer's 99 rules each had at least one rejected consumer input among
+135 and a deletion proof;
+D88 later removed its digest rules,
+which leaves 94 rules and 130 rejected inputs;
+its in-process PNG decoder matched ImageMagick byte for byte on all 28 images
+it reads.
+Four offline Chromium contexts passed with no axe violations,
+and all sixteen screenshots were inspected.
+`questions/evidence/settings-pane-review-verification.json` records that check of the
+viewer,
+builder,
+test and evidence;
+`evidence/settings-pane-boundaries.md` holds the scope.
+
+This Settings item is complete within its declared design/debug scope.
+One follow-up is recorded and not done:
+the published first-run study still says
+`After opening a library, choose whether to analyse it.`,
+which D84 contradicts.
+It was left alone at first on the ground that its review verification bound the page by hash.
+D88 (2026-10-05) rules that out:
+nothing is locked by hash.
+The rebuild is tracked in `package/music-player/design/HANDOFF.md`.
 
 The viewer builder now expects two rows,
 reads the column end from the last row and the measured divider between the
@@ -441,10 +509,10 @@ and the application root bottom.
 - [x] Remove the analysis row and the closing sentence from the prototype,
   with fixture tests and mutants.
 - [x] Build the two-row APK and lint it.
-- [ ] Capture both panels in light and dark at 100% and 200% text,
+- [x] Capture both panels in light and dark at 100% and 200% text,
   and exercise every input again.
-- [ ] Inspect every light/dark pair afresh and record the findings.
-- [ ] Replace the withdrawn three-row evidence with the inspected two-row
+- [x] Inspect every light/dark pair afresh and record the findings.
+- [x] Replace the withdrawn three-row evidence with the inspected two-row
   cohort and rebuild and verify the viewer.
 
 D81's template editor (`open-questions.md` 11e) is the next design item and

@@ -72,7 +72,7 @@ pub const MAX_CONFIG_BYTES: u64 = 1_048_576;
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LoadedConfig {
-    /// Validated settings; `CliGitConfig::unconfigured()` when the repository has no file.
+    /// Validated settings; `CliGitConfig::defaults()` when the repository has no file.
     pub config: CliGitConfig,
     /// The JSONC file that was read, absent when the repository has none.
     pub source: Option<PathBuf>,
@@ -276,7 +276,7 @@ pub fn load_repository_config(repository_root: &Path) -> Result<LoadedConfig, Co
             return Err(migration_required(first.as_path(), source.as_path()));
         }
         return Ok(LoadedConfig {
-            config: CliGitConfig::unconfigured(),
+            config: CliGitConfig::defaults(),
             // `None` records that no file was read.
             source: None,
             ignored_legacy: legacy,

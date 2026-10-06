@@ -299,11 +299,143 @@ so the client can draw faster than the parent shows.
   A client with nothing new to draw never commits,
   so every screenshot of an idle application would wait for the full timeout.
 
+## Related: captures after a size change read the old-size back buffer
+
+Found on 2026-10-05 while adding the `scale` control command,
+which changes the framebuffer size while the hosted client keeps its logical size.
+
+### Symptom
+
+A frame recorded after a `scale` switch made during a recording had the new size
+but not the client's drawing.
+With a 640x360 Slint scene switched from scale 1 to 2 while `record` ran,
+the last recorded 1280x720 frame had green 0 at all three probe points:
+
+```text
+AssertionError [ERR_ASSERTION]: frame recorded after a switch while recording: greens 0,0,0
+```
+
+The same switch with the IDE gave a 2200x1320 frame
+whose lower-left 1100x660 region held one quarter of the scale-2 drawing
+and whose other three quarters were empty.
+A `screenshot` taken after the recording stopped was correct.
+
+### Root cause
+
+`read_frame` in `package/cli/nested-wayland-session/src/screenshot.rs` rendered into the nested window's
+EGL surface and read it back.
+Smithay resizes that surface when the window size changed since the last bind:
+
+```rust
+// smithay-0.7.0/src/backend/winit/mod.rs:286
+        let window_size = self.window_size();
+        if Some(window_size) != self.bind_size {
+            self.egl_surface.resize(window_size.w, window_size.h, 0, 0);
+        }
+        self.bind_size = Some(window_size);
+```
+
+Mesa defers that resize while the surface has a back buffer that was drawn into since the last swap.
+The resize callback leaves the size alone in that case:
+
+```c
+// mesa 26.2.2, src/egl/drivers/dri2/platform_wayland.c:462
+   if (!dri2_surf->back) {
+      dri2_surf->base.Width = wl_win->width;
+      dri2_surf->base.Height = wl_win->height;
+   }
+```
+
+and the next draw keeps the existing back buffer:
+
+```c
+// mesa 26.2.2, src/egl/drivers/dri2/platform_wayland.c:1564
+   if (dri2_surf->back != NULL)
+      return 0;
+
+   return update_buffers(dri2_surf, flow);
+```
+
+Only a swap releases the back buffer.
+While a recording runs nothing swaps:
+`redraw` in `src/render.rs` returns early while a recorder exists,
+and the recorder renders and reads back without `submit`.
+So the first recorder tick drew into a back buffer,
+the size change could not replace it,
+and every later tick rendered the new,
+larger output into the old,
+smaller buffer and read back a region larger than the buffer.
+
+The host's Mesa version is taken from the renderer's own log line,
+`GL Version: "OpenGL ES 3.2 Mesa 26.2.2"`.
+
+The same reasoning applies to a `screenshot` after a size change
+while the parent presents nothing (a hidden or locked parent window),
+because the fallback pacing timer sends frame callbacks but does not swap either.
+That case follows from the sources quoted here and was not measured.
+
+### Fix
+
+`read_frame` renders into an offscreen texture sized from the output mode
+(`capture_texture` in `src/state.rs`),
+created on the first capture and recreated when the mode size changes.
+The output mode is set in the same step as a resize or scale change,
+so a capture has the screen's current size without any swap.
+
+### Verification
+
+`inspect:scale` in `package/cli/nested-wayland-session/mise.toml` starts a recording,
+waits 300 ms so the recorder has drawn,
+switches to scale 2,
+and probes the last recorded frame.
+
+Failing,
+on the release binary that captured the window
+(`~/temp/agent/nws-scale-nasfB8/inspect-scale-5-oldcapture.log`):
+`greens 0,0,0`.
+Without the 300 ms wait the same binary passed
+(`inspect-scale-4-oldcapture.log`),
+because the size change arrived before the recorder's first draw;
+that wait is what makes the check able to fail.
+
+Passing,
+on the binary with the offscreen texture
+(`inspect-scale-6.log`):
+
+```text
+switch while recording: last frame 1280x720, greens 192/64/64
+```
+
+The capture path produces the same bytes as before for unchanged sizes:
+`inspect:color-scheme` and `inspect:stalled-parent` report the screenshot hashes
+`cc28a666d87e` (dark) and `ccdb157ba532` (light) on both binaries.
+
+### Tradeoffs
+
+One GPU texture the size of the framebuffer stays allocated after the first capture,
+and it is replaced on every size change.
+A capture no longer reads what the parent window shows,
+only what the compositor composites from the client's committed buffers,
+which is the same content in every measured case.
+
+### What does not work
+
+- Calling `screenshot` again,
+  or waiting,
+  during the recording:
+  no swap happens,
+  so the back buffer stays.
+- Taking the capture size from the window (`window_size()`) and the pixels from its surface:
+  the two disagree until the next swap.
+
 ## Upstream filing decision
 
 The tool is owned by this repository,
 so there is no external tracker and no duplicate search applies.
 `.out-of-scope/` has no entry for the nested compositor.
+The related capture-size item is the same kind:
+Smithay's `bind` and Mesa's deferred resize behave as their sources state,
+and the compositor now captures off screen.
 
 1.  Upstream's fault:
     the behavior was in this repository's compositor.

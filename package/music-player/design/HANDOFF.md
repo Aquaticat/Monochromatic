@@ -12,46 +12,292 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
-## Handoff: Settings pane publication complete (2026-10-05)
+## Handoff: Settings withdrawn, template editor round open (2026-10-05)
 
 Purpose:
-tell the next session what the D11 Settings study left behind and what
-remains of the light-surface queue.
+tell the next session what changed after the two-row Settings publication,
+what the human decided,
+and what is unfinished.
+This section is newer than `Handoff: two-row Settings publication complete (2026-10-05)`.
+
+### What the human decided
+
+- D86:
+  prefix stripping and resume are always on and are not settings.
+  The published two-row Settings study is withdrawn and kept as a record.
+- D87:
+  the Settings page stays and is empty.
+  No study of the empty page is built.
+- D88:
+  nothing is locked by hash.
+  Page,
+  template,
+  builder,
+  test,
+  manifest and report digests are gone from the published review records.
+- D89:
+  the template language and editor follow KWGT with stated omissions.
+  `doc/planning/music-player-template-editor.md` holds the observations,
+  the kept and omitted features,
+  and the entries still open.
+
+### Asked of the human and answered
+
+- D88 also removes the builders' two remaining digest checks:
+  each embedded screenshot against its manifest digest,
+  and the manifest's APK digest against a value written in the builder.
+  The human answered:
+  remove both.
+- The entries D89 left open are the agent's to pick,
+  leaning to no for features obscure in a music player.
+  D90 records the picks.
+
+### Done after those answers
+
+The first-run study is rebuilt and republished.
+`questions/first-run-access.html` shows 32 first views of prototype
+`61e2cf7764f627d40a77bdf6039143e229ad36ea`,
+says that analysis is automatic and not optional,
+and no longer offers a choice to analyse.
+With the shorter text nothing scrolls,
+so the first publication's two scrolled images are gone.
+The captures span two emulator boots.
+Build,
+validation,
+the consumer test,
+three guard-removal proofs and a four-context offline browser check passed.
+`evidence/first-run-access-boundaries.md` holds the scope and limits.
+
+No builder compares a digest any more.
+The scan-indicator builder now has 82 rules and 102 rejected inputs,
+the Settings builder 94 and 130;
+both tests pass and no built page changed.
+Counts given in older sections of this file are those of the publications.
+Pages still print a digest computed from each embedded image and the
+commit and APK digest that produced the captures.
+Those are statements,
+and nothing is checked against them.
+
+The withdrawn Settings viewer was rechecked after its withdrawal notice:
+build,
+validation,
+consumer test,
+one guard-removal proof and a four-context browser check passed,
+and its review record carries the recheck.
+`README.md`,
+`evidence/settings-pane-boundaries.md` and the Settings plan mark the
+study withdrawn.
+The Settings item is closed.
+
+`template-reference.mjs` states what a template yields under D89 and D90,
+with 96 passing cases (`test:template-reference`).
+It is design evidence for the editor study,
+not the player's parser.
+
+### Waiting for the human
+
+The editor study is built,
+captured,
+published and verified,
+and its review page waits for an answer.
+State on 2026-10-06:
+
+- The review page is `questions/template-editor.html`
+  (about 33 MB,
+  self-contained).
+  It asks one question:
+  where the preview sits,
+  `flow`,
+  `rows` or `lines`.
+  The agent ranks `lines`,
+  then `rows`,
+  then `flow`,
+  for the measured reasons on the page.
+  The answer comes back as text prepared by the page and pasted into the chat.
+- `evidence/template-editor-boundaries.md` describes the study,
+  what was measured per layout and what was not exercised.
+  `questions/evidence/template-editor-review-verification.json` records the build,
+  test,
+  guard-removal and offline browser results,
+  with no digest.
+- The study's code is on the prototype branch at
+  `82d2692b7471fcde27c86c9bb321a4d35557bbca`,
+  with 24 passing fixture unit tests.
+  Its 128 views are in
+  `settings-pane-native-private/template-editor-cohort-82d2692b7`.
+  A first build's 56 views in `template-editor-cohort` were a first look only.
+- `verify:template-editor`,
+  `test:template-editor` and `test:template-reference` pass.
+- When the answer arrives:
+  record it as a decision,
+  keep only the chosen layout in the review (RVC),
+  then study how the field list is reached while the keyboard is open,
+  which depends on the layout.
+- The page lists what the study assumes
+  (one template,
+  KWGT's spelling,
+  the fields,
+  the default template,
+  the D90 picks).
+  These were also put to the human in chat on 2026-10-05,
+  with no answer when this was written.
+  Silence is not an acceptance.
+- Answered by the human on 2026-10-06 through the question tool:
+  D88 covers the private capture scripts too,
+  so the scripts that run a visit no longer compare the APK's digest
+  (builds are told apart by commit name,
+  the study's package is replaced by its application id;
+  checked for syntax only,
+  no visit has run with them yet);
+  the rule to search `doc/troubleshooting/` before working around a tool failure is in `AGENTS.md`;
+  a repository-wide rule against locking by hash was declined,
+  because locking by hash is rarely but legitimately wanted.
+- The human also said the transcript does not reliably show them things:
+  anything they must see or answer goes through the question tool
+  (`review-notes.md`,
+  standing standard 17).
+  The handoff of the review page was therefore repeated through that tool.
+
+To capture again,
+from `~/temp/agent`:
+`run-template-editor-until-complete.ts <prefix> <letter>` repeats bounded visits until the cohort of the current build is complete,
+then `prepare-template-editor-crops.ts`,
+`make-template-editor-inspection.ts`,
+a look at every sheet,
+`template-editor-inspection/inspected.json` in the active study folder,
+and `publish-template-editor.ts apply`.
+Writing `~/temp/agent/stop-repeat-visits` ends the loop at its next visit boundary;
+remove the file before starting another.
+Do not run the browser check while the emulator captures.
+
+Production has a duration only for the current track
+(`PlaybackSnapshot.durationMs`) and draws no supporting line,
+so the study previews a line the app cannot fill for every row yet.
+
+### For the next emulator visit
+
+- The emulator crashed twice on 2026-10-05 with a segmentation fault,
+  both times under heavy host load.
+  First-run captures now collect in one cohort folder,
+  `settings-pane-native-private/first-run-cohort`,
+  and a later boot continues from the first missing state.
+  Give the editor capture the same shape.
+- After a crash,
+  follow
+  `doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`:
+  check for owners,
+  then move the lock files to a backup.
+  Write `crashed-before-restoration.json` in that visit's runtime folder
+  so the next preparation accepts the missing restoration.
+- Run each visit with `FOLD_RESTORE_BASELINE` naming
+  `runtime-first/initial-settings.json`,
+  so a boot that starts from a crash's leftover text size still ends at 100%.
+  The restore step asks the guest to write pending data before the console kill;
+  one later boot confirmed the restored value.
+- `podman` answered `database is locked` while other work held its database.
+  `restore-stop-fresh-fold.ts` falls back to the process list,
+  and `fold-direct.ts` reaches a running guest the same way.
+  See `doc/troubleshooting/podman-database-locked-under-concurrent-use.md`.
+- A system `isn't responding` dialog can cover a study under load;
+  the first-run capture detects it,
+  answers `Wait` and repeats the state within a bound.
+  See `doc/troubleshooting/android-emulator-not-responding-dialog-under-host-load.md`.
+- `run-settings-pane-visit.ts resume <stage>` runs a stage on a guest
+  already bootstrapped in the same boot.
+- Publish review records the way `publish-first-run-rebuild-review.ts` does,
+  with no digest.
+  The older scratch publishers and verifiers that wrote or compared digests
+  now stop at once and say so.
+
+## Handoff: two-row Settings publication complete (2026-10-05)
+
+Purpose:
+tell the next session what the Settings study left behind after the human
+withdrew part of D11,
+and what remains of the light-surface queue.
 The plan is `doc/planning/music-player-light-settings.md`;
 the scope and limits are in `evidence/settings-pane-boundaries.md`.
 
+### What the human decided
+
+D84:
+true-peak analysis is automatic and not optional,
+so Settings provides no analysis switch.
+This removes D11's third row and supersedes D27's ask-before-analysing
+prompt and its four answers.
+D27's automatic opening of an available system music library stands,
+D12's Re-analyse on the track menu stands,
+and D26's scan bar stands.
+Reading the scan bar's Pause/Resume as a temporary pause that does not make
+analysis optional is the recording session's interpretation,
+not the human's statement.
+When analysis runs is not decided.
+
+D85:
+the Settings pane has no closing sentence.
+
+Settings keeps `Strip common prefixes from filenames` and
+`Resume where I left off`;
+the human confirmed that only the analysis switch goes.
+Later the same day D86 withdrew both rows as settings and D87 left the
+Settings page empty,
+so this paragraph and the study described under `What is done` are history.
+
 ### What is done
 
-`questions/settings-pane.html` presents 32 freshly inspected native views of
-D11's three switch rows and closing sentence:
+`questions/settings-pane.html` presents 24 freshly inspected native views of
+those two rows:
 both Fold panels,
 light and dark,
 100% and 200% text,
-the closed player,
-both switch scenes and an end-of-column view wherever the column scrolls.
-The artifact is prototype `483f16cdd4c0bda6269ae2e4666732db6407ce75`,
+the closed player and both switch scenes.
+The artifact is prototype `67eae28d1f31689bcc9f132e4db97ec87426e572`,
 APK SHA-256
-`85e4a2080d1d737eb01a16bdcc5172bcc7103fe014770891d68d3cdf1854ca50`.
+`5f3a23911f2a5c32859a78e533704298bfb5afa042cf968f4fc82691ef35e9ab`.
+The earlier three-row publication was withdrawn and its evidence files
+replaced in one commit;
+they remain in git history.
 
+Nothing scrolls on either panel at either text size.
 Row toggles,
 the Back target,
 one authored reopen and system Back passed in all eight environments,
 each returning to an unchanged player,
-and were replayed offline from 90 retained captures.
+and were replayed offline from 72 retained captures.
 The guest's recorded fields were restored,
 the owner exited `0` and no matching runtime remains.
-The viewer's 105 rules,
-142 rejected consumer inputs,
+The viewer's 99 rules,
+135 rejected consumer inputs,
 per-rule deletion proofs,
 publication preflights and four-context offline Chromium checks passed;
-`questions/evidence/settings-pane-review-verification.json` binds them.
-`verify-first-run-final-documents.ts` checks this artifact too.
+`questions/evidence/settings-pane-review-verification.json` records them.
+A pixel rule confirms that nothing is drawn between the last row and the
+navigation area.
 
-The first build drew the dark header and deck text black;
-fresh inspection rejected it,
-and the viewer's pixel rules now reject those images by name.
-A second visit failed on a short `podman inspect` bound under host load and
-supplied no evidence.
+### What went wrong on the way
+
+The emulator was unreliable under host load.
+The fourth,
+fifth and sixth visits each failed:
+a killed hierarchy dump during a startup dialog,
+a late configuration change that recreated the host,
+and an emulator segmentation fault in the GL translator.
+The sixth crashed before restoration and left lock files in the owned AVD
+copy,
+and the next boot was refused as a second instance.
+With no emulator or container running,
+those locks were deleted and a recovery boot restored that visit's own
+baseline.
+That deletion skipped the backup and the wider owner checks that
+`doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`
+prescribes;
+follow that document next time.
+The crash itself is in
+`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`.
+`restore-stop-fresh-fold.ts` now allows 120 s for `podman inspect`,
+and every Settings launch is watched and relaunched within a bound if the
+host is created again.
+The seventh visit supplied every published capture and input check.
 
 ### What the human may want to look at
 
@@ -59,26 +305,37 @@ The Fold placement was adopted from D50,
 D51 and existing Settings behaviour,
 not separately chosen;
 the viewer's optional observations box is the way to object.
-At 200% text the column scrolls on both panels,
-`Resume where I left off` leaves `off` alone on its second line on the inner
-panel,
-the last visible line sits under the gesture handle until scrolled,
+With two rows most of the page below them is empty,
+most visibly on the cover at 100% text.
+At 200% text on the inner panel `Resume where I left off` leaves `off` alone
+on its second line,
 and the 24dp Back arrow reads small beside the title.
 None of these was turned into a ballot.
 
+One published image,
+the inner closed player in light at 100% text,
+shows no gesture handle in the system's navigation strip.
+It was the first capture of the visit and the cause was not established;
+the viewer and the boundary document say so.
+
 ### What remains
 
-Every light surface in the original queue now has its own inspected native
-study.
+The published first-run study still says
+`After opening a library, choose whether to analyse it.`,
+which D84 contradicts.
+`questions/first-run-access.html` was not edited at the time,
+on the ground that its review verification bound it by hash;
+D88 has since ruled that out.
+`evidence/first-run-access-boundaries.md`,
+`open-questions.md` and `candidates.md` carry dated notes.
+Correcting that study needs fresh captures and a rebuild.
+
 The next design item is D81's template editor (`open-questions.md` 11e):
 its fields,
 grammar,
 editor controls,
 preview and validation are undesigned and need the human's direction before
 anything is built.
-Two Settings questions wait for that round:
-whether the third row reflects a D27 first-run answer,
-and whether the closing sentence survives a template entry.
 No production implementation is authorized.
 
 ## Handoff: scan-F publication complete, Settings pane next
@@ -2592,6 +2849,8 @@ Settled in session 3 (decisions.md D19–D31,
    four answers:
    Scan once / Always scan / Dismiss once / Dismiss
   forever (D27).
+  D84 (2026-10-05) supersedes the asking and its four answers:
+  true-peak analysis is automatic and not optional.
 - Picker rail adapts to the library's writing systems (D28);
    names are plain text,
   several per line,

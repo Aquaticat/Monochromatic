@@ -11,6 +11,7 @@
 use super::parse_config;
 use crate::config_schema::{
     CliGitConfig, ForbiddenStringsOptions, MarkdownAutofixOptions, MarkdownRule, PolicySetting,
+    unlisted_severity,
 };
 use crate::policy_registry::{POLICY_REGISTRY, PolicyId, Severity};
 
@@ -47,28 +48,15 @@ fn empty_documents_equal_the_defaults() {
             defaults.policies.setting(descriptor.id),
             PolicySetting {
                 id: descriptor.id,
-                severity: descriptor.default_severity,
+                severity: unlisted_severity(descriptor),
                 explicit: false,
             }
         );
     }
 }
 
-/// The direct translation of this repository's TypeScript `policies` map loads to the
-/// severities the incumbent applies, including the unlisted `mono/dependent-version-bump`.
-#[test]
-fn repository_translation_loads_exact_settings() {
-    let config: CliGitConfig = parse_config(
-        r#"{
-          "policies": {
-            // Rewrites Markdown image links that point at LFS-tracked files.
-            "markdown/autofix": ["warn", { "rules": ["lfs-image-url"], "exclude": ["package/ssg/"] }],
-            "mono/forbidden-root-context": "error",
-            "security/forbidden-strings": ["error", { "builtinRules": true }],
-          },
-        }"#,
-    )
-    .expect("translated repository configuration");
+/// The settings every policy must have after loading this repository's configuration.
+fn assert_repository_settings(config: &CliGitConfig, dependent_bump: (Severity, bool)) {
     for (id, severity, explicit) in [
         (PolicyId::RequireRoot, Severity::Error, false),
         (PolicyId::LinkedWorktreeOnly, Severity::Error, false),
@@ -77,8 +65,11 @@ fn repository_translation_loads_exact_settings() {
         (PolicyId::FinalNewline, Severity::Warn, false),
         (PolicyId::MarkdownAutofix, Severity::Warn, true),
         (PolicyId::ForbiddenRootContext, Severity::Error, true),
-        // Not listed in the root configuration, yet enforced at its default today.
-        (PolicyId::DependentVersionBump, Severity::Error, false),
+        (
+            PolicyId::DependentVersionBump,
+            dependent_bump.0,
+            dependent_bump.1,
+        ),
         (PolicyId::ForbiddenStrings, Severity::Error, true),
     ] {
         assert_eq!(
@@ -107,67 +98,118 @@ fn repository_translation_loads_exact_settings() {
     assert_eq!(config.concurrency, CliGitConfig::defaults().concurrency);
 }
 
-/// A repository without a configuration file runs the built-ins only; a configured one
-/// runs every shipped policy at its incumbent default unless the file says otherwise.
+/// This repository's translated configuration must name all four optional policies to keep
+/// the severities the incumbent applies.
 #[test]
-fn unconfigured_and_configured_defaults_differ_only_for_plugin_era_policies() {
-    let configured: CliGitConfig = CliGitConfig::defaults();
-    let unconfigured: CliGitConfig = CliGitConfig::unconfigured();
-    assert_eq!(unconfigured.concurrency, configured.concurrency);
-    assert_eq!(
-        unconfigured.policies.forbidden_strings,
-        configured.policies.forbidden_strings
-    );
-    assert_eq!(
-        unconfigured.policies.markdown_autofix,
-        configured.policies.markdown_autofix
-    );
-    for (id, without_file, with_file) in [
-        (PolicyId::RequireRoot, Severity::Error, Severity::Error),
+fn repository_translation_names_all_four_optional_policies() {
+    let config: CliGitConfig = parse_config(
+        r#"{
+          "policies": {
+            // Rewrites Markdown image links that point at LFS-tracked files.
+            "markdown/autofix": ["warn", { "rules": ["lfs-image-url"], "exclude": ["package/ssg/"] }],
+            "mono/forbidden-root-context": "error",
+            // The incumbent ran this one without the root configuration naming it.
+            "mono/dependent-version-bump": "error",
+            "security/forbidden-strings": ["error", { "builtinRules": true }],
+          },
+        }"#,
+    )
+    .expect("translated repository configuration");
+    assert_repository_settings(&config, (Severity::Error, true));
+}
+
+/// A word-for-word translation of the TypeScript `policies` map names only three of them:
+/// `mono/dependent-version-bump`, which the incumbent enforced unlisted, silently stops.
+#[test]
+fn literal_translation_silently_stops_the_unlisted_policy() {
+    let config: CliGitConfig = parse_config(
+        r#"{
+          "policies": {
+            "markdown/autofix": ["warn", { "rules": ["lfs-image-url"], "exclude": ["package/ssg/"] }],
+            "mono/forbidden-root-context": "error",
+            "security/forbidden-strings": ["error", { "builtinRules": true }],
+          },
+        }"#,
+    )
+    .expect("literal translation");
+    assert_repository_settings(&config, (Severity::Off, false));
+}
+
+/// Each optional policy is off until the file names it, and naming one turns on only that one.
+#[test]
+fn optional_policies_run_only_when_listed() {
+    let optional: [(PolicyId, &str, Severity); 4] = [
         (
-            PolicyId::LinkedWorktreeOnly,
-            Severity::Error,
-            Severity::Error,
+            PolicyId::MarkdownAutofix,
+            "markdown/autofix",
+            Severity::Warn,
         ),
-        (
-            PolicyId::BranchWorktreeOnly,
-            Severity::Error,
-            Severity::Error,
-        ),
-        (PolicyId::AddExplicit, Severity::Error, Severity::Error),
-        (PolicyId::FinalNewline, Severity::Warn, Severity::Warn),
-        (PolicyId::MarkdownAutofix, Severity::Off, Severity::Warn),
         (
             PolicyId::ForbiddenRootContext,
-            Severity::Off,
+            "mono/forbidden-root-context",
             Severity::Error,
         ),
         (
             PolicyId::DependentVersionBump,
-            Severity::Off,
+            "mono/dependent-version-bump",
             Severity::Error,
         ),
-        (PolicyId::ForbiddenStrings, Severity::Off, Severity::Error),
-    ] {
+        (
+            PolicyId::ForbiddenStrings,
+            "security/forbidden-strings",
+            Severity::Error,
+        ),
+    ];
+    let unlisted: CliGitConfig = parse_config(r#"{ "policies": {} }"#).expect("no policy named");
+    for (id, _, _) in optional {
         assert_eq!(
-            unconfigured.policies.setting(id),
+            unlisted.policies.setting(id),
             PolicySetting {
                 id,
-                severity: without_file,
-                explicit: false
-            }
-        );
-        assert_eq!(
-            configured.policies.setting(id),
-            PolicySetting {
-                id,
-                severity: with_file,
+                severity: Severity::Off,
                 explicit: false
             }
         );
     }
-    assert_eq!(unconfigured.policies.settings.len(), POLICY_REGISTRY.len());
-    // An explicit "off" in a file is the way to stop a shipped policy.
+    for (listed, name, default_severity) in optional {
+        // Listed at the severity the incumbent definition declares as its default.
+        let source: String = format!(
+            r#"{{ "policies": {{ "{name}": "{}" }} }}"#,
+            crate::policy_registry::severity_name(default_severity)
+        );
+        let config: CliGitConfig = parse_config(source.as_str()).expect(source.as_str());
+        assert_eq!(
+            crate::policy_registry::policy_descriptor(listed).default_severity,
+            default_severity,
+            "{name}"
+        );
+        for (other, _, _) in optional {
+            let expected: PolicySetting = if other == listed {
+                PolicySetting {
+                    id: other,
+                    severity: default_severity,
+                    explicit: true,
+                }
+            } else {
+                PolicySetting {
+                    id: other,
+                    severity: Severity::Off,
+                    explicit: false,
+                }
+            };
+            assert_eq!(config.policies.setting(other), expected, "{source}");
+        }
+        // The built-ins are untouched by naming an optional policy.
+        assert_eq!(
+            config.policies.setting(PolicyId::RequireRoot).severity,
+            Severity::Error
+        );
+        assert_eq!(
+            config.policies.setting(PolicyId::FinalNewline).severity,
+            Severity::Warn
+        );
+    }
+    // An explicit "off" is recorded as the repository's choice.
     let disabled: CliGitConfig =
         parse_config(r#"{ "policies": { "mono/dependent-version-bump": "off" } }"#)
             .expect("explicit off");
@@ -203,7 +245,7 @@ fn every_policy_accepts_every_severity() {
                 } else {
                     PolicySetting {
                         id: other.id,
-                        severity: other.default_severity,
+                        severity: unlisted_severity(other),
                         explicit: false,
                     }
                 };
@@ -269,6 +311,85 @@ fn policy_options_apply_field_by_field() {
             .expect("bare severity");
     assert!(bare.policies.forbidden_strings.builtin_rules);
     assert!(bare.policies.setting(PolicyId::ForbiddenStrings).explicit);
+}
+
+/// An options object alone names the policy: it runs at its incumbent default severity
+/// with those options, and unknown or retired option keys are still rejected by key.
+#[test]
+fn options_alone_list_a_policy_at_its_default_severity() {
+    let markdown: CliGitConfig =
+        parse_config(r#"{ "policies": { "markdown/autofix": { "exclude": ["package/ssg/"] } } }"#)
+            .expect("Markdown options alone");
+    assert_eq!(
+        markdown.policies.setting(PolicyId::MarkdownAutofix),
+        PolicySetting {
+            id: PolicyId::MarkdownAutofix,
+            severity: Severity::Warn,
+            explicit: true,
+        }
+    );
+    assert_eq!(
+        markdown.policies.markdown_autofix,
+        MarkdownAutofixOptions {
+            rules: vec![MarkdownRule::LfsImageUrl],
+            exclude: vec![String::from("package/ssg/")],
+        }
+    );
+    // The other optional policies stay off: only the named one is listed.
+    assert_eq!(
+        markdown
+            .policies
+            .setting(PolicyId::ForbiddenStrings)
+            .severity,
+        Severity::Off
+    );
+    let scanner: CliGitConfig = parse_config(
+        r#"{ "policies": { "security/forbidden-strings": { "builtinRules": false } } }"#,
+    )
+    .expect("scanner options alone");
+    assert_eq!(
+        scanner.policies.setting(PolicyId::ForbiddenStrings),
+        PolicySetting {
+            id: PolicyId::ForbiddenStrings,
+            severity: Severity::Error,
+            explicit: true,
+        }
+    );
+    assert!(!scanner.policies.forbidden_strings.builtin_rules);
+    // An empty options object is still a listing, with default options.
+    let empty: CliGitConfig =
+        parse_config(r#"{ "policies": { "security/forbidden-strings": {} } }"#).expect("empty");
+    assert_eq!(
+        empty.policies.setting(PolicyId::ForbiddenStrings).severity,
+        Severity::Error
+    );
+    assert!(empty.policies.setting(PolicyId::ForbiddenStrings).explicit);
+    assert!(empty.policies.forbidden_strings.builtin_rules);
+    for (source, message) in [
+        (
+            r#"{ "policies": { "markdown/autofix": { "command": ["node"] } } }"#,
+            "Configuration key policies.markdown/autofix.command is retired: cli-git runs its own coordinated Markdown linter and configuration cannot select a command. Remove the key.",
+        ),
+        (
+            r#"{ "policies": { "security/forbidden-strings": { "rules": [] } } }"#,
+            "Unknown configuration key: policies.security/forbidden-strings.rules. The only accepted option is builtinRules.",
+        ),
+        // A policy without options cannot be listed by an object.
+        (
+            r#"{ "policies": { "mono/dependent-version-bump": {} } }"#,
+            "Configuration key policies.mono/dependent-version-bump must be a severity string, found an object.",
+        ),
+        (
+            r#"{ "policies": { "require-root": {} } }"#,
+            "Configuration key policies.require-root must be a severity string, found an object.",
+        ),
+    ] {
+        assert_eq!(
+            parse_config(source).expect_err(source).message,
+            message,
+            "{source}"
+        );
+    }
 }
 
 /// Each concurrency key is read independently with its own lower bound.

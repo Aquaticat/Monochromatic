@@ -7,7 +7,7 @@
 //! ```
 
 /// Import the actual parser and native argument/process types.
-use super::{GlobalLayout, GlobalOutcome, global_layout};
+use super::{GlobalLayout, GlobalOutcome, command_tokens, global_layout};
 use std::ffi::OsString;
 use std::process::Command;
 
@@ -157,4 +157,48 @@ fn native_non_utf8_values_remain_opaque() {
     let snapshot: Vec<OsString> = input.clone();
     assert_eq!(global_layout(input.as_slice()).prefix_len, 2);
     assert_eq!(input, snapshot);
+}
+
+/// The command word and the tokens after it are split after the global options; without a command there is no split.
+#[test]
+fn command_tokens_split_after_the_global_options() {
+    for (values, word, region) in [
+        (vec!["status"], "status", vec![]),
+        (vec!["reset", "--hard"], "reset", vec!["--hard"]),
+        (
+            vec!["-C", "dir", "--no-pager", "add", "-A", "--", "file"],
+            "add",
+            vec!["-A", "--", "file"],
+        ),
+        (
+            vec!["-c", "a=b", "switch", "switch"],
+            "switch",
+            vec!["switch"],
+        ),
+        (vec!["-C", "commit", "log", "-C"], "log", vec!["-C"]),
+    ] {
+        let owned: Vec<OsString> = arguments(values.as_slice());
+        let (found_word, found_region) =
+            command_tokens(owned.as_slice()).expect("the arguments name a command");
+        assert_eq!(found_word, word, "{values:?}");
+        assert_eq!(
+            found_region,
+            arguments(region.as_slice()).as_slice(),
+            "{values:?}"
+        );
+    }
+    for values in [
+        vec![],
+        vec!["--no-pager"],
+        vec!["-C", "dir"],
+        vec!["--version", "status"],
+        vec!["--no-such-option", "status"],
+        vec!["-C"],
+    ] {
+        assert_eq!(
+            command_tokens(arguments(values.as_slice()).as_slice()),
+            None,
+            "{values:?}"
+        );
+    }
 }

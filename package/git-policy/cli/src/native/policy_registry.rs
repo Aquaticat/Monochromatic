@@ -63,7 +63,7 @@ pub enum PolicyId {
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type PolicyDescriptor = { id: PolicyId; name: string; defaultSeverity: Severity;
-///   warnSafe: boolean; acceptsOptions: boolean; needsConfigurationFile: boolean };
+///   warnSafe: boolean; acceptsOptions: boolean; offUnlessListed: boolean };
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct PolicyDescriptor {
@@ -71,17 +71,17 @@ pub struct PolicyDescriptor {
     pub id: PolicyId,
     /// Stable configuration key and JSONL `policyId`.
     pub name: &'static str,
-    /// The incumbent policy definition's `defaultSeverity`: the severity when the
-    /// repository configuration file exists and does not mention the policy.
+    /// The incumbent policy definition's `defaultSeverity`. A built-in policy the
+    /// repository configuration does not name runs at this severity.
     pub default_severity: Severity,
     /// Whether `warn` keeps the policy's protection (an unsafe `warn` earns a warning event).
     pub warn_safe: bool,
     /// Whether the `["severity", { ... }]` form is accepted for this policy.
     pub accepts_options: bool,
-    /// Whether the policy is off in a repository that has no `cli-git.config.jsonc`.
-    /// The incumbent ran these formerly plugin-provided policies only where a
-    /// repository's configuration registered their plugin.
-    pub needs_configuration_file: bool,
+    /// Whether the policy runs only where `cli-git.config.jsonc` names it. The four
+    /// policies that plugins used to provide are off everywhere else, with or without
+    /// a configuration file (decided 2026-10-05).
+    pub off_unless_listed: bool,
 }
 
 /// What: `pub const POLICY_REGISTRY: &[PolicyDescriptor]` is a compiled-in, read-only list.
@@ -90,9 +90,9 @@ pub struct PolicyDescriptor {
 /// Why:  Execution and configuration order must be identical on every run; a borrowed
 ///       constant needs no allocation and cannot be reordered at runtime.
 ///       Every default is the incumbent policy definition's own `defaultSeverity`.
-///       The four formerly plugin-provided policies additionally need a configuration
-///       file, because the incumbent only ran them in repositories whose configuration
-///       registered their plugin.
+///       The four formerly plugin-provided policies are additionally off unless the
+///       repository configuration names them, because the incumbent only ran them in
+///       repositories whose configuration registered their plugin.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -105,7 +105,7 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
         default_severity: Severity::Error,
         warn_safe: false,
         accepts_options: false,
-        needs_configuration_file: false,
+        off_unless_listed: false,
     },
     PolicyDescriptor {
         id: PolicyId::LinkedWorktreeOnly,
@@ -113,7 +113,7 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
         default_severity: Severity::Error,
         warn_safe: false,
         accepts_options: false,
-        needs_configuration_file: false,
+        off_unless_listed: false,
     },
     PolicyDescriptor {
         id: PolicyId::BranchWorktreeOnly,
@@ -121,7 +121,7 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
         default_severity: Severity::Error,
         warn_safe: true,
         accepts_options: false,
-        needs_configuration_file: false,
+        off_unless_listed: false,
     },
     PolicyDescriptor {
         id: PolicyId::AddExplicit,
@@ -129,7 +129,7 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
         default_severity: Severity::Error,
         warn_safe: false,
         accepts_options: false,
-        needs_configuration_file: false,
+        off_unless_listed: false,
     },
     PolicyDescriptor {
         id: PolicyId::FinalNewline,
@@ -137,7 +137,7 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
         default_severity: Severity::Warn,
         warn_safe: true,
         accepts_options: false,
-        needs_configuration_file: false,
+        off_unless_listed: false,
     },
     PolicyDescriptor {
         id: PolicyId::MarkdownAutofix,
@@ -145,7 +145,7 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
         default_severity: Severity::Warn,
         warn_safe: true,
         accepts_options: true,
-        needs_configuration_file: true,
+        off_unless_listed: true,
     },
     PolicyDescriptor {
         id: PolicyId::ForbiddenRootContext,
@@ -153,7 +153,7 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
         default_severity: Severity::Error,
         warn_safe: true,
         accepts_options: false,
-        needs_configuration_file: true,
+        off_unless_listed: true,
     },
     PolicyDescriptor {
         id: PolicyId::DependentVersionBump,
@@ -161,7 +161,7 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
         default_severity: Severity::Error,
         warn_safe: false,
         accepts_options: false,
-        needs_configuration_file: true,
+        off_unless_listed: true,
     },
     PolicyDescriptor {
         id: PolicyId::ForbiddenStrings,
@@ -169,7 +169,7 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
         default_severity: Severity::Error,
         warn_safe: false,
         accepts_options: true,
-        needs_configuration_file: true,
+        off_unless_listed: true,
     },
 ];
 

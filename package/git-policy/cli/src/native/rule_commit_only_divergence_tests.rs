@@ -15,7 +15,7 @@ use crate::command_test_support::os_arguments;
 use crate::rule_commit_index::IndexVsHead;
 use crate::rule_commit_only::{
     CommitOnlyDecision, CommitOnlyViolationCode, PendingInjection, decide_commit_only,
-    has_commit_only_escape_hatch, resolve_index_state, violation_code_text,
+    resolve_index_state, violation_code_text,
 };
 use std::ffi::OsString;
 
@@ -104,30 +104,6 @@ fn removes_the_escape_hatch_by_position() {
         decide(&["commit", "-m", "x", "--", "--no-enforce-only"]),
         rewritten(&["commit", "-o", "-m", "x", "--", "--no-enforce-only"])
     );
-}
-
-/// The hatch detector answers for `commit` only and in option position only.
-#[test]
-fn detects_the_escape_hatch() {
-    for (values, expected) in [
-        (vec!["commit", "--no-enforce-only", "-m", "message"], true),
-        (
-            vec!["-c", "a.b=c", "commit", "-m", "m", "--no-enforce-only"],
-            true,
-        ),
-        (vec!["commit", "-m", "--no-enforce-only"], false),
-        (vec!["commit", "--", "--no-enforce-only"], false),
-        (vec!["status", "--no-enforce-only"], false),
-        (vec!["--version"], false),
-        (vec![], false),
-    ] {
-        assert_eq!(
-            has_commit_only_escape_hatch(os_arguments(values.as_slice()).as_slice(), &[]),
-            Ok(expected),
-            "{values:?}"
-        );
-    }
-    assert!(has_commit_only_escape_hatch(os_arguments(&["commit", "-m"]).as_slice(), &[]).is_err());
 }
 
 /// `--fixup=reword:` owns `--only` itself; `--fixup=amend:` is a pathless-allowed mode;

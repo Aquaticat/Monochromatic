@@ -17,6 +17,7 @@ import {
 } from './config.ts';
 import { domainXml, } from './domain-xml.ts';
 import { exec, } from './exec.ts';
+import { chooseFileTransferRoute, } from './file-transfer-route.ts';
 import {
   readVmMeta,
   writeVmMeta,
@@ -25,7 +26,7 @@ import {
   CUSTOM_GUEST_DEFAULTS,
   resolveImage,
 } from './registry.ts';
-import { spawn, } from './spawn.ts';
+import { qemuImg, } from './qemu-img.ts';
 import { waitForGuestAgent, } from './virsh-wait.ts';
 import {
   defineVm,
@@ -134,8 +135,7 @@ export async function clone(
   }
 
   rl.info('copying disk (this may take a moment)...',);
-  await spawn({
-    command: 'qemu-img',
+  await qemuImg({
     args: [
       'convert',
       '-O',
@@ -162,16 +162,23 @@ export async function clone(
     : CUSTOM_GUEST_DEFAULTS;
 
   /**
-   Shared directory exposed to the guest via virtiofs.
+   How the clone's files will move: the virtiofs share, or the guest agent when libvirt finds no virtiofsd.
+   Decided for this host now, not copied from the source VM.
+   */
+  const fileTransfer = await chooseFileTransferRoute(dstVmDir,);
+  /**
+   Shared directory exposed to the guest via virtiofs; only created and attached when the share is used.
    */
   const sharedDir = join(
     dstVmDir,
     SHARED_DIR_NAME,
   );
-  await mkdir(
-    sharedDir,
-    { recursive: true, },
-  );
+  if (fileTransfer === 'virtiofs') {
+    await mkdir(
+      sharedDir,
+      { recursive: true, },
+    );
+  }
 
   /**
    Generated NoCloud seed ISO with a new instance-id so cloud-init reruns on the clone; {@link NO_SEED_ISO} for Windows.
@@ -179,6 +186,7 @@ export async function clone(
   const seedIso = await createSeedIso({
     guest,
     name: destination,
+    sharedMount: fileTransfer === 'virtiofs',
     vmDir: dstVmDir,
   },);
   /**
@@ -188,13 +196,20 @@ export async function clone(
     diskPath: dstDiskPath,
     name: destination,
     osFamily: guest.osFamily,
-    sharedDir,
+    ...(fileTransfer === 'virtiofs' ? { sharedDir, } : {}),
     ...(seedIso !== NO_SEED_ISO ? { seedIsoPath: seedIso, } : {}),
   },);
 
   await defineVm({
     vmDir: dstVmDir,
     xml,
+  },);
+  // Written before the first guest command: exec reads the clone's metadata to pick the guest's shell.
+  await writeVmMeta({
+    fileTransfer,
+    guest,
+    image: meta.image,
+    vmDir: dstVmDir,
   },);
   await startVm({ name: destination, },);
   await waitForGuestAgent({ name: destination, },);
@@ -220,11 +235,6 @@ export async function clone(
     }
   }
 
-  await writeVmMeta({
-    guest,
-    image: meta.image,
-    vmDir: dstVmDir,
-  },);
   rl.info(
     `VM ${destination} is ready (cloned from ${source}). Connect with: mvm shell ${destination}`,
   );

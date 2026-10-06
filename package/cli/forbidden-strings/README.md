@@ -250,6 +250,12 @@ digests,
 rule text,
 or operating-system error text.
 
+One reason differs by platform.
+When a regular file sits where the cache root directory should be,
+the first warning's reason is `unreadable` on Unix targets and `missing` on Windows,
+because Unix reports a not-a-directory error for a path below a file,
+while Windows reports the same path-not-found error as for an absent directory.
+
 ### Built-in baseline (`--builtin-rules`)
 
 The binary embeds the betterleaks-ported baseline ruleset.
@@ -716,6 +722,7 @@ mise run //package/cli/forbidden-strings:test:container
 mise run //package/cli/forbidden-strings:test:release:container
 mise run //package/cli/forbidden-strings:lint:clippy:container
 mise run //package/cli/forbidden-strings:test:mutation:container
+mise run //package/cli/forbidden-strings:test:mutation:pathname:container
 mise run //package/cli/forbidden-strings:test:guards:container
 mise run //package/cli/forbidden-strings:test:guards:observe:container
 mise run //package/cli/forbidden-strings.fuzz:smoke:embedding:container
@@ -729,6 +736,15 @@ including the executable boundary;
 only the pre-existing shipped-corpus compiler conformance tests are omitted from repeated mutant executions.
 Normal container suites run those tests too.
 No mutation branch is excluded to remove a survivor.
+By a decision of 2026-10-05 about mutation timeouts,
+two operator replacements are never tried in any scope:
+`+=` with `*=`,
+and `-=` with `/=`.
+`+=` with `-=` stays active.
+Appending `-- --list` to a mutation task prints the mutants its scope would test.
+The pathname scope mutates only `src/path_scan.rs` and `src/path_name_bytes.rs` with the same suite.
+It exits nonzero on Linux,
+because two `prefix_parts` mutants can differ only on a Windows target.
 
 Evidence under `target/verification/` contains per-file source hashes,
 immutable image IDs,
@@ -756,6 +772,10 @@ and prefix-skip policy is exercised on Linux with explicit target semantics
 and the raw prefix bytes Windows's parser returns for each prefix form;
 Windows's native volume-prefix parser itself runs only on a Windows host,
 which no package task provides.
+`mise run //package/cli/forbidden-strings:lint:clippy:windows` type-checks and lints every target,
+including `#[cfg(windows)]` tests,
+for `x86_64-pc-windows-gnu` on a Linux host that has that Rust target installed;
+it runs no test.
 See the native scanner evidence for exact results,
 source snapshots,
 commits,

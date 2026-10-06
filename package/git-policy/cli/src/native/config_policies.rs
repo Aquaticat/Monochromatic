@@ -240,11 +240,34 @@ fn markdown_autofix_options(
     return Ok(options);
 }
 
-/// What: Validate one policy's setting and write it into the accumulated settings.
+/// What: Validate one option-bearing policy's options object and store it.
 ///       `&mut PolicyConfig` lends the settings for modification (plain `&` is read-only).
+/// Why:  The array form and the options-alone form read the same object the same way.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function applyOptions(config: PolicyConfig, id: PolicyId, value: JsoncValue, path: string): void;
+/// ```
+fn apply_options(
+    config: &mut PolicyConfig,
+    id: PolicyId,
+    value: &JsoncValue,
+    path: &str,
+) -> Result<(), ConfigError> {
+    if id == PolicyId::ForbiddenStrings {
+        config.forbidden_strings = forbidden_strings_options(value, path)?;
+    } else {
+        config.markdown_autofix = markdown_autofix_options(value, path)?;
+    }
+    // `Ok(())` is success with no value; `()` is Rust's empty value, like `void`.
+    return Ok(());
+}
+
+/// What: Validate one policy's setting and write it into the accumulated settings.
 /// Why:  A setting is a severity word, or `[severity, options]` for the policies that
-///       declare options. Mutating one accumulated record keeps each policy's row and
-///       option record together.
+///       declare options, or their options object alone, which names the policy at its
+///       incumbent default severity. Mutating one accumulated record keeps each
+///       policy's row and option record together.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -281,19 +304,21 @@ fn apply_setting(
         }
         // `&elements[0]` borrows the first array item.
         chosen = severity(&elements[0], format!("{path}[0]").as_str())?;
-        let options_path: String = format!("{path}[1]");
-        if descriptor.id == PolicyId::ForbiddenStrings {
-            config.forbidden_strings =
-                forbidden_strings_options(&elements[1], options_path.as_str())?;
-        } else {
-            config.markdown_autofix =
-                markdown_autofix_options(&elements[1], options_path.as_str())?;
-        }
+        apply_options(
+            config,
+            descriptor.id,
+            &elements[1],
+            format!("{path}[1]").as_str(),
+        )?;
     } else if value.text_units().is_some() {
         chosen = severity(value, path.as_str())?;
+    } else if descriptor.accepts_options && value.entries().is_some() {
+        // Options alone still name the policy, so it runs at its incumbent default severity.
+        chosen = descriptor.default_severity;
+        apply_options(config, descriptor.id, value, path.as_str())?;
     } else {
         let expected: &str = if descriptor.accepts_options {
-            "a severity string or [severity, options]"
+            "a severity string, [severity, options] or an options object"
         } else {
             "a severity string"
         };
@@ -306,7 +331,6 @@ fn apply_setting(
             setting.explicit = true;
         }
     }
-    // `Ok(())` is success with no value; `()` is Rust's empty value, like `void`.
     return Ok(());
 }
 

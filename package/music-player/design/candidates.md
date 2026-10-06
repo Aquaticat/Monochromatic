@@ -122,7 +122,7 @@ which were left as historical style comparisons.
 <tr>
 <td>**settings-a**</td>
 <td>860×600</td>
-<td>Three flat switch rows; says out loud that the pane is short. D84 (2026-10-05) removes the third row, `Analyse true peak in the background`, because true-peak analysis is automatic and not optional; D85 (2026-10-05) removes the closing sentence.</td>
+<td>Three flat switch rows; says out loud that the pane is short. D84 (2026-10-05) removes the third row, `Analyse true peak in the background`, because true-peak analysis is automatic and not optional; D85 (2026-10-05) removes the closing sentence. D86 (2026-10-05) removes the two remaining rows: prefix stripping and resume are always on and are not settings.</td>
 </tr>
 <tr>
 <td>**tabletop-c**</td>

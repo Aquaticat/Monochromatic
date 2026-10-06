@@ -23,7 +23,10 @@ import {
   createSshKey,
   listSshKeys,
 } from './api-resources.ts';
-import { HETZNER_DATA_DIR, } from './config.ts';
+import {
+  HETZNER_DATA_DIR,
+  OPENSSH_REMEDY,
+} from './config.ts';
 
 /**
  Logger root for mvm after removing the package log shim.
@@ -102,6 +105,7 @@ async function ensureKeypair(): Promise<void> {
       'mvm',
       '-q',
     ],
+    notFoundRemedy: OPENSSH_REMEDY,
   },);
 }
 

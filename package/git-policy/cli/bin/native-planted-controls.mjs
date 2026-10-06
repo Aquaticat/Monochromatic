@@ -66,11 +66,11 @@ const plantedControls = [
     failing: 'resolution::different_wrapper_build_stops_instead_of_looping',
   },
   {
-    name: 'fail-closed policy stage',
-    file: 'src/native/entry.rs',
-    from: '|| classify_config_loading(arguments) == ConfigLoading::Skip',
-    to: '|| true',
-    failing: 'policy::repository_changing_commands_are_not_run',
+    name: 'commit refusal frontier',
+    file: 'src/native/refusal_frontier.rs',
+    from: 'return Some(Unported::CommitTransaction);',
+    to: 'return None;',
+    failing: 'frontier::a_real_commit_is_refused',
   },
   {
     name: 'unknown top-level key rejection',

@@ -43,6 +43,8 @@ alternative considered are recorded in
 - Provides an isolated clipboard through wlr-data-control and ext-data-control,
   sharing the nested seat's regular clipboard with `wl_data_device` clients.
 - Changes the nested screen size.
+- Sets an integer or fractional output scale at startup and switches it while the app runs,
+  so the app is seen re-rendering for another display scale.
 - Serves a private dark or light appearance preference and switches it while the app runs,
   without touching the host desktop theme.
 - Keeps the hosted app drawing when its own window is hidden or the host session is locked,
@@ -99,7 +101,7 @@ Joined values such as `--size=800x600` are also accepted.
 
 ```txt
 monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
-    [--color-scheme dark|light] [--isolate]
+    [--scale SCALE] [--color-scheme dark|light] [--isolate]
     [--app-cpu-quota PCT] [--app-cpu-weight N] [--] COMMAND [ARG...]
 ```
 
@@ -107,7 +109,12 @@ monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
    Omitted,
    the tool
   just hosts the app with no control channel.
-- `--size WIDTHxHEIGHT` sets the initial nested-screen size in pixels (default `1280x720`).
+- `--size WIDTHxHEIGHT` sets the initial nested-screen size in logical pixels (default `1280x720`).
+  At the default scale 1 a logical pixel is a physical pixel.
+- `--scale SCALE` sets the initial output scale (default `1`),
+  from `0.5` to `3` in steps of 1/120, such as `1.25`, `1.5`, or `2`.
+  The `scale` control command switches it while the client runs;
+  see [Change the output scale](#change-the-output-scale).
 - `--color-scheme dark|light` gives the hosted client a private XDG Settings portal
   with deterministic appearance.
   It does not change the host desktop theme.
@@ -180,6 +187,11 @@ then sets `DBUS_SESSION_BUS_ADDRESS` only for the hosted client.
 The parent compositor and desktop environment remain untouched.
 The private bus intentionally does not expose unrelated host session services,
 such as notifications or file-chooser portals.
+It also cannot start any:
+its configuration has no service directories and no includes,
+so a client's request to start a service fails at once with `org.freedesktop.DBus.Error.ServiceUnknown`,
+and no program named in a host `.service` file runs.
+Slint asks for the accessibility bus `org.a11y.Bus` this way and continues without it.
 Use this option for deterministic appearance tests whose client does not need those services.
 Without `--color-scheme`,
 the hosted client inherits its usual session bus.
@@ -236,6 +248,116 @@ See [`doc/troubleshooting/slint-nested-color-scheme-portal.md`](
 ../../../doc/troubleshooting/slint-nested-color-scheme-portal.md)
 for Slint's D-Bus lookup and the isolation design.
 
+### Change the output scale
+
+Start at a scale,
+or switch it while the client runs:
+
+```sh
+monochromatic-nested-wayland-session --socket /tmp/nws.sock --size 1100x660 --scale 1.25 -- my-app
+
+printf 'scale 2\n' | nc -U /tmp/nws.sock   # => ok changed
+printf 'scale 2\n' | nc -U /tmp/nws.sock   # => ok unchanged
+```
+
+Sizes map the way they do on a desktop with a scaled output:
+
+- `--size` and `resize` set the logical size,
+  which the hosted window is configured with.
+- The physical framebuffer,
+  which `screenshot` and `record` capture,
+  is the logical size times the scale,
+  rounded half away from zero as `wp_fractional_scale_v1` prescribes for toplevel surfaces.
+  `--size 1100x660` captures 1100x660 at scale 1,
+  2200x1320 at scale 2,
+  and 1375x825 at scale 1.25.
+- `click`,
+  `wheel`,
+  and `drop-file` take logical coordinates at every scale,
+  so one command hits the same element whatever the scale.
+  Screenshot pixel (x, y) is the logical point (x / scale, y / scale).
+- `scale` keeps the logical size,
+  so the client sees a scale change without a resize,
+  the way a window keeps its size when it moves to an output with another scale.
+  `resize` keeps the scale.
+
+Scales run from 0.5 to 3 in steps of 1/120,
+which covers the 50 % to 300 % in 5 % steps that KDE's display settings offer.
+A value between two steps is refused with the two nearest steps named,
+because `wp_fractional_scale_v1` sends a scale as a whole number of 120ths.
+
+Hosted clients learn the scale three ways:
+
+- `wp_fractional_scale_v1.preferred_scale` on every surface,
+  in 120ths,
+  as soon as the client asks for a surface's fractional-scale object and again on every change.
+- `wp_viewporter`,
+  through which a fractional-scale client states its logical size.
+  winit binds it only when the fractional-scale manager exists,
+  and from then on ignores integer scales,
+  so both are advertised.
+- `wl_output.scale`,
+  the scale rounded up to a whole number,
+  and the `xdg_output` logical size,
+  for clients without fractional scaling.
+
+Slint's winit backend applies the fractional value as a scale-factor change,
+unless `SLINT_SCALE_FACTOR` in the client's environment overrides it.
+
+`scale` answers as soon as the surfaces have been told;
+the client redraws afterwards.
+Until its next commit,
+a capture shows the client's previous buffer drawn at the new scale,
+uniformly soft after a switch to a larger scale,
+exactly as a desktop compositor shows a window that has just moved to another output.
+Take evidence after the client has settled,
+for example once two consecutive screenshots are identical.
+
+The nested window on the host is the framebuffer.
+A new size or scale asks the parent compositor for a window that covers the physical size,
+counted in the parent's own logical pixels and rounded up,
+then applies the size the window has.
+winit resizes a normal window by itself,
+without waiting for the parent
+(winit 0.30.13 `src/platform_impl/linux/wayland/window/state.rs`,
+`request_inner_size`),
+so this takes effect before the command answers.
+By that source it does not need the parent to send anything,
+which a locked host session does not;
+that case was not exercised,
+because the host was unlocked for every measurement.
+A parent at a scale above 1 can only make windows whose sides are multiples of its scale,
+so a capture can be wider or taller than the computed size
+by fewer pixels than the parent's scale rounded up;
+the extra strip shows the background color and no client content is cut off.
+When the parent keeps the window at a size of its own,
+for example maximized or tiled there,
+`resize` and `scale` answer `err` with the size the window has.
+The host output's own scale never becomes the nested scale,
+so captures do not depend on which host output shows the window.
+
+Use `mise run //package/cli/nested-wayland-session:inspect:scale` to verify the built release binary.
+The task needs `slint-viewer`.
+It hosts a Slint scene that reports the scale Slint applies,
+its logical size,
+and each click position.
+It switches through 1,
+2,
+1.25,
+1.5,
+1,
+and 2,
+then resizes,
+and starts a second session with `--scale 1.5`.
+At each step it checks the client's report,
+the `preferred_scale` and `wl_output.scale` events in the client's own protocol log,
+the screenshot size,
+where the client's drawing ends in a recorded frame,
+and that a click at a logical point reaches that point.
+It also requires that no scale switch resized the client,
+and that a frame recorded after a switch made during a recording has the new size and the client's drawing.
+It prints the directory holding its evidence.
+
 ## Control protocol
 
 Requests are newline-delimited text,
@@ -283,7 +405,18 @@ one response line:
 - `type TEXT` types the rest of the line as individual key taps (US layout;
    characters
   off that layout are skipped).
-- `resize WIDTH HEIGHT` requests a new nested-screen size.
+- `resize WIDTH HEIGHT` sets the logical nested-screen size,
+  keeping the output scale,
+  and applies it before answering `ok`.
+  It answers `err` when the parent compositor keeps the nested window at a size of its own.
+- `scale SCALE` sets the output scale,
+  keeping the logical size.
+  It answers `ok changed` once the window and the output have the new scale
+  and every surface has been told it;
+  the client redraws on its own schedule afterwards.
+  It answers `ok unchanged` when that scale was already set,
+  and `err <message>` for a value outside 0.5 to 3 or between steps of 1/120.
+  See [Change the output scale](#change-the-output-scale).
 - `drop-file PATH [X Y]` originates a compositor-side drag carrying `PATH` as a
   `text/uri-list` and drops it onto the hosted app (defaulting to the window centre),
   exercising the app's own inbound file-drop path.
@@ -331,8 +464,11 @@ winit path.
  three testing needs become built-in,
 in-process features rather than external tools:
 
-- Screenshots are a framebuffer readback (`ExportMem::copy_framebuffer` plus `map_texture`)
+- Screenshots are a readback (`ExportMem::copy_framebuffer` plus `map_texture`)
+  of an offscreen texture the size of the output mode,
   encoded with the [`image`][] crate.
+  Rendering off screen gives every capture the screen's current size at once;
+  the window's own back buffer takes a new size only after its next swap.
 - Input is synthesised directly through the compositor's own seat,
    so events reach only
   the hosted client,

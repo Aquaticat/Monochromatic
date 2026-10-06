@@ -208,5 +208,8 @@ fn collected_heading_text_matches_the_incumbent_helper() {
         .iter()
         .find(|id| return context.kind(**id) == satteri_ast::mdast::MdastNodeType::Heading)
         .expect("heading");
-    assert_eq!(context.text_content(*heading), "Name  code");
+    assert_eq!(
+        context.text_content(*heading),
+        Ok(String::from("Name  code"))
+    );
 }

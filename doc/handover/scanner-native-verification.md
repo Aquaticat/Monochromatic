@@ -15,9 +15,19 @@ Those survivors are retained,
 not excluded.
 A Windows-native follow-up caught both of them with an existing test.
 `Windows-native follow-up` records that run and the separate Windows findings it left open.
-Its device-namespace finding is now fixed and tested on Linux with supplied native prefixes;
-native Windows confirmation of that fix is pending.
+Its device-namespace finding is fixed,
+tested on Linux with supplied native prefixes,
+and confirmed on native Windows on 2026-10-05.
 `Device-namespace pathnames` records the fix.
+`Windows baseline follow-up` records the confirmation,
+the triage of every Windows baseline failure,
+and the pathname-only mutation campaign.
+At the last Windows run the suite was not green:
+two tests that block the cache root with a regular file failed there.
+The decision on those came on 2026-10-05 and the tests now assert each platform's reason
+(`Follow-up decisions applied`).
+The changed Windows assertions have not yet run on Windows,
+so the Windows suite has not been observed green.
 
 ## Requirements preserved
 
@@ -213,8 +223,9 @@ both mutants are caught on native Windows by `path_scan::tests::windows_volume_p
 Controls,
 provenance,
 and the findings that run left open are in `Windows-native follow-up`.
-The later device-namespace fix changes `src/path_scan.rs` but not `prefix_parts`;
-a mutation rerun over the changed scan is pending.
+The later device-namespace fix changes `src/path_scan.rs` but not `prefix_parts`.
+The mutation rerun over the changed scan was made on 2026-10-05:
+`Pathname mutation scope on Linux` and `Pathname mutation scope on Windows` record it.
 
 ### Unviable mutants
 
@@ -266,9 +277,13 @@ The same run produced two findings that it did not change:
 the unmutated suite is not green on Windows,
 and device-namespace pathnames are not name-scanned.
 `Unmutated Windows baseline` and `Device-namespace pathnames` record them.
-The baseline finding remains open.
-The device-namespace finding was fixed afterwards,
-pending native Windows confirmation.
+The device-namespace finding was fixed afterwards and confirmed on native Windows.
+The baseline finding was triaged in `Windows baseline follow-up`:
+the integration target compiles,
+five of the six failing tests pass,
+and the sixth,
+with one integration test that had never compiled,
+was decided afterwards (`Follow-up decisions applied`).
 
 ### Target and toolchain
 
@@ -383,8 +398,12 @@ which was not sent because Clippy did not run in the VM.
 
 ### Unmutated Windows baseline
 
-This finding is open.
-The unmutated suite does not pass on Windows,
+This subsection is the record of the first Windows run.
+`Triage of the Windows baseline failures` establishes the cause of each failure it lists,
+and `Whole Windows suite after the test fixes` gives the current state.
+
+At that run,
+the unmutated suite does not pass on Windows,
 so the `green` form is a subset,
 not the complete suite.
 
@@ -429,8 +448,9 @@ passed 151 library tests and failed the same six tests.
 
 This finding was scanner behavior,
 not a test artifact.
-It is fixed and tested on Linux with supplied native prefixes;
-native Windows confirmation is pending.
+It is fixed,
+tested on Linux with supplied native prefixes,
+and confirmed on native Windows on 2026-10-05 (`Prefix-fix confirmation`).
 `Windows observation` keeps what the Windows run measured,
 and the later subsections record the confirmed mechanism,
 the fix,
@@ -620,8 +640,11 @@ is a `#[cfg(windows)]` test through the native parser:
 `\\.\C:`,
 and `\\.\pipe\NAME.with.dots`,
 plus a clean `\\.\COM1` control.
-Only the Linux target is installed on this host,
-so it has never been compiled.
+When it was written only the Linux target was installed on this host,
+so it had never been compiled.
+It compiled and passed on native Windows on 2026-10-05,
+and fails there under both retained `prefix_parts` mutants
+(`Positive controls and prefix mutants on Windows`).
 
 The test files reached the repository inside concurrent commit `8fdbbded9`,
 whose message describes only `desktop-app-ide` work;
@@ -745,11 +768,18 @@ Package checks on the final tree:
   `catch_unwind(matcher)` for the `without-name-catch` variant,
   still occurs exactly once in the fixed file;
   `bin/observe-guards-container.mjs` substitutes no `path_scan.rs` text.
-- No mutation campaign was run for the fix.
-  The only scanner mutation tasks are the full embedding campaign and the startup-only campaign,
-  so a rerun over the changed `src/path_scan.rs` is pending.
+- No mutation campaign was run for the fix at that time.
+  The only scanner mutation tasks then were the full embedding campaign and the startup-only campaign.
+  The task `test:mutation:pathname:container` now exists,
+  and `Pathname mutation scope on Linux` records its run over the changed `src/path_scan.rs`.
 
 #### Pending Windows confirmation
+
+All three items were done on 2026-10-05;
+`Windows baseline follow-up` records them.
+The `green` form was not rerun,
+because the whole unfiltered suite now compiles and runs instead.
+The original list follows.
 
 - Rebuild and run the Windows `green` and `suite` forms at a snapshot that contains commit `833483171`,
   as in `Controls and results`,
@@ -808,6 +838,8 @@ The scratch drivers are retained in the evidence directory.
 - This is one manual run on one snapshot,
   not a recurring gate.
   The open baseline failures prevent an all-target Windows job from passing as the suite stands.
+  After `Windows baseline follow-up` two failures remain,
+  so that still holds.
 
 ### Decisions left to the main agent
 
@@ -821,6 +853,11 @@ The scratch drivers are retained in the evidence directory.
 - Whether to add a recurring Windows test job once the baseline is green.
 
 `Windows baseline follow-up` takes up these three items.
+The first is done.
+The second is done except for the blocked-cache-root pair,
+which `Decisions left after the Windows baseline follow-up` hands to the human.
+The third stays open,
+with a proposal in `What a recurring Windows job would need`.
 
 ## Windows baseline follow-up
 
@@ -830,8 +867,26 @@ This follow-up makes the scanner's test suite compile and run on native Windows,
 triages every Windows baseline failure,
 confirms the device-namespace prefix fix on native Windows,
 and mutates the pathname files on their own.
-It is in progress;
-each subsection records a finished step.
+
+Outcome:
+
+- Every test target compiles on Windows and the whole suite runs there with no filter.
+- Five of the six recorded baseline failures were tests assuming Unix paths and are fixed in the tests;
+  no production defect was found in them.
+- The Windows suite was not green at its last run.
+  The sixth recorded failure and one integration test that had never compiled failed for one cause,
+  which needed the human's decision
+  (`Reason reported for a cache root blocked by a regular file`).
+  The decision,
+  option A,
+  is applied in `Follow-up decisions applied`;
+  its Windows assertions await their first Windows run.
+- The prefix fix is confirmed on native Windows,
+  with failing positive controls on the same guest.
+- The pathname mutation scope leaves two survivors on Linux,
+  both caught on Windows,
+  where no mutant of the scope survives.
+- The virtual machine was destroyed and every daemon and server started for the run was stopped.
 
 ### Linux-side changes
 
@@ -898,6 +953,18 @@ The unviable mutants are compiler rejections:
 `scan_normalized_records`,
 and `scan_path`,
 and `` `||` operators are not supported in let chain conditions `` for `logical_path`.
+
+That campaign ran before `fe805727c` changed two test files,
+one of which holds the test that kills the `logical_path` mutants.
+The campaign was therefore repeated on the final tree:
+`pathname-mutation-N02NWa`,
+snapshot `50920f5bb0079aaf5c55327d9384229fa51093dab9b61cc3d7050d8967935d58`,
+image `sha256:6927cfce3f638491f1cbcc2c4f5b669ff1aef3d7e0f167af7c2f39f30b09f254`.
+It tested the same 57 mutants in 10 minutes with identical outcome lists:
+51 caught,
+the same 2 missed,
+the same 4 unviable,
+and no timeouts.
 
 ### Windows virtual machine and bridges
 
@@ -1068,7 +1135,7 @@ and the five navigation-spelled forms of `Confirmed mechanism`;
   The function's rustdoc,
   "Validates path with selected target semantics",
   is accurate only on Unix hosts;
-  `Decisions left` proposes a byte-explicit Unix branch,
+  `Rustdoc of platform_absolute_path` proposes a byte-explicit Unix branch,
   not applied because no Windows defect requires it.
 - `runtime_cache::path::tests::source_bytes_select_content_addressed_path`.
   Cause:
@@ -1106,7 +1173,8 @@ and the five navigation-spelled forms of `Confirmed mechanism`;
   or a root differing only in letter case,
   is not relativized.
   Every supplied segment is then still scanned and masked,
-  so it lengthens the display but does not skip a name.
+  so it lengthens the display but does not skip a name
+  (`Verbatim and differently cased repository-relative names on Windows`).
 - `public_warning_paths_preserve_scan_results_without_emitting_terminal_json` (`blocked` mode),
   and `cache_write_failure_keeps_scan_correct`.
   Cause:
@@ -1127,8 +1195,10 @@ and the five navigation-spelled forms of `Confirmed mechanism`;
   `Missing` is "Expected content-addressed artifact did not exist",
   `Unreadable` is "Existing artifact could not be read completely",
   and `CacheRootUnavailable` is "Per-user cache root could not be resolved or used".
-  Neither source nor tests were changed for these two;
-  `Decisions left` lists the options.
+  Neither source nor tests were changed for these two during the Windows run;
+  `Reason reported for a cache root blocked by a regular file` lists the options.
+  Option A was chosen afterwards and the two tests were changed in `aaf4c08e7`
+  (`Follow-up decisions applied`).
 
 ### Prefix-fix confirmation
 
@@ -1144,12 +1214,729 @@ and `\\.\\VAULTTOKEN_LONG`,
 whose native prefix is `\\.\` (`DeviceNS("")`, one part),
 displays `//.//[REDACTED]`.
 For each probed form that `src/path_scan_prefix_tests.rs` also covers,
-the raw native prefix the probe printed equals the bytes that fixture supplies.
+the raw native prefix the probe printed equals the bytes that fixture supplies;
+the verbatim-name fixture spells its prefix `\\?\name` where the probe used `\\?\pictures`.
 Three fixture forms were not probed:
 `\\.\device.with.dots`,
 `//.\COM1`,
 and `\\?/C:`.
 `windows_device_namespace_prefix_is_not_name_segment` compiled and passed in the whole-suite run.
+
+### Whole Windows suite after the test fixes
+
+Snapshot `s2` holds the same inputs at `fe805727c`:
+128 files,
+source hash `22f0d6e7b2f0dee2608d20a58801d5538df331a0acfa937fb647b6ddb164f45c`,
+archive hash `4dffb0eb55a5e72edde95ee50822d3c573e8939bce4c39ea7d104e3b5d30b8da`.
+No scanner or engine commit is later than `fe805727c`.
+It was extracted beside `s1` in the same guest and shares its Cargo target directory,
+so registry dependencies were not rebuilt;
+every campaign log shows `forbidden-strings` recompiled.
+
+The same command,
+again with no `--skip` filter,
+exited `101`:
+
+- Library:
+  178 passed,
+  none failed.
+- `src/main.rs`:
+  4 passed.
+- `tests/embedding.rs`:
+  2 passed.
+- `tests/embedding_warnings.rs`:
+  1 passed,
+  1 failed.
+- `tests/integration.rs`:
+  39 passed,
+  1 failed.
+- `tests/path_names.rs`:
+  8 passed.
+
+No test was ignored or filtered out.
+The two failures are the blocked-cache-root tests held for the human's decision.
+The Windows baseline is therefore not green:
+234 tests ran,
+232 passed.
+The five other baseline failures are fixed.
+The library count is 178 because the three Unix-target cache-root tests are now `#[cfg(unix)]`,
+alongside the three `#[cfg(unix)]` tests named in `Whole Windows suite before triage`,
+and the two `#[cfg(windows)]` prefix tests are present;
+Linux runs 182 library tests.
+
+### Positive controls and prefix mutants on Windows
+
+Each variant replaced `src/path_name_bytes.rs` in the `s2` tree,
+with its hash checked in the guest,
+and ran the whole unfiltered suite.
+The mutant texts' changed lines equal those of the `cargo-mutants` diffs retained in `pathname-mutation-xxqPFq`.
+In execution order:
+
+- Unmutated before:
+  the two blocked-cache-root failures only.
+- Positive control `replace prefix_parts -> usize with 1`:
+  14 additional tests fail,
+  8 library,
+  1 embedding,
+  and 5 pathname binary tests.
+  So a failing variant is visible on the same VM,
+  toolchain,
+  and command that report the passing tests.
+- `replace prefix_parts -> usize with 0`:
+  caught.
+  Exactly two additional tests fail:
+  `windows_volume_prefix_is_not_name_segment`
+  (`C\x3a/[REDACTED]/clean.txt:name:2 rule=0` where `name:1` is expected)
+  and `windows_device_namespace_prefix_is_not_name_segment`
+  (`//./COM1/[REDACTED]/clean.txt:name:2 rule=0` where `name:1` is expected).
+- `delete ! in prefix_parts`:
+  caught by the same two tests with the same values.
+- Unmutated after:
+  identical to the first baseline.
+
+The new Windows read-error test has its own control.
+With the exclusive handle dropped before the scanner is spawned,
+`windows_locked_file_read_error_surfaces_as_hit` fails at its `locked.txt: read error` assertion;
+the exit-status assertion alone would not show the difference,
+because the unlocked file's content matches the rule,
+as in the Unix test.
+With the snapshot's file restored and its hash checked,
+it passes.
+The test therefore passes because of the sharing violation,
+not because the scanner fails for another reason.
+
+### Pathname mutation scope on Windows
+
+The package's runner cannot execute on Windows:
+`bin/mutate-container.mjs` builds and runs a Linux container with `podman`.
+`cargo-mutants` itself can,
+so the scope ran in the guest with the runner's own arguments,
+after the hand-planted variants of `Positive controls and prefix mutants on Windows`.
+
+Bridges tried for the tool:
+
+- The published `cargo-mutants-x86_64-pc-windows-msvc.zip` of release `v27.1.0`,
+  its SHA-256 `2a2f00e47d4b458262a41501b0820aa26015fd35779903d2c8b30b2993f36791`
+  matching the release's published digest,
+  does not start in this guest:
+  `cargo mutants --version` exits `-1073741515` (`0xC0000135`, a required DLL was not found),
+  and `vcruntime140.dll` is absent from `System32`.
+- `cargo install cargo-mutants --version 27.1.0 --locked` with the guest's GNU toolchain built it from source.
+  `cargo mutants --version` prints `cargo-mutants 27.1.0`,
+  the version of the Linux campaigns.
+
+The command was the Linux runner's,
+`cargo mutants --in-place --all-features --baseline run --no-config --no-shuffle --colors=never`
+with `--build-timeout 300 --timeout 120`,
+`--cargo-arg=--offline --cargo-arg=--locked`,
+harness argument `--test-threads=1`,
+and `--file src/path_scan.rs --file src/path_name_bytes.rs`,
+on the `s2` tree.
+Its test command skips four tests,
+two more than on Linux:
+
+- `rule::frx::compile_tests::builtin_ported_all_compile`
+  and `rule::frx::compile_tests::append_ported_compiles_end_to_end`,
+  the shipped-corpus conformance tests the Linux campaigns also skip.
+- `public_warning_paths_preserve_scan_results_without_emitting_terminal_json`
+  and `cache_write_failure_keeps_scan_correct`,
+  which fail on unmutated Windows source;
+  `cargo-mutants` stops when its unmutated baseline fails.
+  Neither test exercises pathname code.
+
+`cargo-mutants` runs `cargo test` without `--no-fail-fast`,
+so a mutant's log ends at the first failing test target.
+
+First,
+restricted with `--re path_name_bytes.rs:36:` to the three mutants of the `prefix_parts` guard line:
+the unmutated baseline passed,
+and all three were caught in 59 seconds,
+with none missed,
+unviable,
+or timed out.
+
+- `replace prefix_parts -> usize with 0`
+  and `delete ! in prefix_parts`,
+  the two Linux survivors:
+  each fails exactly `windows_volume_prefix_is_not_name_segment`
+  and `windows_device_namespace_prefix_is_not_name_segment` in the library target.
+- `replace prefix_parts -> usize with 1`,
+  the positive control Linux also catches:
+  8 library tests fail.
+
+Afterwards the guest's `src/path_scan.rs` and `src/path_name_bytes.rs` hashed to the snapshot's values,
+so the in-place mutation left the tree unmutated.
+
+Then the whole scope,
+without `--re`:
+57 mutants tested in 12 minutes,
+53 caught,
+none missed,
+4 unviable,
+and no timeouts.
+The unmutated baseline passed and `cargo-mutants` exited `0`.
+The 57 mutant names are the same as in the Linux campaign `pathname-mutation-xxqPFq`.
+The caught set is the Linux caught set plus the two Linux survivors,
+and the 4 unviable mutants are the same compiler rejections.
+Both source hashes matched the snapshot again afterwards.
+
+So over the pathname files,
+no mutant survives on both platforms:
+Linux misses only the two that cannot differ on a non-Windows target,
+and Windows catches those two with its `#[cfg(windows)]` prefix tests.
+This holds for the GNU ABI target and the four skipped tests listed here;
+it is one manual run,
+not a recurring gate.
+
+### Linux verification of the final tree
+
+All through the package's tasks,
+on the tree at `fe805727c` unless a snapshot says otherwise.
+Evidence directories are under `package/cli/forbidden-strings/target/verification/`.
+
+- `test:container` on the goal-one tree (`3b85b4269`,
+  the `s1` inputs):
+  `test-kA3nVK`,
+  snapshot `ac3fe2d101dde4ecc237dc798e51f260a13cecdf357429d45e5ffbe21d6183e1`,
+  image `sha256:dde7184e444fc99e8a881486a207889d5a7c0a25c9104e991c6929951d9d7e70`,
+  exit `0`:
+  180 library,
+  4 executable unit,
+  2 embedding,
+  2 public cache-warning,
+  40 CLI integration,
+  and 8 pathname tests passed,
+  none failed or ignored.
+  It shares its snapshot hash with `pathname-mutation-xxqPFq`.
+- `test:container` on the final tree:
+  `test-g2VM7D`,
+  snapshot `4db08892f6863495ebb678db876b7d30b238bc60e5a2e21a086c8fd7cbbcf65b`,
+  image `sha256:4dfabc3fd31a0bd2316b1fc38f7524073175b6eeb55d38470bcc8d98ad4c3b4d`,
+  exit `0`:
+  182 library,
+  4 executable unit,
+  2 embedding,
+  2 public cache-warning,
+  40 CLI integration,
+  and 8 pathname tests passed,
+  none failed or ignored.
+  The two added library tests come from splitting two cache-root tests by target platform.
+- `lint:clippy:container` on the final tree:
+  `clippy-wuZQ0I`,
+  the same snapshot,
+  image `sha256:836482282bba17b82c0b288e5e190a078a6fe3ef13644f486e7b429f3c0a2f44`,
+  exit `0` with no warning.
+- `lint:clippy:windows`,
+  a task added in `11f20de74`,
+  runs Clippy for `x86_64-pc-windows-gnu` over every target with warnings denied.
+  It exits `0`.
+  This is the only Linux-side check that compiles `#[cfg(windows)]` code;
+  it runs no test.
+- `lint:rust` exits `0` with no finding.
+
+No test is skipped,
+ignored,
+or filtered on Linux in these runs.
+On Linux the `#[cfg(windows)]` tests are not compiled:
+`windows_volume_prefix_is_not_name_segment`,
+`windows_device_namespace_prefix_is_not_name_segment`,
+and `windows_locked_file_read_error_surfaces_as_hit`.
+On Windows the `#[cfg(unix)]` tests are not compiled:
+`symlink_name_is_not_replaced_by_target`,
+`publication_enforces_private_modes`,
+`native_path_bytes_are_not_replaced_before_matching`,
+`absolute_unix_override_wins`,
+`xdg_resolution_follows_base_directory_spec`,
+`macos_native_root_is_derived`,
+and `read_error_surfaces_as_hit_and_nonzero_exit`;
+the `native_rule_path` helper of `tests/embedding.rs` is empty there.
+
+Two raw `cargo` invocations preceded the Windows-target task,
+both with a scratch target directory:
+`cargo check --all-targets --all-features --target x86_64-pc-windows-gnu`
+for the compile check and its positive control,
+and one filtered `cargo test --lib` of the edited test modules.
+The container runs,
+not those,
+are the evidence.
+
+#### Gates after the follow-up decisions
+
+On the tree at `703a1c21d`,
+which holds both changes of `Follow-up decisions applied`,
+all through the package's tasks:
+
+- `test:container`:
+  `test-ugiNUM`,
+  snapshot `861844a851d48c9fd6b8dc9fc344fcddfc53f0ae8c3a21b2c7ac9dcafed6b6eb`,
+  image `sha256:6969865cad07c1b987a4bb570d6e99df659fb5c30cbfb611d7c67f592918a9e2`,
+  exit `0`:
+  182 library,
+  4 executable unit,
+  2 embedding,
+  2 public cache-warning,
+  40 CLI integration,
+  and 8 pathname tests passed,
+  none failed,
+  ignored,
+  or filtered.
+  Both changed tests passed.
+- `lint:clippy:container`:
+  `clippy-37qD2W`,
+  the same snapshot,
+  image `sha256:5440f9e8cad307874df6683490b99c754cdc892d4f5f066b2200b2ddb436b84d`,
+  exit `0` with no warning.
+- `lint:clippy:windows`:
+  exit `0`.
+  It compiles the `#[cfg(windows)]` definition of `blocked_root_reason` and both tests that call it;
+  it runs neither.
+- `lint:rust`:
+  exit `0` with no finding.
+- `verify:evidence`:
+  no difference for `test-ugiNUM`,
+  `clippy-37qD2W`,
+  and `pathname-mutation-list-kVfzW5`.
+  Earlier directories now also differ in the three test files `aaf4c08e7` changed or added,
+  so `windows-baseline-phA1vT` reports four differences.
+
+### Decisions left after the Windows baseline follow-up
+
+#### Reason reported for a cache root blocked by a regular file
+
+Decided on 2026-10-05:
+option A.
+The main agent relayed it as the human's decision,
+and `Follow-up decisions applied` records the change.
+The question and the options as they stood follow.
+
+This needed the human's decision.
+Two tests failed on Windows because of it,
+and they were the only failures left there:
+`public_warning_paths_preserve_scan_results_without_emitting_terminal_json` (`blocked` mode)
+and `cache_write_failure_keeps_scan_correct`.
+On both platforms the scan result stays correct and a `write-failed` warning follows;
+only the first warning's reason differs,
+`unreadable` on Linux and `missing` on Windows.
+`package/git-policy/forbidden-strings/src/cache-warning.ts`
+and `package/git-policy/cli/src/optional/forbidden-strings/cache-warning.ts`
+accept either token.
+
+Option A:
+keep the behavior and assert the platform's reason in the two tests,
+`missing` under `cfg!(windows)` and `unreadable` otherwise.
+
+- For:
+  no production or protocol change;
+  the Linux assertions stay exactly as they are;
+  it states what each operating system can report.
+- Against:
+  the same condition has a platform-dependent reason,
+  now pinned by tests.
+
+Option B:
+report `unreadable` on Windows too.
+When the artifact read fails with `NotFound`,
+check whether the cache root or an application directory exists and is not a directory.
+
+- For:
+  one reason on every platform;
+  both tests pass unchanged;
+  Linux output does not change.
+- Against:
+  more filesystem probes in the loader on every cache miss,
+  with a window between the probe and the read;
+  Windows-only behavior that Linux tests cannot reach.
+
+Option C:
+report `missing` everywhere,
+by mapping `NotADirectory` to `Missing` in `read_artifact`.
+
+- For:
+  the smallest code change;
+  matches "Expected content-addressed artifact did not exist" literally.
+- Against:
+  changes the published Linux output for a blocked root
+  (other Unix targets were not measured);
+  both tests change on every platform.
+
+Option D:
+report `cache-root-unavailable` everywhere,
+by checking that the root is a directory or absent before reading.
+
+- For:
+  matches "could not be resolved or used" most literally.
+- Against:
+  changes output on every platform;
+  that reason currently returns before publication,
+  so the `write-failed` warning would disappear unless the flow is reshaped too.
+
+Ranking:
+A > B > C > D.
+A over B because the two tokens have the same recovery and the same consumer handling,
+so B buys only uniform wording at the cost of loader probes and a race.
+B over C because B leaves published Linux output unchanged and C does not.
+C over D because C changes one mapping,
+while D also changes how many warnings a blocked root produces.
+
+#### Rustdoc of `platform_absolute_path`
+
+Its rustdoc says it "Validates path with selected target semantics so every platform branch is host-testable".
+That holds for the Windows branch on every host,
+and for the XDG and macOS branches only on Unix hosts.
+Checking those branches byte-explicitly,
+absolute when the first byte is `/`,
+would make the sentence true everywhere and let the three `#[cfg(unix)]` cache-root tests run on Windows.
+On Unix that is what `Path::is_absolute` already computes,
+so no shipped behavior would change.
+It was not applied,
+because this follow-up's source changes were limited to proven Windows defects and this is not one.
+
+#### Verbatim and differently cased repository-relative names on Windows
+
+`logical_path` compares path components exactly.
+The probe shows that a verbatim argument under a non-verbatim root,
+and a root differing from the argument only in letter case,
+keep every supplied segment.
+No name is skipped,
+so this is not a fail-open,
+but findings then name directories outside the repository.
+No change was made;
+whether Windows arguments should be normalized before the comparison is a product choice.
+
+### Follow-up decisions applied
+
+The main agent relayed two decisions as the human's on 2026-10-05,
+after the Windows run and its teardown.
+No virtual machine was started for them.
+
+#### Option A for the blocked cache root
+
+The scanner's behavior is unchanged.
+`aaf4c08e7` makes the two tests assert the reason the platform reports:
+
+- `tests/support/blocked_root.rs` is a new module both suites include.
+  Its `blocked_root_reason` returns `unreadable` under `#[cfg(unix)]` and `missing` under `#[cfg(windows)]`;
+  a target that is neither fails to compile instead of asserting an unmeasured reason.
+- `warning_consumer_probe` in `tests/embedding_warnings.rs` uses it for the `blocked` mode's first reason.
+  Its other assertions are unchanged:
+  the `compile-from-text` recovery,
+  exactly two warnings,
+  the second being `write-failed` with `continue-with-compiled-rules`,
+  and the content finding.
+- `cache_write_failure_keeps_scan_correct` in `tests/integration.rs` uses it for the first reason
+  and now prints stderr when that assertion fails.
+  Its exit status,
+  `write-failed`,
+  and finding-line assertions are unchanged.
+
+Grounding of the Unix value beyond Linux,
+where it is measured:
+POSIX.1-2024 lists `ENOTDIR` for `stat` when
+"a component of the path prefix names an existing file that is neither a directory
+nor a symbolic link to a directory",
+and `library/std/src/sys/io/error/unix.rs` in the installed `nightly-2026-09-22` source
+maps `ENOTDIR` to `NotADirectory`.
+No Unix target other than Linux was run.
+The Windows value rests on the `s2` run and the probe:
+the same source's `sys/io/error/windows.rs` maps `ERROR_PATH_NOT_FOUND`,
+the measured OS error `3`,
+to `NotFound`.
+
+The Windows assertions have not themselves run on Windows.
+What `s2` measured there:
+
+- The embedding consumer's first warning reason was `missing`.
+- The CLI exited `1` and its stderr lacked `"reason":"unreadable"`.
+
+What it did not measure,
+because each test stopped at its first failing assertion:
+
+- The CLI's stderr containing `"reason":"missing"`.
+- On either path,
+  the warning count,
+  the `write-failed` warning,
+  the recovery tokens,
+  and the finding after the blocked read.
+  The probe's `create_dir_all` under the blocker failing with `AlreadyExists` supports `write-failed`,
+  as an inference from `prepare_directories` in `src/runtime_cache/publish.rs`.
+
+So the next Windows run must include both tests,
+unfiltered,
+and only then can the Windows suite be called green.
+Its mutation campaign should also drop the two Windows-only `--skip` filters for these tests.
+
+On Linux,
+with the Unix value planted as `missing` in a scratch copy,
+both tests fail,
+showing `unreadable` as the actual reason;
+so the changed assertions still discriminate the two tokens.
+The README's cache section now states the platform difference and its cause (`40fb4cdef`).
+
+#### Two operator mutations never tried
+
+`703a1c21d` passes `--exclude-re` twice to `cargo-mutants` in every scope of `bin/mutate-container.mjs`,
+each regex its own argument:
+`replace \+= with \*=` and `replace -= with /=`.
+This is the human's decision for handling mutation timeouts.
+They accepted that those two kinds are never tried;
+`+=` with `-=` stays active.
+It supersedes,
+for these two kinds only,
+this document's earlier statements that no mutant is excluded.
+
+`cd1b9d1db` first gave the runner a `--list` flag,
+which appends `cargo-mutants`' own `--list` to the unchanged campaign arguments in the same container fixture.
+The pathname scope was listed before and after the exclusion:
+
+- Before:
+  `pathname-mutation-list-vTmRVj`,
+  57 names,
+  identical to the names of the campaign `pathname-mutation-N02NWa`.
+- After:
+  `pathname-mutation-list-kVfzW5`,
+  54 names.
+  Its manifest shows the four added arguments as separate elements.
+- Three names disappear and none appears:
+  `src/path_name_bytes.rs:59:19: replace += with *= in count_prefix_parts`,
+  `src/path_scan.rs:150:18: replace += with *= in scan_normalized_records`,
+  and `src/path_scan.rs:142:30: replace -= with /= in scan_normalized_records`.
+  That is two of the first kind and one of the second.
+- The three `+=` with `-=` and `-=` with `+=` mutants at the same positions remain listed.
+
+No campaign was run with the exclusion.
+In the three retained pathname campaigns,
+two on Linux and one on Windows,
+all three now-excluded mutants were caught and none timed out.
+A pathname campaign would now test 54 mutants;
+the 57-mutant counts recorded in this document predate the exclusion.
+The other scopes were not listed.
+
+#### Gates after both changes
+
+`Gates after the follow-up decisions` in `Linux verification of the final tree` records them.
+
+### Repeating the Windows run
+
+At the last Windows run the baseline was not green.
+The steps reproduce that run;
+step 7 states what it measured and what the tree after `aaf4c08e7` should show instead.
+Every step was executed as written on 2026-10-05.
+The scratch drivers that implement them are retained in the evidence directory named in
+`Evidence of the Windows baseline follow-up`;
+they name this run's domain and need that name changed.
+
+1.  Put the `virsh` and `qemu-img` Flatpak shims of
+    `doc/troubleshooting/mvm-libvirt-flatpak-only-host.md` first on `PATH`.
+    Start the session daemon in the background,
+    with its output sent to a file:
+    `flatpak run --command=virtqemud org.virt_manager.virt-manager --verbose`.
+2.  Create the overlay and domain with
+    `mvm --verbose --backend libvirt create --image windows <name>`.
+    It fails at start with `Unable to find a satisfying virtiofsd`.
+    Run `virsh --connect qemu:///session undefine mvm-<name>`,
+    copy `~/.local/share/mvm/vms/<name>/domain.xml` without its `filesystem` and `memoryBacking` elements,
+    then `virsh define` and `virsh start` that copy.
+    The generated domain has 4 virtual CPUs and 8192 MiB of memory.
+3.  Wait until `virsh qemu-agent-command mvm-<name> '{"execute":"guest-ping"}'` answers.
+    Run guest commands with `guest-exec` and poll `guest-exec-status` with `--timeout 60`,
+    retrying failed polls.
+    Print a fresh nonce first in every guest command and discard a status whose output lacks it
+    (`Guest agent findings`).
+4.  Read the license with `cscript.exe //nologo C:\Windows\System32\slmgr.vbs /dli`.
+    If it reports `Notification`,
+    run `slmgr.vbs /rearm` and `shutdown.exe /r /t 10` in the guest,
+    which changes only the overlay,
+    and wait for the agent to stop and answer again.
+5.  In the guest,
+    with `CARGO_HOME=C:\w\cargo` and `RUSTUP_HOME=C:\w\rustup`,
+    run `rustup-init.exe` with the options `-y --no-modify-path`,
+    `--default-host x86_64-pc-windows-gnu`,
+    `--default-toolchain 1.97.0`,
+    and `--profile minimal`.
+    Unpack `MinGit-2.56.0-64-bit.zip` to `C:\w\git`
+    (SHA-256 `064b440ff870ed5198527e8f3a92cdf5bd2fd0fedf5e718af95e3fdaddeff718`)
+    and `winlibs-x86_64-posix-seh-gcc-16.2.0-mingw-w64msvcrt-14.0.0-r2.zip` to `C:\w\mingw`
+    (SHA-256 `1b90ec73c96e6905a913746b56fb6b20122422787029810d3afc6a3b440f2322`).
+    Prefix `PATH` with `C:\w\cargo\bin;C:\w\git\cmd;C:\w\mingw\mingw64\bin`.
+6.  On the host,
+    copy only compiled inputs into a private directory:
+    the scanner's `Cargo.toml`,
+    `Cargo.lock`,
+    `build.rs`,
+    `src`,
+    `tests`,
+    and `data`;
+    the engine's `Cargo.toml`,
+    `Cargo.lock`,
+    and `src`,
+    at the same relative paths;
+    and the root `forbidden-strings.append.txt`.
+    Archive them with `tar` and serve that directory on host loopback only.
+    The guest downloads from `10.0.2.2`,
+    checks the archive's SHA-256,
+    extracts it,
+    and runs `cargo fetch --locked` in the scanner directory.
+7.  With `CARGO_PROFILE_DEV_DEBUG=0` and `CARGO_INCREMENTAL=0`,
+    run `cargo test --locked --all-features --all-targets --no-fail-fast -- --test-threads=1`
+    in the scanner directory.
+    Measured at `fe805727c`:
+    exit `101` with 232 of 234 tests passing and only the two blocked-cache-root tests failing.
+    Expected from `aaf4c08e7` on,
+    not yet observed:
+    exit `0` with all 234 passing.
+8.  Run the positive control:
+    replace the body of `prefix_parts` in `src/path_name_bytes.rs` with `1`,
+    rerun step 7,
+    and expect 14 additional failures.
+    Restore the file,
+    check its hash,
+    and rerun step 7 to see the first result again.
+    A passing Windows result counts only beside this failing control from the same guest.
+9.  Tear down:
+    `virsh destroy` and `virsh undefine` the domain,
+    remove `~/.local/share/mvm/vms/<name>`,
+    stop the file server and the session daemon,
+    and confirm that `template-windows.qcow2` still has its earlier hash.
+
+Before any of that,
+`mise run //package/cli/forbidden-strings:lint:clippy:windows` on Linux shows
+whether every target still compiles for Windows.
+It needs `rustup target add x86_64-pc-windows-gnu` and no virtual machine.
+
+### Guest agent findings
+
+Two behaviors of the guest-agent bridge can make a run report the wrong result.
+Both happened in this run and neither reached the recorded results.
+
+- `mvm exec` exits `1` when one status poll exceeds the agent's 5-second timeout,
+  although the guest command keeps running.
+  That happened once during MinGW-w64 extraction;
+  the command's real status was read afterwards and was exit `0`.
+- The agent keeps an exited command's status until it is read,
+  keyed by process ID alone.
+  One earlier `mvm exec` call lost its launch reply to the same timeout,
+  so its status was never read.
+  Windows later gave the same process ID,
+  2440,
+  to the full-scope mutation command,
+  and the first status read returned the old command's output with exit `0`
+  while the mutation was still running.
+  The stale record is retained as `logs/stale-guest-exec-status-pid-2440.txt`.
+  The client now prints a nonce at the start of every guest command
+  and keeps polling when a status lacks it.
+  Every campaign log recorded before that was checked by content:
+  each names its own snapshot label,
+  variant,
+  and placed-file hash.
+
+### What a recurring Windows job would need
+
+This is a proposal,
+not a workflow;
+none was added.
+No Windows run has exited `0` yet:
+the blocked-root decision is applied,
+but its Windows assertions have not run.
+
+- One Windows run of the suite that exits `0` at `aaf4c08e7` or later,
+  with its positive control.
+- A Windows runner with the scanner's Rust toolchain,
+  Git on `PATH` for `all_mode_skips_configured_rules_file`,
+  and network access for `cargo fetch --locked`.
+  `.github/workflows/cargo-publish.yml` already builds on `windows-latest` and `windows-11-arm`
+  with `rustup target add` and `cargo build`,
+  so those runners provide rustup and Cargo;
+  Git on their `PATH` was not checked here.
+- The command of step 7 in `Repeating the Windows run`,
+  from `package/cli/forbidden-strings`,
+  with no secret and no repository write permission.
+  The shipped-corpus conformance tests dominate its time:
+  the library target took 248 seconds on 4 virtual CPUs in the debug profile.
+- A decision on the target.
+  This run used `x86_64-pc-windows-gnu`,
+  which needs a complete MinGW-w64 on `PATH`.
+  The published binaries are `x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc`,
+  which no run has tested;
+  a hosted job would test the MSVC target directly.
+- A way to keep the positive control.
+  A job that only passes cannot show it would fail;
+  a second job step that plants the `prefix_parts` control and requires failure is one option,
+  and a scheduled Windows mutation run of the pathname scope is another.
+- On Linux runners,
+  `lint:clippy:windows` as a cheap earlier gate for Windows compile errors.
+
+### Teardown
+
+- `mvm --verbose --backend libvirt destroy wbase-20261005` through the shims exited `0`.
+  It ran `virsh destroy` and `virsh undefine --remove-all-storage`,
+  which removed the overlay disk,
+  and removed `~/.local/share/mvm/vms/wbase-20261005`.
+  `virsh list --all` afterwards lists only the six domains that existed before the run.
+- The file server was stopped by process ID;
+  nothing listens on port 18432.
+  Its log shows 13 requests,
+  all from host loopback:
+  the two snapshot archives,
+  the variant,
+  probe,
+  and restore files,
+  and two refused requests made from the host to test the server.
+- The session `virtqemud` was stopped by process ID.
+  Libvirt had spawned `virtlogd` and `virtstoraged` in the same Flatpak sandbox,
+  each with a 120-second idle timeout;
+  both were stopped too,
+  and no virt-manager Flatpak instance remains.
+- `template-windows.qcow2` has the SHA-256 and modification time it had before the run.
+
+### Evidence of the Windows baseline follow-up
+
+Evidence is `package/cli/forbidden-strings/target/verification/windows-baseline-phA1vT`.
+
+- `manifest.json` lists the 128 files of snapshot `s2` with their hashes,
+  each variant's hash,
+  the earlier snapshot `s1`,
+  the target,
+  toolchain,
+  VM bounds,
+  bridges,
+  exact commands,
+  skipped tests,
+  and teardown facts.
+- `control.json` holds the expected observations beside each campaign's exit code,
+  per-target counts,
+  and failing tests.
+- `logs/` holds the complete guest output of every provisioning step,
+  campaign,
+  probe,
+  and control,
+  the file server's request log,
+  and the stale guest-agent record.
+- `reports/s2-line36` and `reports/s2-full` hold the unpacked `cargo-mutants` reports from the guest,
+  each archive checked against the hash the guest printed.
+- The `.diff` files are the hand-applied variants.
+- The scratch drivers are `prepare.mjs`,
+  `serve.mjs`,
+  `agent.mjs`,
+  `drive.mjs`,
+  `sequence.mjs`,
+  `collect.mjs`,
+  `resume-mutants.mjs`,
+  `extract-report.mjs`,
+  and `retain.mjs`.
+
+`verify:evidence` reports one difference for this directory,
+`clippy.toml`,
+which was not sent because Clippy did not run in the guest,
+and none for `test-g2VM7D`,
+`clippy-wuZQ0I`,
+and `pathname-mutation-N02NWa`.
+It reports two for `pathname-mutation-xxqPFq` and `test-kA3nVK`,
+the two test files `fe805727c` changed after those runs.
+Those counts are as of `c925e8187`;
+`Gates after the follow-up decisions` gives the later ones.
+Only compiled inputs were sent to the guest,
+the same file set as in `Evidence and provenance`;
+no home-directory content or credential was served.
 
 ## Matcher-state audit
 
@@ -1294,6 +2081,25 @@ Major scoped commits:
 - `38cb30dff`: one test per navigation-spelled prefix input,
   committed after the fix and shown failing against the reverted fix in `test-scZsf6`.
 - `01029d830` through `42312f27a`: this document's device-namespace records.
+- `ea62f2558`: `tests/integration.rs` compiles for Windows,
+  with a sharing-violation read-error test there.
+- `16b52146e`: rustdoc on the eight undocumented imports.
+- `3b85b4269`: the pathname-only mutation scope and its task.
+- `fe805727c`: platform-correct cache-root,
+  artifact-layout,
+  and repository-relative name tests.
+- `11f20de74`: the `lint:clippy:windows` task.
+- `c5d3d04ea`: README entries for the pathname mutation scope and the `lint:clippy:windows` task.
+- `cd1b9d1db`: the mutation runner's `--list` flag.
+- `aaf4c08e7`: the platform's blocked-cache-root reason in the two tests,
+  with `tests/support/blocked_root.rs`.
+- `40fb4cdef`: README statement of that platform difference.
+- `703a1c21d`: the two operator mutations excluded by the human's decision.
+- `047c60c40`: README statement of those exclusions and of the `--list` flag.
+- `e3cdee512`,
+  `f7362e0d7`,
+  and later `docs(handover)` commits:
+  this document's `Windows baseline follow-up`.
 
 Both READMEs and this evidence document are rendered through the installed CommonMark HTML-tree pipeline.
 Trees and readable rendered text remain in `target/verification/docs`.
@@ -1302,5 +2108,12 @@ That check exposed and corrected README bold spans split across line endings.
 The main agent should inspect the terminal results,
 retained mutant classifications,
 source inventories,
-and the open findings in `Windows-native follow-up` before any production cutover.
-No human response is needed to continue this scoped queue.
+and the findings in `Windows-native follow-up` and `Windows baseline follow-up` before any production cutover.
+The scoped Linux queue needed no human response.
+The Windows baseline needed one,
+`Reason reported for a cache root blocked by a regular file`,
+which was decided as option A on 2026-10-05 and applied.
+What remains is a Windows run:
+the two changed tests have not run there,
+so the Windows suite has not been observed green.
+`Decisions left after the Windows baseline follow-up` lists two further choices that block nothing.

@@ -221,6 +221,140 @@ Time: 0.008
 OK (2 tests)
 ```
 
+## Separate incident: mid-session SIGSEGV under llvmpipe in a container (2026-10-05)
+
+This is recorded here as the nearest topic.
+It is not shown to be the SwiftShader boot crash:
+the emulator version,
+renderer and timing all differ.
+
+Android Emulator 37.2.12.0 (build_id 16428233) ran an owned Pixel 9 Pro Fold
+AVD copy headlessly under Xvfb in `podman run --memory=6g --cpus=2`,
+with `-gpu host -feature -Vulkan -memory 4096 -cores 2`.
+Startup reported:
+
+```text
+# Android Emulator startup diagnostic
+ERROR        | Your GPU cannot be used for hardware rendering. Consider using software rendering.
+INFO         | Graphics Adapter Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))
+```
+
+The guest booted and worked for about 16 minutes,
+through 24 screenshot captures,
+then the emulator crashed during scripted touch input.
+The container's shell printed `Segmentation fault (core dumped)` and the
+emulator command returned `139`.
+`coredumpctl info` names the emitter and signal:
+
+```text
+# coredumpctl info 2301587
+Executable: .../emulator/qemu/linux-x86_64/qemu-system-x86_64-headless
+Signal: 11 (SEGV)
+Stack trace of thread 229:
+#0  0x00007fc75dd89adc n/a (/usr/lib/x86_64-linux-gnu/libc.so.6 + 0x19badc)
+```
+
+Only that frame was resolved,
+so the faulting emulator code is not identified.
+The owner log's last lines before the fault were repeated
+`gles_v2_imp.cpp:... error null ctx` messages from the GL translator.
+An earlier visit with the same command that completed normally logged the
+same message,
+so those lines do not distinguish the crash.
+Host load averaged about 40 to 50 at the time;
+no out-of-memory event was looked for.
+
+The same container command completed whole visits before and after this
+crash,
+so it is intermittent on this host.
+No workaround was verified;
+the visit was repeated.
+A crash leaves the guest's changed settings and the AVD's lock in place;
+see [the lock recurrence](android-emulator-37-disposable-avd-lock-after-hard-stop.md).
+
+### Second occurrence the same day
+
+The same container command crashed again later on 2026-10-05,
+about a quarter of an hour after its start,
+after twelve first-run study states had been captured.
+The emulator's output again ended with `Segmentation fault (core dumped)`
+and the owner exited with status 1.
+`coredumpctl list --since 19:00` reported `No coredumps found`,
+so no stack was read this time.
+The host's one-minute load average had risen from under 1 to between 70
+and 96 during the visit,
+driven by other work on the host.
+That both crashes came under heavy load is an observation,
+not an established cause.
+
+The next boot's first reading of `font_scale` was `2.0`,
+the value the capture had set before the crash,
+so a crash leaves the last written guest setting on disk.
+The remedy that was used is not a fix for the crash:
+the capture now keeps each finished state in one cohort folder and a later
+boot continues from the first missing state,
+with each view naming the boot that made it.
+
+### Third occurrence the same day
+
+A third crash followed that evening,
+a few minutes into a visit,
+after five views of another study.
+Three of those views had the system keyboard open,
+which the earlier crashed visits never did.
+The emulator's output again ended with `Segmentation fault (core dumped)`.
+The host's load average was between 21 and 30 this time,
+well under the earlier two,
+so heavy load is not required for the crash.
+Whether the keyboard matters is not known from one case.
+
+After this one,
+visits are repeated by a bounded driver until the cohort is complete:
+at most eight visits,
+each in the same 6 GiB,
+2 CPU container,
+stopping early if two visits in a row add no view.
+After each crash it checks for owners and moves the stale locks to a backup,
+as [the lock record](android-emulator-37-disposable-avd-lock-after-hard-stop.md)
+prescribes.
+
+### Fourth and fifth occurrences the same day
+
+Two more visits under that driver ended the same way,
+each with `Segmentation fault (core dumped)` as the emulator's last line:
+one after 19 views,
+with a load average near 27 read a few minutes after it,
+and one after 18 views,
+with a load average of 53 read a few minutes after it.
+During the second of these,
+the agent was also running a browser check in a separate 2 CPU container.
+Between them,
+one visit captured 32 views and shut down without a crash.
+
+So on this host the crash came after 5,
+19 and 18 views in three visits and not at all in a fourth of 32 views.
+That is too few visits to say whether load,
+the keyboard or the number of views decides it.
+The driver's answer stays the same:
+keep every finished view,
+record the crash,
+move the stale locks after the owner checks,
+and boot again.
+
+### A visit that was killed, not a segmentation fault
+
+Later that night a visit ended differently.
+After 59 views in about 25 minutes,
+the emulator's guest process was `Killed` and its command returned `137`.
+The output has no segmentation fault line.
+`podman events` for that container reports its end and no out-of-memory event,
+and the kernel log could not be read without privileges.
+So the cause is not established:
+the 6 GiB bound of the container is a candidate and nothing more.
+The stale locks it left were moved the same way and the next visit booted.
+It is counted here because it interrupts a capture exactly as the crash does,
+and must not be reported as one.
+
 ## Verified workarounds
 
 Use `-gpu host` for this Linux host.

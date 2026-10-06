@@ -1,11 +1,11 @@
-//! What: Load the policy configuration of the repository one invocation selects.
+//! What: Load the policy configuration of the worktree one invocation runs in, and render
+//!       the events configuration loading can produce.
 //! Why: Both wrapped Git commands and `git cli-git check`/`fix` need the same answer:
-//!      which worktree do the caller's global options select, and what does its
-//!      `cli-git.config.jsonc` say.
+//!      what does the `cli-git.config.jsonc` of the worktree Git reported say.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! // const loaded = await loadInvocationConfig(gitPath, globalArgs, overlay);
+//! // const loaded = await loadIdentityConfig(location.identity);
 //! ```
 
 /// Import the sibling modules this lookup combines.
@@ -16,81 +16,34 @@ use super::diagnostics::{
     EngineFailureCode, LEGACY_CONFIG_IGNORED_CODE, render_configuration_warning,
     render_engine_failure,
 };
-use super::worktree_identity::{WorktreeIdentity, resolve_worktree_identity, worktree_root};
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
-///       must be UTF-8).
-/// Why:  The caller's global options are replayed to Git unchanged.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// // string[] argv, but byte-preserving.
-/// ```
-use std::ffi::OsString;
-/// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw OS bytes.
-use std::path::{Path, PathBuf};
+use super::worktree_identity::{WorktreeIdentity, worktree_root};
+/// `PathBuf` is an owned filesystem path of raw OS bytes.
+use std::path::PathBuf;
 
-/// What: Why configuration could not be loaded for an invocation.
-///       `#[derive(...)]` generates cloning, debug printing and `==`.
-/// Why:  A rejected configuration is reported as a `config-invalid` event on the
-///       caller's event stream; a repository that could not be inspected is a wrapper
-///       failure reported in prose. Callers need to tell them apart.
+/// What: Load the configuration for the worktree Git reported for this invocation.
+///       `&WorktreeIdentity` borrows that answer;
+///       `Result<LoadedConfig, ConfigError>` is the settings or the rejection.
+/// Why:  The caller already asked Git where the command runs, once, so this function
+///       starts no process. Outside a worktree (no repository, a bare repository, the
+///       inside of `.git`) there is no configuration file and the defaults apply.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type InvocationConfigError = { kind: 'configuration'; error: ConfigError } | { kind: 'repository'; message: string };
+/// async function loadIdentityConfig(identity: WorktreeIdentity): Promise<LoadedConfig>;
 /// ```
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum InvocationConfigError {
-    /// The configuration file, or a legacy file needing migration, was rejected.
-    Configuration(ConfigError),
-    /// Real Git could not be asked, or its answer could not be interpreted.
-    Repository(String),
-}
-
-/// What: Load the configuration for the worktree the global options select.
-///       `&[OsString]` borrows the arguments before the subcommand;
-///       `Result<LoadedConfig, InvocationConfigError>` is the settings or the typed failure.
-/// Why:  Git itself reports which worktree applies. Outside a worktree (no repository,
-///       a bare repository, the inside of `.git`) there is no configuration file and
-///       the unconfigured defaults apply.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// async function loadInvocationConfig(realGit, globalPrefix, overlay): Promise<LoadedConfig>;
-/// ```
-pub fn load_invocation_config(
-    real_git: &Path,
-    global_prefix: &[OsString],
-    overlay: &[(OsString, OsString)],
-) -> Result<LoadedConfig, InvocationConfigError> {
-    // What: `match` on the query `Result`: keep the identity or convert the error.
-    //       `Err(...)` is the failure variant returned to the caller.
-    // Why:  A query that cannot run or cannot be interpreted must stop the command.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let identity; try { identity = await resolveWorktreeIdentity(...); } catch (e) { throw repositoryError(e); }
-    // ```
-    let identity: WorktreeIdentity =
-        match resolve_worktree_identity(real_git, global_prefix, overlay) {
-            Ok(resolved) => resolved,
-            Err(error) => return Err(InvocationConfigError::Repository(error.to_string())),
-        };
+pub fn load_identity_config(identity: &WorktreeIdentity) -> Result<LoadedConfig, ConfigError> {
     // `let Some(root) = ... else { ... };` unwraps the worktree top level or exits.
-    let Some(root) = worktree_root(&identity) else {
-        // `Ok(...)` is the success variant: no worktree means unconfigured defaults.
+    let Some(root) = worktree_root(identity) else {
+        // `Ok(...)` is the success variant: no worktree means the defaults.
         return Ok(LoadedConfig {
-            config: CliGitConfig::unconfigured(),
+            config: CliGitConfig::defaults(),
             // `None` records that no file was read.
             source: None,
             // `Vec::new()` is the empty owned list.
             ignored_legacy: Vec::<PathBuf>::new(),
         });
     };
-    match load_repository_config(root) {
-        Ok(loaded) => return Ok(loaded),
-        Err(error) => return Err(InvocationConfigError::Configuration(error)),
-    }
+    return load_repository_config(root);
 }
 
 /// What: Render the `config-invalid` event for a rejected configuration.

@@ -2,6 +2,8 @@
 
 /// Native source state and tree presentation share one event-loop thread.
 use super::{AppWindow, Navigation, State, line, present};
+/// A language target names a file and a place in it; the caret goes there once the file is shown.
+use crate::native::language::{Jump, place};
 /// Reuse the same revision-aware classification application as external reloads.
 use crate::native::{reload::apply_syntax, render};
 /// Identity exhaustion reports an error rather than reusing an obsolete file generation.
@@ -42,6 +44,8 @@ pub(super) fn request_at(
     target_line: Option<usize>,
 ) -> Result<()> {
     navigation.pending_line = None;
+    // Every new open intent replaces a language target that was still waiting for its file.
+    source.borrow_mut().pending_jump = None;
     if source.borrow().file_path.as_ref() == Some(&path) {
         navigation.opener.cancel()?;
         navigation.reveal = Some(path);
@@ -64,10 +68,53 @@ pub(super) fn request_at(
     return Ok(());
 }
 
+/// What: Open the file of a language target and put the caret at the target once it is shown.
+///       `Jump` names the canonical path, whether it lies outside the project, and the place.
+/// Why: Project files go through the ordinary open (history, tree reveal, badges); a file outside
+///      the project is read without project resolution and gets neither history nor reveal. The
+///      displayed file itself is not reopened: the caret moves at once.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function requestJump(window, source, navigation, jump: Jump): void
+/// ```
+pub(in crate::native) fn request_jump(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    navigation: &mut Navigation,
+    jump: Jump,
+) -> Result<()> {
+    if source.borrow().file_path.as_ref() == Some(&jump.path) {
+        // A waiting open of another file must not replace the file the target is in.
+        navigation.opener.cancel()?;
+        navigation.pending_line = None;
+        source.borrow_mut().pending_jump = None;
+        place(window, source, &jump);
+        focus_source(window);
+        return Ok(());
+    }
+    if jump.outside {
+        navigation.pending_line = None;
+        navigation.opener.request_outside(jump.path.clone())?;
+        source.borrow_mut().navigation_error = None;
+    } else {
+        request_at(window, source, navigation, jump.path.clone(), None)?;
+    }
+    tracing::debug!(path = %jump.path.display(), outside = jump.outside, "requested a language target's file");
+    // `Some(jump)` keeps the target until its file is installed; any later open intent clears it.
+    source.borrow_mut().pending_jump = Some(jump);
+    render(window, source);
+    return Ok(());
+}
+
 /// Read failures do not replace readable source or promote a failed path into history.
 pub(super) fn failed(window: &AppWindow, source: &Rc<RefCell<State>>, message: String) {
     tracing::warn!(%message, "project source open failed; retaining displayed source");
-    source.borrow_mut().navigation_error = Some(message);
+    let mut current = source.borrow_mut();
+    current.navigation_error = Some(message);
+    // The target belonged to the open that failed.
+    current.pending_jump = None;
+    drop(current);
     render(window, source);
 }
 
@@ -80,6 +127,7 @@ pub(super) fn apply(
 ) -> Result<()> {
     // Own the resolved identity for history/reveal after the document moves into its native owner.
     let path = opened.path;
+    let outside = opened.outside_project;
     let mut current = source.borrow_mut();
     let changed = current.file_path.as_ref() != Some(&path);
     if changed {
@@ -105,12 +153,21 @@ pub(super) fn apply(
         }
     }
     current.navigation_error = None;
+    current.outside_project = outside;
     let lines = current.document.text().len_lines();
+    // `take` moves a waiting language target out; it applies only to the file it names.
+    let jump = current.pending_jump.take();
     drop(current);
-    // Promote only successful opens; canonical aliases share the existing history slot.
-    navigation.recent.opened(path.clone());
-    navigation.reveal = Some(path.clone());
+    if outside {
+        // A file outside the project has no tree row and is not a Ctrl+digit history entry.
+        navigation.reveal = None;
+    } else {
+        // Promote only successful opens; canonical aliases share the existing history slot.
+        navigation.recent.opened(path.clone());
+        navigation.reveal = Some(path.clone());
+    }
     window.set_file_label(SharedString::from(path.display().to_string()));
+    window.set_file_outside_project(outside);
     window.set_source_available(true);
     if changed {
         window.set_total_lines(lines as i32);
@@ -119,11 +176,15 @@ pub(super) fn apply(
     if let Some(target) = navigation.pending_line.take() {
         line::reveal(window, source, target);
     }
+    // Every other open intent cleared the target, so a waiting one belongs to this file.
+    if let Some(target) = jump {
+        place(window, source, &target);
+    }
     render(window, source);
     present::update(window, source, navigation);
     if !window.get_search_open() {
         focus_source(window);
     }
-    tracing::info!(path = %path.display(), changed, "project source open presented");
+    tracing::info!(path = %path.display(), changed, outside, "project source open presented");
     return Ok(());
 }

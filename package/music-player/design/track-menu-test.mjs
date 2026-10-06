@@ -1,5 +1,4 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -54,20 +53,19 @@ try {
   const crop = spawnSync('magick', ['-limit', 'thread', '2', '-limit', 'memory', '256MiB', sourcePath,
     '-crop', `${view.cropPixels.width}x${view.cropPixels.height}+0+1`, '+repage', '-strip', '-define', 'png:exclude-chunks=all', 'PNG24:' + imagePath], { encoding: 'utf8' });
   if (crop.status !== 0) throw new Error('Synthetic changed-inset fixture failed: ' + crop.stderr);
-  view.sha256 = createHash('sha256').update(readFileSync(imagePath)).digest('hex');
   writeFileSync(join(evidence, manifestName), JSON.stringify(changedInset));
   positive();
   writeFileSync(imagePath, original);
   writeFileSync(join(evidence, manifestName), JSON.stringify(manifest));
-  for (const [field, value] of [['sha256', '0'.repeat(64)], ['nativeLongPress', false], ['allActionsInitiallyVisible', false],
-    ['targetIndex', 99], ['renderer', 'different-renderer'], ['containerImageId', 'different-image']]) {
+  for (const [field, value] of [['nativeLongPress', false], ['allActionsInitiallyVisible', false],
+    ['targetIndex', 99], ['renderer', 'different-renderer']]) {
     const input = structuredClone(manifest);
     input.witnesses[0][field] = value;
-    reject({ input, diagnostic: 'digest, native input, heading or acquisition assertion differs' });
+    reject({ input, diagnostic: 'image, native input, heading or acquisition assertion differs' });
   }
   const heading = structuredClone(manifest);
   heading.witnesses[0].heading.lines = 8;
-  reject({ input: heading, diagnostic: 'digest, native input, heading or acquisition assertion differs' });
+  reject({ input: heading, diagnostic: 'image, native input, heading or acquisition assertion differs' });
   const badCrop = structuredClone(manifest);
   badCrop.witnesses[0].cropPixels.y++;
   reject({ input: badCrop, diagnostic: 'measured application bounds' });

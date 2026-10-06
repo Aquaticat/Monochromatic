@@ -319,16 +319,22 @@ pub fn parse_options(
         leading: Vec::<usize>::new(),
         boundary: Boundary::End,
     };
-    let mut index: usize = 0;
-    while index < arguments.len() {
+    // True while the token being visited is the value of the option before it.
+    let mut is_value: bool = false;
+    // `.iter().enumerate()` visits every token once with its position, so the scan always
+    // ends: an option only says whether the next token is its value.
+    for (index, argument) in arguments.iter().enumerate() {
+        if is_value {
+            is_value = false;
+            continue;
+        }
         // `.as_encoded_bytes()` lends the raw bytes; nothing is decoded or copied.
-        let token: &[u8] = arguments[index].as_encoded_bytes();
+        let token: &[u8] = argument.as_encoded_bytes();
         // `if let Some(flag) = ...` runs the block only when a value is present.
         if let Some(flag) = wrapper_flag_index(token, wrapper_flags) {
             parsed
                 .wrapper
                 .push(WrapperOccurrence { flag, token: index });
-            index += 1;
             continue;
         }
         // A token not starting with `-`, the empty token and a lone `-` are not options (1011).
@@ -338,7 +344,6 @@ pub fn parse_options(
                 break;
             }
             parsed.leading.push(index);
-            index += 1;
             continue;
         }
         // A lone `-h` asks for usage (1050); a lone completion request prints the table
@@ -356,7 +361,7 @@ pub fn parse_options(
         }
         if token[1] != b'-' {
             // `?` returns the failure to our caller, or unwraps the success value.
-            index += scan_short_cluster(arguments, index, table, mode, &mut parsed)?;
+            is_value = scan_short_cluster(arguments, index, table, mode, &mut parsed)?;
             continue;
         }
         if token.len() == 2 {
@@ -375,7 +380,7 @@ pub fn parse_options(
                 token: index,
             });
         }
-        index += scan_long_option(arguments, index, table, mode, &mut parsed)?;
+        is_value = scan_long_option(arguments, index, table, mode, &mut parsed)?;
     }
     // `Ok(x)` is the success case of `Result`.
     return Ok(parsed);

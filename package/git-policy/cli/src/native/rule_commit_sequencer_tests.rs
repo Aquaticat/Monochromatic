@@ -87,6 +87,20 @@ fn reads_exact_query_output() {
             b"/a\nb/REVERT_HEAD".to_vec()
         ])
     );
+    // The shortest complete answer: three names of an empty directory part, as Git prints
+    // them from inside the Git directory without an absolute format. One byte less is refused.
+    assert_eq!(
+        sequencer_head_paths(b"MERGE_HEAD\nCHERRY_PICK_HEAD\nREVERT_HEAD\n"),
+        Ok(vec![
+            b"MERGE_HEAD".to_vec(),
+            b"CHERRY_PICK_HEAD".to_vec(),
+            b"REVERT_HEAD".to_vec()
+        ])
+    );
+    assert_eq!(
+        sequencer_head_paths(b"MERGE_HEAD\nCHERRY_PICK_HEAD\nREVERT_HEAD"),
+        Err(SequencerOutputError)
+    );
     for malformed in [
         &b""[..],
         b"/r/.git/MERGE_HEAD\n",

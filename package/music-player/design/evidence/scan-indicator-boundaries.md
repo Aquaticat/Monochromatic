@@ -9,6 +9,9 @@ menu actions,
 D83 overlay placement,
 notification presentation,
 D27 consent choices or D81's Settings-template requirement.
+D84 (2026-10-05) supersedes D27's consent choices:
+true-peak analysis is automatic and not optional.
+D26's scan bar stands and this study is unchanged by it.
 
 D26 selects a bottom-edge 56dp bar with analysis text and counts plus an
 always-rendered 100dp-wide Pause/Resume control.
@@ -223,17 +226,22 @@ Its builder holds 86 named rules,
 one per line.
 Validation re-measures every label clearance from the embedded images,
 so those figures are not only asserted by the manifest.
-The status readings stay read by eye and bound by hash.
+The status readings stay read by eye;
+the manifest names each image they were read from by its digest.
 The consumer test rejects 106 changed inputs,
 at least one per rule,
 and checks HTML escaping behind the rule that normally hides it.
 Each of the 86 rules and the escape was deleted once in a disposable copy;
 the test failed on that rule by name every time.
+Those counts are the publication's.
+D88 (2026-10-05) removed the builder's digest rules,
+which leaves 82 rules and 102 rejected inputs;
+the test passed again and the built page did not change.
 The [review verification record](../questions/evidence/scan-indicator-review-verification.json)
-binds exact viewer,
+records that check of the viewer,
 builder,
 test,
-manifest and native-result digests.
+manifest and native result.
 
 An independent read-only review by a separate agent session,
 given the code without this session's conclusions,

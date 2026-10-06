@@ -379,36 +379,78 @@ impl MarkdownSource {
         return Ok(false);
     }
 
-    /// Collect only text and inline-code values, matching the incumbent's collectText helper.
-    pub fn text_content(&self, id: u32) -> String {
-        let mut output = String::new();
-        let mut pending = vec![id];
-        while let Some(current) = pending.pop() {
-            let kind = self.kind(current);
+    /// What: A node followed by all its descendants, in source order.
+    /// Why: Every descendant walk goes through this one bounded loop, the downward twin of `ancestors`.
+    /// A tree holds each node once, so a walk that has visited more nodes than the document has
+    /// has found a cycle in the child index, and it reports one typed error instead of
+    /// looping until memory runs out. `traversal` rejects such an index when the document is built,
+    /// so the error marks a defect in this crate, never a property of the Markdown input.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// subtree(id: number): number[] // throws MarkdownError when the child index has a cycle
+    /// ```
+    pub fn subtree(&self, id: u32) -> Result<Vec<u32>, MarkdownError> {
+        // Owned list the caller receives; it grows by one id per visited node.
+        let mut visited: Vec<u32> = Vec::new();
+        // A work stack of nodes still to visit, used in place of recursion.
+        let mut pending: Vec<u32> = vec![id];
+        // A fixed range bounds the walk whatever the body does. Each pass visits one node, and `0..=len`
+        // is inclusive: one pass per node of the document, plus the pass that finds nothing waiting.
+        for _ in 0..=self.parents.len() {
+            // `pending.pop()` is `Some(id)` while nodes wait and `None` once the whole subtree was visited.
+            let Some(current) = pending.pop() else {
+                return Ok(visited);
+            };
+            visited.push(current);
+            // Push children last to first, so the first child is visited next.
+            for child in self.children(current).iter().rev() {
+                pending.push(*child);
+            }
+        }
+        return Err(MarkdownError {
+            message: format!(
+                "Markdown node {id} has more descendants than the {} nodes of its document, so the parser's child index has a cycle and the document's structure cannot be trusted. This is a defect in the linter, not in the file: report it with this file.",
+                self.parents.len()
+            ),
+            offset: self.offsets(id).0,
+        });
+    }
+
+    /// What: The text and inline-code values below a node, joined in source order; `Err` reports a child-index cycle.
+    /// Why: This matches the incumbent's collectText helper.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// textContent(id: number): string // throws MarkdownError on a cycle
+    /// ```
+    pub fn text_content(&self, id: u32) -> Result<String, MarkdownError> {
+        let mut output: String = String::new();
+        for current in self.subtree(id)? {
+            let kind: MdastNodeType = self.kind(current);
             if kind == MdastNodeType::Text || kind == MdastNodeType::InlineCode {
                 let reference = decode_string_ref_data(self.data(current));
                 output.push_str(self.text(reference));
             }
-            for child in self.children(current).iter().rev() {
-                pending.push(*child);
-            }
         }
-        return output;
+        return Ok(output);
     }
 
-    /// Collect text descendants in source order for localized text edits.
-    pub fn text_nodes(&self, id: u32) -> Vec<u32> {
-        let mut output = Vec::new();
-        let mut pending = vec![id];
-        while let Some(current) = pending.pop() {
+    /// What: The text nodes below a node, in source order, for localized text edits; `Err` reports a child-index cycle.
+    /// Why: A rule edits the last text node of a heading and needs its id, not only its text.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// textNodes(id: number): number[] // throws MarkdownError on a cycle
+    /// ```
+    pub fn text_nodes(&self, id: u32) -> Result<Vec<u32>, MarkdownError> {
+        let mut output: Vec<u32> = Vec::new();
+        for current in self.subtree(id)? {
             if self.kind(current) == MdastNodeType::Text {
                 output.push(current);
             }
-            for child in self.children(current).iter().rev() {
-                pending.push(*child);
-            }
         }
-        return output;
+        return Ok(output);
     }
 }
 

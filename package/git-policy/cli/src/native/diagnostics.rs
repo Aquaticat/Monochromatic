@@ -23,8 +23,9 @@ pub const LEGACY_CONFIG_IGNORED_CODE: &str = "legacy-config-ignored";
 /// What: The stable causes of an engine failure this foundation and its successors report.
 ///       `#[derive(...)]` generates copying, debug printing and `==`.
 /// Why:  A closed set keeps the wire spelling in one place. Codes that described
-///       plugins and trust are not carried over; which code reports a failed built-in
-///       policy is still undecided and is left to the policy engine.
+///       plugins and trust are not carried over. A shipped policy that could not finish
+///       is reported by cause: `ContentUnavailable` when something it had to read could
+///       not be read, `PolicyIncomplete` when its own machinery failed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -36,8 +37,15 @@ pub enum EngineFailureCode {
     ConfigInvalid,
     /// A fixed transform failed unexpectedly.
     CoreIncomplete,
-    /// Candidate content or transaction state could not be read.
+    /// Something a policy or lifecycle had to read could not be read: a candidate's bytes,
+    /// a repository fact asked of Git, or transaction state. The policy itself is intact;
+    /// its input is missing.
     ContentUnavailable,
+    /// A shipped policy's own machinery failed, so the policy could not finish although
+    /// its input was readable: its rules file could not be loaded, its linter could not
+    /// start, or it hit an internal error. An unreadable candidate or repository fact is
+    /// `ContentUnavailable` instead.
+    PolicyIncomplete,
     /// A proposed patch was not valid.
     PatchInvalid,
     /// A proposed patch no longer applied.
@@ -72,6 +80,7 @@ pub fn engine_failure_code_name(code: EngineFailureCode) -> &'static str {
         EngineFailureCode::ConfigInvalid => return "config-invalid",
         EngineFailureCode::CoreIncomplete => return "core-incomplete",
         EngineFailureCode::ContentUnavailable => return "content-unavailable",
+        EngineFailureCode::PolicyIncomplete => return "policy-incomplete",
         EngineFailureCode::PatchInvalid => return "patch-invalid",
         EngineFailureCode::PatchConflict => return "patch-conflict",
         EngineFailureCode::FixCycle => return "fix-cycle",

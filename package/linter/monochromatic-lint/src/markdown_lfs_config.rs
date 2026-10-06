@@ -53,9 +53,9 @@ pub(crate) fn lfs_endpoints(text: &str) -> Vec<String> {
     let mut endpoints: Vec<String> = Vec::<String>::new();
     for raw_line in text.split('\n') {
         let line: &str = js_trim(raw_line);
-        if line.is_empty() || line.starts_with('#') || line.starts_with(';') {
-            continue;
-        }
+        // Blank lines and `#` or `;` comments need no branch of their own. A blank line has no `=`.
+        // A comment is not a section header, because it does not start with `[`, and its key
+        // starts with the comment character, so it can never equal `url` or `lfsurl`.
         if line.starts_with('[') && line.ends_with(']') {
             // Both brackets are single ASCII bytes and distinct, so the line holds at least two bytes.
             let inner: &str = &line[1..line.len() - 1];

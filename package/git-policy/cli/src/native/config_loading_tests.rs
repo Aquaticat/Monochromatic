@@ -43,6 +43,28 @@ fn recognized_inspection_forms_keep_the_fast_path() {
     }
 }
 
+/// A global option Git refuses, and one whose value is missing, are Git's to report: each skips on its own.
+#[test]
+fn global_option_errors_keep_the_fast_path() {
+    for args in [
+        vec!["--no-such-global-option"],
+        vec!["--no-such-global-option", "commit", "-m", "x"],
+        vec![
+            "-C",
+            "/repo",
+            "--no-such-global-option",
+            "branch",
+            "-D",
+            "topic",
+        ],
+        vec!["-C"],
+        vec!["-c"],
+        vec!["--no-pager", "--git-dir"],
+    ] {
+        assert_eq!(classify(args.as_slice()), ConfigLoading::Skip, "{args:?}");
+    }
+}
+
 /// Mutations remain configuration-requiring even when mixed with a listing flag.
 #[test]
 fn mutation_flags_and_positionals_never_become_false_inspection() {

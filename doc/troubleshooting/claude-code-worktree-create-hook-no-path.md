@@ -2,10 +2,12 @@
 
 ## Status
 
-Diagnosed on 2026-10-05.
-The cause is this repository's hook registration, not a Claude Code defect.
-A workaround is in use;
-the fix is proposed in "Proposed fix" and not applied.
+Diagnosed and fixed on 2026-10-05.
+The cause was this repository's hook registration, not a Claude Code defect.
+The user chose to remove the registration;
+"Fix applied" records the change and what built-in isolation provides afterwards.
+"Worktree settings chosen and tested" records the settings that reduce provisioning to one install command.
+The manual-worktree section stays for worktrees created by hand.
 
 ## Symptom
 
@@ -205,20 +207,160 @@ Tradeoffs:
   a registered command hook replaces the default,
   it does not decorate it.
 
-## Proposed fix
+## Fix applied
 
-Not applied:
-`.claude/settings.local.json` is the user's local configuration,
-and the README change alters what the plugin tells every installer to register.
+On 2026-10-05 the user chose removal over teaching the hook to create worktrees
+(that alternative would move worktree location, branch naming and setup into a title plugin).
 
-- Remove the `WorktreeCreate` entry from `.claude/settings.local.json`
-  and from the settings example in `package/claude-code-plugin/terminal-title/README.md`,
-  along with the `WorktreeCreate` title in that README's event list.
-- Decide `WorktreeRemove` separately after probing whether a non-deleting hook leaves worktrees behind.
-- Alternative that keeps the title:
-  make the handler create the worktree and print its path.
-  That moves worktree policy (location, branch naming, ignored-state copying) into a title plugin,
-  which is a larger ownership change than removing two registrations.
+- The `WorktreeCreate` entry is removed from `.claude/settings.local.json`;
+  a comparison against a backup showed no other difference.
+- `package/claude-code-plugin/terminal-title/README.md` no longer lists `WorktreeCreate` in its event examples
+  or its settings example,
+  and says why it must stay unregistered (commit `495f36355`).
+- The title handler still has its `WorktreeCreate` branch;
+  it is unreachable while the event is unregistered.
+
+Verified in the same session, without restarting Claude Code:
+an Agent launch with `isolation: "worktree"` started,
+which had failed twice before the change.
+A read-only probe inside it reported:
+
+- root `.claude/worktrees/agent-<id>` on branch `worktree-agent-<id>`;
+- `HEAD` at `origin/main` (`aa5f9d2bc`) while local `main` was at `8cd4e9721`,
+  so unpushed local commits are absent from an isolated worktree;
+- no `node_modules` and no `package/cli/forbidden-strings/target/release/forbidden-strings`,
+  so its first commit would hit the scanner failure described under "Verified workarounds" until provisioned;
+- a clean status: the main checkout's uncommitted files are not carried over.
+
+After the probe returned, the worktree directory and its branch were gone.
+`cctt` is still registered on `WorktreeRemove`,
+so a non-deleting hook there did not prevent removal of an unchanged worktree.
+Removal of a worktree that has commits was not tested.
+
+## Worktree settings chosen and tested
+
+On 2026-10-05 the user chose to set both Claude Code `worktree` settings and test them.
+`.claude/settings.local.json` now holds:
+
+```jsonc
+// .claude/settings.local.json
+  "worktree": {
+    "baseRef": "head",
+    "symlinkDirectories": [
+      "package/cli/forbidden-strings/target"
+    ]
+  }
+```
+
+With these settings an isolated agent needs one command before its first commit:
+`mise run prepare:pnpm:install`,
+run from its worktree root.
+
+Two probes tested the settings.
+Each was an isolated agent that inspected its worktree and tried one throwaway commit:
+the first with `node_modules` also listed in `symlinkDirectories`,
+the second with the settings shown here.
+Times are local (UTC-4).
+
+### `baseRef: "head"` starts from the local checkout
+
+The second probe's worktree was created at 15:33 with `HEAD` at `1d7bc0fe7`.
+`git reflog show main` has local `main` at `1d7bc0fe7` from 15:32:36 to 15:34:07.
+`git reflog show origin/main` has the remote-tracking ref at `a9010f435` from 15:32:22 to 15:34:12.
+So the worktree started from the local checkout, not from `origin/main`.
+Before the setting,
+the read-only probe under "Fix applied" had started from `origin/main`.
+
+### A symlinked root `node_modules` fails and is unsafe
+
+The first probe ran with `node_modules` and `package/cli/forbidden-strings/target` both listed.
+Both appeared in the worktree as symbolic links into the main checkout,
+and the scanner executable resolved through its link.
+The first commit still failed in the `git add` step with a policy event.
+The wrapper truncated the message,
+which reads in part:
+
+```text
+"type":"engine-failure","code":"plugin-threw"
+markdown-lint report could not be parsed
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@monochromatic-dev
+"trigger":"pre-forward","policyId":"markdown/autofix"
+```
+
+Which package was missing was not isolated,
+because the event is truncated
+and the probe's check for per-package `node_modules` directories did not run
+(see "The refusal that blocked one probe step").
+
+A root link is also wrong when it does resolve.
+Workspace packages are relative links inside the root directory:
+`readlink node_modules/@monochromatic-dev/git-policy-cli` prints `../../package/git-policy/cli`.
+Through a linked root `node_modules` that path resolves against the main checkout,
+so an isolated agent would import the main checkout's package sources instead of its own.
+`node_modules` was therefore removed from `symlinkDirectories`.
+
+### Linking only the scanner's `target` works after an install
+
+The second probe ran with the settings shown under "Worktree settings chosen and tested".
+
+- `node_modules` did not exist;
+  `package/cli/forbidden-strings/target` was a link into the main checkout.
+- `mise run prepare:pnpm:install` succeeded with no trust prompt in 15.5 seconds
+  (pnpm reported 13.3 seconds).
+  It reused 604 packages from the content-addressable store,
+  downloaded none,
+  and put the virtual store inside the worktree.
+- `git add` and `git commit` of one new Markdown file then succeeded with no policy event,
+  and auto-push published the branch `worktree-agent-<id>`.
+
+### Side effects
+
+- The link is untracked and not ignored:
+  `git status --short` prints `?? package/cli/forbidden-strings/target`.
+  `.gitignore:54` is `target/`,
+  and the `gitignore` manual says a pattern `foo/`
+  "will not match a regular file or a symbolic link foo".
+  Explicit pathspecs are unaffected.
+- The scanner's `target` is shared.
+  A scanner build inside an isolated worktree writes into the main checkout's directory,
+  and every worktree's commit policy runs whichever executable was built last.
+- A worktree with changes is kept.
+  The Agent tool describes isolated worktrees as "auto-cleaned if unchanged";
+  the read-only probe's worktree and branch were removed,
+  and both probes that created files were left in place for the caller.
+- Auto-push publishes the agent's branch,
+  so cleanup has a remote step.
+
+Cleanup order used for the second probe, from the main checkout:
+
+```sh
+# doc/troubleshooting/claude-code-worktree-create-hook-no-path.md
+unlink .claude/worktrees/agent-<id>/package/cli/forbidden-strings/target
+git worktree remove .claude/worktrees/agent-<id>
+git branch --delete --force worktree-agent-<id>
+git push origin --delete worktree-agent-<id>
+```
+
+The link was removed first so that `git worktree remove` needed no `--force`
+and never walked into the shared directory;
+removal with the link still present was not tried.
+The scanner executable in the main checkout was still present afterwards.
+
+### The refusal that blocked one probe step
+
+In the first probe,
+`ls -d package/git-policy/cli/node_modules package/cli/mvm/node_modules 2>&1` was refused before it ran:
+
+```text
+This agent is isolated in the worktree /var/home/user/Monochromatic/.claude/worktrees/agent-a096a5b013ff39b97, but this command feeds node text naming git in a plain command, which cannot be shown to stay inside the worktree. Refusing to run it — a worktree-isolated agent's git operations must target its own worktree. Run the plain command from /var/home/user/Monochromatic/.claude/worktrees/agent-a096a5b013ff39b97.
+```
+
+The command was already running from that worktree root and names no Git operation;
+its paths contain `git-policy` and `node_modules`.
+The text does not occur under `package/`,
+`.claude/` or `doc/` in this repository,
+so the emitter was not identified;
+user-level hooks and Claude Code itself were not searched.
 
 ## Upstream filing decision
 
@@ -240,7 +382,7 @@ because this is not an upstream defect.
     Not applicable.
 6.  Is a minimal fix prototyped?
     Not applicable upstream;
-    the local fix is in "Proposed fix".
+    the local fix is in "Fix applied".
 
 Decision:
 nothing to file upstream,

@@ -38,13 +38,15 @@ struct Candidate {
     unset: bool,
 }
 
-/// What: Record a matched option and return how many tokens it used (1 or 2).
-///       `&mut ParsedOptions` lends the result for writing.
-/// Why:  Exact and abbreviated matches end the same way (`get_value`).
+/// What: Record a matched option and say whether it took the next token as its value.
+///       `&mut ParsedOptions` lends the result for writing; `bool` is true or false.
+/// Why:  Exact and abbreviated matches end the same way (`get_value`). The caller visits
+///       every token once and only needs to know whether to pass over the next one, so
+///       no count is returned that a mistake could turn into "stay on this token".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function accept({ args, index, spec, unset, attached, parsed }): number; // throws OptionError
+/// function accept({ args, index, spec, unset, attached, parsed }): boolean; // throws OptionError
 /// ```
 fn accept(
     arguments: &[OsString],
@@ -52,7 +54,7 @@ fn accept(
     chosen: Candidate,
     attached: Option<usize>,
     parsed: &mut ParsedOptions,
-) -> Result<usize, OptionError> {
+) -> Result<bool, OptionError> {
     let spelling: Spelling = if chosen.unset {
         Spelling::NegatedLong
     } else {
@@ -67,11 +69,8 @@ fn accept(
         value,
         token: index,
     });
-    // `if let Some(OptionValue::Detached { .. }) = value` is true only for a next-token value.
-    if let Some(OptionValue::Detached { .. }) = value {
-        return Ok(2);
-    }
-    return Ok(1);
+    // `matches!(x, pattern)` is true when `x` has that shape: here, a next-token value.
+    return Ok(matches!(value, Some(OptionValue::Detached { .. })));
 }
 
 /// What: Byte index of the first `=` in `bytes`, or the length when there is none.
@@ -99,7 +98,7 @@ fn name_end(bytes: &[u8]) -> usize {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function scanLongOption({ args, index, table, mode, parsed }): number; // throws OptionError
+/// function scanLongOption({ args, index, table, mode, parsed }): boolean; // throws OptionError
 /// ```
 pub(crate) fn scan_long_option(
     arguments: &[OsString],
@@ -107,7 +106,7 @@ pub(crate) fn scan_long_option(
     table: &[OptionSpec],
     mode: ParseMode,
     parsed: &mut ParsedOptions,
-) -> Result<usize, OptionError> {
+) -> Result<bool, OptionError> {
     // `.as_encoded_bytes()` lends the raw bytes of the token without decoding them.
     let token: &[u8] = arguments[index].as_encoded_bytes();
     // Git's `arg`: everything after the two dashes, `=value` included.
@@ -199,8 +198,9 @@ pub(crate) fn scan_long_option(
         return accept(arguments, index, chosen, attached, parsed);
     }
     if mode.keep_unknown {
+        // The unknown token stands alone: the next token is not its value.
         parsed.unknown.push(index);
-        return Ok(1);
+        return Ok(false);
     }
     return Err(OptionError {
         kind: OptionErrorKind::UnknownOption,

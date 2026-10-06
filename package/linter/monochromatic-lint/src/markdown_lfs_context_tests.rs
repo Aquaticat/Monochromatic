@@ -93,6 +93,13 @@ fn the_nearest_regular_configuration_file_marks_the_root() {
         find_lfs_repo_root(&root.join("r/sub/absent/deeper")).expect("search"),
         Some(root.join("r/sub"))
     );
+    // A start path below a regular file cannot hold a configuration. The operating system answers
+    // "not a directory" there, not "not found", and the search walks past it instead of failing.
+    std::fs::write(root.join("r/sub/blocker"), "").expect("regular file");
+    assert_eq!(
+        find_lfs_repo_root(&root.join("r/sub/blocker/deeper")).expect("search past a file"),
+        Some(root.join("r/sub"))
+    );
 }
 
 /// Without a configuration, or with one that declares no endpoint, the rule has no repository.
@@ -225,6 +232,18 @@ fn targets_resolve_to_lfs_plain_and_missing() {
         LfsImageTarget::Missing
     );
     assert_eq!(context.targets.len(), 4);
+    // A trailing separator or dot segment still names the tracked file, as the incumbent's `path.resolve` does.
+    // A fresh repository has an empty cache, so each spelling is read from disk.
+    for spelled in ["pkg/asset/shot.png/", "pkg/./asset/shot.png/."] {
+        let fresh: LfsImageRepo = repository(&fixture.path);
+        assert_eq!(
+            fresh.resolve_target(spelled).expect("resolved from disk"),
+            LfsImageTarget::Lfs {
+                oid: String::from(IMAGE_OID)
+            },
+            "{spelled}"
+        );
+    }
 }
 
 /// Relative destinations, object URLs and image definitions are all candidates; external images are not.

@@ -16,6 +16,10 @@ D13 makes the bar non-permanent:
 it appears during analysis and leaves when analysis finishes.
 D12 rejects a permanent completed-analysis status row.
 D27's consent choices remain settled and are not part of this fit study.
+D84 (2026-10-05) supersedes those consent choices:
+true-peak analysis is automatic and not optional.
+D26's scan bar stands,
+and this fit study drew no consent prompt.
 
 The accepted source is the right frame of
 `package/music-player/design/candidates/scan-ef.dc.html`.
@@ -318,10 +322,10 @@ open-boundary and modal screenshots were inspected.
 Closed-page axe checks report zero violations or incomplete results;
 open-dialog,
 Firefox ESR140 and native accessibility acceptance remain untested.
-`questions/evidence/scan-indicator-review-verification.json` binds the
+`questions/evidence/scan-indicator-review-verification.json` records that check of the
 viewer,
 builder,
-test and evidence digests.
+test and evidence.
 The owned browser container is absent after browser closure.
 
 This scan-indicator item is complete within its declared design/debug scope.

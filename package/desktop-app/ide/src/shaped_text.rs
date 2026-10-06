@@ -1,5 +1,7 @@
 //! Shared shaped rows replace independently centered fallback-font glyph items.
 
+/// Positioned hints and diagnostic marks travel with the frame they were laid out against.
+use crate::annotation_layout::AnnotationFrame;
 /// Canonical source remains in the read-only document.
 use crate::document::Document;
 /// Variable roman and real italic blobs retain stable cache identities.
@@ -39,6 +41,18 @@ use std::borrow::Cow;
 /// ```
 pub const TERMINATOR_MARK: f32 = 9.0;
 
+/// What: Paint role of inlay-hint glyphs, a number outside the syntax roles; `u32` is the brush type of layouts.
+/// Why: The raster paints hint glyphs with the hint ink only, never with a syntax or selection color.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const HINT_ROLE = 65;
+/// ```
+pub const HINT_ROLE: u32 = 65;
+
+/// Font size of hint labels in logical pixels, smaller than the 15 px source text so a label reads as an aside.
+pub const HINT_SIZE: f32 = 13.0;
+
 /// Logical dimensions and scale of the source viewport.
 #[derive(Clone, Copy, PartialEq)]
 pub struct Viewport {
@@ -66,6 +80,14 @@ pub struct ShapedView {
     pub selections: Vec<ReadingRect>,
     /// In-file find rectangles from the same row geometry; filled by the native renderer.
     pub matches: Vec<ReadingRect>,
+    /// What: `Option<AnnotationFrame>` is the frame's positioned hints and diagnostic marks, or nothing.
+    /// Why: The renderer fills it after shaping; rows are never changed by it, so reading geometry ignores it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// annotations?: AnnotationFrame;
+    /// ```
+    pub annotations: Option<AnnotationFrame>,
 }
 
 /// Own font discovery and shaping scratch space, rather than recreate per glyph.
@@ -160,6 +182,31 @@ impl TextShaper {
         for (byte, extra) in spacings {
             builder.push(StyleProperty::LetterSpacing(*extra), *byte..*byte + 1);
         }
+        let mut layout = builder.build(text);
+        layout.break_all_lines(None);
+        return layout;
+    }
+
+    /// Shape one inlay-hint label: the source family in its real italic face at [`HINT_SIZE`], with the
+    /// source font settings, painted in the [`HINT_ROLE`] ink. The label is never part of a source line.
+    pub fn hint_layout(&mut self, text: &str, scale: f32) -> Layout<u32> {
+        let mut builder = self
+            .layouts
+            .ranged_builder(&mut self.fonts, text, scale, true);
+        builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
+            Cow::Borrowed("JetBrains Mono"),
+        )));
+        builder.push_default(StyleProperty::FontSize(HINT_SIZE));
+        builder.push_default(StyleProperty::FontWeight(FontWeight::new(
+            self.typography.weight,
+        )));
+        // The real italic face is registered with the roman one, so no slant is synthesized.
+        builder.push_default(StyleProperty::FontStyle(FontStyle::Italic));
+        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(24.0)));
+        builder.push_default(StyleProperty::Brush(HINT_ROLE));
+        builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
+            Cow::Borrowed(&self.typography.features),
+        )));
         let mut layout = builder.build(text);
         layout.break_all_lines(None);
         return layout;
@@ -277,6 +324,7 @@ impl TextShaper {
             height,
             selections: Vec::new(),
             matches: Vec::new(),
+            annotations: None,
         };
         view.selections = view.selection(document);
         return view;

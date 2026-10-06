@@ -25,12 +25,18 @@ No scan/dismiss answers are changed.
 D84 (2026-10-05) supersedes that separate choice:
 true-peak analysis is automatic and not optional,
 so no ask-before-analysing prompt and no scan/dismiss answer remains.
-The study's explanation ends `After opening a library, choose whether to analyse it.`
-(`first-run-access-witnesses.json`, `bodyText`),
-which predates D84 and no longer matches it.
-The published study is left unchanged,
-because its review verification binds the page by hash;
-correcting that sentence is a follow-up.
+The study first published here ended its explanation with
+`After opening a library, choose whether to analyse it.`,
+which D84 contradicts.
+That study was left alone at first on the ground that its review verification bound the page by hash.
+D88 (2026-10-05) rules that out:
+nothing is locked by hash.
+The study was rebuilt and republished the same day.
+Its explanation now reads
+`True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs.`
+That wording is study copy that no decision chose;
+D84 decides only that analysis is automatic and not optional,
+and when analysis runs is undecided.
 
 ## Fresh source boundary
 
@@ -62,10 +68,15 @@ it is not repair of the previous source.
 
 The owned branch `prototype/music-player-first-run-access` starts from
 `a5560abb223af9f700b9d9465eac1991a02aac07`.
-Captured prototype:
+The first publication captured prototype
 `a534bf5ac985e091cc93d6c663c24d72ad82a91c`.
-Captured APK SHA-256:
-`54603701d6b942128a23c9f070ad55c1283312321aa980daf50469e00cf80398`.
+The rebuilt study captures prototype
+`61e2cf7764f627d40a77bdf6039143e229ad36ea`,
+which changes only the explanation's wording,
+with APK SHA-256
+`c6d6e9b38faee5895881b87cf055343d9904f4ab4d9b765aeecfdbd10f68521b`.
+The commit and digest say what produced the captures;
+nothing is checked against them (D88).
 This is a different source boundary from the current-production audit,
 not a current `MainActivity` equivalence claim.
 
@@ -100,9 +111,10 @@ partial reads with and without results,
 failed/unread scopes with both counts,
 unknown coverage,
 negative counts and unknown scene rejection.
-All 12 first-run tests passed.
+All 12 first-run tests passed,
+and passed again on the rebuilt prototype.
 Fresh unknown-scene and partial-zero guard-removal mutants failed the
-intended targeted assertions;
+intended targeted assertions on both;
 exact restoration,
 complete tests and APK build passed.
 These are fixture proofs,
@@ -110,109 +122,151 @@ not native discovery or gesture tests.
 
 ## Captured cohort and visible boundaries
 
-The owned disposable Fold captured 32 initial views across inner/cover,
-100%/200% native text and light/dark.
-Eight 200% post-swipe attempts were also acquired.
-All acquisitions used fresh hierarchy paths,
-exact dump success,
-keyboard-closed and stable-app-frame checks;
-no hierarchy retry occurred.
+This section describes the rebuilt study.
+The first publication's cohort,
+with its two scrolled views,
+is in git history.
 
-Post-swipe attempts were not automatically promoted to scroll evidence.
-The first crop verifier rejected a repeated app image.
-Separate classification found:
+The owned disposable Fold captured 32 first views:
+the four authored states on the inner and cover panels,
+in light and dark,
+at 100% and 200% native text.
+Every acquisition used a fresh hierarchy path,
+a successful dump,
+a closed keyboard,
+stable app frames and a host created exactly once since its launch.
+No system dialog had to be answered in the captures that were kept.
 
-- Two inner no-source 200% frames with changed retained app RGB and a
-  uniquely identified analysis body displaced vertically by 90 physical
-  pixels.
-  The full final paragraph was inspected in both themes;
-  the title is partly cropped at the top.
-- Six attempts with equal retained RGB and unchanged body coordinates.
-  They remain private no-observed-movement controls,
-  not proof of gesture delivery,
-  inability to scroll or reachability.
+After each first view the content was dragged upward until app pixels
+stopped changing.
+No view moved,
+on either panel at either text size,
+so the rebuilt study has no second views.
+A second,
+independent reading agrees:
+no captured hierarchy marks a container as scrollable.
+That reading can show a difference.
+In the first publication's private hierarchies,
+the one state that moved (inner panel,
+no source,
+200% text) carries the mark,
+and the states that did not move carry none.
+With the shorter explanation the content fits:
+on the inner panel at 200% text the explanation's rectangle ends at 2002
+physical pixels,
+above the navigation area that begins at 2074.
+An unmoved state is still not evidence that a gesture was delivered.
 
-The [witness manifest](../questions/evidence/first-run-access-witnesses.json)
-therefore publishes 32 initial frames and two separately identified
-scroll witnesses.
-The original 40 private records and rejected partial crop output remain
-unchanged;
-verified crops were regenerated in a separate directory.
+The captures span two emulator boots.
+The first boot ended in a segmentation fault of the emulator after twelve
+complete states;
+the second captured the remaining twenty.
+Each view in the
+[witness manifest](../questions/evidence/first-run-access-witnesses.json)
+names its visit.
+Both boots ran the same installed APK,
+and each view was checked in its own environment.
+The crash is recorded in
+`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`.
 
-All complete published app-area regions were inspected,
-including unused left-side area and bottom navigation.
-The paragraph's first and last lines were inspected in the full scrolled
-images.
-Native `Open a folder` and Settings lettering remains visible in the
-initial authored states.
-This does not verify their actual actions,
+All 32 published app-area regions were inspected in full,
+as light and dark pairs,
+including the unused left side of the inner panel and the navigation area.
+Every view draws its title,
+body,
+`Open a folder` and Settings;
+the two analysis states also draw the heading and the new explanation,
+and no view draws the withdrawn sentence.
+At 200% text nothing is cut off on either panel.
+One view,
+`first-run-access-inner-declined-light-s100.png`,
+shows no gesture handle in the navigation strip.
+It was the first capture of its visit and the cause was not established.
+This inspection does not verify the buttons' actions,
 48dp action bounds,
 contrast or accessibility focus.
 
-The initial inner no-source 200% body has a clipped semantic rectangle;
-that alone does not establish that glyphs were missing.
-No visible-ink recovery claim is made.
-The scrolled images demonstrate bounded movement and final-paragraph
-visibility,
-not simultaneous full-heading visibility or universal navigation.
-
-Status strips were removed at 136 inner pixels and 151 cover pixels.
-Retained sizes are 2076 × 2016px and 1080 × 2273px at 390dpi.
+Status strips were removed at the height the system reported for each panel:
+136 inner pixels and 152 cover pixels.
+Retained sizes are 2076 × 2016px and 1080 × 2272px at 390dpi.
+The first publication cut the cover at 151 pixels on a different emulator image.
 Exact retained RGB,
 changed-byte sensitivity,
 opacity,
-essential PNG chunks,
-dimensions and hashes passed.
-No app text entered the removed status strips in the hierarchy census;
-that is not an ink-bound measurement.
+essential PNG chunks and dimensions passed.
+No digest of an image is recorded,
+and nothing is compared with a digest (D88);
+the manifest states the APK digest and commit that produced the captures.
 Raw status-bearing frames,
 hierarchies and logs remain private.
 
 ## Review and lifecycle
 
+This section describes the rebuilt study.
+
 [The first-run evidence review](../questions/first-run-access.html)
 uses settled actions and optional observations only.
 It is not a request to select among state witnesses.
-Its build,
-consumer and rendered-document verification are publication gates,
-not a user-answer gate.
-[The verification summary](../questions/evidence/first-run-access-review-verification.json)
-pins the artifact,
-builder and native manifest.
-All 34 images decoded and opened in the first desktop/light interaction pass.
-Availability combinations,
-optional empty/blank observations,
-inert adversarial notes and representative modal/zoom/pan/focus controls
-were separately exercised in each desktop/mobile light/dark context.
-Four closed-page A/AA axe audits had zero violations or incomplete checks;
-no console errors or document overflow were observed.
-No open-dialog axe audit or Firefox acceptance is claimed.
-Visible closed-page controls met the verifier's 48CSSpx minimum.
-Modal size minima were not independently measured by this consumer script.
+It says that analysis is automatic and not optional,
+and it shows a second view only where content moved,
+which is nowhere in this cohort.
+[The verification record](../questions/evidence/first-run-access-review-verification.json)
+says what was checked and with what result.
+It holds no digest (D88).
 
-The first implicit preview click missed a partly visible target.
-Explicit center scrolling before trusted native input passed the complete
-consumer check without changing the page or native images.
-[The bounded source diagnosis](../../../../doc/troubleshooting/agent-browser-partial-target-center.md)
-records the separate zero-offset control and its verified workaround.
-Fresh exact-cohort and scroll-signal guard-removal tests failed their
-intended assertions,
-then restored consumer tests passed.
-These checks verify this artifact,
+The builder derives the cohort from the captures and checks each image's
+geometry and drawn text from the image and its record.
+It refuses a view that draws the withdrawn sentence,
+a no-audio state that explains analysis,
+a missing state,
+and a drag outcome that disagrees with the kept views or with the
+hierarchy's scrolling mark.
+The consumer test rejects 13 changed manifests,
+accepts a synthetic second view with a displaced body and refuses one without,
+and rejects a ballot,
+the withdrawn sentence in the page and a changed output.
+With each of three named guards deleted from a disposable builder,
+the test failed on the matching rejection;
+restored,
+it passed.
+
+All 32 images decoded and opened in an offline Chromium check.
+The shown views,
+the drag status line,
+optional empty and blank observations,
+inert adversarial notes and one modal with zoom,
+pan,
+reset and focus return were exercised in each of four contexts:
+desktop and phone width,
+light and dark.
+Four closed-page A/AA axe audits had zero violations or incomplete checks;
+no console errors or document overflow were observed,
+and visible closed-page controls met the 48 CSS pixel minimum.
+A desktop light and a phone dark screenshot were looked at.
+No open-dialog audit or Firefox acceptance is claimed.
+These checks verify this page,
 not source recovery or native accessibility.
 
-The native runtime was capped at 6GiB/2CPU.
-The fresh snapshot's recorded font 1.0,
+The native runtime was capped at 6 GiB and 2 CPUs.
+The first boot ended in an emulator crash before restoration.
+Its stale lock files were moved to a backup after no owner was found,
+as `doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`
+prescribes.
+The second boot first read a text size of 200%,
+left by the crash,
+captured the remaining states,
+restored the recorded fields to the first visit's baseline
+(text size 100%,
 light appearance,
-reported panel identifier 2,
-accessibility off/services null and stay-on value 1 were restored and
-read back.
-The owning container exited gracefully;
-container and matching emulator process absence were verified.
+panel opened,
+accessibility off) and read them back.
+The owning container exited with status 0,
+and container and matching emulator process absence were verified.
+Whether the restored text size persists is shown only by the next boot's
+first reading.
 Separate device base-state and override configuration were not retained
 individually,
 so full equality of that configuration is not asserted.
-This is not restoration of an earlier runtime or the original AVD.
 
 ## Remaining implementation gate
 
@@ -228,7 +282,6 @@ No new preference question is justified by this study.
 The human closed custom Android media-notification design in D82:
 accept the standard platform presentation.
 No notification variants or visual preference question follows.
-The next substantive design item is the single IntelliJ-aligned keyboard-map
-revision already requested in `open-questions.md` section 6.
-It remains design-only,
-not authorization for production shortcuts or live playback.
+When this study was first published,
+the next design item was the keyboard-map revision in `open-questions.md` section 6.
+The current queue is in `HANDOFF.md`.

@@ -1,8 +1,10 @@
 //! Screenshot capture: render one frame and read the framebuffer back as pixels.
 //!
-//! This runs on the main (GL-context) thread. It binds the winit framebuffer, composites
-//! the current frame into it, and copies the framebuffer to CPU memory with the renderer's
-//! `ExportMem` primitive. `read_frame` fills a caller-owned buffer (so the 60fps recorder
+//! This runs on the main (GL-context) thread. It binds an offscreen texture the size of the
+//! output mode, composites the current frame into it, and copies it to CPU memory with the
+//! renderer's `ExportMem` primitive. Capturing off screen keeps every capture the size the
+//! screen has now: the window's own back buffer only takes a new size after the next swap,
+//! and nothing swaps while recording or while the parent window is hidden. `read_frame` fills a caller-owned buffer (so the 60fps recorder
 //! can reuse buffers instead of allocating each frame); `capture` builds on it to write a
 //! single PNG. PNG encoding of the raw pixels lives in the `encoder` module, off this
 //! thread, so the recorder's per-tick cost stays minimal.
@@ -11,10 +13,11 @@
 /// Why:      `capture` writes to a caller-provided path.
 use std::path::Path;
 
-/// What:     Grouped `use` of the dmabuf `Fourcc` format tag, the render-element and
-///           renderer types, the `ExportMem` readback trait, `render_output`, and the
-///           `Rectangle`/`Buffer` geometry.
-/// Why:      Everything the readback references. `ExportMem` is the trait that adds
+/// What:     Grouped `use` of the dmabuf `Fourcc` format tag, the render-element, renderer,
+///           and texture types, the `Bind`/`ExportMem`/`Offscreen`/`Texture` traits,
+///           `render_output`, and the `Rectangle`/`Size`/`Buffer` geometry.
+/// Why:      Everything the readback references. `Offscreen` adds `create_buffer`, `Bind`
+///           makes a texture the draw target, `Texture` adds `size`, and `ExportMem` adds
 ///           `copy_framebuffer` / `map_texture` to the renderer.
 ///
 /// In TS you'd write (pseudocode):
@@ -24,10 +27,14 @@ use std::path::Path;
 use smithay::{
     backend::{
         allocator::Fourcc,
-        renderer::{element::surface::WaylandSurfaceRenderElement, gles::GlesRenderer, ExportMem},
+        renderer::{
+            element::surface::WaylandSurfaceRenderElement,
+            gles::{GlesRenderer, GlesTexture},
+            Bind, ExportMem, Offscreen, Texture,
+        },
     },
     desktop::space::render_output,
-    utils::{Buffer, Rectangle},
+    utils::{Buffer, Rectangle, Size},
 };
 
 /// What:     `use anyhow::{Context, Result};`. Error helpers.
@@ -74,9 +81,21 @@ pub const BYTES_PER_PIXEL: usize = 4;
 /// const [w, h] = readFrame(state, buf);
 /// ```
 pub fn read_frame(state: &mut Compositor, buffer: &mut Vec<u8>) -> Result<(u32, u32)> {
-    // What:     `let size = state.backend.window_size();`. Framebuffer size.
-    // Why:      Sets the readback region and the returned dimensions.
-    let size = state.backend.window_size();
+    // What:     `state.output.current_mode()` returns `Option<Mode>`; `.context(...)?` turns
+    //           `None` into an error and unwraps `Some`. `.size` is the physical framebuffer size.
+    // Why:      The output mode is what the screen is now, set as soon as a resize or scale
+    //           change applies. The window's EGL back buffer keeps its old size until the next
+    //           swap, which never comes while recording or while the parent window is hidden.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const size = state.output.currentMode()?.size ?? throwError("no mode");
+    // ```
+    let size = state
+        .output
+        .current_mode()
+        .context("the nested output has no mode to capture")?
+        .size;
 
     // What:     `let width = size.w as u32; let height = size.h as u32;`. Unsigned dims.
     // Why:      The image dimensions are reported as `u32`.
@@ -84,15 +103,49 @@ pub fn read_frame(state: &mut Compositor, buffer: &mut Vec<u8>) -> Result<(u32, 
     let height = size.h as u32;
 
     // What:     A block scoping the render/readback borrows so they end before returning.
-    // Why:      `bind` borrows the backend mutably; release it after copying pixels out.
+    // Why:      The renderer and the capture texture are borrowed mutably; release them after
+    //           copying pixels out.
     {
-        // What:     `let (renderer, mut framebuffer) = state.backend.bind().map_err(...)?;`.
-        //           Bind the framebuffer for drawing; convert a bind error to `anyhow`.
-        // Why:      Need the renderer and target to draw and then read back.
-        let (renderer, mut framebuffer) = state
-            .backend
-            .bind()
-            .map_err(|err| anyhow::anyhow!("binding the framebuffer for readback failed: {err:?}"))?;
+        // What:     `let renderer = state.backend.renderer();`. A mutable borrow of the GLES
+        //           renderer only; the output, space, and texture fields stay usable.
+        // Why:      Capture renders off screen, without the window's back buffer.
+        let renderer = state.backend.renderer();
+
+        // What:     `Size<i32, Buffer>` is a size tagged as buffer pixels (siblings: `Physical`,
+        //           `Logical`); `(w, h).into()` builds it from a tuple.
+        // Why:      Offscreen buffers are sized in buffer pixels.
+        let texture_size: Size<i32, Buffer> = (size.w, size.h).into();
+
+        // What:     `match &state.capture_texture { Some(texture) => ..., None => false }` borrows
+        //           the cached texture, if any, and compares its size with the frame size.
+        // Why:      Reuse one texture across a recording instead of allocating one per frame.
+        let reusable = match &state.capture_texture {
+            Some(texture) => texture.size() == texture_size,
+            None => false,
+        };
+        if !reusable {
+            // What:     `Offscreen::<GlesTexture>::create_buffer(renderer, format, size)` allocates
+            //           a GPU texture the renderer can draw into; `Some(...)` stores it.
+            // Why:      A new frame size needs a texture of that size.
+            let texture: GlesTexture = Offscreen::<GlesTexture>::create_buffer(renderer, Fourcc::Abgr8888, texture_size)
+                .map_err(|err| anyhow::anyhow!("creating the capture texture failed: {err:?}"))?;
+            state.capture_texture = Some(texture);
+        }
+
+        // What:     `.as_mut()` lends the stored texture mutably; `.context(...)?` covers the
+        //           impossible `None` without a panic.
+        // Why:      `bind` needs a mutable borrow of the texture it draws into.
+        let texture = state
+            .capture_texture
+            .as_mut()
+            .context("the capture texture is missing after creation")?;
+
+        // What:     `let mut framebuffer = renderer.bind(texture).map_err(...)?;`. Binds the
+        //           texture as the draw target; the returned target borrows the texture.
+        // Why:      Need a target to draw and then read back.
+        let mut framebuffer = renderer
+            .bind(texture)
+            .map_err(|err| anyhow::anyhow!("binding the capture texture failed: {err:?}"))?;
 
         // What:     `render_output::<_, WaylandSurfaceRenderElement<GlesRenderer>, _, _>(...)
         //           .map_err(...)?;`. Composite the current committed client content.

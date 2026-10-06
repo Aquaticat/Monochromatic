@@ -116,22 +116,6 @@ pub fn value_bytes(arguments: &[OsString], value: OptionValue) -> &[u8] {
     return &arguments[token].as_encoded_bytes()[offset..];
 }
 
-/// What: Whether the wrapper-only flag at list position `flag` was found in option position.
-/// Why:  A command module asks about its own escape hatch by its position in the flag list.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const escaped = parsed.wrapper.some(w => w.flag === flag);
-/// ```
-pub fn has_wrapper_flag(parsed: &ParsedOptions, flag: usize) -> bool {
-    for occurrence in &parsed.wrapper {
-        if occurrence.flag == flag {
-            return true;
-        }
-    }
-    return false;
-}
-
 /// What: Wrapper-only flags found in option position, split into the command's own escape
 ///       hatch and every other flag the caller listed.
 /// Why:  A rule asks "was my hatch written?", while the caller removes all of them by position.

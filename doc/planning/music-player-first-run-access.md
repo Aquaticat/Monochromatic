@@ -13,6 +13,13 @@ Search decisions,
 matcher choices,
 template defaults or IME behavior.
 
+D84 (2026-10-05) supersedes that prompt and its scan answers:
+true-peak analysis is automatic and not optional.
+This plan records the study as it was built before D84;
+its statements about a separate choice to analyse describe that study,
+not current behaviour.
+When analysis runs is not decided by D84.
+
 This continuation is a design-only source audit and authored native study.
 It cannot manufacture source-status signals or bind recovery actions to
 production.
@@ -58,6 +65,7 @@ An available system library opens automatically;
 analysis does not begin merely because it was discovered.
 D27's scan prompt has its recorded scan/dismiss answers,
 and unanalysed music remains playable without invented peak values.
+D84 (2026-10-05) supersedes the scan prompt and those answers.
 
 D9 and D69/D71 require truthful operation/failure boundaries.
 A chosen empty folder does not imply that the device has no music.
@@ -184,6 +192,9 @@ See [the separate install-boundary notes](../troubleshooting/android-37-debug-ap
 
 D10's old `empty-a` statement that the first run analyses every file is
 superseded by D27's separate choice to analyse.
+D84 (2026-10-05) in turn supersedes that separate choice;
+it does not decide when analysis runs,
+so it does not restore the `empty-a` statement either.
 No universal hour/fan prediction is copied from that historical candidate.
 The in-app Settings action is not Android permission settings.
 Source picker cancellation leaves the production callback unused
@@ -233,6 +244,43 @@ The next substantive design item is the whole IntelliJ-aligned keyboard-map
 revision from `open-questions.md` section 6,
 not a notification matrix or binding-by-binding questionnaire.
 Production shortcuts and live playback remain unauthorized.
+
+## Rebuild after D84 (2026-10-05)
+
+D84 made true-peak analysis automatic and not optional,
+which the published explanation contradicted with
+`After opening a library, choose whether to analyse it.`
+The human authorized a rebuild and ruled that nothing is locked by hash (D88).
+
+Prototype `61e2cf7764f627d40a77bdf6039143e229ad36ea` changes only that
+paragraph,
+which now reads
+`True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs.`
+The wording is study copy that no decision chose.
+Its fixture tests and guard-removal mutants passed again.
+
+The rebuilt cohort has 32 first views and no second views:
+with the shorter text nothing scrolls on either panel at either text size.
+Two readings agree on that,
+the drag outcome and the hierarchy's scrolling mark,
+and the first publication's one moved state shows that the mark can appear.
+The captures span two emulator boots because the first ended in a
+segmentation fault;
+each view names its visit.
+All views were inspected in full,
+and one shows no gesture handle in the navigation strip.
+
+The viewer,
+its builder and its test were rewritten to derive the cohort from the
+captures and to compare no digest.
+Build,
+validation,
+the consumer test,
+three guard-removal proofs and a four-context offline browser check passed.
+`package/music-player/design/evidence/first-run-access-boundaries.md`
+holds the scope and limits.
+Everything this plan says about 34 published frames and two scroll
+witnesses describes the first publication.
 
 ## Continuation correction
 

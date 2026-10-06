@@ -1,26 +1,35 @@
 //! What: Decide what one `git cli-git ...` invocation does.
 //! Why: Help, refusals and retired commands need no repository; `check` and `fix`
-//!      validate their policy selection and configuration, then stop until policy
-//!      execution exists.
+//!      validate their policy selection and configuration, then run one policy pass over
+//!      the selected repository and report its events on standard output.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! // const action = planManagement(managementArgs, gitGlobalArgs, environment, inputs);
+//! // const action = planManagement(managementArgs, gitGlobalArgs, controls, environment, inputs);
 //! ```
 
 /// Import the sibling modules the decision combines.
-use super::action::{Action, ENGINE_FAILURE_EXIT_CODE, failure, policy_execution_unavailable};
+use super::action::{Action, ENGINE_FAILURE_EXIT_CODE, failure};
 use super::child_environment::child_environment_overlay;
 use super::config_error::ConfigError;
-use super::invocation_config::{
-    InvocationConfigError, config_invalid_event, legacy_warning_events, load_invocation_config,
-};
+use super::config_file::LoadedConfig;
+use super::invocation_config::{config_invalid_event, legacy_warning_events, load_identity_config};
 use super::management_arguments::{
     MANAGEMENT_HELP, MANAGEMENT_USAGE, ManagementAction, ManagementRefusal, RetiredCommand,
     parse_management_arguments,
 };
-use super::policy_registry::{POLICY_REGISTRY, policy_by_name};
+use super::pending_state::pending_state;
+use super::policy_checks::{CandidateSource, ShippedChecks};
+use super::policy_engine::{StageEnd, StageRequest, pass_exit_code};
+use super::policy_events::render_policy_events;
+use super::policy_pass::{PassResult, run_policy_pass};
+use super::policy_registry::{POLICY_REGISTRY, PolicyId, policy_by_name};
+use super::policy_trigger::Trigger;
 use super::real_git::{ResolutionInputs, resolve_real_git};
+use super::repository_facts::{GitFacts, RepositoryFacts, git_facts};
+use super::repository_location::RepositoryLocation;
+use super::unported::{unported_from_unavailable, unported_notice};
+use super::wrapper_controls::Controls;
 /// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
 /// Why:  Arguments and environment values are never decoded.
@@ -46,6 +55,19 @@ fn direct_name(fix: bool) -> &'static str {
         return "fix";
     }
     return "check";
+}
+
+/// What: The words of a direct command as the caller typed them after `git`.
+///       `String` is owned UTF-8 text.
+/// Why:  A refusal names the command that was not run.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function directCommand(fix: boolean): string { return `cli-git ${directName(fix)}`; }
+/// ```
+fn direct_command(fix: bool) -> String {
+    // `format!` builds owned text; `{}` interpolates the command word.
+    return format!("cli-git {}", direct_name(fix));
 }
 
 /// What: The command word of a retired command.
@@ -128,50 +150,129 @@ fn direct_config_failure(error: &ConfigError) -> Action {
     };
 }
 
-/// What: Find the first selected policy ID that no shipped policy has.
-///       `Option<ConfigError>` is "an error or nothing".
+/// What: What a direct command's content policies need that is not ported.
+///       `&str` is text baked into the program.
+/// Why:  `check` and `fix` read the worktree files their scope selects; a content policy
+///       asked by a direct command reports this as what it is missing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const DIRECT_CANDIDATES_NEED = 'reading the worktree files that git cli-git check and fix select';
+/// ```
+pub const DIRECT_CANDIDATES_NEED: &str =
+    "reading the worktree files that git cli-git check and fix select";
+
+/// What: Turn the selected policy names into policy identities.
+///       `Result<Vec<PolicyId>, ConfigError>` is the identities, or the error naming the
+///       first name no shipped policy has.
 /// Why:  `--policy` selects among shipped policies only; a mistyped ID must stop the
 ///       command instead of selecting nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function unknownSelectedPolicy(policies: string[]): ConfigError | undefined;
+/// function selectedPolicies(names: string[]): PolicyId[]; // throws ConfigError on an unknown name
 /// ```
-fn unknown_selected_policy(policies: &[String]) -> Option<ConfigError> {
-    // `for id in policies` borrows each selected ID in order.
-    for id in policies {
-        if policy_by_name(id.as_str()).is_none() {
-            let mut known: String = String::new();
-            for descriptor in POLICY_REGISTRY {
-                if !known.is_empty() {
-                    known.push_str(", ");
+fn selected_policies(names: &[String]) -> Result<Vec<PolicyId>, ConfigError> {
+    // `Vec::<PolicyId>::new()` is an empty owned list; `mut` allows pushing.
+    let mut selected: Vec<PolicyId> = Vec::<PolicyId>::new();
+    // `for name in names` borrows each selected ID in order.
+    for name in names {
+        // `match` unpacks "a registry row or nothing".
+        match policy_by_name(name.as_str()) {
+            Some(descriptor) => selected.push(descriptor.id),
+            None => {
+                let mut known: String = String::new();
+                for descriptor in POLICY_REGISTRY {
+                    if !known.is_empty() {
+                        known.push_str(", ");
+                    }
+                    known.push_str(descriptor.name);
                 }
-                known.push_str(descriptor.name);
+                // `Err(...)` is the failure variant carrying the error.
+                return Err(ConfigError::new(
+                    format!("Unknown policy ID: {name}. Shipped policies: {known}.").as_str(),
+                ));
             }
-            // `Some(...)` is the "present" variant carrying the error.
-            return Some(ConfigError::new(
-                format!("Unknown policy ID: {id}. Shipped policies: {known}.").as_str(),
-            ));
         }
     }
-    // `None` is the "absent" variant: every selected ID is shipped.
-    return None;
+    // `Ok(...)` is the success variant: every selected ID is shipped.
+    return Ok(selected);
 }
 
-/// What: Decide the action for the arguments after `git cli-git`.
-///       `&[OsString]` borrows argument lists; `&ResolutionInputs` borrows process facts.
-/// Why:  Help, refusals and retired commands answer without resolving Git or reading
-///       any repository. A direct command validates its selection and the selected
-///       repository's configuration, reports legacy files, then stops because policy
-///       execution is not implemented.
+/// What: Run the policy pass of one direct command and build its action.
+///       `&LoadedConfig` borrows the accepted configuration; `&mut ShippedChecks<GitFacts>`
+///       lends the shipped policies over real Git for writing.
+/// Why:  Direct commands report every event on standard output. `check` first reports a
+///       legacy file left beside the JSONC file, and policy events continue its numbering.
+///       A policy that cannot be evaluated here stops the command with exit status 2 and
+///       a notice on standard error, after the events gathered so far.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function planManagement(args, gitGlobalArgs, environment, inputs): Action;
+/// async function runDirectCommand({ fix, selected, controls, loaded, checks }): Promise<Action>;
+/// ```
+fn run_direct_command(
+    fix: bool,
+    selected: Vec<PolicyId>,
+    controls: &Controls,
+    loaded: &LoadedConfig,
+    checks: &mut ShippedChecks<GitFacts>,
+) -> Action {
+    // Only `check` reports a legacy file left beside the JSONC file; `fix` stays silent.
+    let mut stdout: String = if fix {
+        String::new()
+    } else {
+        legacy_warning_events(loaded)
+    };
+    // Each event is one line, so the lines written so far are the next event number.
+    // `.matches('\n').count()` counts them; `as u64` widens the count to the number type.
+    let first_sequence: u64 = stdout.matches('\n').count() as u64;
+    let request: StageRequest = StageRequest {
+        trigger: if fix {
+            Trigger::DirectFix
+        } else {
+            Trigger::DirectCheck
+        },
+        // `.clone()` copies the settings and controls into the request.
+        config: loaded.config.policies.clone(),
+        controls: controls.clone(),
+        selected,
+    };
+    let pass: PassResult = run_policy_pass(&request, checks);
+    // `.as_slice()` lends the owned events as a borrowed view.
+    stdout.push_str(render_policy_events(first_sequence, pass.events.as_slice()).as_str());
+    // `if let StageEnd::Unavailable(x) = ...` runs only for that ending and binds what it carries.
+    let stderr: String = if let StageEnd::Unavailable(unavailable) = pass.end {
+        unported_notice(
+            &unported_from_unavailable(unavailable),
+            direct_command(fix).as_str(),
+        )
+    } else {
+        String::new()
+    };
+    return Action::Exit {
+        code: pass_exit_code(pass.events.as_slice(), pass.end),
+        stdout,
+        stderr,
+    };
+}
+
+/// What: Decide the action for the arguments after `git cli-git`.
+///       `&[OsString]` borrows argument lists; `&Controls` borrows what the wrapper
+///       controls written before `cli-git` asked for; `&ResolutionInputs` borrows process facts.
+/// Why:  Help, refusals and retired commands answer without resolving Git or reading
+///       any repository. A direct command validates its selection, asks Git once where it
+///       runs, refuses beside commit transactions it cannot recover, loads that
+///       worktree's configuration and runs one policy pass.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function planManagement(args, gitGlobalArgs, controls, environment, inputs): Action;
 /// ```
 pub fn plan_management(
     arguments: &[OsString],
     git_global_arguments: &[OsString],
+    controls: &Controls,
     environment: &[(OsString, OsString)],
     inputs: &ResolutionInputs,
 ) -> Action {
@@ -210,31 +311,44 @@ pub fn plan_management(
                 stderr: retired_explanation(command),
             };
         }
-        // `..` ignores the scope fields the stopped command does not use yet.
+        // `..` ignores the scope fields: no ported policy reads the selected files yet.
         ManagementAction::Direct { fix, policies, .. } => (fix, policies),
     };
-    // `if let Some(error) = ...` runs only when a selected ID is unknown.
-    if let Some(error) = unknown_selected_policy(policies.as_slice()) {
-        return direct_config_failure(&error);
-    }
+    let selected: Vec<PolicyId> = match selected_policies(policies.as_slice()) {
+        Ok(ids) => ids,
+        // `&error` lends the error to the renderer.
+        Err(error) => return direct_config_failure(&error),
+    };
     let real_git: PathBuf = match resolve_real_git(inputs) {
         Ok(found) => found,
         Err(error) => return failure(error.to_string().as_str()),
     };
     let overlay: Vec<(OsString, OsString)> =
         child_environment_overlay(environment, real_git.as_path());
-    match load_invocation_config(real_git.as_path(), git_global_arguments, overlay.as_slice()) {
-        Ok(loaded) => {
-            return Action::Exit {
-                code: ENGINE_FAILURE_EXIT_CODE,
-                stdout: legacy_warning_events(&loaded),
-                stderr: policy_execution_unavailable(
-                    format!("cli-git {}", direct_name(fix)).as_str(),
-                ),
-            };
-        }
-        Err(InvocationConfigError::Configuration(error)) => return direct_config_failure(&error),
-        Err(InvocationConfigError::Repository(message)) => return failure(message.as_str()),
+    // `mut` lets the pass cache facts it asks Git for.
+    let mut checks: ShippedChecks<GitFacts> = ShippedChecks {
+        facts: git_facts(real_git.as_path(), git_global_arguments, overlay.as_slice()),
+        // `.to_vec()` copies the borrowed global options for the rule cores.
+        arguments: git_global_arguments.to_vec(),
+        candidates: CandidateSource::NotPorted(DIRECT_CANDIDATES_NEED),
+        // `Vec::new()` is an empty owned list: no direct-command policy reads the tool caches.
+        allowed_worktree_dirs: Vec::<PathBuf>::new(),
+    };
+    let location: RepositoryLocation = match checks.facts.location() {
+        Ok(found) => found,
+        Err(message) => return failure(message.as_str()),
+    };
+    // `true`: a direct command forwards nothing, so only commit transactions matter here.
+    if let Some(what) = pending_state(&location.identity, true) {
+        return Action::Exit {
+            code: ENGINE_FAILURE_EXIT_CODE,
+            stdout: String::new(),
+            stderr: unported_notice(&what, direct_command(fix).as_str()),
+        };
+    }
+    match load_identity_config(&location.identity) {
+        Ok(loaded) => return run_direct_command(fix, selected, controls, &loaded, &mut checks),
+        Err(error) => return direct_config_failure(&error),
     }
 }
 

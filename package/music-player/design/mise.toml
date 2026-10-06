@@ -409,7 +409,7 @@ dir = "{{config_root}}"
 run = "node search-filename-comparison.mjs build"
 
 [tasks."lint:search:filename-comparison"]
-description = "Validate exact filename evidence review content, native hashes and absence of policy voting"
+description = "Validate exact filename evidence review content, native image dimensions and absence of policy voting"
 dir = "{{config_root}}"
 run = "node search-filename-comparison.mjs validate"
 
@@ -434,7 +434,7 @@ dir = "{{config_root}}"
 run = "node first-run-access.mjs build"
 
 [tasks."lint:first-run:access"]
-description = "Validate the exact first-run evidence review, native hashes and no-policy-ballot boundary"
+description = "Validate the first-run evidence review, its image geometry, drawn text and no-policy-ballot boundary"
 dir = "{{config_root}}"
 run = "node first-run-access.mjs validate"
 
@@ -454,7 +454,7 @@ dir = "{{config_root}}"
 run = "node feedback-overlay.mjs validate"
 
 [tasks."test:feedback:overlay"]
-description = "Exercise overlay hash, cohort, hold, acquisition and no-ballot guards in disposable copies"
+description = "Exercise overlay cohort, hold, acquisition and no-ballot guards in disposable copies"
 dir = "{{config_root}}"
 run = "node feedback-overlay-test.mjs"
 
@@ -507,6 +507,31 @@ run = "node settings-pane-test.mjs"
 description = "Exercise first-run review image, metadata, cohort and ballot guards in disposable fixtures"
 dir = "{{config_root}}"
 run = ["node first-run-scroll-evidence-test.mjs", "node first-run-access-test.mjs"]
+
+[tasks."test:template-reference"]
+description = "Exercise the design reference for the supporting-text template language: fields, formats, conditions, error lines and typing help"
+dir = "{{config_root}}"
+run = ["node template-reference-test.mjs", "node template-editor-scenes-test.mjs"]
+
+[tasks."build:template-editor"]
+description = "Build the template editor review from inspected native views of its three preview layouts"
+dir = "{{config_root}}"
+run = "node template-editor.mjs build"
+
+[tasks."lint:template-editor"]
+description = "Validate the template editor review: image geometry, drawn text against the template reference, what each layout keeps in view, and its one question"
+dir = "{{config_root}}"
+run = "node template-editor.mjs validate"
+
+[tasks."verify:template-editor"]
+description = "Build the template editor review before validating its exact committed output"
+dir = "{{config_root}}"
+run = ["node template-editor.mjs build", "node template-editor.mjs validate"]
+
+[tasks."test:template-editor"]
+description = "Prove the template editor review refuses changed evidence, a broken layout claim and a page without its question"
+dir = "{{config_root}}"
+run = "node template-editor-test.mjs"
 
 [tasks."build:search:ranking"]
 description = "Rebuild the archived D/P and M/F/T comparison from sanitized native captures"

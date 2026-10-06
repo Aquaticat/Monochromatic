@@ -45,7 +45,7 @@ use crate::{screen::ScreenState, screen_geometry::ScreenGeometry};
 /// import { Space, Window, Seat, ... } from "smithay";
 /// ```
 use smithay::{
-    backend::renderer::{damage::OutputDamageTracker, gles::GlesRenderer},
+    backend::renderer::{damage::OutputDamageTracker, gles::{GlesRenderer, GlesTexture}},
     backend::winit::WinitGraphicsBackend,
     desktop::{PopupManager, Space, Window},
     input::{Seat, SeatState},
@@ -191,6 +191,13 @@ pub struct Compositor {
     ///           the renderer type it drives.
     /// Why:      Rendering, dmabuf import, and screenshot readback all go through it.
     pub backend: WinitGraphicsBackend<GlesRenderer>,
+
+    /// Offscreen texture screenshots and recordings render into, reused while its size fits.
+    ///
+    /// What:     `pub capture_texture: Option<GlesTexture>`. `None` until the first capture.
+    /// Why:      Captures must have the output's current size at once; the window's back buffer
+    ///           only takes a new size after the next swap.
+    pub capture_texture: Option<GlesTexture>,
 
     /// Damage tracker that decides which screen regions need redrawing.
     ///
@@ -476,6 +483,7 @@ impl Compositor {
             output: pieces.output,
             screen,
             backend: pieces.backend,
+            capture_texture: None,
             damage_tracker,
             dmabuf_state: pieces.dmabuf_state,
             _dmabuf_global: pieces.dmabuf_global,

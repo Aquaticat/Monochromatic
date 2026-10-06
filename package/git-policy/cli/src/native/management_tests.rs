@@ -1,21 +1,25 @@
-//! What: Decision controls for `git cli-git` against real Git 2.56.0.
+//! What: Decision controls for `git cli-git` against real Git.
 //! Why: Help and retired commands must answer without Git or a repository; direct
 //!      commands must reject unknown policies and invalid configuration on standard
-//!      output with exit status 2, and must not run until policies exist.
+//!      output with exit status 2, run the policies that are ported, and refuse instead
+//!      of reporting a clean result for a policy that cannot read its files yet.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! // expect(planManagement(['--help'], [], env, inputs)).toEqual({ kind: 'exit', code: 0, stdout: HELP, stderr: '' });
+//! // expect(planManagement(['--help'], [], controls, env, inputs)).toEqual({ kind: 'exit', code: 0, stdout: HELP, stderr: '' });
 //! ```
 #![cfg(unix)]
 
 /// Import the decision under test and shared fixtures.
-use super::{plan_management, retired_explanation};
+use super::{DIRECT_CANDIDATES_NEED, plan_management, retired_explanation};
 use crate::action::Action;
 use crate::config_file::CONFIG_FILE_NAME;
 use crate::management_arguments::{MANAGEMENT_HELP, MANAGEMENT_USAGE, RetiredCommand};
+use crate::policy_registry::PolicyId;
 use crate::real_git::{Platform, ResolutionInputs};
 use crate::test_support::{executable, fixture, remove, repository};
+use crate::unported::{Unported, unported_notice};
+use crate::wrapper_controls::{Controls, no_controls};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
@@ -41,14 +45,30 @@ fn with_git(root: &Path) -> ResolutionInputs {
     return inputs;
 }
 
-/// Plan management text arguments with `-C <directory>` as the Git global prefix.
-fn plan(values: &[&str], directory: &Path, inputs: &ResolutionInputs) -> Action {
+/// Plan management text arguments with `-C <directory>` as the Git global prefix and these controls.
+fn plan_with(
+    values: &[&str],
+    directory: &Path,
+    controls: &Controls,
+    inputs: &ResolutionInputs,
+) -> Action {
     let mut arguments: Vec<OsString> = Vec::<OsString>::new();
     for value in values {
         arguments.push(OsString::from(value));
     }
     let global: Vec<OsString> = vec![OsString::from("-C"), directory.as_os_str().to_os_string()];
-    return plan_management(arguments.as_slice(), global.as_slice(), &[], inputs);
+    return plan_management(
+        arguments.as_slice(),
+        global.as_slice(),
+        controls,
+        &[],
+        inputs,
+    );
+}
+
+/// Plan management text arguments without any wrapper control before `cli-git`.
+fn plan(values: &[&str], directory: &Path, inputs: &ResolutionInputs) -> Action {
+    return plan_with(values, directory, &no_controls(), inputs);
 }
 
 /// Build the expected stop action.
@@ -60,12 +80,22 @@ fn exit(code: i32, stdout: &str, stderr: &str) -> Action {
     };
 }
 
-/// The stop notice of a direct command.
-fn stopped(command: &str) -> String {
+/// The refusal of a direct command whose content policy cannot read the selected files.
+fn content_refused(policy: PolicyId, command: &str) -> String {
+    return unported_notice(
+        &Unported::PolicyNeeds {
+            policy,
+            needs: DIRECT_CANDIDATES_NEED,
+        },
+        command,
+    );
+}
+
+/// The require-root finding of a direct check run in `nested/` of `repo`, as event number `sequence`.
+fn not_at_root(sequence: u64, repo: &Path) -> String {
     return format!(
-        "cli-git: policy execution is not implemented in this native development \
-         executable, so git cli-git {command} was not run. Repository-changing commands \
-         still require the installed cli-git.\n"
+        "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"require-root\",\"severity\":\"error\",\"code\":\"require-root/not-at-root\",\"message\":\"cli-git: not at the root of the git repository. Repo root is {root} but effective cwd is {root}/nested. Tip: cd to {root} or pass -C {root} before the subcommand.\",\"fix\":\"none\"}}\n",
+        root = repo.display()
     );
 }
 
@@ -193,15 +223,22 @@ fn unknown_selected_policy_is_reported_on_stdout() {
     remove(root.as_path());
 }
 
-/// A well-formed direct command resolves Git, validates configuration, then stops.
+/// A direct command runs the ported policies and refuses at the first content policy that is on.
 #[test]
-fn direct_commands_validate_configuration_then_stop() {
+fn direct_commands_run_ported_policies_and_refuse_content_policies() {
     let root: PathBuf = fixture("management-direct");
     let repo: PathBuf = repository(root.as_path(), "repo");
+    let nested: PathBuf = repo.join("nested");
+    std::fs::create_dir(&nested).expect("nested directory");
     let inputs: ResolutionInputs = with_git(root.as_path());
+    // Default settings: the built-in content policy is on and cannot read the selected files.
     assert_eq!(
         plan(&["check", "--all"], repo.as_path(), &inputs),
-        exit(2, "", stopped("check").as_str())
+        exit(
+            2,
+            "",
+            content_refused(PolicyId::FinalNewline, "cli-git check").as_str()
+        )
     );
     assert_eq!(
         plan(
@@ -217,14 +254,105 @@ fn direct_commands_validate_configuration_then_stop() {
             repo.as_path(),
             &inputs
         ),
-        exit(2, "", stopped("fix").as_str())
+        exit(
+            2,
+            "",
+            content_refused(PolicyId::FinalNewline, "cli-git fix").as_str()
+        )
     );
-    // Outside a repository there is no configuration to reject.
+    // Outside a repository there is no configuration to reject and the same policy is on.
     assert_eq!(
         plan(&["check", "--all"], root.as_path(), &inputs),
-        exit(2, "", stopped("check").as_str())
+        exit(
+            2,
+            "",
+            content_refused(PolicyId::FinalNewline, "cli-git check").as_str()
+        )
     );
-    // Invalid configuration is an event on standard output, with no stop notice.
+    // Selecting only ported policies gives a real answer: clean at the top level ...
+    for arguments in [
+        vec!["check", "--all", "--policy", "require-root"],
+        vec!["check", "--policy=require-root", "--", "a.txt"],
+        // ... and nothing at all for policies that do not run for a direct command.
+        vec!["check", "--all", "--policy", "linked-worktree-only"],
+        vec!["fix", "--all", "--policy", "require-root"],
+        vec!["fix", "--all", "--policy", "add-explicit"],
+    ] {
+        assert_eq!(
+            plan(arguments.as_slice(), repo.as_path(), &inputs),
+            exit(0, "", ""),
+            "{arguments:?}"
+        );
+    }
+    // ... and a finding on standard output, with exit status 1, below the top level.
+    assert_eq!(
+        plan(
+            &["check", "--all", "--policy", "require-root"],
+            nested.as_path(),
+            &inputs
+        ),
+        exit(1, not_at_root(0, repo.as_path()).as_str(), "")
+    );
+    // A direct fix has no require-root policy to run, wherever it is typed.
+    assert_eq!(
+        plan(
+            &["fix", "--all", "--policy", "require-root"],
+            nested.as_path(),
+            &inputs
+        ),
+        exit(0, "", "")
+    );
+    remove(root.as_path());
+}
+
+/// The first error stops a direct check; keep-going and escapes written before `cli-git` apply.
+#[test]
+fn controls_before_the_namespace_reach_a_direct_command() {
+    let root: PathBuf = fixture("management-controls");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let nested: PathBuf = repo.join("nested");
+    std::fs::create_dir(&nested).expect("nested directory");
+    let inputs: ResolutionInputs = with_git(root.as_path());
+    // Without a control the require-root error ends the pass before the content policy.
+    assert_eq!(
+        plan(&["check", "--all"], nested.as_path(), &inputs),
+        exit(1, not_at_root(0, repo.as_path()).as_str(), "")
+    );
+    // Keep-going reports the finding and then reaches the content policy, which cannot answer.
+    let mut keep_going: Controls = no_controls();
+    keep_going.keep_going = true;
+    assert_eq!(
+        plan_with(&["check", "--all"], nested.as_path(), &keep_going, &inputs),
+        exit(
+            2,
+            not_at_root(0, repo.as_path()).as_str(),
+            content_refused(PolicyId::FinalNewline, "cli-git check").as_str()
+        )
+    );
+    // An escape skips its policy.
+    let mut escaped: Controls = no_controls();
+    escaped.escaped.push(PolicyId::RequireRoot);
+    assert_eq!(
+        plan_with(
+            &["check", "--all", "--policy", "require-root"],
+            nested.as_path(),
+            &escaped,
+            &inputs
+        ),
+        exit(0, "", "")
+    );
+    remove(root.as_path());
+}
+
+/// Configuration decides which policies a direct command runs, and `check` alone reports a legacy file.
+#[test]
+fn direct_commands_use_the_repository_configuration() {
+    let root: PathBuf = fixture("management-configured");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let nested: PathBuf = repo.join("nested");
+    std::fs::create_dir(&nested).expect("nested directory");
+    let inputs: ResolutionInputs = with_git(root.as_path());
+    // Invalid configuration is an event on standard output, with no refusal notice.
     let source: PathBuf = repo.join(CONFIG_FILE_NAME);
     std::fs::write(&source, r#"{ "trust": { "children": true } }"#).expect("invalid config");
     assert_eq!(
@@ -239,21 +367,102 @@ fn direct_commands_validate_configuration_then_stop() {
             ""
         )
     );
-    // A legacy file beside valid configuration is a warning event on standard output.
-    std::fs::write(&source, "{}").expect("valid config");
-    std::fs::write(repo.join("cli-git.config.ts"), "export default {};").expect("legacy config");
+    // With every content policy off, an unfiltered check and fix are complete and clean.
+    std::fs::write(&source, r#"{ "policies": { "final-newline": "off" } }"#).expect("valid config");
+    assert_eq!(
+        plan(&["check", "--all"], repo.as_path(), &inputs),
+        exit(0, "", "")
+    );
     assert_eq!(
         plan(&["fix", "--all"], repo.as_path(), &inputs),
+        exit(0, "", "")
+    );
+    // A listed optional policy is on and cannot read the selected files.
+    std::fs::write(
+        &source,
+        r#"{ "policies": { "final-newline": "off", "mono/forbidden-root-context": "error" } }"#,
+    )
+    .expect("valid config");
+    assert_eq!(
+        plan(&["check", "--all"], repo.as_path(), &inputs),
         exit(
             2,
-            format!(
-                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\"}}\n",
-                legacy = repo.join("cli-git.config.ts").display(),
-                jsonc = source.display()
-            )
-            .as_str(),
-            stopped("fix").as_str()
+            "",
+            content_refused(PolicyId::ForbiddenRootContext, "cli-git check").as_str()
         )
+    );
+    // That policy does not run for a direct fix, so the fix is complete.
+    assert_eq!(
+        plan(&["fix", "--all"], repo.as_path(), &inputs),
+        exit(0, "", "")
+    );
+    // A legacy file beside valid configuration is a warning event on standard output of
+    // `check`, and policy events continue its numbering.
+    std::fs::write(&source, r#"{ "policies": { "final-newline": "off" } }"#).expect("valid config");
+    std::fs::write(repo.join("cli-git.config.ts"), "export default {};").expect("legacy config");
+    let legacy_warning: String = format!(
+        "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\"}}\n",
+        legacy = repo.join("cli-git.config.ts").display(),
+        jsonc = source.display()
+    );
+    assert_eq!(
+        plan(&["check", "--all"], repo.as_path(), &inputs),
+        exit(0, legacy_warning.as_str(), "")
+    );
+    assert_eq!(
+        plan(&["check", "--all"], nested.as_path(), &inputs),
+        exit(
+            1,
+            format!("{legacy_warning}{}", not_at_root(1, repo.as_path())).as_str(),
+            ""
+        )
+    );
+    assert_eq!(
+        plan(&["fix", "--all"], repo.as_path(), &inputs),
+        exit(0, "", "")
+    );
+    remove(root.as_path());
+}
+
+/// A direct command refuses beside commit transactions it cannot recover.
+#[test]
+fn direct_commands_refuse_beside_registered_transactions() {
+    let root: PathBuf = fixture("management-pending");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let inputs: ResolutionInputs = with_git(root.as_path());
+    let registry: PathBuf = repo.join(".git/cli-git-transactions");
+    std::fs::create_dir_all(registry.join("id")).expect("registry entry");
+    // An interrupted worktree copy does not concern a direct command.
+    std::fs::create_dir_all(repo.join(".git/cli-git-worktree-copy/v1")).expect("journals");
+    std::fs::write(repo.join(".git/cli-git-worktree-copy/v1/id.json"), b"{}").expect("journal");
+    for (arguments, command) in [
+        (
+            vec!["check", "--all", "--policy", "require-root"],
+            "cli-git check",
+        ),
+        (
+            vec!["fix", "--all", "--policy", "require-root"],
+            "cli-git fix",
+        ),
+    ] {
+        assert_eq!(
+            plan(arguments.as_slice(), repo.as_path(), &inputs),
+            exit(
+                2,
+                "",
+                unported_notice(&Unported::TransactionRecovery(registry.clone()), command).as_str()
+            ),
+            "{arguments:?}"
+        );
+    }
+    std::fs::remove_dir_all(&registry).expect("remove registry");
+    assert_eq!(
+        plan(
+            &["check", "--all", "--policy", "require-root"],
+            repo.as_path(),
+            &inputs
+        ),
+        exit(0, "", "")
     );
     remove(root.as_path());
 }

@@ -42,7 +42,7 @@ pub mod effective_target;
 /// The per-invocation decision the thin executable performs.
 pub mod entry;
 
-/// Removal of wrapper-only escape-hatch flags before forwarding.
+/// Spellings of the wrapper-only escape hatches shared by several modules.
 pub mod escape_hatch;
 
 /// Starting real Git with unchanged arguments, streams and exit status.
@@ -177,6 +177,70 @@ pub mod command_config;
 
 /// Pure decision of the require-root policy.
 pub mod rule_require_root;
+
+/// Whether a `git worktree` invocation creates or moves a worktree.
+pub mod command_worktree;
+
+/// Wrapper-only control spellings, their meanings, and removal before the subcommand.
+pub mod wrapper_controls;
+
+/// Removal of every wrapper control from one invocation, by position.
+pub mod wrapper_invocation;
+
+/// Lifecycle triggers and the trigger set of every shipped policy.
+pub mod policy_trigger;
+
+/// Policy events and their JSON Lines rendering.
+pub mod policy_events;
+
+/// Ordered policy execution for one lifecycle point.
+pub mod policy_engine;
+
+/// The bounded loop that repeats a pass after corrections changed candidate content.
+pub mod policy_convergence;
+
+/// The one query for repository identity, top level and the path below it.
+pub mod repository_location;
+
+/// Lazily fetched repository facts behind one interface, with the real-Git provider.
+pub mod repository_facts;
+
+/// Pure decision of the linked-worktree-only policy.
+pub mod rule_linked_worktree;
+
+/// Pure decision of the branch-worktree-only policy and its one-query remote guess.
+pub mod rule_branch_worktree;
+
+/// Pure decision of the add-explicit policy.
+pub mod rule_add_explicit;
+
+/// The shipped policies as checks over rule cores and repository facts.
+pub mod policy_checks;
+
+/// The fixed argument transforms of a forwarded command, in order.
+pub mod policy_transforms;
+
+/// One complete pass: built-in policies, fixed transforms, optional policies.
+pub mod policy_pass;
+
+/// The names of the commands built into Git 2.56.0.
+pub mod git_builtins;
+
+/// The work of the installed cli-git that is not ported, and the refusal notice.
+pub mod unported;
+
+/// Durable commit-transaction and worktree-copy state left in a repository.
+pub mod pending_state;
+
+/// Which commands need unported work: commits, worktree copies, aliases and leases.
+pub mod refusal_frontier;
+
+/// The lifecycle of one wrapped Git command, from refusals to forwarding.
+pub mod wrapped_command;
+
+/// A scripted repository-facts provider for unit tests; never in the release build.
+#[cfg(test)]
+mod policy_test_support;
 
 /// The one failure type of the candidate layer and its closed list of causes.
 pub mod candidate_error;

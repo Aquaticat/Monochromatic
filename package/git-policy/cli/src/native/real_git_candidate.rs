@@ -145,48 +145,55 @@ pub fn has_wrapper_marker(content: &[u8]) -> bool {
     return false;
 }
 
-/// What: Report whether file metadata carries any execute permission bit.
-///       `#[cfg(unix)]` compiles this version only on Unix-like systems.
+/// What: Report whether file metadata says the file can be run.
+///       `#[cfg(unix)]` and `#[cfg(not(unix))]` each compile one of the two inner blocks.
 /// Why:  PATH lookup only runs executable files; a non-executable `git` is skipped.
-///       This checks the mode bits, not the calling user's access as `access(2)` would.
+///       On Unix this checks the mode bits, not the calling user's access as `access(2)`
+///       would. Other systems have no execute bit: every regular file named by PATHEXT
+///       can run.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function isExecutable(stats: Stats): boolean { return (stats.mode & 0o111) !== 0; }
+/// function isExecutable(stats: Stats): boolean { return process.platform === 'win32' || (stats.mode & 0o111) !== 0; }
 /// ```
-#[cfg(unix)]
 fn is_executable(metadata: &std::fs::Metadata) -> bool {
-    // The trait adds `.mode()`; `use` inside a function scopes it to this body.
-    use std::os::unix::fs::PermissionsExt;
-    // `&` here is bitwise AND; `0o111` is octal for the three execute bits.
-    return metadata.permissions().mode() & 0o111 != 0;
-}
-
-/// Non-Unix systems have no execute bit: every regular file named by PATHEXT can run.
-#[cfg(not(unix))]
-fn is_executable(_metadata: &std::fs::Metadata) -> bool {
-    return true;
+    #[cfg(unix)]
+    {
+        // The trait adds `.mode()`; `use` inside a block scopes it to this block.
+        use std::os::unix::fs::PermissionsExt;
+        // `&` here is bitwise AND; `0o111` is octal for the three execute bits.
+        return metadata.permissions().mode() & 0o111 != 0;
+    }
+    #[cfg(not(unix))]
+    {
+        // `let _ = ...` states that the metadata is deliberately not consulted here.
+        let _ = metadata;
+        return true;
+    }
 }
 
 /// What: Report whether two metadata records name the same file on the same device.
-/// Why:  Device and inode numbers identify a file through any symbolic link, hard link
-///       or repeated PATH entry.
+/// Why:  On Unix, device and inode numbers identify a file through any symbolic link,
+///       hard link or repeated PATH entry. Other systems expose no stable inode here,
+///       so the answer is "not proven the same" and canonical paths decide instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function sameInode(a: Stats, b: Stats): boolean { return a.dev === b.dev && a.ino === b.ino; }
+/// function sameInode(a: Stats, b: Stats): boolean { return process.platform !== 'win32' && a.dev === b.dev && a.ino === b.ino; }
 /// ```
-#[cfg(unix)]
 fn same_inode(first: &std::fs::Metadata, second: &std::fs::Metadata) -> bool {
-    // The trait adds `.dev()` and `.ino()` to metadata on Unix.
-    use std::os::unix::fs::MetadataExt;
-    return first.dev() == second.dev() && first.ino() == second.ino();
-}
-
-/// Non-Unix systems expose no stable inode here; canonical paths decide instead.
-#[cfg(not(unix))]
-fn same_inode(_first: &std::fs::Metadata, _second: &std::fs::Metadata) -> bool {
-    return false;
+    #[cfg(unix)]
+    {
+        // The trait adds `.dev()` and `.ino()` to metadata on Unix.
+        use std::os::unix::fs::MetadataExt;
+        return first.dev() == second.dev() && first.ino() == second.ino();
+    }
+    #[cfg(not(unix))]
+    {
+        // Neither record is consulted where no inode is available.
+        let _ = (first, second);
+        return false;
+    }
 }
 
 /// What: Report whether two paths name the same existing file.
@@ -251,34 +258,33 @@ pub fn identical_content(first: &Path, second: &Path) -> bool {
 /// What: Read from a file until `limit` bytes are collected or the file ends.
 ///       `&mut std::fs::File` lends the open file for reading (reading moves its position).
 ///       `Option<Vec<u8>>` is the owned bytes, or `None` when the read failed.
-/// Why:  One `read` call may return fewer bytes than requested; the loop makes the
-///       bound exact.
+/// Why:  One `read` call may return fewer bytes than requested. The standard library's
+///       bounded reader repeats the read until the limit or the end of the file, so the
+///       bound is exact and there is no loop here to keep in step.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// async function readUpTo(file: FileHandle, limit: number): Promise<Buffer | undefined>;
 /// ```
 fn read_up_to(file: &mut std::fs::File, limit: usize) -> Option<Vec<u8>> {
-    // `vec![0; limit]` is an owned list of `limit` zero bytes used as the read buffer.
-    let mut buffer: Vec<u8> = vec![0; limit];
-    let mut filled: usize = 0;
-    while filled < limit {
-        // What: `match` on the read `Result`; `&mut buffer[filled..]` lends the unused tail.
-        // Why:  Zero bytes read means end of file; an error makes the candidate unusable.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const { bytesRead } = await file.read(buffer, filled, limit - filled);
-        // ```
-        match file.read(&mut buffer[filled..]) {
-            Ok(0) => break,
-            Ok(count) => filled += count,
-            Err(_) => return None,
-        }
+    // `Vec::<u8>::new()` is an empty owned byte list that grows as bytes arrive.
+    let mut buffer: Vec<u8> = Vec::<u8>::new();
+    // What: `.take(n)` wraps the lent file in a reader that ends after `n` bytes;
+    //       `limit as u64` widens the count to the 64-bit type that reader takes, which
+    //       cannot lose a value. `.read_to_end(&mut buffer)` appends everything the
+    //       reader yields to the list. `match` unpacks the `Result`: `Ok(_)` ignores
+    //       the byte count.
+    // Why:  A read error makes the candidate unusable.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { return (await file.read({ length: limit })).buffer; } catch { return undefined; }
+    // ```
+    match file.take(limit as u64).read_to_end(&mut buffer) {
+        // `Some(buffer)` is the "present" variant carrying the bytes read.
+        Ok(_) => return Some(buffer),
+        Err(_) => return None,
     }
-    buffer.truncate(filled);
-    // `Some(buffer)` is the "present" variant carrying the bytes read.
-    return Some(buffer);
 }
 
 /// What: Classify one candidate against this wrapper's own executable.
@@ -320,16 +326,17 @@ pub fn classify_candidate(candidate: &Path, own_executable: &Path) -> CandidateK
     if is_native_header(header.as_slice()) {
         return CandidateKind::RealGit;
     }
-    // One byte past the bound proves the script is too large to inspect.
-    let Some(rest) = read_up_to(&mut file, MAX_SCRIPT_INSPECTION_BYTES + 1 - header.len()) else {
+    // The header is at least one byte of a file that has any, so reading the whole bound
+    // after it reaches past the bound exactly when the script is too large to inspect.
+    let Some(rest) = read_up_to(&mut file, MAX_SCRIPT_INSPECTION_BYTES) else {
         return CandidateKind::Unusable;
     };
-    if header.len() + rest.len() > MAX_SCRIPT_INSPECTION_BYTES {
-        return CandidateKind::Unusable;
-    }
     // Join header and rest so a marker spanning the first four bytes is still found.
     let mut content: Vec<u8> = header;
     content.extend_from_slice(rest.as_slice());
+    if content.len() > MAX_SCRIPT_INSPECTION_BYTES {
+        return CandidateKind::Unusable;
+    }
     if has_wrapper_marker(content.as_slice()) {
         return CandidateKind::Wrapper;
     }

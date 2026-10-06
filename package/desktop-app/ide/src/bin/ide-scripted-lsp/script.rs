@@ -1,5 +1,13 @@
 //! Settings of one scripted-server run, read once from `IDE_SCRIPTED_*` environment variables.
 
+/// What: `Value` is a decoded JSON value of any shape, like TS's `unknown` from `JSON.parse`.
+/// Why: Tests hand whole definition and reference results to the server as JSON text.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Value = unknown;
+/// ```
+use serde_json::Value;
 /// What: `env` reads process environment variables; `PathBuf` is an owned filesystem path
 ///       (sibling: borrowed `&Path`).
 /// Why: Tests configure the server through the same `environment` table real servers receive.
@@ -107,6 +115,32 @@ pub struct Script {
     pub outside: Option<PathBuf>,
     /// File every received message and text mirror is appended to, one JSON value per line.
     pub report: Option<PathBuf>,
+    /// What: `Option<Value>` is "a decoded JSON value, or nothing".
+    /// Why: When present, the definition answer is exactly this result, so a test can name its
+    ///      targets; absent keeps the fixed list of same-file and unavailable targets.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// definition?: unknown;
+    /// ```
+    pub definition: Option<Value>,
+    /// When present, the references answer is exactly this result; absent keeps the fixed failure.
+    pub references: Option<Value>,
+}
+
+/// What: Decode the JSON text of one variable. `Option<Value>` is nothing when the variable is
+///       unset or does not hold valid JSON.
+/// Why: A test passes a whole protocol result through the server definition's environment.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function json(name: string): unknown | undefined {
+///   try { return JSON.parse(env['IDE_SCRIPTED_' + name] ?? ''); } catch { return undefined; }
+/// }
+/// ```
+fn json(name: &str) -> Option<Value> {
+    // `ok()` turns the failed parse of a missing or malformed value into "nothing".
+    return serde_json::from_str(&read(name, "")).ok();
 }
 
 /// What: Read one variable, or the fallback when it is unset. `&str` parameters are borrowed text.
@@ -196,6 +230,8 @@ impl Script {
             probe: read("PROBE", "0") == "1",
             outside,
             report,
+            definition: json("DEFINITION"),
+            references: json("REFERENCES"),
         };
     }
 

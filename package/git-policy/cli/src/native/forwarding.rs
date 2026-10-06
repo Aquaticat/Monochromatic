@@ -88,33 +88,31 @@ pub fn exit_code(outcome: ChildOutcome) -> i32 {
     }
 }
 
-/// What: Read a finished child's status into a `ChildOutcome` on Unix.
-///       `#[cfg(unix)]` compiles this version only on Unix-like systems.
-/// Why:  Unix reports either an exit code or a terminating signal, never both.
+/// What: Read a finished child's status into a `ChildOutcome`.
+///       `#[cfg(unix)]` on the inner block compiles it only on Unix-like systems.
+/// Why:  Unix reports either an exit code or a terminating signal, never both. Other
+///       systems report only an exit code. One function serves both, so the part every
+///       system shares is the part every test run exercises; a status that is neither
+///       cannot be reported faithfully and counts as a general failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function outcomeOf(status: { code: number | null; signal: number | null }): ChildOutcome;
 /// ```
-#[cfg(unix)]
 fn outcome_of(status: std::process::ExitStatus) -> ChildOutcome {
-    // The trait adds `.signal()` to exit statuses on Unix.
-    use std::os::unix::process::ExitStatusExt;
     // `if let Some(code) = ...` runs only when the child exited normally.
     if let Some(code) = status.code() {
         return ChildOutcome::Exited(code);
     }
-    if let Some(signal) = status.signal() {
-        return ChildOutcome::Signaled(signal);
+    #[cfg(unix)]
+    {
+        // The trait adds `.signal()` to exit statuses on Unix.
+        use std::os::unix::process::ExitStatusExt;
+        if let Some(signal) = status.signal() {
+            return ChildOutcome::Signaled(signal);
+        }
     }
-    // A waited child that neither exited nor was signalled cannot be reported faithfully.
     return ChildOutcome::Exited(1);
-}
-
-/// Non-Unix systems always report an exit code; a missing one is a general failure.
-#[cfg(not(unix))]
-fn outcome_of(status: std::process::ExitStatus) -> ChildOutcome {
-    return ChildOutcome::Exited(status.code().unwrap_or(1));
 }
 
 /// What: Run real Git as a child with inherited stdin, stdout and stderr, and wait.
@@ -148,44 +146,37 @@ pub fn run_real_git(
     return Ok(outcome_of(status));
 }
 
-/// What: Replace this process with real Git on Unix; returns only when that failed.
+/// What: Become real Git; returns only when Git could not be started.
 ///       The returned `std::io::Error` says why the operating system refused.
-/// Why:  For a command the wrapper adds nothing to, becoming Git is exact forwarding:
-///       same process ID, same streams, same signals, same exit status, and no
-///       wrapper process left between the caller and Git.
+///       `#[cfg(unix)]` and `#[cfg(not(unix))]` each compile one of the two inner blocks.
+/// Why:  On Unix this process is replaced by Git, which is exact forwarding: same process
+///       ID, same streams, same signals, same exit status, and no wrapper process left
+///       between the caller and Git. Windows cannot replace a process image; the nearest
+///       faithful behaviour there is to wait for Git and exit with its status.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// // No Node equivalent: process.execve(realGit, args, env) replaces the process image.
+/// // Unix has no Node equivalent: process.execve(realGit, args, env) replaces the process image.
+/// // Elsewhere: process.exit(exitCode(await runRealGit(realGit, args, overlay)));
 /// ```
-#[cfg(unix)]
 pub fn replace_process_with_real_git(
     real_git: &Path,
     arguments: &[OsString],
     overlay: &[(OsString, OsString)],
 ) -> std::io::Error {
-    // The trait adds `.exec()` to commands on Unix.
-    use std::os::unix::process::CommandExt;
-    return git_command(real_git, arguments, overlay).exec();
-}
-
-/// What: Forward on systems without process replacement: run, wait, exit with Git's code.
-/// Why:  Windows cannot replace a process image; the nearest faithful behaviour is to
-///       wait for Git and exit with its status. Returns only when Git could not start.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// process.exit(exitCode(await runRealGit(realGit, args, overlay)));
-/// ```
-#[cfg(not(unix))]
-pub fn replace_process_with_real_git(
-    real_git: &Path,
-    arguments: &[OsString],
-    overlay: &[(OsString, OsString)],
-) -> std::io::Error {
-    match run_real_git(real_git, arguments, overlay) {
-        Ok(outcome) => std::process::exit(exit_code(outcome)),
-        Err(error) => return error,
+    #[cfg(unix)]
+    {
+        // The trait adds `.exec()` to commands on Unix.
+        use std::os::unix::process::CommandExt;
+        return git_command(real_git, arguments, overlay).exec();
+    }
+    #[cfg(not(unix))]
+    {
+        // `match` unpacks the run: success exits this process with Git's code.
+        match run_real_git(real_git, arguments, overlay) {
+            Ok(outcome) => std::process::exit(exit_code(outcome)),
+            Err(error) => return error,
+        }
     }
 }
 

@@ -1,11 +1,6 @@
 {
   "schema": 1,
   "scope": "Inspected authored native poses and offline evidence viewer, not a new ballot or production/native accessibility acceptance.",
-  "htmlSha256": "110af4bc43b80bfeae638aeecefa136781c5fdd53fcf5f4729158ea09da7f74c",
-  "templateSha256": "dfcf877b05e499da8f180757568fc80d104a0d1961c0210bd0691988eed57ec5",
-  "builderSha256": "1bbb6cbbc5b2047f2d76b70b8f8bd2da7e39e0808c8d50e23ff551551ca67cf0",
-  "manifestSha256": "c65e2f7a89cf5433389677044099c8eb33fa544bf6ca9e7147e4cbd91df9b6c8",
-  "nativeVerificationSha256": "e69d21c35f69fe4f42d0c784ca0ee4fd1e1b4a226c35dceaaeab6442d314b889",
   "browserCliVersion": "0.38.1",
   "firefoxESR140Exercised": false,
   "resourceBounds": {
@@ -91,12 +86,6 @@
   "browsersClosed": true,
   "ownedRuntimeAbsenceVerified": true,
   "productionSourceAndAcceptedSearchReviewUnchanged": true,
-  "guardReportSha256": {
-    "positive": "65b7b3689af2744505585df64d7bb31e0425c60b84d241200222e73a0a63e1ca",
-    "without-exact-cohort": "53e179f4f9f349c032edc1203441b3c988d051019892d51e6df257981b02374f",
-    "without-hold": "1a62994ecb0ba81e5ea66c882ba11fe1358d83c88b4bed6fab73c689c8ce74c5",
-    "restored": "65b7b3689af2744505585df64d7bb31e0425c60b84d241200222e73a0a63e1ca"
-  },
   "rendererScreenshotsInspected": [
     "review-1440-light.png",
     "review-1440-dark.png",
@@ -111,5 +100,6 @@
     "Closed-page axe checks only; no open-dialog, Firefox ESR140 or native accessibility acceptance.",
     "Held poses are not evidence of automatic expiry; native lifecycle groups have separate provenance.",
     "The synthetic changed-inset positive test is consumer geometry validation, not an Android capture."
-  ]
+  ],
+  "pageDigestsRemoved": "Digests of the page, template, builder, test, manifest, native result, preflight and guard reports were removed from this record on 2026-10-05: nothing is locked by hash, and a recorded digest is never a reason to leave a page uncorrected. This record describes the check made when it was written; later edits to those files are allowed and are not covered by it."
 }

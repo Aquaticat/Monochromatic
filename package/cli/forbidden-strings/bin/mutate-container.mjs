@@ -11,12 +11,27 @@ const SCOPES = {
   '--pathname': { name: 'pathname-mutation', files: ['path_scan.rs', 'path_name_bytes.rs'] },
 };
 
+/** Print the mutants a campaign with the same arguments would test; `stdout.log` then holds one mutant name per line. */
+async function listMutants(fixture) {
+  try {
+    const result = run({ command: 'podman', args: ['run', '--rm', ...fixture.limits, fixture.image], allowFailure: true, transcript: fixture.evidence });
+    await writeFile(join(fixture.evidence, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal, listed: true }) + '\n');
+    if (result.status !== 0) throw new ScannerVerificationError(`Mutant listing exited ${result.status}; inspect ${fixture.evidence}.`);
+  } finally {
+    await rm(fixture.context, { recursive: true, force: true });
+  }
+}
+
 /** Scoped mutations retain the baseline, all policy branches and the complete scanner consumer suite. */
 async function main() {
   const options = process.argv.slice(2);
-  if (options.length > 1 || (options.length === 1 && !Object.hasOwn(SCOPES, options[0])))
-    throw new ScannerVerificationError(`Only one of ${Object.keys(SCOPES).join(', ')} is accepted.`);
-  const scope = options.length === 1 ? SCOPES[options[0]] : undefined;
+  // `--list` combines with any scope: it appends cargo-mutants' own `--list` to the unchanged campaign arguments.
+  const listing = options.filter(option => option === '--list');
+  const scopes = options.filter(option => option !== '--list');
+  if (listing.length > 1 || scopes.length > 1 || (scopes.length === 1 && !Object.hasOwn(SCOPES, scopes[0])))
+    throw new ScannerVerificationError(`Accepted: at most one of ${Object.keys(SCOPES).join(', ')}, optionally with --list.`);
+  const scope = scopes.length === 1 ? SCOPES[scopes[0]] : undefined;
+  const list = listing.length === 1;
   const command = [
     'cargo', 'mutants', '--in-place', '--all-features', '--baseline', 'run', '--no-config', '--no-shuffle', '--colors=never',
     '--build-timeout', '300', '--timeout', '120', '--output', '/work/mutation-report',
@@ -26,13 +41,24 @@ async function main() {
     // Their source is not mutated here; exported baseline loading and binary consumers still run.
     '--cargo-test-arg=--skip=rule::frx::compile_tests::builtin_ported_all_compile',
     '--cargo-test-arg=--skip=rule::frx::compile_tests::append_ported_compiles_end_to_end',
+    // Human decision of 2026-10-05, for every scope: these two operator replacements are never tried,
+    // which is how mutation timeouts are handled; `+=` to `-=` stays active.
+    // Each regex is matched against the mutant names `cargo mutants --list` prints.
+    '--exclude-re', String.raw`replace \+= with \*=`,
+    '--exclude-re', 'replace -= with /=',
   ];
   const files = scope ? scope.files : [
     'scanner.rs', 'load_request.rs', 'scan_finding.rs', 'frx_scan.rs', 'path_scan.rs', 'path_name_bytes.rs',
     'frx_load.rs', 'process_boundary.rs', 'main.rs', 'runtime_cache/mod.rs', 'runtime_cache/warning.rs',
   ];
   for (const file of files) command.push('--file', `src/${file}`);
-  const fixture = await snapshot({ command, name: scope ? scope.name : 'mutation', tool: 'cargo-mutants' });
+  if (list) command.push('--list');
+  const name = scope ? scope.name : 'mutation';
+  const fixture = await snapshot({ command, name: list ? `${name}-list` : name, tool: 'cargo-mutants' });
+  if (list) {
+    await listMutants(fixture);
+    return;
+  }
   let container;
   let reportPreserved = false;
   try {

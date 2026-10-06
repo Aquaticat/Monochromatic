@@ -49,7 +49,7 @@ pub(crate) fn finding(
     return diagnostic;
 }
 
-/// What: Turn a failed ancestor walk into a processing-failure finding that names the rule which stopped.
+/// What: Turn a failed ancestor or descendant walk into a processing-failure finding that names the rule which stopped.
 /// Why: A rule that cannot read the document's structure has not checked the file. A processing failure
 /// makes the run exit with status 2 and stops the fixer, where an empty or partial list would look clean.
 /// The zero-width position is the node whose walk failed, in this document's own coordinates;
@@ -57,9 +57,9 @@ pub(crate) fn finding(
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function ancestryFailure(context: MarkdownSource, rule: string, error: MarkdownError): Diagnostic;
+/// function structureFailure(context: MarkdownSource, rule: string, error: MarkdownError): Diagnostic;
 /// ```
-pub(crate) fn ancestry_failure(
+pub(crate) fn structure_failure(
     context: &MarkdownSource,
     rule: &str,
     error: MarkdownError,

@@ -121,7 +121,7 @@ Byte equality to the prior inspected artifact failed for all 24 captures.
 Measured roots and menu bounds match,
 while RGB channels differ by at most 3 on the 8-bit scale.
 No cause or cross-artifact visual equivalence is inferred.
-All current full-region pairs were inspected afresh and hash-bound before
+All current full-region pairs were inspected afresh and named by digest in the manifest before
 publishing `questions/evidence/track-menu-witnesses.json` and its PNGs.
 `questions/evidence/track-menu-native-verification.json` records exact
 contexts,
@@ -133,8 +133,8 @@ heading behavior and native-input evidence.
 The [offline viewer](../questions/track-menu.html) and its build/validation,
 consumer tests and exact-cohort/native-input guard-removal proofs passed.
 The [verification record](../questions/evidence/track-menu-review-verification.json)
-binds exact viewer,
-manifest and native-result digests.
+records that check of the viewer,
+manifest and native result.
 Four offline Chromium desktop/mobile light/dark contexts exercised all
 24 previews,
 environment combinations,

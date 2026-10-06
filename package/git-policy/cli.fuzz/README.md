@@ -38,6 +38,33 @@ An accepted document must satisfy the registry-order and bound invariants
 and survive being restated canonically.
 A rejection must render as one `config-invalid` JSON line that decodes back to the same message.
 
+### `wrapper_controls`
+
+Runs wrapper-control removal and the wrapped-command lifecycle over four views of every input:
+the bytes split at NUL into arguments,
+the bytes mapped to commands,
+Git options,
+separators,
+value options,
+every wrapper control and hatch,
+and near-misses of their spellings,
+a `<command> <valueless options> -- <tokens>` list whose `--` is certainly Git's separator,
+and the same tokens behind a first byte that selects a linked worktree or no repository
+and the answers to the repository questions.
+Removal must leave its input unchanged and be repeatable,
+delete only whole tokens that spell a control or the commit hatch,
+record exactly the effects the deleted tokens asked for,
+find nothing more on a second pass,
+and keep everything from the separator on.
+The lifecycle runs with fixed repository answers and locations that do not exist on disk,
+so it reads no configuration and starts no Git.
+Whatever the arguments,
+a forwarded command must not be a `git commit` without a dry-run or status-format option,
+a `git push` without a dry-run option while the built-in content policy is on,
+a `git add` in a worktree while that policy is on,
+or a worktree creation or possible alias run from a linked worktree without `--no-worktree-copy`.
+The dry-run options are restated from Git's documentation instead of read from the subject's tables.
+
 ### `batch_reply`
 
 Runs `read_batch_reply`,
@@ -69,6 +96,10 @@ the process that produces real replies is controlled beside the subject.
 They count that the generators reach every layout outcome,
 both loading decisions,
 non-default accepted configurations,
+every way a command region is read,
+every control effect,
+a control spelling that survives as a value or path,
+every ending of the lifecycle,
 and every reply kind and reply failure,
 so an invariant that is never reached cannot pass unnoticed.
 
@@ -80,6 +111,10 @@ a bare `git` skipping configuration,
 an unconsumed global option value,
 `warn` read as `error`,
 a rejected `landing` section,
+a control spelling removed anywhere in a region read without a table,
+keep-going removed without being recorded,
+a forwarded real commit,
+a publishing push that skips the manual-push gate,
 object content accepted past its declared size,
 a reply accepted for another object),
 and requires a generator control to fail for each.
@@ -108,4 +143,6 @@ and convert them into deterministic tests beside the subject.
 These targets do not cover real-Git resolution,
 forwarding,
 configuration file reading,
+repository facts read from Git,
+leftover transaction state on disk,
 or the management grammar.

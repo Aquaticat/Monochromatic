@@ -1,29 +1,32 @@
 //! What: Disposable-repository controls for per-invocation configuration loading.
-//! Why: The caller's global options decide which worktree's file is read, and each
-//!      failure kind must reach the caller as its own typed error and event.
+//! Why: The worktree Git reports decides which file is read, and a rejected file must
+//!      reach the caller as an error and an event naming it.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! // expect((await loadInvocationConfig(git, ['-C', nested], [])).source).toBe(join(repo, 'cli-git.config.jsonc'));
+//! // expect((await loadIdentityConfig(identityOf(['-C', nested]))).source).toBe(join(repo, 'cli-git.config.jsonc'));
 //! ```
 #![cfg(unix)]
 
 /// Import the lookup under test and shared fixtures.
-use super::{
-    InvocationConfigError, config_invalid_event, legacy_warning_events, load_invocation_config,
-};
+use super::{config_invalid_event, legacy_warning_events, load_identity_config};
 use crate::config_error::ConfigError;
 use crate::config_file::{CONFIG_FILE_NAME, LoadedConfig};
 use crate::config_schema::CliGitConfig;
 use crate::policy_registry::{PolicyId, Severity};
-use crate::test_support::{REAL_GIT, executable, fixture, git, remove, repository};
+use crate::repository_facts::{RepositoryFacts, git_facts};
+use crate::repository_location::RepositoryLocation;
+use crate::test_support::{REAL_GIT, fixture, git, remove, repository};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-/// Load configuration through real Git with `-C <directory>` as the global prefix.
-fn load(directory: &Path) -> Result<LoadedConfig, InvocationConfigError> {
+/// Load configuration for the location real Git reports after `-C <directory>`.
+fn load(directory: &Path) -> Result<LoadedConfig, ConfigError> {
     let prefix: Vec<OsString> = vec![OsString::from("-C"), directory.as_os_str().to_os_string()];
-    return load_invocation_config(Path::new(REAL_GIT), prefix.as_slice(), &[]);
+    let location: RepositoryLocation = git_facts(Path::new(REAL_GIT), prefix.as_slice(), &[])
+        .location()
+        .expect("location query");
+    return load_identity_config(&location.identity);
 }
 
 /// The selected worktree's own top-level file is read, from any directory inside it.
@@ -107,9 +110,9 @@ fn linked_worktree_uses_its_own_top_level() {
     remove(root.as_path());
 }
 
-/// No repository, a bare repository and the inside of `.git` read no file and use unconfigured defaults.
+/// No repository, a bare repository and the inside of `.git` read no file and use the defaults.
 #[test]
-fn locations_without_a_worktree_use_unconfigured_defaults() {
+fn locations_without_a_worktree_use_the_defaults() {
     let root: PathBuf = fixture("invocation-none");
     let main: PathBuf = repository(root.as_path(), "main");
     let bare: PathBuf = root.join("bare.git");
@@ -130,7 +133,7 @@ fn locations_without_a_worktree_use_unconfigured_defaults() {
         assert_eq!(
             load(directory.as_path()),
             Ok(LoadedConfig {
-                config: CliGitConfig::unconfigured(),
+                config: CliGitConfig::defaults(),
                 source: None,
                 ignored_legacy: Vec::<PathBuf>::new(),
             }),
@@ -140,43 +143,23 @@ fn locations_without_a_worktree_use_unconfigured_defaults() {
     remove(root.as_path());
 }
 
-/// A rejected file is a configuration error; an unusable Git is a repository error.
+/// A rejected file is reported with its path and the rejected key.
 #[test]
-fn failures_are_typed_by_cause() {
+fn a_rejected_file_is_a_configuration_error() {
     let root: PathBuf = fixture("invocation-failures");
     let repo: PathBuf = repository(root.as_path(), "repo");
     let source: PathBuf = repo.join(CONFIG_FILE_NAME);
     std::fs::write(&source, r#"{ "unknown": 1 }"#).expect("invalid config");
     assert_eq!(
         load(repo.as_path()),
-        Err(InvocationConfigError::Configuration(ConfigError::new(
+        Err(ConfigError::new(
             format!(
                 "{}: Unknown configuration key: unknown. Accepted keys: policies, hooks, indexLock, landing.",
                 source.display()
             )
             .as_str()
-        )))
+        ))
     );
-    match load_invocation_config(Path::new("/nonexistent-directory/git"), &[], &[]) {
-        Err(InvocationConfigError::Repository(message)) => {
-            assert!(!message.is_empty());
-        }
-        other => panic!("expected a repository error, got {other:?}"),
-    }
-    let fake: PathBuf = root.join("fake-git");
-    executable(
-        fake.as_path(),
-        b"#!/bin/sh\nprintf 'unexpected\\n'\nexit 0\n",
-    );
-    match load_invocation_config(fake.as_path(), &[], &[]) {
-        Err(InvocationConfigError::Repository(message)) => {
-            assert!(
-                message.starts_with("cli-git could not classify the Git worktree"),
-                "{message}"
-            );
-        }
-        other => panic!("expected a repository error, got {other:?}"),
-    }
     remove(root.as_path());
 }
 
@@ -208,7 +191,7 @@ fn events_render_configuration_failures_and_legacy_warnings() {
     assert_eq!(legacy_warning_events(&without_legacy), "");
     // Without a JSONC source there is nothing authoritative to compare a legacy file with.
     let without_source: LoadedConfig = LoadedConfig {
-        config: CliGitConfig::unconfigured(),
+        config: CliGitConfig::defaults(),
         source: None,
         ignored_legacy: vec![PathBuf::from("/r/cli-git.config.ts")],
     };

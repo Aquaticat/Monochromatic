@@ -30,23 +30,27 @@ use std::path::PathBuf;
 pub const ENGINE_FAILURE_EXIT_CODE: i32 = 2;
 
 /// What: What the executable must do for one invocation.
-///       `Vec<(OsString, OsString)>` is an owned list of name/value pairs;
-///       `String` is owned UTF-8 text.
+///       `Vec<OsString>` is an owned argument list; `Vec<(OsString, OsString)>` is an
+///       owned list of name/value pairs; `String` is owned UTF-8 text.
 /// Why:  The executable performs exactly one of these: become Git, or print and exit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Action = { kind: 'forward'; realGit: string; overlay: [string, string][] }
+/// type Action = { kind: 'forward'; realGit: string; args: string[]; overlay: [string, string][]; stderr: string }
 ///   | { kind: 'exit'; code: number; stdout: string; stderr: string };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Action {
-    /// Become real Git with the caller's unchanged arguments.
+    /// Become real Git.
     Forward {
         /// The selected real Git executable.
         real_git: PathBuf,
+        /// The arguments Git receives: no wrapper control, fixed transforms applied.
+        arguments: Vec<OsString>,
         /// Variables added to the inherited environment.
         overlay: Vec<(OsString, OsString)>,
+        /// Complete warning event lines, written to standard error before Git starts.
+        stderr: String,
     },
     /// Stop without running the caller's command.
     Exit {
@@ -76,20 +80,4 @@ pub fn failure(message: &str) -> Action {
         // `format!` builds the owned, line-terminated text.
         stderr: format!("cli-git: {message}\n"),
     };
-}
-
-/// What: The notice that a command was stopped because policy execution is missing.
-/// Why:  Until the policy engine exists, running a repository-changing command would
-///       silently drop enforcement; the notice says so and names the command.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function policyExecutionUnavailable(command: string): string;
-/// ```
-pub fn policy_execution_unavailable(command: &str) -> String {
-    return format!(
-        "cli-git: policy execution is not implemented in this native development executable, \
-         so git {command} was not run. Repository-changing commands still require the installed \
-         cli-git.\n"
-    );
 }

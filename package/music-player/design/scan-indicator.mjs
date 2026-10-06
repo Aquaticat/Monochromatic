@@ -6,6 +6,8 @@ import { join } from 'node:path';
 //region Rule helper and pinned artifact, not a scan policy or real analysis result
 const questions = join(process.cwd(), 'questions');
 const evidence = join(questions, 'evidence');
+// The APK digest, prototype commit and container image id are only stated in the page: D88 locks
+// nothing by hash, so no rule compares them. The system image and renderer are still required.
 const artifact = {
   apkSha256: 'c06ec80240e41641fee1fdec79313a8294b9595544740145f4fa6f2b1f77ddf1',
   prototypeCommit: '25a95411750c5c5356631fc508513c42a81ad1c4',
@@ -46,8 +48,6 @@ function escapeHtml(text) {
 //region Exact inspected native scan cohort
 const manifest = JSON.parse(readFileSync(join(evidence, 'scan-indicator-witnesses.json'), 'utf8'));
 need({ rule: 'manifest-schema', holds: manifest.schema === 1, detail: 'manifest schema is not 1' });
-need({ rule: 'manifest-apk', holds: manifest.apkSha256 === artifact.apkSha256, detail: 'APK digest differs from the inspected artifact' });
-need({ rule: 'manifest-commit', holds: manifest.prototypeCommit === artifact.prototypeCommit, detail: 'prototype commit differs from the inspected artifact' });
 need({ rule: 'manifest-witness-list', holds: Array.isArray(manifest.witnesses), detail: 'manifest has no witness list' });
 const states = {
   idle: { phase: 'idle', done: 0, total: 1218 },
@@ -97,7 +97,6 @@ for (const [index, capture] of manifest.witnesses.entries()) {
   //region Displayed bytes are the hashed, sanitized image
   const png = readFileSync(join(evidence, file));
   const hash = createHash('sha256').update(png).digest('hex');
-  need({ rule: 'png-digest', holds: hash === capture.sha256, detail: at + 'image digest differs' });
   need({ rule: 'png-signature', holds: png.subarray(0, 8).toString('hex') === '89504e470d0a1a0a', detail: at + 'image is not a PNG' });
   const headerFirst = png.length >= 33 && png.readUInt32BE(8) === 13 && png.subarray(12, 16).toString('ascii') === 'IHDR';
   need({ rule: 'png-header-chunk', holds: headerFirst, detail: at + 'image does not start with a header chunk' });
@@ -118,7 +117,6 @@ for (const [index, capture] of manifest.witnesses.entries()) {
   need({ rule: 'source-padding', holds: capture.controlPaddingDp === 0, detail: at + 'control does not use the accepted source padding' });
   const authored = JSON.stringify(states[scene]);
   need({ rule: 'authored-state', holds: JSON.stringify(capture.state) === authored, detail: at + 'state is not the authored state of its scene' });
-  need({ rule: 'container-image', holds: capture.containerImageId === artifact.containerImageId, detail: at + 'capture container image differs' });
   need({ rule: 'system-image', holds: capture.systemImageFingerprint === artifact.systemImageFingerprint, detail: at + 'system image differs' });
   need({ rule: 'renderer', holds: capture.renderer === artifact.renderer, detail: at + 'renderer differs' });
   //endregion
@@ -232,7 +230,7 @@ function clearanceMatchesPixels(capture) {
 }
 //endregion
 
-//region Inspection findings and provenance stated from validated data, so the page cannot drift from its evidence
+//region Inspection findings stated from validated data, so the page cannot drift from its evidence, then the stated provenance
 function range(values) {
   const low = Math.min(...values);
   const high = Math.max(...values);

@@ -31,12 +31,15 @@ use std::process::Stdio;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type MetadataOutput = { success: boolean; stdout: Buffer; stderr: Buffer };
+/// type MetadataOutput = { success: boolean; code: number | null; stdout: Buffer; stderr: Buffer };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct MetadataOutput {
     /// Whether Git exited with status zero.
     pub success: bool,
+    /// Git's exit code, or nothing when a signal ended it. Some queries answer through
+    /// their exit code alone (`git diff-index --quiet` exits 1 for "differs").
+    pub code: Option<i32>,
     /// Exact bytes Git wrote to standard output, including what it printed before failing.
     pub stdout: Vec<u8>,
     /// Exact bytes Git wrote to standard error.
@@ -71,6 +74,7 @@ pub fn run_metadata_git(
     // `Ok(...)` is the success variant carrying the captured result.
     return Ok(MetadataOutput {
         success: output.status.success(),
+        code: output.status.code(),
         stdout: output.stdout,
         stderr: output.stderr,
     });
@@ -103,35 +107,34 @@ pub fn strip_git_line(output: &[u8]) -> &[u8] {
 }
 
 /// What: Turn path bytes printed by Git into a path, without decoding on Unix.
-///       `Option<PathBuf>` is "an owned path or nothing".
-/// Why:  Unix paths are arbitrary bytes and must round-trip exactly. An empty value
-///       is never a path.
+///       `Option<PathBuf>` is "an owned path or nothing". `#[cfg(unix)]` and
+///       `#[cfg(not(unix))]` each compile one of the two inner blocks.
+/// Why:  Unix paths are arbitrary bytes and must round-trip exactly; other systems can
+///       only build a path from valid UTF-8. An empty value is never a path anywhere.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function pathFromGitBytes(bytes: Buffer): string | undefined;
 /// ```
-#[cfg(unix)]
 pub fn path_from_git_bytes(bytes: &[u8]) -> Option<PathBuf> {
-    // The trait adds `from_vec`, which wraps raw bytes as OS text unchanged.
-    use std::os::unix::ffi::OsStringExt;
     if bytes.is_empty() {
         // `None` is the "absent" variant.
         return None;
     }
-    // `.to_vec()` copies the borrowed bytes into an owned list.
-    return Some(PathBuf::from(OsString::from_vec(bytes.to_vec())));
-}
-
-/// Non-Unix systems can only build a path from valid UTF-8 output.
-#[cfg(not(unix))]
-pub fn path_from_git_bytes(bytes: &[u8]) -> Option<PathBuf> {
-    if bytes.is_empty() {
-        return None;
+    #[cfg(unix)]
+    {
+        // The trait adds `from_vec`, which wraps raw bytes as OS text unchanged.
+        use std::os::unix::ffi::OsStringExt;
+        // `.to_vec()` copies the borrowed bytes into an owned list.
+        return Some(PathBuf::from(OsString::from_vec(bytes.to_vec())));
     }
-    match std::str::from_utf8(bytes) {
-        Ok(text) => return Some(PathBuf::from(text)),
-        Err(_) => return None,
+    #[cfg(not(unix))]
+    {
+        // `match` unpacks the decoding: text becomes a path, other bytes are not one.
+        match std::str::from_utf8(bytes) {
+            Ok(text) => return Some(PathBuf::from(text)),
+            Err(_) => return None,
+        }
     }
 }
 

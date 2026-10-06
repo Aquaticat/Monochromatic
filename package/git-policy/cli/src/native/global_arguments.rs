@@ -81,11 +81,17 @@ const INLINE_OPTIONS: &[&[u8]] = &[
 /// function globalLayout(nativeArgs): { prefixLen: number; outcome: GlobalOutcome };
 /// ```
 pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
-    // usize indexes the argument vector without forcing fixed-width or signed conversions.
-    let mut index: usize = 0;
-    while index < arguments.len() {
+    // True while the token being visited is the value of the separated-value option before it.
+    let mut is_value: bool = false;
+    // `.iter().enumerate()` visits every argument once with its position, so the scan
+    // always ends: there is no hand-stepped index that a mistake could leave standing still.
+    for (index, token) in arguments.iter().enumerate() {
+        if is_value {
+            is_value = false;
+            continue;
+        }
         // Borrow native encoded bytes solely to recognize Git's ASCII option syntax.
-        let argument: &[u8] = arguments[index].as_encoded_bytes();
+        let argument: &[u8] = token.as_encoded_bytes();
         if !argument.starts_with(b"-") {
             return GlobalLayout {
                 prefix_len: index,
@@ -117,7 +123,6 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
                     outcome: GlobalOutcome::Query,
                 };
             }
-            index += 1;
             continue;
         }
         if VALUE_OPTIONS.contains(&argument) {
@@ -127,11 +132,10 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
                     outcome: GlobalOutcome::MissingValue,
                 };
             }
-            index += 2;
+            is_value = true;
             continue;
         }
         if FLAG_OPTIONS.contains(&argument) {
-            index += 1;
             continue;
         }
         let mut inline: bool = false;
@@ -142,7 +146,6 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
             }
         }
         if inline {
-            index += 1;
             continue;
         }
         return GlobalLayout {
@@ -154,6 +157,28 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
         prefix_len: arguments.len(),
         outcome: GlobalOutcome::NoCommand,
     };
+}
+
+/// What: The command word and the tokens after it, when the arguments name a command.
+///       `Option<(&OsString, &[OsString])>` is "a pair of borrowed views, or nothing":
+///       the word, and the list of everything after it.
+/// Why:  Every rule that reads a command's own options needs exactly this split. Taking it
+///       from one function means no rule computes an offset of its own, so no rule can
+///       read the command word as one of its options by an arithmetic slip.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function commandTokens(args: string[]): [word: string, region: string[]] | undefined;
+/// ```
+pub fn command_tokens(arguments: &[OsString]) -> Option<(&OsString, &[OsString])> {
+    let layout: GlobalLayout = global_layout(arguments);
+    if layout.outcome != GlobalOutcome::Command {
+        // `None` is the "absent" case of `Option`.
+        return None;
+    }
+    // `&arguments[n..]` borrows from the command word on; `.split_first()` separates the
+    // first item from the rest, or gives `None` for an empty list.
+    return arguments[layout.prefix_len..].split_first();
 }
 
 /// Boundary controls include real Git probes and native non-UTF-8 arguments.

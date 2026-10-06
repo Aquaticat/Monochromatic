@@ -10,6 +10,8 @@
 use super::{AppWindow, State, render};
 /// Worker creation failure must surface rather than silently disabling external refresh.
 use anyhow::Result;
+/// An accepted reload is copied for the Language module before the document consumes it.
+use ide_app::language::sync::DocumentReload;
 /// Background replies retain the file generation and source base revision.
 use ide_app::reload_worker::{ReloadReply, ReloadRequest, ReloadWorker, SyntaxReply};
 /// Reset source classifications without mutating a snapshot shared with the previous frame.
@@ -90,9 +92,14 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
     let mut redraw = current.file_error.is_some();
     let mut mapped_viewport = None;
     if let Some(reload) = update {
+        // Language servers need both texts and the edits between them, which `apply_reload`
+        // consumes; the copy is handed over only when the document accepted the reload.
+        let language_reload = DocumentReload::from_reload(current.file_generation, &reload);
         if !current.document.apply_reload(reload) {
             return;
         }
+        // Only the latest is kept: the worker recomputes the edits when it missed a revision.
+        current.language_reload = Some(language_reload);
         let position = current.document.position();
         let first = current.document.text().char_to_line(position.viewport);
         let lines = current.document.text().len_lines();
@@ -119,20 +126,14 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
     }
 }
 
-/// Poll completed work on the UI thread; schedule disk reads at 250 ms intervals.
+/// Poll completed work on the UI thread; start a disk read when `State::refresh` says one is due:
+/// on a change notification for the displayed file, every 250 ms while its directory is unwatched,
+/// or on the safety sweep. Missing highlighting is requested again after the 100 ms reread gap.
 /// The returned timer owns the worker and must remain alive until the window closes.
 pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Timer> {
     let mut worker = ReloadWorker::new()?;
     let state = Rc::clone(shared);
     let weak = window.as_weak();
-    // What: None represents no submitted request yet, rather than a fabricated timestamp.
-    // Why: The first poll checks disk immediately, then applies the configured interval.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let lastRequest: number | undefined;
-    // ```
-    let mut last_request: Option<Instant> = None;
     let timer = Timer::default();
     timer.start(TimerMode::Repeated, Duration::from_millis(20), move || {
         let Some(active_window) = weak.upgrade() else {
@@ -148,23 +149,26 @@ pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Ti
                 return;
             }
         }
-        if last_request.is_some_and(|last| return last.elapsed() < Duration::from_millis(250)) {
-            return;
-        }
+        let now = Instant::now();
         let current = state.borrow();
         let Some(path) = &current.file_path else {
             return;
         };
+        let highlight = current.syntax_revision != Some(current.document.revision());
+        // Missing highlighting asks again without a notification, after the schedule's reread gap.
+        if !current.refresh.due(now, highlight) {
+            return;
+        }
         let requested = worker.request(ReloadRequest {
             path: path.clone(),
             snapshot: current.document.clone(),
             generation: current.file_generation,
-            highlight_unchanged: current.syntax_revision != Some(current.document.revision()),
+            highlight_unchanged: highlight,
         });
         drop(current);
         match requested {
             Ok(true) => {
-                last_request = Some(Instant::now());
+                state.borrow_mut().refresh.requested(now);
             }
             Ok(false) => {}
             Err(error) => {

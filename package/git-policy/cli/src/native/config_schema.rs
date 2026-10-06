@@ -13,7 +13,9 @@
 /// ```ts
 /// import { POLICY_REGISTRY, type PolicyId, type Severity } from './policy-registry.ts';
 /// ```
-use super::policy_registry::{POLICY_REGISTRY, PolicyId, Severity, policy_descriptor};
+use super::policy_registry::{
+    POLICY_REGISTRY, PolicyDescriptor, PolicyId, Severity, policy_descriptor,
+};
 
 /// What: `u64` constant, an unsigned 64-bit integer (siblings `u32`, `usize`, `i64`).
 /// Why:  Milliseconds up to 2^53 - 1 are accepted, which `u32` cannot hold.
@@ -168,8 +170,8 @@ pub struct ConcurrencyConfig {
 }
 
 /// What: The complete validated configuration of one repository.
-/// Why:  An empty `{}` file yields `CliGitConfig::defaults()`; a repository without a
-///       file yields `CliGitConfig::unconfigured()`.
+/// Why:  A repository without a file and a repository with an empty `{}` file both yield
+///       `CliGitConfig::defaults()`: a policy that is off unless listed stays off either way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -213,41 +215,34 @@ impl ConcurrencyConfig {
     }
 }
 
+/// What: The severity of a policy the repository configuration does not name. `&PolicyDescriptor`
+///       borrows the policy's registry row.
+/// Why:  The five built-in policies run everywhere at their default severity. The four
+///       policies that plugins used to provide run only where `cli-git.config.jsonc` names
+///       them, whether or not a file exists, so an empty file and no file behave alike.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const unlistedSeverity = descriptor.offUnlessListed ? 'off' : descriptor.defaultSeverity;
+/// ```
+pub fn unlisted_severity(descriptor: &PolicyDescriptor) -> Severity {
+    if descriptor.off_unless_listed {
+        return Severity::Off;
+    }
+    return descriptor.default_severity;
+}
+
 /// Defaults and lookup for policy settings.
 impl PolicyConfig {
-    /// What: Build the settings of a repository whose configuration file mentions no policy.
-    /// Why:  Every shipped policy then runs at its incumbent default severity, exactly as
-    ///       an unlisted policy of a registered plugin did.
+    /// What: Build the settings of a repository whose configuration names no policy, or
+    ///       that has no configuration file at all.
+    /// Why:  Parsing starts from these values and replaces only the policies the file names.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// static defaults(): PolicyConfig;
     /// ```
     pub fn defaults() -> PolicyConfig {
-        return PolicyConfig::with_configuration_file(true);
-    }
-
-    /// What: Build the settings of a repository that has no configuration file.
-    /// Why:  The incumbent ran only its built-in policies there; the formerly
-    ///       plugin-provided policies stay off until a configuration file exists.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// static unconfigured(): PolicyConfig;
-    /// ```
-    pub fn unconfigured() -> PolicyConfig {
-        return PolicyConfig::with_configuration_file(false);
-    }
-
-    /// What: Build default settings for a repository with or without a configuration file.
-    ///       `bool` is `true`/`false`, exactly TS `boolean`.
-    /// Why:  One builder keeps both default sets derived from the same registry rows.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// static withConfigurationFile(present: boolean): PolicyConfig;
-    /// ```
-    fn with_configuration_file(present: bool) -> PolicyConfig {
         // What: `Vec::<PolicySetting>::with_capacity(n)` is an empty list with room for
         //       `n` rows; `mut` permits `push`.
         // Why:  One row per registry policy, known up front.
@@ -260,15 +255,9 @@ impl PolicyConfig {
             Vec::<PolicySetting>::with_capacity(POLICY_REGISTRY.len());
         // `for ... in` borrows each registry row in order.
         for descriptor in POLICY_REGISTRY {
-            // A policy that needs a configuration file is off when there is none.
-            let severity: Severity = if descriptor.needs_configuration_file && !present {
-                Severity::Off
-            } else {
-                descriptor.default_severity
-            };
             settings.push(PolicySetting {
                 id: descriptor.id,
-                severity,
+                severity: unlisted_severity(descriptor),
                 explicit: false,
             });
         }
@@ -301,10 +290,10 @@ impl PolicyConfig {
             }
         }
         // Unreachable while `settings` holds one row per registry policy; fall back to
-        // the registry default rather than aborting a Git command.
+        // the unlisted severity rather than aborting a Git command.
         return PolicySetting {
             id,
-            severity: policy_descriptor(id).default_severity,
+            severity: unlisted_severity(policy_descriptor(id)),
             explicit: false,
         };
     }
@@ -312,7 +301,8 @@ impl PolicyConfig {
 
 /// Whole-configuration defaults.
 impl CliGitConfig {
-    /// What: Build the configuration an empty `{}` file produces.
+    /// What: Build the configuration of a repository without `cli-git.config.jsonc`, which
+    ///       is also what an empty `{}` file produces.
     /// Why:  Parsing starts from these values and replaces only what the file states.
     ///
     /// In TS you'd write (pseudocode):
@@ -322,20 +312,6 @@ impl CliGitConfig {
     pub fn defaults() -> CliGitConfig {
         return CliGitConfig {
             policies: PolicyConfig::defaults(),
-            concurrency: ConcurrencyConfig::defaults(),
-        };
-    }
-
-    /// What: Build the configuration of a repository without `cli-git.config.jsonc`.
-    /// Why:  Absence of the file is ordinary: built-in policies and default tuning apply.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// static unconfigured(): CliGitConfig;
-    /// ```
-    pub fn unconfigured() -> CliGitConfig {
-        return CliGitConfig {
-            policies: PolicyConfig::unconfigured(),
             concurrency: ConcurrencyConfig::defaults(),
         };
     }

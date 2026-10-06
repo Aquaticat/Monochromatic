@@ -236,6 +236,27 @@ and Clippy inside a bounded container.
 Consumer migration and mutation-survivor disposition gates are tracked in the execution document;
 their absence is not a completion claim.
 `mutation:markdown` runs full container tests and Clippy before scoped native Markdown mutation.
+`mutation:executable` does the same for the orchestration modules,
+the executable's entry point,
+and Rust rule selection;
+`mutation:processors:files` does the same for the processor modules.
+A campaign with a missed or timed-out mutant exits nonzero and is not a passing gate.
+
+Two kinds of mutation are never tried,
+by the repository owner's decision of 2026-10-05.
+Every cargo-mutants invocation of this package passes these patterns,
+each as its own `--exclude-re` argument:
+
+- `replace \+= with \*=`
+- `replace -= with /=`
+
+Both replacements leave a counter unchanged,
+so a loop that steps its own index never ends,
+and cargo-mutants 27.1.0 exits with its timeout status whenever any mutant times out.
+`+=` replaced by `-=`,
+and `-=` replaced by `+=`,
+still test every counter.
+
 The fuzz sidecar includes counted Markdown/MDX fixtures,
 raw source,
 reparsing of accepted fixed output,

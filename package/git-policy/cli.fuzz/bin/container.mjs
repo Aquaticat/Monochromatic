@@ -17,6 +17,7 @@ const targets = [
   { name: 'global_arguments', dictionary: 'arguments.dict' },
   { name: 'config_loading', dictionary: 'arguments.dict' },
   { name: 'config_schema', dictionary: 'config_schema.dict' },
+  { name: 'wrapper_controls', dictionary: 'controls.dict' },
   { name: 'batch_reply', dictionary: 'batch_reply.dict' },
 ];
 const secondsPerTarget = 30;

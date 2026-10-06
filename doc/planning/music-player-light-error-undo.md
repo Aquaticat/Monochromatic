@@ -40,9 +40,9 @@ intended invalid cases.
 Held poses are not expiry evidence.
 
 The [viewer verification record](../../package/music-player/design/questions/evidence/feedback-overlay-review-verification.json)
-binds the generated HTML,
+records the check of the generated HTML,
 builder,
-manifest and native report by digest.
+manifest and native report.
 Build,
 validation,
 consumer tests,

@@ -17,5 +17,11 @@ pub mod arguments;
 /// Generated configuration documents and the schema invariants.
 pub mod configuration;
 
+/// Wrapper-control token tables shared by the control generators and their invariants.
+mod control_tables;
+
+/// Control-bearing argument vectors and the invariants of removal and of the refusal frontier.
+pub mod controls;
+
 /// Generated `git cat-file --batch` replies and the reply-reading invariants.
 pub mod batch;

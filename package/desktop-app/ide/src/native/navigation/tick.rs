@@ -1,7 +1,7 @@
 //! Nonblocking navigation replies and lazy directory refresh scheduling.
 
 /// Toolkit callbacks retain only UI-thread owners and immutable worker replies.
-use super::{AppWindow, Navigation, State, open, present, search};
+use super::{AppWindow, Navigation, State, open, present, search, watch};
 /// Queue failures remain actionable diagnostics with their affected directory path.
 use anyhow::Result;
 /// Timed retry/refresh bounds avoid reading an inaccessible folder on every UI tick.
@@ -60,7 +60,9 @@ fn directory_reply(navigation: &mut Navigation) -> bool {
     }
 }
 
-/// Fill one available read slot; lazy expansions take priority over round-robin visible-folder refresh.
+/// Fill one available read slot: first listings of expanded folders, then notified folders,
+/// then unwatched folders on the old 500 ms round robin, then the safety sweep.
+/// A folder whose first listing failed is retried at most every 500 ms.
 fn schedule(navigation: &mut Navigation) -> Result<()> {
     if !navigation.reader_available || navigation.reader.is_busy() {
         return Ok(());
@@ -79,18 +81,14 @@ fn schedule(navigation: &mut Navigation) -> Result<()> {
     let target = if let Some(path) = next_missing {
         path.clone()
     } else {
-        if cooling {
+        let next =
+            navigation
+                .directories
+                .next(&navigation.shown, &navigation.watched, Instant::now());
+        // Nothing is due: no notification, no unwatched folder on its timer, no sweep in progress.
+        let Some(path) = next else {
             return Ok(());
-        }
-        let mut directories = vec![navigation.workspace.root().to_path_buf()];
-        for row in &navigation.rows {
-            if row.entry.is_directory && row.expanded {
-                directories.push(row.entry.path.clone());
-            }
-        }
-        navigation.refresh_index %= directories.len();
-        let path = directories[navigation.refresh_index].clone();
-        navigation.refresh_index += 1;
+        };
         path
     };
     if navigation.reader.request(&mut navigation.tree, &target)? {
@@ -132,6 +130,7 @@ pub(super) fn update(
     if changed {
         present::update(window, source, &mut navigation);
     }
+    watch::update(source, &mut navigation);
     if let Err(error) = schedule(&mut navigation) {
         tracing::warn!(%error, "cannot schedule project directory read");
         navigation.reader_available = false;

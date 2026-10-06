@@ -139,7 +139,7 @@ fn invalid_policy_settings_are_rejected_by_key() {
         ),
         (
             r#"{ "policies": { "markdown/autofix": 1 } }"#,
-            "Configuration key policies.markdown/autofix must be a severity string or [severity, options], found a number.",
+            "Configuration key policies.markdown/autofix must be a severity string, [severity, options] or an options object, found a number.",
         ),
         (
             r#"{ "policies": { "require-root": ["error", {}] } }"#,

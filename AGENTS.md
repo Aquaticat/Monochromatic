@@ -456,6 +456,11 @@ NXR:
  never repeat the same synchronous call;
  rerun in background or with a bound.
 
+TRB:
+ External tool fails with a diagnostic:
+ `rg` its message in `doc/troubleshooting/` before any workaround;
+ follow a recorded verified workaround as written.
+
 EDR:
  Parallel tool calls may run in any order,
  so a command reading a fresh edit can see the pre-edit file;
@@ -673,13 +678,12 @@ CM2:
  `shell = "node --input-type=module-typescript -e"` only for logic.
 
 WC2:
- file-enforcer generates root files (`CLAUDE.md`,
- `mise.toml`,
- ...):
- check `file-enforcer.config.ts` before editing root config;
+ file-enforcer manages root files (`CLAUDE.md`,
+ ...) and package `Cargo.toml`:
+ check `file-enforcer.config.ts` before editing or adding one;
  if managed,
  edit its source,
- run file-enforcer,
+ run it,
  commit output as-is.
 
 ### Simplification
@@ -828,12 +832,6 @@ HDM:
  Agent-authored HTML follows the viewer's system color scheme:
  build + verify light and dark;
  open it in current system mode.
-
-ATS:
- Custom interactive elements (web,
- Android):
- explicit min 48px/dp layout width + height;
- never rely on touch area expanding past bounds where neighbors can overlap.
 
 ### TSDoc comments
 

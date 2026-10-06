@@ -212,7 +212,7 @@ All eight browser review/modal screenshots were inspected.
 Closed-page axe checks report zero violations or incomplete results;
 open-dialog,
 Firefox ESR140 and native accessibility acceptance remain untested.
-`track-menu-review-verification.json` binds the viewer and evidence digests.
+`track-menu-review-verification.json` records that check.
 The owned browser container is absent after browser closure.
 Disposable publication controls rejected a changed inspection hash,
 changed restoration and missing action context before any public write.

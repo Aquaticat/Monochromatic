@@ -8,9 +8,11 @@
 
 /// Import the real guard boundary and installed arena construction API.
 use super::{MarkdownError, MarkdownSource, traversal};
-/// Import the finding model and both rules that walk ancestors, to observe how a walk failure is reported.
+/// Import the finding model and every rule that walks ancestors or descendants, to observe how a walk failure is reported.
 use crate::diagnostic::{Diagnostic, Severity};
+use crate::markdown_duplicate_headings::no_duplicate_heading;
 use crate::markdown_headings::no_emphasis_as_heading;
+use crate::markdown_punctuation::no_trailing_punctuation;
 use crate::markdown_semantic_breaks::semantic_line_breaks;
 use satteri_arena::{Arena, Mdast};
 use satteri_ast::mdast::MdastNodeType;
@@ -185,6 +187,99 @@ fn a_parent_index_cycle_is_a_typed_error_and_a_processing_failure() {
             "markdown/no-emphasis-as-heading",
             paragraph,
             0,
+        ),
+    ] {
+        assert_eq!(findings.len(), 1, "{rule}");
+        let failure: &Diagnostic = &findings[0];
+        assert_eq!(failure.code, "core/processing-failure", "{rule}");
+        assert!(failure.processing_failure, "{rule}");
+        assert_eq!(failure.severity, Severity::Error, "{rule}");
+        assert_eq!(failure.fix, None, "{rule}");
+        assert_eq!(
+            failure.message,
+            format!("{rule} could not check this file: Markdown node {node} {cycle}")
+        );
+        assert_eq!(failure.labels[0].span.offset, offset, "{rule}");
+        assert_eq!(failure.filename, "cycle.md", "{rule}");
+    }
+}
+
+/// Point a node's first child slot at another node, the way a corrupt child index would.
+fn replace_first_child(document: &mut MarkdownSource, node: u32, child: u32) {
+    // `as usize` widens ids and offsets to the index type a Vec takes.
+    let slot: usize = document.arena.nodes[node as usize].children_start as usize;
+    document.arena.children[slot] = child;
+}
+
+/// The bounded descendant walk admits the largest subtree a document can hold: the whole document.
+#[test]
+fn descendant_walks_cover_the_whole_document_from_the_root() {
+    let document: MarkdownSource = parsed("# T\n\n*a*\n");
+    // The root's subtree is every node, in the same source order the validated traversal recorded.
+    assert_eq!(document.subtree(0), Ok(document.all_nodes().to_vec()));
+    assert_eq!(document.all_nodes().len(), document.parents.len());
+    let emphasis: u32 = only(&document, MdastNodeType::Emphasis);
+    let texts: Vec<u32> = document.text_nodes(0).expect("an acyclic parse");
+    assert_eq!(texts.len(), 2);
+    assert_eq!(document.text_content(0), Ok(String::from("Ta")));
+    // A subtree starts with its own node and holds only what is below it.
+    assert_eq!(document.subtree(emphasis), Ok(vec![emphasis, texts[1]]));
+    assert_eq!(document.text_nodes(emphasis), Ok(vec![texts[1]]));
+    assert_eq!(document.text_content(emphasis), Ok(String::from("a")));
+}
+
+/// `traversal` rejects a cyclic child graph when a document is built
+/// (`child_graph_rejects_duplicate_invalid_and_cyclic_ids`), so a child cycle can only appear afterwards:
+/// through a later change to `traversal`, or a mutated `children` accessor.
+/// This plants two in a built document, then requires the typed error and one processing failure
+/// from each rule that reads text below a node.
+#[test]
+fn a_child_index_cycle_is_a_typed_error_and_a_processing_failure() {
+    let mut document: MarkdownSource = parsed("# T\n\n*a*\n");
+    let heading: u32 = only(&document, MdastNodeType::Heading);
+    let emphasis: u32 = only(&document, MdastNodeType::Emphasis);
+    // Positive control: the intact index yields each node's own text.
+    assert_eq!(document.text_content(heading), Ok(String::from("T")));
+    assert_eq!(document.text_content(emphasis), Ok(String::from("a")));
+    // Corrupt the child index: the heading and the emphasis each become their own first child.
+    replace_first_child(&mut document, heading, heading);
+    replace_first_child(&mut document, emphasis, emphasis);
+    let nodes: usize = document.parents.len();
+    let cycle: String = format!(
+        "has more descendants than the {nodes} nodes of its document, so the parser's child index has a cycle and the document's structure cannot be trusted. This is a defect in the linter, not in the file: report it with this file."
+    );
+    // Each walk fails at its own starting node: the heading at byte 0, the emphasis at byte 5.
+    let error: MarkdownError = document.subtree(heading).expect_err("a child cycle");
+    assert_eq!(error.message, format!("Markdown node {heading} {cycle}"));
+    assert_eq!(error.offset, 0);
+    assert_eq!(document.text_content(heading), Err(error.clone()));
+    assert_eq!(document.text_nodes(heading), Err(error.clone()));
+    assert_eq!(
+        document.text_content(emphasis),
+        Err(MarkdownError {
+            message: format!("Markdown node {emphasis} {cycle}"),
+            offset: 5,
+        })
+    );
+    // Each rule reports exactly one processing failure that names it, at the node whose walk failed.
+    for (findings, rule, node, offset) in [
+        (
+            no_duplicate_heading(&document, Severity::Warn),
+            "markdown/no-duplicate-heading",
+            heading,
+            0,
+        ),
+        (
+            no_trailing_punctuation(&document, Severity::Warn),
+            "markdown/no-trailing-punctuation",
+            heading,
+            0,
+        ),
+        (
+            no_emphasis_as_heading(&document, Severity::Warn),
+            "markdown/no-emphasis-as-heading",
+            emphasis,
+            5,
         ),
     ] {
         assert_eq!(findings.len(), 1, "{rule}");

@@ -15,6 +15,8 @@ fn disconnected_opener_clears_pending_work_after_reporting_failure() {
         worker: ReloadWorker::disconnected_for_test(),
         generation: 1,
         pending: Some(fixture.path().join("source.txt")),
+        pending_outside: false,
+        submitted_outside: false,
     };
     assert!(opener.has_pending());
     assert!(opener.poll().is_err());

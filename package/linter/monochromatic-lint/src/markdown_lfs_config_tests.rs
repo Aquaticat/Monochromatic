@@ -37,6 +37,31 @@ fn endpoints_come_from_lfs_and_remote_sections_in_file_order() {
     );
 }
 
+/// A commented-out declaration declares nothing, with either comment character, with or without a
+/// space after it, and under both sections that could otherwise name an endpoint.
+#[test]
+fn commented_out_declarations_declare_nothing() {
+    for source in [
+        "[lfs]\n# url = https://x.example\n",
+        "[lfs]\n#url = https://x.example\n",
+        "[lfs]\n; url = https://x.example\n",
+        "[lfs]\n\t;url=https://x.example\n",
+        "[remote \"o\"]\n# lfsurl = https://x.example\n",
+        "[remote \"o\"]\n;lfsurl = https://x.example\n",
+        // A commented-out section header does not open that section.
+        "#[lfs]\nurl = https://x.example\n",
+        ";[lfs]\nurl = https://x.example\n",
+    ] {
+        assert!(lfs_endpoints(source).is_empty(), "{source}");
+    }
+    // The positive control: the same declaration without its comment character is read,
+    // and a comment between a header and its key does not close the section.
+    assert_eq!(
+        lfs_endpoints("[lfs]\n# note = 1\n\n; other\nurl = https://x.example\n"),
+        ["https://x.example"]
+    );
+}
+
 /// Section and key names fold case; values keep their spelling, including later `=` characters.
 #[test]
 fn names_fold_case_and_values_keep_their_bytes() {
@@ -100,5 +125,12 @@ fn optional_reads_distinguish_absence_from_failure() {
     std::fs::create_dir(&path).expect("directory in place of the file");
     let error = read_optional_text(&path).expect_err("directory is not readable text");
     assert!(error.message.contains(".lfsconfig"), "{}", error.message);
+    // The rendered error is the stored explanation; the processing finding prints it through `{error}`.
+    assert!(
+        error.message.starts_with("Cannot read "),
+        "{}",
+        error.message
+    );
+    assert_eq!(error.to_string(), error.message);
     assert!(read_lfs_object_base(&fixture.path).is_err());
 }

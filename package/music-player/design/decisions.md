@@ -533,6 +533,9 @@ D84 (2026-10-05) removes the third row:
 analysis is automatic and non-optional,
 so Settings has no analysis switch.
 D85 removes the closing sentence that says the pane is short.
+D86 (2026-10-05) removes the two remaining rows:
+both behaviours are always on and are not settings.
+Nothing of settings-a's content is left.
 
 ### D12. Analysis status lives nowhere after the first run
 The user chose this explicitly:
@@ -2371,6 +2374,248 @@ D11's wording about the pane saying out loud that it is short is withdrawn
 with it.
 The sentence was mock copy that no decision chose,
 and D81 already adds template configuration to Settings.
+
+D86 (2026-10-05) then removes the pane's two remaining rows.
+
+### D86. Prefix stripping and resume are always on, not settings (2026-10-05)
+
+The human withdrew D11's two remaining rows:
+`Strip common prefixes from filenames` and `Resume where I left off` are
+always on and are not settings.
+This supersedes the same-day answer that only the analysis switch goes,
+which `HANDOFF.md` recorded under the two-row Settings publication.
+
+The behaviours stand as D11 described them,
+without a switch:
+titles are shown without a common filename prefix,
+as in `Another Xronixle` for
+`かめりあ(Camellia) - Another Xronixle.flac`,
+and launch restores folder,
+track and position,
+paused.
+
+With D84 and D85,
+nothing of settings-a's content remains.
+Settings stays a destination only because D81 places template configuration
+there;
+that content is undesigned (section 11e of `open-questions.md`).
+The Fold placement used by the Settings study was adopted from D50,
+D51 and existing Settings behaviour,
+not accepted,
+and this record does not change that.
+The published two-row Settings study is withdrawn by this record.
+
+A scoped source reading on the same day,
+not an acceptance of production:
+Android `PlaybackService` already loads a persisted session through
+`SessionStore.load` when it starts,
+with no setting;
+whether it restores folder,
+track and position paused as D11 words it was not checked.
+`core/RelPath.kt` strips the longest common directory prefix from displayed
+paths and `rowDisplay` strips a folder label;
+a search of Android and desktop production source found no code that removes
+a shared filename prefix or the extension as D11's example does.
+No production implementation is authorized by this record.
+
+D87 (2026-10-05) answers what the Settings page then holds:
+nothing.
+
+### D87. The Settings page stays and is empty (2026-10-05)
+
+Asked nothing further,
+the human said of the Settings page:
+leave it empty.
+Settings therefore remains a destination with its header and its way back,
+and draws no row,
+no sentence and no placeholder below the header.
+This supersedes the reading in D86 that Settings stays only because of D81;
+it stays because the human kept it.
+D81's template configuration is still placed in Settings and still
+undesigned (section 11e of `open-questions.md`),
+so the page is empty until that is designed.
+The Fold placement of the page remains adopted from D50,
+D51 and existing Settings behaviour,
+not separately accepted.
+The human also said that an empty page needs no study,
+so no native study of the empty page is built;
+the withdrawn two-row study is kept as a record and is not replaced.
+No production implementation is authorized by this record.
+
+### D88. Nothing is locked by hash (2026-10-05)
+
+The published first-run study had been left uncorrected on the ground that
+its review verification bound the page by hash.
+Told so,
+the human said:
+do not lock by hash,
+ever.
+
+What follows from it:
+
+- No check fails or refuses because a page,
+  template,
+  builder,
+  test or record differs from a recorded digest.
+- A recorded digest is never a reason to leave something uncorrected or to put a correction off.
+- Review-verification records carry no digest of a page,
+  template,
+  builder,
+  test,
+  manifest or report.
+  Those fields were removed from the published records under
+  `questions/evidence/` on this date,
+  and each record says so in `pageDigestsRemoved`.
+
+A narrower reading the agent adopted,
+not the human's words,
+and open to veto:
+digests that only name what was captured stay for now.
+Those are the digest of each published screenshot in a witness manifest,
+the digest of the debug APK that produced a set of captures,
+and the digests of browser screenshots that were looked at.
+The builders still compare each embedded screenshot with its manifest digest,
+and some still require the manifest's APK digest to equal a value written in the builder.
+Under the widest reading of the human's words those are locks too.
+Removing them is asked of the human,
+not done.
+
+Asked the same day,
+the human answered:
+remove both.
+So the narrower reading is withdrawn.
+No builder compares a screenshot with a digest,
+and no builder requires an APK digest or a prototype commit to equal a
+value written in it.
+A manifest may still say which APK and which commit produced its captures;
+that is a statement,
+and nothing is checked against it.
+What a builder checks about an image is what it measures from the image itself.
+
+On 2026-10-06 the agent reported that its private emulator-capture scripts,
+which are outside this repository,
+still compared the study APK's digest:
+to keep one set of captures to one build,
+and before replacing the package already installed in the emulator.
+One such comparison had refused a capturing visit the night before.
+Asked whether D88 covers those scripts too,
+the human answered yes,
+remove them.
+The scripts that run a visit now tell builds apart by commit name and replace the study's package by its application id.
+Those changed scripts were checked for syntax only;
+no visit has run with them yet.
+Scripts of finished studies still hold such comparisons;
+they are not run any more,
+and one that is reused gets the same change first.
+
+Asked the same day whether to make this a rule for the whole repository in `AGENTS.md`,
+the human declined:
+"There are legit (rare) situations in which locking by hash is desired."
+So D88 binds this package's design evidence and its capture tooling,
+and is not a ban for the repository at large.
+
+### D89. The template language and editor follow KWGT, with stated omissions (2026-10-05)
+
+The human named KWGT (Kustom Widget Maker) as precedent for D81's template
+editor and had it run first-hand in a throwaway emulator.
+`doc/planning/music-player-template-editor.md` lists what KWGT's formula
+language and editor do,
+with a recommendation to keep or omit each.
+The human answered:
+"I'll go with your recommendations with what to omit and keep."
+
+Kept:
+
+- literal text with formulas between a pair of delimiters;
+- field functions that take a mode word,
+  with the player's own fields;
+- nested calls and formatting functions;
+- text conversion for case and for cutting to a length;
+- `if` and comparisons,
+  so a row can say what to show when a field has no value;
+- a live preview on every keystroke;
+- signature and argument help while typing;
+- error lines that name the function and the problem;
+- a field list that inserts at the caret.
+
+Omitted:
+
+- arithmetic,
+  unless a use appears;
+- global variables;
+- markup for colour,
+  bold,
+  italic and the like;
+- functions for weather,
+  battery,
+  network,
+  calendar,
+  notifications and web content;
+- silence about a formula left open,
+  which the player reports instead;
+- saved favourite formulas;
+- the button row for markup,
+  colour and the globe.
+
+Not decided by this answer,
+because the note recommended nothing there:
+the rest of text conversion,
+regular-expression match and combined conditions,
+whether the preview uses stand-in values or a real track,
+whether ready-made examples are offered,
+and whether an edit applies as typed or on an explicit save.
+Those go to the built editor study as variants.
+
+Also undecided:
+the field inventory and names,
+which row types get templates,
+default templates,
+fallback for an empty field or an invalid template,
+the exact delimiter and function spelling,
+and the editor's layout on the Fold.
+D81's limits stand:
+title customization is not implied,
+and D77's visible distinction before activation remains required.
+No production implementation is authorized by this record.
+
+### D90. The agent's picks for the template entries left open by D89 (2026-10-05)
+
+Asked whether the entries D89 left open were the human's to pick,
+the human answered:
+you choose,
+but for extremely obscure features (for a music player) like regex lean on no.
+
+The agent's picks,
+each open to the human's veto:
+
+- Text conversion stays at case and cutting to a length.
+  Cutting with an ellipsis,
+  padding,
+  splitting and regular-expression replace are omitted.
+  A row already shortens text that does not fit,
+  and the others have no evident use in a track row.
+- Regular-expression match is omitted.
+- Combining conditions with `&` and `|` is omitted,
+  unless a use appears.
+  A nested `if` covers the case of two fields that may each be absent.
+- The preview shows real tracks from the open library,
+  not stand-in values,
+  so the user sees their own names and the rows where a field has no value.
+  Stand-in values are used only when no library is open.
+- No list of ready-made examples.
+  The default template is the example,
+  and the field list inserts at the caret.
+- An edit applies as typed while the template is valid,
+  as Android settings do,
+  with a way back to the default.
+  While the template is invalid the rows keep the last valid template and
+  the editor shows the error.
+  There is no separate save step.
+
+These are picks about scope and behavior,
+not about appearance.
+The editor's layout on the Fold is still to be built and looked at.
+No production implementation is authorized by this record.
 
 ## Pending after the theme picks (2026-09-04)
 

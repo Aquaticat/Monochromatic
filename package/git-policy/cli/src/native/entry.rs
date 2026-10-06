@@ -9,19 +9,21 @@
 //! ```
 
 /// Import the sibling modules the decision combines.
-use super::action::{Action, ENGINE_FAILURE_EXIT_CODE, failure, policy_execution_unavailable};
+use super::action::{Action, ENGINE_FAILURE_EXIT_CODE, failure};
 use super::child_environment::{
     FORWARD_TARGET_VARIABLE, child_environment_overlay, environment_value,
 };
-use super::config_loading::{ConfigLoading, classify_config_loading};
+use super::effective_target::default_allowed_worktree_dirs;
 use super::forwarding::replace_process_with_real_git;
 use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
-use super::invocation_config::{
-    InvocationConfigError, config_invalid_event, legacy_warning_events, load_invocation_config,
-};
 use super::management::plan_management;
+use super::policy_checks::{CandidateSource, ShippedChecks};
 use super::real_git::{ResolutionInputs, process_resolution_inputs, resolve_real_git};
 use super::real_git_candidate::same_file;
+use super::repository_facts::{GitFacts, git_facts};
+use super::wrapped_command::{WrappedOutcome, run_wrapped_command};
+use super::wrapper_controls::{Controls, no_controls, strip_global_controls};
+use super::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
 /// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
 /// Why:  Arguments and environment values are never decoded.
@@ -61,14 +63,35 @@ fn forwarded_to_self(own_executable: &Path) -> Action {
     );
 }
 
+/// What: The caller's home directory from the environment, if it names one.
+///       `Option<PathBuf>` is "an owned path or nothing".
+/// Why:  The tool caches exempt from linked-worktree enforcement live under the home
+///       directory; it comes from the injected environment, never from a fixed path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const home = environment.HOME === undefined || environment.HOME === '' ? undefined : environment.HOME;
+/// ```
+fn home_directory(environment: &[(OsString, OsString)]) -> Option<PathBuf> {
+    // `if let Some(home) = ... && cond` runs only when the variable is set and not empty.
+    if let Some(home) = environment_value(environment, "HOME")
+        && !home.is_empty()
+    {
+        // `Some(...)` is the "present" case; `PathBuf::from` turns the text into a path.
+        return Some(PathBuf::from(home));
+    }
+    // `None` is the "absent" case.
+    return None;
+}
+
 /// What: Decide the action for one invocation from injected process facts.
 ///       `&[OsString]` borrows the arguments after the program name;
 ///       `&[(OsString, OsString)]` borrows the environment as name/value pairs.
-/// Why:  Order matters. The recursion check runs before anything else. The management
-///       namespace is answered by the wrapper. Commands that need no policy
-///       configuration are forwarded without reading it. Every other command
-///       validates configuration and then stops, because policy execution is not
-///       implemented yet and forwarding it unguarded would silently drop enforcement.
+/// Why:  Order matters. The recursion check runs before anything else. Wrapper controls
+///       written before the subcommand are removed first, because Git's own reading of
+///       the arguments stops at them and would hide the subcommand from every later
+///       decision. The management namespace is answered by the wrapper. Every other
+///       command goes through the wrapped-command lifecycle with real Git behind it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,14 +109,20 @@ pub fn plan_invocation(
     {
         return forwarded_to_self(inputs.own_executable.as_path());
     }
-    let layout: GlobalLayout = global_layout(arguments);
+    // `mut` allows the scan to record what the removed controls asked for.
+    let mut global_controls: Controls = no_controls();
+    // `&mut global_controls` lends the record for writing.
+    let global_clean: Vec<OsString> = strip_global_controls(arguments, &mut global_controls);
+    // `.as_slice()` lends the owned list as a borrowed view.
+    let layout: GlobalLayout = global_layout(global_clean.as_slice());
     if layout.outcome == GlobalOutcome::Command
-        && arguments[layout.prefix_len] == MANAGEMENT_COMMAND
+        && global_clean[layout.prefix_len] == MANAGEMENT_COMMAND
     {
-        // `&arguments[a..]` borrows from index `a` on; `&arguments[..a]` borrows up to it.
+        // `&list[a..]` borrows from index `a` on; `&list[..a]` borrows up to it.
         return plan_management(
-            &arguments[layout.prefix_len + 1..],
-            &arguments[..layout.prefix_len],
+            &global_clean[layout.prefix_len + 1..],
+            &global_clean[..layout.prefix_len],
+            &global_controls,
             environment,
             inputs,
         );
@@ -111,42 +140,47 @@ pub fn plan_invocation(
     };
     let overlay: Vec<(OsString, OsString)> =
         child_environment_overlay(environment, real_git.as_path());
-    // Without a subcommand Git only prints its usage; there is nothing for policy to guard.
-    if layout.outcome == GlobalOutcome::NoCommand
-        || classify_config_loading(arguments) == ConfigLoading::Skip
-    {
-        return Action::Forward { real_git, overlay };
-    }
-    match load_invocation_config(
+    let stripped: StrippedInvocation = strip_wrapper_controls(arguments);
+    // The global options before the subcommand select the repository for every fact query.
+    let facts: GitFacts = git_facts(
         real_git.as_path(),
-        &arguments[..layout.prefix_len],
+        &stripped.arguments[..stripped.layout.prefix_len],
         overlay.as_slice(),
-    ) {
-        Ok(loaded) => {
-            // `String` is owned text; `mut` allows appending the stop notice.
-            let mut stderr: String = legacy_warning_events(&loaded);
-            stderr.push_str(
-                policy_execution_unavailable(
-                    // `.to_string_lossy()` renders the subcommand for the message only.
-                    arguments[layout.prefix_len].to_string_lossy().as_ref(),
-                )
-                .as_str(),
-            );
+    );
+    // `mut` lets the lifecycle cache facts and state what content policies can read.
+    let mut checks: ShippedChecks<GitFacts> = ShippedChecks {
+        facts,
+        // `.clone()` copies the stripped arguments for the rule cores.
+        arguments: stripped.arguments.clone(),
+        candidates: CandidateSource::None,
+        allowed_worktree_dirs: default_allowed_worktree_dirs(
+            environment,
+            // `.as_deref()` lends the optional owned path as an optional borrowed one.
+            home_directory(environment).as_deref(),
+        ),
+    };
+    // `match` picks by variant and binds the fields each ending carries.
+    match run_wrapped_command(&stripped, environment, &mut checks) {
+        // `arguments: forwarded` binds the field under a new name.
+        WrappedOutcome::Forward {
+            arguments: forwarded,
+            stderr,
+        } => {
+            return Action::Forward {
+                real_git,
+                arguments: forwarded,
+                overlay,
+                stderr,
+            };
+        }
+        WrappedOutcome::Exit { code, stderr } => {
             return Action::Exit {
-                code: ENGINE_FAILURE_EXIT_CODE,
+                code,
                 // `String::new()` is empty owned text: wrapped commands report on standard error.
                 stdout: String::new(),
                 stderr,
             };
         }
-        Err(InvocationConfigError::Configuration(error)) => {
-            return Action::Exit {
-                code: ENGINE_FAILURE_EXIT_CODE,
-                stdout: String::new(),
-                stderr: config_invalid_event(&error),
-            };
-        }
-        Err(InvocationConfigError::Repository(message)) => return failure(message.as_str()),
     }
 }
 
@@ -173,9 +207,19 @@ pub fn run_process(arguments: &[OsString], environment: &[(OsString, OsString)])
     };
     // `match` picks by variant and binds the fields each one carries.
     match action {
-        Action::Forward { real_git, overlay } => {
-            let error: std::io::Error =
-                replace_process_with_real_git(real_git.as_path(), arguments, overlay.as_slice());
+        Action::Forward {
+            real_git,
+            arguments: forwarded,
+            overlay,
+            stderr,
+        } => {
+            // Warning events reach the caller before Git's own output.
+            write_stream(&mut std::io::stderr(), stderr.as_str());
+            let error: std::io::Error = replace_process_with_real_git(
+                real_git.as_path(),
+                forwarded.as_slice(),
+                overlay.as_slice(),
+            );
             write_stream(
                 &mut std::io::stderr(),
                 format!("cli-git: cannot start {}: {error}\n", real_git.display()).as_str(),

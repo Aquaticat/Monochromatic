@@ -101,6 +101,34 @@ const INITIAL: [u32; 8] = [
     0x5be0_cd19,
 ];
 
+/// What: The FIPS 180-4 `Ch` function: each result bit is the `y` bit where the `x` bit is 1,
+/// and the `z` bit where the `x` bit is 0.
+/// Why: FIPS spells it `(x & y) ^ (!x & z)`. Those two halves never share a set bit, so in that
+/// spelling `^` and `|` give the same value and replacing one with the other changes no digest.
+/// This spelling is the same function, and each of its operators changes some result bit when replaced,
+/// so the fixed vectors notice any such change.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function choose(x: number, y: number, z: number): number { return (z ^ (x & (y ^ z))) >>> 0; }
+/// ```
+fn choose(x: u32, y: u32, z: u32) -> u32 {
+    return z ^ (x & (y ^ z));
+}
+
+/// What: The FIPS 180-4 `Maj` function: each result bit is the value at least two of the three input bits share.
+/// Why: FIPS spells it `(x & y) ^ (x & z) ^ (y & z)`, where either `^` can become `|` without changing
+/// the value, because at most one or all three of the terms are set. Here `x` and `y` are the majority
+/// where they agree, and `z` breaks the tie where they differ; replacing any operator changes some result bit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function majority(x: number, y: number, z: number): number { return (y ^ ((x ^ y) & (y ^ z))) >>> 0; }
+/// ```
+fn majority(x: u32, y: u32, z: u32) -> u32 {
+    return y ^ ((x ^ y) & (y ^ z));
+}
+
 /// What: Mix one 64-byte block into the running eight-word state.
 /// Why: The digest is this compression applied to every padded block in order.
 /// `&mut [u32; 8]` lends the caller's state for in-place update; `&[u8]` lends the block read-only.
@@ -133,16 +161,16 @@ fn compress(state: &mut [u32; 8], block: &[u8]) {
     for index in 0..64 {
         let big_one: u32 =
             work[4].rotate_right(6) ^ work[4].rotate_right(11) ^ work[4].rotate_right(25);
-        let choose: u32 = (work[4] & work[5]) ^ (!work[4] & work[6]);
+        let chosen: u32 = choose(work[4], work[5], work[6]);
         let first: u32 = work[7]
             .wrapping_add(big_one)
-            .wrapping_add(choose)
+            .wrapping_add(chosen)
             .wrapping_add(ROUND[index])
             .wrapping_add(schedule[index]);
         let big_zero: u32 =
             work[0].rotate_right(2) ^ work[0].rotate_right(13) ^ work[0].rotate_right(22);
-        let majority: u32 = (work[0] & work[1]) ^ (work[0] & work[2]) ^ (work[1] & work[2]);
-        let second: u32 = big_zero.wrapping_add(majority);
+        let agreed: u32 = majority(work[0], work[1], work[2]);
+        let second: u32 = big_zero.wrapping_add(agreed);
         work[7] = work[6];
         work[6] = work[5];
         work[5] = work[4];

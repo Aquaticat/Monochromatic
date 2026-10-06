@@ -136,9 +136,11 @@ The user preapproves Helix-owned components and waives a broad dependency-select
 Inspect relevant integration behavior and comply with the licenses of reused code.
 Do not import Helix's modal interaction model or whole editor merely to reuse its internals.
 
-Inlay placement is delegated to the agent:
+Inlay placement was delegated to the agent:
 choose the implementation supported by evidence,
 not an assumed presentation preference.
+The user ended that delegation on 2026-10-05 after seeing the built result;
+the placement is now the one recorded under "Interface decisions (inlay hints and diagnostics)".
 
 ## Decisions of 2026-10-05
 
@@ -166,6 +168,16 @@ quotations are the user's words.
   "I'm approving the notify crate w/o vetting.
   I trust it."
   This approval covers the `notify` crate itself.
+- File-watching timing,
+  decided after the agent's measurements:
+  the safety re-read of everything shown runs every 1 s
+  (the user typed "Every 1s" instead of the offered 10 s,
+  paced,
+  and 30 s);
+  two notified re-reads of one item stay at least 100 ms apart;
+  a file that is still being written is read after 50 ms without further writes,
+  at most 100 ms after the first
+  (instead of the 150 and 250 ms the agent took from editord and the old polling interval).
 - Moving between outputs with different scaling is verified end to end:
   the nested test compositor gains runtime output scaling first.
 - The nested test compositor's private D-Bus session must not activate services from host service definitions.
@@ -199,6 +211,114 @@ quotations are the user's words.
 - UI questions are presented with screenshots of every option,
   stored as local files in the repository rather than a network service:
   "These are useful records that shouldn't depend on a network service to be available."
+
+### Interface decisions (UI batch 2)
+
+Every option was shown as built screenshots:
+`package/desktop-app/ide/design/questions/2026-10-05-ui-batch-2.html`,
+with frames in `package/desktop-app/ide/design/screenshots/2026-10-05-ui-batch-2/`.
+
+- The sidebar divider is a thin line with no strip (option B):
+  "The 48px rule came from Android and focus on touch targets.
+  Losing easily dragging the divider support on touch screens also isn't going to impact this specific app."
+  The pointer grab zone is narrow and sized from desktop precedent checked against sources,
+  not the prototype's 48 px zone over the tree and the source;
+  that sizing was announced by the agent and is open to the user's veto.
+- The divider's smaller target is an exception for that one element,
+  not for the application:
+  "'Target size is not a concern on this desktop app' is wrong.
+  It depends on the situation.
+  For this specific app,
+  we're supporting desktops only;
+  there are desktops with touch screens,
+  but all desktops have touchpads/mice and a keyboard;
+  grabbing the divider and changing where it's at is a very infrequent action;
+  we're already committed to supporting changing where it is at both by mouse and keyboard.
+  Only because all these conditions are met that we were able to bend the 48 x 48 rule for that specific element."
+- The divider stays a keyboard Tab stop (option A).
+- The clear button in the find and search boxes stays,
+  with a click or touch target of at least 48 by 48:
+  "Keep it and make it at least 48 x 48."
+  A target is its hit area:
+  "Please understand what a click/touch target is.
+  That includes invisible padding."
+  The toolkit's control has a hit cell 16 px wide and as tall as the box
+  (measured in `i-slint-compiler` 1.18.1,
+  `widgets/fluent/lineedit.slint` and `widgets/common/lineedit-base.slint`),
+  and its width cannot be set from outside,
+  so the application gets its own text box with its own clear cell.
+- The find bar stays keyboard only (option A):
+  no previous,
+  next,
+  or close buttons.
+- Selected rows in the tree,
+  the combined-search list,
+  and the references list draw white text on the blue selection fill in both schemes (option B),
+  the same rule as selected source text.
+
+### Interface decisions (inlay hints and diagnostics)
+
+The agent had placed hints in boxes after the end of their code line,
+because that placement moves no source text
+(frames in `package/desktop-app/ide/design/screenshots/2026-10-05-annotations-as-built/`).
+The user rejected it:
+"On inlay hints:
+Do not show them inline.
+Show them on another virtual line,
+like what editord does."
+
+- Inlay hints go on virtual rows above their code line,
+  each hint above the position it annotates,
+  as `package-paused/desktop-daemon/editord/src/client/inlay/line.ts` packs them.
+- The known cost is accepted with that decision:
+  hinted lines are taller,
+  so rows beneath move when hints arrive.
+  The implementation limits that movement and measures what remains.
+- Diagnostic messages go on virtual rows above their line as well,
+  every message always visible as in editord.
+  The agent had said diagnostics would stay as built
+  (underline,
+  lettered marker after the line end,
+  a card at the caret);
+  the user answered:
+  "Diiagnostics should be on virtual lines too."
+- A block of virtual rows must look like it belongs to the code line beneath it,
+  not to the line before:
+  "Virtual lines should look like they belong to the next line,
+  not to the previous line,
+  by tuning spacing."
+  So the rows sit tight against their own line and a larger gap separates them from the previous line.
+- Derived by the agent from the two answers and open to the user's veto:
+  nothing that annotates a line is drawn on the code line or after its end,
+  so the lettered marker and the caret card go;
+  the underline under the marked characters stays.
+- Not decided by these answers,
+  and to be asked with built screenshots:
+  the look of the hint row,
+  whether hint labels are shortened as editord shortens them,
+  whether the marker or the card stay beside the rows,
+  and the wording of a diagnostic row.
+
+### Agent rule decisions
+
+- Asking for decisions:
+  questions are batched in the question tool and each item's context is explained again in plain words
+  (rule `QRX` in `AGENTS.md`).
+- UI decisions are asked with built screenshots of every option stored as local repository files
+  (rule `QVS` in `.agents/skills/visual-design-review/SKILL.md`).
+- Target-size rules live in the "Target size" section of `.agents/skills/visual-design-review/SKILL.md`,
+  not in `AGENTS.md`:
+  the 48 px minimum (rule `ATS`,
+  now naming desktop too,
+  moved there "with more details"),
+  the hit-area definition (rule `HZA`),
+  and the per-element exception rule (rule `TXE`).
+  The agent added rules `HZP` and `HZK` and a worked example beside them;
+  the user kept all three when asked.
+- Declined:
+  a reference-parity rule,
+  a CLI `--help` rule,
+  and a font-verification rule.
 
 ## Verification boundary
 

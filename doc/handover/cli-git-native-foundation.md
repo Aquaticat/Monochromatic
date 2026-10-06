@@ -222,6 +222,7 @@ and is the closest direct translation of the TypeScript `policies` map without p
   "policies": {
     "markdown/autofix": ["warn", { "rules": ["lfs-image-url"], "exclude": ["package/ssg/"] }],
     "mono/forbidden-root-context": "error",
+    "mono/dependent-version-bump": "error",
     "security/forbidden-strings": ["error", { "builtinRules": true }],
   },
   "hooks": { "concurrentCommits": false },
@@ -230,10 +231,18 @@ and is the closest direct translation of the TypeScript `policies` map without p
 }
 ```
 
-The `policies` block shown is the direct translation of this repository's `cli-git.config.ts`.
+The `policies` block shown is the translation of this repository's `cli-git.config.ts`
+under the rule the human decided on 2026-10-05
+(see "Defaults with and without a configuration file"):
+it names all four optional policies,
+including `mono/dependent-version-bump`,
+which the TypeScript configuration never listed and the incumbent ran at `error` anyway.
 The three concurrency sections show their defaults and may be omitted.
-`config_parse_tests.rs` loads that `policies` block
-and asserts that `mono/dependent-version-bump` stays at `error` without being listed.
+`config_parse_acceptance_tests.rs` pins both sides:
+`repository_translation_names_all_four_optional_policies` loads that block,
+and `literal_translation_silently_stops_the_unlisted_policy` shows that a word-for-word translation,
+which names only three,
+leaves `mono/dependent-version-bump` off.
 
 A setting is a severity (`"off"`,
 `"warn"`,
@@ -286,20 +295,42 @@ or flat names.
 
 #### Defaults with and without a configuration file
 
-A repository that has `cli-git.config.jsonc` runs every shipped policy at its incumbent default
-unless the file says otherwise;
-`"off"` is the way to stop one.
-A repository without the file runs the five built-ins only
-(`CliGitConfig::unconfigured()`),
-because the incumbent ran the other four only where a configuration registered their plugin.
-Consequence:
-an empty `{}` file enables four more policies than no file.
-The alternative,
-running all nine policies in every repository on the machine,
-would add scanning,
-Markdown rewriting,
-root `CONTEXT.md` rejection,
-and dependent-version propagation to repositories that have never configured cli-git.
+Decided by the human on 2026-10-05,
+no longer open to veto:
+optional policies run only when listed.
+The five built-ins run everywhere at their default severity.
+Each of the four policies that plugins used to provide
+(`markdown/autofix`,
+`mono/forbidden-root-context`,
+`mono/dependent-version-bump`,
+`security/forbidden-strings`)
+is off unless `cli-git.config.jsonc` names it,
+whether or not a file exists.
+An empty `{}` file and no file therefore behave identically,
+and `CliGitConfig::defaults()` is the one default set
+(`CliGitConfig::unconfigured()` is removed;
+the registry field is `off_unless_listed`).
+
+This replaces what this delegation first shipped,
+where a present file ran all nine policies at their incumbent defaults
+and only a missing file left the four off.
+
+Cutover item:
+this repository's translated configuration must name all four,
+as the block under "Shape" does.
+The incumbent ran `mono/dependent-version-bump` at `error` without the root configuration naming it;
+left unlisted,
+it silently stops.
+
+A listing with options but no severity still gets the policy's incumbent default severity:
+for the two policies that take options,
+an options object alone is a third accepted setting form,
+so `"markdown/autofix": { "exclude": ["package/ssg/"] }` runs that policy at `warn`
+and `"security/forbidden-strings": {}` runs the scanner at `error`.
+The two optional policies without options are always listed with a severity word.
+The registry records each policy's incumbent default severity,
+pinned by `every_identity_resolves_to_its_declared_row`;
+`options_alone_list_a_policy_at_its_default_severity` pins the new form.
 
 #### Options
 
@@ -314,24 +345,40 @@ Whether `FORBIDDEN_STRINGS_RULES` stays the way to name the rules file is not de
 
 #### Configuration root
 
+Decided by the human on 2026-10-05,
+no longer open to veto:
+the root is the top level Git reports,
+for configuration lookup and for the require-root policy alike.
+
 The root is what `git rev-parse --show-toplevel` reports under the caller's global options.
 For a linked worktree that is the linked worktree's own top level,
 as with the incumbent.
-Unlike the incumbent it honors `--git-dir`,
+It honors `--git-dir`,
 `--work-tree`,
 and their environment forms,
 which matches `SPEC.md` ("canonical real-Git toplevel").
+The incumbent instead walks up from the effective directory to the nearest valid Git marker
+and ignores those options;
+that difference is intentional.
 A bare repository,
 the inside of `.git`,
-and a non-repository read no file and use the unconfigured defaults.
+and a non-repository read no file and use the defaults.
 
 #### Legacy files
 
-`cli-git.config.mjs` or `cli-git.config.ts` without a JSONC file is a migration error.
+Decided by the human on 2026-10-05,
+no longer open to veto:
+the legacy notice appears only in `git cli-git check`.
+
+`cli-git.config.mjs` or `cli-git.config.ts` without a JSONC file is a migration error on every command,
+unchanged.
 Beside a JSONC file,
-the JSONC file is authoritative and each legacy file is reported on every configuration-loading command.
-This lets both wrappers keep their configuration during the rollback window.
-The stricter alternative is to reject any legacy file.
+the JSONC file is authoritative,
+and ordinary commands and `git cli-git fix` print nothing about the legacy file;
+only `git cli-git check` reports each one,
+as a `configuration-warning` event on standard output.
+This lets both wrappers keep their configuration during the rollback window without a notice on every command.
+This delegation first shipped the notice on every configuration-loading command.
 
 #### File handling
 
@@ -457,7 +504,9 @@ on standard error for a wrapped Git command,
 on standard output for `git cli-git check` and `git cli-git fix`.
 A legacy file beside the JSONC file is one `configuration-warning` event
 with code `legacy-config-ignored` and a `path` field,
-on the same stream.
+on standard output of `git cli-git check` only
+(decided 2026-10-05;
+see "Legacy files").
 
 ### Management namespace
 
@@ -477,8 +526,12 @@ A malformed invocation prints the usage or the specific refusal on standard erro
 an unknown ID is a `config-invalid` event.
 A well-formed `check` or `fix` resolves real Git,
 validates the selected worktree's configuration,
-reports legacy files,
-and then stops with exit status 2 and the notice that policy execution is not implemented.
+and then stops with exit status 2 and the notice that policy execution is not implemented;
+`check`,
+and only `check`,
+first reports legacy files
+(decided 2026-10-05;
+see "Legacy files").
 `--help` and `-h` print help on standard output with exit status 0,
 without resolving Git or reading a repository.
 
@@ -942,7 +995,10 @@ Every public item has rustdoc.
   `CliGitConfig`,
   `PolicyConfig` with `setting(id)`,
   the option and concurrency records,
-  and the `defaults()` and `unconfigured()` constructors.
+  `unlisted_severity(descriptor)`,
+  and the `defaults()` constructor
+  (`unconfigured()` was removed on 2026-10-05;
+  see "Defaults with and without a configuration file").
 - `config_parse`:
   `parse_config(source)`.
 - `config_file`:

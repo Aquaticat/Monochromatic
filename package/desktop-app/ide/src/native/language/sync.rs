@@ -1,0 +1,167 @@
+//! Telling the worker about the displayed file: opens, reloads, and the visible lines for hints.
+//!
+//! A command the worker's queue cannot take now (`Ok(false)`) is sent again on the next tick.
+//! Requests are sent only after the worker was told about the displayed text, because the worker
+//! drops, without any reply, a request for text it does not hold.
+
+/// The language state and the surface helper that reads the displayed stamp.
+use super::{Language, surface::displayed};
+/// The window reports the scroll offset and the viewport height.
+use crate::native::{AppWindow, State};
+/// What: `anyhow::Result<bool>` is "told the worker" (true), "try again" (false), or an error.
+/// Why: An error means the worker stopped; the caller then turns language support off.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Result<T> = T; // throws when the worker stopped
+/// ```
+use anyhow::Result;
+/// Commands and the identities they carry.
+use ide_app::language::{hints::HintWindow, identity::DocumentStamp, sync::DocumentOpen};
+/// What: `Rc<RefCell<State>>` is the window's shared source state; `Duration` and `Instant`
+///       measure how long the visible lines stayed the same.
+/// Why: The reload record is taken out of the source state once the worker accepted it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Shared<T> = { current: T };
+/// ```
+use std::{
+    cell::RefCell,
+    rc::Rc,
+    time::{Duration, Instant},
+};
+
+/// How long the visible lines must stay the same before hints are asked for them. Chosen, not
+/// measured: long enough that a wheel scroll asks once at its end, short enough to feel prompt.
+const HINT_SETTLE: Duration = Duration::from_millis(200);
+
+/// What: The visible lines last reported and the lines seen most recently with their time.
+///       `Option<(A, B)>` is "a pair, or nothing".
+/// Why: Hints are asked for once per settled view and once per newly displayed text.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type HintLines = { sent?: [DocumentStamp, HintWindow]; seen?: [HintWindow, number] };
+/// ```
+#[derive(Debug, Default)]
+pub(super) struct HintLines {
+    /// Stamp and lines the worker was last told.
+    sent: Option<(DocumentStamp, HintWindow)>,
+    /// Lines seen on the latest tick and since when they have not changed.
+    seen: Option<(HintWindow, Instant)>,
+}
+
+/// What: Make the worker hold the displayed text. `Ok(true)` once it does.
+/// Why: A new file generation is an open; a new revision of the same file is the reload the
+///      reload path recorded; an explicit action can ask for the file to be displayed again so
+///      the worker re-resolves programs and restarts failed servers.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function update(language: Language, source: Shared<State>): boolean
+/// ```
+pub(super) fn update(language: &mut Language, source: &Rc<RefCell<State>>) -> Result<bool> {
+    // `let Some(worker) = ... else` leaves when language support is off.
+    let Some(worker) = language.worker.as_mut() else {
+        return Ok(false);
+    };
+    let current = source.borrow();
+    // `clone` copies the path; without a displayed file there is nothing to tell.
+    let Some(path) = current.file_path.clone() else {
+        return Ok(false);
+    };
+    let stamp = displayed(&current);
+    if language.synced == Some(stamp) && !language.reopen {
+        return Ok(true);
+    }
+    let same_file = language
+        .synced
+        .is_some_and(|synced| return synced.file == stamp.file);
+    // A reload record for exactly the displayed revision continues what the worker holds.
+    if same_file
+        && !language.reopen
+        && let Some(reload) = current
+            .language_reload
+            .as_ref()
+            .filter(|record| return record.file == stamp.file && record.revision == stamp.revision)
+    {
+        let command = reload.clone();
+        drop(current);
+        if !worker.reload(command)? {
+            return Ok(false);
+        }
+        tracing::debug!(?stamp, "told the language worker about a reload");
+        language.synced = Some(stamp);
+        source.borrow_mut().language_reload = None;
+        return Ok(true);
+    }
+    // `text().clone()` copies the rope handle; its chunks are shared, not copied.
+    let open = DocumentOpen {
+        path: path.clone(),
+        text: current.document.text().clone(),
+        stamp,
+    };
+    drop(current);
+    if !worker.open(open)? {
+        return Ok(false);
+    }
+    tracing::debug!(?stamp, path = %path.display(), reopened = language.reopen, "told the language worker about the displayed file");
+    language.synced = Some(stamp);
+    language.reopen = false;
+    // An older reload record is covered by the full text just sent.
+    source.borrow_mut().language_reload = None;
+    return Ok(true);
+}
+
+/// What: Report the visible lines once they settled, or at once for newly displayed text.
+/// Why: Hints are asked for the lines in view and some around them; scrolling asks only when it stops.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function hints(language: Language, window: AppWindow, stamp: DocumentStamp): void
+/// ```
+pub(super) fn hints(
+    language: &mut Language,
+    window: &AppWindow,
+    stamp: DocumentStamp,
+) -> Result<()> {
+    let Some(worker) = language.worker.as_mut() else {
+        return Ok(());
+    };
+    // `as usize` truncates the non-negative line count; at least one line is always in view.
+    let first_line = ((-window.get_scroll_y()).max(0.0) / 24.0) as usize;
+    let visible_lines = ((window.get_viewport_height() / 24.0).ceil() as usize).max(1);
+    let wanted = HintWindow {
+        first_line,
+        visible_lines,
+    };
+    if language.hints.sent == Some((stamp, wanted)) {
+        return Ok(());
+    }
+    let new_text = language
+        .hints
+        .sent
+        .is_none_or(|(sent, _)| return sent != stamp);
+    // `map` reads the lines of the previous sighting, if any.
+    if language.hints.seen.map(|(lines, _)| return lines) != Some(wanted) {
+        language.hints.seen = Some((wanted, Instant::now()));
+    }
+    let settled = language
+        .hints
+        .seen
+        .is_some_and(|(_, since)| return since.elapsed() >= HINT_SETTLE);
+    if !new_text && !settled {
+        return Ok(());
+    }
+    if worker.request_hints(stamp, wanted)? {
+        tracing::debug!(
+            ?stamp,
+            first_line,
+            visible_lines,
+            "reported visible lines for inlay hints"
+        );
+        language.hints.sent = Some((stamp, wanted));
+    }
+    return Ok(());
+}

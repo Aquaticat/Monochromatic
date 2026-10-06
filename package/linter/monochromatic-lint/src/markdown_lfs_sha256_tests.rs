@@ -7,8 +7,21 @@
 //! // expect(sha256Hex(bytes)).toBe(createHash('sha256').update(bytes).digest('hex'));
 //! ```
 
-/// Import the digest under test.
-use super::sha256_hex;
+/// Import the digest and both round functions under test.
+use super::{choose, majority, sha256_hex};
+
+/// Both round functions equal their FIPS 180-4 definitions on every combination of three input bits:
+/// each of the eight combinations appears at one bit position of these three words.
+#[test]
+fn choose_and_majority_match_their_fips_definitions() {
+    let x: u32 = 0xf0f0_f0f0;
+    let y: u32 = 0xcccc_cccc;
+    let z: u32 = 0xaaaa_aaaa;
+    assert_eq!(choose(x, y, z), (x & y) ^ (!x & z));
+    assert_eq!(choose(x, y, z), 0xcaca_caca);
+    assert_eq!(majority(x, y, z), (x & y) ^ (x & z) ^ (y & z));
+    assert_eq!(majority(x, y, z), 0xe8e8_e8e8);
+}
 
 /// Published examples: the empty message, `abc`, and the 448-bit two-block message.
 #[test]

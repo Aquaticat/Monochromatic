@@ -10,14 +10,22 @@
 mod ui {
     // Use the toolkit's supported re-export syntax rather than editing generated Rust.
     slint::slint! {
-        export { AppWindow, SourceSelection } from "../ui/app.slint";
+        export { AppWindow, SourceMarker, SourceSelection } from "../ui/app.slint";
     }
 }
 
 /// Source-open errors identify their input instead of exposing an unlabelled I/O failure.
 use anyhow::{Context, bail};
+/// Hint and diagnostic snapshots with their position index.
+use ide_app::annotation::Annotations;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
+/// The Language module's handle, its startup rule, its log directive, and the reload record.
+use ide_app::language::{
+    HELIX_LOG_DIRECTIVE, LanguageWorker, enter_project_directory, sync::DocumentReload,
+};
+/// The displayed file is reread on change notifications, or on the old timer while unwatched.
+use ide_app::refresh_policy::SourceRefresh;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
@@ -41,6 +49,14 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
+/// Inlay hints and diagnostics: the snapshot setter, visible subset, marker rows, and caret card.
+mod annotate;
+/// Rendered annotation pixels in both schemes, untouched source pixels, and visible-only repaints.
+#[cfg(test)]
+mod annotation_paint_tests;
+/// Injected hint and diagnostic snapshots through real key and pointer events.
+#[cfg(test)]
+mod annotation_tests;
 /// Real key events drive caret movement, Shift selection, paging, and caret-following scroll.
 #[cfg(test)]
 mod caret_tests;
@@ -60,6 +76,11 @@ mod focus_tests;
 mod font_tests;
 /// Source selection and keyboard callbacks.
 mod input;
+/// Inspection-only hint and diagnostic injection from a JSON file; debug builds only.
+#[cfg(debug_assertions)]
+mod inspect;
+/// Go to definition, references, and hover through the Language module.
+mod language;
 /// Project tree and asynchronous successful-file navigation.
 mod navigation;
 /// Missing targets and canonical aliases exercise reveal liveness and model identity.
@@ -71,6 +92,9 @@ mod navigation_tests;
 /// Real pointer events select by character, word, and line, extend with Shift, and drag without panning.
 #[cfg(test)]
 mod pointer_tests;
+/// External-write-to-window timings for the tree and the displayed source; ignored by default.
+#[cfg(test)]
+mod refresh_latency_tests;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
@@ -113,6 +137,9 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// External changes reach the tree and source through inotify notifications, faster than polling could.
+#[cfg(test)]
+mod watch_tests;
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.
@@ -160,6 +187,17 @@ struct State {
     frame_stamp: Option<FrameStamp>,
     /// Accepted in-file matches; painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
+    /// The latest accepted external reload the Language module has not been told about yet.
+    language_reload: Option<DocumentReload>,
+    /// Latest accepted hint and diagnostic snapshots, stored by the language poll;
+    /// painted and handed out only while they describe the displayed file and revision.
+    annotations: Annotations,
+    /// The displayed file lies outside the project; it was opened read-only from a language target.
+    outside_project: bool,
+    /// Where the caret goes once the file of a language target is installed.
+    pending_jump: Option<language::Jump>,
+    /// When to reread the displayed file: on change notifications, or on a timer while unwatched.
+    refresh: SourceRefresh,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
@@ -186,16 +224,37 @@ impl State {
             presented_revision: None,
             frame_stamp: None,
             find: None,
+            language_reload: None,
+            annotations: Annotations::default(),
+            outside_project: false,
+            pending_jump: None,
+            refresh: SourceRefresh::default(),
         };
     }
 }
 
 /// Run one project window after display-independent argument parsing has completed.
 pub fn run(options: Options) -> anyhow::Result<()> {
+    // helix-lsp logs every protocol message in full at `info`; its directive keeps it at warnings.
     tracing_subscriber::fmt()
-        .with_env_filter("ide_app=debug,monochromatic_ide=debug")
+        .with_env_filter(format!(
+            "ide_app=debug,monochromatic_ide=debug,{HELIX_LOG_DIRECTIVE}"
+        ))
         .init();
     let workspace = Workspace::new(&options.project)?;
+    // Helix roots every server at the working directory it reads first, so the project root
+    // becomes the working directory before any thread starts or any Helix call is made.
+    // What: `and_then` starts the worker only when entering the directory succeeded.
+    // Why: Either failure leaves the window usable; language features then explain the reason.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let worker: LanguageWorker | Error;
+    // try { process.chdir(root); worker = new LanguageWorker(root); } catch (error) { worker = error; }
+    // ```
+    let language_worker = enter_project_directory(workspace.root())
+        .and_then(|()| return LanguageWorker::new(workspace.root()));
+    let project_root = workspace.root().to_path_buf();
     // Resolve initial-file paths relative to the explicit root, never the caller's ambient cwd.
     let file_path = if let Some(file) = options.file {
         Some(workspace.resolve(&file)?)
@@ -243,12 +302,25 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     bind_appearance(&window, &state);
     // Retain the timer until window shutdown; its Drop also closes and joins the find worker.
     let _find_timer = find::bind(&window, &state)?;
-    let _navigation_timer = navigation::bind(&window, &state, workspace)?;
+    let (_navigation_timer, navigation_state) =
+        navigation::bind_shared(&window, &state, workspace)?;
+    let language_binding = language::bind(
+        &window,
+        &state,
+        &navigation_state,
+        &project_root,
+        language_worker,
+    );
     render(&window, &state);
+    // Debug builds started with `IDE_INSPECT_ANNOTATIONS` show that file's hints and diagnostics; see `inspect`.
+    #[cfg(debug_assertions)]
+    inspect::inject(&window, &state)?;
     if state.borrow().file_path.is_none() {
         window.invoke_focus_tree();
     }
     window.run()?;
+    // The window is gone; stopping servers may take up to about a second without freezing it.
+    language_binding.close();
     // What: Ok(()) reports success without a payload; Err would carry a failure.
     // Why: Clean window closure is not a process error.
     //

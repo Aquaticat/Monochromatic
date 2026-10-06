@@ -8,7 +8,7 @@
 
 use crate::diagnostic::{Diagnostic, Severity};
 /// Import node findings and the processing failure reported when the document's structure cannot be walked.
-use crate::markdown_finding::{ancestry_failure, finding};
+use crate::markdown_finding::{finding, structure_failure};
 use crate::markdown_source::MarkdownSource;
 /// Import native heading data and shared finding construction.
 use satteri_ast::mdast::{MdastNodeType, decode_heading_data};
@@ -85,7 +85,7 @@ pub fn no_emphasis_as_heading(context: &MarkdownSource, severity: Severity) -> V
         let in_list: bool = match context.has_ancestor(*id, MdastNodeType::ListItem) {
             Ok(found) => found,
             Err(error) => {
-                findings.push(ancestry_failure(
+                findings.push(structure_failure(
                     context,
                     "markdown/no-emphasis-as-heading",
                     error,
@@ -106,7 +106,18 @@ pub fn no_emphasis_as_heading(context: &MarkdownSource, severity: Severity) -> V
         if kind != MdastNodeType::Emphasis && kind != MdastNodeType::Strong {
             continue;
         }
-        let text = context.text_content(child);
+        // `Ok(text)` is the emphasis text from the bounded descendant walk; `Err` means the child index has a cycle.
+        let text: String = match context.text_content(child) {
+            Ok(collected) => collected,
+            Err(error) => {
+                findings.push(structure_failure(
+                    context,
+                    "markdown/no-emphasis-as-heading",
+                    error,
+                ));
+                return findings;
+            }
+        };
         let last = text.chars().last();
         if last.is_some_and(|character| return SENTENCE_PUNCTUATION.contains(&character)) {
             continue;

@@ -115,6 +115,8 @@ description = "Exercise native window events and fonts in process-isolated headl
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
+// Language navigation tests start the scripted language server from beside the test binary.
+runCargo(['build', '--features', 'slint/mcp', '--bin', 'ide-scripted-lsp'])
 runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide'])
 """
 
@@ -255,6 +257,23 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--test', 'find', '--test', 'find_navigation', '--test', 'find_worker', '--test', 'find_reference', '--test', 'find_paint', '--test', 'source_frame'])
 """
 
+[tasks."test:annotations"]
+description = "Check inlay-hint and diagnostic layout, painting, stale-snapshot rejection, and the measured placement probe"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'source_frame', '--', '--nocapture'])
+"""
+
+[tasks."test:annotations-native"]
+depends = ["runtime"]
+description = "Exercise injected inlay hints and diagnostics through native window events in process-isolated headless tests"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--no-capture', '--filter-expr', 'test(/annotation/)'])
+"""
+
 [tasks."inspect:find-regex"]
 description = "Print the production plain matcher's per-case comparison against captured Chromium find cases"
 shell = "node --input-type=module-typescript -e"
@@ -308,6 +327,34 @@ arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
 run = "node bin/inspect-theme-guards.mjs"
 
+[tasks."inspect:annotation-guards"]
+description = "Remove inlay-hint and diagnostic guards only in a disposable copy and observe named regression failures"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[only]" help="Comma-separated guard names to run; default is every guard"
+'''
+run = "node bin/inspect-annotation-guards.mjs"
+
+[tasks."inspect:watch-guards"]
+description = "Remove change-watch and reread-schedule guards only in a disposable copy and observe named regression failures"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[only]" help="Comma-separated guard names to run; default is every guard"
+'''
+run = "node bin/inspect-watch-guards.mjs"
+
+[tasks."inspect:refresh-latency"]
+description = "Time external writes until the tree rows and displayed source change, in a disposable package copy"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[runs]" default="3" help="Repeated runs of the same build, for run-to-run spread"
+arg "[package]" help="Measure this crate directory below the private agent scratch root instead of the working tree, with the current latency test injected"
+'''
+run = "node bin/inspect-refresh-latency.mjs"
+
 [tasks."inspect:search-accessibility"]
 description = "Verify accepted search landmarks and rejected dialog role declarations in disposable markup"
 shell = "node --input-type=module-typescript -e"
@@ -336,7 +383,7 @@ console.log(JSON.stringify(record, null, 2))
 
 [tasks."lint:slint"]
 description = "Check the native UI declaration"
-run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/divider.slint"]
+run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/divider.slint", "slint-viewer --check ui/hover.slint", "slint-viewer --check ui/references.slint", "slint-viewer --check ui/annotation.slint"]
 
 [tasks.lint]
 run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rust", "mise run //package/desktop-app/ide:lint:slint"]
@@ -386,6 +433,15 @@ arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
 run = "node bin/inspect-language-guards.mjs"
 
+[tasks."inspect:language-navigation-guards"]
+description = "Remove native language-navigation guards only in a disposable copy and observe named regression failures"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[only]" help="Comma-separated guard names to run; default is every guard"
+'''
+run = "node bin/inspect-language-navigation-guards.mjs"
+
 [tasks.mcp]
 depends = ["runtime"]
 description = "Build and run the source-view gate with native headless UI inspection"
@@ -415,7 +471,7 @@ depends = ["runtime"]
 description = "Run the IDE in the repo compositor with isolated theme and font configuration"
 usage = '''
 arg "[scheme]" default="dark" help="Private system appearance: dark or light"
-arg "[fixture]" default="basic" help="Source fixture: basic, scroll, or syntax"
+arg "[fixture]" default="basic" help="Source fixture: basic, scroll, syntax, or annotations (injected inlay hints and diagnostics)"
 '''
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -426,7 +482,7 @@ const { join, resolve } = await import('node:path')
 const scheme = process.env.usage_scheme ?? 'dark'
 const fixture = process.env.usage_fixture ?? 'basic'
 if (scheme !== 'dark' && scheme !== 'light') { throw new Error('scheme must be dark or light') }
-if (!['basic', 'scroll', 'syntax'].includes(fixture)) { throw new Error('fixture must be basic, scroll, or syntax') }
+if (!['basic', 'scroll', 'syntax', 'annotations'].includes(fixture)) { throw new Error('fixture must be basic, scroll, syntax, or annotations') }
 runCargo(['build', '--features', 'slint/mcp'])
 const scratch = mkdtempSync(join(tmpdir(), 'monochromatic-ide-native-'))
 for (const name of ['config', 'cache', 'data']) { mkdirSync(join(scratch, name)) }
@@ -448,9 +504,20 @@ for (const family of ['Inter Variable', 'JetBrains Mono']) {
   console.error('System-font isolation: ' + family + ' resolves to ' + fallback)
 }
 const socket = join(scratch, 'control.sock')
-const project = join(scratch, 'project')
+// IDE_NATIVE_PROJECT and IDE_NATIVE_FILE open an existing disposable project instead of the generated fixture.
+// Language servers run unconfined and may write into the project they analyze, so only a directory
+// below the system temporary directory is accepted.
+const { realpathSync } = await import('node:fs')
+const { sep } = await import('node:path')
+let project = join(scratch, 'project')
+let sourceFile = join(project, 'fixture.ts')
+if (process.env.IDE_NATIVE_PROJECT) {
+  project = realpathSync(process.env.IDE_NATIVE_PROJECT)
+  if (!project.startsWith(realpathSync(tmpdir()) + sep)) { throw new Error('IDE_NATIVE_PROJECT must be a disposable directory below ' + tmpdir()) }
+  sourceFile = realpathSync(resolve(project, process.env.IDE_NATIVE_FILE ?? ''))
+  if (!sourceFile.startsWith(project + sep)) { throw new Error('IDE_NATIVE_FILE must name a file inside IDE_NATIVE_PROJECT') }
+} else {
 mkdirSync(project)
-const sourceFile = join(project, 'fixture.ts')
 const lines = fixture === 'syntax' ? [
   'const 猫: string = "cat";',
   '// Mixed source scripts keep their shared baseline.',
@@ -462,7 +529,46 @@ const lines = fixture === 'syntax' ? [
   'describe(猫);',
 ] : ['I am a big cat.', 'Select text and use the native Copy action.', '猫 and é are grapheme test cases.']
 if (fixture === 'scroll') { for (let index = 0; index < 200; index++) { lines.push('Line ' + String(index + 4) + ': smooth pixel scrolling, 猫 and Latin.') } }
+// The annotations fixture: hints and diagnostics are injected from a file through the debug-only inspection path,
+// over a tab, CJK, a combining mark, a ligature, overlapping ranges, a multi-line range, and a point at a line end.
+if (fixture === 'annotations') {
+  const tab = String.fromCharCode(9)
+  const accent = 'e' + String.fromCharCode(0x301)
+  lines.splice(0, lines.length,
+    'const label = "héllo 😀"; const total = area(2, 3);',
+    'const count: number = "not a number";',
+    tab + 'const 猫 = ' + accent + ' !== x;',
+    'function area(width: number, height: number): number {',
+    '  return width * height;',
+    '}')
+  const text = lines.join(String.fromCharCode(10))
+  const at = (needle, within = 0) => { const index = text.indexOf(needle); if (index < 0) { throw new Error('fixture lacks ' + needle) } return [...text.slice(0, index)].length + within }
+  const annotations = {
+    hints: [
+      { position: at('label', 5), label: ': string' },
+      { position: at('total', 5), label: ': number' },
+      { position: at('area(2', 5), label: 'width:' },
+      { position: at('2, 3)', 3), label: 'height:' },
+      { position: at('猫', 1), label: ': boolean' },
+    ],
+    diagnostics: [
+      { source: 'ts', start: at('area(2'), end: at('area(2', 10), severity: 'error', code: '2448', message: "Block-scoped variable 'area' used before its declaration." },
+      { source: 'eslint', start: at('area(2'), end: at('area(2', 10), severity: 'hint', code: 'prefer-const', message: 'Call result could be inlined.' },
+      { source: 'ts', start: at('"not a number"'), end: at('"not a number"', 14), severity: 'error', code: '2322', message: "Type 'string' is not assignable to type 'number'." },
+      { source: 'ts', start: at('"not a number";', 15), end: at('"not a number";', 15), severity: 'information', code: '80001', message: 'A point at the end of the line.' },
+      { source: 'ts', start: at('猫'), end: at('猫', 1), severity: 'warning', code: '6133', message: "'猫' is declared but its value is never read." },
+      { source: 'eslint', start: at(accent), end: at('x;', 1), severity: 'information', code: 'eqeqeq', message: 'Comparison of an accented letter.' },
+      { source: 'eslint', start: at('!=='), end: at('!==', 3), severity: 'hint', code: 'no-ligature', message: 'Strict inequality.' },
+      { source: 'ts', start: at('x;'), end: at('function', 8), severity: 'warning', message: 'This range crosses a line end and has no code.' },
+    ],
+  }
+  const annotationFile = join(scratch, 'annotations.json')
+  writeFileSync(annotationFile, JSON.stringify(annotations, null, 2))
+  env.IDE_INSPECT_ANNOTATIONS = annotationFile
+  console.error('IDE_INSPECT_ANNOTATIONS=' + annotationFile)
+}
 writeFileSync(sourceFile, lines.join(String.fromCharCode(10)))
+}
 console.error('IDE_NATIVE_SOCKET=' + socket)
 console.error('IDE_NATIVE_FIXTURE=' + sourceFile)
 const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')

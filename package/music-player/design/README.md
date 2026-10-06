@@ -29,8 +29,13 @@ Read these files in order:
 The first-run/no-library study is in
 [`evidence/first-run-access-boundaries.md`](evidence/first-run-access-boundaries.md).
 Its [verified offline review](questions/first-run-access.html) presents
-32 initial and two separately proven content-movement witnesses,
+32 first views,
 not a policy ballot.
+The study was rebuilt on 2026-10-05 after D84 made true-peak analysis
+automatic:
+its explanation no longer ends with a choice to analyse,
+and with the shorter text nothing scrolls,
+so it has no second views.
 The source states are authored inputs,
 not production permission/discovery evaluation or recovery acceptance.
 The owned native runtime was stopped after restoring its recorded fields.
@@ -94,24 +99,36 @@ Recorded native settings were restored and owned runtimes are absent.
 Real analysis,
 native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
-The [Settings viewer](questions/settings-pane.html) presents 32 freshly
-inspected native views of D11's accepted pane across both panels,
+The [Settings viewer](questions/settings-pane.html) is a withdrawn record,
+not a current design.
+It presents 24 inspected native views of a two-row Settings pane across both panels,
 themes and text scales,
-with the closed player and an end-of-column view wherever the column scrolls.
+with the closed player.
+D84 removed D11's true-peak analysis row,
+because analysis is automatic and not optional,
+and D85 removed the closing sentence.
+D86 then made the two remaining rows always-on behaviour and not settings,
+and D87 keeps the Settings page and leaves it empty until D81's template
+configuration is designed;
+no study of the empty page is built.
 [Its evidence boundary](evidence/settings-pane-boundaries.md) records the
 adopted Fold placement,
-the first build that inspection rejected,
+the withdrawn three-row publication,
 native row toggles,
 both Back paths and an offline replay of those inputs.
-At 200% text the column scrolls on both panels,
-and on the unfolded panel `Resume where I left off` leaves `off` alone on
-its second line;
-the viewer states both rather than deciding them.
+Nothing scrolls at either text size,
+most of the page below the two rows is empty,
+and on the unfolded panel at 200% text `Resume where I left off` leaves
+`off` alone on its second line;
+the viewer states these rather than deciding them.
 Real preferences,
 native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
-D81's template editor remains a separate design problem;
-no light surface from the original queue is left undrawn.
+D81's template editor is a separate design problem with its own built study:
+[`evidence/template-editor-boundaries.md`](evidence/template-editor-boundaries.md) describes it,
+and its [verified offline review](questions/template-editor.html) asks which layout of the preview to take.
+That question is open.
+No light surface from the original queue is left undrawn.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds

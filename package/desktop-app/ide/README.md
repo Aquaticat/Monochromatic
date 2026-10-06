@@ -15,13 +15,16 @@ and the next implementation action.
   font fidelity,
   and native external-change correspondence pass;
   the reading keys are listed under [Source view keys](#source-view-keys);
-  annotations are pending.
+  hints and diagnostics render from injected snapshots,
+  see [Inlay hints and diagnostics](#inlay-hints-and-diagnostics),
+  and await the language-server wiring.
 - [x] Native tree,
   asynchronous file switching,
   and recent-file reveal.
   The sidebar is resizable;
   see [Sidebar width](#sidebar-width).
-  Event-driven directory invalidation remains parity work.
+  External changes reach the tree and the source through inotify notifications;
+  see [Change watching](#change-watching).
 - [x] Combined path/content search.
 - [x] In-file find.
   Plain literal,
@@ -332,7 +335,7 @@ including reload,
 ## Language module
 
 The headless core in `src/language` drives Helix's language-server client on one worker thread.
-It is not wired into the window yet.
+[Language navigation](#language-navigation) wires it into the window.
 The native layer owns one `LanguageWorker`:
 it sends `open`,
  `reload`,
@@ -403,6 +406,428 @@ and the same fixtures unconfined as the guard control.
  readiness,
  and edit-refusal guards in a disposable copy
 and checks that their named tests fail.
+
+## Language navigation
+
+In the source view,
+Ctrl+B goes to the definition of the symbol at the caret,
+and at the definition itself it finds the symbol's references.
+Ctrl+click goes to the definition of the character under the pointer.
+Ctrl+Q shows hover information for the caret,
+and a pointer resting 350 ms on one character shows it for that character.
+Nothing of this is visible until it is used:
+there is no status bar and no language indicator.
+
+### Definitions and references
+
+One target is opened directly.
+In the displayed file the caret moves to the start of the target,
+and the target's line is centered when it was out of view.
+Another project file opens through the ordinary file open,
+so it enters Ctrl+0 to Ctrl+9 history,
+gets its tree badge,
+and is revealed in the tree.
+A file outside the project opens read-only,
+with a bordered `Outside project` label before its path in the file label;
+it gets no tree row,
+no history slot,
+and no project root of its own,
+and Ctrl+0 returns to the last project file.
+
+Several targets are listed beside the caret line,
+below it when there is room and above it otherwise,
+so the list never covers that line.
+The list's title counts them,
+for example `3 references` or `2 definitions`,
+and each row shows the project-relative path and the one-based line,
+or the server's address for a location that cannot be opened.
+Outside-project rows say `Outside project`
+and unopenable rows say `Cannot open`.
+The list takes keyboard focus:
+Up and Down move the selection and wrap,
+Enter or a click opens the selected location,
+Escape or a click outside closes the list,
+and every way of closing returns focus to the source view.
+Tab stays in the list and Ctrl+F waits until it is closed,
+as with the search overlay.
+Rows are 48 px tall;
+the selected row has the selection fill,
+a heavier weight,
+and a boundary.
+Accessibility tools see a `list` named by the title,
+with `list-item` rows that report their selection and open on their default action.
+
+A location the server names but the reader cannot open,
+such as an `untitled:` or `jdt:` address or a missing file,
+is explained instead of opened,
+for example `Cannot open file:///gone.rs: the file does not exist.`
+
+### Hover
+
+Hover content is shown as plain text in JetBrains Mono in a popup beside its line:
+below it when it fits,
+above it otherwise,
+and on the roomier side with a scrolling body when neither fits,
+so the popup never covers the hovered line.
+It is at most 640 px or 60% of the window wide and 320 px tall.
+Markdown code-fence lines are dropped,
+runs of blank lines collapse,
+and content longer than 8,000 characters is cut with an ellipsis line.
+
+The popup closes on Escape,
+on any caret movement,
+on scrolling,
+on a reload of the file,
+on a file switch,
+and when the search overlay opens.
+A pointer hover also closes when the pointer leaves both the source view and the popup,
+so the pointer can move into the popup to scroll it,
+and when the pointer rests over no character,
+such as past the end of a line,
+on a blank line,
+or over the line numbers.
+Resting over no character asks the server nothing.
+
+### Notes
+
+When an action the user asked for cannot be done,
+a note appears in the same popup beside the line it was asked about.
+A note has three channels that set it apart from hover content:
+a heavier weight,
+the interface typeface,
+and a bar along its leading edge.
+Notes are declared as an assertive live region and hover content as a polite one;
+announcement by a screen reader was not tested.
+A note closes like hover content,
+and a new action replaces it.
+A resting pointer never shows a note;
+its failures are only logged.
+
+Each note names the reason and the remedy:
+
+- a server still starting:
+  `scripted-ls is still starting (Indexing). Press Ctrl+B again in a moment.`,
+  with the server's progress title when it reports one;
+- a missing server program,
+  with the reason the Language module reports,
+  which for TypeScript names the project dependency to install,
+  followed by `After installing it, press Ctrl+B again.`;
+- a feature the server does not offer:
+  `scripted-ls does not offer go to definition.`;
+- a failed request,
+  with the server's error code and message,
+  a timeout,
+  or a server that stopped while answering,
+  each with the key to try again;
+- a request the server set aside because its analysis kept changing;
+- an empty answer:
+  `No definition found.`,
+  `No usages found.`,
+  or `No hover information at this position.`,
+  followed,
+  while the server reports work in progress,
+  by the advice to press the key again when it finishes;
+- a server that cannot follow external changes,
+  a failed start,
+  a launch the policy refused,
+  a server root outside the project,
+  and a file outside the project with no running server of its language;
+- a file without a recognized language or without a configured server;
+- an answer overtaken by a reload of the same file:
+  `The file changed on disk before the hover information arrived. Press Ctrl+Q again.`;
+- language support that could not start or stopped,
+  with the reason and the need to restart the application.
+
+The Language module re-resolves server programs and starts failed servers only when a file is displayed.
+When the latest status shows a missing program,
+a failed start,
+an unsynchronized server,
+or an outside-project file without a ready server,
+and no server is ready,
+an explicit action first displays the file to the worker again,
+so the remedy "press Ctrl+B again" works without switching files.
+
+### Stale results
+
+The handle's fence advances only when an open or reload command was queued,
+so the window checks every reply again before applying it:
+the reply must carry the number of the request the window waits for,
+of the same kind,
+and both the reply and the request must describe the displayed file generation and revision.
+A request is sent only after the worker holds the displayed text,
+because the worker drops a request for other text without replying;
+a waiting request whose text is no longer displayed is dropped,
+and on a reload of the same file the note asks to try again.
+The popup and the list close when the displayed text changes,
+and a language target waiting for its file is dropped by any later open.
+Pointer hover and key actions use separate request slots,
+so hovering never replaces a pending Ctrl+B,
+and a resting pointer's late answer never replaces the location list or a note.
+
+### Synchronization and annotations
+
+The window tells the worker about each displayed file,
+and about each accepted external reload with the copy taken before `Document::apply_reload` consumed it;
+a command the queue cannot take is sent again on the next 20 ms tick.
+The visible lines are reported for inlay hints once they stayed the same for 200 ms,
+a chosen value,
+and at once for newly displayed text.
+Accepted hint and diagnostic snapshots are stored in `State::annotations`,
+the store the section "Inlay hints and diagnostics" describes,
+which hands a snapshot out only for the stamp of the text being drawn.
+The tick that stores one repaints the source once (`src/native/language/poll.rs`),
+so hints and diagnostics appear without another event.
+While the hover popup,
+a note,
+or the location list is shown,
+the caret's problem card is hidden so the two never overlap;
+its text stays in the source view's accessible description.
+At window close the worker is dropped after the window is gone,
+which waits up to about a second for servers to exit.
+
+### Differences from editord
+
+editord's language client is in `package-paused/desktop-daemon/editord/src/client/app/`.
+Ctrl+B,
+Ctrl+click,
+the references fallback,
+opening a single reference directly,
+`path:line` rows,
+wrapping Up and Down,
+Enter,
+Escape,
+and the 350 ms pointer rest follow it.
+Deliberate differences:
+
+- Ctrl+Q shows hover information for the caret.
+  editord has no keyboard hover;
+  Ctrl+Q is the Quick Documentation key of the JetBrains keymap editord's other keys come from.
+- Hover content drops Markdown fence lines;
+  editord shows the raw text through `textContent`,
+  fences included.
+- The hover popup sits beside the hovered line at the hovered character,
+  not 8 px below the pointer,
+  and an empty answer for a new character closes it instead of leaving the previous content.
+- Notes stay until dismissed instead of disappearing after 2 seconds,
+  name a remedy,
+  and are declared as a live region for assistive technologies.
+- Several definitions are listed;
+  editord's server keeps only the first.
+- The list has a title,
+  48 px rows,
+  click to open,
+  and modal focus;
+  editord's popover has none of these.
+- A reload or a file switch closes the popup and the list.
+- A file outside the project gets no history slot.
+- There is no Find Usages key besides Ctrl+B at the definition,
+  no back navigation after a jump,
+  and no indication while a request is pending.
+
+### Language navigation checks
+
+`test:native` builds the scripted server `ide-scripted-lsp`,
+then drives every path with real window key and pointer events:
+definitions in the same file,
+another project file,
+and outside the project,
+the references list with its keys,
+outside click,
+and focus return,
+unopenable targets,
+hover by key and by the resting pointer with its placement and dismissals,
+each server-state note,
+answers overtaken by a reload and by a file switch,
+a worker that could not start,
+and closing while a request is pending.
+`IDE_SCRIPTED_DEFINITION` and `IDE_SCRIPTED_REFERENCES` give the scripted server's answers as JSON.
+`inspect:language-navigation-guards` removes each native guard in a disposable copy
+and checks that its named test fails.
+`inspect:native` takes `IDE_NATIVE_PROJECT` and `IDE_NATIVE_FILE`
+to open a disposable project below the system temporary directory instead of its generated fixture.
+
+## Inlay hints and diagnostics
+
+The source view draws inlay hints and the displayed file's diagnostics from the Language module's
+`HintsSnapshot` and `DiagnosticsSnapshot`.
+The window state keeps them in `State::annotations`,
+an `ide_app::annotation::Annotations` (`src/annotation.rs`).
+A language poll stores each polled snapshot with `accept_hints(displayed, snapshot)`
+or `accept_diagnostics(displayed, snapshot)`,
+which refuse a snapshot of any other text,
+and renders once when either accepted;
+accepting draws nothing by itself.
+`annotate::set_annotations(window, state, hints, diagnostics)` in `src/native/annotate.rs`,
+both arguments `Option<Arc<...>>`,
+replaces both and renders.
+For a running language server the caller is the language poll in `src/native/language/poll.rs`,
+through the `accept_` methods;
+tests and the path described under "Inspection" inject snapshots with `set_annotations`.
+
+A snapshot is painted only while its stamp names the displayed text:
+the file generation and the content revision.
+After an external change or a file switch the old snapshots draw nothing,
+and no caret card is shown,
+until snapshots for the new text arrive.
+Source text never moves in between,
+because no annotation takes space inside a line.
+
+### Placement
+
+Hints are drawn after the end of their line,
+in source order,
+each in a box,
+in the source family's real italic face at 13 px and 70 percent of the source ink.
+A line where a diagnostic starts gets a severity marker between its text and its hints.
+Nothing is inserted into a line,
+so caret movement,
+selection,
+hit testing,
+double-click words,
+find rectangles,
+tab stops,
+copying,
+and reload correspondence are those of the line without annotations.
+A click on a hint is a click past the end of its line and puts the caret at the line end.
+
+The scope delegates placement to evidence.
+Three placements were measured against the reading requirements with the production shaper
+(`tests/annotation_placement.rs`, printed by `test:annotations`),
+using the hints real servers returned in the `inspect:language` run of the Language module:
+
+- Inline virtual text (Helix's `InlineAnnotation`, also the convention of most editors) widens the line.
+  On the rust-analyzer line with four hints,
+  glyphs after the first hint move by up to 234 px;
+  on the TypeScript 7 line with two hints,
+  by up to 135 px.
+  A stale snapshot is never painted,
+  so every reload would move the text left and then right again when new hints arrive,
+  measured at 20 ms (TypeScript 7.0.2) and 40 ms (rust-analyzer) after the reload.
+  Hints are requested for one view height above and two below the visible lines,
+  so scrolling further moves arriving lines too.
+  A hint before a tab either changes the tab's width
+  (9 px without the hint, 18 px with it)
+  or leaves the tab 9 px past a tab stop.
+  Up and Down aim at a pixel x,
+  and 15 of 24 caret positions of a hinted line landed on another source position.
+- Hint rows above the line,
+  editord's placement
+  (`::before` blocks in `package-paused/desktop-daemon/editord/src/client/inlay/styles.ts`),
+  make hinted lines taller,
+  so every row below moves down by a whole row per hinted line above it,
+  again whenever hints arrive late.
+  Rows are a fixed 24 px throughout this view:
+  26 uses of that height in 8 source files and 10 `line-height` uses in `ui/app.slint` at the fork point.
+- End of line moves no source glyph and no row.
+  Its measured cost is association:
+  in the same inspection run,
+  1 of 2 hinted rust-analyzer lines and 2 of 3 hinted TypeScript lines carry more than one hint,
+  and their positions are then shown only by order.
+
+End of line is the only placement that meets the no-jump and unchanged-geometry requirements,
+so it is used.
+`late_snapshots_move_no_source_pixel` checks the result on rendered pixels.
+
+### Diagnostic marks
+
+Each diagnostic is underlined under the characters it marks,
+using the same range geometry as selection,
+so tabs,
+CJK,
+combining marks,
+and ligature halves are covered exactly.
+Severity has two visible channels besides color:
+the underline style and the marker letter.
+
+- Error: a wavy line and a marker `E`.
+- Warning: a dashed line and a marker `W`.
+- Information: a dotted line and a marker `I`.
+- Hint: sparse dots and a marker `H`.
+
+A diagnostic without a severity is shown as a warning, as Helix shows it.
+A range over several lines underlines each of its rows and marks a crossed line end like a selected terminator,
+so an empty line inside it stays visible.
+A point range gets a mark one terminator wide:
+after the text at a line end,
+centered on its position elsewhere.
+Where ranges overlap,
+the mildest severity is drawn first and the worst on top;
+the marker shows the worst severity starting on its line.
+Inside a selection an underline keeps its style but takes the selected-text ink,
+as selected glyphs do:
+the light-scheme severity inks reach only 1.16:1 to 1.39:1 against the selection fill `#0078D4`.
+
+When the caret touches a diagnostic,
+at either end of its range or inside it,
+a card under the caret's line lists every problem there,
+worst first,
+for example `Error E0308 (rustc): mismatched types`,
+with a stripe in the worst severity's ink.
+It moves above the line when the view ends first,
+shows only while the source view has keyboard focus,
+and lists at most eight problems.
+The same text starts the source view's accessible description.
+Hints are not exposed to accessibility tools and never appear in the source text they read.
+
+Severity inks have a light and a dark value each:
+the WinUI system critical and caution fill colors for errors and warnings
+(`SystemFillColorCritical` and `SystemFillColorCaution` in `microsoft/microsoft-ui-xaml`,
+`controls/dev/CommonStyles/Common_themeresources_any.xaml`),
+the accent pair of Slint's fluent style for information,
+and a neutral gray for hints.
+Measured on rendered frames (`marks_and_hints_render_in_both_schemes_with_measured_contrast`),
+the error marker reaches 5.42:1 against the light background and 8.39:1 against the dark one,
+its letter the same against the marker,
+and hint text 7.68:1 (light) and 7.49:1 (dark) against its box.
+Computed from the declared values against the fluent backgrounds `#FAFAFA` and `#1C1C1C`,
+the warning ink reaches 5.03:1 and 12.91:1,
+the information ink 6.04:1 and 9.47:1,
+and the hint-severity gray 5.93:1 and 8.22:1.
+
+### Cost and invalidation
+
+Each render takes the annotations of the materialized rows with two binary searches,
+one over hint positions and one over diagnostics indexed by start with the furthest end so far,
+so a range starting above the view is still found.
+The visible part is a frame-stamp input:
+a snapshot change outside the materialized rows repaints nothing,
+and installing the same snapshots again does nothing.
+A repaint shapes one layout per visible hint and checks each visible diagnostic against each materialized row.
+Hint labels past the widest line extend the scroll range.
+
+### Inspection
+
+Debug builds started with `IDE_INSPECT_ANNOTATIONS` naming a JSON file install that file's hints and diagnostics
+for the initially displayed text (`src/native/inspect.rs`),
+for nested-compositor frames without a language server.
+`inspect:native dark annotations` and `inspect:native light annotations` write such a file for a fixture
+with a tab,
+CJK,
+a combining mark,
+a ligature,
+overlapping ranges,
+a range over a line end,
+and a point at a line end.
+Release builds do not contain this path,
+and without the variable it does nothing.
+
+### Differences from editord
+
+editord shows hints and diagnostic messages in rows above each line, in Inter,
+with every message always visible.
+Here hints sit after the line's text in the source family,
+and a message is shown only for the caret position.
+editord shows severity by color alone,
+in its wavy underlines and its message rows;
+here the underline style and a marker letter also differ.
+editord strips a type hint's leading `: ` and a parameter hint's trailing `:`;
+here labels are shown as the server sent them,
+without padding spaces.
+
+`test:annotations` covers the visible subset, layout, painting, the frame stamp, and the placement measurements.
+`test:annotations-native` drives injected snapshots through real key and pointer events in both schemes,
+and `test:native` includes it.
+`inspect:annotation-guards` removes each guard in a disposable copy and checks that its named test fails.
 
 ## Fonts and appearance
 
@@ -561,14 +986,174 @@ Source positions,
 painting,
 and selection share native shaped-row geometry.
 
-The displayed file is reread by a bounded background worker at 250 ms intervals.
+The displayed file is reread by a bounded background worker when a change notification names it;
+see [Change watching](#change-watching).
 External changes map the latest caret,
 selection,
 and viewport through Helix correspondence,
 even while text remains selected.
 Read failures retain the last readable source and show a diagnostic until recovery.
 The concrete caret and replacement-selection cases in the accepted scope pass through the native GUI.
-This polling boundary is not yet a workspace tree watcher or language-server synchronization loop.
+
+## Change watching
+
+The tree and the displayed file follow external changes through Linux inotify,
+using the `notify` crate 8.2.0 (`INotifyWatcher` by name, default features off, no polling backend).
+Only what is shown is watched,
+each directory non-recursively:
+the project root,
+every visible expanded folder,
+and the displayed file's folder,
+even when the tree does not show that folder.
+Collapsing a folder removes its watch;
+folders inside a collapsed folder stay expanded in the tree but are not watched.
+A folder is watched only at its own canonical path inside the project root,
+so a symbolic link to a folder elsewhere,
+or to another folder of the project,
+is never watched.
+The watcher only reads.
+
+A notification carries no data.
+It marks a directory listing or the displayed file as due,
+and the existing bounded readers reread;
+their request identity and stale-reply fencing still decide what is shown.
+A burst of notifications for one folder becomes one pending reread,
+with at most one more after a read already under way.
+A notified folder or file is not reread sooner than 100 ms after its previous read started:
+a single change is read at the next 20 ms timer tick,
+and a folder or file that changes continuously,
+such as build output or a busy log,
+is reread at most 10 times per second.
+The IDE's own opens and reads of watched paths are not changes and are ignored.
+A new watch rereads its folder once more,
+because a change can land between the first listing and the watch;
+a newly displayed file is read once more for the same reason.
+A permission change on a watched folder rereads that folder.
+
+For the displayed file,
+a closed write,
+a rename into place,
+a removal,
+and a permission change are read at once.
+A write that is still open,
+including the truncation that starts an in-place save,
+and a newly created file are read once 150 ms pass without another write,
+and at most 250 ms after the first.
+The latest notification decides,
+so a save that deletes and rewrites the file waits for the rewrite.
+
+### Recovery and timers
+
+A full reread of every shown folder and the displayed file follows:
+an inotify queue overflow (`IN_Q_OVERFLOW`),
+an error from the notification stream,
+a watched folder that is removed or renamed,
+a watch that cannot be added,
+including at the `fs.inotify.max_user_watches` limit,
+and a watcher that cannot start or stops.
+Each is logged.
+A renamed folder's watch is removed,
+because inotify keeps following the moved directory under its old name.
+
+A shown item without a live watch keeps the previous timers:
+the displayed file every 250 ms,
+and unwatched folders one at a time every 500 ms.
+Failed watches are retried every 10 s.
+
+Every 10 s,
+every shown folder and the displayed file are reread anyway,
+after all notified work.
+inotify never reports some changes:
+network and FUSE mounts,
+writes through `mmap`,
+and unmounts (`notify` does not map `IN_UNMOUNT`).
+The sweep bounds how long those stay stale.
+It costs one listing per shown folder and one source read per 10 s,
+against 20 listings and 40 source reads per 10 s under the previous polling.
+
+### Threading and shutdown
+
+A watch thread owns the watcher and applies the set of shown folders,
+because adding a watch blocks until notify's own event thread answers.
+notify's event thread records notifications into state the UI timer drains every 20 ms.
+Closing the window closes the watch thread and joins it;
+dropping the watcher makes notify remove its watches and close its descriptor.
+notify starts its event thread detached,
+so that thread is not joined.
+A watch call stuck on a hung filesystem delays window close,
+as a stuck directory or file read already does.
+
+### Measured refresh latency
+
+`inspect:refresh-latency` times an external write until the tree row or the source text changes,
+through the shipped bindings in the headless window,
+16 trials per case,
+three runs per build,
+with the same pseudo-random write gaps and target folders in both builds.
+Polling (`48a1b5756`):
+a new file in one of 8 expanded folders took a median of 1657 to 1706 ms across runs,
+at most 4035 ms;
+with one expanded folder,
+651 to 785 ms,
+at most 988 ms;
+a rewrite of the displayed file,
+115 to 147 ms,
+at most 281 ms.
+Watching:
+a new file took a median of 29 to 35 ms with 8 folders and 31 to 35 ms with one,
+at most 96 ms;
+a rewrite took 44 to 56 ms,
+at most 92 ms.
+The medians of one build differed between its runs by at most 134 ms under polling and 6 ms under watching.
+
+### Deliberate differences from editord
+
+editord watches each folder with chokidar when it is first expanded and keeps the watch after collapse;
+this reader removes it on collapse.
+editord refreshes the displayed file only through its folder's watch,
+so a file opened from search in a collapsed folder is not refreshed there;
+this reader always watches the displayed file's folder.
+editord ignores events for `.git`,
+`node_modules`,
+editor swap,
+and temporary file names;
+this reader lists those names like any other,
+so their changes appear.
+editord waits for a file's size to stay unchanged for 150 ms (`awaitWriteFinish`) before reporting it;
+this reader reads closed writes at once and waits 150 ms only for writes still open.
+editord drops a folder's watch on an error;
+this reader rereads everything shown,
+keeps that folder on a timer,
+and retries the watch.
+editord has no overflow handling or periodic reread.
+
+### Change-watching checks
+
+`tests/change_watch.rs` runs the watcher over disposable folders:
+entry changes,
+moves in and out,
+the extra read after a new watch,
+collapse removing the kernel watch,
+finished and unfinished writes,
+silence for the IDE's own reads,
+a real queue overflow,
+a notification error,
+removed,
+renamed,
+failed,
+and retried watches,
+refused outside and symbolic-link folders,
+and no watch left after shutdown.
+`tests/refresh_policy.rs` pins the intervals.
+`native::watch_tests` checks the shipped tree and source in the headless window.
+`inspect:watch-guards` removes each guard in a disposable copy and requires its named test to fail.
+In the nested compositor,
+dark and light,
+external create,
+rename,
+and delete in an expanded folder,
+and both correspondence examples through atomic replace,
+show without polling.
 
 ## Build boundary
 

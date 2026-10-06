@@ -184,8 +184,38 @@ fn parse_retired(
     return Ok(ManagementAction::Retired { command, help });
 }
 
+/// What: Add one selected policy ID to the list, once. `&mut Vec<String>` lends the list
+///       for writing; `&[u8]` borrows the value's raw bytes; `Result<(), ManagementRefusal>`
+///       is "nothing, or a refusal".
+/// Why:  A separated value and an attached value are recorded the same way: policy IDs are
+///       ASCII names, so other bytes can never name a policy, and a repeated ID counts once.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function recordPolicy(policies: string[], value: Uint8Array): void { const id = decodeUtf8OrRefuse(value); if (!policies.includes(id)) policies.push(id); }
+/// ```
+fn record_policy(policies: &mut Vec<String>, value: &[u8]) -> Result<(), ManagementRefusal> {
+    // What: `let Ok(text) = ... else { ... };` keeps valid UTF-8 or exits.
+    // Why:  Bytes that are not text cannot be a policy ID.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const id = decodeUtf8OrRefuse(value);
+    // ```
+    let Ok(id) = std::str::from_utf8(value) else {
+        return Err(ManagementRefusal::Usage);
+    };
+    let owned: String = String::from(id);
+    // `.contains(&owned)` borrows the new ID to keep only its first occurrence.
+    if !policies.contains(&owned) {
+        policies.push(owned);
+    }
+    // `Ok(())` is success carrying nothing.
+    return Ok(());
+}
+
 /// What: Parse `check` or `fix` arguments in one forward pass.
-///       `usize` is the index type of every Rust list.
+///       `&[OsString]` borrows the arguments after the command word.
 /// Why:  `--policy` takes its next argument (or an attached `=value`) even when that
 ///       value starts with a dash; everything after `--` is a pathspec. A pathspec
 ///       before `--` is refused so a mistyped option can never become a path, and the
@@ -202,11 +232,16 @@ fn parse_direct(fix: bool, rest: &[OsString]) -> Result<ManagementAction, Manage
     let mut pathspecs: Vec<OsString> = Vec::<OsString>::new();
     let mut terminated: bool = false;
     let mut pathspec_before_separator: bool = false;
-    let mut index: usize = 0;
-    while index < rest.len() {
-        // `&rest[index]` borrows one argument without copying it.
-        let token: &OsString = &rest[index];
-        index += 1;
+    // True while the token being visited is the value of the `--policy` before it.
+    let mut is_policy_value: bool = false;
+    // `for token in rest` borrows each argument once, in order, so the scan always ends.
+    for token in rest {
+        if is_policy_value {
+            is_policy_value = false;
+            // A trailing `?` returns the refusal to our caller, or continues.
+            record_policy(&mut policies, token.as_encoded_bytes())?;
+            continue;
+        }
         if terminated {
             // `.clone()` copies the pathspec bytes into the owned result.
             pathspecs.push(token.clone());
@@ -224,33 +259,20 @@ fn parse_direct(fix: bool, rest: &[OsString]) -> Result<ManagementAction, Manage
             all = true;
             continue;
         }
-        // The policy value: attached after `--policy=`, or the next argument.
-        let value: &[u8] = if token == "--policy" {
-            if index == rest.len() {
-                return Err(ManagementRefusal::Usage);
-            }
-            index += 1;
-            rest[index - 1].as_encoded_bytes()
-        } else if let Some(attached) = token.as_encoded_bytes().strip_prefix(b"--policy=") {
-            attached
-        } else {
-            return Err(ManagementRefusal::Usage);
-        };
-        // What: `let Ok(text) = ... else { ... };` keeps valid UTF-8 or exits.
-        // Why:  Policy IDs are ASCII names; other bytes can never name a policy.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const id = decodeUtf8OrRefuse(value);
-        // ```
-        let Ok(id) = std::str::from_utf8(value) else {
-            return Err(ManagementRefusal::Usage);
-        };
-        let owned: String = String::from(id);
-        // `.contains(&owned)` borrows the new ID to keep only its first occurrence.
-        if !policies.contains(&owned) {
-            policies.push(owned);
+        // The policy value is the next argument, or attached after `--policy=`.
+        if token == "--policy" {
+            is_policy_value = true;
+            continue;
         }
+        // `let Some(x) = ... else { ... };` unwraps the attached value or refuses the option.
+        let Some(attached) = token.as_encoded_bytes().strip_prefix(b"--policy=") else {
+            return Err(ManagementRefusal::Usage);
+        };
+        record_policy(&mut policies, attached)?;
+    }
+    // `--policy` was the last argument: its value is missing.
+    if is_policy_value {
+        return Err(ManagementRefusal::Usage);
     }
     if pathspec_before_separator {
         return Err(ManagementRefusal::PathspecsBeforeSeparator { fix });

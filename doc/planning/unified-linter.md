@@ -230,6 +230,13 @@ Rust:
    No automatic extraction fix;
    captured state may require redesigning the callback interface.
    Macro token trees remain opaque to the current unexpanded syntax frontend.
+   Rollout (user, 2026-10-05):
+   `warn` everywhere at cutover,
+   raised to `error` once the count reaches zero.
+   The differential run of 2026-10-05 measured 1,215 findings in `.rs` files
+   and 207 in Markdown snippets and doc tests.
+   The user chose this over a per-file burn-down list,
+   so nothing blocks a new closure until the rule is raised.
 
 The user also requested explicit Rust type annotations on 2026-10-04,
 including declaration types and generic call arguments.
@@ -391,7 +398,7 @@ there are no directive comments.
         "severity": "error"
       },
       "rust/no-anonymous-functions": {
-        "severity": "error"
+        "severity": "warn"
       }
     }
   },

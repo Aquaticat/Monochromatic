@@ -10,14 +10,114 @@ This handover removes the timeouts that kept the Markdown and processor campaign
 runs the first campaign over the executable's own modules,
 and reruns the Markdown and processor campaigns on the final snapshot.
 
-Inspect `Timeouts removed` first,
-because it changes production code and adds one error path.
-Then read `Defects found` and `Remaining`.
+Inspect `Excluded mutation kinds` first,
+because it changes what every campaign measures.
+Then inspect `Timeouts removed`,
+because it changes production code and adds one error path,
+and read `Defects found` and `Remaining`.
 Respond with a veto of a named change or disposition,
 or with the next scope to mutate.
 
 This document is in progress;
 sections without results say so.
+
+## Excluded mutation kinds
+
+### Decision
+
+The main session relayed this on 2026-10-05 as the human's decision,
+while the first final round was running:
+mutation timeouts are resolved by skipping two kinds of mutation in the tool,
+and code changes only where that does not cover a timeout.
+Every cargo-mutants invocation of this package now passes both patterns,
+each as its own `--exclude-re` argument:
+
+- `replace \+= with \*=`
+- `replace -= with /=`
+
+They are in `bin/mutate-container.mjs` for every scope,
+in the inline `mutation:processors` task,
+and in the `mutation:list:*` tasks,
+so that a listing shows exactly what a campaign tries.
+The fuzz sidecar does not invoke cargo-mutants.
+
+The tradeoff the decision accepts:
+mutants of those two kinds are never tried.
+`+=` replaced by `-=`,
+and `-=` replaced by `+=`,
+still test every counter.
+
+### Cause and cost
+
+[`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`](../troubleshooting/cargo-mutants-timeout-exit-status.md)
+documents why cargo-mutants 27.1.0 exits 3 whenever any mutant times out,
+why these two replacements stall a loop counter,
+and what excluding them costs.
+
+### Measured effect
+
+`cargo mutants --list --no-config` at 27.1.0,
+with and without the two patterns,
+on the source of the gate 5 snapshot.
+In every scope the mutants that disappear are exactly those whose names contain one of the two replacements,
+and no other mutant appears or disappears.
+
+- Executable scope:
+  189 before,
+  184 after
+  (5 of `+=` to `*=`).
+- Markdown scope:
+  750 before,
+  739 after
+  (10 of `+=` to `*=`,
+  1 of `-=` to `/=`).
+- Processor scope:
+  366 before,
+  355 after
+  (11 of `+=` to `*=`).
+- Constant-slot scope:
+  14 before,
+  12 after
+  (2 of `+=` to `*=`).
+- Parent-lookup scope and anonymous-function scope:
+  4 and 3,
+  unchanged.
+- Unscoped:
+  1,672 before,
+  1,640 after
+  (31 of `+=` to `*=`,
+  1 of `-=` to `/=`).
+
+The `mutation:list:executable` and `mutation:list:markdown` tasks print 184 and 739 mutants.
+The same number of `+=` to `-=` and `-=` to `+=` mutants remains in each scope as was removed:
+5,
+11,
+11 and 2.
+
+### What it covers here
+
+The decision covers four of the six recorded timeouts:
+`markdown_definitions.rs:44` and `markdown_punctuation.rs:64` (both `-=` to `/=`),
+and `processors_docs.rs:222` and `processors_lines.rs:45` (both `+=` to `*=`).
+The two constant replacements of `MarkdownSource::parent` are not of those kinds
+and are fixed in code,
+under `Timeouts removed`.
+
+All four loops had already been restructured,
+committed and gated when the decision arrived,
+and they stay as they are:
+the decision says not to revert committed work.
+On this source the exclusion is therefore not what removes those timeouts.
+Before it,
+every mutant of the two kinds was caught by a failing test:
+5 of 5 in the executable scope (`mutation-hQ4LIa`)
+and 11 of 11 in the Markdown scope (`mutation-6Cgoi0`).
+On the source before the restructuring the same kinds gave 9 caught and 2 timeouts in the Markdown scope
+(`mutation-BX2JYq`)
+and 15 caught and 2 timeouts in the processor scope (`processor-survivors-mutation-w00nRd`).
+What the exclusion buys from here on is that a hand-stepped loop added later cannot turn a campaign into exit 3;
+what it costs is that those mutants are no longer tried,
+including the ones a test would catch.
 
 ## Timeouts removed
 
@@ -32,6 +132,8 @@ Each loop now walks a slice,
 calls a standard search,
 or runs over a fixed range,
 so termination no longer depends on a statement a mutant can change.
+The loop restructuring in this section was done before the decision under `Excluded mutation kinds`;
+of its subsections only the bounded ancestor walk is still required by that decision.
 
 ### `markdown_definitions.rs`: definition line start
 
@@ -103,6 +205,63 @@ position and no fix.
 `ancestor_walks_reach_the_root_from_the_deepest_possible_node` is the positive control for the bound:
 in `*__a__*` every node lies on one path,
 so the deepest text node needs exactly as many passes as the document has nodes.
+
+### `MarkdownSource::children`: bounded descendant walks
+
+The first final round found a seventh timeout that no earlier campaign had recorded as one:
+`src/markdown_source.rs:278:9: replace MarkdownSource::children -> &[u32] with Vec::leak(vec![0])`
+(`mutation-CUW7ek`).
+With every node's child list replaced by the root,
+`text_content` and `text_nodes` popped a node and pushed the same child again without end.
+
+The judgement that this is a real stall and not a slow host
+comes from comparing each mutant's test phase with the unmutated baseline of the same run:
+
+- In `mutation-CUW7ek` the baseline's test phase took 0.4 seconds and this mutant's ran the full 180 seconds,
+  with two tests reported as running for over 60 seconds.
+- The earlier Markdown runs had recorded the same mutant as caught,
+  but not by an assertion.
+  Each call of the mutated accessor leaks one small list (`Vec::leak`),
+  and the test binary was killed with signal 9 after 11.7 seconds in `mutation-6Cgoi0`,
+  which fits the container's 2 GiB memory limit;
+  the kill reason itself was not read from the container.
+  Its sibling `Vec::leak(vec![1])` was killed the same way in both runs,
+  after 15.4 and 9.1 seconds.
+- Whether the kill or the 180 second limit comes first depends on how fast the host leaks memory.
+  The main session measured a load average of 40 to 66 on 16 cores during this round.
+
+A mutant that is caught only when memory runs out first is a timeout waiting for a slower host,
+so both are treated as timeouts.
+They are function-body replacements,
+which the two excluded kinds do not cover,
+so the fix is in code and extends the choice made for ancestor walks,
+open to the same veto:
+
+- `MarkdownSource::subtree` is the only descendant walk.
+  It returns a node followed by its descendants in source order,
+  and runs over the fixed range `0..=parents.len()`:
+  one pass per node of the document,
+  plus the pass that finds nothing waiting.
+  A walk that needs more has a cycle in the child index and returns `MarkdownError` with the starting node's offset.
+- `text_content` and `text_nodes` read that list and return `Result`.
+- `markdown/no-duplicate-heading`,
+  `markdown/no-trailing-punctuation` and `markdown/no-emphasis-as-heading`,
+  the three rules that read text below a node,
+  report the error as one `core/processing-failure` finding
+  through the same helper as the ancestry rules,
+  renamed from `ancestry_failure` to `structure_failure`.
+  The public rule signatures are again unchanged.
+- The other callers of `children` read one level and walk nothing.
+
+`a_child_index_cycle_is_a_typed_error_and_a_processing_failure` plants two cycles in a built document
+(the heading and the emphasis each become their own first child),
+then requires the exact error from `subtree`,
+`text_content` and `text_nodes`,
+and exactly one processing failure from each of the three rules.
+`descendant_walks_cover_the_whole_document_from_the_root` is the positive control for the bound:
+the root's subtree is every node of the document,
+equal to the validated traversal order,
+so the walk needs every pass the range allows.
 
 ### `processors_docs.rs`: doc-comment runs
 
@@ -181,7 +340,7 @@ Logs are in `package/linter/monochromatic-lint/target/verification/`.
   379 library tests passed,
   and 11 of 12 `binary` tests passed;
   `debug_streams_workspace_progress_and_plain_runs_stay_silent` failed on a byte comparison
-  described under `Dispositions of the first run`.
+  described under `Executable survivors`.
 - `gate-mutation-close-4.log`,
   after that fix and the panic-hook refactor:
   380 library tests passed in 142.43 seconds,
@@ -252,7 +411,7 @@ Five of them load or prepare a Cargo workspace;
 `no_semantic_selection_avoids_workspace_initialization` and the three semantic-session tests are quick,
 and are skipped only because they share those modules' names.
 
-### Dispositions of the first run
+### Executable survivors
 
 `mutation-hQ4LIa` mutated test image
 `f357522ebe2b80d79a5858b5768305f54ba2241629b0d7587184243bcd7633c6`
@@ -270,7 +429,8 @@ which do not compile.
 Each missed mutant below names its disposition;
 the rerun under `Final campaigns` is the proof for each killing test.
 
-- `src/run_check.rs:126:13: delete field explicit_types from struct RustRuleSettings expression in HostChecker<'run>::check_rust_root`.
+- `src/run_check.rs:126:13`,
+  `delete field explicit_types from struct RustRuleSettings expression in HostChecker<'run>::check_rust_root`.
   Equivalent, and the redundant code is removed.
   `check_syntax_rules` reads only `max_lines`,
   `rustdoc` and `no_anonymous_functions`,
@@ -383,7 +543,107 @@ The scope now passes `--cargo-arg=--lib`,
 which reaches both the build and the test phase and selects the same tests.
 The restarted run is `mutation-6Cgoi0` (`campaign-markdown-2.log`),
 against the same image.
-Results are pending.
+Its unmutated baseline built in 108 seconds and ran the Markdown tests in under a second.
+Result:
+751 mutants,
+699 caught,
+8 missed,
+44 unviable,
+0 timeouts,
+exit status 2.
+
+The four timeouts of `mutation-BX2JYq` are gone,
+and the mutants behind them are caught by ordinary failing tests:
+
+- both constant replacements of `MarkdownSource::parent`
+  (`Some(0)` and `Some(1)` at `src/markdown_source.rs:319:9`),
+  which is the evidence that every ancestor walk is bounded;
+- the remaining arithmetic of the restructured loops,
+  `ending + 1` at `src/markdown_definitions.rs:55:29`
+  and the escape step at `src/markdown_punctuation.rs:79:23`.
+
+All 8 missed mutants are in the modules the executable added;
+the 16 modules mutated before have none.
+
+### Markdown survivors
+
+Locations are `line:column` at the gate 4 snapshot.
+The rerun under `Final campaigns` is the proof for each killing test.
+
+- `src/markdown_lfs_config.rs:56:28: replace || with && in lfs_endpoints`
+  and `src/markdown_lfs_config.rs:56:53: replace || with && in lfs_endpoints`.
+  Equivalent, and the redundant code is removed.
+  The mutated line skipped blank lines and `#` or `;` comments before anything else read them.
+  Without it,
+  a blank line has no `=` and declares nothing;
+  a comment is never a section header,
+  because a header must start with `[`;
+  and a comment's key is the trimmed text before its first `=`,
+  which starts with the comment character,
+  so it can never equal `url` or `lfsurl`,
+  the only keys that declare an endpoint.
+  `lfs_endpoints` no longer has the skip.
+  `commented_out_declarations_declare_nothing` is the control for the behavior the skip appeared to protect:
+  commented-out `url` and `lfsurl` lines with either comment character,
+  with and without a following space,
+  and commented-out section headers,
+  with an uncommented declaration after comments as the positive control.
+- `src/markdown_lfs_config.rs:113:9`,
+  `replace <impl std::fmt::Display for LfsConfigError>::fmt -> std::fmt::Result with Ok(Default::default())`.
+  Not equivalent:
+  a processing finding built from this error would lose its explanation.
+  The only code that renders it is `HostChecker::lfs_context` in `run_check.rs`,
+  whose tests are outside the `markdown` filter,
+  so the survivor is a property of the scope's test selection, not of the whole suite.
+  `optional_reads_distinguish_absence_from_failure` now asserts that the rendered text equals the stored message
+  and that the message starts with `Cannot read `.
+- `src/markdown_lfs_context.rs:137:72: replace != with == in find_lfs_repo_root`.
+  Not equivalent:
+  a search that starts below a regular file would fail with an inspection error instead of walking past it,
+  and every other inspection error would be skipped silently.
+  A permission-denied probe cannot separate the two in the container,
+  where tests run as root,
+  so `the_nearest_regular_configuration_file_marks_the_root` now starts a search at `r/sub/blocker/deeper`,
+  where `blocker` is a regular file:
+  the operating system answers "not a directory" for both candidates below it,
+  and the search must still return `r/sub`.
+- `src/markdown_lfs_sha256.rs:136:47: replace ^ with | in compress`,
+  `src/markdown_lfs_sha256.rs:144:49: replace ^ with | in compress`
+  and `src/markdown_lfs_sha256.rs:144:71: replace ^ with | in compress`.
+  Equivalent, all three.
+  Line 136 was the FIPS 180-4 `Ch` spelling `(x & y) ^ (!x & z)`:
+  its halves never share a set bit,
+  because one needs the `x` bit set and the other needs it clear,
+  so exclusive or and inclusive or give the same value.
+  Line 144 was the FIPS `Maj` spelling `(x & y) ^ (x & z) ^ (y & z)`:
+  for any three input bits either none,
+  exactly one,
+  or all three of those terms are set,
+  and both operators then agree,
+  also after the changed operator precedence of the replaced text.
+  Nothing here is redundant code that could be deleted,
+  and the two excluded mutation kinds do not cover an operator inside an expression,
+  so both functions are respelled so that no operator is interchangeable:
+  `choose` is `z ^ (x & (y ^ z))` and `majority` is `y ^ ((x ^ y) & (y ^ z))`.
+  A scratch truth-table check found that each of the 14 operator replacements cargo-mutants can make
+  in the two new bodies changes the result for some input bits.
+  `choose_and_majority_match_their_fips_definitions` compares both functions with the FIPS spellings
+  on all eight combinations of three input bits (results `0xcacacaca` and `0xe8e8e8e8`),
+  and the published and measured digest vectors are unchanged.
+- `src/markdown_lfs_target.rs:104:31: replace || with && in apply_segments`.
+  Not equivalent:
+  empty and `.` segments would stay in the resolved path.
+  The one existing assertion compared `PathBuf` values,
+  and path equality compares components,
+  which drops `.` segments and a trailing separator.
+  The operating system does not drop them:
+  `shot.png/` and `shot.png/.` name a directory,
+  so a tracked image written with either spelling would resolve as missing,
+  where the incumbent's `path.resolve` still names the file.
+  `lexical_normalization_resolves_dot_components` now compares the exact path spelling for four destinations,
+  and `targets_resolve_to_lfs_plain_and_missing` resolves both spellings from disk
+  through a repository with an empty cache
+  (a cached repository answers from its map and never reaches the file system).
 
 ## Defects found
 
@@ -391,7 +651,17 @@ No mutant so far exposed a defect on unmutated input:
 no wrong exit status,
 lost finding,
 corrupting fix or unbounded work in the released code.
-The survivors were test gaps and one redundant struct update.
+The survivors were test gaps,
+one redundant struct update,
+one redundant comment skip,
+and three interchangeable operators in the hash.
+
+What the campaigns did expose is unbounded work under mutation.
+The ancestor and descendant walks trusted their accessors to describe a tree,
+so a mutated accessor made them run until the per-mutant limit or the memory limit stopped them.
+Both walks are now bounded and report a typed error;
+on a document built by `MarkdownSource::new` neither error can occur,
+because `traversal` validates the child graph first.
 
 One platform risk follows from the stack calibration and was not measured.
 With `--concurrency 1`,
@@ -406,15 +676,166 @@ Neither Windows nor a release build was run here.
 
 ## Final campaigns
 
-The plan for the final snapshot:
-after the Markdown survivors are dispositioned,
-one gate builds the final test image,
-and the executable,
-Markdown and processor campaigns each run against it with `mise run --skip-deps`,
+A final round is one gate,
+which builds the test image,
+followed by the three campaigns against that image with `mise run --skip-deps`,
 one at a time.
-Their three `manifest.json` files must name the same `baseImage`.
-The processor campaign runs only once, there:
-no processor source changed after `Timeouts removed`.
+Their three `manifest.json` files must name the same `baseImage`,
+and a round counts only if all three exit 0.
+The executable and processor campaigns run first,
+because their sources changed the most since they were last mutated
+(the processor restructuring under `Timeouts removed` had never been mutated);
+the Markdown campaign starts only if both pass.
+
+A processor discovery pass on the gate 4 image (`mutation-dy0x0l`) was started and removed before its baseline,
+in favour of running the processor campaign once on the gate 5 image.
+
+### Gate 5
+
+`gate-mutation-close-5.log`,
+started at repository head `90044851e`,
+linter source tree `d38179d751fa78929968a682224e2c163a5e20e0`:
+382 library tests passed in 98.14 seconds,
+12 `binary` tests passed,
+and Clippy with `-D warnings` finished with no finding.
+Test image `6245a831544ee883ab3782207c7820434e9393d32cd1badc1ee1027b31959893`.
+Commits after it change the mutation runner,
+the package tasks,
+the README and this document,
+none of which is copied into the test image.
+
+### Executable campaign before the exclusion
+
+`mutation-eGKI9C` (`campaign-executable-final-1.log`) started before the decision under `Excluded mutation kinds`
+and ran without the two patterns,
+so it tried 5 mutants the scope no longer contains.
+Result:
+189 mutants,
+136 caught,
+0 missed,
+53 unviable,
+0 timeouts,
+exit status 0,
+39 minutes.
+Its per-mutant logs name the test that failed under each mutant the first run missed:
+
+- `replace debug_progress with ()`:
+  `debug_streams_workspace_progress_and_plain_runs_stay_silent`.
+- `replace || with && in run_process`:
+  `a_failing_output_stream_exits_two`, and no other test.
+- The three mutants of the new `silences_panics`
+  (constant `true`,
+  constant `false`,
+  and the deleted `!`):
+  `run_process::tests::only_debug_runs_keep_the_default_panic_hook`.
+- `src/run_workers.rs:37:37: replace * with +`:
+  the test binary aborted with `thread '<unknown>' has overflowed its stack`,
+  an unnamed worker thread.
+- `replace <= with > in process_plans`:
+  the test binary aborted with
+  `has overflowed its stack` for the thread named
+  `run_workers::tests::workers_parse_nesting_deeper_than_a_default_thread_stack_holds`.
+- The redundant struct update in `check_rust_root` is gone,
+  and its mutant is no longer generated.
+
+The executable campaign is rerun with the committed runner after the other two,
+so that all three final results come from the same runner and the same image.
+
+### Round 1
+
+Against the gate 5 image,
+with the two patterns.
+The round does not count:
+its Markdown campaign timed out on one mutant.
+
+- Processor campaign,
+  `mutation-Ij89RQ` (`campaign-processors-files-final-1.log`):
+  355 mutants,
+  330 caught,
+  0 missed,
+  25 unviable,
+  0 timeouts,
+  exit status 0.
+  The baseline built in 156 seconds and tested in 1.4 seconds;
+  no mutant's test phase reached 20 seconds,
+  and none ended by a signal.
+  This is the first campaign over the restructured `units`,
+  `joins_run` and `physical_lines`,
+  and it left no survivor.
+- Markdown campaign,
+  `mutation-CUW7ek` (`campaign-markdown-final-1.log`):
+  739 mutants,
+  694 caught,
+  0 missed,
+  44 unviable,
+  1 timeout,
+  exit status 3.
+  All 8 survivors of the first Markdown run are caught.
+  The timeout is the `MarkdownSource::children` replacement
+  described under `MarkdownSource::children: bounded descendant walks`.
+
+### Round 2
+
+After the bounded descendant walk:
+a new gate,
+then the executable and Markdown campaigns,
+then the processor campaign if both exit 0,
+all against the image that gate builds.
+The processor campaign reruns because `processors_fences.rs` parses through `MarkdownSource`,
+whose source changed.
+
+Gate 6,
+`gate-mutation-close-6.log`,
+started at repository head `9e61f66a3`,
+linter source tree `ceb495865521beda0f988a536435ffd69cc1d100`:
+384 library tests passed in 162.42 seconds,
+12 `binary` tests passed in 3.50 seconds,
+and Clippy with `-D warnings` finished with no finding.
+Test image `5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`.
+`lint:rust` on the same source reports no code-line budget finding
+and 83 `builtin(require-rustdoc)` findings,
+none on an item added by this work.
+
+- Executable campaign,
+  `mutation-Sh3zLV` (`campaign-executable-final-2.log`):
+  184 mutants,
+  131 caught,
+  0 missed,
+  53 unviable,
+  0 timeouts,
+  exit status 0,
+  34 minutes.
+  The baseline built in 167 seconds and tested in 16.3 seconds,
+  eight times the 2.0 seconds of the previous executable run,
+  at a host load average of about 55 on 16 cores.
+  The longest test phase of any mutant was 41.1 seconds.
+  Six mutants ended with the stack-overflow abort of the nesting control (signal 6),
+  which does not depend on load;
+  none ended with a memory kill.
+- Markdown campaign,
+  `mutation-RjKWfe` (`campaign-markdown-final-2.log`):
+  742 mutants,
+  698 caught,
+  0 missed,
+  44 unviable,
+  0 timeouts,
+  exit status 0,
+  82 minutes.
+  The baseline built in 100 seconds and tested in 0.4 seconds.
+  No mutant's test phase reached 20 seconds,
+  and none ended by a signal.
+  All three replacements of `MarkdownSource::children` now end with named failed assertions,
+  among them `markdown_basic_tests::collected_heading_text_matches_the_incumbent_helper`,
+  and so do the three constant replacements of the new `MarkdownSource::subtree`.
+  The per-mutant logs name the tests that fail under the mutants the first Markdown run missed:
+  `markdown_lfs_config::tests::optional_reads_distinguish_absence_from_failure` for the `LfsConfigError` rendering,
+  `markdown_lfs_context::tests::the_nearest_regular_configuration_file_marks_the_root`
+  alone for `137:72` in `find_lfs_repo_root`,
+  and both `markdown_lfs_target::tests::lexical_normalization_resolves_dot_components`
+  and `markdown_lfs_context::tests::targets_resolve_to_lfs_plain_and_missing` for `apply_segments`.
+  All 18 mutants of the respelled `choose` and `majority` are caught.
+
+The processor result is pending.
 
 ## Remaining
 
@@ -445,4 +866,19 @@ The whole library suite took 183.94 seconds in one gate run and 107.20 seconds i
 on unchanged tests.
 The unscoped `mutation` task would record some mutants as timeouts on a loaded host.
 Every scope here filters the suite,
-so none of them is affected.
+so none of them runs the whole suite per mutant.
+
+### Margin of the executable scope on a loaded host
+
+The executable scope's tests start child processes,
+and their duration follows host load.
+In `mutation-eGKI9C` the unmutated baseline's test phase took 2.0 seconds,
+and five caught mutants took 30 to 67 seconds
+(`run_json.rs:72:43` the longest at 67.1 seconds,
+then `run_failure.rs:78:25` at 51.9 seconds),
+none of them a loop:
+each ended with ordinary failed assertions.
+That is a factor of 2.7 below the 180 second limit at the load of that run.
+A timeout in this scope should be read against the baseline of its own run
+and the test named as still running in the mutant's log
+before it is treated as a stall.

@@ -1,12 +1,12 @@
-//! What: Decision controls for one wrapper invocation against real Git 2.56.0.
+//! What: Decision controls for one wrapper invocation against real Git.
 //! Why: Inspection commands must be forwarded without reading configuration, every
-//!      other command must validate configuration and then stop, and the management
-//!      namespace must never reach Git. The invocations that stop before a Git is
-//!      trusted are controlled in `entry_stop_tests.rs`.
+//!      other command must validate configuration and pass its policies or stop, and
+//!      the management namespace must never reach Git. The invocations that stop before
+//!      a Git is trusted are controlled in `entry_stop_tests.rs`.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! // expect(planInvocation(['status'], env, inputs)).toEqual({ kind: 'forward', realGit: '/usr/bin/git', ... });
+//! // expect(planInvocation(['-C', repo, 'status'], env, inputs)).toEqual({ kind: 'forward', realGit: '/usr/bin/git', ... });
 //! ```
 #![cfg(unix)]
 
@@ -16,8 +16,11 @@ use crate::action::{Action, ENGINE_FAILURE_EXIT_CODE};
 use crate::child_environment::FORWARD_TARGET_VARIABLE;
 use crate::config_file::CONFIG_FILE_NAME;
 use crate::management_arguments::MANAGEMENT_HELP;
+use crate::policy_registry::PolicyId;
 use crate::real_git::{Platform, ResolutionInputs};
 use crate::test_support::{REAL_GIT, executable, fixture, remove, repository};
+use crate::unported::{Unported, unported_notice};
+use crate::wrapped_command::ADD_CANDIDATES_NEED;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
@@ -58,10 +61,11 @@ fn in_directory(directory: &Path, rest: &[&str]) -> Vec<OsString> {
     return result;
 }
 
-/// The forward action every inspection command must produce in these fixtures.
-pub(super) fn forward() -> Action {
+/// The forward action for these fixtures: real Git, the lock-PID overlay and no warning.
+pub(super) fn forward(arguments: Vec<OsString>) -> Action {
     return Action::Forward {
         real_git: PathBuf::from(REAL_GIT),
+        arguments,
         overlay: vec![
             (OsString::from("GIT_CONFIG_COUNT"), OsString::from("1")),
             (
@@ -74,6 +78,7 @@ pub(super) fn forward() -> Action {
                 OsString::from(REAL_GIT),
             ),
         ],
+        stderr: String::new(),
     };
 }
 
@@ -93,39 +98,102 @@ pub(super) fn stopped(action: Action) -> String {
     }
 }
 
-/// The stop notice for one subcommand.
-fn not_run(subcommand: &str) -> String {
-    return format!(
-        "cli-git: policy execution is not implemented in this native development executable, \
-         so git {subcommand} was not run. Repository-changing commands still require the \
-         installed cli-git.\n"
+/// The refusal of `git add` while the built-in content policy cannot read what would be staged.
+fn add_refused() -> String {
+    return unported_notice(
+        &Unported::PolicyNeeds {
+            policy: PolicyId::FinalNewline,
+            needs: ADD_CANDIDATES_NEED,
+        },
+        "add",
     );
 }
 
-/// Inspection commands, native queries, option errors and a bare `git` are forwarded unchanged.
+/// Native queries, option errors and a bare `git` are forwarded exactly as written.
 #[test]
-fn commands_needing_no_policy_are_forwarded() {
+fn invocations_git_answers_itself_are_forwarded_unchanged() {
     let root: PathBuf = fixture("entry-forward");
     let resolution: ResolutionInputs = inputs(root.as_path());
     for arguments in [
-        vec!["status"],
         vec!["--version"],
-        vec!["-C", "/somewhere", "log", "--oneline"],
-        vec!["branch", "--list"],
         vec!["--no-such-global-option", "commit"],
         vec!["-C"],
         vec![],
         vec!["--no-pager"],
-        // The namespace word in any position but the subcommand is an ordinary argument.
-        vec!["log", "cli-git"],
-        vec!["-C", "cli-git", "status"],
+        // The namespace word after a query is an ordinary argument.
         vec!["--help", "cli-git"],
     ] {
         assert_eq!(
             plan_invocation(text(arguments.as_slice()).as_slice(), &[], &resolution),
-            forward(),
+            forward(text(arguments.as_slice())),
             "{arguments:?}"
         );
+    }
+    remove(root.as_path());
+}
+
+/// Inspection commands are forwarded with their fixed transform, and controls never reach Git.
+#[test]
+fn inspection_commands_are_forwarded_without_wrapper_controls() {
+    let root: PathBuf = fixture("entry-inspection");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    std::fs::create_dir(repo.join("nested")).expect("nested directory");
+    let resolution: ResolutionInputs = inputs(root.as_path());
+    for (rest, forwarded) in [
+        (
+            vec!["status"],
+            vec!["-c", "advice.statusHints=false", "status"],
+        ),
+        (vec!["log", "--oneline"], vec!["log", "--oneline"]),
+        (vec!["branch", "--list"], vec!["branch", "--list"]),
+        // The namespace word in any position but the subcommand is an ordinary argument.
+        (vec!["log", "cli-git"], vec!["log", "cli-git"]),
+        (
+            vec!["status", "--cli-git-keep-going", "--short"],
+            vec!["-c", "advice.statusHints=false", "status", "--short"],
+        ),
+    ] {
+        assert_eq!(
+            plan_invocation(
+                in_directory(repo.as_path(), rest.as_slice()).as_slice(),
+                &[],
+                &resolution
+            ),
+            forward(in_directory(repo.as_path(), forwarded.as_slice())),
+            "{rest:?}"
+        );
+    }
+    // A control written before the subcommand is removed there too.
+    let mut leading: Vec<OsString> = text(&["--cli-git-keep-going"]);
+    leading.extend(in_directory(repo.as_path(), &["log"]));
+    assert_eq!(
+        plan_invocation(leading.as_slice(), &[], &resolution),
+        forward(in_directory(repo.as_path(), &["log"]))
+    );
+    // Below the top level require-root stops the same command, with or without the control.
+    for prefix in [vec![], vec!["--cli-git-keep-going"]] {
+        let mut arguments: Vec<OsString> = text(prefix.as_slice());
+        arguments.extend(in_directory(repo.join("nested").as_path(), &["status"]));
+        match plan_invocation(arguments.as_slice(), &[], &resolution) {
+            Action::Exit {
+                code,
+                stdout,
+                stderr,
+            } => {
+                assert_eq!(code, 1, "{prefix:?}");
+                assert_eq!(stdout, "", "{prefix:?}");
+                assert!(
+                    stderr.starts_with(
+                        "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\"policyId\":\"require-root\",\"severity\":\"error\",\"code\":\"require-root/not-at-root\","
+                    ),
+                    "{prefix:?}: {stderr}"
+                );
+                assert_eq!(stderr.matches('\n').count(), 1, "{prefix:?}: {stderr}");
+            }
+            Action::Forward { .. } => {
+                panic!("{prefix:?}: a command below the top level is stopped")
+            }
+        }
     }
     remove(root.as_path());
 }
@@ -142,6 +210,15 @@ fn management_namespace_is_answered_by_the_wrapper() {
         vec!["cli-git", "--help"],
         vec!["-C", "/somewhere", "-c", "a.b=c", "cli-git", "-h"],
         vec!["--no-pager", "cli-git", "--help"],
+        // A wrapper control before the namespace word does not hide it.
+        vec!["--cli-git-keep-going", "cli-git", "--help"],
+        vec![
+            "-C",
+            "/somewhere",
+            "--no-enforce-require-root",
+            "cli-git",
+            "-h",
+        ],
     ] {
         assert_eq!(
             plan_invocation(text(arguments.as_slice()).as_slice(), &[], &resolution),
@@ -152,6 +229,18 @@ fn management_namespace_is_answered_by_the_wrapper() {
             },
             "{arguments:?}"
         );
+    }
+    // A control after the namespace word is not part of the management grammar.
+    match plan_invocation(
+        text(&["cli-git", "--cli-git-keep-going", "check", "--all"]).as_slice(),
+        &[],
+        &resolution,
+    ) {
+        Action::Exit { code, stdout, .. } => {
+            assert_eq!(code, 2);
+            assert_eq!(stdout, "");
+        }
+        Action::Forward { .. } => panic!("the management namespace is never forwarded"),
     }
     // The global prefix reaches the direct command: it selects the repository whose file is read.
     resolution.path = OsString::from("/usr/bin");
@@ -190,11 +279,11 @@ fn inspection_commands_do_not_load_configuration() {
     let resolution: ResolutionInputs = inputs(root.as_path());
     assert_eq!(
         plan_invocation(
-            in_directory(repo.as_path(), &["status"]).as_slice(),
+            in_directory(repo.as_path(), &["log"]).as_slice(),
             &[],
             &resolution
         ),
-        forward()
+        forward(in_directory(repo.as_path(), &["log"]))
     );
     // The same repository stops a configuration-requiring command on that invalid file.
     let message: String = stopped(plan_invocation(
@@ -206,39 +295,34 @@ fn inspection_commands_do_not_load_configuration() {
     remove(root.as_path());
 }
 
-/// A configuration-requiring command validates configuration, then stops without running Git.
+/// A configuration-requiring command validates configuration, then runs its policies.
 #[test]
-fn policy_commands_stop_after_validating_configuration() {
+fn policy_commands_validate_configuration_then_run_policies() {
     let root: PathBuf = fixture("entry-required");
     let repo: PathBuf = repository(root.as_path(), "repo");
     let resolution: ResolutionInputs = inputs(root.as_path());
     let arguments: Vec<OsString> = in_directory(repo.as_path(), &["add", "file"]);
     let source: PathBuf = repo.join(CONFIG_FILE_NAME);
     let legacy: PathBuf = repo.join("cli-git.config.ts");
-    // No configuration file: unconfigured defaults apply.
+    // No configuration file: the defaults apply, and the built-in content policy cannot answer.
     assert_eq!(
         stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
-        not_run("add")
+        add_refused()
     );
-    // A valid file is accepted.
-    std::fs::write(&source, r#"{ "policies": { "final-newline": "error" } }"#)
-        .expect("valid config");
+    // A valid file is accepted and its settings are used.
+    std::fs::write(&source, r#"{ "policies": { "final-newline": "off" } }"#).expect("valid config");
     assert_eq!(
-        stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
-        not_run("add")
+        plan_invocation(arguments.as_slice(), &[], &resolution),
+        forward(arguments.clone())
     );
-    // A legacy file beside it is one warning event before the stop notice.
+    // A legacy file beside it is not mentioned by an ordinary command: only
+    // `git cli-git check` reports it.
     std::fs::write(&legacy, "export default {};").expect("legacy config");
     assert_eq!(
-        stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
-        format!(
-            "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\"}}\n{stop}",
-            legacy = legacy.display(),
-            jsonc = source.display(),
-            stop = not_run("add")
-        )
+        plan_invocation(arguments.as_slice(), &[], &resolution),
+        forward(arguments.clone())
     );
-    // An invalid key is exactly one config-invalid event and no stop notice.
+    // An invalid key is exactly one config-invalid event and no refusal notice.
     std::fs::write(&source, r#"{ "policies": { "unknown": "off" } }"#).expect("invalid config");
     assert_eq!(
         stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
@@ -265,7 +349,7 @@ fn policy_commands_stop_after_validating_configuration() {
     remove(root.as_path());
 }
 
-/// Outside a worktree there is no configuration file; the command still stops instead of running.
+/// Outside a worktree there is no configuration file: the defaults apply and Git answers.
 #[test]
 fn policy_commands_outside_a_worktree_use_defaults() {
     let root: PathBuf = fixture("entry-outside");
@@ -274,13 +358,25 @@ fn policy_commands_outside_a_worktree_use_defaults() {
     std::fs::create_dir(&plain).expect("plain directory");
     // An invalid file outside any repository is never read.
     std::fs::write(plain.join(CONFIG_FILE_NAME), "invalid").expect("stray file");
+    for rest in [vec!["init"], vec!["add", "file"]] {
+        assert_eq!(
+            plan_invocation(
+                in_directory(plain.as_path(), rest.as_slice()).as_slice(),
+                &[],
+                &resolution,
+            ),
+            forward(in_directory(plain.as_path(), rest.as_slice())),
+            "{rest:?}"
+        );
+    }
+    // A commit is refused wherever it is typed.
     assert_eq!(
         stopped(plan_invocation(
-            in_directory(plain.as_path(), &["init"]).as_slice(),
+            in_directory(plain.as_path(), &["commit", "-m", "x"]).as_slice(),
             &[],
             &resolution,
         )),
-        not_run("init")
+        unported_notice(&Unported::CommitTransaction, "commit")
     );
     remove(root.as_path());
 }

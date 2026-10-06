@@ -1,5 +1,4 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -61,14 +60,10 @@ try {
     '-crop', `${resized.cropPixels.width}x${resized.cropPixels.height}+0+1`, '+repage', '-strip',
     '-define', 'png:exclude-chunks=all', 'PNG24:' + imagePath], { encoding: 'utf8' });
   if (crop.status !== 0) throw new Error('Synthetic inset fixture failed: ' + crop.stderr);
-  resized.sha256 = createHash('sha256').update(readFileSync(imagePath)).digest('hex');
   writeFileSync(join(evidence, manifestName), JSON.stringify(differentInset));
   positive();
   writeFileSync(imagePath, originalPng);
   writeFileSync(join(evidence, manifestName), JSON.stringify(manifest));
-  const badHash = structuredClone(manifest);
-  badHash.witnesses[0].sha256 = '0'.repeat(64);
-  reject({ input: badHash, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
   const cropOrigin = structuredClone(manifest);
   cropOrigin.witnesses[0].cropPixels.y++;
   reject({ input: cropOrigin, diagnostic: 'measured native application bounds' });
@@ -80,10 +75,10 @@ try {
   reject({ input: wrongPanel, diagnostic: 'measured native application bounds' });
   const wrongRenderer = structuredClone(manifest);
   wrongRenderer.witnesses[0].renderer = 'SwiftShader';
-  reject({ input: wrongRenderer, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
+  reject({ input: wrongRenderer, diagnostic: 'image geometry, hold or acquisition assertion differs' });
   const wrongImage = structuredClone(manifest);
   wrongImage.witnesses[0].systemImageFingerprint = 'different-image';
-  reject({ input: wrongImage, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
+  reject({ input: wrongImage, diagnostic: 'image geometry, hold or acquisition assertion differs' });
   const badPath = structuredClone(manifest);
   badPath.witnesses[0].file = '../outside.png';
   reject({ input: badPath, diagnostic: 'outside the evidence boundary' });
@@ -99,10 +94,10 @@ try {
   reject({ input: missing, diagnostic: 'exact panel, scene, theme and scale combinations' });
   const missingHold = structuredClone(manifest);
   missingHold.witnesses[0].held = false;
-  reject({ input: missingHold, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
+  reject({ input: missingHold, diagnostic: 'image geometry, hold or acquisition assertion differs' });
   const unknownAcquisition = structuredClone(manifest);
   unknownAcquisition.witnesses[0].freshHierarchyValidated = false;
-  reject({ input: unknownAcquisition, diagnostic: 'image digest, geometry, hold or acquisition assertion differs' });
+  reject({ input: unknownAcquisition, diagnostic: 'image geometry, hold or acquisition assertion differs' });
   const template = readFileSync(templatePath, 'utf8');
   writeFileSync(templatePath, template.replace('<form id="review-form">', '<form id="review-form"><input type="radio" name="policy">'));
   if (invoke('build').status !== 0) throw new Error('Ballot fixture did not build.');
@@ -113,7 +108,7 @@ try {
   const output = join(fixture, 'questions', 'feedback-overlay.html');
   writeFileSync(output, readFileSync(output, 'utf8').replace('Design evidence only.', 'Changed output.'));
   if (invoke('validate').status === 0) throw new Error('Changed overlay artifact accepted.');
-  console.log('Overlay review positive, hash, measured crop, physical panel, renderer, system image, path, metadata, exact cohort, hold, acquisition, ballot and output controls passed.');
+  console.log('Overlay review positive, measured crop, physical panel, renderer, system image, path, metadata, exact cohort, hold, acquisition, ballot and output controls passed.');
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }

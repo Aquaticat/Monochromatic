@@ -1,12 +1,6 @@
 {
   "schema": 1,
   "scope": "Freshly inspected authored native scan-indicator states and their offline viewer, not a new ballot, real analysis progress or native accessibility acceptance.",
-  "htmlSha256": "8d296c4370a2be69ac67dcc9eee11bb696092a849506c6e5d9555fe64248e0a1",
-  "templateSha256": "73b8990424fd954bdfb5ca2093a7790986e0de8a486e82b7adb0fe221c2a3f0e",
-  "builderSha256": "34121b549b77b233b3f610d58a84e1dc115978b238993fcc7fd125711e2be23e",
-  "consumerTestSha256": "71be44741e8adf730e4e6074fa9bd3b47cc19c5fc1bcb14daf9e16cf5c8bfe2b",
-  "manifestSha256": "aa672a8dd2bd41198f71b5087c3eb3acb4a9c4925db108128086781bb9176e75",
-  "nativeVerificationSha256": "1660e8e43b7dd10a2383ef92156b38f73c01952c0f08bb105e88c19907d61be2",
   "browserCliVersion": "0.38.1",
   "browserContainerImageId": "4b8805002ee369c81b7826b941afc52c0c9678a0d0e427a0fefd1684b78b5f94",
   "firefoxESR140Exercised": false,
@@ -110,8 +104,7 @@
     "outcomes": {
       "accepted": 69,
       "caughtByAnotherCheck": 18
-    },
-    "reportSha256": "b34259e5952c00f31a9760477149a2719c2a0022486d4fa3ae827fe07653a851"
+    }
   },
   "independentReview": {
     "reviewer": "A separate read-only agent session that was given the builder, test and template without this session's conclusions.",
@@ -178,7 +171,6 @@
       }
     ]
   },
-  "publicationPreflightSha256": "8e450f3a5d7d399026d8a8baf72b9e6bb87c5cd7c067fd21843767ed8302b538",
   "rendererScreenshotsInspected": [
     {
       "file": "review-1440-light.png",
@@ -253,5 +245,11 @@
     "Measured rectangles are checked for mutual consistency and against the crop, not re-derived from the device.",
     "Synthetic changed-inset and changed-witness fixtures are validation controls, not extra Android captures.",
     "Full Android lint retains five inherited errors, 65 warnings and two hints."
-  ]
+  ],
+  "pageDigestsRemoved": "Digests of the page, template, builder, test, manifest, native result, preflight and guard reports were removed from this record on 2026-10-05: nothing is locked by hash, and a recorded digest is never a reason to leave a page uncorrected. This record describes the check made when it was written; later edits to those files are allowed and are not covered by it.",
+  "recheckOf20261005": {
+    "why": "D88 removed the builder's digest rules. Everything else in this record describes the check made at publication.",
+    "consumerTest": "Scan-indicator consumer: 82 rules, 102 rejected inputs, escaping and positive controls passed.",
+    "build": "The built page is unchanged by the removal."
+  }
 }

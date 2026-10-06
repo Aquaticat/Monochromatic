@@ -139,7 +139,7 @@ including a changed-inset positive fixture,
 invalid crop/provenance negatives,
 fresh exact-cohort/hold mutants and restored positives.
 [Consumer verification](../questions/evidence/feedback-overlay-review-verification.json)
-binds the publication by digest.
+records that check.
 Offline Chromium checks decoded and opened every image and exercised
 availability controls,
 optional empty/blank observations,

@@ -1,5 +1,4 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -23,7 +22,6 @@ const template = readFileSync(templatePath, 'utf8');
 const builder = join(fixture, 'settings-pane.mjs');
 const output = join(fixture, 'questions', 'settings-pane.html');
 const limits = ['-limit', 'thread', '2', '-limit', 'memory', '256MiB'];
-function digest(bytes) { return createHash('sha256').update(bytes).digest('hex'); }
 function invoke({ command, script = builder }) {
   return spawnSync(process.execPath, [script, command], { cwd: fixture, encoding: 'utf8', maxBuffer: 2 * 1024 * 1024 });
 }
@@ -48,9 +46,9 @@ function evidenceBytes(at) {
 //endregion
 
 //region One or more rejected inputs per builder rule
-// `change` edits one witness of a fresh manifest copy; `image` rewrites that witness's PNG and its
-// recorded digest; `rename` copies that PNG under a new name; `template` rewrites the page template;
-// `evidenceFile` rewrites one other evidence file; `afterBuild` runs between build and validate.
+// `change` edits one witness of a fresh manifest copy; `image` rewrites that witness's PNG;
+// `rename` copies that PNG under a new name; `template` rewrites the page template;
+// `afterBuild` runs between build and validate.
 // A case names the single rule that must report it. Cases whose rule runs in `validate` build first.
 const closed = { panel: 'cover', view: 'closed', scale: 1, position: 'none' };
 const fits = { panel: 'inner', view: 'accepted', scale: 1, position: 'start' };
@@ -65,9 +63,6 @@ function paste({ path, from, size, to }) {
 }
 const cases = [
   { rule: 'manifest-schema', manifest: input => { input.schema = 2; } },
-  // The superseded first-visit build, whose dark header inspection rejected.
-  { rule: 'manifest-apk', manifest: input => { input.apkSha256 = '40d0b0e4ab592e920372be8d4771fb9381e4e885501b54f575ac3db567a11f0d'; } },
-  { rule: 'manifest-commit', manifest: input => { input.prototypeCommit = '6bc622ff7bc138d5f949c88cca92d24a16270570'; } },
   { rule: 'manifest-witness-list', manifest: input => { input.witnesses = { length: 24 }; } },
   { rule: 'witness-record', manifest: input => { input.witnesses[5] = null; } },
   { rule: 'witness-path', at: closed, change: item => { item.file = '../outside.png'; } },
@@ -91,7 +86,6 @@ const cases = [
   { rule: 'crop-record', at: closed, change: item => { delete item.cropPixels; } },
   { rule: 'crop-origin', at: closed, change: item => { item.cropPixels.y++; } },
   { rule: 'crop-size', at: closed, change: item => { item.cropPixels.height--; } },
-  { rule: 'png-digest', at: closed, change: item => { item.sha256 = '0'.repeat(64); } },
   { rule: 'png-signature', at: closed, image: bytes => Buffer.concat([Buffer.from([0x88]), bytes.subarray(1)]) },
   { rule: 'png-header-chunk', at: closed, image: bytes => bytes.subarray(0, 20) },
   { rule: 'png-size', at: closed, image: (bytes, path) => { magick([path, '-crop', '1079x2000+0+0', '+repage', '-strip', '-define', 'png:exclude-chunks=all', 'PNG24:' + path]); return readFileSync(path); } },
@@ -112,7 +106,6 @@ const cases = [
   { rule: 'authored-state', at: fits, change: item => { item.state.resume = false; } },
   // D84 removed the analysis row, so a reinstated analysis field is not an authored state either.
   { rule: 'authored-state', at: fits, change: item => { item.state.analyse = false; } },
-  { rule: 'container-image', at: closed, change: item => { item.containerImageId = 'different-image'; } },
   { rule: 'system-image', at: closed, change: item => { item.systemImageFingerprint = 'different-system'; } },
   { rule: 'renderer', at: closed, change: item => { item.renderer = 'different-renderer'; } },
   { rule: 'witness-unique', manifest: input => { input.witnesses.push(structuredClone(input.witnesses[0])); } },
@@ -188,6 +181,8 @@ const cases = [
   { rule: 'output-current', phase: 'validate', afterBuild: () => { writeFileSync(output, readFileSync(output, 'utf8').replace('Design evidence only.', 'Changed output.')); } },
   { rule: 'required-statement', phase: 'validate', template: text => text.replace('Reset 100% dp', 'Reset zoom') },
   { rule: 'required-statement', phase: 'validate', template: text => text.replace('it was not separately chosen', 'it was chosen') },
+  // D86 withdrew both rows; a page that drops the withdrawal notice would present them as current.
+  { rule: 'required-statement', phase: 'validate', template: text => text.replace('It is not a current design to review', 'It is the current design') },
   { rule: 'single-form', phase: 'validate', template: text => text.replace('<dialog id="preview"', '<form></form><dialog id="preview"') },
   { rule: 'single-inline-script', phase: 'validate', template: text => text.replace('<dialog id="preview"', '<script src=extra.js></script><dialog id="preview"') },
   { rule: 'no-unresolved-slot', phase: 'validate', template: text => text.replace('<dialog id="preview"', '__SETTINGS_PANE_EXTRA__<dialog id="preview"') },
@@ -204,8 +199,6 @@ const cases = [
   { rule: 'switch-position-pixels', phase: 'validate', at: fits, image: () => evidenceBytes({ panel: 'inner', view: 'closed', scale: 1, position: 'none' }) },
   // Row text pasted into the empty page below the rows, where D85's removed closing sentence used to be.
   { rule: 'nothing-after-rows', phase: 'validate', at: fits, image: (bytes, path) => paste({ path, from: '1500+250', size: '300x100', to: '1500+1500' }) },
-  { rule: 'search-evidence-digest', phase: 'validate', evidenceFile: { name: searchFiles[0], change: bytes => Buffer.concat([bytes, Buffer.from([0])]) } },
-  { rule: 'search-evidence-digest', phase: 'validate', evidenceFile: { name: searchFiles[3], remove: true } },
   // Empty header ground pasted over the title, then over the Back glyph: every rectangle still holds, the ink does not.
   { rule: 'title-contrast-pixels', phase: 'validate', at: fits, image: (bytes, path) => paste({ path, from: '1700+54', size: '300x69', to: '1269+54' }) },
   { rule: 'back-contrast-pixels', phase: 'validate', at: fits, image: (bytes, path) => paste({ path, from: '1700+30', size: '117x117', to: '1132+30' }) },
@@ -223,7 +216,6 @@ function runCase(testCase) {
     undo.push(() => writeFileSync(path, original));
     const bytes = testCase.image(original, path);
     writeFileSync(path, bytes);
-    item.sha256 = digest(bytes);
   }
   if (testCase.rename) {
     const renamed = testCase.rename(item.file);
@@ -233,13 +225,6 @@ function runCase(testCase) {
     item.file = renamed;
   }
   if (testCase.change) testCase.change(item);
-  if (testCase.evidenceFile) {
-    const path = join(evidence, testCase.evidenceFile.name);
-    const original = readFileSync(path);
-    undo.push(() => writeFileSync(path, original));
-    if (testCase.evidenceFile.remove) rmSync(path);
-    else writeFileSync(path, testCase.evidenceFile.change(original));
-  }
   if (testCase.template) {
     const changed = testCase.template(template);
     if (changed === template) throw new Error('Template case changed nothing: ' + testCase.rule);
@@ -327,7 +312,6 @@ try {
       view.cropPixels.y++;
       view.cropPixels.height--;
       magick([imagePath, '-crop', `${view.cropPixels.width}x${view.cropPixels.height}+0+1`, '+repage', '-strip', '-define', 'png:exclude-chunks=all', 'PNG24:' + imagePath]);
-      view.sha256 = digest(readFileSync(imagePath));
       writeFileSync(manifestPath, JSON.stringify(changedInset));
       positive();
       writeFileSync(imagePath, original);

@@ -51,6 +51,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "wrapper_controls"
+path = "fuzz_targets/wrapper_controls.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "batch_reply"
 path = "fuzz_targets/batch_reply.rs"
 test = false
