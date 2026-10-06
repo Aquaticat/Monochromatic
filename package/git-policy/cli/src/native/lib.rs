@@ -272,6 +272,9 @@ pub mod scanner_selection;
 /// One scan pass over a candidate version's exact bytes.
 pub mod scanner_run;
 
+/// Which engine failure code each candidate and scanner failure carries.
+pub mod scanner_failure_code;
+
 /// Process isolation and rule fixtures for scanner controls; never in the release build.
 #[cfg(test)]
 mod scanner_test_support;
