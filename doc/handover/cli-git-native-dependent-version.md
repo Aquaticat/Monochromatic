@@ -15,6 +15,10 @@ section "What the wiring step needs" lists what that later step must do.
 
 What to inspect:
 
+- the mutation gate,
+  which is not met:
+  both campaigns ended with timeouts and no missed mutant,
+  in section "Mutation";
 - the intentional differences, each with its reason,
   in section "Intentional differences";
 - the choices open to veto,
@@ -115,7 +119,7 @@ The committed shared fixture is
 
 ### Fuzz target
 
-`package/git-policy/cli.fuzz` has a fifth target,
+`package/git-policy/cli.fuzz` has a target
 `dependent_version`,
 described in that package's `README.md` under "`dependent_version`".
 
@@ -542,6 +546,16 @@ on commit `b8afd3d74`:
 and Clippy with warnings denied passed.
 Evidence `package/git-policy/cli/target/verification/native-bva1QD`.
 
+### Package lint
+
+Every harness file lints with 0 findings
+(`mise run //package/git-policy/cli:lint:oxlint:paths` per file).
+The package-wide `mise run //package/git-policy/cli:lint:oxlint` exits 1
+with 171 errors and 1,809 warnings,
+all in 81 files that this branch does not change:
+no file in `git diff --name-only main...HEAD` has a finding.
+The Rust modules pass `native:lint:rust` and Clippy with warnings denied inside the container gate.
+
 ### Mutation
 
 The gate is not met:
@@ -661,6 +675,16 @@ the planner selects paths itself.
 In this repository that is 11,443 paths per planning run,
 and planning starts only for a commit that modifies a workspace manifest.
 
+### Mutation evidence from the image before the merge
+
+The full campaign ran against the gate image of `b8afd3d74`,
+before `main` was merged.
+The merge changed no planner module and no planner test,
+and only `lib.rs` names the planner modules,
+so every caught mutant is caught by the same tests on the merged tree.
+The alternative is a full campaign on the merged gate image,
+on a host quiet enough that the crate's other tests fit the 90-second limit.
+
 ## What the wiring step needs
 
 - A second failing `policy_engine::PolicyOutcome` variant for `policy-incomplete`
@@ -704,22 +728,33 @@ and planning starts only for a commit that modifies a workspace manifest.
   module declarations inserted after `pub mod rule_add_explicit;`
   (twelve modules,
   and four test-only modules after `pub mod dependent_version_policy;`).
+- `package/git-policy/cli/mise.toml`:
+  one task block,
+  `native:differential:dependent-version`,
+  before `test:git-image`.
 - `package/git-policy/cli.fuzz/Cargo.toml`:
   one `[[bin]]` block for `dependent_version`,
-  after the `wrapper_controls` block.
+  after the `batch_reply` block.
   File-enforcer manages this file;
-  `mise run sync:files` left the block unchanged.
-  The same run rewrote root `mise.toml` and `package/config/pnpr/config.yaml`
+  `mise run sync:files` left it unchanged before and after the merge of `main`.
+  Each run also rewrote root `mise.toml` and `package/config/pnpr/config.yaml`
   from the local package set;
   that drift is unrelated and was not committed.
 - `package/git-policy/cli.fuzz/src/lib.rs`:
   one module declaration at the end.
 - `package/git-policy/cli.fuzz/bin/container.mjs`:
-  one entry in `targets`.
+  one entry at the end of `targets`.
 - `package/git-policy/cli.fuzz/bin/planted-controls.mjs`:
   one `import` line and one spread line at the end of `plants`.
 - `package/git-policy/cli.fuzz/README.md`:
-  a new section "`dependent_version`" before "Controls".
+  a section "`dependent_version`" after "`batch_reply`" and before "Controls".
+
+The merge of `main` (commit `343a2696c`) conflicted in the five `cli.fuzz` files,
+where `main` had appended its `batch_reply` entry at the same place;
+each keeps both entries,
+`main`'s first.
+The planner modules and their tests are byte for byte those of the gated commit `b8afd3d74`
+(`git diff b8afd3d74 HEAD -- 'package/git-policy/cli/src/native/dependent_version_*.rs'` is empty).
 
 ## Not verified
 
@@ -736,3 +771,11 @@ and planning starts only for a commit that modifies a workspace manifest.
   (`changeset version`, then the direct fix)
   was not run.
 - Only Linux was exercised.
+- The mutation gate:
+  see section "Mutation".
+- The Oxlint 1.86.0 default formatter aborted earlier in this work
+  (a panic at `apps/oxlint/src/output_formatter/default.rs:181:14`)
+  while linting a harness file with many findings;
+  `--format=unix` worked.
+  It did not recur in the package-wide run,
+  and no reproducer was kept.
