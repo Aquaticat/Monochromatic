@@ -98,6 +98,8 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
         // Language servers need both texts and the edits between them, which `apply_reload`
         // consumes; the copy is handed over only when the document accepted the reload.
         let language_reload = DocumentReload::from_reload(current.file_generation, &reload);
+        // Where the old text's virtual rows end up in the new text; their space is held open there.
+        let carried = rows::carried(&current, reload.changes());
         if !current.document.apply_reload(reload) {
             return;
         }
@@ -110,8 +112,9 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
         current.styles = SourceStyles::from([]);
         current.syntax_revision = None;
         current.syntax_error = None;
-        // The new text has its own vertical mapping; the line the view started in keeps its place in the view.
-        rows::refresh(&mut current);
+        // The new text has its own vertical mapping, with the old rows' space held open until annotations of
+        // the new text arrive; the line the view started in keeps its place in the view.
+        rows::hold(&mut current, carried, window.window().scale_factor());
         let target = (current.row_map.code_top(first) + within).max(0.0);
         mapped_viewport = Some((target, current.row_map.height()));
         redraw = true;
@@ -144,6 +147,11 @@ pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Ti
         let Some(active_window) = weak.upgrade() else {
             return;
         };
+        // Space held open for rows of a replaced text is given up when its time has passed.
+        let expired = rows::expire(&mut state.borrow_mut());
+        if expired {
+            render(&active_window, &state);
+        }
         match worker.try_take() {
             Ok(Some(reply)) => {
                 apply(&active_window, &state, reply);

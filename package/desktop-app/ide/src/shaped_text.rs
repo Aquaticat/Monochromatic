@@ -4,8 +4,8 @@
 use crate::annotation_layout::AnnotationFrame;
 /// Canonical source remains in the read-only document.
 use crate::document::Document;
-/// Variable roman and real italic blobs retain stable cache identities.
-use crate::font_asset::code_faces;
+/// Variable roman and real italic blobs retain stable cache identities; the interface face sets virtual rows.
+use crate::font_asset::{code_faces, row_face};
 /// The one vertical mapping: where each line's code row starts and how tall rows and the caret are.
 use crate::row_map::{CARET_HEIGHT, CARET_INSET, CODE_ROW, RowMap};
 /// What: `pub use` re-exports the row types under this module's name.
@@ -24,6 +24,8 @@ use crate::source_typography::SourceTypography;
 use crate::tab_layout::layout_with_tabs;
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::project_line;
+/// Height and text size of the virtual rows above annotated lines.
+use crate::virtual_row::{ROW_HEIGHT, ROW_TEXT};
 /// Construction failures identify unsupported source typography.
 use anyhow::Result;
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
@@ -43,17 +45,17 @@ use std::borrow::Cow;
 /// ```
 pub const TERMINATOR_MARK: f32 = 9.0;
 
-/// What: Paint role of inlay-hint glyphs, a number outside the syntax roles; `u32` is the brush type of layouts.
-/// Why: The raster paints hint glyphs with the hint ink only, never with a syntax or selection color.
+/// What: Paint role of virtual-row glyphs, a number outside the syntax roles; `u32` is the brush type of layouts.
+/// Why: The raster paints hints and messages with one given ink each, never with a syntax or selection color.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export const HINT_ROLE = 65;
+/// export const ROW_ROLE = 65;
 /// ```
-pub const HINT_ROLE: u32 = 65;
+pub const ROW_ROLE: u32 = 65;
 
-/// Font size of hint labels in logical pixels, smaller than the 15 px source text so a label reads as an aside.
-pub const HINT_SIZE: f32 = 13.0;
+/// Family name of the bundled interface face, as its name table spells it.
+const ROW_FAMILY: &str = "Inter Variable";
 
 /// Logical dimensions and scale of the source viewport.
 #[derive(Clone, Copy, PartialEq)]
@@ -143,6 +145,8 @@ impl TextShaper {
         for blob in code_faces() {
             fonts.collection.register_fonts(blob, None);
         }
+        // Virtual rows are set in the bundled interface face, never in whatever the host calls by that name.
+        fonts.collection.register_fonts(row_face(), None);
         return Ok(Self {
             fonts,
             layouts: LayoutContext::new(),
@@ -195,26 +199,28 @@ impl TextShaper {
         return layout;
     }
 
-    /// Shape one inlay-hint label: the source family in its real italic face at [`HINT_SIZE`], with the
-    /// source font settings, painted in the [`HINT_ROLE`] ink. The label is never part of a source line.
-    pub fn hint_layout(&mut self, text: &str, scale: f32) -> Layout<u32> {
+    /// What: Shape the text of one virtual row, an inlay hint or one row of a diagnostic message: the
+    ///       interface face at [`ROW_TEXT`] on a line box of [`ROW_HEIGHT`], regular weight, upright.
+    ///       `&str` lends the text; the answer is an owned layout.
+    /// Why: The reference editor sets these rows in its interface face, which tells them from source text at
+    ///      a glance. The text is never part of a source line, and the raster paints it in one given ink.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rowLayout(text: string, scale: number): Layout;
+    /// ```
+    pub fn row_layout(&mut self, text: &str, scale: f32) -> Layout<u32> {
         let mut builder = self
             .layouts
             .ranged_builder(&mut self.fonts, text, scale, true);
         builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
-            Cow::Borrowed("JetBrains Mono"),
+            Cow::Borrowed(ROW_FAMILY),
         )));
-        builder.push_default(StyleProperty::FontSize(HINT_SIZE));
-        builder.push_default(StyleProperty::FontWeight(FontWeight::new(
-            self.typography.weight,
-        )));
-        // The real italic face is registered with the roman one, so no slant is synthesized.
-        builder.push_default(StyleProperty::FontStyle(FontStyle::Italic));
-        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(CODE_ROW)));
-        builder.push_default(StyleProperty::Brush(HINT_ROLE));
-        builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
-            Cow::Borrowed(&self.typography.features),
-        )));
+        builder.push_default(StyleProperty::FontSize(ROW_TEXT));
+        builder.push_default(StyleProperty::FontWeight(FontWeight::new(400.0)));
+        builder.push_default(StyleProperty::FontStyle(FontStyle::Normal));
+        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(ROW_HEIGHT)));
+        builder.push_default(StyleProperty::Brush(ROW_ROLE));
         let mut layout = builder.build(text);
         layout.break_all_lines(None);
         return layout;
@@ -371,6 +377,39 @@ impl TextShaper {
 
 /// Resolve reading geometry from the exact layouts used to paint source glyphs.
 impl ShapedView {
+    /// What: Move this frame to where `map` puts its first line, without reshaping or repainting; the answer
+    ///       says whether anything moved. `&RowMap` lends the window's current mapping.
+    /// Why: Virtual rows can appear or change above the materialized lines. The frame's own pixels are then
+    ///      still right, only its place in the text is not: every row top and every cached rectangle shifts by
+    ///      the same amount. The caller must have checked that the materialized lines themselves are unchanged.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rebase(map: RowMap): boolean;
+    /// ```
+    pub fn rebase(&mut self, map: &RowMap) -> bool {
+        if self.map == *map {
+            return false;
+        }
+        let shift = map.block_top(self.viewport.first) - self.origin;
+        // `clone` copies the mapping so rows outside the frame are placed by the current one.
+        self.map = map.clone();
+        if shift == 0.0 {
+            return false;
+        }
+        self.origin += shift;
+        for row in &mut self.rows {
+            row.top += shift;
+        }
+        for rectangle in &mut self.selections {
+            rectangle.y += shift;
+        }
+        for rectangle in &mut self.matches {
+            rectangle.y += shift;
+        }
+        return true;
+    }
+
     /// Convert a pointer to a source character using the shaping engine's hit test.
     pub fn hit(&self, document: &Document, row: usize, x: f32) -> usize {
         for shaped in &self.rows {

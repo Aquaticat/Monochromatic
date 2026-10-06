@@ -1,7 +1,5 @@
 //! Rasterize shared shaped rows; glyphs retain their common baseline and advances.
 
-/// Hint text starts this far inside its label box.
-use crate::annotation_layout::LABEL_PADDING;
 /// Diagnostic underline styles and the tile both they and glyphs are drawn into.
 use crate::annotation_paint::{Tile, TilePlace, paint_underlines};
 /// Bounded glyph images prevent repeating outline rasterization on every viewport update.
@@ -130,7 +128,7 @@ impl TextRaster {
     }
 
     /// Paint only the bounded materialized viewport; horizontal offset stays fractional.
-    /// Hint labels and diagnostic underlines of `view.annotations` are painted after the source glyphs.
+    /// Virtual-row texts and diagnostic underlines of `view.annotations` are painted after the source glyphs.
     pub fn paint(
         &mut self,
         view: &ShapedView,
@@ -175,26 +173,27 @@ impl TextRaster {
             )?;
         }
         // What: `if let Some(frame) = &view.annotations` borrows the positioned annotations when there are any.
-        // Why: Hint labels use the hint ink and no selection; underlines follow the glyphs they mark.
+        // Why: Virtual-row texts take one given ink and are never selected; underlines follow the glyphs they mark.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (view.annotations) { paintHints(...); paintUnderlines(...); }
+        // if (view.annotations) { paintRowTexts(...); paintUnderlines(...); }
         // ```
         if let Some(frame) = &view.annotations
             && let Some(top_row) = view.rows.first()
         {
-            for hint in &frame.hints {
-                let row_y = (view.map.code_top(hint.row) - view.origin) * factor;
-                let left = (hint.x + LABEL_PADDING - horizontal) * factor;
-                let origin = (left, row_y + hint.baseline_shift);
+            for text in &frame.texts {
+                // A virtual row lies its rise above the code row of the line it belongs to.
+                let top = view.map.code_top(text.line) - text.rise;
+                let origin = ((text.x - horizontal) * factor, (top - view.origin) * factor);
                 let mut tile = Tile {
                     bytes: &mut bytes,
                     width: view.width,
                     height: view.height,
                 };
-                let fixed = Some(frame.colors.hint);
-                self.draw(&hint.layout, origin, colors, fixed, &[], &mut tile)?;
+                // `Some(...)` fixes one ink for every glyph of the text.
+                let fixed = Some(text.ink);
+                self.draw(&text.layout, origin, colors, fixed, &[], &mut tile)?;
             }
             let mut tile = Tile {
                 bytes: &mut bytes,

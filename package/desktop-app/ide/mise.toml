@@ -258,11 +258,11 @@ runCargo(['test', '--no-default-features', '--lib', '--test', 'find', '--test', 
 """
 
 [tasks."test:annotations"]
-description = "Check inlay-hint and diagnostic layout, painting, stale-snapshot rejection, and the measured placement probe"
+description = "Check the vertical row mapping, virtual-row rules, inlay-hint and diagnostic layout, painting, stale-snapshot rejection, and the measured placement probe"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['test', '--no-default-features', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'source_frame', '--', '--nocapture'])
+runCargo(['test', '--no-default-features', '--test', 'row_map', '--test', 'virtual_row', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'source_frame', '--', '--nocapture'])
 """
 
 [tasks."test:annotations-native"]

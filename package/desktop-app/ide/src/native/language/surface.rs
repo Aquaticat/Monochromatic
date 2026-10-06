@@ -20,13 +20,17 @@ use slint::{ModelRc, SharedString, VecModel};
 /// ```
 use std::{cell::RefCell, rc::Rc};
 
-/// What: Where the popup or the list was opened: the stamp, the caret, and the scroll offsets
-///       at that moment. `(f32, f32)` is a pair of horizontal and vertical offsets.
-/// Why: Any later difference means the reader moved on, which dismisses the surface.
+/// What: Where the popup or the list was opened: the stamp, the caret, the scroll offsets, and where
+///       the anchoring line's code row stood relative to the top edge of the view at that moment.
+///       `(f32, f32)` is a pair of horizontal and vertical offsets.
+/// Why: Any later difference means the reader moved on, which dismisses the surface. Scrolling is
+///      told from virtual rows arriving: rows above the view change the offset while the line stays
+///      where it is on screen, and rows between the top edge and the line move the line while the
+///      offset stays; only the reader's own scrolling changes both.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Origin = { stamp: DocumentStamp; caret: number; scroll: [number, number] };
+/// type Origin = { stamp: DocumentStamp; caret: number; scroll: [number, number]; onScreen: number };
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(super) struct Origin {
@@ -36,6 +40,8 @@ pub(super) struct Origin {
     pub(super) caret: usize,
     /// Scroll offsets when shown.
     pub(super) scroll: (f32, f32),
+    /// Distance of the anchoring line's code row from the top edge of the view when shown.
+    pub(super) on_screen: f32,
 }
 
 /// What is on screen. An `enum` with data is a tagged union.
@@ -67,7 +73,8 @@ pub(super) enum Shown {
     },
 }
 
-/// What: The current origin: the displayed stamp, the caret head, and the scroll offsets.
+/// What: The current origin: the displayed stamp, the caret head, the scroll offsets, and where the
+///       anchoring line's code row stands relative to the top edge of the view.
 /// Why: Recorded when a surface opens and compared on every tick afterwards.
 ///
 /// In TS you'd write (pseudocode):
@@ -75,10 +82,14 @@ pub(super) enum Shown {
 /// function origin(window: AppWindow, state: State): Origin
 /// ```
 pub(super) fn origin(window: &AppWindow, state: &State) -> Origin {
+    // `max(0) as usize` turns the toolkit's integer into a line index.
+    let line = window.get_language_anchor_line().max(0) as usize;
+    let on_screen = state.row_map.code_top(line) + window.get_scroll_y();
     return Origin {
         stamp: displayed(state),
         caret: state.document.position().head,
         scroll: (window.get_scroll_x(), window.get_scroll_y()),
+        on_screen,
     };
 }
 
@@ -250,7 +261,10 @@ pub(super) fn stale(
     if now.caret != opened.caret {
         return Some("the caret moved");
     }
-    if now.scroll != opened.scroll {
+    // The reader scrolled when the offset changed and the anchoring line moved on screen with it. Rows
+    // arriving change only one of the two; half a pixel of tolerance covers rounding when the view is kept still.
+    let line_moved = (now.on_screen - opened.on_screen).abs() > 0.5;
+    if now.scroll.0 != opened.scroll.0 || (now.scroll.1 != opened.scroll.1 && line_moved) {
         return Some("the view scrolled");
     }
     if pointer && !pointer_over && !window.get_language_popup_has_pointer() {

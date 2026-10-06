@@ -10,7 +10,7 @@
 mod ui {
     // Use the toolkit's supported re-export syntax rather than editing generated Rust.
     slint::slint! {
-        export { AppWindow, SourceMarker, SourceSelection } from "../ui/app.slint";
+        export { AppWindow, SourceSelection } from "../ui/app.slint";
     }
 }
 
@@ -38,6 +38,8 @@ use ide_app::text_raster::TextRaster;
 use ide_app::{cli::Options, workspace::Workspace};
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
+/// The stamp naming a displayed text, and one line's block of virtual rows.
+use ide_app::{language::identity::DocumentStamp, virtual_row::Block};
 /// Toolkit handles and models bridge owned Rust state to the window.
 use slint::{ComponentHandle, SharedString, VecModel};
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
@@ -47,15 +49,18 @@ use slint::{ComponentHandle, SharedString, VecModel};
 /// ```ts
 /// const shared = { current: state };
 /// ```
-use std::{cell::RefCell, path::PathBuf, rc::Rc};
+use std::{cell::RefCell, path::PathBuf, rc::Rc, sync::Arc};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
-/// Inlay hints and diagnostics: the snapshot setter, visible subset, marker rows, and caret card.
+/// Inlay hints and diagnostics: the snapshot setter, the visible subset, and the problems at the caret.
 mod annotate;
-/// Rendered annotation pixels in both schemes, untouched source pixels, and visible-only repaints.
+/// Rendered annotation pixels in both schemes, visible-only repaints, the scroll range, and display scale.
 #[cfg(test)]
 mod annotation_paint_tests;
+/// Which rendered pixels may move when virtual rows arrive, change, or vanish, and which may not.
+#[cfg(test)]
+mod annotation_stability_tests;
 /// Injected hint and diagnostic snapshots through real key and pointer events.
 #[cfg(test)]
 mod annotation_tests;
@@ -191,6 +196,24 @@ struct State {
     frame_stamp: Option<FrameStamp>,
     /// Where every line of the displayed text is vertically; kept current by `rows::refresh`.
     row_map: RowMap,
+    /// What: The blocks of virtual rows of every annotated line, in line order; `Arc` shares each block
+    ///       with the frames that paint it (siblings: single-thread `Rc`, owning `Box`).
+    /// Why: The map takes its block heights from these, and a frame takes the blocks of its lines.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// blocks: Readonly<Block>[];
+    /// ```
+    blocks: Vec<Arc<Block>>,
+    /// What: What `blocks` and `row_map` were built from: the displayed text's stamp, the annotation store's
+    ///       change counter, and the display scale as exact bits; `Option<...>` is nothing before the first build.
+    /// Why: Blocks are assembled again only when one of the three changed.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rowKey?: [stamp: DocumentStamp, version: number, scale: number];
+    /// ```
+    row_key: Option<(DocumentStamp, u64, u32)>,
     /// What: `Rc<VecModel<f32>>` is a shared, growable toolkit list of floats.
     /// Why: The window draws one line number per entry at that vertical position; the list is updated in
     ///      place while scrolling.
@@ -242,6 +265,8 @@ impl State {
             presented_revision: None,
             frame_stamp: None,
             row_map,
+            blocks: Vec::new(),
+            row_key: None,
             line_tops: rows::line_model(),
             find: None,
             language_reload: None,

@@ -69,11 +69,14 @@ mod syntax_error;
 /// Language-server feature paths run on one worker thread and are polled; server edits are refused.
 pub mod language;
 
-/// Inlay hints and diagnostics of the displayed file, reduced to the materialized rows; stale snapshots paint nothing.
+/// Inlay hints and diagnostics of the displayed file, grouped into blocks per line; stale snapshots paint nothing.
 pub mod annotation;
 
-/// Underline runs, severity markers, and hint labels positioned after each line's text from the shaped rows.
+/// Underline runs and the texts of virtual rows, positioned from the shaped rows; hint rows are packed here.
 pub mod annotation_layout;
+
+/// The rows a line shows above its code row: placed hints, wrapped diagnostic messages, and their spacing.
+pub mod virtual_row;
 
 /// Diagnostic underline pixels in one line style per severity.
 pub mod annotation_paint;

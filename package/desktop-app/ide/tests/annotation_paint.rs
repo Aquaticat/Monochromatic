@@ -1,16 +1,20 @@
-//! Annotation pixels in the source tile: one underline style per severity in its ink, hint labels only after
-//! the line's text, and inks that follow the scheme.
+//! Annotation pixels in the source tile: one underline style per severity in its ink, hints and messages on
+//! virtual rows above their line and never in a code row, and inks that follow the scheme.
 
-/// The production layout, underline constants, shaper, and raster.
+/// The production layout and packing, underline constants, vertical mapping, shaper, and raster.
 use ide_app::{
     annotation::{Label, Mark, Visible},
-    annotation_layout::{AnnotationColors, lay_out},
+    annotation_layout::{AnnotationColors, lay_out, pack},
     annotation_paint::DROP,
     document::Document,
     language::diagnostics::Severity,
+    row_map::{CODE_ROW, RowMap},
     shaped_text::{ShapedView, TextShaper, Viewport},
     text_raster::{CodeColors, SourcePixels, TextRaster},
+    virtual_row::{BLOCK_GAP, Block, MessageRow, ROW_HEIGHT},
 };
+/// Blocks are shared between the window state and the frames that paint them.
+use std::sync::Arc;
 
 /// Dark-scheme annotation inks for the tests; each differs from the source ink.
 const DARK: AnnotationColors = AnnotationColors {
@@ -46,8 +50,14 @@ fn painted(source: &str, visible: &Visible, inks: AnnotationColors) -> (ShapedVi
         width: 700.0,
         scale: 1.0,
     };
-    let mut view = shaper.prepare(&document, viewport, &[]);
-    let frame = lay_out(&document, &view, visible, &mut shaper, inks);
+    // Rows are placed by the vertical mapping the visible blocks call for.
+    let mut raised = Vec::new();
+    for block in &visible.blocks {
+        raised.push((block.line, block.height()));
+    }
+    let map = RowMap::new(document.text().len_lines(), &raised);
+    let mut view = shaper.prepare_rows(&document, viewport, &[], &map);
+    let frame = lay_out(&view, visible, &mut shaper, inks);
     // `Some(frame)` attaches the positioned annotations to the frame the raster paints.
     view.annotations = Some(frame);
     let colors = CodeColors {
@@ -59,6 +69,59 @@ fn painted(source: &str, visible: &Visible, inks: AnnotationColors) -> (ShapedVi
         .paint(&view, colors, 0.0)
         .expect("source tile");
     return (view, pixels);
+}
+
+/// What: The block above line `line` of `source` with one hint `hint` (position and text) and one message row
+///       per entry of `messages` (start, severity, text), packed by the production shaper.
+/// Why: The paint tests need real placements, not invented ones.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function block(source: string, line: number, hint: [number, string], messages: [number, Severity, string][]): Block;
+/// ```
+fn block(
+    source: &str,
+    line: usize,
+    hint: (usize, &str),
+    messages: &[(usize, Severity, &str)],
+) -> Arc<Block> {
+    let document = Document::new(source);
+    let mut shaper = TextShaper::new();
+    let row = shaper.row(&document, line, 1.0);
+    let labels = [Label {
+        position: hint.0,
+        text: hint.1.to_string(),
+    }];
+    let (hint_rows, hints) = pack(&row, &labels, &mut shaper, 1.0);
+    let mut rows = Vec::new();
+    for (start, severity, text) in messages {
+        rows.push(MessageRow {
+            start: *start,
+            continued: false,
+            severity: *severity,
+            text: (*text).to_string(),
+        });
+    }
+    return Arc::new(Block {
+        line,
+        hint_rows,
+        hints,
+        messages: rows,
+        held: (0.0, 0.0),
+    });
+}
+
+/// How many pixels of rows `rows.0..rows.1` of the tile carry `ink`.
+fn count(pixels: &SourcePixels, rows: (usize, usize), ink: [u8; 4]) -> usize {
+    let mut found = 0;
+    for y in rows.0..rows.1 {
+        for x in 0..pixels.width as usize {
+            if inked(pixels, x, y, ink) {
+                found += 1;
+            }
+        }
+    }
+    return found;
 }
 
 /// What: Whether the premultiplied pixel at (`x`, `y`) is mostly covered and has `ink` once unpremultiplied.
@@ -143,7 +206,7 @@ fn each_severity_has_its_own_line_style_in_its_ink() {
         Severity::Hint,
     ] {
         let visible = Visible {
-            labels: Vec::new(),
+            blocks: Vec::new(),
             marks: vec![Mark {
                 start: 0,
                 end: length,
@@ -204,43 +267,81 @@ fn each_severity_has_its_own_line_style_in_its_ink() {
     );
 }
 
-/// Hint labels are painted in the hint ink after the line's text only; without labels nothing is painted there.
+/// Hints and messages are painted on their own rows above the code row, each in its ink; the gap above the
+/// block stays empty; and the code rows carry exactly the pixels they carry without annotations, so nothing
+/// that annotates a line is drawn on the line itself or after its end.
 #[test]
-fn hint_labels_paint_after_the_line_end_in_the_hint_ink() {
-    let source = "let total = area(2, 3);";
-    let labelled = Visible {
-        labels: vec![Label {
-            position: 9,
-            text: ": u32".to_string(),
-        }],
+fn virtual_rows_paint_above_the_code_row_and_never_in_it() {
+    let source = "let total = area(2, 3);\nnext";
+    let shown = block(
+        source,
+        0,
+        (9, ": u32"),
+        &[
+            (12, Severity::Error, "Error E0308 (rustc): mismatched types"),
+            (4, Severity::Information, "Information: a remark"),
+        ],
+    );
+    let height = shown.height() as usize;
+    assert_eq!(shown.height(), BLOCK_GAP + 3.0 * ROW_HEIGHT);
+    let annotated = Visible {
+        blocks: vec![Arc::clone(&shown)],
         marks: Vec::new(),
     };
-    let (view, pixels) = painted(source, &labelled, DARK);
-    let end = view.rows[0].caret_x(23, 1.0) as usize;
-    let mut before = 0;
-    let mut after = 0;
-    for y in 0..24 {
+    let (view, pixels) = painted(source, &annotated, DARK);
+    let (_, bare) = painted(source, &Visible::default(), DARK);
+    assert_eq!(view.rows[0].top, shown.height());
+    assert_eq!(pixels.height as usize, bare.height as usize + height);
+    let gap = BLOCK_GAP as usize;
+    let row = ROW_HEIGHT as usize;
+    // The gap above the block is empty.
+    for y in 0..gap {
         for x in 0..pixels.width as usize {
-            if inked(&pixels, x, y, DARK.hint) {
-                if x <= end {
-                    before += 1;
-                } else {
-                    after += 1;
-                }
+            let offset = (y * pixels.width as usize + x) * 4;
+            assert_eq!(pixels.bytes[offset + 3], 0, "ink in the gap at {x},{y}");
+        }
+    }
+    // One ink per row: the hint row, then the error row, then the information row.
+    let bands = [
+        (DARK.hint, gap, gap + row),
+        (DARK.error, gap + row, gap + 2 * row),
+        (DARK.information, gap + 2 * row, gap + 3 * row),
+    ];
+    for (ink, top, bottom) in bands {
+        let own = count(&pixels, (top, bottom), ink);
+        assert!(own > 20, "row {top}..{bottom} has {own} pixels of its ink");
+        for (other, _, _) in bands {
+            if other != ink {
+                assert_eq!(
+                    count(&pixels, (top, bottom), other),
+                    0,
+                    "row {top}..{bottom} carries another row's ink"
+                );
             }
         }
     }
-    println!("hint ink pixels: {before} inside the text, {after} after it");
-    assert_eq!(before, 0);
-    assert!(after > 20);
-    let (_, bare) = painted(source, &Visible::default(), DARK);
-    for y in 0..24 {
-        for x in end + 2..bare.width as usize {
-            let offset = (y * bare.width as usize + x) * 4;
-            assert_eq!(
-                bare.bytes[offset + 3],
-                0,
-                "ink after the text at {x},{y} without annotations"
+    // The code rows are pixel for pixel the rows of the text without annotations, moved down by the block.
+    let width = pixels.width as usize;
+    let rows = 2 * CODE_ROW as usize;
+    for y in 0..rows {
+        let with = (y + height) * width * 4;
+        let without = y * width * 4;
+        assert_eq!(
+            pixels.bytes[with..with + width * 4],
+            bare.bytes[without..without + width * 4],
+            "code row pixels differ in tile row {y}"
+        );
+    }
+    // The texts start where their positions are: the hint above character 9, the error above character 12.
+    let frame = view.annotations.as_ref().expect("annotation frame");
+    assert_eq!(frame.texts[0].x, view.rows[0].caret_x(9, 1.0));
+    assert_eq!(frame.texts[1].x, view.rows[0].caret_x(12, 1.0));
+    let hint_left = frame.texts[0].x as usize;
+    for y in gap..gap + row {
+        for x in 0..hint_left.saturating_sub(1) {
+            assert!(
+                !inked(&pixels, x, y, DARK.hint),
+                "hint ink left of its position at {x},{y}"
             );
         }
     }
@@ -267,14 +368,14 @@ fn selected_underlines_take_the_selected_ink() {
     };
     let mut view = shaper.prepare(&document, viewport, &[]);
     let visible = Visible {
-        labels: Vec::new(),
+        blocks: Vec::new(),
         marks: vec![Mark {
             start: 0,
             end: 19,
             severity: Severity::Error,
         }],
     };
-    let frame = lay_out(&document, &view, &visible, &mut shaper, LIGHT);
+    let frame = lay_out(&view, &visible, &mut shaper, LIGHT);
     view.annotations = Some(frame);
     let selected = [255, 255, 255, 255];
     let colors = CodeColors {
@@ -312,15 +413,17 @@ fn selected_underlines_take_the_selected_ink() {
     );
 }
 
-/// The same marks painted with the light inks contain the light error ink and not the dark one, and back.
+/// The same annotations painted with the light inks contain the light inks and none of the dark ones, and back.
 #[test]
 fn annotation_inks_follow_the_scheme() {
     let source = "ABCDEFHIK";
     let visible = Visible {
-        labels: vec![Label {
-            position: 3,
-            text: "hint".to_string(),
-        }],
+        blocks: vec![block(
+            source,
+            0,
+            (3, "hint"),
+            &[(0, Severity::Error, "Error: wrong")],
+        )],
         marks: vec![Mark {
             start: 0,
             end: 9,
@@ -329,18 +432,13 @@ fn annotation_inks_follow_the_scheme() {
     };
     for (inks, other) in [(DARK, LIGHT), (LIGHT, DARK)] {
         let (_, pixels) = painted(source, &visible, inks);
-        let mut own = 0;
-        let mut foreign = 0;
-        for y in 0..24 {
-            for x in 0..pixels.width as usize {
-                if inked(&pixels, x, y, inks.error) || inked(&pixels, x, y, inks.hint) {
-                    own += 1;
-                }
-                if inked(&pixels, x, y, other.error) || inked(&pixels, x, y, other.hint) {
-                    foreign += 1;
-                }
-            }
-        }
-        assert!(own > 20 && foreign == 0, "own {own}, foreign {foreign}");
+        let all = (0, pixels.height as usize);
+        let own_error = count(&pixels, all, inks.error);
+        let own_hint = count(&pixels, all, inks.hint);
+        let foreign = count(&pixels, all, other.error) + count(&pixels, all, other.hint);
+        assert!(
+            own_error > 40 && own_hint > 20 && foreign == 0,
+            "own error {own_error}, own hint {own_hint}, foreign {foreign}"
+        );
     }
 }

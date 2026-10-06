@@ -7,8 +7,10 @@
 /// ```ts
 /// import { type State, AppWindow, SourceSelection } from '../native';
 /// ```
-use super::{AppWindow, State, annotate, find::present::present, rows, ui::SourceSelection};
-/// Hints and diagnostic marks are positioned against the frame's shaped rows.
+use super::{
+    AppWindow, State, annotate, find::present::present, rows, ui::SourceSelection, viewport::place,
+};
+/// Virtual-row texts and diagnostic marks are positioned against the frame's shaped rows.
 use ide_app::annotation_layout::lay_out;
 /// Match rectangles come from the same shaped rows as selection rectangles.
 use ide_app::find_navigation::paint_ranges;
@@ -16,8 +18,8 @@ use ide_app::find_navigation::paint_ranges;
 use ide_app::find_paint::rectangles;
 /// Selected-text ink is chosen from the selection fill, not from the color scheme.
 use ide_app::selection_ink::legible_ink;
-/// Physical viewport description for shared shaping.
-use ide_app::shaped_text::Viewport;
+/// Physical viewport description for shared shaping, and the rectangles a frame hands to the window.
+use ide_app::shaped_text::{ReadingRect, Viewport};
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
 /// Native palette values retain syntax and selection contrast.
@@ -42,6 +44,54 @@ fn rgba(color: slint::Color) -> [u8; 4] {
     return [color.red(), color.green(), color.blue(), color.alpha()];
 }
 
+/// What: Copy a frame's rectangles into the window's row type; `&[ReadingRect]` lends the list.
+/// Why: Selection and find rectangles reach the markup as model rows.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function modelRows(rectangles: ReadingRect[]): SourceSelection[];
+/// ```
+fn model_rows(rectangles: &[ReadingRect]) -> Vec<SourceSelection> {
+    let mut rows = Vec::new();
+    for rect in rectangles {
+        rows.push(SourceSelection {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+        });
+    }
+    return rows;
+}
+
+/// What: Bring the vertical mapping up to date and, when it changed, keep the view still: the answer is the
+///       scroll offset the window must take, or nothing. `view` holds the horizontal offset, the vertical
+///       offset, the width, and the height of the view in logical pixels.
+/// Why: Rows that appear, change, or vanish above the first visible code row must move nothing visible, so
+///      the offset follows them; the materialized lines are chosen again for the offset that results.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function settle(current: State, scale: number, view: [number, number, number, number]): number | undefined;
+/// ```
+fn settle(current: &mut State, scale: f32, view: (f32, f32, f32, f32)) -> Option<f32> {
+    let (left, offset, width, height) = view;
+    // `?` leaves with nothing when no position changed.
+    let previous = rows::refresh(current, scale)?;
+    let limit = rows::limit(&current.row_map, height);
+    let kept = rows::anchored(&previous, &current.row_map, offset).min(limit);
+    place(current, left, kept, width, height);
+    tracing::debug!(
+        before = offset,
+        after = kept,
+        "kept the view still across a change of virtual rows"
+    );
+    if kept == offset {
+        return None;
+    }
+    return Some(kept);
+}
+
 /// Render shared shaped rows, releasing state before any Slint setter can reenter.
 pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let factor = window.window().scale_factor();
@@ -57,9 +107,15 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     };
     // The window names the line a language surface belongs to; the map places it.
     let anchor_line = window.get_language_anchor_line();
+    let view_now = (
+        -window.get_scroll_x(),
+        -window.get_scroll_y(),
+        window.get_viewport_width(),
+        window.get_viewport_height(),
+    );
     let mut current = state.borrow_mut();
-    // No frame is painted against a map that no longer describes the displayed text.
-    rows::refresh(&mut current);
+    // No frame is painted against a map that no longer describes the displayed text and its annotations.
+    let scrolled = settle(&mut current, factor, view_now);
     let first = current.first;
     let horizontal = current.horizontal;
     let viewport = Viewport {
@@ -96,9 +152,8 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     )
     .with_matches(Arc::clone(&ranges))
     .with_annotations(Arc::clone(&shown), inks);
-    // Match rectangles, markers, and hint boxes change only together with the frame, never on caret-only updates.
+    // Match rectangles change only together with the frame, never on caret-only updates.
     let mut rendered_matches = None;
-    let mut rendered_annotations = None;
     if current.frame_stamp.as_ref() != Some(&stamp) {
         // Destructure the mutable borrow so caches can update while source is lent read-only.
         let State {
@@ -117,19 +172,9 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
             horizontal,
             horizontal + viewport.width,
         );
-        let mut marks = Vec::new();
-        for rect in &view.matches {
-            marks.push(SourceSelection {
-                x: rect.x,
-                y: rect.y,
-                width: rect.width,
-                height: rect.height,
-            });
-        }
-        rendered_matches = Some(marks);
-        // Annotations are positioned after shaping and never change the rows that reading geometry uses.
-        let frame = lay_out(document, &view, &shown, shaper, inks);
-        rendered_annotations = Some(annotate::rows(&frame, row_map));
+        rendered_matches = Some(model_rows(&view.matches));
+        // Annotations are positioned after shaping and never change the geometry inside a code row.
+        let frame = lay_out(&view, &shown, shaper, inks);
         // `Some(frame)` hands the positioned annotations to the raster with the rows they belong to.
         view.annotations = Some(frame);
         // Propagate raster failure visibly rather than retaining misleading old source pixels.
@@ -150,20 +195,29 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         }
         current.shaped = Some(view);
         current.frame_stamp = Some(stamp);
+    } else {
+        // What: Destructuring lends the cached frame for change and the map for reading at once.
+        // Why: The materialized lines are unchanged, but rows above them may not be: the frame then keeps
+        //      its pixels and only moves, and its find rectangles are handed over at their new place.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (current.shaped?.rebase(current.rowMap)) renderedMatches = modelRows(current.shaped.matches);
+        // ```
+        let State {
+            shaped, row_map, ..
+        } = &mut *current;
+        if let Some(view) = shaped.as_mut()
+            && view.rebase(row_map)
+        {
+            rendered_matches = Some(model_rows(&view.matches));
+        }
     }
     // The stamp is set only after a corresponding view and image were successfully prepared.
     let view = current.shaped.as_ref().expect("painted source view");
     let document = &current.document;
     let caret = view.caret(document);
-    let mut selections = Vec::new();
-    for rect in &view.selections {
-        selections.push(SourceSelection {
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: rect.height,
-        });
-    }
+    let selections = model_rows(&view.selections);
     let position = document.position();
     let revision = document.revision();
     let selected = document.selected_text();
@@ -174,10 +228,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     for row in &view.rows {
         document_width = document_width.max(row.layout.full_width() / factor + CARET_ROOM);
     }
-    // Hint labels after the widest line stay reachable by scrolling; the range only grows, so nothing jumps.
+    // Hints and messages past the widest line stay reachable by scrolling; the range only grows, so nothing jumps.
     document_width = document_width.max(annotate::extent(view.annotations.as_ref()) + CARET_ROOM);
     current.document_width = document_width;
-    let (problems, severity) = annotate::card(&current);
+    let problems = annotate::problems(&current);
     let updated_source = if current.presented_revision != Some(revision) {
         current.presented_revision = Some(revision);
         Some(current.document.text().to_string())
@@ -211,19 +265,19 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         window.set_image_height(pixels.height as f32 / factor);
     }
     // Rows above the tile can change without a repaint; the image and the line numbers follow the map.
+    // The scroll extent is set before the offset, so the old extent cannot clamp the new offset.
     window.set_image_y(origin);
     rows::present(window, placement);
+    if let Some(offset) = scrolled {
+        window.set_scroll_y(-offset);
+    }
     window.set_error_message(SharedString::from(diagnostic));
     window.set_source_selections(ModelRc::from(Rc::new(VecModel::from(selections))));
     window.set_selection_is_match(found.active.is_some());
     if let Some(marks) = rendered_matches {
         window.set_source_matches(ModelRc::from(Rc::new(VecModel::from(marks))));
     }
-    if let Some((markers, boxes)) = rendered_annotations {
-        window.set_source_markers(ModelRc::from(Rc::new(VecModel::from(markers))));
-        window.set_hint_boxes(ModelRc::from(Rc::new(VecModel::from(boxes))));
-    }
-    annotate::present_card(window, problems, severity);
+    annotate::present_problems(window, problems);
     if let Some(status) = found.status {
         window.set_find_status(SharedString::from(status.label));
         window.set_find_status_detail(SharedString::from(status.detail));

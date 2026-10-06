@@ -10,8 +10,8 @@ use crate::native::{reload::apply_syntax, render, rows};
 use anyhow::{Context, Result};
 /// New source documents arrive only after successful project-boundary resolution and reading.
 use ide_app::{file_open::OpenedFile, source_style::SourceStyles};
-/// File context remains a display-only native-path label.
-use slint::SharedString;
+/// File context remains a display-only native-path label; `ComponentHandle` reaches the window's display scale.
+use slint::{ComponentHandle, SharedString};
 /// Shared source state never crosses the background-reader thread.
 use std::{cell::RefCell, path::PathBuf, rc::Rc};
 
@@ -155,7 +155,7 @@ pub(super) fn apply(
     current.navigation_error = None;
     current.outside_project = outside;
     // The scroll extent of the text now displayed comes from its own vertical mapping.
-    rows::refresh(&mut current);
+    rows::refresh(&mut current, window.window().scale_factor());
     let extent = current.row_map.height();
     // `take` moves a waiting language target out; it applies only to the file it names.
     let jump = current.pending_jump.take();

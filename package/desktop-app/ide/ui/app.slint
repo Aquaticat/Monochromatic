@@ -6,7 +6,7 @@ import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
 import { LanguagePopup } from "hover.slint";
 import { ReferenceList, ReferenceEntry } from "references.slint";
-import { AnnotationInk, ProblemCard, SeverityMarker, SourceMarker } from "annotation.slint";
+import { AnnotationInk } from "annotation.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -18,8 +18,6 @@ export struct SourceSelection {
     width: float,
     height: float,
 }
-
-export { SourceMarker }
 
 export component AppWindow inherits Window {
     title: "Monochromatic IDE";
@@ -154,22 +152,17 @@ export component AppWindow inherits Window {
     // Native code picks the selected-text ink from this fill, because the palette's ink follows the scheme instead.
     out property <brush> selection-fill: Palette.selection-background;
     out property <bool> dark-scheme: Palette.color-scheme == ColorScheme.dark;
-    // Inlay hints and diagnostics: native code reads these inks for the source raster, so hints and underlines
-    // follow the scheme like the markers drawn here.
+    // Inlay hints and diagnostics are drawn in the source image: hints and diagnostic messages on virtual rows
+    // above the code row of their line, underlines under the marked characters. Native code reads these inks
+    // for the raster, so all of it follows the scheme.
     out property <brush> hint-ink: AnnotationInk.hint;
     out property <color> error-ink: AnnotationInk.error;
     out property <color> warning-ink: AnnotationInk.warning;
     out property <color> information-ink: AnnotationInk.information;
     out property <color> suggestion-ink: AnnotationInk.suggestion;
-    // Severity markers and hint label boxes after line ends, positioned from the shaped rows.
-    in property <[SourceMarker]> source-markers;
-    in property <[SourceSelection]> hint-boxes;
-    // The problems at the caret as one text, worst first; empty when the caret touches no diagnostic.
+    // The problems at the caret as one text, worst first and in full; empty when the caret touches no diagnostic.
+    // It is not drawn: every message stands above its line. It starts the accessible description.
     in property <string> caret-problems;
-    in property <int> caret-problem-severity;
-    // The hover popup, a note, and the location list are placed beside the same caret line;
-    // the card yields to them so two surfaces never overlap. Its text stays in the accessible description.
-    out property <bool> problem-card-visible: code-focus.has-focus && !root.language-surface-open && root.caret-problems != "";
     in property <string> source-text;
     in property <string> selected-text;
     in property <string> file-label: "Source-view verification";
@@ -406,16 +399,6 @@ export component AppWindow inherits Window {
                         border-color: Palette.foreground.with-alpha(0.7);
                     }
 
-                    // Hint label boxes after line ends; the label glyphs are in the source image above them.
-                    for hint in root.hint-boxes: Rectangle {
-                        x: root.gutter-width + hint.x * 1px;
-                        y: hint.y * 1px + 3px;
-                        width: hint.width * 1px;
-                        height: hint.height * 1px - 6px;
-                        border-radius: 4px;
-                        background: AnnotationInk.hint-box;
-                    }
-
                     Image {
                         x: root.gutter-width + root.image-x * 1px;
                         y: root.image-y * 1px;
@@ -439,13 +422,6 @@ export component AppWindow inherits Window {
                         font-size: root.font-size;
                     }
 
-                    // One marker after the text of each line where a diagnostic starts, showing the worst severity.
-                    for marker in root.source-markers: SeverityMarker {
-                        x: root.gutter-width + marker.x * 1px;
-                        y: marker.y * 1px + (root.code-row - self.height) / 2;
-                        severity: marker.severity;
-                    }
-
                     Rectangle {
                         visible: code-focus.has-focus && root.selection-anchor == root.selection-head;
                         x: root.gutter-width + root.caret-x * 1px;
@@ -453,23 +429,6 @@ export component AppWindow inherits Window {
                         width: 2px;
                         height: root.code-row - 4px;
                         background: Palette.foreground;
-                    }
-
-                    // The problems at the caret, under the caret's line, or above it when the view ends first.
-                    // It never covers the caret's own line and stays inside the visible part of the view.
-                    problem-card := ProblemCard {
-                        visible: root.problem-card-visible;
-                        text: root.caret-problems;
-                        severity: root.caret-problem-severity;
-                        widest: max(48px, scroll.width - root.gutter-width - 16px);
-                        private property <length> line-top: root.caret-y * 1px - 2px;
-                        private property <length> below: self.line-top + root.code-row + 2px;
-                        private property <length> view-top: -scroll.content-y;
-                        private property <length> view-left: -scroll.content-x;
-                        y: self.below + self.height <= self.view-top + scroll.height ? self.below
-                            : max(self.view-top, self.line-top - self.height - 2px);
-                        x: max(self.view-left + root.gutter-width,
-                            min(root.gutter-width + root.caret-x * 1px, self.view-left + scroll.width - self.width - 8px));
                     }
 
                     pointer := TouchArea {

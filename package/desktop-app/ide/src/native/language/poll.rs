@@ -200,15 +200,26 @@ fn snapshots(
     let hints = worker.try_take_hints()?;
     let diagnostics = worker.try_take_diagnostics()?;
     let mut current = source.borrow_mut();
+    // What: Destructuring `&mut State` lends two fields separately.
+    // Why: The store groups what it accepts by the lines of the displayed text, which is only read.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const { annotations, document } = source.current;
+    // ```
+    let State {
+        annotations,
+        document,
+        ..
+    } = &mut *current;
     // `mut` lets either branch record that the store now holds something new to paint.
     let mut accepted = false;
     if let Some(snapshot) = hints
-        && current.annotations.accept_hints(displayed, snapshot)
+        && annotations.accept_hints(displayed, document.text(), snapshot)
     {
         accepted = true;
         // The accessor the renderer uses reports what was stored.
-        let count = current
-            .annotations
+        let count = annotations
             .hints(displayed)
             .map_or(0, |stored| return stored.hints.len());
         tracing::debug!(
@@ -218,11 +229,10 @@ fn snapshots(
         );
     }
     if let Some(snapshot) = diagnostics
-        && current.annotations.accept_diagnostics(displayed, snapshot)
+        && annotations.accept_diagnostics(displayed, document.text(), snapshot)
     {
         accepted = true;
-        let groups = current
-            .annotations
+        let groups = annotations
             .diagnostics(displayed)
             .map_or(0, |stored| return stored.groups.len());
         tracing::debug!(

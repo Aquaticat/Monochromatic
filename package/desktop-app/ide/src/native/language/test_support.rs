@@ -328,12 +328,66 @@ pub(super) fn escape(reader: &LanguageReader) {
     key(&reader.window, Key::Escape);
 }
 
-/// Window point over source `line`, `x` logical pixels into its text, in the middle of the line.
-pub(super) fn point(window: &AppWindow, line: usize, x: f32) -> LogicalPosition {
+/// What: Window point over the code row of source `line`, `x` logical pixels into its text, in the middle of
+///       the row. The row's place comes from the reader's vertical mapping at the moment of the call.
+/// Why: The scripted server's hint and diagnostics take rows above the first line once they arrive, so a
+///      line's code row is not at its number times one row height.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function point(reader: LanguageReader, line: number, x: number): LogicalPosition;
+/// ```
+pub(super) fn point(reader: &LanguageReader, line: usize, x: f32) -> LogicalPosition {
+    let top = reader.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
-        TEXT_LEFT + x + window.get_scroll_x(),
-        TEXT_TOP + line as f32 * 24.0 + 12.0 + window.get_scroll_y(),
+        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_TOP + top + 12.0 + reader.window.get_scroll_y(),
     );
+}
+
+/// What: Window point `rise` logical pixels above the top of `line`'s code row, `x` logical pixels into the
+///       text: inside the line's virtual rows when it has any.
+/// Why: Resting and Ctrl+clicking on a hint or message row must ask the server nothing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function above(reader: LanguageReader, line: number, x: number, rise: number): LogicalPosition;
+/// ```
+pub(super) fn above(reader: &LanguageReader, line: usize, x: f32, rise: f32) -> LogicalPosition {
+    let top = reader.source.borrow().row_map.code_top(line);
+    return LogicalPosition::new(
+        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_TOP + top - rise + reader.window.get_scroll_y(),
+    );
+}
+
+/// What: How many hint texts and message-row texts the displayed frame paints; a pair (tuple).
+/// Why: Hints and messages are pixels of the source image; the frame's positioned records say what was drawn.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function rows(reader: LanguageReader): [hints: number, messages: number];
+/// ```
+pub(super) fn rows(reader: &LanguageReader) -> (usize, usize) {
+    let source = reader.source.borrow();
+    // `and_then` reads the frame's annotations when a frame exists; `let ... else` answers zeros otherwise.
+    let Some(frame) = source
+        .shaped
+        .as_ref()
+        .and_then(|view| return view.annotations.as_ref())
+    else {
+        return (0, 0);
+    };
+    let mut hints = 0;
+    let mut messages = 0;
+    for text in &frame.texts {
+        if text.severity.is_some() {
+            messages += 1;
+        } else {
+            hints += 1;
+        }
+    }
+    return (hints, messages);
 }
 
 /// Move the pointer to a window point without a button held.
