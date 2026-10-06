@@ -536,7 +536,74 @@ Evidence `package/git-policy/cli/target/verification/native-bva1QD`.
 
 ### Mutation
 
-Pending.
+The gate is not met:
+both campaigns ended with timeouts.
+No campaign reported a missed mutant.
+
+#### First campaign
+
+`GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/dependent_version_*.rs'`
+against the gate image of commit `b8afd3d74`,
+evidence `package/git-policy/cli/target/verification/native-mutation-6RzaA3`
+(`mutants.out/outcomes.json`, `exit.json` with status 3):
+206 mutants over the twelve planner modules,
+179 caught,
+18 unviable,
+9 timeouts,
+0 missed.
+The runner's five planted guard removals were all noticed.
+The unmutated baseline took 8 seconds to build and 37 seconds to test;
+the test limit is 90 seconds.
+The 9 timeouts are in `dependent_version_text.rs` (6),
+`dependent_version_imports.rs` (2)
+and `dependent_version_policy.rs` (1).
+
+#### Rerun of the three files with timeouts
+
+The same task with `--file` for those three files,
+against the same image,
+evidence `native-mutation-nA947L`:
+78 mutants,
+61 caught,
+3 unviable,
+14 timeouts,
+0 missed;
+the baseline took 52 seconds to test.
+The runner process ended before its container did and wrote no `exit.json`;
+`exit-collected-manually.json` records the container's exit status (3, from `podman inspect`),
+and the report was copied out with `podman cp`.
+
+#### Why the timeouts are attributed to host load
+
+- The sets differ between runs:
+  of the 78 mutants in both runs,
+  11 caught in the first timed out in the second,
+  6 that timed out in the first were caught in the second,
+  and 3 timed out in both.
+- The 3 that timed out in both
+  (`replace && with ||` at `dependent_version_text.rs:122:21`,
+  `replace + with *` at `dependent_version_text.rs:127:30`,
+  `replace is_specifier_position -> bool with true`)
+  were applied one at a time on the host,
+  and `cargo test --lib dependent_version` failed in 0.02 seconds each,
+  with 15, 6 and 5 failing tests
+  (`native-mutation-nA947L/twice-timed-out-mutants.json`).
+  Only `lib.rs` names the planner modules,
+  so no other test reaches the mutated code;
+  the rest of the 90 seconds is the crate's other tests,
+  the same in every mutant.
+- Caught mutants' test phases ranged from 5 to 89 seconds in the rerun
+  (median 34),
+  against the 37 and 52 second baselines.
+- Sampled load averages during both campaigns were between 33 and 96 on a host with 16 CPUs,
+  from work outside this branch.
+- No mutated function steps a loop by hand:
+  every loop in the planner modules is a `for` over an iterator or a slice,
+  or the graph walk's `while let Some(..) = pending.pop()`,
+  which none of the timed-out mutants touches.
+
+Neither the timeout nor the exclusion list was changed.
+A campaign on a quieter host is what would close the gate.
 
 ### Fuzzing
 
