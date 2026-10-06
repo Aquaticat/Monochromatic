@@ -171,3 +171,16 @@ Commit `30ce6cab5`.
   naming "the native Markdown linter" and "planning dependent version bumps".
   `security/forbidden-strings` and a `direct-fix` correction did the same at this commit,
   until their own slices.
+
+Gate on that tree,
+`GIT_POLICY_NATIVE_IMAGE_TAG=content-policies`:
+553 unit tests,
+37 binary-level tests,
+1 public-interface consumer test,
+Clippy passed,
+exit status 0;
+test image `7bbeab59bab540a512ceb7b631901de62cfcbe9183f511001bdfb6848141846c`,
+same base,
+evidence `package/git-policy/cli/target/verification/native-BGz5rN`.
+The unit count equals the host count of that commit (543 passed and 10 that need Git 2.56),
+so the snapshot held the committed tree.
