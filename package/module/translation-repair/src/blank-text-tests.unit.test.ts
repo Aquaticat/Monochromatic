@@ -1488,7 +1488,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/score-crosscheck.ts#isSet': {
+  'corpus-run/score-crosscheck-authors.ts#isSet': {
     tests: 1,
     why: ASSEMBLED,
   },

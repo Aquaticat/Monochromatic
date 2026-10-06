@@ -257,6 +257,7 @@ export * from './recall-barrel.ts';
 export * from './refine-barrel.ts';
 export * from './repair-chunk-barrel.ts';
 export * from './sheet-barrel.ts';
+export * from './score-barrel.ts';
 export * from './text-barrel.ts';
 export * from './stage-barrel.ts';
 export * from './translate-barrel.ts';
