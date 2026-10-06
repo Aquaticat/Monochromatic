@@ -243,8 +243,10 @@ async function campaign({ scope, shard }) {
       `CMD ${JSON.stringify(command)}`,
       '',
     ].join('\n'));
-    // The container starts from the ID this build wrote, not from the shared tag, so campaigns started
-    // at the same time (shards of one scope, or two scopes) can never run each other's command.
+    // The container starts from the ID this build wrote, not from the shared tag, and is given its command
+    // explicitly. Two builds started together for shards 0/3 and 1/3, whose Containerfiles differed only in
+    // `CMD`, both committed the same image, whose `CMD` was shard 0's (mutation-7j4HXK); so the image's
+    // own `CMD` never decides what a campaign runs.
     const imageIdFile = join(context, 'image-id');
     podman({
       args: [
@@ -259,12 +261,15 @@ async function campaign({ scope, shard }) {
     container = podman({
       args: [
         'create', '--init', '--network=none', '--memory=2g', '--cpus=2',
-        '--pids-limit=128', campaignImage,
+        '--pids-limit=128', campaignImage, ...command,
       ],
       capture: true,
     }).stdout.trim();
     if (!/^[a-f0-9]{64}$/u.test(container))
       throw new VerificationError('Container creation did not return a complete container ID.');
+    const created = podman({ args: ['container', 'inspect', container, '--format', '{{json .Config.Cmd}}'], capture: true });
+    if (created.stdout.trim() !== JSON.stringify(command))
+      throw new VerificationError(`The created container would run ${created.stdout.trim()}, not this campaign's command.`);
     await writeFile(join(evidence, 'manifest.json'), JSON.stringify({
       baseImage: base,
       campaignImage,
