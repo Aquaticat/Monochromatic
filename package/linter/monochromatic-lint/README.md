@@ -70,6 +70,10 @@ Options:
 - `--init` writes a starter configuration and refuses to overwrite one.
 - `--rules` lists every shipped rule as JSON Lines.
 - `--concurrency <COUNT>` bounds worker threads.
+  Every file is linted on a thread with an 8 MiB stack,
+  including a single file,
+  `--concurrency 1` and standard input,
+  so how deeply nested a file may be does not depend on the platform's main-thread stack.
 - `--ignore-pattern <GLOB>`,
   `--ignore-path <FILE>`,
   and `--no-ignore` change which files the walk finds.
