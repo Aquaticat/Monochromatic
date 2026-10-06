@@ -55,6 +55,9 @@ use ui::AppWindow;
 
 /// Inlay hints and diagnostics: the snapshot setter, the visible subset, and the problems at the caret.
 mod annotate;
+/// The gutter's severity letters in front of line numbers, in both schemes, with measured contrast.
+#[cfg(test)]
+mod annotation_gutter_tests;
 /// Rendered annotation pixels in both schemes, visible-only repaints, the scroll range, and display scale.
 #[cfg(test)]
 mod annotation_paint_tests;
@@ -234,6 +237,15 @@ struct State {
     /// lineTops: ArrayModel<number>;
     /// ```
     line_tops: Rc<VecModel<f32>>,
+    /// What: `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers (sibling `f32` for the tops).
+    /// Why: Per materialized line, the gutter's severity letter: 0 for none, otherwise one more than the rank of
+    ///      the worst diagnostic starting on the line. Updated in place like the line tops.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// lineMarks: ArrayModel<number>;
+    /// ```
+    line_marks: Rc<VecModel<i32>>,
     /// Accepted in-file matches; painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
     /// The latest accepted external reload the Language module has not been told about yet.
@@ -281,6 +293,7 @@ impl State {
             offset: 0.0,
             scrolled_at: None,
             line_tops: rows::line_model(),
+            line_marks: rows::mark_model(),
             find: None,
             language_reload: None,
             annotations: Annotations::default(),
@@ -306,7 +319,9 @@ fn servers_wanted() -> anyhow::Result<()> {
     // `var_os` reads the variable without requiring UTF-8; `is_some` asks whether it is set.
     #[cfg(debug_assertions)]
     if std::env::var_os("IDE_INSPECT_ANNOTATIONS").is_some() {
-        bail!("this window shows the annotations of IDE_INSPECT_ANNOTATIONS and starts no language server");
+        bail!(
+            "this window shows the annotations of IDE_INSPECT_ANNOTATIONS and starts no language server"
+        );
     }
     // `Ok(())` reports success without a payload.
     return Ok(());

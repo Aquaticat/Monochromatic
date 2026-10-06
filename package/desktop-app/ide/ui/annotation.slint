@@ -1,12 +1,13 @@
 // Inks of inlay hints and diagnostics of the displayed file. Native code draws every hint, message row, and
-// underline into the source image at positions it takes from the shaped rows; this file only names the inks.
+// underline into the source image at positions it takes from the shaped rows; this file names the inks and
+// the severity letters the gutter shows in front of line numbers.
 import { Palette } from "std-widgets.slint";
 
 // Severity inks per scheme: the WinUI system critical and caution fill colors, the fluent accent pair this
 // toolkit style uses for information, and a neutral gray.
 // Each reaches at least 5:1 against the scheme's background, so message rows and underlines in them stay legible.
-// Ink is never the only sign of a severity: a message row starts with the severity's word, and each severity
-// has its own underline style.
+// Ink is never the only sign of a severity: a message row starts with the severity's word, the gutter shows the
+// severity's letter, and each severity has its own underline style.
 export global AnnotationInk {
     out property <bool> dark: Palette.color-scheme == ColorScheme.dark;
     out property <color> error: self.dark ? #FF99A4 : #C42B1C;
@@ -15,46 +16,18 @@ export global AnnotationInk {
     out property <color> suggestion: self.dark ? #B4B4B4 : #616161;
     // Hint rows: the source ink at 70 percent. Hints also differ from source text by typeface, size, and row.
     out property <brush> hint: Palette.foreground.with-alpha(0.7);
-    public pure function severity(level: int) -> color {
-        if level == 0 { return self.error; }
-        if level == 1 { return self.warning; }
-        if level == 2 { return self.information; }
+    // The ink of a severity given as its rank: 0 error, 1 warning, 2 information, 3 hint.
+    public pure function severity(rank: int) -> color {
+        if rank == 0 { return self.error; }
+        if rank == 1 { return self.warning; }
+        if rank == 2 { return self.information; }
         return self.suggestion;
     }
-}
-
-// Prototype variant: the problems at the caret, worst first, each spelled out with its severity, code, and source.
-export component ProblemCard inherits Rectangle {
-    in property <string> text;
-    in property <int> severity;
-    in property <length> widest: 560px;
-    width: min(root.widest, content.preferred-width + 2 * root.inset + root.stripe);
-    height: content.preferred-height + 2 * root.inset;
-    private property <length> inset: 8px;
-    private property <length> stripe: 4px;
-    background: Palette.alternate-background;
-    border-width: 1px;
-    border-color: Palette.border;
-    border-radius: 6px;
-    drop-shadow-blur: 6px;
-    drop-shadow-color: #00000040;
-    Rectangle {
-        x: 0px;
-        width: root.stripe;
-        height: parent.height;
-        border-top-left-radius: 6px;
-        border-bottom-left-radius: 6px;
-        background: AnnotationInk.severity(root.severity);
-    }
-    content := Text {
-        x: root.stripe + root.inset;
-        y: root.inset;
-        width: root.width - root.stripe - 2 * root.inset;
-        text: root.text;
-        color: Palette.foreground;
-        font-size: 13px;
-        wrap: word-wrap;
-        accessible-role: AccessibleRole.text;
-        accessible-label: root.text;
+    // The letter of a severity given as its rank; it stands in the gutter in front of the line number.
+    public pure function letter(rank: int) -> string {
+        if rank == 0 { return "E"; }
+        if rank == 1 { return "W"; }
+        if rank == 2 { return "I"; }
+        return "H";
     }
 }

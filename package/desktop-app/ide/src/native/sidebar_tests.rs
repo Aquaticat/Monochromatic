@@ -37,7 +37,18 @@ pub(super) const DIVIDER: f32 = 48.0;
 /// Narrowest source column; the widest sidebar is the window width minus this and the divider.
 pub(super) const SOURCE_MINIMUM: f32 = 240.0;
 /// Width of the line-number gutter at the left edge of the source column.
-pub(super) const GUTTER: f32 = 56.0;
+pub(super) const GUTTER: f32 = 72.0;
+/// Width of the tree column every fixture starts with.
+pub(super) const TREE: f32 = 256.0;
+/// What: Where source text starts in the window: right of the tree, the divider, and the gutter, whose 72 px are
+///       a 16 px severity-letter column and 56 px of line numbers.
+/// Why: Pointer tests aim at text positions; one derivation keeps them right when any of the three changes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const TEXT_LEFT = TREE + DIVIDER + GUTTER;
+/// ```
+pub(super) const TEXT_LEFT: f32 = TREE + DIVIDER + GUTTER;
 /// Height of the project and file label rows above the tree and the source.
 pub(super) const HEADER: f32 = 32.0;
 /// Vertical position used for divider drags, inside the tree rows and the source lines.
