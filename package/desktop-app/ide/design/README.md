@@ -31,9 +31,9 @@ Every option is a real build.
 and `<question>-<option>-<scheme>-crop.png` is the part that differs,
 cut at the same rectangle for every option of a question.
 Line numbers in the list name the scene's source lines.
-Every build shows each severity letter 4 px before its own line number,
-as the user asked on 2026-10-06;
-the frames were rebuilt after that change.
+Every build shows each severity letter 4 px before its own line number:
+on 2026-10-06 the user asked for a shorter space between letter and number,
+and the 4 px gap was chosen for that; the frames were rebuilt after the change.
 
 #### Hint row look (`hint-look`)
 
