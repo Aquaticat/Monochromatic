@@ -290,6 +290,20 @@ running from a copy outside the repository.
 [Its production section](#how-the-2026-10-05-packaged-check-screenshots-were-produced)
 gives the build, the sessions, and what each frame shows.
 
+### 2026-10-06 single-file check
+
+- Screenshots: `screenshots/2026-10-06-single-file-check/`
+- Status: evidence of a check, not a question; it has no page.
+
+The frames show the single executable of the package's `bundle` task,
+run alone from a scratch folder or installed with its launcher entry in a disposable home folder:
+the four consumer sessions,
+the start without a folder,
+"open with" on a folder,
+and a damaged embedded part.
+[Its production section](#how-the-2026-10-06-single-file-check-screenshots-were-produced)
+gives the build, the sessions, and what each frame shows.
+
 ## How the 2026-10-05 UI batch 2 screenshots were produced
 
 ### File names
@@ -822,3 +836,105 @@ IDE_NATIVE_MCP_PORT=9425 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-ap
   339 with `hint-labels` `b`,
   and 291 with `hint-packing` `b`;
   line 8 stands at 559 in the shipped build and 543 with `diagnostic-text` `a`.
+
+## How the 2026-10-06 single-file check screenshots were produced
+
+### Build and copy
+
+`mise run //package/desktop-app/ide:bundle` copied the release binary of the branch `feat/ide-single-file`
+to `dist/monochromatic-ide`,
+one 81,743,984-byte executable whose SHA-256 starts with `abe24454268bca01`.
+It embeds its language runtime and license texts
+(the package README section "What the executable carries" lists them).
+Every session ran a copy of that file alone in a scratch folder below `~/temp/agent`,
+outside the repository,
+or the copy that `bin/install.mjs` placed in a disposable home folder.
+The build still places inlay hints in boxes after the end of their line;
+the decided placement on rows above the code line is another branch's work,
+so newer builds look different there.
+
+### Sessions
+
+- Four consumer sessions,
+  as on 2026-10-05:
+  a TypeScript 7 project and a Rust project,
+  each in dark and in light,
+  hosted in the release build of `package/cli/nested-wayland-session` at 1100 by 660 and scale factor 1,
+  started as `monochromatic-ide PROJECT --file src/main.ts` or `src/main.rs`,
+  with empty configuration, cache, and data homes and no `HELIX_RUNTIME`.
+  Each parser library was loaded from the session's own cache home,
+  `cache/monochromatic-ide/runtime/c47e913b79bf6a42/grammars/`,
+  which the executable filled itself.
+- Home-folder sessions in a disposable home of 283,450 files,
+  with the executable and the launcher entry installed there by `bin/install.mjs`
+  and the session's `HOME`, `PATH`, and XDG defaults pointing into it:
+  a start through the entry with no folder (`gio launch` with the entry alone, as an application menu does),
+  in dark and in light;
+  "open with" on a folder through GLib (`gio launch` with the entry and the folder)
+  and through KIO (`kioclient exec` with the folder URL,
+  the IDE made the default for folders in that home only);
+  and a start with no folder but `--file`
+  for a file in a Rust project below the home folder.
+- One frame of the `damaged-embedded-part-reported` bundle check:
+  a copy with one changed byte inside its embedded `sql.so`.
+
+### Input and capture
+
+As on 2026-10-05:
+seat input through the compositor control socket only,
+state read from the application's log,
+the nested clipboard,
+and these frames,
+a frame saved once three screenshots 250 ms apart (400 ms in the home-folder sessions) are byte-identical
+and the window shows more than one flat color,
+and the stored files re-encoded losslessly,
+stripped of metadata,
+and compared with their originals pixel by pixel.
+`RUST_LOG=ide_app=debug,monochromatic_ide=debug` was given to the application alone,
+because the compositor reads that variable too.
+
+### File names
+
+The consumer frames are `<language>-<scheme>-<step>.png`,
+with the steps of the 2026-10-05 check
+(listed in [its production section](#how-the-2026-10-05-packaged-check-screenshots-were-produced)),
+except that `open-highlighted` is now highlighted from the executable's own embedded runtime.
+No session produced `note-1` or `hints-missing-after-server-answered` this time.
+The other frames:
+
+- `home-dark-no-folder` and `home-light-no-folder`:
+  the start with no folder:
+  the tree's header names the home folder (`large-home`),
+  its rows list the home folder's entries,
+  and the source column is empty.
+- `home-dark-search-no-match`:
+  the search overlay over the home folder after a query that matches nothing,
+  once both searches had walked everything they may read.
+- `home-dark-search-common-word`:
+  a common word,
+  its content results capped at 30.
+- `home-dark-rust-project-file`:
+  the home folder as the project with `code/tool/src/main.rs` displayed;
+  `rust-analyzer` became ready,
+  confined,
+  rooted at `code/tool`,
+  with its state below the home folder's `.cache`.
+- `open-folder-gio-dark` and `open-folder-kio-dark`:
+  the folder `code/project-3`,
+  opened through GLib's and KIO's launchers.
+- `damaged-embedded-part-dark`:
+  the copy with a damaged embedded parser,
+  showing SQL as plain text with the message under the source.
+
+### What the frames do not show
+
+- The window title and the app id:
+  the screenshot holds the application surface only.
+  The Wayland protocol log of the GLib "open with" session showed
+  `set_app_id("monochromatic.ide")` and `set_title("Monochromatic IDE")`.
+- A launcher icon:
+  the entry names the stock `accessories-text-editor`,
+  and the application's own icon is still the user's decision.
+- The emoji in the first file's string under the host's own font configuration:
+  as on 2026-10-05,
+  its place is blank in the Rust frames and an outline glyph in the TypeScript frames.
