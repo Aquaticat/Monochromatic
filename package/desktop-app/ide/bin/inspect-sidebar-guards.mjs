@@ -46,6 +46,9 @@ const cases = [
   // Keyboard focus on the 1px line is marked by a color of its own and by a handle.
   { name: 'focus-color', file: 'ui/divider.slint', before: 'background: root.keyboard-focus ? Palette.accent-background : Palette.foreground;', after: 'background: Palette.foreground;', test: states, failure: 'keyboard focus does not have a line color of its own' },
   { name: 'focus-handle', file: 'ui/divider.slint', before: '        visible: root.keyboard-focus;\n', after: '        visible: false;\n', test: states, failure: 'keyboard focus did not draw its handle' },
+  // Through element handles: the divider slider's increment action, and tree rows reporting the open file.
+  { name: 'a11y-divider-increment', file: 'ui/divider.slint', before: 'accessible-action-increment => { root.resize(root.value + root.step); }', after: 'accessible-action-increment => { }', test: 'divider_is_a_slider_with_value_bounds_step_actions_and_keys', failure: 'the increment action did not set the sidebar width' },
+  { name: 'a11y-tree-row-selected', file: 'ui/tree.slint', before: 'accessible-item-selected: entry.selected;', after: 'accessible-item-selected: false;', test: 'tree_rows_report_role_name_position_and_the_open_file_as_selected', failure: 'does not report selected = true' },
   // Without a project the pointer half takes no input over the source.
   { name: 'hidden-grip', file: 'ui/app.slint', before: '        visible: root.project-visible;\n        x: project-tree.width - self.reach;', after: '        x: project-tree.width - self.reach;', test: 'hidden_project_has_no_divider', failure: 'the first window pixel is not source without a project' },
   // Without a project there is no divider to focus.

@@ -49,6 +49,9 @@ const cases = [
   { name: 'pending-open-focus', file: 'src/native/navigation/open.rs', before: 'if !window.get_search_open() {', after: 'if true {', occurrence: 1, native: true, test: 'pending_file_open_does_not_steal_search_input_focus', failure: 'asynchronous source install stole query focus' },
   // The search box's clear control reports the emptied query, so the results are removed with it.
   { name: 'clear-reports-edit', file: 'ui/query-input.slint', before: '        root.edited("");\n', after: '', native: true, test: 'search_clear_cell_is_48px_clears_the_query_and_results_and_keeps_focus', failure: 'clearing the query left search results' },
+  // Through element handles: the clear control's default action clears, and result rows report selection.
+  { name: 'a11y-clear-default-action', file: 'ui/query-input.slint', before: 'accessible-action-default => { root.clear(); }', after: '', native: true, test: 'search_box_and_clear_control_expose_role_label_value_and_actions', failure: "the clear control's default action did not clear the search box" },
+  { name: 'a11y-result-selected', file: 'ui/search.slint', before: 'accessible-item-selected: selected;', after: 'accessible-item-selected: false;', native: true, test: 'search_results_report_role_name_position_and_the_selected_result', failure: 'does not report selected = true' },
   { name: 'same-file-focus', file: 'src/native/navigation/open.rs', before: 'if !window.get_search_open() {', after: 'if true {', native: true, test: 'pending_file_open_does_not_steal_search_input_focus', failure: 'same-file request stole query focus' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
