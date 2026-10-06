@@ -1511,6 +1511,17 @@ Every target exited 0
 - `config_schema`: 29,924 executions.
 - `wrapper_controls`: 41,774 executions.
 
+The same task on the tree of commit `348d94cbe`,
+the final tree,
+on a quieter host
+(evidence `package/git-policy/cli.fuzz/target/verification/campaign-ma0PAO`),
+again with every target exiting 0:
+
+- `global_arguments`: 1,448,046 executions.
+- `config_loading`: 511,433 executions.
+- `config_schema`: 60,003 executions.
+- `wrapper_controls`: 105,604 executions.
+
 The new target is slower per execution than the argument targets
 because each execution runs the whole lifecycle twice and removal three times.
 Thirty seconds is a smoke run,
