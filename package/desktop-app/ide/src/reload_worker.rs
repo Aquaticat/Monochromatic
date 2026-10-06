@@ -20,6 +20,7 @@ use std::{
     path::PathBuf,
     sync::mpsc::{Receiver, SyncSender, TryRecvError, sync_channel},
     thread::{self, JoinHandle},
+    time::Duration,
 };
 
 /// A file generation prevents applying an old file's result after navigation.
@@ -32,6 +33,16 @@ pub struct ReloadRequest {
     pub generation: u64,
     /// Request initial/retried classification even without a text change; changed source always classifies.
     pub highlight_unchanged: bool,
+    /// What: `Option<Duration>` is a time span or nothing (`number | undefined`).
+    /// Why: `Some(quiet)` accepts the bytes only when the file was last modified at least `quiet` before
+    ///      the read began; a read no change notification asked for sets it, because such a read can meet a
+    ///      save in progress. `None` accepts any read: a notification already waited for the writer.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// requireQuiet?: number;
+    /// ```
+    pub require_quiet: Option<Duration>,
 }
 
 /// Classifications identify the exact source revision they describe.
@@ -52,6 +63,9 @@ pub struct ReloadReply {
     pub result: Result<Option<Reload>>,
     /// Present for changed source and explicitly requested unchanged-source classification.
     pub syntax: Option<SyntaxReply>,
+    /// The request required quiet and the file was written too recently: `result` is `Ok(None)`, nothing
+    /// is applied, and the caller treats the file as being written, as for an unfinished-write notification.
+    pub recent_write: bool,
 }
 
 /// Queue envelope keeps project resolution on the worker without changing existing reload requests.

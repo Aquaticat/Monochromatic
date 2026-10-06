@@ -7,8 +7,6 @@ use crate::Step;
 use crate::render;
 /// Failures name the operation that failed.
 use anyhow::{Context, Result, bail};
-/// The application's own document and reload path.
-use ide_app::document::Document;
 /// The handle and the types it exchanges.
 use ide_app::language::{
     LanguageWorker,
@@ -20,6 +18,8 @@ use ide_app::language::{
     status::{LanguageStatus, ServerState},
     sync::{DocumentOpen, DocumentReload},
 };
+/// The application's own document and reload path, and its change watcher and project boundary.
+use ide_app::{change_watch::ChangeWatcher, document::Document, workspace::Workspace};
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
 /// What: `Path`/`PathBuf` are borrowed and owned filesystem paths; `Arc` is a thread-safe shared
@@ -36,6 +36,9 @@ use std::{
     time::{Duration, Instant},
 };
 
+/// The steps about folders watched for the servers, and the relay the application's tick performs.
+mod watching;
+
 /// Pause between polls, as the application's timer polls its workers.
 const POLL: Duration = Duration::from_millis(20);
 
@@ -46,6 +49,14 @@ const REPEAT: Duration = Duration::from_millis(500);
 pub struct Session {
     /// The handle under inspection.
     worker: LanguageWorker,
+    /// What: `Option<ChangeWatcher>` is the project's change watcher, or `None` in the positive control.
+    /// Why: The application watches folders for the servers; the control shows what happens without it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// watcher?: ChangeWatcher;
+    /// ```
+    watcher: Option<ChangeWatcher>,
     /// Resolved project root.
     project: PathBuf,
     /// Path of the displayed file.
@@ -75,12 +86,18 @@ fn emit(started: Instant, mut record: Value) {
 /// Session steps.
 impl Session {
     /// Start the worker for a project; no server starts until a file is opened.
-    pub fn new(project: &Path, setup: LanguageSetup) -> Result<Self> {
+    pub fn new(project: &Path, setup: LanguageSetup, forward: bool) -> Result<Self> {
         // The trailing `?` returns the start error to the caller.
         let worker = LanguageWorker::with_setup(project, setup)?;
+        let watcher = if forward {
+            Some(ChangeWatcher::new(Workspace::new(project)?)?)
+        } else {
+            None
+        };
         // `Ok(...)` is the success variant of `Result`.
         return Ok(Self {
             worker,
+            watcher,
             project: project.to_path_buf(),
             path: PathBuf::new(),
             document: Document::new(""),
@@ -110,6 +127,7 @@ impl Session {
     /// poll() { for (const change of worker.takeAll()) { record(change); } }
     /// ```
     fn poll(&mut self) -> Result<()> {
+        self.relay_file_changes();
         // `if let Some(x) = ...?` runs the block only when something new was published.
         if let Some(status) = self.worker.try_take_status()? {
             emit(self.started, json!({ "status": render::status(&status) }));
@@ -348,6 +366,8 @@ impl Session {
                     "droppedStaleRevision": after.stale_revision - before.stale_revision,
                 })
             }
+            Step::Write { file, text } => self.write(file, text)?,
+            Step::Folders { minimum, seconds } => self.folders(*minimum, *seconds)?,
             Step::Sleep { milliseconds } => {
                 let never = |_: &Session| return false;
                 self.until(Duration::from_millis(*milliseconds), &never)?;

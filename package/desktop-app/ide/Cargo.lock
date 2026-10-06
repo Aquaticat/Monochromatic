@@ -2511,6 +2511,7 @@ dependencies = [
  "base64",
  "clap",
  "futures-util",
+ "globset",
  "helix-core",
  "helix-loader",
  "helix-lsp",
