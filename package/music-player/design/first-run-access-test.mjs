@@ -22,6 +22,8 @@ const guards = {
   'without-withdrawn-text': `capture.texts.some(text => typeof text !== 'string' || text.includes(withdrawn))`,
   'without-cohort': `if (!first) throw new Error('First-run review requires every authored state under every condition: ' + base);`,
   'without-drag-outcome': `typeof moved !== 'boolean' || moved !== (end !== undefined)`,
+  'without-declined-actions': `declinedActions.some(label => !capture.texts.includes(label))`,
+  'without-visit-count': '!html.includes(`${visits} visits contributed views`)',
 };
 const removed = process.argv[2];
 if (removed !== undefined) {
