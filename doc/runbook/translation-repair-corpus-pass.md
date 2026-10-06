@@ -127,10 +127,20 @@ TODO | DONE
     OpenRouter
     (`doc/decision/translation-repair-openrouter-fallback.md`);
     a worktree whose store predates the OpenRouter name can still exercise it by launching the worktree's
-    bundle with the main repository as the mise config root
-    (`cd /var/home/user/Monochromatic && mise exec -- node <worktree>/<bundle> --only <id>`,
-    where the bundle is `package/module/translation-repair/dist/final/node/corpus-pass.mjs`),
-    with `env -u TRANSLATION_REPAIR_CHARM_HYPER_API_KEY` between `--` and `node` to leave Hyper out of that run.
+    bundle with the main repository as the mise config root,
+    where the bundle is `package/module/translation-repair/dist/final/node/corpus-pass.mjs`:
+
+    ```sh
+    cd /var/home/user/Monochromatic
+    TRANSLATION_REPAIR_STARTED_BY=corpus-pass mise exec -- node <worktree>/<bundle> --only <id>
+    ```
+
+    Put `env --unset=TRANSLATION_REPAIR_CHARM_HYPER_API_KEY` between `--` and `node` to leave Hyper out of that run.
+    The `TRANSLATION_REPAIR_STARTED_BY=corpus-pass` before `mise exec` is what the command's own task would set:
+    since 2026-10-06 a built command refuses to run in a process that holds provider keys
+    unless that variable names it
+    (`package/module/translation-repair/src/task-runner-guard.ts`),
+    so a start that skips the task names the command by hand.
     Check which names a root injects before choosing,
     printing presence and never a value:
     `mise exec -- node -e "console.log(process.env.TRANSLATION_REPAIR_OPENROUTER_API_KEY === undefined ? 'absent' : 'present')"`.
@@ -398,10 +408,12 @@ TODO | DONE
 
     To read something while a pass is in flight,
     invoke the built entry point directly
-    and skip the task that would rebuild it:
+    and skip the task that would rebuild it,
+    naming the command as its task would,
+    since a built command refuses to run in a shell that holds provider keys unless that variable names it:
 
     ```sh
-    node dist/final/node/meter-report.mjs "${RUNDIR}.log"
+    TRANSLATION_REPAIR_STARTED_BY=meter-report node dist/final/node/meter-report.mjs "${RUNDIR}.log"
     ```
 
     To exercise a CHANGE while a pass is in flight,
