@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { defaultTemplate, errorLines, evaluateTemplate, fields, functions, helpAt, parseTemplate } from './template-reference.mjs';
 
 //region Fixture tracks: one analysed, one not yet analysed, one with nothing but a path
-const analysed = { title: 'Another Xronixle', file: 'かめりあ(Camellia) - Another Xronixle', ext: 'flac', folder: 'Camellia', path: 'Camellia/かめりあ(Camellia) - Another Xronixle.flac', len: 275, peak: '\u22120.3' };
+const analysed = { title: 'Another Xronixle', file: 'かめりあ(Camellia) - Another Xronixle', ext: 'flac', folder: 'Camellia', path: 'Camellia/かめりあ(Camellia) - Another Xronixle.flac', len: 275, peak: '\u22120.3 dBTP' };
 const waiting = { ...analysed, title: 'Exit This Earth\'s Atomosphere', peak: undefined };
 const bare = { title: 'x', file: 'x', ext: 'mp3', folder: '', path: 'x.mp3', len: undefined, peak: undefined };
 let cases = 0;
@@ -23,9 +23,12 @@ function refuses({ text, track = analysed, lines }) {
 //region Text, fields and the default line
 shows({ text: '', track: analysed, expected: '' });
 shows({ text: 'plain text, no formula', track: analysed, expected: 'plain text, no formula' });
-shows({ text: defaultTemplate, track: analysed, expected: '4:35 · \u22120.3 dBTP' });
-shows({ text: defaultTemplate, track: waiting, expected: '4:35' });
-shows({ text: defaultTemplate, track: bare, expected: '' });
+// Plain substitution (D93): the space between the formulas is always shown, also when the peak is empty.
+shows({ text: defaultTemplate, track: analysed, expected: '4:35 \u22120.3 dBTP' });
+shows({ text: defaultTemplate, track: waiting, expected: '4:35 ' });
+shows({ text: defaultTemplate, track: bare, expected: ' ' });
+assert.equal(defaultTemplate, '$tf(mi(len), m:ss)$ $mi(peak)$');
+cases += 1;
 for (const field of fields) shows({ text: '[$mi(' + field.mode + ')$]', track: analysed, expected: '[' + String(analysed[field.mode]) + ']' });
 shows({ text: '$mi(folder)$/$mi(file)$.$mi(ext)$', track: analysed, expected: 'Camellia/かめりあ(Camellia) - Another Xronixle.flac' });
 shows({ text: '$mi(peak)$', track: waiting, expected: '' });
@@ -65,32 +68,21 @@ refuses({ text: '$tc(ell, mi(title), 5)$', lines: ['tc: unknown mode ell'] });
 refuses({ text: '$tc(up)$', lines: ['tc: takes 2 or 3 values, as in tc(mode, text, [length])'] });
 //endregion
 
-//region Conditions, comparisons and joining
-shows({ text: '$if(mi(peak) != "", "analysed", "waiting")$', track: analysed, expected: 'analysed' });
-shows({ text: '$if(mi(peak) != "", "analysed", "waiting")$', track: waiting, expected: 'waiting' });
-shows({ text: '$if(mi(peak) = "", "waiting")$', track: analysed, expected: '' });
-shows({ text: '$if(mi(peak), yes, no)$', track: waiting, expected: 'no' });
-shows({ text: '$if(0, yes, no)$', track: analysed, expected: 'no' });
-shows({ text: '$if(1, yes, no)$', track: analysed, expected: 'yes' });
-shows({ text: '$if(mi(peak) > -1, hot, fine)$', track: analysed, expected: 'hot' });
-shows({ text: '$if(mi(peak) > -1, hot, fine)$', track: waiting, expected: 'fine' });
-shows({ text: '$if(mi(peak) > -1, hot, fine)$', track: { ...analysed, peak: '\u22121.2' }, expected: 'fine' });
-shows({ text: '$if(mi(peak) = -0.3, same, different)$', track: analysed, expected: 'same' });
-shows({ text: '$if(mi(len) >= 275, long, short)$', track: analysed, expected: 'long' });
-shows({ text: '$if(mi(len) < 275, short, long)$', track: analysed, expected: 'long' });
-shows({ text: '$if(mi(len) <= 275, short, long)$', track: analysed, expected: 'short' });
-shows({ text: '$if(mi(ext) = flac, lossless, lossy)$', track: analysed, expected: 'lossless' });
-shows({ text: '$if(mi(ext) != flac, lossy, lossless)$', track: analysed, expected: 'lossless' });
-shows({ text: '$if(2 = 2.0, same, different)$', track: analysed, expected: 'same' });
-shows({ text: '$mi(len) = 275$', track: analysed, expected: '1' });
-shows({ text: '$mi(len) = 1$', track: analysed, expected: '0' });
+//region Joining, and no conditional (D92, D93)
 shows({ text: '$"a" + "b" + mi(ext)$', track: analysed, expected: 'abflac' });
 shows({ text: '$1 + 2$', track: analysed, expected: '12' });
-// A nested `if` covers two fields that may each be absent, which is why combining with & and | is left out (D90).
-shows({ text: '$if(mi(len) != "", if(mi(peak) != "", both, "length only"), neither)$', track: waiting, expected: 'length only' });
-refuses({ text: '$if(1)$', lines: ['if: takes 2 or 3 values, as in if(condition, then, [else])'] });
-// A mistake in the branch this track does not take is still reported.
-refuses({ text: '$if(1, fine, mi(nope))$', lines: ['mi: unknown field nope'] });
+// A separator next to an empty field stays in the line: there is nothing to leave it out with.
+shows({ text: '$mi(folder)$ · $mi(title)$', track: bare, expected: ' · x' });
+shows({ text: '$mi(peak)$ dBTP', track: waiting, expected: ' dBTP' });
+// Comparison signs are ordinary characters inside a word.
+shows({ text: '$tc(up, a<b>=c!=d)$', track: analysed, expected: 'A<B>=C!=D' });
+refuses({ text: '$if(mi(peak), yes, no)$', lines: ['if: unknown function'] });
+refuses({ text: '$if(1, fine, mi(nope))$', lines: ['if: unknown function'] });
+refuses({ text: '$mi(peak) != ""$', lines: ['formula: unexpected !='] });
+refuses({ text: '$mi(len) = 275$', lines: ['formula: unexpected ='] });
+refuses({ text: '$mi(len) > 1$', lines: ['formula: unexpected >'] });
+assert.equal(Object.hasOwn(functions, 'if'), false);
+cases += 1;
 //endregion
 
 //region Mistakes are named, ordered by where they sit, and never shown as text
@@ -133,9 +125,11 @@ assert.equal(help({ text: '$tf(|' }), 'tf(seconds, [format]) / seconds');
 assert.equal(help({ text: '$tf(mi(|len), m:ss)$' }), 'mi(field) / field');
 assert.equal(help({ text: '$tf(mi(len)|, m:ss)$' }), 'tf(seconds, [format]) / seconds');
 assert.equal(help({ text: '$tf(mi(len), m:|ss)$' }), 'tf(seconds, [format]) / format');
-assert.equal(help({ text: '$if(mi(peak) != "", " · " + mi(peak|) + " dBTP")$' }), 'mi(field) / field');
-assert.equal(help({ text: '$if(mi(peak) != "", " · " + mi(peak) + " dBTP"|)$' }), 'if(condition, then, [else]) / then');
-assert.equal(help({ text: '$if(a, b, c, |d)$' }), 'if(condition, then, [else]) / else');
+assert.equal(help({ text: '$tf(mi(len), m:ss)$ $mi(peak|)$' }), 'mi(field) / field');
+assert.equal(help({ text: '$tc(cut, mi(title), |5)$' }), 'tc(mode, text, [length]) / length');
+// Past the last parameter the help stays on the last one.
+assert.equal(help({ text: '$tc(a, b, c, |d)$' }), 'tc(mode, text, [length]) / length');
+assert.equal(help({ text: '$if(|1)$' }), undefined);
 assert.equal(help({ text: '$xx(|1)$' }), undefined);
 assert.equal(help({ text: '$mi(title)$ and $tc(up, |' }), 'tc(mode, text, [length]) / text');
 assert.equal(helpAt({ text: '$tf(', caret: 4 }).description, functions.tf.parameters[0].description);

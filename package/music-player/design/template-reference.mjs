@@ -1,6 +1,7 @@
 //region Reference for the supporting-text template language, design evidence only
-// D89 and D90 fix the scope: text with formulas between `$` signs, the track's fields, duration
-// formatting, case and cut conversion, `if` with comparisons, and `+` to join text. The spelling
+// D89 to D93 fix the scope: text with formulas between `$` signs, the track's fields, duration
+// formatting, case and cut conversion, and `+` to join text. There is no conditional (D92): text
+// outside formulas is always shown and a field with no value yields nothing (D93). The spelling
 // follows KWGT where KWGT has one. This file is the design study's statement of what a template
 // yields; it is not the player's parser and authorizes no production implementation.
 
@@ -12,7 +13,7 @@ export const fields = [
   { mode: 'folder', label: 'Folder', description: 'The folder that holds the file.' },
   { mode: 'path', label: 'Path', description: 'The path from the library root.' },
   { mode: 'len', label: 'Duration', description: 'The duration in seconds; tf formats it.' },
-  { mode: 'peak', label: 'True peak', description: 'The true peak in dBTP with one decimal and a real minus sign, or nothing before the file is analysed.' },
+  { mode: 'peak', label: 'True peak', description: 'The true peak with its unit, such as \u22121.2 dBTP, or nothing before the file is analysed.' },
 ];
 
 /** Functions with the signature and argument help the editor shows while the caret is inside a call. */
@@ -26,18 +27,15 @@ export const functions = {
     { name: 'mode', description: 'Mode: low, up or cap to change case; cut to keep the first characters.' },
     { name: 'text', description: 'Text: the text to convert.' },
     { name: 'length', description: 'Length: how many characters cut keeps.' }] },
-  if: { signature: 'if(condition, then, [else])', minimum: 2, maximum: 3, parameters: [
-    { name: 'condition', description: 'Condition: a comparison, or any value; nothing and 0 count as false.' },
-    { name: 'then', description: 'Then: shown when the condition is true.' },
-    { name: 'else', description: 'Else: shown when the condition is false; nothing when left out.' }] },
 };
 
-/** The default supporting line: D35's duration and true peak, without the peak part before analysis. */
-export const defaultTemplate = '$tf(mi(len), m:ss)$$if(mi(peak) != "", " · " + mi(peak) + " dBTP")$';
+/** The default supporting line (D93): the duration, a space, then the true peak, which is empty before analysis. */
+export const defaultTemplate = '$tf(mi(len), m:ss)$ $mi(peak)$';
 //endregion
 
 //region Formula text to tokens, one pass
-const operators = ['!=', '<=', '>=', '=', '<', '>', '+', '(', ')', ','];
+// No comparison operators: with no conditional (D92) there is nothing to feed them, so `=`, `<` and `>` are ordinary characters.
+const operators = ['+', '(', ')', ','];
 /** Splits one formula's text; `offset` is the formula's first character in the whole template. */
 function tokenize({ text, offset }) {
   const tokens = [];
@@ -63,7 +61,7 @@ function tokenize({ text, offset }) {
       index += operator.length;
       continue;
     }
-    // A bare word runs to the next space, quotation mark or operator; `!` alone is part of a word.
+    // A bare word runs to the next space, quotation mark or operator.
     let end = index;
     while (end < text.length && !' \t\n"'.includes(text[end]) && !operators.some(candidate => text.startsWith(candidate, end))) end += 1;
     tokens.push({ kind: 'word', value: text.slice(index, end), start: offset + index, end: offset + end });
@@ -105,7 +103,7 @@ function parseFormula({ text, offset }) {
       }
       if (isOperator(')')) { call.close = peek().start; position += 1; return call; }
       for (;;) {
-        call.parameters.push(comparison(depth + 1));
+        call.parameters.push(joined(depth + 1));
         if (isOperator(',')) { call.separators.push(peek().start); position += 1; continue; }
         if (isOperator(')')) { call.close = peek().start; position += 1; return call; }
         if (!abandoned) errors.push({ subject: token.value, message: 'a closing bracket is missing', at: token.start });
@@ -119,16 +117,7 @@ function parseFormula({ text, offset }) {
     while (isOperator('+')) { position += 1; left = { kind: 'join', left, right: primary(depth) }; }
     return left;
   }
-  function comparison(depth) {
-    const left = joined(depth);
-    const token = peek();
-    if (token?.kind === 'operator' && ['=', '!=', '<', '<=', '>', '>='].includes(token.value)) {
-      position += 1;
-      return { kind: 'compare', operator: token.value, left, right: joined(depth) };
-    }
-    return left;
-  }
-  const tree = comparison(0);
+  const tree = joined(0);
   if (position < tokens.length) errors.push({ subject: 'formula', message: 'unexpected ' + tokens[position].value, at: tokens[position].start });
   return { tree, errors };
 }
@@ -158,13 +147,11 @@ export function parseTemplate(text) {
 //region Tree to text for one track
 const absent = '';
 function asText(value) {
-  if (value === true) return '1';
-  if (value === false) return '0';
   return String(value);
 }
 function asNumber(value) {
-  // The player writes a true peak with a real minus sign (U+2212), as the accepted rows do; it still compares as a number.
-  const text = asText(value).trim().replaceAll('\u2212', '-');
+  // Only seconds and a cut length are read as numbers; nothing compares values any more (D92).
+  const text = asText(value).trim();
   const number = Number(text);
   return text === '' || !Number.isFinite(number) ? undefined : number;
 }
@@ -190,20 +177,6 @@ function formatSeconds({ seconds, format }) {
 function evaluate({ node, track, errors }) {
   if (node.kind === 'text' || node.kind === 'word') return node.value;
   if (node.kind === 'join') return asText(evaluate({ node: node.left, track, errors })) + asText(evaluate({ node: node.right, track, errors }));
-  if (node.kind === 'compare') {
-    const left = evaluate({ node: node.left, track, errors });
-    const right = evaluate({ node: node.right, track, errors });
-    const numbers = [asNumber(left), asNumber(right)];
-    const numeric = numbers.every(number => number !== undefined);
-    if (node.operator === '=') return numeric ? numbers[0] === numbers[1] : asText(left) === asText(right);
-    if (node.operator === '!=') return numeric ? numbers[0] !== numbers[1] : asText(left) !== asText(right);
-    // An ordering against a field with no value is false rather than an error, so a row is not broken by an unanalysed file.
-    if (!numeric) return false;
-    if (node.operator === '<') return numbers[0] < numbers[1];
-    if (node.operator === '<=') return numbers[0] <= numbers[1];
-    if (node.operator === '>') return numbers[0] > numbers[1];
-    return numbers[0] >= numbers[1];
-  }
   const definition = Object.hasOwn(functions, node.name) ? functions[node.name] : undefined;
   if (!definition) { errors.push({ subject: node.name, message: 'unknown function', at: node.start }); return absent; }
   if (node.parameters.length < definition.minimum || node.parameters.length > definition.maximum) {
@@ -211,7 +184,7 @@ function evaluate({ node, track, errors }) {
       (definition.maximum === 1 ? ' value' : ' values') + ', as in ' + definition.signature, at: node.start });
     return absent;
   }
-  // Every argument is evaluated, also the branch `if` does not take, so a mistake there is reported for every track.
+  // Every argument is evaluated before the call, so a mistake in any of them is reported.
   const values = node.parameters.map(parameter => evaluate({ node: parameter, track, errors }));
   if (node.name === 'mi') {
     const mode = asText(values[0]);
@@ -239,9 +212,7 @@ function evaluate({ node, track, errors }) {
     errors.push({ subject: 'tc', message: 'unknown mode ' + mode, at: node.start });
     return absent;
   }
-  const condition = values[0];
-  const holds = condition === true || (condition !== false && asText(condition) !== absent && asText(condition) !== '0');
-  return holds ? values[1] : values.length === 3 ? values[2] : absent;
+  throw new Error('A function is defined but not evaluated: ' + node.name);
 }
 
 /** What a template shows for one track, or the mistakes that keep it from applying. */
@@ -268,7 +239,7 @@ export function helpAt({ text, caret }) {
   const pending = parts.filter(part => part.kind === 'formula' && caret > part.start && caret <= (part.closed ? part.end - 1 : part.end)).map(part => part.tree);
   while (pending.length > 0) {
     const node = pending.pop();
-    if (node.kind === 'join' || node.kind === 'compare') { pending.push(node.left, node.right); continue; }
+    if (node.kind === 'join') { pending.push(node.left, node.right); continue; }
     if (node.kind !== 'call') continue;
     pending.push(...node.parameters);
     const inside = caret >= node.open && (node.close === undefined || caret <= node.close);
