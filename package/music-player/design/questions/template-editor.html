@@ -61,19 +61,17 @@ dialog h2 { margin-block-start: 0; }
 </head>
 <body>
 <header>
-<p class="summary-text">Design study. The template editor as decided, and which lines get a template, for approval.</p>
+<p class="summary-text">Design study. The template editor and its two templates, as decided.</p>
 <h1>Templates for the player's lines</h1>
-<p>Purpose: show the editor for the template that produces a track row's supporting line (D81) as you decided it
-(D89 to D96), and the agent's one version of which other lines get a template (D97), which awaits your approval.
-The page itself asks nothing; anything you would change goes in the last field.</p>
+<p>Purpose: show the template editor (D81) as you decided it (D89 to D96, accepted in D98) and the two lines that get
+a template, which you approved (D99). The page asks nothing; anything you would change goes in the last field.</p>
 <p class="note">Every state is authored debug input. Typing is not connected: each view shows fixed template text,
 and the preview, error lines and help it draws are checked against a reference that computes what the grammar yields.
 The app has a duration only for the playing track today and draws no supporting line yet, so this previews a line the
 app cannot fill for every row.</p>
 <p>The buttons emit debug events only. No template is stored and no row of the player changes.
 No production implementation is authorized.</p>
-<p>What to look at: the Settings page and the playing-track editor, which are new; the editor's states on both
-panels, at 100% and 200% text; and the second preview row, whose true peak is not measured yet. How to respond: if anything should
+<p>What to look at: nothing new since you approved it; the page is the record of the decided design. How to respond: if anything should
 change, write it in the last field, press <strong>Prepare reply</strong> and paste the prepared text into the chat. This
 page sends and saves nothing.</p>
 </header>
@@ -125,8 +123,8 @@ There is no Save step; <strong>Reset to default</strong> is drawn only when the 
 <li>The field list stays under the field; with the keyboard open you scroll to it (D96).</li>
 </ul>
 </section>
-<section aria-labelledby="approval-title"><h2 id="approval-title">For approval: which lines get a template</h2>
-<p>The agent's one version (D97). Nothing in this section is decided until you approve it.</p>
+<section aria-labelledby="lines-title"><h2 id="lines-title">Which lines get a template</h2>
+<p>Built as the agent's one version (D97) and approved as built (D99).</p>
 <ul>
 <li>Two templates, listed under Templates in Settings: <strong>Track rows</strong>, the supporting line studied so far,
 and <strong>Playing track</strong>, the line under the playing track's title in the deck. Each editor is titled with

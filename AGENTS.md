@@ -502,7 +502,9 @@ CLN:
 APQ:
  Auto-push fires in third-party clones too:
  before committing in one,
- run `git remote set-url --push origin DISABLED`.
+ run `git remote set-url --push origin DISABLED`;
+ never in this repo's linked worktrees,
+ which share its `.git/config`.
 
 BOP:
  `~` in shell output is a display-only home-dir substitution by the `bash-output-filter` hook;

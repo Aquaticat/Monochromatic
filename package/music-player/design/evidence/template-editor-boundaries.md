@@ -18,8 +18,8 @@ and that the agent builds one version of which other rows get templates
 and asks for approval (D97).
 This study shows that editor and that version as authored native states on the Fold.
 The version is two templates,
-`Track rows` and `Playing track`;
-it is not decided until the human approves it.
+`Track rows` and `Playing track`.
+The human accepted the editor as shown (D98) and approved the version as built (D99).
 
 It changes no production code,
 stores no template and changes no row of the player.
@@ -33,10 +33,9 @@ the pinned layouts that D91 rejected with what they measured,
 and the decisions of 2026-10-06.
 
 The review page is `questions/template-editor.html`.
-It shows the decided editor and the version for approval,
-and asks nothing itself:
-approval is asked through the question tool,
-and the page's last field takes anything the human would change.
+It shows the decided editor and the two templates as decided,
+and asks nothing;
+its last field takes anything the human would change.
 
 ## What the app has today
 
@@ -192,7 +191,7 @@ neither is part of the study.
 a scroll of the study's own on a typing view,
 a page that asks a question,
 a page that quotes a conditional,
-a page without the section for approval or without a figure for each scene,
+a page without the section on which lines get a template or without a figure for each scene,
 and a page naming a number of capture visits other than its views record.
 Removing each of its four named guards makes that test fail.
 An offline browser check in a container bounded to 2 GiB of memory and 2 CPUs opened every embedded view,
@@ -244,6 +243,6 @@ The editor's language,
 default,
 preview placement,
 scrolling and field list are decided (D89 to D96).
-Which lines get a template awaits the human's approval of the D97 version.
+Which lines get a template is decided too (D99).
 No production parser,
 storage or row change is authorized.

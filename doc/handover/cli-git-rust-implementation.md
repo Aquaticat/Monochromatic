@@ -199,6 +199,19 @@ Running at the last update of this document (2026-10-06, relaunched at 08:10):
   (linked worktree `.claude/worktrees/cli-git-dependent-version`,
   branch `feat/cli-git-native-dependent-version`),
   evidence `doc/handover/cli-git-native-dependent-version.md` on that branch.
+- Linter publication and cutover (linked worktree `.claude/worktrees/linter-cutover`, branch `feat/linter-cutover`):
+  `monochromatic-jsonc-edit` 0.1.1 and `monochromatic-lint` 0.1.0 through `cargo-publish.yml` after CI dry runs,
+  then step 7 of `doc/planning/unified-linter.md` as one change.
+  The delegate lands the version bump that triggers publication;
+  the main session lands the cutover.
+  Evidence: `doc/handover/unified-linter-cutover.md` on that branch.
+- The commit path (linked worktree `.claude/worktrees/cli-git-transactions`, branch `feat/cli-git-native-transactions`):
+  locks and journals with incumbent interoperability, registry and recovery, hook dispatch,
+  the commit transaction, signals, auto-push and worktree copy, in gated slices.
+  Evidence: `doc/handover/cli-git-native-transactions.md` on that branch.
+- `markdown/autofix` through the native linter, and the `pathBytes` event field
+  (linked worktree `.claude/worktrees/cli-git-markdown-autofix`, branch `feat/cli-git-native-markdown-autofix`).
+  Evidence: `doc/handover/cli-git-native-markdown-autofix.md` on that branch.
 
 The content-policy delegate and the linter gaps delegate have reported;
 see `Content policies over candidates` and `Linter mutation close`.
