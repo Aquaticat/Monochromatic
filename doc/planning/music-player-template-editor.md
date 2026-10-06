@@ -361,6 +361,8 @@ formulas between `$` signs,
 `tc(...)` for text conversion,
 `if(condition, then, [else])`,
 and `+` to join pieces of text inside a formula.
+On 2026-10-06 D92 removed `if` and the comparisons;
+the rest of this spelling stands.
 
 Fields,
 each a mode word of `mi`:
@@ -382,6 +384,8 @@ each a mode word of `mi`:
 - `peak`:
   the true peak in dBTP with one decimal,
   and nothing when the file is not analysed yet.
+  Since D93 (2026-10-06) the value carries its unit,
+  as in `−1.2 dBTP`.
 
 `mi(title)` and `mi(len)` mean what they mean in KWGT;
 the other mode words are the player's own.
@@ -409,6 +413,16 @@ A field with no value yields nothing.
 That is the agent's choice;
 what KWGT does there was not observed.
 While a template is invalid the rows keep the last valid template (D90).
+
+This default needs `if`,
+which D92 removed on 2026-10-06.
+D93 replaces it with plain substitution:
+text outside formulas is always shown,
+the peak carries its unit,
+and the default is `$tf(mi(len), m:ss)$ $mi(peak)$`,
+which reads `4:35 −1.2 dBTP` and,
+before analysis,
+`5:12` followed by a space nobody sees.
 
 ### What the study shows
 
@@ -556,6 +570,11 @@ not of the design:
 
 ### Layouts being compared
 
+Superseded on 2026-10-06:
+D91 took the scrolling preview and rejected both pinned layouts,
+and D94 removed the authored scroll rule this section adds to every layout.
+The section stays as the record of what was built and why.
+
 The first look names one consequential concern the human did not raise:
 at large text,
 typing can hide the very preview that D89 keeps for feedback on every keystroke.
@@ -652,3 +671,30 @@ and the rows lose help instead,
 which can be scrolled to while the result stays in view.
 The choice is the human's and is asked on the review page,
 `package/music-player/design/questions/template-editor.html`.
+
+### Decided on 2026-10-06
+
+Asked through the question tool with the review page open,
+the human rejected the agent's ranking and chose none of the offered options outright,
+writing that least surprise against the base platform matters more,
+and that the preview scrolls (D91).
+Asked in the same way about the study's assumptions and the questions that followed:
+the language has no conditional (D92),
+an empty field is plain substitution with the unit inside the peak field (D93),
+and the page rests where Android puts a focused field (D94).
+Everything else the study assumed stands:
+one template for the track row's supporting line,
+KWGT's spelling without `if`,
+the seven fields and the D90 picks.
+
+What the agent learnt about its own ranking:
+it weighed what stays in view at 200% text above how the page behaves against other apps,
+and the human weighs it the other way.
+
+The study is rebuilt for these decisions:
+one layout,
+no scroll of the study's own while typing,
+the new default template,
+and a changed-template scene whose second row ends with the separator an empty peak leaves.
+Its review page shows the decided design and asks nothing.
+The next concern of the round is reaching the field list while the keyboard is open.
