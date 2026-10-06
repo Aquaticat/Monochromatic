@@ -1309,6 +1309,10 @@ the project root,
 every visible expanded folder,
 and the displayed file's folder,
 even when the tree does not show that folder.
+A displayed file outside the project,
+opened from a language target such as a standard-library source,
+is not watched and is not a watch failure:
+the safety sweep rereads it.
 Collapsing a folder removes its watch;
 folders inside a collapsed folder stay expanded in the tree but are not watched.
 A folder is watched only at its own canonical path inside the project root,
@@ -1351,8 +1355,24 @@ The latest notification decides,
 so a save that deletes and rewrites the file waits for the rewrite.
 A writer that leaves the file unfinished for longer than the quiet period is read mid-write,
 and read again when it closes the file.
-A sweep read can also meet a save that began within the last timer tick;
+
+A read that no write notification asked for accepts the file only when it has been quiet:
+the safety sweep,
+the timer of an unwatched file,
+a highlighting retry,
+the first read,
+and the reread after a new watch,
+a newly displayed file,
+or lost events.
+The reader asks the open file for its modification time after reading;
+when that time lies less than 50 ms before the read began,
+or during the read,
+or after the current time,
+the bytes are dropped and the file waits like an unfinished write.
+The check depends on the file alone,
+so no order of timers and notifications lets such a read show a save in progress;
 see [Measured write wait](#measured-write-wait).
+A file system that keeps modification times in whole seconds can let a save through this check.
 
 ### Recovery and timers
 
@@ -1361,9 +1381,9 @@ an inotify queue overflow (`IN_Q_OVERFLOW`),
 an error from the notification stream,
 a watched folder that is removed or renamed,
 a watch that cannot be added,
-including at the `fs.inotify.max_user_watches` limit,
+reaching the `fs.inotify.max_user_watches` limit,
 and a watcher that cannot start or stops.
-Each is logged.
+Each is logged once.
 A renamed folder's watch is removed,
 because inotify keeps following the moved directory under its old name.
 
@@ -1375,6 +1395,24 @@ while anything shown lacks a watch.
 A failure is logged and followed by the full reread once,
 and again only when its error text changes;
 a watch that works again is logged once.
+
+The watch limit counts the watches of every program the user runs,
+so reaching it is one state rather than one failure per folder.
+The first refused watch logs one warning that names the sysctl,
+rereads everything shown once,
+and stops adding watches in that pass.
+The safety sweep then retries after 2 s,
+doubling the wait after each refused retry up to 64 s.
+Expanding,
+collapsing,
+switching files,
+and scrolling the tree (at most once a second) retry at once
+without lengthening the wait.
+The displayed file's folder is tried first.
+When every shown folder has a watch again,
+one line says so.
+Folders without a watch keep the timers and the sweep meanwhile.
+See [Watch counts and the watch limit](#watch-counts-and-the-watch-limit).
 
 Every second,
 every shown folder and the displayed file are reread anyway,
@@ -1404,6 +1442,59 @@ and the sweep's 1 s from four
 (`tests/refresh_intervals.rs` prints these from the shipped schedule).
 The 250 ms timer for an unwatched displayed file stays four times as frequent as the sweep.
 Both timers are kept.
+
+### Watch counts and the watch limit
+
+The IDE holds one watch per shown folder:
+2 with one expanded folder,
+13 with 12,
+and 101 with 100,
+counted from its inotify descriptors in `/proc` (`inspect:idle-cost`).
+Watching only the folders in the tree's viewport was measured as the alternative
+(`inspect:watch-scope`, 60 expanded folders, three runs each):
+it held 5 watches instead of 61,
+but in 48 of 60 trials a folder changed while out of view showed its old listing
+for a median of 61 to 85 ms per run,
+at most 148 ms,
+after it scrolled into view;
+watching every expanded folder showed the change at once in 59 of 60 trials,
+1 ms late in the other.
+The IDE keeps watching every expanded folder.
+
+The language servers count against the same limit.
+Helix's built-in rust-analyzer definition sets `files.watcher = "server"`,
+so rust-analyzer watches every directory below each workspace package by itself.
+It leaves out each package's `target` and `.git`,
+but not `node_modules`:
+on a disposable 40-crate workspace whose first crate holds a `node_modules` of 2001 directories,
+it held 3081 watches,
+1080 for sources and 2001 for `node_modules` (`inspect:server-watches`, directories identified by inode).
+When rust-analyzer is about to start,
+the IDE walks the project once,
+without entering `node_modules`,
+`target`,
+`.git`,
+or symbolic links,
+and adds every `node_modules` directory to `files.excludeDirs`,
+by absolute path for each spelling of the root.
+The TypeScript 7 server held no watches:
+Helix declares client-side file watching,
+which TypeScript 7.0.2 then uses instead of its own watcher (`internal/lsp/server.go`),
+and the application installs no watches for those registrations.
+
+The IDE's own podman tasks run their containers with `--network=none`,
+except `fetch` and `runtime`, which download;
+podman's default network starts a pasta helper per container,
+which holds an inotify watch and warns when the limit is reached.
+
+A positive control runs the IDE in a disposable user namespace whose own watch limit is 4
+(`inspect:watch-limit`, 12 expanded folders, the host limit untouched):
+one warning,
+no per-folder warning,
+4 refused watch calls in 60 s with 59 sweeps,
+a file created in an unwatched folder listed after 629 ms,
+and one line 63.8 s after the namespace limit was raised,
+the backoff's longest wait.
 
 ### Threading and shutdown
 
@@ -1478,15 +1569,18 @@ whose save began about 200 ms after a read had restarted the sweep clock.
 The filter `write_wait_timer` starts the same save,
 unfinished for 40 ms,
 at a pseudo-random time within the 400 ms that contain the next sweep read,
-120 trials per run.
-5 to 8 of 120 trials showed the truncated file across four runs,
-which is 17 to 27 ms before each sweep read.
-The sweep read is not asked for by the save's notification,
-so the write wait holds it back only once that notification has reached the schedule.
-The source timer is bound before the timer that receives notifications (`src/native.rs`),
-which fits a window of about one 20 ms tick.
-For a save that stays unfinished that long this is about 2 to 3 in 100 saves at the 1 s sweep;
-a save that is finished within a millisecond is exposed for that millisecond.
+until 120 trials have counted.
+A trial counts only when the file stayed truncated for less than the quiet period in real time;
+on a loaded host the test thread itself can stall mid-save,
+which makes the save a long one that any read may show by design.
+Before the quiet check (`45db45d02`) 4,
+6,
+and 8 of 120 trials showed the truncated file in three runs.
+With it,
+none of 120 did in any of three runs,
+alternating with the earlier build in one session at a load average of 63 to 99 on 16 processors.
+Of the trials the stalls stretched past the quiet period,
+6 of 30 showed the truncated file before the check and 1 of 41 with it.
 
 ### Measured idle cost
 
@@ -1602,8 +1696,23 @@ and the unwatched timer never makes a folder staler than the sweep alone.
 `native::watch_tests` checks the shipped tree and source in the headless window.
 `native::write_wait_tests` plays a slow writer against that window:
 an in-place save and a delete-then-rewrite are shown only when finished.
+`native::quiet_read_tests` does the same for a file outside the project,
+whose reads no write notification ever asks for.
+`tests/quiet_read.rs` checks the reader's quiet requirement with chosen modification times
+and the reread classification.
+The library tests in `change_watch/reconcile_tests.rs` drive the watch limit with a fake kernel:
+one state,
+no further adds,
+the backoff and its cap,
+immediate retries,
+and the displayed file's folder first.
+`language/config/rust_analyzer_tests.rs` checks the `node_modules` walk and the settings rust-analyzer is given.
 `inspect:watch-guards` removes each guard in a disposable copy and requires its named test to fail.
-`inspect:idle-cost` and `inspect:refresh-latency` produce the measurements in this section.
+`inspect:idle-cost`,
+`inspect:refresh-latency`,
+`inspect:watch-scope`,
+`inspect:server-watches`,
+and `inspect:watch-limit` produce the measurements in this section.
 In the nested compositor,
 dark and light,
 external create,
