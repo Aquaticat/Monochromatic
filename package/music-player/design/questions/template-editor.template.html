@@ -56,12 +56,18 @@ dialog::backdrop { background-color: var(--color-surface); opacity: 0.85; }
 dialog h2 { margin-block-start: 0; }
 .viewer { overflow: auto; max-block-size: 65vb; min-inline-size: 3rem; min-block-size: 3rem; }
 .viewer img { display: block; max-inline-size: none; block-size: auto; }
+fieldset > section { border-block-start-width: 0.0625rem; border-block-start-style: solid;
+  border-block-start-color: var(--color-line); padding-block-start: 0.5rem; }
+fieldset label { display: flex; gap: 0.75rem; align-items: center; font-weight: 700; }
+input[type="radio"] { flex-shrink: 0; inline-size: 1.5rem; min-inline-size: 1.5rem; block-size: 1.5rem; min-block-size: 1.5rem;
+  margin-block: 0.75rem; margin-inline: 0.75rem; accent-color: var(--color-focus); }
+.measured { color: var(--color-muted); }
 [hidden] { display: none; }
 </style>
 </head>
 <body>
 <header>
-<p class="summary-text">Design study. One built proposal for the supporting-line template editor.</p>
+<p class="summary-text">Design study. A built editor for the supporting-line template, and one question about it.</p>
 <h1>Editing the track row's supporting line</h1>
 <p>Purpose: look at a built editor for the template that produces a track row's supporting line (D81). The language
 and the editor follow KWGT with the omissions you chose (D89) and the picks you left to the agent (D90). Nothing on
@@ -87,25 +93,102 @@ bottom navigation remains. Logical dp uses the measured 390dpi density, not your
 </section>
 <form id="review-form">
 <section aria-labelledby="state-title"><h2 id="state-title">The editor's states</h2>
-<p>Three states hold focus in the template field with the system keyboard open. Under each image, the page says what
-of that state is not in view.</p>
+<p>These views use the baseline layout: the preview at the top of one scrolling page. Three states hold focus in the
+template field with the system keyboard open. Under each image, the page says what of that state is not in view.</p>
 <div class="gallery">
 <figure data-scene="list"><h3>Settings, with the template as its one entry</h3><button type="button" class="preview-button"><img alt="Settings page listing the track row supporting line template with the line it currently produces"><span>Open the Settings page</span></button><figcaption></figcaption></figure>
-<figure data-scene="default"><h3>Editor with the default template</h3><button type="button" class="preview-button"><img alt="Template editor showing two preview rows, the default template, the field list and reset"><span>Open the editor with the default template</span></button><figcaption></figcaption></figure>
+<figure data-scene="default"><h3>Editor with the default template</h3><button type="button" class="preview-button"><img alt="Template editor showing two preview rows, the default template and the start of the field list"><span>Open the editor with the default template</span></button><figcaption></figcaption></figure>
 <figure data-scene="help"><h3>Typing inside a call</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and help for the format argument of tf under the field"><span>Open the editor while typing inside a call</span></button><figcaption></figcaption></figure>
 <figure data-scene="unknown-field"><h3>An unknown field</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and an error line naming mi and the unknown field"><span>Open the editor with an unknown field</span></button><figcaption></figcaption></figure>
-<figure data-scene="open-formula"><h3>A formula left open</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and an error line saying the formula is not closed"><span>Open the editor with a formula left open</span></button><figcaption></figcaption></figure>
-<figure data-scene="custom"><h3>A changed template</h3><button type="button" class="preview-button"><img alt="Template editor with a custom template, preview rows showing its result and reset offered"><span>Open the editor with a changed template</span></button><figcaption></figcaption></figure>
+<figure data-scene="open-formula"><h3>A formula left open</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and an error line saying a dollar sign has no closing dollar sign"><span>Open the editor with a formula left open</span></button><figcaption></figcaption></figure>
+<figure data-scene="custom"><h3>A changed template</h3><button type="button" class="preview-button"><img alt="Template editor with a changed template and preview rows showing its result"><span>Open the editor with a changed template</span></button><figcaption></figcaption></figure>
+<figure data-scene="custom-end"><h3>A changed template, scrolled to the end</h3><button type="button" class="preview-button"><img alt="Template editor scrolled to its end, showing the rest of the field list and Reset to default"><span>Open the editor scrolled to its end</span></button><figcaption></figcaption></figure>
 <figure data-scene="no-library"><h3>No library open</h3><button type="button" class="preview-button"><img alt="Template editor with stand-in preview rows because no library is open"><span>Open the editor with no library open</span></button><figcaption></figcaption></figure>
 </div>
 </section>
+<section aria-labelledby="assumed-title"><h2 id="assumed-title">What this study assumes</h2>
+<p>None of this is asked as a question, because each point was either decided or left to the agent (D89, D90). If one
+should change, say so in the last field of this page.</p>
+<ul>
+<li>One template is studied: the supporting line of a track row. Titles and other rows are not templated here.</li>
+<li>Spelling follows KWGT: formulas between dollar signs, <code>mi(field)</code> for a field of the track,
+<code>tf(seconds, format)</code> for a duration, <code>tc(mode, text)</code> for case and cutting,
+<code>if(condition, then, else)</code>, and <code>+</code> to join text.</li>
+<li>Fields: <code>title</code>, <code>file</code>, <code>ext</code>, <code>folder</code>, <code>path</code>,
+<code>len</code> and <code>peak</code>. There is no artist or album field, because the app reads no tags.</li>
+<li>The default template gives the duration and, once a file is analysed, its true peak:
+<code>$tf(mi(len), m:ss)$$if(mi(peak) != "", " · " + mi(peak) + " dBTP")$</code>.</li>
+<li>The preview shows two files of the open library, one of them not analysed yet, and sample values when no library
+is open.</li>
+<li>An edit applies as typed while the template is valid. While it has a mistake, rows keep the last valid template.
+There is no Save step; <strong>Reset to default</strong> is drawn only when the template differs from the default.</li>
+<li>A mistake is named under the field in place of the typing help. A formula left open is a mistake.</li>
+</ul>
+</section>
+<fieldset><legend>Question: what stays in view while typing</legend>
+<p>Why this is asked: at 100% text everything around the field fits above the keyboard on both panels. At 200% text it
+does not, and something has to give. The baseline lets the preview scroll away, which hides the result of each
+keystroke. Two alternatives keep the preview fixed under the header. In all three, the page scrolls while the field has
+focus so that the lines under the field clear the keyboard, as far as they fit.</p>
+<p><button type="button" id="show-large">Switch every image to 200% text</button></p>
+<section data-layout="flow" aria-labelledby="option-flow-title"><h3 id="option-flow-title">Preview at the top of the page (the baseline)</h3>
+<label><input type="radio" name="layout" value="flow" required> Take this: the preview scrolls with the page</label>
+<p>The two preview rows are the first thing on one scrolling page.</p>
+<ul><li>For: the simplest page, with nothing fixed but the header, so the field and its lines get all the height when
+they need it.</li>
+<li>Against: at 200% text the preview is not in view while typing, so the result of a keystroke is seen only after
+scrolling back.</li></ul>
+<ul class="measured" data-measured="flow"></ul>
+<div class="gallery">
+<figure data-scene="help" data-option="flow"><h3>Typing inside a call</h3><button type="button" class="preview-button"><img alt="Typing inside a call with the preview at the top of the scrolling page"><span>Open: typing inside a call</span></button><figcaption></figcaption></figure>
+<figure data-scene="unknown-field" data-option="flow"><h3>An unknown field</h3><button type="button" class="preview-button"><img alt="An unknown field with the preview at the top of the scrolling page"><span>Open: an unknown field</span></button><figcaption></figcaption></figure>
+<figure data-scene="open-formula" data-option="flow"><h3>A formula left open</h3><button type="button" class="preview-button"><img alt="A formula left open with the preview at the top of the scrolling page"><span>Open: a formula left open</span></button><figcaption></figcaption></figure>
+<figure data-scene="custom" data-option="flow"><h3>At rest, with a changed template</h3><button type="button" class="preview-button"><img alt="The editor at rest with the preview at the top of the scrolling page"><span>Open: the editor at rest</span></button><figcaption></figcaption></figure>
+</div></section>
+<section data-layout="rows" aria-labelledby="option-rows-title"><h3 id="option-rows-title">Both preview rows fixed under the header</h3>
+<label><input type="radio" name="layout" value="rows"> Take this: both rows stay in view</label>
+<p>The two preview rows never scroll; the note, the field and the field list scroll beneath them. KWGT also keeps its
+preview fixed above the formula field.</p>
+<ul><li>For: the result of every keystroke stays in view at every size, drawn as the track row it will become, title
+and line.</li>
+<li>Against: it takes the most height. At 200% text less of the help under the field fits, and at rest the scrolling
+part of the page is shorter.</li></ul>
+<ul class="measured" data-measured="rows"></ul>
+<div class="gallery">
+<figure data-scene="rows-help" data-option="rows"><h3>Typing inside a call</h3><button type="button" class="preview-button"><img alt="Typing inside a call with both preview rows fixed under the header"><span>Open: typing inside a call</span></button><figcaption></figcaption></figure>
+<figure data-scene="rows-unknown-field" data-option="rows"><h3>An unknown field</h3><button type="button" class="preview-button"><img alt="An unknown field with both preview rows fixed under the header"><span>Open: an unknown field</span></button><figcaption></figcaption></figure>
+<figure data-scene="rows-open-formula" data-option="rows"><h3>A formula left open</h3><button type="button" class="preview-button"><img alt="A formula left open with both preview rows fixed under the header"><span>Open: a formula left open</span></button><figcaption></figcaption></figure>
+<figure data-scene="rows-custom" data-option="rows"><h3>At rest, with a changed template</h3><button type="button" class="preview-button"><img alt="The editor at rest with both preview rows fixed under the header"><span>Open: the editor at rest</span></button><figcaption></figcaption></figure>
+</div></section>
+<section data-layout="lines" aria-labelledby="option-lines-title"><h3 id="option-lines-title">Only the two result lines fixed under the header</h3>
+<label><input type="radio" name="layout" value="lines"> Take this: only the result lines stay in view</label>
+<p>Only what the template yields for the two files stays fixed, one line each, without the rows' titles. KWGT's own
+preview is one such line.</p>
+<ul><li>For: the result stays in view for less height than two whole rows, so more of the field's help fits at 200%
+text.</li>
+<li>Against: the lines no longer look like track rows, and only their order says which file each belongs to; the note
+that explains the second line scrolls away.</li></ul>
+<ul class="measured" data-measured="lines"></ul>
+<div class="gallery">
+<figure data-scene="lines-help" data-option="lines"><h3>Typing inside a call</h3><button type="button" class="preview-button"><img alt="Typing inside a call with the two result lines fixed under the header"><span>Open: typing inside a call</span></button><figcaption></figcaption></figure>
+<figure data-scene="lines-unknown-field" data-option="lines"><h3>An unknown field</h3><button type="button" class="preview-button"><img alt="An unknown field with the two result lines fixed under the header"><span>Open: an unknown field</span></button><figcaption></figcaption></figure>
+<figure data-scene="lines-open-formula" data-option="lines"><h3>A formula left open</h3><button type="button" class="preview-button"><img alt="A formula left open with the two result lines fixed under the header"><span>Open: a formula left open</span></button><figcaption></figcaption></figure>
+<figure data-scene="lines-custom" data-option="lines"><h3>At rest, with a changed template</h3><button type="button" class="preview-button"><img alt="The editor at rest with the two result lines fixed under the header"><span>Open: the editor at rest</span></button><figcaption></figcaption></figure>
+</div></section>
+<p id="ranking">__RANKING__</p>
+<label><input type="radio" name="layout" value="none"> None of these; I say what instead in the last field</label>
+</fieldset>
 <details><summary>Read what was and was not checked</summary>
 <p>The host is a debug activity, not the player. The merged debug manifest disables the production launcher, playback
 and sweep services. Each view was captured with a fresh hierarchy, exactly one creation of the host since its launch,
 and the keyboard open only for the three states that hold focus.</p>
-<p>Whether a text is in view is read from its rectangle in the hierarchy and the keyboard's own frame; hierarchy
-rectangles are not ink bounds. TalkBack, focus order, speech and contrast were not exercised. Real typing, caret
-movement by touch and inserting a field were not exercised.</p>
+<p>Whether a text is in view is read from its rectangle in the hierarchy, the page's scrolling window and the keyboard's
+own frame; hierarchy rectangles are not ink bounds. A text whose rectangle touches an edge of the window is reported as
+at the edge, because the hierarchy cannot tell cut from flush. Where the page rests with the keyboard open is the
+study's own scroll rule, applied once per launch. TalkBack, focus order, speech and contrast were not exercised. Real
+typing, caret movement by touch, scrolling by hand and inserting a field were not exercised.</p>
+<p>Not built yet: with the keyboard open most of the field list is out of view, so inserting a field means scrolling
+away from the field. What to do about that depends on the answer to the question, and comes after it.</p>
 <p>The published crops keep exact RGB, opacity, dimensions and only essential PNG chunks. No digest of an image is
 recorded, and nothing is compared with a digest (D88).</p>
 </details>
@@ -142,14 +225,14 @@ const roleWords = [[/^preview-(title|supporting)-/, 'the preview rows'], [/^prev
   [/^(field-label|template)$/, 'the template field'], [/^(error|help)-/, 'the lines under the field'],
   [/^section-/, 'a section heading'], [/^field-(name|value|insert)-/, 'part of the field list'], [/^reset$/, 'Reset to default'],
   [/^entry-/, 'the template entry'], [/^page-title$/, 'the page title']];
-function outOfView(fact) {
-  const words = [];
-  for (const role of fact.outOfView) {
-    const found = roleWords.find(entry => entry[0].test(role));
-    if (!found) throw new Error('Unknown role: ' + role);
-    if (!words.includes(found[1])) words.push(found[1]);
+function words(roles) {
+  const found = [];
+  for (const role of roles) {
+    const entry = roleWords.find(candidate => candidate[0].test(role));
+    if (!entry) throw new Error('Unknown role: ' + role);
+    if (!found.includes(entry[1])) found.push(entry[1]);
   }
-  return words;
+  return found;
 }
 function metadata(image) {
   return image.width + ' × ' + image.height + ' retained px · ' + (image.width / (image.density / 160)).toFixed(1) +
@@ -168,11 +251,40 @@ function render() {
     element.src = image.source;
     element.width = image.width;
     element.height = image.height;
-    const hidden = outOfView(fact);
     figure.querySelector('figcaption').textContent = metadata(image) + ' · keyboard ' + (fact.keyboard ? 'open' : 'closed') +
       (fact.keyboard ? (fact.caretDrawn ? ' · caret drawn' : ' · caret not drawn in this frame') : '') +
-      ' · ' + (hidden.length === 0 ? 'everything this state draws is in view' : 'not in view: ' + hidden.join(', ')) +
-      (fact.scrolls ? ' · the page scrolls' : ' · the page does not scroll');
+      ' · ' + visibility(fact) + (fact.scrolls ? ' · the page scrolls' : ' · the page does not scroll');
+  }
+  controls.scale.value = String(state.fontScale);
+}
+// One sentence on what a view keeps in view, from the roles the builder recorded.
+function visibility(fact) {
+  const hidden = words(fact.outOfView);
+  const edge = words(fact.atEdge).filter(word => !hidden.includes(word));
+  if (hidden.length === 0 && edge.length === 0) return 'everything this state draws is in view';
+  return [hidden.length ? 'not in view: ' + hidden.join(', ') : '', edge.length ? 'at an edge of the view: ' + edge.join(', ') : '']
+    .filter(Boolean).join(' · ');
+}
+// What each layout keeps in view while typing, said per panel and text size from the same recorded facts.
+const typing = [['help', 'typing inside a call'], ['unknown-field', 'an unknown field'], ['open-formula', 'a formula left open']];
+function typingFact({ layout, panel, scale, scene }) {
+  const fact = facts[[panel, (layout === 'flow' ? '' : layout + '-') + scene, 'light', scale].join('/')];
+  if (!fact) throw new Error('Required typing view is absent.');
+  return fact;
+}
+function measured() {
+  for (const list of document.querySelectorAll('[data-measured]')) {
+    const layout = list.dataset.measured;
+    list.textContent = '';
+    for (const scale of [1, 2]) for (const panel of ['inner', 'cover']) {
+      const parts = typing.map(entry => [entry[1], visibility(typingFact({ layout, panel, scale, scene: entry[0] }))]);
+      const whole = parts.every(part => part[1] === 'everything this state draws is in view');
+      const item = document.createElement('li');
+      // The field list under the field is out of view in every typing state of every layout; it is named once, under the question.
+      item.textContent = 'Measured, ' + panel + ' panel, ' + scale * 100 + '% text: ' +
+        (whole ? 'everything is in view in all three typing states.' : parts.map(part => part[0] + ': ' + part[1]).join('; ') + '.');
+      list.append(item);
+    }
   }
 }
 function resizePreview() {
@@ -209,7 +321,9 @@ document.getElementById('zoom-out').addEventListener('click', () => { state.zoom
 document.getElementById('zoom-in').addEventListener('click', () => { state.zoom = Math.min(4, state.zoom * 1.25); resizePreview(); });
 document.getElementById('reset-preview').addEventListener('click', () => { state.zoom = 1; resizePreview(); });
 document.getElementById('native-preview').addEventListener('click', () => { state.zoom = state.preview.density / 160; resizePreview(); });
+document.getElementById('show-large').addEventListener('click', () => { state.fontScale = 2; render(); });
 render();
+measured();
 //endregion
 
 //region Reply, prepared in the page and sent nowhere
@@ -224,8 +338,13 @@ function prepareReply(event) {
   document.getElementById('response').hidden = false;
   document.getElementById('reply').focus();
 }
-// Filled in once the questions exist; a page with no question prepares only the free text.
-function answers(data) { return ''; }
+const layoutAnswers = { flow: 'Preview at the top of the page (the baseline).', rows: 'Both preview rows fixed under the header.',
+  lines: 'Only the two result lines fixed under the header.', none: 'None of these; see the last line.' };
+function answers(data) {
+  const layout = layoutAnswers[String(data.get('layout'))];
+  if (!layout) throw new Error('Unknown layout answer.');
+  return 'What stays in view while typing: ' + layout + '\n';
+}
 function invalidateReply() {
   document.getElementById('reply').value = '';
   document.getElementById('response').hidden = true;
