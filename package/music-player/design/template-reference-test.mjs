@@ -95,8 +95,8 @@ refuses({ text: '$if(1, fine, mi(nope))$', lines: ['mi: unknown field nope'] });
 
 //region Mistakes are named, ordered by where they sit, and never shown as text
 refuses({ text: '$xx(1)$ and $mi(nope)$', lines: ['xx: unknown function', 'mi: unknown field nope'] });
-refuses({ text: '$mi(title)', lines: ['formula: the formula opened at character 1 is not closed'] });
-refuses({ text: 'a $mi(title) - text', lines: ['formula: the formula opened at character 3 is not closed', 'formula: unexpected -'] });
+refuses({ text: '$mi(title)', lines: ['formula: the $ at character 1 has no closing $'] });
+refuses({ text: 'a $mi(title) - text', lines: ['formula: the $ at character 3 has no closing $', 'formula: unexpected -'] });
 refuses({ text: '$mi(title$', lines: ['mi: a closing bracket is missing'] });
 refuses({ text: '$mi("title)$', lines: ['mi: a closing bracket is missing', 'text: a quotation mark is not closed'] });
 refuses({ text: '$$', lines: ['formula: a value is missing'] });

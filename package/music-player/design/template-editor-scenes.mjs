@@ -20,21 +20,41 @@ export const standIns = [
 ];
 
 /**
+ * Where the editor draws its preview. `flow` puts two preview rows at the top of the scrolling page.
+ * `rows` keeps those two rows fixed under the header. `lines` keeps only the two lines the template
+ * yields fixed under the header, without titles.
+ */
+export const layouts = ['flow', 'rows', 'lines'];
+
+/**
  * `caret` is a position in the template text and means the field has focus and the keyboard is open;
  * without it the field is not focused. `|` in `typed` marks that position and is not part of the template.
+ * `state` names the authored native state a scene draws; several scenes draw one state under another
+ * layout or scrolled to the page's end.
  */
-function scene({ id, page = 'editor', typed, libraryOpen = true }) {
+function scene({ id, state = id, layout = 'flow', position = 'top', page = 'editor', typed, libraryOpen = true }) {
   const caret = typed.indexOf('|');
-  return { id, page, template: typed.replace('|', ''), caret: caret < 0 ? undefined : caret, libraryOpen };
+  return { id, state, layout, position, page, template: typed.replace('|', ''), caret: caret < 0 ? undefined : caret, libraryOpen };
 }
+const typing = [
+  ['help', defaultTemplate.replace('m:ss', 'm:|ss')],
+  ['unknown-field', '$tf(mi(len), m:ss)$ · $mi(peek)$ dBTP|'],
+  ['open-formula', '$tf(mi(len), m:ss)|'],
+];
+const changed = '$tc(up, mi(ext))$ · $tf(mi(len), m:ss)$';
 export const scenes = [
   scene({ id: 'list', page: 'list', typed: defaultTemplate }),
   scene({ id: 'default', typed: defaultTemplate }),
-  scene({ id: 'help', typed: defaultTemplate.replace('m:ss', 'm:|ss') }),
-  scene({ id: 'unknown-field', typed: '$tf(mi(len), m:ss)$ · $mi(peek)$ dBTP|' }),
-  scene({ id: 'open-formula', typed: '$tf(mi(len), m:ss)|' }),
-  scene({ id: 'custom', typed: '$tc(up, mi(ext))$ · $tf(mi(len), m:ss)$' }),
+  ...typing.map(([id, typed]) => scene({ id, typed })),
+  scene({ id: 'custom', typed: changed }),
+  // The same state with the page scrolled to its end, so the whole field list and the way back are seen.
+  scene({ id: 'custom-end', state: 'custom', position: 'end', typed: changed }),
   scene({ id: 'no-library', typed: defaultTemplate, libraryOpen: false }),
+  // Each pinned layout is shown for the three typing states and for one state at rest.
+  ...layouts.slice(1).flatMap(layout => [
+    ...typing.map(([state, typed]) => scene({ id: layout + '-' + state, state, layout, typed })),
+    scene({ id: layout + '-custom', state: 'custom', layout, typed: changed }),
+  ]),
 ];
 
 /** Every text the state draws that the grammar decides. */
@@ -49,6 +69,9 @@ export function expected(state) {
   const help = valid && state.caret !== undefined ? helpAt({ text: state.template, caret: state.caret }) : undefined;
   return {
     id: state.id,
+    state: state.state,
+    layout: state.layout,
+    position: state.position,
     page: state.page,
     template: state.template,
     caret: state.caret,
@@ -73,9 +96,13 @@ export function drawnTexts(state) {
     return [{ role: 'page-title', text: 'Settings' }, { role: 'section-templates', text: 'Templates' },
       { role: 'entry-title', text: want.listEntry.title }, { role: 'entry-supporting', text: want.listEntry.supporting }];
   }
-  return [{ role: 'page-title', text: 'Supporting line' }, { role: 'section-preview', text: 'Preview' },
-    ...want.previewRows.flatMap((row, index) => [{ role: 'preview-title-' + index, text: row.title },
-      // A row whose line is empty draws no second line at all.
+  return [{ role: 'page-title', text: 'Supporting line' },
+    // A pinned preview has no heading of its own; it sits directly under the page header.
+    ...(want.layout === 'flow' ? [{ role: 'section-preview', text: 'Preview' }] : []),
+    ...want.previewRows.flatMap((row, index) => [
+      // The `lines` layout draws only what the template yields, without the row's title.
+      ...(want.layout === 'lines' ? [] : [{ role: 'preview-title-' + index, text: row.title }]),
+      // A row whose line is empty draws no text for it.
       ...(row.supporting === '' ? [] : [{ role: 'preview-supporting-' + index, text: row.supporting }])]),
     { role: 'preview-note', text: want.previewNote }, { role: 'field-label', text: 'Template' }, { role: 'template', text: want.template },
     ...want.errors.map((line, index) => ({ role: 'error-' + index, text: line })),
@@ -85,6 +112,14 @@ export function drawnTexts(state) {
       { role: 'field-value-' + field.insert, text: field.value === '' ? 'No value yet' : field.value }, { role: 'field-insert-' + field.insert, text: field.insert }]),
     // The way back to the default is drawn only when there is something to reset; a dimmed button would differ by colour alone.
     ...(want.resetEnabled ? [{ role: 'reset', text: 'Reset to default' }] : [])];
+}
+
+/** Whether a role belongs to the part of a layout that stays fixed under the header and never scrolls. */
+export function pinned({ layout, role }) {
+  if (role === 'page-title') return true;
+  if (layout === 'rows') return /^preview-(title|supporting)-/u.test(role);
+  if (layout === 'lines') return /^preview-supporting-/u.test(role);
+  return false;
 }
 //endregion
 

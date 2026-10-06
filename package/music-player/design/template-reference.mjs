@@ -144,7 +144,7 @@ export function parseTemplate(text) {
     if (open > index) parts.push({ kind: 'literal', value: text.slice(index, open) });
     const close = text.indexOf('$', open + 1);
     const source = text.slice(open + 1, close < 0 ? text.length : close);
-    if (close < 0) errors.push({ subject: 'formula', message: 'the formula opened at character ' + (open + 1) + ' is not closed', at: open });
+    if (close < 0) errors.push({ subject: 'formula', message: 'the $ at character ' + (open + 1) + ' has no closing $', at: open });
     const parsed = parseFormula({ text: source, offset: open + 1 });
     errors.push(...parsed.errors);
     parts.push({ kind: 'formula', tree: parsed.tree, start: open, end: close < 0 ? text.length : close + 1, closed: close >= 0 });
