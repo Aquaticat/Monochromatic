@@ -242,6 +242,12 @@ fn malformed_records_are_refused_with_their_line() {
         );
     }
     assert_eq!(
+        records("\n"),
+        Err(String::from(
+            "monochromatic-lint wrote a record cli-git cannot use on line 1 of its standard error: it is not JSON"
+        ))
+    );
+    assert_eq!(
         records(good.trim_end()),
         Err(String::from(
             "monochromatic-lint ended its standard error without a line feed after the last record"

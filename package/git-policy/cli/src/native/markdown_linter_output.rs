@@ -228,15 +228,16 @@ fn remaining_findings(
             "monochromatic-lint wrote standard error that is not UTF-8 text",
         ));
     };
-    let Some(body) = text.strip_suffix('\n').or(text.is_empty().then_some("")) else {
+    let mut findings: Vec<RemainingFinding> = Vec::new();
+    if text.is_empty() {
+        return Ok(findings);
+    }
+    // Every record ends with LF; a lone LF is an empty line, which is not a record.
+    let Some(body) = text.strip_suffix('\n') else {
         return Err(String::from(
             "monochromatic-lint ended its standard error without a line feed after the last record",
         ));
     };
-    let mut findings: Vec<RemainingFinding> = Vec::new();
-    if body.is_empty() {
-        return Ok(findings);
-    }
     for (index, line) in body.split('\n').enumerate() {
         match remaining_finding(line, rules) {
             Ok(finding) => findings.push(finding),

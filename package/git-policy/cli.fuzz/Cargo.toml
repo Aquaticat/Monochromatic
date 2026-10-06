@@ -85,6 +85,27 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "linter_output"
+path = "fuzz_targets/linter_output.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "event_path"
+path = "fuzz_targets/event_path.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "linter_config"
+path = "fuzz_targets/linter_config.rs"
+test = false
+doc = false
+bench = false
+
 # libFuzzer records and minimizes a failing input by unwinding out of the assertion.
 [profile.release]
 panic = "unwind"
