@@ -265,6 +265,8 @@ export component AppWindow inherits Window {
             reject
         }
     HorizontalLayout {
+        // Prototype watch-limit b: the layout keeps the top edge; an element with its own height is centered otherwise.
+        y: 0px;
         height: parent.height - root.watch-row-height;
         spacing: 0px;
         project-tree := ProjectTree {
