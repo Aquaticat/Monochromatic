@@ -289,8 +289,10 @@ fn initialize_answered_within_the_start_allowance_is_accepted() {
         );
         return;
     };
-    // A request timeout of 2 s gives a start allowance of 6 s; the answer comes after 3 s.
-    let definitions = support::scripted(&root, &[("INIT_DELAY_MS", "3000")], 2);
+    // A request timeout of 4 s gives a start allowance of 12 s; the answer comes after 5 s.
+    // The answer can never beat the request timeout, so without the allowance the start fails
+    // every time; with it, a stall of up to 7 s still passes.
+    let definitions = support::scripted(&root, &[("INIT_DELAY_MS", "5000")], 4);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until("the server to be ready or to fail", |seen| {

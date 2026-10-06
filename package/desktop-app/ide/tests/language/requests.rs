@@ -302,8 +302,10 @@ fn request_keeps_the_request_timeout_while_the_start_allowance_is_longer() {
         );
         return;
     };
-    // A request timeout of 2 s gives a start allowance of 6 s; the hover answer comes after 5 s.
-    let definitions = support::scripted(&root, &[("HOVER_DELAY_MS", "5000")], 2);
+    // A request timeout of 3 s gives helix-lsp a start allowance of 9 s; the hover answer comes
+    // after 7 s. A stall of up to 4 s still ends in the timeout this test expects, and without
+    // the worker's own bound the answer arrives 2 s before helix-lsp would give up.
+    let definitions = support::scripted(&root, &[("HOVER_DELAY_MS", "7000")], 3);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
