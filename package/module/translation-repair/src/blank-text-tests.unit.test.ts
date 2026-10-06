@@ -1219,7 +1219,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/budget-sample.ts#sampleBudgets': {
+  'corpus-run/budget-sample-keys.ts#readProviderKeys': {
     tests: 8,
     why: SETTING,
   },
@@ -1372,7 +1372,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 2,
     why: TOOL,
   },
-  'corpus-run/model-catalog.ts#main': {
+  'corpus-run/model-catalog-print.ts#printModelCatalog': {
     tests: 1,
     why: SETTING,
   },
@@ -1456,7 +1456,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/roster-card.ts#fetchListing': {
+  'corpus-run/roster-card-listing.ts#fetchListing': {
     tests: 1,
     why: SETTING,
   },

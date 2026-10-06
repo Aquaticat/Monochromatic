@@ -1,40 +1,12 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
-
 import { contextRoot, } from '../log-context.ts';
-import { createBedrockClient, } from '../bedrock-client.ts';
-import { bedrockLedgerFromEnv, } from '../bedrock-ledger.ts';
-import { createHyperClient, } from '../hyper-client.ts';
-import { createOpenRouterClient, } from '../openrouter-client.ts';
-import { createProviderBudgets, } from '../provider-budget.ts';
-import { PROVIDER_ORDER, } from '../provider-name.ts';
-import { createSyntheticClient, } from '../synthetic-client.ts';
 import { fetchTransport, } from '../synthetic-transport.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
+import { sampleBudgets, } from './budget-sample-run.ts';
 
 //region Budget sample
-// Takes ONE reading of every provider's meter and leaves it in the log.
-//
-// WHY THIS EXISTS SEPARATELY FROM A RUN. The budget layer reads the meters when
-// something asks to spend, so the availability record is dense while a pass is
-// running and empty otherwise. That is the right denominator for a duty cycle,
-// which prices a seat by availability WHEN WE WERE ASKING. It is the wrong one
-// for the other half of the question: an outage that stops a pass also stops
-// the readings, so nothing observes when the provider came back, and every
-// outage that ended a run reads as open-ended forever.
-//
-// This closes that. Run it between passes, or on a timer, and the record gains
-// readings during the quiet stretches where the recovery actually happened.
-//
-// SPENDS NO GENERATION. It reads the four meters the router reads at most once
-// a minute while working (ledger D16): the Synthetic, Hyper and OpenRouter
-// endpoints, and the Bedrock spend ledger on disk, where that provider's credit
-// is kept. No model is called, no token is produced, and nothing is written to
-// a run directory.
-//
-// THE READING IS THE OUTPUT. It goes to the log as a `METERS` line, which is
-// the same line a pass leaves and the same line `meter-report` reads back.
-// Capture both streams: the reading is at info and an unreadable meter warns.
+// Takes one reading of every provider's meter and leaves it in the log:
+// `budget-sample-keys.ts` reads the four keys and `budget-sample-run.ts` is the
+// procedure.
 
 /**
  Logger root for this probe.
@@ -42,133 +14,28 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
- How long one sample may take before it is abandoned.
-
- SET TO THE FRESHNESS WINDOW rather than picked. A reading is trusted for
- sixty seconds, so one that takes longer than that to arrive has aged out
- before it could be used, and a sampler that waits past it is measuring the
- endpoint's latency rather than the provider's budget.
- */
-const SAMPLE_TIMEOUT_MS = 60_000;
-
-/**
- Reads every provider's meter once and leaves the reading in the log.
-
- Returns nothing: the `METERS` line IS the output.
-
- @throws {@link StatedRefusalError} when any provider's key is absent, since
- a sample of some providers cannot answer a question about the others
+ Samples the meters over the process's own environment and the live transport.
+ Not `async`: it hands the promise on, so a run that refuses before its first
+ call leaves no continuation behind it that nothing runs.
 
  @example
  ```ts
- await sampleBudgets();
+ await sampleOverTheEnvironment();
  ```
  */
-async function sampleBudgets(): Promise<void> {
-  /**
-   Logger pre-tagged with this function's name.
-   */
-  const rl = tagged({
-    tag: sampleBudgets.name,
+function sampleOverTheEnvironment(): Promise<void> {
+  return sampleBudgets({
+    env: process.env,
+    transport: fetchTransport,
     l,
   },);
-
-  /**
-   First provider's key, injected by mise from the sops-encrypted env.
-   */
-  const syntheticKey = process.env
-    .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
-    ?? '';
-
-  /**
-   Second provider's key, from the same place.
-   */
-  const hyperKey = process.env
-    .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
-    ?? '';
-
-  /**
-   Third provider's key, from the same place.
-   */
-  const openRouterKey = process.env
-    .TRANSLATION_REPAIR_OPENROUTER_API_KEY
-    ?? '';
-
-  /**
-   Fourth provider's key, from the same place.
-   */
-  const bedrockKey = process.env
-    .TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY
-    ?? '';
-
-  /**
-   Whether any provider's key is missing, which makes the sample partial.
-   */
-  const someKeyMissing = (syntheticKey === '')
-    || (hyperKey === '')
-    || (bedrockKey === '')
-    || (openRouterKey === '');
-  if (someKeyMissing) {
-    throw new StatedRefusalError({
-      says: 'every provider key must be set to sample availability, and at least one is not: '
-        + `TRANSLATION_REPAIR_SYNTHETIC_API_KEY is ${syntheticKey === '' ? 'absent' : 'present'}, `
-        + `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is ${hyperKey === '' ? 'absent' : 'present'}, `
-        + `TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is ${bedrockKey === '' ? 'absent' : 'present'}, `
-        + `TRANSLATION_REPAIR_OPENROUTER_API_KEY is ${openRouterKey === '' ? 'absent' : 'present'}. `
-        + 'Run under mise so sops injects them. A sample of some providers is not recorded, '
-        + 'because the record is read as a statement about all of them and a missing column would '
-        + 'be indistinguishable from a provider that answered.',
-    },);
-  }
-
-  /**
-   Budget view over every meter, which logs what it reads.
-
-   ITS CACHE CANNOT INTERFERE. A fresh view has never read anything, so the
-   first call always reaches the wire, and this process makes exactly one.
-   */
-  const budgets = createProviderBudgets({
-    synthetic: createSyntheticClient({
-      apiKey: syntheticKey,
-      transport: fetchTransport,
-    },),
-    hyper: createHyperClient({
-      apiKey: hyperKey,
-      transport: fetchTransport,
-    },),
-    bedrock: createBedrockClient({
-      apiKey: bedrockKey,
-      ledger: bedrockLedgerFromEnv({ env: process.env, },),
-      transport: fetchTransport,
-    },),
-    openrouter: createOpenRouterClient({
-      apiKey: openRouterKey,
-      transport: fetchTransport,
-    },),
-  },);
-
-  /**
-   The routed view, whose real product is the line the read leaves behind.
-   */
-  const view = await budgets.read({ signal: AbortSignal.timeout(SAMPLE_TIMEOUT_MS,), },);
-
-  /**
-   What routing would do with each provider, for the summary.
-   */
-  const verdicts = PROVIDER_ORDER.map(function verdictOf(provider,): string {
-    return `${view[provider] ? 'avoid' : 'use'} ${provider}`;
-  },);
-  rl.info(
-    `SAMPLED: routing would ${verdicts.join(', ',)}. The reading this command logged is the record; `
-      + 'read a collection of them with `mise run //package/module/translation-repair:meter-report`',
-  );
 }
 
 if (import.meta.main)
   await reportingRefusals({
     what: 'budget-sample',
     argv: process.argv,
-    run: sampleBudgets,
+    run: sampleOverTheEnvironment,
   },);
 
 //endregion Budget sample

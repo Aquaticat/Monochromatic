@@ -1,4 +1,5 @@
 import { wordForCount, } from './count-word.ts';
+import { StatedRefusalError, } from './stated-refusal.ts';
 
 //region Sample grading model
 // The milestone-three headline gate is precision of accepted issues on a
@@ -339,17 +340,22 @@ export type GradableIssue = {
 /**
  Raised when a sample cannot support a repair measurement because some of its
  issues predate repair recording.
+ A STATED REFUSAL, since the message counts samples and says what to do next:
+ a command reports it as declined, with no frames, rather than as a fault of
+ the command.
 
  @example
  ```ts
  throw new UnmeasurableRepairError({ unrecorded: 50, sampled: 50, },);
  ```
  */
-export class UnmeasurableRepairError extends Error {
+export class UnmeasurableRepairError extends StatedRefusalError {
   /**
-   Declares this message safe to forward: it counts samples.
+   Declared here as well as inherited, so the source scan that keeps the
+   marked-class inventory sees it: the message counts samples and quotes
+   nothing.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Builds the refusal from the counts that make the sample unmeasurable.
@@ -367,8 +373,8 @@ export class UnmeasurableRepairError extends Error {
       readonly sampled: number;
     },
   ) {
-    super(
-      `refusing a final draw: ${String(unrecorded,)} of ${
+    super({
+      says: `refusing a final draw: ${String(unrecorded,)} of ${
         String(sampled,)
       } sampled ${
         wordForCount({
@@ -379,7 +385,7 @@ export class UnmeasurableRepairError extends Error {
       } no recorded repair, so repair quality cannot be `
         + `measured over this sample. Those artifacts predate repair recording; `
         + `move them aside and rerun the pass into a fresh artifacts directory.`,
-    );
+    },);
     this.name = 'UnmeasurableRepairError';
   }
 }

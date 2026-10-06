@@ -241,6 +241,7 @@ export * from './generation-barrel.ts';
 export * from './lane-barrel.ts';
 export * from './provider-barrel.ts';
 export * from './roster-barrel.ts';
+export * from './sampler-barrel.ts';
 export * from './bedrock-barrel.ts';
 export * from './openrouter-barrel.ts';
 export * from './cache-account-barrel.ts';

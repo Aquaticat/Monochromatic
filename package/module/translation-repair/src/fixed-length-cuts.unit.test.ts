@@ -94,7 +94,7 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'an ISO time stamp',
   ],
   [
-    'corpus-run/roster-card.ts#DATE_CHARS',
+    'corpus-run/roster-card-print.ts#DATE_CHARS',
     'an ISO date stamp',
   ],
   [
@@ -102,7 +102,7 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'a list of slices',
   ],
   [
-    'corpus-run/damage-sample.ts#DAMAGE_SAMPLE_SIZE',
+    'corpus-run/damage-sample-draw.ts#DAMAGE_SAMPLE_SIZE',
     'a list of samples',
   ],
   [

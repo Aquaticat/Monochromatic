@@ -26,7 +26,10 @@ import { rm, } from 'node:fs/promises';
 //
 // Paths are recorded BEFORE their write, not after. A write can create or
 // truncate a file and then fail, and a path recorded only on success would
-// leave exactly that file behind.
+// leave exactly that file behind. The one failure that created nothing is the
+// exclusive create finding the path taken (two draws racing, or a link left
+// at the path): that path is released, so the file standing there, which no
+// draw of this invocation made, is not removed with the rest.
 
 /**
  Files a draw has written, and whether it finished writing all of them.
@@ -41,6 +44,13 @@ export type DrawOutputs = AsyncDisposable & {
    Notes a file this draw created.
    */
   readonly record: ({ path, }: { readonly path: string; },) => void;
+
+  /**
+   Forgets a file this draw recorded but did not create, so it is not removed
+   on the way out: an exclusive create that found the path already there
+   created nothing, and the file standing there is someone else's.
+   */
+  readonly release: ({ path, }: { readonly path: string; },) => void;
 
   /**
    Marks the set complete, so nothing is removed on the way out.
@@ -70,8 +80,11 @@ export function trackDrawOutputs(
   /**
    Paths written so far, and whether the set completed.
    */
-  const state = {
-    paths: [] as string[],
+  const state: {
+    paths: string[];
+    committed: boolean;
+  } = {
+    paths: [],
     committed: false,
   };
   return {
@@ -80,6 +93,12 @@ export function trackDrawOutputs(
         return;
       state.paths
         .push(path,);
+    },
+    release({ path, }: { readonly path: string; },): void {
+      state.paths = state.paths
+        .filter(function isOtherPath(recorded,): boolean {
+          return recorded !== path;
+        },);
     },
     commit(): void {
       state.committed = true;

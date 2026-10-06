@@ -220,5 +220,42 @@ await describe({
         expect(await readdir(scratch.path,),).toEqual([],);
       },
     },),
+    it({
+      name: 'keeps a file it RELEASED, which an exclusive create found already standing, and removes the rest',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'whiskers-draw-', },);
+        /**
+         Sheet some other draw made, which this draw's exclusive create found taken.
+         */
+        const taken = join(
+          scratch.path,
+          'grading-sheet.md',
+        );
+        /**
+         Sheet this draw made before the next one failed.
+         */
+        const own = join(
+          scratch.path,
+          'repair-sheet.md',
+        );
+        await writeFile(
+          taken,
+          'graded by someone else',
+        );
+
+        {
+          await using outputs = trackDrawOutputs({ enabled: true, },);
+          outputs.record({ path: own, },);
+          await writeFile(
+            own,
+            'this draw\'s',
+          );
+          outputs.record({ path: taken, },);
+          outputs.release({ path: taken, },);
+        }
+
+        expect(await readdir(scratch.path,),).toEqual(['grading-sheet.md',],);
+      },
+    },),
   ],
 },);
