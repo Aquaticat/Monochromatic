@@ -291,6 +291,27 @@ impl State {
     }
 }
 
+/// What: Success when this window may start language servers, otherwise the reason it starts none.
+///       `anyhow::Result<()>` is success without a value, or an error.
+/// Why: A debug build started with `IDE_INSPECT_ANNOTATIONS` shows that file's hints and diagnostics. A worker
+///      without servers still publishes "no problems" for the displayed text, which would replace the file's
+///      diagnostics, so such a window runs without the worker; asking for a language feature explains why.
+///      Release builds do not read the variable.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function serversWanted(): void { if (DEBUG && process.env.IDE_INSPECT_ANNOTATIONS) throw new Error('...'); }
+/// ```
+fn servers_wanted() -> anyhow::Result<()> {
+    // `var_os` reads the variable without requiring UTF-8; `is_some` asks whether it is set.
+    #[cfg(debug_assertions)]
+    if std::env::var_os("IDE_INSPECT_ANNOTATIONS").is_some() {
+        bail!("this window shows the annotations of IDE_INSPECT_ANNOTATIONS and starts no language server");
+    }
+    // `Ok(())` reports success without a payload.
+    return Ok(());
+}
+
 /// Run one project window after display-independent argument parsing has completed.
 pub fn run(options: Options) -> anyhow::Result<()> {
     // helix-lsp logs every protocol message in full at `info`; its directive keeps it at warnings.
@@ -311,6 +332,7 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     // try { process.chdir(root); worker = new LanguageWorker(root); } catch (error) { worker = error; }
     // ```
     let language_worker = enter_project_directory(workspace.root())
+        .and_then(|()| return servers_wanted())
         .and_then(|()| return LanguageWorker::new(workspace.root()));
     let project_root = workspace.root().to_path_buf();
     // Resolve initial-file paths relative to the explicit root, never the caller's ambient cwd.
@@ -371,8 +393,9 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     );
     render(&window, &state);
     // Debug builds started with `IDE_INSPECT_ANNOTATIONS` show that file's hints and diagnostics; see `inspect`.
+    // The timer of delayed arrivals, when the file asks for any, lives until the window closes.
     #[cfg(debug_assertions)]
-    inspect::inject(&window, &state)?;
+    let _inspection = inspect::inject(&window, &state)?;
     if state.borrow().file_path.is_none() {
         window.invoke_focus_tree();
     }
