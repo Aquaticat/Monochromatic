@@ -248,6 +248,23 @@ of a machine that is stalling on memory before anything intervenes.
 possibly unresponsive desktop,
  which is a preference rather than a fix.
 
+## Seen: a background run killed, its container left running
+
+On 2026-10-06 the journal recorded:
+
+```text
+systemd-oomd[2363]: Killed /user.slice/user-1000.slice/user@1000.service/app.slice/claude-code-bash due to memory pressure for /user.slice/user-1000.slice/user@1000.service/app.slice being 85.14% > 80.00% for > 20s with reclaim activity
+```
+
+The session survived,
+but a capture loop it had started in the background was in `claude-code-bash` and died with it,
+exit status 1 and no message of its own.
+The Android emulator container that loop owned was in podman's cgroup and kept running with no owner.
+After such a kill,
+list containers with `podman ps --all` and stop any the run owned the way the run itself would have,
+before starting it again;
+the run's own log ends mid-step and does not say it was killed.
+
 ## What does not work
 
 - Looking for the kernel OOM killer.
