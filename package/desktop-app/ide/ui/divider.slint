@@ -65,12 +65,10 @@ export component SidebarDividerGrip inherits Rectangle {
     // Columns on each side of the line that belong to the divider. With the line that is a 5px zone,
     // the grab area Qt gives a 1px splitter handle (`QSplitterHandle::resizeEvent`).
     // Three columns would still clear the tree scrollbar's thumb and buttons; four would not.
-    // Prototype zone-width d: 13px, 6 columns on the tree side and 6 on the source side.
-    out property <length> reach: 6px;
-    out property <length> reach-after: 6px;
+    out property <length> reach: 2px;
     callback resize(length);
     private property <bool> emphasized: grip.has-hover || grip.pressed || root.keyboard-focus;
-    width: root.reach + 1px + root.reach-after;
+    width: 2 * root.reach + 1px;
 
     // The line. At rest it is one faint column. Under the pointer it is three columns in stronger ink,
     // beside the resize cursor; a drag uses full ink. Keyboard focus draws the three columns in the accent color.
@@ -85,18 +83,11 @@ export component SidebarDividerGrip inherits Rectangle {
     // and by shape, and from the resting line by weight, color, and shape.
     Rectangle {
         visible: root.keyboard-focus;
-        x: root.reach - 2px;
         y: (parent.height - self.height) / 2;
-        width: 5px;
+        width: parent.width;
         height: 48px;
         border-radius: self.width / 2;
         background: Palette.accent-background;
-    }
-    // Prototype only: the invisible pointer zone drawn as a translucent overlay so frames show its columns.
-    Rectangle {
-        width: parent.width;
-        height: parent.height;
-        background: #FF00FF59;
     }
     grip := TouchArea {
         private property <length> press-pointer;

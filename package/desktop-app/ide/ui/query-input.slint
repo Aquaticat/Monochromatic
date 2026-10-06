@@ -12,6 +12,8 @@ export component QueryInput inherits Rectangle {
     in property <bool> enabled: true;
     // Accessible name of the clear control, which says what it clears.
     in property <string> clear-label: "Clear text";
+    // Prototype query-selection-ink b: the owner passes the ink native code chooses from the selection fill.
+    in property <brush> selected-ink: Palette.accent-foreground;
     in-out property <string> text <=> input.text;
     out property <bool> has-focus: input.has-focus;
     // The toolkit's rule for its clear control: text is present, the box is enabled, and it has keyboard focus.
@@ -129,7 +131,7 @@ export component QueryInput inherits Rectangle {
                     color: root.ink;
                     selection-background-color: Palette.selection-background;
                     // The toolkit box draws selected text in the accent ink, which follows the scheme.
-                    selection-foreground-color: root.enabled ? Palette.accent-foreground
+                    selection-foreground-color: root.enabled ? root.selected-ink
                         : (root.dark ? #FFFFFF87 : #FFFFFF);
                     // The box is the accessible text input; this inner item must not appear a second time.
                     accessible-role: none;
