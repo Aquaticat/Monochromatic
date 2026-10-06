@@ -21,6 +21,8 @@ use super::candidate_reader::{ObjectReader, start_object_reader};
 use super::candidate_record::{CandidateRecord, parse_raw_records};
 /// Import the stage-record parser of `git ls-files --stage`.
 use super::candidate_stage::{StageRecord, parse_stage_records};
+/// Import the tree-record parser of `git ls-tree -r`.
+use super::candidate_tree::{TreeRecord, parse_tree_records};
 /// Import the version types and builder.
 use super::candidate_version::{Candidate, CandidateSource, CandidateVersion, build_version};
 /// Import the captured-query runner and its line helper.
@@ -361,6 +363,33 @@ impl CandidateStore {
         return parse_raw_records(output.as_slice());
     }
 
+    /// What: Every file of the `HEAD` commit with its mode and object; nothing when the
+    ///       branch has no commit yet.
+    /// Why:  A policy that compares the candidate state with `HEAD` reads `HEAD`'s copy of
+    ///       a file without naming the path in an object request, and learns its mode.
+    ///       `--full-tree` lists from the top level whatever directory Git runs in.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async headTreeRecords(): Promise<TreeRecord[]>
+    /// ```
+    pub fn head_tree_records(&mut self) -> Result<Vec<TreeRecord>, CandidateError> {
+        let Some(head) = self.reader()?.head_commit()? else {
+            return Ok(Vec::new());
+        };
+        let output: Vec<u8> = self.run_listing(
+            "ls-tree",
+            &[
+                OsString::from("ls-tree"),
+                OsString::from("-r"),
+                OsString::from("-z"),
+                OsString::from("--full-tree"),
+                OsString::from(head.as_str()),
+            ],
+        )?;
+        return parse_tree_records(output.as_slice());
+    }
+
     /// What: A version of the current generation built from records the caller derived.
     ///       `Vec<CandidateRecord>` is taken by value: the records move into the version.
     /// Why:  A predicted staging operation has no single listing command; its candidates
@@ -445,3 +474,8 @@ mod baseline_tests;
 #[cfg(test)]
 #[path = "candidate_store_failure_tests.rs"]
 mod failure_tests;
+
+/// The `HEAD` tree listing.
+#[cfg(test)]
+#[path = "candidate_store_tree_tests.rs"]
+mod tree_tests;

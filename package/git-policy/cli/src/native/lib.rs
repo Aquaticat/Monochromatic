@@ -253,6 +253,15 @@ pub mod dependent_version_plan;
 /// The decision and findings of `mono/dependent-version-bump`.
 pub mod dependent_version_policy;
 
+/// The dependent-version planner's view of a prepared candidate state.
+pub mod dependent_version_lifecycle;
+
+/// Whether a direct fix may change a tracked file it did not select.
+pub mod policy_added_path;
+
+/// The `mono/dependent-version-bump` check over a lifecycle's candidate state.
+pub mod policy_dependent_version;
+
 /// An in-memory workspace that records reads; never in the release build.
 #[cfg(test)]
 mod dependent_version_test_support;
@@ -345,6 +354,9 @@ pub mod candidate_store;
 
 /// Pure parsing of `git ls-files --stage` records and the delta between two index states.
 pub mod candidate_stage;
+
+/// The files of a commit's tree with their modes and objects.
+pub mod candidate_tree;
 
 /// A private, timestamp-preserving copy of the real index, removed when dropped.
 pub mod candidate_private_index;

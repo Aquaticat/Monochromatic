@@ -9,7 +9,7 @@
 //! ```
 
 /// The adapter under test, the engine types it returns and the scripted facts.
-use super::{DEPENDENT_VERSION_BUMP_NEEDS, MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+use super::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
 use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::diagnostics::EngineFailureCode;
@@ -366,7 +366,9 @@ fn unprepared() -> PolicyOutcome {
 }
 
 /// Content policies report nothing without candidates; with candidates the ported ones
-/// read them and the unported ones refuse without reading.
+/// read them and the unported one refuses without reading. The dependent-version policy
+/// reads nothing for `git add`, the one forwarded command with candidates, as the installed
+/// wrapper's policy plans only for a forwarded `commit`.
 #[test]
 fn content_policies_follow_the_lifecycle_content() {
     for policy in [
@@ -386,30 +388,31 @@ fn content_policies_follow_the_lifecycle_content() {
             assert_eq!(without.facts.asked, Vec::<String>::new());
         }
     }
-    let unported: [(PolicyId, &str); 2] = [
-        (PolicyId::MarkdownAutofix, MARKDOWN_AUTOFIX_NEEDS),
-        (PolicyId::DependentVersionBump, DEPENDENT_VERSION_BUMP_NEEDS),
-    ];
-    for (policy, needs) in unported {
-        let mut with: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
-        with.candidates = add_candidates();
-        assert_eq!(
-            with.check(policy, Trigger::PreForward),
-            PolicyOutcome::Unavailable(needs),
-            "{policy:?}"
-        );
-        assert_eq!(with.facts.asked, Vec::<String>::new(), "{policy:?}");
-    }
+    let mut with: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
+    with.candidates = add_candidates();
+    assert_eq!(
+        with.check(PolicyId::MarkdownAutofix, Trigger::PreForward),
+        PolicyOutcome::Unavailable(MARKDOWN_AUTOFIX_NEEDS)
+    );
+    assert_eq!(
+        with.check(PolicyId::DependentVersionBump, Trigger::PreForward),
+        clean()
+    );
+    assert_eq!(with.facts.asked, Vec::<String>::new());
     for policy in [
         PolicyId::FinalNewline,
         PolicyId::ForbiddenRootContext,
         PolicyId::ForbiddenStrings,
+        PolicyId::DependentVersionBump,
     ] {
         for trigger in [
             Trigger::PreForward,
             Trigger::DirectCheck,
             Trigger::DirectFix,
         ] {
+            if policy == PolicyId::DependentVersionBump && trigger == Trigger::PreForward {
+                continue;
+            }
             let mut read: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
             read.candidates = add_candidates();
             assert_eq!(read.check(policy, trigger), unprepared(), "{policy:?}");

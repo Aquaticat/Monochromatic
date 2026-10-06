@@ -424,6 +424,37 @@ impl ContentState {
     }
 }
 
+/// What: `impl ContentState { ... }` continued: the whole candidate state, for a policy
+///       that reads files beyond the candidates.
+/// Why:  The dependent-version policy lists every tracked file of the private index and
+///       reads files that are not candidates, through the same store and the same
+///       corrections every other content policy reads through.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class ContentState { storeWithCorrections() {} }
+/// ```
+impl ContentState {
+    /// What: The store the candidates were prepared in, with this invocation's corrected
+    ///       files; nothing before preparation or after a failed one. The two borrows are
+    ///       of separate fields, so both can be held at once.
+    /// Why:  A later pass of a direct fix must read what the earlier passes made of every
+    ///       file, candidate or not.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// storeWithCorrections(): [CandidateStore, Map<string, InstallChange>] | undefined;
+    /// ```
+    pub fn store_with_corrections(
+        &mut self,
+    ) -> Option<(&mut CandidateStore, &BTreeMap<Vec<u8>, InstallChange>)> {
+        match &mut self.prepared {
+            Some(Ok(prepared)) => return Some((&mut prepared.store, &self.corrected)),
+            Some(Err(_)) | None => return None,
+        }
+    }
+}
+
 /// What: The failure of a read made before any version was prepared.
 /// Why:  Only a defect in a calling policy can cause it. It is reported as a stale
 ///       candidate, whose code is `policy-incomplete`: the policy's own sequencing

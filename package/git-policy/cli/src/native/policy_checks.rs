@@ -3,9 +3,9 @@
 //! Why: The engine owns order, severity and stopping; the rule cores own decisions from
 //!      arguments; this module joins them and fetches a repository fact only when a core
 //!      asks. The content policies read the lifecycle's candidates: they report nothing
-//!      where a lifecycle has none. The two content policies that are not ported are
-//!      unavailable wherever a lifecycle has candidates, so an unchecked file can never
-//!      read as a clean one.
+//!      where a lifecycle has none. The content policy that is not ported is unavailable
+//!      wherever a lifecycle has candidates, so an unchecked file can never read as a
+//!      clean one.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -25,6 +25,8 @@ use super::effective_target::{EffectiveTarget, classify_effective_target};
 /// What the lifecycle offers content policies, and its prepared candidates.
 use super::policy_content::{ContentState, LifecycleContent};
 use super::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
+/// The dependent-version check over the candidate state.
+use super::policy_dependent_version::check_dependent_version;
 /// The built-in final-newline check over candidates.
 use super::policy_final_newline::check_final_newline;
 /// The forbidden-strings check, its settings and its scanner.
@@ -65,9 +67,6 @@ use std::path::PathBuf;
 
 /// What the Markdown autofix policy needs that is not ported.
 pub const MARKDOWN_AUTOFIX_NEEDS: &str = "the native Markdown linter";
-
-/// What the dependent-version policy needs that is not ported.
-pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps";
 
 /// What: The shipped policies over one invocation. `<F: RepositoryFacts>` says the record
 ///       works with any one type `F` that provides the facts interface, chosen where the
@@ -347,7 +346,12 @@ impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
                 return unported_content(&self.candidates, MARKDOWN_AUTOFIX_NEEDS);
             }
             PolicyId::DependentVersionBump => {
-                return unported_content(&self.candidates, DEPENDENT_VERSION_BUMP_NEEDS);
+                return check_dependent_version(
+                    &mut self.content,
+                    &self.candidates,
+                    &mut self.facts,
+                    trigger,
+                );
             }
             PolicyId::ForbiddenStrings => {
                 return check_forbidden_strings(
