@@ -64,7 +64,10 @@ internal fun firstRunCanClaimNoAudio(input: FirstRunDiscoveryFixture): Boolean {
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * type FirstRunAccessFixture = { title: string; body: string; primary: string; analysis: boolean };
+ * type FirstRunAccessFixture = {
+ *   title: string; body: string; primary: string; primaryEvent: string;
+ *   secondary: string | null; analysis: boolean;
+ * };
  * ```
  */
 data class FirstRunAccessFixture(
@@ -74,7 +77,27 @@ data class FirstRunAccessFixture(
     val body: String,
     /** Label for a debug event only, not a connected production action. */
     val primary: String,
-    /** Whether D10's analysis explanation belongs to the authored no-source state. */
+    /**
+     * What: Plain String naming the debug event the filled button passes to the activity callback.
+     * Why: Declined access asks for access while no-audio scenes open a folder; one shared label cannot route both.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * primaryEvent: 'allow-access' | 'open-folder';
+     * ```
+     */
+    val primaryEvent: String,
+    /**
+     * What: String? is nullable text; null means no outlined folder button, not an empty label.
+     * Why: Only the unreadable device library offers the folder route beside its primary action.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * secondary: string | null; // Its button always emits 'open-folder'.
+     * ```
+     */
+    val secondary: String?,
+    /** Whether D10's analysis explanation belongs to the authored scene. */
     val analysis: Boolean,
 )
 
@@ -92,25 +115,20 @@ data class FirstRunAccessFixture(
 internal fun firstRunAccessFixture(scene: String): FirstRunAccessFixture {
     if (scene == "declined") {
         // What: The record constructor uses named fields instead of positional descriptor arrays.
-        // Why: State-specific wording stays next to the exact authored premise.
+        // Why: D95 and D100 keep the device library open when access is refused, so the copy names
+        // an open but unreadable source and offers access or a folder; no state lacks a source.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return { title: 'Choose a music folder', body: '...', primary: 'Open a folder', analysis: true };
+        // return { title: "The device music library can't be read", body: '...', primary: 'Allow access',
+        //   primaryEvent: 'allow-access', secondary: 'Open a folder', analysis: true };
         // ```
         return FirstRunAccessFixture(
-            title = "Choose a music folder",
-            body = "Device-wide music access was not granted. You can choose a folder instead.",
-            primary = "Open a folder",
-            analysis = true,
-        )
-    }
-    if (scene == "not-opened") {
-        // Describe an authored no-source state, not a claim that Android lacks MediaStore.
-        return FirstRunAccessFixture(
-            title = "Choose a music folder",
-            body = "No music source is open. Choose a folder containing music; its subfolders become the folder browser.",
-            primary = "Open a folder",
+            title = "The device music library can't be read",
+            body = "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+            primary = "Allow access",
+            primaryEvent = "allow-access",
+            secondary = "Open a folder",
             analysis = true,
         )
     }
@@ -120,17 +138,29 @@ internal fun firstRunAccessFixture(scene: String): FirstRunAccessFixture {
             throw IllegalStateException("Complete zero-audio fixture did not permit the scoped claim.")
         }
         if (scene == "system-no-audio") {
+            // What: null fills the nullable secondary field, like TS `secondary: null`.
+            // Why: The filled button already opens a folder, so no second folder button is drawn.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return { ..., primary: 'Open a folder', primaryEvent: 'open-folder', secondary: null, analysis: false };
+            // ```
             return FirstRunAccessFixture(
                 title = "No audio found in the device music library",
                 body = "The device music library was checked completely. You can open a folder that is not listed there.",
                 primary = "Open a folder",
+                primaryEvent = "open-folder",
+                secondary = null,
                 analysis = false,
             )
         }
+        // The chosen-folder scene also opens a folder from its filled button and draws no secondary button.
         return FirstRunAccessFixture(
             title = "No audio found in Cult of Luna",
             body = "The chosen folder was checked completely and contains no supported audio files. Opening a different folder changes the music source.",
             primary = "Open a folder",
+            primaryEvent = "open-folder",
+            secondary = null,
             analysis = false,
         )
     }

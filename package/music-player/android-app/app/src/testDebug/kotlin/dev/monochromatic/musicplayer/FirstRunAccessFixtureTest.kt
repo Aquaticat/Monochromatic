@@ -22,6 +22,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 // Partial or failed reads must return false, including when their count is zero.
 import org.junit.Assert.assertFalse
+// What: assertNull passes only for null, like TS `expect(value).toBeNull()`.
+// Why: No-audio scenes must draw no secondary button, which the fixture marks with null.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { expect } from 'test';
+// ```
+import org.junit.Assert.assertNull
 
 /**
  * What: A plain class groups JUnit methods; it is not a singleton object or Android activity.
@@ -98,28 +106,39 @@ class FirstRunAccessFixtureTest {
         firstRunCanClaimNoAudio(FirstRunDiscoveryFixture("complete", -1))
     }
 
-    /** Declining device access keeps D10's folder route without declaring music absent. */
-    @Test fun declinedRetainsFolderAlternative() {
+    /** Declined access leaves the device library open but unreadable, offering access or a folder (D95, D100). */
+    @Test fun declinedIsOpenButUnreadable() {
         // What: val binds one immutable scene record; String is literal text rather than a parsed path.
-        // Why: Inspect the authored no-held-source scene without querying LibraryRoot or permissions.
+        // Why: Inspect the authored declined scene without querying LibraryRoot or permissions.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const fixture = firstRunAccessFixture('declined');
         // ```
         val fixture: FirstRunAccessFixture = firstRunAccessFixture("declined")
-        assertEquals("Open a folder", fixture.primary)
-        assertEquals("Choose a music folder", fixture.title)
+        assertEquals("The device music library can't be read", fixture.title)
+        assertEquals(
+            "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+            fixture.body,
+        )
+        assertEquals("Allow access", fixture.primary)
+        assertEquals("allow-access", fixture.primaryEvent)
+        assertEquals("Open a folder", fixture.secondary)
         assertTrue(fixture.analysis)
-        assertTrue(fixture.body.contains("was not granted"))
     }
 
-    /** No source opened is not a claim that a system provider is absent. */
-    @Test fun unopenedRemainsSourceScoped() {
-        val fixture: FirstRunAccessFixture = firstRunAccessFixture("not-opened")
-        assertTrue(fixture.body.startsWith("No music source is open."))
-        assertTrue(fixture.analysis)
-        assertEquals("Open a folder", fixture.primary)
+    /**
+     * What: expected requires IllegalArgumentException from the retired scene name.
+     * Why: D100 leaves no state without a source, so `not-opened` must throw like any unknown scene.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * test('not-opened is rejected', () => expect(() => firstRunAccessFixture('not-opened')).toThrow());
+     * ```
+     */
+    @Test(expected = IllegalArgumentException::class)
+    fun notOpenedIsRejected() {
+        firstRunAccessFixture("not-opened")
     }
 
     /** Zero eligible audio in the authored system scope does not mean zero files on the device. */
@@ -128,6 +147,9 @@ class FirstRunAccessFixtureTest {
         assertEquals("No audio found in the device music library", fixture.title)
         assertTrue(fixture.body.contains("checked completely"))
         assertFalse(fixture.analysis)
+        // The filled button opens a folder, and no secondary button is drawn.
+        assertEquals("open-folder", fixture.primaryEvent)
+        assertNull(fixture.secondary)
     }
 
     /** Opening another folder changes scope rather than repairing or widening the old source. */
@@ -136,9 +158,12 @@ class FirstRunAccessFixtureTest {
         assertEquals("No audio found in Cult of Luna", fixture.title)
         assertTrue(fixture.body.contains("changes the music source"))
         assertFalse(fixture.analysis)
+        // The filled button opens a different folder, and no secondary button is drawn.
+        assertEquals("open-folder", fixture.primaryEvent)
+        assertNull(fixture.secondary)
     }
 
-    /** Unknown route input cannot render a fallback no-source state. */
+    /** Unknown route input cannot render a fallback scene. */
     @Test(expected = IllegalArgumentException::class)
     fun unknownSceneIsRejected() {
         firstRunAccessFixture("declined-extra")

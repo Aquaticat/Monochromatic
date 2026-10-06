@@ -34,7 +34,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 // Filled primary action follows D10.
 import androidx.compose.material3.Button
-// Subordinate Settings action is not a permission-recovery promise.
+// Outlined actions: the optional folder alternative and the subordinate Settings action,
+// which is not a permission-recovery promise.
 import androidx.compose.material3.OutlinedButton
 // Material theme provides system appearance and text roles.
 import androidx.compose.material3.MaterialTheme
@@ -112,11 +113,34 @@ internal fun FirstRunAccessStudy(scene: String, onAction: (String) -> Unit) {
             ) {
                 Text(fixture.title, style = MaterialTheme.typography.headlineSmall)
                 Text(fixture.body, style = MaterialTheme.typography.bodyLarge)
-                // The debug activity logs the Open request without opening a picker or changing source.
+                // What: The click lambda forwards the fixture's authored event name to the callback.
+                // Why: The debug activity logs the primary event (allow-access or open-folder) without
+                // requesting permission, opening a picker or changing source.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // Button({ onClick: () => onAction(fixture.primaryEvent), children: Text(fixture.primary) });
+                // ```
                 Button(
-                    onClick = { onAction("open-folder") },
+                    onClick = { onAction(fixture.primaryEvent) },
                     modifier = Modifier.widthIn(min = 48.dp).heightIn(min = 48.dp),
                 ) { Text(fixture.primary) }
+                // What: A local val copies the nullable label so the null check narrows it to String.
+                // Why: Only scenes with an authored folder alternative draw this button, between the
+                // filled action and Settings; its debug event never opens a picker.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const secondary = fixture.secondary;
+                // if (secondary !== null) OutlinedButton({ onClick: () => onAction('open-folder'), children: Text(secondary) });
+                // ```
+                val secondary: String? = fixture.secondary
+                if (secondary != null) {
+                    OutlinedButton(
+                        onClick = { onAction("open-folder") },
+                        modifier = Modifier.widthIn(min = 48.dp).heightIn(min = 48.dp),
+                    ) { Text(secondary) }
+                }
                 // Settings is in-app Settings; this debug action does not open Android permission settings.
                 OutlinedButton(
                     onClick = { onAction("settings") },
