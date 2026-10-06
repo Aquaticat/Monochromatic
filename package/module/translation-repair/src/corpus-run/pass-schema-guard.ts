@@ -2,6 +2,7 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { contextRoot, } from '../log-context.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
@@ -506,15 +507,15 @@ export async function assertResumableSchemaGeneration(
 
   // THE LABEL CHECK PASSED, so every remaining file claims this generation.
   // Now they have to BE it, which only this generation's reader can say.
-  await Promise.all(
-    artifacts.map(async function checkBody({ entryId, },): Promise<void> {
+  await allInInputOrder({
+    members: artifacts.map(async function checkBody({ entryId, },): Promise<void> {
       await assertBodyMatchesLabel({
         artifactsDir,
         entryId,
         writes,
       },);
     },),
-  );
+  },);
 }
 
 //endregion Pass schema guard

@@ -1,6 +1,7 @@
 import { stat, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import {
   compareCodePoints,
   textsInCodePointOrder,
@@ -392,36 +393,40 @@ async function recordsUnder({ runsDir, }: { readonly runsDir: string; },): Promi
   /**
    Records of each entry.
    */
-  const perEntry = await Promise.all(entryIds.map(async function recordsOf(entryId,): Promise<readonly SliceRecord[]> {
-    /**
-     The entry's cache directory.
-     */
-    const entryDir = join(
-      cacheDir,
-      entryId,
-    );
-    /**
-     Files named as slices.
-     */
-    const names = (await presentNamesOfKind({
-      dir: entryDir,
-      kind: 'file',
-    },)).filter(function isSlice(name,): boolean {
-      return isSliceFileName({ name, },);
-    },);
-    /**
-     Each with its time.
-     */
-    const records = await Promise.all(names.map(async function recordOf(name,): Promise<readonly SliceRecord[]> {
-      return await recordAt({
-        path: join(
-          entryDir,
-          name,
-        ),
+  const perEntry = await allInInputOrder({
+    members: entryIds.map(async function recordsOf(entryId,): Promise<readonly SliceRecord[]> {
+      /**
+       The entry's cache directory.
+       */
+      const entryDir = join(
+        cacheDir,
+        entryId,
+      );
+      /**
+       Files named as slices.
+       */
+      const names = (await presentNamesOfKind({
+        dir: entryDir,
+        kind: 'file',
+      },)).filter(function isSlice(name,): boolean {
+        return isSliceFileName({ name, },);
       },);
-    },),);
-    return records.flat();
-  },),);
+      /**
+       Each with its time.
+       */
+      const records = await allInInputOrder({
+        members: names.map(async function recordOf(name,): Promise<readonly SliceRecord[]> {
+          return await recordAt({
+            path: join(
+              entryDir,
+              name,
+            ),
+          },);
+        },),
+      },);
+      return records.flat();
+    },),
+  },);
   return perEntry.flat();
 }
 
@@ -446,9 +451,11 @@ export async function sliceCacheAccount(
   /**
    Every record, across the runs directories.
    */
-  const records = (await Promise.all(runsDirs.map(async function read(runsDir,): Promise<readonly SliceRecord[]> {
-    return await recordsUnder({ runsDir, },);
-  },),)).flat();
+  const records = (await allInInputOrder({
+    members: runsDirs.map(async function read(runsDir,): Promise<readonly SliceRecord[]> {
+      return await recordsUnder({ runsDir, },);
+    },),
+  },)).flat();
   /**
    The record written last; a tie goes to the path first in code-point order,
    so one tree always names one record.

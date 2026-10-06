@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { wordForCount, } from '../count-word.ts';
 import { contextRoot, } from '../log-context.ts';
@@ -78,30 +79,32 @@ export async function cacheVersionSetting(
   /**
    Each with the declarations of this value it added and removed.
    */
-  const candidates = await Promise.all(commits.map(async function counted(commit,) {
-    /**
-     The commit's changes to the source, without context lines.
-     */
-    const diff = await cacheAccountGitOutput({
-      args: [
-        '-C',
-        root,
-        'show',
-        '--format=',
-        '--unified=0',
-        commit.hash,
-        '--',
-        sources,
-      ],
-    },);
-    return {
-      commit,
-      ...declarationLineCounts({
-        diff,
-        version,
-      },),
-    };
-  },),);
+  const candidates = await allInInputOrder({
+    members: commits.map(async function counted(commit,) {
+      /**
+       The commit's changes to the source, without context lines.
+       */
+      const diff = await cacheAccountGitOutput({
+        args: [
+          '-C',
+          root,
+          'show',
+          '--format=',
+          '--unified=0',
+          commit.hash,
+          '--',
+          sources,
+        ],
+      },);
+      return {
+        commit,
+        ...declarationLineCounts({
+          diff,
+          version,
+        },),
+      };
+    },),
+  },);
   /**
    Newest commit that added the declaration on balance.
    */

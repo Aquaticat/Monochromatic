@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
 import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -192,18 +193,20 @@ export async function publishedEntryIds(
   /**
    Each entry directory beside whether it holds its page.
    */
-  const carried = await Promise.all(names.map(async function check(entryId,): Promise<{
-    readonly entryId: string;
-    readonly hasPage: boolean;
-  }> {
-    return {
-      entryId,
-      hasPage: await carriesPage({
-        peopleDir,
+  const carried = await allInInputOrder({
+    members: names.map(async function check(entryId,): Promise<{
+      readonly entryId: string;
+      readonly hasPage: boolean;
+    }> {
+      return {
         entryId,
-      },),
-    };
-  },),);
+        hasPage: await carriesPage({
+          peopleDir,
+          entryId,
+        },),
+      };
+    },),
+  },);
 
   return {
     kind: 'read',

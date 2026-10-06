@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -228,38 +229,40 @@ export async function censusBySchema(
    */
   const names = textsInCodePointOrder({ texts: (await listArtifactFiles({ artifactsDir, },)), },);
 
-  return Promise.all(names.map(async function readOne(name,): Promise<SchemaCensusRow> {
-    /**
-     Entry id, which is the file name without its suffix.
-     */
-    const entryId = entryIdOfArtifact({ name, },);
+  return allInInputOrder({
+    members: names.map(async function readOne(name,): Promise<SchemaCensusRow> {
+      /**
+       Entry id, which is the file name without its suffix.
+       */
+      const entryId = entryIdOfArtifact({ name, },);
 
-    /**
-     Artifact text as it sits on disk.
-     */
-    const text = await readFile(
-      join(
-        artifactsDir,
-        name,
-      ),
-      'utf8',
-    );
+      /**
+       Artifact text as it sits on disk.
+       */
+      const text = await readFile(
+        join(
+          artifactsDir,
+          name,
+        ),
+        'utf8',
+      );
 
-    /**
-     The file's value, or its malformed classification.
-     */
-    const parsed = parsedArtifactText({ text, },);
+      /**
+       The file's value, or its malformed classification.
+       */
+      const parsed = parsedArtifactText({ text, },);
 
-    return {
-      entryId,
-      classification: (parsed.kind === 'malformed')
-        ? parsed
-        : classifyArtifact({
-          artifact: parsed.artifact,
-          entryId,
-        },),
-    };
-  },),);
+      return {
+        entryId,
+        classification: (parsed.kind === 'malformed')
+          ? parsed
+          : classifyArtifact({
+            artifact: parsed.artifact,
+            entryId,
+          },),
+      };
+    },),
+  },);
 }
 
 //endregion Pass schema census

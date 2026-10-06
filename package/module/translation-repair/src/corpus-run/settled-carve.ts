@@ -2,9 +2,10 @@ import { textsInCodePointOrder, } from '../code-points.ts';
 import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { readSettledArtifact, } from '../artifact-read.ts';
-import {
-  type CorpusPin,
+import type {
+  CorpusPin,
   readCorpusFile,
 } from '../corpus-source.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
@@ -94,7 +95,7 @@ export type SettledRecipe = {
 
  @example
  ```ts
- const carve: SettledCarve = await carveSettled({ entryId, runsDir, cloneDir, },);
+ const carve: SettledCarve = await carveSettled({ entryId, runsDir, cloneDir, readFile: readCorpusFile, },);
  ```
  */
 export type SettledCarve = {
@@ -253,11 +254,15 @@ export async function readSettledRecipe(
 
  @param cloneDir - corpus clone the artifact's commit is read from
 
+ @param readFile - reads a corpus file at a pin: `readCorpusFile` in a run, a
+ test's scripted reader otherwise, so the order the two pages answer in is a
+ thing a case sets
+
  @returns Slicing the lanes saw, or the reason there is none
 
  @example
  ```ts
- const carve = await carveSettled({ entryId, runsDir, cloneDir, },);
+ const carve = await carveSettled({ entryId, runsDir, cloneDir, readFile: readCorpusFile, },);
  ```
  */
 export async function carveSettled(
@@ -265,10 +270,12 @@ export async function carveSettled(
     entryId,
     runsDir,
     cloneDir,
+    readFile,
   }: {
     readonly entryId: string;
     readonly runsDir: string;
     readonly cloneDir: string;
+    readonly readFile: typeof readCorpusFile;
   },
 ): Promise<SettledCarve> {
   /**
@@ -290,18 +297,21 @@ export async function carveSettled(
   };
 
   /**
-   Both sides at that commit.
+   Both sides at that commit. When both reads are refused the refusal is the
+   original's, as the input lists it first, whichever read ends first.
    */
-  const [sourceText, targetText,] = await Promise.all([
-    readCorpusFile({
-      pin,
-      relPath: `people/${entryId}/page.md`,
-    },),
-    readCorpusFile({
-      pin,
-      relPath: `people/${entryId}/page.en.md`,
-    },),
-  ],);
+  const [sourceText, targetText,] = await allInInputOrder({
+    members: [
+      readFile({
+        pin,
+        relPath: `people/${entryId}/page.md`,
+      },),
+      readFile({
+        pin,
+        relPath: `people/${entryId}/page.en.md`,
+      },),
+    ],
+  },);
 
   /**
    The carve the artifact's recipe, flags and stored archive give.

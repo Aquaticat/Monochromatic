@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
 import { createHash, } from 'node:crypto';
 import {
@@ -395,8 +396,8 @@ export async function digestPipeline(
   /**
    One line per file, pairing its path with the hash of its bytes.
    */
-  const lines = await Promise.all(
-    files.map(async function toLine(entry,): Promise<string> {
+  const lines = await allInInputOrder({
+    members: files.map(async function toLine(entry,): Promise<string> {
       /**
        Absolute path of this emitted file.
        */
@@ -419,7 +420,7 @@ export async function digestPipeline(
         )
       }${PATH_TERMINATOR}${hash}\n`;
     },),
-  );
+  },);
 
   /**
    Lines in one order whatever order the directory reported its entries in.

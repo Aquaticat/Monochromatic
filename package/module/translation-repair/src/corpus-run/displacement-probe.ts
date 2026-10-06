@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { readCorpusFile, } from '../corpus-source.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { probeDisplacement, } from './displacement-probe-run.ts';
 import {
@@ -52,6 +53,7 @@ if (import.meta.main)
             entryId,
             runsDir,
             cloneDir: RUN_CORPUS_PIN.cloneDir,
+            readFile: readCorpusFile,
           },);
         },
         writeOut,

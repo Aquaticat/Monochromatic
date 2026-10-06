@@ -1,5 +1,6 @@
 import { join, } from 'node:path';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import {
   type ArtifactProbeReading,
   readArtifactProbe,
@@ -70,24 +71,26 @@ export async function gatherProbeReadings(
    it came from, so no later step pairs the two by position.
 
    Every parse failure carries the artifact path it came from, so a malformed
-   file names itself regardless of read order. Which of several malformed
-   files reports first is not fixed, since `Promise.all` rejects with whichever
-   rejected soonest rather than the earliest in the sorted list.
+   file names itself regardless of read order. Of several malformed files the
+   one reported is the earliest in the sorted list, whichever read ended
+   first, since `allInInputOrder` reports by position.
    */
-  const perEntry = await Promise.all(names.map(async function toReading(name,): Promise<NamedProbeReading> {
-    return {
-      name,
-      reading: readArtifactProbe({
-        value: await readRunJson({
-          path: join(
-            artifactsDir,
-            name,
-          ),
+  const perEntry = await allInInputOrder({
+    members: names.map(async function toReading(name,): Promise<NamedProbeReading> {
+      return {
+        name,
+        reading: readArtifactProbe({
+          value: await readRunJson({
+            path: join(
+              artifactsDir,
+              name,
+            ),
+          },),
+          path: name,
         },),
-        path: name,
-      },),
-    };
-  },),);
+      };
+    },),
+  },);
 
   /**
    Every reading paired with its owning issue, across every artifact.

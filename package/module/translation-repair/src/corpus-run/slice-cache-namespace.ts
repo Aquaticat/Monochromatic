@@ -7,6 +7,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { wordForCount, } from '../count-word.ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import { contextRoot, } from '../log-context.ts';
@@ -556,15 +557,17 @@ export async function discardNamespace(
         + `filled by ${cached === '' ? '(unstamped)' : cached}`,
     );
   }
-  await Promise.all(owned.map(async function removeOne(name,): Promise<void> {
-    await rm(
-      join(
-        dir,
-        name,
-      ),
-      { force: true, },
-    );
-  },),);
+  await allInInputOrder({
+    members: owned.map(async function removeOne(name,): Promise<void> {
+      await rm(
+        join(
+          dir,
+          name,
+        ),
+        { force: true, },
+      );
+    },),
+  },);
 }
 
 //endregion Slice cache namespace

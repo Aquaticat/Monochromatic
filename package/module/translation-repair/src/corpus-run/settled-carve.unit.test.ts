@@ -32,12 +32,14 @@ import {
   buildSettledTwoLaneArtifact,
   NO_PAGE_ASSEMBLY,
   carveSettled,
+  CorpusReadError,
   type DocumentLanesResult,
   listSettledEntryIds,
   type PipelineDigest,
   preparationIdentity,
   type PreparedDocumentPair,
   prepareDocumentPair,
+  readCorpusFile,
   readSettledRecipe,
   recipeLabel,
   type SliceDeliveryRecord,
@@ -47,6 +49,7 @@ import {
   scratchDirWith,
 } from '../scratch-dir.test-fixture.ts';
 import { rawResultFor, } from './lane-result-evidence.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 
 /**
@@ -670,6 +673,7 @@ await describe({
               entryId: ENTRY_ID,
               runsDir: runs.path,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
             expect(carve.kind,).toBe('settled',);
             if (carve.kind !== 'settled')
@@ -690,6 +694,7 @@ await describe({
               entryId: ENTRY_ID,
               runsDir: runs.path,
               cloneDir: '/nonexistent/clone',
+              readFile: readCorpusFile,
             },),).toEqual({ kind: 'unsettled', },);
           },
         },),
@@ -734,6 +739,7 @@ await describe({
               entryId: ENTRY_ID,
               runsDir: runs.path,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
             if (carve.kind !== 'settled')
               throw new Error(`expected a settled carve, got ${carve.kind}`,);
@@ -774,12 +780,82 @@ await describe({
               entryId: ENTRY_ID,
               runsDir: runs.path,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
             if (carve.kind !== 'settled')
               throw new Error(`expected a settled carve, got ${carve.kind}`,);
             expect(carve.targetText,).toBe(TARGET_PAGE,);
             expect(preparationIdentity({ prepared: carve.prepared, },),).toBe(
               preparationIdentity({ prepared: carved, },),
+            );
+          },
+        },),
+        it({
+          name: 'REFUSES with the page.md read when both reads of a commit the clone lacks are refused and the '
+            + 'page.en.md read is refused first',
+          fn: async () => {
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
+            /**
+             Commit the artifact names and the clone does not carry.
+             */
+            const lackedCommit = 'b'.repeat(40,);
+            await writeArtifact({
+              runsDir: runs.path,
+              prepared: prepareDocumentPair({
+                sourceText: SOURCE_PAGE,
+                targetText: TARGET_PAGE,
+              },),
+              corpusSha: lackedCommit,
+              strip: [],
+            },);
+
+            /**
+             Opened by the archive read as it refuses, which the original's read
+             waits for before it refuses itself.
+             */
+            const archiveRefused = Promise.withResolvers<undefined>();
+
+            /**
+             Reader whose archive read refuses at once and whose original read
+             refuses only after that, the way git children end in the other
+             order under load.
+             */
+            async function refusesArchiveFirst(
+              {
+                pin,
+                relPath,
+              }: Parameters<typeof readCorpusFile>[0],
+            ): Promise<string> {
+              /**
+               What git says of a path the commit does not carry.
+               */
+              const refusal = new CorpusReadError({
+                detail: `${pin.commitSha}:${relPath}`,
+                cause: { stderr: `fatal: path '${relPath}' does not exist in '${pin.commitSha}'`, },
+              },);
+              if (relPath.endsWith('/page.en.md',)) {
+                archiveRefused.resolve(undefined,);
+                throw refusal;
+              }
+              await archiveRefused.promise;
+              throw refusal;
+            };
+
+            /**
+             What the carve refused with.
+             */
+            const refusal = await rejectionOf({
+              promise: carveSettled({
+                entryId: ENTRY_ID,
+                runsDir: runs.path,
+                cloneDir: '/nonexistent/clone',
+                readFile: refusesArchiveFirst,
+              },),
+            },);
+            expect(refusal,).toBeInstanceOf(CorpusReadError,);
+            expect(String(refusal,),).toBe(
+              `CorpusReadError: corpus read failed for ${lackedCommit}:people/${ENTRY_ID}/page.md (missing-object); `
+                + 'check that the clone exists and the pinned commit is present.',
             );
           },
         },),

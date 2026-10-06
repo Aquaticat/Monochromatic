@@ -4,6 +4,7 @@ import {
 } from 'node:fs/promises';
 import { hostname, } from 'node:os';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { contextRoot, } from '../log-context.ts';
 import { refusalText, } from '../refusal-text.ts';
 
@@ -133,13 +134,15 @@ export async function hostIdentity(): Promise<HostRead> {
     const [
       bootText,
       pidNamespace,
-    ] = await Promise.all([
-      readFile(
-        '/proc/sys/kernel/random/boot_id',
-        'utf8',
-      ),
-      readlink('/proc/self/ns/pid',),
-    ],);
+    ] = await allInInputOrder({
+      members: [
+        readFile(
+          '/proc/sys/kernel/random/boot_id',
+          'utf8',
+        ),
+        readlink('/proc/self/ns/pid',),
+      ],
+    },);
     return {
       kind: 'read',
       here: {

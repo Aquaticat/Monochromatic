@@ -1,6 +1,7 @@
 import { readFile, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { failureName, } from '../error-name.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
@@ -29,7 +30,8 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 
  @returns Each log's text, in the order named
 
- @throws {@link StatedRefusalError} naming a log (the first to fail where several would)
+ @throws {@link StatedRefusalError} naming a log (the first one named on the command line that
+ cannot be read, where several cannot)
  that could not be read, with the filesystem's code and no text from the
  failure's own message
 
@@ -41,20 +43,22 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 export async function readLogTexts(
   { paths, }: { readonly paths: readonly string[]; },
 ): Promise<readonly string[]> {
-  return await Promise.all(paths.map(async function one(path,): Promise<string> {
-    try {
-      return await readFile(
-        path,
-        'utf8',
-      );
-    } catch (error) {
-      throw new StatedRefusalError({
-        says: `the log ${path} could not be read (${failureName({ error, },)}), so nothing was counted. `
-          + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
-        cause: error,
-      },);
-    }
-  },),);
+  return await allInInputOrder({
+    members: paths.map(async function one(path,): Promise<string> {
+      try {
+        return await readFile(
+          path,
+          'utf8',
+        );
+      } catch (error) {
+        throw new StatedRefusalError({
+          says: `the log ${path} could not be read (${failureName({ error, },)}), so nothing was counted. `
+            + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
+          cause: error,
+        },);
+      }
+    },),
+  },);
 }
 
 /**

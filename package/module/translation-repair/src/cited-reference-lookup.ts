@@ -10,6 +10,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from './all-in-input-order.ts';
 import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import { fetchCitedReference, } from './cited-reference-fetch.ts';
@@ -248,12 +249,14 @@ export async function citedReferenceBlock(
    What the cache held for each page before the ask, so the log can say
    what was bought and what was read back.
    */
-  const held = await Promise.all(urls.map(function heldFor(url,): Promise<CachedReference> {
-    return readCachedReference({
-      dir,
-      url,
-    },);
-  },),);
+  const held = await allInInputOrder({
+    members: urls.map(function heldFor(url,): Promise<CachedReference> {
+      return readCachedReference({
+        dir,
+        url,
+      },);
+    },),
+  },);
   /**
    Answers that were hits.
    */

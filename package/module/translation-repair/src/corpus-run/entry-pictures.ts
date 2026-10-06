@@ -3,6 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import {
   type CorpusPin,
@@ -95,28 +96,30 @@ export async function gatherEntryPictures(
 
   // Every read, run together: these are local git invocations rather than
   // model calls, so nothing here contends for a per-model slot.
-  await Promise.all([...named].map(async function gather(assetName,): Promise<void> {
-    try {
-      gathered.set(
-        assetName,
-        await readCorpusBytes({
-          pin,
-          relPath: photoPath({
-            entryId,
-            assetName,
+  await allInInputOrder({
+    members: [...named].map(async function gather(assetName,): Promise<void> {
+      try {
+        gathered.set(
+          assetName,
+          await readCorpusBytes({
+            pin,
+            relPath: photoPath({
+              entryId,
+              assetName,
+            },),
           },),
-        },),
-      );
-    }
-    catch (error) {
-      // NAMED RATHER THAN SWALLOWED, and not rethrown: a picture the corpus
-      // does not carry is a fact about the corpus, and the slices showing it
-      // report it as unread.
-      if (!isMissingCorpusObject(error,))
-        throw error;
-      gl.warn(`${entryId}/${assetName}: not in the corpus at this pin (${error.message})`,);
-    }
-  },),);
+        );
+      }
+      catch (error) {
+        // NAMED RATHER THAN SWALLOWED, and not rethrown: a picture the corpus
+        // does not carry is a fact about the corpus, and the slices showing it
+        // report it as unread.
+        if (!isMissingCorpusObject(error,))
+          throw error;
+        gl.warn(`${entryId}/${assetName}: not in the corpus at this pin (${error.message})`,);
+      }
+    },),
+  },);
 
   gl.info(`gathered ${String(gathered.size,)} of ${String(named.size,)} ${
     wordForCount({

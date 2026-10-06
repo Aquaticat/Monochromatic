@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import {
   bedrockIsDry,
   hyperIsDry,
@@ -240,75 +241,77 @@ export async function assertRequiredProvidersReady(
         reason: 'key missing',
       },);
   }
-  await Promise.all(keys.map(async function checkProvider(
-    {
-      provider,
-      key,
-    },
-  ): Promise<void> {
-    if (provider === 'synthetic') {
-      /**
-       Required Synthetic meter client.
-       */
-      const client = createSyntheticClient({
-        apiKey: key,
-        transport,
-      },);
-      await gateProvider({
+  await allInInputOrder({
+    members: keys.map(async function checkProvider(
+      {
         provider,
-        readDry: async function readQuota(): Promise<boolean> {
-          return syntheticIsDry({ quota: await client.quotas({ signal, },), },);
-        },
-      },);
-      return;
-    }
-    if (provider === 'hyper') {
-      /**
-       Required Hyper meter client.
-       */
-      const client = createHyperClient({
-        apiKey: key,
-        transport,
-      },);
-      await gateProvider({
-        provider,
-        readDry: async function readCredits(): Promise<boolean> {
-          return hyperIsDry({ credits: await client.credits({ signal, },), },);
-        },
-      },);
-      return;
-    }
-    if (provider === 'bedrock') {
-      /**
-       Required Bedrock meter client, over the ledger the environment names.
-       */
-      const client = createBedrockClient({
-        apiKey: key,
-        ledger: bedrockLedgerFromEnv({ env, },),
-        transport,
-      },);
-      await gateProvider({
-        provider,
-        readDry: async function readBedrockCredits(): Promise<boolean> {
-          return bedrockIsDry({ credits: await client.credits({ signal, },), },);
-        },
-      },);
-      return;
-    }
-    /**
-     Required OpenRouter meter client.
-     */
-    const client = createOpenRouterClient({
-      apiKey: key,
-      transport,
-    },);
-    await gateProvider({
-      provider,
-      readDry: async function readOpenRouterCredits(): Promise<boolean> {
-        return openRouterIsDry({ credits: await client.credits({ signal, },), },);
+        key,
       },
-    },);
-  },),);
+    ): Promise<void> {
+      if (provider === 'synthetic') {
+        /**
+         Required Synthetic meter client.
+         */
+        const client = createSyntheticClient({
+          apiKey: key,
+          transport,
+        },);
+        await gateProvider({
+          provider,
+          readDry: async function readQuota(): Promise<boolean> {
+            return syntheticIsDry({ quota: await client.quotas({ signal, },), },);
+          },
+        },);
+        return;
+      }
+      if (provider === 'hyper') {
+        /**
+         Required Hyper meter client.
+         */
+        const client = createHyperClient({
+          apiKey: key,
+          transport,
+        },);
+        await gateProvider({
+          provider,
+          readDry: async function readCredits(): Promise<boolean> {
+            return hyperIsDry({ credits: await client.credits({ signal, },), },);
+          },
+        },);
+        return;
+      }
+      if (provider === 'bedrock') {
+        /**
+         Required Bedrock meter client, over the ledger the environment names.
+         */
+        const client = createBedrockClient({
+          apiKey: key,
+          ledger: bedrockLedgerFromEnv({ env, },),
+          transport,
+        },);
+        await gateProvider({
+          provider,
+          readDry: async function readBedrockCredits(): Promise<boolean> {
+            return bedrockIsDry({ credits: await client.credits({ signal, },), },);
+          },
+        },);
+        return;
+      }
+      /**
+       Required OpenRouter meter client.
+       */
+      const client = createOpenRouterClient({
+        apiKey: key,
+        transport,
+      },);
+      await gateProvider({
+        provider,
+        readDry: async function readOpenRouterCredits(): Promise<boolean> {
+          return openRouterIsDry({ credits: await client.credits({ signal, },), },);
+        },
+      },);
+    },),
+  },);
 }
 
 //endregion Required providers for measured arms

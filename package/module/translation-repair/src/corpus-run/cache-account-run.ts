@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { wordForCount, } from '../count-word.ts';
 import { contextRoot, } from '../log-context.ts';
 import { isMissingPathError, } from '../missing-path-error.ts';
@@ -183,18 +184,20 @@ export async function auditCacheAccounts(
   /**
    Each file's text, by path.
    */
-  const entries = await Promise.all(files.map(async function read(path,): Promise<readonly [
-    string,
-    string,
-  ]> {
-    return [
-      path,
-      await sourceTextAt({
-        root,
+  const entries = await allInInputOrder({
+    members: files.map(async function read(path,): Promise<readonly [
+      string,
+      string,
+    ]> {
+      return [
         path,
-      },),
-    ] as const;
-  },),);
+        await sourceTextAt({
+          root,
+          path,
+        },),
+      ] as const;
+    },),
+  },);
   /**
    The same, looked up by path.
    */
@@ -236,17 +239,19 @@ export async function auditCacheAccounts(
   /**
    Every version with the commit that set it and the text its account is in.
    */
-  const settings: readonly VersionSetting[] = await Promise.all(versions.map(async function set(version,): Promise<VersionSetting> {
-    return {
-      version,
-      commit: await cacheVersionSetting({
-        root,
-        sources,
+  const settings: readonly VersionSetting[] = await allInInputOrder({
+    members: versions.map(async function set(version,): Promise<VersionSetting> {
+      return {
         version,
-      },),
-      account: nonNullishOrThrow(texts.get(version.path,),),
-    };
-  },),);
+        commit: await cacheVersionSetting({
+          root,
+          sources,
+          version,
+        },),
+        account: nonNullishOrThrow(texts.get(version.path,),),
+      };
+    },),
+  },);
   /**
    The setting furthest back, from which every later source commit is read;
    there is one, since a version was declared.

@@ -1,5 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { reportLines, } from './displacement-probe-report.ts';
 import {
   type EntryDisplacement,
@@ -90,28 +91,30 @@ export async function probeDisplacement(
   /**
    Each entry carved through its recipe, or the reason it could not be.
    */
-  const carves = await Promise.all(entryIds.map(async function toCarve(entryId,): Promise<EntryCarve> {
-    /**
-     Slicing the lanes saw.
-     */
-    const entryCarve = await carve(entryId,);
-    if (entryCarve.kind !== 'settled')
-      log.info(`${entryId}: skipped, ${entryCarve.kind} artifact records no recipe`,);
-    // A CARVE THAT MOVED IS STILL MEASURED, and said to be: the readings then
-    // describe slices the run did not see.
-    if (entryCarve.kind === 'settled') {
+  const carves = await allInInputOrder({
+    members: entryIds.map(async function toCarve(entryId,): Promise<EntryCarve> {
       /**
-       Whether the re-carve is the run's own.
+       Slicing the lanes saw.
        */
-      const { reproduction, } = entryCarve;
-      if (reproduction.kind === 'moved')
-        log.warn(`${entryId}: re-carve is not the run's (${reproduction.detail}); its readings measure other slices`,);
-    }
-    return {
-      entryId,
-      carve: entryCarve,
-    };
-  },),);
+      const entryCarve = await carve(entryId,);
+      if (entryCarve.kind !== 'settled')
+        log.info(`${entryId}: skipped, ${entryCarve.kind} artifact records no recipe`,);
+      // A CARVE THAT MOVED IS STILL MEASURED, and said to be: the readings then
+      // describe slices the run did not see.
+      if (entryCarve.kind === 'settled') {
+        /**
+         Whether the re-carve is the run's own.
+         */
+        const { reproduction, } = entryCarve;
+        if (reproduction.kind === 'moved')
+          log.warn(`${entryId}: re-carve is not the run's (${reproduction.detail}); its readings measure other slices`,);
+      }
+      return {
+        entryId,
+        carve: entryCarve,
+      };
+    },),
+  },);
 
   /**
    Readings for every settled entry.

@@ -299,7 +299,12 @@ await describe({
             rejecting: ROSTER[2],
             delayed: true,
           },),
-          graceMs: 100,
+          // FAR LONGER THAN THE 30 ms DELAY, since the round ends when every seat
+          // has answered and so never waits this long; a window a loaded machine
+          // can outrun would fail the case on a slow timer alone. At `graceMs: 0`
+          // the late rejection is cut and this case fails, which shows the window
+          // is what keeps it.
+          graceMs: 60_000,
         },);
         expect(review.verdict,).toBe('unacceptable',);
         expect(review.usable,).toBe(3,);

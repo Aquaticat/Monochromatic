@@ -418,7 +418,10 @@ await describe({
               },
               signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
               exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
-              graceMs: 100,
+              // FAR LONGER THAN THE DELAYS, since the round ends when every voice
+              // has answered and so never waits this long. A window a loaded
+              // machine can outrun would fail the case on a slow timer alone.
+              graceMs: 60_000,
               l,
             },);
             expect(outcome.usable,).toBe(4,);

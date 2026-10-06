@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
 import type { readCorpusFile, } from '../corpus-source.ts';
 import type { GradingCandidate, } from '../sample-grading.ts';
@@ -106,8 +107,8 @@ export async function readDrawPool(
   /**
    Every settled entry banded with its candidates.
    */
-  const entries = await Promise.all(
-    names.map(function load(name,) {
+  const entries = await allInInputOrder({
+    members: names.map(function load(name,) {
       return loadEntry({
         artifactsDir,
         name,
@@ -115,7 +116,7 @@ export async function readDrawPool(
         readSource,
       },);
     },),
-  );
+  },);
 
   return {
     eligible,

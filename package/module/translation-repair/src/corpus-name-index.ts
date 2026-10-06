@@ -1,3 +1,4 @@
+import { allInInputOrder, } from './all-in-input-order.ts';
 import {
   type CorpusPin,
   isMissingCorpusObject,
@@ -352,35 +353,39 @@ export async function readCorpusNames(
   /**
    Both documents of every entry, absent where either side is not at the pin.
    */
-  const entries = await Promise.all(ids.map(async function readEntry(id,): Promise<readonly CorpusEntryTexts[]> {
-    try {
-      /**
-       Both sides read together.
-       */
-      const [
-        sourceText,
-        targetText,
-      ] = await Promise.all([
-        readFile({
-          pin,
-          relPath: `people/${id}/page.md`,
-        },),
-        readFile({
-          pin,
-          relPath: `people/${id}/page.en.md`,
-        },),
-      ],);
-      return [{
-        id,
-        sourceText,
-        targetText,
-      },];
-    } catch (error) {
-      if (isMissingCorpusObject(error,))
-        return [];
-      throw error;
-    }
-  },),);
+  const entries = await allInInputOrder({
+    members: ids.map(async function readEntry(id,): Promise<readonly CorpusEntryTexts[]> {
+      try {
+        /**
+         Both sides read together.
+         */
+        const [
+          sourceText,
+          targetText,
+        ] = await allInInputOrder({
+          members: [
+            readFile({
+              pin,
+              relPath: `people/${id}/page.md`,
+            },),
+            readFile({
+              pin,
+              relPath: `people/${id}/page.en.md`,
+            },),
+          ],
+        },);
+        return [{
+          id,
+          sourceText,
+          targetText,
+        },];
+      } catch (error) {
+        if (isMissingCorpusObject(error,))
+          return [];
+        throw error;
+      }
+    },),
+  },);
   return corpusNamesOf({ entries: entries.flat(), },);
 }
 

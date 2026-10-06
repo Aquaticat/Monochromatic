@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
 import { rm, } from 'node:fs/promises';
 
@@ -236,19 +237,21 @@ export async function removeDeclinedPages(
   /**
    Entries declined here, each with whether a page stood for it.
    */
-  const outcomes = await Promise.all([...await declinedEntryIds({ declinedDir, },),]
-    .map(async function removeFor(entryId,): Promise<{
-      readonly entryId: string;
-      readonly removed: boolean;
-    }> {
-      return {
-        entryId,
-        removed: await removeLeftoverPage({
-          publishDir,
+  const outcomes = await allInInputOrder({
+    members: [...await declinedEntryIds({ declinedDir, },),]
+      .map(async function removeFor(entryId,): Promise<{
+        readonly entryId: string;
+        readonly removed: boolean;
+      }> {
+        return {
           entryId,
-        },),
-      };
-    },),);
+          removed: await removeLeftoverPage({
+            publishDir,
+            entryId,
+          },),
+        };
+      },),
+  },);
   /**
    Entries whose page was removed.
    */

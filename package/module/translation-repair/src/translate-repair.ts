@@ -5,6 +5,7 @@ import {
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { allInInputOrder, } from './all-in-input-order.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
@@ -470,8 +471,8 @@ export async function repairInvalidCandidates(
   /**
    One outcome per heard voice.
    */
-  const outcomes = await Promise.all(
-    voices.map(async function repairEach(voice,): Promise<RepairOutcome> {
+  const outcomes = await allInInputOrder({
+    members: voices.map(async function repairEach(voice,): Promise<RepairOutcome> {
       return await repairOneCandidate({
         client,
         voice,
@@ -488,7 +489,7 @@ export async function repairInvalidCandidates(
         l,
       },);
     },),
-  );
+  },);
 
   return {
     voices: outcomes.flatMap(function toVoice(

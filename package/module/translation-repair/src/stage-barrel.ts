@@ -92,6 +92,7 @@ export {
 } from './stage-round-line.ts';
 export { runWindowedRounds, } from './stage-windowed-rounds.ts';
 export { UnpreparedSliceError, } from './unprepared-slice.ts';
+export { allInInputOrder, } from './all-in-input-order.ts';
 export {
   mapOverlapped,
   type OverlappedRow,

@@ -1,4 +1,5 @@
 import { rm, } from 'node:fs/promises';
+import { allInInputOrder, } from '../all-in-input-order.ts';
 
 //region Draw outputs
 // The lifetime of the files one draw writes.
@@ -109,13 +110,15 @@ export function trackDrawOutputs(
       // `force` so removing a path the failing write never created is not
       // itself a failure, which is the ordinary case: the write that threw is
       // the one whose file may be absent.
-      await Promise.all(state.paths
-        .map(function removeOne(path,) {
-          return rm(
-            path,
-            { force: true, },
-          );
-        },),);
+      await allInInputOrder({
+        members: state.paths
+          .map(function removeOne(path,) {
+            return rm(
+              path,
+              { force: true, },
+            );
+          },),
+      },);
     },
   };
 }

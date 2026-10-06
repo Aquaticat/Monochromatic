@@ -1,5 +1,6 @@
 import pLimit from 'p-limit';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import type { BenchSlice, } from './bench-sample.ts';
 import {
   type SliceRounds,
@@ -18,8 +19,9 @@ import {
  ORDER MATTERS HERE AND NOWHERE ELSE IN THE RUN. Every standing the command
  reports is computed off this array, so a report that depended on which slice
  happened to finish first would not be comparable between two runs of one
- sample, which is exactly what the overlap dial measures. `Promise.all` keeps
- input order whatever order the work completes in.
+ sample, which is exactly what the overlap dial measures. `allInInputOrder`
+ keeps input order whatever order the work completes in, and reports the
+ failure of the first slice in sample order when several slices fail.
 
  WHAT THE SEQUENTIAL DRIVER'S NOTE SAID, kept because it is the claim under
  test: slices ran one at a time because one slice already fans eight models
@@ -59,8 +61,8 @@ export async function driveEditorCalibrate(
    */
   const inFlight = pLimit(overlap,);
 
-  return await Promise.all(
-    sample.map(function admit(
+  return await allInInputOrder({
+    members: sample.map(function admit(
       slice,
       position,
     ): Promise<SliceRounds> {
@@ -84,7 +86,7 @@ export async function driveEditorCalibrate(
         return rounds;
       },);
     },),
-  );
+  },);
 }
 
 //endregion Editor calibrate drive
