@@ -152,6 +152,9 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// An ignored measurement of watch counts and staleness when a changed folder is scrolled into view.
+#[cfg(test)]
+mod watch_scope_tests;
 /// External changes reach the tree and source through inotify notifications, faster than polling could.
 #[cfg(test)]
 mod watch_tests;

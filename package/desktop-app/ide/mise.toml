@@ -447,6 +447,36 @@ arg "[runs]" default="3" help="Runs per build and folder count, for run-to-run s
 '''
 run = "node bin/inspect-idle-cost.mjs"
 
+[tasks."inspect:watch-limit"]
+description = "Run the IDE in a disposable user namespace with a lowered inotify watch limit and check one warning, few failing watch calls, refresh through timers, and one line when watches return"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[folders]" default="12" help="Expanded sibling folders"
+arg "[limit]" default="4" help="Watch limit of the namespace; below the number of shown directories"
+arg "[seconds]" default="60" help="Length of the observed interval under the limit"
+'''
+run = "node bin/inspect-watch-limit.mjs"
+
+[tasks."inspect:watch-scope"]
+description = "Compare watching every expanded folder with watching only the tree viewport: kernel watches with 60 expanded folders and staleness when a changed folder is scrolled into view"
+usage = '''
+arg "<cache>" help="Disposable Cargo target directory below the private agent scratch root, for the shipped scope"
+arg "<viewport_cache>" help="A second disposable Cargo target directory, for the viewport-scope copy"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[runs]" default="3" help="Alternating runs per scope, for run-to-run spread"
+'''
+run = "node bin/inspect-watch-scope.mjs"
+
+[tasks."inspect:server-watches"]
+description = "Count the inotify watches of confined language servers on large disposable Rust and TypeScript projects"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
+execFileSync('node', ['bin/inspect-server-watches.mjs'], { stdio: 'inherit' })
+"""
+
 [tasks."inspect:search-accessibility"]
 description = "Verify accepted search landmarks and rejected dialog role declarations in disposable markup"
 shell = "node --input-type=module-typescript -e"
