@@ -28,7 +28,11 @@ import {
   type BudgetView,
   WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
-import { capturingLoggerPair, } from '../capturing-logger.test-fixture.ts';
+import {
+  capturingLoggerPair,
+  warningRecordingLogger,
+} from '../capturing-logger.test-fixture.ts';
+import { quotingFailure, } from '../quoting-failure.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_NO_OPENROUTER, } from '../roster-seats.test-fixture.ts';
 
 //region Seat reading tests
@@ -183,6 +187,26 @@ await describe({
             },);
             expect(unread.dry,).toEqual(ALL_WET,);
             expect(unread.wideSeats.includes(QWEN,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'WARNS OF AN UNREADABLE VIEW BY THE FAILURE\'S CLASS and not by its message, which a meter '
+            + 'request with an unsendable header quotes',
+          fn: async () => {
+            const warnings: string[] = [];
+            await readJudgeSeats({
+              client: viewClient({
+                providerDryness: async () => {
+                  throw quotingFailure();
+                },
+              },),
+              phase: 'consolidation',
+              signal: new AbortController().signal,
+              l: warningRecordingLogger({ base: l, warnings, },),
+            },);
+            expect(warnings,).toEqual([
+              'judge seats: the budget view could not be read (refused by TypeError); seating the full bench',
+            ],);
           },
         },),
         it({

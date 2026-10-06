@@ -31,6 +31,7 @@ import {
   type TwinOrBought,
   type TwinStored,
 } from '../dist/final/node/index.mjs';
+import { quotingFailure, } from './quoting-failure.test-fixture.ts';
 
 //region Fixtures
 // A buyer whose purchases finish when the test opens their gates, in the
@@ -412,6 +413,38 @@ await describe({
             persisted: true,
           },
         },);
+      },
+    },),
+
+    it({
+      name: 'a failed buy warns of its failure by class and never by its message, which an unsendable header quotes',
+      fn: async () => {
+        const memo: TwinMemo<string> = new Map();
+        const shop = buyer();
+        const first = collected({
+          run: asking({
+            memo,
+            shop,
+          },),
+        },);
+        await settle();
+        const second = asking({
+          memo,
+          shop,
+        },);
+        await settle();
+
+        nonNullishOrThrow(shop.gates[0],).reject(quotingFailure(),);
+        await first;
+        await settle();
+        expect(shop.warned,).toEqual([
+          'twin memo: the buy for a shared key was abandoned (refused by TypeError), so any twin waiting on it asks for itself',
+        ],);
+        nonNullishOrThrow(shop.gates[1],).resolve({
+          record: 'r3',
+          persisted: true,
+        },);
+        await second;
       },
     },),
 

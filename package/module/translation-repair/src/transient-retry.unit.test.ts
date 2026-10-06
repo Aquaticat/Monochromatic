@@ -43,6 +43,9 @@ import {
   SyntheticHttpError,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
+import { warnLinesDuring, } from './console-warn-lines.test-fixture.ts';
+import { quotingFailure, } from './quoting-failure.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 
 /**
  Retry policy with a backoff small enough to keep the suite quick.
@@ -1047,6 +1050,26 @@ await describe({
             },),).toBe(true,);
           },
         },),
+        it({
+          name: 'NAMES A THROWN TRANSPORT FAILURE BY CLASS on the retry line and never by its message, which an '
+            + 'unsendable header quotes',
+          fn: async () => {
+            const { warned, } = await warnLinesDuring({
+              run: async () =>
+                exchangeWithRetry({
+                  transport: scriptedTransport({
+                    script: [quotingFailure(), OK_REPLY,],
+                    calls: { count: 0, },
+                  },),
+                  exchange: exchangeWith({ signal: new AbortController().signal, },),
+                  policy: FAST_POLICY,
+                },),
+            },);
+            expect(warned.map(function untilBackoff(line,): string {
+              return line.split('; retrying in',)[0] ?? '';
+            },),).toEqual(['[translation-repair] [exchangeWithRetry] hf:whiskers: transport failure: refused by TypeError',],);
+          },
+        },),
       ],
     },),
 
@@ -1057,21 +1080,24 @@ await describe({
         /**
          Exchange over a transport that throws a bare string.
          */
-        const attempt = exchangeWithRetry({
-          transport: async function transport(): Promise<TransportReply> {
-            // A thrown value that is no Error, as a hostile transport might.
-            // Typed `unknown` so the throw carries no literal the lint reads
-            // as a non-Error shape.
-            const thrownValue: unknown = 'the cat knocked the cable';
-            throw thrownValue;
-          },
-          exchange: exchangeWith({ signal: new AbortController().signal, },),
-          policy: FAST_POLICY,
+        const refusal = await rejectionOf(async function exhausted(): Promise<unknown> {
+          return await exchangeWithRetry({
+            transport: async function transport(): Promise<TransportReply> {
+              // A thrown value that is no Error, as a hostile transport might.
+              // Typed `unknown` so the throw carries no literal the lint reads
+              // as a non-Error shape.
+              const thrownValue: unknown = 'the cat knocked the cable';
+              throw thrownValue;
+            },
+            exchange: exchangeWith({ signal: new AbortController().signal, },),
+            policy: FAST_POLICY,
+          },);
         },);
-        // THE CLASS FIRST: the message matcher reads a bare string's own
-        // text, so the string rejected unwrapped would satisfy it alone.
-        await expect(attempt,).rejects.toThrow(Error,);
-        await expect(attempt,).rejects.toThrow('the cat knocked the cable',);
+        // THE CLASS FIRST: the message and the cause are read off an Error, so a
+        // string rejected unwrapped must fail here.
+        expect(refusal,).toBeInstanceOf(Error,);
+        expect(String(refusal,),).toBe('Error: the transport threw a value that is not an Error',);
+        expect(Error.isError(refusal,) ? refusal.cause : undefined,).toBe('the cat knocked the cable',);
       },
     },),
   ],

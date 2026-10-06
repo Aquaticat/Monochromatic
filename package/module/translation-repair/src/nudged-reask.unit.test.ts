@@ -24,6 +24,8 @@ import {
   type ChatTextRequest,
   reaskElsewhereNudged,
 } from '../dist/final/node/index.mjs';
+import { warnLinesDuring, } from './console-warn-lines.test-fixture.ts';
+import { quotingFailure, } from './quoting-failure.test-fixture.ts';
 import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from './roster-seats.test-fixture.ts';
 
 //region Nudged reask tests
@@ -65,6 +67,7 @@ const FIRST_UNUSABLE: ChatJsonOutcome<Cat> = {
 
 await describe({
   name: 'nudged re-ask',
+  concurrency: 1,
   children: [
     it({
       name: 'RE-ASKS only where the first answer failed, returning the second where it is usable and the '
@@ -173,6 +176,26 @@ await describe({
           },
         },);
         expect(kept,).toEqual({ kind: 'schema-mismatch', rawText: 'not json at all', detail: 'fixture', },);
+      },
+    },),
+
+    it({
+      name: 'WARNS OF A FAILED RE-ASK BY THE FAILURE\'S CLASS and never by its message, which an unsendable header '
+        + 'quotes',
+      fn: async () => {
+        const { warned, } = await warnLinesDuring({
+          run: async () =>
+            reaskElsewhereNudged({
+              request: REQUEST,
+              first: { reply: FIRST_REPLY, outcome: FIRST_UNUSABLE, },
+              ask: async () => {
+                throw quotingFailure();
+              },
+            },),
+        },);
+        expect(warned,).toEqual([
+          `[translation-repair] [reaskElsewhereNudged] ${SEAT_SYNTHETIC_TEXT_EVERYWHERE}: no re-ask elsewhere (refused by TypeError); keeping the first answer`,
+        ],);
       },
     },),
 

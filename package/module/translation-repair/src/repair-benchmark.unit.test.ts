@@ -24,7 +24,12 @@ import {
   type repairTranslation,
   type runRestorationJudge,
   type SeededErrorSpec,
+  SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
+import {
+  quotingFailure,
+  WHISKER_KEY,
+} from './quoting-failure.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -898,7 +903,52 @@ await describe({
               judge: restoringJudge,
             },);
             expect(errored.records[0]?.outcomeKind,).toBe('error',);
-            expect(errored.records[0]?.detail,).toContain('scripted transport collapse',);
+            expect(errored.records[0]?.detail,).toBe('refused by Error',);
+          },
+        },),
+
+        it({
+          name: 'RECORDS A THROWN REPAIR BY CLASS AND HTTP STATUS and never by the message, which a provider body or an '
+            + 'unsendable header can fill',
+          fn: async () => {
+            /** Entry whose repair collapses. */
+            const entry = {
+              entryId: 'whiskers',
+              sourceText: '猫',
+              targetText: CLEAN_TEXT,
+              seeds: [BUTTERFLY_SEED,],
+            };
+            /** Benchmark whose repair raises a runtime failure quoting a header value. */
+            const headerRefusal = await runRepairBenchmark({
+              client: UNUSED_CLIENT,
+              judgeModelIds: MODELS.judgeModelIds,
+              entries: [entry,],
+              models: MODELS,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              repair: async () => {
+                throw quotingFailure();
+              },
+              judge: restoringJudge,
+            },);
+            /** Benchmark whose repair raises a provider status failure carrying a body excerpt. */
+            const statusRefusal = await runRepairBenchmark({
+              client: UNUSED_CLIENT,
+              judgeModelIds: MODELS.judgeModelIds,
+              entries: [entry,],
+              models: MODELS,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              repair: async () => {
+                throw new SyntheticHttpError({
+                  status: 429,
+                  bodyText: `the cat key ${WHISKER_KEY} is over its weekly credit`,
+                },);
+              },
+              judge: restoringJudge,
+            },);
+            expect(headerRefusal.records[0]?.detail,).toBe('refused by TypeError',);
+            expect(statusRefusal.records[0]?.detail,).toBe('refused by SyntheticHttpError with HTTP 429',);
           },
         },),
 

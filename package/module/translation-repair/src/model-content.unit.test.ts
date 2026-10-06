@@ -8,6 +8,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -41,6 +42,28 @@ await describe({
             if (attempt.parsed)
               throw new Error('unreachable: asserted failure',);
             expect(attempt.detail,).toContain('SyntaxError',);
+          },
+        },),
+        it({
+          name: 'NAMES THE CLASS OF A PARSE REFUSAL and never the opening of the reply V8 quotes in its message',
+          fn: async () => {
+            /**
+             Reply that stops being JSON at its first character, so V8 quotes it.
+             */
+            const reply = 'Pouncewick was never JSON';
+
+            /**
+             What a bare parse of the reply raises, held to show the probe can see the quote.
+             */
+            const bare = caught(function bareParse(): unknown {
+              return JSON.parse(reply,);
+            },);
+            // Positive control: the bare parse's own message carries the reply's opening.
+            expect(String(bare,).includes('Pouncewick',),).toBe(true,);
+            expect(parseModelJson({ text: reply, },),).toEqual({
+              parsed: false,
+              detail: 'refused by SyntaxError',
+            },);
           },
         },),
       ],

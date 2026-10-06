@@ -21,14 +21,18 @@ import {
 import {
   armIdleGuard,
   drainBody,
+  refusalText,
   StreamCutShortError,
   StreamDegenerateError,
   StreamOverrunError,
+  StreamStalledError,
 } from '../dist/final/node/index.mjs';
 import {
   anthropicBlockDelta,
   anthropicBlockStart,
 } from './anthropic-frames.test-fixture.ts';
+import { warnLinesDuring, } from './console-warn-lines.test-fixture.ts';
+import { quotingFailure, } from './quoting-failure.test-fixture.ts';
 import {
   frameOf,
   longVariedStream,
@@ -209,6 +213,8 @@ async function drainOutcome(
 
 await describe({
   name: drainBody.name,
+  // ONE AT A TIME: a case diverts the process-wide `console.warn` across an await.
+  concurrency: 1,
   children: [
     it({
       name: 'CARRIES THE RAW CHARACTERS DELIVERED on both errors it ends a call with (ledger P7): the '
@@ -405,9 +411,9 @@ await describe({
             }
             controller.enqueue(encoder.encode(next,),);
           },
-          cancel(reason,): never {
+          cancel(): never {
             cancelled.count += 1;
-            throw new Error(`refused to cancel: ${String(reason,)}`,);
+            throw quotingFailure();
           },
         },);
 
@@ -417,11 +423,19 @@ await describe({
           idleMs: ROOMY_MS,
         },);
 
-        const outcome = await drainOutcome({
-          response: new Response(body, { headers: { 'content-type': 'text/event-stream', }, },),
-          guard,
+        const {
+          result: outcome,
+          warned,
+        } = await warnLinesDuring({
+          run: async () =>
+            drainOutcome({
+              response: new Response(body, { headers: { 'content-type': 'text/event-stream', }, },),
+              guard,
+            },),
         },);
 
+        // THE FAILED CANCEL IS NAMED BY CLASS: the failure's message quotes a header value.
+        expect(warned,).toEqual(['[translation-repair] [drainBody] could not cancel : refused by TypeError',],);
         expect(outcome.kind,).toBe('raised',);
         if (outcome.kind !== 'raised')
           throw new Error('raised by construction',);
@@ -517,6 +531,53 @@ await describe({
 
         // The original failure is preserved rather than replaced.
         expect(outcome.error.cause,).toBeInstanceOf(Error,);
+      },
+    },),
+
+    it({
+      name: 'STATES A CUT STREAM\'S CAUSE BY CLASS in its message, which the error declares safe to repeat, and '
+        + 'repeats the sentence of a cause that declares the same',
+      fn: async () => {
+        /**
+         What the stream did before the cut, plain numbers.
+         */
+        const progress = {
+          firstByteMs: 40,
+          maxGapMs: 4,
+          chars: 512,
+          elapsedMs: 830,
+        };
+
+        /**
+         Cut whose cause is a runtime failure quoting a header value.
+         */
+        const quoting = new StreamCutShortError({
+          label: 'hf:whiskers',
+          partialText: 'It is a cat.',
+          progress,
+          cause: quotingFailure(),
+        },);
+
+        /**
+         Cut whose cause is a stall, a class that writes its own sentence.
+         */
+        const stalled = new StreamCutShortError({
+          label: 'hf:whiskers',
+          partialText: 'It is a cat.',
+          progress,
+          cause: new StreamStalledError({
+            label: 'hf:whiskers',
+            idleMs: 60_000,
+            phase: 'body',
+          },),
+        },);
+
+        expect(refusalText({ error: quoting, },),).toBe(
+          'hf:whiskers: stream cut after 12 characters (refused by TypeError)',
+        );
+        expect(refusalText({ error: stalled, },),).toBe(
+          'hf:whiskers: stream cut after 12 characters (Stalled: hf:whiskers emitted nothing for 60000ms (body))',
+        );
       },
     },),
 

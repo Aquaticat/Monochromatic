@@ -606,6 +606,11 @@ await describe({
             },);
 
             /**
+             Lines the pair logged while one reader failed.
+             */
+            const lines: string[] = [];
+
+            /**
              What the roster made of a picture one reader could not finish reading.
              */
             const paired = await readImagePair({
@@ -616,10 +621,18 @@ await describe({
               assetName: 'noticeboard.webp',
               signal: AbortSignal.timeout(30_000,),
               perCallTimeoutMs: 30_000,
-              l,
+              l: levelCapturingLogger({ lines, },),
             },);
 
             expect(asked.length,).toBe(2,);
+            // THE FAILED READER IS NAMED BY CLASS: an exchange failure's message can quote a header value
+            // or a provider body.
+            expect(lines.filter(function failedOutright(line,): boolean {
+              return line.includes('failed outright',);
+            },),).toStrictEqual([
+              `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} failed outright, `
+              + 'so it contributes no reading (refused by Error)',
+            ],);
             expect(paired.kind,).toBe('unavailable',);
             if (paired.kind !== 'unavailable')
               throw new Error('unavailable by construction',);

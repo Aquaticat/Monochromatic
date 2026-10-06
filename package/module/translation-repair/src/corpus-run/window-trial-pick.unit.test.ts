@@ -30,6 +30,7 @@ import {
   type RosterModelId,
   trialKey,
 } from '../../dist/final/node/index.mjs';
+import { warningRecordingLogger, } from '../capturing-logger.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
 
@@ -139,6 +140,36 @@ await describe({
         },);
 
         expect(outcome.kind,).toBe('refused',);
+      },
+    },),
+    it({
+      name: 'WARNS OF A REFUSAL BY THE SENTENCE ITS CLASS DECLARES SAFE, so the operator reads which slice '
+        + 'had no window and no message of another class is repeated',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-pick-', },);
+        const warnings: string[] = [];
+        await runPick({
+          client: throwingClient({ error: new Error('unused', ), },),
+          slices: LONE,
+          pick: {
+            entryId: 'Mittens',
+            sliceIndex: 0,
+            sliceClass: 'relocation',
+          },
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: freshLedger({ dir: scratch.path, },),
+          done: new Set<string>(),
+          models: MODELS,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l: warningRecordingLogger({ base: l, warnings, },),
+        },);
+
+        expect(warnings,).toEqual([
+          'Mittens/0 (relocation): refused, Mittens/0 has no neighbouring section carrying text, so its wide arm '
+          + 'would be its narrow arm and the pair would report a false null',
+        ],);
       },
     },),
     it({

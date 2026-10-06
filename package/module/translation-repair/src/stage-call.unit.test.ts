@@ -30,6 +30,7 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from './capturing-logger.test-fixture.ts';
+import { quotingFailure, } from './quoting-failure.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 import {
   isPurrReply,
@@ -306,6 +307,22 @@ await describe({
         },);
 
         expect(voice.heard,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'LOGS A THROWN TRANSPORT FAILURE BY CLASS WHEN IT IS NOT A MARKED CLASS, because a runtime '
+        + 'rejection for an unsendable header quotes the header value',
+      fn: async () => {
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
+        await callWith({
+          client: scriptedClient({ thrown: quotingFailure(), },),
+          signal: new AbortController().signal,
+          logger,
+        },);
+
+        expect(warnings,).toEqual([`purr-check ${MODEL_ID}: refused by TypeError, voice lost`,],);
       },
     },),
 

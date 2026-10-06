@@ -22,6 +22,8 @@ import {
   type SyntheticClient,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
+import { warningRecordingLogger, } from './capturing-logger.test-fixture.ts';
+import { WHISKER_KEY, } from './quoting-failure.test-fixture.ts';
 import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
 
 /**
@@ -234,9 +236,31 @@ await describe({
     },),
 
     it({
+      name: 'LOGS A LOST VOICE BY CLASS AND HTTP STATUS and not by the provider body its message excerpts',
+      fn: async () => {
+        const warnings: string[] = [];
+        await attemptStageCall({
+          ...SHARED,
+          l: warningRecordingLogger({ base: l, warnings, },),
+          client: clientWith({
+            decide: async () => {
+              throw new SyntheticHttpError({
+                status: 400,
+                bodyText: `the cat key ${WHISKER_KEY} named an invalid_question`,
+              },);
+            },
+          },),
+          decision: DECISION,
+        },);
+        expect(warnings,).toEqual([
+          `select ${SEAT_OPENROUTER_DECISIONS}: refused by SyntheticHttpError with HTTP 400, voice lost`,
+        ],);
+      },
+    },),
+
+    it({
       name: 'READS AS A LOST VOICE rather than out of reach when the refusal status is not 400 even '
-        + 'though the body names the marker, since only a 400 max_tokens_exceeded names the state itself '
-        + '(ledger T8, the decision cluster)',
+        + 'though the body names the marker, since only a 400 max_tokens_exceeded names the state itself',
       fn: async () => {
         const serverError = await attemptStageCall({
           ...SHARED,
