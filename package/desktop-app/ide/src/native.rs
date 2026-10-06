@@ -414,6 +414,23 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     } else {
         (String::new(), String::new())
     };
+    // What: `RuntimeSource::Embedded(&...)` lends the table compiled into this executable to the
+    //       process-wide language runtime; `&` borrows it, and it lives as long as the program.
+    // Why: Highlighting reads only these files, never Helix's runtime directories, and it must be
+    //      chosen before the reload worker (bound below) prepares the first file. Both calls come
+    //      after logging starts so their records are kept.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // runtime.install({ kind: 'embedded', runtime: EMBEDDED_RUNTIME });
+    // ```
+    ide_app::runtime::install(ide_app::runtime::RuntimeSource::Embedded(
+        &crate::embedded_runtime::EMBEDDED_RUNTIME,
+    ));
+    // Renew this build's parser cache folder, then remove other builds' folders unused for 30 days.
+    ide_app::runtime::tidy_cache(&crate::embedded_runtime::EMBEDDED_RUNTIME);
+    // The app id must be stamped by the backend before the window below exists.
+    crate::launcher::install_backend()?;
     let window = AppWindow::new()?;
     window.set_source_available(file_path.is_some());
     let state = Rc::new(RefCell::new(State::new(&source, file_path)));

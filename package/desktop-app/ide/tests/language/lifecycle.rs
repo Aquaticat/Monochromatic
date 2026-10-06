@@ -212,7 +212,8 @@ fn refusing(request: &LaunchRequest) -> Result<ServerLaunch, String> {
     return Err(format!("no confinement for {}", request.server));
 }
 
-/// A launch policy that needs a private directory although none is configured.
+/// A launch policy that needs a private directory below the project, which the test configures as
+/// the state root itself.
 fn needing_state(request: &LaunchRequest) -> Result<ServerLaunch, String> {
     let mut launch = launch_directly(request)?;
     launch
@@ -248,9 +249,10 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
         })
     );
     drop(probe);
+    // The project itself as the state root would make all of it writable, so preparation refuses it.
     let unprepared = LanguageSetup {
         launch: needing_state,
-        state_root: Some(root.join("state-inside-the-project")),
+        state_root: Some(root.clone()),
         extra_languages: Some(support::scripted(&root, &[], 3)),
     };
     let mut second = Probe::with_setup(&root, unprepared);
@@ -261,7 +263,7 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
     let Some(ServerState::LaunchRefused { reason }) = second.state(SERVER) else {
         panic!("unexpected state {:?}", second.state(SERVER));
     };
-    assert!(reason.contains("is inside the project"), "{reason}");
+    assert!(reason.contains("contains the project"), "{reason}");
     assert!(
         !root.join("state-inside-the-project").exists(),
         "a private directory was created inside the project"

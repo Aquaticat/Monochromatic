@@ -213,22 +213,23 @@ pub fn recipe(
         directories.push(state.join("build"));
     }
     let mut args = isolation(!NO_PID_NAMESPACE.contains(&server));
-    // The writable binds come after the read-only root bind on purpose, and the project binds
-    // after the `/tmp` and `/run` replacements, because a later mount covers an earlier one.
-    for part in [
-        "--bind".to_string(),
-        format!("{state_text}/tmp"),
-        "/tmp".to_string(),
-        "--bind".to_string(),
-        state_text.to_string(),
-        state_text.to_string(),
-    ] {
-        args.push(part);
-    }
+    // A later mount covers an earlier one, so the order is deliberate:
+    // - the writable binds come after the read-only root bind;
+    // - the project binds come after the `/tmp` and `/run` replacements, so a project below them
+    //   stays visible;
+    // - the state bind comes last, after the read-only project bind, so a state directory inside the
+    //   project (the home folder opened as the project holds `~/.cache`) stays writable while the
+    //   rest of the project stays read-only.
+    args.push("--bind".to_string());
+    args.push(format!("{state_text}/tmp"));
+    args.push("/tmp".to_string());
     args.extend(project_binds(
         &request.project_root,
         &request.project_spellings,
     )?);
+    args.push("--bind".to_string());
+    args.push(state_text.to_string());
+    args.push(state_text.to_string());
     args.push("--clearenv".to_string());
     for (name, value) in environment {
         args.push("--setenv".to_string());

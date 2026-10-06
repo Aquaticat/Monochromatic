@@ -4,6 +4,8 @@
 
 /// The seam's input and output types, and the state-path checks shared with `prepare`.
 use super::launch::{LaunchRequest, ServerLaunch, check_state_directory, resolve_existing};
+/// The shared private cache directory rule and the fixed FNV-1a digest that names per-project state.
+use crate::{app_cache::application_cache, content_digest::fnv1a};
 /// What: `Command` starts a child process and waits for it; `OnceLock` holds a value computed once.
 /// Why: The namespace probe runs bubblewrap once per process and remembers the answer.
 ///
@@ -61,27 +63,9 @@ fn component(text: &str) -> String {
     return safe;
 }
 
-/// What: The 64-bit FNV-1a hash of some bytes. `u64` is an unsigned 64-bit integer;
-///       `wrapping_mul` multiplies and keeps the low 64 bits instead of failing on overflow.
-/// Why: Two projects with the same directory name need different state; the standard library's
-///      hasher may change between releases, and this one is fixed by its definition.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function fnv1a(bytes: Uint8Array): bigint
-/// ```
-fn fnv1a(bytes: &[u8]) -> u64 {
-    let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
-    for byte in bytes {
-        hash ^= u64::from(*byte);
-        hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
-    }
-    return hash;
-}
-
 /// What: The private state directory of one server for one project:
 ///       `<state root>/<project name>-<hash of the project path>/<server>`.
-/// Why: The adopted shape keeps state per project and per server, outside the project.
+/// Why: The adopted shape keeps state per project and per server, in the private cache.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -103,24 +87,17 @@ pub fn state_directory(state_root: &Path, project_root: &Path, server: &str) -> 
 
 /// What: The application's private state root: `$XDG_CACHE_HOME/monochromatic-ide/language`,
 ///       or `$HOME/.cache/monochromatic-ide/language`; nothing when neither is an absolute path.
-/// Why: Cache storage outside the project is allowed by the accepted scope.
+/// Why: A private application cache is allowed by the accepted scope; it lies inside the project
+///      only when the home folder (or a folder above it) is opened.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function defaultStateRoot(): string | undefined
 /// ```
 pub fn default_state_root() -> Option<PathBuf> {
-    // `filter` keeps the value only when the closure accepts it.
-    let cache = std::env::var_os("XDG_CACHE_HOME")
-        .map(PathBuf::from)
-        .filter(|path| return path.is_absolute())
-        .or_else(|| {
-            return std::env::var_os("HOME")
-                .map(PathBuf::from)
-                .filter(|path| return path.is_absolute())
-                .map(|home| return home.join(".cache"));
-        })?;
-    return Some(cache.join("monochromatic-ide").join("language"));
+    // `application_cache()` is the shared `$XDG_CACHE_HOME/monochromatic-ide` rule; `map` joins
+    // `language` onto a present value and keeps `None` as it is.
+    return application_cache().map(|cache| return cache.join("language"));
 }
 
 /// What: Refuse a path below `/proc`. `what` names the path and `remedy` the fix in the message.
@@ -160,7 +137,7 @@ pub fn private_state(request: &LaunchRequest) -> Result<PathBuf, String> {
     };
     let resolved = resolve_existing(state_root);
     let remedy = format!(
-        "{server} is not started. Point XDG_CACHE_HOME or HOME at a directory outside the project and outside /proc, then restart the application"
+        "{server} is not started. Point XDG_CACHE_HOME or HOME at a directory that does not contain the project and is outside /proc, then restart the application"
     );
     check_outside_proc(&resolved, "the private state directory", &remedy)?;
     check_state_directory(&resolved, &request.project_root)

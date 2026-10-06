@@ -117,3 +117,26 @@ fn replaced_locations_compare_whole_components() {
     assert_eq!(replaced_location(Path::new("/var/tmp/p")), None);
     assert_eq!(replaced_location(Path::new("/proc/1")), None);
 }
+
+/// The home folder opened as the project holds the private state below `~/.cache`; bubblewrap
+/// applies mounts in order and a later one covers an earlier one, so the writable state bind must
+/// come after the read-only project bind or the server could not write its own state.
+#[test]
+fn state_inside_the_project_is_bound_writable_after_the_read_only_project() {
+    let wanted = request("/var/home/someone", &["/home/someone"]);
+    let state = "/var/home/someone/.cache/monochromatic-ide/language/someone-0/rust-analyzer";
+    let launch = recipe(&wanted, Path::new(state), "/usr/bin/bwrap", &[]).expect("recipe");
+    let args = &launch.args;
+    let project = triple(args, "--ro-bind", "/var/home/someone", "/var/home/someone");
+    let writable = triple(args, "--bind", state, state);
+    assert!(
+        project.is_some() && writable.is_some(),
+        "the project or the state bind is missing: {args:?}"
+    );
+    assert!(
+        project < writable,
+        "the read-only project bind comes after the state bind and would cover it: {args:?}"
+    );
+    let clear = args.iter().position(|part| return part == "--clearenv");
+    assert!(writable < clear, "binds must precede the environment");
+}
