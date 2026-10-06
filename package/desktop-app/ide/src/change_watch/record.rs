@@ -145,6 +145,16 @@ fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool
     let Some(change) = server_kind(kind) else {
         return false;
     };
+    // A change inside a folder that was empty when scanned is not sent: the folder may be ignored.
+    // Its parent is scanned again, and the files that scan lists in it are sent as created.
+    if let Some(folder) = parent
+        && guard.server.provisional.contains(folder)
+    {
+        if let Some(base) = folder.parent() {
+            guard.server.rescans.insert(base.to_path_buf());
+        }
+        return true;
+    }
     let message = ServerChange {
         path: path.to_path_buf(),
         kind: change,
@@ -166,14 +176,6 @@ fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool
     }
     if change == ServerChangeKind::Deleted && guard.server.watched.contains(path) {
         guard.server.gone.insert(path.to_path_buf());
-        structure = true;
-    }
-    // A change inside a folder that was empty when scanned classifies it, by scanning its parent.
-    if let Some(folder) = parent
-        && guard.server.provisional.contains(folder)
-        && let Some(base) = folder.parent()
-    {
-        guard.server.rescans.insert(base.to_path_buf());
         structure = true;
     }
     return structure;

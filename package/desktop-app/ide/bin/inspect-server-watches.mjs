@@ -5,8 +5,11 @@
 // large `node_modules` and `.git`. Watched directories are classified by inode into source, target,
 // `.git`, `node_modules`, and outside the project. Every process the headless Language module
 // starts is sampled from /proc (inotify descriptors and their `wd:` lines) while the servers load.
-// Helix's built-in rust-analyzer definition watches on the server side, which is the positive control that
-// shows the probe sees server watches; a run with client-side watching shows the alternative.
+// The IDE watches the project's source folders for the servers and forwards changes; each production case
+// also changes a file the displayed file imports, outside the IDE, and waits for the displayed file's
+// diagnostics to follow. The cases without forwarding are the positive control: the same change must leave
+// the diagnostics stale. SERVER_WATCH_BEFORE_BINARY names an older ide-language-inspect build to measure as
+// "before" (case rust-before, which only opens, waits, and closes, since older builds know fewer steps).
 // No server is ever pointed at this repository; it is read only to copy the TypeScript 7 packages.
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
@@ -23,9 +26,10 @@ const base = realpathSync(mkdtempSync(join(privateRoot, 'ide-server-watches-')))
 const results = join(base, 'results');
 mkdirSync(results);
 console.log('SERVER_WATCHES_ARTIFACT=' + base);
-// rust-analyzer adds its watches only after loading the workspace and building compile-time dependencies,
-// which took from 9 s to over 60 s on a loaded host, so the servers are sampled for a long while.
-const sampleSeconds = Number(process.env.SERVER_WATCH_SECONDS ?? '150');
+// Production cases wait for the servers to register watchers and for the baseline diagnostics before this
+// pause, so it only has to cover the scan and the watches; an older build's rust-analyzer adds its own
+// watches only after loading and building compile-time dependencies, which took up to 60 s on a loaded host.
+const sampleSeconds = Number(process.env.SERVER_WATCH_SECONDS ?? '20');
 
 const write = (root, relative, text) => {
   const target = join(root, relative);
@@ -58,6 +62,8 @@ for (let crate = 0; crate < 40; crate++) {
     write(rust, 'crates/' + name + '/src/' + moduleName + '/mod.rs', 'pub fn value() -> u32 { ' + module + ' }\n');
     directories++;
   }
+  // The displayed file imports from another file; renaming the import there makes an unresolved import here.
+  modules.push('use crate::m00::value as first;', 'pub fn uses() -> u32 { first() }');
   write(rust, 'crates/' + name + '/src/lib.rs', modules.join('\n') + '\n');
 }
 // A package with both Cargo.toml and package.json keeps its JavaScript dependencies beside its sources.
@@ -84,6 +90,9 @@ for (let group = 0; group < 40; group++) {
   }
   directories++;
 }
+// The displayed file imports from another file; removing the export there makes an error here.
+write(ts, 'src/g00/dep.ts', 'export const local: number = 1;\n');
+write(ts, 'src/g00/f00.ts', 'import { value } from "pkg-0000";\nimport { local } from "./dep";\nexport const doubled: number = value * 2 + local;\n');
 cpSync(join(store, 'typescript@7.0.2', 'node_modules', 'typescript'), join(ts, 'node_modules', 'typescript'), { recursive: true });
 cpSync(join(store, '@typescript+typescript-linux-x64@7.0.2', 'node_modules', '@typescript', 'typescript-linux-x64'), join(ts, 'node_modules', '@typescript', 'typescript-linux-x64'), { recursive: true });
 filler(ts);
@@ -146,13 +155,16 @@ const descendants = root => {
 const env = { ...process.env, XDG_CACHE_HOME: join(base, 'app-cache') };
 delete env.CARGO_TARGET_DIR;
 delete env.CARGO_BUILD_BUILD_DIR;
-// Helix's built-in definition sets `files.watcher = "server"`, so production rust-analyzer watches by itself.
-const clientWatching = '[language-server.rust-analyzer.config.files]\nwatcher = "client"\n';
 const selected = process.env.SERVER_WATCH_CASES ? new Set(process.env.SERVER_WATCH_CASES.split(',')) : undefined;
+// Each change replaces the imported file's content; the next case writes the original back first.
+const rustChange = { file: 'crates/c000/src/m00/mod.rs', original: 'pub fn value() -> u32 { 0 }\n', changed: 'pub fn renamed() -> u32 { 0 }\n' };
+const tsChange = { file: 'src/g00/dep.ts', original: 'export const local: number = 1;\n', changed: 'export const other: number = 1;\n' };
 const allCases = [
-  { name: 'rust-production', project: rust, file: 'crates/c000/src/lib.rs' },
-  { name: 'rust-client-watching', project: rust, file: 'crates/c000/src/lib.rs', extra_languages: clientWatching },
-  { name: 'typescript-production', project: ts, file: 'src/g00/f00.ts' },
+  { name: 'rust-production', project: rust, file: 'crates/c000/src/lib.rs', change: rustChange, forward: true },
+  { name: 'rust-no-forwarding', project: rust, file: 'crates/c000/src/lib.rs', change: rustChange, forward: false },
+  { name: 'typescript-production', project: ts, file: 'src/g00/f00.ts', change: tsChange, forward: true },
+  { name: 'typescript-no-forwarding', project: ts, file: 'src/g00/f00.ts', change: tsChange, forward: false },
+  ...(process.env.SERVER_WATCH_BEFORE_BINARY ? [{ name: 'rust-before', project: rust, file: 'crates/c000/src/lib.rs', binary: process.env.SERVER_WATCH_BEFORE_BINARY }] : []),
 ];
 // SERVER_WATCH_ROUNDS repeats the selected cases in order, so two cases alternate and runs of one case can be compared.
 const rounds = Number(process.env.SERVER_WATCH_ROUNDS ?? '1');
@@ -197,19 +209,30 @@ const summary = {
   cases: [],
 };
 for (const item of cases) {
-  const plan = {
-    project: item.project,
-    ...(item.extra_languages ? { extra_languages: item.extra_languages } : {}),
-    steps: [
+  // The changed file starts each case with its original content, outside any watch the case can see.
+  if (item.change) writeFileSync(join(item.project, item.change.file), item.change.original);
+  const steps = item.change
+    ? [
+      { label: 'open', do: 'open', file: item.file },
+      { label: 'ready', do: 'ready', seconds: 120 },
+      // A server registers its watchers once it has loaded the project; the IDE then scans and watches.
+      ...(item.forward ? [{ label: 'folders', do: 'folders', minimum: 1, seconds: 150 }] : []),
+      { label: 'baseline', do: 'diagnostics', minimum: 0, maximum: 0, seconds: 120 },
+      { label: 'load', do: 'sleep', milliseconds: sampleSeconds * 1000 },
+      { label: 'change', do: 'write', file: item.change.file, text: item.change.changed },
+      { label: 'updated', do: 'diagnostics', minimum: 1, maximum: 100, seconds: 60 },
+      { label: 'close', do: 'close' },
+    ]
+    : [
       { label: 'open', do: 'open', file: item.file },
       { label: 'ready', do: 'ready', seconds: 120 },
       { label: 'load', do: 'sleep', milliseconds: sampleSeconds * 1000 },
       { label: 'close', do: 'close' },
-    ],
-  };
+    ];
+  const plan = { project: item.project, ...(item.change ? { forward_file_changes: item.forward } : {}), steps };
   const planPath = join(results, item.name + '.plan.json');
   writeFileSync(planPath, JSON.stringify(plan, null, 2));
-  const run = spawn(binary, [planPath], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+  const run = spawn(item.binary ?? binary, [planPath], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = '';
   let stderr = '';
   run.stdout.on('data', chunk => { stdout += chunk; });
@@ -243,9 +266,13 @@ for (const item of cases) {
   writeFileSync(join(results, item.name + '.stderr.txt'), stderr);
   const events = stdout.split('\n').filter(Boolean).map(line => JSON.parse(line));
   const ready = events.find(event => event.step === 1)?.result?.ready === true;
-  const record = { name: item.name, exit: status, ready, processes: [...peaks.values()].sort((left, right) => right.watches - left.watches), watched_kinds: kinds, first_watch_seconds: firstWatchSeconds };
+  // What each labelled step returned: `within` for waits, `folders` for the folder count.
+  const outcome = label => events.find(event => event.step === steps.findIndex(step => step.label === label))?.result;
+  const processes = [...peaks.values()].sort((left, right) => right.watches - left.watches);
+  const totalWatches = processes.reduce((sum, row) => sum + row.watches, 0);
+  const record = { name: item.name, exit: status, ready, total_watches: totalWatches, processes, watched_kinds: kinds, first_watch_seconds: firstWatchSeconds, folders: outcome('folders'), baseline: outcome('baseline'), updated: outcome('updated') };
   summary.cases.push(record);
-  console.log(JSON.stringify({ name: record.name, exit: status, ready, processes: record.processes.filter(row => row.instances > 0).map(row => row.comm + '=' + row.watches + ' watches/' + row.instances + ' instances').join(', '), watched_kinds: kinds, first_watch_seconds: firstWatchSeconds }));
+  console.log(JSON.stringify({ name: record.name, exit: status, ready, total_watches: totalWatches, processes: processes.filter(row => row.instances > 0).map(row => row.comm + '=' + row.watches + ' watches/' + row.instances + ' instances').join(', '), watched_kinds: kinds, folders: record.folders, baseline_within: record.baseline?.within ?? null, updated_within: record.updated?.within ?? null }));
 }
 writeFileSync(join(results, 'results.json'), JSON.stringify(summary, null, 2));
 console.log('directories: ' + JSON.stringify(summary.directories));

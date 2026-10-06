@@ -7,8 +7,6 @@ use crate::Step;
 use crate::render;
 /// Failures name the operation that failed.
 use anyhow::{Context, Result, bail};
-/// The application's own document and reload path.
-use ide_app::document::Document;
 /// The handle and the types it exchanges.
 use ide_app::language::{
     LanguageWorker,
@@ -20,6 +18,8 @@ use ide_app::language::{
     status::{LanguageStatus, ServerState},
     sync::{DocumentOpen, DocumentReload},
 };
+/// The application's own document and reload path, and its change watcher and project boundary.
+use ide_app::{change_watch::ChangeWatcher, document::Document, workspace::Workspace};
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
 /// What: `Path`/`PathBuf` are borrowed and owned filesystem paths; `Arc` is a thread-safe shared
@@ -46,6 +46,14 @@ const REPEAT: Duration = Duration::from_millis(500);
 pub struct Session {
     /// The handle under inspection.
     worker: LanguageWorker,
+    /// What: `Option<ChangeWatcher>` is the project's change watcher, or `None` in the positive control.
+    /// Why: The application watches folders for the servers; the control shows what happens without it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// watcher?: ChangeWatcher;
+    /// ```
+    watcher: Option<ChangeWatcher>,
     /// Resolved project root.
     project: PathBuf,
     /// Path of the displayed file.
@@ -75,12 +83,18 @@ fn emit(started: Instant, mut record: Value) {
 /// Session steps.
 impl Session {
     /// Start the worker for a project; no server starts until a file is opened.
-    pub fn new(project: &Path, setup: LanguageSetup) -> Result<Self> {
+    pub fn new(project: &Path, setup: LanguageSetup, forward: bool) -> Result<Self> {
         // The trailing `?` returns the start error to the caller.
         let worker = LanguageWorker::with_setup(project, setup)?;
+        let watcher = if forward {
+            Some(ChangeWatcher::new(Workspace::new(project)?)?)
+        } else {
+            None
+        };
         // `Ok(...)` is the success variant of `Result`.
         return Ok(Self {
             worker,
+            watcher,
             project: project.to_path_buf(),
             path: PathBuf::new(),
             document: Document::new(""),
@@ -110,6 +124,16 @@ impl Session {
     /// poll() { for (const change of worker.takeAll()) { record(change); } }
     /// ```
     fn poll(&mut self) -> Result<()> {
+        // The application's tick: the watcher feeds the worker while some server wants file changes.
+        if let Some(watcher) = self.watcher.as_mut() {
+            let feed = self
+                .worker
+                .wants_file_changes()
+                .then(|| return self.worker.file_change_sender());
+            watcher.feed_servers(feed);
+            // The tree's invalidations have no reader here.
+            let _tree = watcher.take();
+        }
         // `if let Some(x) = ...?` runs the block only when something new was published.
         if let Some(status) = self.worker.try_take_status()? {
             emit(self.started, json!({ "status": render::status(&status) }));
@@ -347,6 +371,27 @@ impl Session {
                     "delivered": delivered,
                     "droppedStaleRevision": after.stale_revision - before.stale_revision,
                 })
+            }
+            Step::Write { file, text } => {
+                let path = self.project.join(file);
+                std::fs::write(&path, text)
+                    .with_context(|| return format!("Cannot write {}", path.display()))?;
+                json!({ "written": path.display().to_string() })
+            }
+            Step::Folders { minimum, seconds } => {
+                let least = *minimum;
+                let watched = move |session: &Session| {
+                    return session
+                        .watcher
+                        .as_ref()
+                        .is_some_and(|watcher| return watcher.server_folders() >= least);
+                };
+                let within = self.until(Duration::from_secs(*seconds), &watched)?;
+                let folders = self
+                    .watcher
+                    .as_ref()
+                    .map_or(0, |watcher| return watcher.server_folders());
+                json!({ "within": within, "folders": folders })
             }
             Step::Sleep { milliseconds } => {
                 let never = |_: &Session| return false;

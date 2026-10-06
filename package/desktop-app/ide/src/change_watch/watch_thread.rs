@@ -144,15 +144,17 @@ fn spawn_scan(
 }
 
 /// Replace what was known below the scanned folder with what the scan found. Files in folders that had
-/// no watch before appeared without any event, so the servers hear about them as created.
+/// no watch before, or only a provisional one whose events were held back, appeared without any event
+/// the servers heard, so they hear about them as created.
 fn apply_scan(
     servers: &mut ServerWatches,
     found: Scan,
     feed: Option<&UnboundedSender<ServerChange>>,
 ) {
     let base = found.base.clone();
-    // What: `filter` keeps the folders below the base; `cloned` copies them; `collect` builds the set.
-    // Why: Only folders already watched before this scan have had their changes delivered.
+    // What: `filter` keeps the folders below the base that were source folders; `cloned` copies them;
+    //       `collect` builds the set.
+    // Why: Only those folders have had their changes delivered.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -161,7 +163,7 @@ fn apply_scan(
     let before: BTreeSet<PathBuf> = servers
         .desired
         .iter()
-        .filter(|path| return path.starts_with(&base))
+        .filter(|path| return path.starts_with(&base) && !servers.provisional.contains(*path))
         .cloned()
         .collect();
     forget_below(&mut servers.desired, &base);
