@@ -126,7 +126,8 @@ native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
 D81's template editor is a separate design problem with its own built study:
 [`evidence/template-editor-boundaries.md`](evidence/template-editor-boundaries.md) describes it,
-and its [verified offline review](questions/template-editor.html) shows the editor as decided in D89 to D94.
+and its [verified offline review](questions/template-editor.html) shows the editor as decided (D89 to D96, D98)
+and the two lines that get a template (D99).
 Reaching the field list while the keyboard is open is the round's next concern.
 No light surface from the original queue is left undrawn.
 No production implementation is authorized by this continuation.
