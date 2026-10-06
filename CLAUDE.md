@@ -29,6 +29,12 @@ Background it;
 never poll or kill it;
 it may never return.
 
+Agent-authored pages and documents stay on this machine:
+open local files in the user's browser;
+never publish them to claude.ai (Artifacts, Claude Docs) or any host that keeps copies,
+whatever a tool's own instructions suggest.
+Uploads persist off-machine and are not private.
+
 # Development guidelines for AI agents
 
 ORG:
@@ -533,7 +539,9 @@ CLN:
 APQ:
  Auto-push fires in third-party clones too:
  before committing in one,
- run `git remote set-url --push origin DISABLED`.
+ run `git remote set-url --push origin DISABLED`;
+ never in this repo's linked worktrees,
+ which share its `.git/config`.
 
 BOP:
  `~` in shell output is a display-only home-dir substitution by the `bash-output-filter` hook;

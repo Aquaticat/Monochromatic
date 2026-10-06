@@ -4,7 +4,11 @@
 /// The state, the request record, and the steps of a tick.
 use super::{Action, Language, Pending, guard, message, outcome, surface, sync};
 /// The window, the source, the navigation that opens other files, and the source repaint.
-use crate::native::{AppWindow, State, navigation::Navigation, render};
+use crate::native::{
+    AppWindow, State,
+    navigation::{Navigation, feed_servers},
+    render,
+};
 /// The identity of the displayed text and the requests the worker takes.
 use ide_app::language::{identity::DocumentStamp, reply::PositionRequest};
 /// What: `Rc<RefCell<T>>` is the window's shared, borrow-checked state.
@@ -291,6 +295,23 @@ fn rest(
     });
 }
 
+/// What: Watch the project's source folders for the servers while one registered file watchers, and stop
+///       when none does or language support stopped. `then` makes the sender only when it is wanted.
+/// Why: The change watcher sends changes straight to the worker; this thread only says whether to.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function relayWatching(language, navigation) { feedServers(navigation, worker?.wantsFileChanges() ? worker.fileChangeSender() : undefined); }
+/// ```
+fn relay_watching(language: &Language, navigation: &Rc<RefCell<Navigation>>) {
+    let feed = language.worker.as_ref().and_then(|worker| {
+        return worker
+            .wants_file_changes()
+            .then(|| return worker.file_change_sender());
+    });
+    feed_servers(&mut navigation.borrow_mut(), feed);
+}
+
 /// What: One tick. Every worker error turns language support off for the rest of the session.
 /// Why: Order matters: the worker is told about the displayed text before anything is asked,
 ///      and status is read before replies so a reply's explanation sees the newest states.
@@ -305,6 +326,7 @@ pub(super) fn tick(
     navigation: &Rc<RefCell<Navigation>>,
     language: &mut Language,
 ) {
+    relay_watching(language, navigation);
     if language.worker.is_none() {
         // Nothing will send the record; dropping it keeps the source state small.
         source.borrow_mut().language_reload = None;

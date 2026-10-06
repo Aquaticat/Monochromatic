@@ -13,7 +13,7 @@ use notify::{Error, ErrorKind};
 /// Borrowed native paths name the affected directory.
 use std::path::Path;
 
-/// The watch limit names the directory and the sysctl that raises the limit.
+/// The watch limit names the directory and the sysctl that sets the limit.
 #[test]
 fn watch_limit_names_the_directory_and_the_sysctl() {
     let message = describe(
@@ -22,7 +22,7 @@ fn watch_limit_names_the_directory_and_the_sysctl() {
     );
     assert!(
         message.contains("/project/src") && message.contains("fs.inotify.max_user_watches"),
-        "the watch-limit message lost its directory or remedy: {message}"
+        "the watch-limit message lost its directory or the sysctl that sets the limit: {message}"
     );
 }
 

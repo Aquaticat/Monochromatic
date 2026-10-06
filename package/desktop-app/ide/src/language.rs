@@ -75,8 +75,12 @@ mod lifecycle;
 /// The five feature requests.
 mod request;
 
+/// Send gathered file changes to the servers that asked for them.
+mod forward;
 /// Server-to-client traffic.
 mod traffic;
+/// The file watchers servers registered, and the changes gathered for them.
+mod watched_files;
 
 /// The wait until every server process the worker started has been reaped.
 mod reap;

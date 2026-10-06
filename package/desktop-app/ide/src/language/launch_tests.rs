@@ -88,15 +88,19 @@ fn bare_name_is_searched_on_the_path_and_resolved_absolute() {
     );
 }
 
+/// The home folder opened as the project holds the private cache; the sandbox binds that state
+/// writable after the read-only project, so a state directory strictly inside the project is
+/// accepted, while the project itself as state would make all of it writable.
 #[test]
-fn state_directory_inside_the_project_is_rejected() {
+fn state_directory_inside_the_project_is_accepted_but_the_project_itself_is_not() {
     let project = tempfile::tempdir().expect("project");
     let root = canonical(&project);
-    let reason = check_state_directory(&root.join(".cache/state"), &root)
-        .expect_err("a state directory inside the project was accepted");
-    assert!(reason.contains("is inside the project"), "{reason}");
+    assert_eq!(
+        check_state_directory(&root.join(".cache/monochromatic-ide/language"), &root),
+        Ok(())
+    );
     let same = check_state_directory(&root, &root).expect_err("the project itself was accepted");
-    assert!(same.contains("is inside the project"), "{same}");
+    assert!(same.contains("contains the project"), "{same}");
 }
 
 #[test]
@@ -110,16 +114,15 @@ fn state_directory_containing_the_project_is_rejected() {
 }
 
 #[test]
-fn state_directory_reached_through_a_link_into_the_project_is_rejected() {
+fn state_directory_reached_through_a_link_to_the_project_itself_is_rejected() {
     let project = tempfile::tempdir().expect("project");
     let elsewhere = tempfile::tempdir().expect("elsewhere");
     let root = canonical(&project);
-    fs::create_dir(root.join("inner")).expect("inner");
     let link = canonical(&elsewhere).join("link");
-    std::os::unix::fs::symlink(root.join("inner"), &link).expect("link");
-    let reason = check_state_directory(&link.join("state"), &root)
-        .expect_err("a link into the project was accepted as state");
-    assert!(reason.contains("is inside the project"), "{reason}");
+    std::os::unix::fs::symlink(&root, &link).expect("link");
+    let reason = check_state_directory(&link, &root)
+        .expect_err("a link to the project was accepted as state");
+    assert!(reason.contains("contains the project"), "{reason}");
 }
 
 #[test]
@@ -176,14 +179,21 @@ fn preparation_refuses_directories_outside_the_state_root_or_inside_the_project(
     assert!(prepare(&whole_state, &root, Some(&state)).is_err());
     let no_state = launch(vec![state.join("server")], Vec::new());
     assert!(prepare(&no_state, &root, None).is_err());
-    let state_in_project = launch(vec![root.join("state/server")], Vec::new());
-    let inside = prepare(&state_in_project, &root, Some(&root.join("state")))
-        .expect_err("a state root inside the project was accepted");
-    assert!(inside.contains("is inside the project"), "{inside}");
+    let project_as_state = launch(vec![root.join("server")], Vec::new());
+    let whole = prepare(&project_as_state, &root, Some(&root))
+        .expect_err("the project itself was accepted as the state root");
+    assert!(whole.contains("contains the project"), "{whole}");
     assert!(
-        !root.join("state").exists(),
-        "a directory was created inside the project"
+        !root.join("server").exists(),
+        "a directory was created in the project refused as state"
     );
+    // The home folder opened as the project: its private cache is created below the project.
+    let state_in_project = launch(vec![root.join(".cache/state/server")], Vec::new());
+    assert_eq!(
+        prepare(&state_in_project, &root, Some(&root.join(".cache/state"))),
+        Ok(())
+    );
+    assert!(root.join(".cache/state/server").is_dir());
     assert_eq!(
         prepare(&launch(Vec::new(), Vec::new()), &root, None),
         Ok(())

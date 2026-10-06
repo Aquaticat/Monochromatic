@@ -379,7 +379,8 @@ Quotations are the user's words.
   the 30 days are the agent's proposal).
 - The embedded license and notice texts are printed by `monochromatic-ide --licenses` ("--licenses flag").
 - The license notices of the Rust crates compiled into the executable are collected by a notice generator,
-  vetted first through the repository's technology-selection process,
+  namely cargo-about without comparing alternatives
+  ("No need to consider any alternatives. Just it."),
   embedded beside the other notices,
   and printed by `--licenses` ("Adopt a notice generator").
 - Settled by the agent:
@@ -461,3 +462,35 @@ and unit tests alone do not establish completion.
 [handover]: ../handover/slint-ide-0x.md
 [scope]: ../planning/slint-ide-0x.md
 [implementation]: ../planning/slint-ide-implementation.md
+### Interface decisions (UI batch 3b)
+
+Asked on 2026-10-06 with the page `package/desktop-app/ide/design/questions/2026-10-06-ui-batch-3b.html`
+and the frames under `package/desktop-app/ide/design/screenshots/2026-10-06-ui-batch-3b/`.
+
+- The divider's pointer grab zone stays 5 px wide ("5 px").
+- Selected text in the find and search boxes takes the same ink as every other selection on that fill,
+  white in both schemes ("White, like the rest").
+- A hovered or focused selected row keeps its darker blue ("Darker blue").
+- An unfocused long query may run into the clear button's empty cell ("Use it when unfocused").
+- The divider's keyboard focus mark is the accent line plus a 5 by 96 px handle ("Line + 96 px handle").
+- The clear button's hover and press plate fills its whole 48 by 48 cell, translucent,
+  so the box's border and focus line show through:
+  "Whole cell, it's more honest. And you don't have to compromise here: Use transparency."
+- A click on the panel padding leaves the focus in the box ("Box keeps focus").
+- Reaching the file-watch limit is reported in the log only ("Log only").
+
+### Accessibility decisions
+
+- The text inside tree, search-result, and location rows is hidden from assistive technology,
+  so each row's name is exposed once ("Hide the inner text").
+- The search box's accessible description carries the result count, as the find box's does ("Add the count").
+
+### Language-server start allowance
+
+- A starting language server gets three request timeouts (60 s at Helix's default of 20 s)
+  before it is reported failed, instead of one ("3 times, 60 s").
+  Reason measured on the test-flake branch:
+  under load, a working server's first answer can arrive after the request timeout,
+  helix-lsp drops a late answer,
+  and the start failures were the most common gate failure (24 of 200 runs before, 0 of 200 after).
+  Cost: a server that really hangs is reported after 62 s instead of 22 s.
