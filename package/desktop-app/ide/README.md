@@ -1646,7 +1646,7 @@ the application does not inherit Helix's modal commands or editing features.
 
 ## Release build and application directory
 
-`mise run //package/desktop-app/ide:build:release` builds the optimized `monochromatic-ide` binary
+`mise run //package/desktop-app/ide:build` builds the optimized `monochromatic-ide` binary
 in the bounded container described under [Build boundary](#build-boundary).
 `mise run //package/desktop-app/ide:bundle` runs that build and assembles `dist/monochromatic-ide`,
 a directory that runs from any location,
@@ -1668,9 +1668,13 @@ Run it as `dist/monochromatic-ide/monochromatic-ide PROJECT`,
 with `--file FILE` as under [Project startup](#project-startup).
 `mise run //package/desktop-app/ide:run:bundle PROJECT` does the same from the package directory.
 `dist/` is ignored by Git.
-The existing `build` and `run` tasks stay the debug build that tests and inspection use;
-sibling applications name their release build `build`,
-and renaming here is left until the other tasks and documents that call `build` can change with it.
+As in the sibling applications,
+`build` is the release build and `build:debug` the debug build;
+`run` starts the debug binary that `build:debug`,
+the tests,
+and the inspection tasks use.
+`mise run //package/desktop-app/ide:lint:release` checks the application binary under the release profile,
+where code behind `cfg(debug_assertions)` is absent and unused items show only there.
 
 The release build unsets `SLINT_EMIT_DEBUG_INFO`,
 which the debug tasks set so inspection can address interface elements by name,

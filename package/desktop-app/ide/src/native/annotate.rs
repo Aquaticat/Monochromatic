@@ -56,6 +56,11 @@ const CARD_PROBLEMS: usize = 8;
 /// function setAnnotations(window: AppWindow, state: Shared<State>,
 ///   hints?: HintsSnapshot, diagnostics?: DiagnosticsSnapshot): void;
 /// ```
+///
+/// Built only for tests and debug builds (`#[cfg(any(test, debug_assertions))]`), because its only
+/// production caller, the inspection path, is itself debug-only; a release build would otherwise
+/// report the function as unused.
+#[cfg(any(test, debug_assertions))]
 pub(super) fn set_annotations(
     window: &AppWindow,
     state: &Rc<RefCell<State>>,

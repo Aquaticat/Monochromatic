@@ -91,18 +91,18 @@ for (const profile of ['debug', 'release']) {
 }
 """
 
-[tasks.build]
+[tasks."build:debug"]
 depends = ["runtime"]
-description = "Build the native IDE in the bounded container"
+description = "Build the debug IDE and its helper binaries in the bounded container"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['build'])
 """
 
-[tasks."build:release"]
+[tasks.build]
 depends = ["runtime"]
-description = "Build the optimized application binary in the bounded container"
+description = "Build the optimized application binary in the bounded container, as sibling applications name their release build"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
@@ -114,7 +114,7 @@ runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'build', '--release
 """
 
 [tasks.bundle]
-depends = ["build:release"]
+depends = ["build"]
 description = "Assemble dist/monochromatic-ide from the release binary, its language runtime, and license texts"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -122,7 +122,7 @@ const { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, re
 const { join } = await import('node:path')
 const binary = 'target/release/monochromatic-ide'
 const runtime = 'target/release/runtime'
-if (!existsSync(binary)) throw new Error('Missing ' + binary + '; run the build:release task')
+if (!existsSync(binary)) throw new Error('Missing ' + binary + '; run the build task')
 const manifest = JSON.parse(readFileSync(join(runtime, 'manifest.json'), 'utf8'))
 // Assemble beside the destination and swap, so a failed copy never leaves a half-filled directory in place.
 const destination = 'dist/monochromatic-ide'
@@ -255,6 +255,16 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['clippy', '--all-targets', '--', '--deny', 'warnings'])
+"""
+
+[tasks."lint:release"]
+depends = ["runtime"]
+description = "Check the application binary under the release profile with warnings denied, as the build task compiles it"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+// Code behind cfg(debug_assertions) is absent from release builds, so unused items there show only in this profile.
+runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'clippy', '--release', '--bin', 'monochromatic-ide', '--', '--deny', 'warnings'])
 """
 
 [tasks."lint:rust"]
@@ -699,5 +709,5 @@ execFileSync(compositor, ['--socket', socket, '--size', size, '--color-scheme', 
 """
 
 [tasks.run]
-description = "Run the built IDE against a local root supplied as an argument"
+description = "Run the debug IDE from the build:debug task against a local root supplied as an argument"
 run = "./target/debug/monochromatic-ide"
