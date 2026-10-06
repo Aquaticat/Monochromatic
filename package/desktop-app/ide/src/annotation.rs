@@ -533,14 +533,12 @@ impl Annotations {
 /// function describe(problem: Problem): string;
 /// ```
 pub fn describe(problem: &Problem) -> String {
-    let mut text = severity_name(problem.mark.severity).to_string();
-    if let Some(code) = &problem.code {
-        text.push(' ');
-        text.push_str(code);
-    }
+    // Prototype variant: editord's wording, lower-case severity and the source in brackets, no code.
+    let mut text = severity_name(problem.mark.severity)
+        .to_lowercase()
+        .replace("information", "info");
     if !problem.source.is_empty() {
-        // `format!` builds a new `String` from a template, like a TS template literal.
-        text.push_str(&format!(" ({})", problem.source));
+        text.push_str(&format!("({})", problem.source));
     }
     text.push_str(": ");
     text.push_str(problem.message.trim());
