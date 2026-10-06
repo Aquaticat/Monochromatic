@@ -83,6 +83,9 @@ const cases = [
   // clear control is a button.
   { name: 'a11y-set-value-edits', file: 'ui/query-input.slint', before: '        root.text = value;\n        root.edited(value);\n', after: '        root.text = value;\n', native: true, test: 'find_box_and_clear_control_expose_role_label_value_and_actions', failure: "setting the find box's value did not run find" },
   { name: 'a11y-clear-role', file: 'ui/query-input.slint', before: '                accessible-role: button;', after: '                accessible-role: AccessibleRole.text;', native: true, test: 'find_box_and_clear_control_expose_role_label_value_and_actions', failure: "the find box's clear control is not a button" },
+  // Answer of 2026-10-06: selected find text takes the ink chosen from the fill, passed through the find bar.
+  { name: 'find-box-ink-passed', file: 'ui/app.slint', before: '                error-message: root.find-error;\n                selected-ink: root.selected-row-ink;\n', after: '                error-message: root.find-error;\n', native: true, test: 'find_box_selection_uses_the_ink_chosen_from_the_fill', failure: 'dark: selected find text is not drawn in light ink' },
+  { name: 'find-bar-ink-passed', file: 'ui/find.slint', before: '                selected-ink: root.selected-ink;\n', after: '', native: true, test: 'find_box_selection_uses_the_ink_chosen_from_the_fill', failure: 'dark: selected find text is not drawn in light ink' },
   { name: 'escape-topmost', file: 'ui/app.slint', before: 'root.find-open && !root.search-open {', after: 'root.find-open {', native: true, test: 'native_find_and_search_overlay_close_topmost_first', failure: 'Escape did not close the topmost search overlay' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
