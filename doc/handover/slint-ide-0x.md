@@ -187,6 +187,11 @@ the items after it are the record of 2026-10-05 and older.
   Three daemons for another session's worktree `translation-repair` started again afterwards,
   one through an explicit `git fsmonitor--daemon start` under the git wrapper's shadow git directory;
   the cause is not established.
+- Reminder issues for the user to raise upstream themselves,
+  opened on 2026-10-06 as with #606 for Slint:
+  #608 (helix-lsp logs a server's normal exit at ERROR level)
+  and #609 (the TypeScript 7 language server exits with `context canceled`).
+  Each points at its troubleshooting document's draft.
 - Still owed to the user:
   UI batch 3 with screenshots
   (hint row look,
