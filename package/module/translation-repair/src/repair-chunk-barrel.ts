@@ -22,6 +22,7 @@ export {
   panelClause,
 } from './claim-panel-voters.ts';
 export { repairChunk, } from './repair-chunk.ts';
+export { buyRepairSlice, } from './repair-slice-buy.ts';
 export { settleShippedPatch, } from './repair-chunk-settle.ts';
 export { frontMatterRepairOutcome, } from './front-matter-repair.ts';
 export {

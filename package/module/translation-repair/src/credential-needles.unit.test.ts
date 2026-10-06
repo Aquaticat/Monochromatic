@@ -67,7 +67,7 @@ await describe({
          */
         const texts = needlesOf({ credential: odd, },)
           .filter(function isBase64({ text, },): boolean {
-            return [...text,].every(function inAlphabet(unit,): boolean {
+            return text.split('',).every(function inAlphabet(unit,): boolean {
               return base64Units.includes(unit,);
             },);
           },)

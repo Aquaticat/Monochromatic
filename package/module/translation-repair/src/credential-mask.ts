@@ -1,3 +1,20 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
+import { decodedFormsOf, } from './credential-decoded-forms.ts';
+import {
+  distinctNeedles,
+  type Needle,
+  needlesOf,
+} from './credential-needles.ts';
+import {
+  findNeedles,
+  type NeedleFind,
+} from './credential-search.ts';
+import {
+  decodedViewsOf,
+  type TextView,
+} from './credential-views.ts';
+
 //region Credential mask
 // Replaces every copy of a credential a request carried inside the text a
 // provider answered with, so the credential never leaves the transport.
@@ -11,9 +28,21 @@
 //
 // NO REGULAR EXPRESSION IS BUILT FROM A CREDENTIAL. A key may hold characters a
 // pattern reads as syntax, and building the pattern from it is the shape that
-// fails on exactly the keys that need masking. Each credential is found by a
-// linear scan (Knuth-Morris-Pratt), so a long body and a long credential cost
-// the sum of their lengths, never the product.
+// fails on exactly the keys that need masking. Every spelling of every
+// credential is found in one pass over the text (`credential-search.ts`), so a
+// long body costs its length and the number of copies, never its length times
+// the number of spellings.
+//
+// A CREDENTIAL IS MASKED IN EVERY SPELLING A MECHANICAL DECODER RECOVERS: as it
+// stands, as a JSON string writes it (`credential-needles.ts`), percent-encoded
+// or JSON-escaped in any mix and nesting (`credential-views.ts`, which reads the
+// text as each decoder would and maps a find back to where it stands), and in
+// base64 or base64url at any alignment (`credential-needles.ts`). A header sent
+// encoded and echoed decoded is listed by `credentialsOfHeaders`
+// (`credential-decoded-forms.ts`). Out of reach by rule: a credential a proxy
+// split by a line fold or a soft hyphen, and a spelling that no decoder named
+// here recovers (a cipher, a hash, a case-folded key, the key written in hex or
+// as HTML entities, or in base64 of bytes that are no UTF-8 of it).
 //
 // THE CLOSED LIST OF CREDENTIAL HEADERS is the one place a new client's
 // credential header must be written down: a header named here has its value
@@ -81,11 +110,13 @@ type Span = {
 /**
  Lists what a request's headers carry as credential: for each credential
  header, its whole value and, where the value is a scheme word and a token, the
- token alone, since a provider may echo either.
+ token alone, since a provider may echo either, and the forms a decoder
+ reads out of the token (a `Basic` pair and each side of it, an escaped token
+ resolved), since a provider may echo those instead.
 
  @param headers - request headers, names in any case
 
- @returns Whole values and tokens whose secret holds at least the minimum
+ @returns Whole values, tokens and decoded forms that hold at least the minimum
  units; empty where the request carried none
 
  @example
@@ -122,148 +153,295 @@ export function credentialsOfHeaders(
       if (secret.length < MINIMUM_CREDENTIAL_UNITS)
         return [];
 
-      if (secret === whole)
-        return [whole,];
-
       return [
-        whole,
-        secret,
-      ];
+        ...new Set([
+          whole,
+          secret,
+          ...decodedFormsOf({ secret, },),
+        ],),
+      ].filter(function longEnough(form,): boolean {
+        return form.length >= MINIMUM_CREDENTIAL_UNITS;
+      },);
     },);
 }
 
 /**
- Spellings a credential may take inside a reply: itself, as a JSON string
- holds it, and as a JSON writer that escapes the slash holds it.
+ Lists the needles of the credentials long enough to mask, each once.
 
- @param credential - credential to spell
+ @param credentials - secrets the request carried
 
- @returns Distinct spellings, the credential first
+ @returns Needles of every spelling of every credential
 
  @example
  ```ts
- spellingsOf({ credential: 'a/b"c-0123456789', },);
+ needlesOfAll({ credentials: ['whisker-key-7421',], },);
  ```
  */
-function spellingsOf({ credential, }: { readonly credential: string; },): readonly string[] {
+function needlesOfAll({ credentials, }: { readonly credentials: readonly string[]; },): readonly Needle[] {
   /**
-   The credential between the quotes JSON writes around it.
+   Every needle of every credential long enough, some of them repeated.
    */
-  const escaped = JSON.stringify(credential,)
-    .slice(
-      1,
-      -1,
-    );
-  return [
-    ...new Set([
-      credential,
-      escaped,
-      escaped.split('/',)
-        .join(String.raw`\/`,),
-    ],),
-  ];
+  const every = [...new Set(credentials,),]
+    .filter(function longEnough(credential,): boolean {
+      return credential.length >= MINIMUM_CREDENTIAL_UNITS;
+    },)
+    .flatMap(function needlesOfOne(credential,): readonly Needle[] {
+      return needlesOf({ credential, },);
+    },);
+  return distinctNeedles({ needles: every, },);
 }
 
 /**
- Builds the Knuth-Morris-Pratt table of a needle: for each prefix, the length
- of its longest proper prefix that is also its suffix.
-
- @param needle - non-empty text to find
-
- @returns Table with one entry per unit of the needle
-
- @example
- ```ts
- failureTable({ needle: 'abab', },); // [0, 0, 1, 2]
- ```
+ Units that carry bits of a base64 text in either alphabet. Padding is not
+ among them: `=` only ever ends a run, so the one before a find is no part of
+ the run the find is in, and none holds a bit of a credential beside it.
  */
-function failureTable({ needle, }: { readonly needle: string; },): readonly number[] {
-  /**
-   Table being filled, one entry per unit.
-   */
-  const table = Array.from(
-    { length: needle.length, },
-    function zero(): number {
-      return 0;
-    },
-  );
-  /**
-   Length of the prefix the unit under the cursor extends.
-   */
-  const cursor = { matched: 0, };
-  for (let at = 1; at < needle.length; at += 1) {
-    while ((cursor.matched > 0) && (needle.codePointAt(at,) !== needle.codePointAt(cursor.matched,)))
-      cursor.matched = table[cursor.matched - 1] ?? 0;
-
-    if (needle.codePointAt(at,) === needle.codePointAt(cursor.matched,))
-      cursor.matched += 1;
-
-    table[at] = cursor.matched;
-  }
-  return table;
-}
+const BASE64_UNITS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/-_';
 
 /**
- Finds every span of a needle in a text in one pass over the text.
+ Most `=` units that pad a base64 text.
+ */
+const MOST_PADDING = 2;
 
- @param text - text searched
+/**
+ Counts the units beside a find that a base64 find reaches over: up to a number
+ of them, each of the base64 units a run is written with.
 
- @param needle - non-empty text to find
+ @param text - text the find is in
 
- @returns Spans in the order their ends fall, overlapping ones included
+ @param from - index of the first unit counted
+
+ @param direction - one to count forward, minus one to count back
+
+ @param most - most units to count
+
+ @returns How many consecutive base64 units there are beside the find, up to most
 
  @example
  ```ts
- findSpans({ text: 'xxabxx', needle: 'ab', },); // [{ start: 2, end: 4, }]
+ base64UnitsBeside({ text: 'xa2l0O', from: 1, direction: 1, most: 1, },); // 1
  ```
  */
-function findSpans(
+function base64UnitsBeside(
   {
     text,
+    from,
+    direction,
+    most,
+  }: {
+    readonly text: string;
+    readonly from: number;
+    readonly direction: 1 | -1;
+    readonly most: number;
+  },
+): number {
+  /**
+   Units counted so far.
+   */
+  const counted = { units: 0, };
+  while (
+    (counted.units < most)
+    && ((from + (direction * counted.units)) >= 0)
+      && ((from + (direction * counted.units)) < text.length)
+      && BASE64_UNITS.includes(text.charAt(from + (direction * counted.units),),)
+  )
+    counted.units += 1;
+
+  return counted.units;
+}
+
+/**
+ Widens a find over the characters beside it that hold bits of the credential.
+
+ THE WIDENING STOPS AT A UNIT A BASE64 RUN IS NOT WRITTEN WITH, so a find that
+ stands against a quote, a space or the text's edge hides nothing of what lies
+ beyond it: the characters that share bits with the credential are in the run,
+ or the find was not a base64 run at that alignment.
+
+ PADDING GOES WITH THE FIND ONLY AFTER A CHARACTER THE CREDENTIAL'S BITS END
+ INSIDE, the one place a run the credential ends can be padded; after a find
+ whose credential ends on a whole group of three bytes, an `=` pads no run the
+ credential ends and stays.
+
+ @param text - text the find is in
+
+ @param find - the find
+
+ @param needle - the needle found
+
+ @returns The find's span, widened and cut to the text
+
+ @example
+ ```ts
+ reachOf({ text, find, needle, },);
+ ```
+ */
+function reachOf(
+  {
+    text,
+    find,
     needle,
   }: {
     readonly text: string;
-    readonly needle: string;
+    readonly find: NeedleFind;
+    readonly needle: Needle;
+  },
+): Span {
+  /**
+   Base64 units after the find that hold bits of the credential.
+   */
+  const tail = base64UnitsBeside({
+    text,
+    from: find.end,
+    direction: 1,
+    most: needle.after,
+  },);
+
+  /**
+   End of the find with its tail.
+   */
+  const reached = find.end + tail;
+
+  /**
+   `=` units after the tail, which pad the run only where the tail holds the
+   credential's last bits.
+   */
+  const padding = (tail > 0)
+    ? paddingAt({
+      text,
+      from: reached,
+    },)
+    : 0;
+  return {
+    start: find.start - base64UnitsBeside({
+      text,
+      from: find.start - 1,
+      direction: -1,
+      most: needle.before,
+    },),
+    end: reached + padding,
+  };
+}
+
+/**
+ Counts the `=` padding units that start at a position.
+
+ @param text - text the padding is in
+
+ @param from - index of the first unit counted
+
+ @returns Units of padding, at most two
+
+ @example
+ ```ts
+ paddingAt({ text: 'abc==d', from: 3, },); // 2
+ ```
+ */
+function paddingAt({
+  text,
+  from,
+}: {
+  readonly text: string;
+  readonly from: number
+},): number {
+  /**
+   Units counted so far.
+   */
+  const counted = { units: 0, };
+  while ((counted.units < MOST_PADDING) && (text.charAt(from + counted.units,) === '='))
+    counted.units += 1;
+
+  return counted.units;
+}
+
+/**
+ Finds the spans of every needle in a text, as the text itself and as each
+ decoded reading of it, each span in the units of the original text.
+
+ @param text - reply text
+
+ @param needles - needles to find
+
+ @returns Spans in the original text, unordered
+
+ @example
+ ```ts
+ spansOfNeedles({ text, needles, },);
+ ```
+ */
+function spansOfNeedles(
+  {
+    text,
+    needles,
+  }: {
+    readonly text: string;
+    readonly needles: readonly Needle[];
   },
 ): readonly Span[] {
   /**
-   Table telling a mismatch how much of the match survives.
+   Texts of the needles, in the order `findNeedles` numbers them.
    */
-  const table = failureTable({ needle, },);
+  const texts = needles.map(function textOf(needle,): string {
+    return needle.text;
+  },);
   /**
-   Spans found.
+   Every unit some needle holds.
    */
-  const spans: Span[] = [];
-  /**
-   Units of the needle matched at the cursor.
-   */
-  const cursor = { matched: 0, };
-  for (let at = 0; at < text.length; at += 1) {
-    while ((cursor.matched > 0) && (text.codePointAt(at,) !== needle.codePointAt(cursor.matched,)))
-      cursor.matched = table[cursor.matched - 1] ?? 0;
-
-    if (text.codePointAt(at,) === needle.codePointAt(cursor.matched,))
-      cursor.matched += 1;
-
-    if (cursor.matched === needle.length) {
-      spans.push({
-        start: (at + 1) - needle.length,
-        end: at + 1,
-      },);
-      cursor.matched = table[cursor.matched - 1] ?? 0;
-    }
-  }
-  return spans;
+  const alphabet = new Set(texts.flatMap(function unitsOf(needle,): readonly string[] {
+    return needle.split('',);
+  },),);
+  return [
+    ...findNeedles({
+      text,
+      needles: texts,
+    },)
+      .map(function inOriginal(find,): Span {
+        return reachOf({
+          text,
+          find,
+          needle: nonNullishOrThrow(needles[find.needle],),
+        },);
+      },),
+    ...decodedViewsOf({
+      text,
+      wanted: function inSomeNeedle({ unit, }: { readonly unit: string; },): boolean {
+        return alphabet.has(unit,);
+      },
+    },)
+      .flatMap(function inView(view: TextView,): readonly Span[] {
+        return findNeedles({
+          text: view.text,
+          needles: texts,
+        },)
+          .map(function inOriginal(find,): Span {
+            /**
+             The find widened in the decoded text.
+             */
+            const reach = reachOf({
+              text: view.text,
+              find,
+              needle: nonNullishOrThrow(needles[find.needle],),
+            },);
+            return {
+              start: nonNullishOrThrow(view.starts[reach.start],),
+              end: nonNullishOrThrow(view.ends[reach.end - 1],),
+            };
+          },);
+      },),
+  ];
 }
 
 /**
  Replaces every copy of each credential in a text by the marker.
 
- EVERY CREDENTIAL IS FOUND IN THE ORIGINAL TEXT and overlapping or touching
- finds become one marker, so a whole header value and the token inside it
- leave one marker, and a marker's own wording is never searched. Matching is by
- UTF-16 unit; a credential is a header value, whose units are all below 256, so
- no match can begin or end inside a surrogate pair.
+ EVERY CREDENTIAL IS FOUND IN THE ORIGINAL TEXT, in every spelling a decoder
+ recovers (see the module comment), and overlapping or touching finds become
+ one marker, so a whole header value and the token inside it leave one marker,
+ and a marker's own wording is never searched. A credential found inside a
+ base64 run hides, with it, the one neighbouring character at each edge that
+ holds bits of it and, after a character its bits end inside, the run's
+ padding; that is the most it can hide of the text beside it.
+ Matching is by UTF-16 unit.
 
  @param text - reply text, of any shape: JSON, event frames or prose
 
@@ -287,27 +465,12 @@ export function maskCredentials(
   },
 ): string {
   /**
-   Credentials long enough to mask, each once.
-   */
-  const needles = [
-    ...new Set(credentials.filter(function longEnough(credential,): boolean {
-      return credential.length >= MINIMUM_CREDENTIAL_UNITS;
-    },),),
-  ];
-
-  /**
    Spans of every spelling of every credential, in the original text.
    */
-  const found = needles
-    .flatMap(function spellings(credential,): readonly string[] {
-      return spellingsOf({ credential, },);
-    },)
-    .flatMap(function spansOf(needle,): readonly Span[] {
-      return findSpans({
-        text,
-        needle,
-      },);
-    },)
+  const found = spansOfNeedles({
+    text,
+    needles: needlesOfAll({ credentials, },),
+  },)
     .toSorted(function byStart(
       left,
       right,
@@ -401,7 +564,10 @@ function trailingHeadUnits(
  the credential the stream was saying when it stopped has no copy to find, and
  its first units would show. The mask is applied to the whole text first and
  the ending read after it, so a caller cuts its excerpt from what this
- returns and never masks an excerpt already cut.
+ returns and never masks an excerpt already cut. The ending is read for the
+ spellings a text can be cut inside, which are the written ones, the JSON
+ ones and the base64 ones; a cut inside a percent escape shows at most the
+ escapes before it.
 
  @param text - generated text so far, of any shape
 
@@ -435,22 +601,14 @@ export function maskCredentialsInCutText(
   },);
 
   /**
-   Spellings of the credentials long enough to mask.
-   */
-  const needles = credentials
-    .filter(function longEnough(credential,): boolean {
-      return credential.length >= MINIMUM_CREDENTIAL_UNITS;
-    },)
-    .flatMap(function spellings(credential,): readonly string[] {
-      return spellingsOf({ credential, },);
-    },);
-
-  /**
    Units of the ending that is a credential's opening.
    */
   const head = trailingHeadUnits({
     text: masked,
-    needles,
+    needles: needlesOfAll({ credentials, },)
+      .map(function textOf(needle,): string {
+        return needle.text;
+      },),
   },);
   if (head === 0)
     return masked;

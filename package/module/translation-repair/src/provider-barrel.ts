@@ -22,6 +22,10 @@ export {
   maskCredentialsInCutText,
   MINIMUM_CREDENTIAL_UNITS,
 } from './credential-mask.ts';
+export { decodedFormsOf, } from './credential-decoded-forms.ts';
+export { needlesOf, } from './credential-needles.ts';
+export { findNeedles, } from './credential-search.ts';
+export { decodedViewsOf, } from './credential-views.ts';
 export {
   exchangeFailureLogText,
   exchangeFailureText,
