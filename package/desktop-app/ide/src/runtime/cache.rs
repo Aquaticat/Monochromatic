@@ -41,13 +41,18 @@ static NEXT_WRITE: AtomicU64 = AtomicU64::new(0);
 
 /// What: Write `bytes` to a new private file beside `target`, then rename it over `target`.
 ///       `&Path` is a borrowed path (sibling `PathBuf`, an owned one).
-/// Why: Kept separate so a failed write can remove its private file in one place.
+/// Why: Kept separate so a failed write can remove its private file in one place; the retention
+///      module writes its use marker through it as well.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function replaceAtomically(directory: string, target: string, bytes: Uint8Array): void
 /// ```
-fn replace_atomically(directory: &Path, target: &Path, bytes: &[u8]) -> std::io::Result<()> {
+pub(super) fn replace_atomically(
+    directory: &Path,
+    target: &Path,
+    bytes: &[u8],
+) -> std::io::Result<()> {
     // What: `fetch_add(1, Ordering::Relaxed)` returns the counter and adds one in a single step;
     //       `Relaxed` asks only for uniqueness, not for ordering with other memory.
     // Why: Every write in this process gets its own number.

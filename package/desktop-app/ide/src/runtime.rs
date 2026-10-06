@@ -24,6 +24,10 @@ use std::{
 pub mod cache;
 /// The table of files the build script compiled into the application binary.
 pub mod embedded;
+/// The embedded license and notice texts, as `--licenses` prints them.
+pub mod notices;
+/// Renew the current build's cache folder and remove other builds' folders unused for 30 days.
+pub mod retention;
 
 /// What: Where language files come from. `enum` is a value that is exactly one of these variants,
 ///       like a TS discriminated union. `&'static EmbeddedRuntime` borrows the table stored in the
@@ -96,6 +100,43 @@ pub fn install(source: RuntimeSource) {
     if let Err(ignored) = INSTALLED.set(source) {
         tracing::warn!(ignored = %ignored.describe(), "language runtime was already chosen; keeping the first");
     }
+}
+
+/// What: At start, renew the cache folder of `runtime`'s key, then remove the folders of other
+///       builds unused for longer than [`retention::UNUSED_LIMIT`].
+/// Why: The application binary calls this once, before any window exists, so the current key is in
+///      place before anything is removed. It runs on the starting thread: it lists one small
+///      folder and removes at most a few old ones, and a removal must not be cut short by an exit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tidyCache(runtime: EmbeddedRuntime): void { markUsed(keyFolder); removeUnused(...); }
+/// ```
+pub fn tidy_cache(runtime: &embedded::EmbeddedRuntime) {
+    let Some(cache) = application_cache() else {
+        tracing::warn!(
+            "no private cache directory (neither XDG_CACHE_HOME nor HOME is absolute); the language parser cache is not tidied"
+        );
+        return;
+    };
+    let folder = cache.join("runtime");
+    // What: `if let Err(error) = ...` runs the block only for a failed renewal; `{error:#}` prints
+    //       the message with its causes.
+    // Why: Removal of other folders still runs: it never touches the current key.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { markUsed(join(folder, runtime.key)); } catch (error) { log.warn(error); }
+    // ```
+    if let Err(error) = retention::mark_used(&folder.join(runtime.key)) {
+        tracing::warn!(error = %format!("{error:#}"), "language parser cache use not recorded at start");
+    }
+    retention::remove_unused(
+        &folder,
+        runtime.key,
+        std::time::SystemTime::now(),
+        retention::UNUSED_LIMIT,
+    );
 }
 
 /// What: The chosen source; without one, the directory `HELIX_RUNTIME` names. `&'static` borrows
@@ -252,8 +293,8 @@ impl RuntimeSource {
                         "Cannot unpack the language parser {name}: neither XDG_CACHE_HOME nor HOME is an absolute path, so the application has no private cache directory. Set HOME or XDG_CACHE_HOME and restart the application. Source remains readable without coloring."
                     );
                 };
-                let directory = cache.join("runtime").join(runtime.key).join("grammars");
-                return cache::unpack(&directory, name, bytes);
+                let key_folder = cache.join("runtime").join(runtime.key);
+                return retention::unpack_marked(&key_folder, name, bytes);
             }
             Self::Directory(directory) => {
                 let path = directory.join("grammars").join(format!("{name}.so"));

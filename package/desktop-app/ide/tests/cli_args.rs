@@ -3,7 +3,7 @@
 /// Inspect typed clap exits without terminating the test process.
 use clap::{Error, error::ErrorKind};
 /// Parse arguments through the production library entry point.
-use ide_app::cli::{parse_args, parse_args_with_home};
+use ide_app::cli::{Options, Startup, parse_args, parse_args_with_home};
 /// Native byte filenames must survive parsing, including paths that are not valid UTF-8.
 use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::Path};
 
@@ -16,21 +16,31 @@ fn args(values: &[&str]) -> Vec<OsString> {
         .collect();
 }
 
+/// The options of a start that opens a window; any other outcome fails the test.
+fn opened(startup: Startup) -> Options {
+    return match startup {
+        Startup::Open(options) => options,
+        Startup::Licenses => panic!("expected a window start, got the license listing"),
+    };
+}
+
 /// Required root and optional initial-file operands remain uninterpreted native paths during parsing.
 #[test]
 fn project_and_initial_file_parse_without_filesystem_access() {
-    let parsed = parse_args(&args(&["/not-created/project", "--file", "src/猫.ts"]))
-        .expect("startup grammar");
+    let parsed = opened(
+        parse_args(&args(&["/not-created/project", "--file", "src/猫.ts"]))
+            .expect("startup grammar"),
+    );
     assert_eq!(parsed.project, Path::new("/not-created/project"));
     assert_eq!(parsed.file.as_deref(), Some(Path::new("src/猫.ts")));
     assert!(
-        parse_args(&args(&["project"]))
-            .expect("project only")
+        opened(parse_args(&args(&["project"])).expect("project only"))
             .file
             .is_none()
     );
-    let dashed =
-        parse_args(&args(&["--file=-source.rs", "--", "-project"])).expect("dash-prefixed paths");
+    let dashed = opened(
+        parse_args(&args(&["--file=-source.rs", "--", "-project"])).expect("dash-prefixed paths"),
+    );
     assert_eq!(dashed.project, Path::new("-project"));
     assert_eq!(dashed.file.as_deref(), Some(Path::new("-source.rs")));
 }
@@ -42,8 +52,10 @@ fn non_utf8_arguments_keep_their_original_bytes() {
     let project = OsString::from_vec(vec![b'p', 0xff]);
     let file = OsString::from_vec(vec![b'f', 0xfe]);
     // Clone retains the expected byte sequences after the argument vector takes its owned inputs.
-    let parsed = parse_args(&[project.clone(), OsString::from("--file"), file.clone()])
-        .expect("native byte paths");
+    let parsed = opened(
+        parse_args(&[project.clone(), OsString::from("--file"), file.clone()])
+            .expect("native byte paths"),
+    );
     assert_eq!(parsed.project.as_os_str(), project);
     assert_eq!(parsed.file.expect("initial file").as_os_str(), file);
 }
@@ -67,14 +79,17 @@ fn help_and_version_are_successful_parser_outcomes() {
 #[test]
 fn missing_project_opens_the_home_folder() {
     let home = Path::new("/var/home/someone");
-    let parsed = parse_args_with_home(&args(&[]), Some(home)).expect("home default");
+    let parsed = opened(parse_args_with_home(&args(&[]), Some(home)).expect("home default"));
     assert_eq!(parsed.project, home);
     assert!(parsed.file.is_none());
-    let with_file = parse_args_with_home(&args(&["--file", "notes/todo.md"]), Some(home))
-        .expect("home default with an initial file");
+    let with_file = opened(
+        parse_args_with_home(&args(&["--file", "notes/todo.md"]), Some(home))
+            .expect("home default with an initial file"),
+    );
     assert_eq!(with_file.project, home);
     assert_eq!(with_file.file.as_deref(), Some(Path::new("notes/todo.md")));
-    let explicit = parse_args_with_home(&args(&["/srv/project"]), Some(home)).expect("explicit");
+    let explicit =
+        opened(parse_args_with_home(&args(&["/srv/project"]), Some(home)).expect("explicit"));
     assert_eq!(explicit.project, Path::new("/srv/project"));
 }
 
@@ -86,6 +101,31 @@ fn missing_project_without_a_home_folder_is_a_usage_error() {
     assert_eq!(cli.exit_code(), 2);
     assert!(cli.use_stderr());
     assert!(cli.to_string().contains("No PROJECT was given"), "{cli}");
+}
+
+/// `--licenses` asks for the license listing even without a project or a home folder, and is a
+/// usage error beside a project or a file, which it would otherwise silently ignore.
+#[test]
+fn licenses_needs_no_project_and_accepts_none() {
+    assert!(matches!(
+        parse_args_with_home(&args(&["--licenses"]), None).expect("license listing"),
+        Startup::Licenses
+    ));
+    assert!(matches!(
+        parse_args_with_home(&args(&["--licenses"]), Some(Path::new("/var/home/someone")))
+            .expect("license listing"),
+        Startup::Licenses
+    ));
+    for values in [
+        vec!["--licenses", "project"],
+        vec!["project", "--licenses"],
+        vec!["--licenses", "--file", "notes.md"],
+    ] {
+        let result = parse_args(&args(&values)).expect_err("licenses beside a start");
+        let cli = result.downcast_ref::<Error>().expect("typed usage error");
+        assert_eq!(cli.kind(), ErrorKind::ArgumentConflict, "{values:?}");
+        assert_eq!(cli.exit_code(), 2);
+    }
 }
 
 /// Extra roots, repeated file selection, unknown options, and empty paths are rejected.

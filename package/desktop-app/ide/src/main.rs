@@ -31,6 +31,37 @@ mod launcher;
 #[path = "embedded_runtime_tests.rs"]
 mod embedded_runtime_tests;
 
+/// What: Print every license and notice text embedded in this executable to standard output.
+///       `stdout().lock()` holds the stream for the whole listing; `write_all` sends raw bytes.
+/// Why: `--licenses` must work without a project, a home folder, or a display. Every text is
+///      digest-checked first, so a damaged executable reports the damage and prints no partial list.
+///      A reader that stops early (`| head`) closes the pipe; Rust reports that as a `BrokenPipe`
+///      write error instead of ending the process, and it is a normal end here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function printLicenses(): void { process.stdout.write(render(collect(EMBEDDED_RUNTIME))); }
+/// ```
+fn print_licenses() -> anyhow::Result<()> {
+    let notices = ide_app::runtime::notices::collect(&embedded_runtime::EMBEDDED_RUNTIME)?;
+    let mut out = std::io::stdout().lock();
+    // What: `and_then(|()| ...)` flushes only after every text was written; `match` then sorts the
+    //       one outcome into success, a closed pipe, or a real error.
+    // Why: Output is buffered, so a write error can surface at the flush.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { write(notices, version, stdout); flush(stdout); } catch (error) { if (error.code !== 'EPIPE') throw error; }
+    // ```
+    let written = ide_app::runtime::notices::write(&notices, env!("CARGO_PKG_VERSION"), &mut out)
+        .and_then(|()| return std::io::Write::flush(&mut out));
+    return match written {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::BrokenPipe => Ok(()),
+        Err(error) => Err(error.into()),
+    };
+}
+
 /// Parse help and usage before starting logging, filesystem reads, or a native display connection.
 fn main() -> anyhow::Result<()> {
     // What: args_os retains native filename bytes; skip omits the executable name and collect owns the arguments.
@@ -49,8 +80,8 @@ fn main() -> anyhow::Result<()> {
     // const options = parseOrPrintAndExit(args);
     // return run(options);
     // ```
-    let options = match ide_app::cli::parse_args(&args) {
-        Ok(options) => options,
+    let startup = match ide_app::cli::parse_args(&args) {
+        Ok(startup) => startup,
         Err(error) => {
             if let Some(cli) = error.downcast_ref::<clap::Error>() {
                 // Exit is clap's documented terminal operation; no application resources have been started.
@@ -59,5 +90,15 @@ fn main() -> anyhow::Result<()> {
             return Err(error);
         }
     };
-    return native::run(options);
+    // What: `match` on the two outcomes: open a window, or print the license texts and return.
+    // Why: The license listing starts no logging, reads no project, and connects to no display.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return startup.kind === 'open' ? run(startup.options) : printLicenses();
+    // ```
+    return match startup {
+        ide_app::cli::Startup::Open(options) => native::run(options),
+        ide_app::cli::Startup::Licenses => print_licenses(),
+    };
 }

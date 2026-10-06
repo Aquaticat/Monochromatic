@@ -324,6 +324,8 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     ide_app::runtime::install(ide_app::runtime::RuntimeSource::Embedded(
         &crate::embedded_runtime::EMBEDDED_RUNTIME,
     ));
+    // Renew this build's parser cache folder, then remove other builds' folders unused for 30 days.
+    ide_app::runtime::tidy_cache(&crate::embedded_runtime::EMBEDDED_RUNTIME);
     // The app id must be stamped by the backend before the window below exists.
     crate::launcher::install_backend()?;
     let window = AppWindow::new()?;

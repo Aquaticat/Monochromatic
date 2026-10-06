@@ -1,12 +1,13 @@
 //! Display-independent startup grammar for one project root and an optional initial source file.
 //!
 //! Without a project argument the application opens the user's home folder (`$HOME`), as a launcher
-//! entry started without a folder does (decision of 2026-10-06).
+//! entry started without a folder does (decision of 2026-10-06). `--licenses` prints the license and
+//! notice texts embedded in the executable instead of opening a window (decision of 2026-10-06).
 
 /// Preserve clap's typed help/usage errors inside the application's standard error envelope.
 use anyhow::Result;
 /// Reuse the repository's CLI parser and native-path value parser instead of manual argument dispatch.
-use clap::{Arg, Command, builder::PathBufValueParser, error::ErrorKind};
+use clap::{Arg, ArgAction, Command, builder::PathBufValueParser, error::ErrorKind};
 /// Native argv and paths retain non-UTF-8 names rather than passing through display strings.
 use std::{
     ffi::OsString,
@@ -20,6 +21,25 @@ pub struct Options {
     pub project: PathBuf,
     /// Optional source path resolved relative to the project root, not the caller's cwd.
     pub file: Option<PathBuf>,
+}
+
+/// What: What the command line asks for. `enum` is a value that is exactly one of these variants,
+///       like a TS discriminated union.
+/// Why: Printing the license texts needs no project, no home folder, and no display.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Startup = { kind: 'open'; options: Options } | { kind: 'licenses' };
+/// ```
+#[derive(Debug)]
+pub enum Startup {
+    /// Open a window on a project.
+    Open(
+        /// The project and the optional initial file.
+        Options,
+    ),
+    /// Print every embedded license and notice text, then exit with status 0.
+    Licenses,
 }
 
 /// Construct help and option grammar without initializing a display or reading project contents.
@@ -48,6 +68,20 @@ fn command() -> Command {
         "Initially display a UTF-8 source file within PROJECT; relative paths start at PROJECT",
     );
     command = command.arg(file);
+    let mut licenses = Arg::new("licenses");
+    licenses = licenses.long("licenses").action(ArgAction::SetTrue);
+    // What: `conflicts_with_all` makes clap report a usage error when these arguments are combined.
+    // Why: Printing the texts opens nothing, so a project or file beside it would be silently ignored.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (options.licenses && (options.project || options.file)) throw new UsageError('...');
+    // ```
+    licenses = licenses.conflicts_with_all(["project", "file"]);
+    licenses = licenses.help(
+        "Print every license and notice text embedded in the executable, then exit without opening a window",
+    );
+    command = command.arg(licenses);
     return command;
 }
 
@@ -74,14 +108,14 @@ pub fn home_folder() -> Option<PathBuf> {
 
 /// Parse argv excluding the executable name, opening the `HOME` folder when no project is given;
 /// no filesystem or toolkit operations occur here.
-pub fn parse_args(args: &[OsString]) -> Result<Options> {
+pub fn parse_args(args: &[OsString]) -> Result<Startup> {
     // `home_folder().as_deref()` lends the owned path as `Option<&Path>`.
     return parse_args_with_home(args, home_folder().as_deref());
 }
 
 /// Parse argv excluding the executable name, with an explicit home folder for the no-project case.
 /// `home` is `None` when no usable home folder exists; then a missing project is a usage error.
-pub fn parse_args_with_home(args: &[OsString], home: Option<&Path>) -> Result<Options> {
+pub fn parse_args_with_home(args: &[OsString], home: Option<&Path>) -> Result<Startup> {
     // What: Vec owns a variable-length argv list; unlike String, OsString retains native non-UTF-8 bytes.
     // Why: The command name occupies argv[0] while project filenames remain exact native paths.
     //
@@ -103,6 +137,10 @@ pub fn parse_args_with_home(args: &[OsString], home: Option<&Path>) -> Result<Op
     // const matches = command().tryParse(argv);
     // ```
     let matches = command().try_get_matches_from(argv)?;
+    // `get_flag` reads a `SetTrue` switch; the license texts need neither a project nor a home folder.
+    if matches.get_flag("licenses") {
+        return Ok(Startup::Licenses);
+    }
     // cloned copies a present owned path; omission remains None rather than a fabricated filename.
     let file = matches.get_one::<PathBuf>("file").cloned();
     // What: `match (argument, home)` looks at both options at once: `(Some(path), _)` is an explicit
@@ -138,7 +176,7 @@ pub fn parse_args_with_home(args: &[OsString], home: Option<&Path>) -> Result<Op
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return { project, file: matches.file };
+    // return { kind: 'open', options: { project, file: matches.file } };
     // ```
-    return Ok(Options { project, file });
+    return Ok(Startup::Open(Options { project, file }));
 }
