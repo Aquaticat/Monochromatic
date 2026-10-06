@@ -40,6 +40,18 @@ export const CREDENTIAL_MARKER = '[masked: credential sent with this request]';
 export const MINIMUM_CREDENTIAL_UNITS = 12;
 
 /**
+ Fewest leading units of a credential that a text ending in them is read as a
+ credential cut short, and masked.
+
+ A CHOICE, NOT A MEASUREMENT. A head shorter than this is, by inference, too
+ little of a 12-unit secret to be worth the ordinary words a shorter rule
+ would rewrite at the end of an excerpt (a text ending in `s` would match
+ every key that begins with `s`); the cost is that the first three units of a
+ credential may show where a stream was cut inside it.
+ */
+const MINIMUM_HEAD_UNITS = 4;
+
+/**
  Lower-case names of the request headers that carry a credential: an
  authorization value, an API key and a session token.
  */
@@ -337,6 +349,116 @@ export function maskCredentials(
   }
   parts.push(text.slice(cursor.resume,),);
   return parts.join('',);
+}
+
+/**
+ Length of the longest ending of a text that is the opening of one of the
+ needles, a credential the text was cut inside.
+
+ @param text - text that may end inside a credential
+
+ @param needles - spellings of the credentials to look for
+
+ @returns Units of the ending, zero when none is as long as the minimum head
+
+ @example
+ ```ts
+ trailingHeadUnits({ text: 'says whisker-k', needles: ['whisker-key-7421',], },); // 9
+ ```
+ */
+function trailingHeadUnits(
+  {
+    text,
+    needles,
+  }: {
+    readonly text: string;
+    readonly needles: readonly string[];
+  },
+): number {
+  return Math.max(
+    0,
+    ...needles.map(function headOf(needle,): number {
+      for (let units = Math.min(
+        needle.length - 1,
+        text.length,
+      ); units >= MINIMUM_HEAD_UNITS; units -= 1) {
+        if (text.endsWith(needle.slice(
+          0,
+          units,
+        ),))
+          return units;
+      }
+      return 0;
+    },),
+  );
+}
+
+/**
+ Replaces every copy of each credential in a text that may have been cut
+ short, and the opening of a credential the text ends inside, by the marker.
+
+ FOR TEXT CUT OFF BEFORE ITS END, an excerpt of a stream that was torn down:
+ the credential the stream was saying when it stopped has no copy to find, and
+ its first units would show. The mask is applied to the whole text first and
+ the ending read after it, so a caller cuts its excerpt from what this
+ returns and never masks an excerpt already cut.
+
+ @param text - generated text so far, of any shape
+
+ @param credentials - secrets the request carried; one holding fewer than the
+ minimum units, or none, is left unmasked
+
+ @returns The text with every copy masked and any ending that is at least the
+ minimum head of a credential masked too, the very same string when neither
+ was found
+
+ @example
+ ```ts
+ maskCredentialsInCutText({ text: 'says whisker-k', credentials: ['whisker-key-7421',], },);
+ ```
+ */
+export function maskCredentialsInCutText(
+  {
+    text,
+    credentials,
+  }: {
+    readonly text: string;
+    readonly credentials: readonly string[];
+  },
+): string {
+  /**
+   Text with every whole copy masked.
+   */
+  const masked = maskCredentials({
+    text,
+    credentials,
+  },);
+
+  /**
+   Spellings of the credentials long enough to mask.
+   */
+  const needles = credentials
+    .filter(function longEnough(credential,): boolean {
+      return credential.length >= MINIMUM_CREDENTIAL_UNITS;
+    },)
+    .flatMap(function spellings(credential,): readonly string[] {
+      return spellingsOf({ credential, },);
+    },);
+
+  /**
+   Units of the ending that is a credential's opening.
+   */
+  const head = trailingHeadUnits({
+    text: masked,
+    needles,
+  },);
+  if (head === 0)
+    return masked;
+
+  return masked.slice(
+    0,
+    masked.length - head,
+  ) + CREDENTIAL_MARKER;
 }
 
 //endregion Credential mask

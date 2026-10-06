@@ -1,11 +1,15 @@
 import { setTimeout as sleepFor, } from 'node:timers/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { contextRoot, } from './log-context.ts';
 import { monotonicMs, } from './monotonic-clock.ts';
 import { StatedRefusalError, } from './stated-refusal.ts';
-import { isDecimalText, } from './whole-number-text.ts';
+import {
+  isWholeNumberText,
+  WHOLE_NUMBER_RULE,
+} from './whole-number-text.ts';
 
 //region Request pace
 // A sliding-window pacer that lets at most `perWindow` requests START in any
@@ -135,8 +139,9 @@ async function abortableSleep(
  together cannot both read a window with one free place and both start, and
  no caller ever waits behind another caller's wait.
 
- @param perWindow - starts allowed in any window; not positive means no
- pacing, which is what tests and a provider without a rate limit want
+ @param perWindow - starts allowed in any window, a whole number of one or
+ more: a window holds whole requests, and the start `perWindow` places back is
+ read by index, which a fraction would miss
 
  @param windowMs - window length
 
@@ -148,6 +153,9 @@ async function abortableSleep(
  tests
 
  @returns Pacer
+
+ @throws {@link RangeError} when `perWindow` is not a whole number of one or
+ more, whatever the caller built it from
 
  @example
  ```ts
@@ -172,6 +180,12 @@ export function createRequestPace(
     ) => Promise<void>;
   },
 ): RequestPace {
+  // A PLACE COUNT THE WINDOW CANNOT HOLD IS REFUSED HERE, so a pacer built by
+  // hand cannot reach `nextFreeAt` with a fractional index: 1.5 places read
+  // `starts[1.5]` as missing and made every take wait a whole window.
+  if ((!Number.isSafeInteger(perWindow,)) || (perWindow < 1))
+    throw new RangeError(`perWindow must be a whole number of one or more, and ${String(perWindow,)} is not`,);
+
   /**
    Logger pre-tagged with this function's name.
    */
@@ -192,7 +206,7 @@ export function createRequestPace(
      Oldest moment still inside the window.
      */
     const edge = now() - windowMs;
-    while ((starts.length > 0) && ((starts[0] ?? edge) <= edge))
+    while ((starts.length > 0) && (nonNullishOrThrow(starts[0],) <= edge))
       starts.shift();
   }
 
@@ -204,11 +218,13 @@ export function createRequestPace(
    */
   function nextFreeAt(): number {
     prune();
-    if ((perWindow <= 0) || (starts.length < perWindow))
+    if (starts.length < perWindow)
       return now();
     return Math.max(
       now(),
-      (starts[starts.length - perWindow] ?? now()) + windowMs,
+      // A PLAIN INDEX READ: `perWindow` is a whole number of one or more and
+      // the window holds at least that many starts, so the index is in range.
+      nonNullishOrThrow(starts[starts.length - perWindow],) + windowMs,
     );
   }
 
@@ -296,12 +312,14 @@ export function createRequestPace(
 
  @param env - environment to read
 
- @returns Positive number from the variable, or the default when it is unset,
- empty or blank
+ @returns Whole number of one or more from the variable, or the default when
+ it is unset, empty or blank
 
  @throws {@link StatedRefusalError} when the variable is set and is not a
- positive number, as every other dial refuses (ledger D14): a mistyped rate
- that fell back to the account limit ran a launch at a pace nobody asked for
+ whole number of one or more, as every other dial refuses (ledger D14): a
+ mistyped rate that fell back to the account limit ran a launch at a pace
+ nobody asked for, and a fraction such as 1.5 is a rate the pacer cannot keep
+ since its window holds whole requests
 
  @example
  ```ts
@@ -326,13 +344,13 @@ export function hyperRequestsPerHour(
    number out of a typo such as `300/h`.
    */
   const parsed = Number(raw,);
-  // A PLAIN DECIMAL, as an operator writes a rate: `Number` also read `0x10`,
-  // `1e1`, `+15`, ` 15` and `.5` as rates nobody wrote that way (ledger B73).
-  if ((!isDecimalText({ text: raw, },))
-    || (!Number.isFinite(parsed,))
-    || (parsed <= 0)) {
+  // A WHOLE NUMBER IN DIGITS, as an operator writes a count of requests:
+  // `Number` also read `0x10`, `1e1`, `+15`, ` 15` and `.5` as rates nobody
+  // wrote that way (ledger B73), and a fraction is no rate a window of whole
+  // requests can keep.
+  if ((!isWholeNumberText({ text: raw, },)) || (parsed < 1)) {
     throw new StatedRefusalError({
-      says: `${HYPER_REQUESTS_PER_HOUR_VAR} must be a positive number of requests per hour, and `
+      says: `${HYPER_REQUESTS_PER_HOUR_VAR} must be one or more requests per hour, as ${WHOLE_NUMBER_RULE}, and `
         + `${JSON.stringify(raw,)} is not; leave it unset for the account limit of ${String(HYPER_REQUESTS_PER_HOUR,)}`,
     },);
   }

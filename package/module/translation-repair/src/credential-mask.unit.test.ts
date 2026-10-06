@@ -17,6 +17,7 @@ import {
   CREDENTIAL_MARKER,
   credentialsOfHeaders,
   maskCredentials,
+  maskCredentialsInCutText,
   MINIMUM_CREDENTIAL_UNITS,
 } from '../dist/final/node/index.mjs';
 import { WHISKER_KEY, } from './quoting-failure.test-fixture.ts';
@@ -191,6 +192,55 @@ await describe({
             'x-api-key': 'short',
           },
         },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'MASKS THE OPENING OF A CREDENTIAL A CUT TEXT ENDS INSIDE from four units on, and leaves three alone',
+      fn: async () => {
+        /**
+         Endings of the key, from three units to all but the last one, and what
+         the cut text becomes for each.
+         */
+        const lengths = Array.from(
+          { length: WHISKER_KEY.length - 3, },
+          function unitsAt(_unused, at,): number {
+            return at + 3;
+          },
+        );
+        expect(lengths.map(function maskedAt(units,): string {
+          return maskCredentialsInCutText({
+            text: `says ${WHISKER_KEY.slice(0, units,)}`,
+            credentials: [WHISKER_KEY,],
+          },);
+        },),).toEqual(lengths.map(function expected(units,): string {
+          return (units < 4) ? `says ${WHISKER_KEY.slice(0, units,)}` : `says ${CREDENTIAL_MARKER}`;
+        },),);
+      },
+    },),
+    it({
+      name: 'MASKS WHOLE COPIES AND THE CUT OPENING TOGETHER, and the opening of the header value as written',
+      fn: async () => {
+        expect(maskCredentialsInCutText({
+          text: `${WHISKER_KEY} then ${BEARER.slice(0, 11,)}`,
+          credentials: [BEARER, WHISKER_KEY,],
+        },),).toBe(`${CREDENTIAL_MARKER} then ${CREDENTIAL_MARKER}`,);
+      },
+    },),
+    it({
+      name: 'RETURNS THE VERY SAME CUT TEXT when it holds no copy and ends in no opening of a credential',
+      fn: async () => {
+        /**
+         Text ending on three units of the key, and a word that is no key's.
+         */
+        const text = 'the cat napped on the mat, whi';
+        expect(maskCredentialsInCutText({
+          text,
+          credentials: [WHISKER_KEY,],
+        },),).toBe(text,);
+        expect(maskCredentialsInCutText({
+          text,
+          credentials: [],
+        },),).toBe(text,);
       },
     },),
   ],

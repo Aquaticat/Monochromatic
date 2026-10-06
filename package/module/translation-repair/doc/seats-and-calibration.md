@@ -129,7 +129,7 @@ read off four matched pass pairs
 (`doc/decision/translation-repair-pass-overlap.md`);
 `TRANSLATION_REPAIR_SLICE_OVERLAP=1` reproduces the sequential driver for one launch.
 `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR` (`request-pace.ts`) sets how many Hyper requests may start
-in any rolling hour,
+in any rolling hour (a whole number of one or more, or the client refuses it),
 retries and credit reads included;
 the rest queue in arrival order instead of being refused with HTTP 429.
 The default,

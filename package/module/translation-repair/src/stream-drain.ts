@@ -1,12 +1,17 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import {
+  maskCredentials,
+  maskCredentialsInCutText,
+} from './credential-mask.ts';
 import { contextRoot, } from './log-context.ts';
 import { refusalText, } from './refusal-text.ts';
 import type { IdleGuard, } from './stream-idle-guard.ts';
 import type { StreamWireFormat, } from './stream-wire-format.ts';
 import {
   type RunawayVerdict,
+  type RunawayWatch,
   StreamDegenerateError,
   watchRunaway,
 } from './stream-runaway-watch.ts';
@@ -154,6 +159,66 @@ function endedOutcome({ error, }: { readonly error: unknown; },): StreamOutcome 
 }
 
 /**
+ Logs how a stream ended, with the sent credentials taken out of the two
+ pieces of provider text the line carries.
+
+ MASKED BEFORE THE EXCERPT IS CUT. The line shows the opening of what the
+ model generated, and the credential a request carried may be in it, whole,
+ or cut by the end of a stream that was torn down inside it. The generated
+ text the watch kept is masked whole, a cut-off credential included, and the
+ line's excerpt is cut from that, so no head of a credential reaches the
+ cut. Masking the excerpt after the cut showed the head of a credential the
+ cut fell inside. The text is the watch's own opening, which it caps, so the
+ mask reads a short text except where one frame carried far more.
+
+ @param label - model this call went to
+
+ @param guard - silence guard, whose totals the line reports
+
+ @param watch - runaway watch whose opening text, counts and upstream the line reports
+
+ @param outcome - how the stream ended
+
+ @param credentials - secrets the request carried, none where the caller has none to name
+
+ @example
+ ```ts
+ reportMaskedProgress({ label, guard, watch, outcome: 'cut', credentials, },);
+ ```
+ */
+function reportMaskedProgress(
+  {
+    label,
+    guard,
+    watch,
+    outcome,
+    credentials,
+  }: {
+    readonly label: string;
+    readonly guard: ForeignBorrowed<IdleGuard>;
+    readonly watch: RunawayWatch;
+    readonly outcome: StreamOutcome;
+    readonly credentials: readonly string[];
+  },
+): void {
+  reportStreamProgress({
+    label,
+    progress: guard.progress(),
+    unreadableFrames: watch.unreadableFrames(),
+    outcome,
+    openingText: maskCredentialsInCutText({
+      text: watch.openingText(),
+      credentials,
+    },),
+    generatedChars: watch.generatedChars(),
+    servedBy: maskCredentials({
+      text: watch.servedBy(),
+      credentials,
+    },),
+  },);
+}
+
+/**
  Drains a response body chunk by chunk, telling the guard about each arrival
  so silence is measured rather than inferred from total elapsed time. The
  decoded text is concatenated and handed back whole, so every parser above
@@ -192,9 +257,14 @@ function endedOutcome({ error, }: { readonly error: unknown; },): StreamOutcome 
  @param maxAnswerChars - bound for this one call, when the caller knows its
  own input size; the module default polices every call that names none
 
+ @param credentials - secrets the request carried, which the log line's
+ excerpt of generated text and its upstream name must not repeat; an empty
+ list where the request carried none, which every caller states so that none
+ forgets the mask
+
  @example
  ```ts
- const bodyText = await drainBody({ response, guard, callerSignal, label, },);
+ const bodyText = await drainBody({ response, guard, callerSignal, label, credentials, },);
  ```
  */
 export async function drainBody(
@@ -205,6 +275,7 @@ export async function drainBody(
     label,
     maxAnswerChars,
     wireFormat,
+    credentials,
   }: {
     readonly response: ForeignBorrowed<Response>;
     readonly guard: ForeignBorrowed<IdleGuard>;
@@ -212,6 +283,7 @@ export async function drainBody(
     readonly label: string;
     readonly maxAnswerChars?: number;
     readonly wireFormat?: StreamWireFormat;
+    readonly credentials: readonly string[];
   },
 ): Promise<string> {
   /**
@@ -342,14 +414,12 @@ export async function drainBody(
     // that finished. A degenerate ending is reported as its own outcome rather
     // than as `cut`, so a stall figure read off this line counts stalls and not
     // every deliberate termination alongside them.
-    reportStreamProgress({
+    reportMaskedProgress({
       label,
-      progress: guard.progress(),
-      unreadableFrames: watch.unreadableFrames(),
+      guard,
+      watch,
       outcome: endedOutcome({ error, },),
-      openingText: watch.openingText(),
-      generatedChars: watch.generatedChars(),
-      servedBy: watch.servedBy(),
+      credentials,
     },);
 
     // OUR OWN DELIBERATE TERMINATION PASSES THROUGH UNCHANGED. Both guard
@@ -380,14 +450,12 @@ export async function drainBody(
    */
   const bodyText = parts.join('',);
 
-  reportStreamProgress({
+  reportMaskedProgress({
     label,
-    progress: guard.progress(),
-    unreadableFrames: watch.unreadableFrames(),
+    guard,
+    watch,
     outcome: 'completed',
-    openingText: watch.openingText(),
-    generatedChars: watch.generatedChars(),
-    servedBy: watch.servedBy(),
+    credentials,
   },);
 
   return bodyText;

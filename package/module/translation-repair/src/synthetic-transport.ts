@@ -228,6 +228,7 @@ async function drainWithMaskedCut(
       guard,
       callerSignal,
       label,
+      credentials,
       ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
       ...((wireFormat === undefined) ? {} : { wireFormat, }),
     },);

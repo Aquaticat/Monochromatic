@@ -215,6 +215,7 @@ await describe({
          */
         const raised = await refusalFrom(async function readsPastTheBound(): Promise<void> {
           await drainBody({
+            credentials: [],
             response: streamOf({ raw: bodyOf(), },),
             guard,
             callerSignal: AbortSignal.timeout(ROOMY_MS,),
@@ -239,6 +240,7 @@ await describe({
          Whole body, which only arrives if nothing ended the call.
          */
         const body = await drainBody({
+          credentials: [],
           response: streamOf({ raw: bodyOf(), },),
           guard,
           callerSignal: AbortSignal.timeout(ROOMY_MS,),

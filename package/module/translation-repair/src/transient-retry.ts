@@ -189,7 +189,10 @@ function longestBackoffMs({ policy, }: { readonly policy: RetryPolicy; },): numb
  @param signal - caller's abort, joined with the exchange deadline where one
  is armed
 
- @throws Whatever the timer throws for any reason other than that abort
+ @throws {@link Error} naming an unreachable state, with the timer's own
+ rejection as its cause, when the timer rejects while the caller has not
+ aborted: `timers/promises` `setTimeout` rejects for a number of milliseconds
+ and an abort signal only when that signal aborts
 
  @example
  ```ts
@@ -223,7 +226,11 @@ async function sleepBackoff(
     // The caller's abort is the one early end a backoff has; the retry loop
     // reads it next and surfaces the failure that was being retried.
     if (!signal.aborted)
-      throw error;
+      throw new Error(
+        'unreachable: the backoff timer rejected while the caller had not aborted, and a timer given a number '
+          + 'of milliseconds and an abort signal rejects only when that signal aborts',
+        { cause: error, },
+      );
     rl.debug(`backoff of ${String(ms,)}ms ended by the caller's abort: ${String(error,)}`,);
   }
 }

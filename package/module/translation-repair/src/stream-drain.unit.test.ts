@@ -175,7 +175,7 @@ type DrainOutcome = {
 
  @param label - model name to drain under
 
- @param credentials - secrets the request carried, absent for none named
+ @param credentials - secrets the request carried, none where absent
 
  @mutates response - its body is drained and cannot be read again
 
@@ -195,7 +195,7 @@ async function drainOutcome(
     callerSignal = new AbortController().signal,
     wireFormat,
     label = 'hf:whiskers',
-    credentials,
+    credentials = [],
   }: {
     readonly response: Response;
     readonly guard: Parameters<typeof drainBody>[0]['guard'];
@@ -215,7 +215,7 @@ async function drainOutcome(
         label,
         // Conditional spread keeps the knob absent instead of undefined.
         ...(wireFormat === undefined ? {} : { wireFormat, }),
-        ...((credentials === undefined) ? {} : { credentials, }),
+        credentials,
       },),
     };
   }
@@ -493,6 +493,7 @@ await describe({
         const overrun = await (async function drainUnderBound(): Promise<unknown> {
           try {
             return await drainBody({
+              credentials: [],
               response: answering.response,
               guard: overrunGuard,
               callerSignal: new AbortController().signal,

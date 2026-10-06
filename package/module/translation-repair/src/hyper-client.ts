@@ -229,7 +229,7 @@ function servedIdFor(
  @param requestsPerHour - request starts allowed in any rolling hour,
  retries and credit reads included; the provider limits this account to
  1,000 and refuses the rest with HTTP 429, so calls queue here instead
- (`request-pace.ts` has the measurement); not positive means unpaced
+ (`request-pace.ts` has the measurement); a whole number of one or more, which `createRequestPace` refuses otherwise
 
  @returns Client surface with chatText, chatJson, and credits
 

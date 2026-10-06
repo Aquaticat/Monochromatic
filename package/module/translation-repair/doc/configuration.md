@@ -313,9 +313,10 @@ section `Historical writer and editor runners`.
     the account's limit as the owner stated it (`HYPER_REQUESTS_PER_HOUR` in `src/request-pace.ts`).
     It is read once,
     when the Hyper client is built.
-    Unlike every other dial here,
-    a value that is not a positive number is not refused:
-    it silently leaves the default.
+    A value that is not a whole number of one or more,
+    written in digits,
+    is refused there as every other dial is,
+    naming the variable and the value as written.
 
 ## Choosing what a run attempts
 

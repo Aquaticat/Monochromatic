@@ -320,6 +320,7 @@ await describe({
             },);
             const encoder = new TextEncoder();
             const bodyText = await drainBody({
+              credentials: [],
               response: streamingResponse([
                 encoder.encode('data: one\n',),
                 encoder.encode('data: two\n',),
@@ -344,6 +345,7 @@ await describe({
             // U+732B in UTF-8 is e7 8c ab; splitting it proves the decoder is
             // incremental rather than per-chunk.
             const bodyText = await drainBody({
+              credentials: [],
               response: streamingResponse([
                 new Uint8Array([0xE7, 0x8C,],),
                 new Uint8Array([0xAB,],),
@@ -365,6 +367,7 @@ await describe({
               idleMs: ROOMY_MS,
             },);
             const bodyText = await drainBody({
+              credentials: [],
               response: new Response(null,),
               guard,
             label: 'hf:whiskers',
@@ -404,6 +407,7 @@ await describe({
             let caught: unknown;
             try {
               await drainBody({
+                credentials: [],
                 response: stalled,
                 guard,
                 label: 'hf:whiskers',
@@ -461,6 +465,7 @@ await describe({
             let caught: unknown;
             try {
               await drainBody({
+                credentials: [],
                 response: steered,
                 guard,
                 label: 'hf:whiskers',

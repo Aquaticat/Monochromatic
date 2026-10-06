@@ -19,6 +19,7 @@ export {
   CREDENTIAL_MARKER,
   credentialsOfHeaders,
   maskCredentials,
+  maskCredentialsInCutText,
   MINIMUM_CREDENTIAL_UNITS,
 } from './credential-mask.ts';
 export {
