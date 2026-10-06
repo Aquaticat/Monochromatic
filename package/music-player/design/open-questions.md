@@ -1210,11 +1210,10 @@ and that the agent should build one version of which other rows get templates
 and ask for approval (D97).
 That version (two templates,
 `Track rows` and `Playing track`)
-is proposed in the planning note and built into the review page;
-row-type coverage stays open until the human approves it.
-Still open in this round:
-how the field list is reached while the keyboard is open,
-then row-type coverage and titles.
+was built into the review page,
+and the human accepted the editor (D98) and approved that version as built (D99).
+The design round for templates is closed;
+no production implementation is authorized.
 
 ## 12. Existing-screen refinement, 3B settled and accepted
 

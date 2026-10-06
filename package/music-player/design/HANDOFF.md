@@ -144,12 +144,17 @@ The capture needed many visits while other work loaded the host;
 within a bound,
 for the five-minute load average to fall under 48 before each round of visits.
 
+Answered through the question tool on 2026-10-06:
+the editor is accepted as shown (D98),
+the two templates are approved as built (D99),
+the first-run study keeps access declined and drops no source opened (D100),
+and `AGENTS.md`'s APQ now says never to block pushes in this repository's linked worktrees,
+which share its `.git/config`.
+The review page shows the two templates as decided.
+
 Next:
-ask the human,
-through the question tool,
-to approve the D97 version,
-whether D95 removes the first-run study's states without an opened source,
-and whether a rule should keep agents from blocking pushes in this repository's linked worktrees.
+rebuild the first-run study for D100
+(`evidence/first-run-access-boundaries.md` describes the current one).
 
 To capture again,
 from `~/temp/agent`:

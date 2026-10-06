@@ -700,14 +700,22 @@ no scroll of the study's own while typing,
 the new default template,
 and a changed-template scene whose second row ends with the separator an empty peak leaves.
 Its review page shows the decided design and asks nothing.
-The next concern of the round is reaching the field list while the keyboard is open.
+
+Shown that page,
+the human answered that a library is always open (D95),
+that scrolling suffices to reach the field list (D96),
+and that the agent builds one version of which other rows get templates for approval (D97).
+That version is the next section.
+The human then accepted the editor as shown (D98),
+approved the version as built (D99),
+and decided what D95 means for the first-run study (D100).
 
 ## Which rows get templates: the agent's version (2026-10-06)
 
 D97 asks for one built version,
 the agent's own design,
 and the human's approval.
-Nothing here is decided until then.
+The human approved it as built (D99).
 
 ### Where supporting text appears
 
