@@ -1,11 +1,13 @@
 //! Reads that no write notification asked for do not show a save in progress. A displayed file outside
-//! the project has no watch at all, so every read of it is such a read: the first read after opening,
-//! the newly displayed file's reread, and the safety sweep.
+//! the project has no watch at all, so no notification of the save ever arrives; the test asks for the
+//! reread a new watch, a newly displayed file, or a full reread after lost events asks for, mid-save.
 
 /// Shipped window setup shared with the watch tests.
 use super::watch_tests::open;
 /// The slow-writer helpers and texts of the write-wait tests.
 use super::write_wait_tests::{NEW, OLD, PAUSE, until_text, watch_texts};
+/// The kind of change the navigation records for a reread no write was seen behind.
+use ide_app::change_watch::SourceChange;
 /// The quiet period a save must stay under for the assertion to apply.
 use ide_app::refresh_policy::WRITE_QUIET;
 /// `ComponentHandle` provides `hide` on the generated window.
@@ -20,12 +22,12 @@ use slint::ComponentHandle;
 use std::{
     fs::{self, OpenOptions},
     io::Write,
-    time::Instant,
+    time::{Duration, Instant},
 };
 
-/// A save that starts as the window opens is shown only when finished. A trial in which the test thread
-/// itself stalled until the save outlasted the quiet period proves nothing, so up to five trials run until
-/// one did not stall.
+/// A save in progress when a reread with no write behind it is asked for is shown only when finished.
+/// A trial in which the test thread itself stalled until the save outlasted the quiet period proves
+/// nothing, so up to five trials run until one did not stall.
 #[test]
 fn reads_no_notification_asked_for_do_not_show_a_save_in_progress() {
     let project = tempfile::tempdir().expect("disposable project");
@@ -42,13 +44,19 @@ fn reads_no_notification_asked_for_do_not_show_a_save_in_progress() {
         // Opened from a language target: outside the project, so nothing watches it.
         state.borrow_mut().outside_project = true;
         let mut seen = Vec::new();
-        // No timer has run yet, so the first read and the reread of the newly displayed file come after this.
+        // The startup reads finish, and the file has been quiet for longer than the quiet period.
+        watch_texts(&window, Duration::from_millis(300), &mut seen);
         let truncated_at = Instant::now();
         let mut file = OpenOptions::new()
             .write(true)
             .truncate(true)
             .open(&displayed)
             .expect("open for an in-place save");
+        // What the navigation records after a new watch, a switch, or lost events: read at the next tick.
+        state
+            .borrow_mut()
+            .refresh
+            .changed(SourceChange::Reread, Instant::now());
         watch_texts(&window, PAUSE, &mut seen);
         let held = truncated_at.elapsed();
         file.write_all(NEW.as_bytes()).expect("finish the save");
