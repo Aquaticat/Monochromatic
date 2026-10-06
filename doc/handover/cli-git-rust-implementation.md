@@ -195,20 +195,13 @@ Every delegate in that list has reported;
 `Delegate results` has each outcome.
 Running at the last update of this document (2026-10-06, relaunched at 08:10):
 
-- Content policies over candidates
-  (linked worktree `.claude/worktrees/cli-git-content-policies`, branch `feat/cli-git-native-content-policies`):
-  the `git add` and worktree candidate sources,
-  the failure code carried to the event,
-  `final-newline`, `security/forbidden-strings` with `rulesFile`, and `mono/forbidden-root-context`,
-  with a differential test against the incumbent.
-  Evidence: `doc/handover/cli-git-native-content-policies.md` on that branch.
-- Linter mutation and fuzz gaps (main checkout):
-  the six items listed under `Linter mutation close`.
 - Dependent-version planning in Rust with a differential proof against the TypeScript planner
   (linked worktree `.claude/worktrees/cli-git-dependent-version`,
   branch `feat/cli-git-native-dependent-version`),
   evidence `doc/handover/cli-git-native-dependent-version.md` on that branch.
 
+The content-policy delegate and the linter gaps delegate have reported;
+see `Content policies over candidates` and `Linter mutation close`.
 The scanner's Windows suite through `mvm` alone has reported;
 its result is in the work queue item `Scanner on Windows`.
 Reported and recorded under `Delegate results`:
@@ -875,6 +868,82 @@ linting on the main thread for one file or `--concurrency 1` (a possible stack o
 the untested `set_hook` call and worker stack size,
 and a rerun of the fuzz sidecar against the final library.
 
+The gaps round closed all of them;
+evidence in `doc/handover/unified-linter-mutation-close.md`, sections `Result` and `Gaps round`.
+Final test image `7526e26a714499174ff012c45175059ac39127333510cc8fa405264c902499f7`,
+linter source tree `c5f934d97d7579d9eca66741241ecc47291cc877`;
+its gate passed 389 library tests (1 ignored), 13 binary tests and Clippy.
+
+- Coverage by listing (`mutation:coverage`):
+  the union of every scope's `--list` equals the unscoped listing,
+  1,650 mutants with none outside a scope,
+  and each scope's listing equals the names in its final campaign's outcomes.
+  The union had been 347 short before this round;
+  a core scope and a sharded semantic scope (1,200 seconds per mutant, judged against its baselines) close it.
+  Dropping the core scope makes the check fail with 202 mutants outside, the positive control.
+- Every scope ended with 0 missed.
+  The executable scope recorded one timeout,
+  a mutant whose own test had already failed
+  while two unrelated concurrency tests ran past 180 seconds at host load 45 to 95;
+  rerunning that file on the same image caught it in 1.1 seconds.
+- Linting now always runs on a thread with the explicit 8 MiB stack.
+  Before the change, one file, `--concurrency 1` and `--stdin` each overflowed the main stack under a 1 MiB limit
+  (`thread 'main' has overflowed its stack`, exit 134);
+  after it all five cases exit 0,
+  and a binary test fails when the thread is removed.
+- The panic hook call and the stack size are pinned by tests that fail when mutated.
+- The fuzz sidecar gained planted-defect controls (all six noticed) and passed its controls and smoke run.
+- Still open:
+  no Windows or release build was run;
+  two backend settings are pinned rather than tested by behavior,
+  because no fixture in the container can observe them;
+  and on a loaded host the executable scope's slowest caught mutant took 146 seconds against its 180 second limit.
+- Observed once and not reduced:
+  two concurrent `podman build` runs whose Containerfiles differed only in `CMD`
+  committed one image with the first build's `CMD`,
+  so one shard ran another shard's mutants.
+  The runner now passes the command to `podman create` and checks it (`416d00ee1`).
+  No troubleshooting entry exists yet, because the cause was not reduced to a reproduction.
+
+#### Content policies over candidates
+
+Landed on `main` on 2026-10-06 as `83463b49a`,
+a fast-forward to a merge of `main` into the branch;
+every path the gate image reads was byte-identical to the gated commit `e4725f72c`.
+Evidence in `doc/handover/cli-git-native-content-policies.md`.
+
+- The native executable now runs `git add`, `git cli-git check` and `git cli-git fix` with
+  `final-newline`,
+  `security/forbidden-strings` (with the `rulesFile` option, then `FORBIDDEN_STRINGS_RULES`, then the default file)
+  and `mono/forbidden-root-context`.
+  It still refuses, with exit 2 and one line, whenever `markdown/autofix` or `mono/dependent-version-bump` is enabled
+  and there are candidates.
+- `git add` costs a fixed 6 Git processes and a direct command 5, for 1, 20 or 200 files.
+- Failures carry `content-unavailable` or `policy-incomplete` by cause,
+  and engine-failure events never carry a candidate pathname.
+- Direct `fix` converges full-content corrections in memory and installs them atomically with rollback;
+  `git add` applies no fixes, as in the incumbent.
+- Gate on `e4725f72c`: 578 unit, 39 binary-level and 1 consumer test, Clippy
+  (image `30a8e6112b2a3723be78c4b379dfd130b44baa960df6525eb8b7c2d9b05589f7`).
+- Differential against the incumbent, both by path in disposable repositories:
+  44 commands over 17 cases,
+  32 identical in every field,
+  12 different and each intentional
+  (the failure code by cause, a non-UTF-8 name the incumbent cannot handle,
+  repository-relative paths from a subdirectory as the spec requires,
+  an incumbent `fix` defect from a subdirectory,
+  and the spec's exit status for a pathspec that matches nothing).
+- Mutation: 411 mutants, 0 missed;
+  13 timeouts on a loaded host were all caught on a rerun of the same image.
+- Fuzz: three new targets, 14 planted defects noticed, every target's smoke run exit 0.
+- Not built, although adopted on 2026-10-06:
+  the optional `pathBytes` field for a non-UTF-8 path in an event.
+  The delegate read the decision brief, which still listed it as open,
+  rather than the adoption in this document;
+  the brief now has an `Outcome` section saying where the answers are.
+- The fuzz seeds of `final-newline` were given a final newline by the installed wrapper when committed;
+  the target's generated input still reaches both cases.
+
 #### Native policy engine
 
 Complete for commands that need no commit transaction, worktree copy or manual-push scanning;
@@ -1159,6 +1228,12 @@ Asked through the question tool, with context restated, as rule `QRX` requires.
   nothing was run on Windows.
   The user selected no option for this one and wrote:
   "I'm going with all your recommendations this turn".
+- On 2026-10-06 the user wrote:
+  "I'm approving publishing to crates.io for this session."
+  This satisfies the standing requirement that the first crates.io publication needs explicit approval,
+  for the session in which it was given.
+  It unblocks the linter's cutover (plan step 7 of `doc/planning/unified-linter.md`)
+  and the `monochromatic-jsonc-edit` 0.1.1 publication it needs.
 
 The no-config, repository-root and legacy-config decisions were sent to the engine delegate,
 which owns the affected modules,
@@ -1309,8 +1384,12 @@ that is verification, not a decision for the user.
 - [ ] Unified-linter Rust and Markdown/MDX rules, processors, fix mapping, and consumer parity.
   Rules, processors and the executable are implemented and gated;
   differential comparison is recorded under `Resumption 2026-10-05`.
-  Remaining: orchestration mutation campaign, processor and Markdown survivor dispositions,
-  and consumer migration.
+  Mutation testing is complete (`Linter mutation close`).
+  Remaining: the cutover of the plan's step 7.
+  The user approved crates.io publication for this session on 2026-10-06.
+  The repository's `monochromatic-jsonc-edit` source carries two fuzz-found fixes that the published 0.1.0 lacks
+  while still declaring 0.1.0,
+  so that crate needs a 0.1.1 publication before the linter is published against it.
 - [x] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
 - [x] Forbidden-strings structured embedding interface and standalone parity.
   The two Windows-native survivors are caught on Windows (GNU ABI, differential against a red baseline).
@@ -1330,9 +1409,9 @@ that is verification, not a decision for the user.
   once with real-time scanning excluded for the build directory in the throwaway guest,
   to tell the two apart.
 - [ ] Mutation gates exit 0 with the two excluded replacement kinds, 0 missed and 0 timeouts.
-  Done for the wrapper on its final engine tree (`348d94cbe`) and for the candidate branch;
-  the linter's scopes are still being rerun by their delegate,
-  and the merged wrapper tree needs its own campaign.
+  Done for the wrapper's engine (`348d94cbe`), the candidate layer and the content policies,
+  and for every linter scope.
+  Left: the dependent-version branch, and the scanner on Windows.
 - [x] cargo-mutants upstream check: the option from upstream issue 545 is prototyped and verified
   (`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`, section `Prototype`).
 - [x] The user chose to post the cargo-mutants prototype as a comment on upstream issue 545; it is posted.
@@ -1345,15 +1424,14 @@ that is verification, not a decision for the user.
   for commands that need no commit transaction:
   on `main`, final engine tree `348d94cbe` (`Native policy engine`).
 - [x] Merge the candidate content layer into `main` (`c6cab0800`).
-- [ ] Content policies over candidates:
-  the missing candidate sources (`git add` staged delta, worktree bytes for direct `check`, manual-push listings),
-  the five built-in content policies,
-  then the four optional policies
-  (forbidden-strings with the `rulesFile` option and an emitting path for `policy-incomplete`,
-  forbidden-root-context,
-  dependent-version propagation as the one implementation,
-  Markdown autofix through the native linter).
-  This repository's translated configuration must list all four optional policies and set `rulesFile`.
+- [x] Content policies over candidates for `git add` and the direct commands:
+  `final-newline`, `security/forbidden-strings` and `mono/forbidden-root-context` (`83463b49a`).
+- [ ] `markdown/autofix` through the native linter executable,
+  and the `pathBytes` event field adopted for non-UTF-8 paths.
+- [ ] `mono/dependent-version-bump`: the planner and its differential proof are on their branch;
+  wiring into `ShippedChecks` follows.
+- [ ] This repository's translated configuration must list all four optional policies and set `rulesFile`.
+- [ ] Manual-push listings for the content policies, with the push lifecycle.
 - [ ] Rust cli-git transactions, hooks, locks, replay, recovery, worktree copy, and auto-push.
 - [ ] Container integration, mutation testing, fuzzing, platform checks, and release-artifact performance gates.
   Mutation survivors from both campaigns need disposition or new controls.
