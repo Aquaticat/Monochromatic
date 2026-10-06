@@ -1020,7 +1020,7 @@ it fails with 202 mutants outside every scope (`coverage-99OU43`).
 The comparison is repeated on the final tree once the round's campaigns are done.
 
 Before this round the union was 347 mutants short,
-not only the 72 of the six files named under `Remaining`:
+not only the 72 of the six files the first round listed as never mutated:
 configuration,
 findings,
 edits,
@@ -1353,102 +1353,63 @@ The separate `build` task was not run;
 
 ## Remaining
 
-### Never-mutated files outside this brief
+### Unscoped campaign
 
-No campaign has mutated these production files,
-and none of the three scopes here includes them
-(counts from `cargo mutants --list --no-config` with both exclusion patterns on the final tree):
+The unscoped `mutation` task runs the whole suite for every mutant under the 180 second limit.
+The whole library suite took 250.7 seconds alone in `workspace-tests-cost-1.log`,
+so that task would record timeouts on this host;
+it was not run.
+Every mutant it would try is in a scope,
+by the listing comparison under `Coverage by listing`.
 
-- `src/file_discovery.rs`: 20 mutants.
-- `src/fix_loop.rs`: 4 mutants.
-- `src/path_inputs.rs`: 25 mutants.
-- `src/rust_file_engine.rs`: 5 mutants.
-- `src/rust_toolchain.rs`: 4 mutants.
-- `src/rust_workspace.rs`: 14 mutants.
-- `src/cli_options.rs` and `src/lib.rs`: none generated.
+### Margin of the fast scopes on a loaded host
 
-The first three are executable orchestration that predates the executable work
-and run with the fast tests,
-so they would fit the executable scope at little cost.
-The last three are only reached by the Cargo-workspace suites the executable scope skips,
-so they need a scope with those suites and a measured per-mutant limit.
-`src/processors_consumer.rs` is a standalone consumer program outside the module tree.
+The executable and core scopes start child processes and threads,
+and their test phases follow host load.
+In the final round the executable scope's baseline tested in 43 seconds,
+six times its 7 seconds in discovery,
+and one mutant reached the 180 second limit while two unrelated concurrency tests were still running;
+`Final round` has the rerun.
+A timeout in these scopes should be read against the baseline of its own run
+and the tests named as still running in the mutant's log
+before it is treated as a stall,
+and the affected file rerun once with `-- --re '<regex>'`.
 
-### Whole-suite duration
+### Settings pinned but not observed
 
-The whole library suite took 183.94 seconds in one gate run and 107.20 seconds in the next,
-on unchanged tests.
-The unscoped `mutation` task would record some mutants as timeouts on a loaded host.
-Every scope here filters the suite,
-so none of them runs the whole suite per mutant.
+The `RUST_SRC_PATH` override and the re-resolution of a stale lockfile,
+which `cargo_settings_name_the_checked_library_and_keep_cargo_offline_and_locked` pins through the backend settings,
+are not exercised by any fixture.
+A behavioral control would load a workspace with `RUST_SRC_PATH` set to another library,
+and another workspace whose lockfile is stale,
+each costing a workspace load (40 to 140 seconds here) in every semantic mutant's test phase.
 
-### Margin of the executable scope on a loaded host
+### Platforms and builds not run
 
-The executable scope's tests start child processes,
-and their duration follows host load.
-In `mutation-eGKI9C` the unmutated baseline's test phase took 2.0 seconds,
-and five caught mutants took 30 to 67 seconds
-(`run_json.rs:72:43` the longest at 67.1 seconds,
-then `run_failure.rs:78:25` at 51.9 seconds),
-none of them a loop:
-each ended with ordinary failed assertions.
-That is a factor of 2.7 below the 180 second limit at the load of that run.
-A timeout in this scope should be read against the baseline of its own run
-and the test named as still running in the mutant's log
-before it is treated as a stall.
-In the final executable campaign the baseline's test phase took 16.3 seconds
-and the longest mutant 41.1 seconds,
-a factor of 4.4 below the limit.
+No Windows build and no release build was run.
+The invocation thread uses the same `std::thread::Builder::stack_size` as the workers on every platform;
+that it removes the dependence on a 1 MB Windows main thread is an inference from Microsoft's documentation
+and the Linux reproduction,
+not a Windows measurement.
 
-### Scopes not rerun on the final tree
+### Container-build collision
 
-The constant-slot scope (`mutation:inferred-constants`),
-the parent-lookup scope (`mutation:markdown:parent`),
-the anonymous-function scope (`mutation:rust-style`),
-the five planted guard removals of the inline `mutation:processors` task,
-and the unscoped `mutation` task were not run here.
-The first two last passed on test image `f1ccc6b562a7` in `unified-linter-mutation-survivors.md`.
-Their source files did not change in this work,
-except that `markdown_source.rs` gained the bounded walks,
-and the Markdown scope here mutates every `MarkdownSource::parent` replacement and catches all four.
-The exclusion patterns were added to all of them and checked only by listing,
-except the inline `mutation:processors` task,
-whose command array was evaluated and inspected but not run.
-
-### Fuzz sidecar
-
-`package/linter/monochromatic-lint.fuzz` was not edited.
-It calls none of the functions whose signatures changed
-(`has_ancestor`,
-`text_content`,
-`text_nodes`,
-`paragraph_for` and `delimiter_tail`),
-and its `lint:types` task
-(`cargo check --lib` and Clippy with warnings denied, on the host toolchain)
-passes against the final library.
-Its AddressSanitizer build,
-its unit controls and its smoke run were not rerun.
-
-### What the panic hook and the worker stack leave open
-
-- `parse_and_run` calls `std::panic::set_hook` when `silences_panics` returns true.
-  The decision is tested;
-  the call is not,
-  and cargo-mutants generates no mutant for it.
-- The worker stack control pins that 1,200 nested parentheses parse on a worker.
-  It does not pin the 8 MiB value:
-  a worker stack between about 4 and 8 MiB would pass it.
-- The platform risk under `Defects found` (a small main-thread stack with one file or `--concurrency 1`)
-  is a reading of the calibration,
-  not a measurement on Windows.
+Two `podman build` runs started together for Containerfiles that differed only in `CMD`
+committed the same image with the first build's `CMD`,
+although the second printed its own (`mutation-7j4HXK`).
+The runner no longer depends on an image's `CMD`.
+The collision was seen once and not reduced to a minimal reproduction;
+a section of `doc/troubleshooting/` for it is proposed,
+not written,
+because this delegation could change only the linter packages and this document.
 
 ### Existing rustdoc findings
 
-`lint:rust` reports 83 `builtin(require-rustdoc)` findings on the final tree and no code-line budget finding.
-85 were recorded before this work;
-the two that went were on `use` lines this work documented.
-None is on an item added here,
-and none was otherwise fixed.
+`lint:rust` reports 83 `builtin(require-rustdoc)` findings on the final tree and no code-line budget finding,
+with the same count in every file as before the gaps round.
+85 were recorded before the first round;
+the two that went were on `use` lines that round documented.
+None is on an item added by either round.
 
 ## Commits
 
@@ -1491,6 +1452,27 @@ Commits that change only this document are left out;
 - `e7eee1d37` respells the hash's `choose` and `majority` functions.
 - `08b561920` compares applied destination segments by exact spelling.
 
+### Commits for the gaps round
+
+- `ed7c3080d` gives every production module a scope in one table,
+  adds `--list` and `--coverage`,
+  skips the workspace tests by full name,
+  and tags the processor tasks' images with `MONOCHROMATIC_LINT_IMAGE_TAG`.
+- `f430ab536` lints every invocation on a thread with the 8 MiB lint stack
+  and adds the small-main-stack,
+  panic-hook and stack-size controls.
+- `522fc2a49` shards campaigns,
+  starts each from its own image ID,
+  and gives the semantic scope its 1,200 second limit.
+- `416d00ee1` passes each campaign's command to `podman create` and checks it.
+- `a1d285671` adds the sidecar's planted-defect controls and per-session image tags.
+- `1944613ed` adds the controls for the discovery survivors,
+  names the backend settings `cargo_config`,
+  adds the proc-macro member to the generated-definitions fixture,
+  and skips only the four workspace-loading tests.
+- `5bdb09aaa` states the lint stack in the README.
+- `fe00f4a14` lets a campaign rerun only the mutants whose names match `--re`.
+
 ### Evidence location
 
 Evidence directories and logs are in the ignored build tree,
@@ -1504,3 +1486,22 @@ Evidence directories and logs are in the ignored build tree,
 `mutation-RjKWfe` and `mutation-uVvFQn`,
 with `gate-mutation-close-1.log` to `gate-mutation-close-6.log`
 and the `campaign-*.log` files named in the sections that use them.
+The gaps round's evidence is in the same directory:
+`gate-mutation-gaps-1.log` and `gate-mutation-gaps-2.log`,
+`gate-processors-gaps-final.log`,
+the `campaign-*-gaps-*.log` files,
+the `mutation-*`,
+`processors-mutation-*` and `coverage-*` directories named in `Gaps round`,
+`stack-repro-before.log`,
+`stack-repro-after.log`,
+`hand-mutations-stack-hook.log`,
+`hand-mutations-survivors-1.log`,
+`hand-mutations-survivors-2.log`,
+`workspace-tests-cost-1.log`
+and `workspace-controls-container-2.log`.
+The fuzz sidecar's are in `package/linter/monochromatic-lint.fuzz/target/verification/`.
+The scratch drivers that ran the steps are not committed.
+The gate and campaign logs record their repository head,
+linter source tree and command;
+the reproduction and timing logs name the image they ran,
+and the hand-mutation logs the exact text each mutation replaced.
