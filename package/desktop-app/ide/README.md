@@ -1664,7 +1664,8 @@ among them `logging::background::tests::a_blocked_output_never_delays_the_loggin
 which logs 5000 records through the real subscriber while the output stalls for 4 s;
 `inspect:language-lifecycle-guards` makes the full queue wait for room and observes that test fail.
 `mise run //package/desktop-app/ide:inspect:log-stall <cache> [cargo] [seconds] [port]`
-runs the IDE in the nested compositor with `RUST_LOG=debug` and its standard output on a FIFO that is never read,
+runs the IDE in the nested compositor with every application record on
+and its standard output on a FIFO that is never read,
 moves the caret, and measures how long the window's Slint MCP server, which runs on the event loop, takes to answer;
 the same sources with the writer replaced by plain standard output are the control that must stop answering.
 
