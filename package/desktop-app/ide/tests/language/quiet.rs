@@ -291,9 +291,9 @@ fn a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines() {
     );
 }
 
-/// A server that writes a line and never answers `initialize`: the start-deadline error holds the
-/// line; the worker stopped it itself, so there is no ended-server record and nothing it writes
-/// while it is stopped is reported.
+/// A server that writes a line and never answers `initialize`: the start-deadline error is followed
+/// by a warning that holds the line; the worker stopped the server itself, so there is no
+/// ended-server record and nothing it writes while it is stopped is reported.
 #[test]
 fn a_timed_out_start_is_logged_with_its_stderr_lines() {
     let Some(root) = support::child_root() else {
@@ -320,7 +320,12 @@ fn a_timed_out_start_is_logged_with_its_stderr_lines() {
     assert_record(
         &text,
         "ERROR",
-        r#"language server did not answer initialize in time and is stopped server=scripted-ls seconds=1 stderr_tail=["indexing the workspace"]"#,
+        "language server did not answer initialize in time and is stopped server=scripted-ls seconds=1",
+    );
+    assert_record(
+        &text,
+        "WARN",
+        r#"language server wrote this to standard error before it was stopped server=scripted-ls stderr_tail=["indexing the workspace"]"#,
     );
     assert_eq!(
         records_with(&text, TAIL_FIELD).len(),

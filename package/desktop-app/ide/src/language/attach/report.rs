@@ -76,15 +76,15 @@ pub(super) fn ended_unexpectedly(server: String, was_ready: bool) {
     });
 }
 
-/// What: Log that a starting server did not answer `initialize` in time and is stopped, with the
-///       lines it wrote to standard error so far.
-/// Why: A server that hangs in its start often says why there.
-pub(super) fn start_timed_out(server: &str, seconds: u64) {
+/// What: Log the lines a server wrote to standard error before the worker stopped it because it
+///       did not finish starting in time; nothing when it wrote none. Follows the worker's error
+///       record of the timed-out start.
+/// Why: A server that hangs in its start often says why there. A record of its own keeps the
+///      start-deadline code as it is.
+pub(super) fn stopped_during_start(server: &str) {
     let lines = stderr_tail::take(server);
-    if lines.is_empty() {
-        tracing::error!(server = %server, seconds, "language server did not answer initialize in time and is stopped");
-    } else {
-        tracing::error!(server = %server, seconds, stderr_tail = ?lines, "language server did not answer initialize in time and is stopped");
+    if !lines.is_empty() {
+        tracing::warn!(server = %server, stderr_tail = ?lines, "language server wrote this to standard error before it was stopped");
     }
 }
 

@@ -2,7 +2,7 @@
 //! like the worker's. Every test uses its own server name, because the kept lines are shared by
 //! the whole test process.
 
-use super::{SETTLE, ended_unexpectedly, start_timed_out};
+use super::{SETTLE, ended_unexpectedly, stopped_during_start};
 use crate::logging::stderr_tail;
 use std::{
     io::{self, Write},
@@ -146,19 +146,16 @@ fn an_end_without_lines_has_no_tail_field() {
 }
 
 #[test]
-fn a_timed_out_start_has_the_lines_so_far() {
+fn a_stopped_start_has_the_lines_so_far_and_nothing_without_them() {
     let server = "report-start";
     let text = logged(async {
         stderr_tail::remember(server, "loading project\\n");
-        start_timed_out(server, 7);
-        start_timed_out("report-start-silent", 7);
+        stopped_during_start(server);
+        stopped_during_start("report-start-silent");
     });
     assert!(
-        text.contains(r#"ERROR ide_app::language::attach::report: language server did not answer initialize in time and is stopped server=report-start seconds=7 stderr_tail=["loading project"]"#),
+        text.contains(r#" WARN ide_app::language::attach::report: language server wrote this to standard error before it was stopped server=report-start stderr_tail=["loading project"]"#),
         "{text}"
     );
-    assert!(
-        text.contains("is stopped server=report-start-silent seconds=7\n"),
-        "{text}"
-    );
+    assert!(!text.contains("report-start-silent"), "{text}");
 }
