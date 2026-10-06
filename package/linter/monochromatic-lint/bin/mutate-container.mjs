@@ -127,7 +127,9 @@ const scopes = new Map([
   }],
   // The semantic engine: workspace discovery and loading, the compiler query, the per-invocation engine, the
   // session and the explicit-type rule. Its tests are the Cargo-workspace suites, so this scope runs the whole
-  // suite, and its limit is set against its own unmutated baseline (doc/handover/unified-linter-mutation-close.md).
+  // suite. Its first unmutated baseline tested in 251 seconds on a loaded host (mutation-VFaIKp), already over
+  // the 180 second default, so its limit is 1,200 seconds: 4.8 times that baseline, just under cargo-mutants'
+  // own automatic limit of five times the baseline. Record: doc/handover/unified-linter-mutation-close.md.
   ['--semantic', {
     description: 'the semantic engine and the explicit-type rule against the whole suite',
     select: [
@@ -135,7 +137,7 @@ const scopes = new Map([
       'src/rust_generic_arguments.rs', 'src/rust_semantic_*.rs', 'src/rust_type_diagnostic.rs',
     ].flatMap(fileArguments),
     run: [],
-    timeoutSeconds: 900,
+    timeoutSeconds: 1200,
   }],
 ]);
 
@@ -202,7 +204,7 @@ async function coverage() {
 }
 
 /** Build and run the tool over an immutable input image, then retain its complete report. */
-async function campaign(scope) {
+async function campaign({ scope, shard }) {
   const timeoutSeconds = scope.timeoutSeconds ?? defaultTimeoutSeconds;
   const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-mutation-'));
   const evidenceRoot = join(process.cwd(), 'target', 'verification');
@@ -227,6 +229,8 @@ async function campaign(scope) {
       '--no-config', '--no-shuffle', '--output', '/work/mutation-report',
       '--cargo-arg=--offline', '--cargo-arg=--locked',
       ...excludedMutantPatterns.flatMap(exclusionArguments),
+      // cargo-mutants numbers shards from 0; every shard runs the same arguments and its own baseline.
+      ...(shard === undefined ? [] : ['--shard', shard]),
       ...scope.select,
       ...scope.run,
     ];
@@ -239,17 +243,23 @@ async function campaign(scope) {
       `CMD ${JSON.stringify(command)}`,
       '',
     ].join('\n'));
+    // The container starts from the ID this build wrote, not from the shared tag, so campaigns started
+    // at the same time (shards of one scope, or two scopes) can never run each other's command.
+    const imageIdFile = join(context, 'image-id');
     podman({
       args: [
         'build', '--network=none', '--http-proxy=false', '--pull=never',
         '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000',
-        '--tag', mutationImage, context,
+        '--iidfile', imageIdFile, '--tag', mutationImage, context,
       ],
     });
+    const campaignImage = (await readFile(imageIdFile, 'utf8')).trim().replace(/^sha256:/u, '');
+    if (!/^[a-f0-9]{64}$/u.test(campaignImage))
+      throw new VerificationError('The campaign image build did not report a full content-addressed image ID.');
     container = podman({
       args: [
         'create', '--init', '--network=none', '--memory=2g', '--cpus=2',
-        '--pids-limit=128', mutationImage,
+        '--pids-limit=128', campaignImage,
       ],
       capture: true,
     }).stdout.trim();
@@ -257,6 +267,8 @@ async function campaign(scope) {
       throw new VerificationError('Container creation did not return a complete container ID.');
     await writeFile(join(evidence, 'manifest.json'), JSON.stringify({
       baseImage: base,
+      campaignImage,
+      shard: shard ?? null,
       toolSha256,
       container,
       command,
@@ -291,7 +303,10 @@ function scopeFor(option) {
   return scope;
 }
 
-/** Dispatch: a campaign by default, `--list [scope]` for one listing, `--coverage` for the scope-union proof. */
+/**
+ * Dispatch: a campaign by default, optionally one `--shard k/n` of it, `--list [scope]` for one listing,
+ * and `--coverage` for the scope-union proof.
+ */
 async function main() {
   const options = process.argv.slice(2);
   if (options[0] === '--coverage') {
@@ -306,9 +321,18 @@ async function main() {
     console.log(listMutants(scopeFor(options[1])).join('\n'));
     return;
   }
+  const shardAt = options.indexOf('--shard');
+  let shard;
+  if (shardAt !== -1) {
+    shard = options[shardAt + 1];
+    const parts = /^(\d+)\/(\d+)$/u.exec(shard ?? '');
+    if (parts === null || Number(parts[1]) >= Number(parts[2]))
+      throw new VerificationError(`--shard needs k/n with k from 0 to n - 1, not ${shard}.`);
+    options.splice(shardAt, 2);
+  }
   if (options.length > 1)
     throw new VerificationError(`Only one of ${[...scopes.keys()].join(', ')} is accepted.`);
-  await campaign(scopeFor(options[0]));
+  await campaign({ scope: scopeFor(options[0]), shard });
 }
 
 await main();
