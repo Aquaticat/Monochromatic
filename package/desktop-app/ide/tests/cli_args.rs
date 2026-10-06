@@ -3,7 +3,7 @@
 /// Inspect typed clap exits without terminating the test process.
 use clap::{Error, error::ErrorKind};
 /// Parse arguments through the production library entry point.
-use ide_app::cli::parse_args;
+use ide_app::cli::{parse_args, parse_args_with_home};
 /// Native byte filenames must survive parsing, including paths that are not valid UTF-8.
 use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::Path};
 
@@ -63,11 +63,35 @@ fn help_and_version_are_successful_parser_outcomes() {
     }
 }
 
-/// Extra roots, repeated file selection, unknown options, and missing/empty paths are rejected.
+/// Without a project argument the home folder is the project; an explicit project still wins.
+#[test]
+fn missing_project_opens_the_home_folder() {
+    let home = Path::new("/var/home/someone");
+    let parsed = parse_args_with_home(&args(&[]), Some(home)).expect("home default");
+    assert_eq!(parsed.project, home);
+    assert!(parsed.file.is_none());
+    let with_file = parse_args_with_home(&args(&["--file", "notes/todo.md"]), Some(home))
+        .expect("home default with an initial file");
+    assert_eq!(with_file.project, home);
+    assert_eq!(with_file.file.as_deref(), Some(Path::new("notes/todo.md")));
+    let explicit = parse_args_with_home(&args(&["/srv/project"]), Some(home)).expect("explicit");
+    assert_eq!(explicit.project, Path::new("/srv/project"));
+}
+
+/// Without a project argument and without a usable home folder, the grammar reports a usage error.
+#[test]
+fn missing_project_without_a_home_folder_is_a_usage_error() {
+    let result = parse_args_with_home(&args(&[]), None).expect_err("nothing to open");
+    let cli = result.downcast_ref::<Error>().expect("typed usage error");
+    assert_eq!(cli.exit_code(), 2);
+    assert!(cli.use_stderr());
+    assert!(cli.to_string().contains("No PROJECT was given"), "{cli}");
+}
+
+/// Extra roots, repeated file selection, unknown options, and empty paths are rejected.
 #[test]
 fn invalid_argument_shapes_are_usage_errors() {
     for values in [
-        vec![],
         vec!["--unknown"],
         vec!["one", "two"],
         vec!["project", "--file"],

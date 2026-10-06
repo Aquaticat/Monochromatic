@@ -35,6 +35,15 @@ helix-loader = { git = "https://github.com/helix-editor/helix", rev = "ba40e5474
 # Both already resolve through helix-lsp; these lines add direct edges only.
 arc-swap = "1"
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
+# Helix's syntax crate, the same 0.4 release and features helix-core resolves to (Helix-owned, preapproved).
+# Highlighting drives it with the application's own loader, so grammars and queries come only from the
+# application's runtime and never from helix-loader's directory search, where a file below
+# $XDG_CONFIG_HOME/helix/runtime takes precedence. This line adds a direct edge only.
+tree-house = { version = "0.4", default-features = false }
+# Slint's winit backend, the release slint already resolves to (no new package). As in the sibling
+# terminal and music player, the application installs it explicitly with a window-attributes hook that
+# stamps the Wayland app id before the window exists; Slint's default backend selection sets none.
+i-slint-backend-winit = "1.17.0"
 # OS file-change notifications for shown directories and the displayed file (user-approved 2026-10-05).
 # The code names `INotifyWatcher` directly; `default-features = false` drops the macOS FSEvents
 # backend, and no polling backend is used, so a non-Linux build fails instead of silently polling.

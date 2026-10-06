@@ -226,6 +226,7 @@ runCargo(['test', '--no-default-features', '--test', 'file_open'])
 """
 
 [tasks."test:cli"]
+depends = ["runtime"]
 description = "Verify native-path argument grammar and executable help without display startup"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -250,6 +251,8 @@ runCargo(['test', '--no-default-features', '--test', 'raster_reuse', '--', '--no
 """
 
 [tasks."lint:clippy"]
+# The application binary embeds target/debug/runtime, so its build needs the prepared runtime.
+depends = ["runtime"]
 description = "Check all IDE targets with warnings denied"
 shell = "node --input-type=module-typescript -e"
 run = """

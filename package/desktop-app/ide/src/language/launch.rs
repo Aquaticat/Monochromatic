@@ -77,7 +77,8 @@ pub struct ServerLaunch {
     pub environment: HashMap<String, String>,
     /// Settings table after the policy's overrides.
     pub settings: Option<Value>,
-    /// Directories that must exist before every launch; created by the worker, never inside the project.
+    /// Directories that must exist before every launch; created by the worker below the private state
+    /// root, which lies inside the project only when the home folder is opened.
     pub directories: Vec<PathBuf>,
     /// Directories emptied before every launch, such as a private temporary directory.
     pub scratch: Vec<PathBuf>,
@@ -214,11 +215,13 @@ pub fn resolve_existing(path: &Path) -> PathBuf {
     }
 }
 
-/// What: Check that a directory a policy wants written is outside the project. `Result<(), String>`
-///       is success without a value, or the reason for refusal.
-/// Why: A private state directory inside the project would be a project write, and one that
-///      contains the project would make the project writable through it (measured in
-///      `doc/planning/slint-ide-write-confinement.md`).
+/// What: Check that a directory a policy wants written does not contain the project.
+///       `Result<(), String>` is success without a value, or the reason for refusal.
+/// Why: A state directory that contains (or is) the project would make the project writable
+///      through it (measured in `doc/planning/slint-ide-write-confinement.md`). A state directory
+///      strictly inside the project is allowed: it is the application's own cache, which lies inside
+///      the project when the home folder is opened (`~/.cache/monochromatic-ide`), and the sandbox
+///      binds it writable after the read-only project bind, so only that directory is writable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -234,13 +237,10 @@ pub fn check_state_directory(directory: &Path, project_root: &Path) -> Result<()
     }
     let state = resolve_existing(directory);
     let project = resolve_existing(project_root);
-    if state.starts_with(&project) {
-        return Err(format!(
-            "private state directory {} is inside the project {}",
-            state.display(),
-            project.display()
-        ));
+    if state != project && state.starts_with(&project) {
+        tracing::debug!(state = %state.display(), project = %project.display(), "private state directory lies inside the project; it is bound writable after the read-only project");
     }
+    // Equal paths also start with each other, so the project itself is refused here too.
     if project.starts_with(&state) {
         return Err(format!(
             "private state directory {} contains the project {}",
@@ -277,7 +277,7 @@ fn check_below_state(directory: &Path, state_root: &Path) -> Result<(), String> 
 ///       "a borrowed path, or nothing": the application's private state root.
 /// Why: A wrapper refuses to start when its bind sources are missing, and a private temporary
 ///      directory must not carry files from an earlier session. Every directory must be below
-///      the state root, and the state root must be outside the project; anything else is refused.
+///      the state root, and the state root must not contain the project; anything else is refused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -44,18 +44,21 @@ mod typescript;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type LanguageSetup = { launch: LaunchPolicy; stateRoot?: string; extraLanguages?: string };
+/// type LanguageSetup = { launch: LaunchPolicy; stateRoot?: string; extraLanguages?: string; home?: string };
 /// ```
 #[derive(Clone, Debug)]
 pub struct LanguageSetup {
     /// Decides what is spawned for every server; the default spawns the server itself.
     pub launch: LaunchPolicy,
-    /// Private application state directory, outside the project; needed by confining policies.
+    /// Private application state directory, not containing the project; needed by confining policies.
     pub state_root: Option<PathBuf>,
     /// Extra language and server definitions in Helix's `languages.toml` syntax, merged over the
     /// built-in ones. This is for definitions the application itself supplies; it must never be
     /// filled from a project or user file.
     pub extra_languages: Option<String>,
+    /// The user's home folder: no server is rooted at it or at a folder containing it. Nothing
+    /// disables that rule; the production setup reads `HOME`, tests pass a disposable folder.
+    pub home: Option<PathBuf>,
 }
 
 /// What: `impl Default for X` defines the value `X::default()` returns.
@@ -73,6 +76,7 @@ impl Default for LanguageSetup {
             launch: super::confine::launch_confined,
             state_root: super::confine::default_state_root(),
             extra_languages: None,
+            home: crate::cli::home_folder(),
         };
     }
 }
@@ -92,6 +96,7 @@ impl LanguageSetup {
             launch: launch_directly,
             state_root: None,
             extra_languages: None,
+            home: None,
         };
     }
 }
@@ -356,6 +361,11 @@ impl Languages {
     /// The application's private state directory, when one is configured.
     pub(super) fn state_root(&self) -> Option<&Path> {
         return self.setup.state_root.as_deref();
+    }
+
+    /// The home folder no server may be rooted at, when one is configured.
+    pub(super) fn home(&self) -> Option<&Path> {
+        return self.setup.home.as_deref();
     }
 
     /// What: Rebuild the registry when a language's server programs appeared or disappeared

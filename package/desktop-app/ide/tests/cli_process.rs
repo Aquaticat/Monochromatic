@@ -26,6 +26,8 @@ fn invoke(root: &Path, args: &[&OsStr]) -> Output {
     command.env("XDG_CONFIG_HOME", root.join("config"));
     command.env("XDG_CACHE_HOME", root.join("cache"));
     command.env("XDG_DATA_HOME", root.join("data"));
+    // A disposable home folder: a start without a project argument opens it, never the real one.
+    command.env("HOME", root.join("home"));
     command.env_remove("DISPLAY");
     command.env_remove("WAYLAND_SOCKET");
     return command.output().expect("run native CLI");
@@ -58,7 +60,6 @@ fn executable_help_and_version_exit_without_startup() {
 fn executable_usage_errors_exit_before_startup() {
     let fixture = tempfile::tempdir().expect("disposable CLI environment");
     for args in [
-        vec![],
         vec![OsStr::new("--unknown")],
         vec![OsStr::new("one"), OsStr::new("two")],
     ] {
@@ -102,5 +103,36 @@ fn invalid_project_and_non_regular_source_have_input_specific_errors() {
             .expect("private directory")
             .count(),
         1
+    );
+}
+
+/// Without a project argument the disposable home folder is opened: startup gets past the project
+/// checks to the display connection, which fails in this test on purpose. Without any home folder
+/// the grammar reports a usage error before anything starts.
+#[test]
+fn missing_project_opens_the_home_folder_or_reports_its_absence() {
+    let fixture = tempfile::tempdir().expect("disposable CLI environment");
+    fs::create_dir(fixture.path().join("home")).expect("disposable home folder");
+    let started = invoke(fixture.path(), &[]);
+    let started_text = String::from_utf8_lossy(&started.stderr).into_owned();
+    assert_ne!(started.status.code(), Some(2), "{started_text}");
+    assert!(!started_text.contains("Usage:"), "{started_text}");
+    assert!(
+        !started_text.contains("Cannot open project directory"),
+        "{started_text}"
+    );
+    let mut command = Command::new(env!("CARGO_BIN_EXE_monochromatic-ide"));
+    command.current_dir(fixture.path()).env_remove("HOME");
+    command.env(
+        "WAYLAND_DISPLAY",
+        fixture.path().join("absent-wayland.socket"),
+    );
+    command.env_remove("DISPLAY");
+    let refused = command.output().expect("run native CLI without HOME");
+    assert_eq!(refused.status.code(), Some(2));
+    let refused_text = String::from_utf8(refused.stderr).expect("UTF-8 diagnostic");
+    assert!(
+        refused_text.contains("No PROJECT was given"),
+        "{refused_text}"
     );
 }

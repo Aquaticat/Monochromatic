@@ -2514,6 +2514,7 @@ dependencies = [
  "helix-core",
  "helix-loader",
  "helix-lsp",
+ "i-slint-backend-winit",
  "notify",
  "parley",
  "serde",
@@ -2526,6 +2527,7 @@ dependencies = [
  "toml",
  "tracing",
  "tracing-subscriber",
+ "tree-house",
 ]
 
 [[package]]

@@ -5,6 +5,9 @@
 //! application sets the working directory to the project root at startup; this module never
 //! changes it. It asks Helix's own public functions what they will compute and refuses every
 //! answer that is not inside the project, so a server is never started on an enclosing tree.
+//! It also refuses a root that is the user's home folder or contains it: with the home folder
+//! opened as the project, a file with no root marker between itself and the home folder would
+//! otherwise give its server the whole home folder as workspace (rule chosen on 2026-10-06).
 
 /// Helix's per-language configuration supplies the root-marker file names.
 use helix_core::syntax::config::LanguageConfiguration;
@@ -24,7 +27,8 @@ use std::path::{Path, PathBuf};
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type RootRefusal = { kind: 'wrongWorkingDirectory'; directory: string }
-///                  | { kind: 'outsideProject'; root: string };
+///                  | { kind: 'outsideProject'; root: string }
+///                  | { kind: 'homeFolder'; root: string };
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) enum RootRefusal {
@@ -38,6 +42,46 @@ pub(super) enum RootRefusal {
         /// The directory that would have become the server's root.
         PathBuf,
     ),
+    /// Helix would root the server at the home folder or a folder containing it.
+    HomeFolder(
+        /// The directory that would have become the server's root.
+        PathBuf,
+    ),
+}
+
+/// What: Whether `root` is the home folder or contains it, comparing resolved locations.
+///       `Option<&Path>` is a borrowed home path or nothing; `canonicalize` resolves symbolic links
+///       and fails for a missing path, in which case the path is compared as written.
+/// Why: A server rooted there would index and watch every project and file of the user.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function coversHome(root: string, home?: string): boolean {
+///   return home !== undefined && isWithin(realpath(home), realpath(root)); // home === root counts
+/// }
+/// ```
+pub(super) fn covers_home(root: &Path, home: Option<&Path>) -> bool {
+    // What: `let Some(folder) = home else { ... }` unpacks the home path or leaves early.
+    // Why: Without a home folder there is nothing to protect.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (home === undefined) return false;
+    // ```
+    let Some(folder) = home else {
+        return false;
+    };
+    // What: `unwrap_or_else(|_| folder.to_path_buf())` keeps the path as written when it cannot be resolved.
+    // Why: `/home` links to `/var/home` on this host; both sides must use one spelling.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const resolvedHome = tryRealpath(home) ?? home;
+    // ```
+    let resolved_home =
+        std::fs::canonicalize(folder).unwrap_or_else(|_| return folder.to_path_buf());
+    let resolved_root = std::fs::canonicalize(root).unwrap_or_else(|_| return root.to_path_buf());
+    return resolved_home.starts_with(&resolved_root);
 }
 
 /// What: The project root in two spellings. `PathBuf` owns its path.
@@ -141,19 +185,22 @@ impl RootView {
     }
 
     /// What: Compute the root Helix would give a server for `document` (in Helix's spelling) and
-    ///       accept it only inside the project.
+    ///       accept it only inside the project and only when it does not cover `home`.
     /// Why: With no root-marker file in the project, Helix returns the enclosing version-controlled
     ///      tree even when the project is passed as a root directory (`helix-lsp/src/lib.rs`,
-    ///      `find_lsp_workspace`). Such a root is refused before any process exists.
+    ///      `find_lsp_workspace`). With no marker between the file and the project root, Helix
+    ///      returns the project root, which is the home folder when that is the project. Both roots
+    ///      are refused before any process exists.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// lspRoot(config: LanguageConfiguration, document: string): string // throws the refusal
+    /// lspRoot(config: LanguageConfiguration, document: string, home?: string): string // throws the refusal
     /// ```
     pub(super) fn lsp_root(
         &self,
         config: &LanguageConfiguration,
         document: &Path,
+        home: Option<&Path>,
     ) -> Result<PathBuf, RootRefusal> {
         let (workspace, is_working_directory) = helix_core::find_workspace();
         // What: `parent()` and `to_str()` both return `Option`; `and_then` chains them and
@@ -180,9 +227,19 @@ impl RootView {
         );
         // Without a root Helix runs the server in the workspace directory itself.
         let root = found.unwrap_or(workspace);
-        if self.contains(&root) {
-            return Ok(root);
+        if !self.contains(&root) {
+            return Err(RootRefusal::OutsideProject(root));
         }
-        return Err(RootRefusal::OutsideProject(root));
+        // `&root` lends the candidate root; `home` is already a borrowed path or nothing.
+        if covers_home(&root, home) {
+            tracing::info!(root = %root.display(), document = %document.display(), "language server root would cover the home folder; not started");
+            return Err(RootRefusal::HomeFolder(root));
+        }
+        return Ok(root);
     }
 }
+
+/// The home-folder rule on disposable directories.
+#[cfg(test)]
+#[path = "root_tests.rs"]
+mod tests;

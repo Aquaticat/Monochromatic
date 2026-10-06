@@ -57,8 +57,16 @@ pub mod reload_worker;
 /// Worker-side target resolution and revision-bound source classification.
 mod reload_read;
 
+/// The application's private cache directory below `$XDG_CACHE_HOME`.
+pub mod app_cache;
+/// The fixed FNV-1a digest shared by the build script and the embedded-runtime checks.
+pub mod content_digest;
+/// The application's own language runtime: embedded in the binary, or a directory for tests and tools.
+pub mod runtime;
 /// Helix-backed source classifications use canonical character offsets.
 pub mod syntax;
+/// The highlighting loader that reads grammars and queries only from the application's own runtime.
+mod syntax_loader;
 
 /// User-facing parser diagnostics distinguish limits from missing assets.
 mod syntax_error;
