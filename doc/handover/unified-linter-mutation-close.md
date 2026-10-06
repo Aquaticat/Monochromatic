@@ -812,8 +812,30 @@ none on an item added by this work.
   Six mutants ended with the stack-overflow abort of the nesting control (signal 6),
   which does not depend on load;
   none ended with a memory kill.
+- Markdown campaign,
+  `mutation-RjKWfe` (`campaign-markdown-final-2.log`):
+  742 mutants,
+  698 caught,
+  0 missed,
+  44 unviable,
+  0 timeouts,
+  exit status 0,
+  82 minutes.
+  The baseline built in 100 seconds and tested in 0.4 seconds.
+  No mutant's test phase reached 20 seconds,
+  and none ended by a signal.
+  All three replacements of `MarkdownSource::children` now end with named failed assertions,
+  among them `markdown_basic_tests::collected_heading_text_matches_the_incumbent_helper`,
+  and so do the three constant replacements of the new `MarkdownSource::subtree`.
+  The per-mutant logs name the tests that fail under the mutants the first Markdown run missed:
+  `markdown_lfs_config::tests::optional_reads_distinguish_absence_from_failure` for the `LfsConfigError` rendering,
+  `markdown_lfs_context::tests::the_nearest_regular_configuration_file_marks_the_root`
+  alone for `137:72` in `find_lfs_repo_root`,
+  and both `markdown_lfs_target::tests::lexical_normalization_resolves_dot_components`
+  and `markdown_lfs_context::tests::targets_resolve_to_lfs_plain_and_missing` for `apply_segments`.
+  All 18 mutants of the respelled `choose` and `majority` are caught.
 
-The Markdown and processor results are pending.
+The processor result is pending.
 
 ## Remaining
 
