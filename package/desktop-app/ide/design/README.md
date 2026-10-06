@@ -113,9 +113,10 @@ gives the build, the sessions, and what each frame shows.
 
 ### 2026-10-06 UI batch 3b
 
+- Page: [`questions/2026-10-06-ui-batch-3b.html`](questions/2026-10-06-ui-batch-3b.html)
 - Screenshots: `screenshots/2026-10-06-ui-batch-3b/`
 - Status: open.
-  The coordinating session asks the user in the chat; there is no question page.
+  The coordinating session asks the user in the chat and points to the page.
   The frames and builds are described in the
   [production notes](#how-the-2026-10-06-ui-batch-3b-screenshots-were-produced).
 
