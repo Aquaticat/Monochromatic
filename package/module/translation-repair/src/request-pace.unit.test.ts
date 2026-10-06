@@ -182,8 +182,66 @@ await describe({
         },),
 
         it({
+          name: 'WAITS FOR THE START A WHOLE PLACE BACK: with starts at 0 and 600 ms in a window of 1,000 ms and '
+            + 'two places, 700 ms reads 300 ms of wait',
+          fn: async () => {
+            /**
+             Scripted clock, moved by hand.
+             */
+            const clock = { now: 0, };
+            const pace = createRequestPace({
+              perWindow: 2,
+              windowMs: 1_000,
+              now: () => clock.now,
+              wait: async function wait({ ms, },): Promise<void> {
+                clock.now += ms;
+              },
+            },);
+            await pace.take({ signal: SIGNAL, },);
+            clock.now = 600;
+            await pace.take({ signal: SIGNAL, },);
+            clock.now = 700;
+            expect(pace.waitMs(),).toBe(300,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A PLACE COUNT THAT IS NOT A WHOLE NUMBER OF ONE OR MORE with a RangeError naming the '
+            + 'count, where 1.5 places read the start list at a fraction and made a take at 700 ms wait 1,000 ms',
+          fn: async () => {
+            /**
+             Counts a window cannot hold, each as the refusal writes it.
+             */
+            const refused: readonly [number, string,][] = [
+              [1.5, '1.5',],
+              [0, '0',],
+              [-1, '-1',],
+              [Number.NaN, 'NaN',],
+              [Number.POSITIVE_INFINITY, 'Infinity',],
+              [2 ** 60, String(2 ** 60,),],
+            ];
+            expect(refused.map(function refusalOf([perWindow,],): string {
+              return String(caught(function builds(): unknown {
+                return createRequestPace({
+                  perWindow,
+                  windowMs: 1_000,
+                },);
+              },),);
+            },),).toEqual(refused.map(function expected([, written,],): string {
+              return `RangeError: perWindow must be a whole number of one or more, and ${written} is not`;
+            },),);
+            expect(caught(function builds(): unknown {
+              return createRequestPace({
+                perWindow: 1.5,
+                windowMs: 1_000,
+              },);
+            },),).toBeInstanceOf(RangeError,);
+          },
+        },),
+
+        it({
           name: 'ENDS a wait with the abort reason when the caller gives up, REFUSES a place to a caller '
-            + 'that gave up while queued, and paces nothing when the rate is not positive',
+            + 'that gave up while queued',
           fn: async () => {
             /**
              Aborts the caller from inside its own sleep.
@@ -245,11 +303,6 @@ await describe({
             // and take a place of its own.
             expect(sleeps,).toEqual([WINDOW_MS,],);
             expect(queued.inWindow(),).toBe(1,);
-
-            const unpaced = scriptedPace({ perWindow: 0, },);
-            await unpaced.pace.take({ signal: SIGNAL, },);
-            await unpaced.pace.take({ signal: SIGNAL, },);
-            expect(unpaced.sleeps,).toEqual([],);
           },
         },),
 
@@ -323,7 +376,7 @@ await describe({
       name: hyperRequestsPerHour.name,
       children: [
         it({
-          name: 'READS a positive number from the variable and takes the account limit when it is unset',
+          name: 'READS a whole number from the variable and takes the account limit when it is unset',
           fn: async () => {
             expect(hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: '300', }, },),).toBe(300,);
             expect(hyperRequestsPerHour({ env: {}, },),).toBe(HYPER_REQUESTS_PER_HOUR,);
@@ -332,14 +385,28 @@ await describe({
           },
         },),
         it({
-          name: 'REFUSES A VALUE THAT IS NOT A POSITIVE NUMBER, as every other dial does (ledger D14): it fell back to '
-            + 'the account limit, so a mistyped rate ran the launch at a pace nobody asked for',
+          name: 'REFUSES A RATE THAT IS NOT A WHOLE NUMBER OF ONE OR MORE, naming the variable, the value as written '
+            + 'and what is accepted, as every other dial does (ledger D14): a fraction such as 1.5 read the pacer\'s '
+            + 'start list at a fraction, and a mistyped rate that fell back to the account limit ran the launch at a '
+            + 'pace nobody asked for',
           fn: async () => {
-            expect(['lots', '0', '-5',].map(function refusalOf(written,): boolean {
-              return caught(function readsRate() {
-                hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: written, }, },);
-              },) instanceof StatedRefusalError;
-            },),).toEqual([true, true, true,],);
+            /**
+             Texts that are no whole number of one or more.
+             */
+            const written = ['lots', '0', '-5', '-1', '1.5', '0.5', 'NaN',];
+            expect(written.map(function refusalOf(text,): string {
+              return String(caught(function readsRate() {
+                return hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: text, }, },);
+              },),);
+            },),).toEqual(written.map(function expected(text,): string {
+              return 'StatedRefusalError: TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR must be one or more requests '
+                + 'per hour, as a whole number written in digits, at most '
+                + `${String(Number.MAX_SAFE_INTEGER,)}, and ${JSON.stringify(text,)} is not; leave it unset for the `
+                + 'account limit of 1000';
+            },),);
+            expect(caught(function readsRate() {
+              return hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: '1.5', }, },);
+            },),).toBeInstanceOf(StatedRefusalError,);
           },
         },),
         it({
@@ -351,9 +418,9 @@ await describe({
           },
         },),
         it({
-          name: 'REFUSES A RATE NOT WRITTEN AS A PLAIN DECIMAL, which `Number` read as a pace nobody typed: a '
-            + 'hexadecimal, an exponent, a sign, a space either side and a point missing digits on one side, '
-            + 'while a plain decimal such as 0.5 still reads (ledger B73)',
+          name: 'REFUSES A RATE NOT WRITTEN IN PLAIN DIGITS, which `Number` read as a pace nobody typed: a '
+            + 'hexadecimal, an exponent, a sign, a space either side and a point missing digits on one side '
+            + '(ledger B73)',
           fn: async () => {
             /**
              Spellings `Number` reads as a rate that no operator writes as one.
@@ -374,7 +441,6 @@ await describe({
             },),).toEqual(spellings.map(function refused(): boolean {
               return true;
             },),);
-            expect(hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: '0.5', }, },),).toBe(0.5,);
           },
         },),
       ],

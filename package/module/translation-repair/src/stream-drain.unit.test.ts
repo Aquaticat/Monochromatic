@@ -12,6 +12,7 @@
  @module
  */
 
+import { logger as frameworkLogger, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -20,6 +21,8 @@ import {
 
 import {
   armIdleGuard,
+  CREDENTIAL_MARKER,
+  contextRoot,
   drainBody,
   refusalText,
   StreamCutShortError,
@@ -33,7 +36,10 @@ import {
   anthropicBlockStart,
 } from './anthropic-frames.test-fixture.ts';
 import { warnLinesDuring, } from './console-warn-lines.test-fixture.ts';
-import { quotingFailure, } from './quoting-failure.test-fixture.ts';
+import {
+  quotingFailure,
+  WHISKER_KEY,
+} from './quoting-failure.test-fixture.ts';
 import {
   frameOf,
   longVariedStream,
@@ -167,6 +173,10 @@ type DrainOutcome = {
  @param wireFormat - event grammar to name to the drain, absent for the
  module's own default
 
+ @param label - model name to drain under
+
+ @param credentials - secrets the request carried, absent for none named
+
  @mutates response - its body is drained and cannot be read again
 
  @mutates guard - the drain notifies it per chunk
@@ -184,11 +194,15 @@ async function drainOutcome(
     guard,
     callerSignal = new AbortController().signal,
     wireFormat,
+    label = 'hf:whiskers',
+    credentials,
   }: {
     readonly response: Response;
     readonly guard: Parameters<typeof drainBody>[0]['guard'];
     readonly callerSignal?: AbortSignal;
     readonly wireFormat?: Parameters<typeof drainBody>[0]['wireFormat'];
+    readonly label?: string;
+    readonly credentials?: readonly string[];
   },
 ): Promise<DrainOutcome> {
   try {
@@ -198,9 +212,10 @@ async function drainOutcome(
         response,
         guard,
         callerSignal,
-        label: 'hf:whiskers',
+        label,
         // Conditional spread keeps the knob absent instead of undefined.
         ...(wireFormat === undefined ? {} : { wireFormat, }),
+        ...((credentials === undefined) ? {} : { credentials, }),
       },),
     };
   }
@@ -210,6 +225,234 @@ async function drainOutcome(
       error,
     };
   }
+}
+
+/**
+ Label the credential cases drain under, so the progress line a case reads
+ is told from the lines the other cases write.
+ */
+const CREDENTIAL_LABEL = 'hf:whiskers-key';
+
+/**
+ Names of the clock readings a progress line states, which differ on every
+ run.
+ */
+const CLOCK_READINGS: readonly string[] = ['elapsed', 'firstByte', 'maxGap',];
+
+/**
+ Frame carrying text on the answer channel, and the gateway's name for the
+ upstream where one is given.
+
+ @param text - text the frame carries
+
+ @param provider - upstream the frame names, absent for none
+
+ @returns Frame as the wire sends it
+
+ @example
+ ```ts
+ const raw = namedFrame({ text: 'purr', provider: 'Parasail', },);
+ ```
+ */
+function namedFrame(
+  {
+    text,
+    provider,
+  }: {
+    readonly text: string;
+    readonly provider?: string;
+  },
+): string {
+  return `data: ${
+    JSON.stringify({
+      ...((provider === undefined) ? {} : { provider, }),
+      choices: [{
+        index: 0,
+        delta: { content: text, },
+        finish_reason: null,
+      },],
+    },)
+  }\n\n`;
+}
+
+/**
+ Response whose body hands over each piece in turn and is then torn down,
+ as an abort tears a fetch down, or closes cleanly where the ending is
+ clean.
+
+ @param pieces - texts delivered one per pull
+
+ @param ending - whether the body is torn down after the last piece or closes
+
+ @returns Response over that body
+
+ @example
+ ```ts
+ const response = piecesThen({ pieces: [frame,], ending: 'torn down', },);
+ ```
+ */
+function piecesThen(
+  {
+    pieces,
+    ending,
+  }: {
+    readonly pieces: readonly string[];
+    readonly ending: 'torn down' | 'closed';
+  },
+): Response {
+  /**
+   Pieces handed over so far.
+   */
+  const sent = { count: 0, };
+  /**
+   Encoder, since a body carries bytes.
+   */
+  const encoder = new TextEncoder();
+  return new Response(new ReadableStream<Uint8Array>({
+    pull(controller,): void {
+      /**
+       Next piece, absent once they run out.
+       */
+      const next = pieces[sent.count];
+      if (next !== undefined) {
+        sent.count += 1;
+        controller.enqueue(encoder.encode(next,),);
+        return;
+      }
+      if (ending === 'closed') {
+        controller.close();
+        return;
+      }
+      controller.error(new Error('exchange torn down by abort',),);
+    },
+  },),);
+}
+
+/**
+ Drains a response under the credential label, handing the drain the
+ credentials a request carried, and returns the progress line the drain
+ logged, with the clock readings taken out so the line is the same on every
+ run.
+
+ @param response - response to drain
+
+ @param credentials - secrets the request carried, left out of the call
+ where absent
+
+ @mutates response - its body is drained and cannot be read again
+
+ @returns The progress line's message, readings of elapsed time blanked
+
+ @example
+ ```ts
+ const line = await progressLineOf({ response, credentials: [WHISKER_KEY,], },);
+ ```
+ */
+async function progressLineOf(
+  {
+    response,
+    credentials,
+  }: {
+    readonly response: Response;
+    readonly credentials?: readonly string[];
+  },
+): Promise<string> {
+  // Both loggers are drained first, so a line another case wrote is printed
+  // rather than kept here as the drain's.
+  await contextRoot({ tag: 'stream-drain-credential-cases', },)
+    .flush();
+  await frameworkLogger.flush();
+  /**
+   Lines `console.info` was handed while the drain ran.
+   */
+  const kept: string[] = [];
+  /**
+   `console.info` as it was, put back when the drain is over.
+   */
+  const original = console.info;
+  console.info = (...parts: readonly unknown[]) => {
+    kept.push(parts.join(' ',),);
+  };
+  await using restore = {
+    [Symbol.asyncDispose]: async () => {
+      console.info = original;
+    },
+  };
+  using guard = armIdleGuard({
+    label: CREDENTIAL_LABEL,
+    firstByteMs: ROOMY_MS,
+    idleMs: ROOMY_MS,
+  },);
+  /**
+   What the drain did, which these cases do not read: the line it logged is
+   the evidence.
+   */
+  const outcome = await drainOutcome({
+    response,
+    guard,
+    label: CREDENTIAL_LABEL,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((credentials === undefined) ? {} : { credentials, }),
+  },);
+  expect(['drained', 'raised',].includes(outcome.kind,),).toBe(true,);
+  await contextRoot({ tag: 'stream-drain-credential-cases', },)
+    .flush();
+  /**
+   The one line this drain's report wrote.
+   */
+  const [line, ...others] = kept.filter(function ours(entry,): boolean {
+    return entry.includes(`stream ${CREDENTIAL_LABEL}:`,);
+  },);
+  if ((line === undefined) || (others.length > 0))
+    throw new Error(`expected one progress line for ${CREDENTIAL_LABEL}, got ${JSON.stringify(kept,)}`,);
+  return line
+    .slice(line.indexOf(`stream ${CREDENTIAL_LABEL}:`,),)
+    .split(', ',)
+    .map(function blanked(part,): string {
+      return CLOCK_READINGS.some(function isReading(reading,): boolean {
+        return part.startsWith(`${reading} `,);
+      },)
+        ? `${part.split(' ',)[0] ?? ''} Xms`
+        : part;
+    },)
+    .join(', ',);
+}
+
+/**
+ The progress line the drain writes for a cut stream that delivered one
+ piece of answer text.
+
+ @param rawChars - raw wire characters delivered
+
+ @param contentChars - characters of generated answer text
+
+ @param opening - the excerpt of that text the line shows
+
+ @param served - the `, served by "..."` part, empty for none
+
+ @returns The line's message
+
+ @example
+ ```ts
+ const line = cutLine({ rawChars: 90, contentChars: 20, opening: 'purr', served: '', },);
+ ```
+ */
+function cutLine(
+  {
+    rawChars,
+    contentChars,
+    opening,
+    served,
+  }: {
+    readonly rawChars: number;
+    readonly contentChars: number;
+    readonly opening: string;
+    readonly served: string;
+  },
+): string {
+  return `stream ${CREDENTIAL_LABEL}: cut, elapsed Xms, firstByte Xms, maxGap Xms, ${String(rawChars,)} raw chars, `
+    + `0 unreadable frames, ${String(contentChars,)} content chars, 0 reasoning chars${served}, `
+    + `opening ${JSON.stringify(opening,)}`;
 }
 
 await describe({
@@ -711,6 +954,174 @@ await describe({
         if (!(outcome.error instanceof StreamDegenerateError))
           throw new Error('a degeneration error by construction',);
         expect(outcome.error.channel,).toBe('reasoning',);
+      },
+    },),
+
+    it({
+      name: 'LOGS A CUT STREAM\'S OPENING WITH A SENT CREDENTIAL MASKED when the first content echoes the key, '
+        + 'where the line read the key out of the generated text before any mask ran',
+      fn: async () => {
+        /**
+         Frame whose text echoes the key.
+         */
+        const frame = namedFrame({ text: `The cat says ${WHISKER_KEY} twice`, },);
+        expect(await progressLineOf({
+          response: piecesThen({
+            pieces: [frame,],
+            ending: 'torn down',
+          },),
+          credentials: [WHISKER_KEY,],
+        },),).toBe(cutLine({
+          rawChars: frame.length,
+          contentChars: `The cat says ${WHISKER_KEY} twice`.length,
+          opening: `The cat says ${CREDENTIAL_MARKER} twice`,
+          served: '',
+        },),);
+      },
+    },),
+
+    it({
+      name: 'LOGS THE OPENING MASKED WHEN THE KEY ARRIVES IN TWO CHUNKS cut inside the key, and when it arrives '
+        + 'in two frames of generated text cut inside the key',
+      fn: async () => {
+        /**
+         Text echoing the key.
+         */
+        const said = `The cat says ${WHISKER_KEY} twice`;
+        /**
+         Frame carrying the whole text.
+         */
+        const whole = namedFrame({ text: said, },);
+        /**
+         Where the first chunk ends: inside the key.
+         */
+        const cutAt = whole.indexOf(WHISKER_KEY,) + 7;
+        /**
+         What both deliveries log.
+         */
+        const expected = cutLine({
+          rawChars: whole.length,
+          contentChars: said.length,
+          opening: `The cat says ${CREDENTIAL_MARKER} twice`,
+          served: '',
+        },);
+        expect(await progressLineOf({
+          response: piecesThen({
+            pieces: [whole.slice(0, cutAt,), whole.slice(cutAt,),],
+            ending: 'torn down',
+          },),
+          credentials: [WHISKER_KEY,],
+        },),).toBe(expected,);
+
+        /**
+         The same text as two frames, split inside the key.
+         */
+        const first = namedFrame({ text: `The cat says ${WHISKER_KEY.slice(0, 7,)}`, },);
+        const second = namedFrame({ text: `${WHISKER_KEY.slice(7,)} twice`, },);
+        expect(await progressLineOf({
+          response: piecesThen({
+            pieces: [first, second,],
+            ending: 'torn down',
+          },),
+          credentials: [WHISKER_KEY,],
+        },),).toBe(cutLine({
+          rawChars: first.length + second.length,
+          contentChars: said.length,
+          opening: `The cat says ${CREDENTIAL_MARKER} twice`,
+          served: '',
+        },),);
+      },
+    },),
+
+    it({
+      name: 'LOGS NO HEAD OF THE KEY when the stream is cut inside it, so the opening ends in the marker where '
+        + 'cutting the excerpt before the mask would have shown the key\'s first characters',
+      fn: async () => {
+        /**
+         Text that ends eight units into the key.
+         */
+        const said = `The cat says ${WHISKER_KEY.slice(0, 8,)}`;
+        /**
+         Frame carrying it.
+         */
+        const frame = namedFrame({ text: said, },);
+        expect(await progressLineOf({
+          response: piecesThen({
+            pieces: [frame,],
+            ending: 'torn down',
+          },),
+          credentials: [WHISKER_KEY,],
+        },),).toBe(cutLine({
+          rawChars: frame.length,
+          contentChars: said.length,
+          opening: `The cat says ${CREDENTIAL_MARKER}`,
+          served: '',
+        },),);
+      },
+    },),
+
+    it({
+      name: 'LOGS THE UPSTREAM NAME MASKED when the gateway\'s own name field carries a sent credential, on a '
+        + 'stream that finished',
+      fn: async () => {
+        /**
+         Frame naming the key as its upstream.
+         */
+        const frame = namedFrame({
+          text: 'purr',
+          provider: WHISKER_KEY,
+        },);
+        expect(await progressLineOf({
+          response: piecesThen({
+            pieces: [frame,],
+            ending: 'closed',
+          },),
+          credentials: [WHISKER_KEY,],
+        },),).toBe(
+          'stream hf:whiskers-key: completed, elapsed Xms, firstByte Xms, maxGap Xms, '
+            + `${String(frame.length,)} raw chars, 0 unreadable frames, 4 content chars, 0 reasoning chars, `
+            + `served by ${JSON.stringify(CREDENTIAL_MARKER,)}`,
+        );
+      },
+    },),
+
+    it({
+      name: 'LOGS A STREAM THAT NEVER ECHOES THE KEY exactly as it logged before the drain was given credentials, '
+        + 'whether or not the call names any',
+      fn: async () => {
+        /**
+         Text never mentioning the key, ending on letters that begin it.
+         */
+        const said = 'The cat says purr, then wh';
+        /**
+         Frame carrying it.
+         */
+        const frame = namedFrame({
+          text: said,
+          provider: 'Parasail',
+        },);
+        /**
+         What the drain has always logged for this stream.
+         */
+        const expected = cutLine({
+          rawChars: frame.length,
+          contentChars: said.length,
+          opening: said,
+          served: ', served by "Parasail"',
+        },);
+        expect(await progressLineOf({
+          response: piecesThen({
+            pieces: [frame,],
+            ending: 'torn down',
+          },),
+        },),).toBe(expected,);
+        expect(await progressLineOf({
+          response: piecesThen({
+            pieces: [frame,],
+            ending: 'torn down',
+          },),
+          credentials: [WHISKER_KEY, `Bearer ${WHISKER_KEY}`,],
+        },),).toBe(expected,);
       },
     },),
   ],
