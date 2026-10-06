@@ -217,6 +217,134 @@ await describe({
       },
     },),
     it({
+      name: 'READS EVERY LINK OF THE TITLE: where the original links the title twice to one destination, '
+        + 'both of the page\'s links at those places take the heading\'s rendering',
+      fn: async () => {
+        /**
+         Pass over a slice linking the title twice to one destination.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            HEADING,
+            pair({
+              sliceIndex: 1,
+              source: '——出自《[窗边猫](https://example.test/cat)》，又见《[窗边猫](https://example.test/cat)》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADING_ROW,
+            {
+              sliceIndex: 1,
+              replacementText: '——From [The Window Cat](https://example.test/cat), again [The Window Cat](https://example.test/cat)',
+            },
+          ],
+        },);
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
+          HEADING_ROW.replacementText,
+          '——From [Cat by the Window](https://example.test/cat), again [Cat by the Window](https://example.test/cat)',
+        ],);
+      },
+    },),
+    it({
+      name: 'READS EVERY LINK OF THE TITLE: where the original links the title to two destinations, '
+        + 'the page\'s link to each takes the heading\'s rendering',
+      fn: async () => {
+        /**
+         Pass over a slice linking the title to two destinations.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            HEADING,
+            pair({
+              sliceIndex: 1,
+              source: '《[窗边猫](https://example.test/a)》与《[窗边猫](https://example.test/b)》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADING_ROW,
+            {
+              sliceIndex: 1,
+              replacementText: '[The Window Cat](https://example.test/a) and [The Window Cat](https://example.test/b)',
+            },
+          ],
+        },);
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
+          HEADING_ROW.replacementText,
+          '[Cat by the Window](https://example.test/a) and [Cat by the Window](https://example.test/b)',
+        ],);
+      },
+    },),
+    it({
+      name: 'STANDS ASIDE WHERE ONE OF THE TITLE\'S TWO DESTINATIONS IS LINKED A DIFFERENT NUMBER OF TIMES on the page, '
+        + 'since which of its links carries the title cannot be read',
+      fn: async () => {
+        /**
+         Page text linking the second destination twice where the original links it once.
+         */
+        const page = '[The Window Cat](https://example.test/a) and [The Window Cat](https://example.test/b) '
+          + '([source](https://example.test/b))';
+        /**
+         Pass over the heading and that page.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            HEADING,
+            pair({
+              sliceIndex: 1,
+              source: '《[窗边猫](https://example.test/a)》与《[窗边猫](https://example.test/b)》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADING_ROW,
+            {
+              sliceIndex: 1,
+              replacementText: page,
+            },
+          ],
+        },);
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
+          HEADING_ROW.replacementText,
+          page,
+        ],);
+        expect(unified.findings,).toEqual([
+          'title-reference-ambiguous (slice 1: 「窗边猫」 rendered by the heading of slice 0 as "Cat by the Window", '
+          + 'but the slice offers more than one span to read)',
+        ],);
+      },
+    },),
+    it({
+      name: 'READS THE LINK THE PAGE KEPT WHERE IT DROPPED ONE OF THE TITLE\'S TWO DESTINATIONS',
+      fn: async () => {
+        /**
+         Pass over a page that kept the link to the first destination only.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            HEADING,
+            pair({
+              sliceIndex: 1,
+              source: '《[窗边猫](https://example.test/a)》与《[窗边猫](https://example.test/b)》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADING_ROW,
+            {
+              sliceIndex: 1,
+              replacementText: '[The Window Cat](https://example.test/a) and the same cat',
+            },
+          ],
+        },);
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
+          HEADING_ROW.replacementText,
+          '[Cat by the Window](https://example.test/a) and the same cat',
+        ],);
+      },
+    },),
+    it({
       name: 'READS THE QUOTES WHERE THE ORIGINAL\'S LINK NEVER CLOSES, since no destination can be read from it',
       fn: async () => {
         /**

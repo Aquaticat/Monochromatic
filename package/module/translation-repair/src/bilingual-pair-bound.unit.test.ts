@@ -78,6 +78,39 @@ const INTRODUCED = [
   '好了，猫，睡吧。',
 ].join('\n',);
 
+/**
+ Original whose pair, a refrain, stands twice with a line between.
+ */
+const REFRAIN = [
+  '晚安，猫。',
+  'Good night, cat.',
+  '',
+  '窗边有一只猫。',
+  '',
+  '晚安，猫。',
+  'Good night, cat.',
+].join('\n',);
+
+/**
+ Page carrying the refrain's English once in each place.
+ */
+const REFRAIN_PAGE = [
+  'Good night, cat.',
+  '',
+  'A cat sits at the window.',
+  '',
+  'Good night, cat.',
+].join('\n',);
+
+/**
+ Finding for a rendering whose block holding the refrain carries two lines
+ where the page's carries one.
+ */
+const REFRAIN_WIDENED = 'This slice is LINE-STRUCTURED and the ORIGINAL gives the line `Good night, cat.` twice, once in '
+  + 'Chinese and once in English directly beside it; that pair is ONE line whose English is already its rendering, '
+  + 'and the EXISTING TRANSLATION carries the block holding it as 1 line. Yours carries 2. Drop the second rendering '
+  + 'of the pair (the Chinese line, or a second English wording of it), keeping the wording you chose elsewhere.';
+
 await describe({
   name: 'the existing translation bounds a bilingual pair to one line (class eighty)',
   children: [
@@ -232,6 +265,101 @@ await describe({
           candidateText: 'The cat wakes,\nstretching.\nThe sun is warm.',
           pageText: 'The cat wakes.\nThe sun is warm.',
         },).length,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'REFUSES a rendering that widens the SECOND block of a refrain the page carries in two places',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: REFRAIN,
+          candidateText: [
+            'Good night, cat.',
+            '',
+            'A cat sits at the window.',
+            '',
+            'Sleep well, cat.',
+            'Good night, cat.',
+          ].join('\n',),
+          pageText: REFRAIN_PAGE,
+        },),).toEqual([REFRAIN_WIDENED,],);
+      },
+    },),
+    it({
+      name: 'REFUSES a rendering that widens the FIRST block of a refrain the page carries in two places',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: REFRAIN,
+          candidateText: [
+            'Sleep well, cat.',
+            'Good night, cat.',
+            '',
+            'A cat sits at the window.',
+            '',
+            'Good night, cat.',
+          ].join('\n',),
+          pageText: REFRAIN_PAGE,
+        },),).toEqual([REFRAIN_WIDENED,],);
+      },
+    },),
+    it({
+      name: 'ACCEPTS a refrain carried in both places as the page carries it',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: REFRAIN,
+          candidateText: REFRAIN_PAGE,
+          pageText: REFRAIN_PAGE,
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'STAYS SILENT ON THE PAIR where the rendering carries the wording on more lines than the page does, '
+        + 'leaving the repeat to the repeated-line check',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: '晚安，猫。\nGood night, cat.\n\n窗边有一只猫。',
+          candidateText: [
+            'Sleep well, cat.',
+            'Good night, cat.',
+            '',
+            'A cat sits at the window.',
+            'Good night, cat.',
+          ].join('\n',),
+          pageText: 'Good night, cat.\n\nA cat sits at the window.',
+        },),).toEqual([
+          'This slice is LINE-STRUCTURED and your rendering repeats the line `Good night, cat.` 2 times where the '
+          + 'ORIGINAL repeats no line more than once. A Chinese line and its own English beside it are one line to '
+          + 'render, not two. Drop the repeat, keeping the wording you chose.',
+        ],);
+      },
+    },),
+    it({
+      name: 'REFUSES a widened block through the second of two pairs sharing one English wording, '
+        + 'where the page kept the first pair\'s Han line only',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: '晚安，猫。\nGood night, cat.\n\n窗边有一只猫。\n\n今夜很静。\nGood night, cat.',
+          candidateText: 'A cat sits at the window.\n\nSleep well, cat.\nGood night, cat.',
+          pageText: '晚安，猫。\n\nGood night, cat.\n\nA cat sits at the window.',
+        },),).toEqual([REFRAIN_WIDENED,],);
+      },
+    },),
+    it({
+      name: 'REFUSES a widened block through the second of two pairs sharing one Han line with two English wordings, '
+        + 'where the page kept neither English wording but the first',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: '晚安，猫。\nGood night, cat.\n\n窗边有一只猫。\n\n晚安，猫。\nSleep well, cat.',
+          candidateText: 'A cat sits at the window.\n\nSay good night.\nSleep well, cat.',
+          pageText: 'Good night, cat.\n\nA cat sits at the window.\n\nSleep well, cat.',
+        },),).toEqual([
+          REFRAIN_WIDENED.replace('Good night, cat.', 'Sleep well, cat.',),
+        ],);
       },
     },),
   ],
