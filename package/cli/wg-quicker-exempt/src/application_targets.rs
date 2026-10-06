@@ -160,7 +160,10 @@ fn is_exempt_application_executable(path: &Path) -> bool {
     // ```
     let is_chatgpt = path.starts_with(CHATGPT_INSTALL_DIRECTORY);
     // Interpreter's AppImage runtime file, its mounted inner binary, and its bundled agents
-    // all carry the lowercase family prefix, matching the same shape Helium uses.
+    // all carry the lowercase `interpreter` name prefix.
+    // Unlike Helium's rule this comparison keeps the exact lowercase spelling,
+    // so a capitalized lookalike stays tunnel-routed, while a renamed AppImage file still matches
+    // through the lowercase inner binary it mounts.
     let is_interpreter = name_text.starts_with(INTERPRETER_EXECUTABLE_PREFIX);
     return normalized_helium_name.starts_with("helium")
         || name_text == "palemoon"
