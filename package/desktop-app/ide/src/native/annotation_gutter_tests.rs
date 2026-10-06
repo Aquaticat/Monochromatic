@@ -332,11 +332,13 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
 }
 
 /// A file of 1000 lines has one digit more than the three every smaller file gets, so its text starts one digit
-/// further right; a click there still lands on the character under the pointer.
+/// further right; a click there still lands on the character under the pointer. Both files end without a line
+/// terminator: after a final terminator the empty line that follows gets a number of its own.
 #[test]
 fn the_gutter_gains_a_digit_past_999_lines_and_the_pointer_follows() {
-    let (_small_directory, small) = fixture_reader(&numbered(999));
-    let (_large_directory, large) = fixture_reader(&numbered(1000));
+    // `trim_end_matches` drops the final terminator.
+    let (_small_directory, small) = fixture_reader(numbered(999).trim_end_matches('\n'));
+    let (_large_directory, large) = fixture_reader(numbered(1000).trim_end_matches('\n'));
     update_timers_and_animations();
     assert_eq!(
         small.window.get_gutter_width(),
