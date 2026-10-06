@@ -5,9 +5,13 @@
 D81 asks for an editor for the template that produces a track row's supporting line.
 The human named KWGT as the precedent,
 chose which of its features to keep and omit (D89),
-and left the remaining choices to the agent (D90).
-This study builds that editor as authored native states,
-so its layout can be looked at on the Fold instead of being described.
+left the remaining choices to the agent (D90),
+and on 2026-10-06 decided the rest:
+the preview scrolls with the page (D91),
+the language has no conditional (D92),
+an empty field is plain substitution with the unit inside the peak field (D93),
+and the page rests where Android puts a focused field (D94).
+This study shows that editor as authored native states on the Fold.
 
 It changes no production code,
 stores no template and changes no row of the player.
@@ -15,14 +19,14 @@ It is not a parser,
 and it authorizes no production implementation.
 The [planning note](../../../../doc/planning/music-player-template-editor.md)
 holds the KWGT observations,
-the proposal the study builds,
+the proposal,
 the first look at a first build,
-and the layouts considered.
+the pinned layouts that D91 rejected with what they measured,
+and the decisions of 2026-10-06.
 
 The review page is `questions/template-editor.html`.
-It asks one question:
-which layout keeps what in view while typing.
-Everything else it shows is listed in it as an assumption open to objection.
+It shows the decided editor and asks nothing;
+its last field takes anything the human would change.
 
 ## What the app has today
 
@@ -39,7 +43,7 @@ not to the template language.
 ## Authored native fixture
 
 The owned branch `prototype/music-player-first-run-access` holds the study at
-`82d2692b7471fcde27c86c9bb321a4d35557bbca`.
+`4df8e785cc7f5dff97c4d463c8c9358f5787bbff`.
 Its production source is unchanged from `a5560abb223af9f700b9d9465eac1991a02aac07`,
 which the build checks with a source comparison,
 not a digest.
@@ -53,57 +57,48 @@ not logic.
 (fields,
 `tf`,
 `tc`,
-`if`,
+`+`,
 error lines and typing help),
 and `template-editor-scenes.mjs` computes from it every text each state must draw.
 A capture whose page draws anything else is refused.
-The fixture's own unit task passes with 24 cases.
+The fixture's own unit task passes with 22 cases.
 
-Three launch options select what is drawn:
+Two launch options select what is drawn:
 
 - `scene`:
   the authored state.
-- `layout`:
-  `flow`,
-  `rows` or `lines`,
-  described under `Captured cohort and visible boundaries`.
 - `position`:
   `top`,
   or `end` for the page scrolled to its end.
+  That scroll is the study's way to show the end of the page,
+  not a behaviour of the editor.
 
 While a state holds focus in the field,
-the study scrolls the page once,
-by its own rule:
-just far enough that the lines under the field clear the keyboard by 8dp,
-and never so far that the field's upper edge leaves the scrolling window.
-The preparation of the captures checks that each typing view rests where that rule put it.
+the page rests where Android puts a focused field (D94);
+the study does not scroll it.
 Typing,
 moving the caret,
 inserting a field and resetting are not connected;
 the buttons emit a debug event and change nothing.
 
+The default template is `$tf(mi(len), m:ss)$ $mi(peak)$`.
+For the file not analysed yet it yields `5:12` followed by a space,
+because plain substitution keeps the text between the formulas (D93).
+The hierarchy keeps that space,
+and the capture checks it.
+The changed template,
+`$tc(up, mi(ext))$ · $tf(mi(len), m:ss)$ · $mi(peak)$`,
+shows what plain substitution means for a separator:
+the second row reads `FLAC · 5:12 ·`.
+
 ## Captured cohort and visible boundaries
 
-The cohort is 128 views:
-the scenes of `template-editor-scenes.mjs` on both Fold panels,
+The cohort is 64 views:
+the eight scenes of `template-editor-scenes.mjs` on both Fold panels,
 in light and dark,
 at 100% and 200% text.
-The baseline layout is shown in every state,
-plus one view scrolled to the page's end.
-Each pinned layout is shown in the typing states and in one state at rest.
 States that hold focus are captured with the system keyboard open;
 the others with it closed.
-
-The layouts:
-
-- `flow`:
-  two preview rows at the top of one scrolling page.
-- `rows`:
-  the two preview rows fixed under the header,
-  the rest scrolling beneath them.
-- `lines`:
-  only the two lines the template yields fixed under the header,
-  without the rows' titles.
 
 What a view keeps in view is read from the hierarchy,
 not judged by eye.
@@ -111,43 +106,33 @@ A text that scrolls counts as in view only when its rectangle lies strictly insi
 whose lower edge is the keyboard when one is open.
 A rectangle that touches an edge is reported as at the edge,
 because the hierarchy cannot tell cut from flush.
-What a layout fixes under the header must be in view in every one of its views,
-and the builder refuses the cohort otherwise.
+The page title sits in the header and must be in view in every view.
 Hierarchy rectangles are not ink bounds.
 
 Measured,
 for the preview,
-the field and the lines under it:
+the field and the lines under it,
+with the keyboard open:
 
-- At 100% text all of them are in view in every typing state,
-  in every layout,
-  on both panels.
-- `flow` at 200% text:
-  typing inside a call puts the preview out of view on both panels.
-  On the inner panel the field and its help also reach the window's edges.
-  In the two error states the preview stays,
-  with its first title against the header on the inner panel.
-- `rows` at 200% text:
-  the preview stays in view everywhere.
-  Typing inside a call leaves only the help's first line on the inner panel,
-  cut at the keyboard,
-  and cuts the help's sentence on the cover panel.
-  The error states keep the field and its error line in view on both panels.
-- `lines` at 200% text:
-  the preview stays in view everywhere.
-  Typing inside a call keeps the help's first line whole on the inner panel and the whole help on the cover panel.
-  The error states keep everything in view on both panels.
+- At 100% text everything is in view in all three typing states on both panels.
+- At 200% text on the inner panel,
+  typing inside a call scrolls the whole preview out of view.
+  The help's signature stays in view;
+  its sentence and the field's box reach the keyboard.
+  With an unknown field the first preview title sits against the header,
+  and with either mistake the error line ends flush against the keyboard.
+- At 200% text on the cover panel,
+  typing inside a call keeps the second preview row,
+  with the first one cut at the header,
+  and the help's sentence reaches the keyboard.
+  Both mistakes keep everything in view.
 
-In every layout the field list sits under the field and is mostly out of view while the keyboard is open.
-That is a separate concern,
-not built yet,
-and it depends on which layout is taken.
+Those are the costs D94 named when it chose the platform's scrolling.
+The field list sits under the field and is mostly out of view while the keyboard is open;
+reaching it is the round's next concern.
 
-Two capture problems were found with the first build and are handled now:
-the keyboard's own notice after a change of text size,
-which the capture avoids by opening the keyboard once per condition and by requiring one keyboard edge per panel;
-and hierarchy attributes written in single quotes,
-which the reader now accepts.
+The view scrolled to the end shows the whole field list and `Reset to default` on the cover panel at 100% text,
+and all but the top of the list on the inner panel at 200% text.
 
 ## Review and lifecycle
 
@@ -159,44 +144,35 @@ Every view was read in full on a sheet of its panel,
 text size and theme before publication:
 no system dialog,
 notification or keyboard notice is in any of them.
-The keyboard's suggestion strip shows the emulator image's own dictionary guesses for the authored text.
+The keyboard shows the emulator image's own suggestions or its tool row;
+neither is part of the study.
 
 `verify:template-editor` builds the page and validates it against the views and the reference.
 `test:template-editor` proves the builder refuses changed evidence,
-a broken layout claim and a page without its question.
+a scroll of the study's own on a typing view,
+a page that asks a question and a page that quotes a conditional.
 Removing each of its four named guards makes that test fail.
 An offline browser check in a container bounded to 2 GiB of memory and 2 CPUs opened every embedded view,
-answered the question each way,
+prepared replies,
 and ran in light and dark at desktop and phone width with no accessibility finding on the closed page.
 `questions/evidence/template-editor-review-verification.json` records these results.
 
 No digest of an image is recorded,
 and neither the builder nor the review record compares anything with a digest (D88).
 The witness manifest states the prototype commit and the APK's digest as provenance only.
-The private capture scripts,
-which are not in this repository,
-compared the APK's digest while these views were captured:
-to keep one cohort to one build,
-and before replacing a package already installed in the guest.
-Asked on 2026-10-06,
-the human said D88 covers them too,
-and the comparisons were removed from the scripts that run a visit.
+The private capture scripts no longer compare the APK's digest either:
+the human said on 2026-10-06 that D88 covers them,
+and this cohort is the first one captured without it.
 
-The views were captured over several emulator visits on 2026-10-05,
-each in a container bounded to 6 GiB of memory and 2 CPUs.
-The emulator stopped abnormally during two of the visits that contributed views:
-once with a segmentation fault,
-and once killed,
-with exit status 137 and no out-of-memory event reported by `podman`,
-for a reason that was not established.
-Finished views were kept,
+The views were captured over three emulator visits on 2026-10-06,
+each in a container bounded to 6 GiB of memory and 2 CPUs,
+on a host also loaded by other work.
+The first ended in a segmentation fault after 25 views,
+and the second when a guest command timed out after 12 more;
+finished views were kept,
 and each view's record names its visit.
 The last visit restored the guest's recorded settings and shut down with no container or emulator process left.
-The crashes,
-a refused start after a shutdown the emulator cut short,
-and what recovered each are recorded in
-`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md` and
-`doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`.
+`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md` records the crash.
 
 ## Not exercised
 
@@ -211,10 +187,11 @@ and what recovered each are recorded in
 
 ## Remaining implementation gate
 
-Nothing here is decided by being shown.
-The layout waits for the human's answer to the review page.
-After it:
-the field list's reach while typing,
+The editor's language,
+default,
+preview placement and scrolling are decided (D89 to D94).
+Still open in this round:
+reaching the field list while the keyboard is open,
 then the questions D81 leaves open,
 such as which other rows get a template.
 No production parser,
