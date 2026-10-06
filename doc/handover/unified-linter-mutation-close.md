@@ -1182,9 +1182,26 @@ Every discovery campaign mutated this image.
   exit status 2,
   67 minutes),
   and `mutation-6G2hzn` (shard 1/3,
-  still running when this was written).
+  32 mutants,
+  28 caught,
+  4 unviable,
+  exit status 0,
+  2 hours).
   The shard baselines tested in 224,
-  218 and 188 seconds.
+  218 and 188 seconds,
+  and no mutant timed out.
+- Core scope,
+  `mutation-YJ48Vl` (`campaign-core-gaps-1.log`):
+  202 mutants,
+  182 caught,
+  0 missed,
+  20 unviable,
+  0 timeouts,
+  exit status 0,
+  2 hours.
+  The baseline built in 311 seconds and tested in 42 seconds.
+  It still skipped five tests by name,
+  because it started before the skip list was reduced to four.
 
 Two campaigns were stopped on purpose by removing their containers.
 `mutation-VFaIKp` was the unsharded semantic campaign:
