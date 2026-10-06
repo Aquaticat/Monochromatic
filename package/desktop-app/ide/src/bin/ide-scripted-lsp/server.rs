@@ -16,7 +16,7 @@ use serde_json::{Value, json};
 /// ```ts
 /// const documents = new Map<string, string>();
 /// ```
-use std::{collections::HashMap, io, sync::Arc, thread, time::Duration};
+use std::{collections::HashMap, io, path::Path, sync::Arc, thread, time::Duration};
 
 /// What: The loop's own state. `String` owns its text (sibling: borrowed `&str`).
 /// Why: Only the main thread reads and edits documents, so no lock is needed for them.
@@ -44,6 +44,24 @@ struct Session {
     ///       "a JSON answer, or nothing".
     /// Why: It is written right after the next hint answer.
     held_hint: Option<Value>,
+}
+
+/// What: Wait until a file exists, checking every 5 ms, for at most one minute. `&Path` lends
+///       the path (sibling: owned `PathBuf`).
+/// Why: The read loop holds `initialize` until the test allows the start; a test that never
+///      creates the file still ends, because the client's start deadline stops the server.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function waitFor(gate: string) { for (let i = 0; i < 12_000 && !existsSync(gate); i++) sleepSync(5); }
+/// ```
+fn wait_for(gate: &Path) {
+    for _ in 0..12_000 {
+        if gate.exists() {
+            return;
+        }
+        thread::sleep(Duration::from_millis(5));
+    }
 }
 
 /// Capabilities announced in the `initialize` answer.
@@ -201,6 +219,10 @@ impl Session {
                     json!({ "id": id, "error": { "code": -32603, "message": "scripted initialize failure" } }),
                 ),
                 Init::Ok => {
+                    // A gated start waits for the test's file, for at most one minute.
+                    if let Some(gate) = &self.script.init_gate {
+                        wait_for(gate);
+                    }
                     // A slow start: the client must not send anything else in the meantime.
                     thread::sleep(Duration::from_millis(self.script.init_delay));
                     self.send(json!({ "id": id, "result": {
@@ -241,7 +263,9 @@ impl Session {
             self.send(json!({ "id": id, "error": { "code": -32603, "message": "scripted internal failure" } }));
         } else if method == "textDocument/inlayHint" {
             self.inlay_hints += 1;
+            // `&self.script.hint_steps` lends the scripted list; the count picks this request's step.
             let step = step_for(&self.script.hint_steps, self.inlay_hints);
+            // `&mut self.held_hint` lends the slot of a held-back answer, which `respond` fills or empties.
             crate::inlay::respond(&self.wire, id, step, &mut self.held_hint);
         } else if method == "textDocument/diagnostic" {
             self.pulls += 1;

@@ -235,13 +235,19 @@ fn reload_during_start_is_delivered_by_the_eventual_did_open() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("INIT_DELAY_MS", "600")], PRODUCT_TIMEOUT);
+    // The server answers `initialize` only once the gate file exists, which the test creates
+    // after the reload was sent; the worker takes the reload before the server can be ready.
+    let gate = support::scratch(&root).join("initialize-gate");
+    let gate_text = gate.display().to_string();
+    let definitions =
+        support::scripted(&root, &[("INIT_GATE", gate_text.as_str())], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("slow.scripted"), CAT_BEFORE);
     probe.until("the starting state", |seen| {
         return seen.state(SERVER) == Some(&ServerState::Starting);
     });
     probe.reload(CAT_AFTER);
+    std::fs::write(&gate, "").expect("initialize gate");
     probe.until_ready();
     let lines = support::server_text_until(&root, CAT_AFTER);
     let opens = of_method(&lines, "textDocument/didOpen");

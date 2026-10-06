@@ -574,6 +574,26 @@ A failure the server states itself is final for that text.
 A definition,
  references,
  or hover request that times out is reported to its caller as a timeout and is not sent again.
+A hint answer for lines other than those reported last is dropped,
+so a server that answers an older window after a newer one cannot replace the current hints.
+
+Every request has the server's configured request timeout,
+Helix's 20 seconds unless the definition names another.
+`initialize` gets three request timeouts (`START_FACTOR` in `src/language/config.rs`):
+helix-lsp never uses a client whose `initialize` timed out,
+so a server that is only slow to start on a busy machine would otherwise stay failed
+until the next file is displayed.
+helix-lsp is given that start allowance,
+and the worker bounds every request it sends by the request timeout itself.
+
+After a reload,
+a server's diagnostics pushed without a version are held back
+until the server answers a request sent for the new text,
+or for at most `HOLD_FALLBACK` (2 seconds),
+because such a set may still describe the previous text.
+The latest set pushed during the hold is shown when the hold ends,
+unless a set with the current version arrived first;
+a set naming a line the text does not have is discarded.
 
 The TypeScript family uses the project's own TypeScript 7 server (`node_modules/typescript/bin/tsc --lsp --stdio`);
 a project without it shows the missing-executable state.
@@ -609,9 +629,20 @@ nothing falls back to an unconfined launch.
 
 `test:language` runs the unit rules and sessions against the scripted server `ide-scripted-lsp`,
 one child process per session.
-`IDE_SCRIPTED_STALL_AT` and `IDE_SCRIPTED_STALL_MS` hold the scripted server's read loop once,
-before the first message of the named method,
-so `tests/language/again.rs` makes a request time out without any load on the machine.
+Its request timeout is the product default of 20 seconds (`PRODUCT_TIMEOUT` in `tests/language/support.rs`)
+wherever an assertion does not depend on it.
+`IDE_SCRIPTED_HINT_STEPS` and `IDE_SCRIPTED_PULL_STEPS` script, request by request,
+which inlay-hint or pull-diagnostics request is answered, left unanswered (`silent`),
+held back until the next answer (`hold`),
+or superseded (`modified`, `modified-notify`),
+so `tests/language/again.rs` and `tests/language/windows.rs` do not depend on how busy the machine is.
+`IDE_SCRIPTED_INIT_GATE` names a file the server waits for before it answers `initialize`,
+so a test can act while the server is still starting.
+Every report line carries its wall-clock time in milliseconds (`at`),
+and every message the server writes adds a `sent` line.
+Each session keeps its project and report in `/dev/shm` when that exists:
+the scripted server writes its report before it answers,
+and on a disk the rest of the machine keeps busy one write blocked it for up to 10 seconds.
 `IDE_LANGUAGE_TEST_LOG=1` makes a session print the worker's debug log
 and the helix-lsp protocol log to standard error.
 `inspect:language` runs all five feature paths,

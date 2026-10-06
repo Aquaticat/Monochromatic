@@ -176,6 +176,11 @@ pub struct Script {
     pub push_diagnostics: bool,
     /// Push diagnostics again after every hover answer, as a server with delayed analysis does.
     pub push_after_hover: bool,
+    /// What: A file whose existence lets the server answer `initialize`; `Option<PathBuf>` is "an
+    ///       owned path, or nothing" (sibling: borrowed `&Path`).
+    /// Why: A test that must act while the server is still starting creates the file only after
+    ///      it acted, so the start cannot overtake it however busy the machine is.
+    pub init_gate: Option<PathBuf>,
     /// Milliseconds to wait before answering `initialize`.
     pub init_delay: u64,
     /// What each inlay-hint request gets, in order (`IDE_SCRIPTED_HINT_STEPS`).
@@ -305,6 +310,8 @@ impl Script {
             push_diagnostics: read("PUSH", "1") == "1",
             push_after_hover: read("PUSH_AFTER_HOVER", "0") == "1",
             init_delay: read("INIT_DELAY_MS", "0").parse().unwrap_or(0),
+            // `map(PathBuf::from)` converts a present value into an owned path.
+            init_gate: env::var_os("IDE_SCRIPTED_INIT_GATE").map(PathBuf::from),
             hint_steps: steps("HINT_STEPS"),
             pull_steps: steps("PULL_STEPS"),
             pull_diagnostics: read("PULL", "0") == "1",
