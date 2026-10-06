@@ -29,8 +29,11 @@ use std::path::Path;
 pub(super) enum WatchFailure {
     /// `inotify_add_watch` answered `ENOSPC`: this user's inotify watch limit is reached.
     Limit,
-    /// Refused (outside the root, a symbolic-link alias) or failed for another reason; the text names the directory.
-    Other(String),
+    /// Refused (outside the root, a symbolic-link alias) or failed for another reason.
+    Other(
+        /// The failure, naming the directory.
+        String,
+    ),
 }
 
 /// Watch one directory non-recursively after checking that it is its own canonical path inside the root.

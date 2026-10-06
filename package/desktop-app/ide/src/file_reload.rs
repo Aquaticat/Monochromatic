@@ -34,8 +34,11 @@ use std::{
 /// ```
 pub enum QuietRead {
     /// The file was last modified at least the quiet period before the read began, so the bytes
-    /// are a finished state; `None` inside means they equal the displayed text.
-    Read(Option<Reload>),
+    /// are a finished state.
+    Read(
+        /// The prepared change, or `None` when the bytes equal the displayed text.
+        Option<Reload>,
+    ),
     /// The file was modified within the quiet period before the read began, or during the read,
     /// or its modification time lies in the future: a save may be in progress, so the bytes are dropped.
     RecentlyWritten,
