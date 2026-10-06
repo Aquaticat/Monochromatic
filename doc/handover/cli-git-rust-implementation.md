@@ -202,9 +202,6 @@ Running at the last update of this document (2026-10-06, relaunched at 08:10):
   `final-newline`, `security/forbidden-strings` with `rulesFile`, and `mono/forbidden-root-context`,
   with a differential test against the incumbent.
   Evidence: `doc/handover/cli-git-native-content-policies.md` on that branch.
-- Scanner Windows suite through the `mvm` command-line program (no repository code changes):
-  the run that would show the Windows suite green,
-  recorded in `doc/handover/scanner-native-verification.md`.
 - Linter mutation and fuzz gaps (main checkout):
   the six items listed under `Linter mutation close`.
 - Dependent-version planning in Rust with a differential proof against the TypeScript planner
@@ -212,6 +209,8 @@ Running at the last update of this document (2026-10-06, relaunched at 08:10):
   branch `feat/cli-git-native-dependent-version`),
   evidence `doc/handover/cli-git-native-dependent-version.md` on that branch.
 
+The scanner's Windows suite through `mvm` alone has reported;
+its result is in the work queue item `Scanner on Windows`.
 Reported and recorded under `Delegate results`:
 the scanner Windows follow-up,
 the open-decision brief,
@@ -1309,12 +1308,21 @@ that is verification, not a decision for the user.
 - [x] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
 - [x] Forbidden-strings structured embedding interface and standalone parity.
   The two Windows-native survivors are caught on Windows (GNU ABI, differential against a red baseline).
-- [ ] Scanner on Windows: the prefix fail-open fix (`833483171`) is confirmed on Windows,
-  and the suite passed 232 of 234 tests at `fe805727c`.
-  The two remaining tests now assert the platform's reason (`aaf4c08e7`);
-  a Windows run that shows 234 of 234 beside a failing positive control is still owed
-  (a delegate is running it through `mvm`),
-  and MSVC is unexercised.
+- [x] Scanner on Windows: the prefix fail-open fix (`833483171`) is confirmed on Windows,
+  and on 2026-10-06 the whole suite passed 234 of 234 at `fb64be854`
+  beside a positive control that failed the expected 14 tests
+  (`doc/handover/scanner-native-verification.md`, section `Windows run with mvm alone`).
+  Not exercised: the MSVC and aarch64 Windows targets.
+- [ ] Scanner pathname mutation scope on Windows without a timeout.
+  The 2026-10-06 run missed nothing but recorded one timeout
+  after its mutant had already failed nine tests;
+  the stall was in an unrelated test,
+  and on two reruns of that mutant the unmutated baseline's test time went from 21.7 to 83.9 seconds and then past
+  the 120 second limit as host load rose to 167 on 16 processors.
+  The cause (host load or the guest's real-time malware scanning) was not separated.
+  Rerun when the host is quiet,
+  once with real-time scanning excluded for the build directory in the throwaway guest,
+  to tell the two apart.
 - [ ] Mutation gates exit 0 with the two excluded replacement kinds, 0 missed and 0 timeouts.
   Done for the wrapper on its final engine tree (`348d94cbe`) and for the candidate branch;
   the linter's scopes are still being rerun by their delegate,
