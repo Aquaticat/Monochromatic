@@ -281,7 +281,10 @@ export function restoreJsxAttributes(
        */
       const archiveTag = archiveTags[at];
       if (archiveTag === undefined)
-        return [];
+        throw new Error(
+          'unreachable: a page tag has no archive tag at its position, '
+            + 'though sameTagSequence had matched the two sequences by length and by name',
+        );
       return attributeRewrites({
         pageTag,
         archiveTag,

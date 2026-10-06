@@ -233,6 +233,7 @@ export {
   RunsDirectoryBusyError,
 } from './corpus-run/runs-lock.ts';
 export {
+  holderLiveness,
   lockFileText,
 } from './corpus-run/runs-lock-holder.ts';
 export {

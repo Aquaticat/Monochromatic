@@ -41,12 +41,14 @@ export {
   openNamespacedCache,
 } from './corpus-run/slice-cache-namespace.ts';
 export { verifyArtifactMeasurements, } from './corpus-run/artifact-two-lane-corpus-verify.ts';
+export { resolveGit, } from './corpus-run/git-command.ts';
 export {
   type HostIdentity,
   hostIdentity,
   type HostRead,
   type StartTicksRead,
   startTicksOf,
+  startTicksOfStat,
 } from './corpus-run/process-identity.ts';
 export {
   type AgreementSource,

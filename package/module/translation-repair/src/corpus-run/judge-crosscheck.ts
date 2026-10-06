@@ -250,9 +250,19 @@ export function buildCrosscheckCensus(
         },)
         .map(function toItem(claimId,): CrosscheckItem {
           /**
-           Authors of this claim, known present by `isAttributed`.
+           Set of authors of this claim, known present by `isAttributed`.
            */
-          const proposers = [...(proposersOf.get(claimId,) ?? []),];
+          const authors = proposersOf.get(claimId,);
+          if (authors === undefined)
+            throw new Error(
+              'unreachable: a claim `isAttributed` kept has no authors in the map it asked, which '
+                + 'holds a claim id for every attribution it read',
+            );
+
+          /**
+           Authors of this claim, in the order first met.
+           */
+          const proposers = [...authors,];
 
           /**
            Who may re-examine this claim and who authored it.

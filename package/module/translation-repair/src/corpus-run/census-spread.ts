@@ -41,6 +41,9 @@ const PERCENT_WHOLE = 100;
 
  @returns Value at that rank, zero for an empty sample
 
+ @throws RangeError where the percentile is below zero or not a number, which
+ names no rank
+
  @example
  ```ts
  const p90 = percentileOf({ sorted, percentile: 90, },);
@@ -55,6 +58,12 @@ export function percentileOf(
     readonly percentile: number;
   },
 ): number {
+  // A comparison with NaN is false either way, so this refuses it too.
+  if (!(percentile >= 0))
+    throw new RangeError(
+      `percentile ${String(percentile,)} is not a number from zero up, `
+        + 'so it names no rank in the sample',
+    );
   if (sorted.length === 0)
     return 0;
 
@@ -65,7 +74,17 @@ export function percentileOf(
     sorted.length - 1,
     Math.floor((percentile / PERCENT_WHOLE) * sorted.length,),
   );
-  return sorted[rank] ?? 0;
+  /**
+   Value at that rank, which exists since the percentile is at least zero and
+   the rank is clamped to the last index of a sample that holds one.
+   */
+  const value = sorted[rank];
+  if (value === undefined)
+    throw new Error(
+      'unreachable: the rank of a percentile of zero or more, clamped to the last index of a non-empty '
+        + 'sample, names no value',
+    );
+  return value;
 }
 
 /**

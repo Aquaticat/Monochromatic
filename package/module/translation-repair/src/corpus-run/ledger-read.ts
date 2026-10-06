@@ -165,8 +165,12 @@ export type CandidateReading = {
 
  @param best - one-based position the ballot named
 
- @returns Models behind it, empty where the ballot named nothing or named a
- position the slate did not have
+ @returns Models behind it, empty where the ballot named a position the slate
+ did not have
+
+ @throws Error where the ballot named nothing, which the caller sets apart
+ before asking since an empty answer would count it as a position the slate
+ lacked
 
  @example
  ```ts
@@ -183,7 +187,10 @@ function producersNamed(
   },
 ): readonly string[] {
   if (best === CANDIDATE_NONE)
-    return [];
+    throw new Error(
+      'unreachable: the ballot named nothing, which summariseLedger sets apart before asking who is behind a '
+        + 'position, so an empty answer here would count an abstention as a position the slate lacked',
+    );
 
   /**
    Candidate at that position, absent where the ballot overran the slate.

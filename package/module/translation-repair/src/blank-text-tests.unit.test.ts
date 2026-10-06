@@ -1420,7 +1420,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/process-identity.ts#startTicksOf': {
+  'corpus-run/process-identity.ts#startTicksOfStat': {
     tests: 1,
     why: TOOL,
   },

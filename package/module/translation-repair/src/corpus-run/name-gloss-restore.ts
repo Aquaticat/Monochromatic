@@ -2,6 +2,7 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { wordStarts, } from '../word-bounds.ts';
 import {
+  pageTextOf,
   rowsChangedBy,
   slicesInOrder,
 } from './assembly-page-text.ts';
@@ -259,6 +260,8 @@ function glossed(
  @returns Replacements with the gloss lines restored, the rewritten rows
  alone, and one finding per restored line
 
+ @throws SliceNotOnPageError where a replacement names a slice the pairs lack
+
  @example
  ```ts
  const restored = restoreNameGlossLines({ slices, replacements, },);
@@ -309,7 +312,10 @@ export function restoreNameGlossLines(
      Gloss lines the archive carries on this slice.
      */
     const glosses = nameGlosses({
-      archiveText: archiveBySlice.get(row.sliceIndex,) ?? '',
+      archiveText: pageTextOf({
+        pageText: archiveBySlice,
+        sliceIndex: row.sliceIndex,
+      },),
     },);
     return glosses.reduce(
       function place(

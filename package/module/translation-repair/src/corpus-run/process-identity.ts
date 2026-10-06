@@ -158,10 +158,39 @@ export async function hostIdentity(): Promise<HostRead> {
 }
 
 /**
- Reads when one process started, in clock ticks since boot.
+ Reads the start time out of one `/proc/<pid>/stat` line.
 
  The command name sits in parentheses and may itself hold spaces or a closing
  parenthesis, so the fields are read after the LAST one.
+
+ @param stat - the line the kernel prints for one process
+
+ @returns Its start time, or that the line holds none
+
+ @example
+ ```ts
+ const started = startTicksOfStat({ stat: '1 (init) S 0 1 1 0 -1 4194560 1 2 3 4 5 6 7 8 20 0 1 0 275883698', },);
+ ```
+ */
+export function startTicksOfStat({ stat, }: { readonly stat: string; },): StartTicksRead {
+  /**
+   Start time among the fields after the command name.
+   */
+  const startTicks = stat
+    .slice(stat.lastIndexOf(')',) + 1,)
+    .trim()
+    .split(' ',)[START_TICKS_FIELD];
+  return ((startTicks === undefined) || (startTicks === ''))
+    ? { kind: 'unread', }
+    : {
+      kind: 'read',
+      startTicks,
+    };
+}
+
+/**
+ Reads when one process started, in clock ticks since boot, out of the line
+ the kernel prints for it.
 
  @param pid - process to read
 
@@ -183,19 +212,7 @@ export async function startTicksOf(
       `/proc/${String(pid,)}/stat`,
       'utf8',
     );
-    /**
-     Start time among the fields after the command name.
-     */
-    const startTicks = stat
-      .slice(stat.lastIndexOf(')',) + 1,)
-      .trim()
-      .split(' ',)[START_TICKS_FIELD];
-    return ((startTicks === undefined) || (startTicks === ''))
-      ? { kind: 'unread', }
-      : {
-        kind: 'read',
-        startTicks,
-      };
+    return startTicksOfStat({ stat, },);
   }
   catch (error) {
     // Absent or hidden alike: the caller falls back to the id, which tells a

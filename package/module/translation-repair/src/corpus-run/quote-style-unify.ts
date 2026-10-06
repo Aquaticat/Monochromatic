@@ -3,7 +3,10 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import { restoreTypography, } from '../restore-typography.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { proseMask, } from '../typography-prose-mask.ts';
-import { pageTextBySlice, } from './assembly-page-text.ts';
+import {
+  pageTextBySlice,
+  pageTextOf,
+} from './assembly-page-text.ts';
 import {
   rewriteEverySlice,
   type TextRewrite,
@@ -174,8 +177,11 @@ function pageQuoteConvention(
       ): QuoteTally {
         return tallyQuotes({
           tally: counted,
-          text: carried.get(slice.target
-            .sliceIndex,) ?? '',
+          text: pageTextOf({
+            pageText: carried,
+            sliceIndex: slice.target
+              .sliceIndex,
+          },),
         },);
       },
       EMPTY_TALLY,

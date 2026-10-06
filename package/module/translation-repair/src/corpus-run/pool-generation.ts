@@ -94,9 +94,19 @@ export function poolGeneration(
       }, which the pool guard should have refused`,
     };
 
+  /**
+   The one digest the pool records.
+   */
+  const [digest,] = digests;
+  if (digest === undefined)
+    throw new Error(
+      'unreachable: the pool\'s digest list held one digest a moment ago and holds none now, '
+        + 'though the two checks before it refused every other length',
+    );
+
   return {
     kind: 'recorded',
-    digest: digests[0] ?? '',
+    digest,
     entries: names.length,
   };
 }
