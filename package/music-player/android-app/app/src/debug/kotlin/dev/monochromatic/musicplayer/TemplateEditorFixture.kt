@@ -1,6 +1,6 @@
 //region Authored template editor states, literal copy rather than a parser or evaluator
 // What: Package places this debug fixture beside the other authored Compose studies.
-// Why: The template editor study reads its seven states here without touching production source.
+// Why: The template editor study reads every authored state here without touching production source.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -21,7 +21,7 @@ package dev.monochromatic.musicplayer
  * ```
  */
 internal data class TemplateEditorPreviewRow(
-    /** Title of one file from the authored library, or of a stand-in when no library is open. */
+    /** Title of one file from the authored library, or of a stand-in while the library has no tracks. */
     val title: String,
     /** Line the shown template yields for that file; empty text means no second line is drawn. */
     val supporting: String,
@@ -67,8 +67,8 @@ internal data class TemplateEditorField(
 )
 
 /**
- * What: A data class records how the Settings page lists the template: a name and a current result.
- * Why: The list page shows what the template produces now, so its effect is visible before opening it.
+ * What: A data class records how the Settings page lists one template: a name and a current result.
+ * Why: The list page shows what each template produces now, so its effect is visible before opening it.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -78,7 +78,7 @@ internal data class TemplateEditorField(
 internal data class TemplateEditorListEntry(
     /** Name of the template as the Settings page lists it. */
     val title: String,
-    /** Line the template currently produces for the first preview file. */
+    /** Line the template's default produces for the first file of the library. */
     val supporting: String,
 )
 
@@ -98,15 +98,16 @@ internal data class TemplateEditorListEntry(
  * Boolean (not Boolean?) because the button is either usable or not. `position` has a default so
  * every authored scene rests at the `top` without naming it, and a launch replaces it only when it
  * asks for the end of the page. It is String (not an enum class) because the launch carries it as
- * text, the way `page` already is.
+ * text, the way `page` already is. `pageTitle` is the name of the template being edited, copied
+ * from the reference, so the editor's header says which template the page changes.
  *
  * In TS you'd write (pseudocode):
  * ```ts
  * type TemplateEditorFixture = Readonly<{
- *   page: 'list' | 'editor'; template: string; caret: number;
+ *   page: 'list' | 'editor'; pageTitle: string; template: string; caret: number;
  *   previewRows: readonly TemplateEditorPreviewRow[]; previewNote: string; errors: readonly string[];
  *   help: TemplateEditorHelp | null; fields: readonly TemplateEditorField[];
- *   resetEnabled: boolean; listEntry: TemplateEditorListEntry; position: 'top' | 'end';
+ *   resetEnabled: boolean; listEntries: readonly TemplateEditorListEntry[]; position: 'top' | 'end';
  * }>;
  * // A function building one defaults the last field: ({ position = 'top', ...rest }) => ...
  * ```
@@ -114,6 +115,8 @@ internal data class TemplateEditorListEntry(
 internal data class TemplateEditorFixture(
     /** Which page the state shows: `list` for the Settings page, `editor` for the template editor. */
     val page: String,
+    /** Name of the template the editor edits, drawn as the editor's header title: `Track rows` or `Playing track`. */
+    val pageTitle: String,
     /** Template text exactly as the field shows it. */
     val template: String,
     /** Caret position in the template while the field is focused; -1 means it is not focused. */
@@ -126,12 +129,12 @@ internal data class TemplateEditorFixture(
     val errors: List<String>,
     /** Typing help for the call holding the caret, or null when none is shown. */
     val help: TemplateEditorHelp?,
-    /** The seven insertable fields, in the order they are listed. */
+    /** The insertable fields of the edited template, in the order they are listed. */
     val fields: List<TemplateEditorField>,
-    /** Whether the way back to the default is usable, which is when the template is not the default. */
+    /** Whether the way back to the default is usable, which is when the template is not its own default. */
     val resetEnabled: Boolean,
-    /** How the Settings page lists this template. */
-    val listEntry: TemplateEditorListEntry,
+    /** How the Settings page lists every template, in the order its entries are drawn. */
+    val listEntries: List<TemplateEditorListEntry>,
     /** Where the scrolling body rests: `top` (a focused field may move it), or `end` for its last pixel. */
     val position: String = "top",
 )
@@ -140,9 +143,9 @@ internal data class TemplateEditorFixture(
  * What: `private val` at file level is a constant only this file can read. Inside a Kotlin string,
  * `$name` splices a variable the way `${name}` does in a TypeScript template literal, so every
  * literal dollar sign is written `\$`.
- * Why: Four states show the default template, so it is written once and they cannot drift apart.
- * It is two formulas and the space between them, with no condition: an empty field is plain
- * substitution (D93), and `mi(peak)` yields the peak with its unit, or nothing before analysis.
+ * Why: Several states show the track rows' default template, so it is written once and they cannot
+ * drift apart. It is two formulas and the space between them, with no condition: an empty field is
+ * plain substitution (D93), and `mi(peak)` yields the peak with its unit, or nothing before analysis.
  * Gotcha: An unescaped `$tf` would be read as "insert the variable tf" and fail to compile.
  *
  * In TS you'd write (pseudocode):
@@ -151,6 +154,21 @@ internal data class TemplateEditorFixture(
  * ```
  */
 private val templateEditorDefaultTemplate: String = "\$tf(mi(len), m:ss)\$ \$mi(peak)\$"
+
+/**
+ * What: A file-level constant holds the playing track's default template, with every literal dollar
+ * sign written `\$` for the same reason as the track rows' default.
+ * Why: The playing track's line is the second template the study edits (the agent's version under
+ * D97, awaiting approval). It is three formulas joined by ` of ` and a space: the file's place in
+ * its folder, the folder's track count, and the true peak, which yields nothing before analysis.
+ * Gotcha: An unescaped `$mi` would be read as "insert the variable mi" and fail to compile.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const templateEditorPlayingDefaultTemplate = '$mi(track)$ of $mi(total)$ $mi(peak)$';
+ * ```
+ */
+private val templateEditorPlayingDefaultTemplate: String = "\$mi(track)\$ of \$mi(total)\$ \$mi(peak)\$"
 
 /**
  * What: `listOf(a, b)` builds a read-only List from its arguments; each argument constructs one
@@ -175,8 +193,9 @@ private val templateEditorLibraryRows: List<TemplateEditorPreviewRow> = listOf(
 )
 
 /**
- * What: A file-level constant holds the seven fields with the first library file's values.
- * Why: Every state with an open library lists the same fields, so one list serves six states.
+ * What: A file-level constant holds the track rows' fields with the first library file's values.
+ * Why: Every track-row state with tracks in the library lists the same fields, and the playing
+ * track lists them before its own two, so one list serves all of them.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -194,8 +213,27 @@ private val templateEditorLibraryFields: List<TemplateEditorField> = listOf(
 )
 
 /**
+ * What: `a + b` on two Lists builds a new read-only List holding a's elements, then b's; neither
+ * operand changes. Kotlin lets a type define what `+` means (operator overloading); TypeScript has
+ * no such mechanism, so read it as array spreading.
+ * Why: The playing track's template knows every track-row field plus the file's place in its
+ * folder and the folder's track count, listed in that order, with the first library file's values.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const templateEditorPlayingFields = [...templateEditorLibraryFields,
+ *   { label: 'Place in folder', insert: 'mi(track)', value: '1' },
+ *   { label: 'Tracks in folder', insert: 'mi(total)', value: '16' }] as const;
+ * ```
+ */
+private val templateEditorPlayingFields: List<TemplateEditorField> = templateEditorLibraryFields + listOf(
+    TemplateEditorField("Place in folder", "mi(track)", "1"),
+    TemplateEditorField("Tracks in folder", "mi(total)", "16"),
+)
+
+/**
  * What: A file-level constant holds the note drawn under the preview while the template applies
- * and a library is open.
+ * and the library has tracks.
  * Why: The second row has no true peak, and the note says why instead of leaving it unexplained.
  *
  * In TS you'd write (pseudocode):
@@ -217,16 +255,24 @@ private val templateEditorLibraryNote: String = "From your library. The second f
 private val templateEditorKeptNote: String = "Rows keep the last valid template."
 
 /**
- * What: A file-level constant holds the Settings entry for the default template on the library.
- * Why: Five states list the template with the first library file's default line.
+ * What: A file-level constant holds the Settings page's two entries, in the order they are drawn.
+ * Why: Settings lists every template with the line its default yields for the first file of the
+ * library, whatever state the editor is in, so every scene carries these same two entries: the
+ * track rows' default gives the duration and peak, the playing track's default gives the file's
+ * place in its folder of 16 and the peak.
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * const templateEditorLibraryEntry = { title: 'Track row supporting line', supporting: '4:35 −1.2 dBTP' } as const;
+ * const templateEditorListEntries = [
+ *   { title: 'Track rows', supporting: '4:35 −1.2 dBTP' },
+ *   { title: 'Playing track', supporting: '1 of 16 −1.2 dBTP' },
+ * ] as const;
  * ```
  */
-private val templateEditorLibraryEntry: TemplateEditorListEntry =
-    TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP")
+private val templateEditorListEntries: List<TemplateEditorListEntry> = listOf(
+    TemplateEditorListEntry("Track rows", "4:35 −1.2 dBTP"),
+    TemplateEditorListEntry("Playing track", "1 of 16 −1.2 dBTP"),
+)
 
 /**
  * What: A named function returns the authored record for one exact scene name, and throws for any
@@ -247,16 +293,18 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
     if (scene == "list") {
         // What: The record constructor takes `name = value` pairs instead of positional values;
         // `listOf()` with no arguments is an empty list, and `null` fills the nullable help field.
-        // Why: Ten fields in a row are only readable by name. The Settings page lists the default
-        // template with the line it produces for the first library file.
+        // Why: A long run of fields is only readable by name. The Settings page lists every
+        // template with the line its default produces for the first library file; the editor
+        // fields carried here are those of the track rows, the reference's first template.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return { page: 'list', template: defaultTemplate, caret: -1, previewRows: libraryRows, previewNote: libraryNote,
-        //   errors: [], help: null, fields: libraryFields, resetEnabled: false, listEntry: libraryEntry };
+        // return { page: 'list', pageTitle: 'Track rows', template: defaultTemplate, caret: -1, previewRows: libraryRows,
+        //   previewNote: libraryNote, errors: [], help: null, fields: libraryFields, resetEnabled: false, listEntries };
         // ```
         return TemplateEditorFixture(
             page = "list",
+            pageTitle = "Track rows",
             template = templateEditorDefaultTemplate,
             caret = -1,
             previewRows = templateEditorLibraryRows,
@@ -265,13 +313,14 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
             help = null,
             fields = templateEditorLibraryFields,
             resetEnabled = false,
-            listEntry = templateEditorLibraryEntry,
+            listEntries = templateEditorListEntries,
         )
     }
     if (scene == "default") {
-        // The editor as opened from Settings: default template, field not focused, nothing to reset.
+        // The track rows' editor as opened from Settings: default template, field not focused, nothing to reset.
         return TemplateEditorFixture(
             page = "editor",
+            pageTitle = "Track rows",
             template = templateEditorDefaultTemplate,
             caret = -1,
             previewRows = templateEditorLibraryRows,
@@ -280,13 +329,14 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
             help = null,
             fields = templateEditorLibraryFields,
             resetEnabled = false,
-            listEntry = templateEditorLibraryEntry,
+            listEntries = templateEditorListEntries,
         )
     }
     if (scene == "help") {
         // The caret sits at position 15, inside the format argument of `tf`, so its help is shown.
         return TemplateEditorFixture(
             page = "editor",
+            pageTitle = "Track rows",
             template = templateEditorDefaultTemplate,
             caret = 15,
             previewRows = templateEditorLibraryRows,
@@ -300,7 +350,7 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
             ),
             fields = templateEditorLibraryFields,
             resetEnabled = false,
-            listEntry = templateEditorLibraryEntry,
+            listEntries = templateEditorListEntries,
         )
     }
     if (scene == "unknown-field") {
@@ -308,6 +358,7 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
         // rows keep the default template's results.
         return TemplateEditorFixture(
             page = "editor",
+            pageTitle = "Track rows",
             template = "\$tf(mi(len), m:ss)\$ \$mi(peek)\$",
             caret = 30,
             previewRows = templateEditorLibraryRows,
@@ -316,13 +367,14 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
             help = null,
             fields = templateEditorLibraryFields,
             resetEnabled = true,
-            listEntry = templateEditorLibraryEntry,
+            listEntries = templateEditorListEntries,
         )
     }
     if (scene == "open-formula") {
         // A formula left without its closing dollar sign is reported, not shown as literal text.
         return TemplateEditorFixture(
             page = "editor",
+            pageTitle = "Track rows",
             template = "\$tf(mi(len), m:ss)",
             caret = 18,
             previewRows = templateEditorLibraryRows,
@@ -331,15 +383,17 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
             help = null,
             fields = templateEditorLibraryFields,
             resetEnabled = true,
-            listEntry = templateEditorLibraryEntry,
+            listEntries = templateEditorListEntries,
         )
     }
     if (scene == "custom") {
         // A valid template other than the default, with ` · ` written between its three formulas:
         // both rows change and the way back is usable. The second row's line ends in that separator,
         // trailing space included, because plain substitution keeps literal text when the peak is empty.
+        // The Settings entries still show each template's default line, as the reference prints them.
         return TemplateEditorFixture(
             page = "editor",
+            pageTitle = "Track rows",
             template = "\$tc(up, mi(ext))\$ · \$tf(mi(len), m:ss)\$ · \$mi(peak)\$",
             caret = -1,
             previewRows = listOf(
@@ -351,20 +405,22 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
             help = null,
             fields = templateEditorLibraryFields,
             resetEnabled = true,
-            listEntry = TemplateEditorListEntry("Track row supporting line", "FLAC · 4:35 · −1.2 dBTP"),
+            listEntries = templateEditorListEntries,
         )
     }
-    if (scene == "no-library") {
-        // No library is open, so the preview rows and the field values are stand-ins.
+    if (scene == "empty-library") {
+        // A library is always open (D95); this one holds no tracks yet, so the preview rows and the
+        // field values are stand-ins, and the note says so.
         return TemplateEditorFixture(
             page = "editor",
+            pageTitle = "Track rows",
             template = templateEditorDefaultTemplate,
             caret = -1,
             previewRows = listOf(
                 TemplateEditorPreviewRow("Track title", "3:20 −1.0 dBTP"),
                 TemplateEditorPreviewRow("Track not analysed yet", "3:20 "),
             ),
-            previewNote = "No library is open. These are sample values.",
+            previewNote = "Your library has no tracks yet. These are sample values.",
             errors = listOf(),
             help = null,
             fields = listOf(
@@ -377,7 +433,39 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
                 TemplateEditorField("True peak", "mi(peak)", "−1.0 dBTP"),
             ),
             resetEnabled = false,
-            listEntry = TemplateEditorListEntry("Track row supporting line", "3:20 −1.0 dBTP"),
+            listEntries = templateEditorListEntries,
+        )
+    }
+    if (scene == "playing") {
+        // What: Another branch built from the same named-field constructor, here with the playing
+        // track's title, default template and field list.
+        // Why: The playing track's editor as opened from Settings (D97 version, awaiting approval):
+        // its own default template, field not focused, nothing to reset. The first file is first of
+        // 16 in its folder and analysed; the second file's line ends in the space before its empty
+        // peak, `2 of 16 ` with the trailing space, because plain substitution keeps that space.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return { page: 'editor', pageTitle: 'Playing track', template: playingDefaultTemplate, caret: -1,
+        //   previewRows: [{ title: 'Another Xronixle', supporting: '1 of 16 −1.2 dBTP' },
+        //     { title: 'Burning Aquamarine', supporting: '2 of 16 ' }],
+        //   previewNote: libraryNote, errors: [], help: null, fields: playingFields, resetEnabled: false, listEntries };
+        // ```
+        return TemplateEditorFixture(
+            page = "editor",
+            pageTitle = "Playing track",
+            template = templateEditorPlayingDefaultTemplate,
+            caret = -1,
+            previewRows = listOf(
+                TemplateEditorPreviewRow("Another Xronixle", "1 of 16 −1.2 dBTP"),
+                TemplateEditorPreviewRow("Burning Aquamarine", "2 of 16 "),
+            ),
+            previewNote = templateEditorLibraryNote,
+            errors = listOf(),
+            help = null,
+            fields = templateEditorPlayingFields,
+            resetEnabled = false,
+            listEntries = templateEditorListEntries,
         )
     }
     // What: `throw` raises an exception; `$scene` splices the rejected name into the message.

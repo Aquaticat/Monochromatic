@@ -59,18 +59,20 @@ class TemplateEditorActivity : ComponentActivity() {
     private var shown: TemplateEditorFixture by mutableStateOf(templateEditorFixture("list"))
 
     /**
-     * What: A private method logs one event name and replaces the shown record in exactly two cases.
+     * What: A private method logs one event name and replaces the shown record in exactly three cases.
      * `$event` splices the name into the logged line like a TypeScript template literal.
-     * Why: Header Back, system Back and every row tap share one owner. Opening the entry on the
-     * Settings page shows the editor's default state, and Back on an editor page returns to the
-     * Settings page. Back on the Settings page, inserting a field and resetting are not connected
-     * in this authored study, so they leave a tagged line and change nothing.
+     * Why: Header Back, system Back and every row tap share one owner. Opening the track rows'
+     * entry on the Settings page shows that editor's default state, opening the playing track's
+     * entry shows the playing track's editor, and Back on any editor page returns to the Settings
+     * page. Back on the Settings page, inserting a field and resetting are not connected in this
+     * authored study, so they leave a tagged line and change nothing.
      *
      * In TS you'd write (pseudocode):
      * ```ts
      * function dispatch(event: string): void {
      *   log(event);
      *   if (event === 'open' && shown.page === 'list') setShown(templateEditorFixture('default'));
+     *   else if (event === 'open-playing' && shown.page === 'list') setShown(templateEditorFixture('playing'));
      *   else if (event === 'back' && shown.page === 'editor') setShown(templateEditorFixture('list'));
      * }
      * ```
@@ -87,6 +89,9 @@ class TemplateEditorActivity : ComponentActivity() {
         if (event == "open" && shown.page == "list") {
             // Opening the entry always shows the editor as first opened, never a focused or failing state.
             shown = templateEditorFixture("default")
+        } else if (event == "open-playing" && shown.page == "list") {
+            // Opening the playing track's entry shows its editor as first opened, at its own default.
+            shown = templateEditorFixture("playing")
         } else if (event == "back" && shown.page == "editor") {
             // Any editor state returns to the same Settings page.
             shown = templateEditorFixture("list")

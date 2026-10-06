@@ -128,14 +128,40 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
+ * What: A private function returns the event name a Settings entry emits, chosen by the entry's
+ * position in the list, and throws for any other position.
+ * Why: The reference lists the track rows first and the playing track second. The first entry
+ * keeps the `open` event the study has always emitted, and the second emits `open-playing`, so the
+ * host can tell which editor to show. A third entry has no planned editor, so it stops the study
+ * instead of opening some default state.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function templateEditorListEntryEvent(index: number): string {
+ *   if (index === 0) return 'open';
+ *   if (index === 1) return 'open-playing';
+ *   throw new Error(`No template editor event for Settings entry ${index}`);
+ * }
+ * ```
+ */
+private fun templateEditorListEntryEvent(index: Int): String {
+    // The track rows' entry.
+    if (index == 0) return "open"
+    // The playing track's entry.
+    if (index == 1) return "open-playing"
+    // An entry the study has no editor for is a mistake in the fixture, never a default.
+    throw IllegalArgumentException("No template editor event for Settings entry $index")
+}
+
+/**
  * What: A composable draws the Settings page: status spacer, header, separator, a `Templates`
- * heading and the template's one entry. `@Composable` registers the function as a UI builder that
+ * heading and one entry per template. `@Composable` registers the function as a UI builder that
  * may only be called from another one. `Modifier` is an immutable layout configuration. `Dp` is a
  * density-independent distance; the siblings a reader might expect are a raw pixel Int and the
  * font-scaled `Sp`. `Color` is an opaque colour value. `(String) -> Unit` is a function type taking
  * one string and returning nothing. `startSafe` and `endSafe` are the horizontal insets that keep
  * text clear of the fold connector.
- * Why: The entry shows the line the template produces now, so its effect is visible before the
+ * Why: Each entry shows the line its template produces now, so its effect is visible before the
  * editor is opened. The insets use Dp (not pixels or Sp) so they are the same physical size on both
  * panels and do not grow with the user's text size.
  *
@@ -216,30 +242,44 @@ internal fun TemplateEditorListPage(modifier: Modifier, startSafe: Dp, endSafe: 
         Column(modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll)
             .windowInsetsPadding(WindowInsets.navigationBars)) {
             TemplateEditorSectionHeading(text = "Templates", startSafe = startSafe, endSafe = endSafe, bottom = 8.dp)
-            // What: `ListItem` takes its parts as named lambdas ("slots"): a headline and a supporting
-            // line. `clickable` makes the whole row one action with the Button role and merges the two
-            // texts into one accessibility element.
-            // Why: One tap anywhere on the row opens the editor, and the row is announced as one button.
-            // Gotcha: `startSafe - 16.dp` subtracts two Dp values. Kotlin lets a type define what `-`
-            // means (operator overloading); TypeScript has no such mechanism, so read it as plain number
-            // subtraction. The subtraction assumes the list item's own 16dp side padding.
+            // What: `withIndex()` pairs each list element with its position, and `(index, entry)`
+            // unpacks each pair into two read-only names, like `entries.forEach((entry, index) => ...)`.
+            // Why: Every template is listed in the reference's order, each closed by a quiet separator,
+            // and the position says which editor the entry opens.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <ListItem role="button" onClick={() => onEvent('open')} headline={entry.title} supporting={entry.supporting}
-            //   style={{ paddingLeft: startSafe - 16, paddingRight: endSafe - 16, background: 'transparent' }}/>
+            // {fixture.listEntries.map((entry, index) => <><EntryRow entry={entry} event={entryEvent(index)}/><Divider/></>)}
             // ```
-            ListItem(
-                headlineContent = { Text(text = fixture.listEntry.title) },
-                modifier = Modifier.fillMaxWidth()
-                    .clickable(role = Role.Button, onClick = { onEvent("open") })
-                    .padding(start = startSafe - 16.dp, end = endSafe - 16.dp),
-                supportingContent = { Text(text = fixture.listEntry.supporting) },
-                // `Color.Transparent` gives the row no fill of its own, so the page colour shows through.
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            )
-            // `outlineVariant` is the theme's quiet separator colour, used between rows.
-            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+            for ((index, entry) in fixture.listEntries.withIndex()) {
+                // The event this entry's tap emits; an unplanned position stops the study.
+                val event: String = templateEditorListEntryEvent(index)
+                // What: `ListItem` takes its parts as named lambdas ("slots"): a headline and a supporting
+                // line. `clickable` makes the whole row one action with the Button role and merges the two
+                // texts into one accessibility element.
+                // Why: One tap anywhere on the row opens that template's editor, and the row is announced
+                // as one button.
+                // Gotcha: `startSafe - 16.dp` subtracts two Dp values. Kotlin lets a type define what `-`
+                // means (operator overloading); TypeScript has no such mechanism, so read it as plain number
+                // subtraction. The subtraction assumes the list item's own 16dp side padding.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // <ListItem role="button" onClick={() => onEvent(event)} headline={entry.title} supporting={entry.supporting}
+                //   style={{ paddingLeft: startSafe - 16, paddingRight: endSafe - 16, background: 'transparent' }}/>
+                // ```
+                ListItem(
+                    headlineContent = { Text(text = entry.title) },
+                    modifier = Modifier.fillMaxWidth()
+                        .clickable(role = Role.Button, onClick = { onEvent(event) })
+                        .padding(start = startSafe - 16.dp, end = endSafe - 16.dp),
+                    supportingContent = { Text(text = entry.supporting) },
+                    // `Color.Transparent` gives the row no fill of its own, so the page colour shows through.
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+                // `outlineVariant` is the theme's quiet separator colour, used between rows.
+                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+            }
         }
     }
 }
@@ -305,8 +345,15 @@ internal fun TemplateEditorPage(modifier: Modifier, startSafe: Dp, endSafe: Dp, 
     Column(modifier = modifier.fillMaxSize().background(pageColor)) {
         // Status-bar spacer, as on the list page.
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
-        // This page's Back target returns to the Settings page.
-        TemplateEditorHeader(title = "Supporting line", backDescription = "Back to Settings",
+        // What: The header's title is the authored state's `pageTitle` field, not a literal.
+        // Why: The study edits two templates, and the header names the one this page changes, as the
+        // reference prints it. This page's Back target returns to the Settings page.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <Header title={fixture.pageTitle} backDescription="Back to Settings" onBack={() => onEvent('back')}/>
+        // ```
+        TemplateEditorHeader(title = fixture.pageTitle, backDescription = "Back to Settings",
             onBack = { onEvent("back") }, startSafe = startSafe, endSafe = endSafe)
         // The strong separator that closes the header.
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)

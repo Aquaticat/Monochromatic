@@ -52,24 +52,40 @@ class TemplateEditorFixtureTest {
     private val defaultTemplate: String = "\$tf(mi(len), m:ss)\$ \$mi(peak)\$"
 
     /**
-     * What: `listOf(a, b, ...)` builds a read-only List of the seven scene names. `List<String>` is
-     * an ordered read-only collection; the siblings a reader might expect are MutableList
-     * (changeable after creation) and Array (fixed-size, compared by identity).
-     * Why: The rules that hold for every state loop over one list, and List (not MutableList or
-     * Array) keeps a test from adding or dropping a scene by accident.
+     * What: A private val holds the playing track's default template, every literal dollar sign
+     * written `\$` for the same reason as the track rows' default.
+     * Why: The playing state shows it, and the reset rule compares that state against it rather
+     * than against the track rows' default.
      *
      * In TS you'd write (pseudocode):
      * ```ts
-     * const scenes = ['list', 'default', 'help', 'unknown-field', 'open-formula', 'custom', 'no-library'] as const;
+     * const playingDefaultTemplate = '$mi(track)$ of $mi(total)$ $mi(peak)$';
+     * ```
+     */
+    private val playingDefaultTemplate: String = "\$mi(track)\$ of \$mi(total)\$ \$mi(peak)\$"
+
+    /**
+     * What: `listOf(a, b, ...)` builds a read-only List of the native scene names. `List<String>` is
+     * an ordered read-only collection; the siblings a reader might expect are MutableList
+     * (changeable after creation) and Array (fixed-size, compared by identity).
+     * Why: The rules that hold for every state loop over one list, and List (not MutableList or
+     * Array) keeps a test from adding or dropping a scene by accident. The reference also prints
+     * `custom-end`, which is the `custom` state captured at the end of the page, not a scene of
+     * its own, so it is not listed here.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * const scenes = ['list', 'default', 'help', 'unknown-field', 'open-formula', 'custom', 'empty-library', 'playing'] as const;
      * ```
      */
     private val scenes: List<String> =
-        listOf("list", "default", "help", "unknown-field", "open-formula", "custom", "no-library")
+        listOf("list", "default", "help", "unknown-field", "open-formula", "custom", "empty-library", "playing")
 
     /**
-     * What: A private method returns the seven fields with the first library file's values; each
+     * What: A private method returns the track rows' fields with the first library file's values; each
      * list element constructs one record by passing its fields in declaration order.
-     * Why: Six states list these same fields, so their expected values are written once.
+     * Why: Most states list these same fields, and the playing state lists them first, so their
+     * expected values are written once.
      *
      * In TS you'd write (pseudocode):
      * ```ts
@@ -106,10 +122,29 @@ class TemplateEditorFixtureTest {
     }
 
     /**
+     * What: A private method returns the Settings page's two entries, in the order they are drawn.
+     * Why: The reference lists every template with the line its default yields for the first file
+     * of the library, whatever state the editor is in, so every state carries these same entries.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * function listEntries(): readonly TemplateEditorListEntry[] { return [{ title: 'Track rows', supporting: '4:35 −1.2 dBTP' },
+     *   { title: 'Playing track', supporting: '1 of 16 −1.2 dBTP' }]; }
+     * ```
+     */
+    private fun listEntries(): List<TemplateEditorListEntry> {
+        return listOf(
+            TemplateEditorListEntry("Track rows", "4:35 −1.2 dBTP"),
+            TemplateEditorListEntry("Playing track", "1 of 16 −1.2 dBTP"),
+        )
+    }
+
+    /**
      * What: @Test registers a named function. `val fixture: TemplateEditorFixture = ...` binds a
      * read-only local with its type written out. assertEquals compares two values, and two data-class
      * records or two lists are equal when every field or element is; assertNull requires null.
-     * Why: The Settings page lists the default template with the line it produces for the first file.
+     * Why: The Settings page lists every template with the line its default produces for the first
+     * file, and carries the track rows' title as the reference prints it for this state.
      *
      * In TS you'd write (pseudocode):
      * ```ts
@@ -119,6 +154,7 @@ class TemplateEditorFixtureTest {
     @Test fun listSceneMatchesReference() {
         val fixture: TemplateEditorFixture = templateEditorFixture("list")
         assertEquals("list", fixture.page)
+        assertEquals("Track rows", fixture.pageTitle)
         assertEquals(defaultTemplate, fixture.template)
         assertEquals(-1, fixture.caret)
         assertEquals(libraryRows(), fixture.previewRows)
@@ -127,13 +163,14 @@ class TemplateEditorFixtureTest {
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertFalse(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
+        assertEquals(listEntries(), fixture.listEntries)
     }
 
     /** The editor as first opened shows the default template, not focused, with nothing to reset. */
     @Test fun defaultSceneMatchesReference() {
         val fixture: TemplateEditorFixture = templateEditorFixture("default")
         assertEquals("editor", fixture.page)
+        assertEquals("Track rows", fixture.pageTitle)
         assertEquals(defaultTemplate, fixture.template)
         assertEquals(-1, fixture.caret)
         assertEquals(libraryRows(), fixture.previewRows)
@@ -142,13 +179,14 @@ class TemplateEditorFixtureTest {
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertFalse(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
+        assertEquals(listEntries(), fixture.listEntries)
     }
 
     /** A caret inside the format argument of `tf` shows that call's signature and description. */
     @Test fun helpSceneMatchesReference() {
         val fixture: TemplateEditorFixture = templateEditorFixture("help")
         assertEquals("editor", fixture.page)
+        assertEquals("Track rows", fixture.pageTitle)
         assertEquals(defaultTemplate, fixture.template)
         assertEquals(15, fixture.caret)
         assertEquals(libraryRows(), fixture.previewRows)
@@ -161,13 +199,14 @@ class TemplateEditorFixtureTest {
         ), fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertFalse(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
+        assertEquals(listEntries(), fixture.listEntries)
     }
 
     /** A misspelt field name gives one error line while the rows keep the last valid template. */
     @Test fun unknownFieldSceneMatchesReference() {
         val fixture: TemplateEditorFixture = templateEditorFixture("unknown-field")
         assertEquals("editor", fixture.page)
+        assertEquals("Track rows", fixture.pageTitle)
         assertEquals("\$tf(mi(len), m:ss)\$ \$mi(peek)\$", fixture.template)
         assertEquals(30, fixture.caret)
         assertEquals(libraryRows(), fixture.previewRows)
@@ -176,13 +215,14 @@ class TemplateEditorFixtureTest {
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertTrue(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
+        assertEquals(listEntries(), fixture.listEntries)
     }
 
     /** A formula left without its closing dollar sign is reported with the place it was opened. */
     @Test fun openFormulaSceneMatchesReference() {
         val fixture: TemplateEditorFixture = templateEditorFixture("open-formula")
         assertEquals("editor", fixture.page)
+        assertEquals("Track rows", fixture.pageTitle)
         assertEquals("\$tf(mi(len), m:ss)", fixture.template)
         assertEquals(18, fixture.caret)
         assertEquals(libraryRows(), fixture.previewRows)
@@ -191,13 +231,14 @@ class TemplateEditorFixtureTest {
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertTrue(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
+        assertEquals(listEntries(), fixture.listEntries)
     }
 
-    /** A valid template other than the default changes both rows and the Settings entry. */
+    /** A valid template other than the default changes both rows; Settings still lists each template's default line. */
     @Test fun customSceneMatchesReference() {
         val fixture: TemplateEditorFixture = templateEditorFixture("custom")
         assertEquals("editor", fixture.page)
+        assertEquals("Track rows", fixture.pageTitle)
         assertEquals("\$tc(up, mi(ext))\$ · \$tf(mi(len), m:ss)\$ · \$mi(peak)\$", fixture.template)
         assertEquals(-1, fixture.caret)
         assertEquals(listOf(
@@ -209,20 +250,21 @@ class TemplateEditorFixtureTest {
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertTrue(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "FLAC · 4:35 · −1.2 dBTP"), fixture.listEntry)
+        assertEquals(listEntries(), fixture.listEntries)
     }
 
-    /** With no library open, the preview rows and every field value are stand-ins. */
-    @Test fun noLibrarySceneMatchesReference() {
-        val fixture: TemplateEditorFixture = templateEditorFixture("no-library")
+    /** With a library that holds no tracks yet, the preview rows and every field value are stand-ins. */
+    @Test fun emptyLibrarySceneMatchesReference() {
+        val fixture: TemplateEditorFixture = templateEditorFixture("empty-library")
         assertEquals("editor", fixture.page)
+        assertEquals("Track rows", fixture.pageTitle)
         assertEquals(defaultTemplate, fixture.template)
         assertEquals(-1, fixture.caret)
         assertEquals(listOf(
             TemplateEditorPreviewRow("Track title", "3:20 −1.0 dBTP"),
             TemplateEditorPreviewRow("Track not analysed yet", "3:20 "),
         ), fixture.previewRows)
-        assertEquals("No library is open. These are sample values.", fixture.previewNote)
+        assertEquals("Your library has no tracks yet. These are sample values.", fixture.previewNote)
         assertEquals(0, fixture.errors.size)
         assertNull(fixture.help)
         assertEquals(listOf(
@@ -235,7 +277,41 @@ class TemplateEditorFixtureTest {
             TemplateEditorField("True peak", "mi(peak)", "−1.0 dBTP"),
         ), fixture.fields)
         assertFalse(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "3:20 −1.0 dBTP"), fixture.listEntry)
+        assertEquals(listEntries(), fixture.listEntries)
+    }
+
+    /**
+     * What: `libraryFields() + listOf(...)` builds a new List holding the track rows' fields, then
+     * the two listed after them, like `[...libraryFields(), a, b]` in TypeScript.
+     * Why: The playing track's editor (D97 version) carries its own title and default template,
+     * nothing to reset, rows saying each file's place in its folder of 16, and the track rows'
+     * fields followed by the place in the folder and the folder's track count. The second row ends
+     * in the space before its empty peak, as the reference prints it.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * test('playing', () => { const fixture = templateEditorFixture('playing'); expect(fixture.pageTitle).toBe('Playing track'); ... });
+     * ```
+     */
+    @Test fun playingSceneMatchesReference() {
+        val fixture: TemplateEditorFixture = templateEditorFixture("playing")
+        assertEquals("editor", fixture.page)
+        assertEquals("Playing track", fixture.pageTitle)
+        assertEquals(playingDefaultTemplate, fixture.template)
+        assertEquals(-1, fixture.caret)
+        assertEquals(listOf(
+            TemplateEditorPreviewRow("Another Xronixle", "1 of 16 −1.2 dBTP"),
+            TemplateEditorPreviewRow("Burning Aquamarine", "2 of 16 "),
+        ), fixture.previewRows)
+        assertEquals("From your library. The second file is not analysed yet.", fixture.previewNote)
+        assertEquals(0, fixture.errors.size)
+        assertNull(fixture.help)
+        assertEquals(libraryFields() + listOf(
+            TemplateEditorField("Place in folder", "mi(track)", "1"),
+            TemplateEditorField("Tracks in folder", "mi(total)", "16"),
+        ), fixture.fields)
+        assertFalse(fixture.resetEnabled)
+        assertEquals(listEntries(), fixture.listEntries)
     }
 
     /**
@@ -253,7 +329,8 @@ class TemplateEditorFixtureTest {
     @Test fun unanalysedRowKeepsTheSpaceBeforeItsEmptyPeak() {
         assertEquals("5:12 ", templateEditorFixture("default").previewRows[1].supporting)
         assertEquals("FLAC · 5:12 · ", templateEditorFixture("custom").previewRows[1].supporting)
-        assertEquals("3:20 ", templateEditorFixture("no-library").previewRows[1].supporting)
+        assertEquals("3:20 ", templateEditorFixture("empty-library").previewRows[1].supporting)
+        assertEquals("2 of 16 ", templateEditorFixture("playing").previewRows[1].supporting)
     }
 
     /** The default template is two formulas and the space between them, with no condition. */
@@ -333,30 +410,56 @@ class TemplateEditorFixtureTest {
      * What: `Regex("mi\\([a-z]+\\)")` builds a regular expression; inside a Kotlin string `\\` is
      * one backslash, so the pattern is `mi\([a-z]+\)`. `matches` is true only when the whole text
      * fits the pattern.
-     * Why: Every state lists exactly seven fields, and a tap inserts a `mi` call with one mode
+     * `if (...) 9 else 7` is an expression yielding one of the two counts, like `cond ? 9 : 7`.
+     * Why: A track-row state lists the seven track-row fields and the playing track's state lists
+     * those plus its two folder fields, nine in all, and a tap inserts a `mi` call with one mode
      * word, the only kind of field the language has.
      *
      * In TS you'd write (pseudocode):
      * ```ts
+     * expect(fixture.fields.length).toBe(fixture.pageTitle === 'Playing track' ? 9 : 7);
      * for (const field of fixture.fields) expect(/^mi\([a-z]+\)$/.test(field.insert)).toBe(true);
      * ```
      */
-    @Test fun everySceneHasSevenInsertableFields() {
+    @Test fun everySceneListsTheInsertableFieldsOfItsTemplate() {
         for (scene in scenes) {
             val fixture: TemplateEditorFixture = templateEditorFixture(scene)
-            assertEquals(scene, 7, fixture.fields.size)
+            // The playing track's template knows two fields more than the track rows' template.
+            val expectedCount: Int = if (fixture.pageTitle == "Playing track") 9 else 7
+            assertEquals(scene, expectedCount, fixture.fields.size)
             for (field in fixture.fields) {
                 assertTrue(scene + " " + field.insert, Regex("mi\\([a-z]+\\)").matches(field.insert))
             }
         }
     }
 
-    /** The way back to the default is usable exactly when the template is not the default. */
-    @Test fun resetIsEnabledExactlyWhenTheTemplateDiffersFromDefault() {
-        val defaultSceneTemplate: String = templateEditorFixture("default").template
+    /**
+     * What: The loop picks, per state, the default of the template that state edits, chosen by its
+     * page title, and compares the shown template with it.
+     * Why: The way back to the default is usable exactly when the template is not its own
+     * template's default, as the reference computes it per template; the playing track's default
+     * differs from the track rows' default and still has nothing to reset.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * for (const scene of scenes) { const fixture = templateEditorFixture(scene);
+     *   const ownDefault = fixture.pageTitle === 'Playing track' ? playingDefaultTemplate : defaultTemplate;
+     *   expect(fixture.resetEnabled).toBe(fixture.template !== ownDefault); }
+     * ```
+     */
+    @Test fun resetIsEnabledExactlyWhenTheTemplateDiffersFromItsOwnDefault() {
         for (scene in scenes) {
             val fixture: TemplateEditorFixture = templateEditorFixture(scene)
-            assertEquals(scene, fixture.template != defaultSceneTemplate, fixture.resetEnabled)
+            // The default of the template this state edits.
+            val ownDefault: String = if (fixture.pageTitle == "Playing track") playingDefaultTemplate else defaultTemplate
+            assertEquals(scene, fixture.template != ownDefault, fixture.resetEnabled)
+        }
+    }
+
+    /** Every state carries the same Settings entries, whatever template it edits or shows. */
+    @Test fun everySceneCarriesTheSameListEntries() {
+        for (scene in scenes) {
+            assertEquals(scene, listEntries(), templateEditorFixture(scene).listEntries)
         }
     }
 

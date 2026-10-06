@@ -130,19 +130,23 @@ internal fun TemplateEditorStudy(fixture: TemplateEditorFixture, onEvent: (Strin
                 // widths. `{ slot -> ... }` is a lambda that receives the browser's layout configuration.
                 // Why: The left half is the accepted folder browser over the full-height deck, built
                 // exactly as the Settings study builds it; the right half is the page under study.
+                // The deck draws `1 of 16 −1.2 dBTP` under the playing title, the line the playing
+                // track's default template yields for the first file, so the deck beside the editor
+                // agrees with the template the study edits.
                 // Gotcha: `halfDent + 8.dp` adds two Dp values. Kotlin lets a type define what `+` means
                 // (operator overloading); TypeScript has no such mechanism, so read it as number addition.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
                 // <div style={{ display: 'flex' }}>
-                //   <DeckHost style={{ flex: 1 }}>{slot => <Folders style={{ ...slot, paddingRight: halfDent + 8 }}/>}</DeckHost>
+                //   <DeckHost style={{ flex: 1 }} deckSubtitle="1 of 16 −1.2 dBTP">
+                //     {slot => <Folders style={{ ...slot, paddingRight: halfDent + 8 }}/>}</DeckHost>
                 //   <Page style={{ flex: 1 }} startSafe={halfDent + 16} endSafe={16}/>
                 // </div>
                 // ```
                 Row(modifier = Modifier.fillMaxSize()) {
                     SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
-                        deckFullHeight = true) { slot ->
+                        deckFullHeight = true, deckSubtitle = "1 of 16 −1.2 dBTP") { slot ->
                         SearchFoldFolders(light = light, modifier = slot.padding(end = halfDent + 8.dp))
                     }
                     // The right half starts clear of the fold connector, then keeps the 16dp inset.

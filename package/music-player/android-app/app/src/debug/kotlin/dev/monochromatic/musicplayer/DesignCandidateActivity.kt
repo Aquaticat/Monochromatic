@@ -418,6 +418,19 @@ private const val CURRENT_SUBDIRECTORY: String = "Camellia"
 /** Longest subdirectory content width allowed inside one-row Shuffle segment. */
 private const val MAX_SHUFFLE_SUBDIRECTORY: String = "Camellia"
 
+/**
+ * What:     `private const val` is a compile-time text constant only this file can read.
+ * Why:      The deck's line under the playing title, as every accepted study draws it; it is the
+ *           default for the deck's subtitle parameters, so a study that passes nothing draws
+ *           exactly this, and only a study that passes its own line (the template editor) differs.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const ACCEPTED_DECK_SUBTITLE = '1 of 16 · −1.2 dBTP';
+ * ```
+ */
+private const val ACCEPTED_DECK_SUBTITLE: String = "1 of 16 · −1.2 dBTP"
+
 /** Candidate-specific Material surface roles and decorative-divider treatment. */
 private data class CandidatePalette(
     val window: Color,
@@ -1040,12 +1053,16 @@ private fun paletteForSearchDeck(light: Boolean): CandidatePalette = paletteFor(
 )
 
 /**
- * What:     Keep the accepted deck beneath a caller-owned upper-left region.
- * Why:      D50 requires the deck in every unfolded Search destination.
+ * What:     Keep the accepted deck beneath a caller-owned upper-left region. `deckSubtitle` is
+ *           the line drawn under the deck's playing title; it defaults to the accepted line.
+ * Why:      D50 requires the deck in every unfolded Search destination. The template editor study
+ *           passes the line its playing-track default yields, so the deck beside the editor shows
+ *           the template's result; every other caller passes nothing and draws what it drew before.
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * function SearchFoldDeckHost({ topContent }: { topContent: (size: Size) => UIElement }): UIElement;
+ * function SearchFoldDeckHost({ deckSubtitle = ACCEPTED_DECK_SUBTITLE, topContent }:
+ *   { deckSubtitle?: string; topContent: (size: Size) => UIElement }): UIElement;
  * ```
  */
 @Composable
@@ -1055,6 +1072,8 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
     compactForBrowser: Boolean = false,
     reserveOwnsNavigation: Boolean = false,
     onDeckMeasured: ((Int) -> Unit)? = null,
+    // Line under the deck's playing title; placed before `topContent` so trailing-lambda calls still compile.
+    deckSubtitle: String = ACCEPTED_DECK_SUBTITLE,
     topContent: @Composable (Modifier) -> Unit) {
     val palette = paletteForSearchDeck(light)
     Column(modifier = modifier.fillMaxSize().background(palette.picker)) {
@@ -1062,7 +1081,7 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
         if (deckFirst) {
             // Keep playback controls above the system keyboard while the lower browser can scroll.
             TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic",
-                palette = palette, deckHeightCap = false)
+                palette = palette, deckHeightCap = false, subtitle = deckSubtitle)
             Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
             topContent(Modifier.weight(1f))
         } else {
@@ -1077,7 +1096,7 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
             }, candidate = "dark-stable-wallpaper-dynamic",
                 palette = palette, deckHeightCap = !deckFullHeight, bannerFit = bannerFit,
                 compactForBrowser = compactForBrowser,
-                reserveOwnsNavigation = reserveOwnsNavigation)
+                reserveOwnsNavigation = reserveOwnsNavigation, subtitle = deckSubtitle)
         }
     }
 }
@@ -1558,7 +1577,17 @@ private fun RowScope.FolderNames(
     }
 }
 
-/** Draws a labeled Material slider, official transport icon buttons, and one-row mode selector. */
+/**
+ * What:     Draws a labeled Material slider, official transport icon buttons, and one-row mode
+ *           selector. `subtitle` is the line under the playing title, defaulting to the accepted one.
+ * Why:      Only the template editor study passes its own line, so the deck beside that editor
+ *           shows what its playing-track template yields; every other caller draws the accepted line.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function TransportBlock({ subtitle = ACCEPTED_DECK_SUBTITLE, ...rest }: { subtitle?: string; ... }): UIElement;
+ * ```
+ */
 @Composable
 private fun TransportBlock(
     modifier: Modifier,
@@ -1568,6 +1597,8 @@ private fun TransportBlock(
     bannerFit: Boolean = false,
     compactForBrowser: Boolean = false,
     reserveOwnsNavigation: Boolean = false,
+    // Line under the playing title; a caller that omits it draws the accepted line.
+    subtitle: String = ACCEPTED_DECK_SUBTITLE,
 ) {
     // What:     Kotlin's `if` can return a value, unlike a TypeScript `if` statement.
     // Why:      Every candidate keeps one immutable Material spacing value for its complete deck.
@@ -1616,7 +1647,7 @@ private fun TransportBlock(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "Another Xronixle", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        text = "1 of 16 · −1.2 dBTP",
+                        text = subtitle,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
                     )
@@ -1629,7 +1660,7 @@ private fun TransportBlock(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = "Another Xronixle", style = MaterialTheme.typography.titleMedium)
                 Text(
-                    text = "1 of 16 · −1.2 dBTP",
+                    text = subtitle,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
