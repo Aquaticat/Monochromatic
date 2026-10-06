@@ -36,6 +36,8 @@ struct Session {
     probed: bool,
     /// Number of hover requests seen.
     hovers: u64,
+    /// Whether the scripted stall already happened.
+    stalled: bool,
 }
 
 /// Capabilities announced in the `initialize` answer.
@@ -79,6 +81,24 @@ impl Session {
         if let Err(error) = self.wire.send(message) {
             eprintln!("scripted language server cannot write: {error}");
         }
+    }
+
+    /// What: Sleep once, on the read loop itself, before the first message of the scripted
+    ///       method is handled. `&mut self` allows remembering that the stall happened.
+    /// Why: Unlike a delayed hover answer, which a helper thread sends late, this holds back
+    ///      everything: the message itself and all the client sends after it wait unread, so
+    ///      a request sent meanwhile can pass its timeout before the server reads it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// stall(method: string) { if (!this.stalled && method === script.stallAt) { this.stalled = true; sleepSync(script.stall); } }
+    /// ```
+    fn stall(&mut self, method: &str) {
+        if self.stalled || self.script.stall == 0 || method != self.script.stall_at {
+            return;
+        }
+        self.stalled = true;
+        thread::sleep(Duration::from_millis(self.script.stall));
     }
 
     /// Record the server's copy of a document and, when configured, push diagnostics that quote it.
@@ -317,6 +337,7 @@ pub fn run(script: Script) -> io::Result<()> {
         documents: HashMap::new(),
         probed: false,
         hovers: 0,
+        stalled: false,
     };
     // `lock()` on standard input returns a buffered reader this thread owns.
     let mut input = io::stdin().lock();
@@ -329,6 +350,8 @@ pub fn run(script: Script) -> io::Result<()> {
                 session
                     .wire
                     .record(json!({ "received": name, "id": id, "params": message["params"] }));
+                // The report shows the message as received before the scripted stall holds it back.
+                session.stall(name);
                 if id.is_null() {
                     session.notification(name, &message["params"]);
                 } else {

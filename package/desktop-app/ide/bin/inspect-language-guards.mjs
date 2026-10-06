@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Observe committed Language regressions failing after guard removal in a disposable package copy.
 // Guards: stale-result fencing (file, revision, server process), the readiness gate in front of
-// every helix-lsp call, and the refusal of server-initiated workspace edits.
+// every helix-lsp call, the refusal of server-initiated workspace edits, and asking again for
+// hints and pull diagnostics a server left unanswered.
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -48,6 +49,15 @@ const cases = [
   { name: 'root-spelling', file: 'src/language/root.rs', before: 'Ok(below) => self.helix.join(below),', after: 'Ok(_) => path.to_path_buf(),', integration: 'language', test: 'roots::project_reached_through_a_linked_working_directory_is_rooted_at_the_project', failure: 'the server was not rooted at the project reached through the linked working directory' },
   { name: 'stop-tombstone', file: 'src/language/attach.rs', before: 'worker.registry.remove_by_id(client.id());', after: 'worker.registry.stop(client.name());', integration: 'language', test: 'lifecycle::crash_fails_the_pending_request_and_the_next_open_restarts', failure: 'an exited server could not be started again' },
   { name: 'edit-refusal-worker', file: 'src/language/incoming.rs', before: 'json!({ "applied": false, "failureReason": EDIT_REFUSAL })', after: 'json!({ "applied": true })', integration: 'language', test: 'policy::server_requests_get_policy_replies_and_edits_change_nothing', failure: 'a server-initiated workspace edit was not refused' },
+  // Asking again: a hint or pull-diagnostics request the server left unanswered for its whole timeout is not the last one.
+  // The scripted server stalls its read loop, so the removed guard fails by the test's own wait, without any load.
+  { name: 'hint-timeout-first', file: 'src/language/request/answer.rs', before: 'Failure::Failed(RequestFailure::Timeout) => Some(Duration::ZERO),', after: 'Failure::Failed(RequestFailure::Timeout) => None,', integration: 'language', test: 'again::hints_are_asked_again_when_the_first_request_times_out', failure: 'timed out waiting for hints for the first text after the first request timed out' },
+  { name: 'hint-timeout-reload', file: 'src/language/request/answer.rs', before: 'Failure::Failed(RequestFailure::Timeout) => Some(Duration::ZERO),', after: 'Failure::Failed(RequestFailure::Timeout) => None,', integration: 'language', test: 'again::hints_are_asked_again_after_a_reload_when_the_request_times_out', failure: 'timed out waiting for hints for the reloaded text after the request timed out' },
+  { name: 'pull-timeout-reload', file: 'src/language/request/answer.rs', before: '} else if matches!(error, helix_lsp::Error::Timeout(_)) {', after: '} else if false {', integration: 'language', test: 'again::pulled_diagnostics_are_asked_again_after_a_reload_when_the_request_times_out', failure: 'timed out waiting for pulled diagnostics for the reloaded text after the request timed out' },
+  // Catching up: once every retry timed out, the server's next message, or its next answer, makes the worker ask once more.
+  { name: 'catch-up-notification', file: 'src/language/traffic.rs', before: 'request::catch_up(worker, index);', after: 'tracing::trace!(index, "catch-up removed");', integration: 'language', test: 'again::hints_are_asked_again_when_the_server_sends_a_notification_after_every_retry_timed_out', failure: "timed out waiting for hints for the reloaded text after the server's notification followed the timed-out retries" },
+  { name: 'catch-up-answer', file: 'src/language/request/answer.rs', before: 'if answered && let Some(index) = worker.session.index_of_identity(&ticket.server) {', after: 'if false && let Some(index) = worker.session.index_of_identity(&ticket.server) {', integration: 'language', test: 'again::hints_are_asked_again_when_the_server_answers_another_request_after_every_retry_timed_out', failure: "timed out waiting for hints for the reloaded text after the server's hover answer followed the timed-out retries" },
+  { name: 'catch-up-limit', file: 'src/language/owed.rs', before: 'if self.asked_again >= MAX_CATCH_UPS {', after: 'if false {', test: 'language::owed::tests::catch_up_asks_stop_at_the_limit_until_the_text_changes', failure: 'a server was asked again beyond the limit for one displayed text' },
 ];
 // An optional comma-separated list reruns only the named guards.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;

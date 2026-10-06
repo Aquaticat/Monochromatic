@@ -60,6 +60,9 @@ pub mod sync;
 /// Which directory Helix would root a server at, checked before anything is spawned.
 mod root;
 
+/// Answers a server still owes for the displayed text, and the bounded rule for asking again.
+mod owed;
+
 /// What the worker thread remembers.
 mod session;
 
