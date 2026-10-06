@@ -86,6 +86,13 @@ const control = async (socketPath, line) => {
   socket.end();
   return String(response).trim();
 };
+// Keys are paced: a burst faster than the IDE reads its events overflows the compositor's 4096-byte
+// buffer for the client, and libwayland then disconnects the IDE (measured: 'Data too big for buffer').
+const key = async (socketPath, name) => {
+  const response = await control(socketPath, 'key ' + name);
+  if (!response.startsWith('ok')) throw new Error('Key ' + name + ' was refused: ' + response);
+  await wait(8);
+};
 const live = mkdtempSync(join(liveRoot, 'ide-watch-limit-'));
 const livePath = join(live, 'ide.log');
 const lines = () => plain(readFileSync(livePath, 'utf8')).split('\n').filter(Boolean);
@@ -124,10 +131,10 @@ try {
   // Expand every folder with real keys: Tab to the tree, Home, then Right and Down for each row.
   const listed = () => new Set(own().filter(line => line.includes('applied tree directory snapshot') && line.includes('folder-')).map(line => line.match(/path=(\S+)/)?.[1])).size;
   for (let attempt = 0; attempt < 6 && listed() < folders; attempt++) {
-    for (const key of ['tab', 'home']) await control(socketPath, 'key ' + key);
+    for (const name of ['tab', 'home']) await key(socketPath, name);
     for (let step = 0; step < 2 * (9 * folders + 2) && listed() < folders; step++) {
-      await control(socketPath, 'key right');
-      await control(socketPath, 'key down');
+      await key(socketPath, 'right');
+      await key(socketPath, 'down');
     }
     await wait(500);
   }
