@@ -452,49 +452,58 @@ fn finding_details_reach_the_event() {
     );
 }
 
-/// A fact that could not be read ends the pass with one engine failure naming trigger and policy.
+/// A policy that could not finish ends the pass with one engine failure naming trigger,
+/// policy and the outcome's own cause, for either cause.
 #[test]
 fn failed_check_ends_the_pass_with_an_engine_failure() {
     let mut keep_going: Controls = no_controls();
     keep_going.keep_going = true;
-    let (result, called) = run(
-        Trigger::PreForward,
-        &PolicyConfig::defaults(),
-        &keep_going,
-        &[],
-        vec![
-            (PolicyId::RequireRoot, found("not-at-root")),
-            (
-                PolicyId::LinkedWorktreeOnly,
-                PolicyOutcome::Failed(String::from("git could not be asked")),
-            ),
-        ],
-    );
-    assert_eq!(result.end, StageEnd::Failed);
-    assert_eq!(
-        called,
-        [PolicyId::RequireRoot, PolicyId::LinkedWorktreeOnly]
-    );
-    assert_eq!(
-        result.events,
-        [
-            event(
-                Trigger::PreForward,
-                PolicyId::RequireRoot,
-                Severity::Error,
-                "not-at-root"
-            ),
-            PolicyEvent::EngineFailure {
-                code: EngineFailureCode::ContentUnavailable,
-                message: String::from("git could not be asked"),
-                trigger: Some(Trigger::PreForward),
-                policy: Some(PolicyId::LinkedWorktreeOnly),
-                path: None,
-            },
-        ]
-    );
-    // The failure decides the exit code even though an error finding precedes it.
-    assert_eq!(pass_exit_code(result.events.as_slice(), result.end), 2);
+    for code in [
+        EngineFailureCode::ContentUnavailable,
+        EngineFailureCode::PolicyIncomplete,
+    ] {
+        let (result, called) = run(
+            Trigger::PreForward,
+            &PolicyConfig::defaults(),
+            &keep_going,
+            &[],
+            vec![
+                (PolicyId::RequireRoot, found("not-at-root")),
+                (
+                    PolicyId::LinkedWorktreeOnly,
+                    PolicyOutcome::Failed {
+                        code,
+                        message: String::from("git could not be asked"),
+                    },
+                ),
+            ],
+        );
+        assert_eq!(result.end, StageEnd::Failed);
+        assert_eq!(
+            called,
+            [PolicyId::RequireRoot, PolicyId::LinkedWorktreeOnly]
+        );
+        assert_eq!(
+            result.events,
+            [
+                event(
+                    Trigger::PreForward,
+                    PolicyId::RequireRoot,
+                    Severity::Error,
+                    "not-at-root"
+                ),
+                PolicyEvent::EngineFailure {
+                    code,
+                    message: String::from("git could not be asked"),
+                    trigger: Some(Trigger::PreForward),
+                    policy: Some(PolicyId::LinkedWorktreeOnly),
+                    path: None,
+                },
+            ]
+        );
+        // The failure decides the exit code even though an error finding precedes it.
+        assert_eq!(pass_exit_code(result.events.as_slice(), result.end), 2);
+    }
 }
 
 /// A policy that cannot be evaluated ends the pass as unavailable, keeping earlier events and inventing none.

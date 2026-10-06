@@ -11,6 +11,7 @@
 /// The adapter under test, the engine types it returns and the scripted facts.
 use super::{CandidateSource, ShippedChecks};
 use crate::command_test_support::os_arguments;
+use crate::diagnostics::EngineFailureCode;
 use crate::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
 use crate::policy_registry::PolicyId;
 use crate::policy_test_support::{
@@ -138,7 +139,10 @@ fn require_root_rejects_a_directory_below_the_top_level() {
     assert_eq!(
         pre_forward(PolicyId::RequireRoot, &["status"], unlocatable()),
         (
-            PolicyOutcome::Failed(String::from("git could not be asked")),
+            PolicyOutcome::Failed {
+                code: EngineFailureCode::ContentUnavailable,
+                message: String::from("git could not be asked"),
+            },
             location_only()
         )
     );
@@ -221,7 +225,10 @@ fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
             unlocatable()
         ),
         (
-            PolicyOutcome::Failed(String::from("git could not be asked")),
+            PolicyOutcome::Failed {
+                code: EngineFailureCode::ContentUnavailable,
+                message: String::from("git could not be asked"),
+            },
             location_only()
         )
     );
@@ -317,7 +324,13 @@ fn branch_worktree_rejects_creation_and_guessed_creation() {
     failing.remote_guess = Err(String::from("no git"));
     assert_eq!(
         pre_forward(PolicyId::BranchWorktreeOnly, &["switch", "topic"], failing),
-        (PolicyOutcome::Failed(String::from("no git")), asked)
+        (
+            PolicyOutcome::Failed {
+                code: EngineFailureCode::ContentUnavailable,
+                message: String::from("no git"),
+            },
+            asked
+        )
     );
 }
 

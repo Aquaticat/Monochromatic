@@ -19,6 +19,7 @@
 /// ```ts
 /// import { decideRequireRoot, resolveRequireRoot } from './rule_require_root.ts';
 /// ```
+use super::diagnostics::EngineFailureCode;
 use super::effective_target::{EffectiveTarget, classify_effective_target};
 use super::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
 use super::policy_registry::PolicyId;
@@ -91,6 +92,22 @@ pub struct ShippedChecks<F: RepositoryFacts> {
     pub allowed_worktree_dirs: Vec<PathBuf>,
 }
 
+/// What: The outcome of a check whose repository fact could not be read.
+///       `String` is the owned reason the facts provider gave.
+/// Why:  Every fact these checks ask for is read from the repository, so its absence is
+///       `content-unavailable`, never a failure of the policy itself.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const factUnavailable = (message: string): PolicyOutcome => ({ kind: 'failed', code: 'content-unavailable', message });
+/// ```
+fn fact_unavailable(message: String) -> PolicyOutcome {
+    return PolicyOutcome::Failed {
+        code: EngineFailureCode::ContentUnavailable,
+        message,
+    };
+}
+
 /// What: The outcome "nothing found". `Vec::<PolicyFinding>::new()` is an empty owned list.
 /// Why:  Most checks end this way; one helper keeps them identical.
 ///
@@ -147,7 +164,7 @@ fn check_require_root(
     // `match` unpacks the answer; `Ok`/`Err` are the success/failure variants.
     let location: RepositoryLocation = match facts.location() {
         Ok(found) => found,
-        Err(message) => return PolicyOutcome::Failed(message),
+        Err(message) => return fact_unavailable(message),
     };
     // `let Some(x) = ... else { ... };` unwraps the top level or returns: no worktree, no root.
     let Some(root) = worktree_root(&location.identity) else {
@@ -186,7 +203,7 @@ fn check_linked_worktree(
     };
     let location: RepositoryLocation = match facts.location() {
         Ok(found) => found,
-        Err(message) => return PolicyOutcome::Failed(message),
+        Err(message) => return fact_unavailable(message),
     };
     let target: EffectiveTarget =
         classify_effective_target(&location.identity, allowed_worktree_dirs);
@@ -214,7 +231,7 @@ fn check_branch_worktree(facts: &mut dyn RepositoryFacts, arguments: &[OsString]
         BranchWorktreeDecision::NeedsRemoteGuess { command, target } => {
             // `.as_os_str()` lends the owned name as a borrowed one.
             match facts.remote_guess_creates_branch(target.as_os_str()) {
-                Err(message) => return PolicyOutcome::Failed(message),
+                Err(message) => return fact_unavailable(message),
                 Ok(false) => return clean(),
                 Ok(true) => {
                     return rejected(

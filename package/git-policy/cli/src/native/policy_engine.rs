@@ -61,14 +61,17 @@ pub struct PolicyFinding {
     pub fix_available: bool,
 }
 
-/// What: What one policy check returned. An `enum` is a closed set of named alternatives.
-/// Why:  "Nothing found", "cannot be evaluated here" and "a needed fact could not be
-///       read" are three different answers; folding the last two into an empty finding
-///       list would let an unchecked command through.
+/// What: What one policy check returned. An `enum` is a closed set of named alternatives;
+///       `Failed { code, message }` carries named fields.
+/// Why:  "Nothing found", "cannot be evaluated here" and "could not finish" are three
+///       different answers; folding the last two into an empty finding list would let an
+///       unchecked command through. A policy that could not finish names its cause:
+///       `content-unavailable` when candidate bytes or a repository fact could not be
+///       read, `policy-incomplete` when its own machinery failed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type PolicyOutcome = { kind: 'findings'; findings: PolicyFinding[] } | { kind: 'unavailable'; needs: string } | { kind: 'failed'; message: string };
+/// type PolicyOutcome = { kind: 'findings'; findings: PolicyFinding[] } | { kind: 'unavailable'; needs: string } | { kind: 'failed'; code: EngineFailureCode; message: string };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum PolicyOutcome {
@@ -76,8 +79,13 @@ pub enum PolicyOutcome {
     Findings(Vec<PolicyFinding>),
     /// The policy needs something this executable does not implement yet; the text names it.
     Unavailable(&'static str),
-    /// A repository fact the policy needs could not be read; the text says why.
-    Failed(String),
+    /// The policy could not finish.
+    Failed {
+        /// The cause, as the engine-failure event reports it.
+        code: EngineFailureCode,
+        /// What failed, for the person who ran the command; never a candidate's pathname.
+        message: String,
+    },
 }
 
 /// What: The policies behind the stage. A `trait` is a named set of methods a type promises
@@ -149,7 +157,7 @@ pub enum StageEnd {
     Completed,
     /// An error finding stopped the pass.
     Stopped,
-    /// A policy could not read a fact; the last event is the engine failure.
+    /// A policy could not finish; the last event is the engine failure naming its cause.
     Failed,
     /// A policy or the lifecycle cannot be evaluated by this executable.
     Unavailable(Unavailable),
@@ -251,9 +259,9 @@ pub fn run_policy_stage(
                     }),
                 };
             }
-            PolicyOutcome::Failed(message) => {
+            PolicyOutcome::Failed { code, message } => {
                 events.push(PolicyEvent::EngineFailure {
-                    code: EngineFailureCode::ContentUnavailable,
+                    code,
                     message,
                     // `Some(x)` is the "present" case of `Option`.
                     trigger: Some(request.trigger),
