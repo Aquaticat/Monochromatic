@@ -185,26 +185,32 @@ pub fn pack(
     scale: f32,
 ) -> (usize, Vec<HintPlace>) {
     let mut places = Vec::new();
-    let mut rows: usize = 0;
-    // Right edge of the last hint placed on the current row.
-    let mut end: f32 = 0.0;
+    // Prototype variant: the right edge of the last hint on every row; a hint takes the first row with room.
+    let mut ends: Vec<f32> = Vec::new();
     for label in labels {
         let x = row.caret_x(label.position, scale);
         let width = shaper.row_layout(&label.text, scale).full_width() / scale;
-        if rows == 0 || x < end + HINT_GAP {
-            rows += 1;
+        let mut chosen = ends.len();
+        for (index, end) in ends.iter().enumerate() {
+            if x >= *end + HINT_GAP {
+                chosen = index;
+                break;
+            }
         }
+        if chosen == ends.len() {
+            ends.push(0.0);
+        }
+        ends[chosen] = x + width;
         places.push(HintPlace {
-            row: rows - 1,
+            row: chosen,
             position: label.position,
             x,
             width,
             // `clone` copies the label so the placement owns its text.
             text: label.text.clone(),
         });
-        end = x + width;
     }
-    return (rows, places);
+    return (ends.len(), places);
 }
 
 /// What: Position every visible annotation against the frame's rows. `&mut TextShaper` is lent so virtual-row
