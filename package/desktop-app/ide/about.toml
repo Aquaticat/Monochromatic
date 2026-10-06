@@ -3,19 +3,22 @@
 # and writes target/crate-licenses.json, which build.rs embeds as LICENSES/crates.json.
 
 # Licenses the crates may be used under, in order of preference: for a crate offered under
-# `A OR B`, the first listed one is chosen. MIT, ISC, and the BSD licenses come first because the
-# crates' own files of these licenses carry the copyright lines the licenses ask to reproduce.
+# `A OR B`, the first listed one is chosen. MIT comes first because the crates' own MIT files carry
+# the copyright lines the license asks to reproduce; Apache-2.0 next, whose attribution notices would
+# sit in NOTICE files that none of these crates ship. Preferring BSD-3-Clause over Apache-2.0 was
+# tried: cargo-about then took every BSD header among the source files of moxcms and pxfm as a
+# separate text (224 texts instead of 197).
 # Slint is used under GPL-3.0-only, whose text LICENSES/GPL-3.0-or-later.txt already carries; its
 # royalty-free license would instead ask for Slint's attribution in the application (default chosen
 # on 2026-10-06, open to the user's veto). A dependency under any other license stops the task,
 # so a new license is reviewed before it ships.
 accepted = [
   "MIT",
+  "Apache-2.0",
   "ISC",
   "BSD-2-Clause",
   "BSD-3-Clause",
   "Zlib",
-  "Apache-2.0",
   "Unicode-3.0",
   "MPL-2.0",
   "CC0-1.0",
