@@ -31,6 +31,9 @@ Every option is a real build.
 and `<question>-<option>-<scheme>-crop.png` is the part that differs,
 cut at the same rectangle for every option of a question.
 Line numbers in the list name the scene's source lines.
+Every build shows each severity letter 4 px before its own line number,
+as the user asked on 2026-10-06;
+the frames were rebuilt after that change.
 
 #### Hint row look (`hint-look`)
 
@@ -458,25 +461,28 @@ because neighbouring fixture lines look alike.
 ### Builds
 
 Every option is a real build of the application.
-Options that the branch `feat/ide-hint-rows` ships are built from the prototype commit `c1edfcf40`,
-whose sources equal `feat/ide-hint-rows` at `970eebaae`, the build with the gutter letters.
+Options that the branch `feat/ide-hint-rows` ships are built from the prototype commit `4438d8028`,
+whose sources equal `feat/ide-hint-rows` at `397d40092`,
+the build that stands each severity letter 4 px before its own line number.
 Every other option is one commit on the branch `prototype/ide-hint-row-variants`,
 in the worktree `.claude/worktrees/ide-hint-row-variants`.
-The tree of each commit is `c1edfcf40` plus only that option
+The tree of each commit is `4438d8028` plus only that option
 (each commit restores the files of the previous option),
 so checking one commit out builds that option alone.
 The branch is throwaway prototype code and is never merged.
 
-- `diagnostic-text` `a`, `ad6a6fac0`: editord wording without the code.
-- `hint-look` `b`, `c9873c837`: the source family italic in a box.
-- `hint-labels` `b`, `65184fbff`: editord label stripping.
-- `hint-packing` `b`, `d5736b7ed`: each hint on the first row with room.
-- `diagnostic-rows` `b`, `fce7a8852`: rows and gutter letters plus the caret card.
+- `diagnostic-text` `a`, `06b8a3b09`: editord wording without the code.
+- `hint-look` `b`, `a5ee2671f`: the source family italic in a box.
+- `hint-labels` `b`, `70851ccc1`: editord label stripping.
+- `hint-packing` `b`, `89a24c0ff`: each hint on the first row with room.
+- `diagnostic-rows` `b`, `5e46c5d18`: rows and gutter letters plus the caret card.
 
-The same options were first built on `fb0824037`, before the gutter letters,
-together with a lettered box after the line end that the user's decision of 2026-10-06 retired
-(commits `46704e4c2` to `9d24ffcca`);
-their frames were replaced by the frames of these builds.
+The same options were built twice before, and their frames were replaced by the frames of these builds:
+first on `fb0824037`, together with a lettered box after the line end that the user's decision of 2026-10-06 retired
+(commits `46704e4c2` to `9d24ffcca`),
+then on `c1edfcf40`, with the letters in a 16 px column at the gutter's left edge,
+which the user found too far from the line numbers
+(commits `ad6a6fac0`, `c9873c837`, `65184fbff`, `d5736b7ed`, and `fce7a8852`).
 
 ### Command, fixture, and window size
 
