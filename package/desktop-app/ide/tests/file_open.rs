@@ -39,9 +39,10 @@ fn fixture() -> tempfile::TempDir {
 /// Longest wait for one open: a hang detector, not a latency budget, and the same bound the
 /// Language integration tests use for any expected state (`PATIENCE` in `tests/language/support.rs`).
 /// The first open of every opener builds the syntax engine and compiles the language's queries,
-/// once; measured in a debug build with two processors shared by a loaded machine, that took
-/// 0.9 s at the median and up to 6 s, and with half a processor up to 7 s. Later opens take
-/// milliseconds. No product bound exists for opening a file.
+/// once. Measured in a debug build with fixtures in memory, on a loaded machine, that took 0.8 s
+/// at the median and up to 4.2 s with two processors, and 1.9 s at the median and up to 4.2 s
+/// with half a processor; later opens take milliseconds. No product bound exists for opening a
+/// file.
 const OPEN_PATIENCE: Duration = Duration::from_secs(20);
 
 /// Drain a pending open or cancellation without relying on filesystem-read timing.
