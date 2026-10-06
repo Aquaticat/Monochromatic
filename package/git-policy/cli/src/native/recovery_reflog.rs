@@ -75,7 +75,9 @@ pub fn list_nonce_reflog_oids(
     let output: GitOutput = match run_git(context, &request) {
         Ok(finished) => finished,
         Err(error) => {
-            return Err(RecoveryError(format!("{reference} reflog is unreadable: {error}")));
+            return Err(RecoveryError(format!(
+                "{reference} reflog is unreadable: {error}"
+            )));
         }
     };
     if !output.succeeded() {

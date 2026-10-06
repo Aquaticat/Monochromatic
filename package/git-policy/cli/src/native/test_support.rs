@@ -110,3 +110,59 @@ pub(crate) fn executable(path: &Path, content: &[u8]) {
     std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755))
         .expect("mark candidate executable");
 }
+
+/// What: Variables that isolate a Git child started through the production runners from the
+///       real system and global configuration, with the fixed fixture identity.
+/// Why:  Production runners add an overlay to the inherited environment instead of clearing
+///       it, so tests pass these pairs as that overlay.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const overlay = [['GIT_CONFIG_NOSYSTEM', '1'], ['GIT_CONFIG_GLOBAL', '/nonexistent-global-config'], ...];
+/// ```
+pub(crate) fn isolated_overlay() -> Vec<(std::ffi::OsString, std::ffi::OsString)> {
+    // `mut` allows collecting the pairs one at a time.
+    let mut pairs: Vec<(std::ffi::OsString, std::ffi::OsString)> = Vec::new();
+    for (name, value) in [
+        ("GIT_CONFIG_NOSYSTEM", "1"),
+        ("GIT_CONFIG_GLOBAL", "/nonexistent-global-config"),
+        ("GIT_AUTHOR_NAME", "Fixture"),
+        ("GIT_AUTHOR_EMAIL", "fixture@example.invalid"),
+        ("GIT_COMMITTER_NAME", "Fixture"),
+        ("GIT_COMMITTER_EMAIL", "fixture@example.invalid"),
+    ] {
+        pairs.push((
+            std::ffi::OsString::from(name),
+            std::ffi::OsString::from(value),
+        ));
+    }
+    return pairs;
+}
+
+/// What: A transaction Git context running the real fixture Git with the isolating overlay.
+/// Why:  Recovery and landing tests start Git through the production runner.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const context = { gitPath: '/usr/bin/git', overlay: isolatedOverlay(), globalPrefix: [] };
+/// ```
+pub(crate) fn git_context() -> crate::transaction_git::GitContext {
+    return crate::transaction_git::GitContext {
+        real_git: PathBuf::from(REAL_GIT),
+        overlay: isolated_overlay(),
+        global_prefix: Vec::new(),
+    };
+}
+
+/// What: Real Git's standard output with one trailing newline removed, as text.
+/// Why:  Tests compare object IDs and ref values.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// git(directory, args).stdout.toString().trimEnd()
+/// ```
+pub(crate) fn git_text<S: AsRef<OsStr>>(directory: &Path, arguments: &[S]) -> String {
+    let output: Output = git(directory, arguments);
+    let text: String = String::from_utf8(output.stdout).expect("UTF-8 Git output");
+    return String::from(text.strip_suffix('\n').unwrap_or(text.as_str()));
+}

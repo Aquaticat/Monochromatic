@@ -9,21 +9,21 @@
 //! if (await commitLanded({ ... })) await completeIndex({ directory, preparing, landing });
 //! ```
 
+/// The fail-closed recovery failure.
+use super::recovery_error::RecoveryError;
 /// Exact reads, owned links, lock release and index installation.
 use super::recovery_files::{
     create_owned_file_link, files_equal, install_recovered_index, read_recovery_file,
     recovery_path_exists, release_owned_lock, remove_file_if_present,
 };
-/// The fail-closed recovery failure.
-use super::recovery_error::RecoveryError;
 /// The reflog nonce search.
 use super::recovery_reflog::list_nonce_reflog_oids;
 /// Running real Git.
 use super::transaction_git::{GitContext, GitRequest, run_git};
 /// Journal records and artifact names.
 use super::transaction_journal::{
-    FileIdentity, INDEX_INSTALLED_FILENAME, LandingRecord, PreparingRecord,
-    REF_UPDATED_FILENAME, post_index_filename, pre_landing_index_filename,
+    FileIdentity, INDEX_INSTALLED_FILENAME, LandingRecord, PreparingRecord, REF_UPDATED_FILENAME,
+    post_index_filename, pre_landing_index_filename,
 };
 /// The `ref-updated.json` parser.
 use super::transaction_journal_parse::parse_ref_updated;
@@ -197,7 +197,12 @@ pub fn complete_index(
             directory.display()
         )));
     }
-    install_recovered_index(lock_path.as_path(), real_index, post.as_path(), &landing.lock)?;
+    install_recovered_index(
+        lock_path.as_path(),
+        real_index,
+        post.as_path(),
+        &landing.lock,
+    )?;
     return Ok(IndexCompletion::Installed);
 }
 

@@ -8,14 +8,15 @@
 //! await releaseRecordedLocks({ directory, names, realIndexPath, ownerPid });
 //! ```
 
-/// Exact reads, owned-lock release and the PID file path.
-use super::recovery_files::{
-    LockRelease, lock_pid_path, read_recovery_file, release_owned_lock, remove_file_if_present,
-};
-/// The fail-closed recovery failure.
-use super::recovery_error::{RecoveryError, io_failure};
 /// Debug diagnostics.
 use super::diagnostic_log::debug;
+/// The fail-closed recovery failure.
+use super::recovery_error::{RecoveryError, io_failure};
+/// Exact reads, owned-lock release and the PID file path.
+use super::recovery_files::{
+    LockRelease, lock_pid_path, lock_release_name, read_recovery_file, release_owned_lock,
+    remove_file_if_present,
+};
 /// The index-lock record parser.
 use super::transaction_journal_parse::parse_index_lock;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
@@ -42,10 +43,7 @@ pub fn attempt_numbers(names: &[String], prefix: &str) -> Vec<i64> {
     // `mut` allows collecting the numbers one at a time.
     let mut attempts: Vec<i64> = Vec::new();
     for name in names {
-        let Some(middle) = name
-            .strip_prefix(prefix)
-            .and_then(strip_record_suffix)
-        else {
+        let Some(middle) = name.strip_prefix(prefix).and_then(strip_record_suffix) else {
             continue;
         };
         if let Some(attempt) = decimal_attempt(middle) {
@@ -188,14 +186,15 @@ pub fn release_recorded_locks(
     lock_name.push(".lock");
     let lock_path: PathBuf = PathBuf::from(lock_name);
     for attempt in attempt_numbers(names, INDEX_LOCK_RECORD_PREFIX) {
-        let record_path: PathBuf =
-            directory.join(format!("{INDEX_LOCK_RECORD_PREFIX}{attempt}{RECORD_SUFFIX}"));
+        let record_path: PathBuf = directory.join(format!(
+            "{INDEX_LOCK_RECORD_PREFIX}{attempt}{RECORD_SUFFIX}"
+        ));
         let record: super::transaction_journal::IndexLockRecord =
             parse_index_lock(read_recovery_file(record_path.as_path())?.as_slice())?;
         let released: LockRelease = release_owned_lock(&record.lock, lock_path.as_path())?;
         debug(
             "releaseRecordedLocks",
-            format!("attempt {attempt} lock {released:?}").as_str(),
+            format!("attempt {attempt} lock {}", lock_release_name(released)).as_str(),
         );
     }
     return remove_dead_pid_file(real_index, owner_pid);

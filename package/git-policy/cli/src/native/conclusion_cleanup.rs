@@ -10,20 +10,20 @@
 //! await reproduceConclusionCleanup({ gitPath, cwd, gitDir, shadowPath, transactionDirectory, refFormat });
 //! ```
 
-/// Exact reads and existence probes.
-use super::recovery_files::{path_present, read_optional, remove_file_if_present};
+/// Debug diagnostics.
+use super::diagnostic_log::debug;
 /// Tree removal and private files.
 use super::private_storage::remove_tree;
 /// The fail-closed recovery failure.
 use super::recovery_error::{RecoveryError, io_failure};
+/// Exact reads and existence probes.
+use super::recovery_files::{path_present, read_optional, remove_file_if_present};
 /// Shadow commands.
 use super::shadow_git::shadow_request;
 /// Running real Git.
 use super::transaction_git::{GitContext, GitRequest, run_git, run_git_checked};
 /// The ref storage backend.
 use super::transaction_journal::RefFormat;
-/// Debug diagnostics.
-use super::diagnostic_log::debug;
 /// `BTreeMap` is a sorted map.
 use std::collections::BTreeMap;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
@@ -127,7 +127,10 @@ fn read_tree(root: &Path) -> Result<BTreeMap<PathBuf, Vec<u8>>, RecoveryError> {
                     Ok(read) => read,
                     Err(error) => return Err(io_failure("reading", path.as_path(), &error)),
                 };
-                let relative: PathBuf = path.strip_prefix(root).unwrap_or(path.as_path()).to_path_buf();
+                let relative: PathBuf = path
+                    .strip_prefix(root)
+                    .unwrap_or(path.as_path())
+                    .to_path_buf();
                 files.insert(relative, bytes);
             }
         }
@@ -197,13 +200,14 @@ fn clean_store_held(
         context,
         GitRequest::new(cwd, &["rev-parse", "--verify", "--quiet", name]),
     );
-    if !in_shadow && in_real.as_deref() == Some(copied) {
-        if let Err(failure) = run_git_checked(
+    if !in_shadow
+        && in_real.as_deref() == Some(copied)
+        && let Err(failure) = run_git_checked(
             context,
             &GitRequest::new(cwd, &["update-ref", "-d", name, copied]),
-        ) {
-            return Err(RecoveryError(failure.0));
-        }
+        )
+    {
+        return Err(RecoveryError(failure.0));
     }
     return Ok(());
 }
@@ -228,7 +232,11 @@ pub fn reproduce_conclusion_cleanup(
     if !path_present(copies.as_path())? {
         debug(
             "reproduceConclusionCleanup",
-            format!("no conclusion state was copied: {}", transaction_directory.display()).as_str(),
+            format!(
+                "no conclusion state was copied: {}",
+                transaction_directory.display()
+            )
+            .as_str(),
         );
         return Ok(());
     }

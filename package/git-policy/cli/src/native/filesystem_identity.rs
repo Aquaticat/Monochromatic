@@ -294,7 +294,11 @@ fn darwin_fs_id(path: &Path) -> Option<String> {
     }
     let number: String = command_output(
         "stat",
-        &[std::ffi::OsStr::new("-f"), std::ffi::OsStr::new("%d"), target],
+        &[
+            std::ffi::OsStr::new("-f"),
+            std::ffi::OsStr::new("%d"),
+            target,
+        ],
     )?;
     return create_fs_id(FsIdSource::DeviceNumber, number.as_str());
 }

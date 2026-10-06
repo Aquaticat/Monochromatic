@@ -10,10 +10,10 @@
 //! await removeTransactionKeeps({ objectDirectory, transactionId });
 //! ```
 
-/// Single-file removal.
-use super::recovery_files::remove_file_if_present;
 /// The fail-closed recovery failure.
 use super::recovery_error::{RecoveryError, io_failure};
+/// Single-file removal.
+use super::recovery_files::remove_file_if_present;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 

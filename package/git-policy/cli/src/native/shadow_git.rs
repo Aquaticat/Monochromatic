@@ -11,14 +11,14 @@
 //! await runShadowGit({ gitPath, shadowPath, args: ['rev-parse', 'HEAD'] });
 //! ```
 
+/// Debug diagnostics.
+use super::diagnostic_log::debug;
 /// Tree removal.
 use super::private_storage::remove_tree;
 /// The fail-closed recovery failure.
 use super::recovery_error::{RecoveryError, io_failure};
 /// One Git start.
 use super::transaction_git::GitRequest;
-/// Debug diagnostics.
-use super::diagnostic_log::debug;
 /// `OsString` is owned operating-system text of raw bytes.
 use std::ffi::OsString;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
@@ -44,7 +44,10 @@ pub const NO_HOOKS_DIRECTORY: &str = "no-hooks";
 /// shadowRepositoryPath({ commonDir, transactionId }) // `${commonDir}/cli-git/shadow/${transactionId}`
 /// ```
 pub fn shadow_repository_path(common_dir: &Path, transaction_id: &str) -> PathBuf {
-    return common_dir.join("cli-git").join("shadow").join(transaction_id);
+    return common_dir
+        .join("cli-git")
+        .join("shadow")
+        .join(transaction_id);
 }
 
 /// What: A request running `arguments` against the shadow: `--git-dir=<shadow>`, hooks pointed
@@ -55,7 +58,11 @@ pub fn shadow_repository_path(common_dir: &Path, transaction_id: &str) -> PathBu
 /// ```ts
 /// runShadowGit({ gitPath, shadowPath, args, cwd })
 /// ```
-pub fn shadow_request<S: AsRef<std::ffi::OsStr>>(shadow: &Path, cwd: &Path, arguments: &[S]) -> GitRequest {
+pub fn shadow_request<S: AsRef<std::ffi::OsStr>>(
+    shadow: &Path,
+    cwd: &Path,
+    arguments: &[S],
+) -> GitRequest {
     // `mut` allows prefixing the shadow selection.
     let mut git_dir: OsString = OsString::from("--git-dir=");
     git_dir.push(shadow.as_os_str());

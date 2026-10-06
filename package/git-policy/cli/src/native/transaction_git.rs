@@ -193,8 +193,8 @@ fn input_file(bytes: &[u8]) -> std::io::Result<std::fs::File> {
     let path: PathBuf = std::env::temp_dir().join(format!("cli-git-input-{unique}"));
     write_private_file(path.as_path(), bytes)?;
     let file: std::io::Result<std::fs::File> = std::fs::File::open(&path);
-    // The open handle keeps the bytes readable after the name is gone (Unix); on Windows the
-    // removal fails while the file is open and is retried after Git exits.
+    // The open handle keeps the bytes readable after the name is gone. If the platform refuses
+    // to remove an open file, the private file stays behind and the error is ignored.
     let _ = std::fs::remove_file(&path);
     let opened: std::fs::File = file?;
     return Ok(opened);
@@ -270,7 +270,10 @@ pub fn run_git(context: &GitContext, request: &GitRequest) -> std::io::Result<Gi
 /// ```ts
 /// await runTransactionGit({ gitPath, cwd, args }) // throws CommitTransactionGitError
 /// ```
-pub fn run_git_checked(context: &GitContext, request: &GitRequest) -> Result<GitOutput, GitFailure> {
+pub fn run_git_checked(
+    context: &GitContext,
+    request: &GitRequest,
+) -> Result<GitOutput, GitFailure> {
     let output: GitOutput = match run_git(context, request) {
         Ok(finished) => finished,
         Err(error) => {

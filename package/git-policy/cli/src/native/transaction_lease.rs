@@ -18,7 +18,9 @@ use super::owner_lock_record::{PublishedOwner, read_owner_lock_record};
 /// Bounded no-follow reads.
 use super::private_storage::read_regular_file;
 /// Transaction owner records and their liveness.
-use super::transaction_owner::{OwnerLiveness, classify_transaction_owner, parse_transaction_owner};
+use super::transaction_owner::{
+    OwnerLiveness, classify_transaction_owner, parse_transaction_owner,
+};
 /// The owner record filename of a transaction directory.
 use super::transaction_registry::OWNER_FILENAME;
 /// `OsString` is owned operating-system text of raw bytes.
@@ -128,8 +130,10 @@ pub fn has_valid_preparation_lease(environment: &[(OsString, OsString)]) -> bool
     if string_field(&plan, "lease") != Some(lease.as_str()) {
         return false;
     }
-    let Ok(owner_bytes) = read_regular_file(transaction.join(OWNER_FILENAME).as_path(), LEASE_RECORD_LIMIT)
-    else {
+    let Ok(owner_bytes) = read_regular_file(
+        transaction.join(OWNER_FILENAME).as_path(),
+        LEASE_RECORD_LIMIT,
+    ) else {
         return false;
     };
     let Some(owner) = parse_transaction_owner(owner_bytes.as_slice()) else {
@@ -149,7 +153,10 @@ pub fn has_valid_preparation_lease(environment: &[(OsString, OsString)]) -> bool
 /// ```ts
 /// async function hasValidLandingLease({ environment, lockDirectory }): Promise<boolean>;
 /// ```
-pub fn has_valid_landing_lease(environment: &[(OsString, OsString)], lock_directory: &Path) -> bool {
+pub fn has_valid_landing_lease(
+    environment: &[(OsString, OsString)],
+    lock_directory: &Path,
+) -> bool {
     let Some(lease) = nonempty_variable(environment, LANDING_LEASE_VARIABLE) else {
         return false;
     };
