@@ -25,11 +25,6 @@ import { introducedFootnoteFindings, } from './assembly-regressions.ts';
 // archive lacked.
 
 /**
- What `indexOf` returns for a block the archive does not carry verbatim.
- */
-const NOT_FOUND = -1;
-
-/**
  Refusal of a block the page it is reviewed in does not carry, so the page
  its revision would leave cannot be built.
 
@@ -71,12 +66,17 @@ export class BlockOutsideArchiveError extends Error {
  `corpus-run/archive-block-repair.ts` reviews later blocks first; so one not
  found in that page breaks the caller's contract; it once passed every revision unread, a branch kept for
  fixtures a caller composed and reached by none. A block the page carries
- more than once is replaced at its first occurrence; the footnote graph
- reads the same labels whichever occurrence is replaced.
+ more than once is replaced at the offset its caller gives, not found again
+ by its text, since a first occurrence inside a code fence references
+ nothing and the same text in the body does (ledger B203, whose census found
+ this site).
 
  @param modelId - reviewer who wrote the revision, named in the finding
 
  @param blockText - archive block under review, verbatim
+
+ @param blockOffset - where the block starts in the page, as the caller
+ cut it out, so a block whose text stands twice is revised where it stands
 
  @param replacementText - revision as it would ship, empty for a removal
 
@@ -85,39 +85,45 @@ export class BlockOutsideArchiveError extends Error {
 
  @returns Findings withholding the revision, empty when it may stand
 
- @throws BlockOutsideArchiveError when the page does not carry the block
+ @throws BlockOutsideArchiveError when the page does not carry the block at
+ the offset given
 
  @example
  ```ts
- const findings = revisionFootnoteFindings({ modelId, blockText, replacementText: '', targetText, },);
+ const findings = revisionFootnoteFindings({ modelId, blockText, blockOffset, replacementText: '', targetText, },);
  ```
  */
 export function revisionFootnoteFindings(
   {
     modelId,
     blockText,
+    blockOffset,
     replacementText,
     targetText,
   }: {
     readonly modelId: string;
     readonly blockText: string;
+    readonly blockOffset: number;
     readonly replacementText: string;
     readonly targetText: string;
   },
 ): readonly string[] {
   /**
-   Where the block stands in the archive.
+   Where the block ends in the page.
    */
-  const at = targetText.indexOf(blockText,);
-  if (at === NOT_FOUND)
+  const blockEnd = blockOffset + blockText.length;
+  if (targetText.slice(
+    blockOffset,
+    blockEnd,
+  ) !== blockText)
     throw new BlockOutsideArchiveError();
   /**
    The page as the revision would leave it.
    */
   const revised = `${targetText.slice(
     0,
-    at,
-  )}${replacementText}${targetText.slice(at + blockText.length,)}`;
+    blockOffset,
+  )}${replacementText}${targetText.slice(blockEnd,)}`;
   /**
    Footnote defects the revised page carries and the archive did not.
    */

@@ -33,6 +33,7 @@ async function runFixture(fixture: ReturnType<typeof archiveSelectionFixture>,):
     sourceText: ARCHIVE_TEST_SOURCE,
     targetText: ARCHIVE_TEST_PAGE,
     blockText: ARCHIVE_TEST_BLOCK,
+    blockOffset: ARCHIVE_TEST_PAGE.indexOf(ARCHIVE_TEST_BLOCK,),
     priorFindings: [],
     signal: AbortSignal.timeout(5_000,),
     exchangeTimeoutMs: 5_000,
@@ -137,6 +138,7 @@ await describe({
         await runArchiveBlockReviewStage({
           client: fixture.client, modelIds: ARCHIVE_TEST_ROSTER,
           sourceText: ARCHIVE_TEST_SOURCE, targetText: ARCHIVE_TEST_PAGE, blockText: ARCHIVE_TEST_BLOCK,
+          blockOffset: ARCHIVE_TEST_PAGE.indexOf(ARCHIVE_TEST_BLOCK,),
           priorFindings: ['Earlier independent concern.',],
           signal: AbortSignal.timeout(5_000,), exchangeTimeoutMs: 5_000,
           l: tagged({ tag: 'archive-prior-evidence-test', },),

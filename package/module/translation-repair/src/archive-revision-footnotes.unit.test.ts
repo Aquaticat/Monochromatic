@@ -31,6 +31,24 @@ import {
  */
 const ARCHIVE = 'The cat napped by the stove.[^1]\n\n[^1]: The stove in the kitchen.\n';
 
+/**
+ Archive page whose block `Purr[^1]` stands twice: first inside a code fence,
+ where it references nothing, then in the body, where it references the note.
+ */
+const FENCED_TWICE = '```\nPurr[^1]\n```\n\nPurr[^1]\n\n[^1]: A cat note.';
+
+/**
+ Block that stands twice on that page.
+ */
+const PURR = 'Purr[^1]';
+
+/**
+ Finding for a revision of that block that drops the marker the note hangs on.
+ */
+const ORPHANED = 'archive-revision-refused (hf:cat/Cat-A): the revision gives the page a footnote defect it does not '
+  + 'carry as it stands (orphan-definition gfm 1); a footnote is a relation between blocks, and its other end '
+  + 'stands outside the block under review';
+
 await describe({
   name: revisionFootnoteFindings.name,
   children: [
@@ -45,6 +63,7 @@ await describe({
           return revisionFootnoteFindings({
             modelId: 'hf:cat/Cat-A',
             blockText: '[^1]: The stove in the hall.',
+            blockOffset: 0,
             replacementText: '',
             targetText: ARCHIVE,
           },);
@@ -57,12 +76,57 @@ await describe({
       },
     },),
     it({
+      name: 'READS THE REVISION AT THE OFFSET THE CALLER GIVES: a block that stands twice, the first inside a code '
+        + 'fence, loses the marker the note hangs on at its second place',
+      fn: async () => {
+        expect(revisionFootnoteFindings({
+          modelId: 'hf:cat/Cat-A',
+          blockText: PURR,
+          blockOffset: FENCED_TWICE.lastIndexOf(PURR,),
+          replacementText: 'Purr',
+          targetText: FENCED_TWICE,
+        },),).toEqual([ORPHANED,],);
+      },
+    },),
+    it({
+      name: 'READS THE REVISION AT THE OFFSET THE CALLER GIVES: the same block at its first place, inside a code '
+        + 'fence, leaves the note referenced',
+      fn: async () => {
+        expect(revisionFootnoteFindings({
+          modelId: 'hf:cat/Cat-A',
+          blockText: PURR,
+          blockOffset: FENCED_TWICE.indexOf(PURR,),
+          replacementText: 'Purr',
+          targetText: FENCED_TWICE,
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REFUSES an offset at which the page does not carry the block, though it carries the block elsewhere',
+      fn: async () => {
+        /**
+         What the floor threw for an offset one place past the block's own.
+         */
+        const refusal = caught(function readsMisplacedBlock(): unknown {
+          return revisionFootnoteFindings({
+            modelId: 'hf:cat/Cat-A',
+            blockText: PURR,
+            blockOffset: FENCED_TWICE.indexOf(PURR,) + 1,
+            replacementText: 'Purr',
+            targetText: FENCED_TWICE,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(BlockOutsideArchiveError,);
+      },
+    },),
+    it({
       name: 'READS the page a revision of a block the archive carries would leave, finding nothing where the '
         + 'notes still pair',
       fn: async () => {
         expect(revisionFootnoteFindings({
           modelId: 'hf:cat/Cat-A',
           blockText: '[^1]: The stove in the kitchen.',
+          blockOffset: ARCHIVE.indexOf('[^1]: The stove in the kitchen.',),
           replacementText: '[^1]: The kitchen stove.',
           targetText: ARCHIVE,
         },),).toEqual([],);

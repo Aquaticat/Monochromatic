@@ -82,6 +82,9 @@ export type ArchiveBlockReviewOutcome = {
 
  @param blockText - exact block under review
 
+ @param blockOffset - where the block starts in `targetText`, so a revision
+ of a block whose text stands twice is checked where the block stands
+
  @param priorFindings - latest failed-strategy evidence
 
  @param identityContext - declared names preparation holds, for the
@@ -116,6 +119,7 @@ export async function runArchiveBlockReviewStage(
     sourceText,
     targetText,
     blockText,
+    blockOffset,
     priorFindings,
     identityContext,
     referenceContext,
@@ -128,6 +132,7 @@ export async function runArchiveBlockReviewStage(
     readonly sourceText: string;
     readonly targetText: string;
     readonly blockText: string;
+    readonly blockOffset: number;
     readonly priorFindings: readonly string[];
     readonly identityContext?: string;
     readonly referenceContext?: string;
@@ -235,6 +240,7 @@ export async function runArchiveBlockReviewStage(
   } = replacementCandidates({
     voices: anchoredVoices,
     blockText,
+    blockOffset,
     targetText,
   },);
   for (const finding of withheld)

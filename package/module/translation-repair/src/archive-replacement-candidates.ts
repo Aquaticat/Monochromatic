@@ -27,6 +27,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  @param blockText - archive block under review, verbatim, whose declared
  contributors and shape a revision must keep
 
+ @param blockOffset - where the block starts in that page, which its footnote
+ check revises it at
+
  @param targetText - page the block stands in, as the revisions already
  applied leave it: the quote style a revision is restored to, and the page
  its footnote check reads (ledger B80)
@@ -37,13 +40,14 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
  @example
  ```ts
- const { candidates, withheld, } = replacementCandidates({ voices, blockText, targetText, },);
+ const { candidates, withheld, } = replacementCandidates({ voices, blockText, blockOffset, targetText, },);
  ```
  */
 export function replacementCandidates(
   {
     voices,
     blockText,
+    blockOffset,
     targetText,
   }: {
     readonly voices: readonly {
@@ -51,6 +55,7 @@ export function replacementCandidates(
       readonly value: ArchiveBlockReviewWire
     }[];
     readonly blockText: string;
+    readonly blockOffset: number;
     readonly targetText: string;
   },
 ): {
@@ -118,6 +123,7 @@ export function replacementCandidates(
     const footnoteFindings = revisionFootnoteFindings({
       modelId: voice.modelId,
       blockText,
+      blockOffset,
       replacementText: replacement,
       targetText,
     },);

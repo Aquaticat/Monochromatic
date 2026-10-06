@@ -622,12 +622,14 @@ await describe({
               revisionFootnoteFindings({
                 modelId: ROSTER[0],
                 blockText: earlier,
+                blockOffset: targetText.indexOf(earlier,),
                 replacementText: earlierRevision,
                 targetText,
               },),
               revisionFootnoteFindings({
                 modelId: ROSTER[0],
                 blockText: later,
+                blockOffset: targetText.indexOf(later,),
                 replacementText: laterRevision,
                 targetText,
               },),
@@ -700,6 +702,7 @@ await describe({
                 return revisionFootnoteFindings({
                   modelId,
                   blockText: earlier,
+                  blockOffset: afterLater.indexOf(earlier,),
                   replacementText: earlierRevision,
                   targetText: afterLater,
                 },);

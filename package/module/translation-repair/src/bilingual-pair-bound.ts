@@ -123,20 +123,24 @@ function wordingOf({ line, }: { readonly line: string; },): string {
 }
 
 /**
- Index of the first line carrying a wording.
+ Index of every line carrying a wording, in order.
+
+ EVERY LINE, NOT THE FIRST (ledger B203, whose census found this site). A
+ refrain stands on more than one line of a text, and each stands in a block
+ of its own.
 
  @param lines - raw lines to search
 
  @param wording - wording to find, as `wordingOf` gives it
 
- @returns Index, or -1 when no line carries it
+ @returns Indexes in order, empty when no line carries it
 
  @example
  ```ts
- const at = lineAt({ lines, wording: wordingOf({ line: pair.english, },), },);
+ const at = linesAt({ lines, wording: wordingOf({ line: pair.english, },), },);
  ```
  */
-function lineAt(
+function linesAt(
   {
     lines,
     wording,
@@ -144,9 +148,12 @@ function lineAt(
     readonly lines: readonly string[];
     readonly wording: string;
   },
-): number {
-  return lines.findIndex(function carries(line,): boolean {
-    return wordingOf({ line, },) === wording;
+): readonly number[] {
+  return lines.flatMap(function indexIfCarries(
+    line,
+    index,
+  ): readonly number[] {
+    return (wordingOf({ line, },) === wording) ? [index,] : [];
   },);
 }
 
@@ -290,8 +297,8 @@ function blockAround(
 ): LineBlock {
   /**
    Whether the block is a quote. The line at `at` is ALWAYS PRESENT:
-   `pairBoundFindings` passes only a `lineAt` answer it has checked is not
-   negative, an index of these same lines.
+   `pairBoundFindings` passes only a `linesAt` answer, an index of these same
+   lines.
    */
   const quoted = isQuoted({ line: nonNullishOrThrow(lines[at],), },);
   /**
@@ -330,6 +337,10 @@ function blockAround(
 /**
  Names a governed rendering whose block holding a bilingual pair's English
  line carries more lines than the page's block holding it.
+
+ A wording standing on several lines (a refrain) is compared place by place,
+ the page's first place with the rendering's first, and so on, where both
+ texts carry it equally often; where they do not, the bound says nothing.
 
  @param pairs - Han lines the original gives with their own English beside
  them, as the floor found them
@@ -384,63 +395,80 @@ export function pairBoundFindings(
      */
     const english = wordingOf({ line: pair.english, },);
     /**
-     Where the page carries that line.
+     Where the page carries that line, in order.
      */
-    const pageAt = lineAt({
+    const pageAts = linesAt({
       lines: pageLines,
       wording: english,
     },);
-    if (pageAt < 0)
+    if (pageAts.length === 0)
       return [];
     /**
      Where the page carries the Han line, if it kept both.
      */
-    const pageHanAt = lineAt({
+    const pageHanAts = linesAt({
       lines: pageLines,
       wording: wordingOf({ line: pair.han, },),
     },);
-    if (pageHanAt >= 0)
+    if (pageHanAts.length > 0)
       return [];
     /**
-     Where the rendering carries the English line.
+     Where the rendering carries the English line, in order.
      */
-    const candidateAt = lineAt({
+    const candidateAts = linesAt({
       lines: candidateLines,
       wording: english,
     },);
-    if (candidateAt < 0)
+    // THE WORDING MUST STAND AS OFTEN IN BOTH TEXTS (ledger B203, whose census
+    // found this site): then its places pair off in order, each place of the
+    // page with the same place of the rendering. Where the counts differ, no
+    // place of the rendering is known to be a page place, so the bound says
+    // nothing and the repeated-line check speaks to a rendering that
+    // repeats the line.
+    if (candidateAts.length !== pageAts.length)
       return [];
-    /**
-     Page block holding the line.
-     */
-    const pageBlock = blockAround({
-      lines: pageLines,
-      at: pageAt,
+    return pageAts.flatMap(function toPlaceFinding(
+      pageAt,
+      place,
+    ): readonly string[] {
+      /**
+       Where the rendering carries the line at this place. ALWAYS PRESENT:
+       `place` indexes `pageAts`, which has as many entries as
+       `candidateAts`.
+       */
+      const candidateAt = nonNullishOrThrow(candidateAts[place],);
+      /**
+       Page block holding the line.
+       */
+      const pageBlock = blockAround({
+        lines: pageLines,
+        at: pageAt,
+      },);
+      /**
+       Rendering block holding the line.
+       */
+      const candidateBlock = blockAround({
+        lines: candidateLines,
+        at: candidateAt,
+      },);
+      if ((candidateBlock.count <= pageBlock.count) || named.has(candidateBlock.start,))
+        return [];
+      named.add(candidateBlock.start,);
+      return [
+        `This slice is LINE-STRUCTURED and the ORIGINAL gives the line \`${english}\` twice, `
+          + `once in Chinese and once in English directly beside it; that pair is ONE line whose English is `
+          + `already its rendering, and the EXISTING TRANSLATION carries the block holding it as `
+          + `${String(pageBlock.count,)} ${
+            wordForCount({
+              count: pageBlock.count,
+              one: 'line',
+              many: 'lines',
+            },)
+          }. Yours carries ${String(candidateBlock.count,)}. Drop the second `
+          + `rendering of the pair (the Chinese line, or a second English wording of it), keeping the wording `
+          + `you chose elsewhere.`,
+      ];
     },);
-    /**
-     Rendering block holding the line.
-     */
-    const candidateBlock = blockAround({
-      lines: candidateLines,
-      at: candidateAt,
-    },);
-    if ((candidateBlock.count <= pageBlock.count) || named.has(candidateBlock.start,))
-      return [];
-    named.add(candidateBlock.start,);
-    return [
-      `This slice is LINE-STRUCTURED and the ORIGINAL gives the line \`${english}\` twice, `
-        + `once in Chinese and once in English directly beside it; that pair is ONE line whose English is `
-        + `already its rendering, and the EXISTING TRANSLATION carries the block holding it as `
-        + `${String(pageBlock.count,)} ${
-          wordForCount({
-            count: pageBlock.count,
-            one: 'line',
-            many: 'lines',
-          },)
-        }. Yours carries ${String(candidateBlock.count,)}. Drop the second `
-        + `rendering of the pair (the Chinese line, or a second English wording of it), keeping the wording `
-        + `you chose elsewhere.`,
-    ];
   },);
 }
 

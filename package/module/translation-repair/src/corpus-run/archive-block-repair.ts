@@ -314,6 +314,7 @@ export async function repairArchiveBlocks(
       // in that page at its archive offsets.
       targetText: revisedText,
       blockText,
+      blockOffset: block.startOffset,
       priorFindings: [],
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((referenceContext === undefined) ? {} : { referenceContext, }),

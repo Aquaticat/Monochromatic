@@ -1,5 +1,9 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-import type { TitleLocation, } from './title-reference-scope.ts';
+import type {
+  LocatedTitle,
+  TitleLocation,
+  TitleLocations,
+} from './title-reference-scope.ts';
 
 //region Title reference link
 // A TITLE REFERENCE THE ORIGINAL WRITES AS A LINK (`《[title](url)》`),
@@ -32,31 +36,34 @@ const LINK_TEXT_BREAKS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- The link the original wraps a title in: its destination, and the offset of
- its `](`; none where the original links no such title or the link never
- closes.
+ A link the original wraps a title in: its destination, and the offset of
+ its `](`.
  */
-export type TitleLink = {
-  readonly kind: 'link';
+type TitleLink = {
   readonly destination: string;
   readonly middle: number;
-} | { readonly kind: 'none'; };
+};
 
 /**
- The link the original wraps a title in.
+ Every link the original wraps a title in, in the original's order; a link
+ that never closes is left out, since no destination can be read from it.
+
+ EVERY LINK, NOT THE FIRST (ledger B59, then B203, whose census found this
+ site). A slice may link one title more than once, to one destination or to
+ several, and each link is a reference the page renders.
 
  @param sourceText - original text of the slice
 
  @param title - Han title
 
- @returns Destination and middle of the title's link, or none
+ @returns Destination and middle of each link of the title, empty for none
 
  @example
  ```ts
- titleLink({ sourceText: '《[猫](https://example.test/cat)》', title: '猫', },); // destination 'https://example.test/cat', middle 3
+ titleLinks({ sourceText: '《[猫](https://example.test/cat)》', title: '猫', },); // one link, destination 'https://example.test/cat', middle 3
  ```
  */
-export function titleLink(
+function titleLinks(
   {
     sourceText,
     title,
@@ -64,38 +71,45 @@ export function titleLink(
     readonly sourceText: string;
     readonly title: string;
   },
-): TitleLink {
+): readonly TitleLink[] {
   /**
    Link text opening the original writes.
    */
   const opening = `${LINK_OPEN}${title}${LINK_MIDDLE}`;
   /**
-   Offset of the link text opening, -1 for none.
+   Links found so far.
    */
-  const open = sourceText.indexOf(opening,);
-  if (open === (-1))
-    return { kind: 'none', };
-  /**
-   Offset of the destination's first character.
-   */
-  const from = open + opening.length;
-  /**
-   Offset of the destination's close, -1 for none.
-   */
-  const close = sourceText.indexOf(
-    LINK_CLOSE,
-    from,
-  );
-  if (close === (-1))
-    return { kind: 'none', };
-  return {
-    kind: 'link',
-    destination: sourceText.slice(
+  const links: TitleLink[] = [];
+  for (
+    let open = sourceText.indexOf(opening,);
+    open !== (-1);
+    open = sourceText.indexOf(
+      opening,
+      open + opening.length,
+    )
+  ) {
+    /**
+     Offset of the destination's first character.
+     */
+    const from = open + opening.length;
+    /**
+     Offset of the destination's close, -1 for none.
+     */
+    const close = sourceText.indexOf(
+      LINK_CLOSE,
       from,
-      close,
-    ),
-    middle: from - LINK_MIDDLE.length,
-  };
+    );
+    if (close === (-1))
+      continue;
+    links.push({
+      destination: sourceText.slice(
+        from,
+        close,
+      ),
+      middle: from - LINK_MIDDLE.length,
+    },);
+  }
+  return links;
 }
 
 /**
@@ -212,7 +226,7 @@ function linkTextBefore(
  locateLink({ sourceText: '《[猫](u)》', pageText: 'From [The Cat](u)', link, },); // link 6 to 13
  ```
  */
-export function locateLink(
+function locateLink(
   {
     sourceText,
     pageText,
@@ -220,7 +234,7 @@ export function locateLink(
   }: {
     readonly sourceText: string;
     readonly pageText: string;
-    readonly link: Extract<TitleLink, { readonly kind: 'link'; }>;
+    readonly link: TitleLink;
   },
 ): TitleLocation {
   /**
@@ -248,6 +262,77 @@ export function locateLink(
     pageText,
     middle: nonNullishOrThrow(pageMiddles[sourceMiddles.indexOf(link.middle,)],),
   },);
+}
+
+/**
+ Where the page renders every link the original wraps a title in, in page
+ order.
+
+ EVERY LINK OF THE TITLE LOCATED, OR THE SLICE AMBIGUOUS. Each link is
+ located by the rule of `locateLink`. A link the page does not link at all is
+ left as the page has it, since the page dropped it; where any link is
+ ambiguous the slice is, since a rendering rewritten while another link of
+ the same title is unreadable would leave the page saying the title two ways.
+
+ @param sourceText - original text of the slice
+
+ @param pageText - page text of the slice
+
+ @param title - Han title
+
+ @returns Located link texts, ambiguous, or none where the original links
+ the title nowhere or the page links none of its destinations
+
+ @example
+ ```ts
+ locateLinks({ sourceText: '《[猫](u)》', pageText: 'From [The Cat](u)', title: '猫', },); // one link, 6 to 13
+ ```
+ */
+export function locateLinks(
+  {
+    sourceText,
+    pageText,
+    title,
+  }: {
+    readonly sourceText: string;
+    readonly pageText: string;
+    readonly title: string;
+  },
+): TitleLocations {
+  /**
+   Link texts located so far.
+   */
+  const renderings: LocatedTitle[] = [];
+  for (
+    const link of titleLinks({
+      sourceText,
+      title,
+    },)
+  ) {
+    /**
+     Where the page renders this link.
+     */
+    const located = locateLink({
+      sourceText,
+      pageText,
+      link,
+    },);
+    if (located.kind === 'ambiguous')
+      return located;
+    if (located.kind !== 'none')
+      renderings.push(located,);
+  }
+  if (renderings.length === 0)
+    return { kind: 'none', };
+  return {
+    kind: 'located',
+    renderings: renderings.toSorted(function byStart(
+      left,
+      right,
+    ): number {
+      return left.start - right.start;
+    },),
+  };
 }
 
 //endregion Title reference link

@@ -1,7 +1,4 @@
-import {
-  locateLink,
-  titleLink,
-} from './title-reference-link.ts';
+import { locateLinks, } from './title-reference-link.ts';
 import { locateMarked, } from './title-reference-marks.ts';
 import {
   type LocatedTitle,
@@ -22,8 +19,8 @@ export type {
 // title brackets (`《title》`) or in corner brackets (`「title」篇`); the
 // bench renders it as a link with the same destination, as the English
 // with the Han in parentheses after it, in title brackets, or in quotes.
-// Each shape is found by index scan. The link is the page's link at the
-// title link's place among the links to its destination
+// Each shape is found by index scan. Each link of the title is the page's
+// link at that link's place among the links to its destination
 // (title-reference-link.ts); every gloss names the title, so each is read
 // (ledger B59); and a slice that offers two bracketed or quoted spans, or
 // links the destination a different number of times than the original, is
@@ -342,30 +339,15 @@ export function locateTitleRendering(
   },
 ): TitleLocations {
   /**
-   The original's link around the title, if it links it.
+   Link texts, where the page links the destinations the original does.
    */
-  const link = titleLink({
+  const linked = locateLinks({
     sourceText,
+    pageText,
     title,
   },);
-  /**
-   Link text, where the page links the same destination.
-   */
-  const linked = (link.kind === 'none')
-    ? { kind: 'none', } as const
-    : locateLink({
-      sourceText,
-      pageText,
-      link,
-    },);
-  if (linked.kind === 'ambiguous')
+  if (linked.kind !== 'none')
     return linked;
-  if (linked.kind !== 'none') {
-    return {
-      kind: 'located',
-      renderings: [linked,],
-    };
-  }
   /**
    English runs before the Han gloss, where the page glosses.
    */
