@@ -222,7 +222,8 @@ This gate also covers commits `66a3e9b9c`,
 `52cc1494b`
 and `5e5972f64`,
 which had been checked on the host only.
-Its image is the one the second mutation campaign runs against.
+Its image is the one the second and third mutation campaigns and the rerun ran against.
+`mise run //package/git-policy/cli:native:clippy:windows` also passes on this tree.
 
 ### Tests run on the host
 
@@ -1304,6 +1305,8 @@ so running fewer parts side by side would not avoid it.
 
 All five files are in the second campaign,
 which is the test of this reading.
+It confirms it;
+see "Second campaign over every file".
 
 ### Second campaign over every file
 
@@ -1432,25 +1435,72 @@ The six mutants that had timed out were each caught,
 after 3 to 15 seconds of test time.
 The slowest caught mutant of the rerun took 26 seconds.
 
-### Result on the final tree
+### Third campaign over every file
 
-Every one of the 1208 mutants of the final tree is caught or does not compile
-in a run against the one gate image:
+After the rerun the load average of the host had fallen below 15,
+and the campaign over every file was run once more:
+the same 1208 mutants,
+the same four parts,
+the same gate image.
+
+- Part 0
+  (evidence `native-mutation-WPafzn`):
+  272 caught,
+  30 unviable.
+- Part 1
+  (evidence `native-mutation-mKw99E`):
+  277 caught,
+  25 unviable.
+- Part 2
+  (evidence `native-mutation-js1Bh1`):
+  261 caught,
+  41 unviable.
+- Part 3
+  (evidence `native-mutation-uU7heb`):
+  264 caught,
+  38 unviable.
+
+Together:
 1074 caught,
 134 unviable,
-0 missed.
-1068 of the caught ones are from the campaign over every file
-and 6 from the rerun.
-No mutant was excluded beyond the two kinds the human approved,
-and no test bound was changed.
+0 missed
+and 0 timeouts.
+Every part exited 0,
+noticed its five planted controls,
+and names image `e56fa45aa948` as its base.
+The second reading set no caught mutant aside.
+The unmutated test time was 5 seconds in every part,
+and the slowest caught mutant took 14 seconds,
+against the limit of 90.
+The six mutants that timed out in the second campaign were each caught,
+after 4 to 14 seconds.
 
-Stated plainly:
-the campaign over every file did not end with 0 timeouts.
-It ended with 6,
-on a host that other sessions kept stalling,
-and the claim of 0 timeouts holds only for the rerun of the affected files.
-A campaign over every file that ends clean in one run needs a quieter host;
-it was not obtained.
+### Result on the final tree
+
+The third campaign is the result:
+on the tree of commit `348d94cbe`,
+with the two approved exclusions,
+1208 mutants,
+1074 caught,
+134 unviable,
+0 missed
+and 0 timeouts,
+in one run over every file of `src/native/`.
+
+The mutants it ran are exactly the 1208 that the listing task prints.
+The second campaign and the rerun agree with it mutant for mutant:
+comparing the two reports by mutant name gives the same outcome for 1202,
+and the 6 that the second campaign lost to the stalled host,
+and the rerun caught,
+are caught.
+No mutant was excluded beyond the two kinds the human approved,
+no test bound was changed,
+and the runner's limit of 90 seconds was left as it is.
+
+Three campaigns over every file ran in this delegation.
+The two that ran while other sessions loaded the host each lost mutants to a stall,
+at the same seconds in every part;
+the one on the quieter host lost none.
 
 ## Fuzzing
 
@@ -1730,6 +1780,4 @@ each has a sibling `*_tests.rs`.
   and no shipped policy ported so far has machinery of its own that can fail.
 - The 263 `require-rustdoc` findings of the repository's Rust linter,
   if the wrapper is to pass that linter.
-- A mutation campaign over every file that ends with 0 timeouts in one run.
-  See "Result on the final tree".
 - A decision on each item under "Choices open to veto" and "Forwarded with a known omission".
