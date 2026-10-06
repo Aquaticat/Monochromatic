@@ -1,7 +1,7 @@
 //! Turn notify events into pending invalidations; this runs on notify's own event-loop thread.
 
-/// Shared invalidation state and its poison-tolerant lock.
-use super::shared::{Shared, SourceChange, lock};
+/// Shared invalidation state, the changes sent to the language servers, and the poison-tolerant lock.
+use super::shared::{ServerChange, ServerChangeKind, Shared, SourceChange, lock};
 /// What: notify's event types: `Event` holds a kind plus affected paths; the `*Kind` enums classify it.
 /// Why: Classification decides whether a directory listing, the displayed file, or nothing is stale.
 ///
@@ -11,7 +11,7 @@ use super::shared::{Shared, SourceChange, lock};
 /// ```
 use notify::{
     Event, EventKind,
-    event::{AccessKind, AccessMode, ModifyKind},
+    event::{AccessKind, AccessMode, CreateKind, ModifyKind, RenameMode},
 };
 /// What: `Mutex` guards the shared state; `SyncSender` is the sending half of a bounded channel.
 /// Why: The handler must never block notify's thread; it only locks briefly and sends a non-blocking wake.
@@ -20,7 +20,10 @@ use notify::{
 /// ```ts
 /// import { Mutex, BoundedSender } from 'threads';
 /// ```
-use std::sync::{Mutex, mpsc::SyncSender, mpsc::TrySendError};
+use std::{
+    path::Path,
+    sync::{Mutex, mpsc::SyncSender, mpsc::TrySendError},
+};
 
 /// What one event means for the window.
 ///
@@ -75,6 +78,105 @@ fn classify(kind: &EventKind) -> Reaction {
             return Reaction::Entries(SourceChange::Settled);
         }
     }
+}
+
+/// What an event means for the language servers, or `None` for events they never hear about.
+fn server_kind(kind: &EventKind) -> Option<ServerChangeKind> {
+    // What: `match` on nested event kinds; `RenameMode::From` and `RenameMode::To` are the two halves of a move.
+    // Why: The protocol knows only created, changed, and deleted; a move is a deletion plus a creation.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // switch (kind.type) { case 'create': return 'created'; case 'remove': return 'deleted'; ... }
+    // ```
+    match kind {
+        EventKind::Access(AccessKind::Close(AccessMode::Write)) => {
+            return Some(ServerChangeKind::Changed);
+        }
+        EventKind::Access(_) => {
+            return None;
+        }
+        EventKind::Create(_) | EventKind::Modify(ModifyKind::Name(RenameMode::To)) => {
+            return Some(ServerChangeKind::Created);
+        }
+        EventKind::Modify(ModifyKind::Name(RenameMode::From)) | EventKind::Remove(_) => {
+            return Some(ServerChangeKind::Deleted);
+        }
+        // notify also reports each half of a rename on its own, so this event would repeat them.
+        EventKind::Modify(ModifyKind::Name(RenameMode::Both)) => {
+            return None;
+        }
+        _ => {
+            return Some(ServerChangeKind::Changed);
+        }
+    }
+}
+
+/// True for an event that may have made a new folder appear: a folder creation, a creation of unknown
+/// kind, or a move into place, which inotify does not mark as a file or a folder.
+fn may_add_folder(kind: &EventKind) -> bool {
+    return matches!(
+        kind,
+        EventKind::Create(CreateKind::Folder | CreateKind::Any | CreateKind::Other)
+            | EventKind::Modify(ModifyKind::Name(RenameMode::To | RenameMode::Any))
+    );
+}
+
+/// Forward one event's path to the language servers when it lies in a folder watched for them, and note
+/// what it does to the folder structure; true when the watch thread must look at that structure.
+fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool {
+    // What: `let Some(feed) = ... else` binds the queue into the language worker, or returns when there is none.
+    // Why: Nothing is watched or sent for the servers while none registered file watchers.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const feed = shared.server.feed; if (feed === undefined) return false;
+    // ```
+    let Some(feed) = guard.server.feed.as_ref() else {
+        return false;
+    };
+    let parent = path.parent();
+    let watched = &guard.server.watched;
+    let inside =
+        watched.contains(path) || parent.is_some_and(|folder| return watched.contains(folder));
+    if !inside {
+        return false;
+    }
+    let Some(change) = server_kind(kind) else {
+        return false;
+    };
+    let message = ServerChange {
+        path: path.to_path_buf(),
+        kind: change,
+    };
+    // What: `send` queues without waiting and fails only when the language worker is gone.
+    // Why: notify's thread must never block on the worker.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (!feed.offer(message)) log.debug('language worker stopped');
+    // ```
+    if let Err(error) = feed.send(message) {
+        tracing::debug!(%error, "the language worker stopped; a file change was not forwarded");
+    }
+    let mut structure = false;
+    if may_add_folder(kind) {
+        guard.server.candidates.insert(path.to_path_buf());
+        structure = true;
+    }
+    if change == ServerChangeKind::Deleted && guard.server.watched.contains(path) {
+        guard.server.gone.insert(path.to_path_buf());
+        structure = true;
+    }
+    // A change inside a folder that was empty when scanned classifies it, by scanning its parent.
+    if let Some(folder) = parent
+        && guard.server.provisional.contains(folder)
+        && let Some(base) = folder.parent()
+    {
+        guard.server.rescans.insert(base.to_path_buf());
+        structure = true;
+    }
+    return structure;
 }
 
 /// Wake the watch thread without blocking; a full channel already holds a pending wake.
@@ -139,6 +241,7 @@ pub(super) fn record(
         return;
     }
     let reaction = classify(&event.kind);
+    // A close after writing is `Content` for the window too, so only reads end here.
     if reaction == Reaction::Ignore {
         return;
     }
@@ -148,12 +251,16 @@ pub(super) fn record(
         return;
     }
     let mut guard = lock(shared);
-    let mut lost = false;
+    let mut wake_thread = false;
     for path in &event.paths {
         // Watched paths are canonical and inside the root, but a moved watch can report the old name.
         if !path.starts_with(&guard.root) {
             tracing::debug!(path = %path.display(), "ignored a change outside the project root");
             continue;
+        }
+        // The servers hear about every change in their folders, the IDE's own reads excepted.
+        if record_for_servers(&mut guard, &event.kind, path) {
+            wake_thread = true;
         }
         // What: `if let Reaction::Entries(_) = reaction` tests the variant without using its payload.
         // Why: Only entry changes alter listings or can remove a watched directory itself.
@@ -168,7 +275,7 @@ pub(super) fn record(
                 tracing::warn!(path = %path.display(), "watched directory was removed or renamed; rereading everything shown");
                 guard.stale.insert(path.clone());
                 guard.pending.everything = true;
-                lost = true;
+                wake_thread = true;
             }
             // What: `if let Some(parent) = path.parent()` extracts the parent path when one exists.
             // Why: The parent's listing gains or loses this name; only watched parents are shown.
@@ -209,7 +316,7 @@ pub(super) fn record(
         }
     }
     drop(guard);
-    if lost {
+    if wake_thread {
         wake(sender);
     }
 }

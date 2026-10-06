@@ -7,8 +7,10 @@
 
 /// The registry is assembled in code on this thread, never from project or user configuration.
 use super::config::{LanguageSetup, Languages};
+/// The file watchers servers registered, and the changes waiting for them.
+use super::watched_files::WatchedFiles;
 /// The steps a command or event is dispatched to, and the wait that ends the thread.
-use super::{attach, lifecycle, reap, request, session::Session, traffic};
+use super::{attach, forward, lifecycle, reap, request, session::Session, traffic};
 /// Latest-value results the worker publishes.
 use super::{diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot, status::LanguageStatus};
 /// Commands and one-shot replies.
@@ -18,6 +20,8 @@ use super::{
     reply::{LanguageReply, PositionRequest},
     sync::{DocumentOpen, DocumentReload},
 };
+/// The changes the change watcher forwards.
+use crate::change_watch::ServerChange;
 /// Start failures name the operation that failed.
 use anyhow::{Context, Result};
 /// What: `StreamExt` adds `.next()` to streams, which are sequences of values that arrive over
@@ -132,6 +136,8 @@ pub(super) enum Internal {
         /// The request to send again, with its attempt count already raised.
         Box<request::Ticket>,
     ),
+    /// Gathered file changes may be due for sending.
+    ForwardFiles,
 }
 
 /// The sending ends of every channel the interface thread polls.
@@ -144,6 +150,8 @@ pub(super) struct Outputs {
     pub(super) diagnostics: watch::Sender<Option<Arc<DiagnosticsSnapshot>>>,
     /// Latest hints; nothing until a server answered for the displayed text.
     pub(super) hints: watch::Sender<Option<Arc<HintsSnapshot>>>,
+    /// Whether some server registered file watchers, so the project's folders are worth watching.
+    pub(super) watching: watch::Sender<bool>,
 }
 
 /// Publishing.
@@ -179,6 +187,10 @@ pub(super) struct Worker {
     pub(super) internal: mpsc::UnboundedSender<Internal>,
     /// Requests sent to servers and not yet answered; the loop awaits them itself.
     pub(super) requests: FuturesUnordered<request::AnswerFuture>,
+    /// File watchers servers registered, and the changes waiting to be sent to them.
+    pub(super) watched: WatchedFiles<LanguageServerId>,
+    /// A send of gathered file changes is scheduled.
+    pub(super) forward_scheduled: bool,
 }
 
 /// Dispatch and publishing.
@@ -231,6 +243,14 @@ impl Worker {
             *current = hints.map(Arc::new);
             return true;
         });
+        let watching = self.watched.wanted();
+        self.outputs.watching.send_if_modified(|current| {
+            if *current == watching {
+                return false;
+            }
+            *current = watching;
+            return true;
+        });
     }
 
     /// What: Deliver `event` to the loop after `delay`. `tokio::spawn` starts an independent task
@@ -278,6 +298,7 @@ impl Worker {
             }
             // `*ticket` moves the value out of its heap box.
             Internal::Retry(ticket) => request::retry(self, *ticket),
+            Internal::ForwardFiles => forward::due(self),
         }
         self.publish();
     }
@@ -358,6 +379,7 @@ async fn run(
     mut worker: Worker,
     mut commands: mpsc::Receiver<Command>,
     mut internal: mpsc::UnboundedReceiver<Internal>,
+    mut file_changes: mpsc::UnboundedReceiver<ServerChange>,
 ) {
     loop {
         tokio::select! {
@@ -380,6 +402,19 @@ async fn run(
                 traffic::on_call(&mut worker, server, call).await;
                 worker.publish();
             }
+            Some(change) = file_changes.recv() => {
+                forward::receive(&mut worker, change);
+                // What: `try_recv` takes what is already queued without waiting; `Ok` is one more change.
+                // Why: A burst is gathered in one go instead of one loop round per change.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // for (let more = queue.poll(); more; more = queue.poll()) receive(worker, more);
+                // ```
+                while let Ok(more) = file_changes.try_recv() {
+                    forward::receive(&mut worker, more);
+                }
+            }
         }
     }
     worker.shutdown().await;
@@ -398,6 +433,7 @@ pub(super) fn spawn(
     root: PathBuf,
     setup: LanguageSetup,
     commands: mpsc::Receiver<Command>,
+    file_changes: mpsc::UnboundedReceiver<ServerChange>,
     outputs: Outputs,
 ) -> Result<JoinHandle<()>> {
     // What: A current-thread runtime drives every task on the thread that calls `block_on`;
@@ -439,8 +475,10 @@ pub(super) fn spawn(
                     outputs,
                     internal: internal_sender,
                     requests: FuturesUnordered::new(),
+                    watched: WatchedFiles::default(),
+                    forward_scheduled: false,
                 };
-                run(worker, commands, internal_receiver).await;
+                run(worker, commands, internal_receiver, file_changes).await;
             });
             // What: `drop` ends the runtime now: every task still on it is dropped, and with the
             //       tasks the last handles of server processes, which kills those processes.

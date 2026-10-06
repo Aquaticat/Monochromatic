@@ -42,6 +42,8 @@ mod watch;
 
 /// Language targets in other files open through the same latest-request-wins path as tree rows.
 pub(super) use open::request_jump;
+/// The language worker decides whether folders are watched for the servers; the watcher lives here.
+pub(super) use watch::feed_servers;
 
 /// All tree interaction stays on the native event-loop thread; its fields stay private to navigation.
 pub(super) struct Navigation {

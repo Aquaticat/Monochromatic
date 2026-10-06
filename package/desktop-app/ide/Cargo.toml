@@ -35,6 +35,9 @@ helix-loader = { git = "https://github.com/helix-editor/helix", rev = "ba40e5474
 # Both already resolve through helix-lsp; these lines add direct edges only.
 arc-swap = "1"
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
+# Protocol file-watcher globs (`src/language/watched_files.rs`): helix-lsp already resolves globset 0.4,
+# so this line adds a direct edge only; helix-lsp's own handler drops relative patterns and kinds.
+globset = "0.4"
 # OS file-change notifications for shown directories and the displayed file (user-approved 2026-10-05).
 # The code names `INotifyWatcher` directly; `default-features = false` drops the macOS FSEvents
 # backend, and no polling backend is used, so a non-Linux build fails instead of silently polling.

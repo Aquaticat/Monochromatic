@@ -1,5 +1,7 @@
 //! State shared by the UI handle, the watch thread, and notify's event-handler thread.
 
+/// A finished scan of folders for the language servers.
+use super::server_scan::Scan;
 /// What: `BTreeSet` is an ordered set of owned paths; `PathBuf` owns a path, `Path` borrows one.
 /// Why: Pending invalidations collapse repeated events for one directory into a single entry.
 ///
@@ -12,6 +14,69 @@ use std::{
     path::PathBuf,
     sync::{Mutex, MutexGuard},
 };
+/// What: `UnboundedSender` is the sending end of tokio's queue without a size limit; sending never waits.
+/// Why: Changes go from notify's thread to the language worker's async loop, and neither may block.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const feed = new Queue<ServerChange>();
+/// ```
+use tokio::sync::mpsc::UnboundedSender;
+
+/// What happened to a path inside a folder watched for the language servers.
+///
+/// What: an `enum` with three payload-free variants, like a TS string-literal union.
+/// Why: The protocol tells servers whether a file was created, changed, or deleted.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ServerChangeKind = 'created' | 'changed' | 'deleted';
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ServerChangeKind {
+    /// The path appeared: created, or moved or renamed into place.
+    Created,
+    /// The path's content or attributes changed.
+    Changed,
+    /// The path disappeared: deleted, or moved or renamed away.
+    Deleted,
+}
+
+/// One change for the language servers: an absolute path inside the project and what happened to it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ServerChange {
+    /// The changed file or folder.
+    pub path: PathBuf,
+    /// What happened to it.
+    pub kind: ServerChangeKind,
+}
+
+/// The language servers' part of the shared state: where changes go and which folders are watched for them.
+#[derive(Debug, Default)]
+pub(super) struct ServerShared {
+    /// What: `Option<UnboundedSender<ServerChange>>` is the queue into the language worker, or `None`.
+    /// Why: Folders are watched for the servers only while some server registered file watchers.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// feed?: Queue<ServerChange>;
+    /// ```
+    pub(super) feed: Option<UnboundedSender<ServerChange>>,
+    /// The feed was set or cleared since the watch thread last looked.
+    pub(super) feed_changed: bool,
+    /// Folders with a live watch for the servers, as last published by the watch thread.
+    pub(super) watched: BTreeSet<PathBuf>,
+    /// Watched folders that held no entries when scanned; their first change asks to classify them.
+    pub(super) provisional: BTreeSet<PathBuf>,
+    /// Paths that may be new folders inside a watched folder; the scan thread checks which are.
+    pub(super) candidates: BTreeSet<PathBuf>,
+    /// Folders whose contents must be scanned again.
+    pub(super) rescans: BTreeSet<PathBuf>,
+    /// Watched folders that were removed or moved away; their watches and everything below them go.
+    pub(super) gone: BTreeSet<PathBuf>,
+    /// Finished scans waiting for the watch thread.
+    pub(super) scanned: Vec<Scan>,
+}
 
 /// How finished an observed change to the displayed file looks.
 ///
@@ -77,6 +142,8 @@ pub(super) struct Shared {
     pub(super) watched: BTreeSet<PathBuf>,
     /// The watched set changed since the UI last took it.
     pub(super) watched_changed: bool,
+    /// Folders watched for the language servers and the changes sent to them.
+    pub(super) server: ServerShared,
 }
 
 /// Construct the empty shared state for one project root.
@@ -101,6 +168,7 @@ impl Shared {
             pending: Changes::default(),
             watched: BTreeSet::new(),
             watched_changed: false,
+            server: ServerShared::default(),
         };
     }
 }

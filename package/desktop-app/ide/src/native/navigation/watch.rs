@@ -3,8 +3,9 @@
 
 /// Navigation owns the watcher and the directory schedule; the source state owns its own schedule.
 use super::{AppWindow, Navigation, State};
-/// A full reread asks for a reread of the displayed file once it has been quiet.
-use ide_app::change_watch::SourceChange;
+/// A full reread asks for a reread of the displayed file once it has been quiet; the servers' changes go to
+/// the language worker.
+use ide_app::change_watch::{ServerChange, SourceChange};
 /// What: `Rc<RefCell<State>>` is the UI-thread shared source state; `BTreeSet` is an ordered set.
 /// Why: The watcher compares whole sets, so an unchanged tree sends nothing to the watch thread.
 ///
@@ -19,6 +20,29 @@ use std::{
     rc::Rc,
     time::{Duration, Instant},
 };
+/// What: `UnboundedSender` is the sending end of the language worker's queue without a size limit.
+/// Why: The change watcher sends from notify's thread and never waits.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Feed = Queue<ServerChange>;
+/// ```
+use tokio::sync::mpsc::UnboundedSender;
+
+/// What: Watch the project's source folders for the language servers and send their changes to `feed`, or,
+///       with `None`, release those watches. `UnboundedSender<ServerChange>` is the language worker's queue.
+/// Why: The language worker says whether some server registered file watchers; the watcher lives here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function feedServers(navigation: Navigation, feed: Queue<ServerChange> | undefined): void
+/// ```
+pub(in crate::native) fn feed_servers(
+    navigation: &mut Navigation,
+    feed: Option<UnboundedSender<ServerChange>>,
+) {
+    navigation.watcher.feed_servers(feed);
+}
 
 /// Shortest time between two watch retries asked for by scrolling.
 const SCROLL_RETRY_GAP: Duration = Duration::from_secs(1);

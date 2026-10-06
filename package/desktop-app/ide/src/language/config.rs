@@ -34,6 +34,8 @@ use std::{
     sync::Arc,
 };
 
+/// rust-analyzer hears about file changes from the IDE instead of watching the project itself.
+mod rust_analyzer;
 /// The TypeScript family is served by the project's own TypeScript 7 server.
 mod typescript;
 
@@ -216,6 +218,7 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
         .try_into()
         .context("Cannot decode the language definitions")?;
     typescript::apply(&mut configuration, root);
+    rust_analyzer::watch_through_client(&mut configuration);
     // What: Helix's spelling of the root, when it differs from the canonical one; `ok()` drops
     //       the refusal, which the start reports on its own.
     // Why: Helix gives servers this spelling, so a confined server must find the project there.

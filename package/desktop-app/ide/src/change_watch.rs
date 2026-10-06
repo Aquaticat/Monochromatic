@@ -7,6 +7,10 @@ mod limit;
 mod reconcile;
 /// Turn notify events into pending invalidations on notify's thread.
 mod record;
+/// Find the folders watched for the language servers, with the search's ignore rules.
+mod server_scan;
+/// Watch those folders after the tree and the displayed file, sharing the one inotify instance.
+mod server_watch;
 /// State shared by the UI handle, the watch thread, and the event handler.
 mod shared;
 /// Add and remove one watch, and describe a failure.
@@ -14,17 +18,16 @@ mod watch_ops;
 /// The thread that owns the inotify watcher.
 mod watch_thread;
 
-/// The watch-limit backoff and its intervals, public so the schedule is tested with chosen times.
-pub use limit::{FIRST_LIMIT_RETRY, LONGEST_LIMIT_RETRY, LimitBackoff};
-/// Invalidation kinds returned by `ChangeWatcher::take`.
-pub use shared::{Changes, SourceChange};
-
 /// Directory watches are checked against the same canonical root as every project read.
 use crate::workspace::Workspace;
 /// Thread startup failures stay actionable.
 use anyhow::{Context, Result};
+/// The watch-limit backoff and its intervals, public so the schedule is tested with chosen times.
+pub use limit::{FIRST_LIMIT_RETRY, LONGEST_LIMIT_RETRY, LimitBackoff};
 /// The non-blocking wake shared with notify's event handler.
 use record::wake;
+/// Invalidation kinds returned by `ChangeWatcher::take`, and the changes sent to the language servers.
+pub use shared::{Changes, ServerChange, ServerChangeKind, SourceChange};
 /// Private shared state and its poison-tolerant lock.
 use shared::{Shared, lock};
 /// What: `Arc<Mutex<Shared>>` is a thread-safe shared owner of locked state (`Rc<RefCell<..>>` is the
@@ -44,6 +47,14 @@ use std::{
     },
     thread::{self, JoinHandle},
 };
+/// What: `UnboundedSender` is the sending end of tokio's queue without a size limit.
+/// Why: The language worker receives the servers' changes on its async loop.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Feed = Queue<ServerChange>;
+/// ```
+use tokio::sync::mpsc::UnboundedSender;
 
 /// UI-owned handle: say what is shown, then poll invalidations without blocking.
 pub struct ChangeWatcher {
@@ -59,6 +70,8 @@ pub struct ChangeWatcher {
     sent: Option<(BTreeSet<PathBuf>, Option<PathBuf>)>,
     /// The watch thread ended unexpectedly; reported once, then everything stays on timers.
     stopped: bool,
+    /// The servers' feed was last set (true) or cleared (false), so unchanged requests are not resent.
+    feeding: bool,
 }
 
 /// Test seam: while held, notify's event handler cannot record, so the kernel queue fills up.
@@ -96,6 +109,7 @@ impl ChangeWatcher {
             thread: Some(thread),
             sent: None,
             stopped: false,
+            feeding: false,
         });
     }
 
@@ -153,6 +167,32 @@ impl ChangeWatcher {
         }
         lock(&self.shared).user_retry = true;
         wake(&self.wake);
+    }
+
+    /// What: Watch the project's source folders for the language servers and send their changes to `feed`,
+    ///       or, with `None`, release those watches. Unchanged requests are free.
+    /// Why: Folders are watched for the servers only while some server registered file watchers.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// feedServers(feed: Queue<ServerChange> | undefined): void
+    /// ```
+    pub fn feed_servers(&mut self, feed: Option<UnboundedSender<ServerChange>>) {
+        let feeding = feed.is_some();
+        if feeding == self.feeding || self.stopped {
+            return;
+        }
+        self.feeding = feeding;
+        let mut guard = lock(&self.shared);
+        guard.server.feed = feed;
+        guard.server.feed_changed = true;
+        drop(guard);
+        wake(&self.wake);
+    }
+
+    /// How many folders hold a watch for the language servers, for tests and measurements.
+    pub fn server_folders(&self) -> usize {
+        return lock(&self.shared).server.watched.len();
     }
 
     /// Take everything recorded since the last call; never blocks on the filesystem.

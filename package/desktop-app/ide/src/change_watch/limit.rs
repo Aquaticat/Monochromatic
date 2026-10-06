@@ -56,6 +56,12 @@ impl LimitBackoff {
         self.next_retry = now + self.wait;
     }
 
+    /// How long until a retry is allowed; zero once it is.
+    pub fn until_retry(&self, now: Instant) -> Duration {
+        // `saturating_duration_since` gives zero instead of failing when `now` is already past.
+        return self.next_retry.saturating_duration_since(now);
+    }
+
     /// The wait before the next sweep retry, for the log line.
     pub fn wait(&self) -> Duration {
         return self.wait;

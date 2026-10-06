@@ -1,7 +1,5 @@
 //! Document synchronization: `didOpen`, `didChange` with its fallbacks, `didSave`, and `didClose`.
 
-/// Starting and attaching servers is its own step.
-use super::attach;
 /// A reload renews what each server may be asked again for.
 use super::owed::Owed;
 /// Requests that follow every open and change.
@@ -16,6 +14,10 @@ use super::status::{DocumentState, ServerState};
 use super::sync::{DocumentOpen, DocumentReload};
 /// The worker whose state these steps change.
 use super::worker::{Internal, Worker};
+/// Starting and attaching servers is its own step; reloads also reach servers that watch the file.
+use super::{attach, forward};
+/// A reload is a change of the displayed file.
+use crate::change_watch::{ServerChange, ServerChangeKind};
 /// What: `compare_ropes` computes the edit list between two texts.
 /// Why: It is the fallback when a reload does not continue from the text servers were told about.
 ///
@@ -267,8 +269,15 @@ pub(super) fn reload(worker: &mut Worker, mut reload: DocumentReload) {
     worker.timer(HOLD_FALLBACK, Internal::HoldExpired(serial));
     worker.session.hints.clear();
     worker.session.pending.clear();
-    // helix-lsp matches the path against the globs servers registered and notifies them itself.
-    worker.registry.file_event_handler.file_changed(path);
+    // Servers that registered a watcher for the displayed file hear about the reload too, even when its
+    // folder is not watched for them.
+    forward::receive(
+        worker,
+        ServerChange {
+            path,
+            kind: ServerChangeKind::Changed,
+        },
+    );
     for index in synchronized {
         request::pull_diagnostics(worker, index, 0);
         request::hints(worker, index, 0);
