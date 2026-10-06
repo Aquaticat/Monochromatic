@@ -78,6 +78,9 @@ The app has a duration only for the playing track today and draws no supporting 
 app cannot fill for every row.</p>
 <p>The buttons emit debug events only. No template is stored and no row of the player changes.
 No production implementation is authorized.</p>
+<p>What to look at: the editor's states, then the three options under the question, most of all at 200% text, where
+they differ. How to respond: choose one option, write anything else in the last field, press
+<strong>Prepare reply</strong> and paste the prepared text into the chat. This page sends and saves nothing.</p>
 </header>
 <section aria-labelledby="environment-title">
 <h2 id="environment-title">Inspect the same native conditions</h2>
@@ -190,7 +193,8 @@ while the result stays in view.</p>
 <details><summary>Read what was and was not checked</summary>
 <p>The host is a debug activity, not the player. The merged debug manifest disables the production launcher, playback
 and sweep services. Each view was captured with a fresh hierarchy, exactly one creation of the host since its launch,
-and the keyboard open only for the three states that hold focus.</p>
+and the keyboard open only for the scenes whose state holds focus. The emulator ended in a segmentation fault during
+two of the capturing visits; views finished before a crash were kept, and each view's record names its visit.</p>
 <p>Whether a text is in view is read from its rectangle in the hierarchy, the page's scrolling window and the keyboard's
 own frame; hierarchy rectangles are not ink bounds. A text whose rectangle touches an edge of the window is reported as
 at the edge, because the hierarchy cannot tell cut from flush. Where the page rests with the keyboard open is the
