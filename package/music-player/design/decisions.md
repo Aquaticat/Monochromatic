@@ -2854,7 +2854,11 @@ and to drop the state with no source opened.
 Under D95 the system library is open even when its tracks cannot be read,
 so the kept state shows that library as open but unreadable,
 offering to grant access or to open a folder.
-The first-run study (`evidence/first-run-access-boundaries.md`) is to be rebuilt for this.
+D10's empty state,
+which D27 had narrowed to no system library or a declined one,
+now applies only to this declined state.
+The first-run study (`evidence/first-run-access-boundaries.md`) is to be rebuilt for this;
+the agent's version of its copy is proposed in `doc/planning/music-player-first-run-access.md`.
 
 No production implementation is authorized by this record.
 
