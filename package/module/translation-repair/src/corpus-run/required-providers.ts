@@ -1,4 +1,3 @@
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -8,6 +7,7 @@ import {
   syntheticIsDry,
 } from '../budget-routing.ts';
 import { createBedrockClient, } from '../bedrock-client.ts';
+import { exchangeFailureText, } from '../exchange-failure-text.ts';
 import { bedrockLedgerFromEnv, } from '../bedrock-ledger.ts';
 import { createHyperClient, } from '../hyper-client.ts';
 import { createOpenRouterClient, } from '../openrouter-client.ts';
@@ -162,7 +162,7 @@ async function gateProvider(
        Logger tagged with the gate's name.
        */
       const rl = tagged({ tag: gateProvider.name, },);
-      rl.warn(`${provider} meter could not be read: ${caughtValueText(error,)}`,);
+      rl.warn(`${provider} meter could not be read: ${exchangeFailureText({ error, },)}`,);
       return 'unreadable';
     }
   })();

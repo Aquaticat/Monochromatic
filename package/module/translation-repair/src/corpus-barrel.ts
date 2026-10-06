@@ -293,6 +293,7 @@ export {
   type PickOutcome,
   runPick,
 } from './corpus-run/window-trial-pick.ts';
+export { TrialSliceRefusalError, } from './corpus-run/window-trial-refusal.ts';
 export { runSliceArms, } from './corpus-run/window-trial-slice.ts';
 export {
   assertWindowReachedJudges,

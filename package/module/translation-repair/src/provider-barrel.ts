@@ -15,6 +15,7 @@ export {
   errorName,
   failureName,
 } from './error-name.ts';
+export { exchangeFailureText, } from './exchange-failure-text.ts';
 export {
   isMissingPathError,
   rethrowUnlessMissingPath,

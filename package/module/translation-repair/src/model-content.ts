@@ -1,5 +1,6 @@
 import type { ExtractedCompletion, } from './completion-shape.ts';
 import { wordForCount, } from './count-word.ts';
+import { refusalText, } from './refusal-text.ts';
 
 //region Model content handling
 // Deterministic handling of what models write: fence unwrapping, thinking-block
@@ -116,7 +117,7 @@ export function stripThinkBlock({ text, }: { readonly text: string; },): {
 
  @param text - fence-stripped model content
 
- @returns Parsed value, or failure detail
+ @returns Parsed value, or a detail naming the refusal's class and quoting none of the text
 
  @example
  ```ts
@@ -140,9 +141,12 @@ export function parseModelJson({ text, }: { readonly text: string; },):
     };
   }
   catch (error) {
+    // THE CLASS, NOT THE MESSAGE: V8 quotes the opening of the text it refused,
+    // and this text is a model's reply or a provider's body, which a detail
+    // that reaches a log line or a stored finding would copy there.
     return {
       parsed: false,
-      detail: String(error,),
+      detail: refusalText({ error, },),
     };
   }
 }

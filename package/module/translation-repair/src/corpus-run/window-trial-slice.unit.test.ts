@@ -34,6 +34,7 @@ import {
   type SyntheticClient,
   type RosterModelId,
   TRIAL_ARMS,
+  TrialSliceRefusalError,
   trialKey,
 } from '../../dist/final/node/index.mjs';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
@@ -519,8 +520,17 @@ await describe({
           perCallTimeoutMs: 5_000,
           l,
         },);
-        await expect(attempt,).rejects
-          .toBeInstanceOf(RangeError,);
+        /**
+         What the attempt refused with.
+         */
+        const refusal = await rejectionOf(async function refused(): Promise<unknown> {
+          return await attempt;
+        },);
+        expect(refusal,).toBeInstanceOf(TrialSliceRefusalError,);
+        expect(String(refusal,),).toBe(
+          'TrialSliceRefusalError: Mittens/0 has no neighbouring section carrying text, so its wide arm would be '
+            + 'its narrow arm and the pair would report a false null',
+        );
         // And it refused before buying anything.
         expect(rig.served
           .count,).toBe(0,);
@@ -551,9 +561,9 @@ await describe({
             l,
           },);
         },);
-        expect(refusal,).toBeInstanceOf(RangeError,);
+        expect(refusal,).toBeInstanceOf(TrialSliceRefusalError,);
         expect(String(refusal,),).toBe(
-          'RangeError: Mittens has no slice 99; the draw and the preparation disagree, which means they were '
+          'TrialSliceRefusalError: Mittens has no slice 99; the draw and the preparation disagree, which means they were '
             + 'made from different text',
         );
       },

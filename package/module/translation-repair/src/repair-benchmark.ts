@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { exchangeFailureText, } from './exchange-failure-text.ts';
 import { contextRoot, } from './log-context.ts';
 import { monotonicMs, } from './monotonic-clock.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -370,10 +371,10 @@ export async function runRepairBenchmark(
       // symptom, and a caller tells an abort from a fault by identity alone
       // (as `repair-slice-buy.ts` and `translate-slice-attempt.ts` do).
       if (signal.aborted) {
-        rl.warn(`${entry.entryId}: abandoned by the caller's abort (${String(error,)})`,);
+        rl.warn(`${entry.entryId}: abandoned by the caller's abort (${exchangeFailureText({ error, },)})`,);
         throw signal.reason;
       }
-      rl.warn(`${entry.entryId}: repair threw ${String(error,)}`,);
+      rl.warn(`${entry.entryId}: repair threw ${exchangeFailureText({ error, },)}`,);
       records.push({
         entryId: entry.entryId,
         outcomeKind: 'error',
@@ -383,7 +384,7 @@ export async function runRepairBenchmark(
         seedDetection: {},
         issueCount: 0,
         resolvedIssueCount: 0,
-        detail: String(error,),
+        detail: exchangeFailureText({ error, },),
       },);
     }
   }

@@ -5,6 +5,7 @@ import {
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { wordForCount, } from './count-word.ts';
+import { exchangeFailureText, } from './exchange-failure-text.ts';
 import {
   askDeterministicReader,
   type OcrReading,
@@ -474,7 +475,7 @@ export async function readImagePair(
       );
     rl.warn(
       `${assetName}: ${modelId} failed outright, so it contributes no reading (${
-        String(result.reason,)
+        exchangeFailureText({ error: result.reason, },)
       })`,
     );
     return {

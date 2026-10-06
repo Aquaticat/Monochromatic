@@ -9,6 +9,7 @@ import type {
   ChatTextRequest,
 } from './chat-contract.ts';
 import { readJsonOutcome, } from './chat-json-outcome.ts';
+import { exchangeFailureText, } from './exchange-failure-text.ts';
 import { contextRoot, } from './log-context.ts';
 
 //region Nudged re-ask elsewhere
@@ -161,7 +162,7 @@ export async function reaskElsewhereNudged<ValueT,>(
     // second chance: no other provider could take it, one refused it on
     // budget, or its exchange failed. Its prompt was released by the caller's
     // claims, so a later ask of the same question may still buy it.
-    rl.warn(`${request.modelId}: no re-ask elsewhere (${String(error,)}); keeping the first answer`,);
+    rl.warn(`${request.modelId}: no re-ask elsewhere (${exchangeFailureText({ error, },)}); keeping the first answer`,);
     return first.outcome;
   }
 }

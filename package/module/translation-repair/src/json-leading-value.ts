@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from './log-context.ts';
+import { parseModelJson, } from './model-content.ts';
 
 //region Json leading value
 // LEDGER P8 (the whole-package audit, 2026-09-27): a complete JSON value
@@ -224,26 +225,27 @@ export function readJsonBeforeTrailingText({ text, }: { readonly text: string; }
     rl.debug('answer opens with no container that closes, so there is no leading value to read',);
     return { parsed: false, };
   }
-  try {
-    /**
-     Value the opening container parses to, when it does.
-     */
-    const value: unknown = JSON.parse(characters
+  /**
+   Parse of the opening container, whose refusal is data that names its class
+   and quotes none of the text V8 refused.
+   */
+  const attempt = parseModelJson({
+    text: characters
       .slice(
         0,
         end,
       )
-      .join('',),);
-    return {
-      parsed: true,
-      value,
-      trailing: characters.length - end,
-    };
-  }
-  catch (error) {
-    rl.debug(`the opening container is not JSON: ${String(error,)}`,);
+      .join('',),
+  },);
+  if (!attempt.parsed) {
+    rl.debug(`the opening container is not JSON: ${attempt.detail}`,);
     return { parsed: false, };
   }
+  return {
+    parsed: true,
+    value: attempt.value,
+    trailing: characters.length - end,
+  };
 }
 
 //endregion Json leading value

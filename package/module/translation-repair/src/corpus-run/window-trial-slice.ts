@@ -17,6 +17,7 @@ import {
   armOrderFor,
   TRIAL_ARM_SET,
 } from './window-trial-order.ts';
+import { TrialSliceRefusalError, } from './window-trial-refusal.ts';
 import { TRIAL_ARMS, } from './window-trial-report.ts';
 import { wordForCount, } from '../count-word.ts';
 
@@ -66,6 +67,9 @@ import { wordForCount, } from '../count-word.ts';
  @param l - run logger
 
  @returns Rows this call appended, empty when the slice was already complete
+
+ @throws {@link TrialSliceRefusalError} when the slice index is not one the prepared slices carry or its
+ neighbouring original holds no text
 
  @throws Whatever the stage throws; a slice that cannot be judged is a defect
  rather than a datum, and recording it as a keep would report a failed arm as
@@ -164,10 +168,11 @@ export async function runSliceArms(
    */
   const slice = slices[sliceIndex];
   if (slice === undefined)
-    throw new RangeError(
-      `${entryId} has no slice ${String(sliceIndex,)}; the draw and the `
-        + `preparation disagree, which means they were made from different text`,
-    );
+    throw new TrialSliceRefusalError({
+      entryId,
+      sliceIndex,
+      kind: 'slice-missing',
+    },);
 
   /**
    Neighbouring original, which only the wide arm is shown.
@@ -184,11 +189,11 @@ export async function runSliceArms(
   // whitespace, and the pair would report a false null under a label saying the
   // judges had been shown the neighbouring original.
   if (neighbouringSourceText.trim() === '')
-    throw new RangeError(
-      `${entryId}/${String(sliceIndex,)} has no neighbouring section carrying `
-        + `text, so its wide arm would be its narrow arm and the pair would `
-        + `report a false null`,
-    );
+    throw new TrialSliceRefusalError({
+      entryId,
+      sliceIndex,
+      kind: 'window-empty',
+    },);
 
   /**
    Whether this bed treats its slices as governed by the verse rule.

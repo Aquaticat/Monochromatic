@@ -4,6 +4,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import { parseModelJson, } from './model-content.ts';
 
 import { ssePayloadOf, } from './sse-data-line.ts';
 
@@ -339,8 +340,8 @@ type ReadPayload = {
   readonly ok: false;
 
   /**
-   Why it could not be read, kept so the caught value is used rather than
-   discarded and so a future caller can report it.
+   Why it could not be read, kept so a future caller can report it. A parse
+   refusal is named by class and quotes none of the frame V8 refused.
    */
   readonly reason: string;
 };
@@ -367,28 +368,31 @@ type ReadPayload = {
  ```
  */
 function readPayload({ payload, }: { readonly payload: string; },): ReadPayload {
-  try {
-    /**
-     Whatever the payload parsed to, before any shape is assumed.
-     */
-    const frame: unknown = JSON.parse(payload,);
-    if (!isJsonRecord(frame,)) {
-      return {
-        ok: false,
-        reason: 'parsed to something other than a JSON object',
-      };
-    }
-    return {
-      ok: true,
-      frame,
-    };
-  }
-  catch (error) {
+  /**
+   Parse of the payload, whose refusal is data that names its class and
+   quotes none of the frame V8 refused.
+   */
+  const attempt = parseModelJson({ text: payload, },);
+  if (!attempt.parsed) {
     return {
       ok: false,
-      reason: String(error,),
+      reason: attempt.detail,
     };
   }
+  /**
+   Whatever the payload parsed to, before any shape is assumed.
+   */
+  const frame: unknown = attempt.value;
+  if (!isJsonRecord(frame,)) {
+    return {
+      ok: false,
+      reason: 'parsed to something other than a JSON object',
+    };
+  }
+  return {
+    ok: true,
+    frame,
+  };
 }
 
 /**

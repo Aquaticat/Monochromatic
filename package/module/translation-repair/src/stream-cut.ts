@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { wholeOpening, } from './code-points.ts';
 import { wordForCount, } from './count-word.ts';
+import { exchangeFailureText, } from './exchange-failure-text.ts';
 import { contextRoot, } from './log-context.ts';
 import type { StreamProgress, } from './stream-idle-guard.ts';
 
@@ -66,9 +67,12 @@ export type StreamOutcome = 'completed' | 'cut' | 'degenerate' | 'overrun';
  Raised when a stream was cut off, carrying what it had already delivered.
 
  WRAPS RATHER THAN REPLACES. The original failure is the `cause`, so a stall
- still reads as a stall and steering still reads as steering, and the message
- repeats the cause's own text so anything printing this error with `String`
- says what it used to say.
+ still reads as a stall and steering still reads as steering. The message
+ states the cause through `exchangeFailureText`: a cause that declares its own
+ sentence safe is repeated, a provider's status failure is named by class and
+ HTTP status, and any other is named by class, since a stream's failure can be
+ a runtime rejection whose message quotes what it refused. That makes this
+ class safe to repeat, so it declares `messageNamesOnly`.
 
  @example
  ```ts
@@ -81,6 +85,13 @@ export type StreamOutcome = 'completed' | 'cut' | 'degenerate' | 'overrun';
  ```
  */
 export class StreamCutShortError extends Error {
+  /**
+   Declares this message safe to forward: it names the model, a count of
+   characters and the cause by its own safe sentence, or by class and the
+   HTTP status a provider answered with.
+   */
+  readonly messageNamesOnly: true = true;
+
   /**
    Model or endpoint whose stream was cut.
    */
@@ -131,7 +142,7 @@ export class StreamCutShortError extends Error {
           one: 'character',
           many: 'characters',
         },)
-      } (${String(cause,)})`,
+      } (${exchangeFailureText({ error: cause, },)})`,
       { cause, },
     );
     this.name = 'StreamCutShortError';

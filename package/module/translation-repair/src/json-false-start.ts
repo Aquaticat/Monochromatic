@@ -86,27 +86,27 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
   for (let at = 1; at < last; at += 1) {
     if (text[at] !== '{')
       continue;
-    try {
-      /**
-       Value the remainder parses to, when it does.
-       */
-      const value: unknown = JSON.parse(text.slice(at,),);
-      rl.debug(`read an object past an abandoned opening of ${String(at,)} ${
-        wordForCount({
-          count: at,
-          one: 'char',
-          many: 'chars',
-        },)
-      }`,);
-      return {
-        parsed: true,
-        value,
-        abandoned: at,
-      };
+    /**
+     Parse of the remainder, whose refusal is data that names its class and
+     quotes none of the text V8 refused.
+     */
+    const attempt = parseModelJson({ text: text.slice(at,), },);
+    if (!attempt.parsed) {
+      rl.debug(`no object starts at ${String(at,)}: ${attempt.detail}`,);
+      continue;
     }
-    catch (error) {
-      rl.debug(`no object starts at ${String(at,)}: ${String(error,)}`,);
-    }
+    rl.debug(`read an object past an abandoned opening of ${String(at,)} ${
+      wordForCount({
+        count: at,
+        one: 'char',
+        many: 'chars',
+      },)
+    }`,);
+    return {
+      parsed: true,
+      value: attempt.value,
+      abandoned: at,
+    };
   }
 
   return { parsed: false, };

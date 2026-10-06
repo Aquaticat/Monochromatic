@@ -26,6 +26,7 @@ import {
   StreamDegenerateError,
   StreamOverrunError,
   StreamStalledError,
+  SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 import {
   anthropicBlockDelta,
@@ -535,8 +536,9 @@ await describe({
     },),
 
     it({
-      name: 'STATES A CUT STREAM\'S CAUSE BY CLASS in its message, which the error declares safe to repeat, and '
-        + 'repeats the sentence of a cause that declares the same',
+      name: 'STATES A CUT STREAM\'S CAUSE BY CLASS in its message, which the error declares safe to repeat, '
+        + 'repeats the sentence of a cause that declares the same, and names the HTTP status of a cause that is '
+        + 'a provider\'s status failure without its body',
       fn: async () => {
         /**
          What the stream did before the cut, plain numbers.
@@ -572,8 +574,25 @@ await describe({
           },),
         },);
 
+        /**
+         Cut whose cause is a provider's status failure, whose own message
+         excerpts the body.
+         */
+        const refused = new StreamCutShortError({
+          label: 'hf:whiskers',
+          partialText: 'It is a cat.',
+          progress,
+          cause: new SyntheticHttpError({
+            status: 503,
+            bodyText: 'the cat shelf is full of naps',
+          },),
+        },);
+
         expect(refusalText({ error: quoting, },),).toBe(
           'hf:whiskers: stream cut after 12 characters (refused by TypeError)',
+        );
+        expect(refusalText({ error: refused, },),).toBe(
+          'hf:whiskers: stream cut after 12 characters (refused by SyntheticHttpError with HTTP 503)',
         );
         expect(refusalText({ error: stalled, },),).toBe(
           'hf:whiskers: stream cut after 12 characters (Stalled: hf:whiskers emitted nothing for 60000ms (body))',

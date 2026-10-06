@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { wordForCount, } from '../count-word.ts';
+import { exchangeFailureText, } from '../exchange-failure-text.ts';
 import {
   listCorpusPeople,
   readCorpusFile,
@@ -370,9 +371,9 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-probe'>;
           asked: RUN_ROSTER.length,
           evidence: [],
           unanchoredQuotes: [],
-          findings: [String(error,),],
+          findings: [exchangeFailureText({ error, },),],
         },);
-        log.info(`${entryId} ${where}: FAILED ${String(error,)}`,);
+        log.info(`${entryId} ${where}: FAILED ${exchangeFailureText({ error, },)}`,);
       }
     }
   }

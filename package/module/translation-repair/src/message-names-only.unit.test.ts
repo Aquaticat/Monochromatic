@@ -165,6 +165,7 @@ const MARKED_CLASSES: readonly string[] = [
   'SourceMapFileError',
   'SpendCeilingOverrideError',
   'StatedRefusalError',
+  'StreamCutShortError',
   'StreamBoundError',
   'StreamDegenerateError',
   'StreamErrorEventError',
@@ -175,6 +176,7 @@ const MARKED_CLASSES: readonly string[] = [
   'TranslateAbsenceError',
   'TranslationRepairInterruptedError',
   'TrialLedgerLineError',
+  'TrialSliceRefusalError',
   'UnfoldedTranslationError',
   'UnknownArtifactGenerationError',
   'UnmeasurableRepairError',
@@ -227,6 +229,11 @@ const NAMED_PARTS: Record<string, string> = {
   'String(cap,)': 'count',
   'String(census.total,)': 'count',
   'String(charsSeen,)': 'count',
+  'String(partialText.length,)': 'count',
+  'exchangeFailureText({ error: cause, },)': 'a caught cause through exchangeFailureText: the cause\'s own sentence '
+    + 'where its class declares one safe, the class name otherwise, with the HTTP status a provider answered with',
+  'wordForCount({ count: partialText.length, one: \'character\', many: \'characters\', },)':
+    'noun agreeing with a count, both forms authored here',
   'String(droppedCount,)': 'count',
   'whereCarried({ traces, },)': 'fixed clause naming slice indices whose original carries a dropped destination',
   'String(sourceDistinct,)': 'count',
@@ -388,7 +395,6 @@ const WITHHELD: Record<string, string> = {
     + 'artifact reader refuses a stored identity by shape in its own words instead (ledger B34)',
   RenderingAuditInvariantError: 'forwards each site\'s own sentence, which names indexes and vocabulary '
     + 'words and never text; unreachable by construction, so the boundary never has to print it',
-  StreamCutShortError: 'the abort reason reaches the message through String of an unknown value',
   SyntheticHttpError: 'the message carries an excerpt of the provider response body, on purpose',
   TimingLineError: 'quotes the whole timing line it could not read, so an operator can find it; the line was '
     + 'chosen by the round or completion marker the run\'s own logger writes, but nothing proves a line '

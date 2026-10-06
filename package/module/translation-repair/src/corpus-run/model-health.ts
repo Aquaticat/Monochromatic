@@ -2,8 +2,8 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { isJsonRecord, } from '../json-guard.ts';
 import { wholeOpening, } from '../code-points.ts';
-import { errorName, } from '../error-name.ts';
 import { wordForCount, } from '../count-word.ts';
+import { exchangeFailureText, } from '../exchange-failure-text.ts';
 import {
   createRunClient,
   RUN_PER_CALL_TIMEOUT_MS,
@@ -177,16 +177,21 @@ async function reportModelHealth(): Promise<void> {
       // model after it went unreported, which is precisely the moment someone
       // is running this.
       /**
-       What was thrown, rendered and bounded so a long provider body cannot
-       fill the report.
+       What was thrown, by class and HTTP status where the provider stated
+       one, never by a message: a runtime rejection for an unsendable header
+       quotes the key, and a status failure's message excerpts the provider's
+       body. Bounded so a marked class's long sentence cannot fill the report.
        */
       const detail = wholeOpening({
-        text: String(error,),
+        text: exchangeFailureText({ error, },),
         units: RAW_REPLY_PREVIEW_CHARS,
       },);
 
       unreachable.push(modelId,);
-      l.warn(`${modelId}: UNREACHABLE (${errorName({ error, },)}): ${detail}`,);
+      // THE CLASS IS NAMED ONCE. `detail` already names it for every class
+      // that does not write its own sentence, so a second naming in front
+      // read `UNREACHABLE (TypeError): refused by TypeError`.
+      l.warn(`${modelId}: UNREACHABLE: ${detail}`,);
     }
   }
 

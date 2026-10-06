@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { contextRoot, } from './log-context.ts';
+import { refusalText, } from './refusal-text.ts';
 import type { IdleGuard, } from './stream-idle-guard.ts';
 import type { StreamWireFormat, } from './stream-wire-format.ts';
 import {
@@ -69,7 +70,7 @@ async function stopReading(
       tag: drainBody.name,
       l,
     },);
-    cl.warn(`could not cancel ${url}: ${String(error,)}`,);
+    cl.warn(`could not cancel ${url}: ${refusalText({ error, },)}`,);
   }
 }
 
