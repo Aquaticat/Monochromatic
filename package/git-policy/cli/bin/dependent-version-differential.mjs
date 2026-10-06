@@ -32,10 +32,8 @@ import {
 } from './dependent-version-generator.mjs';
 import { nativeResults } from './dependent-version-native.mjs';
 import { compareClasses } from './dependent-version-report.mjs';
-import {
-  repositoryCases,
-  repositorySamples,
-} from './dependent-version-repository-cases.mjs';
+import { repositoryCases } from './dependent-version-repository-cases.mjs';
+import { repositorySamples } from './dependent-version-repository-samples.mjs';
 import {
   repositorySnapshot,
   sharedWorkspace,

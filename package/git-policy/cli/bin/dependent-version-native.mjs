@@ -149,10 +149,11 @@ async function corpusTest({
     output.push(chunk);
   }
     );
-  const [code] = await once(
+  await once(
     child,
-    'close'
+    'close',
   );
+  const code = child.exitCode;
   await writeFile(
     join(
       corpus,

@@ -124,10 +124,11 @@ async function gitOutput({
   );
   child.stdin
     .end(input);
-  const [code] = await once(
+  await once(
     child,
     'close',
   );
+  const code = child.exitCode;
   if (code !== 0)
     throw new HarnessError(`git ${args.join(' ')} exited ${String(code)}`);
   return Buffer.concat(chunks);
