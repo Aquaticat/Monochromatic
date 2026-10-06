@@ -2241,6 +2241,9 @@ and narrowed the choice the same day: "No need to consider any alternatives. Jus
   preferring BSD-3-Clause over Apache-2.0 gave 224 texts,
   because cargo-about then took every BSD header among the source files of moxcms and pxfm as its own text.
   The task took 99 s with its `fetch` step.
+  On the release executable of commit `9d476f838` (83,362,368 bytes),
+  the `crate-licenses` bundle check found all 369 linked crates
+  and all 291 registry crates whose source paths the executable contains among the crates printed.
 - The `linked-crates` task writes `target/linked-crates.txt`
   from `cargo tree --frozen --edges normal,no-proc-macro --target x86_64-unknown-linux-gnu`
   for the bundle checks.
