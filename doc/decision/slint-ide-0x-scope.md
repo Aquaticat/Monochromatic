@@ -368,6 +368,19 @@ Quotations are the user's words.
   an app-menu item that opens the home folder,
   and "Open with" for folders ("Add a launcher entry").
   Its icon is asked later with screenshots.
+- A loose file directly in the home folder,
+  opened when no project folder was given,
+  gets no special handling:
+  "A loose file directly in home + user didn't launch with a project folder argument = user error
+  and we don't do special handling for it."
+  The agent's rule that refused language servers rooted at the home folder is removed.
+- The single executable's unpacked grammar folders of other builds are removed
+  after 30 days without use ("Remove after N days unused";
+  the 30 days are the agent's proposal).
+- The embedded license and notice texts are printed by `monochromatic-ide --licenses` ("--licenses flag").
+- Settled by the agent:
+  the application's private state folder may lie inside any open project folder,
+  since only that folder becomes writable either way.
 - Slint's testing crate may be added as a test-only dependency
   for rerunnable accessibility tests ("Allow it").
 - Settled by the agent from repository convention and the user's statement that size is not a constraint:
