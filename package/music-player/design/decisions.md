@@ -2718,7 +2718,7 @@ So:
 - The default template is `$tf(mi(len), m:ss)$ $mi(peak)$`.
   An analysed file reads `4:35 −1.2 dBTP`;
   one not analysed yet reads `5:12`.
-  D35's middle dot between duration and peak is gone from the default line.
+  The middle dot between duration and peak that C2 describes is gone from the default line.
   Analysis is automatic (D84),
   so the missing peak is temporary.
 
