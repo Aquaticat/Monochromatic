@@ -11,7 +11,15 @@ the preview scrolls with the page (D91),
 the language has no conditional (D92),
 an empty field is plain substitution with the unit inside the peak field (D93),
 and the page rests where Android puts a focused field (D94).
-This study shows that editor as authored native states on the Fold.
+Shown that editor,
+the human answered that a library is always open (D95),
+that scrolling suffices to reach the field list (D96),
+and that the agent builds one version of which other rows get templates
+and asks for approval (D97).
+This study shows that editor and that version as authored native states on the Fold.
+The version is two templates,
+`Track rows` and `Playing track`;
+it is not decided until the human approves it.
 
 It changes no production code,
 stores no template and changes no row of the player.
@@ -25,8 +33,10 @@ the pinned layouts that D91 rejected with what they measured,
 and the decisions of 2026-10-06.
 
 The review page is `questions/template-editor.html`.
-It shows the decided editor and asks nothing;
-its last field takes anything the human would change.
+It shows the decided editor and the version for approval,
+and asks nothing itself:
+approval is asked through the question tool,
+and the page's last field takes anything the human would change.
 
 ## What the app has today
 
@@ -54,7 +64,7 @@ playback and sweep services.
 The fixture holds copy,
 not logic.
 `template-reference.mjs` is a small reference for the language
-(fields,
+(each template's default and fields,
 `tf`,
 `tc`,
 `+`,
@@ -90,6 +100,23 @@ The changed template,
 `$tc(up, mi(ext))$ · $tf(mi(len), m:ss)$ · $mi(peak)$`,
 shows what plain substitution means for a separator:
 the second row reads `FLAC · 5:12 ·`.
+
+The playing track's template defaults to `$mi(track)$ of $mi(total)$ $mi(peak)$`
+and has two fields the track rows do not:
+`track`,
+the file's place in its folder,
+and `total`,
+how many tracks the folder holds.
+Its editor previews the same two files as rows,
+reading `1 of 16 −1.2 dBTP` and `2 of 16` followed by a space.
+On the inner panel the deck in the left pane draws the first of those lines;
+every other study keeps the deck's earlier fixed text.
+The track rows' editor is titled `Track rows`,
+the name Settings lists it under.
+
+When the open library holds no track,
+the preview shows sample values and says so (D95);
+the study's `empty-library` state shows that.
 
 ## Captured cohort and visible boundaries
 
