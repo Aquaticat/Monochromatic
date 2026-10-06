@@ -1,20 +1,7 @@
-import { join, } from 'node:path';
-
-import { LEDGER_DIR, } from '../candidate-ledger.ts';
-import { wholeOpening, } from '../code-points.ts';
-import { wordForCount, } from '../count-word.ts';
-import {
-  type LedgerReading,
-  readLedgerDirectory,
-} from './ledger-directory.ts';
-import {
-  type CandidateReading,
-  summariseLedger,
-  workOfModel,
-} from './ledger-read.ts';
-import { resolveRunsDir, } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
+import { reportLedger, } from './ledger-report-run.ts';
+import { resolveRunsDir, } from './run-config.ts';
 
 //region Ledger report
 // WHAT EACH MODEL WROTE, AND WHAT THE JUDGES SAID ABOUT IT. Spends no quota and
@@ -34,333 +21,26 @@ import type { CommandLineOf, } from './command-lines.ts';
 //
 // THE SUMMARY VIEW PRINTS NO WORDING AT ALL, and `ledger-directory.ts` is what
 // keeps that true when a file will not read.
+//
+// THIS FILE IS ONLY THE WIRING: the command line, and the runs directory the
+// environment names. `ledger-report-run.ts` holds the procedure and
+// `ledger-report-print.ts` the printers.
 
 /**
- Exit code left behind when there is no ledger to read.
- */
-const NOTHING_TO_READ = 1;
-
-/**
- Exit code left behind when the ledger was read but not all of it.
-
- SEPARATE FROM AN ABSENT LEDGER, on the same grounds `verify-published.ts`
- separates its two: a run that recorded nothing and a run whose record is
- part unreadable answer a roster question differently, and a gate treating
- them alike either trusts a partial standing or discards a whole one.
- */
-const LEDGER_INCOMPLETE = 2;
-
-/**
- Most UTF-16 units of a candidate shown before it is cut, ending on a whole
- character (`wholeOpening`).
- */
-const EXCERPT_CHARS = 400;
-
-/**
- Multiplier turning a fraction into a percentage.
- */
-const PERCENT = 100;
-
-/**
- Prints one candidate a named seat wrote, with what judges said about it.
-
- @param reading - candidate and the remarks about it
-
- @param at - position in this seat's output, so a reader can cite one
-
- @example
- ```ts
- printReading({ reading, at: 0, },);
- ```
- */
-function printReading(
-  {
-    reading,
-    at,
-  }: {
-    readonly reading: CandidateReading;
-    readonly at: number;
-  },
-): void {
-  console.log(
-    `\n--- ${String(at + 1,)} --- ${reading.won ? 'CHOSEN' : 'not chosen'} `
-      + `--- ${reading.task}`,
-  );
-  console.log(wholeOpening({
-    text: reading.rendered,
-    units: EXCERPT_CHARS,
-  },),);
-  /**
-   Disinterested judges that named this candidate.
-   */
-  const { remarks, } = reading;
-
-  if (remarks.length === 0)
-    console.log('  (no disinterested judge named this candidate)',);
-  for (const remark of remarks) {
-    console.log(`  ${remark}`,);
-  }
-}
-
-/**
- Reports the files that would not read, and what their absence costs.
-
- NAMED AS A SHORTFALL RATHER THAN LISTED AND DROPPED. Every figure this report
- prints is computed over the files that read, so an unreadable contest silently
- lowers a seat's candidate count and its ballot count together. A reader who
- did not know that would take a partial standing for a whole one.
-
- @param reading - what the ledger directory yielded
-
- @example
- ```ts
- printRefusals({ reading, },);
- ```
- */
-function printRefusals(
-  { reading, }: { readonly reading: LedgerReading; },
-): void {
-  /**
-   Both halves of the reading, named so no member chain runs two steps deep.
-   */
-  const {
-    refused,
-    rounds,
-  } = reading;
-
-  for (const refusal of refused) {
-    console.log(`  UNREADABLE ${refusal.file}: ${refusal.says}`,);
-  }
-
-  if (refused.length === 0)
-    return;
-
-  /**
-   Every ledger file this report accounts for, read or not.
-   */
-  const totalLedgerFiles = refused.length + rounds.length;
-  console.log(
-    `  ${String(refused.length,)} of `
-      + `${String(totalLedgerFiles,)} ledger ${
-        wordForCount({
-          count: totalLedgerFiles,
-          one: 'file',
-          many: 'files',
-        },)
-      } could not be read. `
-      + 'Every figure here counts only the files that could, so a seat that wrote into an '
-      + 'unreadable contest is undercounted, and so is every judge who weighed it. Re-run the '
-      + 'pass to rewrite them, or read the standing as a floor.',
-  );
-}
-
-/**
- Prints what every seat did, over the contests that read.
-
- @param reading - what the ledger directory yielded
-
- @example
- ```ts
- printSummary({ reading, },);
- ```
- */
-function printSummary(
-  { reading, }: { readonly reading: LedgerReading; },
-): void {
-  /**
-   What every seat did.
-   */
-  const summary = summariseLedger({ rounds: reading.rounds, },);
-
-  console.log(
-    `${String(summary.abstentions,)} ${
-      wordForCount({
-        count: summary.abstentions,
-        one: 'ballot',
-        many: 'ballots',
-      },)
-    } named nothing, `
-      + `${String(summary.namedMissing,)} named a candidate the slate did not have`,
-  );
-  for (const work of summary.models) {
-    /**
-     Share of disinterested ballots that named this seat's work.
-     */
-    const share = (work.ballots === 0)
-      ? 'UNJUDGED'
-      : `${((work.votes / work.ballots) * PERCENT).toFixed(1,)}%`;
-
-    console.log(
-      `  ${work.model}: ${String(work.candidates,)} ${
-        wordForCount({
-          count: work.candidates,
-          one: 'candidate',
-          many: 'candidates',
-        },)
-      }, ${String(work.wins,)} chosen, `
-        + `${share} of ${String(work.ballots,)} disinterested ${
-          wordForCount({
-            count: work.ballots,
-            one: 'ballot',
-            many: 'ballots',
-          },)
-        }, `
-        + `${String(work.selfVotes,)} ${
-          wordForCount({
-            count: work.selfVotes,
-            one: 'self-vote',
-            many: 'self-votes',
-          },)
-        }`,
-    );
-  }
-  console.log(
-    '\nPass --model <id> to read one seat\'s text and the reasons judges gave. A low share means '
-      + 'rarely picked as best, which is not the same as wrong.',
-  );
-}
-
-/**
- Prints one seat's candidates and the reasons judges gave for choosing them.
-
- @param reading - what the ledger directory yielded
-
- @param wanted - seat to read in full
-
- @example
- ```ts
- printSeat({ reading, wanted, },);
- ```
- */
-function printSeat(
-  {
-    reading,
-    wanted,
-  }: {
-    readonly reading: LedgerReading;
-    readonly wanted: string;
-  },
-): void {
-  /**
-   Everything that seat wrote.
-   */
-  const written = workOfModel({
-    rounds: reading.rounds,
-    model: wanted,
-  },);
-
-  /**
-   Its candidates the panel chose.
-   */
-  const chosen = written.filter(function won(reading_,): boolean {
-    return reading_.won;
-  },);
-
-  console.log(
-    `${wanted} wrote ${String(written.length,)} ${
-      wordForCount({
-        count: written.length,
-        one: 'candidate',
-        many: 'candidates',
-      },)
-    }, `
-      + `${String(chosen.length,)} chosen`,
-  );
-  written.forEach(function show(
-    reading_,
-    at,
-  ): void {
-    printReading({
-      reading: reading_,
-      at,
-    },);
-  },);
-}
-
-/**
- Reads a run's ledger and reports what it holds.
-
- Returns nothing: the report on stdout and the exit code ARE the output.
+ Reads the runs directory this process was pointed at and reports its ledger.
 
  @param line - the report's command line, read whole by `reportingRefusals`
 
  @example
  ```ts
- await reportLedger({ line, },);
+ await main({ line, },);
  ```
  */
-async function reportLedger({ line, }: { readonly line: CommandLineOf<'ledger-report'>; },): Promise<void> {
-  /**
-   Run directory to read, from the environment or the house default, which is
-   the same resolution every other reader in this family uses.
-   */
-  const runsDir = await resolveRunsDir();
-
-  // A FLAG WITH NOTHING AFTER IT IS REFUSED rather than ignored, before this
-  // runs. Falling through to the summary would answer a question nobody asked,
-  // and the summary looks exactly like a successful run to anything reading the
-  // exit code. So is a seat flag followed by the next flag, which this once
-  // read as the seat to report (ledger B75).
-  /**
-   Seat to read in full, unwritten when the whole ledger was asked for.
-   */
-  const seat = line.flag('model',);
-
-  /**
-   Every contest the ledger holds, beside the files that would not read.
-   */
-  const reading = await readLedgerDirectory({
-    dir: join(
-      runsDir,
-      LEDGER_DIR,
-    ),
+async function main({ line, }: { readonly line: CommandLineOf<'ledger-report'>; },): Promise<void> {
+  await reportLedger({
+    line,
+    runsDir: await resolveRunsDir(),
   },);
-
-  /**
-   Both halves of the reading, named so no member chain runs two steps deep.
-   */
-  const {
-    refused,
-    rounds,
-  } = reading;
-
-  console.log(`ledger-report: ${String(rounds.length,)} ${
-    wordForCount({
-      count: rounds.length,
-      one: 'contest',
-      many: 'contests',
-    },)
-  } under ${runsDir}`,);
-  printRefusals({ reading, },);
-
-  if (refused.length > 0)
-    process.exitCode = LEDGER_INCOMPLETE;
-
-  if (rounds.length === 0) {
-    if (refused.length === 0) {
-      console.log(
-        'NOTHING RECORDED. This run wrote no ledger, which is not the same as a run whose models '
-          + 'wrote nothing: every run started before candidate-ledger.ts landed has none, and so does '
-          + 'any run launched without TRANSLATION_REPAIR_RUNS_DIR set.',
-      );
-      process.exitCode = NOTHING_TO_READ;
-    } else
-      console.log(
-        'NOTHING COUNTED. Every ledger file this run wrote refused to read, so this is a run whose '
-          + 'record was lost rather than a run that recorded nothing.',
-      );
-    return;
-  }
-
-  if (seat.kind === 'written') {
-    printSeat({
-      reading,
-      wanted: seat.value,
-    },);
-    return;
-  }
-
-  printSummary({ reading, },);
 }
 
 // NOT WRAPPED IN A CATCH. Every failure this command raises now names itself safely:
@@ -372,7 +52,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'ledger-report',
     argv: process.argv,
-    run: reportLedger,
+    run: main,
   },);
 
 //endregion Ledger report

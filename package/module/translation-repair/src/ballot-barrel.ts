@@ -78,6 +78,13 @@ export {
   summariseLedger,
   workOfModel,
 } from './corpus-run/ledger-read.ts';
+export {
+  printReading,
+  printRefusals,
+  printSeat,
+  printSummary,
+} from './corpus-run/ledger-report-print.ts';
+export { reportLedger, } from './corpus-run/ledger-report-run.ts';
 
 // What a judge is told a decline does, exported so the rendered-sheets
 // fixture renders every slate from the texts the judges read (ledger X17).

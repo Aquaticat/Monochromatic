@@ -81,6 +81,17 @@ export {
   readMeterLine,
   readMeterLog,
 } from './corpus-run/meter-sample-read.ts';
+export { levelLines, } from './corpus-run/meter-report-level.ts';
+export { reportProvider, } from './corpus-run/meter-report-provider.ts';
+export {
+  mergeSamples,
+  reportMeters,
+} from './corpus-run/meter-report-run.ts';
+export {
+  outageLines,
+  spanText,
+  stampText,
+} from './corpus-run/meter-report-text.ts';
 export {
   type CreditRates,
   creditsFor,
@@ -102,6 +113,26 @@ export {
   type SpendUsd,
   tallySpend,
 } from './corpus-run/spend-read.ts';
+export {
+  asCredits,
+  asUsd,
+  pricedLine,
+  tokensOnlyLine,
+  usdLine,
+} from './corpus-run/spend-report-line.ts';
+export { printCost, } from './corpus-run/spend-report-print.ts';
+export {
+  linesOfLog,
+  readLogTexts,
+  refuseRepeatedLogs,
+} from './corpus-run/report-log-read.ts';
+export {
+  asSpan,
+  printInFlight,
+  printRounds,
+} from './corpus-run/run-timing-report-print.ts';
+export { reportRunTiming, } from './corpus-run/run-timing-report-run.ts';
+export { reportSpendCost, } from './corpus-run/spend-report-run.ts';
 export {
   type BudgetView,
   createProviderBudgets,

@@ -138,7 +138,7 @@ const HELD: Readonly<Record<string, string>> = {
   'corpus-run/publish-defects.ts#defectOf':
     'reads the message of the refusal class a check names, which the step type holds to a class declaring '
     + 'messageNamesOnly',
-  'corpus-run/run-timing-report.ts#reportRunTiming':
+  'corpus-run/run-timing-report-run.ts#reportRunTiming':
     'reads the message of a NothingInFlightError, the only class the clause lets through, which declares it safe',
   'corpus-run/runner-closure.ts#readEntryText':
     'a read failure of the built entry the run is executing, which quotes that path; no provider is called',

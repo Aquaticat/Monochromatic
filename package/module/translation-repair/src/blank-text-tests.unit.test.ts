@@ -1368,7 +1368,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/meter-report.ts#spanText': {
+  'corpus-run/meter-report-text.ts#spanText': {
     tests: 1,
     why: ASSEMBLED,
   },
@@ -1447,6 +1447,10 @@ const HELD_TESTS: Readonly<Record<string, {
   'corpus-run/rendering-audit-settled-report.ts#main': {
     tests: 1,
     why: SETTING,
+  },
+  'corpus-run/report-log-read.ts#linesOfLog': {
+    tests: 1,
+    why: SCANNER,
   },
   'corpus-run/required-providers.ts#assertRequiredProvidersReady': {
     tests: 1,

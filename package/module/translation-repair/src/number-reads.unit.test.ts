@@ -179,7 +179,7 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: 'reads an exit code Number.isInteger took as a number; no text is read',
   },
-  'corpus-run/meter-report.ts#stampText: new Date': {
+  'corpus-run/meter-report-text.ts#stampText: new Date': {
     calls: 1,
     why: EPOCH_MILLISECONDS,
   },
