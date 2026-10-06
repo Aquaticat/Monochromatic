@@ -382,7 +382,8 @@ from the executable built at `e4725f72c`.
 Each command runs on its own pair of fresh repositories built the same way:
 one with the incumbent's `cli-git.config.ts`
 (`mono/forbidden-root-context` at error,
-`security/forbidden-strings` at error with `builtinRules: false` and the release scanner from this worktree as its executable),
+`security/forbidden-strings` at error with `builtinRules: false`
+and the release scanner from this worktree as its executable),
 one with the equivalent `cli-git.config.jsonc`,
 each committed before the case's own setup.
 The native executable runs by path through a `git` link outside `PATH`;
@@ -480,7 +481,8 @@ none was fixed.
   (a pathspec that matches nothing):
   the incumbent exits 1 with Git's message as plain text;
   the native wrapper exits 2 with `content-unavailable`
-  "cli-git could not predict what git add stages: git add failed: fatal: pathspec 'missing.txt' did not match any files".
+  "cli-git could not predict what git add stages: git add failed:
+  fatal: pathspec 'missing.txt' did not match any files".
   A failure before Git runs exits 2 under the spec's exit contract
   (open decisions,
   "A wrapper failure before Git runs").
