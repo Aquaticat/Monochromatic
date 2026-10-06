@@ -51,16 +51,18 @@ pub(super) fn only(window: &AppWindow, label: &str) -> ElementHandle {
     // ```
     let mut found = ElementHandle::find_by_accessible_label(window, label);
     // What: `next()` returns an `Option`: `Some(element)` or `None` when the sequence is empty;
-    // `expect` returns the element or fails the test with this message.
+    // `let Some(first) = ... else { ... }` keeps the element or runs the `else` block, which must leave;
+    // `panic!` fails the test with a formatted message.
     // Why: A missing element is the failure under test, so the message names the label.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const first = found.next().value ?? fail(`no element is labelled ${label}`);
+    // const first = found.next().value;
+    // if (first === undefined) throw new Error(`assistive tools find no element labelled ${label}`);
     // ```
-    let first = found
-        .next()
-        .expect(&format!("assistive tools find no element labelled {label:?}"));
+    let Some(first) = found.next() else {
+        panic!("assistive tools find no element labelled {label:?}");
+    };
     // What: `is_none()` is true when the `Option` is `None`.
     // Why: Exactly one element may carry the label.
     //
