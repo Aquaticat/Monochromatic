@@ -19,6 +19,7 @@ import {
   deriveEditableEnvelopes,
   hashContent,
 } from '../dist/final/node/index.mjs';
+import { envelopeSpanOf, } from './envelope-span.test-fixture.ts';
 
 /**
  Translation the issues' spans cut from.
@@ -120,14 +121,7 @@ await describe({
           targetText: TARGET_TEXT,
         },);
 
-        expect(envelopes.map(function readable(envelope,) {
-          return {
-            startOffset: envelope.startOffset,
-            endOffset: envelope.endOffset,
-            baseText: envelope.baseText,
-            issueIds: envelope.issueIds,
-          };
-        },),).toEqual([
+        expect(envelopes.map(envelopeSpanOf,),).toEqual([
           {
             startOffset: 4,
             endOffset: 12,

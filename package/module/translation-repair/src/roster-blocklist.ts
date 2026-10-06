@@ -162,10 +162,12 @@ function modelNameOf(
   { id, }: { readonly id: string; },
 ): string {
   /**
-   Path segments; the last one is the model name under both spellings.
+   Where the last path segment starts, which is the model name under both
+   spellings: after the last slash, or at the start where there is none.
    */
-  const segments = id.split('/',);
-  return (segments.at(-1,) ?? id).toLowerCase();
+  const nameStart = id.lastIndexOf('/',) + 1;
+  return id.slice(nameStart,)
+    .toLowerCase();
 }
 
 /**

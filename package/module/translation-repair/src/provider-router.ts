@@ -253,6 +253,54 @@ export function createRoutingClient(
   },);
 
   /**
+   Reads which providers may take one call once the stream bound holds are
+   taken out, refusing where the holds leave nobody.
+
+   ASKED IN TWO PLACES, so a call ends with one reason whichever of them
+   finds every serving provider held: before each attempt, and after the last
+   one a call has.
+
+   @param request - call being routed, read for its model and its pictures
+
+   @returns Providers serving the model that hold nothing against it
+
+   @throws {@link NoProviderForModelError} when every provider serving the
+   model holds it out on its stream bound
+
+   @example
+   ```ts
+   const reach = reachPastBoundHoldsOrRefusal({ request, },);
+   ```
+   */
+  function reachPastBoundHoldsOrRefusal(
+    { request, }: { readonly request: ForeignBorrowed<ChatTextRequest>; },
+  ): ModelReach {
+    /**
+     Providers that can serve this model, narrowed where it carries a picture,
+     less any holding it out on its stream bound.
+     */
+    const {
+      reach,
+      heldMs,
+    } = reachPastBoundHolds({
+      reach: reachFor({ request, },),
+      modelId: request.modelId,
+      holds: boundHolds,
+    },);
+    if ((heldMs > 0) && PROVIDER_ORDER.every(function closed(provider,): boolean {
+      return !reach[provider];
+    },)) {
+      // REFUSED WITHOUT A CALL, so a round counts the seat unreachable and
+      // neither asks nor waits for it (class one hundred forty-eight).
+      throw new NoProviderForModelError({
+        modelId: request.modelId,
+        reason: `every provider serving this model ran past its stream bound; held out for another ${String(heldMs,)}ms`,
+      },);
+    }
+    return reach;
+  }
+
+  /**
    Decides which provider takes one call, given what is known right now.
 
    @param request - call being routed, read for its model and its pictures
@@ -281,27 +329,9 @@ export function createRoutingClient(
     },
   ): Promise<ProviderName> {
     /**
-     Providers that can serve this model, narrowed where it carries a picture,
-     less any holding it out on its stream bound.
+     Providers that can serve this model and hold nothing against it.
      */
-    const {
-      reach,
-      heldMs,
-    } = reachPastBoundHolds({
-      reach: reachFor({ request, },),
-      modelId: request.modelId,
-      holds: boundHolds,
-    },);
-    if ((heldMs > 0) && PROVIDER_ORDER.every(function closed(provider,): boolean {
-      return !reach[provider];
-    },)) {
-      // REFUSED WITHOUT A CALL, so a round counts the seat unreachable and
-      // neither asks nor waits for it (class one hundred forty-eight).
-      throw new NoProviderForModelError({
-        modelId: request.modelId,
-        reason: `every provider serving this model ran past its stream bound; held out for another ${String(heldMs,)}ms`,
-      },);
-    }
+    const reach = reachPastBoundHoldsOrRefusal({ request, },);
 
     /**
      What each provider's budget looks like right now, the refusal that
@@ -542,10 +572,20 @@ export function createRoutingClient(
       }
     }
 
-    // Unreachable: the loop returns a reply or rethrows the last refusal.
+    // THE ONE WAY OUT OF THE LOOP WITHOUT A REPLY OR A RETHROWN REFUSAL is a call
+    // cut at its stream bound on the last attempt the loop has: the cut
+    // `continue`s, and the next decision, which would read the holds and name
+    // them, is one the loop has no attempt left for. That takes a model all
+    // four providers serve. The holds are read here in that decision's place,
+    // so four providers cut in turn end with the reason three would.
+    reachPastBoundHoldsOrRefusal({ request, },);
+
+    // NOT EVERY ONE WAS CUT, then: a provider before the last refused the call
+    // on its budget, which sends the call on without a stream bound hold, and
+    // the last one ran past its bound.
     throw new NoProviderForModelError({
       modelId: request.modelId,
-      reason: 'every provider refused this call',
+      reason: 'every provider serving this model refused this call or ran past its stream bound on it',
     },);
   }
 

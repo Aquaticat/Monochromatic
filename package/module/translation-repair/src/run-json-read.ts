@@ -49,6 +49,18 @@ const NOT_FOUND = -1;
 const POSITION_PHRASE = ' at position ';
 
 /**
+ How every refusal that quotes the file ends.
+
+ V8 words a refusal one of two ways: it states a position and quotes nothing
+ ("... in JSON at position 7 (line 1 column 8)"), or it quotes a window of the
+ file and states no position ("Unexpected token 'c', "cat" is not valid JSON").
+ A file whose own words carry the position phrase can only appear in the second
+ form, so a refusal ending this way never yields an offset, whatever its
+ quotation says.
+ */
+const QUOTING_SUFFIX = ' is not valid JSON';
+
+/**
  Stand-in for an offset a refusal did not state.
 
  A NAMED SENTINEL rather than an absent value, which is how this package
@@ -72,6 +84,10 @@ const DECIMAL = 10;
 
  @returns Offset as written, or nothing where the message states none
 
+ @throws {@link Error} when V8 writes the position phrase of a refusal that
+ quotes no file words and no whole number follows it, which V8's messages
+ never do
+
  @example
  ```ts
  const at = offsetIn({ message: 'Unexpected end of JSON input', },);
@@ -80,6 +96,11 @@ const DECIMAL = 10;
 function offsetIn(
   { message, }: { readonly message: string; },
 ): number | typeof OFFSET_UNSTATED {
+  // A REFUSAL THAT QUOTES THE FILE STATES NO POSITION, and the phrase in it is
+  // the file's own words, whose digits are not an offset.
+  if (message.endsWith(QUOTING_SUFFIX,))
+    return OFFSET_UNSTATED;
+
   /**
    Where the phrase introducing an offset begins.
    */
@@ -105,8 +126,10 @@ function offsetIn(
 
   // A refusal with no digits after the phrase gives `NaN`, which is not a safe
   // integer, so one branch covers both that and any offset too large to trust.
+  // Neither occurs once the quoting refusals are set aside: V8 writes a whole
+  // position, at most the file's length, after the phrase and quotes nothing.
   if ((!Number.isSafeInteger(offset,)) || (offset < 0))
-    return OFFSET_UNSTATED;
+    throw new Error('unreachable: a V8 refusal states a position phrase with no whole offset after it, which none of its messages does',);
 
   return offset;
 }
@@ -239,12 +262,16 @@ export function parseRunJson(
   try {
     return JSON.parse(text,) as unknown;
   } catch (error) {
+    if (!Error.isError(error,))
+      throw new Error(
+        'unreachable: JSON.parse refused a text with a value that is not an Error, which it does by throwing a SyntaxError',
+        { cause: error, },
+      );
+
     throw new RunJsonUnreadableError({
       file: from,
       failure: errorName({ error, },),
-      at: Error.isError(error,)
-        ? offsetIn({ message: error.message, },)
-        : OFFSET_UNSTATED,
+      at: offsetIn({ message: error.message, },),
     },);
   }
 }

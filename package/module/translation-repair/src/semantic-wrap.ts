@@ -54,7 +54,7 @@ const RULE = rulesById.get(RULE_ID,);
 // halfway through a run that has already been paid for.
 if (RULE === undefined)
   throw new Error(
-    `markdown-lint no longer carries \`${RULE_ID}\`, so shipped text cannot be wrapped at its semantic boundaries`,
+    `unreachable: markdown-lint no longer carries \`${RULE_ID}\`, so shipped text cannot be wrapped at its semantic boundaries`,
   );
 
 /**

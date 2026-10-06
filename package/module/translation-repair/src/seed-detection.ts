@@ -66,6 +66,10 @@ const PROTECTIVE_STATUS = 'source-defect';
 
  @returns Detection verdict keyed by seed id
 
+ @throws {@link Error} when an issue names a slice the preparation of the two
+ texts does not hold, which only a repair run on other texts or another
+ budget can cause
+
  @example
  ```ts
  const detection = gradeSeedDetection({ sourceText, seededText, applications, issues, },);
@@ -119,8 +123,12 @@ export function gradeSeedDetection(
      */
     const chunk = slices[record.sliceIndex]
       ?.target;
+    // A SLICE THIS PREPARATION LACKS IS NOT AN ISSUE TO SKIP: every record
+    // names a slice of the preparation the repair ran on, which this call
+    // rebuilds from the same two texts, and skipping one would read every seed
+    // in that slice as never reported.
     if (chunk === undefined)
-      return [];
+      throw new Error(`unreachable: an issue record names slice ${String(record.sliceIndex,)}, which the preparation of this pair does not hold, though the repair numbered its slices by the same preparation`,);
     return record
       .issue
       .claims

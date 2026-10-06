@@ -255,6 +255,9 @@ function isNodeList(value: unknown,): value is BlockContainer['children'] {
 
  @returns Whether the node packages blocks rather than being one
 
+ @throws {@link Error} when a JSX flow element has no `children` property,
+ which the parser writes on every element
+
  @example
  ```ts
  if (isUnwrappableContainer(node,)) { }
@@ -265,8 +268,11 @@ function isUnwrappableContainer(
 ): node is ForeignBorrowed<RootContent> & BlockContainer {
   if (node.type !== CONTAINER_TYPE)
     return false;
+  // THE PARSER WRITES `children` ON EVERY JSX FLOW ELEMENT, an empty list for
+  // a self-closing one, so a node of this type without the property is not a
+  // component that stays a block but a node nothing here can read.
   if (!('children' in node))
-    return false;
+    throw new Error('unreachable: an MDX flow element node carries no children property, though the parser writes one on every element',);
 
   /**
    Child blocks the container holds, typed `unknown` by the `in` check that

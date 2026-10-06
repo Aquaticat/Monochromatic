@@ -114,6 +114,9 @@ type PanelPacketResult = {
 
  @returns One line naming the issue, its fate and its weights
 
+ @throws {@link Error} when a member claim has no tally, which the tally never
+ leaves out of an issue it builds
+
  @example
  ```ts
  packetLogger.info(describePanelDecision(issue,),);
@@ -126,13 +129,14 @@ function describePanelDecision(issue: AdjudicatedIssue,): string {
   const weights = issue.claims
     .map(function weightsOf({ claimId, },): string {
       /**
-       Weights this claim drew, absent for a claim the tally never counted.
+       Weights this claim drew, which `tallyVotes` keys for every member claim
+       of an issue it builds.
        */
       const tally = issue.tallies[claimId];
-      // SAID RATHER THAN ZEROED: zeros would read as a tally in which no
+      // NOT ZEROED AND NOT SKIPPED: zeros would read as a tally in which no
       // ballot carried weight, which is a different fact.
       if (tally === undefined)
-        return `${claimId}: no tally`;
+        throw new Error(`unreachable: ${claimId} is a member claim of ${issue.issueId} and has no tally, though the tally of an issue keys every member claim`,);
       /**
        Weight behind each vote state.
        */
@@ -159,6 +163,9 @@ function describePanelDecision(issue: AdjudicatedIssue,): string {
 
  @returns One line per stored ballot, in claim then ballot order
 
+ @throws {@link Error} when the issue or one of its member claims has no stored
+ reading, which the tally never leaves out of an issue it builds
+
  @example
  ```ts
  for (const line of describePanelReasons(issue,)) packetLogger.info(line,);
@@ -166,15 +173,24 @@ function describePanelDecision(issue: AdjudicatedIssue,): string {
  */
 function describePanelReasons(issue: AdjudicatedIssue,): readonly string[] {
   /**
-   Stored readings keyed by claim id, none on an issue the tally did not build.
+   Stored readings keyed by claim id, which `tallyVotes` writes for every
+   issue it builds.
    */
-  const { readings = {}, } = issue;
+  const { readings, } = issue;
+  if (readings === undefined)
+    throw new Error(`unreachable: ${issue.issueId} carries no readings, though the tally stores the ballots of every issue it builds`,);
   return issue.claims
     .flatMap(function linesOf({ claimId, },): readonly string[] {
       /**
-       Ballots stored for this claim, none where the tally kept no reading.
+       Reading stored for this claim, one per member claim.
        */
-      const { ballots, } = readings[claimId] ?? { ballots: [], };
+      const reading = readings[claimId];
+      if (reading === undefined)
+        throw new Error(`unreachable: ${claimId} is a member claim of ${issue.issueId} and has no reading, though the tally stores one for every member claim`,);
+      /**
+       Ballots stored for this claim.
+       */
+      const { ballots, } = reading;
       return ballots.map(function lineOf({
         panelistId,
         vote,

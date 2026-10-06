@@ -31,6 +31,7 @@ import {
   gatherWidthInput,
 } from '../../dist/final/node/index.mjs';
 
+import { envelopeSpanOf, } from '../envelope-span.test-fixture.ts';
 import { scriptedClient, } from './scripted-width-client.test-fixture.ts';
 
 /**
@@ -129,19 +130,7 @@ await describe({
           statuses: outcome.input.issues.map(function statusOf(issue,): string {
             return issue.status;
           },),
-          envelopes: outcome.input.envelopes.map(function spanOf(envelope,): {
-            readonly startOffset: number;
-            readonly endOffset: number;
-            readonly baseText: string;
-            readonly issueIds: readonly string[];
-          } {
-            return {
-              startOffset: envelope.startOffset,
-              endOffset: envelope.endOffset,
-              baseText: envelope.baseText,
-              issueIds: envelope.issueIds,
-            };
-          },),
+          envelopes: outcome.input.envelopes.map(envelopeSpanOf,),
           issueIds: outcome.input.issues.map(function idOf(issue,): string {
             return issue.issueId;
           },),

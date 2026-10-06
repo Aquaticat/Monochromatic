@@ -48,17 +48,18 @@ function isBlockquoteMark(
     readonly index: number;
   },
 ): boolean {
-  for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
-    /**
-     Character behind the bracket.
-     */
-    const character = text.charAt(cursor,);
-    if (character === '\n')
-      return true;
-    if ((character !== ' ') || ((index - cursor) > BLOCKQUOTE_INDENT_MAX))
-      return false;
-  }
-  return true;
+  /**
+   Where the walk back from the bracket stopped: before the first character
+   that is not a space, or past the third space.
+   */
+  const stop = { at: index - 1, };
+  while ((stop.at >= 0)
+    && (text.charAt(stop.at,) === ' ')
+    && ((index - stop.at) <= BLOCKQUOTE_INDENT_MAX))
+    stop.at -= 1;
+  // THE START OF THE TEXT COUNTS AS A LINE START, so a bracket with only
+  // spaces behind it all the way back is a marker like one behind a newline.
+  return (stop.at < 0) || (text.charAt(stop.at,) === '\n');
 }
 
 /**

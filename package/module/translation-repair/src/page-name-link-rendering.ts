@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 //region Page name link rendering
 // WHICH ARCHIVE LINK RENDERS WHICH LINK OF THE ORIGINAL. Both documents carry
 // a link under one href, and the archive's text for it is how the page renders
@@ -137,7 +139,12 @@ export function renderedLinks(
      Whether the archive links the href under more than one text.
      */
     const byPlace = severalTexts.has(link.href,);
-    if (byPlace && (partners.length !== (sourceByHref.get(link.href,) ?? []).length))
+    /**
+     Original's links to the href, which hold this link, since the grouping
+     read the same list this walk goes through.
+     */
+    const sourcePartners = nonNullishOrThrow(sourceByHref.get(link.href,),);
+    if (byPlace && (partners.length !== sourcePartners.length))
       return [];
     /**
      Archive's link at this link's place among the links to the href, or its

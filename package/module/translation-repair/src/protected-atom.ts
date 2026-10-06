@@ -243,7 +243,9 @@ export function scanTextAtoms({ text, }: { readonly text: string; },): readonly 
     /**
      Code point at the cursor, present because the cursor is in range.
      */
-    const codePoint = text.codePointAt(cursor.at,) ?? 0;
+    const codePoint = text.codePointAt(cursor.at,);
+    if (codePoint === undefined)
+      throw new Error(`unreachable: the cursor stands at offset ${String(cursor.at,)} of a leaf whose length is ${String(text.length,)}, where a code point begins`,);
 
     /**
      UTF-16 units this code point occupies.

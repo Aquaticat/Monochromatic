@@ -422,10 +422,13 @@ export function recordOfDistinctIds<Value>(
 
  @returns The record, read under that provider's served-id union
 
- @throws When a served spelling on the roster's list has no card, a
- card's spelling is off the list, or two cards carry one spelling, which
- the key check after the build could not see since the later card would
- have replaced the earlier
+ @throws {@link Error} naming an unreachable state when a served spelling
+ on the roster's list has no card or a card's spelling is off the list,
+ which only an edit to the cards or the list alone can cause
+
+ @throws {@link RangeError} when two cards carry one spelling, which the key
+ check after the build could not see since the later card would have
+ replaced the earlier
 
  @example
  ```ts
@@ -468,13 +471,14 @@ export function servedRecord<Provider extends CardProvider, Row>(
    Spellings the roster lists for this provider.
    */
   const keys: readonly ServedIdOf<Provider>[] = SERVED_IDS[provider];
-  if (!keyedBy<ServedIdOf<Provider>, Row>({ keys, },)(built,)) {
-    /**
-     Spellings the cards carry, for the message.
-     */
-    const carried = Object.keys(built,);
-    throw new RangeError(`${provider} cards and served ids disagree: cards ${carried.join(', ',)}; list ${keys.join(', ',)}`,);
-  }
+  // BOTH SIDES ARE THE PACKAGE'S OWN CONSTANTS (`MODEL_CARDS` and the served-id
+  // lists of `roster-id.ts`), so no caller's input can make them disagree; an
+  // edit to one of them alone does, and says so at the first import.
+  if (!keyedBy<ServedIdOf<Provider>, Row>({ keys, },)(built,))
+    throw new Error(`unreachable: ${provider} cards and served ids disagree: cards ${
+      Object.keys(built,)
+        .join(', ',)
+    }; list ${keys.join(', ',)}`,);
   return built;
 }
 

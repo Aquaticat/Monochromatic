@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { parseDocument, } from './parse-document.ts';
 
 //region Soft break fold
@@ -60,7 +62,7 @@ function foldParagraph({ text, }: { readonly text: string; },): string {
       /**
        Whether line opens after rendered break.
        */
-      const afterHard = (index > 0) && endsInHardBreak({ line: lines[index - 1] ?? '', },);
+      const afterHard = (index > 0) && endsInHardBreak({ line: nonNullishOrThrow(lines[index - 1],), },);
       /**
        Whether line closes with rendered break.
        */
