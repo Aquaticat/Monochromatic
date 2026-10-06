@@ -22,6 +22,8 @@ const targets = [
   { name: 'stage_listing', dictionary: 'stage_listing.dict' },
   { name: 'rules_file', dictionary: 'rules_file.dict' },
   { name: 'final_newline', dictionary: 'final_newline.dict' },
+  { name: 'owner_records', dictionary: 'owner_records.dict' },
+  { name: 'transaction_records', dictionary: 'transaction_records.dict' },
 ];
 const secondsPerTarget = 30;
 const maxInputBytes = 4096;

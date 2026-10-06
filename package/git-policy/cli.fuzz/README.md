@@ -135,6 +135,50 @@ a replacement keeps every byte before the trailing LF run,
 ends with exactly one LF,
 and is itself left alone.
 
+### `owner_records`
+
+Runs the owner lock record reader,
+the transaction owner record reader
+and the `/proc/<pid>/stat` start-time reader
+over raw bytes and over records and stat lines built from the input.
+A built owner lock record is restated by the subject's encoder
+and then edited once by one of a fixed list of field edits
+(a PID of 0, negative, fractional, beyond the safe range or text,
+an empty or renamed token,
+an empty identity,
+another schema version,
+an equal schema version spelled `1.0`,
+a mistyped `transactionId` before the real one,
+an unknown field),
+and the reader must return exactly the outcome the edit implies,
+with the last of duplicate keys winning as in `JSON.parse`.
+A built stat line carries a command name holding spaces,
+parentheses and `) ` sequences,
+a process state,
+and the start time in field 22;
+the reader must return that start time for a running process,
+nothing for a zombie or dead one,
+and refuse a line without the start time or without a closing parenthesis.
+Any accepted record must have a positive safe PID and non-empty token and identity,
+and must parse back to itself after being restated.
+
+### `transaction_records`
+
+Runs the journal readers
+(`preparing.json`, `landing-<n>.json`, `index-lock-<n>.json`, `ref-updated.json`),
+the capture-order readers (`captured.json`, landed-capture records)
+and the capture sequence reader
+over raw bytes and over records built from the input through the subject's types.
+Every built record must parse back to itself;
+one edit per input
+(another schema version, a schema version spelled as text, another state,
+an array around the record, a mistyped `fsId`, an attempt of 0)
+must make every record kind it applies to refuse,
+and a proper prefix of a landing record must be refused.
+An accepted record restated by the encoder must parse to the same record,
+a landing record is a commit exactly when it names its new commit,
+and the sequence reader accepts exactly a canonical decimal and a newline.
+
 ## Controls
 
 `mise run //package/git-policy/cli.fuzz:test` runs the generator controls.
@@ -148,7 +192,10 @@ every ending of the lifecycle,
 every reply kind and reply failure,
 equal, changed, removed and new paths of a staged delta,
 every `rulesFile` refusal,
-and every final-newline outcome,
+every final-newline outcome,
+accepted and refused owner lock records,
+running, exited and malformed stat lines,
+and normalizations, detached heads and merge conclusions in journal records,
 so an invariant that is never reached cannot pass unnoticed.
 
 `mise run //package/git-policy/cli.fuzz:test:planted` proves the invariants can fail.
@@ -167,6 +214,11 @@ object content accepted past its declared size,
 a reply accepted for another object,
 a changed path left out of the staged delta,
 a `rulesFile` value with `..` accepted,
+an owner lock naming PID 0 accepted,
+the start time read from the field before it,
+a journal record of another schema version accepted,
+a capture record with sequence 0 accepted,
+a sequence file with a leading zero accepted,
 extra final line feeds kept),
 and requires a generator control to fail for each.
 Results are retained under `target/verification/planted-*`.
@@ -195,5 +247,5 @@ These targets do not cover real-Git resolution,
 forwarding,
 configuration file reading,
 repository facts read from Git,
-leftover transaction state on disk,
+transaction recovery on disk,
 or the management grammar.

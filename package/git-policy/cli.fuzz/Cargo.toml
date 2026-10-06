@@ -85,6 +85,20 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "owner_records"
+path = "fuzz_targets/owner_records.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "transaction_records"
+path = "fuzz_targets/transaction_records.rs"
+test = false
+doc = false
+bench = false
+
 # libFuzzer records and minimizes a failing input by unwinding out of the assertion.
 [profile.release]
 panic = "unwind"

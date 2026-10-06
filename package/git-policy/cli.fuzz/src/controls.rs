@@ -29,6 +29,7 @@ use git_policy_cli::repository_facts::RepositoryFacts;
 use git_policy_cli::repository_location::RepositoryLocation;
 use git_policy_cli::rule_commit_index::IndexVsHead;
 use git_policy_cli::rule_commit_sequencer::SequencerState;
+use git_policy_cli::transaction_git::GitContext;
 use git_policy_cli::worktree_identity::WorktreeIdentity;
 use git_policy_cli::wrapped_command::{WrappedOutcome, run_wrapped_command};
 use git_policy_cli::wrapper_controls::{
@@ -398,6 +399,33 @@ impl RepositoryFacts for FixedFacts {
             CandidateFailure::GitNotStarted,
             "the fuzz facts start no Git, so no candidate can be prepared",
         ));
+    }
+
+    /// What: The fixed location, as already known.
+    /// Why:  Recovery before a read-only command then probes a location that does not exist,
+    ///       which finds no transaction and starts no Git.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// askedLocation() { return this.location; }
+    /// ```
+    fn asked_location(&self) -> Option<Result<RepositoryLocation, String>> {
+        return Some(Ok(self.location.clone()));
+    }
+
+    /// What: A transaction context naming a Git that does not exist.
+    /// Why:  Any Git the lifecycle tried to start would fail instead of touching a repository.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// transactionContext() { return { gitPath: '/nonexistent/git', overlay: [], globalPrefix: [] }; }
+    /// ```
+    fn transaction_context(&self) -> GitContext {
+        return GitContext {
+            real_git: PathBuf::from("/nonexistent/git"),
+            overlay: Vec::new(),
+            global_prefix: Vec::new(),
+        };
     }
 }
 

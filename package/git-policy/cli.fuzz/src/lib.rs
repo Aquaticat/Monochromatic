@@ -28,3 +28,9 @@ pub mod batch;
 
 /// Index listings, staged deltas, `rulesFile` values and final-newline bytes, with their invariants.
 pub mod content;
+
+/// Generated owner records and `/proc/<pid>/stat` lines, with their parsers' invariants.
+pub mod owners;
+
+/// Generated journal, capture-order and sequence records, with their parsers' invariants.
+pub mod journal;
