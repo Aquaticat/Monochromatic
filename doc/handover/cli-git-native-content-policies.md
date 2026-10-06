@@ -18,6 +18,7 @@ Respond by merging the branch into `main` and by vetoing any item under "Choices
 
 ## Status
 
+Complete on this branch, pending review and merge.
 Done:
 the two candidate sources,
 the coded failure outcome,
@@ -710,3 +711,21 @@ none was fixed.
 - `package/git-policy/cli.fuzz/Cargo.toml` gained three `[[bin]]` entries for the new targets.
 - `package/git-policy/cli/mise.toml` gained `native:build`;
   `package/git-policy/cli.fuzz/mise.toml` describes `test:planted` without a count.
+
+## Not verified
+
+- Nothing ran on macOS or Windows;
+  `native:clippy:windows` only type-checks and lints the library for `x86_64-pc-windows-gnu`.
+- The differential runs used the host's Git 2.55.0 behind both wrappers;
+  the gate image's Git 2.56.0 ran only the Rust controls.
+- `git add --patch` was compared for an untracked file only,
+  where Git answers "No changes.";
+  a tracked file with changes and closed standard input was not compared.
+- A second process changing a file or the index while `git cli-git fix` installs was provoked only inside the
+  installer's unit controls,
+  by calling its two phases directly;
+  no concurrent process raced a real fix.
+- The incumbent's landing lock around direct-fix installation has no native counterpart and no control.
+- The differential driver and its records live in scratch
+  (`${HOME}/temp/agent/content-policies-20261006/`),
+  not in the repository.
