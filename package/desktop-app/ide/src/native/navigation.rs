@@ -42,6 +42,8 @@ mod watch;
 
 /// Language targets in other files open through the same latest-request-wins path as tree rows.
 pub(super) use open::request_jump;
+/// The language worker decides whether folders are watched for the servers; the watcher lives here.
+pub(super) use watch::feed_servers;
 
 /// All tree interaction stays on the native event-loop thread; its fields stay private to navigation.
 pub(super) struct Navigation {
@@ -65,6 +67,10 @@ pub(super) struct Navigation {
     shown: Vec<PathBuf>,
     /// Directories with a live watch, as last reported by the watcher.
     watched: BTreeSet<PathBuf>,
+    /// Tree scroll offset at the previous tick, to notice the user scrolling.
+    tree_scroll: f32,
+    /// When scrolling last asked the watcher to retry watches waiting on the limit.
+    scroll_retry: Option<Instant>,
     /// Latest directory failure; unrelated successes must not erase its diagnostic.
     directory_error: Option<(PathBuf, String)>,
     /// Background source opens retain only the latest requested target.
@@ -152,6 +158,8 @@ pub(super) fn bind_shared(
         directories: DirectoryRefresh::default(),
         shown,
         watched: BTreeSet::new(),
+        tree_scroll: 0.0,
+        scroll_retry: None,
         directory_error: None,
         reveal: initial,
     }));

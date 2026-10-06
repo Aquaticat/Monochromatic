@@ -232,6 +232,34 @@ impl SyntaxEngine {
         });
     }
 
+    /// What: Say whether the built-in language rules name a language for this file, by filename or
+    ///       shebang, without reading the bundled manifest or any grammar. `Result<bool>` is the answer
+    ///       or the error of decoding the compiled-in rules.
+    /// Why: When highlighting cannot start, a file no language applies to loses nothing, so that is
+    ///      not a failure worth a warning; a file some language applies to loses its highlighting.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static namesALanguage(path: string, text: Rope): boolean
+    /// ```
+    pub fn names_a_language(path: &Path, text: &Rope) -> Result<bool> {
+        // An empty grammar set: only the compiled-in filename and shebang rules are consulted.
+        let rules = Self::with_provisioned(HashSet::new())?;
+        // What: `or_else` tries the shebang only when the filename named nothing; `is_some` asks
+        //       whether either found a language.
+        // Why: The same order `recognize` uses, without its check for a bundled grammar.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return (byFilename(path) ?? byShebang(text)) !== undefined;
+        // ```
+        let found = rules
+            .loader
+            .language_for_filename(path)
+            .or_else(|| return rules.loader.language_for_shebang(text.slice(..)));
+        return Ok(found.is_some());
+    }
+
     /// Recognize a bundled language by filename, then by shebang.
     /// None means the registry does not know the file or this build does not ship its grammar.
     fn recognize(&self, path: &Path, text: &Rope) -> Option<Language> {
