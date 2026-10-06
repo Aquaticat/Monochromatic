@@ -2,8 +2,8 @@
 
 /// Waits, kernel probes, and fixture helpers shared by this crate.
 use super::support::{arrive, kernel_watches, not_watching, quiet, set, settle, start, watching};
-/// The watcher under test.
-use ide_app::change_watch::ChangeWatcher;
+/// The watcher under test, and how it classifies the displayed file's changes.
+use ide_app::change_watch::{ChangeWatcher, SourceChange};
 /// What: `PermissionsExt` adds `from_mode`, the Unix way to build permission bits from an octal number.
 /// Why: A mode change on a watched folder is one of the reported changes.
 ///
@@ -154,9 +154,15 @@ fn a_newly_displayed_file_in_a_watched_folder_is_reported_once() {
     watcher.watch_only(&set(&[&root]), Some(&first));
     settle(&mut watcher, &[&root]);
     watcher.watch_only(&set(&[&root]), Some(&second));
-    arrive(&mut watcher, "the newly displayed file", |record| {
+    let switched = arrive(&mut watcher, "the newly displayed file", |record| {
         return record.source.is_some();
     });
+    // No write was seen, so the read it asks for must accept only a file that has been quiet.
+    assert_eq!(
+        switched.source,
+        Some(SourceChange::Reread),
+        "the newly displayed file was reported as a finished write"
+    );
     // Positive control for the silence that follows: nothing else reports the file again.
     let silent = quiet(&mut watcher);
     assert_eq!(

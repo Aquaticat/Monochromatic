@@ -11,7 +11,8 @@
 use ide_app::{
     change_watch::SourceChange,
     refresh_policy::{
-        DirectoryRefresh, SAFETY_SWEEP, SourceRefresh, UNWATCHED_DIRECTORY_POLL, WRITE_QUIET,
+        DirectoryRefresh, SAFETY_SWEEP, SourceRefresh, UNWATCHED_DIRECTORY_POLL,
+        UNWATCHED_SOURCE_POLL, WRITE_QUIET,
     },
 };
 /// What: `BTreeMap` maps each folder to its last read time; `Duration`/`Instant` are spans and time points.
@@ -169,4 +170,23 @@ fn unwatched_timer_shortens_the_sweep_interval_only_for_few_folders() {
             "the unwatched timer made {folders} folders staler than the sweep alone"
         );
     }
+}
+
+/// A displayed file outside the project has no watch on purpose, so the safety sweep rereads it,
+/// not the 250 ms timer that stands in for a watch that failed.
+#[test]
+fn a_file_outside_the_project_is_reread_on_the_sweep() {
+    let start = Instant::now();
+    let mut refresh = SourceRefresh::default();
+    refresh.requested(start);
+    refresh.set_watched(false);
+    refresh.set_outside_project(true);
+    assert!(
+        !refresh.due(start + UNWATCHED_SOURCE_POLL, false),
+        "a file outside the project was polled like a failed watch"
+    );
+    assert!(
+        refresh.due(start + SAFETY_SWEEP, false),
+        "a file outside the project was not reread on the sweep"
+    );
 }

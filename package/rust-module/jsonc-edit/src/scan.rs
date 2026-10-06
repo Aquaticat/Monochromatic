@@ -312,7 +312,7 @@ impl<'a> Scanner<'a> {
                     units.push(self.code_unit()?);
                     continue;
                 }
-                let decoded = if escape == b'"' { Some(u16::from(b'"')) }
+                let simple_escape = if escape == b'"' { Some(u16::from(b'"')) }
                     else if escape == b'\\' { Some(u16::from(b'\\')) }
                     else if escape == b'/' { Some(u16::from(b'/')) }
                     else if escape == b'b' { Some(8) }
@@ -321,7 +321,7 @@ impl<'a> Scanner<'a> {
                     else if escape == b'r' { Some(13) }
                     else if escape == b't' { Some(9) }
                     else { None };
-                let Some(decoded) = decoded else { return Err(self.error("invalid JSON string escape")); };
+                let Some(decoded) = simple_escape else { return Err(self.error("invalid JSON string escape")); };
                 units.push(decoded);
                 continue;
             }

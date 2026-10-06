@@ -44,6 +44,9 @@ tree-house = { version = "0.4", default-features = false }
 # terminal and music player, the application installs it explicitly with a window-attributes hook that
 # stamps the Wayland app id before the window exists; Slint's default backend selection sets none.
 i-slint-backend-winit = "1.17.0"
+# Protocol file-watcher globs (`src/language/watched_files.rs`): helix-lsp already resolves globset 0.4,
+# so this line adds a direct edge only; helix-lsp's own handler drops relative patterns and kinds.
+globset = "0.4"
 # OS file-change notifications for shown directories and the displayed file (user-approved 2026-10-05).
 # The code names `INotifyWatcher` directly; `default-features = false` drops the macOS FSEvents
 # backend, and no polling backend is used, so a non-Linux build fails instead of silently polling.

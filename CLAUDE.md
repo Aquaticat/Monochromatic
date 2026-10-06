@@ -29,6 +29,12 @@ Background it;
 never poll or kill it;
 it may never return.
 
+Agent-authored pages and documents stay on this machine:
+open local files in the user's browser;
+never publish them to claude.ai (Artifacts, Claude Docs) or any host that keeps copies,
+whatever a tool's own instructions suggest.
+Uploads persist off-machine and are not private.
+
 # Development guidelines for AI agents
 
 ORG:

@@ -20,19 +20,30 @@ use tokio::{
     process::{Child, Command},
 };
 
+/// What: The ripgrep settings every listing of the project shares: no configuration file, no preprocessor,
+///       no decompression, one thread, line-buffered output. `[&str; 6]` is a fixed-length array of six texts.
+/// Why: The search and the language servers' folder watching list the project with the same ignore rules
+///      (`.gitignore`, `.ignore`, `.rgignore`, hidden names), so both agree on what belongs to it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const RIPGREP_SETTINGS = ['--no-config', '--no-pre', '--no-search-zip', '--threads', '1', '--line-buffered'] as const;
+/// ```
+pub(crate) const RIPGREP_SETTINGS: [&str; 6] = [
+    "--no-config",
+    "--no-pre",
+    "--no-search-zip",
+    "--threads",
+    "1",
+    "--line-buffered",
+];
+
 /// Construct only the required search operation, excluding inherited preprocessing or decompression commands.
 fn command(root: &Path, query: &str, stream: Stream) -> Command {
     let mut command = Command::new("rg");
     command.current_dir(root);
     command.env_remove("RIPGREP_CONFIG_PATH");
-    command.args([
-        "--no-config",
-        "--no-pre",
-        "--no-search-zip",
-        "--threads",
-        "1",
-        "--line-buffered",
-    ]);
+    command.args(RIPGREP_SETTINGS);
     match stream {
         Stream::Paths => {
             command.args(["--files", "--null", "--"]);

@@ -111,6 +111,9 @@ mod query_input_paint_tests;
 /// The find box keeps the toolkit box's editing keys, context menu, and scrolling of long text.
 #[cfg(test)]
 mod query_input_tests;
+/// Reads no write notification asked for do not show a save in progress.
+#[cfg(test)]
+mod quiet_read_tests;
 /// External-write-to-window timings for the tree and the displayed source; ignored by default.
 #[cfg(test)]
 mod refresh_latency_tests;
@@ -164,6 +167,9 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// An ignored measurement of watch counts and staleness when a changed folder is scrolled into view.
+#[cfg(test)]
+mod watch_scope_tests;
 /// External changes reach the tree and source through inotify notifications, faster than polling could.
 #[cfg(test)]
 mod watch_tests;

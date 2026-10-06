@@ -14,6 +14,8 @@ use super::{
     sync::{DocumentOpen, DocumentReload},
     worker::{self, Command, Outputs},
 };
+/// The changes the change watcher forwards to servers.
+use crate::change_watch::ServerChange;
 /// Failures are reported as user-facing errors, never as empty results.
 use anyhow::{Context, Result, anyhow};
 /// What: `Path` is a borrowed filesystem path; `Arc` is a thread-safe shared pointer;
@@ -64,6 +66,10 @@ pub struct LanguageWorker {
     diagnostics: watch::Receiver<Option<Arc<DiagnosticsSnapshot>>>,
     /// Latest hints.
     hints: watch::Receiver<Option<Arc<HintsSnapshot>>>,
+    /// The queue the change watcher sends file changes into; the worker reads it.
+    file_changes: mpsc::UnboundedSender<ServerChange>,
+    /// Whether some server registered file watchers.
+    watching: watch::Receiver<bool>,
     /// Drops results for another file, revision, or server process.
     fence: Fence,
     /// Number given to the next position request. `u64` never wraps in practice.
@@ -128,13 +134,23 @@ impl LanguageWorker {
         let (status_sender, status_receiver) = watch::channel(Arc::new(LanguageStatus::closed()));
         let (diagnostics_sender, diagnostics_receiver) = watch::channel(None);
         let (hints_sender, hints_receiver) = watch::channel(None);
+        let (watching_sender, watching_receiver) = watch::channel(false);
+        // What: `unbounded_channel` makes a queue without a size limit.
+        // Why: The change watcher sends from notify's thread and must never wait for the worker.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const fileChanges = new Queue<ServerChange>();
+        // ```
+        let (change_sender, change_receiver) = mpsc::unbounded_channel();
         let outputs = Outputs {
             replies: reply_sender,
             status: status_sender,
             diagnostics: diagnostics_sender,
             hints: hints_sender,
+            watching: watching_sender,
         };
-        let thread = worker::spawn(root, setup, command_receiver, outputs)?;
+        let thread = worker::spawn(root, setup, command_receiver, change_receiver, outputs)?;
         // `Ok(...)` is the success variant of `Result`.
         return Ok(Self {
             commands: Some(command_sender),
@@ -142,6 +158,8 @@ impl LanguageWorker {
             status: status_receiver,
             diagnostics: diagnostics_receiver,
             hints: hints_receiver,
+            file_changes: change_sender,
+            watching: watching_receiver,
             fence: Fence::default(),
             next_request: 0,
             thread: Some(thread),
@@ -172,6 +190,28 @@ impl LanguageWorker {
         return anyhow!(
             "Language support stopped unexpectedly ({reason}). Definitions, references, hover, inlay hints, and diagnostics are unavailable until the application is restarted"
         );
+    }
+
+    /// What: A sender for the change watcher's file changes; `clone` makes another handle to one queue.
+    /// Why: The change watcher feeds the worker directly, without the interface thread in between.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// fileChangeSender(): Queue<ServerChange>
+    /// ```
+    pub fn file_change_sender(&self) -> mpsc::UnboundedSender<ServerChange> {
+        return self.file_changes.clone();
+    }
+
+    /// What: Whether some server registered file watchers; `borrow` reads the latest value without waiting.
+    /// Why: The project's folders are watched for servers only while one asked.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// wantsFileChanges(): boolean
+    /// ```
+    pub fn wants_file_changes(&self) -> bool {
+        return *self.watching.borrow();
     }
 
     /// What: Queue one command without waiting. `Ok(false)` means the queue is full and nothing
