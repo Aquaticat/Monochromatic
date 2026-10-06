@@ -5,8 +5,8 @@
 
 /// The find fixture with the bar open and focused, and the wait for the find count.
 use super::find_clear_tests::opened;
-/// Typing into whatever has keyboard focus, and the bounded wait for a condition.
-use super::find_tests::{eventually, type_text};
+/// Typing into whatever has keyboard focus, one key press, and the bounded wait for a condition.
+use super::find_tests::{eventually, key, type_text};
 /// The bounded wait for native navigation state and the tree-row lookup.
 use super::navigation_tests::{row, wait_until};
 /// The search reader and the double-Shift opening of the search overlay.
@@ -26,8 +26,8 @@ use super::AppWindow;
 /// import { ElementHandle, AccessibleRole } from 'slint-testing';
 /// ```
 use i_slint_backend_testing::{AccessibleRole, ElementHandle};
-/// Window ownership and row counts of the result model.
-use slint::{ComponentHandle, Model};
+/// Window ownership, row counts of the result model, and the toolkit's key names.
+use slint::{ComponentHandle, Model, platform::Key};
 /// Fixture files for the disposable search project.
 use std::fs;
 
@@ -291,4 +291,65 @@ fn search_box_and_clear_control_expose_role_label_value_and_actions() {
     );
     window.invoke_search_dismiss();
     window.hide().expect("close accessible search window");
+}
+
+/// What: `field` lends the search box's handle; `expected` is the description it must report.
+/// Why: Every step of the description test reads the same property and names it in the failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function described(field: ElementHandle, expected: string, after: string): void;
+/// ```
+fn described(field: &ElementHandle, expected: &str, after: &str) {
+    // What: `.unwrap_or_default()` takes the text out of the `Option`, or an empty text when there is none.
+    // Why: An absent description and an empty one read the same to an assistive tool.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const shown = field.accessibleDescription ?? '';
+    // ```
+    let shown = field.accessible_description().unwrap_or_default();
+    assert_eq!(
+        shown.as_str(),
+        expected,
+        "after {after} the search box's description is not the expected count text"
+    );
+}
+
+/// The search box's description counts the results for assistive tools, worded like the find box's match
+/// count: nothing without a query, "Searching" while results are pending, "Result 1 of N" for the selected
+/// row and following it, and "No results" when nothing matches.
+#[test]
+fn search_box_description_counts_the_results() {
+    let fixture = tempfile::tempdir().expect("disposable search-count project");
+    // Two files whose names match, so the selected row can move.
+    fs::write(fixture.path().join("needle-one.txt"), "first\n").expect("search fixture");
+    fs::write(fixture.path().join("needle-two.txt"), "second\n").expect("search fixture");
+    let reader = reader(fixture.path());
+    let window = &reader.window;
+    resize(window, 1100.0, 660.0);
+    wait_until(|| return row(window, "needle-two.txt").is_some());
+    open(window);
+    let field = only(window, "Search query");
+    described(&field, "", "opening the overlay");
+    field.set_accessible_value("needle");
+    assert!(
+        window.get_search_busy(),
+        "positive control: setting the query did not start a search"
+    );
+    described(&field, "Searching", "setting the query");
+    wait_until(|| return !window.get_search_busy());
+    settle(window);
+    let total = window.get_search_entries().row_count();
+    assert_eq!(total, 2, "positive control: the fixture gives two results");
+    described(&field, "Result 1 of 2", "the results arrived");
+    key(window, Key::DownArrow);
+    settle(window);
+    described(&field, "Result 2 of 2", "Down");
+    field.set_accessible_value("zzzz");
+    wait_until(|| return !window.get_search_busy());
+    settle(window);
+    described(&field, "No results", "a query that matches nothing");
+    window.invoke_search_dismiss();
+    window.hide().expect("close search-count window");
 }

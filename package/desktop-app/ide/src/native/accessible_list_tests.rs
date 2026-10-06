@@ -2,8 +2,8 @@
 //! Slint's element handles: each container's role, name, and item count, and each row's role, name,
 //! index, and selected state, which must follow the open file and the arrow keys.
 
-/// Finding exactly one element by its accessible label.
-use super::accessible_box_tests::only;
+/// Finding exactly one element by its accessible label, and counting the elements with one label.
+use super::accessible_box_tests::{count, only};
 /// One key press and release through the window, and a bounded wait that names what did not happen.
 use super::find_tests::{eventually, key};
 /// The bounded wait for native navigation state and the tree-row lookup.
@@ -114,6 +114,27 @@ fn item(list: &ElementHandle, label: &str) -> ElementHandle {
 /// ```
 fn assert_row(list: &ElementHandle, label: &str, selected: bool, index: usize) {
     let row = item(list, label);
+    // What: `.to_string()` copies the label for the filter, which the query keeps; `.len()` counts the matches.
+    // Why: Only the row itself may carry its name; a text inside it with the same name is read twice.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const named = descendants(list).filter(e => e.accessibleLabel === label).length;
+    // ```
+    let wanted = label.to_string();
+    let named = list
+        .query_descendants()
+        .match_predicate(move |candidate| {
+            return candidate
+                .accessible_label()
+                .is_some_and(|text| return text == wanted.as_str());
+        })
+        .find_all()
+        .len();
+    assert_eq!(
+        named, 1,
+        "row {label:?} is named by {named} elements in its list, so its name would be read more than once"
+    );
     // What: `Some(true)` is the present variant of `Option` holding `true`.
     // Why: Every row can be selected, and an assistive tool must be told so.
     //
@@ -222,6 +243,11 @@ fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
     assert_row(&tree, "alpha.txt", true, 0);
     assert_row(&tree, "beta.txt", false, 1);
     assert_row(&tree, "nested", false, 2);
+    assert_eq!(
+        item(&tree, "nested").accessible_description().as_deref(),
+        Some("Directory"),
+        "the directory row does not say it is a directory"
+    );
     // Opening another file through the row's default action moves the selected state to its row.
     item(&tree, "beta.txt").invoke_accessible_default_action();
     eventually("opening beta.txt through its row did not select its row", || {
@@ -229,6 +255,18 @@ fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
     });
     assert_row(&tree, "alpha.txt", false, 0);
     assert_row(&tree, "beta.txt", true, 1);
+    // The opened file has a slot badge; its row's description names the shortcut the badge shows.
+    let badge = window
+        .get_tree_entries()
+        .row_data(row(window, "beta.txt").expect("beta row") as usize)
+        .expect("beta entry")
+        .recency;
+    assert!(!badge.is_empty(), "positive control: the opened file has no slot badge");
+    assert_eq!(
+        item(&tree, "beta.txt").accessible_description().unwrap_or_default().as_str(),
+        format!("Source file, Ctrl+{badge}").as_str(),
+        "the row of a file with a slot badge does not name its shortcut"
+    );
     // A handle does not keep its element alive, so the row is looked up again after the file switch.
     item(&tree, "nested").invoke_accessible_expand_action();
     eventually("the expand action did not list the directory's file", || {
@@ -338,6 +376,11 @@ fn location_list_reports_role_name_position_and_the_selected_location() {
     window.invoke_focus_references();
     settle(window);
     let places = container(window, AccessibleRole::List, "2 references", 2);
+    assert_eq!(
+        count(window, "2 references"),
+        1,
+        "the location list's title is read besides the list's own name"
+    );
     assert_row(&places, "src/one.ts:3", true, 0);
     assert_row(&places, "lib/two.d.ts:12", false, 1);
     assert_eq!(
