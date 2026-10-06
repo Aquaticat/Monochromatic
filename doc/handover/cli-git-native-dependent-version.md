@@ -75,7 +75,8 @@ Nothing outside them calls them yet.
 
 Test-only modules:
 `dependent_version_test_support.rs` (an in-memory workspace that records reads),
-`dependent_version_fixture_json.rs` and `dependent_version_fixture_cases.rs`
+`dependent_version_fixture_json.rs`,
+`dependent_version_fixture_output.rs` and `dependent_version_fixture_cases.rs`
 (the native side of the differential harness),
 and `dependent_version_differential_tests.rs`.
 
@@ -339,7 +340,10 @@ Evidence directory
 `package/git-policy/cli/target/verification/dependent-version-DufJ5h`
 (`cases.jsonl`, `ts-results.jsonl`, `rust-results.jsonl`, `report.json`),
 seed `20261006`,
-on the tree of commit `0d7318ff2`:
+on the tree of commit `0d7318ff2`.
+The same corpus on the final gated commit `fee63c86e`
+(evidence `dependent-version-dgeD2D`)
+gave the same counts and the same outcome distribution in every class:
 
 - Unit-test scenarios:
   61 cases,
@@ -558,6 +562,17 @@ it refuses those inputs instead of rewriting them.
   (`passed.json`: tests and Clippy true).
   Image `d0189d1c2c33`,
   evidence `native-dJWeV6`.
+- On commit `fee63c86e`,
+  after the fixture modules were split for the Rust linter
+  and the fuzz dictionary was fixed:
+  605 unit tests passed,
+  1 ignored,
+  37 binary-level tests passed,
+  and Clippy with warnings denied passed.
+  Image `1782030bb936`,
+  evidence `native-CpbtDP`.
+  This is the final gated commit;
+  the third mutation campaign ran against this image.
 
 ### Package lint
 
@@ -567,7 +582,13 @@ The package-wide `mise run //package/git-policy/cli:lint:oxlint` exits 1
 with 171 errors and 1,809 warnings,
 all in 81 files that this branch does not change:
 no file in `git diff --name-only main...HEAD` has a finding.
-The Rust modules pass `native:lint:rust` and Clippy with warnings denied inside the container gate.
+`mise run //package/git-policy/cli:native:lint:rust` exits 1 with 273 findings in 58 files,
+none of them a file this branch changes.
+At the merge commit it also reported 15 findings in two of this branch's test-only modules
+(`dependent_version_fixture_cases.rs` over the 300-code-line limit,
+and `use` lines without rustdoc there and in `dependent_version_fixture_json.rs`);
+commit `90300ff70` split the canonical renderers into `dependent_version_fixture_output.rs`
+and documented each `use` line.
 
 ### Mutation
 
