@@ -463,15 +463,22 @@ await describe({
               await drainBody({
                 response: steered,
                 guard,
-            label: 'hf:whiskers',
+                label: 'hf:whiskers',
                 callerSignal: caller.signal,
               },);
             }
             catch (error) {
               caught = error;
             }
-            expect(caught,).not.toBeInstanceOf(StreamStalledError,);
-            expect((caught as Error).message,).toContain('caller stopped',);
+            // THE STEERING IS THE CAUSE, BY IDENTITY, and the cut's message
+            // names it by class alone: the message is repeated at every
+            // refusal printer, and a caller's abort reason is any value at
+            // all, so its own words stay on the cause.
+            expect(caught,).toBeInstanceOf(StreamCutShortError,);
+            expect((caught as StreamCutShortError).cause,).toBe(steering,);
+            expect(String(caught,),).toBe(
+              'StreamCutShortError: hf:whiskers: stream cut after 0 characters (refused by Error)',
+            );
           },
         },),
       ],
