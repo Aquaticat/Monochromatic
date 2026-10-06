@@ -346,6 +346,16 @@ Quotations are the user's words.
   and stopped servers are collected for at most 2 s after the worker's runtime ends.
 - The application logs warnings and errors by default,
   and the standard `RUST_LOG` variable turns on more detail ("Warnings, with override").
+- Language servers' own output lines are not shown at the default level;
+  the IDE keeps each server's last few lines and puts them into its warning
+  when a server stops unexpectedly ("Keep last lines for crashes").
+- On a normal quit the IDE waits at most 1 s for unwritten log lines ("1 s"),
+  and holds at most 8 MB of unwritten log lines while nothing reads the log,
+  reporting a gap when it has to drop lines ("8 MB").
+- Settled by the agent from the `arc-swap` precedent:
+  `tracing-log` becomes a direct dependency;
+  it was already built through `tracing-subscriber`,
+  and the lockfile gains one dependency edge and no package.
 - The application ships as one executable that carries its runtime files ("Ship as single file").
   Derived by the agent from that answer and the sibling applications,
   open to the user's veto:
