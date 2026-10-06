@@ -393,6 +393,31 @@ Quotations are the user's words.
   `git status` in the main checkout took 4.8 to 9.7 s with the monitor and 33 to 96 ms without it,
   three alternating runs each under a load average near 100.
 
+### Interface decisions (UI batch 3)
+
+Asked on 2026-10-06 with built screenshots of every option
+(`package/desktop-app/ide/design/questions/2026-10-06-ui-batch-3.html`,
+frames in `package/desktop-app/ide/design/screenshots/2026-10-05-ui-batch-3/`).
+Every answer matches what the hint-row build already ships.
+
+- Hint rows look as editord draws them:
+  Inter at 13 px in a dimmed ink,
+  no box.
+- Hint labels stay as the server sent them,
+  colon included.
+- Several hints of one line share rows in source order,
+  as editord packs them,
+  not in the first row with room that the agent ranked first.
+  The user's reason:
+  "first row with room" cannot make readers immediately realize two things are not one thing
+  under the constraints we chose.
+- Diagnostic messages show on their rows with the gutter letters only;
+  the old card at the caret does not come back.
+- A message row keeps the error code,
+  for example `Error 2322 (ts): Type 'string' is not assignable to type 'number'.`
+- The line-number area keeps room for at least three digits,
+  so text starts at the same place for every file under 1000 lines.
+
 ## Verification boundary
 
 Completion requires the actual native application,
