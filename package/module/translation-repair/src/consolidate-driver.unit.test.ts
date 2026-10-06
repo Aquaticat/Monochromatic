@@ -92,9 +92,14 @@ const WIDE_ROSTER = [
 ] as const;
 
 /**
- Per-call bound, never reached because nothing here buys a call.
+ Per-call bound, and the bound on a whole drive when a case passes no signal
+ of its own: a stop for a hang, which no case waits for, since every scripted
+ client answers at once. At 5,000 ms a loaded machine outran it, and the case
+ that drives two slices serially and then two at once failed with a
+ `TimeoutError` its name never states (`mistake-prevention.md`, "Tests on the
+ real clock"). A case that needs the run stopped brings its own controller.
  */
-const CALL_TIMEOUT_MS = 5_000;
+const CALL_TIMEOUT_MS = 60_000;
 
 /**
  What a picture near a slice was read to say, offered to the driver in the
