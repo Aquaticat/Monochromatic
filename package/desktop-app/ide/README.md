@@ -57,7 +57,7 @@ Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
 
 Drag the divider between the tree and the source to resize the tree.
 The width starts at 256 px,
-stays between 160 px and the window width minus the divider and a 240 px source column,
+stays between 160 px and the window width minus the divider's 1 px line and a 240 px source column,
 and lasts for the session only.
 A window too narrow for the chosen width shows the tree narrower,
 down to 160 px,
@@ -78,20 +78,97 @@ and set-value actions;
 Slint 1.18.1 has no splitter or separator role.
 A pointer press never takes keyboard focus.
 
-The idle divider is a faint 1 px line.
-Hover shows the column-resize cursor and a 3 px line in stronger ink;
-a drag keeps the 3 px line in full ink;
-keyboard focus adds a boundary around the whole divider.
+The divider is a 1 px line with no strip beside it.
+Each state is marked by more than color:
+
+- at rest,
+  one faint column;
+- under the pointer,
+  the column-resize cursor and three columns in stronger ink;
+- during a drag,
+  the cursor and three columns in full ink;
+- with keyboard focus,
+  three columns in the accent color
+  and a 5 px by 48 px handle in the same color in the middle of the line.
 
 ### Divider hit area
 
-The divider is its own 48 px layout cell between the tree and the source,
-and its pointer area is exactly that cell.
-It never overlaps tree rows,
-the tree scrollbar,
-or source text,
-so the last tree pixel and the first source pixel keep their own clicks.
-The cost is 47 px of permanent spacing beside the 1 px line.
+The divider's layout cell is its 1 px line,
+so the tree and the source column meet at it.
+Its pointer zone is 5 px wide over the whole window height:
+the line's column and two columns on each side.
+At sidebar width `W` those are the tree's last columns `W-2` and `W-1`,
+the line at `W`,
+and the source column's first columns `W+1` and `W+2`.
+A press there starts a drag and does nothing else.
+The zone takes presses only:
+a wheel turn over it scrolls the tree or the source under it.
+
+The zone is narrower than the 48 px minimum that every other interactive element of this application keeps.
+The user decided this on 2026-10-05 for this one element:
+the application runs on desktops only,
+every desktop has a pointer and a keyboard,
+dragging the divider is rare,
+and the width is also adjustable by keyboard.
+The exception does not extend to any other element.
+
+What the zone covers,
+measured in `ui/tree.slint`,
+`ui/app.slint`,
+and the toolkit's fluent scroll bar (Slint 1.18.1 `widgets/fluent/scrollview.slint`):
+
+- Tree columns `W-2` and `W-1`.
+  Rows span the whole tree width,
+  and their text ends 12 px before the edge,
+  so a row loses two columns of padding as a click target.
+  When the tree overflows,
+  its 14 px scroll bar lies over columns `W-14` to `W-1`.
+  The thumb is drawn in columns `W-6` and `W-5`,
+  or `W-10` to `W-5` under the pointer,
+  and the arrow buttons take columns `W-11` to `W-4`,
+  so the zone covers none of them.
+  The bar scrolls by a drag that starts anywhere on its width;
+  such a drag can no longer start on its last two columns.
+- Source columns `W+1` and `W+2`.
+  They are the first two of the 56 px line-number gutter.
+  Line numbers are right-aligned and end 12 px before the text,
+  and a gutter click puts the caret at the start of its line from any gutter column.
+  Source text and selection rectangles start at `W+57`.
+  Above and under the source view the zone lies in the 12 px padding of the file label and of the find bar.
+
+### Pointer zone precedent
+
+The zone's width follows desktop toolkits,
+read from their sources on 2026-10-05:
+
+- Qt gives a splitter handle narrower than 4 px a grab area of 4 or 5 px:
+  `QSplitterHandle::resizeEvent` adds `(5 - handleWidth) / 2` px of margin on each side,
+  5 px for a 1 px handle
+  (`qt/qtbase` at `f127f11f`, `src/widgets/widgets/qsplitter.cpp` lines 208 to 221).
+  KDE's Breeze style sets the handle width to 1 px
+  (`KDE/breeze` at `fab6402a`, `kstyle/breezemetrics.h` line 169),
+  so Breeze applications show a 1 px line with that 5 px grab area.
+  Once the pointer is on a handle,
+  Breeze also places a 24 px square proxy under it that keeps the drag reachable
+  (`kstyle/breezesplitterproxy.cpp` line 312,
+  `SplitterProxyWidth` 12 in `kstyle/breeze.kcfg`).
+  Qt's Fusion style uses a 4 px handle
+  (`src/widgets/styles/qfusionstyle.cpp` lines 2630 to 2632).
+- Visual Studio Code's sash is 4 px wide and centered on the boundary
+  (`microsoft/vscode` at `729f257f`,
+  `workbench.sash.size` default 4 in `src/vs/workbench/contrib/sash/browser/sash.contribution.ts` lines 22 to 26,
+  `src/vs/base/browser/ui/sash/sash.ts` lines 147 and 667).
+- GTK 4 extends a paned separator's pointer area by 6 px on every side unless `wide-handle` is set
+  (`GNOME/gtk` at `c2a232c4`, `gtk/gtkpaned.c` lines 131 and 297 to 310),
+  and libadwaita draws the separator 1 px wide
+  (`GNOME/libadwaita` at `19098711`, `src/stylesheet/widgets/_paned.scss` lines 2 to 4),
+  which makes 13 px.
+
+Qt's 5 px for a 1 px handle is used.
+Visual Studio Code's 4 px cannot be centered on a 1 px line.
+GTK's 6 px on the tree side would cover the scroll bar's thumb in columns `W-6` and `W-5`.
+Three columns on each side would still clear the thumb and the arrow buttons;
+four would cover the buttons' last column.
 
 ### Differences from editord
 
@@ -109,11 +186,17 @@ and keyboard adjustment.
 
 ### Sidebar checks
 
-`test:native` drives the divider with real pointer and key events,
-including clicks on the pixels on both sides of it at the default,
+`test:native` drives the divider with real pointer and key events:
+a drag from each of the zone's five columns and from the first column on each side of it,
+clicks on the zone and on the pixels beside it at the default,
 narrowest,
-and widest widths.
-`inspect:sidebar-guards` removes each width bound in a disposable copy
+and widest widths,
+a tree scroll-bar drag from the last column left of the zone,
+a wheel turn over the zone's tree columns and source columns,
+and the rendered columns of every state.
+`inspect:sidebar-guards` removes each width bound,
+each edge of the zone,
+and each keyboard-focus mark in a disposable copy
 and checks that its named test fails.
 
 ## Combined search
@@ -279,10 +362,10 @@ and the active match is the reading selection while the bar is still open.
   The offsets are assigned directly,
    without easing.
 - The find text is one line;
-  the toolkit input replaces pasted line breaks with spaces.
-- The find input is the toolkit `LineEdit`,
-  as in combined search,
-  including its built-in clear icon while it has focus and text.
+  the toolkit's `TextInput` replaces pasted line breaks with spaces.
+- The find input is the application's own text box,
+  the same one combined search uses;
+  see [Find and search text box](#find-and-search-text-box).
 
 ### Find painting
 
@@ -331,6 +414,125 @@ including reload,
  file switch,
  and the search overlay.
 `inspect:find-guards` removes each guard in a disposable copy and checks that its named test fails.
+
+## Find and search text box
+
+The find text and the search query are edited in `QueryInput` (`ui/query-input.slint`),
+a single-line box built on the toolkit's `TextInput` item.
+It replaces the toolkit's fluent `LineEdit` because of that widget's clear control:
+a cell 16 px wide whose width cannot be set from outside
+(Slint 1.18.1 `widgets/fluent/lineedit.slint` lines 58 to 67,
+`widgets/common/lineedit-base.slint` lines 189 to 196).
+The user decided on 2026-10-05 to keep the control and give it a click target of at least 48 px by 48 px.
+
+### Clear control
+
+The x at the trailing end of the box empties the text.
+Its click target is a 48 px by 48 px layout cell of the box:
+the glyph is 16 px in the middle,
+and the rest of the cell is padding that takes the click.
+Being a layout cell,
+it is never drawn over the text or over anything beside the box.
+While the control is hidden,
+the same cell is the box's 12 px trailing padding.
+
+The control follows the toolkit's rule for when it exists:
+the box has text,
+is enabled,
+and has keyboard focus.
+A click empties the text,
+reports the edit,
+so the find count and highlights or the search results go with it,
+and leaves keyboard focus in the box.
+A press released outside the cell clears nothing.
+As in the toolkit,
+the control is not a Tab stop;
+from the keyboard,
+Ctrl+A and Delete empty the box.
+
+Each pointer state has two marks:
+
+- at rest,
+  the glyph alone;
+- under the pointer,
+  a filled plate with a 1 px boundary;
+- pressed,
+  a stronger fill and a 2 px boundary.
+
+Accessibility tools see a `button` named `Clear find text` or `Clear search query`
+whose default action clears.
+The toolkit's control is not exposed to them at all.
+
+### Behavior kept from the toolkit box
+
+Read from `widgets/common/lineedit-base.slint` and `widgets/fluent/lineedit.slint` of Slint 1.18.1:
+
+- The placeholder shows while the text and any input-method composition are both empty.
+- Selected text has the palette's selection fill and the palette's accent ink,
+  which is black in the dark scheme and white in the light one.
+  The source view and selected rows choose their ink from the fill instead;
+  see [Selected text ink](#selected-text-ink).
+- A text wider than the box scrolls with the caret:
+  while the caret moves through the text it stays 24 px inside the text area,
+  and the end of the text reaches the area's edge.
+- A right click opens a menu with Undo,
+  Redo,
+  Cut,
+  Copy,
+  Paste,
+  and Select All;
+  Copy and Select All are disabled while the box is empty.
+- Editing keys,
+  clipboard shortcuts,
+  undo,
+  redo,
+  and input-method composition are `TextInput`'s own
+  (`i-slint-core` 1.18.1 `items/text.rs`),
+  so they are the same in both boxes.
+- Focus is marked by a 2 px accent line along the bottom edge and a different fill.
+- Accessibility tools see a `text-input` with its label,
+  value,
+  placeholder,
+  and enabled state,
+  and can set the value and the selection.
+
+Not carried over,
+because nothing here uses them:
+the password and read-only modes,
+the `accepted` callback,
+and the key callbacks.
+
+### Text box checks
+
+`test:native` drives both boxes with real window events:
+
+- a click on each corner pixel and on the center of the find box's clear cell clears,
+  a click one pixel outside each edge does not,
+  the cell's measured size is 48 px by 48 px,
+  and clearing keeps focus and removes the find count and the highlights;
+- the search box's clear cell has the same size,
+  and clearing removes the results and keeps focus;
+- editing keys,
+  every entry of the context menu,
+  and scrolling of a text wider than the box,
+  which never reaches the clear cell;
+- rendered pixels in both schemes:
+  placeholder,
+  focus marks,
+  selection colors,
+  and the clear control's three states.
+
+`inspect:find-guards` and `inspect:search-guards` remove the cell's size,
+its whole-cell click target,
+its edit report,
+and each half of its shown rule in a disposable copy
+and check that the named tests fail.
+Input-method composition was not exercised:
+the toolkit's public window events carry no composition event,
+and the nested compositor provides no input method.
+Accessible properties were read from the running application
+through the toolkit's inspection server during the native frame captures;
+see `design/README.md`.
 
 ## Language module
 
@@ -495,7 +697,8 @@ as with the search overlay.
 Rows are 48 px tall;
 the selected row has the selection fill,
 a heavier weight,
-and a boundary.
+and a boundary,
+and its text is drawn in the ink described under [Selected rows](#selected-rows).
 Accessibility tools see a `list` named by the title,
 with `list-item` rows that report their selection and open on their default action.
 
@@ -892,6 +1095,40 @@ Inter's normal Slint UI request currently retains the optical-axis default,
 not automatic optical sizing.
 Idle DPI changes are covered by a native headless window-event regression.
 Live system-theme change and physical-output scale migration remain to be verified.
+
+### Selected rows
+
+The selected row of the tree,
+of the search results,
+and of the location list draws its text and marks in the ink native code chooses from the selection fill.
+It is the rule of [Selected text ink](#selected-text-ink) in `src/selection_ink.rs`,
+applied in `src/native/render.rs`.
+With the fluent palette that ink is white on `#0078D4` in both color schemes,
+where the palette's own selection ink is black in the dark scheme.
+The user chose this on 2026-10-05.
+
+Measured on rendered frames in both schemes
+by `selected_rows_use_the_ink_chosen_from_the_fill_with_measured_contrast`:
+
+- White on the fill reaches 4.53:1.
+  That holds for the tree's file name,
+  its slot badge,
+  the location list's label and detail,
+  and both lines of a search result,
+  whether or not the list has keyboard focus.
+  No part of a selected row is dimmed:
+  all of it uses the one ink at full opacity.
+- A selected tree row under the pointer or with keyboard focus is tinted.
+  The tint is the opposite of the ink,
+  black under white ink,
+  so it moves the fill away from the text:
+  the fill becomes `#006EC3` and the ratio 5.23:1.
+  Tinted with the foreground ink,
+  as unselected rows are,
+  the dark scheme's fill became `#1482D7` and the ratio fell to 4.04:1.
+
+`inspect:theme-guards` removes the ink choice and reverses the tint in a disposable copy
+and checks that the test fails.
 
 ## Source view keys
 

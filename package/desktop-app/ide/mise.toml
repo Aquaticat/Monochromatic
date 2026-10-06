@@ -112,12 +112,15 @@ runCargo(['test', '--no-default-features', '--lib', '--tests'])
 [tasks."test:native"]
 depends = ["runtime"]
 description = "Exercise native window events and fonts in process-isolated headless tests"
+usage = 'arg "[filter]" help="Optional nextest filter expression, for example test(/sidebar/); default is every native test"'
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 // Language navigation tests start the scripted language server from beside the test binary.
 runCargo(['build', '--features', 'slint/mcp', '--bin', 'ide-scripted-lsp'])
-runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide'])
+// A filtered run prints what its tests print, such as measured contrast ratios, and runs every selected test.
+const filter = process.env.usage_filter ? ['--no-capture', '--no-fail-fast', '--filter-expr', process.env.usage_filter] : []
+runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', ...filter])
 """
 
 [tasks."test:fonts"]
@@ -288,7 +291,11 @@ run = "node bin/inspect-find-reference.mjs"
 
 [tasks."inspect:search-guards"]
 description = "Remove search guards only in a disposable copy and observe named regression failures"
-usage = 'arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"'
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[only]" help="Comma-separated guard names to run; default is every guard"
+'''
 run = "node bin/inspect-search-guards.mjs"
 
 [tasks."inspect:find-guards"]
@@ -383,7 +390,7 @@ console.log(JSON.stringify(record, null, 2))
 
 [tasks."lint:slint"]
 description = "Check the native UI declaration"
-run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/divider.slint", "slint-viewer --check ui/hover.slint", "slint-viewer --check ui/references.slint", "slint-viewer --check ui/annotation.slint"]
+run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/query-input.slint", "slint-viewer --check ui/divider.slint", "slint-viewer --check ui/hover.slint", "slint-viewer --check ui/references.slint", "slint-viewer --check ui/annotation.slint"]
 
 [tasks.lint]
 run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rust", "mise run //package/desktop-app/ide:lint:slint"]

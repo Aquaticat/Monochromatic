@@ -15,7 +15,7 @@ use ide_app::find_navigation::paint_ranges;
 /// Only matches inside the materialized rows and horizontal tile become native rectangles.
 use ide_app::find_paint::rectangles;
 /// Selected-text ink is chosen from the selection fill, not from the color scheme.
-use ide_app::selection_ink::legible_ink;
+use ide_app::selection_ink::{legible_ink, luminance};
 /// Physical viewport description for shared shaping.
 use ide_app::shaped_text::Viewport;
 /// Exact paint inputs exclude collapsed caret movement.
@@ -42,6 +42,21 @@ fn rgba(color: slint::Color) -> [u8; 4] {
     return [color.red(), color.green(), color.blue(), color.alpha()];
 }
 
+/// What: `[u8; 4]` is a fixed array of four bytes, red, green, blue, alpha (siblings `Vec<u8>`, growable,
+/// and `&[u8]`, borrowed); `Color::from_argb_u8` builds a toolkit color from them, alpha first, and
+/// `Brush::from` wraps it as the fill type window properties hold.
+/// Why: Inks chosen by native code are handed to the markup as window properties.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function brush([red, green, blue, alpha]: Color): Brush;
+/// ```
+fn brush(color: [u8; 4]) -> slint::Brush {
+    return slint::Brush::from(slint::Color::from_argb_u8(
+        color[3], color[0], color[1], color[2],
+    ));
+}
+
 /// Render shared shaped rows, releasing state before any Slint setter can reenter.
 pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let factor = window.window().scale_factor();
@@ -55,6 +70,24 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         ),
         dark: window.get_dark_scheme(),
     };
+    // Selected rows of the tree, the search results, and the location list sit on the same fill
+    // as selected source text, so they are drawn in the same chosen ink.
+    window.set_selected_row_ink(brush(colors.selected));
+    // What: `luminance` is the WCAG lightness of the chosen ink, from 0 (black) to 1 (white); the
+    //       `if ... else` picks one of two opaque colors as a value.
+    // Why: A hovered or focused selected row is tinted. The tint must move the fill away from the ink,
+    //      black under light ink and white under dark ink, or it would lower the contrast of the row's text.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const tint = luminance(colors.selected) > 0.5 ? BLACK : WHITE;
+    // ```
+    let tint = if luminance(colors.selected) > 0.5 {
+        [0, 0, 0, 255]
+    } else {
+        [255, 255, 255, 255]
+    };
+    window.set_selected_row_tint(brush(tint));
     let mut current = state.borrow_mut();
     let first = current.first;
     let horizontal = current.horizontal;

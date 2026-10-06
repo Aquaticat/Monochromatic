@@ -3,8 +3,9 @@
 Durable visual records for the read-only Slint IDE in `package/desktop-app/ide`:
 comparison pages that put built UI options side by side,
 and the screenshots those pages show.
-Each record is a question for the user, not shipped behavior.
-Answers are given in the chat and then recorded in `doc/handover/slint-ide-0x.md` by the coordinating session.
+A comparison page is a question for the user, not shipped behavior.
+Answers are given in the chat and then recorded here and in `doc/handover/slint-ide-0x.md`.
+Frames of the built result are stored beside the frames of the question they answer.
 
 ## Layout
 
@@ -14,6 +15,8 @@ Answers are given in the chat and then recorded in `doc/handover/slint-ide-0x.md
 - `screenshots/<date>-<topic>/`:
   the frames for that page.
   PNG files are stored through Git LFS by the root `.gitattributes`.
+- `screenshots/<date>-<topic>-applied/`:
+  frames of the application as built after the answers.
 
 ## Index
 
@@ -51,7 +54,9 @@ The tree's selected row and the wide divider gutter in these frames predate the 
 
 - Page: [`questions/2026-10-05-ui-batch-2.html`](questions/2026-10-05-ui-batch-2.html)
 - Screenshots: `screenshots/2026-10-05-ui-batch-2/`
-- Status: awaiting the user's answers.
+- Status: answered by the user on 2026-10-05 and applied.
+  The applied frames are in `screenshots/2026-10-05-ui-batch-2-applied/`;
+  see [Applied frames of the 2026-10-05 UI batch 2](#applied-frames-of-the-2026-10-05-ui-batch-2).
 
 Questions on the page, with the slug used in file names:
 
@@ -60,6 +65,41 @@ Questions on the page, with the slug used in file names:
 - `clear-icon`: whether the find and search inputs keep the toolkit's clear icon.
 - `find-buttons`: whether the find bar gets previous, next, and close buttons.
 - `selected-ink`: whether selected rows draw white text on the selection fill in both schemes.
+
+#### Answers of 2026-10-05
+
+- `divider-gap`:
+  option B,
+  a thin line with no strip.
+  The built divider does not use the prototype's 48 px grab area over the tree and the source.
+  Its pointer zone is 5 px wide,
+  sized from desktop toolkit sources;
+  the package `README.md` lists them under "Pointer zone precedent".
+  The user granted this size for this one element only:
+  the application runs on desktops only,
+  every desktop has a pointer and a keyboard,
+  dragging the divider is rare,
+  and the width is also adjustable by keyboard.
+- `divider-tab`:
+  option A,
+  the divider stays a Tab stop with the `slider` role and its arrow keys.
+- `clear-icon`:
+  neither option as drawn.
+  The clear control stays,
+  and its click target,
+  invisible padding included,
+  is at least 48 px by 48 px.
+  The toolkit's control cannot be given that size,
+  so the built boxes are the application's own text box with a 48 px by 48 px clear cell.
+- `find-buttons`:
+  option A,
+  keyboard only.
+- `selected-ink`:
+  option B,
+  white text on the selection fill,
+  in the tree,
+  the search results,
+  and the references list.
 
 ## How the 2026-10-05 UI batch 2 screenshots were produced
 
@@ -177,3 +217,118 @@ the source focused, the sidebar 256 px wide.
 - The references list from the language-navigation work:
   it is not in `a630b237b`, and showing it needs a running language server.
   On `main` at `2c64f0229` its selected row uses the same palette ink as the tree and the search list.
+
+## Applied frames of the 2026-10-05 UI batch 2
+
+`screenshots/2026-10-05-ui-batch-2-applied/` holds frames of the application built at commit `5683610b5`
+of the branch `feat/ide-ui-batch-2`,
+in the dark and the light scheme.
+
+### How the applied frames were produced
+
+Every frame comes from a fresh session of the package's native inspection task
+in the nested compositor,
+one session per scene and scheme:
+
+```sh
+# package/desktop-app/ide/mise.toml, task inspect:native
+IDE_NATIVE_MCP_PORT=9394 mise run //package/desktop-app/ide:inspect:native dark scroll
+IDE_NATIVE_MCP_PORT=9395 mise run //package/desktop-app/ide:inspect:native light scroll
+```
+
+- Fixture,
+  window size,
+  project contents,
+  seat input,
+  pointer hover,
+  settled frames,
+  caret phase,
+  and lossless re-encoding are those of
+  [How the 2026-10-05 UI batch 2 screenshots were produced](#how-the-2026-10-05-ui-batch-2-screenshots-were-produced).
+- A held press uses the toolkit inspection server's `drag_element`,
+  which presses,
+  moves in 5 px steps 16 ms apart,
+  and releases.
+  The divider is dragged straight down its own line,
+  so its width stays 256 px;
+  the clear control is dragged out of its cell,
+  where the release clears nothing.
+  Screenshots are taken while the drag runs,
+  and one whose sampled pixels show the pressed state is kept;
+  it is not a settled pair.
+- A frame taken right after a scale switch or after the context menu opens
+  waits until the application reports the new scale or lists the menu entries,
+  because the compositor can answer before the application has redrawn.
+- Frames whose names end in `-2x` follow the control command `scale 2`:
+  2200 by 1320 pixels for the same 1100 by 660 logical window.
+- The references frames open a disposable TypeScript project below the system temporary directory
+  through `IDE_NATIVE_PROJECT` and `IDE_NATIVE_FILE`,
+  with the repository's TypeScript 7.0.2 copied into its `node_modules`.
+  A seat click puts the caret on a function's name at its definition,
+  and Ctrl+B lists its references.
+- `capture-record.json` holds what each session read from the running application:
+  accessible properties of the divider,
+  both text boxes,
+  and both clear controls,
+  sampled pixel colors of the divider states,
+  and the values after each action.
+
+### What the applied frames show
+
+File names are `<element>-<state>-<scheme>.png`,
+with `-2x` for the scale 2 frames.
+
+- `divider-rest`:
+  the 1 px line,
+  with the pointer parked over the source.
+- `divider-hovered`:
+  three columns in stronger ink,
+  with the pointer on the line.
+- `divider-dragging`:
+  three columns in full ink,
+  during a held press.
+- `divider-focused`:
+  three columns in the accent color and the handle in the middle,
+  after Tab from the source to the tree and to the divider.
+- `divider-rest-2x`,
+  `divider-hovered-2x`,
+  and `divider-focused-2x`:
+  the same states at scale 2.
+- `find-empty`:
+  the find bar after Ctrl+F,
+  with its placeholder and no clear control.
+- `find-text`:
+  the find text `Latin` and the clear control at rest.
+- `find-clear-hovered` and `find-clear-pressed`:
+  the clear control under the pointer and during a held press.
+- `find-text-2x` and `find-clear-hovered-2x`:
+  the clear cell at scale 2.
+- `find-menu`:
+  the context menu after a right click on the find text.
+- `search-empty`,
+  `search-text`,
+  `search-clear-hovered`,
+  and `search-clear-pressed`:
+  the same states of the search box;
+  `search-text` also shows a selected result row.
+- `selected-tree`:
+  the selected tree row while the source has keyboard focus.
+- `selected-tree-hovered`:
+  the same row under the pointer,
+  with its darker tint.
+- `selected-tree-focused`:
+  the same row with keyboard focus on it,
+  after Tab from the source and End,
+  with its tint and boundary.
+- `selected-search`:
+  the selected search result.
+- `selected-references` and `selected-references-second`:
+  the references list with its first and then its second row selected.
+
+### What the applied frames do not show
+
+- The mouse cursor:
+  the screenshot holds the application surface only.
+  The column-resize cursor over the divider is therefore not in any frame.
+- Input-method composition:
+  the nested compositor provides no input method.
