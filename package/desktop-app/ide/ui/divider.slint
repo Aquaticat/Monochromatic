@@ -85,7 +85,8 @@ export component SidebarDividerGrip inherits Rectangle {
         visible: root.keyboard-focus;
         y: (parent.height - self.height) / 2;
         width: parent.width;
-        height: 48px;
+        // Prototype divider-focus b: a longer handle.
+        height: 96px;
         border-radius: self.width / 2;
         background: Palette.accent-background;
     }

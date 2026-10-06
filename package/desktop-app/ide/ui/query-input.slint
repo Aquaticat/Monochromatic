@@ -147,8 +147,7 @@ export component QueryInput inherits Rectangle {
         // The trailing layout cell: 12px of padding while the clear control is hidden, and the control's
         // whole 48px wide click target while it is shown. It is never drawn over the text or a neighbor.
         clear-cell := Rectangle {
-            // Prototype trailing-cell b: the cell keeps its 48px whether or not the control is shown.
-            width: root.clear-size;
+            width: root.clear-shown ? root.clear-size : root.side-padding;
             Rectangle {
                 visible: root.clear-shown;
                 width: 100%;
