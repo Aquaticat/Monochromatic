@@ -10,6 +10,10 @@ run = "cargo fuzz list --fuzz-dir ."
 description = "Run generator and invariant controls"
 run = "cargo test --lib"
 
+[tasks."test:planted"]
+description = "Plant one defect per fuzz target in a copy of the linter and require the generator controls to fail"
+run = "node bin/planted-controls.mjs"
+
 [tasks."lint:types"]
 description = "Check the fuzz helper library with denied Clippy warnings"
 run = ["cargo check --lib", "cargo clippy --lib -- -D warnings"]

@@ -6,6 +6,13 @@ import { access, copyFile, cp, mkdir, mkdtemp, rm, stat, writeFile } from 'node:
 import { tmpdir } from 'node:os';
 import { delimiter, join, resolve } from 'node:path';
 
+/** Concurrent worktrees and agents set MONOCHROMATIC_LINT_IMAGE_TAG so one campaign never runs another's image. */
+const imageTag = process.env.MONOCHROMATIC_LINT_IMAGE_TAG ?? 'development';
+/** Instrumented build image: package inputs, vendored dependencies and cargo-fuzz. */
+const buildImage = `localhost/monochromatic-lint-fuzz-build:${imageTag}`;
+/** Mount-free run image: instrumented binaries, seeds and dictionary only. */
+const runImage = `localhost/monochromatic-lint-fuzz-run:${imageTag}`;
+
 /** Preserve the failed verification boundary rather than masking it with a later copy error. */
 class FuzzVerificationError extends Error {}
 
@@ -96,15 +103,15 @@ async function main() {
       'ENV RUSTC="/toolchain/bin/rustc" RUSTDOC="/toolchain/bin/rustdoc"',
       '',
     ].join('\n'));
-    execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/monochromatic-lint-fuzz-build:development', context] });
+    execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', buildImage, context] });
     // Compiler files retain their host labels. Do not relabel a shared Rust installation with :Z.
     // Only build containers disable label isolation; fuzz execution has no host mounts and keeps it enabled.
     const compilerMount = ['--security-opt', 'label=disable', '--volume', `${compiler}:/toolchain:ro`];
-    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development', 'cargo', 'test', '--lib', '--offline', '--locked', '--', '--test-threads=2'] });
+    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, buildImage, 'cargo', 'test', '--lib', '--offline', '--locked', '--', '--test-threads=2'] });
     // Type/lint the property helpers in the same bounded compiler context as their generator controls.
-    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development', 'cargo', 'clippy', '--lib', '--offline', '--locked', '--', '-D', 'warnings'] });
+    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, buildImage, 'cargo', 'clippy', '--lib', '--offline', '--locked', '--', '-D', 'warnings'] });
     const buildContainer = execute({ command: 'podman', args: [
-      'create', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development',
+      'create', ...limits, ...compilerMount, buildImage,
       'cargo', 'fuzz', 'build', '--fuzz-dir', '.', '--sanitizer', 'address', '--codegen-units', '16',
       '--target', 'x86_64-unknown-linux-gnu', '--target-dir', '/work/build',
     ], capture: true }).stdout.trim();
@@ -133,12 +140,12 @@ async function main() {
       `RUN ${JSON.stringify(['mkdir', '--parents', ...targets.map(target => `/fuzz/artifacts/${target}`)])}`,
       'WORKDIR /fuzz', '',
     ].join('\n'));
-    execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/monochromatic-lint-fuzz-run:development', '--file', join(context, 'Run.Containerfile'), context] });
+    execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', runImage, '--file', join(context, 'Run.Containerfile'), context] });
     console.log(`Fuzz evidence: ${evidence}`);
     for (const target of targets) {
       const dictionary = target === 'configuration' ? ['-dict=/fuzz/dictionary/configuration.dict'] : [];
       const container = execute({ command: 'podman', args: [
-        'create', ...limits, 'localhost/monochromatic-lint-fuzz-run:development',
+        'create', ...limits, runImage,
         `/fuzz/bin/${target}`, `/fuzz/corpus/${target}`, '-max_total_time=30',
         '-max_len=8192', '-rss_limit_mb=1536', '-timeout=5', '-print_final_stats=1', `-artifact_prefix=/fuzz/artifacts/${target}/`, ...dictionary,
       ], capture: true }).stdout.trim();
