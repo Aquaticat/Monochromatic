@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import { readAttemptOutcome, } from './entry-reattempt.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
 
@@ -110,15 +111,25 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
 
     if (verdict.kind === 'earned') {
       console.log(
-        `REATTEMPT ${entry.id} queued: ${String(verdict.gained,)} more cache records than it had, `
-          + 'so the next attempt starts further along',
+        `REATTEMPT ${entry.id} queued: ${String(verdict.gained,)} more cache ${
+          wordForCount({
+            count: verdict.gained,
+            one: 'record',
+            many: 'records',
+          },)
+        } than it had, so the next attempt starts further along`,
       );
       queue.push(entry,);
     }
     if (verdict.kind === 'stalled') {
       console.log(
-        `STALLED ${entry.id}: its ${String(verdict.cached,)} cache records are what it started `
-          + 'with, so a further attempt in this invocation would repeat it',
+        `STALLED ${entry.id}: its ${String(verdict.cached,)} cache ${
+          wordForCount({
+            count: verdict.cached,
+            one: 'record is',
+            many: 'records are',
+          },)
+        } what it started with, so a further attempt in this invocation would repeat it`,
       );
     }
     if (verdict.kind === 'stopped') {

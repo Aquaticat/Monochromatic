@@ -117,10 +117,6 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'corpus-run/pass-schema-guard.ts#NAMED_EXAMPLES',
     'a list of entry ids',
   ],
-  [
-    'corpus-run/corpus-pass.ts#PLAN_PREVIEW_COUNT',
-    'a list of entry ids',
-  ],
 ],);
 
 /**

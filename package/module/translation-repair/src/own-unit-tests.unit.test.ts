@@ -662,7 +662,6 @@ const ALLOWLIST: readonly string[] = [
   'src/corpus-run/pass-pictures-reseat.ts',
   'src/corpus-run/pass-prepare-reseat.ts',
   'src/corpus-run/pass-prepare.ts',
-  'src/corpus-run/pass-republish.ts',
   'src/corpus-run/pass-reseat-hook.ts',
   'src/corpus-run/pass-seated-pictures.ts',
   'src/corpus-run/pass-visual-evidence.ts',

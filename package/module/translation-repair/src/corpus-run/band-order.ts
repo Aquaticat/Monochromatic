@@ -98,33 +98,6 @@ export function bandOf(
 }
 
 /**
- Ids sitting in the small band, held as a set so a comparator is a lookup
- rather than a re-measurement on every compare.
-
- @param entries - eligible entries with their page sizes
-
- @returns Ids whose page source is under the small-band cut
-
- @example
- ```ts
- const small = smallBandIds({ entries, },);
- ```
- */
-export function smallBandIds(
-  { entries, }: { readonly entries: readonly SizedEntry[]; },
-): ReadonlySet<string> {
-  return new Set(
-    entries
-      .filter(function isSmall(entry,) {
-        return bandOf({ sourceBytes: entry.sourceBytes, },) === 'small';
-      },)
-      .map(function toId(entry,) {
-        return entry.id;
-      },),
-  );
-}
-
-/**
  Ranks every entry within its own size band, so a comparator can interleave
  the bands by rank instead of draining one before starting the next.
 

@@ -156,6 +156,10 @@ function isModifierWord({ word, }: { readonly word: string; },): boolean {
  */
 const EXEMPT_COUNTS: ReadonlyMap<string, string> = new Map([
   [
+    'artifact-change-sets.ts#readArtifactChangeSets: records',
+    'a verb after a schema version',
+  ],
+  [
     'assembly-contract-fault.ts#assemblySentence: claims',
     'a verb after a slice index',
   ],

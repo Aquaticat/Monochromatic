@@ -1,4 +1,5 @@
-import { contextRoot, } from '../log-context.ts';
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+
 import { readCorpusFile, } from '../corpus-source.ts';
 import {
   type CorpusPairReader,
@@ -6,7 +7,6 @@ import {
 } from './page-republish.ts';
 import { removeDeclinedPages, } from './pass-decline.ts';
 import { settledEntryIds, } from './published-tree-listing.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Pass republish
 // The pass's side of ledger A16c: before any entry runs, every page the
@@ -15,13 +15,10 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 // `corpus-pass.ts`, which keeps to its line budget.
 
 /**
- Logger the republish lines go through.
- */
-const republishLog = contextRoot({ tag: 'republish', },);
-
-/**
  Reads an entry's pair from the run's corpus clone at the commit its artifact
  was settled at, which the run pin need not share.
+
+ @param cloneDir - clone the run reads
 
  @param entryId - entry whose pair to read
 
@@ -31,20 +28,21 @@ const republishLog = contextRoot({ tag: 'republish', },);
 
  @example
  ```ts
- const pair = await readPinnedPair({ entryId: 'tabby', corpusSha, },);
+ const pair = await readPinnedPair({ cloneDir, entryId: 'tabby', corpusSha, },);
  ```
  */
 async function readPinnedPair(
   {
+    cloneDir,
     entryId,
     corpusSha,
-  }: Parameters<CorpusPairReader>[0],
+  }: Parameters<CorpusPairReader>[0] & { readonly cloneDir: string; },
 ): ReturnType<CorpusPairReader> {
   /**
    The clone the run reads, at the artifact's own commit.
    */
   const pin = {
-    cloneDir: RUN_CORPUS_PIN.cloneDir,
+    cloneDir,
     commitSha: corpusSha,
   };
   /**
@@ -85,9 +83,13 @@ async function readPinnedPair(
 
  @param publishDir - root of the mirrored tree
 
+ @param cloneDir - corpus clone the pairs are read from, at each artifact's own commit
+
+ @param l - logger the republish lines go through
+
  @example
  ```ts
- await republishRunPages({ runsDir, artifactsDir, declinedDir, publishDir, },);
+ await republishRunPages({ runsDir, artifactsDir, declinedDir, publishDir, cloneDir, l, },);
  ```
  */
 export async function republishRunPages(
@@ -96,11 +98,15 @@ export async function republishRunPages(
     artifactsDir,
     declinedDir,
     publishDir,
+    cloneDir,
+    l,
   }: {
     readonly runsDir: string;
     readonly artifactsDir: string;
     readonly declinedDir: string;
     readonly publishDir: string;
+    readonly cloneDir: string;
+    readonly l: Logger;
   },
 ): Promise<void> {
   await removeDeclinedPages({
@@ -112,15 +118,24 @@ export async function republishRunPages(
    */
   const settled = await settledEntryIds({ runsDir, },);
   if (settled.kind === 'unreadable') {
-    republishLog.warn(`republish: artifacts unreadable (${settled.reason}); no page judged`,);
+    l.warn(`republish: artifacts unreadable (${settled.reason}); no page judged`,);
     return;
   }
   await republishSettledPages({
     entryIds: settled.names,
     artifactsDir,
     publishDir,
-    readPair: readPinnedPair,
-    l: republishLog,
+    readPair: function readPair({
+      entryId,
+      corpusSha,
+    },): ReturnType<CorpusPairReader> {
+      return readPinnedPair({
+        cloneDir,
+        entryId,
+        corpusSha,
+      },);
+    },
+    l,
   },);
 }
 

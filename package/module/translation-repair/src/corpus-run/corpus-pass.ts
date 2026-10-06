@@ -1,10 +1,3 @@
-import { textsInCodePointOrder, } from '../code-points.ts';
-import { join, } from 'node:path';
-
-
-import {
-  listCorpusPeople,
-} from '../corpus-source.ts';
 import {
   graceOverrideNote,
   resolveStragglerGraceMs,
@@ -15,222 +8,47 @@ import {
   readWriterGrace,
   writerGraceOverrideNote,
 } from '../writer-grace-override.ts';
-import {
-  type AttemptMap,
-  attemptsOf,
-  countAttempt,
-  readAttemptMap,
-  writeAttemptMap,
-} from './attempt-store.ts';
-import {
-  countSettledPerBand,
-  rankWithinBands,
-  smallBandIds,
-} from './band-order.ts';
-import { askedAmong, } from './command-flags.ts';
-import { readOnlyIds, } from './entry-filter.ts';
-import { inEntryLogContext, } from '../log-context.ts';
 import { monotonicMs, } from '../monotonic-clock.ts';
-import { collectEligiblePairs, } from './pass-eligibility.ts';
-import type { EntryOutcome, } from './pass-entry-contract.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
+import { resolveHardCapMinutes, } from './cap-override.ts';
 import {
-  settleEntry,
-} from './pass-entry.ts';
-import {
-  assertArtifactsPlaceable,
-  assertBuildGenerationResumable,
-  readDriftOptIn,
-} from './pass-generation-guard.ts';
+  HARD_CAP_MINUTES,
+  PASS_MS_PER_MINUTE,
+} from './corpus-pass-limits.ts';
+import { runCorpusPassOver, } from './corpus-pass-run.ts';
+import { readDriftOptIn, } from './pass-generation-guard.ts';
+import { settleEntry, } from './pass-entry.ts';
 import { RUN_OUTSIDE_READS, } from './pass-outside-reads.ts';
 import { RUN_PICTURE_SOURCES, } from './pass-visual-evidence.ts';
-import { assertResumableSchemaGeneration, } from './pass-schema-guard.ts';
-import {
-  entriesFinishedThisRun,
-  finishedEntryIds,
-} from './pass-finished.ts';
-import { countSettled, } from './pass-settled.ts';
-import { prepareRunsLayout, } from './runs-layout.ts';
-import { digestPipeline, } from './pipeline-digest.ts';
-import {
-  capOutlastsOneCall,
-  capTooTightNote,
-  HARD_CAP_VAR,
-  resolveHardCapMinutes,
-} from './cap-override.ts';
-import { runAttemptQueue, } from './entry-attempt-queue.ts';
-import { countCachedSlices, } from './entry-reattempt.ts';
-import { stopBeforeNextEntry, } from './pass-stop-before-next.ts';
-import {
-  resolveSpendCeilingUsd,
-  SPEND_CEILING_USD,
-  spendCeilingOverrideNote,
-} from './spend-ceiling.ts';
-import { lockRunsDir, } from './runs-lock.ts';
-import { republishRunPages, } from './pass-republish.ts';
-import { listResumableEntries, } from './slice-cache-store.ts';
 import {
   createRunClient,
   readHeadSha,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
   RUN_CORPUS_PIN_SETTING,
-  RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
-import { corpusPinOverrideNote, } from './corpus-pin-override.ts';
-import { reportingRefusals, } from './cli-refusal.ts';
-import type { CommandLineOf, } from './command-lines.ts';
 import {
-  assertRequiredProvidersReady,
-  readRequiredProviders,
-} from './required-providers.ts';
+  resolveSpendCeilingUsd,
+  SPEND_CEILING_USD,
+} from './spend-ceiling.ts';
 
 //region Corpus pass
-// Runs the pipeline over every complete zh/en corpus pair at the pinned commit,
-// one entry at a time: skips entries that already have an artifact, orders the
-// rest to resume cached progress first, then interleave the size bands by
-// within-band rank so coverage fills evenly (then fewest-attempts-first), and
-// stops starting new entries at the soft budget while a per-entry hard ceiling
-// aborts an entry that overruns. Each settled
-// entry writes one JSON artifact and one TALLY line. Run it with `mise run
-// //package/module/translation-repair:corpus-pass` (append `-- --plan` for a
-// zero-quota setup check).
+// Runs the pipeline over every complete zh/en corpus pair at the pinned commit
+// (`corpus-pass-run.ts`). This file is the wiring only: it reads what a process
+// has (the environment, the clock, the git tip, the client) and hands it over.
+// Run it with `mise run //package/module/translation-repair:corpus-pass` (append
+// `-- --plan` for a zero-quota setup check).
 
 /**
- Minutes expressed in milliseconds, for the time budgets.
- */
-const MS_PER_MINUTE = 60_000;
+ Reads the launch's overrides and runs the pass over them.
 
-/**
- Minutes after which no new entry starts, counted on `monotonicMs` like the
- per-entry hard cap's timer, so setting the system clock neither spends the
- budget nor refunds it, and time the machine spends suspended does not count
- (ledger B78).
-
- Was 25, which throttled the whole accumulation to about one entry per launch.
- The interaction that caused it: `BANDS` puts the large band first within a
- rank, so a run starts a large entry, that entry alone runs past 25 minutes,
- and this check then refuses to start anything else. Runs 010 and 011 both
- show exactly that, one settling a single entry and one settling none.
-
- A long budget lets a run chain several entries instead. It is scheduling
- only: it changes when a run stops starting work, never what the pipeline
- finds, so unlike the per-call deadline it can move without splitting the pool
- into incomparable cohorts. The per-entry hard cap still bounds any single
- runaway, and slice-level resumability means an entry cut by that cap resumes
- on the next run rather than restarting.
-
- Raised from 240 alongside the hard cap, and for the same measured reason.
- Recall run 001 spent 252 minutes settling SEVEN of nine entries under a
- four-hour budget and recorded the other two as skipped, coverage 0.778. The
- ensemble and the naturalness lane only make each entry slower, so holding
- 240 would have shrunk that further. Twelve hours leaves room for a full
- nine-entry pass.
-
- A skipped entry is lost coverage in the verdict, not saved money: the plan
- is flat rate, quota regenerates faster than runs spend, and the user
- confirmed cost does not matter.
-
- Raised from 720 because twelve hours could not clear the corpus in ONE
- invocation, and every extra invocation was fragmenting the pool. Measured
- from artifact mtimes across an evening: about 27 minutes per entry over a
- clean stretch and about 53 averaged over a whole span including stalls. At
- 92 pending entries that is 41 to 81 hours, so a twelve-hour budget settles
- roughly 13 to 26 and stops, and reaching the full corpus needs four to seven
- resumes. Each resume re-reads HEAD, so under a policy of restarting whenever
- a fix lands, each one stamped a new commit: that is precisely how one
- directory came to hold 22 entries across four tips.
-
- Three days covers the pessimistic rate with room to spare. It is not a
- prediction that a run will take three days; the resume guards at startup
- (`assertArtifactsPlaceable`, `assertResumableSchemaGeneration`,
- `assertBuildGenerationResumable`) are what protect the pool now, and this
- only stops the BUDGET from being the thing that forces a fragmenting resume.
- */
-const SOFT_BUDGET_MINUTES = 4_320;
-
-/**
- Minutes ONE entry may run before its exchanges abort, on the timer clock,
- which a step of the system clock does not move and which does not count a
- suspend.
- Per entry, not per run: the ceiling was previously armed once for the
- whole loop, so an entry that started near the soft budget got only the
- remaining sliver, and Arita (12 slices, ~68 min) could never finish. A
- fresh timer per entry gives each its full budget regardless of start
- time. Entries far larger than the cap clears (aiyysk 77 slices,
- hulicaijia 65, ...) still exceed any single-run ceiling and need
- slice-level resumability, tracked separately.
-
- Raised from 90 on measurement rather than on feel. Recall run 001 timed
- seven entries end to end: per-slice rate ran 3.25 min at best, 5.56 at the
- median, and 8.56 at the worst, and its longest entry took 74.7 minutes for
- 12 slices. The old 90 was therefore ALREADY marginal before this branch
- changed anything: at the worst observed rate a 12-slice entry needs 103
- minutes and would have been cut. The measured median also confirms the
- ~5.5 min/slice figure the old comment claimed.
-
- That rate is PRE-ENSEMBLE. It predates per-envelope judge rounds, the
- chunk-level round, and the whole naturalness lane, every one of which only
- adds. How much they add is unmeasured, so this is a bound against runaway
- rather than a tuned value: 180 clears 21 slices even at the worst observed
- rate, and 32 at the median.
-
- Cost is not the constraint being traded here. The plan is flat rate and
- quota regenerates faster than runs spend, and the user confirmed cost does
- not matter, so the thing a low cap actually costs is entries covered per
- run. Slice-level resumability means a capped entry resumes next run, so a
- generous cap risks time and never work.
- */
-const HARD_CAP_MINUTES = 420;
-
-// RAISED FROM 180 TO 420 on 2026-08-17, on a measurement rather than on
-// the reasoning in `HARD_CAP_MINUTES`'s TSDoc, which had only a bound against
-// runaway to offer. That
-// measurement timed the two-lane shape end to end and found 4 to 6 entries hitting the
-// 180-minute cap, all of them clearing at 7 hours. Every argument in that
-// TSDoc's paragraph on cost points the same way: cost is not the constraint, slice-level
-// resumability means a capped entry resumes rather than dies, so the cap buys
-// nothing except a shorter run and costs entries covered by it.
-
-/**
- Soft budget in milliseconds.
- */
-const SOFT_BUDGET_MS = SOFT_BUDGET_MINUTES * MS_PER_MINUTE;
-
-/**
- Hard ceiling in milliseconds, after any environment override.
-
- OVERRIDABLE so the re-attempt queue can be exercised against an entry that
- fits in one run: the queue only does anything to an entry the cap CUTS, and
- the shipped ceiling means the smallest such entry needs thirteen hours.
- `cap-override.ts` carries why an unreadable override throws.
- */
-const HARD_CAP_MS = resolveHardCapMinutes({ fallback: HARD_CAP_MINUTES, },)
-  * MS_PER_MINUTE;
-
-/**
- USD this run may spend on the provider that bills in USD before it stops
- starting entries, after any environment override (`spend-ceiling.ts`).
- */
-const RUN_SPEND_CEILING_USD = resolveSpendCeilingUsd({ fallback: SPEND_CEILING_USD, },);
-
-/**
- Complete zh/en pairs present at the pinned commit; the run target.
- */
-const CORPUS_PAIR_TARGET = 92;
-
-/**
- Entry ids previewed on the `--plan` line.
- */
-const PLAN_PREVIEW_COUNT = 5;
-
-/**
- Runs one accumulation pass over the corpus, writing artifacts and TALLY lines.
- Reads config and the API key from the environment; performs model calls unless
- `--plan` is passed, which verifies setup at zero quota and returns.
+ EVERY OVERRIDE IS READ HERE, INSIDE THE REFUSAL BOUNDARY, in the order a
+ launch's mistakes should surface: the per-entry ceiling, the spend allowance,
+ then both windows, before the lock is claimed and before anything is read, so
+ an unreadable value refuses the pass before it claims a directory or spends
+ anything, as a stated refusal and not as a fault at load.
 
  @param line - the pass's command line, read whole by `reportingRefusals`
-
- @throws {@link Error} when the API key env var is unset
 
  @example
  ```ts
@@ -239,11 +57,23 @@ const PLAN_PREVIEW_COUNT = 5;
  */
 async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-pass'>; },): Promise<void> {
   /**
-   Note naming the straggler window when it is not the built-in one.
+   Hard ceiling in milliseconds, after any environment override.
 
-   RESOLVED FIRST, before the lock and before anything is read, so an
-   unreadable override refuses the pass before it claims a directory or
-   spends anything. Printed after START, where the cap note is.
+   OVERRIDABLE so the re-attempt queue can be exercised against an entry that
+   fits in one run: the queue only does anything to an entry the cap CUTS, and
+   the shipped ceiling means the smallest such entry needs thirteen hours.
+   `cap-override.ts` carries why an unreadable override throws.
+   */
+  const hardCapMs = resolveHardCapMinutes({ fallback: HARD_CAP_MINUTES, },) * PASS_MS_PER_MINUTE;
+
+  /**
+   USD this run may spend on the provider that bills in USD before it stops
+   starting entries, after any environment override (`spend-ceiling.ts`).
+   */
+  const spendCeilingUsd = resolveSpendCeilingUsd({ fallback: SPEND_CEILING_USD, },);
+
+  /**
+   Note naming the straggler window when it is not the built-in one.
    */
   const graceNote = graceOverrideNote({
     effectiveMs: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
@@ -251,418 +81,29 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
   },);
 
   /**
-   Note naming the writer rounds' window when a launch gave them their own,
-   resolved here for the same reason as `graceNote` and printed beside it.
+   Note naming the writer rounds' window when a launch gave them their own.
    */
   const writerNote = writerGraceOverrideNote({ grace: readWriterGrace(), },);
 
-  /**
-   Durable, gitignored output root for this run.
-   */
-  const runsDir = await resolveRunsDir();
-
-  // Taken before anything is read, and held for the whole pass. Two passes
-  // sharing one directory overwrite each other attempt counts, delete each
-  // other cached slices whenever their pipelines differ, and the later write of
-  // any entry replaces the earlier one, all of it looking like ordinary output.
-  /**
-   Exclusive claim on this runs directory, released when the pass returns.
-   */
-  await using _lock = await lockRunsDir({ runsDir, },);
-
-  /**
-   Every path this pass reads and writes under its runs dir; the artifacts
-   directory and the published tree are created now so a pass that settles
-   nothing still leaves what it promised (`runs-layout.ts`).
-   */
-  const {
-    artifactsDir,
-    publishDir,
-    declinedDir,
-    sliceCacheDir,
-    promptPayloadDir,
-    attemptsPath,
-  } = await prepareRunsLayout({ runsDir, },);
-
-  /**
-   Pipeline tip recorded into every artifact.
-   */
-  const tip = await readHeadSha();
-
-  /**
-   Identity of the built pipeline this invocation is running, taken over the
-   directory the runner was loaded from.
-
-   `tip` cannot answer this and never could: it moves for a documentation
-   commit that changes nothing that runs, and stays put across an uncommitted
-   edit that changes everything. Every corpus-run task builds before it runs
-   and runs its built file, so the files beside this one ARE the pipeline.
-   */
-  const {
-    digest: pipelineDigest,
-    fileCount,
-  } = await digestPipeline({ dir: import.meta.dirname, },);
-
-  // Before anything is settled: a resume builds again, so if anything that runs
-  // changed since the entries already here were written, continuing would stamp
-  // a second pipeline into one pool and every reader that computes a rate would
-  // then refuse the lot.
-  /**
-   What every placeable artifact records, read once for both guards.
-
-   THE THREE REFUSALS RUN IN ORDER OF HOW LITTLE CHOICE THE OPERATOR HAS.
-   First an artifact nothing can place, which no opt-in is an opinion about.
-   Then the SHAPE, which no commit can reconcile. Only then the BUILD, whose
-   refusal is overridable and whose message says so; running that one first
-   offered an operator an opt-in that the shape check then refused anyway, so
-   the advice was a lie and the second run logged a resume that never
-   happened.
-   */
-  const generationCensus = await assertArtifactsPlaceable({ artifactsDir, },);
-  await assertResumableSchemaGeneration({ artifactsDir, },);
-  assertBuildGenerationResumable({
-    census: generationCensus,
-    digest: pipelineDigest,
+  return runCorpusPassOver({
+    line,
+    runsDir: await resolveRunsDir(),
+    graceNote,
+    writerNote,
+    pinSetting: RUN_CORPUS_PIN_SETTING,
+    hardCapMs,
+    spendCeilingUsd,
     driftAllowed: readDriftOptIn(),
-  },);
-
-  /**
-   Entry ids already carrying an artifact this pass, or a decline record.
-   */
-  const done = await finishedEntryIds({
-    artifactsDir,
-    declinedDir,
-  },);
-
-  /**
-   Attempt counts from prior runs, or empty on the first.
-   */
-  const attempts: AttemptMap = await readAttemptMap(attemptsPath,);
-
-  /**
-   Every person id at the pinned commit.
-   */
-  const people = await listCorpusPeople({ pin: RUN_CORPUS_PIN, },);
-
-  /**
-   Entry ids this invocation is restricted to, empty when unrestricted.
-   */
-  const onlyIds = readOnlyIds({ line, },);
-  if (onlyIds.size > 0) {
-    /**
-     Chosen ids in a stable order, so two runs of one selection log alike.
-     */
-    const chosen = textsInCodePointOrder({ texts: [...onlyIds,], },)
-      .join(',',);
-
-    console.log(
-      `ONLY ${chosen} (ordering is bypassed; run `
-        + 'this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
-        + 'entry never enters a pool later draws treat as natural accumulation)',
-    );
-  }
-
-  /**
-   Encoder measuring page-source byte size once per entry.
-   */
-  const sizer = new TextEncoder();
-
-  /**
-   Complete unsettled pairs, already-settled sizes (ordering needs these:
-   ranking runs over the REMAINING entries, so without knowing what each band
-   already settled every run would restart each band at rank zero), and the
-   entries missing a side at the pin.
-
-   ONLY A MISSING OBJECT DROPS OUT, and it is printed. Any other read
-   failure propagates: until 2026-08-26 every read failure read as the
-   expected missing side, so a clone that had gone away shrank the corpus
-   to nothing without a line saying so.
-   */
-  const {
-    eligible,
-    settled,
-    incomplete,
-  } = await collectEligiblePairs({
-    ids: askedAmong({
-      asked: [...onlyIds,],
-      known: people,
-      source: '--only',
-      within: 'the corpus at the pin',
-    },),
-    done,
-    pin: RUN_CORPUS_PIN,
-  },);
-  for (const gap of incomplete)
-    console.log(`INCOMPLETE ${gap.id}: ${gap.side} page absent at the pin (${gap.detail})`,);
-
-  /**
-   Every eligible entry reduced to its id and page-source byte size, measured
-   once so ordering never re-encodes text on a compare.
-   */
-  const sized = eligible.map(function toSized(entry,) {
-    return {
-      id: entry.id,
-      sourceBytes: sizer.encode(entry.sourceText,)
-        .length,
-    };
-  },);
-
-  /**
-   Ids whose page source is under the small-band cut.
-   */
-  const smallIds = smallBandIds({ entries: sized, },);
-
-  /**
-   Each entry's rank within its own size band, so ordering interleaves the
-   bands instead of draining one before starting the next. Rationale for
-   interleaving lives in `band-order.ts`.
-   */
-  const bandRank = rankWithinBands({
-    entries: sized,
-    settledPerBand: countSettledPerBand({ entries: settled, },),
-  },);
-
-  /**
-   Ids with cached slices from an earlier aborted run. These resume first so
-   an in-flight large document finishes before a fresh entry starts, rather
-   than every large entry taking one partial attempt while none settles.
-
-   NO PROGRESS GUARANTEE IS CLAIMED HERE, and one used to be: this said a
-   cap-abort always completes at least one new slice, which is false. An abort
-   can land before the first persistence, and the slices a lane deliberately
-   leaves uncached, the unfilled and the unheard, produce no cache entry
-   however long they took. What actually bounds it is that a stuck entry
-   surfaces: `repairChunk` degrades and persists rather than throwing on a
-   lost quorum, the translate lane's refusal counter bounds its retries within
-   a slice, and an entry that keeps failing writes a repeated same-entry ERROR
-   line across runs, which is read by inspection.
-   */
-  const resumableIds = await listResumableEntries({ dir: sliceCacheDir, },);
-
-  /**
-   Pending entries: cached progress resumes first, then the bands interleave
-   by within-band rank so coverage fills evenly, then the larger band leads
-   within one rank (a large entry may need a second run, so starting it
-   earlier costs nothing), then fewest attempts first so flaky ones
-   deprioritize.
-   */
-  const pending = eligible.toSorted(function byResumeThenBandThenAttempts(
-    a,
-    b,
-  ) {
-    /**
-     Negative when only `a` has cached progress (so it resumes first),
-     positive when only `b` does; zero when neither or both do.
-     */
-    const resumeDelta = Number(resumableIds.has(b.id,),)
-      - Number(resumableIds.has(a.id,),);
-    if (resumeDelta !== 0)
-      return resumeDelta;
-    /**
-     Difference in within-band rank. Interleaving on this fills every band
-     at the same pace, so the tenth entry of each band arrives at roughly
-     the same time rather than one band starving.
-     */
-    const rankDelta = (bandRank.get(a.id,) ?? 0) - (bandRank.get(b.id,) ?? 0);
-    if (rankDelta !== 0)
-      return rankDelta;
-
-    /**
-     Within one rank, the larger band goes first: a large entry may need a
-     second run to settle, so starting it earlier costs nothing and lets it
-     resume sooner.
-     */
-    const bandDelta = Number(smallIds.has(a.id,),)
-      - Number(smallIds.has(b.id,),);
-    if (bandDelta !== 0)
-      return bandDelta;
-    return attemptsOf({
-      attempts,
-      id: a.id,
-    },) - attemptsOf({
-      attempts,
-      id: b.id,
-    },);
-  },);
-
-  console.log(
-    `START tip=${tip} pipeline=${pipelineDigest} files=${String(fileCount,)} pending=${String(pending.length,)} done=${String(done.size,)} soft=${String(SOFT_BUDGET_MS,)}ms hard=${String(HARD_CAP_MS,)}ms`,
-  );
-
-  // A run must never hide which ceiling it ran under: an artifact settled below
-  // a lowered cap is not comparable with one settled under the shipped one.
-  if (HARD_CAP_MS !== (HARD_CAP_MINUTES * MS_PER_MINUTE)) {
-    console.log(
-      `CAP OVERRIDDEN by ${HARD_CAP_VAR}: entries run under ${
-        String(HARD_CAP_MS / MS_PER_MINUTE,)
-      } minutes rather than the built-in ${String(HARD_CAP_MINUTES,)}`,
-    );
-  }
-
-  /**
-   The spend allowance, named only when a launch overrode it.
-   */
-  const ceilingNote = spendCeilingOverrideNote({ ceilingUsd: RUN_SPEND_CEILING_USD, },);
-  if (ceilingNote !== '')
-    console.log(ceilingNote,);
-
-  // Nor which straggler window, for the same reason: rounds under a longer
-  // window hear voices the shipped window cuts, and their artifacts are not
-  // comparable with ones settled under it.
-  if (graceNote !== '')
-    console.log(graceNote,);
-  if (writerNote !== '')
-    console.log(writerNote,);
-
-  // Nor which corpus (ledger D13): a pass read under an overridden clone or
-  // commit settles a fixture's pages, not the pinned corpus's.
-  /**
-   The corpus pin's launch line, empty for the built-in pin.
-   */
-  const pinNote = corpusPinOverrideNote({ setting: RUN_CORPUS_PIN_SETTING, },);
-  if (pinNote !== '')
-    console.log(pinNote,);
-
-  if (!capOutlastsOneCall({
-    capMs: HARD_CAP_MS,
-    perCallMs: RUN_PER_CALL_TIMEOUT_MS,
-  },)) {
-    console.log(capTooTightNote({
-      capMs: HARD_CAP_MS,
-      perCallMs: RUN_PER_CALL_TIMEOUT_MS,
-    },),);
-  }
-
-  /**
-   Providers validation or performance arm explicitly requires wet.
-   */
-  const requiredProviders = readRequiredProviders({ line, },);
-  await assertRequiredProvidersReady({
-    required: requiredProviders,
+    pipelineDir: import.meta.dirname,
+    readTip: readHeadSha,
     env: process.env,
     transport: fetchTransport,
-    signal: new AbortController().signal,
+    newClient: createRunClient,
+    settle: settleEntry,
+    outsideReads: RUN_OUTSIDE_READS,
+    pictureSources: RUN_PICTURE_SOURCES,
+    now: monotonicMs,
   },);
-  if (requiredProviders.length > 0) {
-    console.log(`REQUIRED-PROVIDERS ${requiredProviders.join(',',)} status=wet`,);
-  }
-
-  /**
-   Shared client using measured production provider concurrency.
-   */
-  const client = createRunClient({ promptPayloadDir, },);
-
-  if (line.switched('plan',)) {
-    console.log(
-      `PLAN ok tip=${tip} pipeline=${pipelineDigest} client=constructed pending=${String(pending.length,)} first=${
-        pending
-          .slice(
-            0,
-            PLAN_PREVIEW_COUNT,
-          )
-          .map(function toPlanId(entry,) {
-            return entry.id;
-          },)
-          .join(',',)
-      }`,
-    );
-    return;
-  }
-
-  // AFTER THE PLAN RETURNS, which promises no write, and after the build
-  // guards, so a page is rewritten only under a build the operator let resume
-  // here: every page the artifacts here say should ship differently, or that
-  // is missing, is rewritten from its artifact before any entry runs, and a
-  // page standing for a declined entry is removed (ledger A16c).
-  await republishRunPages({
-    runsDir,
-    artifactsDir,
-    declinedDir,
-    publishDir,
-  },);
-
-  /**
-   Start of the processing loop on `monotonicMs` (ledger B78).
-   */
-  const start = monotonicMs();
-
-  /**
-   Shared base signal each entry's deadline forwards from; the driver
-   never aborts it, so only a per-entry timeout ever fires.
-   */
-  const neverAbort = new AbortController().signal;
-
-  await runAttemptQueue({
-    pending,
-
-    cachedCountFor: function cachedCountFor({ entry, },): Promise<number> {
-      return countCachedSlices({
-        dir: join(
-          sliceCacheDir,
-          entry.id,
-        ),
-      },);
-    },
-
-    stopBeforeNext: function stopBeforeNext(): boolean {
-      return stopBeforeNextEntry({
-        elapsedMs: monotonicMs() - start,
-        softBudgetMs: SOFT_BUDGET_MS,
-        ceilingUsd: RUN_SPEND_CEILING_USD,
-      },);
-    },
-
-    attempt: async function attempt({ entry, },): Promise<EntryOutcome> {
-      countAttempt({
-        attempts,
-        id: entry.id,
-      },);
-      // Persisted before the attempt so a crash still records that it happened.
-      await writeAttemptMap({
-        attemptsPath,
-        attempts,
-      },);
-
-      // Every line and ledger record written for this entry names it (ledger A11).
-      return await inEntryLogContext({
-        entry: entry.id,
-        generation: pipelineDigest,
-        run: async function settleInContext(): Promise<EntryOutcome> {
-          return await settleEntry({
-            client,
-            entry,
-            artifactsDir,
-            publishDir,
-            declinedDir,
-            sliceCacheDir,
-            tip,
-            pipelineDigest,
-            hardCapMs: HARD_CAP_MS,
-            baseSignal: neverAbort,
-            outsideReads: RUN_OUTSIDE_READS,
-            pictureSources: RUN_PICTURE_SOURCES,
-          },);
-        },
-      },);
-    },
-  },);
-
-  /**
-   Artifacts present after this run, against the pair target.
-   */
-  const total = await countSettled({ artifactsDir, },);
-
-  /**
-   Entries this run finished, an artifact or a decline each.
-   */
-  const processed = await entriesFinishedThisRun({
-    before: done,
-    artifactsDir,
-    declinedDir,
-  },);
-  console.log(
-    `DONE processed=${String(processed,)} of pending=${String(pending.length,)}; artifacts=${String(total,)}/${String(CORPUS_PAIR_TARGET,)} elapsed=${String(monotonicMs() - start,)}ms`,
-  );
 }
 
 if (import.meta.main)

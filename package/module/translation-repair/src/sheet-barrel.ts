@@ -245,7 +245,6 @@ export {
   MEDIUM_PAGE_BYTES,
   rankWithinBands,
   type SizedEntry,
-  smallBandIds,
   SMALL_PAGE_BYTES,
 } from './corpus-run/band-order.ts';
 export {

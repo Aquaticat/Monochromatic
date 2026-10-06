@@ -1,5 +1,6 @@
 import { textsInCodePointOrder, } from '../code-points.ts';
 import { wordForCount, } from '../count-word.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
   censusByGeneration,
   type GenerationCensus,
@@ -58,11 +59,11 @@ export function readDriftOptIn(): boolean {
 /**
  Raised when a resume would stamp a second pipeline into one pool.
  */
-export class GenerationDriftError extends Error {
+export class GenerationDriftError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names two digests and the variable that would allow the drift.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names what is already there, what would be added, and every way forward.
@@ -95,8 +96,8 @@ export class GenerationDriftError extends Error {
       ],
     },);
 
-    super(
-      [
+    super({
+      says: [
         'This artifacts directory was built by a different pipeline.',
         '',
         ...digests.map(function toLine(recorded,): string {
@@ -122,7 +123,7 @@ export class GenerationDriftError extends Error {
         '  accepting that this directory will hold several generations and that',
         '  a rate over it must name a required commit.',
       ].join('\n',),
-    );
+    },);
     this.name = 'GenerationDriftError';
   }
 }
@@ -130,11 +131,11 @@ export class GenerationDriftError extends Error {
 /**
  Raised when a directory holds artifacts from before builds were recorded.
  */
-export class LegacyPipelineError extends Error {
+export class LegacyPipelineError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names entry ids and counts them.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names the entries that predate generation identity and what to do.
@@ -147,8 +148,8 @@ export class LegacyPipelineError extends Error {
    ```
    */
   constructor({ entryIds, }: { readonly entryIds: readonly string[]; },) {
-    super(
-      [
+    super({
+      says: [
         `${String(entryIds.length,)} ${
           wordForCount({
             count: entryIds.length,
@@ -171,7 +172,7 @@ export class LegacyPipelineError extends Error {
         'directory with TRANSLATION_REPAIR_RUNS_DIR and let this one stand as',
         'the generation it is.',
       ].join('\n',),
-    );
+    },);
     this.name = 'LegacyPipelineError';
   }
 }
@@ -179,11 +180,11 @@ export class LegacyPipelineError extends Error {
 /**
  Raised when an artifact records nothing that could identify it.
  */
-export class UnplaceableArtifactError extends Error {
+export class UnplaceableArtifactError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names entry ids and counts them.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names every unplaceable artifact and what removing it restores.
@@ -196,8 +197,8 @@ export class UnplaceableArtifactError extends Error {
    ```
    */
   constructor({ entryIds, }: { readonly entryIds: readonly string[]; },) {
-    super(
-      [
+    super({
+      says: [
         `${String(entryIds.length,)} ${
           wordForCount({
             count: entryIds.length,
@@ -223,7 +224,7 @@ export class UnplaceableArtifactError extends Error {
         '.json. Reaching here now means a legacy artifact from before that, a',
         'concurrent writer, a permission fault, or storage trouble.',
       ].join('\n',),
-    );
+    },);
     this.name = 'UnplaceableArtifactError';
   }
 }

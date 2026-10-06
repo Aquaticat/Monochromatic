@@ -268,6 +268,7 @@ export * from './openrouter-barrel.ts';
 export * from './cache-account-barrel.ts';
 export * from './cap-census-barrel.ts';
 export * from './slice-cost-barrel.ts';
+export * from './corpus-pass-barrel.ts';
 export * from './coverage-census-barrel.ts';
 export * from './publish-barrel.ts';
 export * from './pairing-barrel.ts';

@@ -171,8 +171,8 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/corpus-pass.ts#byResumeThenBandThenAttempts: Number': {
-    calls: 4,
+  'corpus-run/corpus-pass-order.ts#byResumeThenBandThenAttempts: Number': {
+    calls: 2,
     why: TRUTH_VALUE,
   },
   'corpus-run/coverage-census-steps.ts#commandExit: Number': {

@@ -34,7 +34,6 @@ import {
   MEDIUM_PAGE_BYTES,
   rankWithinBands,
   type SizedEntry,
-  smallBandIds,
   SMALL_BAND_MAX_BYTES,
   SMALL_PAGE_BYTES,
 } from '../../dist/final/node/index.mjs';
@@ -149,65 +148,6 @@ await describe({
               expect(bandOf({ sourceBytes, },),).toBe(
                 bandAt(sourceBytes,),
               );
-          },
-        },),
-      ],
-    },),
-
-    describe({
-      name: smallBandIds.name,
-      concurrency: DEFAULT_CONCURRENCY,
-      children: [
-        it({
-          name: 'collects exactly the small-band ids, excluding the entry sitting '
-            + 'on the cut, which is medium',
-          fn: async () => {
-            /**
-             Ids of the small-band entries, as a set for order-free comparison.
-             */
-            const ids = smallBandIds({
-              entries: [
-                sized({
-                  id: 'Mittens',
-                  sourceBytes: 900,
-                },),
-                sized({
-                  id: 'Pumpkin',
-                  sourceBytes: SMALL_PAGE_BYTES,
-                },),
-                sized({
-                  id: 'Biscuit',
-                  sourceBytes: SMALL_PAGE_BYTES - 1,
-                },),
-                sized({
-                  id: 'Marmalade',
-                  sourceBytes: 9_000,
-                },),
-              ],
-            },);
-
-            expect([...ids,].toSorted(),).toStrictEqual([
-              'Biscuit',
-              'Mittens',
-            ],);
-          },
-        },),
-
-        it({
-          name: 'returns an empty set when no entry is small, rather than throwing '
-            + 'or reporting the whole slate',
-          fn: async () => {
-            expect(
-              smallBandIds({
-                entries: [
-                  sized({
-                    id: 'Marmalade',
-                    sourceBytes: 9_000,
-                  },),
-                ],
-              },).size,
-            ).toBe(0,);
-            expect(smallBandIds({ entries: [], },).size,).toBe(0,);
           },
         },),
       ],

@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 
 import { contextRoot, } from '../log-context.ts';
 import { refusalText, } from '../refusal-text.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { artifactFileNameOf, } from './artifact-file-name.ts';
 import { ARTIFACT_SCHEMA_VERSION_V14, } from './artifact-two-lane-contract.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
@@ -195,11 +196,11 @@ const WAYS_FORWARD = [
 /**
  Raised when a resume would settle a second artifact generation into one pool.
  */
-export class SchemaGenerationError extends Error {
+export class SchemaGenerationError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names a schema version.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names every foreign generation, what this pass writes, and every way
@@ -223,8 +224,8 @@ export class SchemaGenerationError extends Error {
       readonly writes: number;
     },
   ) {
-    super(
-      [
+    super({
+      says: [
         'This artifacts directory holds artifacts of another schema generation.',
         '',
         ...[...foreign.entries(),].map(function toLine([
@@ -251,7 +252,7 @@ export class SchemaGenerationError extends Error {
         '',
         ...WAYS_FORWARD,
       ].join('\n',),
-    );
+    },);
     this.name = 'SchemaGenerationError';
   }
 }
@@ -260,7 +261,7 @@ export class SchemaGenerationError extends Error {
  Raised when an artifact declares the generation this pass writes and is not
  one.
  */
-export class MislabelledArtifactError extends Error {
+export class MislabelledArtifactError extends StatedRefusalError {
   /**
    Declares this message safe to print whole at a boundary: it names the entry
    and the generation and states the ways forward. The reader's own objection,
@@ -268,7 +269,7 @@ export class MislabelledArtifactError extends Error {
    instead of riding here, which is what let the ways forward reach nobody
    while the class was unmarked.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names the entry and the generation whose reader refused it.
@@ -291,8 +292,8 @@ export class MislabelledArtifactError extends Error {
       readonly writes: number;
     },
   ) {
-    super(
-      [
+    super({
+      says: [
         `${entryId} declares schema version ${
           String(writes,)
         }, which is what this pass writes, and is not one; what its reader refused is in the run log.`,
@@ -308,7 +309,7 @@ export class MislabelledArtifactError extends Error {
         '',
         ...WAYS_FORWARD,
       ].join('\n',),
-    );
+    },);
     this.name = 'MislabelledArtifactError';
   }
 }

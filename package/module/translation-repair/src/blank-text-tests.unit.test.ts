@@ -1267,9 +1267,9 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/corpus-pass.ts#runCorpusPass': {
-    tests: 4,
-    why: ASSEMBLED,
+  'corpus-run/corpus-pass-lines.ts#isSaid': {
+    tests: 1,
+    why: SENTINEL,
   },
   'corpus-run/corpus-pin-override.ts#readCorpusPinSetting': {
     tests: 6,
