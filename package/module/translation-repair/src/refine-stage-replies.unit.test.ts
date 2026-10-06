@@ -177,6 +177,33 @@ await describe({
         },),
 
         it({
+          name: 'NAMES an operation whose rewrite leaves a text nested 300 list markers deep as an unreadable '
+            + 'rewrite of paragraph 1 and proposes nothing, where the atom gate read the rewrite alone',
+          fn: async () => {
+            expect(applyReply({
+              reply: {
+                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                resolution: { operations: [], findings: [], },
+                passed: [
+                  {
+                    envelopeId: PARAGRAPH?.envelopeId ?? '',
+                    baseHash: PARAGRAPH?.baseHash ?? '',
+                    newText: `${'- '.repeat(300,)}${SMOOTH_TEXT}`,
+                  },
+                ],
+                refusals: [],
+              },
+              repairedText: REPAIRED_TEXT,
+              envelopes: SLICE.envelopes,
+            },),).toEqual({
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              candidates: [],
+              rejections: [`${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-unreadable-rewrite (paragraph 1)`,],
+            },);
+          },
+        },),
+
+        it({
           name: 'THROWS naming the reason when the patch refuses an operation for a stale base hash, which '
             + 'the resolver\'s own hash echo cannot produce',
           fn: async () => {
@@ -203,7 +230,7 @@ await describe({
               `Error: unreachable: the patch refused ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}'s rewrite as `
                 + 'stale-base-hash, but this lane binds its operations to its own envelopes, applies them to '
                 + 'the text those envelopes came from with preservation skipped, and so can be refused only '
-                + 'as unchanged-region',
+                + 'as unchanged-region or as a text no grammar reads',
             );
           },
         },),
@@ -235,7 +262,7 @@ await describe({
               `Error: unreachable: the patch refused ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}'s rewrite as `
                 + 'unknown-envelope, but this lane binds its operations to its own envelopes, applies them to '
                 + 'the text those envelopes came from with preservation skipped, and so can be refused only '
-                + 'as unchanged-region',
+                + 'as unchanged-region or as a text no grammar reads',
             );
           },
         },),

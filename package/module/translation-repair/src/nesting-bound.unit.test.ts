@@ -197,6 +197,20 @@ await describe({
           },
         },),
         it({
+          name: 'COUNTS the delimiters of a line that mixes stars and hyphens, which is no thematic break and which '
+            + 'costs the parser seconds at 24,000 pairs',
+          fn: async () => {
+            expect(firstNestingExcess({ body: '*-'.repeat(1_100,), grammar: 'markdown', },),).toEqual({
+              kind: 'beyond',
+              measure: 'emphasis delimiters',
+              bound: 1_024,
+              line: 1,
+              column: 2_049,
+            },);
+            expect(firstNestingExcess({ body: '*-'.repeat(1_100,), grammar: 'mdx', },).kind,).toBe('beyond',);
+          },
+        },),
+        it({
           name: 'READS nothing inside a fenced block, where the parser nests nothing, and resumes after its closing fence',
           fn: async () => {
             /**
@@ -213,6 +227,13 @@ await describe({
               column: 257,
             },);
             expect(firstNestingExcess({ body: `~~~\n${'['.repeat(300,)}\n\`\`\`\n${'['.repeat(300,)}`, grammar: 'markdown', },),).toEqual(WITHIN,);
+            expect(firstNestingExcess({ body: `~~~\n${'['.repeat(300,)}\n~~~\n${'['.repeat(300,)}`, grammar: 'markdown', },),).toEqual({
+              kind: 'beyond',
+              measure: 'brackets',
+              bound: 256,
+              line: 4,
+              column: 257,
+            },);
           },
         },),
         it({

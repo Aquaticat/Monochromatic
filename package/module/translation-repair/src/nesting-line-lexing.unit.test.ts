@@ -1,7 +1,7 @@
 /**
  Tests for the line readers the nesting bound counts with: the blanks opening
- a line, the container markers after them, a fence a line may open, and
- whether a line is a thematic break.
+ a line, the container markers after them, and whether a line is a
+ thematic break.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -18,10 +18,8 @@ import {
 import {
   blanksEnd,
   containerPrefixOf,
-  fenceOf,
   indentationOf,
   isRuleLine,
-  NO_FENCE,
 } from '../dist/final/node/index.mjs';
 
 //region Nesting line lexing tests
@@ -139,43 +137,25 @@ await describe({
     },),
 
     describe({
-      name: fenceOf.name,
-      concurrency: DEFAULT_CONCURRENCY,
-      children: [
-        it({
-          name: 'READS a run of three or more backticks or tildes as a fence, with its character and length',
-          fn: async () => {
-            expect(fenceOf({ line: '```ts', },),).toEqual({ character: '`', length: 3, },);
-            expect(fenceOf({ line: '~~~~', },),).toEqual({ character: '~', length: 4, },);
-          },
-        },),
-        it({
-          name: 'READS two backticks, prose and an empty line as no fence',
-          fn: async () => {
-            expect(fenceOf({ line: '``', },),).toEqual(NO_FENCE,);
-            expect(fenceOf({ line: 'cat', },),).toEqual(NO_FENCE,);
-            expect(fenceOf({ line: '', },),).toEqual(NO_FENCE,);
-            expect(NO_FENCE,).toEqual({ character: '', length: 0, },);
-          },
-        },),
-      ],
-    },),
-
-    describe({
       name: isRuleLine.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'READS a line of only stars, underscores, hyphens, spaces and tabs as a rule',
+          name: 'READS three or more of one of stars, underscores and hyphens, with only spaces and tabs between, as a rule',
           fn: async () => {
             expect(isRuleLine({ line: '* * *', },),).toBe(true,);
             expect(isRuleLine({ line: '___', },),).toBe(true,);
             expect(isRuleLine({ line: '- - -\t', },),).toBe(true,);
+            expect(isRuleLine({ line: '*'.repeat(2_000,), },),).toBe(true,);
           },
         },),
         it({
-          name: 'READS a line with any other character as no rule',
+          name: 'READS a mix of those characters, fewer than three of them, and any other character as no rule',
           fn: async () => {
+            expect(isRuleLine({ line: '*-*-*-', },),).toBe(false,);
+            expect(isRuleLine({ line: '*_*_*_', },),).toBe(false,);
+            expect(isRuleLine({ line: '**', },),).toBe(false,);
+            expect(isRuleLine({ line: '', },),).toBe(false,);
             expect(isRuleLine({ line: 'cat', },),).toBe(false,);
             expect(isRuleLine({ line: '**bold**', },),).toBe(false,);
             expect(isRuleLine({ line: '***~', },),).toBe(false,);
