@@ -235,6 +235,19 @@ fn the_servers_wait_while_the_tree_waits() {
         "the servers added a watch while the tree waited"
     );
     assert!(servers.limit.is_some());
+    // A backoff retry that still finds the tree waiting lengthens the wait instead of leaving it over.
+    let later = now + FIRST_LIMIT_RETRY;
+    let still = ServerRequest {
+        desired_changed: false,
+        tree_limited: true,
+    };
+    reconcile_servers(&mut servers, &BTreeSet::new(), still, later, &mut fake);
+    assert!(
+        servers
+            .limit
+            .is_some_and(|backoff| return !backoff.may_retry(later)),
+        "the servers' wait did not grow while they waited for the tree, so the watch thread would wake every 50 ms"
+    );
 }
 
 /// Folders no scan wants any more lose their watch, unless the tree holds them.

@@ -107,6 +107,7 @@ pub fn reconcile_servers(
         .difference(&servers.active)
         .cloned()
         .collect();
+    let yielded = request.tree_limited && !missing.is_empty();
     for path in missing {
         if servers.failed.contains(&path) {
             continue;
@@ -143,7 +144,9 @@ pub fn reconcile_servers(
             }
         }
     }
-    update_limit(servers, limit_hit && backoff_retry, now);
+    // Waiting for the tree counts as a retry in vain too; otherwise the wait would stay over and the watch
+    // thread would wake at its shortest sleep for as long as the tree waits on the limit.
+    update_limit(servers, backoff_retry && (limit_hit || yielded), now);
     if !established.is_empty() {
         tracing::debug!(
             folders = established.len(),
