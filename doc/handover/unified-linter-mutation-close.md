@@ -1007,6 +1007,8 @@ Every scope is now one entry of a table in `bin/mutate-container.mjs`:
 the arguments that decide which mutants exist,
 the arguments that decide how each mutant is built and tested,
 and a per-mutant limit where it differs from 180 seconds.
+Any campaign also takes `-- --shard k/n` (zero-based, as in cargo-mutants)
+and `-- --re <regex>` to rerun only some of its mutants.
 The campaign,
 `--list <scope>` and `--coverage` all read that table,
 so a listing can no longer drift from the campaign it describes,
@@ -1015,7 +1017,8 @@ and the `mutation:list:*` tasks call `--list`.
 - The executable scope also mutates `file_discovery.rs`,
   `path_inputs.rs` and `fix_loop.rs`,
   the input expansion and fix loop it drives:
-  233 mutants instead of 184.
+  233 mutants instead of 184 when the table was committed,
+  239 on the final tree.
 - The new core scope (`mutation:core`) mutates configuration parsing,
   lookup,
   matching,
@@ -1033,7 +1036,8 @@ and the `mutation:list:*` tasks call `--list`.
   the `rust_explicit_*` modules,
   `rust_generic_arguments.rs`,
   `rust_semantic_*` and `rust_type_diagnostic.rs`:
-  96 mutants.
+  96 mutants when the table was committed,
+  97 on the final tree.
   It runs the whole suite,
   because the Cargo-workspace suites are its tests
   and the rest of the suite costs little next to them.
