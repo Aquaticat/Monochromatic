@@ -106,14 +106,22 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 // Attaches accessibility properties.
 import androidx.compose.ui.semantics.semantics
+// Character-level styling applied to part of a text.
+import androidx.compose.ui.text.SpanStyle
 // A start and end position inside a text; equal ends mean a caret.
 import androidx.compose.ui.text.TextRange
+// Builds one text out of differently styled parts.
+import androidx.compose.ui.text.buildAnnotatedString
 // Font family names; Monospace gives every character the same width.
 import androidx.compose.ui.text.font.FontFamily
+// Font weight names; Bold is the heavy one.
+import androidx.compose.ui.text.font.FontWeight
 // A text-field value: the text together with its caret or selection.
 import androidx.compose.ui.text.input.TextFieldValue
 // Single-line truncation policy.
 import androidx.compose.ui.text.style.TextOverflow
+// Applies one style to the text appended inside its block.
+import androidx.compose.ui.text.withStyle
 // Density-independent distance type.
 import androidx.compose.ui.unit.Dp
 // Density-independent literal distance.
@@ -268,16 +276,21 @@ internal fun TemplateEditorPage(modifier: Modifier, startSafe: Dp, endSafe: Dp, 
             onBack = { onEvent("back") }, startSafe = startSafe, endSafe = endSafe)
         // The strong separator that closes the header.
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
-        // What: `imePadding()` pads the scrolling content at the bottom by the software keyboard's
-        // height while it is open; the navigation-bar padding after it covers the closed case.
-        // Why: The field list and the reset button can be scrolled above the keyboard instead of
-        // ending underneath it.
+        // What: `imePadding()` shrinks this column by the software keyboard's height while it is
+        // open. It comes before `verticalScroll`, so it is the scrolling window itself that shrinks,
+        // not padding added inside the scrolled content. The navigation-bar padding after the scroll
+        // covers the closed case.
+        // Why: Compose scrolls a focused field back into view when its scrolling window shrinks. With
+        // the padding inside the content the window would keep its height and the keyboard would
+        // simply cover the focused template field.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // <div style={{ flex: 1, overflowY: 'auto', paddingBottom: Math.max(keyboardHeight, navigationBarHeight) }}>{body}</div>
+        // <div style={{ flex: 1, marginBottom: keyboardHeight, overflowY: 'auto' }}>
+        //   <div style={{ paddingBottom: navigationBarHeight }}>{body}</div>
+        // </div>
         // ```
-        Column(modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll).imePadding()
+        Column(modifier = Modifier.weight(1f).fillMaxWidth().imePadding().verticalScroll(scroll)
             .windowInsetsPadding(WindowInsets.navigationBars)) {
             TemplateEditorSectionHeading(text = "Preview", startSafe = startSafe, endSafe = endSafe, bottom = 4.dp)
             // What: A `for (row in rows)` loop emits one element per list entry, like `rows.map(...)` in JSX.
@@ -309,22 +322,26 @@ internal fun TemplateEditorPage(modifier: Modifier, startSafe: Dp, endSafe: Dp, 
                 TemplateEditorFieldRow(field = field, onEvent = onEvent, startSafe = startSafe, endSafe = endSafe)
                 HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
             }
-            // What: `TextButton` draws a label-only button; `enabled = false` dims it and ignores taps.
-            // `defaultMinSize(minHeight = 48.dp)` keeps its touch target at least 48dp tall.
+            // What: `TextButton` draws a label-only button, and the `if` around it leaves it out
+            // entirely when there is nothing to reset. `defaultMinSize(minHeight = 48.dp)` keeps its
+            // touch target at least 48dp tall.
             // Why: The way back to the default is offered only when the template is not the default.
+            // A disabled button would differ from an enabled one by its dimmed colour alone; leaving
+            // it out says the same thing by presence, which does not rest on colour.
             // Its label lines up with the text column: the installed Material 3 text button pads its
             // label by 12dp on each side, so the button itself starts 12dp before `startSafe`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <button disabled={!fixture.resetEnabled} onClick={() => onEvent('reset')}
-            //   style={{ marginLeft: startSafe - 12, minHeight: 48 }}>Reset to default</button>
+            // {fixture.resetEnabled && <button onClick={() => onEvent('reset')}
+            //   style={{ marginLeft: startSafe - 12, minHeight: 48 }}>Reset to default</button>}
             // ```
-            TextButton(onClick = { onEvent("reset") },
-                modifier = Modifier.padding(start = startSafe - 12.dp, top = 8.dp, bottom = 16.dp)
-                    .defaultMinSize(minHeight = 48.dp),
-                enabled = fixture.resetEnabled) {
-                Text(text = "Reset to default")
+            if (fixture.resetEnabled) {
+                TextButton(onClick = { onEvent("reset") },
+                    modifier = Modifier.padding(start = startSafe - 12.dp, top = 8.dp, bottom = 16.dp)
+                        .defaultMinSize(minHeight = 48.dp)) {
+                    Text(text = "Reset to default")
+                }
             }
         }
     }
@@ -600,9 +617,11 @@ private fun TemplateEditorErrorLines(lines: List<String>) {
 }
 
 /**
- * What: A private composable draws the typing help: the call's signature on one line, then the
- * sentence describing the parameter the caret is in.
+ * What: A private composable draws the typing help: the call's signature on one line with the
+ * parameter the caret is in set in bold, then the sentence describing that parameter.
  * Why: The signature is code, so it shares the field's monospace face; the description is prose.
+ * The bold word says which argument is being typed by weight, as KWGT's editor does, so that
+ * does not rest on the description alone.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -611,10 +630,39 @@ private fun TemplateEditorErrorLines(lines: List<String>) {
  */
 @Composable
 private fun TemplateEditorHelpLines(help: TemplateEditorHelp) {
+    // What: `indexOf` finds where the parameter's name starts inside the signature, or gives -1.
+    // Why: The name is authored copy and the signature is authored copy; if they ever disagree the
+    // signature is drawn without a bold word instead of failing, and the capture's copy check
+    // against the reference is what catches the disagreement.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const start = help.signature.indexOf(help.parameter);
+    // ```
+    val start: Int = help.signature.indexOf(help.parameter)
+    // What: `buildAnnotatedString { ... }` assembles one text from parts; `append` adds a part, and
+    // `withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { ... }` adds its part in bold.
+    // `substring(a, b)` is the slice from a up to but not including b.
+    // Why: The drawn characters stay exactly the signature; only the weight of one word changes.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const signature = start < 0 ? [help.signature]
+    //   : [help.signature.slice(0, start), <b>{help.parameter}</b>, help.signature.slice(start + help.parameter.length)];
+    // ```
+    val signature = buildAnnotatedString {
+        if (start < 0) {
+            append(help.signature)
+        } else {
+            append(help.signature.substring(0, start))
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(help.parameter) }
+            append(help.signature.substring(start + help.parameter.length))
+        }
+    }
     // The signature and its description are stacked, signature first.
     Column {
         // `fontFamily = FontFamily.Monospace` replaces only the face of the small body style.
-        Text(text = help.signature, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        Text(text = signature, color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall,
             maxLines = 1, overflow = TextOverflow.Ellipsis)
         // The description wraps freely under the signature.
