@@ -78,11 +78,38 @@ and `dependent_version_differential_tests.rs`.
 ### Differential harness
 
 The driver is `package/git-policy/cli/bin/dependent-version-differential.mjs`,
-with `dependent-version-incumbent.mjs` (the incumbent side),
-`dependent-version-unit-scenarios.mjs`,
-`dependent-version-generator.mjs`,
-`dependent-version-repository.mjs`
-and `dependent-version-probes.mjs`.
+run as `mise run //package/git-policy/cli:native:differential:dependent-version -- <record | check | corpus>`.
+Its modules in the same directory, all named `dependent-version-<role>.mjs`:
+
+- `incumbent` and `incumbent-reader`:
+  the incumbent side and its fake policy context.
+- `unit-scenarios`,
+  `unit-functions`,
+  `unit-graph`,
+  `unit-workspaces`
+  and `unit-workspace-parts`:
+  the transcribed unit-test scenarios.
+- `generator`,
+  `workspace`,
+  `generator-parts`,
+  `manifest-text`,
+  `malformed`
+  and `random`:
+  the seeded generator.
+- `repository`,
+  `repository-samples`
+  and `repository-cases`:
+  the real repository.
+- `native`:
+  the native side,
+  in place or in a planted copy.
+- `probes` and `report`:
+  predictions,
+  plants and the per-class comparison.
+- `types`:
+  the shapes both sides read and write.
+
+Each lints with 0 findings under the package's Oxlint configuration.
 The committed shared fixture is
 `package/git-policy/cli/src/native/dependent_version_fixtures/unit_cases.json`.
 
@@ -207,7 +234,7 @@ imported unchanged through `@monochromatic-dev/git-policy-repository/ts` and run
 #### Unit-test scenarios
 
 Every scenario of the incumbent's five dependent-version unit-test files is transcribed in
-`bin/dependent-version-unit-scenarios.mjs`:
+the `unit-*` modules:
 61 cases,
 from function-level ones (`patchBumpVersion`, `planDependentBumps`, `readManifestDependencyFacts`,
 `replaceManifestVersion`, `importsPackage`, `isNonTestSourcePath`, `readPublishableNames`)
@@ -215,7 +242,7 @@ to workspace ones (`findDependentBumps` and `bumpWorktreeDependents`).
 Each keeps its unit test's own assertion,
 which the driver applies to the incumbent's result before recording it,
 so a transcription mistake fails before any comparison.
-`node bin/dependent-version-differential.mjs record` writes the results to the committed fixture
+The `record` subcommand writes the results to the committed fixture
 `src/native/dependent_version_fixtures/unit_cases.json`;
 `check` requires the incumbent to reproduce that file;
 the native gate test `dependent_version_differential_tests::unit_fixtures_match_the_incumbent` reads the same file.
@@ -245,7 +272,7 @@ and one more runs that raise as the release workflow's `direct-fix`.
 
 #### Generated workspaces
 
-`bin/dependent-version-generator.mjs`,
+The `generator` module and its parts,
 seeded with Mulberry32.
 Each workspace has 2 to 10 packages with random edges of every field kind
 (so cycles,
@@ -293,7 +320,7 @@ a duplicated version key whose first value differs).
 
 One feature per workspace whose result is meant to differ,
 25 workspaces per feature,
-each difference checked against its prediction in `bin/dependent-version-probes.mjs`:
+each difference checked against its prediction in the `probes` module:
 `bom`,
 `huge-patch`,
 `duplicate-name`,
@@ -305,34 +332,35 @@ each difference checked against its prediction in `bin/dependent-version-probes.
 ### Results
 
 Evidence directory
-`package/git-policy/cli/target/verification/dependent-version-avWftA`
+`package/git-policy/cli/target/verification/dependent-version-DufJ5h`
 (`cases.jsonl`, `ts-results.jsonl`, `rust-results.jsonl`, `report.json`),
 seed `20261006`,
-on the tree of commit `926a93a40`:
+on the tree of commit `0d7318ff2`:
 
 - Unit-test scenarios:
   61 cases,
   61 identical.
-- Real repository at `926a93a40`:
+- Real repository at `0d7318ff2`:
   17 cases
   (the import-only category had three qualifying packages),
   17 identical;
   10 plan bumps
-  (between 8 and 80 dependents each),
+  (between 1 and 80 dependents each;
+  the three import-only samples are reached only through bundled development imports and plan 1, 2 and 8),
   7 raise a package nothing published reaches.
 - Generated:
   2,000 cases,
   2,000 identical.
   The incumbent's outcomes:
-  731 plans with bumps,
-  677 raised without a bump,
-  213 nothing raised,
-  186 unsupported versions,
-  114 syntax failures and 79 shape failures of the plan;
-  630 policy runs with stale findings,
-  169 with an unsupported finding,
-  1,021 without a finding,
-  107 syntax and 73 shape failures.
+  744 plans with bumps,
+  650 raised without a bump,
+  216 nothing raised,
+  213 unsupported versions,
+  91 syntax failures and 86 shape failures of the plan;
+  646 policy runs with stale findings,
+  192 with an unsupported finding,
+  1,003 without a finding,
+  81 syntax and 78 shape failures.
 - Probes:
   175 cases,
   23 identical
@@ -340,6 +368,19 @@ on the tree of commit `926a93a40`:
   152 differences,
   all matching their prediction,
   0 unexplained.
+  Differences per feature:
+  `bom` 25,
+  `huge-patch` 13,
+  `duplicate-name` 19,
+  `unpaired-surrogate-name` 25,
+  `deep-nesting` 25,
+  `non-utf8-manifest` 25,
+  `non-utf8-config` 20.
+
+The harness was rewritten to the package's lint rules after a first run
+(evidence `dependent-version-avWftA`, commit `926a93a40`);
+that run was also free of unexplained differences,
+with a generated corpus that differed in detail.
 
 No difference was found outside the probes.
 
