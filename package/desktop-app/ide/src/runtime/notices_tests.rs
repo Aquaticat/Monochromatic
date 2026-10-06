@@ -1,4 +1,5 @@
-//! License and notice selection, headings, and damage, on a small table sorted as the build writes it.
+//! License and notice selection, headings, crate entries, and damage, on small tables sorted as the
+//! build writes them.
 
 use super::{collect, is_notice, write};
 use crate::{
@@ -6,12 +7,22 @@ use crate::{
     runtime::embedded::{EmbeddedFile, EmbeddedRuntime},
 };
 
+/// A crate license list with one entry, as the `notices` task writes it.
+const CRATES: &[u8] = br#"{"licenses": [
+{"id": "MIT", "name": "MIT License", "source": "/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anyhow-1.0.104/LICENSE-MIT", "crates": [{"name": "anyhow", "version": "1.0.104"}], "text": "Copyright (c) The anyhow authors\n"}
+]}"#;
+
 /// One file of each kind the executable embeds, sorted by path.
-static FILES: [EmbeddedFile; 9] = [
+static FILES: [EmbeddedFile; 10] = [
     EmbeddedFile {
         path: "LICENSES/LGPL-3.0-or-later.txt",
         bytes: b"GNU LESSER GENERAL PUBLIC LICENSE\n",
         digest: fnv1a(b"GNU LESSER GENERAL PUBLIC LICENSE\n"),
+    },
+    EmbeddedFile {
+        path: "LICENSES/crates.json",
+        bytes: CRATES,
+        digest: fnv1a(CRATES),
     },
     EmbeddedFile {
         path: "LICENSES/font/Inter-LICENSE.txt",
@@ -74,6 +85,19 @@ static DAMAGED_RUNTIME: EmbeddedRuntime = EmbeddedRuntime {
     files: &DAMAGED,
 };
 
+/// A table holding license files but no crate license list.
+static WITHOUT_CRATES: [EmbeddedFile; 1] = [EmbeddedFile {
+    path: "runtime/licenses/sql/LICENSE",
+    bytes: b"MIT License\n",
+    digest: fnv1a(b"MIT License\n"),
+}];
+
+/// The table of [`WITHOUT_CRATES`].
+static WITHOUT_CRATES_RUNTIME: EmbeddedRuntime = EmbeddedRuntime {
+    key: "0123456789abcdef",
+    files: &WITHOUT_CRATES,
+};
+
 #[test]
 fn license_folders_and_license_named_files_are_notices_and_nothing_else_is() {
     let selected: Vec<&str> = FILES
@@ -108,7 +132,7 @@ fn every_text_is_printed_in_full_under_a_heading_naming_its_component_and_path()
     let text = String::from_utf8(out).expect("UTF-8 output");
     assert!(
         text.starts_with(
-            "Monochromatic IDE 9.9.9 carries these 6 license and notice texts, each in full below.\n"
+            "Monochromatic IDE 9.9.9 carries these 7 license and notice texts, each in full below.\n"
         ),
         "{text}"
     );
@@ -148,6 +172,18 @@ fn every_text_is_printed_in_full_under_a_heading_naming_its_component_and_path()
         let block = format!("\n{rule}\n{heading}\nEmbedded as {path}\n{rule}\n\n{body}");
         assert!(text.contains(&block), "missing block for {path}:\n{text}");
     }
+    let rule = "=".repeat(78);
+    let crate_block = format!(
+        "\n{rule}\nRust crates under MIT License (MIT): 1 crate\nUsed by: anyhow 1.0.104\nText from the crate file anyhow-1.0.104/LICENSE-MIT\n{rule}\n\nCopyright (c) The anyhow authors\n"
+    );
+    assert!(
+        text.contains(&crate_block),
+        "missing the crate block:\n{text}"
+    );
+    assert!(
+        !text.contains("Embedded as LICENSES/crates.json"),
+        "the raw list was printed"
+    );
     assert!(!text.contains("Taken from a repository"));
     assert!(!text.contains("parser"));
 }
@@ -161,5 +197,13 @@ fn a_damaged_text_prints_nothing_and_names_the_file_and_the_remedy() {
         "{message}"
     );
     assert!(message.contains("is damaged"), "{message}");
+    assert!(message.contains("fresh copy"), "{message}");
+}
+
+#[test]
+fn an_executable_without_the_crate_list_is_reported_instead_of_printing_a_partial_list() {
+    let error = collect(&WITHOUT_CRATES_RUNTIME).expect_err("no crate list");
+    let message = format!("{error:#}");
+    assert!(message.contains("LICENSES/crates.json"), "{message}");
     assert!(message.contains("fresh copy"), "{message}");
 }

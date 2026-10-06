@@ -2496,6 +2496,7 @@ runtime/licenses/<grammar>/      license notice of each bundled grammar
 runtime/Helix-LICENSE            MPL-2.0 text for the Helix query files and the Helix crates in the binary
 LICENSES/                        LGPL-3.0-or-later and GPL-3.0-or-later texts of the application
 LICENSES/font/                   SIL Open Font License notices of Inter and JetBrains Mono
+LICENSES/crates.json             license texts of the Rust crates, collected by cargo-about
 ```
 
 On 2026-10-06 that was 1,254 files and 34,659,293 bytes:
@@ -2512,7 +2513,7 @@ Inter and JetBrains Mono themselves are compiled in through Slint, as before.
 every file below `LICENSES/` and `runtime/licenses/`,
 and every other file whose name contains `LICENSE` or `LICENCE` or starts with `COPYING` or `NOTICE`,
 which adds `runtime/Helix-LICENSE` and `runtime/queries/snakemake/LICENSE`;
-34 texts and 117,354 bytes of output on 2026-10-06.
+34 files on 2026-10-06.
 The two read-me files among the queries (`ecma/README.md`, a description of query inheritance,
 and `ripple/readme.md`, a source link) are not license terms and are left out.
 Each text comes in full under a framed heading that names its component and its embedded path,
@@ -2520,10 +2521,131 @@ for example `Language grammar rust: LICENSE` above `Embedded as runtime/licenses
 Every text is digest-checked before anything is printed,
 so a damaged executable prints the damage message and exits with status 1 instead of a partial list;
 a reader that closes the pipe early (`| head`) ends the listing with status 0.
-The executable still holds no collected license notices of the Rust crates compiled into it,
-which the listing's second line says;
-that remains an open question for the user.
+After these files the listing prints the license texts of the Rust crates,
+one entry per distinct text
+(see [Rust crate license texts](#rust-crate-license-texts));
+with them it counted 231 texts and 581,919 bytes on 2026-10-06.
 The table's key (`c47e913b79bf6a42` for that runtime) is a digest of every path and file digest.
+
+### Rust crate license texts
+
+The user decided on 2026-10-06 to collect every Rust crate's license text with a notice generator,
+and narrowed the choice the same day: "No need to consider any alternatives. Just it." (cargo-about).
+
+#### What was established before wiring it in
+
+- Version:
+  cargo-about 0.9.2, the latest release (2026-08-18).
+  Its crates.io archive (sha256 `0cd19d99696eb83f0a2d6ab7a347b14968d2980416c8cca827ded220e6e9c4bb`)
+  names commit `f7394d5c8f618623573072caadf6594821c789b6` in `.cargo_vcs_info.json`,
+  and its files equal that tag's apart from Cargo's normalized manifest.
+  The command needs the `cli` feature:
+  `cargo install --locked --features cli --version 0.9.2 cargo-about`
+  (without `--features cli` the install compiles for minutes and then installs nothing).
+  Its book documents `-L, --log-level`; 0.9.2 accepts only `-L`.
+- License:
+  cargo-about is MIT OR Apache-2.0 and runs only while building;
+  none of its code is compiled into the executable.
+  What the executable gains is each crate's own license file,
+  or, when a crate ships none that cargo-about recognizes,
+  the standard text of the chosen license from the SPDX License List data compiled into cargo-about
+  (`spdx` 0.13.4).
+- Offline:
+  with `--frozen` (`--locked` plus `--offline`) cargo-about creates no HTTP client
+  (`src/cargo-about/generate.rs`, the `client` binding after "gathered {} crates"),
+  so license files that a configuration would fetch from a crate's git repository are not used,
+  and Cargo resolves the graph from the local registry.
+  Its license store is compiled in (`Store::load_inline` in `src/licenses.rs`).
+  The crate sources come from the `ide-cargo` volume that the `fetch` task fills.
+  Installing the tool is the one step that needs the network,
+  so it belongs to the image build (`Containerfile`), as `rustfmt` already does.
+  The trial ran with `--network=none`,
+  the package and `ide-cargo` mounted read-only,
+  and exited with status 0.
+- Trial against the IDE at commit `4b8b03663`
+  (target `x86_64-unknown-linux-gnu`, build and dev dependencies ignored, the unpublished package itself ignored):
+  - 424 crates, 6 of them Helix crates from git.
+    `cargo tree --edges normal,no-proc-macro` names 369 crates besides the IDE linked into the executable,
+    all among them;
+    the other 55 are procedural-macro crates and their dependencies, which run only while compiling.
+    The 187 registry crates whose source paths appear inside that release executable are all among them too.
+  - 29 distinct license expressions.
+    The most common: `MIT OR Apache-2.0` (188 crates), `MIT` (82), `Apache-2.0 OR MIT` (47),
+    `Unicode-3.0` (25), `Apache-2.0` (15),
+    Slint's `GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0` (10),
+    and `MPL-2.0` (9).
+    Unusual spellings parse as well:
+    fnv's `Apache-2.0  OR  MIT`,
+    smartstring's deprecated `MPL-2.0+`,
+    and unicode-ident's `(MIT OR Apache-2.0) AND Unicode-3.0`.
+  - No crate it could not resolve:
+    `--fail` exited with status 0.
+    As a positive control,
+    the same run without `GPL-3.0-only` among the accepted licenses failed with status 1,
+    naming all ten Slint crates.
+  - Two runs gave byte-identical output; one took 55.7 s on 2 CPUs.
+  - cargo-about reads no NOTICE files.
+    In the fetched registry only `cfg_aliases` ships one (`NOTICES.md`),
+    and it is a build dependency outside the graph.
+
+#### How the build carries them
+
+- `Containerfile` installs cargo-about 0.9.2 into the build image
+  (`mise run //package/desktop-app/ide:image`).
+  The `notices` task first checks `cargo-about --version` and,
+  in an image built before this change,
+  stops and names the `image` task.
+- `notices` runs after `fetch`:
+  cargo-about's `generate` with `--frozen`, `--fail`, `--config about.toml`,
+  and `--output-file target/crate-licenses.json`, on the template `about.json.hbs`.
+  It keeps the file while a SHA-256 over `Cargo.lock`, `Cargo.toml`, `about.toml`, `about.json.hbs`,
+  and the cargo-about version is unchanged (`target/crate-licenses.inputs`).
+  Every task that builds the application binary with the `gui` feature depends on it;
+  `build.rs` embeds the file as `LICENSES/crates.json`
+  and stops with a message naming the task when it is missing.
+- `about.json.hbs` writes one entry per distinct license text:
+  its SPDX identifier,
+  its name,
+  the crate file it came from (null for a standard text),
+  the crates it covers,
+  and the text.
+  `src/runtime/crate_licenses.rs` reads the list,
+  and `--licenses` prints every entry after the license files,
+  under a framed heading such as `Rust crates under MIT License (MIT): 18 crates`,
+  then the crates by name and version wrapped to 78 columns,
+  then `Text from the crate file annotate-snippets-0.12.16/LICENSE-MIT`
+  or `Text: the standard text of this license (no crate file was recognized)`.
+- `about.toml` accepts, in this order of preference for crates offered under several licenses:
+  MIT, Apache-2.0, ISC, BSD-2-Clause, BSD-3-Clause, Zlib, Unicode-3.0, MPL-2.0, CC0-1.0, Unlicense, GPL-3.0-only.
+  A dependency under any other license stops the task until it is reviewed.
+- On 2026-10-06 the list held 197 texts for 424 crates,
+  193 of them read from the crates' own files,
+  402,423 bytes of text in a 461,974-byte file.
+  Standard texts cover 12 MIT crates, 5 Apache-2.0 crates,
+  the ten Slint crates (GPL-3.0-only; the `slint` crate keeps that text in a `LICENSES/` folder,
+  which cargo-about did not pick),
+  and five Helix crates (MPL-2.0; Helix keeps its license file only at its repository root,
+  which `runtime/Helix-LICENSE` already carries).
+  Preferring Apache-2.0 over MIT gave 117 texts of 621,736 bytes, 66 crates on the standard Apache-2.0 text;
+  preferring BSD-3-Clause over Apache-2.0 gave 224 texts,
+  because cargo-about then took every BSD header among the source files of moxcms and pxfm as its own text.
+  The task took 99 s with its `fetch` step.
+  On the release executable of commit `9d476f838` (83,362,368 bytes),
+  the `crate-licenses` bundle check found all 369 linked crates
+  and all 291 registry crates whose source paths the executable contains among the crates printed.
+- The `linked-crates` task writes `target/linked-crates.txt`
+  from `cargo tree --frozen --edges normal,no-proc-macro --target x86_64-unknown-linux-gnu`
+  for the bundle checks.
+
+#### Choices made by default and open to veto
+
+- MIT ahead of Apache-2.0 in the accepted list,
+  because the crates' MIT files carry the copyright lines that license asks to reproduce,
+  and the list is smaller.
+- Slint under `GPL-3.0-only`,
+  whose text the executable already carries,
+  rather than the royalty-free license,
+  which asks for Slint's attribution (the `AboutSlint` widget in an About screen, or a badge on a public page).
 
 ### Where language files come from
 
@@ -2786,6 +2908,11 @@ without changing either:
   keeps the second,
   and renews its own folder's marker,
   before its display connection fails on purpose.
+- `crate-licenses`:
+  `--licenses` prints one section per entry of `target/crate-licenses.json`,
+  with the same license, the same crates in the same order, and the text in full;
+  every crate in `target/linked-crates.txt` (the `linked-crates` task, which both bundle tasks run first)
+  and every registry crate whose source path the executable itself contains is among the crates printed.
 
 The other startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`;
 SQL is the sample because it has a bundled grammar and no configured language server.
@@ -2806,10 +2933,21 @@ the SQL parser,
 a grammar notice,
 a font notice,
 an application license,
-and Helix's license.
+Helix's license,
+and the Rust crate license list.
 `license-texts` fails on every one of these but the SQL cases:
 a copy without its executable bit cannot run `--licenses`,
-and a copy with a damaged text exits with status 1 and the damage message naming that text.
+and a copy with a damaged text exits with status 1 and the damage message naming that text;
+on the damaged crate list `crate-licenses` fails the same way.
+A damaged file cannot show that `crate-licenses` notices a crate missing from an intact list,
+so that was checked on an altered build (on 2026-10-06):
+with `ignore-transitive-dependencies = true` added to `about.toml`,
+the list held 21 crates,
+and `crate-licenses` failed on the rebuilt debug executable
+("348 of 369 linked crates have no license text").
+In the same disposable copy,
+a debug build without `target/crate-licenses.json` stopped with status 101
+and the message naming the `notices` task.
 
 Behavior cannot be removed from a finished file,
 so the run-time checks were also run on an altered debug build (on 2026-10-06):
