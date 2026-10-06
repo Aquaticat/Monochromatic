@@ -46,8 +46,7 @@ const UNMERGED_REASON: &str =
     "is an unmerged (conflicted) index entry; resolve the conflict and stage the result";
 
 /// The reason a candidate the listing lacks stops the plan.
-const UNLISTED_REASON: &str =
-    "is a candidate that the listing of tracked files does not hold, so the listing cannot be trusted";
+const UNLISTED_REASON: &str = "is a candidate that the listing of tracked files does not hold, so the listing cannot be trusted";
 
 /// The reason a file that is not tracked cannot be read.
 const UNTRACKED_REASON: &str = "is not a tracked file of the candidate state";

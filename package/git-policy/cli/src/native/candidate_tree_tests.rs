@@ -129,7 +129,11 @@ fn refuses_every_malformed_record() {
     for (listing, cause, detail) in cases {
         let error: CandidateError = failure(parse_tree_records(listing.as_bytes()));
         assert_eq!(error.failure, cause, "{listing:?}");
-        assert!(error.message.contains(detail), "{listing:?}: {}", error.message);
+        assert!(
+            error.message.contains(detail),
+            "{listing:?}: {}",
+            error.message
+        );
         assert!(
             error.message.contains("git ls-tree -r HEAD"),
             "{}",

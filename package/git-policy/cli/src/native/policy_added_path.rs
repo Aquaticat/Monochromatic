@@ -99,6 +99,7 @@ pub fn head_mode(head: Option<&Entry>, index: &Entry) -> Result<CandidateMode, &
 fn executable_matches(metadata: &std::fs::Metadata, mode: CandidateMode) -> bool {
     #[cfg(unix)]
     {
+        /// Unix permission bits.
         use std::os::unix::fs::PermissionsExt;
         return (metadata.permissions().mode() & 0o100 != 0) == (mode == CandidateMode::Executable);
     }

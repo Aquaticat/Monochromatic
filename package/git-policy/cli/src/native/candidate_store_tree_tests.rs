@@ -89,16 +89,11 @@ fn a_failed_listing_is_reported() {
     write(repo.as_path(), b"file.txt", b"content\n");
     git(repo.as_path(), &["add", "file.txt"]);
     git(repo.as_path(), &["commit", "--quiet", "--message=file"]);
-    let head: String = String::from_utf8(
-        git(repo.as_path(), &["rev-parse", "HEAD:"]).stdout,
-    )
-    .expect("tree name");
+    let head: String =
+        String::from_utf8(git(repo.as_path(), &["rev-parse", "HEAD:"]).stdout).expect("tree name");
     // Removing the commit's tree object makes `ls-tree` fail while `HEAD` still resolves.
     let tree: &str = head.trim();
-    let object: PathBuf = repo
-        .join(".git/objects")
-        .join(&tree[..2])
-        .join(&tree[2..]);
+    let object: PathBuf = repo.join(".git/objects").join(&tree[..2]).join(&tree[2..]);
     std::fs::remove_file(object).expect("remove the tree object");
     let mut subject: CandidateStore = store(repo.as_path());
     let error = subject.head_tree_records().expect_err("listing fails");

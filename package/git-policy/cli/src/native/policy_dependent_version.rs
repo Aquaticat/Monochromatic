@@ -189,7 +189,9 @@ fn correction_of(
     let Some(relative) = path_from_git_bytes(&bump.path) else {
         return Err(failed(
             EngineFailureCode::ContentUnavailable,
-            format!("mono/dependent-version-bump cannot name the worktree copy of {shown} on this system."),
+            format!(
+                "mono/dependent-version-bump cannot name the worktree copy of {shown} on this system."
+            ),
         ));
     };
     let file: PathBuf = top_level.join(relative);
@@ -199,7 +201,9 @@ fn correction_of(
         Err(error) => {
             return Err(failed(
                 EngineFailureCode::ContentUnavailable,
-                format!("mono/dependent-version-bump could not read the worktree copy of {shown}: {error}."),
+                format!(
+                    "mono/dependent-version-bump could not read the worktree copy of {shown}: {error}."
+                ),
             ));
         }
     }
@@ -254,10 +258,13 @@ pub fn check_dependent_version<F: RepositoryFacts>(
     let Some((store, corrected)) = content.store_with_corrections() else {
         return failed(
             EngineFailureCode::ContentUnavailable,
-            String::from("mono/dependent-version-bump found no prepared candidates; this is a defect in cli-git."),
+            String::from(
+                "mono/dependent-version-bump found no prepared candidates; this is a defect in cli-git.",
+            ),
         );
     };
-    let mut workspace: LifecycleWorkspace<'_> = lifecycle_workspace(store, corrected, listed.as_slice());
+    let mut workspace: LifecycleWorkspace<'_> =
+        lifecycle_workspace(store, corrected, listed.as_slice());
     let findings: Vec<DependentFinding> = match find_dependent_bumps(&request, &mut workspace) {
         Ok(found) => found,
         Err(error) => return plan_failure(&error),

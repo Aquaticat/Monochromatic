@@ -21,12 +21,14 @@
 /// import { decideRequireRoot, resolveRequireRoot } from './rule_require_root.ts';
 /// ```
 use super::diagnostics::EngineFailureCode;
+/// Which worktree a command targets, for the linked-worktree rule.
 use super::effective_target::{EffectiveTarget, classify_effective_target};
 /// What the lifecycle offers content policies, and its prepared candidates.
 use super::policy_content::{ContentState, LifecycleContent};
-use super::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
 /// The dependent-version check over the candidate state.
 use super::policy_dependent_version::check_dependent_version;
+/// The engine's check interface, findings and outcomes.
+use super::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
 /// The built-in final-newline check over candidates.
 use super::policy_final_newline::check_final_newline;
 /// The forbidden-strings check, its settings and its scanner.
@@ -34,24 +36,33 @@ use super::policy_forbidden_strings::{
     ScannerSettings, ScannerState, check_forbidden_strings, default_scanner_settings,
     unloaded_scanner,
 };
+/// The typed policy identities.
 use super::policy_registry::PolicyId;
 /// The optional root-context check over candidates.
 use super::policy_root_context::check_root_context;
+/// The lifecycle points.
 use super::policy_trigger::Trigger;
+/// The facts interface every check asks.
 use super::repository_facts::RepositoryFacts;
+/// Where a command runs, and the directory Git works in.
 use super::repository_location::{RepositoryLocation, effective_directory};
+/// The add-explicit rule core.
 use super::rule_add_explicit::{BULK_ADD_CODE, decide_add_explicit};
+/// The branch-worktree rule core.
 use super::rule_branch_worktree::{
     BRANCH_CREATION_CODE, BranchWorktreeDecision, branch_creation_message, decide_branch_worktree,
 };
+/// The linked-worktree rule core.
 use super::rule_linked_worktree::{
     LINKED_WORKTREE_REQUIRED_CODE, LinkedWorktreeDecision, decide_linked_worktree,
     resolve_linked_worktree,
 };
+/// The require-root rule core.
 use super::rule_require_root::{
     NOT_AT_ROOT_CODE, RequireRootDecision, RequireRootFacts, RequireRootVerdict,
     decide_require_root, resolve_require_root,
 };
+/// The worktree's top level.
 use super::worktree_identity::worktree_root;
 /// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
 ///       expect: `String`, which must be valid UTF-8.
@@ -314,6 +325,13 @@ fn unported_content(candidates: &LifecycleContent, needs: &'static str) -> Polic
 /// check(policy: PolicyId, trigger: PolicyTrigger): Promise<PolicyOutcome> { switch (policy) { /* ... */ } }
 /// ```
 impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
+    /// What: The outcome of one policy at one lifecycle point.
+    /// Why:  Each arm calls the one check that owns the policy.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// check(policy: PolicyId, trigger: PolicyTrigger): PolicyOutcome;
+    /// ```
     fn check(&mut self, policy: PolicyId, trigger: Trigger) -> PolicyOutcome {
         // `&mut self.facts` lends the provider for writing; `.as_slice()` lends a list.
         match policy {
