@@ -33,7 +33,9 @@ path = "src/binary_tests.rs"
 
 [dependencies]
 # Reuse the repository's comment-preserving parser and exact-number value model.
-monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }
+# 0.1.1 is the first release with the fuzz-found fixes for bare-CR comment bodies and scalar root
+# replacement; a crates.io build against 0.1.0 would compile the unfixed code.
+monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.1" }
 # Reuse the incumbent native CLI parser for operating-system paths and generated usage validation.
 clap = { version = "4", features = ["derive"] }
 # Same glob compiler and gitignore-aware walker family as the incumbent Rust linter.
