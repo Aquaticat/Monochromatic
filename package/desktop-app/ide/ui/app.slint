@@ -171,6 +171,8 @@ export component AppWindow inherits Window {
     // materialized line: all from native code's vertical mapping.
     in property <float> content-extent: 24;
     in property <[float]> line-tops;
+    // Per materialized line, one more than the rank of the worst diagnostic starting on it, or 0 for none.
+    in property <[int]> line-marks;
     in property <int> first-line;
     in property <int> selection-anchor;
     in property <int> selection-head;
@@ -180,7 +182,11 @@ export component AppWindow inherits Window {
     out property <float> viewport-width: (scroll.width - root.gutter-width) / 1px;
     // Height of one code row; where rows are is decided by native code alone.
     private property <length> code-row: 24px;
-    private property <length> gutter-width: 56px;
+    // The gutter: a column for the severity letter, then the line numbers right-aligned 12 px before the text.
+    // The letter column exists on every line, so the text keeps its x when diagnostics arrive or go.
+    private property <length> mark-column: 16px;
+    private property <length> number-column: 56px;
+    private property <length> gutter-width: root.mark-column + root.number-column;
     private property <length> font-size: 15px;
     // Converting a physical pixel tracks display scale even when logical window size is unchanged.
     private property <length> physical-pixel: 1phx;
@@ -409,9 +415,9 @@ export component AppWindow inherits Window {
 
                     // One number per materialized line, on that line's code row, never on its virtual rows.
                     for top[index] in root.line-tops: Text {
-                        x: 0px;
+                        x: root.mark-column;
                         y: top * 1px;
-                        width: root.gutter-width - 12px;
+                        width: root.number-column - 12px;
                         height: root.code-row;
                         text: root.first-line + index + 1;
                         horizontal-alignment: right;
@@ -420,6 +426,25 @@ export component AppWindow inherits Window {
                         opacity: 0.6;
                         font-family: "JetBrains Mono";
                         font-size: root.font-size;
+                    }
+
+                    // The worst severity of the diagnostics starting on a line, as its letter in its ink, in front of
+                    // the line number. A mark of 0 is no diagnostic; a missing entry reads as 0, so nothing shows.
+                    for top[index] in root.line-tops: Text {
+                        visible: root.line-marks[index] > 0;
+                        x: 0px;
+                        y: top * 1px;
+                        width: root.mark-column;
+                        height: root.code-row;
+                        text: AnnotationInk.letter(root.line-marks[index] - 1);
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                        color: AnnotationInk.severity(root.line-marks[index] - 1);
+                        font-family: "JetBrains Mono";
+                        font-size: root.font-size;
+                        font-weight: 700;
+                        // The accessible description already starts with the problems at the caret.
+                        accessible-role: none;
                     }
 
                     Rectangle {

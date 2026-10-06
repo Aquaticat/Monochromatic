@@ -40,8 +40,8 @@ use slint::{
 /// ```
 use std::{fs, sync::Arc, time::Duration};
 
-/// Source text starts right of the 256 px tree, its 48 px divider cell, and the 56 px line-number gutter.
-pub(super) const TEXT_LEFT: f32 = 360.0;
+/// Where source text starts in the window, derived in `sidebar_tests` from the tree, divider, and gutter widths.
+pub(super) use super::sidebar_tests::TEXT_LEFT;
 /// Source rows start below the 32 px file label.
 pub(super) const TEXT_TOP: f32 = 32.0;
 

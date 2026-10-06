@@ -37,8 +37,8 @@ use std::{fs, sync::Arc};
 
 /// Characters per line of the numbered fixture: `line NNN: value` and its terminator.
 const LINE: usize = 16;
-/// The line numbers start this far left of the text: the 56 px gutter.
-const GUTTER: f32 = 56.0;
+/// The gutter, severity letters and line numbers, starts this far left of the text.
+const GUTTER: f32 = super::sidebar_tests::GUTTER;
 /// Rows of a code row above its underline band; glyphs without descenders end there.
 const ABOVE_UNDERLINE: usize = 17;
 

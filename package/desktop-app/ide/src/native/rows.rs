@@ -15,8 +15,8 @@ use super::{AppWindow, State, annotate::displayed, viewport::place};
 /// import { Assoc, type ChangeSet } from 'helix-core';
 /// ```
 use helix_core::{Assoc, ChangeSet};
-/// Space held open above a line of a reloaded text.
-use ide_app::annotation::Held;
+/// Space held open above a line of a reloaded text, and the rank that orders severities.
+use ide_app::annotation::{Held, rank};
 /// The mapping itself and the height of one code row.
 use ide_app::row_map::{CODE_ROW, RowMap};
 /// The stamp naming a displayed text, and one line's block of virtual rows.
@@ -287,7 +287,7 @@ pub(super) fn limit(map: &RowMap, height: f32) -> f32 {
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Placement = { extent: number; first: number; tops: number[]; model: ArrayModel<number>;
-///   anchor: [top: number, height: number] };
+///   marks: number[]; markModel: ArrayModel<number>; anchor: [top: number, height: number] };
 /// ```
 pub(super) struct Placement {
     /// Height of the whole text.
@@ -298,6 +298,10 @@ pub(super) struct Placement {
     tops: Vec<f32>,
     /// The persistent line-number model.
     model: Rc<VecModel<f32>>,
+    /// Gutter severity mark of each materialized line; see `State::line_marks`.
+    marks: Vec<i32>,
+    /// The persistent severity-mark model.
+    mark_model: Rc<VecModel<i32>>,
     /// Top and height of everything the anchoring line owns.
     anchor: (f32, f32),
 }
@@ -317,18 +321,63 @@ pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
     for line in current.first..last {
         tops.push(map.code_top(line));
     }
+    // What: `vec![0; n]` is a list of n zeros; `partition_point` is a binary search for the first block at or
+    //       after the first materialized line.
+    // Why: A line's message rows are listed worst first, so the first row names the worst severity starting on
+    //      the line. Blocks with held space only have no rows, so a stale text shows no letter.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const marks = tops.map(() => 0); for (const block of blocksIn(first, last)) marks[block.line - first] = ...;
+    // ```
+    let mut marks = vec![0; tops.len()];
+    let from = current
+        .blocks
+        .partition_point(|block| return block.line < current.first);
+    for block in &current.blocks[from..] {
+        if block.line >= last {
+            break;
+        }
+        // `first()` lends the worst message row, or nothing for a block without messages.
+        if let Some(worst) = block.messages.first() {
+            marks[block.line - current.first] = i32::from(rank(worst.severity)) + 1;
+        }
+    }
     return Placement {
         extent: map.height(),
         first: current.first,
         tops,
         // `Rc::clone` copies the pointer to the shared model, not its rows.
         model: Rc::clone(&current.line_tops),
+        marks,
+        mark_model: Rc::clone(&current.line_marks),
         anchor: anchor_place(map, anchor_line),
     };
 }
 
-/// What: Hand a [`Placement`] to the window. The line-number model is updated row by row.
-/// Why: Updating in place changes numbers and positions while scrolling without rebuilding text elements.
+/// What: Make `model` hold exactly `wanted`, changing only rows that differ. `T` is the row type; `Copy` lets a
+///       row be duplicated like a number and `PartialEq` lets two rows be compared.
+/// Why: Updating in place changes numbers, positions, and letters while scrolling without rebuilding elements.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function update<T>(model: ArrayModel<T>, wanted: T[]): void;
+/// ```
+fn update<T: Copy + PartialEq + 'static>(model: &VecModel<T>, wanted: &[T]) {
+    for (index, row) in wanted.iter().enumerate() {
+        if index >= model.row_count() {
+            model.push(*row);
+        } else if model.row_data(index) != Some(*row) {
+            model.set_row_data(index, *row);
+        }
+    }
+    while model.row_count() > wanted.len() {
+        model.remove(model.row_count() - 1);
+    }
+}
+
+/// What: Hand a [`Placement`] to the window. The line-number and severity-mark models are updated row by row.
+/// Why: The window draws a number and, where a diagnostic starts, a letter on each materialized code row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -337,17 +386,8 @@ pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
 pub(super) fn present(window: &AppWindow, placement: Placement) {
     window.set_content_extent(placement.extent);
     let model = &placement.model;
-    let wanted = &placement.tops;
-    for (index, top) in wanted.iter().enumerate() {
-        if index >= model.row_count() {
-            model.push(*top);
-        } else if model.row_data(index) != Some(*top) {
-            model.set_row_data(index, *top);
-        }
-    }
-    while model.row_count() > wanted.len() {
-        model.remove(model.row_count() - 1);
-    }
+    update(model, &placement.tops);
+    update(&placement.mark_model, &placement.marks);
     // What: `Rc::clone` copies the pointer; the window compares model pointers, so handing over the same
     //       model again changes nothing.
     // Why: The first render installs the model; later ones only confirm it.
@@ -357,6 +397,7 @@ pub(super) fn present(window: &AppWindow, placement: Placement) {
     // window.lineTops = current.lineTops;
     // ```
     window.set_line_tops(ModelRc::from(Rc::clone(model)));
+    window.set_line_marks(ModelRc::from(Rc::clone(&placement.mark_model)));
     window.set_first_line(placement.first as i32);
     let (top, height) = placement.anchor;
     window.set_language_anchor_y(top);
@@ -380,6 +421,11 @@ pub(super) fn anchor_place(map: &RowMap, anchor_line: i32) -> (f32, f32) {
 
 /// A fresh line-number model for a new source state.
 pub(super) fn line_model() -> Rc<VecModel<f32>> {
+    return Rc::new(VecModel::from(Vec::new()));
+}
+
+/// A fresh severity-mark model for a new source state.
+pub(super) fn mark_model() -> Rc<VecModel<i32>> {
     return Rc::new(VecModel::from(Vec::new()));
 }
 

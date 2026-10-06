@@ -53,7 +53,7 @@ pub(super) fn frame(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
 }
 
 /// One frame pixel at whole logical coordinates; the headless window has scale one.
-fn pixel(frame: &SharedPixelBuffer<Rgba8Pixel>, x: f32, y: f32) -> Rgba8Pixel {
+pub(super) fn pixel(frame: &SharedPixelBuffer<Rgba8Pixel>, x: f32, y: f32) -> Rgba8Pixel {
     let index = y as usize * frame.width() as usize + x as usize;
     return frame.as_slice()[index];
 }
@@ -71,7 +71,7 @@ fn luminance(pixel: Rgba8Pixel) -> f32 {
 }
 
 /// WCAG 2 contrast ratio of two opaque pixels.
-fn contrast(first: Rgba8Pixel, second: Rgba8Pixel) -> f32 {
+pub(super) fn contrast(first: Rgba8Pixel, second: Rgba8Pixel) -> f32 {
     let (lighter, darker) = (
         luminance(first).max(luminance(second)),
         luminance(first).min(luminance(second)),
@@ -80,7 +80,7 @@ fn contrast(first: Rgba8Pixel, second: Rgba8Pixel) -> f32 {
 }
 
 /// Whether a frame pixel equals a toolkit color within rounding.
-fn near(pixel: Rgba8Pixel, color: Color) -> bool {
+pub(super) fn near(pixel: Rgba8Pixel, color: Color) -> bool {
     return pixel.r.abs_diff(color.red()) <= 2
         && pixel.g.abs_diff(color.green()) <= 2
         && pixel.b.abs_diff(color.blue()) <= 2;
