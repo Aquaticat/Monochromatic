@@ -326,6 +326,9 @@ so its invariant that no unchecked `git add` is forwarded still holds and now go
 The repository's installed wrapper corrected the final newline of the new seed files when they were committed
 (its `final-newline` exclusions do not cover this package's seeds),
 so every new seed ends with one LF.
+The names `seed/final_newline/missing` and `seed/final_newline/extra` were kept,
+although those two files are now canonical;
+the targets still reach both cases through their generated view.
 
 Generator controls:
 21 passed (`cargo test --lib` through `mise run //package/git-policy/cli.fuzz:test`).
@@ -709,6 +712,12 @@ none was fixed.
 
 - `package/git-policy/cli/Cargo.toml` and both lockfiles are unchanged.
 - `package/git-policy/cli.fuzz/Cargo.toml` gained three `[[bin]]` entries for the new targets.
+  file-enforcer manages it through the `package/*/*/Cargo.toml` glob;
+  `mise run sync:files` in this worktree left it unchanged.
+  The same run rewrote the root `mise.toml` (`_.path` entries) and `package/config/pnpr/config.yaml`
+  (published package count 128 to 131) from what is on disk here;
+  neither is this branch's change,
+  so both were restored and nothing from that run was committed.
 - `package/git-policy/cli/mise.toml` gained `native:build`;
   `package/git-policy/cli.fuzz/mise.toml` describes `test:planted` without a count.
 
