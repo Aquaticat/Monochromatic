@@ -44,7 +44,9 @@ and by vetoing any item under `Choices open to veto`.
 
 ## Status
 
-Slices 0 and 1 are done; slice 2 is in progress.
+Slices 0 to 2 are done, apart from the slice 2 fuzz smoke campaign;
+slice 3 is next.
+A real commit is still refused.
 
 ## Slice plan
 
@@ -403,7 +405,9 @@ every test passed (637 unit tests, 39 binary-level tests, the candidate consumer
 then Clippy failed on `manual_range_contains` in `json_record.rs`;
 the fix is committed and the next gate covers it.
 
-Interoperability (`native-interop/owner-locks.mjs`, evidence `target/verification/interop-c2oSt5`):
+Interoperability (`native-interop/owner-locks.mjs`, evidence `target/verification/interop-c2oSt5`).
+The first run ended during the image build (step 14 of 21) with exit 1 and no diagnostic in its log;
+the rerun on the same snapshot passed:
 
 - An incumbent paused at `capture-locked` holds its capture lock;
   the native identity of its PID is `linux:4248886`,
@@ -421,9 +425,155 @@ Measured facts recorded for later slices:
 
 - The Bash tool's processes share one 8 GB cgroup (`claude-code-bash`) with other sessions' commands;
   a host `cargo check` of this crate died there with no diagnostic at the default parallelism
-  and passed with `CARGO_BUILD_JOBS=4` (52.8 s).
+  and passed with `CARGO_BUILD_JOBS=4`.
 - The incumbent prints warnings as `[warn] [<ISO time>] [cli-git] <message>`.
+
+### Slice 2
+
+Commits `359807798`, `06d92ef04`, `f51a46758`, `d74fa16e2` and `e0435222c`.
+Modules:
+`transaction_owner.rs`,
+`transaction_registry.rs`,
+`transaction_journal.rs` with `_encode` and `_parse`,
+`transaction_lease.rs`,
+`iso_time.rs`,
+`filesystem_identity.rs`,
+`transaction_git.rs`,
+`recovery_files.rs`,
+`recovery_evidence.rs`,
+`recovery_reflog.rs`,
+`recovery_completion.rs`,
+`pack_keep.rs`,
+`shadow_git.rs`,
+`conclusion_cleanup.rs`,
+`capture_store.rs`,
+`capture_records.rs`,
+`blob_batch.rs`,
+`worktree_completion.rs`,
+`recovery_inspect.rs`,
+`recovery_landing.rs`,
+`recovery_scan.rs`,
+`commit_recovery.rs`,
+`transaction_gate.rs`.
+`diagnostic_log.rs` now writes the incumbent's line format,
+`[<level>] [<ISO time>] [cli-git] [<tag>] <message>`.
+
+Behavior now:
+every guarded, read-only and direct command that reads the repository location
+recovers dead transactions first, oldest first,
+taking the landing lock for dead landings.
+A live transaction still refuses guarded and direct commands
+(`Unported::TransactionRecovery`),
+because index writers do not coordinate with landings before slice 3;
+read-only commands go on beside it.
+A malformed registry stops any of them with exit 2 and a `content-unavailable` event naming the path,
+and keeps the files.
+The legacy `cli-git-transaction` directory stops with the owner's message.
+`pending_state.rs` keeps only interrupted worktree copies.
+An empty registry costs one directory read and no Git process;
+the read-only fast-path test
+(`policy::read_only_commands_start_at_most_the_location_query`) still passes.
+
+Gate at `d74fa16e2`:
+755 unit tests passed and 2 ignored,
+39 binary-level tests,
+the candidate consumer,
+Clippy clean, exit 0.
+On the host (Git 2.55.0) the same suite has 10 unit and 4 binary-level failures,
+all comparisons with Git 2.56.0 output.
+`d74fa16e2` added two methods to `RepositoryFacts`;
+the fuzz sidecar's `FixedFacts` lacked them until `e0435222c`,
+so the sidecar does not build at `d74fa16e2`.
+
+Interoperability (`native-interop/phase-recovery.mjs`, evidence `target/verification/interop-zGaVqG`):
+the incumbent committed `a.txt` and killed itself at each of
+`capture-locked`, `preparation-done`, `landing-locked`, `objects-migrated`, `ref-updated` and `index-installed`;
+the native `git status` then exited 0 each time.
+Afterwards the commit had not landed for the first four phases and had landed whole for the last two,
+the real index equaled `HEAD`,
+the worktree kept the edit,
+and no transaction directory, shadow repository, `index.lock`, `.keep` or landed-capture record was left;
+the incumbent then landed a follow-up commit in the same repository.
+For `ref-updated` the native recovery installed the recorded post-index
+(the dead incumbent had not).
+
+Fuzz (`package/git-policy/cli.fuzz`):
+targets `owner_records` and `transaction_records`,
+with generator controls (26 sidecar controls pass on the host)
+and five planted defects.
+The planted-defect run and the 30-second smoke campaign are recorded once they finish.
+
+## Dependencies
+
+Added to `package/git-policy/cli/Cargo.toml`, all already in the lockfile:
+
+- `serde_json`, already linked through the forbidden-strings scanner:
+  JSON records with `JSON.parse` semantics (last duplicate key wins, numbers as doubles)
+  and `JSON.stringify` string escaping.
+- `getrandom`, already linked through `tempfile`:
+  random bytes for `randomUUID`-shaped tokens and transaction IDs.
+- `libc` (Unix only), already in the lockfile:
+  `kill(pid, 0)`, `O_NOFOLLOW`, `O_NONBLOCK`, error numbers, and later `sigaction`.
+
+`mise run //package/git-policy/cli:native:lock:scanner` added exactly these three edges to
+`package/git-policy/cli/Cargo.lock`;
+`mise run //package/git-policy/cli.fuzz:lock:subject` added the same three to the sidecar's lockfile.
+file-enforcer left both manifests as edited;
+the `mise.toml` and `package/config/pnpr/config.yaml` it rewrote were unrelated drift of this
+environment and were discarded.
 
 ## Choices open to veto
 
-None yet.
+### Windows ownership and identity
+
+Windows birth identities use the incumbent's PowerShell command unchanged,
+and private files and directories get no Windows ACLs
+(the incumbent applies them through PowerShell in `src/trust/registry-io.ts`).
+Neither was run on Windows here.
+The Windows filesystem identity keeps the PowerShell volume serial
+but not the incumbent's fallback to Node's device number,
+which the Rust standard library exposes only through an unstable interface;
+without the serial no identity is recorded and the landing that needs one stops.
+
+### Recovery failures and the exit code
+
+Every recovery failure is a `content-unavailable` engine failure with exit 2.
+The incumbent reports its own recovery errors that way
+but lets an operating-system error or a `TypeError` escape as a plain message with exit 1.
+A malformed owner record of a published directory names the directory,
+where the incumbent's message names none.
+
+### Stricter reads than the incumbent
+
+- Attempt numbers in `landing-<n>.json` and `index-lock-<n>.json` must be ASCII digits;
+  the incumbent reads them with `Number`, which also accepts a sign, whitespace, exponents and `0x`.
+  Neither wrapper writes those spellings.
+- Owner records and recovery files are read without following a link and only up to a size limit
+  (64 KiB for owner lock records, 2 GiB for recovery files, 256 MiB for capture-store files);
+  the incumbent follows a link for owner lock records and reads any size.
+
+### Recovery visits a directory once
+
+When one dead landing takes the landing lock,
+every dead transaction that entered the landing critical section is recovered under it,
+and the later pass no longer visits those directories.
+The incumbent visits them a second time and fails reading the removed directory.
+
+### Git input through a file
+
+Bytes for a Git child's standard input are written to a private, already unlinked file
+in the temporary directory instead of a pipe,
+so a child that writes before reading all its input cannot deadlock against this process.
+
+### Recovery's Git commands replay the global options
+
+Recovery runs Git with the invocation's global options (`-C`, `--git-dir`, `-c`),
+as the native location query does.
+The incumbent runs them in the effective directory without those options.
+The two differ only for invocations that select a repository with `--git-dir` or `--work-tree`.
+
+### Numbers serde_json reads differently
+
+`serde_json` without its `float_roundtrip` feature reads `9007199254740991.0` as 9007199254740990;
+`JSON.parse` reads 9007199254740991.
+Neither wrapper writes fractional spellings of integers.
