@@ -1,14 +1,15 @@
-import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
   type BundleMaps,
   bundleMapsOf,
   requireUnminifiedBuild,
 } from './coverage-bundle-maps.ts';
+import type { ReadText, } from './coverage-census-read-text.ts';
 import { namesIn, } from './directory-listing.ts';
 
 //region Coverage census build
@@ -59,6 +60,8 @@ async function builtFilesOf({ distDirectory, }: { readonly distDirectory: string
 
  @param l - logger the one progress line goes to
 
+ @param readText - reads one bundle's text, passed in so a case scripts which of two bundles' reads ends first
+
  @returns The build's bundles, split by whether a map stands beside each
 
  @throws StatedRefusalError where the directory cannot be listed, holds no
@@ -66,16 +69,18 @@ async function builtFilesOf({ distDirectory, }: { readonly distDirectory: string
 
  @example
  ```ts
- const bundleMaps = await requireCoverageBuild({ distDirectory, l, },);
+ const bundleMaps = await requireCoverageBuild({ distDirectory, l, readText: readUtf8Text, },);
  ```
  */
 export async function requireCoverageBuild(
   {
     distDirectory,
     l,
+    readText,
   }: {
     readonly distDirectory: string;
     readonly l: Logger;
+    readonly readText: ReadText;
   },
 ): Promise<BundleMaps> {
   /**
@@ -94,15 +99,16 @@ export async function requireCoverageBuild(
   } = bundleMaps;
   // Before the suite, so a minified build costs no suite run (ledger M79).
   requireUnminifiedBuild({
-    texts: await Promise.all(mapped.map(function textOf(bundle,): Promise<string> {
-      return readFile(
-        join(
-          distDirectory,
-          bundle,
-        ),
-        'utf8',
-      );
-    },),),
+    texts: await allInInputOrder({
+      members: mapped.map(function textOf(bundle,): Promise<string> {
+        return readText({
+          path: join(
+            distDirectory,
+            bundle,
+          ),
+        },);
+      },),
+    },),
     distDirectory,
   },);
   l.info(`bundles with no source map, read only where the census must place code in them: ${(unmapped.length === 0) ? 'none' : unmapped.join(', ',)}`,);

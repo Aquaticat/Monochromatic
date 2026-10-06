@@ -8,12 +8,14 @@ import { pathToFileURL, } from 'node:url';
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { wordForCount, } from '../count-word.ts';
 import { packageCacheDir, } from '../lookup-cache.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import type { Baseline, } from './coverage-census-baseline-lines.ts';
 import { requireCoverageBuild, } from './coverage-census-build.ts';
+import { readUtf8Text, } from './coverage-census-read-text.ts';
 import type {
   packageCommit,
   sourcesEditedSince,
@@ -111,6 +113,41 @@ export type CoverageCensusSteps = {
 };
 
 /**
+ Reads every earlier census the command line named, side by side.
+
+ @param paths - census files named, in the order a refusal must be reported in
+
+ @param readBaseline - reads one census file, passed in so a case scripts which of two reads ends first
+
+ @returns Each census beside the path it came from, in the order named
+
+ @throws Whatever the first file named, whose read failed, was refused with
+
+ @example
+ ```ts
+ const baselines = await readBaselines({ paths: ['/cats/before.json',], readBaseline: readBaselineFile, },);
+ ```
+ */
+export async function readBaselines(
+  {
+    paths,
+    readBaseline,
+  }: {
+    readonly paths: readonly string[];
+    readonly readBaseline: typeof readBaselineFile;
+  },
+): Promise<readonly Baseline[]> {
+  return await allInInputOrder({
+    members: paths.map(async function readOne(path,): Promise<Baseline> {
+      return {
+        path,
+        census: await readBaseline({ path, },),
+      };
+    },),
+  },);
+}
+
+/**
  Runs the census the command line asked for and prints its report.
 
  Returns nothing: the report on stdout IS the output, and the census file it
@@ -164,13 +201,10 @@ export async function runCoverageCensus(
    does not read as one refuses at once rather than after the whole suite
    (ledger M67's control run spent a suite on one).
    */
-  const baselines = await Promise.all(asked.baseline
-    .map(async function readBaseline(path,): Promise<Baseline> {
-    return {
-      path,
-      census: await readBaselineFile({ path, },),
-    };
-  },),);
+  const baselines = await readBaselines({
+    paths: asked.baseline,
+    readBaseline: readBaselineFile,
+  },);
   /**
    Build directory the tests import.
    */
@@ -186,6 +220,7 @@ export async function runCoverageCensus(
   const bundleMaps = await requireCoverageBuild({
     distDirectory,
     l,
+    readText: readUtf8Text,
   },);
   /**
    The commit and whether the files match it.

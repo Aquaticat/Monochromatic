@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   open,
@@ -22,6 +23,7 @@ import {
   PASS_MARKER,
 } from './coverage-census-input.ts';
 import type { UnloadedSource, } from './coverage-census-print.ts';
+import type { ReadText, } from './coverage-census-read-text.ts';
 import { sourceKindOf, } from './coverage-census-report.ts';
 import { namesOfKind, } from './directory-listing.ts';
 import {
@@ -385,11 +387,13 @@ export async function readBundle(
 
  @param entryFiles - sources the build names as runner entries
 
+ @param readText - reads one source's text, passed in so a case scripts which of two sources' reads ends first
+
  @returns One record per source, sorted by name
 
  @example
  ```ts
- const unloaded = await unloadedSourcesOf({ packageDirectory, carried, loadedSources, entryFiles, },);
+ const unloaded = await unloadedSourcesOf({ packageDirectory, carried, loadedSources, entryFiles, readText: readUtf8Text, },);
  ```
  */
 export async function unloadedSourcesOf(
@@ -398,15 +402,17 @@ export async function unloadedSourcesOf(
     carried,
     loadedSources,
     entryFiles,
+    readText,
   }: {
     readonly packageDirectory: string;
     readonly carried: readonly string[];
     readonly loadedSources: ReadonlySet<string>;
     readonly entryFiles: ReadonlySet<string>;
+    readonly readText: ReadText;
   },
 ): Promise<readonly UnloadedSource[]> {
-  return await Promise.all(
-    textsInCodePointOrder({ texts: [...new Set(carried,),]
+  return await allInInputOrder({
+    members: textsInCodePointOrder({ texts: [...new Set(carried,),]
       .filter(function onlyThere(source,): boolean {
         return !loadedSources.has(source,);
       },), },)
@@ -417,17 +423,16 @@ export async function unloadedSourcesOf(
             source,
             entryFiles,
           },),
-          lines: (await readFile(
-            join(
+          lines: (await readText({
+            path: join(
               packageDirectory,
               source,
             ),
-            'utf8',
-          )).split('\n',)
+          },)).split('\n',)
             .length,
         };
       },),
-  );
+  },);
 }
 
 //endregion Coverage census steps

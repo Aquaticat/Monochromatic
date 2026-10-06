@@ -72,7 +72,10 @@ export {
   type JudgedEntry,
   judgePublishedEntry,
 } from './corpus-run/verify-published-entry.ts';
-export { verifyPublishedRun, } from './corpus-run/verify-published-run.ts';
+export {
+  judgePublishedEntries,
+  verifyPublishedRun,
+} from './corpus-run/verify-published-run.ts';
 
 export {
   type ArtifactPageAssembly,

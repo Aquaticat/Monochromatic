@@ -209,6 +209,7 @@ export type { BenchRow, } from './corpus-run/roster-bench-row.ts';
 export {
   type BenchSlice,
   sampleBenchSlices,
+  sliceListedEntries,
 } from './corpus-run/bench-sample.ts';
 export {
   classifyWidths,

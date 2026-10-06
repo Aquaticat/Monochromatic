@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   basename,
@@ -5,14 +6,14 @@ import {
 } from 'node:path';
 
 
-import {
-  type CorpusPin,
+import type {
+  CorpusPin,
   readCorpusFile,
 } from '../corpus-source.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
-import { listArtifactFiles, } from './artifact-file-name.ts';
+import type { listArtifactFiles, } from './artifact-file-name.ts';
 import { verifyArtifactMeasurements, } from './artifact-two-lane-corpus-verify.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
@@ -283,6 +284,9 @@ function verifySettled(
 
  @param cloneDir - corpus clone the artifact's own commit is read from
 
+ @param readFile - reads one page at a commit, passed in so a case scripts which of the two page reads ends first
+ instead of the clone deciding it
+
  @returns Everything that artifact offers, provenance included
 
  @throws {@link ArtifactParseError} when the file is not a settled version 2
@@ -290,7 +294,7 @@ function verifySettled(
 
  @example
  ```ts
- const reading = await readArtifactSubjects({ archiveDir, runSetDir, runSet, artifactFile, cloneDir, },);
+ const reading = await readArtifactSubjects({ archiveDir, runSetDir, runSet, artifactFile, cloneDir, readFile: readCorpusFile, },);
  ```
  */
 export async function readArtifactSubjects(
@@ -300,12 +304,14 @@ export async function readArtifactSubjects(
     runSet,
     artifactFile,
     cloneDir,
+    readFile,
   }: {
     readonly archiveDir: string;
     readonly runSetDir: string;
     readonly runSet: string;
     readonly artifactFile: string;
     readonly cloneDir: string;
+    readonly readFile: typeof readCorpusFile;
   },
 ): Promise<SettledArtifactReading> {
   /**
@@ -336,16 +342,18 @@ export async function readArtifactSubjects(
   /**
    Pair as it stood at that commit.
    */
-  const [sourceText, targetText,] = await Promise.all([
-    readCorpusFile({
-      pin,
-      relPath: `people/${artifact.id}/page.md`,
-    },),
-    readCorpusFile({
-      pin,
-      relPath: `people/${artifact.id}/page.en.md`,
-    },),
-  ],);
+  const [sourceText, targetText,] = await allInInputOrder({
+    members: [
+      readFile({
+        pin,
+        relPath: `people/${artifact.id}/page.md`,
+      },),
+      readFile({
+        pin,
+        relPath: `people/${artifact.id}/page.en.md`,
+      },),
+    ],
+  },);
 
   /**
    Preparation rebuilt from that pair with the recipe the artifact records,
@@ -401,17 +409,26 @@ export async function readArtifactSubjects(
 
  @param archiveDir - directory of run sets, or of artifacts
 
+ @param listFiles - lists the artifacts one directory holds, passed in so a case scripts which of two run sets'
+ listings ends first
+
  @returns Locations sorted by run set then file
 
  @throws {@link StatedRefusalError} when artifacts sit at both levels
 
  @example
  ```ts
- const located = await locateSettledArtifacts({ archiveDir, },);
+ const located = await locateSettledArtifacts({ archiveDir, listFiles: listArtifactFiles, },);
  ```
  */
 async function locateSettledArtifacts(
-  { archiveDir, }: { readonly archiveDir: string; },
+  {
+    archiveDir,
+    listFiles,
+  }: {
+    readonly archiveDir: string;
+    readonly listFiles: typeof listArtifactFiles;
+  },
 ): Promise<readonly ArtifactLocation[]> {
   /**
    Run-set subdirectories, sorted.
@@ -425,7 +442,7 @@ async function locateSettledArtifacts(
    Artifacts sitting at the archive root, which is the layout a pass writes:
    regular files named like one, as every artifact reader lists them.
    */
-  const loose = textsInCodePointOrder({ texts: (await listArtifactFiles({ artifactsDir: archiveDir, },)), },);
+  const loose = textsInCodePointOrder({ texts: (await listFiles({ artifactsDir: archiveDir, },)), },);
 
   // STATED, NOT FAULTED: the archive is the operator's, the path is what they
   // typed, and the remedy is theirs, so `reportingRefusals` prints this line
@@ -450,26 +467,28 @@ async function locateSettledArtifacts(
       };
     },);
 
-  return (await Promise.all(runSets.map(
-    async function within(runSet,): Promise<readonly ArtifactLocation[]> {
-      // Regular files only, as the loose layout already required: a directory
-      // named like an artifact inside a run set was read as JSON and stopped
-      // the whole archive reading (ledger B64).
-      return textsInCodePointOrder({ texts: (await listArtifactFiles({
-        artifactsDir: join(
-          archiveDir,
-          runSet,
-        ),
-      },)), },)
-        .map(function at(artifactFile,): ArtifactLocation {
-          return {
-            runSetDir: runSet,
+  return (await allInInputOrder({
+    members: runSets.map(
+      async function within(runSet,): Promise<readonly ArtifactLocation[]> {
+        // Regular files only, as the loose layout already required: a directory
+        // named like an artifact inside a run set was read as JSON and stopped
+        // the whole archive reading (ledger B64).
+        return textsInCodePointOrder({ texts: (await listFiles({
+          artifactsDir: join(
+            archiveDir,
             runSet,
-            artifactFile,
-          };
-        },);
-    },
-  ),))
+          ),
+        },)), },)
+          .map(function at(artifactFile,): ArtifactLocation {
+            return {
+              runSetDir: runSet,
+              runSet,
+              artifactFile,
+            };
+          },);
+      },
+    ),
+  },))
     .flat();
 }
 
@@ -483,38 +502,54 @@ async function locateSettledArtifacts(
 
  @param cloneDir - corpus clone every artifact's own commit is read from
 
+ @param readFile - reads one page at a commit, passed in so a case scripts which artifact's page read is
+ refused first
+
+ @param listFiles - lists the artifacts one directory holds, passed in so a case scripts which run set's
+ listing is refused first
+
  @returns One reading per artifact, in archive order
 
  @example
  ```ts
- const readings = await readArchiveSubjects({ archiveDir, cloneDir, },);
+ const readings = await readArchiveSubjects({ archiveDir, cloneDir, readFile: readCorpusFile, listFiles: listArtifactFiles, },);
  ```
  */
 export async function readArchiveSubjects(
   {
     archiveDir,
     cloneDir,
+    readFile,
+    listFiles,
   }: {
     readonly archiveDir: string;
     readonly cloneDir: string;
+    readonly readFile: typeof readCorpusFile;
+    readonly listFiles: typeof listArtifactFiles;
   },
 ): Promise<readonly SettledArtifactReading[]> {
   /**
    Every artifact path, flattened in archive order.
    */
-  const located = await locateSettledArtifacts({ archiveDir, },);
+  const located = await locateSettledArtifacts({
+    archiveDir,
+    listFiles,
+  },);
 
-  return await Promise.all(located.map(
-    async function read(at,): Promise<SettledArtifactReading> {
-      return await readArtifactSubjects({
-        archiveDir,
-        runSetDir: at.runSetDir,
-        runSet: at.runSet,
-        artifactFile: at.artifactFile,
-        cloneDir,
-      },);
-    },
-  ),);
+  return await allInInputOrder({
+    members: located.map(
+      async function read(at,): Promise<SettledArtifactReading> {
+        return await readArtifactSubjects({
+          archiveDir,
+          runSetDir: at.runSetDir,
+          runSet: at.runSet,
+          artifactFile: at.artifactFile,
+          cloneDir,
+          readFile,
+        },);
+      },
+    ),
+  },);
 }
 
 //endregion Settled audit input

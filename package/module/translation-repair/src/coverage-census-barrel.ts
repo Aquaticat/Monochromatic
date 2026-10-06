@@ -17,6 +17,7 @@ export {
 export {
   type PlacedTally,
   placeTally,
+  readMappedBundles,
 } from './corpus-run/coverage-census-place.ts';
 export {
   invariantThrowCountLine,
@@ -127,7 +128,12 @@ export { requireCoverageBuild, } from './corpus-run/coverage-census-build.ts';
 export { reportCensus, } from './corpus-run/coverage-census-reading.ts';
 export {
   type CoverageCensusSteps,
+  readBaselines,
   runCoverageCensus,
 } from './corpus-run/coverage-census-run.ts';
+export {
+  type ReadText,
+  readUtf8Text,
+} from './corpus-run/coverage-census-read-text.ts';
 
 //endregion Coverage census barrel

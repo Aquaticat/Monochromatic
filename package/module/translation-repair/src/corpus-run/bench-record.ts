@@ -9,7 +9,6 @@ import type {
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from '../chat-contract.ts';
-import { wholeOpening, } from '../code-points.ts';
 import type { QuotaSnapshot, } from '../synthetic-quota.ts';
 import { refusalText, } from '../refusal-text.ts';
 
@@ -26,13 +25,6 @@ import { refusalText, } from '../refusal-text.ts';
 // the caller passes, because the caller here is `runTranslateStage` and it does
 // not take one. The schema name is what actually distinguishes a translate call
 // from a ballot or a repair turn.
-
-/**
- Most UTF-16 units of a thrown failure kept on its row, enough to tell a
- timeout from a transport drop without carrying a stack into a summary; the
- cut ends on a whole character (`wholeOpening`).
- */
-const FAILURE_DETAIL_CHARS = 40;
 
 /**
  Both halves of one exchange's token cost, kept apart because a single total
@@ -102,7 +94,8 @@ export type BenchCall = CallTokens & {
   readonly ms: number;
 
   /**
-   Outcome kind, or a truncated failure when the exchange raised.
+   Outcome kind, or `threw` and the failure whole, as `refusalText` renders
+   it, when the exchange raised.
    */
   readonly outcome: string;
 };
@@ -289,11 +282,16 @@ export function recordingClient(
       /**
        What failed, as its class name or its marked message, so a row never
        carries a provider body.
+
+       WHOLE, NEVER CUT. A cut at 40 units stood here from when the row held
+       `String(error)`, and once the text came through `refusalText` it carried
+       no stack or body left to keep out. It then kept only the opening of a
+       marked message: `NoProviderForModelError` lost the router's reason and
+       how long the seat is held out, `CallTimeoutError` its deadline behind
+       any model id it named, and the row in `rows.json` is the only place a
+       reader of the bench learns them.
        */
-      const detail = wholeOpening({
-        text: refusalText({ error, },),
-        units: FAILURE_DETAIL_CHARS,
-      },);
+      const detail = refusalText({ error, },);
       calls.push({
         schema: schemaOf({ request, },),
         modelId: request.modelId,

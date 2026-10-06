@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import {
   baselineReportLines,
 } from './coverage-census-print.ts';
@@ -81,50 +82,52 @@ export async function baselineReadingsOf(
     readonly editedSince: typeof sourcesEditedSince;
   },
 ): Promise<readonly (readonly string[])[]> {
-  return await Promise.all(baselines.map(async function baselineLines({
-    path,
-    census: baseline,
-  },): Promise<readonly string[]> {
-    /**
-     Files of the work tree changed since the baseline's commit, named as
-     the census names sources, whose baseline lines name other code now.
-     */
-    const edited = await editedSince({
-      packageDirectory,
-      head: baseline.head,
-    },);
-    return baselineReportLines({
+  return await allInInputOrder({
+    members: baselines.map(async function baselineLines({
       path,
-      head: baseline.head,
-      statuses: baselineStatusesOf({
-        baseline: baseline.stretches,
-        current: stretches,
-        loadedSources,
-        sources: claimed,
-        edited,
-      },),
-      coldSince: coldSinceOf({
-        baseline,
-        current: stretches,
-        sources: claimed,
-        edited,
-      },),
-      emptyClaims: emptyClaimsOf({
-        baseline,
-        edited,
-        current: stretches,
-        loadedSources,
-        sources: claimed,
-      },),
-      editedClaims: editedClaimsOf({
-        baseline,
-        edited,
-        current: stretches,
-        loadedSources,
-        sources: claimed,
-      },),
-    },);
-  },),);
+      census: baseline,
+    },): Promise<readonly string[]> {
+      /**
+       Files of the work tree changed since the baseline's commit, named as
+       the census names sources, whose baseline lines name other code now.
+       */
+      const edited = await editedSince({
+        packageDirectory,
+        head: baseline.head,
+      },);
+      return baselineReportLines({
+        path,
+        head: baseline.head,
+        statuses: baselineStatusesOf({
+          baseline: baseline.stretches,
+          current: stretches,
+          loadedSources,
+          sources: claimed,
+          edited,
+        },),
+        coldSince: coldSinceOf({
+          baseline,
+          current: stretches,
+          sources: claimed,
+          edited,
+        },),
+        emptyClaims: emptyClaimsOf({
+          baseline,
+          edited,
+          current: stretches,
+          loadedSources,
+          sources: claimed,
+        },),
+        editedClaims: editedClaimsOf({
+          baseline,
+          edited,
+          current: stretches,
+          loadedSources,
+          sources: claimed,
+        },),
+      },);
+    },),
+  },);
 }
 
 //endregion Coverage census baseline lines

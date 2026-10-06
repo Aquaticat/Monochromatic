@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { citedReferenceUrlsOf, } from '../cited-reference-scan.ts';
 import { runRenderingAudit, } from '../rendering-audit.ts';
@@ -228,62 +229,64 @@ export async function withCitedReferences(
    Every page beside what it cites, read concurrently: pages are few, one
    per bought artifact at most.
    */
-  const readPages = await Promise.all(pages.map(
-    async function readPage([
-      pageSourceText,
-      entryId,
-    ],): Promise<readonly [
-      string,
-      SettledReferences,
-    ]> {
-      /**
-       What this page's links say, empty where there are none or none
-       could be read.
-       */
-      const read = await reader({
-        sourceText: pageSourceText,
-        signal: new AbortController().signal,
-        l,
-      },);
-      if (read !== '') {
-        l.info(`CITED REFERENCES entry=${entryId} cited, characters=${String(read.length,)}`,);
+  const readPages = await allInInputOrder({
+    members: pages.map(
+      async function readPage([
+        pageSourceText,
+        entryId,
+      ],): Promise<readonly [
+        string,
+        SettledReferences,
+      ]> {
+        /**
+         What this page's links say, empty where there are none or none
+         could be read.
+         */
+        const read = await reader({
+          sourceText: pageSourceText,
+          signal: new AbortController().signal,
+          l,
+        },);
+        if (read !== '') {
+          l.info(`CITED REFERENCES entry=${entryId} cited, characters=${String(read.length,)}`,);
+          return [
+            pageSourceText,
+            {
+              kind: 'cited',
+              context: read,
+            },
+          ];
+        }
+
+        /**
+         Pages this original links, which tell a page citing nothing from
+         a page nobody read.
+         */
+        const links = citedReferenceUrlsOf({ text: pageSourceText, },)
+          .length;
+        if (links === 0) {
+          l.info(`CITED REFERENCES entry=${entryId} none: the page links nowhere`,);
+          return [
+            pageSourceText,
+            { kind: 'none', },
+          ];
+        }
+        l.warn(
+          `CITED REFERENCES entry=${entryId} UNREAD: the page links ${String(links,)} page(s) and the read`
+            + ` returned nothing, so its slices are audited without them and their rows record unread;`
+            + ` the reference reader returns nothing for linked pages when ${EXA_API_KEY_VAR} is not set,`
+            + ' so set it and audit again, or read these rows as audited without the references',
+        );
         return [
           pageSourceText,
           {
-            kind: 'cited',
-            context: read,
+            kind: 'unread',
+            links,
           },
         ];
-      }
-
-      /**
-       Pages this original links, which tell a page citing nothing from
-       a page nobody read.
-       */
-      const links = citedReferenceUrlsOf({ text: pageSourceText, },)
-        .length;
-      if (links === 0) {
-        l.info(`CITED REFERENCES entry=${entryId} none: the page links nowhere`,);
-        return [
-          pageSourceText,
-          { kind: 'none', },
-        ];
-      }
-      l.warn(
-        `CITED REFERENCES entry=${entryId} UNREAD: the page links ${String(links,)} page(s) and the read`
-          + ` returned nothing, so its slices are audited without them and their rows record unread;`
-          + ` the reference reader returns nothing for linked pages when ${EXA_API_KEY_VAR} is not set,`
-          + ' so set it and audit again, or read these rows as audited without the references',
-      );
-      return [
-        pageSourceText,
-        {
-          kind: 'unread',
-          links,
-        },
-      ];
-    },
-  ),);
+      },
+    ),
+  },);
 
   /**
    What each page cites, by its whole text.

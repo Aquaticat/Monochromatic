@@ -104,6 +104,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Combinator calls
 // Which calls of a `Promise` combinator production code makes, keyed by the
@@ -3199,10 +3200,12 @@ await describe({
       name: 'FINDS NO COMBINATOR CALLED OR REACHED ACROSS THE PACKAGE\'S SOURCE outside the listed calls, none it '
         + 'cannot follow or key, and no listed site or reason the source no longer holds',
       fn: async () => {
-        expect(unexcusedCombinators({
-          files: await readPackageSource(),
-          listed: LISTED_CALLS,
-        },),).toEqual([],);
+        expectNoFindings({
+          findings: unexcusedCombinators({
+            files: await readPackageSource(),
+            listed: LISTED_CALLS,
+          },),
+        },);
       },
     },),
   ],

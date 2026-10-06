@@ -1,5 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import {
   type CorpusPairReader,
@@ -51,16 +52,18 @@ async function readPinnedPair(
   const [
     sourceText,
     targetText,
-  ] = await Promise.all([
-    readCorpusFile({
-      pin,
-      relPath: `people/${entryId}/page.md`,
-    },),
-    readCorpusFile({
-      pin,
-      relPath: `people/${entryId}/page.en.md`,
-    },),
-  ],);
+  ] = await allInInputOrder({
+    members: [
+      readCorpusFile({
+        pin,
+        relPath: `people/${entryId}/page.md`,
+      },),
+      readCorpusFile({
+        pin,
+        relPath: `people/${entryId}/page.en.md`,
+      },),
+    ],
+  },);
   return {
     sourceText,
     targetText,

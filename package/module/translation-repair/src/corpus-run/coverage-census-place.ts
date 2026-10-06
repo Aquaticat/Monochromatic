@@ -1,3 +1,4 @@
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
@@ -6,6 +7,7 @@ import {
 } from './coverage-bundle-maps.ts';
 import type { InvariantThrowStretch, } from './coverage-census-invariant.ts';
 import type { UnloadedSource, } from './coverage-census-print.ts';
+import { readUtf8Text, } from './coverage-census-read-text.ts';
 import {
   type CensusStretch,
   censusStretchesOf,
@@ -145,6 +147,41 @@ function standingOf(
 }
 
 /**
+ Reads every mapped bundle side by side, keyed by name.
+
+ @param mapped - bundles with a map beside each, in the order a failure must be reported in
+
+ @param readOne - reads one bundle, passed in so a case scripts which of two reads ends first
+
+ @returns Each bundle's reading by name, in the order given
+
+ @throws Whatever the first bundle in the order given, whose read failed, was refused with
+
+ @example
+ ```ts
+ const read = await readMappedBundles({ mapped: ['index.mjs',], readOne: ({ bundle, },) => readBundle({ distDirectory, packageDirectory, bundle, },), },);
+ ```
+ */
+export async function readMappedBundles<const Reading,>(
+  {
+    mapped,
+    readOne,
+  }: {
+    readonly mapped: readonly string[];
+    readonly readOne: (input: { readonly bundle: string; },) => Promise<Reading>;
+  },
+): Promise<ReadonlyMap<string, Reading>> {
+  return new Map(await allInInputOrder({
+    members: mapped.map(async function readNamed(bundle,) {
+      return [
+        bundle,
+        await readOne({ bundle, },),
+      ] as const;
+    },),
+  },),);
+}
+
+/**
  Places a painted tally on source lines through the build's maps.
 
  @param packageDirectory - package directory the sources are named from
@@ -197,18 +234,16 @@ export async function placeTally(
   /**
    Every mapped bundle's text, lines and sources, by name.
    */
-  const read = new Map(
-    await Promise.all(mapped.map(async function readOne(bundle,) {
-    return [
-      bundle,
-      await readBundle({
+  const read = await readMappedBundles({
+    mapped,
+    readOne: function readOne({ bundle, },) {
+      return readBundle({
         distDirectory,
         packageDirectory,
         bundle,
-      },),
-    ] as const;
-  },),),
-  );
+      },);
+    },
+  },);
   /**
    Bundles some process loaded.
    */
@@ -345,6 +380,7 @@ export async function placeTally(
       },),
       loadedSources,
       entryFiles,
+      readText: readUtf8Text,
     },),
   };
 }

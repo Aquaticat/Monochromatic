@@ -1,6 +1,8 @@
 import type { SyntheticClient, } from '../chat-contract.ts';
+import { readCorpusFile, } from '../corpus-source.ts';
 import { wordForCount, } from '../count-word.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import { listArtifactFiles, } from './artifact-file-name.ts';
 import type { PassReferenceReader, } from './pass-outside-reads.ts';
 import { persistProbeRun, } from './probe-store.ts';
 import type { RunnerClosure, } from './runner-closure.ts';
@@ -167,6 +169,8 @@ export async function runSettledAudit(
   const readings = await readArchiveSubjects({
     archiveDir: asked.archiveDir,
     cloneDir: asked.cloneDir,
+    readFile: readCorpusFile,
+    listFiles: listArtifactFiles,
   },);
 
   // BEFORE anything is printed. An archive with nothing in it means the run was

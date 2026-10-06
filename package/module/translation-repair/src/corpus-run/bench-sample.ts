@@ -1,6 +1,6 @@
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { alignDocumentSections, } from '../chunk-document.ts';
-import { wholeOpening, } from '../code-points.ts';
 import {
   type CorpusPin,
   listCorpusPeople,
@@ -8,7 +8,11 @@ import {
 } from '../corpus-source.ts';
 import { wordForCount, } from '../count-word.ts';
 import { isLineStructured, } from '../line-structure.ts';
-import { parseDocument, } from '../parse-document.ts';
+import {
+  parseDocument,
+  type RepairDocument,
+} from '../parse-document.ts';
+import { refusalText, } from '../refusal-text.ts';
 import { subdivideChunkPair, } from '../slice-pair.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { pickSpreadSample, } from './bench-draw.ts';
@@ -23,13 +27,6 @@ import { pickSpreadSample, } from './bench-draw.ts';
 // concentrating it wherever the corpus happens to be dense.
 //
 // Spends no quota. Reads the pinned corpus only.
-
-/**
- Most UTF-16 units of a read failure kept when an entry is skipped, enough to
- name the missing side without printing a stack per entry; the cut ends on a
- whole character (`wholeOpening`).
- */
-const SKIP_DETAIL_CHARS = 80;
 
 /**
  One slice the bench translates, with the facts a stage call needs.
@@ -70,46 +67,301 @@ export type BenchSlice = {
 };
 
 /**
- Cuts one entry into slices, or returns none when either side is unreadable.
+ A step of cutting an entry that failed: the line saying why the entry was
+ skipped, held as data so the lines print in the order the corpus lists the
+ entries once every entry has settled.
 
- @param entryId - corpus entry
+ @example
+ ```ts
+ const skipped: SkippedStep = { kind: 'skipped', line: 'BENCH skipping Mittens: people/Mittens/page.md could not be read: refused by Error', };
+ ```
+ */
+type SkippedStep = {
+  readonly kind: 'skipped';
+  readonly line: string;
+};
+
+/**
+ What one step of cutting an entry came to: its value, or the skip line.
+
+ @example
+ ```ts
+ const outcome: StepOutcome<number> = { kind: 'done', value: 3, };
+ ```
+ */
+type StepOutcome<Value,> =
+  | {
+    readonly kind: 'done';
+    readonly value: Value;
+  }
+  | SkippedStep;
+
+/**
+ One page of an entry, read and parsed.
+
+ @example
+ ```ts
+ const page: ParsedPage = { text, document: parseDocument({ text, },), };
+ ```
+ */
+type ParsedPage = {
+  /**
+   Page text, which slicing cuts at the offsets the parse records.
+   */
+  readonly text: string;
+
+  /**
+   The page parsed, which alignment pairs by section.
+   */
+  readonly document: RepairDocument;
+};
+
+/**
+ What a skip line says where aligning the pair or cutting it into slices
+ failed. The throws found there (in `chunk-document.ts`, `slice-pair.ts`,
+ `line-structure.ts` and the modules they call) each guard an invariant of the
+ aligner or the slicer, and none says which page broke it, so the line says
+ so rather than naming one.
+
+ NO INPUT IS KNOWN TO REACH IT, AS MEASURED ON 2026-10-06. A bounded probe
+ over generated input handed `sliceListedEntries` three fixed seeds of 2,000
+ cat-themed page pairs each, drawn from a grammar of headings, paragraphs,
+ lists, quotes, fences, tables, comments, footnotes, math, line-structured
+ blocks, lone tags and braces, with front matter, carriage returns and byte
+ order marks, against English pages carrying the original's sections, another
+ count of them, some dropped, or extra ones shuffled in. 5,773 pairs passed
+ this step, 2,363 of them cut into 7,326 slices, and none ended on this line;
+ the 227 pages built with front matter no parser accepts each printed their
+ parse line, which shows the probe read every line the draw printed. The line
+ stays for a broken invariant, which then skips the entry rather than ending
+ the draw.
+ */
+const PAIR_STEP_FAILED = 'the pair could not be aligned or cut into slices, and which page caused it is not known';
+
+/**
+ Builds the outcome of an entry skipped at one step.
+
+ @param entryId - entry the line names first, since a reader scans a draw's skip lines by entry
+
+ @param where - the page and the step that failed on it, which a reader fixing the corpus looks for; or
+ the step and that no one page is known, where the failure names none
+
+ @param error - what the step raised, printed through `refusalText` so the
+ line repeats a marked class's message whole and names any other class alone
+
+ @returns The skipped step, carrying the line whole so the draw can print it in listing order once
+ every entry has settled
+
+ @example
+ ```ts
+ const skipped = skippedAt({ entryId: 'Mittens', where: 'people/Mittens/page.md could not be read', error, },);
+ ```
+ */
+function skippedAt(
+  {
+    entryId,
+    where,
+    error,
+  }: {
+    readonly entryId: string;
+    readonly where: string;
+    readonly error: unknown;
+  },
+): SkippedStep {
+  return {
+    kind: 'skipped',
+    line: `BENCH skipping ${entryId}: ${where}: ${refusalText({ error, },)}`,
+  };
+}
+
+/**
+ Runs one step of cutting an entry, holding its failure as the entry's skip
+ line.
+
+ @param entryId - entry a failure's line names
+
+ @param where - what a failure's line says failed, known before the step runs
+ so the line never has to guess it from the failure
+
+ @param step - the step's work, run inside the catch so a failure of it skips
+ this entry rather than ending the whole draw
+
+ @returns The step's value, or the skip line held as data so the draw goes on to the next entry
+
+ @example
+ ```ts
+ const parsed = stepOf({ entryId: 'Mittens', where: 'people/Mittens/page.md could not be parsed', step: function parse() { return parseDocument({ text, },); }, },);
+ ```
+ */
+function stepOf<Value,>(
+  {
+    entryId,
+    where,
+    step,
+  }: {
+    readonly entryId: string;
+    readonly where: string;
+    readonly step: () => Value;
+  },
+): StepOutcome<Value> {
+  try {
+    return {
+      kind: 'done',
+      value: step(),
+    };
+  }
+  catch (error) {
+    return skippedAt({
+      entryId,
+      where,
+      error,
+    },);
+  }
+}
+
+/**
+ Reads one page of an entry, holding a refused read as the entry's skip line
+ naming the page.
+
+ @param entryId - entry a failure's line names
+
+ @param pin - the draw's clone and commit, resolved once by `sampleBenchSlices`
+ so every page of one draw is read at one revision through one git binary
+
+ @param relPath - page read, which a failure's line names
+
+ @param readFile - reads one page at the pin, passed in so a case scripts which refusal ends first
+
+ @returns The page's text, or the skip line naming it, held as data so the pair is reported in input
+ order whichever page failed first
+
+ @example
+ ```ts
+ const read = await textOf({ entryId: 'Mittens', pin, relPath: 'people/Mittens/page.md', readFile: readCorpusFile, },);
+ ```
+ */
+async function textOf(
+  {
+    entryId,
+    pin,
+    relPath,
+    readFile,
+  }: {
+    readonly entryId: string;
+    readonly pin: CorpusPin;
+    readonly relPath: string;
+    readonly readFile: typeof readCorpusFile;
+  },
+): Promise<StepOutcome<string>> {
+  try {
+    return {
+      kind: 'done',
+      value: await readFile({
+        pin,
+        relPath,
+      },),
+    };
+  }
+  catch (error) {
+    return skippedAt({
+      entryId,
+      where: `${relPath} could not be read`,
+      error,
+    },);
+  }
+}
+
+/**
+ Reads and parses one page of an entry, holding a failure of either as the
+ entry's skip line naming the page and the step.
+
+ @param entryId - entry a failure's line names
+
+ @param pin - the draw's clone and commit, resolved once by `sampleBenchSlices`
+ so every page of one draw is read at one revision through one git binary
+
+ @param relPath - page read, which a failure's line names
+
+ @param readFile - reads one page at the pin, passed in so a case scripts which refusal ends first
+
+ @returns The page read and parsed, or the skip line of the step that failed, held as data so the
+ pair is reported in input order whichever page failed first
+
+ @example
+ ```ts
+ const page = await pageOf({ entryId: 'Mittens', pin, relPath: 'people/Mittens/page.md', readFile: readCorpusFile, },);
+ ```
+ */
+async function pageOf(
+  {
+    entryId,
+    pin,
+    relPath,
+    readFile,
+  }: {
+    readonly entryId: string;
+    readonly pin: CorpusPin;
+    readonly relPath: string;
+    readonly readFile: typeof readCorpusFile;
+  },
+): Promise<StepOutcome<ParsedPage>> {
+  /**
+   The page's text, or why it could not be read.
+   */
+  const read = await textOf({
+    entryId,
+    pin,
+    relPath,
+    readFile,
+  },);
+  if (read.kind === 'skipped')
+    return read;
+
+  return stepOf({
+    entryId,
+    where: `${relPath} could not be parsed`,
+    step: function parsed(): ParsedPage {
+      return {
+        text: read.value,
+        document: parseDocument({ text: read.value, },),
+      };
+    },
+  },);
+}
+
+/**
+ Cuts one entry's two parsed pages into slices.
+
+ @param entryId - entry each slice carries, so a row of the bench can be traced back to it
+
+ @param source - original page, whose sections give each slice the passage to render
+
+ @param target - English page, aligned with the original so each slice carries the translation as it stands
 
  @returns Every slice of that entry
 
  @example
  ```ts
- const slices = await sliceEntry({ entryId: 'Mittens', pin, },);
+ const slices = pairSlices({ entryId: 'Mittens', source, target, },);
  ```
  */
-async function sliceEntry(
+function pairSlices(
   {
     entryId,
-    pin,
+    source,
+    target,
   }: {
     readonly entryId: string;
-    readonly pin: CorpusPin;
+    readonly source: ParsedPage;
+    readonly target: ParsedPage;
   },
-): Promise<readonly BenchSlice[]> {
-  /**
-   Both sides at the pin; an entry missing either is simply not sampled.
-   */
-  const [sourceText, targetText,] = await Promise.all([
-    readCorpusFile({
-      pin,
-      relPath: `people/${entryId}/page.md`,
-    },),
-    readCorpusFile({
-      pin,
-      relPath: `people/${entryId}/page.en.md`,
-    },),
-  ],);
-
+): readonly BenchSlice[] {
   /**
    Aligned sections, exactly as the pipeline pairs them.
    */
   const alignment = alignDocumentSections({
-    source: parseDocument({ text: sourceText, },),
-    target: parseDocument({ text: targetText, },),
+    source: source.document,
+    target: target.document,
   },);
 
   /**
@@ -126,8 +378,8 @@ async function sliceEntry(
     for (
       const slice of subdivideChunkPair({
         pair,
-        sourceText,
-        targetText,
+        sourceText: source.text,
+        targetText: target.text,
         baseIndex: slices.length,
       },)
     ) {
@@ -146,6 +398,160 @@ async function sliceEntry(
   }
 
   return slices;
+}
+
+/**
+ Cuts one entry into slices, or says why it cannot.
+
+ An entry missing one side is simply not sampled: the census reports the
+ same gap.
+
+ @param entryId - corpus entry, whose two pages are read under `people/<entryId>/`
+
+ @param pin - the draw's clone and commit, resolved once by `sampleBenchSlices`
+ so every page of one draw is read at one revision through one git binary
+
+ @param readFile - reads one page at the pin, passed in so a case scripts which refusal ends first
+
+ @returns Every slice of that entry, or its skip line: of two pages that
+ fail, the original's failure, read or parse, regardless of which ended first
+
+ @example
+ ```ts
+ const outcome = await sliceEntry({ entryId: 'Mittens', pin, readFile: readCorpusFile, },);
+ ```
+ */
+async function sliceEntry(
+  {
+    entryId,
+    pin,
+    readFile,
+  }: {
+    readonly entryId: string;
+    readonly pin: CorpusPin;
+    readonly readFile: typeof readCorpusFile;
+  },
+): Promise<StepOutcome<readonly BenchSlice[]>> {
+  /**
+   Both sides at the pin, each read and parsed, in input order.
+   */
+  const [source, target,] = await allInInputOrder({
+    members: [
+      pageOf({
+        entryId,
+        pin,
+        relPath: `people/${entryId}/page.md`,
+        readFile,
+      },),
+      pageOf({
+        entryId,
+        pin,
+        relPath: `people/${entryId}/page.en.md`,
+        readFile,
+      },),
+    ],
+  },);
+  if (source.kind === 'skipped')
+    return source;
+  if (target.kind === 'skipped')
+    return target;
+
+  return stepOf({
+    entryId,
+    where: PAIR_STEP_FAILED,
+    step: function slicesOfPair(): readonly BenchSlice[] {
+      return pairSlices({
+        entryId,
+        source: source.value,
+        target: target.value,
+      },);
+    },
+  },);
+}
+
+/**
+ Prints one skip line on the terminal, which is where a bench draw's progress goes.
+
+ @param line - skip line as `skippedAt` built it and `sliceListedEntries` reports it, printed whole since
+ it already names the entry, the page and the failure
+
+ @example
+ ```ts
+ printSkipLine('BENCH skipping Mittens: people/Mittens/page.md could not be read: refused by Error',);
+ ```
+ */
+function printSkipLine(line: string,): void {
+  console.log(line,);
+}
+
+/**
+ Cuts every listed entry into slices, reporting each entry it cannot cut.
+
+ An entry missing one side is not a bench failure: the census reports the
+ same gap, and refusing to draw a sample over it would make the bench depend
+ on corpus completeness it does not need.
+
+ @param entryIds - entries at the pin, in the order the corpus lists them
+
+ @param pin - the draw's clone and commit, resolved once by `sampleBenchSlices`
+ so every page of one draw is read at one revision through one git binary
+
+ @param readFile - reads one page at the pin, passed in so a case scripts which refusal ends first
+
+ @param report - takes each skip line, passed in so a case reads the lines a
+ draw prints and their order; a draw prints them on the terminal
+
+ @returns Every slice of every entry cut, in listing order
+
+ @example
+ ```ts
+ const all = await sliceListedEntries({ entryIds, pin, readFile: readCorpusFile, report: console.log, },);
+ ```
+
+ @internal
+ */
+export async function sliceListedEntries(
+  {
+    entryIds,
+    pin,
+    readFile,
+    report,
+  }: {
+    readonly entryIds: readonly string[];
+    readonly pin: CorpusPin;
+    readonly readFile: typeof readCorpusFile;
+    readonly report: (line: string,) => void;
+  },
+): Promise<readonly BenchSlice[]> {
+  /**
+   Every entry sliced, or the line that says why it was skipped.
+
+   The line names the entry, the page and the step that failed on it, or says
+   that no one page is known, then the failure through `refusalText`: a
+   corpus read's marked message names the commit, the path and the kind, and
+   any other failure names its class alone. No cut stands in for knowing what
+   the text holds.
+   */
+  const outcomes = await allInInputOrder({
+    members: entryIds.map(function sliceOne(entryId,): Promise<StepOutcome<readonly BenchSlice[]>> {
+      return sliceEntry({
+        entryId,
+        pin,
+        readFile,
+      },);
+    },),
+  },);
+
+  // Printed here, in listing order, rather than by each entry as its reads
+  // ended: the order the disk answered in is no property of the corpus.
+  for (const outcome of outcomes) {
+    if (outcome.kind === 'skipped')
+      report(outcome.line,);
+  }
+
+  return outcomes.flatMap(function slicesOf(outcome,): readonly BenchSlice[] {
+    return (outcome.kind === 'done') ? outcome.value : [];
+  },);
 }
 
 /**
@@ -194,38 +600,14 @@ export async function sampleBenchSlices(
   const entryIds = await listCorpusPeople({ pin: resolvedPin, },);
 
   /**
-   Every entry sliced, or reported as unreadable.
-
-   An entry missing one side is not a bench failure: the census reports the
-   same gap, and refusing to draw a sample over it would make the bench depend
-   on corpus completeness it does not need.
-   */
-  const sliced = await Promise.all(
-    entryIds.map(async function sliceOne(entryId,): Promise<readonly BenchSlice[]> {
-      try {
-        return await sliceEntry({
-          entryId,
-          pin: resolvedPin,
-        },);
-      }
-      catch (error) {
-        /**
-         Why this entry could not be sliced, trimmed for one log line.
-         */
-        const detail = wholeOpening({
-          text: String(error,),
-          units: SKIP_DETAIL_CHARS,
-        },);
-        console.log(`BENCH skipping ${entryId}: ${detail}`,);
-        return [];
-      }
-    },),
-  );
-
-  /**
    Every slice of every readable entry.
    */
-  const all = sliced.flat();
+  const all = await sliceListedEntries({
+    entryIds,
+    pin: resolvedPin,
+    readFile: readCorpusFile,
+    report: printSkipLine,
+  },);
   // A STATED REFUSAL, since the remedy is the operator's: the clone or the
   // commit the run reads is not the corpus they meant. As a plain error both
   // commands that draw here printed it as a fault in themselves, at exit 5

@@ -1,5 +1,6 @@
 import { join, } from 'node:path';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import { wordForCount, } from '../count-word.ts';
 import {
   DECLINED_DIR,
@@ -43,6 +44,49 @@ const NOTHING_WAS_VERIFIED = 2;
 const READ_TO_THE_END = 0;
 
 /**
+ Judges every matched entry side by side and hands back what each came to,
+ in the order the entries were listed.
+
+ A JUDGEMENT CAN STILL THROW. `judgePublishedEntry` answers every failure to
+ read or parse an entry as a refused line, but it judges what it parsed
+ through `pageAgreement`, outside that catch, and `wouldShipTextPerSlice`
+ raises `UnansweredContestSliceError`, naming the slice, where a slice's
+ lanes differ and the contest never answered it. Two entries that both raise
+ would otherwise report whichever judgement ended first.
+
+ @param entryIds - matched entries, in the order the run lists them, which a
+ failure is reported in
+
+ @param judge - judges one entry, passed in so a case scripts which of two
+ judgements ends first
+
+ @returns Each entry's verdict and lines, in the order given
+
+ @throws Whatever the first entry in the order given, whose judging failed,
+ was refused with
+
+ @example
+ ```ts
+ const judged = await judgePublishedEntries({ entryIds: matched, judge: ({ entryId, },) => judgePublishedEntry({ runsDir, entryId, thisBuild, },), },);
+ ```
+ */
+export async function judgePublishedEntries(
+  {
+    entryIds,
+    judge,
+  }: {
+    readonly entryIds: readonly string[];
+    readonly judge: (input: { readonly entryId: string; },) => Promise<JudgedEntry>;
+  },
+): Promise<readonly JudgedEntry[]> {
+  return await allInInputOrder({
+    members: entryIds.map(function judgeOne(entryId,): Promise<JudgedEntry> {
+      return judge({ entryId, },);
+    },),
+  },);
+}
+
+/**
  Reads a run's published tree back and reports whether it agrees with its
  artifacts.
 
@@ -73,14 +117,21 @@ export async function verifyPublishedRun(
 ): Promise<number> {
   /**
    What the run left on disk, or why each half could not be read.
+
+   Only the published half can still throw (`carriesPage` rethrows a failure
+   that is no absence); the settled half answers every listing failure as
+   data. Read by input order all the same, so a throw added to the settled
+   half later cannot make the report depend on which listing ended first.
    */
   const [
     settled,
     published,
-  ] = await Promise.all([
-    settledEntryIds({ runsDir, },),
-    publishedEntryIds({ runsDir, },),
-  ],);
+  ] = await allInInputOrder({
+    members: [
+      settledEntryIds({ runsDir, },),
+      publishedEntryIds({ runsDir, },),
+    ],
+  },);
 
   /**
    Ids to check, or why this run leaves nothing to check.
@@ -191,13 +242,16 @@ export async function verifyPublishedRun(
    a line printed as its read finished put the entries in whatever order the
    disk answered.
    */
-  const judged = await Promise.all(matched.map(function one(entryId,): Promise<JudgedEntry> {
-    return judgePublishedEntry({
-      runsDir,
-      entryId,
-      thisBuild,
-    },);
-  },),);
+  const judged = await judgePublishedEntries({
+    entryIds: matched,
+    judge: function judgeOne({ entryId, },): Promise<JudgedEntry> {
+      return judgePublishedEntry({
+        runsDir,
+        entryId,
+        thisBuild,
+      },);
+    },
+  },);
   for (const { lines, } of judged) {
     for (const line of lines)
       console.log(line,);

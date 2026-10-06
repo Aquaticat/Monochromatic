@@ -4096,6 +4096,13 @@ The verifier printed its entries' lines in the order its reads finished (ledger 
 and a test helper put the recheck's findings and ballots in order before comparing them,
 which hid a regression of the roster order the stage promises (ledger B328);
 a second test file did the same through `readingsInSeatOrder` (ledger B343).
+The bench draw's skip line kept a fixed-length opening of the refusal,
+cut inside the commit hash before the page was named,
+and printed the lines of several entries in the order their reads ended.
+A gather round raced its asks,
+and once the caller stopped it two asks could reject with failures of their own,
+so the round reported whichever ended first
+and the other failure reached no line.
 
 The rule:
 what a command prints,
@@ -4108,16 +4115,37 @@ Where several started operations may fail,
 what is thrown is the first failure in input order,
 through `allInInputOrder` (`all-in-input-order.ts`),
 never `Promise.all`'s first by the clock.
+A combinator call outside the helper is listed with the reason no completion order can show
+(its members cannot reject,
+each catches its own failure,
+they share one abort reason,
+or their settled results are read in input order)
+and with what in the code that reason rests on,
+held to the call it excuses:
+the statement making the call and the code feeding it,
+every catch inside the call,
+or the handler of a `try` around it.
+A failure a shared reason replaces is logged,
+not dropped.
 Voices are ordered by roster,
 ties by a stated key,
 and a case asserts the order exactly,
 never after a sort of its own.
 
 What enforces it:
-habit and review;
+`promise-combinators-in-order.unit.test.ts`,
+among the source scans,
+fails on a combinator called in production code outside the helper's own call and the listed sites,
+on every way it sees to reach a combinator other than by a plain named call,
+on a call in a function it cannot key,
+on a listed site holding more or fewer calls than listed,
+and on a listed reason the code no longer holds;
+its module doc names what is out of its reach,
+such as a reflective or computed read off a value other than `Promise`.
 `all-in-input-order.unit.test.ts` holds the helper,
-each moved site with a parameter over what it reads has a case scripting the later member failing first,
-and no scan yet fails a bare `Promise.all`;
+and each moved site with a parameter over what it reads has a case scripting the later member failing first,
+`settled-carve.unit.test.ts`,
+`bench-sample-draw.unit.test.ts` and `stage-round.unit.test.ts` among them;
 `repair-edit-stages.unit.test.ts` holds the roster order whichever seats lost their first answer,
 `refine-recheck.unit.test.ts` and `refine-slice-settle.unit.test.ts`
 assert the recheck's order as the stage returns it,
