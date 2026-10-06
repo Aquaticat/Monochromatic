@@ -83,7 +83,8 @@ export function drawnTexts(state) {
     { role: 'section-fields', text: 'Fields' },
     ...want.fields.flatMap(field => [{ role: 'field-name-' + field.insert, text: field.label },
       { role: 'field-value-' + field.insert, text: field.value === '' ? 'No value yet' : field.value }, { role: 'field-insert-' + field.insert, text: field.insert }]),
-    { role: 'reset', text: 'Reset to default' }];
+    // The way back to the default is drawn only when there is something to reset; a dimmed button would differ by colour alone.
+    ...(want.resetEnabled ? [{ role: 'reset', text: 'Reset to default' }] : [])];
 }
 //endregion
 

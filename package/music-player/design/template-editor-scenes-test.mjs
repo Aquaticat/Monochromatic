@@ -43,7 +43,7 @@ assert.deepEqual(drawnTexts(scenes[0]).map(item => item.role + '=' + item.text),
 for (const state of scenes.slice(1)) {
   const roles = drawnTexts(state).map(item => item.role);
   assert.deepEqual(roles.filter(role => !/^(preview-supporting|error|help|field-(name|value|insert))-/u.test(role) && !/^preview-title-/u.test(role)),
-    ['page-title', 'section-preview', 'preview-note', 'field-label', 'template', 'section-fields', 'reset'], state.id);
+    ['page-title', 'section-preview', 'preview-note', 'field-label', 'template', 'section-fields', ...(expected(state).resetEnabled ? ['reset'] : [])], state.id);
   assert.equal(roles.filter(role => role.startsWith('field-name-')).length, 7, state.id);
   assert.equal(new Set(roles).size, roles.length, state.id);
 }
@@ -51,5 +51,7 @@ for (const state of scenes.slice(1)) {
 assert.deepEqual(drawnTexts(scenes[1]).filter(item => item.role.startsWith('preview-')).map(item => item.role),
   ['preview-title-0', 'preview-supporting-0', 'preview-title-1', 'preview-supporting-1', 'preview-note']);
 assert.equal(drawnTexts(scenes.find(state => state.id === 'unknown-field')).find(item => item.role === 'error-0').text, 'mi: unknown field peek');
+// Reset is on the page exactly for the states whose template is not the default.
+assert.deepEqual(scenes.filter(state => drawnTexts(state).some(item => item.role === 'reset')).map(state => state.id), ['unknown-field', 'open-formula', 'custom']);
 //endregion
 console.log('Template editor scenes: ' + scenes.length + ' states and their drawn text passed.');
