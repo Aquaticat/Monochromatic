@@ -115,9 +115,6 @@ const HELD: Readonly<Record<string, string>> = {
     'reads the message of an ArtifactComparisonError, the only class the clause lets through, which declares it safe',
   'corpus-run/artifact-two-lane-read-row-relations.ts#assertRowsCoherent':
     'text of a WordingCoherenceError or a DeliveryCoherenceError, the only classes the clause lets through, both marked',
-  'corpus-run/bench-sample.ts#sliceOne':
-    'a corpus slicing failure on a command whose operator owns the run; the corpus is public by its '
-    + 'owner\'s ruling of 2026-10-05 and no provider is called',
   'corpus-run/cap-census-walk.ts#reportCapCensusUnreadable':
     'a directory listing or log read failure printed to the terminal of the cap-census command; no provider is called',
   'corpus-run/cli-refusal.ts#framesOf':

@@ -27,13 +27,16 @@ import {
   CoverageFileError,
   coverageReadings,
   readBundle,
+  readUtf8Text,
   runSuite,
   SourceMapFileError,
   sourceLineAt,
   tallyCoverage,
   unloadedSourcesOf,
 } from '../../dist/final/node/index.mjs';
+import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 
 /**
  Start of each case's throwaway directory name, so a leftover shows this
@@ -441,6 +444,7 @@ await describe({
               carried: ['src/nap.ts', 'src/corpus-run/nap-probe.ts', 'src/nap.ts', 'src/purr.ts',],
               loadedSources: new Set(['src/purr.ts',],),
               entryFiles: new Set(['src/corpus-run/nap-probe.ts',],),
+              readText: readUtf8Text,
             },),).toEqual([
               {
                 source: 'src/corpus-run/nap-probe.ts',
@@ -453,6 +457,33 @@ await describe({
                 lines: 3,
               },
             ],);
+          },
+        },),
+        it({
+          name: 'REFUSES with the first source\'s read when two unloaded sources cannot be read and the second '
+            + 'source\'s read is refused first',
+          fn: async () => {
+            /**
+             The two refusals the source reads end in.
+             */
+            const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+            /**
+             What the count refused with.
+             */
+            const refusal = await rejectionOf({
+              promise: unloadedSourcesOf({
+                packageDirectory: '/cats/package',
+                carried: ['src/nap.ts', 'src/purr.ts',],
+                loadedSources: new Set<string>(),
+                entryFiles: new Set<string>(),
+                readText: async function refusesSecondFirst({ path, },): Promise<string> {
+                  return await (path.endsWith('nap.ts',)
+                    ? refuseAfterThat(new Error('the nap source cannot be read',),)
+                    : refuseAtOnce(new Error('the purr source cannot be read',),));
+                },
+              },),
+            },);
+            expect(String(refusal,),).toBe('Error: the nap source cannot be read',);
           },
         },),
       ],

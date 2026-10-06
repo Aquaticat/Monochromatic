@@ -34,6 +34,8 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from './capturing-logger.test-fixture.ts';
+import { refusalOrder, } from './refusal-order.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -166,6 +168,105 @@ function scheduledClient(
       throw new Error('quotas unused',);
     },
   };
+}
+
+/**
+ Client answering every seat at once but one, whose call fails at once.
+
+ @param failingModelId - seat whose call fails before any answer, a voice the
+ round loses without waiting
+
+ @returns Client the round can drive
+
+ @example
+ ```ts
+ const client = clientFailingOne({ failingModelId: SEAT_SYNTHETIC_VISION_WITHHELD, },);
+ ```
+ */
+function clientFailingOne({ failingModelId, }: { readonly failingModelId: RosterModelId; },): SyntheticClient {
+  /**
+   Client answering every seat at once.
+   */
+  const answering = scheduledClient({},);
+  return {
+    ...answering,
+    chatJson: async function failingOne<ValueT,>(
+      request: Parameters<typeof answering.chatJson>[0],
+    ): Promise<Awaited<ReturnType<typeof answering.chatJson<ValueT>>>> {
+      if (request.modelId === failingModelId)
+        throw new Error('refused at once',);
+      return await answering.chatJson(request as Parameters<typeof answering.chatJson<ValueT>>[0],);
+    },
+  };
+}
+
+/**
+ Client whose first two seats wait for the caller's abort and then each fail,
+ the way a call whose own deadline or transport failure lands as the caller
+ aborts does; the third seat answers at once.
+
+ @param failFirst - ends the first seat's call once the abort reached it,
+ handed that call's signal so a case can fail it with the reason it carries
+
+ @param failSecond - ends the second seat's call the same way, so a case
+ chooses which of the two failures the round meets first
+
+ @returns Client the round can drive
+
+ @example
+ ```ts
+ const client = clientFailingAfterTheStop({ failFirst: refuseLate, failSecond: refuseSoon, },);
+ ```
+ */
+function clientFailingAfterTheStop(
+  {
+    failFirst,
+    failSecond,
+  }: {
+    readonly failFirst: (signal: AbortSignal,) => Promise<never>;
+    readonly failSecond: (signal: AbortSignal,) => Promise<never>;
+  },
+): SyntheticClient {
+  /**
+   Client answering every seat at once.
+   */
+  const answering = scheduledClient({},);
+  return {
+    ...answering,
+    chatJson: async function failingAfterTheStop<ValueT,>(
+      request: Parameters<typeof answering.chatJson>[0],
+    ): Promise<Awaited<ReturnType<typeof answering.chatJson<ValueT>>>> {
+      if (request.modelId === SEAT_HYPER_OPENROUTER_VISION_EDITOR) {
+        await untilAborted({ signal: request.signal, },);
+        return await failFirst(request.signal,);
+      }
+      if (request.modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER) {
+        await untilAborted({ signal: request.signal, },);
+        return await failSecond(request.signal,);
+      }
+      return await answering.chatJson(request as Parameters<typeof answering.chatJson<ValueT>>[0],);
+    },
+  };
+}
+
+/**
+ Ends a call with the reason its own signal carries, which is the caller's
+ forwarded reason when the caller stopped the round.
+
+ @param signal - signal of the call, aborted by the time this runs
+
+ @returns Never; it rejects with the signal's reason
+
+ @throws The signal's reason, the very value the caller aborted with
+
+ @example
+ ```ts
+ const client = clientFailingAfterTheStop({ failFirst: withTheCallersReason, failSecond: withTheCallersReason, },);
+ ```
+ */
+async function withTheCallersReason(signal: AbortSignal,): Promise<never> {
+  signal.throwIfAborted();
+  throw new Error('unreachable: a call that waited for its abort was handed a signal that had not aborted',);
 }
 
 /**
@@ -363,6 +464,180 @@ await describe({
             expect(timings.totalMs,).toBe(timings.toQuorumMs + timings.inGraceMs,);
           },
         },),
+
+        it({
+          name: 'REJECTS WITH THE CALLER\'S OWN ABORT REASON before quorum when two asks rethrow failures of their own '
+            + 'after the abort and the later-listed ask ends first',
+          fn: async () => {
+            /**
+             The caller's steering, aborted once every ask is in flight.
+             */
+            const steering = new AbortController();
+            /**
+             Why the caller stopped the round.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             The two failures the asks end in, the later-listed one first.
+             */
+            const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+            /**
+             The round, started and left waiting on the first two seats.
+             */
+            const round = runGatherRound({
+              client: clientFailingAfterTheStop({
+                failFirst: async function timedOut(): Promise<never> {
+                  return await refuseAfterThat(new Error('the first seat timed out as the stop arrived',),);
+                },
+                failSecond: async function disconnected(): Promise<never> {
+                  return await refuseAtOnce(new Error('the second seat lost its connection as the stop arrived',),);
+                },
+              },),
+              modelIds: ROSTER,
+              messages: [{ role: 'user', content: 'meow', },],
+              signal: steering.signal,
+              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              responseFormat: MEOW_FORMAT,
+              validate: isMeowReply,
+              stage: 'cat-stage',
+              l: capturingLogger({ messages: [], },),
+              heardNeeded: ROSTER.length,
+              graceMs: GRACE_MS,
+            },);
+            steering.abort(reason,);
+            expect(await rejectionOf(async function stopped(): Promise<unknown> {
+              return await round;
+            },),).toBe(reason,);
+          },
+        },),
+
+        it({
+          name: 'LOGS THE FAILURE AN ASK ENDED IN AFTER THE CALLER\'S ABORT, whole as its refusal text names it, on a '
+            + 'line tagged nextSettled, before the round rejects with the caller\'s own reason in its place',
+          fn: async () => {
+            /**
+             Every message the round logged.
+             */
+            const said: string[] = [];
+            /**
+             The caller's steering, aborted once every ask is in flight.
+             */
+            const steering = new AbortController();
+            /**
+             Why the caller stopped the round.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             The two failures the asks end in, the later-listed one first.
+             */
+            const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+            /**
+             The round, started and left waiting on the first two seats.
+             */
+            const round = runGatherRound({
+              client: clientFailingAfterTheStop({
+                failFirst: async function outOfTime(): Promise<never> {
+                  return await refuseAfterThat(new Error('the first seat ran out of time as the owner called',),);
+                },
+                failSecond: async function dropped(): Promise<never> {
+                  return await refuseAtOnce(new RangeError('the second seat dropped its line as the owner called',),);
+                },
+              },),
+              modelIds: ROSTER,
+              messages: [{ role: 'user', content: 'meow', },],
+              signal: steering.signal,
+              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              responseFormat: MEOW_FORMAT,
+              validate: isMeowReply,
+              stage: 'cat-stage',
+              l: capturingLogger({ messages: said, },),
+              heardNeeded: ROSTER.length,
+              graceMs: GRACE_MS,
+            },);
+            steering.abort(reason,);
+            expect(await rejectionOf(async function stopped(): Promise<unknown> {
+              return await round;
+            },),).toBe(reason,);
+            expect(said,).toEqual([
+              '[nextSettled] cat-stage: an ask failed as the caller stopped the round, which reports the caller\'s '
+                + 'reason in its place: refused by RangeError',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'LOGS NOTHING when the asks end in the caller\'s own abort reason itself, which the round rejects with, '
+            + 'so no failure is dropped',
+          fn: async () => {
+            /**
+             Every message the round logged.
+             */
+            const said: string[] = [];
+            /**
+             The caller's steering, aborted once every ask is in flight.
+             */
+            const steering = new AbortController();
+            /**
+             Why the caller stopped the round.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             The round, started and left waiting on the first two seats.
+             */
+            const round = runGatherRound({
+              client: clientFailingAfterTheStop({
+                failFirst: withTheCallersReason,
+                failSecond: withTheCallersReason,
+              },),
+              modelIds: ROSTER,
+              messages: [{ role: 'user', content: 'meow', },],
+              signal: steering.signal,
+              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              responseFormat: MEOW_FORMAT,
+              validate: isMeowReply,
+              stage: 'cat-stage',
+              l: capturingLogger({ messages: said, },),
+              heardNeeded: ROSTER.length,
+              graceMs: GRACE_MS,
+            },);
+            steering.abort(reason,);
+            expect(await rejectionOf(async function stopped(): Promise<unknown> {
+              return await round;
+            },),).toBe(reason,);
+            expect(said,).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'REJECTS WITH A LOGGER\'S OWN FAILURE, unchanged, when no abort is in play and a lost voice cannot be '
+            + 'logged',
+          fn: async () => {
+            /**
+             What the logger raises on every warning.
+             */
+            const logFailure = new Error('the cat sat on the log',);
+            expect(await rejectionOf(async function unlogged(): Promise<unknown> {
+              return await runGatherRound({
+                client: clientFailingOne({ failingModelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),
+                modelIds: ROSTER,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: new AbortController().signal,
+                exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+                responseFormat: MEOW_FORMAT,
+                validate: isMeowReply,
+                stage: 'cat-stage',
+                l: {
+                  ...capturingLogger({ messages: [], },),
+                  warn: function refusesToWarn(): void {
+                    throw logFailure;
+                  },
+                },
+                heardNeeded: ROSTER.length,
+                graceMs: GRACE_MS,
+              },);
+            },),).toBe(logFailure,);
+          },
+        },),
       ],
     },),
 
@@ -377,21 +652,8 @@ await describe({
              Every message the round logged.
              */
             const said: string[] = [];
-            /**
-             Client answering every seat at once but one, which fails at once.
-             */
-            const answering = scheduledClient({},);
             await runGatherRound({
-              client: {
-                ...answering,
-                chatJson: async function failingOne<ValueT,>(
-                  request: Parameters<typeof answering.chatJson>[0],
-                ): Promise<Awaited<ReturnType<typeof answering.chatJson<ValueT>>>> {
-                  if (request.modelId === SEAT_SYNTHETIC_VISION_WITHHELD)
-                    throw new Error('refused at once',);
-                  return await answering.chatJson(request as Parameters<typeof answering.chatJson<ValueT>>[0],);
-                },
-              },
+              client: clientFailingOne({ failingModelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),
               modelIds: ROSTER,
               messages: [{ role: 'user', content: 'meow', },],
               signal: new AbortController().signal,

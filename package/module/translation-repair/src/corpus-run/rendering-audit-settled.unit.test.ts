@@ -32,6 +32,7 @@ import {
   capped,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  CacheFileUnreadableError,
   eligibleSubjects,
   printPopulation,
   sameAuditedText,
@@ -42,7 +43,10 @@ import {
   type SettledVerification,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
+import { directoryRefusalText, } from '../cache-file-refusal.test-fixture.ts';
+import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { relayingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 
 /**
  Original every subject carries.
@@ -709,6 +713,43 @@ await describe({
             },);
             expect(read,).toStrictEqual([],);
             expect(paired,).toStrictEqual([],);
+          },
+        },),
+        it({
+          name: 'REFUSES with the first bought page\'s cache refusal when two pages\' caches cannot be read and the '
+            + 'second page\'s refusal ends first',
+          fn: async () => {
+            /**
+             The two refusals the page reads end in.
+             */
+            const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+            /**
+             What the buy refused with.
+             */
+            const refusal = await rejectionOf({
+              promise: withCitedReferences({
+                subjects: [
+                  subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+                  subjectAt({ entryId: 'tabby', sliceIndex: 0, auditsArchiveText: false, pageSourceText: OTHER_PAGE_TEXT, },),
+                ],
+                reader: async function refusesSecondPageFirst({ sourceText, },): Promise<string> {
+                  /**
+                   Cache file the page's references would be read from.
+                   */
+                  const path = (sourceText === PAGE_TEXT) ? '/cache/mittens' : '/cache/tabby';
+                  /**
+                   What the lookup cache says of a path holding a directory.
+                   */
+                  const unreadable = new CacheFileUnreadableError({
+                    path,
+                    failure: 'EISDIR',
+                    cause: new Error('the cat basket is a directory',),
+                  },);
+                  return await ((sourceText === PAGE_TEXT) ? refuseAfterThat(unreadable,) : refuseAtOnce(unreadable,));
+                },
+              },),
+            },);
+            expect(String(refusal,),).toBe(directoryRefusalText({ path: '/cache/mittens', },),);
           },
         },),
       ],

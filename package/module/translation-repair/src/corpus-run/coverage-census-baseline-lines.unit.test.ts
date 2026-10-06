@@ -15,7 +15,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { baselineReadingsOf, } from '../../dist/final/node/index.mjs';
+import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { recorded, } from './coverage-census.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 
 /**
  Package directory every case asks git about.
@@ -231,6 +233,51 @@ await describe({
           '  no baseline stretch (not loaded there, so the baseline proves nothing of it); this run loaded it and '
             + 'left 1 cold stretch: src/zoomies.ts',
         ],],);
+      },
+    },),
+    it({
+      name: 'REFUSES with the first baseline\'s git failure when two baselines\' commits cannot be asked about and '
+        + 'the second baseline\'s question is refused first',
+      fn: async () => {
+        /**
+         The two refusals git's answers end in.
+         */
+        const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+        /**
+         What the reading refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: baselineReadingsOf({
+            baselines: [
+              {
+                path: '/cats/before.json',
+                census: {
+                  head: 'c0ffee123',
+                  stretches: [],
+                  loadedSources: new Set<string>(),
+                },
+              },
+              {
+                path: '/cats/older.json',
+                census: {
+                  head: 'beef00456',
+                  stretches: [],
+                  loadedSources: new Set<string>(),
+                },
+              },
+            ],
+            packageDirectory: PACKAGE_DIRECTORY,
+            claimed: new Set<string>(),
+            stretches: [],
+            loadedSources: new Set<string>(),
+            editedSince: async function refusesSecondFirst({ head, },): Promise<ReadonlySet<string>> {
+              return await ((head === 'c0ffee123')
+                ? refuseAfterThat(new Error('git cannot diff since c0ffee123',),)
+                : refuseAtOnce(new Error('git cannot diff since beef00456',),));
+            },
+          },),
+        },);
+        expect(String(refusal,),).toBe('Error: git cannot diff since c0ffee123',);
       },
     },),
   ],

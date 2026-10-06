@@ -17,10 +17,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  readUtf8Text,
   requireCoverageBuild,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from '../capturing-logger.test-fixture.ts';
+import { refusalOrder, } from '../refusal-order.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import {
   makeBuiltPackage,
   MINIFIED_BUNDLE,
@@ -51,6 +54,7 @@ async function refusalOfBuild({ distDirectory, }: { readonly distDirectory: stri
     await requireCoverageBuild({
       distDirectory,
       l: capturingLoggerPair().logger,
+      readText: readUtf8Text,
     },);
   }
   catch (error) {
@@ -202,6 +206,7 @@ await describe({
         expect(await requireCoverageBuild({
           distDirectory: built.distDirectory,
           l: logger,
+          readText: readUtf8Text,
         },),).toEqual({
           mapped: [
             'nap.mjs',
@@ -230,6 +235,7 @@ await describe({
         expect(await requireCoverageBuild({
           distDirectory: built.distDirectory,
           l: logger,
+          readText: readUtf8Text,
         },),).toEqual({
           mapped: ['nap.mjs',],
           unmapped: [
@@ -240,6 +246,39 @@ await describe({
         expect(lines,).toEqual([
           'bundles with no source map, read only where the census must place code in them: index.mjs, loaf.mjs',
         ],);
+      },
+    },),
+    it({
+      name: 'REFUSES with the first mapped bundle\'s read when two bundles cannot be read and the second '
+        + 'bundle\'s read is refused first',
+      fn: async () => {
+        await using built = await makeBuiltPackage({
+          files: {
+            'nap.mjs': UNMINIFIED_BUNDLE,
+            'nap.mjs.map': '{}',
+            'purr.mjs': UNMINIFIED_BUNDLE,
+            'purr.mjs.map': '{}',
+          },
+        },);
+        /**
+         The two refusals the bundle reads end in.
+         */
+        const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+        /**
+         What the check refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: requireCoverageBuild({
+            distDirectory: built.distDirectory,
+            l: capturingLoggerPair().logger,
+            readText: async function refusesSecondFirst({ path, },): Promise<string> {
+              return await (path.endsWith('nap.mjs',)
+                ? refuseAfterThat(new Error('the nap bundle cannot be read',),)
+                : refuseAtOnce(new Error('the purr bundle cannot be read',),));
+            },
+          },),
+        },);
+        expect(String(refusal,),).toBe('Error: the nap bundle cannot be read',);
       },
     },),
   ],

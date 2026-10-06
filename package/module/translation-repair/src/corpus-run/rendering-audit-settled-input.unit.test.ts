@@ -29,12 +29,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  listArtifactFiles,
   preparationIdentity,
   prepareDocumentPair,
   readArchiveSubjects,
   readArtifactSubjects,
+  readCorpusFile,
 } from '../../dist/final/node/index.mjs';
+import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { pageReadsRefusingLastFor, } from './ordered-page-reads.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import {
   BARE_SOURCE_PAGE,
   BARE_TARGET_PAGE,
@@ -45,6 +50,16 @@ import {
   TARGET_PAGE,
   writeArtifact,
 } from './settled-archive.test-fixture.ts';
+
+/**
+ Characters in a SHA-1 object id.
+ */
+const OBJECT_ID_LENGTH = 40;
+
+/**
+ Commit the artifacts of the refusal cases name and no clone carries.
+ */
+const LACKED_COMMIT = 'b'.repeat(OBJECT_ID_LENGTH,);
 
 await describe({
   name: '',
@@ -85,6 +100,7 @@ await describe({
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
 
             expect(reading.entryId,).toBe(ENTRY_ID,);
@@ -157,6 +173,7 @@ await describe({
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
             expect(reading.verification,).toEqual({
               kind: 'refused',
@@ -194,6 +211,7 @@ await describe({
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
 
             expect(subjects[0]?.deliveryKind,).toBe('replacement-shipped',);
@@ -242,6 +260,7 @@ await describe({
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
 
             /**
@@ -291,6 +310,7 @@ await describe({
               runSet: 'first',
               artifactFile: 'tabby.json',
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
 
             expect(subjects[0]?.identity
@@ -337,6 +357,7 @@ await describe({
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
 
             expect(reading.verification
@@ -386,6 +407,7 @@ await describe({
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
 
             expect(reading.verification
@@ -431,6 +453,7 @@ await describe({
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
 
             expect(reading.verification
@@ -485,6 +508,7 @@ await describe({
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
             expect(reading.verification
               .kind,).toBe('verified',);
@@ -525,6 +549,7 @@ await describe({
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
             },);
 
             /**
@@ -541,6 +566,43 @@ await describe({
             // The first departure from the recorded rows, which is what the verdict
             // now reads rather than the identity (ledger A12b).
             expect(verification.detail,).toContain('slice',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES with the page.md read when both page reads of a commit the clone lacks are refused and the '
+            + 'page.en.md read is refused first',
+          fn: async () => {
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
+            await writeArtifact({
+              archiveDir: archive.path,
+              runSet: 'first',
+              prepared: prepareDocumentPair({
+                sourceText: SOURCE_PAGE,
+                targetText: TARGET_PAGE,
+              },),
+              corpusSha: LACKED_COMMIT,
+              entryId: ENTRY_ID,
+            },);
+
+            /**
+             What the reading refused with.
+             */
+            const refusal = await rejectionOf({
+              promise: readArtifactSubjects({
+                archiveDir: archive.path,
+                runSetDir: 'first',
+                runSet: 'first',
+                artifactFile: `${ENTRY_ID}.json`,
+                cloneDir: '/nonexistent/clone',
+                readFile: pageReadsRefusingLastFor({ endsLast: '/page.md', },),
+              },),
+            },);
+
+            expect(String(refusal,),).toBe(
+              `CorpusReadError: corpus read failed for ${LACKED_COMMIT}:people/${ENTRY_ID}/page.md (missing-object); `
+                + 'check that the clone exists and the pinned commit is present.',
+            );
           },
         },),
       ],
@@ -588,6 +650,8 @@ await describe({
             const readings = await readArchiveSubjects({
               archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
+              listFiles: listArtifactFiles,
             },);
 
             expect(readings.length,).toBe(2,);
@@ -633,6 +697,8 @@ await describe({
             const readings = await readArchiveSubjects({
               archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
+              listFiles: listArtifactFiles,
             },);
 
             expect(readings.length,).toBe(1,);
@@ -672,6 +738,8 @@ await describe({
             const readings = await readArchiveSubjects({
               archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
+              listFiles: listArtifactFiles,
             },);
 
             expect(readings.length,).toBe(1,);
@@ -712,6 +780,8 @@ await describe({
             const readings = await readArchiveSubjects({
               archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
+              listFiles: listArtifactFiles,
             },);
 
             expect(readings.length,).toBe(1,);
@@ -761,6 +831,8 @@ await describe({
             const refusal = await readArchiveSubjects({
               archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
+              listFiles: listArtifactFiles,
             },).then(
               function unexpected(): string {
                 return 'no refusal';
@@ -772,6 +844,107 @@ await describe({
             // STATED, so the CLI boundary prints the line and exits 6 rather than
             // printing frames for a bug that is not one.
             expect(refusal.startsWith('StatedRefusalError:',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES with the first artifact\'s page read when two artifacts of one run set are refused and the '
+            + 'second artifact\'s reads are refused first',
+          fn: async () => {
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
+            /**
+             Preparation both artifacts were settled over.
+             */
+            const prepared = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+            },);
+            await writeArtifact({
+              archiveDir: archive.path,
+              runSet: 'first-run',
+              prepared,
+              corpusSha: LACKED_COMMIT,
+              entryId: 'cat-alpha',
+            },);
+            await writeArtifact({
+              archiveDir: archive.path,
+              runSet: 'first-run',
+              prepared,
+              corpusSha: LACKED_COMMIT,
+              entryId: 'cat-beta',
+            },);
+
+            /**
+             What the archive reading refused with.
+             */
+            const refusal = await rejectionOf({
+              promise: readArchiveSubjects({
+                archiveDir: archive.path,
+                cloneDir: '/nonexistent/clone',
+                readFile: pageReadsRefusingLastFor({ endsLast: 'people/cat-alpha/', },),
+                listFiles: listArtifactFiles,
+              },),
+            },);
+
+            expect(String(refusal,),).toBe(
+              `CorpusReadError: corpus read failed for ${LACKED_COMMIT}:people/cat-alpha/page.md (missing-object); `
+                + 'check that the clone exists and the pinned commit is present.',
+            );
+          },
+        },),
+
+        it({
+          name: 'REFUSES with the first run set\'s listing when two run sets cannot be listed and the second '
+            + 'run set\'s listing is refused first',
+          fn: async () => {
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
+            /**
+             Preparation both run sets were settled over.
+             */
+            const prepared = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+            },);
+            await writeArtifact({
+              archiveDir: archive.path,
+              runSet: 'first-run',
+              prepared,
+              corpusSha: LACKED_COMMIT,
+              entryId: ENTRY_ID,
+            },);
+            await writeArtifact({
+              archiveDir: archive.path,
+              runSet: 'second-run',
+              prepared,
+              corpusSha: LACKED_COMMIT,
+              entryId: ENTRY_ID,
+            },);
+            /**
+             The two refusals the listings end in.
+             */
+            const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+
+            /**
+             What the archive reading refused with.
+             */
+            const refusal = await rejectionOf({
+              promise: readArchiveSubjects({
+                archiveDir: archive.path,
+                cloneDir: '/nonexistent/clone',
+                readFile: pageReadsRefusingLastFor({ endsLast: 'no such page', },),
+                listFiles: async function listsRunSetsOutOfOrder(
+                  { artifactsDir, }: Parameters<typeof listArtifactFiles>[0],
+                ): Promise<Awaited<ReturnType<typeof listArtifactFiles>>> {
+                  if (artifactsDir.endsWith('first-run',))
+                    return await refuseAfterThat(new Error('the first run set cannot be listed',),);
+                  if (artifactsDir.endsWith('second-run',))
+                    return await refuseAtOnce(new Error('the second run set cannot be listed',),);
+                  return [];
+                },
+              },),
+            },);
+
+            expect(String(refusal,),).toBe('Error: the first run set cannot be listed',);
           },
         },),
       ],

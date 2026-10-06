@@ -18,6 +18,20 @@
  repository in a temporary directory, commits into it, and reads it back at
  that commit.
 
+ THE SKIP LINE SAYS WHICH PAGE AND WHY. An entry that cannot be cut into
+ slices is skipped with a line naming the entry, the page, the step that
+ failed on it (its read or its parse) and the failure, in the words the
+ refusal's class marks safe to print (`refusalText`), never a fixed-length
+ opening of the refusal, whose cut fell inside the commit hash before the page
+ was named. A failure aligning the pair or cutting it into slices names no
+ one page, and its line says so; no case builds one, since no input is known
+ to reach it (`PAIR_STEP_FAILED` in `bench-sample.ts` says what was measured).
+ The lines of one draw print in the order the corpus lists the entries, and
+ of an entry's two pages the original is the one named where both fail,
+ whichever ended first and whether it failed its read or its parse; the cases
+ that say so hand the draw a scripted reader that chooses which refusal ends
+ first, or one page that cannot be read beside one that cannot be parsed.
+
  THE SECOND CASE IS THE CONTROL, and it does two jobs: it separates a guard
  that reads its input from one that refuses everything, and it proves the pin
  is actually threaded, since a draw still reading the run pin would come back
@@ -45,11 +59,16 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  CorpusReadError,
   type CorpusPin,
   sampleBenchSlices,
+  type readCorpusFile,
+  sliceListedEntries,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 import { runKeyless, } from '../child-environment.test-fixture.ts';
+import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { pageReadsRefusingLastFor, } from './ordered-page-reads.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
@@ -222,6 +241,160 @@ async function clonedCorpusHolding(
     },
   },);
 }
+
+/**
+ Characters in a SHA-1 object id.
+ */
+const OBJECT_ID_LENGTH = 40;
+
+/**
+ Commit every scripted read of the skip cases is made at.
+ */
+const SCRIPTED_COMMIT = 'a'.repeat(OBJECT_ID_LENGTH,);
+
+/**
+ Pin the scripted reads name, which no repository stands behind.
+ */
+const SCRIPTED_PIN: CorpusPin = {
+  cloneDir: '/nonexistent/clone',
+  commitSha: SCRIPTED_COMMIT,
+};
+
+/**
+ Words the corpus reader ends every refusal with.
+ */
+const CLONE_ADVICE = 'check that the clone exists and the pinned commit is present.';
+
+/**
+ Makes a reader that serves both pages except one path, which it refuses.
+
+ @param refusedPath - path whose read fails
+
+ @param cause - what the failing read raised, whose stderr decides the failure kind
+
+ @returns A reader to pass in place of `readCorpusFile`
+
+ @example
+ ```ts
+ const readFile = readerRefusing({ refusedPath: 'people/whiskers/page.en.md', cause: new Error('no', ), },);
+ ```
+ */
+function readerRefusing(
+  {
+    refusedPath,
+    cause,
+  }: {
+    readonly refusedPath: string;
+    readonly cause: unknown;
+  },
+): typeof readCorpusFile {
+  return async function servesAllButOne(
+    {
+      pin,
+      relPath,
+    }: Parameters<typeof readCorpusFile>[0],
+  ): Promise<string> {
+    if (relPath === refusedPath) {
+      throw new CorpusReadError({
+        detail: `${pin.commitSha}:${relPath}`,
+        cause,
+      },);
+    }
+    return relPath.endsWith('/page.en.md',) ? TARGET_PAGE : SOURCE_PAGE;
+  };
+}
+
+/**
+ A page whose front matter fence holds YAML the parser refuses.
+ */
+const UNPARSABLE_PAGE = '---\ntitle: [unclosed\n---\n\n## The windowsill\n\nThe kitten dozes.\n';
+
+/**
+ The parser's marked refusal of {@link UNPARSABLE_PAGE}, as it prints whole.
+ */
+const UNPARSABLE_REFUSAL = 'Front matter fence pair found but YAML inside refused to parse at line 1 column 17 '
+  + '(BAD_INDENT); corpus metadata parses upstream, so this signals corruption.';
+
+/**
+ Makes a reader that serves both pages, one path's page holding front matter
+ no parser accepts.
+
+ @param unparsablePath - path whose page cannot be parsed, which the skip line
+ must name although its read succeeded
+
+ @returns A reader to pass in place of `readCorpusFile`
+
+ @example
+ ```ts
+ const readFile = readerServingUnparsable({ unparsablePath: 'people/whiskers/page.md', },);
+ ```
+ */
+function readerServingUnparsable(
+  { unparsablePath, }: { readonly unparsablePath: string; },
+): typeof readCorpusFile {
+  return async function servesOneUnparsable(
+    { relPath, }: Parameters<typeof readCorpusFile>[0],
+  ): Promise<string> {
+    if (relPath === unparsablePath)
+      return UNPARSABLE_PAGE;
+    return relPath.endsWith('/page.en.md',) ? TARGET_PAGE : SOURCE_PAGE;
+  };
+}
+
+/**
+ Makes a reader under which one page of an entry cannot be read, git having
+ found it missing, and the other is served with front matter no parser
+ accepts, so the two pages fail at different steps.
+
+ @param refusedPath - path whose read fails
+
+ @param unparsablePath - path whose page is served and cannot be parsed
+
+ @returns A reader to pass in place of `readCorpusFile`
+
+ @example
+ ```ts
+ const readFile = readerMixingFailures({ refusedPath: 'people/whiskers/page.en.md', unparsablePath: 'people/whiskers/page.md', },);
+ ```
+ */
+function readerMixingFailures(
+  {
+    refusedPath,
+    unparsablePath,
+  }: {
+    readonly refusedPath: string;
+    readonly unparsablePath: string;
+  },
+): typeof readCorpusFile {
+  /**
+   Reader refusing the one path.
+   */
+  const refusing = readerRefusing({
+    refusedPath,
+    cause: { stderr: 'fatal: path does not exist in the commit', },
+  },);
+  /**
+   Reader serving the other path's page unparsable.
+   */
+  const unparsable = readerServingUnparsable({ unparsablePath, },);
+  return async function refusesOneServesOneUnparsable(
+    request: Parameters<typeof readCorpusFile>[0],
+  ): Promise<string> {
+    return (request.relPath === refusedPath) ? await refusing(request,) : await unparsable(request,);
+  };
+}
+
+/**
+ The skip line of the entry whose original page git found missing.
+ */
+const ORIGINAL_MISSING_LINE = `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.md could not be read: `
+  + `corpus read failed for ${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.md (missing-object); ${CLONE_ADVICE}`;
+
+/**
+ The skip line of the entry whose original page cannot be parsed.
+ */
+const ORIGINAL_UNPARSABLE_LINE = `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.md could not be `
+  + `parsed: ${UNPARSABLE_REFUSAL}`;
 
 //endregion Fixtures
 
@@ -409,6 +582,297 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
         expect(sample.map(function toEntryId(slice,): string {
           return slice.entryId;
         },),).toStrictEqual([ENTRY_ID,],);
+      },
+    },),
+    it({
+      name: 'SKIPS AN ENTRY WITH NO ENGLISH PAGE and says the entry, the page and that git found it missing, whole',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the one entry.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: [HALF_ENTRY_ID,],
+          pin: SCRIPTED_PIN,
+          readFile: readerRefusing({
+            refusedPath: `people/${HALF_ENTRY_ID}/page.en.md`,
+            cause: { stderr: 'fatal: path does not exist in the commit', },
+          },),
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([
+          `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.en.md could not be read: corpus read failed for `
+            + `${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.en.md (missing-object); ${CLONE_ADVICE}`,
+        ],);
+      },
+    },),
+    it({
+      name: 'SKIPS AN ENTRY WITH NO ORIGINAL and says the entry, the page and that git found it missing, whole',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the one entry.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: [HALF_ENTRY_ID,],
+          pin: SCRIPTED_PIN,
+          readFile: readerRefusing({
+            refusedPath: `people/${HALF_ENTRY_ID}/page.md`,
+            cause: { stderr: 'fatal: path does not exist in the commit', },
+          },),
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([ORIGINAL_MISSING_LINE,],);
+      },
+    },),
+    it({
+      name: 'SKIPS AN ENTRY UNREADABLE FOR ANOTHER REASON and says the entry, the page and that the failure was another kind, whole',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the one entry.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: [HALF_ENTRY_ID,],
+          pin: SCRIPTED_PIN,
+          readFile: readerRefusing({
+            refusedPath: `people/${HALF_ENTRY_ID}/page.en.md`,
+            cause: { stderr: 'fatal: not a git repository', },
+          },),
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([
+          `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.en.md could not be read: corpus read failed for `
+            + `${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.en.md (other); ${CLONE_ADVICE}`,
+        ],);
+      },
+    },),
+    it({
+      name: 'SKIPS AN ENTRY WHOSE READ FAILS WITH NO CORPUS READ REFUSAL and names the page and only the failure\'s '
+        + 'class, quoting nothing it said',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the one entry.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: [HALF_ENTRY_ID,],
+          pin: SCRIPTED_PIN,
+          readFile: async function knocksTheClone(): Promise<string> {
+            throw new RangeError('the cat knocked the clone off the shelf',);
+          },
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([
+          `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.md could not be read: refused by RangeError`,
+        ],);
+      },
+    },),
+    it({
+      name: 'PRINTS THE SKIP LINES OF SEVERAL ENTRIES in the order the corpus lists them when the later entry\'s '
+        + 'reads are refused first, each naming its own first page',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the two entries.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: ['cat-alpha', 'cat-beta',],
+          pin: SCRIPTED_PIN,
+          readFile: pageReadsRefusingLastFor({ endsLast: 'people/cat-alpha/', },),
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([
+          `BENCH skipping cat-alpha: people/cat-alpha/page.md could not be read: corpus read failed for `
+            + `${SCRIPTED_COMMIT}:people/cat-alpha/page.md (missing-object); ${CLONE_ADVICE}`,
+          `BENCH skipping cat-beta: people/cat-beta/page.md could not be read: corpus read failed for `
+            + `${SCRIPTED_COMMIT}:people/cat-beta/page.md (missing-object); ${CLONE_ADVICE}`,
+        ],);
+      },
+    },),
+    it({
+      name: 'NAMES THE ORIGINAL IN THE SKIP LINE when both pages of an entry are refused, since the pair is '
+        + 'reported by input order whichever refusal ends first',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the one entry.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: [HALF_ENTRY_ID,],
+          pin: SCRIPTED_PIN,
+          readFile: pageReadsRefusingLastFor({ endsLast: '/page.md', },),
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([ORIGINAL_MISSING_LINE,],);
+      },
+    },),
+    it({
+      name: 'SKIPS AN ENTRY WHOSE ORIGINAL CANNOT BE PARSED and names that page and the parser\'s marked refusal, '
+        + 'whole, although both reads succeeded',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the one entry.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: [HALF_ENTRY_ID,],
+          pin: SCRIPTED_PIN,
+          readFile: readerServingUnparsable({ unparsablePath: `people/${HALF_ENTRY_ID}/page.md`, },),
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([ORIGINAL_UNPARSABLE_LINE,],);
+      },
+    },),
+    it({
+      name: 'SKIPS AN ENTRY WHOSE ENGLISH PAGE CANNOT BE PARSED and names that page and the parser\'s marked '
+        + 'refusal, whole, although both reads succeeded',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the one entry.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: [HALF_ENTRY_ID,],
+          pin: SCRIPTED_PIN,
+          readFile: readerServingUnparsable({ unparsablePath: `people/${HALF_ENTRY_ID}/page.en.md`, },),
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([
+          `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.en.md could not be parsed: ${UNPARSABLE_REFUSAL}`,
+        ],);
+      },
+    },),
+    it({
+      name: 'NAMES THE ORIGINAL\'S PARSE FAILURE IN THE SKIP LINE when the original cannot be parsed and the English '
+        + 'page cannot be read, since of two pages that fail the original is reported, read or parse, whichever '
+        + 'ended first',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the one entry.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: [HALF_ENTRY_ID,],
+          pin: SCRIPTED_PIN,
+          readFile: readerMixingFailures({
+            refusedPath: `people/${HALF_ENTRY_ID}/page.en.md`,
+            unparsablePath: `people/${HALF_ENTRY_ID}/page.md`,
+          },),
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([ORIGINAL_UNPARSABLE_LINE,],);
+      },
+    },),
+    it({
+      name: 'NAMES THE ORIGINAL\'S READ FAILURE IN THE SKIP LINE when the original cannot be read and the English '
+        + 'page cannot be parsed',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         Slices drawn over the one entry.
+         */
+        const slices = await sliceListedEntries({
+          entryIds: [HALF_ENTRY_ID,],
+          pin: SCRIPTED_PIN,
+          readFile: readerMixingFailures({
+            refusedPath: `people/${HALF_ENTRY_ID}/page.md`,
+            unparsablePath: `people/${HALF_ENTRY_ID}/page.en.md`,
+          },),
+          report: function collect(line,): void {
+            lines.push(line,);
+          },
+        },);
+        expect(slices,).toEqual([],);
+        expect(lines,).toEqual([ORIGINAL_MISSING_LINE,],);
+      },
+    },),
+    it({
+      name: 'PRINTS THE SKIP LINE OF AN ENTRY A REAL CLONE HOLDS NO ENGLISH PAGE FOR on the terminal, naming the '
+        + 'entry, the page and that git found it missing, whole',
+      fn: async (ctx) => {
+        /**
+         Entry no other case's clone holds, so its line is told apart from
+         any line another case prints while this one runs.
+         */
+        const halfEntry = 'marmalade';
+        await using pin = await clonedCorpusHolding({
+          files: {
+            [`people/${ENTRY_ID}/page.md`]: SOURCE_PAGE,
+            [`people/${ENTRY_ID}/page.en.md`]: TARGET_PAGE,
+            [`people/${halfEntry}/page.md`]: SOURCE_PAGE,
+          },
+        },);
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+
+        await sampleBenchSlices({
+          count: 2,
+          pin,
+        },);
+
+        expect(printed.lines.filter(function isThisEntry(line,): boolean {
+          return line.startsWith(`BENCH skipping ${halfEntry}:`,);
+        },),).toEqual([
+          `BENCH skipping ${halfEntry}: people/${halfEntry}/page.en.md could not be read: corpus read failed for `
+            + `${pin.commitSha}:people/${halfEntry}/page.en.md (missing-object); ${CLONE_ADVICE}`,
+        ],);
       },
     },),
   ],

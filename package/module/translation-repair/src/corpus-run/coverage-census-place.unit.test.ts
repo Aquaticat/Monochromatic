@@ -31,10 +31,13 @@ import {
   invariantThrowRowsOf,
   kindTotalsOf,
   placeTally,
+  readMappedBundles,
   sourceRowsOf,
   tallyCoverage,
 } from '../../dist/final/node/index.mjs';
+import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 
 /**
  A bundle's text: one line, then a second line of 120 characters, which a
@@ -712,6 +715,45 @@ await describe({
           },),
           entryFiles: new Set(),
         },),).rejects.toThrow('coverage names ghost.mjs',);
+      },
+    },),
+    it({
+      name: 'READS EVERY MAPPED BUNDLE by name in the order given, and refuses with the first bundle\'s read when two '
+        + 'cannot be read and the second bundle\'s read is refused first',
+      fn: async () => {
+        // Compared as a list of entries: the matcher compares two Maps with
+        // their entries sorted, which would pass a reading in any order. The
+        // bundles are listed out of name order so a reading that sorted them
+        // fails too.
+        expect([
+          ...await readMappedBundles({
+            mapped: ['purr.mjs', 'nap.mjs',],
+            readOne: async function lengthOf({ bundle, },): Promise<number> {
+              return bundle.length;
+            },
+          },),
+        ],).toEqual([
+          ['purr.mjs', 'purr.mjs'.length,],
+          ['nap.mjs', 'nap.mjs'.length,],
+        ],);
+        /**
+         The two refusals the bundle reads end in.
+         */
+        const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+        /**
+         What the reading refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: readMappedBundles({
+            mapped: ['nap.mjs', 'purr.mjs',],
+            readOne: async function refusesSecondFirst({ bundle, },): Promise<number> {
+              return await ((bundle === 'nap.mjs')
+                ? refuseAfterThat(new Error('the nap bundle cannot be read',),)
+                : refuseAtOnce(new Error('the purr bundle cannot be read',),));
+            },
+          },),
+        },);
+        expect(String(refusal,),).toBe('Error: the nap bundle cannot be read',);
       },
     },),
   ],

@@ -19,11 +19,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  NoProviderForModelError,
   recordingClient,
   type BenchCall,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_NO_OPENROUTER, } from '../roster-seats.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 
 /**
  Model standing in for whichever one a stage seated.
@@ -68,6 +70,9 @@ const JSON_REQUEST = {
 
  @param outcome - what a schema exchange returns, or `throw` to raise instead
 
+ @param refusal - what a schema exchange raises under `throw`, where a case
+ reads the row a particular class leaves; a transport drop otherwise
+
  @returns Client the wrapper can wrap, plus every quota read it served
 
  @example
@@ -76,12 +81,13 @@ const JSON_REQUEST = {
  ```
  */
 function scriptedClient(
-  { reply, outcome, }: {
+  { reply, outcome, refusal, }: {
     readonly reply?: {
       readonly text: string;
       readonly usage?: Record<string, number>;
     };
     readonly outcome?: Record<string, unknown> | 'throw';
+    readonly refusal?: Error;
   },
 ): {
   readonly client: SyntheticClient;
@@ -105,7 +111,7 @@ function scriptedClient(
     },
     chatJson: async function chatJson(): Promise<unknown> {
       if (outcome === 'throw')
-        throw new Error('the provider dropped the connection mid-nap',);
+        throw refusal ?? new Error('the provider dropped the connection mid-nap',);
 
       return outcome ?? { kind: 'ok', value: {}, rawText: '{}', };
     },
@@ -242,14 +248,43 @@ await describe({
          Row the failure left.
          */
         const row = recorder.calls[0] as BenchCall;
-        expect(row.outcome
-          .startsWith('threw',),).toBe(true,);
+        // An unmarked class is named and never quoted: its message may carry
+        // a provider's words.
+        expect(row.outcome,).toBe('threw refused by Error',);
 
         // Zero on every half: no usage came back, and crediting the prompt
         // would price a call the provider never billed.
         expect(row.promptTokens,).toBe(0,);
         expect(row.completionTokens,).toBe(0,);
         expect(row.tokens,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'RECORDS A MARKED REFUSAL WHOLE on the row of a throw, the router\'s reason and how long the seat is held '
+        + 'out included, since the row is all a reader of the bench learns of why the call failed',
+      fn: async () => {
+        /**
+         Refusal a router raises for a seat no provider can take for now.
+         */
+        const refusal = new NoProviderForModelError({
+          modelId: CAT_MODEL,
+          reason: 'every provider serving this model ran past its stream bound; held out for another 90000ms',
+        },);
+        /**
+         Wrapper over a client the router refused.
+         */
+        const recorder = recordingClient({ inner: scriptedClient({
+          outcome: 'throw',
+          refusal,
+        },).client, },);
+
+        expect(await rejectionOf({ promise: recorder.client.chatJson(JSON_REQUEST,), },),).toBe(refusal,);
+        expect(recorder.calls.map(function outcomeOf({ outcome, },): string {
+          return outcome;
+        },),).toEqual([
+          `threw no provider can take ${CAT_MODEL}: every provider serving this model ran past its stream bound; `
+            + 'held out for another 90000ms',
+        ],);
       },
     },),
     it({

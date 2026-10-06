@@ -25,7 +25,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { verifyPublishedRun, } from '../../dist/final/node/index.mjs';
+import {
+  judgePublishedEntries,
+  UnansweredContestSliceError,
+  verifyPublishedRun,
+} from '../../dist/final/node/index.mjs';
+import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
@@ -457,6 +462,41 @@ await describe({
           + 'declines would re-run every declined entry',
         );
         expect(printed.lines,).toEqual([]);
+      },
+    },),
+    it({
+      name: 'REJECTS with the first listed entry\'s judgement when two judgements throw and the later entry\'s '
+        + 'throws first',
+      fn: async () => {
+        /**
+         The two refusals the judgements end in.
+         */
+        const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+        /**
+         What judging both entries rejected with.
+         */
+        const refusal = await rejectionOf({
+          promise: judgePublishedEntries({
+            entryIds: [
+              catEntry({ index: 1, },),
+              catEntry({ index: 2, },),
+            ],
+            judge: async function throwsSecondFirst({ entryId, },): Promise<never> {
+              return await ((entryId === catEntry({ index: 1, },))
+                ? refuseAfterThat(new UnansweredContestSliceError({
+                  message: 'slice 3 differs across lanes and the contest names it nowhere',
+                },),)
+                : refuseAtOnce(new UnansweredContestSliceError({
+                  message: 'slice 5 differs across lanes and the contest names it nowhere',
+                },),));
+            },
+          },),
+        },);
+
+        expect(refusal,).toBeInstanceOf(UnansweredContestSliceError,);
+        expect(String(refusal,),).toBe(
+          'UnansweredContestSliceError: slice 3 differs across lanes and the contest names it nowhere',
+        );
       },
     },),
   ],

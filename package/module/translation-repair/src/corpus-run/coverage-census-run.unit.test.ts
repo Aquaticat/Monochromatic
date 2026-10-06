@@ -26,20 +26,25 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CensusBaselineError,
   type CoverageCensusSteps,
   createCoverageTally,
   isMissingPathError,
   type PlacedTally,
+  type readBaselineFile,
+  readBaselines,
   runCoverageCensus,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from '../capturing-logger.test-fixture.ts';
+import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import {
   makeBuiltPackage,
   UNMINIFIED_BUNDLE,
 } from './coverage-census-package.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 
 /**
  What the scripted steps were asked, in order, by step.
@@ -746,6 +751,39 @@ await describe({
           return;
         }
         throw new Error('the census counted a suite that failed',);
+      },
+    },),
+    it({
+      name: 'REFUSES with the first named baseline\'s refusal when two baselines cannot be read and the second '
+        + 'baseline\'s read is refused first',
+      fn: async () => {
+        /**
+         The two refusals the baseline reads end in.
+         */
+        const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+        /**
+         What the reading refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: readBaselines({
+            paths: ['/cats/before.json', '/cats/older.json',],
+            readBaseline: async function refusesSecondFirst({ path, },): ReturnType<typeof readBaselineFile> {
+              /**
+               What the read of this file refuses with.
+               */
+              const unreadable = new CensusBaselineError({
+                path,
+                says: 'it could not be read (ENOENT)',
+                cause: new Error('the cat basket is empty',),
+              },);
+              return await ((path === '/cats/before.json') ? refuseAfterThat(unreadable,) : refuseAtOnce(unreadable,));
+            },
+          },),
+        },);
+        expect(String(refusal,),).toBe(
+          'CensusBaselineError: baseline /cats/before.json does not read as a census this command wrote: it could '
+            + 'not be read (ENOENT)',
+        );
       },
     },),
   ],
