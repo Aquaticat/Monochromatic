@@ -9,8 +9,9 @@
 //! // const output = JSON.stringify(result); // compared byte for byte with the native output
 //! ```
 
-/// The crate's JSONC parser reads fixtures; quoting matches the incumbent's.
+/// Quoting that matches the incumbent's.
 use crate::dependent_version_release::json_quote_units;
+/// The crate's JSONC parser reads fixtures.
 use monochromatic_jsonc_edit::{JsoncKind, JsoncValue};
 
 /// The member of a fixture object; a missing member is a broken fixture.

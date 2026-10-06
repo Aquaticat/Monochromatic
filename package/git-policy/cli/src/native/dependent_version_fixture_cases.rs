@@ -8,120 +8,40 @@
 //! // const output = evaluate(testCase); // the driver's TypeScript twin of this function
 //! ```
 
-/// The fixture reader, the native planner and the in-memory workspace.
-use crate::dependent_version_content::{PlanError, PolicyIncomplete, TrackedMode};
+/// The failure a case may end in, and the modes a fixture names.
+use crate::dependent_version_content::{PlanError, TrackedMode};
+/// The fixture reader.
 use crate::dependent_version_fixture_json::{
-    array, elements, field, hex, is_null, is_true, object, quote, quote_hex, text, texts, units,
+    array, elements, field, hex, is_null, is_true, object, quote, text, texts, units,
 };
+/// The canonical renderings of failures, plans and findings.
+use crate::dependent_version_fixture_output::{failed, plan_output, policy_output};
+/// The dependency walk under test.
 use crate::dependent_version_graph::{PlannedBump, WorkspaceNode, plan_dependent_bumps};
+/// The specifier scan under test.
 use crate::dependent_version_imports::imports_package;
+/// The manifest reader under test.
 use crate::dependent_version_manifest::read_manifest_facts;
+/// The source path rule under test.
 use crate::dependent_version_paths::is_non_test_source_path;
-use crate::dependent_version_plan::{ManifestBump, PlanOutcome, plan_workspace_bumps};
+/// The workspace plan under test.
+use crate::dependent_version_plan::plan_workspace_bumps;
+/// The policy under test and its request.
 use crate::dependent_version_policy::{
-    Candidate, CandidateChange, DependentFinding, DependentRequest, find_dependent_bumps,
+    Candidate, CandidateChange, DependentRequest, find_dependent_bumps,
 };
+/// The configuration reader under test.
 use crate::dependent_version_publishable::read_publishable_names;
+/// The release bump under test and the incumbent's quoting.
 use crate::dependent_version_release::{json_quote_units, patch_bump_version, unsupported_message};
+/// The in-memory workspace the cases read.
 use crate::dependent_version_test_support::{MemoryFile, MemoryWorkspace};
+/// The version rewrite under test.
 use crate::dependent_version_text::replace_manifest_version;
+/// The lifecycle point a workspace case names.
 use crate::policy_trigger::Trigger;
+/// The parsed fixture value.
 use monochromatic_jsonc_edit::JsoncValue;
-
-/// The canonical failure: its class and, for shape problems, the incumbent's message.
-fn failed(error: &PlanError) -> String {
-    let (class, detail): (&str, String) = match error {
-        PlanError::ContentUnavailable(_) => ("unavailable", String::new()),
-        PlanError::PolicyIncomplete(PolicyIncomplete::NotUtf8 { .. }) => ("decode", String::new()),
-        PlanError::PolicyIncomplete(PolicyIncomplete::ManifestSyntax { .. }) => {
-            ("syntax", String::new())
-        }
-        PlanError::PolicyIncomplete(PolicyIncomplete::ManifestShape { problem, .. }) => {
-            ("shape", problem.clone())
-        }
-        PlanError::PolicyIncomplete(PolicyIncomplete::DuplicateName { .. }) => {
-            ("graph", String::new())
-        }
-    };
-    return object(&[
-        ("kind", quote("failed")),
-        ("error", quote(class)),
-        ("detail", quote(&detail)),
-    ]);
-}
-
-/// The canonical plan result.
-fn plan_output(outcome: &Result<PlanOutcome, PlanError>) -> String {
-    match outcome {
-        Err(error) => return failed(error),
-        Ok(PlanOutcome::Unsupported(unsupported)) => {
-            return object(&[
-                ("kind", quote("unsupported")),
-                ("message", quote(&unsupported_message(unsupported))),
-            ]);
-        }
-        Ok(PlanOutcome::Planned(plan)) => {
-            let bumps: Vec<String> = plan.bumps.iter().map(bump_output).collect();
-            let names: Vec<String> = plan
-                .bumped_names
-                .iter()
-                .map(|name| return quote(name))
-                .collect();
-            return object(&[
-                ("kind", quote("planned")),
-                ("bumpedNames", array(&names)),
-                ("bumps", array(&bumps)),
-            ]);
-        }
-    }
-}
-
-/// The canonical form of one planned manifest bump.
-fn bump_output(bump: &ManifestBump) -> String {
-    return object(&[
-        ("name", quote(&bump.planned.name)),
-        ("directory", quote_hex(&bump.planned.directory)),
-        ("from", quote(&bump.planned.bump.from)),
-        ("to", quote(&bump.planned.bump.to)),
-        ("path", quote_hex(&bump.path)),
-        ("original", quote_hex(&bump.original)),
-        ("replacement", quote_hex(&bump.replacement)),
-    ]);
-}
-
-/// The canonical policy result.
-fn policy_output(outcome: &Result<Vec<DependentFinding>, PlanError>) -> String {
-    let findings: &Vec<DependentFinding> = match outcome {
-        Err(error) => return failed(error),
-        Ok(found) => found,
-    };
-    let rendered: Vec<String> = findings
-        .iter()
-        .map(|finding| {
-            let patch: String = finding.patch.as_ref().map_or_else(
-                || return String::from("null"),
-                |bump| {
-                    return object(&[
-                        ("path", quote_hex(&bump.path)),
-                        ("original", quote_hex(&bump.original)),
-                        ("replacement", quote_hex(&bump.replacement)),
-                    ]);
-                },
-            );
-            let path: String = finding
-                .path
-                .as_deref()
-                .map_or_else(|| return String::from("null"), quote_hex);
-            return object(&[
-                ("code", quote(finding.code)),
-                ("message", quote(&finding.message)),
-                ("path", path),
-                ("patch", patch),
-            ]);
-        })
-        .collect();
-    return object(&[("kind", quote("findings")), ("findings", array(&rendered))]);
-}
 
 /// The mode a fixture names.
 fn mode(value: &JsoncValue) -> TrackedMode {

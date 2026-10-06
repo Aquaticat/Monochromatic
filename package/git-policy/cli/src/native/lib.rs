@@ -258,6 +258,10 @@ mod dependent_version_test_support;
 #[cfg(test)]
 mod dependent_version_fixture_json;
 
+/// Canonical renderings of the native planner's results; never in the release build.
+#[cfg(test)]
+mod dependent_version_fixture_output;
+
 /// One differential case evaluated by the native planner; never in the release build.
 #[cfg(test)]
 mod dependent_version_fixture_cases;
