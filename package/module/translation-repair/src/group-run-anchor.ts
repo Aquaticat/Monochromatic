@@ -163,7 +163,7 @@ export function reanchorInsertions(
      Nothing either side carries a translation block only when no walk builds
      one: `anchorOffsets` names an anchor only where a step paired, and a
      paired step always leaves a translation block in the runs for these
-     scans to find (ledger T8, the group cluster).
+     scans to find (ledger T8).
      */
     const settled = (next === NO_BOUNDARY) ? previous : next;
 

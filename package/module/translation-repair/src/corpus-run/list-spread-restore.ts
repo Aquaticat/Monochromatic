@@ -286,6 +286,10 @@ function spacingOf({ list, }: { readonly list: ListSpacing; },): SpacingShape {
    */
   const gapCount = list.gaps
     .length;
+  // A ONE-ITEM LIST HAS NO SPACING TO RESTORE. No case can tell this line
+  // from its absence: lists pair only at the same item count, so both sides
+  // of a pair lack gaps together and read alike either way. It stays so the
+  // shape says what a gapless list is, not what a fallthrough makes of it.
   if (gapCount === 0)
     return 'mixed';
   if (list.blankGaps === gapCount)

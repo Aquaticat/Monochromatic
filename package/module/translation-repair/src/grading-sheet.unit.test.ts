@@ -59,7 +59,7 @@ await describe({
           ],
           seed: 'meow',
           bar: 0.9,
-          corpusSha: 'a41fc60',
+          corpusSha: 'feedfac',
           drawDigest: 'digest-of-this-draw',
         },);
         // The candidate blocks are the whole of what this case asserts, not the header.

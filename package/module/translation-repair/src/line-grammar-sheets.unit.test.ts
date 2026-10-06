@@ -241,7 +241,7 @@ const RENDERED: readonly { readonly name: string; readonly text: string; }[] = [
       sample: [CANDIDATE,],
       seed: DEFAULT_SAMPLE_SEED,
       bar: DEFAULT_PRECISION_BAR,
-      corpusSha: 'a41fc60',
+      corpusSha: 'feedfac',
       drawDigest: 'digest/mittens',
     },),
   },
@@ -250,7 +250,7 @@ const RENDERED: readonly { readonly name: string; readonly text: string; }[] = [
     text: formatRepairSheet({
       sample: [CANDIDATE,],
       seed: DEFAULT_SAMPLE_SEED,
-      corpusSha: 'a41fc60',
+      corpusSha: 'feedfac',
       drawDigest: 'digest/mittens',
     },),
   },

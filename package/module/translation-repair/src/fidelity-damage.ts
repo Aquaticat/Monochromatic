@@ -270,6 +270,9 @@ export function insertBorrowedSentence(
    donor is empty or repeats something here.
    */
   const usable = offered.find(function isUsable(sentence,) {
+    // AN EMPTY SENTENCE BORROWS NOTHING. The next line refuses it too, since
+    // every text includes the empty string, so no case can tell this line
+    // from its absence; it stays so the refusal does not rest on that.
     if (sentence === '')
       return false;
     return !cleanText.includes(sentence,);

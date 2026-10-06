@@ -28,7 +28,7 @@ import {
 /**
  One repo commit, as an object-id-shaped invention.
  */
-const TIP = 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379';
+const TIP = 'feedfacefeedfacefeedfacefeedfacefeedface';
 
 /**
  One built pipeline, as a digest-shaped invention.
@@ -50,13 +50,13 @@ await describe({
           fn: async () => {
             const short = abbreviate({
               ids: [
-                'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+                'feedfacefeedfacefeedfacefeedfacefeedface',
                 'b7d2e991400000000000000000000000000000000',
               ],
             },);
 
-            expect(short({ id: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379', },),)
-              .toBe('a41fc607e',);
+            expect(short({ id: 'feedfacefeedfacefeedfacefeedfacefeedface', },),)
+              .toBe('feedfacef',);
           },
         },),
 
@@ -110,7 +110,7 @@ await describe({
               ],
             },);
 
-            expect(short({ id: TIP, },),).toBe('a41fc607e',);
+            expect(short({ id: TIP, },),).toBe('feedfacef',);
           },
         },),
 

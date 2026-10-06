@@ -503,7 +503,7 @@ await describe({
         it({
           name: 'READS the inline half of a container through a quoted or braced value holding the character '
             + 'that would end it, so a self-closing tag is refused on its own `>` and its closing half stays '
-            + 'lone (ledger T8, the inline cluster)',
+            + 'lone',
           fn: async () => {
             // THE QUOTE SWALLOWS the `>` that would end the tag and the closing quote releases it.
             expect(atomsOf({

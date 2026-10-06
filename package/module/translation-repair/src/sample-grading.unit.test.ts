@@ -586,12 +586,12 @@ await describe({
                   sample,
                   seed: 'meow',
                   bar: 0.9,
-                  corpusSha: 'a41fc60',
+                  corpusSha: 'feedfac',
                   drawDigest: 'digest-of-this-draw',
                 },);
                 expect(sheet,).toContain('Draw seed: meow',);
                 expect(sheet,).toContain('Precision bar: 0.9',);
-                expect(sheet,).toContain('Corpus pin: a41fc60',);
+                expect(sheet,).toContain('Corpus pin: feedfac',);
                 expect(sheet,).toContain('Sample size: 2',);
                 expect(sheet,).toContain('entry: Kitten',);
                 expect(sheet,).toContain('entry: Tabby',);

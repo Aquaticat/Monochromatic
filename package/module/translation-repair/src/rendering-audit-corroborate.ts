@@ -235,6 +235,9 @@ function intersects(
   // A SIDE NEITHER CLAIM USES IS NOT A SHARED POSITION. Two omissions both
   // leaving the candidate side unused agree about nothing there, and reading
   // that as an intersection would make every pair of one-sided claims touch.
+  // No case can tell this line from its absence (an unused side has no
+  // bounds, and comparing missing bounds is false); the type check needs it
+  // to reach the bounds at all.
   if ((left.kind === 'unused') || (right.kind === 'unused'))
     return false;
 

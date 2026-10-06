@@ -317,7 +317,7 @@ const OPERATOR_MISTAKES: readonly Error[] = [
     says: 'it has no mappings',
   },),
   new CorpusReadError({
-    detail: 'people/whiskers/page.md at a41fc60',
+    detail: 'people/whiskers/page.md at feedfac',
     cause: new Error('fatal: not a git repository',),
   },),
 ];

@@ -10,7 +10,10 @@
  @module
  */
 
-import { chmod, writeFile, } from 'node:fs/promises';
+import {
+  truncate,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -29,6 +32,14 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Slice cache resume tests
 
+/**
+ Size of a cache file Node's `readFile` refuses before it reads a byte: one
+ past the largest it reads (2 GiB less one), held sparse so it takes no disk.
+ Unlike a mode that forbids reading, it refuses whoever runs the suite, the
+ superuser included.
+ */
+const UNREADABLE_SIZE = 2 ** 31;
+
 await describe({
   name: loadNamespacedSlices.name,
   children: [
@@ -37,7 +48,7 @@ await describe({
         + 'not read',
       fn: async () => {
         // Cache directory holding one file whose JSON is a number and one
-        // the process may not read.
+        // too large to read.
         await using dir = await scratchDir({ prefix: 'slice-cache-namespace-', },);
         await writeFile(
           join(dir.path, sliceFileName({ key: 'k1', namespace: REPAIR_SLICE_NAMESPACE, },),),
@@ -58,12 +69,12 @@ await describe({
           '5',
           'utf8',
         );
-        await chmod(
+        await truncate(
           join(dir.path, sliceFileName({ key: 'k2', namespace: REPAIR_SLICE_NAMESPACE, },),),
-          0o000,
+          UNREADABLE_SIZE,
         );
         /**
-         What the load raised, read for the permission fault it carries.
+         What the load raised, read for the read fault it carries.
          */
         const refusal: unknown = await rejectionOf(async function load(): Promise<unknown> {
           return await loadNamespacedSlices({
@@ -75,9 +86,7 @@ await describe({
           },);
         },);
         expect(String(refusal,),).toBe(
-          `Error: EACCES: permission denied, open '${
-            join(dir.path, sliceFileName({ key: 'k2', namespace: REPAIR_SLICE_NAMESPACE, },),)
-          }'`,
+          `RangeError [ERR_FS_FILE_TOO_LARGE]: File size (${String(UNREADABLE_SIZE,)}) is greater than 2 GiB`,
         );
       },
     },),

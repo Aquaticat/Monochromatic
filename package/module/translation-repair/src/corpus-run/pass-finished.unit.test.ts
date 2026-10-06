@@ -94,7 +94,7 @@ async function decline(
       id,
       tip: 'abc',
       pipelineDigest: 'sha256:0',
-      corpusSha: 'a41fc60',
+      corpusSha: 'feedfac',
       timestamp: '2026-09-27T00:00:00.000Z',
       reason: 'archive-original',
       note: 'the cat wrote this page in English herself',

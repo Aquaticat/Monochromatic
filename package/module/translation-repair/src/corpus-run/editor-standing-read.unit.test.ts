@@ -252,7 +252,7 @@ await describe({
           id: 'Mittens',
           tip: 'abc',
           pipelineDigest: `sha256-tree-v1:${'0'.repeat(64,)}`,
-          corpusSha: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+          corpusSha: 'feedfacefeedfacefeedfacefeedfacefeedface',
           callConfig: {},
           durationMs: 1,
           timestamp: '2026-09-28T10:00:00.000Z',

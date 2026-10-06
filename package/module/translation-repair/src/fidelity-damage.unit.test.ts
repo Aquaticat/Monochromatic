@@ -138,7 +138,7 @@ await describe({
         },),
         it({
           name: 'REFUSES a deletion that would leave the slice empty, which is a shape no translation '
-            + 'takes (ledger T8, the fidelity cluster)',
+            + 'takes',
           fn: async () => {
             expect(deleteOneSentence({
               cleanText: 'The tortoiseshell cat arrived at the shelter on a rainy Tuesday and stayed.',
@@ -202,22 +202,27 @@ await describe({
           },
         },),
         it({
-          name: 'SKIPS an empty offered sentence and borrows the first usable one (ledger T8, the '
-            + 'fidelity cluster)',
+          name: 'SKIPS an empty offered sentence and borrows the first usable one, set after the clean '
+            + 'text\'s second sentence',
           fn: async () => {
-            const attempt = insertBorrowedSentence({
+            expect(insertBorrowedSentence({
               cleanText: CLEAN_TEXT,
               donorTexts: ['', DONOR_TEXT,],
+            },),).toEqual({
+              kind: 'damaged',
+              damageKind: 'insertion',
+              damagedText: CLEAN_TEXT.replace(
+                'touched. ',
+                `touched. ${BORROWED} `,
+              ),
+              changedChars: BORROWED.length,
+              damageDetail: `inserted a borrowed sentence of ${String(BORROWED.length,)} characters`,
             },);
-            if (attempt.kind !== 'damaged')
-              throw new Error(`expected damage, got ${attempt.reason}`,);
-            expect(attempt.damagedText
-              .includes(BORROWED,),).toBe(true,);
           },
         },),
         it({
           name: 'REFUSES an insertion where no sentence is long enough and unique enough to splice '
-            + 'after (ledger T8, the fidelity cluster)',
+            + 'after',
           fn: async () => {
             expect(insertBorrowedSentence({
               cleanText: 'Short. Also short.',
@@ -321,7 +326,7 @@ await describe({
         },),
         it({
           name: 'REFUSES an alteration where every same-shape number already appears on one side or '
-            + 'the other (ledger T8, the fidelity cluster)',
+            + 'the other',
           fn: async () => {
             expect(alterSharedNumber({
               cleanText: 'Mittens counted 2009 birds over 2000 2001 2002 2003 2004 2005 2006 2007 2008 days.',

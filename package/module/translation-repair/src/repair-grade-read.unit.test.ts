@@ -212,7 +212,7 @@ await describe({
               '# Repair sheet',
               '',
               'Draw seed: milestone-three-precision-round-three',
-              'Corpus pin: a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+              'Corpus pin: feedfacefeedfacefeedfacefeedfacefeedface',
               'Draw digest: abc123',
               'Sample size: 50',
               '',
@@ -221,7 +221,7 @@ await describe({
 
             expect(readSheetIdentity({ text, },),).toEqual({
               seed: 'milestone-three-precision-round-three',
-              corpusSha: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+              corpusSha: 'feedfacefeedfacefeedfacefeedfacefeedface',
               drawDigest: 'abc123',
             },);
           },

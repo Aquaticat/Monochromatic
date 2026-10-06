@@ -34,7 +34,7 @@ const BASE_RECORD: RecallScorecardRecord = {
   startedAt: '2026-08-26T09:00:00.000Z',
   finishedAt: '2026-08-26T21:00:00.000Z',
   tip: 'cafef00dcafef00dcafef00dcafef00dcafef00d',
-  corpusSha: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+  corpusSha: 'feedfacefeedfacefeedfacefeedfacefeedface',
   callConfig: { perCallTimeoutMs: 600_000, },
   entriesPerBand: 3,
   seedsPerEntry: 3,

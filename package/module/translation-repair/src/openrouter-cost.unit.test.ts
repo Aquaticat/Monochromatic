@@ -68,8 +68,7 @@ await describe({
     },),
 
     it({
-      name: 'SKIPS a cost that is not finite, since it states no spend (ledger T8, the openrouter '
-        + 'cluster)',
+      name: 'SKIPS a cost that is not finite, since it states no spend',
       fn: async () => {
         expect(openRouterCostOf({
           bodyText: 'data: {"usage":{"cost":1e999}}\n\ndata: [DONE]\n',
