@@ -142,7 +142,11 @@ then a 72-view cohort
 `again`,
 `more`,
 `next` and `later`;
-every failure (slow boots and launches, not-responding dialogs, lost focus) came with the host's load average at 60 to 100 from other work,
+every failure
+(slow boots and launches,
+not-responding dialogs,
+lost focus)
+came with the host's load average at 60 to 100 from other work,
 so `run-template-editor-when-quiet.ts` now waits,
 within a bound,
 for it to fall under 48 before each round),
