@@ -1,53 +1,56 @@
 #!/usr/bin/env node
-// Observe every bundle check failing on a damaged copy of an assembled application directory.
-// Each case damages its own copy below the private agent scratch root; the assembled directory is only read.
+// Observe the bundle checks failing on damaged copies of a single application executable.
+// Each case damages its own copy below the private agent scratch root; the checked executable is only read.
+// These cases damage the file itself. Checks of run-time behavior (the cache comparison, ignoring a user Helix
+// runtime, the digest check of embedded parts) need an executable built without that behavior; the package
+// README, under "Bundle checks", records those controls, run with inspect:bundle on a deliberately altered build.
 import { spawnSync } from 'node:child_process';
-import { chmodSync, cpSync, mkdtempSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const privateRoot = join(homedir(), 'temp', 'agent');
 if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Guard scratch root must exclude group and other permissions: ' + privateRoot);
-const bundle = realpathSync(resolve(process.env.usage_directory || 'dist/monochromatic-ide'));
+const executable = realpathSync(resolve(process.env.usage_file || 'dist/monochromatic-ide'));
+const runtime = realpathSync(resolve(process.env.usage_runtime || 'target/release/runtime'));
 const artifact = realpathSync(mkdtempSync(join(privateRoot, 'ide-bundle-guard-')));
 console.log('BUNDLE_GUARD_ARTIFACT=' + artifact);
 
-const remove = relative => directory => rmSync(join(directory, relative), { recursive: true });
+// Change one byte in the middle of an embedded file's only occurrence in the copy.
+const flipInside = sourceFile => copy => {
+  const bytes = readFileSync(copy);
+  const needle = readFileSync(sourceFile);
+  const at = bytes.indexOf(needle);
+  if (at < 0) throw new Error(sourceFile + ' is not embedded in ' + copy);
+  if (bytes.indexOf(needle, at + 1) >= 0) throw new Error(sourceFile + ' occurs twice in ' + copy + '; damaging one occurrence would be ambiguous');
+  bytes[at + Math.floor(needle.length / 2)] ^= 0x01;
+  writeFileSync(copy, bytes);
+};
 // `checks` are the checks run on the damaged copy; `fails` maps each check expected to fail to a phrase of its message.
 // Checks named in `checks` but not in `fails` must still pass, which shows a failure is specific to its damage.
 const cases = [
-  { name: 'grammar-library-removed', damage: remove('runtime/grammars/sql.so'), checks: ['inventory', 'license-texts', 'grammars-load', 'starts-outside-source-tree'],
-    fails: { inventory: 'lacks listed libraries: sql.so', 'grammars-load': 'syntax tests failed', 'starts-outside-source-tree': 'could not highlight from its own runtime' } },
-  { name: 'unlisted-grammar-library', damage: directory => cpSync(join(directory, 'runtime/grammars/toml.so'), join(directory, 'runtime/grammars/unlisted.so')), checks: ['inventory', 'license-texts'],
-    fails: { inventory: 'entries the manifest does not list: unlisted.so' } },
-  { name: 'executable-bit-cleared', damage: directory => chmodSync(join(directory, 'monochromatic-ide'), 0o644), checks: ['inventory'],
+  { name: 'executable-bit-cleared', damage: copy => chmodSync(copy, 0o644), checks: ['inventory', 'license-texts'],
     fails: { inventory: 'is not executable' } },
-  { name: 'query-rules-removed', damage: remove('runtime/queries/rust/highlights.scm'), checks: ['inventory', 'grammars-load'],
-    fails: { 'grammars-load': 'syntax tests failed' } },
-  { name: 'grammar-notice-removed', damage: remove('runtime/licenses/rust'), checks: ['inventory', 'license-texts'],
-    fails: { 'license-texts': 'runtime/licenses/rust is missing' } },
-  { name: 'reuse-headers-removed', damage: remove('runtime/licenses/slint/REUSE-headers.txt'), checks: ['license-texts'],
-    fails: { 'license-texts': 'without REUSE-headers.txt copyright lines' } },
-  { name: 'font-notice-removed', damage: remove('LICENSES/font/Inter-LICENSE.txt'), checks: ['inventory', 'license-texts'],
-    fails: { 'license-texts': 'LICENSES/font/Inter-LICENSE.txt is missing' } },
-  { name: 'application-license-removed', damage: remove('LICENSES/LGPL-3.0-or-later.txt'), checks: ['license-texts'],
-    fails: { 'license-texts': 'LICENSES/LGPL-3.0-or-later.txt is missing' } },
-  { name: 'helix-license-removed', damage: remove('runtime/Helix-LICENSE'), checks: ['license-texts'],
-    fails: { 'license-texts': 'runtime/Helix-LICENSE is missing' } },
-  { name: 'runtime-removed', damage: remove('runtime'), checks: ['inventory', 'license-texts', 'starts-outside-source-tree'],
-    fails: { inventory: 'runtime/manifest.json is missing', 'license-texts': 'runtime/Helix-LICENSE is missing', 'starts-outside-source-tree': 'could not highlight from its own runtime' } },
-  // The executable is replaced by a link to the intact one, so the copy without a runtime still finds the intact
-  // runtime beside the link's target: an application that reports nothing must fail the missing-runtime check.
-  { name: 'runtime-found-elsewhere', damage: directory => { rmSync(join(directory, 'monochromatic-ide')); symlinkSync(join(bundle, 'monochromatic-ide'), join(directory, 'monochromatic-ide')); }, checks: ['missing-runtime-reported'],
-    fails: { 'missing-runtime-reported': 'reported nothing' } },
+  { name: 'embedded-query-damaged', damage: flipInside(join(runtime, 'queries/sql/highlights.scm')), checks: ['inventory', 'license-texts', 'lone-copy-highlights'],
+    fails: { inventory: 'runtime/queries/sql/highlights.scm', 'lone-copy-highlights': 'runtime/queries/sql/highlights.scm embedded in' } },
+  { name: 'embedded-grammar-damaged', damage: flipInside(join(runtime, 'grammars/sql.so')), checks: ['inventory', 'license-texts', 'lone-copy-highlights'],
+    fails: { inventory: 'runtime/grammars/sql.so', 'lone-copy-highlights': 'runtime/grammars/sql.so embedded in' } },
+  { name: 'embedded-grammar-notice-damaged', damage: flipInside(join(runtime, 'licenses/rust/LICENSE')), checks: ['inventory', 'license-texts'],
+    fails: { inventory: 'runtime/licenses/rust/LICENSE', 'license-texts': 'runtime/licenses/rust/LICENSE' } },
+  { name: 'embedded-font-notice-damaged', damage: flipInside(resolve('asset/font/Inter-LICENSE.txt')), checks: ['inventory', 'license-texts'],
+    fails: { inventory: 'LICENSES/font/Inter-LICENSE.txt', 'license-texts': 'LICENSES/font/Inter-LICENSE.txt' } },
+  { name: 'embedded-application-license-damaged', damage: flipInside(resolve('LICENSES/LGPL-3.0-or-later.txt')), checks: ['inventory', 'license-texts'],
+    fails: { inventory: 'LICENSES/LGPL-3.0-or-later.txt', 'license-texts': 'LICENSES/LGPL-3.0-or-later.txt' } },
+  { name: 'embedded-helix-license-damaged', damage: flipInside(join(runtime, 'Helix-LICENSE')), checks: ['inventory', 'license-texts'],
+    fails: { inventory: 'runtime/Helix-LICENSE', 'license-texts': 'runtime/Helix-LICENSE' } },
 ];
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
 const selected = only ? cases.filter(item => only.has(item.name)) : cases;
 if (only && selected.length !== only.size) throw new Error('Unknown guard name in: ' + process.env.usage_only);
 
 const results = [];
-const inspect = (name, directory, checks) => {
-  const run = spawnSync(process.execPath, ['bin/inspect-bundle.mjs'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, usage_directory: directory, usage_only: checks.join(',') } });
+const inspect = (name, file, checks) => {
+  const run = spawnSync(process.execPath, ['bin/inspect-bundle.mjs'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, usage_file: file, usage_runtime: runtime, usage_only: checks.join(',') } });
   const output = (run.stdout ?? '') + (run.stderr ?? '');
   writeFileSync(join(artifact, name + '.log'), output);
   if (run.error) throw run.error;
@@ -57,18 +60,19 @@ const inspect = (name, directory, checks) => {
 };
 const note = entry => { results.push(entry); writeFileSync(join(artifact, 'results.json'), JSON.stringify(results, null, 2)); console.log(JSON.stringify(entry)); };
 
-// The undamaged directory passes every check any case runs; this is the baseline for all of them.
+// The undamaged executable passes every check any case runs; this is the baseline for all of them.
 const used = [...new Set(selected.flatMap(item => item.checks))];
-const baseline = inspect('baseline', bundle, used);
+const baseline = inspect('baseline', executable, used);
 const baselinePassed = baseline.status === 0 && baseline.records.every(record => record.passed);
 note({ name: 'baseline', phase: 'intact', checks: used, accepted: baselinePassed });
-if (!baselinePassed) throw new Error('The intact directory does not pass its checks; inspect ' + artifact);
+if (!baselinePassed) throw new Error('The intact executable does not pass its checks; inspect ' + artifact);
 
 for (const item of selected) {
-  const directory = join(artifact, item.name);
-  cpSync(bundle, directory, { recursive: true });
-  item.damage(directory);
-  const { status, records } = inspect(item.name, directory, item.checks);
+  const copy = join(artifact, item.name + '-monochromatic-ide');
+  copyFileSync(executable, copy);
+  chmodSync(copy, 0o755);
+  item.damage(copy);
+  const { status, records } = inspect(item.name, copy, item.checks);
   const verdicts = records.map(record => {
     const phrase = item.fails[record.name];
     const asExpected = phrase === undefined ? record.passed : !record.passed && String(record.detail).includes(phrase);

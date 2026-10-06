@@ -276,9 +276,18 @@ fn state_root_is_resolved_before_it_is_checked_and_bound() {
         state.starts_with(target.join("cache")),
         "the state directory kept the link spelling: {state:?}"
     );
+    // State inside the project (the home folder opened as the project) is allowed and is bound at its
+    // real location, which the sandbox mounts writable after the read-only project.
     linked.state_root = Some(links.path().join("inside").join("cache"));
-    let reason = private_state(&linked).expect_err("state inside the project through a link");
-    assert!(reason.contains("inside the project"), "{reason}");
+    let inside = private_state(&linked).expect("state inside the project through a link");
+    assert!(
+        inside.starts_with(project_root.join("cache")),
+        "the state directory kept the link spelling: {inside:?}"
+    );
+    // The project itself, reached through a link, would make all of it writable.
+    linked.state_root = Some(links.path().join("inside"));
+    let reason = private_state(&linked).expect_err("the project itself through a link");
+    assert!(reason.contains("contains the project"), "{reason}");
     assert!(reason.contains("restart the application"), "{reason}");
     linked.state_root = Some(links.path().join("away"));
     linked.project_root = target.join("nested");
