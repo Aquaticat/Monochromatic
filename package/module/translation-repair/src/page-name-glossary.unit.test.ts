@@ -17,7 +17,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { pageNameLines, } from '../dist/final/node/index.mjs';
+import {
+  pageNameLines,
+  pairedPageNames,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: 'a page names its people and linked titles as the archive renders them (class seventy-one)',
@@ -378,6 +381,34 @@ await describe({
           .slice(1,),).toEqual([
           '- 咪咪 (link text, https://example.invalid/mimi): "Mimi"',
         ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A SOURCE TEXT THE ARCHIVE RENDERS TWO WAYS, by two links to different hrefs or by two '
+        + 'headings, since the sheet would give one rendering as the page\'s and say nothing of the other, and '
+        + 'READS the page\'s other names and their paired set without it',
+      fn: async () => {
+        /**
+         Original naming 猫猫 by two links and 简介 by two headings, and 左右 once.
+         */
+        const sourceText = '[猫猫](https://example.invalid/a)和[猫猫](https://example.invalid/b)。\n\n'
+          + '## 简介\n\n猫睡了。\n\n## 简介\n\n猫醒了。\n\n## 左右\n\n猫走了。\n';
+        /**
+         Archive rendering each of the repeated texts two ways.
+         */
+        const targetText = '[Maomao](https://example.invalid/a) and [Mimi](https://example.invalid/b).\n\n'
+          + '## Overview\n\nThe cat slept.\n\n## Summary\n\nThe cat woke.\n\n## Conflict\n\nThe cat left.\n';
+        expect(pageNameLines({
+          sourceText,
+          targetText,
+        },)
+          .slice(1,),).toEqual([
+          '- 左右 (heading): "Conflict"',
+        ],);
+        expect([...pairedPageNames({
+          sourceText,
+          targetText,
+        },),],).toEqual(['左右',],);
       },
     },),
   ],

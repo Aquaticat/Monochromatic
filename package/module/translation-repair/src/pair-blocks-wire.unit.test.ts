@@ -470,6 +470,49 @@ await describe({
           },
         },),
         it({
+          name: 'REFUSES a definition pair named again after another pair, which the free order of definitions lets '
+            + 'through the order rule, since one voice naming it twice would count as two voices agreeing on it',
+          fn: async () => {
+            /**
+             The refusal for a definition pair repeated after another one.
+             */
+            const refusal = caught(function readsDefinitionRepeat(): void {
+              readBlockPairing({
+                value: {
+                  pairs: [
+                    {
+                      source: 2,
+                      target: 2,
+                    },
+                    {
+                      source: 3,
+                      target: 3,
+                    },
+                    {
+                      source: 2,
+                      target: 2,
+                    },
+                  ],
+                },
+                sourceCount: 4,
+                targetCount: 4,
+                freeOrder: {
+                  source: new Set([
+                    2,
+                    3,
+                  ],),
+                  target: new Set([
+                    2,
+                    3,
+                  ],),
+                },
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(BlockPairingError,);
+            expect(caughtValueText(refusal,),).toBe('pairing repeats the same correspondence at position 2',);
+          },
+        },),
+        it({
           name: 'REFUSES an index no block carries, on either side, naming the side',
           fn: async () => {
             /**
