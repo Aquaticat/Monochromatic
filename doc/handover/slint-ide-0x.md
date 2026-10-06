@@ -150,6 +150,23 @@ the items after it are the record of 2026-10-05 and older.
   which `fix/ide-test-flakes` owns.
   UI batch 3 was asked with the page `package/desktop-app/ide/design/questions/2026-10-06-ui-batch-3.html`;
   every answer matches what the build ships.
+- Landed on `main` as merge `d1493c66c`:
+  a crashed language server's last standard-error lines in its warning
+  (`feat/ide-logging` through `6c1aff99b`; 8 lines of at most 512 bytes per server;
+  a start timeout keeps its ERROR line and adds a WARN with the lines;
+  the crash warning waits up to 1 s for the last lines;
+  these three choices were the agent's, settled by the coordinating session).
+  Gate at `180353bbb` (IDE tree `88b0bf572869089e9e723f2567b6614070991013`):
+  lint;
+  102 passing library and integration result lines;
+  `test:native` failed once in
+  `native::annotation_gutter_tests::the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers`
+  ("line 0's number or text changed when its letter appeared")
+  and passed 112 of 112 on the rerun of the same tree;
+  that intermittent failure went to `fix/ide-test-flakes`.
+- The API session limit cut four agents off again at about 15:10 on 2026-10-06;
+  each worktree was clean and pushed,
+  and each agent was resumed from its transcript with its measured state.
 - Agents at work,
   each in its own worktree on a branch not yet merged:
   - `feat/ide-single-file` (`.claude/worktrees/ide-single-file`):
@@ -167,8 +184,6 @@ the items after it are the record of 2026-10-05 and older.
     the timing failures seen in the gates,
     an older hint answer replacing a newer window's,
     and an unversioned diagnostics push dropped during the hold after a reload.
-  - `feat/ide-logging` (same worktree, on top of the landed commits):
-    each server's last output lines in the warning when it stops unexpectedly.
   - `feat/ide-accessibility-tests` (`.claude/worktrees/ide-a11y`):
     rerunnable accessibility tests with Slint's testing crate,
     and comparison frames for UI batch 2's open choices and the watch-limit message
