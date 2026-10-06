@@ -136,7 +136,8 @@ pub struct Script {
     /// kill ends the process.
     pub linger: bool,
     /// One line written to standard error when `shutdown` arrives, as a real server reports its
-    /// own shutdown there; nothing when absent.
+    /// own shutdown there, and right before the hover crash ends the process, as a crashing
+    /// server's last words; nothing when absent.
     pub stderr_at_shutdown: Option<String>,
 }
 

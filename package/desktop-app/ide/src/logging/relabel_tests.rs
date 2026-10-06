@@ -1,7 +1,8 @@
 //! Record shapes from helix-lsp's format strings at the pinned revision, near misses that keep
 //! their level, and the re-labelled record as the application's subscriber writes it.
 
-use super::{RELABEL, Shape, shape};
+use super::{Matched, RELABEL, Shape, matched, shape};
+use crate::logging::stderr_tail;
 use std::{
     io::{self, Write},
     sync::{Arc, Mutex},
@@ -236,4 +237,44 @@ fn records_at_other_levels_pass_through_unchanged() {
         line.ends_with(" INFO helix_lsp::transport: scripted-ls -> {\"jsonrpc\":\"2.0\"}\n"),
         "{line}"
     );
+}
+
+#[test]
+fn a_match_names_the_server_and_the_quoted_line() {
+    assert_eq!(
+        matched(
+            TRANSPORT,
+            log::Level::Error,
+            r#"scripted-ls err <- "say \"hi\"\n""#
+        ),
+        Some(Matched {
+            shape: Shape::ServerStderrLine,
+            server: "scripted-ls",
+            line: r#"say \"hi\"\n"#,
+        })
+    );
+    assert_eq!(
+        matched(
+            TRANSPORT,
+            log::Level::Error,
+            "scripted-ls err: <- StreamClosed"
+        ),
+        Some(Matched {
+            shape: Shape::EndOfServerStderr,
+            server: "scripted-ls",
+            line: "",
+        })
+    );
+}
+
+#[test]
+fn the_bridge_keeps_stderr_lines_the_filter_hides() {
+    let server = "relabel-tail";
+    let line = format!(r#"{server} err <- "last words\n""#);
+    assert_eq!(written("warn", TRANSPORT, log::Level::Error, &line), "");
+    assert!(!stderr_tail::is_closed(server));
+    let end = format!("{server} err: <- StreamClosed");
+    assert_eq!(written("warn", TRANSPORT, log::Level::Error, &end), "");
+    assert!(stderr_tail::is_closed(server));
+    assert_eq!(stderr_tail::take(server), vec!["last words".to_string()]);
 }
