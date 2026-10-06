@@ -175,10 +175,12 @@ and neither the builder nor the review record compares anything with a digest (D
 The witness manifest states the prototype commit and the APK's digest as provenance only.
 The private capture scripts,
 which are not in this repository,
-do still compare the APK's digest:
+compared the APK's digest while these views were captured:
 to keep one cohort to one build,
 and before replacing a package already installed in the guest.
-Whether D88 reaches those scripts is put to the human.
+Asked on 2026-10-06,
+the human said D88 covers them too,
+and the comparisons were removed from the scripts that run a visit.
 
 The views were captured over several emulator visits on 2026-10-05,
 each in a container bounded to 6 GiB of memory and 2 CPUs.

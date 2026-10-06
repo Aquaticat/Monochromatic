@@ -2492,6 +2492,28 @@ that is a statement,
 and nothing is checked against it.
 What a builder checks about an image is what it measures from the image itself.
 
+On 2026-10-06 the agent reported that its private emulator-capture scripts,
+which are outside this repository,
+still compared the study APK's digest:
+to keep one set of captures to one build,
+and before replacing the package already installed in the emulator.
+One such comparison had refused a capturing visit the night before.
+Asked whether D88 covers those scripts too,
+the human answered yes,
+remove them.
+The scripts that run a visit now tell builds apart by commit name and replace the study's package by its application id.
+Those changed scripts were checked for syntax only;
+no visit has run with them yet.
+Scripts of finished studies still hold such comparisons;
+they are not run any more,
+and one that is reused gets the same change first.
+
+Asked the same day whether to make this a rule for the whole repository in `AGENTS.md`,
+the human declined:
+"There are legit (rare) situations in which locking by hash is desired."
+So D88 binds this package's design evidence and its capture tooling,
+and is not a ban for the repository at large.
+
 ### D89. The template language and editor follow KWGT, with stated omissions (2026-10-05)
 
 The human named KWGT (Kustom Widget Maker) as precedent for D81's template

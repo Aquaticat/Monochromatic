@@ -142,13 +142,21 @@ State on 2026-10-06:
   These were also put to the human in chat on 2026-10-05,
   with no answer when this was written.
   Silence is not an acceptance.
-- Put to the human and unanswered:
-  whether D88 reaches the private capture scripts,
-  which still compare the APK's digest to keep one cohort to one build
-  and before replacing a package installed in the guest;
-  and two proposed `AGENTS.md` rules,
-  one against locking by hash,
-  one to search `doc/troubleshooting/` before working around a tool failure.
+- Answered by the human on 2026-10-06 through the question tool:
+  D88 covers the private capture scripts too,
+  so the scripts that run a visit no longer compare the APK's digest
+  (builds are told apart by commit name,
+  the study's package is replaced by its application id;
+  checked for syntax only,
+  no visit has run with them yet);
+  the rule to search `doc/troubleshooting/` before working around a tool failure is in `AGENTS.md`;
+  a repository-wide rule against locking by hash was declined,
+  because locking by hash is rarely but legitimately wanted.
+- The human also said the transcript does not reliably show them things:
+  anything they must see or answer goes through the question tool
+  (`review-notes.md`,
+  standing standard 17).
+  The handoff of the review page was therefore repeated through that tool.
 
 To capture again,
 from `~/temp/agent`:
