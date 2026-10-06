@@ -634,7 +634,6 @@ function floorInputOmissions({ files, }: { readonly files: readonly SourceText[]
 const MEASUREMENT_FILES: Readonly<Record<string, string>> = {
   'corpus-run/checker-sensitivity-run.ts': 'asks whether the resolution checkers can say no, on cat-themed sheets',
   'corpus-run/coverage-control.ts': 'asks the coverage roster about a passage before and after its anchors are cut',
-  'corpus-run/coverage-probe.ts': 'asks the coverage roster about the passages the aligners refuse to pair',
   'corpus-run/editor-calibrate.ts': 'ranks every model on the editor\'s job over drawn slices',
   'corpus-run/editor-width-arm.ts': 'one arm of the editor-width probe',
   'corpus-run/editor-width-contest.ts': 'the editor-width probe\'s head-to-head between its arms\' winners',
@@ -643,7 +642,7 @@ const MEASUREMENT_FILES: Readonly<Record<string, string>> = {
   'corpus-run/probe-relabel-control.ts': 'gathers the relabel probe\'s control cases',
   'corpus-run/producer-calibrate.ts': 'ranks producers on drawn bare slices, every seat filled',
   'corpus-run/roster-bench.ts': 'benches roster widths on drawn bare slices',
-  'corpus-run/translate-probe.ts': 'prints the translate sheet for a drawn slice',
+  'corpus-run/translate-probe-run.ts': 'prints the translate sheet for a drawn slice',
   'corpus-run/window-trial-probe.ts': 'draws the entries the judging-window trial runs on',
   'corpus-run/window-trial-slice.ts': 'runs one slice of the judging-window trial in both arms',
 };

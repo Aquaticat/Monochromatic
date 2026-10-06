@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { readPageSkeleton, } from './translate-skeleton-page.ts';
 
@@ -223,9 +224,16 @@ function sideClause(
 ): string {
   if (count === 'unreadable')
     return `${side} could not be read to count its quoted passages`;
-  if (count === 1)
-    return `${side} carries 1 quoted passage`;
-  return `${side} carries ${String(count,)} quoted passages`;
+
+  /**
+   The noun in the number the count takes.
+   */
+  const noun = wordForCount({
+    count,
+    one: 'passage',
+    many: 'passages',
+  },);
+  return `${side} carries ${String(count,)} quoted ${noun}`;
 }
 
 /**

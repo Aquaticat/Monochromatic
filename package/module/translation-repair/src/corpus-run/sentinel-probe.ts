@@ -1,12 +1,3 @@
-import { refusalText, } from '../refusal-text.ts';
-import {
-  compareCodePoints,
-  wholeOpening,
-} from '../code-points.ts';
-import {
-  listCorpusPeople,
-  readCorpusFile,
-} from '../corpus-source.ts';
 import { repairTranslation, } from '../repair-entry.ts';
 import { monotonicMs, } from '../monotonic-clock.ts';
 import {
@@ -16,197 +7,29 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
-import { askedAmong, } from './command-flags.ts';
-import type { CommandLineOf, } from './command-lines.ts';
+import { probeCorpusEntries, } from './sentinel-probe-run.ts';
 
 //region Sentinel probe
 // Runs a set of named, known-behavior corpus entries through the pipeline and
-// prints one PROBE line each (status, issue counts, findings). Used before an
-// improve-and-restart step to confirm a change moved the known cases the way it
-// should; expected statuses live in doc/handover/translation-repair-history.md, not
-// hardcoded here, so this runner never drifts against the recorded ledger. Run
-// it with `mise run //package/module/translation-repair:sentinel-probe -- Anilovr Aniloviraw`.
-
-/**
- Sentinel set probed when no ids are named on the command line.
- */
-const DEFAULT_SENTINELS: readonly string[] = [
-  'Anilovr',
-  'Aniloviraw',
-];
-
-/**
- Most UTF-16 units of an error message kept in a PROBE line, ending on a
- whole character (`wholeOpening`).
- */
-const ERROR_MESSAGE_CAP = 200;
-
-/**
- Probes each corpus entry asked for through the pipeline, printing a PROBE
- line per entry, in the order the corpus lists them. With no ids named on the
- command line, probes {@link DEFAULT_SENTINELS}.
-
- @param line - the probe's command line, read whole by `reportingRefusals`
-
- @throws {@link Error} when the API key env var is unset
-
- @throws StatedRefusalError when an id to probe, named or default, is no
- entry in the corpus at the pin, before anything is spent
-
- @example
- ```ts
- await probeCorpusEntries({ line, },);
- ```
- */
-async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sentinel-probe'>; },): Promise<void> {
-  /**
-   Ids named on the command line. A flag is refused before this runs, where it
-   was once dropped and the argument after it probed as an entry (ledger B75).
-   */
-  const named = line.positionals;
-
-  /**
-   Entries to probe: named ids, else the default sentinels, each held to the
-   corpus at the pin before anything is spent. An id it lacks once printed an
-   error line of its own while the probe spent on the rest (ledger B76).
-   */
-  const targets = askedAmong({
-    asked: (named.length > 0) ? named : DEFAULT_SENTINELS,
-    known: await listCorpusPeople({ pin: RUN_CORPUS_PIN, },),
-    source: 'sentinel-probe',
-    within: 'the corpus at the pin',
-  },);
-
-  /**
-   Shared client using measured production provider concurrency.
-   */
-  const client = createRunClient();
-
-  console.log(`PROBE start corpus=${RUN_CORPUS_PIN.commitSha} targets=${targets.join(',',)}`,);
-
-  for (const id of targets) {
-    /**
-     Start time of this probe, for its duration.
-     */
-    const t0 = monotonicMs();
-    try {
-      /* oxlint-disable no-await-in-loop -- diagnostic entries remain sequential so each log and failure belongs to one named sentinel; provider capacity is not the reason */
-      /**
-       Original zh page text for this entry.
-       */
-      const sourceText = await readCorpusFile({
-        pin: RUN_CORPUS_PIN,
-        relPath: `people/${id}/page.md`,
-      },);
-      /* oxlint-enable no-await-in-loop */
-
-      /* oxlint-disable no-await-in-loop -- pairs with the read of its source page */
-      /**
-       Translated en page text for this entry.
-       */
-      const targetText = await readCorpusFile({
-        pin: RUN_CORPUS_PIN,
-        relPath: `people/${id}/page.en.md`,
-      },);
-      /* oxlint-enable no-await-in-loop */
-
-      /**
-       Fresh abort controller per entry; the probe imposes no deadline of its own.
-       */
-      const controller = new AbortController();
-
-      /* oxlint-disable no-await-in-loop -- sequential by design, for the reason the source read gives */
-      /**
-       Repair result for this probed entry.
-       */
-      const result = await repairTranslation({
-        client,
-        sourceText,
-        targetText,
-        models: RUN_MODELS,
-        signal: controller.signal,
-        perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-      },);
-      /* oxlint-enable no-await-in-loop */
-
-      /**
-       Accepted issues among all adjudicated.
-       */
-      const accepted = result.issues
-        .filter(function isAccepted(record,) {
-        return record.issue
-          .status
-          === 'accepted';
-      },);
-      /**
-       Accepted issues counted per repair disposition; a map, as every record
-       filled by a key is (ledger B77).
-       */
-      const counts = new Map<string, number>();
-      for (const record of accepted) {
-        counts.set(
-          record.repairDisposition,
-          (counts.get(record.repairDisposition,) ?? 0) + 1,
-        );
-      }
-
-      /**
-       Those counts as the PROBE line prints them, so a probe shows whether
-       repair provenance is actually recorded rather than only whether issues
-       were found. Sorted so two probe lines compare directly.
-       */
-      const dispositions = [...counts,]
-        .toSorted(function byName(
-          left,
-          right,
-        ) {
-          return compareCodePoints({
-            left: left[0],
-            right: right[0],
-          },);
-        },)
-        .map(function toPair(entry,) {
-          return `${entry[0]}:${String(entry[1],)}`;
-        },)
-        .join(',',);
-
-      console.log(
-        `PROBE ${id} status=${result.status} issues=${String(result.issues
-          .length,)} accepted=${String(accepted.length,)} repairs=${
-          dispositions === '' ? 'none' : dispositions
-        } refinedIssues=${
-          String(
-            result.issues
-              .filter(function wasRefined(record,) {
-                return record.refined;
-              },)
-              .length,
-          )
-        } findings=${String(result.findings
-          .length,)} ms=${String(monotonicMs() - t0,)}`,
-      );
-    }
-    catch (error) {
-      /**
-       Failure text for the PROBE line: a marked class in its own words,
-       anything else by name only; capped after that.
-       */
-      const message = wholeOpening({
-        text: refusalText({ error, },),
-        units: ERROR_MESSAGE_CAP,
-      },);
-      console.log(`PROBE ${id} status=ERROR ms=${String(monotonicMs() - t0,)} error=${message}`,);
-    }
-  }
-
-  console.log('PROBE done',);
-}
+// prints one PROBE line each (status, issue counts, findings). Wiring only:
+// the walk is `sentinel-probe-run.ts` and the line is `sentinel-probe-line.ts`.
+// Run it with `mise run //package/module/translation-repair:sentinel-probe -- Anilovr Aniloviraw`.
 
 if (import.meta.main)
   await reportingRefusals({
     what: 'sentinel-probe',
     argv: process.argv,
-    run: probeCorpusEntries,
+    run: function runSentinelProbe({ line, },) {
+      return probeCorpusEntries({
+        line,
+        pin: RUN_CORPUS_PIN,
+        newClient: createRunClient,
+        repair: repairTranslation,
+        models: RUN_MODELS,
+        perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+        now: monotonicMs,
+      },);
+    },
   },);
 
 //endregion Sentinel probe

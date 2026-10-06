@@ -1320,10 +1320,6 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/displacement-probe.ts#main': {
-    tests: 1,
-    why: ASSEMBLED,
-  },
   'corpus-run/dropped-destinations.ts#markdownDestinations': {
     tests: 1,
     why: 'a link\'s destination, an address and no wording, where an empty one leads nowhere a page could '
@@ -1489,10 +1485,6 @@ const HELD_TESTS: Readonly<Record<string, {
     why: SCANNER,
   },
   'corpus-run/score-crosscheck-authors.ts#isSet': {
-    tests: 1,
-    why: ASSEMBLED,
-  },
-  'corpus-run/sentinel-probe.ts#probeCorpusEntries': {
     tests: 1,
     why: ASSEMBLED,
   },

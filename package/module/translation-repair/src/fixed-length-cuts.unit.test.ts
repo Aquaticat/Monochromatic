@@ -106,7 +106,7 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'a list of samples',
   ],
   [
-    'corpus-run/translate-probe.ts#PROBE_SLICES',
+    'corpus-run/translate-probe-run.ts#PROBE_SLICES',
     'a list of slices',
   ],
   [

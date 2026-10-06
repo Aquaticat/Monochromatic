@@ -125,7 +125,7 @@ const HELD: Readonly<Record<string, string>> = {
   'corpus-run/coverage-census-steps.ts#commandExit':
     'a child process failure whose message is the command line and exit code (nano-spawn result.js), the '
     + 'output going to a log file; no provider is called',
-  'corpus-run/coverage-probe.ts#readPair':
+  'corpus-run/coverage-probe-pair.ts#readPair':
     'a corpus read failure on the probe\'s own command; the corpus is public and no provider is called',
   'corpus-run/editor-standing-read.ts#readOne':
     'reads the message of an OffRosterModelError, which declares it safe and names a path and a model id',
@@ -142,7 +142,7 @@ const HELD: Readonly<Record<string, string>> = {
     'reads the message of a NothingInFlightError, the only class the clause lets through, which declares it safe',
   'corpus-run/runner-closure.ts#readEntryText':
     'a read failure of the built entry the run is executing, which quotes that path; no provider is called',
-  'corpus-run/translate-probe.ts#main':
+  'corpus-run/translate-probe-run.ts#probeTranslate':
     'printed to the terminal of a probe command whose operator owns the provider keys, not logged or stored',
   'corpus-run/window-trial-probe.ts#readPairTexts':
     'a missing-object corpus read narrowed by isMissingCorpusObject; the corpus is public',

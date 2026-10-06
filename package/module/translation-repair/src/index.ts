@@ -254,6 +254,7 @@ export * from './pipeline-barrel.ts';
 export * from './identity-barrel.ts';
 export * from './probe-barrel.ts';
 export * from './probe-args-barrel.ts';
+export * from './probe-run-barrel.ts';
 export * from './recall-barrel.ts';
 export * from './refine-barrel.ts';
 export * from './repair-chunk-barrel.ts';
