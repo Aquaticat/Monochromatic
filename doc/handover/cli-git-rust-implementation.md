@@ -818,6 +818,36 @@ The linter mutation delegate stopped once more on 2026-10-06,
 on an API authentication error (HTTP 403) during its second round,
 and was resumed again.
 
+#### Linter mutation close
+
+Evidence in `doc/handover/unified-linter-mutation-close.md` (`a5033325b`), section `Result`.
+On one test image built from linter source tree `ceb495865521beda0f988a536435ffd69cc1d100`,
+with the two excluded replacement kinds:
+
+- Executable scope (new): 184 mutants, 131 caught, 53 that do not compile, 0 missed, 0 timeouts.
+- Markdown scope: 742 mutants, 698 caught, 44 that do not compile, 0 missed, 0 timeouts.
+- Processor scope: 355 mutants, 330 caught, 25 that do not compile, 0 missed, 0 timeouts.
+- Gate before them: 384 library and 12 executable tests, Clippy clean.
+
+No mutant exposed a defect on unmutated input.
+The campaigns did expose unbounded work under mutation in both Markdown tree walks.
+Ancestor and descendant walks are now bounded by the node count,
+and five Markdown rules report a walk failure as one `core/processing-failure` finding;
+the descendant bound extends the ancestor choice and is open to the same veto.
+On this source every mutant of the two excluded kinds was already being caught,
+so for the linter the exclusion guards future loops and costs the mutants listed in
+`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`.
+
+The delegate named what is still open,
+and the main session sent all of it back as the next piece of the same task:
+six production files no campaign has mutated,
+a listing proof that the union of scopes equals the unscoped mutant list,
+the scopes not yet rerun on the final tree,
+four quick tests the executable scope skips by name,
+linting on the main thread for one file or `--concurrency 1` (a possible stack overflow where the main stack is small),
+the untested `set_hook` call and worker stack size,
+and a rerun of the fuzz sidecar against the final library.
+
 #### Native policy engine
 
 Complete for commands that need no commit transaction, worktree copy or manual-push scanning;
