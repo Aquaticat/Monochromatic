@@ -220,7 +220,10 @@ pub(super) fn exited(worker: &mut Worker, server: LanguageServerId) {
         }
     };
     // The record waits briefly for the server's last standard-error lines; the state does not.
-    report::ended_unexpectedly(worker.session.servers[index].identity.name.clone(), was_ready);
+    report::ended_unexpectedly(
+        worker.session.servers[index].identity.name.clone(),
+        was_ready,
+    );
     retire(worker, index, state, false);
     if !worker.session.servers[index].attached {
         worker.session.servers.remove(index);

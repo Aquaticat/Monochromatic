@@ -78,10 +78,15 @@ fn an_end_waits_for_lines_that_arrive_after_it() {
     assert_eq!(ended.len(), 1, "{text}");
     assert!(ended[0].contains(" WARN "), "{text}");
     assert!(
-        ended[0].contains(r#"server=report-late was_ready=true stderr_tail=["panicked at main.rs:1:1"]"#),
+        ended[0].contains(
+            r#"server=report-late was_ready=true stderr_tail=["panicked at main.rs:1:1"]"#
+        ),
         "the record did not wait for the last line:\n{text}"
     );
-    assert!(text.contains("waited for the end of a server's standard error"), "{text}");
+    assert!(
+        text.contains("waited for the end of a server's standard error"),
+        "{text}"
+    );
 }
 
 #[test]

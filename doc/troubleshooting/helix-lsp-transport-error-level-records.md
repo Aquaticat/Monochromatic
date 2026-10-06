@@ -247,8 +247,11 @@ Tradeoffs:
   A changed format string on a `helix-lsp` update makes that record ERROR again, which the enforced test reports;
   it cannot hide a record, because an unrecognized record keeps its level.
 - A server's standard error is no longer visible at the default level.
-  A server that crashes leaves the worker's warning `language server process ended`,
-  but its own last words appear only with `RUST_LOG=helix_lsp=info`.
+  Since 2026-10-06 the bridge keeps each server's last 8 lines anyway (`src/logging/stderr_tail.rs`):
+  a server that crashes, or ends during its start, leaves the worker's warning `language server process ended`
+  with them in its `stderr_tail` field,
+  and a server stopped for not answering `initialize` in time leaves them in a warning after the start-deadline error.
+  Every line a server writes appears with `RUST_LOG=helix_lsp=info`.
 - The upstream fix for the end-of-stream record ("Upstream filing decision") remains worth filing;
   the bridge does not depend on it.
 

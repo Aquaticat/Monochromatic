@@ -100,7 +100,10 @@ pub fn unescape(quoted: &str) -> String {
                 }
                 rest.next();
                 // An escape that names no character is kept as written.
-                match u32::from_str_radix(&digits, 16).ok().and_then(char::from_u32) {
+                match u32::from_str_radix(&digits, 16)
+                    .ok()
+                    .and_then(char::from_u32)
+                {
                     Some(decoded) => text.push(decoded),
                     None => text.push_str(&format!("\\u{{{digits}}}")),
                 }
