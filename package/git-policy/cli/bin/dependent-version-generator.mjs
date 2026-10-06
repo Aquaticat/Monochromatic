@@ -270,13 +270,14 @@ function generatedWorkspace(tool, { defect }) {
   const packages = Array.from({ length: 2 + tool.below(9) }, (_, index) => generatedPackage(tool, index));
   for (const pkg of packages) {
     for (const other of packages) {
-      if (other === pkg ? tool.chance(0.04) : tool.chance(0.22))
+      if (other === pkg ? tool.chance(0.04) : tool.chance(0.32))
         pkg.edges.push({ field: tool.pick(fields), name: other.name, protocol: tool.pick(protocols) });
     }
     if (tool.chance(0.3))
       pkg.edges.push({ field: tool.pick(fields), name: tool.pick(externals), protocol: tool.pick(protocols) });
     for (const fileName of tool.shuffled(sourceNames).slice(0, tool.below(4))) {
-      const mentioned = tool.shuffled([...pkg.edges.map((/** @type {any} */ edge) => edge.name), ...packages.map(other => other.name)]).slice(0, 1 + tool.below(3));
+      const declared = pkg.edges.map((/** @type {any} */ edge) => edge.name);
+      const mentioned = tool.shuffled([...declared, ...declared, ...packages.map(other => other.name)]).slice(0, 1 + tool.below(4));
       const text = Buffer.from(sourceText(tool, mentioned), 'utf8');
       pkg.sources.push({ path: `${pkg.directory}/src/${fileName}`, bytes: tool.chance(0.05) ? Buffer.concat([Buffer.from([0xFF, 0xFE, 0x20]), text]) : text });
     }

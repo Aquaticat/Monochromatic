@@ -13,7 +13,7 @@ import { execFileSync } from 'node:child_process';
 
 import { HarnessError, toHex } from './dependent-version-incumbent.mjs';
 import { seeded } from './dependent-version-generator.mjs';
-import { importsPackage, isNonTestSourcePath } from '@monochromatic-dev/git-policy-repository/ts';
+import { importsPackage, isNonTestSourcePath, readPublishableNames } from '@monochromatic-dev/git-policy-repository/ts';
 
 /** Real Git, bypassing the policy wrapper on `PATH`. */
 const realGit = '/usr/bin/git';
@@ -95,9 +95,12 @@ export function repositorySamples(snapshot, seed) {
   const runtimeCount = (/** @type {string} */ name) => all.filter(entry => keysOf(entry.manifest, runtimeFields).includes(name)).length;
   const anyCount = (/** @type {string} */ name) => all.filter(entry => keysOf(entry.manifest, [...runtimeFields, 'devDependencies']).includes(name)).length;
   const sources = (/** @type {string} */ directory) => [...snapshot.bytes].filter(([path]) => isNonTestSourcePath({ directory, path })).map(([, bytes]) => bytes.toString('utf8'));
+  const publishable = new Set(readPublishableNames(snapshot.bytes.get('package/config/pnpr/config.yaml')?.toString('utf8') ?? ''));
+  // A sample whose dependents are all unpublished would plan nothing; these prefer samples that reach a published one.
   const importOnly = all.filter(candidate => runtimeCount(candidate.manifest.name) === 0
-    && all.some(user => keysOf(user.manifest, ['devDependencies']).includes(candidate.manifest.name)
+    && all.some(user => publishable.has(user.manifest.name) && keysOf(user.manifest, ['devDependencies']).includes(candidate.manifest.name)
       && sources(user.directory).some(sourceText => importsPackage({ sourceText, packageName: candidate.manifest.name }))));
+  const dependedPrivate = all.filter(entry => entry.manifest.private === true && anyCount(entry.manifest.name) > 0);
   const random = seeded(seed);
   const sample = (/** @type {typeof all} */ list) => list
     .map(entry => ({ entry, order: random() }))
@@ -108,7 +111,7 @@ export function repositorySamples(snapshot, seed) {
   return [
     { category: 'leaf', names: sample(byName(all.filter(entry => anyCount(entry.manifest.name) === 0))) },
     { category: 'most-depended-on', names: all.toSorted((left, right) => runtimeCount(right.manifest.name) - runtimeCount(left.manifest.name) || (left.manifest.name < right.manifest.name ? -1 : 1)).slice(0, perCategory).map(entry => entry.manifest.name) },
-    { category: 'private', names: sample(byName(all.filter(entry => entry.manifest.private === true))) },
+    { category: 'private', names: sample(byName(dependedPrivate)) },
     { category: 'source-import-only', names: sample(byName(importOnly)) },
   ];
 }

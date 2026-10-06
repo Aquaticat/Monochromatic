@@ -111,6 +111,29 @@ async function nativeResults({ corpus, plant }) {
 }
 
 /**
+ How the incumbent's results of one class are distributed, so a class that only exercises one path is visible.
+
+ @param {any[]} results - incumbent results
+ @returns {Record<string, number>} counts by outcome
+ */
+function outcomes(results) {
+  /** @type {Record<string, number>} */
+  const counts = {};
+  const count = (/** @type {string} */ key) => {
+    counts[key] = (counts[key] ?? 0) + 1;
+  };
+  for (const result of results) {
+    if (result.plan === undefined) {
+      count(`function ${result.kind}`);
+      continue;
+    }
+    count(result.plan.kind === 'planned' ? (result.plan.bumps.length > 0 ? 'plan with bumps' : (result.plan.bumpedNames.length > 0 ? 'plan raised without bumps' : 'plan nothing raised')) : `plan ${result.plan.kind} ${result.plan.error ?? ''}`.trim());
+    count(result.policy.kind === 'findings' ? (result.policy.findings.length > 0 ? `policy ${[...new Set(result.policy.findings.map((/** @type {any} */ finding) => finding.code))].join('+')}` : 'policy no finding') : `policy failed ${result.policy.error}`);
+  }
+  return counts;
+}
+
+/**
  Build and evaluate the corpus, compare, and write evidence.
 
  @param {Map<string, string>} parsed - options
@@ -150,6 +173,7 @@ async function corpus(parsed) {
     report.classes.push({
       label,
       cases: indices.length,
+      outcomes: outcomes(indices.map(index => JSON.parse(incumbent[index]))),
       identical: indices.length - differing.length,
       explained: explained.map(index => all[index].name),
       unexplained: unexplained.map(index => ({ name: all[index].name, incumbent: JSON.parse(incumbent[index]), native: JSON.parse(native[index]) })),
@@ -157,7 +181,7 @@ async function corpus(parsed) {
   }
   await writeFile(join(directory, 'report.json'), `${JSON.stringify(report, undefined, 2)}\n`);
   for (const entry of report.classes)
-    console.log(`${entry.label}: ${entry.cases} cases, ${entry.identical} identical, ${entry.explained.length} explained differences, ${entry.unexplained.length} unexplained`);
+    console.log(`${entry.label}: ${entry.cases} cases, ${entry.identical} identical, ${entry.explained.length} explained differences, ${entry.unexplained.length} unexplained; ${JSON.stringify(entry.outcomes)}`);
   console.log(`Differential evidence: ${directory}`);
   const unexplainedTotal = report.classes.reduce((sum, entry) => sum + entry.unexplained.length, 0);
   if (unexplainedTotal > 0)
