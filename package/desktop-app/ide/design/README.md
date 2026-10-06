@@ -22,11 +22,20 @@ Frames of the built result are stored beside the frames of the question they ans
 
 ### 2026-10-05 UI batch 3
 
+- Page: [`questions/2026-10-06-ui-batch-3.html`](questions/2026-10-06-ui-batch-3.html),
+  built by the coordinating session from these frames and this entry's analysis.
 - Screenshots: `screenshots/2026-10-05-ui-batch-3/`
-- Status: awaiting the user's answers.
-  The coordinating session asks the questions; no question page was built.
-  Until the answers, the branch `feat/ide-hint-rows` ships option `a` of every question
-  except `diagnostic-text`, where it ships `b`.
+- Status: answered by the user on 2026-10-06;
+  every answer matches what the build ships:
+  `hint-look` `a`,
+  `hint-labels` `a`,
+  `hint-packing` `a` (editord's packing, not the `b` ranked first:
+  "first row with room" cannot make readers immediately realize two things are not one thing
+  under the constraints we chose),
+  `diagnostic-rows` `a`,
+  `diagnostic-text` `b`.
+  The user also kept the three-digit minimum of the line-number column.
+  `doc/decision/slint-ide-0x-scope.md` records the answers under "Interface decisions (UI batch 3)".
 - How the frames were made: section "How the 2026-10-05 UI batch 3 screenshots were produced".
 
 Every option is a real build.
