@@ -47,6 +47,7 @@ import {
   readLivingRepositoryDocs,
   REPOSITORY_ROOT,
 } from './living-docs.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  What the check asks of the docs a link can reach, so fixtures need no disk.
@@ -378,9 +379,11 @@ await describe({
          Reader over the working tree.
          */
         const reader = diskReader();
-        expect((await Promise.all(paths.map(async function inDoc(path,): Promise<readonly string[]> {
-          return deadLinks({ path, text: await readFile(join(REPOSITORY_ROOT, path,), 'utf8',), reader, },);
-        },),)).flat(),).toEqual([],);
+        expectNoFindings({
+          findings: (await Promise.all(paths.map(async function inDoc(path,): Promise<readonly string[]> {
+            return deadLinks({ path, text: await readFile(join(REPOSITORY_ROOT, path,), 'utf8',), reader, },);
+          },),)).flat(),
+        },);
       },
     },),
   ],

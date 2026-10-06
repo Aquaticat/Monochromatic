@@ -58,6 +58,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Spawning bindings
 // Which local names start a child, read from the file's own imports.
@@ -552,7 +553,7 @@ await describe({
          Every package file, tests and fixtures among them to be skipped.
          */
         const files = await readPackageSource();
-        expect(childrenWithoutBuiltEnvironment({ files, },),).toEqual([],);
+        expectNoFindings({ findings: childrenWithoutBuiltEnvironment({ files, },), },);
         expect(files.some(function isHelper(file,): boolean {
           return file.path === 'child-process-environment.ts';
         },),).toBe(true,);

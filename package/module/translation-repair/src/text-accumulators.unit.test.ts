@@ -33,6 +33,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectFindingsAsListed, } from './scan-findings.test-fixture.ts';
 
 /**
  Node kinds that loop.
@@ -258,7 +259,10 @@ await describe({
     it({
       name: 'FINDS NO TEXT GROWN IN A LOOP across the package but the accumulators named as reading no text',
       fn: async () => {
-        expect(textGrownInLoops({ files: await readPackageSource(), },),).toEqual(Object.keys(NOT_TEXT,).toSorted(),);
+        expectFindingsAsListed({
+          findings: textGrownInLoops({ files: await readPackageSource(), },),
+          listed: Object.keys(NOT_TEXT,).toSorted(),
+        },);
       },
     },),
   ],

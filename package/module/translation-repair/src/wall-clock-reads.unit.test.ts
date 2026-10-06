@@ -47,6 +47,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Wall clock reads
 // The scan itself: which nodes read the wall clock as a number, and the walk
@@ -367,7 +368,7 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(wallClockReads({ files, },),).toEqual([],);
+        expectNoFindings({ findings: wallClockReads({ files, },), },);
       },
     },),
   ],

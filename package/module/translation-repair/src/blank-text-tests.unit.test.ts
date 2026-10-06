@@ -56,6 +56,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectRecordAsListed, } from './scan-findings.test-fixture.ts';
 
 //region Blank-text tests
 // The scan: which nodes ask whether a text is blank by its bytes, and the walk
@@ -2190,7 +2191,10 @@ await describe({
               held.tests,
             ];
           },),);
-        expect(blankTextTests({ files: await readPackageSource(), },),).toEqual(allowed,);
+        expectRecordAsListed({
+          found: blankTextTests({ files: await readPackageSource(), },),
+          listed: allowed,
+        },);
       },
     },),
   ],

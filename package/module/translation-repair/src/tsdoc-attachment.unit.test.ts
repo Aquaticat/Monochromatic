@@ -45,6 +45,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Tsdoc attachment
 // The scan: which AST node kinds a TSDoc block can document, the offset its
@@ -477,7 +478,7 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(orphanTsdocEntries({ files, },),).toEqual([],);
+        expectNoFindings({ findings: orphanTsdocEntries({ files, },), },);
       },
     },),
   ],

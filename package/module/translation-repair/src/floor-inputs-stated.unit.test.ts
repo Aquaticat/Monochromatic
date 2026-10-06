@@ -43,6 +43,10 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import {
+  expectFindingsAsListed,
+  expectNoFindings,
+} from './scan-findings.test-fixture.ts';
 
 //region Floor inputs
 
@@ -807,13 +811,16 @@ await describe({
          Every omission the scan finds.
          */
         const found = floorInputOmissions({ files, },);
-        expect(found.filter(function outsideMeasurement(omission,): boolean {
-          return !inMeasurementFile({ omission, },);
-        },),).toEqual(NAMED_OMISSIONS
-          .map(function omissionOf(named,): Omission {
-            return named.omission;
-          },)
-          .toSorted(),);
+        expectFindingsAsListed({
+          findings: found.filter(function outsideMeasurement(omission,): boolean {
+            return !inMeasurementFile({ omission, },);
+          },),
+          listed: NAMED_OMISSIONS
+            .map(function omissionOf(named,): Omission {
+              return named.omission;
+            },)
+            .toSorted(),
+        },);
       },
     },),
     it({
@@ -823,11 +830,13 @@ await describe({
          Every omission the scan finds.
          */
         const found = floorInputOmissions({ files: await readPackageSource(), },);
-        expect(Object.keys(MEASUREMENT_FILES,).filter(function stale(path,): boolean {
-          return !found.some(function inFile(omission,): boolean {
-            return omission.startsWith(`${path}#`,);
-          },);
-        },),).toEqual([],);
+        expectNoFindings({
+          findings: Object.keys(MEASUREMENT_FILES,).filter(function stale(path,): boolean {
+            return !found.some(function inFile(omission,): boolean {
+              return omission.startsWith(`${path}#`,);
+            },);
+          },),
+        },);
       },
     },),
   ],

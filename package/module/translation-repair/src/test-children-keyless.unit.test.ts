@@ -47,6 +47,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  Path, relative to `src`, of the one file allowed to start a child.
@@ -250,7 +251,7 @@ await describe({
          Every package file, source among them to be skipped.
          */
         const files = await readPackageSource();
-        expect(childrenStartedApart({ files, },),).toEqual([],);
+        expectNoFindings({ findings: childrenStartedApart({ files, },), },);
         expect(files.some(function isSharedFixture(file,): boolean {
           return file.path === SHARED_FIXTURE;
         },),).toBe(true,);

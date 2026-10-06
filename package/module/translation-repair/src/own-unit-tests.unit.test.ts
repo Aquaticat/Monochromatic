@@ -55,6 +55,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectRecordAsListed, } from './scan-findings.test-fixture.ts';
 
 //region Own-test ratchet scan
 // What a production module classifies as: own-tested, exempt by shape
@@ -901,9 +902,12 @@ await describe({
          */
         const files = await readPackageSource();
         expect(files.length,).toBeGreaterThan(0,);
-        expect(ownTestRatchetFindings({ files, allowlist: ALLOWLIST, },),).toEqual({
-          unlisted: [],
-          stale: [],
+        expectRecordAsListed({
+          found: ownTestRatchetFindings({ files, allowlist: ALLOWLIST, },),
+          listed: {
+            unlisted: [],
+            stale: [],
+          },
         },);
       },
     },),

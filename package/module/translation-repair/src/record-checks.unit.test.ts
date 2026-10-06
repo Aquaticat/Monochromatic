@@ -38,6 +38,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Record checks
 // The scan itself: which nodes compare a `typeof` with `object`, and the walk
@@ -266,12 +267,16 @@ await describe({
          Every check the scan finds.
          */
         const checks = recordChecks({ files, },);
-        expect(checks.filter(function unexempt(check,): boolean {
-          return !EXEMPT_CHECKS.has(check,);
-        },),).toEqual([],);
-        expect([...EXEMPT_CHECKS.keys(),].filter(function stale(exempt,): boolean {
-          return !checks.includes(exempt,);
-        },),).toEqual([],);
+        expectNoFindings({
+          findings: checks.filter(function unexempt(check,): boolean {
+            return !EXEMPT_CHECKS.has(check,);
+          },),
+        },);
+        expectNoFindings({
+          findings: [...EXEMPT_CHECKS.keys(),].filter(function stale(exempt,): boolean {
+            return !checks.includes(exempt,);
+          },),
+        },);
       },
     },),
   ],

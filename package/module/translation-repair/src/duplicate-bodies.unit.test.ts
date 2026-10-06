@@ -36,6 +36,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectFindingsAsListed, } from './scan-findings.test-fixture.ts';
 
 /**
  Shortest body, in normalized characters, the scan compares; the census the
@@ -681,14 +682,17 @@ await describe({
         expect(files.some(function isTestFile(file,): boolean {
           return file.isTest;
         },),).toBe(true,);
-        expect(duplicateGroups({ files, },),).toEqual([
-          ...FROZEN_COPIES,
-          ...GLOBAL_WRITER_COPIES,
-        ]
-          .map(function locationsOf({ locations, },): readonly string[] {
-            return locations.toSorted();
-          },)
-          .toSorted(byFirstLocation,),);
+        expectFindingsAsListed({
+          findings: duplicateGroups({ files, },),
+          listed: [
+            ...FROZEN_COPIES,
+            ...GLOBAL_WRITER_COPIES,
+          ]
+            .map(function locationsOf({ locations, },): readonly string[] {
+              return locations.toSorted();
+            },)
+            .toSorted(byFirstLocation,),
+        },);
       },
     },),
   ],

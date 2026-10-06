@@ -36,6 +36,7 @@ import {
   readPackageSource,
   type SourceText,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Trailing whitespace
 // Lines that end in whitespace outside every template's text, found by reading
@@ -161,7 +162,7 @@ await describe({
     it({
       name: 'FINDS NO LINE ending in whitespace outside a template\'s text across the package\'s source and tests',
       fn: async () => {
-        expect(trailingWhitespaceLines({ files: await readPackageSource(), },),).toEqual([],);
+        expectNoFindings({ findings: trailingWhitespaceLines({ files: await readPackageSource(), },), },);
       },
     },),
   ],

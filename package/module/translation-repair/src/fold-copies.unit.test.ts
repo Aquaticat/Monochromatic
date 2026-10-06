@@ -43,6 +43,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectFindingsAsListed, } from './scan-findings.test-fixture.ts';
 
 /**
  Node kinds that loop.
@@ -601,7 +602,10 @@ await describe({
     it({
       name: 'FINDS NO FOLD COPYING WHAT IT BUILDS across the package but the folds named as bounded or sequential',
       fn: async () => {
-        expect(foldCopies({ files: await readPackageSource(), },),).toEqual(Object.keys(BOUNDED_OR_SEQUENTIAL,).toSorted(),);
+        expectFindingsAsListed({
+          findings: foldCopies({ files: await readPackageSource(), },),
+          listed: Object.keys(BOUNDED_OR_SEQUENTIAL,).toSorted(),
+        },);
       },
     },),
   ],

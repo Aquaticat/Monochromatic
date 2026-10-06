@@ -37,6 +37,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Blank-line splits
 // The scan: string searches and splits handed a blank line, keyed by file,
@@ -286,7 +287,7 @@ await describe({
          */
         const files = await readPackageSource();
         expect(files.length,).toBeGreaterThan(0,);
-        expect(blankLineSplits({ files, },),).toStrictEqual([],);
+        expectNoFindings({ findings: blankLineSplits({ files, },), },);
       },
     },),
   ],

@@ -46,6 +46,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Top-level describe scan
 // The scan: every AwaitExpression wrapping a describe(...) call, kept only
@@ -222,7 +223,7 @@ await describe({
         expect(files.some(function isTestFile({ path, },): boolean {
           return path.endsWith('.test.ts',);
         },),).toBe(true,);
-        expect(multiSuiteTopLevelFiles({ files, },),).toEqual([],);
+        expectNoFindings({ findings: multiSuiteTopLevelFiles({ files, },), },);
       },
     },),
   ],

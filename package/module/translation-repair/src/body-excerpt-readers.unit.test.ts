@@ -32,6 +32,7 @@ import {
   readPackageSource,
   type SourceText,
 } from './source-scan.test-fixture.ts';
+import { expectFindingsAsListed, } from './scan-findings.test-fixture.ts';
 
 /**
  The field this scan holds to its readers.
@@ -102,7 +103,10 @@ await describe({
     it({
       name: 'HOLDS THE FIELD TO THE FILES LISTED WITH A REASON, and lists no file that stopped naming it',
       fn: async () => {
-        expect(filesNaming({ files: await readPackageSource(), },),).toEqual(Object.keys(NAMED_READERS,).toSorted(),);
+        expectFindingsAsListed({
+          findings: filesNaming({ files: await readPackageSource(), },),
+          listed: Object.keys(NAMED_READERS,).toSorted(),
+        },);
       },
     },),
   ],

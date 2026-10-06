@@ -47,6 +47,7 @@ import {
   parseSource,
   readPackageSource,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  Words that close a time with its zone.
@@ -724,9 +725,11 @@ await describe({
         expect(files.some(function isPassLog({ path, },): boolean {
           return path.endsWith('translation-repair-openrouter-2026-09-03.md',);
         },),).toBe(true,);
-        expect(files.flatMap(function inFile(prose,): readonly string[] {
-          return zonelessTimes({ prose, },);
-        },),).toEqual([],);
+        expectNoFindings({
+          findings: files.flatMap(function inFile(prose,): readonly string[] {
+            return zonelessTimes({ prose, },);
+          },),
+        },);
       },
     },),
   ],

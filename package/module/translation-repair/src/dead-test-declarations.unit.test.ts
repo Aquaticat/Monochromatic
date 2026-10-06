@@ -59,6 +59,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Dead top-level declaration scan
 // Each test file's top-level names, read against the identifiers its program
@@ -736,7 +737,7 @@ await describe({
       name: 'FINDS NO TOP-LEVEL DECLARATION NOTHING READS, and no form the scan cannot follow, across the '
         + 'package\'s tests and fixtures',
       fn: async () => {
-        expect(deadTopLevelDeclarations({ files: await readPackageSource(), },),).toEqual([],);
+        expectNoFindings({ findings: deadTopLevelDeclarations({ files: await readPackageSource(), },), },);
       },
     },),
   ],

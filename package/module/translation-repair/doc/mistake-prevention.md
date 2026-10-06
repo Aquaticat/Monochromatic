@@ -435,6 +435,18 @@ unit fixtures stay invented;
 and a session transcript is still neither searched nor quoted,
 since it holds more than the corpus.
 
+A scan's package-wide case compares what it found through a helper of `src/scan-findings.test-fixture.ts`
+(`expectNoFindings` for a list that should be empty,
+`expectFindingsAsListed` for a list that should equal an inventory,
+`expectRecordAsListed` for a record),
+never through `toEqual` or `toStrictEqual` alone:
+the assertion library prints a value longer than forty characters cut to its length
+(`expected [ …(31) ] to deeply equal []`,
+issue 610),
+so a failing scan named nothing it found until its walk ran again in a probe.
+Each helper writes every difference whole on a line of its own,
+then makes the comparison the scan made.
+
 What enforces it:
 habit,
 the control-byte scan in the checklist,
@@ -442,6 +454,11 @@ the coverage census's placement refusal and baseline format check (`requirePlace
 `CENSUS_FORMAT`),
 and the census's refusal of a minified build (`requireUnminifiedBuild`),
 before the suite runs.
+`src/scan-direct-comparisons.unit.test.ts`,
+among the source scans,
+fails on `toEqual` or `toStrictEqual` called on `expect(...)` in a case of a scan the `source-scans` task names
+where the case reads the package's files,
+and on a scan none of whose cases reads them.
 
 ## Claims without their evidence
 

@@ -48,6 +48,10 @@ import {
   readPackageTexts,
   readRepositoryTexts,
 } from './prose-texts.test-fixture.ts';
+import {
+  expectFindingsAsListed,
+  expectNoFindings,
+} from './scan-findings.test-fixture.ts';
 
 /**
  The sign a citation opens with, kept out of this file's own text.
@@ -576,13 +580,18 @@ await describe({
          Every citation found.
          */
         const found = citations({ files, quotations: [], },);
-        expect(found.filter(function isNotAllowed(citation,): boolean {
-          return !GITHUB_ISSUES.has(citedNumber({ citation, },),);
-        },),).toEqual([],);
-        expect([...new Set(found.map(function numberOf(citation,): number {
-          return citedNumber({ citation, },);
-        },),),].toSorted(ascending,),).toEqual([...GITHUB_ISSUES,].toSorted(ascending,),);
-        expect(wordCitations({ files, ranges: [], },),).toEqual([],);
+        expectNoFindings({
+          findings: found.filter(function isNotAllowed(citation,): boolean {
+            return !GITHUB_ISSUES.has(citedNumber({ citation, },),);
+          },),
+        },);
+        expectFindingsAsListed({
+          findings: [...new Set(found.map(function numberOf(citation,): number {
+            return citedNumber({ citation, },);
+          },),),].toSorted(ascending,),
+          listed: [...GITHUB_ISSUES,].toSorted(ascending,),
+        },);
+        expectNoFindings({ findings: wordCitations({ files, ranges: [], },), },);
       },
     },),
     it({
@@ -607,42 +616,57 @@ await describe({
          Every living repository-level doc.
          */
         const files = await readRepositoryTexts();
-        expect([
-          'doc/decision/',
-          'doc/handover/',
-          'doc/planning/',
-          'doc/runbook/',
-          'doc/troubleshooting/',
-        ].filter(function isUnread(kind,): boolean {
-          return !files.some(function isOfKind({ path, },): boolean {
-            return path.startsWith(kind,);
-          },);
-        },),).toEqual([],);
+        expectNoFindings({
+          findings: [
+            'doc/decision/',
+            'doc/handover/',
+            'doc/planning/',
+            'doc/runbook/',
+            'doc/troubleshooting/',
+          ].filter(function isUnread(kind,): boolean {
+            return !files.some(function isOfKind({ path, },): boolean {
+              return path.startsWith(kind,);
+            },);
+          },),
+        },);
         /**
          Every citation outside the quotations.
          */
         const found = citations({ files, quotations: OWNER_QUOTATIONS, },);
-        expect(found.filter(function isNotAllowed(citation,): boolean {
-          return !REPOSITORY_GITHUB_ISSUES.has(citedNumber({ citation, },),);
-        },),).toEqual([],);
-        expect([...new Set(found.map(function numberOf(citation,): number {
-          return citedNumber({ citation, },);
-        },),),].toSorted(ascending,),).toEqual([...REPOSITORY_GITHUB_ISSUES,].toSorted(ascending,),);
-        expect(OWNER_QUOTATIONS.filter(function isGone(quotation,): boolean {
-          return !files.some(function holds({ text, },): boolean {
-            return text.includes(quotation,);
-          },);
-        },),).toEqual([],);
-        expect(TAKEOVER_RANGES.filter(function isGone(range,): boolean {
-          /**
-           The file the stretch belongs to, when it is read.
-           */
-          const file = files.find(function isOfRange({ path, },): boolean {
-            return path === range.path;
-          },);
-          return (file === undefined) || (keptLines({ file, ranges: [range,], },).size === 0);
-        },),).toEqual([],);
-        expect(wordCitations({ files, ranges: TAKEOVER_RANGES, },),).toEqual([],);
+        expectNoFindings({
+          findings: found.filter(function isNotAllowed(citation,): boolean {
+            return !REPOSITORY_GITHUB_ISSUES.has(citedNumber({ citation, },),);
+          },),
+        },);
+        expectFindingsAsListed({
+          findings: [...new Set(found.map(function numberOf(citation,): number {
+            return citedNumber({ citation, },);
+          },),),].toSorted(ascending,),
+          listed: [...REPOSITORY_GITHUB_ISSUES,].toSorted(ascending,),
+        },);
+        expectNoFindings({
+          findings: OWNER_QUOTATIONS.filter(function isGone(quotation,): boolean {
+            return !files.some(function holds({ text, },): boolean {
+              return text.includes(quotation,);
+            },);
+          },),
+        },);
+        expectNoFindings({
+          findings: TAKEOVER_RANGES
+            .filter(function isGone(range,): boolean {
+              /**
+               The file the stretch belongs to, when it is read.
+               */
+              const file = files.find(function isOfRange({ path, },): boolean {
+                return path === range.path;
+              },);
+              return (file === undefined) || (keptLines({ file, ranges: [range,], },).size === 0);
+            },)
+            .map(function named(range,): string {
+              return `${range.path}: ${range.from} to ${range.to}`;
+            },),
+        },);
+        expectNoFindings({ findings: wordCitations({ files, ranges: TAKEOVER_RANGES, },), },);
       },
     },),
   ],

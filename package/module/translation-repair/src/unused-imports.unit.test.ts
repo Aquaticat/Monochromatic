@@ -31,6 +31,7 @@ import {
   type TreeNode,
 } from './source-scan.test-fixture.ts';
 import { isIdentifierCharacter, } from './source-text-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  What opens a TSDoc link.
@@ -242,7 +243,7 @@ await describe({
          */
         const files = await readPackageSource();
         expect(files.length,).toBeGreaterThan(0,);
-        expect(unusedImports({ files, },),).toEqual([],);
+        expectNoFindings({ findings: unusedImports({ files, },), },);
       },
     },),
   ],

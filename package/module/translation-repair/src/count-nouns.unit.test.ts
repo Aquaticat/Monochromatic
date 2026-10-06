@@ -65,6 +65,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Count nouns
 // The scan itself: which nouns the package counts, and which template
@@ -600,12 +601,16 @@ await describe({
           files,
           nouns,
         },);
-        expect(plurals.filter(function unexempt(key,): boolean {
-          return !EXEMPT_COUNTS.has(key,);
-        },),).toEqual([],);
-        expect([...EXEMPT_COUNTS.keys(),].filter(function stale(key,): boolean {
-          return !plurals.includes(key,);
-        },),).toEqual([],);
+        expectNoFindings({
+          findings: plurals.filter(function unexempt(key,): boolean {
+            return !EXEMPT_COUNTS.has(key,);
+          },),
+        },);
+        expectNoFindings({
+          findings: [...EXEMPT_COUNTS.keys(),].filter(function stale(key,): boolean {
+            return !plurals.includes(key,);
+          },),
+        },);
       },
     },),
   ],

@@ -47,6 +47,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectRecordAsListed, } from './scan-findings.test-fixture.ts';
 
 /**
  Specifiers of the module `process` is.
@@ -494,9 +495,12 @@ await describe({
             return path.slice('./src/'.length,);
           },)
           .toSorted();
-        expect(commandLineReads({ files: await readPackageSource(), },),).toEqual({
-          reads: Object.keys(ALLOWED,).toSorted(),
-          handOffs: runners,
+        expectRecordAsListed({
+          found: commandLineReads({ files: await readPackageSource(), },),
+          listed: {
+            reads: Object.keys(ALLOWED,).toSorted(),
+            handOffs: runners,
+          },
         },);
       },
     },),

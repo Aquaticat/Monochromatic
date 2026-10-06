@@ -31,6 +31,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  Fixed-length cuts that stay `.slice`, each as `path#LIMIT`, with why no
@@ -290,12 +291,16 @@ await describe({
          Cuts in the package's source.
          */
         const cuts = fixedLengthCuts({ files: await readPackageSource(), },);
-        expect(cuts.filter(function unlisted(cut,): boolean {
-          return !KEPT_CUTS.has(cut,);
-        },),).toEqual([],);
-        expect([...KEPT_CUTS.keys(),].filter(function gone(cut,): boolean {
-          return !cuts.includes(cut,);
-        },),).toEqual([],);
+        expectNoFindings({
+          findings: cuts.filter(function unlisted(cut,): boolean {
+            return !KEPT_CUTS.has(cut,);
+          },),
+        },);
+        expectNoFindings({
+          findings: [...KEPT_CUTS.keys(),].filter(function gone(cut,): boolean {
+            return !cuts.includes(cut,);
+          },),
+        },);
       },
     },),
   ],

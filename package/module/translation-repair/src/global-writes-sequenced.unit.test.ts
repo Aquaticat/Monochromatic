@@ -58,6 +58,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Global writes
 // The scan: which nodes write a process global, which case each write runs
@@ -865,7 +866,7 @@ await describe({
         expect(files.some(function testFile({ isTest, },): boolean {
           return isTest;
         },),).toBe(true,);
-        expect(unconfinedWrites({ files, },),).toEqual([],);
+        expectNoFindings({ findings: unconfinedWrites({ files, },), },);
       },
     },),
   ],

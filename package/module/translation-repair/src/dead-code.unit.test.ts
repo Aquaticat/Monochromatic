@@ -46,6 +46,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectRecordAsListed, } from './scan-findings.test-fixture.ts';
 
 /**
  Declarations nothing reaches, by kind, each as `path#name`.
@@ -675,13 +676,16 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(deadCode({
-          files,
-          seams: PACKAGE_SEAMS,
-        },),).toEqual({
-          private: [],
-          unreached: [],
-          staleSeams: [],
+        expectRecordAsListed({
+          found: deadCode({
+            files,
+            seams: PACKAGE_SEAMS,
+          },),
+          listed: {
+            private: [],
+            unreached: [],
+            staleSeams: [],
+          },
         },);
       },
     },),

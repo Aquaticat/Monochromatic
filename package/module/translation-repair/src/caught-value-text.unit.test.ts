@@ -60,6 +60,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  Names a caught value goes by outside a catch clause's own binding.
@@ -603,10 +604,12 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(openFindings({
-          files,
-          held: HELD,
-        },),).toEqual([],);
+        expectNoFindings({
+          findings: openFindings({
+            files,
+            held: HELD,
+          },),
+        },);
       },
     },),
   ],

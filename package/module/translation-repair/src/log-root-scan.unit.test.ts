@@ -23,6 +23,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
+
 /**
  Source directory this scan reads, which is the one holding this file.
  */
@@ -144,13 +146,15 @@ await describe({
           return context.length > 0;
         },).length,).toBeGreaterThan(0,);
 
-        expect(scanned
-          .filter(function hasPlainRoot({ plain, },): boolean {
-            return plain.length > 0;
-          },)
-          .map(function named({ name, },): string {
-            return name;
-          },),).toStrictEqual([],);
+        expectNoFindings({
+          findings: scanned
+            .filter(function hasPlainRoot({ plain, },): boolean {
+              return plain.length > 0;
+            },)
+            .map(function named({ name, },): string {
+              return name;
+            },),
+        },);
       },
     },),
   ],

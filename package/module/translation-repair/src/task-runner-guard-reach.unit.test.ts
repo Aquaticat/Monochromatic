@@ -50,6 +50,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Task runner guard reach scan
 // What the tasks of `mise.toml` and the entry files say, read as text and as
@@ -354,18 +355,20 @@ await describe({
               .map(function entryOf([name, path,],): readonly [string, string,] {
                 return [name, path.slice('./src/'.length,),];
               },);
-            expect(taskRunnerFindings({
-              mise: await readFile(
-                join(
-                  import.meta.dirname,
-                  '..',
-                  'mise.toml',
+            expectNoFindings({
+              findings: taskRunnerFindings({
+                mise: await readFile(
+                  join(
+                    import.meta.dirname,
+                    '..',
+                    'mise.toml',
+                  ),
+                  'utf8',
                 ),
-                'utf8',
-              ),
-              entries,
-              files: await readPackageSource(),
-            },),).toEqual([],);
+                entries,
+                files: await readPackageSource(),
+              },),
+            },);
           },
         },),
       ],

@@ -27,6 +27,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  Names of the functions one file exports where it declares them: function
@@ -152,7 +153,7 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(sharedExportedNames({ files, },),).toEqual([],);
+        expectNoFindings({ findings: sharedExportedNames({ files, },), },);
       },
     },),
   ],

@@ -68,6 +68,7 @@ import {
   readPackageTexts,
   readRepositoryTexts,
 } from './prose-texts.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 
 
@@ -232,8 +233,8 @@ await describe({
         expect(files.some(function isLedger({ path, },): boolean {
           return path === 'doc/audit-ledger.md';
         },),).toBe(true,);
-        expect(unexempted({ files, exemptions: PACKAGE_EXEMPTIONS, },),).toEqual([],);
-        expect(staleExemptions({ files, exemptions: PACKAGE_EXEMPTIONS, },),).toEqual([],);
+        expectNoFindings({ findings: unexempted({ files, exemptions: PACKAGE_EXEMPTIONS, },), },);
+        expectNoFindings({ findings: staleExemptions({ files, exemptions: PACKAGE_EXEMPTIONS, },), },);
       },
     },),
     it({
@@ -245,8 +246,8 @@ await describe({
          */
         const files = await readRepositoryTexts();
         expect(files.length,).toBeGreaterThan(0,);
-        expect(unexempted({ files, exemptions: REPOSITORY_EXEMPTIONS, },),).toEqual([],);
-        expect(staleExemptions({ files, exemptions: REPOSITORY_EXEMPTIONS, },),).toEqual([],);
+        expectNoFindings({ findings: unexempted({ files, exemptions: REPOSITORY_EXEMPTIONS, },), },);
+        expectNoFindings({ findings: staleExemptions({ files, exemptions: REPOSITORY_EXEMPTIONS, },), },);
       },
     },),
   ],

@@ -54,6 +54,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Silent case scan
 // Each `it(...)` call read against the suites that hold it, nearest first.
@@ -412,7 +413,7 @@ await describe({
         it({
           name: 'FINDS NO CASE THAT PRINTS NO PASS LINE across the package\'s tests',
           fn: async () => {
-            expect(silentCases({ files: await readPackageSource(), },),).toEqual([],);
+            expectNoFindings({ findings: silentCases({ files: await readPackageSource(), },), },);
           },
         },),
       ],

@@ -48,6 +48,10 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import {
+  expectFindingsAsListed,
+  expectNoFindings,
+} from './scan-findings.test-fixture.ts';
 
 //region Marked message inventory
 
@@ -1116,8 +1120,8 @@ await describe({
       fn: async () => {
         const declared = await scanSource();
 
-        expect(
-          declared
+        expectFindingsAsListed({
+          findings: declared
             .filter(function isMarked(entry,): boolean {
               return entry.marked;
             },)
@@ -1125,7 +1129,8 @@ await describe({
               return entry.name;
             },)
             .toSorted(),
-        ).toEqual(MARKED_CLASSES.toSorted(),);
+          listed: MARKED_CLASSES.toSorted(),
+        },);
       },
     },),
 
@@ -1152,7 +1157,7 @@ await describe({
         // Naming the class and the part rather than a count, because the whole
         // point of a failure here is that a reader has to decide about one
         // specific expression.
-        expect(unnamed,).toEqual([],);
+        expectNoFindings({ findings: unnamed, },);
       },
     },),
 
@@ -1161,8 +1166,8 @@ await describe({
       fn: async () => {
         const declared = await scanSource();
 
-        expect(
-          declared
+        expectNoFindings({
+          findings: declared
             .filter(function isForwarding(entry,): boolean {
               return entry.marked
                 && (!entry.writesOwnSentence)
@@ -1173,7 +1178,7 @@ await describe({
             .map(function named(entry,): string {
               return entry.name;
             },),
-        ).toEqual([],);
+        },);
       },
     },),
 
@@ -1182,8 +1187,8 @@ await describe({
       fn: async () => {
         const declared = await scanSource();
 
-        expect(
-          declared
+        expectFindingsAsListed({
+          findings: declared
             .filter(function isWithheld(entry,): boolean {
               return (!entry.marked) && entry.writesOwnSentence;
             },)
@@ -1191,7 +1196,8 @@ await describe({
               return entry.name;
             },)
             .toSorted(),
-        ).toEqual(Object.keys(WITHHELD,).toSorted(),);
+          listed: Object.keys(WITHHELD,).toSorted(),
+        },);
       },
     },),
 
@@ -1257,20 +1263,25 @@ await describe({
             marked: new Set(MARKED_CLASSES,),
           },);
         },);
-        expect(forwardingLines({ records: found, },),).toEqual(forwardingLines({ records: FORWARDING_SITES, },),);
-        expect(FORWARDING_SITES.flatMap(function unmarkedNarrowing(site,): readonly string[] {
-          if (site.kind !== 'forwards')
-            return [];
-          return (site.narrowedTo.length === 0)
-            ? [`${site.file}: forwards from an unnarrowed catch`,]
-            : site.narrowedTo
-              .filter(function isUnmarked(className,): boolean {
-                return !MARKED_CLASSES.includes(className,);
-              },)
-              .map(function located(className,): string {
-                return `${site.file}: narrowed to unmarked ${className}`;
-              },);
-        },),).toEqual([],);
+        expectFindingsAsListed({
+          findings: forwardingLines({ records: found, },),
+          listed: forwardingLines({ records: FORWARDING_SITES, },),
+        },);
+        expectNoFindings({
+          findings: FORWARDING_SITES.flatMap(function unmarkedNarrowing(site,): readonly string[] {
+            if (site.kind !== 'forwards')
+              return [];
+            return (site.narrowedTo.length === 0)
+              ? [`${site.file}: forwards from an unnarrowed catch`,]
+              : site.narrowedTo
+                .filter(function isUnmarked(className,): boolean {
+                  return !MARKED_CLASSES.includes(className,);
+                },)
+                .map(function located(className,): string {
+                  return `${site.file}: narrowed to unmarked ${className}`;
+                },);
+          },),
+        },);
       },
     },),
   ],

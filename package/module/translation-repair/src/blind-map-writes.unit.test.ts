@@ -43,6 +43,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  Node kinds that open a function.
@@ -430,7 +431,7 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(unnamedBlindWrites({ files, },),).toEqual([],);
+        expectNoFindings({ findings: unnamedBlindWrites({ files, },), },);
       },
     },),
   ],

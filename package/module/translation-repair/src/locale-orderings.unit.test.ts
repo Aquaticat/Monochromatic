@@ -51,6 +51,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 //region Locale orderings
 // The scan itself: which nodes order or case text by the runtime's locale, and
@@ -366,7 +367,7 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(localeReads({ files, },),).toEqual([],);
+        expectNoFindings({ findings: localeReads({ files, },), },);
       },
     },),
     it({
@@ -433,12 +434,16 @@ await describe({
          Every ordering the scan finds, exemptions included.
          */
         const found = codeUnitOrderings({ files, },);
-        expect(found.filter(function unexempt(key,): boolean {
-          return !CODE_UNIT_ORDER_EXEMPTIONS.has(key,);
-        },),).toEqual([],);
-        expect([...CODE_UNIT_ORDER_EXEMPTIONS,].filter(function gone(key,): boolean {
-          return !found.includes(key,);
-        },),).toEqual([],);
+        expectNoFindings({
+          findings: found.filter(function unexempt(key,): boolean {
+            return !CODE_UNIT_ORDER_EXEMPTIONS.has(key,);
+          },),
+        },);
+        expectNoFindings({
+          findings: [...CODE_UNIT_ORDER_EXEMPTIONS,].filter(function gone(key,): boolean {
+            return !found.includes(key,);
+          },),
+        },);
       },
     },),
   ],

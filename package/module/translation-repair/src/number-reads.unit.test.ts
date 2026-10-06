@@ -40,6 +40,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectRecordAsListed, } from './scan-findings.test-fixture.ts';
 
 /**
  Global functions that read a number out of text when called.
@@ -545,7 +546,10 @@ await describe({
               held.calls,
             ];
           },),);
-        expect(numberReads({ files: await readPackageSource(), },),).toEqual(allowed,);
+        expectRecordAsListed({
+          found: numberReads({ files: await readPackageSource(), },),
+          listed: allowed,
+        },);
       },
     },),
   ],

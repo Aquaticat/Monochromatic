@@ -37,6 +37,7 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { expectFindingsAsListed, } from './scan-findings.test-fixture.ts';
 
 /**
  Modules whose listing functions the scan reads.
@@ -188,7 +189,10 @@ await describe({
       name: 'FINDS NO DIRECTORY LISTING across the package but the listing module and the walkers named '
         + 'as needing every kind of entry',
       fn: async () => {
-        expect(directoryListings({ files: await readPackageSource(), },),).toEqual(Object.keys(WALKERS,).toSorted(),);
+        expectFindingsAsListed({
+          findings: directoryListings({ files: await readPackageSource(), },),
+          listed: Object.keys(WALKERS,).toSorted(),
+        },);
       },
     },),
   ],

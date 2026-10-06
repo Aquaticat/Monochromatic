@@ -18,9 +18,10 @@ import {
 
 import {
   describe,
-  expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+
+import { expectRecordAsListed, } from './scan-findings.test-fixture.ts';
 
 /**
  This package's source directory.
@@ -145,15 +146,19 @@ await describe({
          The fixtures' text.
          */
         const fixtures = fixtureText();
-        expect({
-          // The census reads the builders at all: two it must find.
-          readsBuilders: builders.includes('buildCriticMessages',) && builders.includes('buildArchiveBlockReviewMessages',),
-          unrendered: builders.filter(function unrendered(name,): boolean {
-            return !fixtures.includes(`${name}(`,);
-          },),
-        },).toEqual({
-          readsBuilders: true,
-          unrendered: [],
+        expectRecordAsListed({
+          found: {
+            // The census reads the builders at all: two it must find.
+            readsBuilders: builders.includes('buildCriticMessages',)
+              && builders.includes('buildArchiveBlockReviewMessages',),
+            unrendered: builders.filter(function unrendered(name,): boolean {
+              return !fixtures.includes(`${name}(`,);
+            },),
+          },
+          listed: {
+            readsBuilders: true,
+            unrendered: [],
+          },
         },);
       },
     },),

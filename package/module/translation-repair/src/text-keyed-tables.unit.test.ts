@@ -51,6 +51,7 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  First type argument of a type reference, absent when it is given none.
@@ -669,7 +670,7 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(textKeyedTables({ files, },),).toEqual([],);
+        expectNoFindings({ findings: textKeyedTables({ files, },), },);
       },
     },),
   ],

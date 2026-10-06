@@ -20,6 +20,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { exampleFindingsOf, } from './tsdoc-example-scan.test-fixture.ts';
+import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
  A documented function, as the formatter writes one.
@@ -163,7 +164,7 @@ await describe({
               return `${path}:${String(finding.line,)} ${finding.name} ${finding.problem}`;
             },);
         },),)).flat();
-        expect(findings,).toEqual([],);
+        expectNoFindings({ findings, },);
       },
     },),
   ],

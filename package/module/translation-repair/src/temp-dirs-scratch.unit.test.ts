@@ -65,6 +65,10 @@ import {
   type TreeNode,
   unwrapped,
 } from './source-scan.test-fixture.ts';
+import {
+  expectFindingsAsListed,
+  expectNoFindings,
+} from './scan-findings.test-fixture.ts';
 
 //region Temp-dir calls
 
@@ -592,7 +596,10 @@ await describe({
           name: 'FINDS NO DIRECT MKDTEMP OR TMPDIR CALL across the package\'s tests but through scratchDir, the '
             + 'scratchDir fixture itself, and the kept sites `KEPT` names',
           fn: async () => {
-            expect(tempDirCalls({ files: await readPackageSource(), },),).toEqual(Object.keys(KEPT,).toSorted(),);
+            expectFindingsAsListed({
+              findings: tempDirCalls({ files: await readPackageSource(), },),
+              listed: Object.keys(KEPT,).toSorted(),
+            },);
           },
         },),
       ],
@@ -661,7 +668,7 @@ await describe({
         it({
           name: 'FINDS NO SCRATCHDIR CALL across the package\'s tests left unbound by await using',
           fn: async () => {
-            expect(unboundScratchDirCalls({ files: await readPackageSource(), },),).toEqual([],);
+            expectNoFindings({ findings: unboundScratchDirCalls({ files: await readPackageSource(), },), },);
           },
         },),
       ],
