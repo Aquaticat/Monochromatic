@@ -40,6 +40,28 @@ answer the questions in `Question batches`,
 and veto any item under `Settled by evidence` whose answer is not the one wanted.
 A settled item is adopted without a question unless it is vetoed.
 
+## Outcome
+
+Every question in this brief is now decided,
+so none of them is open any more,
+even where an item section below still reads "Needs the owner".
+The answers are recorded in [`cli-git-rust-implementation.md`](../handover/cli-git-rust-implementation.md),
+section `User decisions 2026-10-05`:
+the owner answered the optional-policy batch and four transactions-phase questions
+(signals, the exit status of a signaled Git, and the hook entries on Unix and on Windows),
+and asked on 2026-10-06 that a clearly dominant option be adopted without a question for that session.
+Every other item was adopted on that basis,
+each with its reason and open to the owner's veto,
+in the subsection `Adopted without a question`.
+That subsection departs from this brief's ranking once:
+the whole native test suite runs on hosted macOS and Windows runners.
+Items under `Settled by evidence` stand as written,
+except recovery before read-only commands,
+whose adopted form keeps commands that start no Git process exempt.
+
+An implementation reading this brief takes the answer from that subsection,
+not from the ranking in the item section.
+
 ## Sources and conventions
 
 Source:
