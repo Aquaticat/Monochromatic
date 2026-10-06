@@ -533,14 +533,23 @@ arg "[only]" help="Comma-separated guard names to run; default is every guard"
 run = "node bin/inspect-language-guards.mjs"
 
 [tasks."inspect:language-lifecycle-guards"]
-description = "Observe the quiet-lifetime regressions failing in a disposable copy: without a fix, with a server that writes to standard error, and with the worker's shutdown request, wait, or reaping removed"
+description = "Observe the quiet-lifetime and logging regressions failing in a disposable copy: each helix-lsp re-labelling removed or widened, a full log queue that waits, and the worker's shutdown request, wait, or reaping removed"
 usage = '''
 arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
-arg "[helix]" help="Fresh disposable clone of Helix at the pinned revision; adds the prototype control for helix-lsp's end-of-stream record"
-arg "[only]" help="Run one part only: sources (the package's own controls) or helix (the prototype); default is both"
+arg "[only]" help="Comma-separated case names to run; default is every case"
 '''
 run = "node bin/inspect-language-lifecycle-guards.mjs"
+
+[tasks."inspect:log-stall"]
+description = "Check in the nested compositor that a reader that stops reading the IDE's log does not freeze the window, and that the synchronous writer it replaced does (guard control)"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[seconds]" help="Length of each measurement while keys move the caret; default 30"
+arg "[port]" help="Slint MCP port of the IDE under test; default 9408"
+'''
+run = "node bin/inspect-log-stall.mjs"
 
 [tasks."inspect:language-reap-rate"]
 description = "Count, in a disposable copy and a bounded container, how often a lifetime test finds a server process left as a zombie or still running, with the worker's reaping and with the fixed pause it replaced"

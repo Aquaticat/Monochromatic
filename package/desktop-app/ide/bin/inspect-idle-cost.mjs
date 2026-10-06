@@ -34,8 +34,8 @@ const runs = positive('runs', '3');
 const folderCounts = (process.env.usage_folders ?? '1,12,100').split(',').map(Number);
 if (folderCounts.some(count => !Number.isInteger(count) || count < 1 || count > 200)) throw new Error('folders must be whole numbers from 1 to 200');
 
-// The IDE writes its log from the UI thread, so a log on a busy disk stalls the IDE for as long as one
-// write blocks. The live log therefore goes to memory-backed storage and is copied to the artifact after.
+// The IDE writes its log from a writer thread, but a log on a busy disk still delays the records this
+// measurement times. The live log therefore goes to memory-backed storage and is copied to the artifact after.
 const TMPFS_MAGIC = 0x01021994;
 const liveRoot = process.env.XDG_RUNTIME_DIR;
 if (!liveRoot || (statSync(liveRoot).mode & 0o077) !== 0 || statfsSync(liveRoot).type !== TMPFS_MAGIC) throw new Error('XDG_RUNTIME_DIR must name a private memory-backed directory for the live session logs');
@@ -94,7 +94,9 @@ const fontConfig = join(artifact, 'fonts.conf');
 writeFileSync(fontConfig, '<fontconfig><dir>/usr/share/fonts</dir><cachedir prefix="xdg">fontconfig</cachedir></fontconfig>');
 for (const name of ['config', 'cache', 'data']) mkdirSync(join(artifact, name));
 const runtime = [join(origin, 'target/debug/runtime'), join(cache, 'debug/runtime')].find(existsSync);
-const environment = { ...process.env, SLINT_BACKEND: 'winit', FONTCONFIG_FILE: fontConfig, XDG_CONFIG_HOME: join(artifact, 'config'), XDG_CACHE_HOME: join(artifact, 'cache'), XDG_DATA_HOME: join(artifact, 'data') };
+// The IDE logs warnings only unless RUST_LOG asks for more; this measurement reads its debug records and the
+// compositor's close records, and both programs read RUST_LOG.
+const environment = { ...process.env, SLINT_BACKEND: 'winit', FONTCONFIG_FILE: fontConfig, XDG_CONFIG_HOME: join(artifact, 'config'), XDG_CACHE_HOME: join(artifact, 'cache'), XDG_DATA_HOME: join(artifact, 'data'), RUST_LOG: 'nested_wayland_session=info,ide_app=debug,monochromatic_ide=debug' };
 if (runtime) environment.HELIX_RUNTIME = runtime;
 delete environment.SLINT_MCP_PORT;
 
