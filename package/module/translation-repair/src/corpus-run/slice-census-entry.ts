@@ -25,7 +25,10 @@ import {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
 } from '../slice-pair.ts';
-import type { PairingRecipe, } from './artifact-two-lane-rebuild.ts';
+import {
+  type PairingRecipe,
+  pairingSetAsideSentence,
+} from './artifact-two-lane-rebuild.ts';
 
 /**
  Logger root for the slice census.
@@ -410,8 +413,7 @@ function measureCarve(
         sourceText,
         targetText,
       },),
-      pairingRefusal: `the recorded block pairing does not fit the text carved (${refusal}), so every section's `
-        + 'blocks were carved by the deterministic aligner',
+      pairingRefusal: pairingSetAsideSentence({ refusal, },),
     };
   }
 }

@@ -272,6 +272,27 @@ export function recipeOf(
 }
 
 /**
+ Says why a recorded block pairing was set aside and what carved the blocks
+ instead, in the one wording the rebuild and the slice census both give, so
+ an artifact read by either answers with the same sentence.
+
+ @param refusal - why the recorded pairing does not fit the text carved
+
+ @returns The sentence a `moved` rebuild and a `settled-moved` census row carry
+
+ @example
+ ```ts
+ const detail = pairingSetAsideSentence({ refusal: 'pairing names translation block 5, and there are 4', },);
+ ```
+ */
+export function pairingSetAsideSentence(
+  { refusal, }: { readonly refusal: string; },
+): string {
+  return `the recorded block pairing does not fit the text carved (${refusal}), so every section's `
+    + 'blocks were carved by the deterministic aligner';
+}
+
+/**
  Carves a document pair with the recipe a settled artifact records.
 
  CARVES OVER THE ARCHIVE THE ARTIFACT STORED (ledger A18). A pass reshapes
@@ -414,8 +435,7 @@ export function rebuildPreparation(
       unrecorded,
       reproduction: {
         kind: 'moved',
-        detail: `the recorded block pairing does not fit the text carved (${refusal}), so every section's `
-          + 'blocks were carved by the deterministic aligner',
+        detail: pairingSetAsideSentence({ refusal, },),
       },
     };
   }

@@ -7,7 +7,10 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { wordForCount, } from './count-word.ts';
 import { wholeOpening, } from './code-points.ts';
 import { encodeImageAsset, } from './image-asset.ts';
-import { readingMakesSense, } from './image-reading-sense.ts';
+import {
+  readingMakesSense,
+  solidCharacters,
+} from './image-reading-sense.ts';
 import { readsImages, } from './roster-reach.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -377,10 +380,16 @@ export async function readImageAsset(
       reason: verdict.clause,
     };
   }
+  /**
+   Length the log reports, in the solid characters the verdict counted
+   (non-whitespace code points), so the number and the verdict never read
+   one reading in two counts.
+   */
+  const solid = solidCharacters({ text: trimmed, },);
   if (verdict.kind === 'short') {
-    rl.info(`${modelId} read ${assetName}: ${String(trimmed.length,)} ${
+    rl.info(`${modelId} read ${assetName}: ${String(solid,)} ${
       wordForCount({
-        count: trimmed.length,
+        count: solid,
         one: 'character',
         many: 'characters',
       },)
@@ -391,12 +400,15 @@ export async function readImageAsset(
     };
   }
 
-  // TRIMMED, AS THE SHORT BRANCH IS. Xu_Yushu1 (2026-09-26): a reader padded
+  // SOLID, AS THE SHORT BRANCH IS. Xu_Yushu1 (2026-09-26): a reader padded
   // 27 characters with about 2,700 ideographic spaces, and the untrimmed
   // length logged "2753 characters" for what the verdict had judged as 28.
-  rl.info(`${modelId} read ${assetName}: ${String(trimmed.length,)} ${
+  // Trimming fixed that, and counting the verdict's own way fixes the rest:
+  // inner whitespace and astral characters (two UTF-16 units) still moved the
+  // trimmed length away from the count the verdict used.
+  rl.info(`${modelId} read ${assetName}: ${String(solid,)} ${
     wordForCount({
-      count: trimmed.length,
+      count: solid,
       one: 'character',
       many: 'characters',
     },)

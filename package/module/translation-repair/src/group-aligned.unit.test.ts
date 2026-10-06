@@ -45,8 +45,6 @@ import {
   parseDocument,
   prepareDocumentPair,
   sealedNodeIds,
-  UnplacedTranslationBlocksError,
-  refusalText,
 } from '../dist/final/node/index.mjs';
 import { groupWithNothingSealed, } from './group-aligned.test-fixture.ts';
 
@@ -298,6 +296,16 @@ const LETTER_SOURCE = 'Dear cat, come home.\n';
  Archive with a shop greeting ahead of the sealing note and the letter after it.
  */
 const GREETED_ARCHIVE = `A note from the shop.\n\n${SEALING_NOTE}\n\nDear cat, come home.\n`;
+
+/**
+ Original whose heading has no translation, followed by four paragraphs.
+ */
+const HEADED_SOURCE = '## Cats\n\nThe tabby naps.\n\nThe kitten purrs.\n\nThe cat stretches.\n\nThe whiskers twitch.\n';
+
+/**
+ Archive with a heading ahead of the sealing note and one sealed paragraph after it.
+ */
+const HEADED_ARCHIVE = `## Gatos\n\n${SEALING_NOTE}\n\nThe tabby naps in the sun.\n`;
 
 /**
  Archive whose greeting has an original of its own beside it, ahead of the note.
@@ -1136,6 +1144,7 @@ await describe({
                 },
               ],
               sealedSourceIds: new Set<string>(),
+              unplacedTargetIds: new Set<string>(),
             },);
           },
         },),
@@ -1278,53 +1287,138 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'REFUSES a translation block ahead of the sealing note that no paired run can take, naming the block '
-            + 'and why nothing takes it, where it was dropped without a word',
+          name: 'CARRIES a translation block ahead of the sealing note that no paired run can take as unplaced, '
+            + 'with no run for it and the letter\'s original sealed',
           fn: async () => {
             /**
-             What grouping the page refused with.
+             What grouping the page answers.
              */
-            const refusal = caught(function groupsThePage(): unknown {
-              return groupSealedPage({
-                sourceText: LETTER_SOURCE,
-                targetText: GREETED_ARCHIVE,
-              },);
+            const {
+              runs,
+              sealedSourceIds,
+              unplacedTargetIds,
+            } = groupSealedPage({
+              sourceText: LETTER_SOURCE,
+              targetText: GREETED_ARCHIVE,
             },);
-            expect(refusal,).toBeInstanceOf(UnplacedTranslationBlocksError,);
-            expect(String(refusal,),).toBe(
-              'UnplacedTranslationBlocksError: translation block block/0 can join no run: no paired run stands before '
-              + 'it, and the sealed run after it takes nothing in, so the section would leave it out of every slice',
-            );
-            expect(refusalText({ error: refusal, },),).toBe(
-              'translation block block/0 can join no run: no paired run stands before it, and the sealed run after it '
-              + 'takes nothing in, so the section would leave it out of every slice',
-            );
+            expect({
+              runs,
+              sealedSourceIds: [...sealedSourceIds,],
+              unplacedTargetIds: [...unplacedTargetIds,],
+            },).toStrictEqual({
+              runs: [],
+              sealedSourceIds: ['block/0',],
+              unplacedTargetIds: ['block/0',],
+            },);
           },
         },),
 
         it({
-          name: 'REFUSES the same page through prepareDocumentPair in the grouping\'s words, not as a block that '
-            + 'reached no slice',
+          name: 'PREPARES the same page through prepareDocumentPair with the greeting kept as the archive has it, '
+            + 'handed to the block correction round and named in a finding by its id',
           fn: async () => {
             /**
-             What preparing the page refused with.
+             What preparing the page answers.
              */
-            const refusal = caught(function preparesThePage(): unknown {
-              return prepareDocumentPair({
-                sourceText: LETTER_SOURCE,
-                targetText: GREETED_ARCHIVE,
-                sealArchiveOriginal: true,
-              },);
+            const prepared = prepareDocumentPair({
+              sourceText: LETTER_SOURCE,
+              targetText: GREETED_ARCHIVE,
+              sealArchiveOriginal: true,
             },);
-            expect(refusal,).toBeInstanceOf(UnplacedTranslationBlocksError,);
-            expect(String(refusal,),).toBe(
-              'UnplacedTranslationBlocksError: translation block block/0 can join no run: no paired run stands before '
-              + 'it, and the sealed run after it takes nothing in, so the section would leave it out of every slice',
-            );
-            expect(refusalText({ error: refusal, },),).toBe(
-              'translation block block/0 can join no run: no paired run stands before it, and the sealed run after it '
-              + 'takes nothing in, so the section would leave it out of every slice',
-            );
+            expect({
+              slices: prepared.slices,
+              unclaimedTargetBlocks: prepared.unclaimedTargetBlocks,
+              alignmentFindings: prepared.alignmentFindings,
+            },).toStrictEqual({
+              slices: [],
+              unclaimedTargetBlocks: [
+                {
+                  location: { kind: 'aligned-pair', pairIndex: 0, },
+                  blockId: 'block/0',
+                  startOffset: 0,
+                  endOffset: 21,
+                },
+              ],
+              alignmentFindings: [
+                'alignment archive-original (pair 0: 1 translation block and 1 original block sealed by the archive\'s '
+                + 'note, shipped as the archive has them: block/1)',
+                'alignment target-unplaced (pair 0: 1 translation block no run could take, 21 characters: block/0)',
+              ],
+            },);
+          },
+        },),
+
+        it({
+          name: 'PREPARES a page whose heading ahead of the sealing note is unpaired and whose later originals follow '
+            + 'the seal, keeping the heading out of every run that stands after the seal',
+          fn: async () => {
+            /**
+             What preparing the page answers.
+             */
+            const prepared = prepareDocumentPair({
+              sourceText: HEADED_SOURCE,
+              targetText: HEADED_ARCHIVE,
+              sealArchiveOriginal: true,
+              blockPairings: new Map([
+                [
+                  0,
+                  [
+                    { source: 1, target: 1, },
+                    { source: 3, target: 1, },
+                  ],
+                ],
+              ],),
+            },);
+            expect({
+              slices: prepared.slices.map(function toPlacement(slice,): unknown {
+                return {
+                  source: slice.source.nodes.map(function toId(node,): string {
+                    return node.id;
+                  },),
+                  target: slice.target.nodes.map(function toId(node,): string {
+                    return node.id;
+                  },),
+                  start: slice.target.startOffset,
+                  end: slice.target.endOffset,
+                };
+              },),
+              unclaimedTargetBlocks: prepared.unclaimedTargetBlocks,
+              alignmentFindings: prepared.alignmentFindings,
+            },).toStrictEqual({
+              slices: [
+                {
+                  source: ['block/0',],
+                  target: [],
+                  start: 44,
+                  end: 44,
+                },
+                {
+                  source: ['block/2', 'block/3',],
+                  target: [],
+                  start: 70,
+                  end: 70,
+                },
+                {
+                  source: ['block/4',],
+                  target: [],
+                  start: 70,
+                  end: 70,
+                },
+              ],
+              unclaimedTargetBlocks: [
+                {
+                  location: { kind: 'aligned-pair', pairIndex: 0, },
+                  blockId: 'block/0',
+                  startOffset: 0,
+                  endOffset: 8,
+                },
+              ],
+              alignmentFindings: [
+                'alignment archive-original (pair 0: 1 translation block and 1 original block sealed by the archive\'s '
+                + 'note, shipped as the archive has them: block/1)',
+                'alignment target-unplaced (pair 0: 1 translation block no run could take, 8 characters: block/0)',
+              ],
+            },);
           },
         },),
 

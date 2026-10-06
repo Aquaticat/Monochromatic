@@ -18,6 +18,7 @@ import {
   RESOLUTION_RESPONSE_FORMAT,
 } from './resolution-wire.ts';
 import { logBallotIrregularities, } from './ballot-irregularity-log.ts';
+import { inRosterOrder, } from './refine-stage-replies.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
@@ -171,11 +172,26 @@ export async function runCheckerStage(
     l,
   },);
 
+  // ROSTER ORDER, NOT THE GATHER'S. `gatherStageVoices` hands voices back by
+  // the retry round that heard them, then by the prompt's rotation of the
+  // bench, so one input read twice ordered its findings and its readings
+  // differently whenever a seat lost its first answer and was heard on a retry
+  // (probed: three seats, all heard, findings in two orders). Every step of this
+  // function reads this list, so the ballots, the findings, the readings and the log
+  // lines all follow the roster.
+  /**
+   Heard checkers in the order the roster seats them.
+   */
+  const heard = inRosterOrder({
+    replies: gather.voices,
+    roster: checkerModelIds,
+  },);
+
   /**
    Resolved ballots keyed by checker id.
    */
   const ballots: Record<string, ResolutionBallot> = Object.fromEntries(
-    gather.voices
+    heard
       .map(function toEntry(voice,): readonly [
         string,
         ResolutionBallot,
@@ -232,7 +248,7 @@ export async function runCheckerStage(
         return [
           issueId,
           {
-            ballots: gather.voices
+            ballots: heard
               .flatMap(function toBallot(voice,): readonly IssueCheckerBallot[] {
                 /**
                  This checker's answer, absent where its ballot skipped this

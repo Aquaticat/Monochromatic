@@ -21,6 +21,7 @@ export {
 } from './openrouter-endpoint.ts';
 export {
   InStreamProviderError,
+  InStreamRefusalError,
   openRouterStreamErrorOf,
   requireNoStreamError,
   STREAM_ERROR_ABSENT,

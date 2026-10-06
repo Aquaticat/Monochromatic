@@ -39,9 +39,9 @@ function archiveWasEndorsed(
 
  @returns One finding per slice standing without endorsement, empty when none
 
- @throws Error when the artifact records its contest as other than contested,
- which no persisted artifact does: `settledEntryArtifact` writes the kind as a
- literal
+ @throws Error when the artifact records its contest as other than contested
+ or its consolidation as other than settled, which no persisted artifact does:
+ `settledEntryArtifact` writes both kinds as literals
 
  @example
  ```ts
@@ -79,24 +79,31 @@ export function finalSelectionFindings(
     );
 
   /**
+   Consolidation and optional polish records final reading derives from.
+   */
+  const { consolidation, } = artifact;
+
+  // LOUD FOR THE CONSOLIDATION TOO, for the same reason. Polish wording exists
+  // only inside a settled consolidation (`would-ship-text.ts` reads polish only
+  // there), and `settledEntryArtifact` writes the kind as `settled`, so a
+  // consolidation that never ran stands on no polish verdict at all, and
+  // reading it as having none would pass an unreviewed polish as reviewed.
+  // `assertFinalNaturalnessComplete` refuses the same state out loud.
+  if (consolidation.kind !== 'settled')
+    throw new Error(
+      `unreachable: the artifact handed to persistence records its consolidation as ${consolidation.kind}, though `
+        + 'settledEntryArtifact, its one writer, records it as settled',
+    );
+
+  /**
    Contest records, one per slice the contest ran over.
    */
   const contests = laneSelection.slices;
 
   /**
-   Consolidation and optional polish records final reading derives from.
+   Consolidation records the final reading derives from.
    */
-  const { consolidation, } = artifact;
-
-  /**
-   Consolidation records the final reading derives from, none where the stage
-   never ran: polish wording exists only inside a settled consolidation
-   (`would-ship-text.ts` reads polish only there), so an empty list is the
-   honest reading anywhere else.
-   */
-  const consolidatedSlices = (consolidation.kind === 'settled')
-    ? consolidation.slices
-    : [];
+  const consolidatedSlices = consolidation.slices;
 
   /**
    Slices where archive would stand despite no contest endorsement.

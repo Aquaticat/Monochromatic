@@ -642,17 +642,16 @@ function walkIntoRuns(
 
  @param sealed - ids of translation blocks that ship as they stand
 
- @returns Runs covering every unsealed block on both sides exactly once,
- beside the ids of the originals the sealed blocks took with them
+ @returns Runs covering every unsealed block on both sides exactly once but
+ for the translation blocks no run could take, beside the ids of the originals
+ the sealed blocks took with them and the ids of those translation blocks. Those
+ translation blocks reach no run and ship as the archive has them
 
  @throws Error when a step names a block its side lacks, in `blockAtStep`'s
  words, or no step names a block of a side: `blockPairingToSteps` refuses a
  pairing that would build the first and names every block of both sides,
  and `alignBlocks` walks every block, so only a walk built another way can
  carry either
-
- @throws `UnplacedTranslationBlocksError` (`group-merge.ts`) when a seal stands in the
- section and translation blocks ahead of it have no paired run to join
 
  @example
  ```ts
@@ -684,6 +683,7 @@ export function groupNodesSealed(
 ): {
   readonly runs: readonly AlignedRun[];
   readonly sealedSourceIds: ReadonlySet<string>;
+  readonly unplacedTargetIds: ReadonlySet<string>;
 } {
   // A SUPPLIED PAIRING WINS, because it came from models that read both texts
   // while `alignBlocks` scores kind, script-neutral tokens and length. On this
@@ -717,8 +717,17 @@ export function groupNodesSealed(
   /**
    Settled runs, sealed ones still standing where they were for the anchors.
    */
-  const settled = reanchorInsertions({ runs: mergeOneSidedRuns({ runs: open, },), },);
+  const {
+    runs: merged,
+    unplacedTargetIds,
+  } = mergeOneSidedRuns({ runs: open, },);
+
+  /**
+   Merged runs with their insertion anchors settled.
+   */
+  const settled = reanchorInsertions({ runs: merged, },);
   return {
+    unplacedTargetIds: new Set(unplacedTargetIds,),
     runs: settled.filter(function ships(run,): run is AlignedRun {
       return run.kind !== 'sealed';
     },),

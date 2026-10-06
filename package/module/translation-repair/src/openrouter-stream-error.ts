@@ -1,3 +1,4 @@
+import { SyntheticHttpError, } from './completion-shape.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 import { openRouterEndpointOf, } from './openrouter-endpoint.ts';
@@ -64,6 +65,30 @@ const UNNAMED = 'unnamed';
  forwarded no native reason for it.
  */
 const ERROR_FINISH_KIND = 'error-finish';
+
+/**
+ Lowest status of the 4xx class, which the gateway's error code mirrors
+ (OpenRouter's errors page, read 2026-10-06: the code is the HTTP status the
+ failure would have carried).
+ */
+const FIRST_CLIENT_ERROR_CODE = 400;
+
+/**
+ First status past the 4xx class.
+ */
+const FIRST_SERVER_ERROR_CODE = 500;
+
+/**
+ Request Timeout, a 4xx code that is weather rather than a refusal: the
+ retry ladder retries it over plain HTTP, so it stays retried here.
+ */
+const REQUEST_TIMEOUT_CODE = 408;
+
+/**
+ Too Many Requests, a 4xx code that is weather rather than a refusal, kept
+ retried here as the ladder retries it over plain HTTP.
+ */
+const TOO_MANY_REQUESTS_CODE = 429;
 
 /**
  What one stream's error chunk said, reduced to names.
@@ -161,6 +186,73 @@ export class InStreamProviderError extends Error {
 }
 
 /**
+ Raised when a success-status stream carried an error chunk whose code is a
+ 4xx status the retry ladder does not retry over plain HTTP: the gateway
+ refused the request itself, and repeating it meets the same refusal.
+
+ THE HTTP REFUSAL IT STANDS FOR: a subclass of {@link SyntheticHttpError}
+ carrying the code as its status, so the ladder returns it unretried as it
+ returns the plain HTTP reply, and a caller branching on the status (a 402
+ holds the provider out) reads it as it reads the plain one. A 408 or 429
+ chunk is not this class: those ride the ladder as before, as
+ {@link InStreamProviderError}.
+
+ @example
+ ```ts
+ throw new InStreamRefusalError({ code: 400, errorType: 'invalid_request', endpoint: 'ModelRun', },);
+ ```
+ */
+export class InStreamRefusalError extends SyntheticHttpError {
+  /**
+   Declares this message safe to forward: it carries a code, a failure kind
+   and an endpoint's display name, never the upstream's text.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Upstream the gateway named as serving the call, or that it named none.
+   */
+  readonly endpoint: string;
+
+  /**
+   Names the refusal the stream carried.
+
+   @param code - 4xx status the gateway reported, which is also this error's status
+
+   @param errorType - gateway's failure kind, or that none was named
+
+   @param endpoint - upstream display name, or that none was named
+
+   @example
+   ```ts
+   throw new InStreamRefusalError({ code: 402, errorType: 'payment_required', endpoint: 'ModelRun', },);
+   ```
+   */
+  constructor(
+    {
+      code,
+      errorType,
+      endpoint,
+    }: {
+      readonly code: number;
+      readonly errorType: string;
+      readonly endpoint: string;
+    },
+  ) {
+    super({
+      status: code,
+      bodyText: '',
+      excerpt: 'withheld',
+      summary: `stream carried a refusal of the request itself instead of a completion: code ${String(code,)}, `
+        + `type ${errorType}, served by ${endpoint}; the gateway had already sent a success status, `
+        + 'and repeating the request meets the same refusal',
+    },);
+    this.name = 'InStreamRefusalError';
+    this.endpoint = endpoint;
+  }
+}
+
+/**
  Reads the failure a stream's error chunk carried, if any chunk carried one.
 
  THE FIRST ERROR CHUNK WINS, as the endpoint reader's first name does: the
@@ -253,8 +345,11 @@ export function openRouterStreamErrorOf(
 
  @param bodyText - whole drained `text/event-stream` body
 
- @throws {@link InStreamProviderError} when a chunk carried an error object
- or a choice stopped on an error finish
+ @throws {@link InStreamRefusalError} when the error object's code is a 4xx
+ status other than 408 and 429, which no retry changes
+
+ @throws {@link InStreamProviderError} when a chunk carried any other error
+ object or a choice stopped on an error finish
 
  @example
  ```ts
@@ -269,6 +364,16 @@ export function requireNoStreamError(
    */
   const reading = openRouterStreamErrorOf({ bodyText, },);
   if (reading.found) {
+    if (((typeof reading.code) === 'number')
+      && (reading.code >= FIRST_CLIENT_ERROR_CODE)
+      && (reading.code < FIRST_SERVER_ERROR_CODE)
+      && (reading.code !== REQUEST_TIMEOUT_CODE)
+      && (reading.code !== TOO_MANY_REQUESTS_CODE))
+      throw new InStreamRefusalError({
+        code: reading.code,
+        errorType: reading.errorType,
+        endpoint: reading.endpoint,
+      },);
     throw new InStreamProviderError({
       code: reading.code,
       errorType: reading.errorType,

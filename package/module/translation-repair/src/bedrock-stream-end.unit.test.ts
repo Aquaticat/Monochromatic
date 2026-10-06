@@ -18,6 +18,8 @@ import {
 
 import {
   extractStreamedCompletion,
+  InStreamProviderError,
+  InStreamRefusalError,
   MalformedCompletionError,
   requireBedrockStreamEnd,
   withDoneSentinel,
@@ -37,6 +39,22 @@ const USAGE_CHUNK = 'data: {"choices":[],"usage":{"prompt_tokens":98,"completion
  Gemma route stream: content, usage, sentinel.
  */
 const GEMMA_STREAM = `${CONTENT_CHUNK}${USAGE_CHUNK}data: [DONE]\n\n`;
+
+/**
+ Error chunk an OpenAI-shaped stream ends on when the call failed.
+
+ @param code - status the chunk reports
+
+ @returns Framed error event
+
+ @example
+ ```ts
+ const chunk = errorChunk({ code: 400, },);
+ ```
+ */
+function errorChunk({ code, }: { readonly code: number; },): string {
+  return `data: ${JSON.stringify({ error: { code, message: 'the sill refused', metadata: { error_type: 'invalid_request', }, }, },)}\n\n`;
+}
 
 /**
  gpt-oss route stream: content, usage, nothing more.
@@ -85,6 +103,42 @@ await describe({
                 streamEnd: 'usage-chunk',
               },);
             },).toThrow(MalformedCompletionError,);
+          },
+        },),
+
+        it({
+          name: 'NAMES AN ERROR CHUNK on either route by its cause, a refusal for a 4xx code and a provider '
+            + 'failure for any other, where both read as a stream cut off before its end',
+          fn: async () => {
+            /**
+             What each route and code ended with.
+             */
+            const ended: Record<string, string> = {};
+            for (const streamEnd of ['done-sentinel', 'usage-chunk',] as const) {
+              for (const code of [400, 503,]) {
+                try {
+                  requireBedrockStreamEnd({
+                    bodyText: `${CONTENT_CHUNK}${errorChunk({ code, },)}`,
+                    streamEnd,
+                  },);
+                  ended[`${streamEnd} ${String(code,)}`] = 'accepted';
+                } catch (error) {
+                  ended[`${streamEnd} ${String(code,)}`] = (error instanceof InStreamRefusalError)
+                    ? 'refusal'
+                    : (error instanceof InStreamProviderError)
+                    ? 'provider failure'
+                    : (error instanceof MalformedCompletionError)
+                    ? 'cut off'
+                    : String(error,);
+                }
+              }
+            }
+            expect(ended,).toStrictEqual({
+              'done-sentinel 400': 'refusal',
+              'done-sentinel 503': 'provider failure',
+              'usage-chunk 400': 'refusal',
+              'usage-chunk 503': 'provider failure',
+            },);
           },
         },),
 

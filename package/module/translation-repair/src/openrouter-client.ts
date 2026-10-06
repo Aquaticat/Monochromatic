@@ -160,8 +160,12 @@ export type OpenRouterClient = ModelCaller & {
 
  @param attemptReply - one attempt's reply, read before the ladder returns it
 
- @throws InStreamProviderError - when a success body carries the gateway's
- error chunk, which puts the failed call on the retry path under its own name
+ @throws InStreamRefusalError - when a success body carries the gateway's
+ error chunk with a 4xx code other than 408 and 429, which the ladder
+ returns unretried as it returns the same refusal over plain HTTP
+
+ @throws InStreamProviderError - when a success body carries any other error
+ chunk, which puts the failed call on the retry path under its own name
 
  @throws MalformedCompletionError - when a success body stops before
  `[DONE]`, which is what puts a truncated stream on the retry path

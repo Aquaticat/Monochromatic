@@ -285,10 +285,19 @@ export function createBedrockClient(
     const streamBoundMs = streamBoundMsOverride ?? catalogBoundMs;
 
     /**
-     Refuses a success reply whose stream never ended the way this route
-     ends, so the ladder retries the attempt as the transport failure it is.
+     Refuses a success reply whose stream carried an error chunk or never
+     ended the way this route ends, so the ladder retries the attempt as the
+     transport failure it is, or returns a refusal of the request unretried.
 
      @param attemptReply - one attempt's reply, read before the ladder returns it
+
+     @throws InStreamRefusalError - when the stream carries an error chunk
+     with a 4xx code other than 408 and 429
+
+     @throws InStreamProviderError - when the stream carries any other error
+     chunk
+
+     @throws MalformedCompletionError - when the stream stops before its end
      */
     function wholeMessage(attemptReply: TransportReply,): void {
       if (!isSuccessStatus({ status: attemptReply.status, },))

@@ -118,11 +118,13 @@ function runToChunk(
  reach no slice and take the originals paired to them along
 
  @returns Slice pairs covering both sides of the section completely but for
- the sealed blocks, beside the ids of the originals sealed with them
+ the sealed blocks, beside the ids of the originals sealed with them and the
+ ids of the translation blocks no slice could take, which ship as the archive
+ has them
 
  @example
  ```ts
- const { slices, sealedSourceIds, } = subdivideSealedChunkPair({
+ const { slices, sealedSourceIds, unplacedTargetIds, } = subdivideSealedChunkPair({
    pair,
    sourceText,
    targetText,
@@ -152,6 +154,7 @@ export function subdivideSealedChunkPair(
 ): {
   readonly slices: readonly ChunkPair[];
   readonly sealedSourceIds: ReadonlySet<string>;
+  readonly unplacedTargetIds: ReadonlySet<string>;
 } {
   /**
    How much shorter the original runs than its translation, measured over
@@ -205,6 +208,9 @@ export function subdivideSealedChunkPair(
       // NOTHING IS SEALED: a seal names translation blocks, and an insertion
       // carries none.
       sealedSourceIds: new Set<string>(),
+
+      // NOTHING IS UNPLACED EITHER: an insertion carries no translation block.
+      unplacedTargetIds: new Set<string>(),
       slices: groupNodes({
         nodes: pair.source
           .nodes,
@@ -272,6 +278,7 @@ export function subdivideSealedChunkPair(
   },);
   return {
     sealedSourceIds: grouped.sealedSourceIds,
+    unplacedTargetIds: grouped.unplacedTargetIds,
     slices: grouped.runs
       .map(function toSlice(
       run,

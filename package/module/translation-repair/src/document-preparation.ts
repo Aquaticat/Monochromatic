@@ -4,7 +4,6 @@ import {
   describeAlignmentAttachment,
 } from './chunk-document.ts';
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
-import { wordForCount, } from './count-word.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
 import { declaredNamePairs, } from './linked-title-declared-name.ts';
 import { extractDeclaredIdentity, } from './identity-context.ts';
@@ -46,7 +45,11 @@ import {
   declinedLessSealed,
   sealedFinding,
 } from './preparation-seal.ts';
-import { unclaimedOutsideAlignment, } from './preparation-unclaimed.ts';
+import {
+  unclaimedFinding,
+  unclaimedInAlignedPair,
+  unclaimedOutsideAlignment,
+} from './preparation-unclaimed.ts';
 
 //region Document preparation
 // Everything a lane needs to know about a document PAIR before any model is
@@ -109,10 +112,6 @@ import { unclaimedOutsideAlignment, } from './preparation-unclaimed.ts';
  sealed nothing
 
  @returns Slices, governance, declared names and alignment findings
-
- @throws `UnplacedTranslationBlocksError` (`group-merge.ts`), let through from
- the grouping, when a sealed section holds translation blocks ahead of its
- seal that no paired run can take
 
  @example
  ```ts
@@ -343,11 +342,13 @@ export function prepareDocumentPair(
     },);
 
     /**
-     Slices carved from this chunk, and the originals the seal took.
+     Slices carved from this chunk, the originals the seal took, and the
+     translation blocks no slice could take.
      */
     const {
       slices: carved,
       sealedSourceIds,
+      unplacedTargetIds,
     } = subdivideSealedChunkPair({
       pair,
       sourceText,
@@ -368,65 +369,65 @@ export function prepareDocumentPair(
      Translation blocks this chunk's pairing accounted for nowhere, less the
      sealed ones (`preparation-seal.ts`).
      */
-    const declined = declinedLessSealed({
+    const declinedByPairing = declinedLessSealed({
       pair,
       ...((blockPairing === undefined) ? {} : { blockPairing, }),
       sealedTargets,
     },);
+
+    // A BLOCK NO RUN COULD TAKE SHIPS AS THE ARCHIVE HAS IT, like a declined
+    // one. It is not declined by the pairing: the grouping had no run to put
+    // it in (an archive block ahead of the sealing note, with no paired run
+    // before it), and refusing the page for that stopped an entry whose bytes
+    // could be kept.
+    /**
+     Every block of this chunk that reaches no slice by decision.
+     */
+    const declined = new Set([
+      ...declinedByPairing,
+      ...unplacedTargetIds,
+    ],);
     if (declined.size > 0) {
       /**
-       Declined blocks of this chunk, for the characters they hold.
+       Blocks of this chunk that reach no slice, in document order.
        */
       const blocks = pair.target
         .nodes
         .filter(function isDeclined(node,): boolean {
           return declined.has(node.id,);
         },);
-      unclaimedTargetBlocks.push(...blocks.map(function toUnclaimedTargetBlock(
-        node,
-      ): UnclaimedTargetBlock {
-        return {
-          location: {
-            kind: 'aligned-pair',
-            pairIndex,
-          },
-          blockId: node.id,
-          startOffset: node.startOffset,
-          endOffset: node.endOffset,
-        };
+      unclaimedTargetBlocks.push(...unclaimedInAlignedPair({
+        pairIndex,
+        blocks,
       },),);
+
       /**
-       Characters the unclaimed blocks hold.
+       Blocks the pairing accounted for nowhere.
        */
-      const unclaimedChars = blocks.reduce(
-        function addChars(
-          sum,
-          node,
-        ): number {
-          return sum + (node.endOffset - node.startOffset);
-        },
-        0,
-      );
-      declinedFindings.push(
-        `alignment target-unclaimed (pair ${String(pairIndex,)}: ${
-          String(blocks.length,)
-        } translation ${
-          wordForCount({
-            count: blocks.length,
-            one: 'block',
-            many: 'blocks',
-          },)
-        } no original claims, ${String(unclaimedChars,)} ${
-          wordForCount({
-            count: unclaimedChars,
-            one: 'character',
-            many: 'characters',
-          },)
-        }: ${blocks.map(function toId(node,): string {
-          return node.id;
-        },)
-          .join(', ',)})`,
-      );
+      const declinedBlocks = blocks.filter(function isByPairing(node,): boolean {
+        return declinedByPairing.has(node.id,);
+      },);
+      if (declinedBlocks.length > 0)
+        declinedFindings.push(unclaimedFinding({
+          label: 'target-unclaimed',
+          pairIndex,
+          blocks: declinedBlocks,
+          reason: 'no original claims',
+        },),);
+
+      /**
+       Blocks no run could take.
+       */
+      const unplacedBlocks = blocks.filter(function isUnplaced(node,): boolean {
+        return unplacedTargetIds.has(node.id,);
+      },);
+      if (unplacedBlocks.length > 0)
+        declinedFindings.push(unclaimedFinding({
+          label: 'target-unplaced',
+          pairIndex,
+          blocks: unplacedBlocks,
+          reason: 'no run could take',
+        },),);
     }
 
     // BEFORE ANYTHING READS THEM. A block that reached no slice leaves the

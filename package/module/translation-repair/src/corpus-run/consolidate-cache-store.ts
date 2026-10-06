@@ -1,4 +1,5 @@
 import {
+  CONSOLIDATE_GATE_QUORUM,
   type GateShipped,
   settleGateBallots,
 } from '../consolidate-gate-stage.ts';
@@ -223,8 +224,9 @@ function isSlateFloor(value: unknown,): boolean {
 
  ABSENT IS VALID and is not the same as empty. A slice the floor stopped never
  reached the gate, so its settlement carries no gate; a gate that ran and
- heard nobody carries one with no ballots. The terminal tells them apart, and
- a store that required the key would refuse every floored slice. Whether
+ heard nobody carries one with no ballots, which the quorum check refuses as a
+ gate short of its quorum. The terminal tells absence from that, and a store that
+ required the key would refuse every floored slice. Whether
  absence is right for the settlement in hand is `gateFitsTerminal`'s question.
 
  THE CHOICE IS RECOMPUTED FROM THE BALLOTS. The stage settles `choice` with
@@ -232,6 +234,13 @@ function isSlateFloor(value: unknown,): boolean {
  afterwards, so a stored choice its own ballots do not give was not written by
  the stage. `choice` and `ships` are not compared: a forfeit standing ships
  the consolidation over a standing or neither choice.
+
+ A GATE THAT HEARD FEWER VOICES THAN THE QUORUM IS REFUSED. The stage returns
+ one when too few gate voices answer, and `consolidationWorthResuming` never
+ persists it, because a thin panel is the hour and not the slice. A file
+ holding one was not written by the stage, and resuming it would freeze the
+ slice on that thin panel where a re-asked gate could hear the quorum.
+ Refusing it costs one re-asked gate.
 
  @param value - parsed cache entry
 
@@ -259,6 +268,7 @@ function isGateOutcomeOrAbsent(value: unknown,): boolean {
     && (value.choice === settleGateBallots({ ballots, },))
     && ((typeof value.usable) === 'number')
     && (value.usable === ballots.length)
+    && (value.usable >= CONSOLIDATE_GATE_QUORUM)
     && Array.isArray(value.findings,);
 }
 

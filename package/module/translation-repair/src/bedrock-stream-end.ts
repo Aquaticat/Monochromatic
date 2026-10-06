@@ -3,6 +3,7 @@ import type { BedrockStreamEnd, } from './bedrock-catalog.ts';
 import { MalformedCompletionError, } from './completion-shape.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { requireNoStreamError, } from './openrouter-stream-error.ts';
 import { ssePayloadOf, } from './sse-data-line.ts';
 import { requireStreamTerminator, } from './stream-completion.ts';
 
@@ -70,6 +71,11 @@ function isUsageChunk(rawLine: string,): boolean {
 
  @param streamEnd - how this model's stream ends
 
+ @throws {@link import('./openrouter-stream-error.ts').InStreamRefusalError} when an error chunk carries a 4xx
+ code the retry ladder does not retry
+
+ @throws {@link import('./openrouter-stream-error.ts').InStreamProviderError} when any other error chunk arrived
+
  @throws {@link MalformedCompletionError} when the terminator never arrived
 
  @example
@@ -86,6 +92,14 @@ export function requireBedrockStreamEnd(
     readonly streamEnd: BedrockStreamEnd;
   },
 ): void {
+  // THE FAILURE IS ASKED FIRST, as on the OpenRouter route. A stream that
+  // failed mid-way carries an `error` chunk and neither terminator, so asking
+  // only for the end named the framing ("cut off") where the wire named the
+  // cause, and retried a refusal the ladder returns unretried over plain HTTP.
+  // The chunk's shape is the OpenAI-compatible one, which this route speaks;
+  // AWS's documentation for the route does not state an error frame (read
+  // 2026-10-06), so this reads the convention and not a captured Bedrock frame.
+  requireNoStreamError({ bodyText, },);
   if (streamEnd === 'done-sentinel') {
     requireStreamTerminator({ bodyText, },);
     return;

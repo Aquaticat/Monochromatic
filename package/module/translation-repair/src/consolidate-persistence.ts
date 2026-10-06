@@ -23,11 +23,22 @@ import type { TranslateDecision, } from './translate-stage-result.ts';
  recorded once the retry is spent, so the slate has already had its second
  panel and a third would not change what it settled. The other decisions are
  not listed because no slate settles as `slate-declined-standing` on them.
+
+ `no-voice-heard` IS KEPT APART, in `UNHEARD_DECISION`, because it settles as
+ `slate-unjudged-standing`, a terminal kept without a gate.
  */
 const UNSETTLED_DECISIONS: readonly TranslateDecision[] = [
   'declined-indecision',
   'declined-rejection',
 ];
+
+/**
+ Decision recording that no voice was heard on the slate at all: the hour, not
+ the slice. A later run could hear one, so a settlement carrying it is not kept
+ although its terminal (`slate-unjudged-standing`) is kept for the decisions
+ that left nothing to ask (a sole candidate, no candidate).
+ */
+const UNHEARD_DECISION: TranslateDecision = 'no-voice-heard';
 
 /**
  Terminals settled enough to keep without reading judged round: a DELIBERATE
@@ -109,6 +120,16 @@ export function consolidationWorthResuming(
    How slice left stage.
    */
   const { terminal, } = settlement;
+  // A SLATE NOBODY WAS HEARD ON IS THE HOUR, not the slice. The stage reaches
+  // it only for a standing that shows nothing beside lane texts that show
+  // nothing, which the lane offer never hands it, so nothing writes it today;
+  // the rule is here so that a path that ever does is not frozen as settled.
+  /**
+   What judges decided, absent when no decision reached.
+   */
+  const { decided, } = settlement;
+  if (decided?.decision === UNHEARD_DECISION)
+    return false;
   if (SETTLED_WITHOUT_A_GATE.some(function matches(settled,): boolean {
     return settled === terminal;
   },))
@@ -117,10 +138,6 @@ export function consolidationWorthResuming(
   if (terminal !== 'slate-declined-standing')
     return false;
 
-  /**
-   What judges decided, absent when no decision reached.
-   */
-  const { decided, } = settlement;
   if (decided === undefined)
     return false;
 

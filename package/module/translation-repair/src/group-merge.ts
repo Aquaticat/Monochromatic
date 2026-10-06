@@ -1,6 +1,5 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { wordForCount, } from './count-word.ts';
 import type { DocumentNode, } from './document-node.ts';
 import type {
   GroupedRun,
@@ -48,63 +47,26 @@ export type OpenRun = {
 export const NOT_AN_INSERTION = -1;
 
 /**
- Translation blocks of a sealed section that no run can carry.
-
- MARKED: its message is a count, positional block ids (`block/N`, which name
- places and never wording) and sentences written here.
+ What merging settled: the runs that carry blocks on both sides, and the
+ translation blocks no run could take.
 
  @example
  ```ts
- throw new UnplacedTranslationBlocksError({ blockIds: ['block/0',], },);
+ const { runs, unplacedTargetIds, } = mergeOneSidedRuns({ runs: open, },);
  ```
  */
-export class UnplacedTranslationBlocksError extends Error {
+export type MergedRuns = {
   /**
-   Declares this message safe to forward: counts, positional block ids and
-   a sentence written here.
+   Runs that all carry blocks on both sides, sealed runs among them.
    */
-  readonly messageNamesOnly: true = true;
+  readonly runs: readonly GroupedRun[];
 
   /**
-   Ids of the translation blocks left without a run.
+   Ids of the translation blocks left without a run, in document order, which
+   reach no slice and ship as the archive has them.
    */
-  readonly blockIds: readonly string[];
-
-  /**
-   @param blockIds - ids of the blocks no run can carry
-   */
-  public constructor({ blockIds, }: { readonly blockIds: readonly string[]; },) {
-    super(
-      `translation ${
-        wordForCount({
-          count: blockIds.length,
-          one: 'block',
-          many: 'blocks',
-        },)
-      } ${blockIds.join(', ',)} can join no run: no paired run stands before ${
-        wordForCount({
-          count: blockIds.length,
-          one: 'it',
-          many: 'them',
-        },)
-      }, and the sealed run after ${
-        wordForCount({
-          count: blockIds.length,
-          one: 'it',
-          many: 'them',
-        },)
-      } takes nothing in, so the section would leave ${
-        wordForCount({
-          count: blockIds.length,
-          one: 'it',
-          many: 'them',
-        },)
-      } out of every slice`,
-    );
-    this.name = 'UnplacedTranslationBlocksError';
-    this.blockIds = blockIds;
-  }
-}
+  readonly unplacedTargetIds: readonly string[];
+};
 
 /**
  Where a sealed run ends in the translation, which is where originals held
@@ -269,20 +231,19 @@ function placeHeldRuns(
 
  @param runs - runs as grouped, possibly one-sided
 
- @returns Runs that all carry blocks on both sides, sealed runs among them
-
- @throws {@link UnplacedTranslationBlocksError} when a sealed run stands among
- the runs and translation blocks are left that no paired run can take, which
- would leave them in no run
+ @returns Runs that all carry blocks on both sides, sealed runs among them,
+ beside the ids of the translation blocks no run could take. Those are
+ reported rather than dropped: the caller keeps their bytes as the archive
+ has them, as it does for text outside the alignment
 
  @example
  ```ts
- const usable = mergeOneSidedRuns({ runs, },);
+ const { runs: usable, unplacedTargetIds, } = mergeOneSidedRuns({ runs, },);
  ```
  */
 export function mergeOneSidedRuns(
   { runs, }: { readonly runs: readonly OpenRun[]; },
-): readonly GroupedRun[] {
+): MergedRuns {
   /**
    Runs that carry both sides, each replaced wholesale when it absorbs a
    one-sided neighbour so no run is ever mutated in place.
@@ -299,6 +260,11 @@ export function mergeOneSidedRuns(
    Translation-side counterpart of the held blocks.
    */
   const heldTarget: DocumentNode[] = [];
+
+  /**
+   Translation blocks no run could take, in document order.
+   */
+  const unplaced: DocumentNode[] = [];
   for (const run of runs) {
     if (run.sealed) {
       // A SEALED RUN STANDS ALONE, like an insertion: held blocks settle ahead
@@ -308,6 +274,16 @@ export function mergeOneSidedRuns(
         heldSource,
         heldTarget,
       },);
+
+      // A TRANSLATION BLOCK STILL HELD AT A SEAL STAYS BEHIND IT. It found no
+      // paired run ahead of the seal, and a run that stands after the seal
+      // would stretch its span over the sealed bytes, or be written ahead of
+      // the sealed run's own slices. A page whose unpaired heading sat ahead of
+      // the note met the second: the heading joined the original that follows
+      // the note, and `assertPlacementLayout` refused the slices as out of
+      // order.
+      unplaced.push(...heldTarget,);
+      heldTarget.length = 0;
       merged.push({
         kind: 'sealed',
         sourceRun: [ ...run.sourceRun, ],
@@ -410,43 +386,40 @@ export function mergeOneSidedRuns(
   // `assertSliceCoverage` then refused the document.
   //
   // The module's stated exception survives as the case `placeHeldRuns` cannot
-  // settle without a seal in the section: with no run to host them (no run at
-  // all, or, for held translation blocks, no paired run), the blocks stay held
-  // and this returns without them, saying nothing. A section one side of which
-  // has no blocks is that case (`group-aligned.unit.test.ts` pins it), and
-  // `subdivideSealedChunkPair` never groups one: an empty translation side is
-  // an insertion it slices by the original, and every aligned chunk holds a
+  // settle: with no run to host them (no run at all, or, for held translation
+  // blocks, no paired run after the last seal), the blocks stay held. Held
+  // originals are then left out of the runs, saying nothing. A section one side
+  // of which has no blocks is that case (`group-aligned.unit.test.ts` pins it),
+  // and `subdivideSealedChunkPair` never groups one: an empty translation side
+  // is an insertion it slices by the original, and every aligned chunk holds a
   // block. NO CALLER FALLS BACK ANY MORE: the one-slice fallback
   // `subdivideSealedChunkPair` kept for such a section went in T8's
-  // seventeenth batch (its own comment says so). A section that reaches here
-  // another way loses those blocks from its slices, and
-  // `prepareDocumentPair`'s `assertSliceCoverage` is what refuses that; a
-  // caller of `subdivideChunkPair` alone has no such check.
+  // seventeenth batch (its own comment says so). A caller of
+  // `subdivideChunkPair` alone has no coverage check for the originals.
   //
-  // A SEALED SECTION IS NOT THAT CASE, and its held translation blocks are
-  // refused here. An archive block ahead of the note with no paired run before
-  // it has nothing to join: the sealed run takes nothing in, and every block
-  // after the note is sealed with it, so none follows to take it either.
-  // A bounded probe over generated archive pages (a span note at a random
-  // place, scorer and supplied walks) reached it for 115 of 3000 sections
-  // through `prepareDocumentPair`, which then refused the page in
-  // `assertSliceCoverage`; a caller of `groupNodesSealed` alone was handed
-  // runs without the block and no word of it.
+  // A HELD TRANSLATION BLOCK THAT REMAINS IS REPORTED, NEVER DROPPED. An archive
+  // block ahead of a sealing note with no paired run before it has nothing to
+  // join: the sealed run takes nothing in, and every block after the note is
+  // sealed with it, so none follows to take it either. This used to throw
+  // `UnplacedTranslationBlocksError`, which stopped the whole page where the
+  // archive's own bytes could be kept. A bounded probe over generated archive
+  // pages (a span note at a random place, scorer and supplied walks) reached it
+  // for 115 of 3000 sections. The caller now carries the ids the way text
+  // outside the alignment is carried (`preparation-unclaimed.ts`): in no slice,
+  // byte for byte as the archive has them, and handed to the block correction
+  // round.
   placeHeldRuns({
     merged,
     heldSource,
     heldTarget,
   },);
-  if ((heldTarget.length > 0)
-    && merged.some(function isSealed(candidate,): boolean {
-      return candidate.kind === 'sealed';
-    },))
-    throw new UnplacedTranslationBlocksError({
-      blockIds: heldTarget.map(function toId(node,): string {
-        return node.id;
-      },),
-    },);
-  return merged;
+  unplaced.push(...heldTarget,);
+  return {
+    runs: merged,
+    unplacedTargetIds: unplaced.map(function toId(node,): string {
+      return node.id;
+    },),
+  };
 }
 
 //endregion One-sided run merging
