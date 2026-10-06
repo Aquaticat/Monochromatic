@@ -74,7 +74,15 @@ impl Annotations {
         }
         let length = text.len_chars();
         for hint in &snapshot.hints {
-            let trimmed = hint.label.trim();
+            // Prototype variant: editord's label stripping by hint kind.
+            let whole = hint.label.trim();
+            let trimmed = if hint.kind == Some(crate::language::hints::HintKind::Parameter) {
+                whole.strip_suffix(':').unwrap_or(whole)
+            } else if hint.kind == Some(crate::language::hints::HintKind::Type) {
+                whole.strip_prefix(": ").unwrap_or(whole)
+            } else {
+                whole
+            };
             if trimmed.is_empty() {
                 continue;
             }

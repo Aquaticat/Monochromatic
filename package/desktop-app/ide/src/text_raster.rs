@@ -186,35 +186,6 @@ impl TextRaster {
                 // A virtual row lies its rise above the code row of the line it belongs to.
                 let top = view.map.code_top(text.line) - text.rise;
                 let origin = ((text.x - horizontal) * factor, (top - view.origin) * factor);
-                // Prototype variant: a rounded box behind each hint, its ink at 8 percent, 5 px wider on each side
-                // and 1 px inside the row at top and bottom.
-                if text.severity.is_none() {
-                    let shade = [text.ink[0], text.ink[1], text.ink[2], 20];
-                    let left = (text.x - 5.0 - horizontal) * factor;
-                    let right = (text.x + text.width + 5.0 - horizontal) * factor;
-                    let upper = (top + 1.0 - view.origin) * factor;
-                    let lower = (top + 15.0 - view.origin) * factor;
-                    let radius = 4.0 * factor;
-                    let first_x = left.max(0.0).floor() as u32;
-                    let last_x = (right.max(0.0).ceil() as u32).min(view.width);
-                    let first_y = upper.max(0.0).floor() as u32;
-                    let last_y = (lower.max(0.0).ceil() as u32).min(view.height);
-                    for y in first_y..last_y {
-                        for x in first_x..last_x {
-                            let px = x as f32 + 0.5;
-                            let py = y as f32 + 0.5;
-                            if px < left || px > right || py < upper || py > lower {
-                                continue;
-                            }
-                            let dx = (left + radius - px).max(px - (right - radius)).max(0.0);
-                            let dy = (upper + radius - py).max(py - (lower - radius)).max(0.0);
-                            if dx * dx + dy * dy > radius * radius {
-                                continue;
-                            }
-                            blend(&mut bytes, ((y * view.width + x) * 4) as usize, shade);
-                        }
-                    }
-                }
                 let mut tile = Tile {
                     bytes: &mut bytes,
                     width: view.width,
