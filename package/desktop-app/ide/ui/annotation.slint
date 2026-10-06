@@ -31,3 +31,39 @@ export global AnnotationInk {
         return "H";
     }
 }
+
+// Prototype variant: the problems at the caret, worst first, each spelled out with its severity, code, and source.
+export component ProblemCard inherits Rectangle {
+    in property <string> text;
+    in property <int> severity;
+    in property <length> widest: 560px;
+    width: min(root.widest, content.preferred-width + 2 * root.inset + root.stripe);
+    height: content.preferred-height + 2 * root.inset;
+    private property <length> inset: 8px;
+    private property <length> stripe: 4px;
+    background: Palette.alternate-background;
+    border-width: 1px;
+    border-color: Palette.border;
+    border-radius: 6px;
+    drop-shadow-blur: 6px;
+    drop-shadow-color: #00000040;
+    Rectangle {
+        x: 0px;
+        width: root.stripe;
+        height: parent.height;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+        background: AnnotationInk.severity(root.severity);
+    }
+    content := Text {
+        x: root.stripe + root.inset;
+        y: root.inset;
+        width: root.width - root.stripe - 2 * root.inset;
+        text: root.text;
+        color: Palette.foreground;
+        font-size: 13px;
+        wrap: word-wrap;
+        accessible-role: AccessibleRole.text;
+        accessible-label: root.text;
+    }
+}
