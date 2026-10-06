@@ -17,11 +17,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { maskLoneContainerTags, } from '../dist/final/node/index.mjs';
 import {
-  maskLoneContainerTags,
-  parseMdxBody,
-  requireMdxRefusal,
-} from '../dist/final/node/index.mjs';
+  grammarAcceptsDocument,
+  tagNameSpellings,
+} from './tag-name-spellings.test-fixture.ts';
 
 //region Mask container tags tests
 
@@ -160,30 +160,6 @@ function separatorForms({ separator, }: { readonly separator: string; },): reado
 }
 
 /**
- Whether the strict grammar reads a document whole.
-
- @param document - document under the grammar
-
- @returns True when the grammar accepts it
-
- @example
- ```ts
- const accepted = grammarAccepts({ document: '<details>\n\nA cat naps.\n\n</details>\n', },);
- ```
- */
-function grammarAccepts({ document, }: { readonly document: string; },): boolean {
-  try {
-    parseMdxBody({ body: document, },);
-    return true;
-  }
-  catch (error) {
-    // Only the grammar's own refusal reads as a document it does not accept.
-    requireMdxRefusal({ error, },);
-    return false;
-  }
-}
-
-/**
  Whether the masker finds every tag of a document paired, masking none.
 
  @param document - document under the masker
@@ -199,6 +175,36 @@ function maskerPairs({ document, }: { readonly document: string; },): boolean {
   return maskLoneContainerTags({ text: document, },)
     .tags
     .length === 0;
+}
+
+/**
+ Whether the masker reads a lone tag of one kind in a slice.
+
+ @param text - slice under the masker
+
+ @param kind - which half of a container the slice holds alone
+
+ @returns True when the masker reports exactly one lone tag, of that kind
+
+ @example
+ ```ts
+ const reads = readsLoneTag({ text: '<details>\n', kind: 'open', },);
+ ```
+ */
+function readsLoneTag(
+  {
+    text,
+    kind,
+  }: {
+    readonly text: string;
+    readonly kind: 'open' | 'close';
+  },
+): boolean {
+  /**
+   Tags the masker reports.
+   */
+  const { tags, } = maskLoneContainerTags({ text, },);
+  return (tags.length === 1) && (tags.at(0,)?.kind === kind);
 }
 
 await describe({
@@ -304,7 +310,7 @@ await describe({
                       '0',
                     )
                 }`,
-                grammar: grammarAccepts({ document: grammar, },),
+                grammar: grammarAcceptsDocument({ document: grammar, },),
                 masker: maskerPairs({ document: slice, },),
               };
             },);
@@ -323,6 +329,99 @@ await describe({
         },).map(function spellingOf({ spelling, },): string {
           return spelling;
         },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'READS A TAG NAME AS THE STRICT GRAMMAR DOES, a lone opener and a lone closer read exactly where the '
+        + 'grammar reads the same name as the tag of a whole element, over every class of character a name holds '
+        + 'in each place it may stand',
+      fn: async () => {
+        /**
+         The grammar's verdict and the masker's, for each spelling.
+         */
+        const verdicts = tagNameSpellings()
+          .map(function verdictOf(name,) {
+            return {
+              name,
+              grammar: grammarAcceptsDocument({ document: `<${name}>\n\nA cat naps.\n\n</${name}>\n`, },),
+              opener: readsLoneTag({
+                text: `<${name}>\n\nA cat naps.\n`,
+                kind: 'open',
+              },),
+              closer: readsLoneTag({
+                text: `A cat naps.\n\n</${name}>\n`,
+                kind: 'close',
+              },),
+            };
+          },);
+        // Both verdicts are reached, so agreement is not agreement on nothing.
+        expect(verdicts.some(function accepted({ grammar, },): boolean {
+          return grammar;
+        },),).toBe(true,);
+        expect(verdicts.some(function refused({ grammar, },): boolean {
+          return !grammar;
+        },),).toBe(true,);
+        expect(verdicts.filter(function disagrees({
+          grammar,
+          opener,
+          closer,
+        },): boolean {
+          return (grammar !== opener) || (grammar !== closer);
+        },).map(function nameOf({ name, },): string {
+          return JSON.stringify(name,);
+        },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'READS THE NAME OF A TAG WITHOUT THE WHITESPACE THE GRAMMAR ALLOWS AROUND ITS SEPARATORS, so a member or '
+        + 'a prefixed name is one name however it is spaced, and a name in any script or opening with `$` or `_` '
+        + 'is a name',
+      fn: async () => {
+        expect(maskLoneContainerTags({ text: '<a . b>\n', },).tags.map(function nameOf({ name, },): string {
+          return name;
+        },),).toEqual(['a.b',],);
+        expect(maskLoneContainerTags({ text: '</a : b >\n', },).tags.map(function nameOf({ name, },): string {
+          return name;
+        },),).toEqual(['a:b',],);
+        expect(['猫', '$cat', '_cat', 'é', 'Ω', 'cat-nap', 'cat3',].map(function nameRead(name,): string {
+          return maskLoneContainerTags({ text: `<${name}>\n`, },).tags.map(function nameOf(tag,): string {
+            return tag.name;
+          },).join(',',);
+        },),).toEqual(['猫', '$cat', '_cat', 'é', 'Ω', 'cat-nap', 'cat3',],);
+      },
+    },),
+
+    it({
+      name: 'LEAVES A LONE TAG WHOSE NAME HOLDS A CHARACTER THE GRAMMAR REFUSES IN THE SLICE, unmasked and reported '
+        + 'as no tag, so the strict grammar refuses the slice it would have read as an element of that odd name',
+      fn: async () => {
+        for (
+          const text of [
+            '<details\u{200B}>\n\nA cat naps.\n',
+            '<details\u{200B}open>\n\nA cat naps.\n',
+            'A cat naps.\n\n</details\u{200B}>\n',
+            '<de\u{200E}tails>\n\nA cat naps.\n',
+            '<\u{200B}details>\n\nA cat naps.\n',
+            '<details\u{20000}>\n\nA cat naps.\n',
+          ]
+        ) {
+          expect(maskLoneContainerTags({ text, },),).toEqual({
+            masked: text,
+            tags: [],
+          },);
+        }
+      },
+    },),
+
+    it({
+      name: 'PAIRS AN OPENER WITH AN INLINE CLOSER WRITTEN WITH WHITESPACE AROUND ITS SEPARATOR, since the grammar '
+        + 'reads both spellings as one name',
+      fn: async () => {
+        expect(maskLoneContainerTags({ text: '<a.b>\n\nA cat naps.</a . b>\n', },),).toEqual({
+          masked: '<a.b>\n\nA cat naps.</a . b>\n',
+          tags: [],
+        },);
       },
     },),
     it({

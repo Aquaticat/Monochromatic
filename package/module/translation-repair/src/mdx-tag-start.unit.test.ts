@@ -144,6 +144,23 @@ const PROBES: readonly Probe[] = [
     at: 2,
     outcome: 'fails',
   },
+  // A letter past U+FFFF is two units to the compiler, neither of them a
+  // letter, so it starts no name.
+  {
+    text: 'a <\u{20000} /> b',
+    at: 2,
+    outcome: 'fails',
+  },
+  {
+    text: 'a <\u{1D49C} /> b',
+    at: 2,
+    outcome: 'fails',
+  },
+  {
+    text: 'a <\u{1F431} /> b',
+    at: 2,
+    outcome: 'fails',
+  },
 ];
 
 /**

@@ -533,6 +533,26 @@ await describe({
             ],);
           },
         },),
+
+        it({
+          name: 'READS A LINE HOLDING ONLY A BYTE ORDER MARK AS BLANK between two paragraphs, as the document '
+            + 'parse reads it, so the slice has the two blocks the page has and not one welded block',
+          fn: async () => {
+            expect(blocksOf({ text: 'The cat naps.\n\uFEFF\nThe cat eats fish.', },),).toEqual([
+              {
+                kind: 'paragraph',
+                detail: '',
+              },
+              {
+                kind: 'paragraph',
+                detail: '',
+              },
+            ],);
+            // A zero-width space alone on a line is read the same way, and a mark inside a line of text is content.
+            expect(blocksOf({ text: 'The cat naps.\n\u200B\nThe cat eats fish.', },),).toHaveLength(2,);
+            expect(blocksOf({ text: 'The cat naps.\n\uFEFFThe cat eats fish.', },),).toHaveLength(1,);
+          },
+        },),
       ],
     },),
   ],

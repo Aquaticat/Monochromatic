@@ -20,6 +20,7 @@ import {
 import {
   isLineStructured,
   prepareDocumentPair,
+  spliceSlices,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -88,6 +89,97 @@ The cat also likes sunbathing.
 There is a bird on the windowsill.
 `;
 
+/**
+ Byte order mark a page may open with.
+ */
+const MARK = '\uFEFF';
+
+/**
+ Original with metadata and two paragraphs, for the pages that may open with a mark.
+ */
+const MARKABLE_SOURCE = '---\nname: 猫猫\n---\n\n猫在睡觉。\n\n猫在吃鱼。\n';
+
+/**
+ Archive with metadata and the same two paragraphs rendered.
+ */
+const MARKABLE_ARCHIVE = '---\nname: Mittens\n---\n\nThe cat naps.\n\nThe cat eats fish.\n';
+
+/**
+ Archive carrying the paragraphs and no metadata, which the lanes insert it into.
+ */
+const MARKABLE_ARCHIVE_WITHOUT_METADATA = 'The cat naps.\n\nThe cat eats fish.\n';
+
+/**
+ Metadata a lane writes over the front matter slice.
+ */
+const REWRITTEN_METADATA = '---\nname: Whiskers\n---\n';
+
+/**
+ Slices a pair prepares and the page assembled by rewriting the metadata slice.
+
+ @param sourceText - original page, opening with the mark or not
+
+ @param targetText - archive page, opening with the mark or not
+
+ @returns Every slice's texts in order, whether every slice's offsets index
+ the texts as written, and the assembled page
+
+ @example
+ ```ts
+ const { texts, assembled, } = assembleRewrittenMetadata({ sourceText, targetText, },);
+ ```
+ */
+function assembleRewrittenMetadata(
+  {
+    sourceText,
+    targetText,
+  }: {
+    readonly sourceText: string;
+    readonly targetText: string;
+  },
+): {
+  readonly texts: readonly (readonly string[])[];
+  readonly offsetsIndexText: boolean;
+  readonly assembled: string;
+} {
+  /**
+   Slices prepared for the pair.
+   */
+  const { slices, } = prepareDocumentPair({
+    sourceText,
+    targetText,
+  },);
+
+  /**
+   The metadata slice, which the pair always carries here.
+   */
+  const metadata = slices.find(function isMetadata(slice,): boolean {
+    return slice.syntax === 'front-matter';
+  },);
+  if (metadata === undefined)
+    throw new Error('the original declares metadata, so the pair has a metadata slice',);
+
+  return {
+    texts: slices.map(function toTexts(slice,): readonly string[] {
+      return [slice.source.text, slice.target.text,];
+    },),
+    offsetsIndexText: slices.every(function indexes(slice,): boolean {
+      return (sourceText.slice(
+        slice.source.startOffset,
+        slice.source.endOffset,
+      ) === slice.source.text) && (targetText.slice(
+        slice.target.startOffset,
+        slice.target.endOffset,
+      ) === slice.target.text);
+    },),
+    assembled: spliceSlices({
+      targetText,
+      slices,
+      replacements: [{ sliceIndex: metadata.target.sliceIndex, replacementText: REWRITTEN_METADATA, },],
+    },),
+  };
+}
+
 await describe({
   name: prepareDocumentPair.name,
   children: [
@@ -132,6 +224,47 @@ await describe({
         expect(slices.at(0,)?.source.text,).toBe('---\nname: 猫猫\nhandle: mao\n---\n',);
         expect(slices.at(0,)?.target.text,).toBe('---\nname: Maomao\nhandle: mao\n---\n',);
         expect(slices.at(1,)?.syntax,).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'WRITES A LEADING MARK WHERE THE ARCHIVE HAD IT AND NOWHERE ELSE, whether the original, the archive or both '
+        + 'open with one and whether the archive has metadata, so a pair opening with a mark slices to the same texts '
+        + 'and assembles to the mark before what the pair without one assembles to',
+      fn: async () => {
+        for (
+          const archive of [MARKABLE_ARCHIVE, MARKABLE_ARCHIVE_WITHOUT_METADATA,]
+        ) {
+          /**
+           What the pair without any mark prepares and assembles to.
+           */
+          const plain = assembleRewrittenMetadata({
+            sourceText: MARKABLE_SOURCE,
+            targetText: archive,
+          },);
+          /**
+           Original and archive of each pairing of marks.
+           */
+          const pairs: readonly (readonly [string, string,])[] = [
+            [MARK + MARKABLE_SOURCE, MARK + archive,],
+            [MARK + MARKABLE_SOURCE, archive,],
+            [MARKABLE_SOURCE, MARK + archive,],
+          ];
+          for (const [sourceText, targetText,] of pairs) {
+            /**
+             The same pair with the marks its pages open with.
+             */
+            const marked = assembleRewrittenMetadata({
+              sourceText,
+              targetText,
+            },);
+            expect(marked.texts,).toEqual(plain.texts,);
+            expect(marked.offsetsIndexText,).toBe(true,);
+            expect(marked.assembled,).toBe(
+              targetText.startsWith(MARK,) ? `${MARK}${plain.assembled}` : plain.assembled,
+            );
+          }
+        }
       },
     },),
 

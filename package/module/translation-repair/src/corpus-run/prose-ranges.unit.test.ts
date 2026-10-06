@@ -125,6 +125,38 @@ await describe({
     },),
 
     it({
+      name: 'PROTECTS THE FRONT MATTER OF A PAGE OPENING WITH A BYTE ORDER MARK, the mark inside the range, '
+        + 'and reads the code span past it at the offsets of the text as written',
+      fn: async () => {
+        /**
+         Page with front matter and one code span, as the same page reads without a mark.
+         */
+        const page = '---\nname: Mittens\n---\nA cat `x`.\n';
+
+        expect(protectedRanges({ text: page, },),).toStrictEqual([
+          {
+            start: 0,
+            end: 22,
+          },
+          {
+            start: 28,
+            end: 31,
+          },
+        ],);
+        expect(protectedRanges({ text: `\uFEFF${page}`, },),).toStrictEqual([
+          {
+            start: 0,
+            end: 23,
+          },
+          {
+            start: 29,
+            end: 32,
+          },
+        ],);
+      },
+    },),
+
+    it({
       name: 'PROTECTS a bare web address in prose up to the space that ends it',
       fn: async () => {
         expect(protectedRanges({ text: 'See https://cat.example/a cat today.', },),).toStrictEqual([{

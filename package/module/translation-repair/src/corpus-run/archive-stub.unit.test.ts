@@ -166,6 +166,20 @@ await describe({
           },
         },),
         it({
+          name: 'LEAVES A MARKER INSIDE THE FRONT MATTER OF A PAGE OPENING WITH A BYTE ORDER MARK, as it leaves one '
+            + 'inside the front matter of the same page without the mark',
+          fn: async () => {
+            /**
+             Front matter whose own paragraph is a placeholder token, then a body.
+             */
+            const page = '---\nname: Mittens\n\nTODO\n\nnote: x\n---\n\nThe cat naps.\n';
+            for (const text of [page, `\uFEFF${page}`,]) {
+              expect(stripStubMarkersWithOrigins({ text, },).text,).toBe(text,);
+              expect(stripStubMarkersWithOrigins({ text, },).stripped,).toEqual([],);
+            }
+          },
+        },),
+        it({
           name: 'REMOVES a marker that ends the document with the blank line above it, so no trailing blank '
             + 'pair is left, and REMOVES a marker that is the whole body',
           fn: async () => {
@@ -207,6 +221,32 @@ await describe({
               l: tagged({ tag: 'archive-stub-test', },),
             },);
             expect(archive,).toBe('Before.\n\nnon-binary after.\n',);
+          },
+        },),
+        it({
+          name: 'KEEPS A LEADING BYTE ORDER MARK the archive opens with, which is no content, and still FOLDS every '
+            + 'other mark, so an archive the pass changes in nothing else is written back byte for byte',
+          fn: async () => {
+            /**
+             Page with front matter, a marker spelled with a non-breaking hyphen and one invisible variant.
+             */
+            const page = '---\nname: Mittens\n---\n\n(To\u2011Do)\n\nThe cat naps, non\u2011binary.\n';
+            /**
+             The same page after the fold and the strip.
+             */
+            const expected = '---\nname: Mittens\n---\n\nThe cat naps, non-binary.\n';
+            expect(passArchiveText({
+              text: page,
+              l: tagged({ tag: 'archive-stub-test', },),
+            },),).toBe(expected,);
+            expect(passArchiveText({
+              text: `\uFEFF${page}`,
+              l: tagged({ tag: 'archive-stub-test', },),
+            },),).toBe(`\uFEFF${expected}`,);
+            expect(passArchiveText({
+              text: '\uFEFFThe cat naps.\n\uFEFF\nThe cat wakes.\n',
+              l: tagged({ tag: 'archive-stub-test', },),
+            },),).toBe('\uFEFFThe cat naps.\n\nThe cat wakes.\n',);
           },
         },),
       ],

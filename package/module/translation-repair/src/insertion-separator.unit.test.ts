@@ -99,6 +99,30 @@ await describe({
           },
         },),
         it({
+          name: 'READS A BOUNDARY AFTER NOTHING BUT A LEADING BYTE ORDER MARK AS THE START OF THE DOCUMENT, so '
+            + 'an insertion there adds no blank line before it and the mark stays the page\'s first character '
+            + 'with the insertion straight after it',
+          fn: async () => {
+            expect(composeInsertion({
+              fragments: ['---\nname: Whiskers\n---\n',],
+              before: '\uFEFF',
+              after: 'The cat naps.\n',
+              eol: '\n',
+            },),).toBe(composeInsertion({
+              fragments: ['---\nname: Whiskers\n---\n',],
+              before: '',
+              after: 'The cat naps.\n',
+              eol: '\n',
+            },),);
+            expect(composeInsertion({
+              fragments: ['The cat naps.',],
+              before: '\uFEFFThe cat sleeps.',
+              after: 'She purrs.',
+              eol: '\n',
+            },),).toBe('\n\nThe cat naps.\n\n',);
+          },
+        },),
+        it({
           name: 'writes ONE blank line between fragments sharing a boundary, not one per fragment. Several '
             + 'slices of an untranslated section land here, and each carrying its own separators would put '
             + 'two blank lines between every pair',

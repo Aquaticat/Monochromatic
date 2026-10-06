@@ -270,6 +270,69 @@ await describe({
     },),
 
     it({
+      name: 'ACCEPTS PAGES OPENING WITH A BYTE ORDER MARK under the metadata slice that starts at each opening '
+        + 'fence, and an insertion that stands after the archive\'s mark, and REFUSES that insertion at offset zero, '
+        + 'which would write the metadata before the mark',
+      fn: async () => {
+        /**
+         Original and archive metadata of pages opening with the mark.
+         */
+        const markedSource = splitFrontMatter({ text: `\uFEFF${SOURCE_TEXT}`, },).frontMatter;
+        const markedFolder = splitFrontMatter({ text: `\uFEFF${FOLDER_TEXT}`, },).frontMatter;
+        if ((markedSource === undefined) || (markedFolder === undefined))
+          throw new Error('marked front matter fixture did not parse',);
+        /**
+         Slice over both marked pages.
+         */
+        const marked = frontMatterSlice({
+          source: markedSource,
+          target: markedFolder,
+        },);
+        /**
+         Insertion over a marked archive without metadata, at the offset after its mark.
+         */
+        const inserted = frontMatterSlice({
+          source: markedSource,
+          targetInsertionOffset: 1,
+        },);
+        /**
+         Insertion at offset zero over the same archive.
+         */
+        const misplaced = frontMatterSlice({ source: markedSource, },);
+        if ((marked.kind !== 'paired') || (inserted.kind !== 'paired') || (misplaced.kind !== 'paired'))
+          throw new Error('marked front matter fixture did not pair',);
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: `\uFEFF${SOURCE_TEXT}`,
+          archiveText: `\uFEFF${FOLDER_TEXT}`,
+          pageText: `\uFEFF${TRANSLATED_TEXT}`,
+          slices: [marked.slice,],
+        },),).not.toThrow();
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: `\uFEFF${SOURCE_TEXT}`,
+          archiveText: '\uFEFFBody.\n',
+          pageText: `\uFEFF${TRANSLATED_TEXT}`,
+          slices: [inserted.slice,],
+        },),).not.toThrow();
+        expect(thrownBy({
+          run: function assertMisplaced(): void {
+            assertFrontMatterComplete({
+              entryId: 'EntryId',
+              sourceText: `\uFEFF${SOURCE_TEXT}`,
+              archiveText: '\uFEFFBody.\n',
+              pageText: `\uFEFF${TRANSLATED_TEXT}`,
+              slices: [misplaced.slice,],
+            },);
+          },
+        },),).toEqual(new FrontMatterCompletenessError({
+          entryId: 'EntryId',
+          reason: 'missing-slice',
+        },),);
+      },
+    },),
+
+    it({
       name: 'ACCEPTS UNCHANGED TARGET-ONLY METADATA without localized slice',
       fn: async () => {
         expect(() => assertFrontMatterComplete({

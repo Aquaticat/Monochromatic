@@ -28,10 +28,12 @@ import {
   collectDestinations,
   droppedDestinations,
   markdownDestinations,
+  parseMarkdownBody,
   prepareDocumentPair,
   scanUrlRuns,
   traceDroppedDestinations,
 } from '../../dist/final/node/index.mjs';
+import { addressTexts, } from '../destination-address-texts.test-fixture.ts';
 
 //region Fixtures
 
@@ -104,6 +106,48 @@ function traceOverTwoSections(
       replacementText: rowText,
     },],
   },);
+}
+
+/**
+ A node of the parse as the walk reads it: its kind, where it names one its
+ destination, and its children.
+ */
+type ParsedNode = {
+  readonly type: string;
+  readonly url?: string;
+  readonly children?: readonly ParsedNode[];
+};
+
+/**
+ The addresses the parse itself reads as links in a text, in document order:
+ those of the plain markdown tree, which holds an autolink literal as the
+ parser's trail rule cut it.
+
+ @param text - text holding a bare address
+
+ @returns Each link's destination
+
+ @example
+ ```ts
+ const addresses = parsedAddressesOf({ text: 'see https://c.example/a. then', },); // ['https://c.example/a']
+ ```
+ */
+function parsedAddressesOf({ text, }: { readonly text: string; },): readonly string[] {
+  /**
+   Nodes still to visit, the first of the text last.
+   */
+  const pending: ParsedNode[] = [parseMarkdownBody({ body: text, },),];
+
+  /**
+   Destinations met so far.
+   */
+  const addresses: string[] = [];
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if ((node.type === 'link') && (node.url !== undefined))
+      addresses.push(node.url,);
+    pending.push(...(node.children ?? []).toReversed(),);
+  }
+  return addresses;
 }
 
 //endregion Fixtures
@@ -238,6 +282,71 @@ await describe({
               'https://cat.example/loaf',
               'https://cat.example/paw',
             ],);
+          },
+        },),
+
+        it({
+          name: 'ENDS A RUN WHERE THE PARSE\'S TRAIL RULE ENDS IT for the character reference and the bracket form: '
+            + 'a well-formed reference, `]` before whitespace, `(` or `[` or the text\'s end, and any run of them '
+            + 'with sentence punctuation, while a malformed reference, `]` before anything else and a reference '
+            + 'or bracket the address goes on past stay in it',
+          fn: async () => {
+            /**
+             Texts with the address the parse reads, each held to the scanner's.
+             */
+            const texts = [
+              'see https://c.example/a&amp; then',
+              'see https://c.example/a&amp;',
+              'see https://c.example/a&amp;.',
+              'see https://c.example/a.&amp;)',
+              'see https://c.example/a&amp;&lt;;',
+              'see https://c.example/a&amp;b then',
+              'see https://c.example/a&amp then',
+              'see https://c.example/a&#35; then',
+              'see https://c.example/a&1; then',
+              'see https://c.example/a&; then',
+              'see https://c.example/a& then',
+              'see https://c.example/a] then',
+              'see https://c.example/a]',
+              'see https://c.example/a.]',
+              'see https://c.example/a]]',
+              'see https://c.example/a](x) then',
+              'see https://c.example/a][x] then',
+              'see https://c.example/a]b then',
+              'see https://c.example/a].b then',
+              'see https://c.example/a[b] then',
+              'see https://c.example/a&amp;] then',
+              'see https://c.example/a]&amp; then',
+            ];
+            expect(texts.map(function scanned(text,): string {
+              return scanUrlRuns({ text, },).join('|',);
+            },),).toEqual(texts.map(function parsed(text,): string {
+              return parsedAddressesOf({ text, },).join('|',);
+            },),);
+          },
+        },),
+
+        it({
+          name: 'READS THE ADDRESSES THE TREE READER READS over every generated text: the paths and sentences of '
+            + 'the trail rule\'s forms (punctuation, emphasis marks, parentheses, character references, brackets), '
+            + 'so the scanner and the tree reader name one address where the parse sheds a trail',
+          fn: async () => {
+            /**
+             Texts on which the two readers name different addresses, leaving out
+             the texts whose pieces and sentence write a link of their own after
+             the address (`]` then `[` and `](`), whose explicit destination only
+             the tree reader names.
+             */
+            const disagreeing = addressTexts({ sampled: 6_000, },)
+              .filter(function readsOneLink(text,): boolean {
+                return parsedAddressesOf({ text, },).length <= 1;
+              },)
+              .filter(function disagrees(text,): boolean {
+                return scanUrlRuns({ text, },).join('|',)
+                  !== markdownDestinations({ text, },).urls.join('|',);
+              },);
+            expect(disagreeing.slice(0, 8,),).toEqual([],);
+            expect(disagreeing.length,).toBe(0,);
           },
         },),
 

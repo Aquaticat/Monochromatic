@@ -30,6 +30,7 @@ const SOURCE = {
     name: '猫猫',
     info: { alias: '猫', },
   },
+  startOffset: 0,
 };
 
 /**
@@ -41,6 +42,7 @@ const TARGET = {
     name: 'Maomao',
     info: { alias: 'Cat', },
   },
+  startOffset: 0,
 };
 
 /**
@@ -174,6 +176,67 @@ await describe({
           name: 'PRESERVES TARGET-ONLY METADATA outside localized slice',
           fn: async () => {
             expect(frontMatterSlice({ target: TARGET, },),).toEqual({ kind: 'none', },);
+          },
+        },),
+
+        it({
+          name: 'PLACES BOTH SPANS AFTER A LEADING MARK each page opens with, the mark outside the slice text so no '
+            + 'rewrite of the metadata reaches it',
+          fn: async () => {
+            /**
+             Source metadata of a page opening with the mark.
+             */
+            const marked = { ...SOURCE, startOffset: 1, };
+
+            /**
+             Target metadata of a page opening with the mark.
+             */
+            const markedTarget = { ...TARGET, startOffset: 1, };
+
+            expect(frontMatterSlice({ source: marked, target: markedTarget, },),).toEqual({
+              kind: 'paired',
+              slice: {
+                syntax: 'front-matter',
+                source: {
+                  kind: 'content',
+                  sliceIndex: 0,
+                  nodes: [],
+                  startOffset: 1,
+                  endOffset: 1 + SOURCE.raw.length,
+                  text: SOURCE.raw,
+                },
+                target: {
+                  kind: 'content',
+                  sliceIndex: 0,
+                  nodes: [],
+                  startOffset: 1,
+                  endOffset: 1 + TARGET.raw.length,
+                  text: TARGET.raw,
+                },
+              },
+            },);
+          },
+        },),
+
+        it({
+          name: 'INSERTS AFTER THE TARGET\'S LEADING MARK where the target has no metadata, so the mark stays '
+            + 'the first character of the page',
+          fn: async () => {
+            /**
+             Result for a source with metadata and a target opening with the mark and no metadata.
+             */
+            const result = frontMatterSlice({ source: SOURCE, targetInsertionOffset: 1, },);
+            expect(result.kind,).toBe('paired',);
+            if (result.kind !== 'paired')
+              throw new Error('source-only metadata did not create insertion slice',);
+            expect(result.slice.target,).toEqual({
+              kind: 'insertion',
+              sliceIndex: 0,
+              nodes: [],
+              startOffset: 1,
+              endOffset: 1,
+              text: '',
+            },);
           },
         },),
       ],

@@ -279,6 +279,132 @@ await describe({
     },),
 
     describe({
+      name: 'splitFrontMatter leading byte order mark',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS THE FRONT MATTER OF A PAGE OPENING WITH A MARK, the fence pair its own raw '
+            + 'slice, the mark left outside it and the offsets those of the text as written',
+          fn: async () => {
+            /**
+             Page whose first character is the mark, then its fence pair and a body.
+             */
+            const text = '\uFEFF---\nname: Mittens\n---\n\nThe cat naps.\n';
+
+            expect(splitFrontMatter({ text, },),).toEqual({
+              frontMatter: {
+                raw: '---\nname: Mittens\n---\n',
+                data: { name: 'Mittens', },
+                startOffset: 1,
+              },
+              body: '\nThe cat naps.\n',
+              bodyOffset: 23,
+            },);
+          },
+        },),
+
+        it({
+          name: 'READS THE FRONT MATTER OF A PAGE OPENING WITH A MARK under CRLF, and one closing at the end of '
+            + 'its input',
+          fn: async () => {
+            /**
+             Windows-flavoured page opening with the mark.
+             */
+            const crlf = splitFrontMatter({ text: '\uFEFF---\r\nname: Nori\r\n---\r\n\r\nBody.\r\n', },);
+
+            /**
+             Page that is the mark and a fence pair, closing at its end.
+             */
+            const closing = splitFrontMatter({ text: '\uFEFF---\nname: Nori\n---', },);
+
+            expect(crlf.frontMatter,).toEqual({
+              raw: '---\r\nname: Nori\r\n---\r\n',
+              data: { name: 'Nori', },
+              startOffset: 1,
+            },);
+            expect(crlf.bodyOffset,).toBe(23,);
+            expect(closing.frontMatter,).toEqual({
+              raw: '---\nname: Nori\n---',
+              data: { name: 'Nori', },
+              startOffset: 1,
+            },);
+            expect(closing.body,).toBe('',);
+            expect(closing.bodyOffset,).toBe(19,);
+          },
+        },),
+
+        it({
+          name: 'STARTS FRONT MATTER AT ZERO WHERE THE PAGE OPENS WITH THE FENCE, so a page without a mark reads as it did',
+          fn: async () => {
+            /**
+             Page opening with its fence pair and no mark.
+             */
+            const split = splitFrontMatter({ text: '---\nname: Mittens\n---\n\nThe cat naps.\n', },);
+
+            expect(split.frontMatter?.startOffset,).toBe(0,);
+            expect(split.bodyOffset,).toBe(22,);
+          },
+        },),
+
+        it({
+          name: 'LEAVES A MARK THAT DOES NOT OPEN THE PAGE AS CONTENT, so a second mark, a mark after a line '
+            + 'break and a mark on the fence line each leave the page without front matter',
+          fn: async () => {
+            for (
+              const text of [
+                '\uFEFF\uFEFF---\nname: Mittens\n---\n',
+                '\n\uFEFF---\nname: Mittens\n---\n',
+                '---\uFEFF\nname: Mittens\n---\n',
+              ]
+            ) {
+              expect(splitFrontMatter({ text, },),).toEqual({
+                body: text,
+                bodyOffset: 0,
+              },);
+            }
+          },
+        },),
+
+        it({
+          name: 'LEAVES A PAGE OPENING WITH A MARK AND AN UNTERMINATED FENCE WITHOUT FRONT MATTER, the whole text its body',
+          fn: async () => {
+            /**
+             Page with the mark, an opening fence and no closing one.
+             */
+            const text = '\uFEFF---\nname: Mittens\n\nThe cat naps.\n';
+
+            expect(splitFrontMatter({ text, },),).toEqual({
+              body: text,
+              bodyOffset: 0,
+            },);
+          },
+        },),
+
+        it({
+          name: 'REPRODUCES THE TEXT FROM THE MARK, THE RAW SLICE AND THE BODY, so every offset a record names '
+            + 'indexes the text as written',
+          fn: async () => {
+            /**
+             Page opening with the mark.
+             */
+            const text = '\uFEFF---\nname: Mittens\n---\n\nThe cat naps.\n';
+
+            /**
+             Split of that page.
+             */
+            const split = splitFrontMatter({ text, },);
+            const { frontMatter, } = split;
+            if (frontMatter === undefined)
+              throw new Error('the page opens with a fence pair, so it has front matter',);
+
+            expect(`${text.slice(0, frontMatter.startOffset,)}${frontMatter.raw}${split.body}`,).toBe(text,);
+            expect(text.slice(frontMatter.startOffset, split.bodyOffset,),).toBe(frontMatter.raw,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: 'FrontMatterParseError says where, never what',
       concurrency: DEFAULT_CONCURRENCY,
       children: [

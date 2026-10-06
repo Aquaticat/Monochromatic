@@ -55,7 +55,6 @@ import {
   AFTERNOON_ISSUE,
   CHECKERS,
   everyCheckerSays,
-  readingsInSeatOrder,
   REWRITTEN_TEXT,
   SOURCE_TEXT,
   SUNBATHING_ISSUE,
@@ -291,38 +290,6 @@ function missingCheck(
 }
 
 /**
- Findings with the `missing-check` lines put in code-point order where they
- stand, since the order checkers' ballots reach the stage in is the gather's
- arrival order and the cases assert the order of everything else.
-
- @param findings - findings as the recheck returned them
-
- @returns The same findings, the missing-check lines sorted among their slots
-
- @example
- ```ts
- const ordered = missingChecksSorted({ findings: verdict.findings, },);
- ```
- */
-function missingChecksSorted(
-  { findings, }: { readonly findings: readonly string[]; },
-): readonly string[] {
-  /**
-   The missing-check lines still to be placed, in code-point order.
-   */
-  const queue = findings
-    .filter(function isMissing(finding,): boolean {
-      return finding.startsWith('missing-check (',);
-    },)
-    .toSorted();
-  return findings.map(function placed(finding,): string {
-    return finding.startsWith('missing-check (',)
-      ? (queue.shift() ?? finding)
-      : finding;
-  },);
-}
-
-/**
  Runs the recheck over the sunbathing slice's rewrite.
 
  @param issues - issues the accuracy lane settled for the slice
@@ -343,8 +310,9 @@ function missingChecksSorted(
 
  @param asked - sink receiving every exchange the recheck sent
 
- @returns The recheck's verdict, each reading's ballots in seat order and its
- missing-check findings in code-point order
+ @returns The recheck's verdict exactly as it came back: its ballots and its
+ findings in the order the roster seats the checkers, which the stage
+ guarantees and the cases assert
 
  @example
  ```ts
@@ -393,11 +361,7 @@ async function recheck(
     perCallTimeoutMs: 1_000,
     l,
   },);
-  return {
-    ...verdict,
-    findings: missingChecksSorted({ findings: verdict.findings, },),
-    readings: readingsInSeatOrder({ readings: verdict.readings, },),
-  };
+  return verdict;
 }
 
 await describe({
