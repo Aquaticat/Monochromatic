@@ -40,6 +40,10 @@ Run `monochromatic-ide PROJECT` for one explicit local root,
 or `monochromatic-ide PROJECT --file FILE` to initially display a file inside it.
 Relative `FILE` paths start at `PROJECT`,
 not the shell's working directory.
+Without `PROJECT` the application opens the home folder that `HOME` names
+(decided on 2026-10-06 for a launcher entry started without a folder);
+without a usable `HOME` it reports a usage error with status 2.
+[Home folder as the project](#home-folder-as-the-project) describes what changes then.
 `--help` and `--version` exit before filesystem or native-display startup.
 The executable no longer substitutes example source when no file is selected.
 
@@ -557,6 +561,16 @@ A command method returns `false` when the queue is full;
 `enter_project_directory` must run once at startup,
  before any thread or Helix call,
 because Helix roots every server at the process working directory.
+A server root outside the project is refused before anything starts,
+and so is a root that is the home folder or a folder containing it
+(`covers_home` in `src/language/root.rs`, with `LanguageSetup::home` read from `HOME`):
+with the home folder as the project,
+a file with no root marker of its language between itself and the home folder
+would otherwise give its server the whole home folder as workspace.
+Such a server shows the not-started state,
+naming the root it would have had and the remedy:
+open the folder of the file's own project,
+or add one of the language's root files beside the file.
 
 Inlay hints and pull diagnostics are requests the worker makes on its own:
 when a file is displayed,
@@ -592,17 +606,24 @@ which also holds its private `/tmp`,
  caches,
  and cargo output.
 The state root is resolved through symbolic links first
-and must lie neither inside the project nor above it.
+and must not contain the project.
+It may lie inside the project,
+as it does when the home folder is the project (`~/.cache` is below it).
 After the sandbox replaces `/tmp`,
  `/run`,
  and `/dev`,
 the project is bound again read-only at its own path
 and at Helix's working-directory spelling when that lies below one of them,
 so projects below `/tmp` or `/run/media/<user>` work.
+The writable state bind comes last,
+after the read-only project bind,
+because bubblewrap applies mounts in order and a later one covers an earlier one;
+`state_inside_the_project_is_bound_writable_after_the_read_only_project` in
+`src/language/confine/project_tests.rs` holds that order.
 `PROJECT_MOUNT` in `src/language/confine/project.rs` is the one switch a later write mode changes.
 Without bubblewrap or user namespaces,
 for a project or state root below `/proc`,
-or for state inside or above the project,
+or for state that contains the project,
 the server shows the launch-refused state with the cause and remedy;
 nothing falls back to an unconfined launch.
 `LanguageSetup::unconfined()` exists only for tests and guard controls on disposable projects.
@@ -1637,6 +1658,10 @@ and language-server presence on this host.
 The published `manifest.json` lists the bundled grammars:
 a file whose recognized language is not listed stays plain text,
 while a listed grammar that fails to load is reported as a broken installation.
+The application binary embeds `target/<profile>/runtime` when it is compiled
+(see [What the executable carries](#what-the-executable-carries)),
+so every task that builds it with the default `gui` feature runs `runtime` first,
+and a build without a prepared runtime stops with a message naming that task.
 
 [runtime-languages]: ../../../doc/planning/slint-ide-runtime-languages.md
 

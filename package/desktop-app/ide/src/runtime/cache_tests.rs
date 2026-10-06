@@ -3,7 +3,8 @@
 use super::unpack;
 use std::{
     fs,
-    os::unix::fs::PermissionsExt,
+    io::Read,
+    os::unix::fs::{MetadataExt, PermissionsExt},
     path::Path,
     sync::{Arc, Barrier},
     thread,
@@ -109,6 +110,27 @@ fn a_damaged_or_shortened_cached_library_is_written_again() {
         "{:?}",
         leftovers(&directory)
     );
+}
+
+/// A rewrite puts a new file in place of the old one instead of writing into it: a process that already
+/// opened (or loaded) the old file keeps reading it whole, and a reader of the name sees either file whole.
+/// This is what makes concurrent first starts safe; a write into the file in place would fail it.
+#[test]
+fn a_rewrite_replaces_the_file_instead_of_writing_into_it() {
+    let base = tempfile::tempdir().expect("disposable cache");
+    let directory = base.path().join("grammars");
+    let bytes = library();
+    let path = unpack(&directory, "toml", &bytes).expect("first use");
+    let shortened = bytes[..4096].to_vec();
+    fs::write(&path, &shortened).expect("shorten the cached library");
+    let mut held = fs::File::open(&path).expect("open the shortened library");
+    let inode = fs::metadata(&path).expect("metadata").ino();
+    unpack(&directory, "toml", &bytes).expect("rewrite");
+    let mut seen = Vec::new();
+    held.read_to_end(&mut seen).expect("read through the earlier handle");
+    assert_eq!(seen, shortened, "the rewrite changed the file an earlier reader holds");
+    assert_ne!(fs::metadata(&path).expect("metadata").ino(), inode, "the name still points at the old file");
+    assert_eq!(fs::read(&path).expect("rewritten"), bytes);
 }
 
 /// Several first starts at once (threads stand in for processes; the rename that makes a write
