@@ -42,6 +42,8 @@ use super::policy_trigger::Trigger;
 use super::refusal_frontier::{command_frontier, inherited_lease};
 use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
+/// Startup recovery as a command step.
+use super::transaction_gate::{Gate, recover_for_command};
 use super::unported::{Unported, unported_from_unavailable, unported_notice};
 use super::worktree_identity::worktree_root;
 use super::wrapper_invocation::{StrippedInvocation, command_region, command_word};
@@ -207,6 +209,24 @@ fn prepare_guarded_command<F: RepositoryFacts>(
             });
         }
     };
+    // Dead transactions are recovered before configuration loads; a live one still refuses a
+    // guarded command, which would otherwise race it.
+    match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
+        Gate::Clear => {}
+        Gate::Live(registry) => {
+            return Err(refused(
+                String::new(),
+                &Unported::TransactionRecovery(registry),
+                command,
+            ));
+        }
+        Gate::Stop(stderr) => {
+            return Err(WrappedOutcome::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stderr,
+            });
+        }
+    }
     if let Some(what) = pending_state(&location.identity, stripped.controls.skip_worktree_copy) {
         return Err(refused(String::new(), &what, command));
     }
@@ -234,6 +254,33 @@ fn prepare_guarded_command<F: RepositoryFacts>(
     }
     // `Ok(x)` is the success case.
     return Ok(policies);
+}
+
+/// What: Recover before a read-only command that already asked Git for the repository location;
+///       a live transaction does not stop it, a legacy directory or a recovery failure does.
+///       `Option<WrappedOutcome>` is "the ending, or nothing to say".
+/// Why:  The incumbent recovers before read-only commands too, reusing the identity it already
+///       resolved; a command that never asked for the location starts no extra work.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// if (configFreeIdentity !== undefined) await recoverCommitTransaction({ args, gitPath, identity: configFreeIdentity });
+/// ```
+fn recover_before_read_only<F: RepositoryFacts>(
+    checks: &ShippedChecks<F>,
+) -> Option<WrappedOutcome> {
+    let Some(Ok(location)) = checks.facts.asked_location() else {
+        return None;
+    };
+    match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
+        Gate::Clear | Gate::Live(_) => return None,
+        Gate::Stop(stderr) => {
+            return Some(WrappedOutcome::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stderr,
+            });
+        }
+    }
 }
 
 /// What: Run the lifecycle of one wrapped command. `&StrippedInvocation` borrows the
@@ -264,15 +311,16 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
     // are not UTF-8; `.into_owned()` makes it owned text.
     let command: String = String::from_utf8_lossy(command_word(stripped)).into_owned();
     // `.as_slice()` lends an owned list as a borrowed view.
-    let policies: PolicyConfig =
-        if classify_config_loading(stripped.arguments.as_slice()) == ConfigLoading::Skip {
-            PolicyConfig::defaults()
-        } else {
-            match prepare_guarded_command(stripped, environment, checks, command.as_str()) {
-                Ok(loaded) => loaded,
-                Err(ending) => return ending,
-            }
-        };
+    let skips_config: bool =
+        classify_config_loading(stripped.arguments.as_slice()) == ConfigLoading::Skip;
+    let policies: PolicyConfig = if skips_config {
+        PolicyConfig::defaults()
+    } else {
+        match prepare_guarded_command(stripped, environment, checks, command.as_str()) {
+            Ok(loaded) => loaded,
+            Err(ending) => return ending,
+        }
+    };
     let request: StageRequest = StageRequest {
         trigger: Trigger::PreForward,
         config: policies,
@@ -282,6 +330,9 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
     };
     let pass: PassResult = run_policy_pass(&request, checks);
     if let Some(ending) = stage_ending(pass.events.as_slice(), pass.end, command.as_str()) {
+        return ending;
+    }
+    if skips_config && let Some(ending) = recover_before_read_only(checks) {
         return ending;
     }
     // `mut` allows the push gate to append its events.

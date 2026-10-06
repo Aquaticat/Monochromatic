@@ -24,7 +24,6 @@ use super::management_arguments::{
     MANAGEMENT_HELP, MANAGEMENT_USAGE, ManagementAction, ManagementRefusal, RetiredCommand,
     parse_management_arguments,
 };
-use super::pending_state::pending_state;
 /// The shipped checks and their constructor.
 use super::policy_checks::{ShippedChecks, shipped_checks};
 /// What the direct command offers its content policies.
@@ -40,7 +39,9 @@ use super::repository_facts::{GitFacts, RepositoryFacts, git_facts};
 use super::repository_location::RepositoryLocation;
 /// The variable that names the forbidden-strings rules file.
 use super::scanner_selection::RULES_VARIABLE;
-use super::unported::{unported_from_unavailable, unported_notice};
+/// Startup recovery as a command step.
+use super::transaction_gate::{Gate, recover_for_command};
+use super::unported::{Unported, unported_from_unavailable, unported_notice};
 /// The worktree's top level, where a fix installs corrected files.
 use super::worktree_identity::worktree_root;
 use super::wrapper_controls::Controls;
@@ -399,13 +400,27 @@ pub fn plan_management(
         Ok(found) => found,
         Err(message) => return failure(message.as_str()),
     };
-    // `true`: a direct command forwards nothing, so only commit transactions matter here.
-    if let Some(what) = pending_state(&location.identity, true) {
-        return Action::Exit {
-            code: ENGINE_FAILURE_EXIT_CODE,
-            stdout: String::new(),
-            stderr: unported_notice(&what, direct_command(fix).as_str()),
-        };
+    // A direct command forwards nothing, so only commit transactions matter here: dead ones
+    // are recovered, and a live one still refuses, since a fix would race its landing.
+    match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
+        Gate::Clear => {}
+        Gate::Live(registry) => {
+            return Action::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stdout: String::new(),
+                stderr: unported_notice(
+                    &Unported::TransactionRecovery(registry),
+                    direct_command(fix).as_str(),
+                ),
+            };
+        }
+        Gate::Stop(stderr) => {
+            return Action::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stdout: String::new(),
+                stderr,
+            };
+        }
     }
     match load_identity_config(&location.identity) {
         Ok(loaded) => {

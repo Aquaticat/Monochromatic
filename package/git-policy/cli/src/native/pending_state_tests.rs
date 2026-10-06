@@ -1,11 +1,12 @@
-//! What: Which directory contents count as durable state, for each kind of location.
-//! Why: Missing state that exists would run a command beside a landing commit; seeing
-//!      state that does not exist would refuse every command in a quiet repository.
+//! What: Which directory contents count as an interrupted worktree copy, for each kind of
+//!       location.
+//! Why: Missing a journal would run a command beside an unfinished copy; seeing one that
+//!      does not exist would refuse every command in a quiet repository.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! // await mkdir(join(gitDir, 'cli-git-transactions', 'id'), { recursive: true });
-//! // expect(await pendingState(main, false)).toEqual({ kind: 'transaction-recovery', directory });
+//! // await writeFile(join(commonDir, 'cli-git-worktree-copy', 'v1', 'id.json'), '{}');
+//! // expect(await pendingState(linked, false)).toEqual({ kind: 'worktree-copy-recovery', directory });
 //! ```
 #![cfg(unix)]
 
@@ -81,62 +82,21 @@ fn quiet_directories_hold_no_state() {
     remove(root.as_path());
 }
 
-/// Any registry entry, and the legacy directory, stop every location that has a Git directory.
+/// Commit transactions are recovered elsewhere, so registry entries and the legacy directory
+/// are not state here.
 #[test]
-fn transaction_entries_are_state_for_the_invocations_git_directory() {
+fn transaction_entries_are_not_state_here() {
     let (root, common, linked): (PathBuf, PathBuf, PathBuf) = directories("pending-transactions");
-    let registry: PathBuf = common.join("cli-git-transactions");
-    for entry in [
-        "0123-id",
-        "0123-id.pending",
-        "landing.lock",
-        "reservation.lock",
+    std::fs::create_dir_all(common.join("cli-git-transactions/0123-id")).expect("registry entry");
+    std::fs::create_dir_all(linked.join("cli-git-transactions/0123-id")).expect("registry entry");
+    std::fs::create_dir(common.join("cli-git-transaction")).expect("legacy");
+    for identity in [
+        main_worktree(common.as_path()),
+        linked_worktree(common.as_path(), linked.as_path()),
+        bare_repository(common.as_path()),
     ] {
-        std::fs::create_dir_all(registry.join(entry)).expect("registry entry");
-        for identity in [
-            main_worktree(common.as_path()),
-            bare_repository(common.as_path()),
-        ] {
-            assert_eq!(
-                pending_state(&identity, true),
-                Some(Unported::TransactionRecovery(registry.clone())),
-                "{entry} {identity:?}"
-            );
-        }
-        // The linked worktree has its own registry, which is still empty.
-        assert_eq!(
-            pending_state(&linked_worktree(common.as_path(), linked.as_path()), true),
-            None,
-            "{entry}"
-        );
-        std::fs::remove_dir(registry.join(entry)).expect("remove registry entry");
+        assert_eq!(pending_state(&identity, false), None, "{identity:?}");
     }
-    // A plain file in the registry is an entry too.
-    std::fs::write(registry.join("stray"), b"").expect("stray file");
-    assert_eq!(
-        pending_state(&main_worktree(common.as_path()), false),
-        Some(Unported::TransactionRecovery(registry.clone()))
-    );
-    std::fs::remove_file(registry.join("stray")).expect("remove stray file");
-    let linked_registry: PathBuf = linked.join("cli-git-transactions");
-    std::fs::create_dir_all(linked_registry.join("id")).expect("linked registry entry");
-    assert_eq!(
-        pending_state(&linked_worktree(common.as_path(), linked.as_path()), false),
-        Some(Unported::TransactionRecovery(linked_registry.clone()))
-    );
-    assert_eq!(pending_state(&main_worktree(common.as_path()), false), None);
-    std::fs::remove_dir_all(&linked_registry).expect("remove linked registry");
-    // The legacy directory counts whatever it is, even a link to nowhere.
-    let legacy: PathBuf = common.join("cli-git-transaction");
-    std::os::unix::fs::symlink("nowhere", &legacy).expect("legacy link");
-    assert_eq!(
-        pending_state(&main_worktree(common.as_path()), false),
-        Some(Unported::TransactionRecovery(legacy.clone()))
-    );
-    assert_eq!(
-        pending_state(&linked_worktree(common.as_path(), linked.as_path()), false),
-        None
-    );
     remove(root.as_path());
 }
 
@@ -159,46 +119,37 @@ fn worktree_copy_journals_are_state_where_copies_are_synchronized() {
         assert_eq!(pending_state(&identity, true), None, "{identity:?}");
     }
     assert_eq!(pending_state(&main_worktree(common.as_path()), false), None);
-    // A transaction is reported before a journal.
-    std::fs::create_dir_all(linked.join("cli-git-transactions/id")).expect("registry entry");
-    assert_eq!(
-        pending_state(&linked_worktree(common.as_path(), linked.as_path()), false),
-        Some(Unported::TransactionRecovery(
-            linked.join("cli-git-transactions")
-        ))
-    );
     remove(root.as_path());
 }
 
-/// A registry that cannot be listed or inspected counts as holding state.
+/// A journal directory that cannot be listed counts as holding state.
 #[test]
-fn unreadable_directories_count_as_state() {
-    let (root, common, _linked): (PathBuf, PathBuf, PathBuf) = directories("pending-unreadable");
-    // A file where the registry directory should be cannot be listed.
-    let registry: PathBuf = common.join("cli-git-transactions");
-    std::fs::write(&registry, b"").expect("file in place of the registry");
+fn unreadable_journal_directories_count_as_state() {
+    let (root, common, linked): (PathBuf, PathBuf, PathBuf) = directories("pending-unreadable");
+    // A file where the journal directory should be cannot be listed.
+    let journals: PathBuf = common.join("cli-git-worktree-copy/v1");
+    std::fs::create_dir_all(common.join("cli-git-worktree-copy")).expect("journal parent");
+    std::fs::write(&journals, b"").expect("file in place of the journals");
     assert_eq!(
-        pending_state(&main_worktree(common.as_path()), false),
-        Some(Unported::TransactionRecovery(registry.clone()))
+        pending_state(&linked_worktree(common.as_path(), linked.as_path()), false),
+        Some(Unported::WorktreeCopyRecovery(journals.clone()))
     );
-    std::fs::remove_file(&registry).expect("remove file");
-    // A Git directory that cannot be searched hides whether the legacy directory exists.
-    let hidden: PathBuf = root.join("hidden");
-    std::fs::create_dir(&hidden).expect("hidden directory");
-    std::fs::set_permissions(&hidden, std::fs::Permissions::from_mode(0o000))
+    std::fs::remove_file(&journals).expect("remove file");
+    // A journal directory that cannot be searched hides whether journals exist.
+    std::fs::create_dir(&journals).expect("journals");
+    std::fs::set_permissions(&journals, std::fs::Permissions::from_mode(0o000))
         .expect("remove every permission");
     // Positive control for the fixture: the directory really is unreadable to this process,
     // which holds only when the tests do not run as the superuser.
-    let unreadable: bool = std::fs::read_dir(&hidden).is_err();
-    let found: Option<Unported> = pending_state(&main_worktree(hidden.as_path()), false);
-    std::fs::set_permissions(&hidden, std::fs::Permissions::from_mode(0o700))
+    let unreadable: bool = std::fs::read_dir(&journals).is_err();
+    let found: Option<Unported> =
+        pending_state(&linked_worktree(common.as_path(), linked.as_path()), false);
+    std::fs::set_permissions(&journals, std::fs::Permissions::from_mode(0o700))
         .expect("restore permissions");
     assert!(unreadable);
     assert_eq!(
         found,
-        Some(Unported::TransactionRecovery(
-            hidden.join("cli-git-transactions")
-        ))
+        Some(Unported::WorktreeCopyRecovery(journals.clone()))
     );
     remove(root.as_path());
 }

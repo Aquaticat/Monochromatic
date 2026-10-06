@@ -20,6 +20,7 @@ use super::rule_commit_index::IndexVsHead;
 use super::rule_commit_sequencer::SequencerState;
 /// The image's real Git, which prepares candidates for scripted facts.
 use super::test_support::REAL_GIT;
+use super::transaction_git::GitContext;
 use super::worktree_identity::WorktreeIdentity;
 /// Branch names and global options are operating-system text.
 use std::ffi::{OsStr, OsString};
@@ -94,6 +95,21 @@ impl RepositoryFacts for ScriptedFacts {
                 ));
             }
         }
+    }
+
+    fn asked_location(&self) -> Option<Result<RepositoryLocation, String>> {
+        if self.asked.contains(&String::from("location")) {
+            return Some(self.location.clone());
+        }
+        return None;
+    }
+
+    fn transaction_context(&self) -> GitContext {
+        return GitContext {
+            real_git: PathBuf::from(REAL_GIT),
+            overlay: Vec::new(),
+            global_prefix: Vec::new(),
+        };
     }
 }
 

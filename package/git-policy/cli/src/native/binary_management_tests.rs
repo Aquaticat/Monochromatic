@@ -9,7 +9,10 @@
 //! ```
 
 /// Import the shared fixtures and bounded process helpers.
-use super::support::{Fixture, Observed, bounded, fixture, observe, remove, repository, wrapped};
+use super::support::{
+    Fixture, Observed, bounded, fixture, observe, registered_transaction, remove, repository,
+    wrapped,
+};
 use git_policy_cli::unported::{Unported, unported_notice};
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
@@ -345,10 +348,9 @@ fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
         "{}",
         stdout_text(&invalid)
     );
-    // A registered commit transaction stops a direct command before any policy.
+    // A live commit transaction stops a direct command before any policy.
     std::fs::write(&source, "{}").expect("valid config");
-    let registry: PathBuf = repo.join(".git/cli-git-transactions");
-    std::fs::create_dir_all(registry.join("0123-transaction")).expect("registry entry");
+    let registry: PathBuf = registered_transaction(repo.as_path(), true);
     assert_eq!(
         run(
             &fixture,

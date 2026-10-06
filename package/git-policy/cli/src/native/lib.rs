@@ -386,3 +386,30 @@ pub mod shadow_git;
 
 /// Native conclusion cleanup reproduced in the owning worktree.
 pub mod conclusion_cleanup;
+
+/// The per-worktree capture store: location, sequence and identity.
+pub mod capture_store;
+
+/// `captured.json`, landed-capture records, their recording and pruning.
+pub mod capture_records;
+
+/// Loading many blobs through one `git cat-file --batch`.
+pub mod blob_batch;
+
+/// Bringing added paths' worktree copies to their landed bytes.
+pub mod worktree_completion;
+
+/// Owner inspection of registry entries and the oldest-first order.
+pub mod recovery_inspect;
+
+/// Recovery of one dead-owner transaction.
+pub mod recovery_landing;
+
+/// Recovery across every transaction directory of one worktree.
+pub mod recovery_scan;
+
+/// Startup recovery of interrupted commit transactions.
+pub mod commit_recovery;
+
+/// Startup recovery as a step of a wrapped or direct command.
+pub mod transaction_gate;

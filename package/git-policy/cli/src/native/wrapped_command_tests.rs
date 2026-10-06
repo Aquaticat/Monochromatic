@@ -29,7 +29,29 @@ use crate::unported::{Unported, unported_notice};
 use crate::worktree_identity::WorktreeIdentity;
 use crate::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
 use std::ffi::OsString;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+/// The transaction ID the registry fixtures use.
+const TRANSACTION_ID: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10";
+
+/// Publish a transaction owned by this test process, live or dead, in a repository's registry.
+fn registered(repo: &Path, live: bool) -> PathBuf {
+    let registry: PathBuf = repo.join(".git/cli-git-transactions");
+    std::fs::create_dir_all(repo.join(".git")).expect("Git directory stand-in");
+    crate::transaction_registry::ensure_transaction_root(registry.as_path()).expect("registry");
+    crate::transaction_registry::publish_transaction_directory(
+        registry.as_path(),
+        TRANSACTION_ID,
+        crate::recovery_inspect::tests::owner_bytes(
+            TRANSACTION_ID,
+            "2026-10-06T00:00:00.000Z",
+            live,
+        )
+        .as_slice(),
+    )
+    .expect("published");
+    return registry;
+}
 
 /// Run the lifecycle of one command, written as text, and return its ending with the facts asked for.
 fn run(
@@ -175,12 +197,13 @@ fn invocations_without_a_subcommand_are_forwarded_untouched() {
     }
 }
 
-/// A read-only command reads no configuration, checks no leftover state and ignores leases.
+/// A read-only command reads no configuration, goes on beside a live transaction and ignores
+/// leases.
 #[test]
 fn read_only_commands_skip_configuration_and_refusals() {
-    // The configuration is invalid and a transaction is registered: neither is looked at.
+    // The configuration is invalid and a live transaction is registered: neither stops it.
     let root: PathBuf = configured("wrapped-read-only", "this is not JSONC");
-    std::fs::create_dir_all(root.join(".git/cli-git-transactions/id")).expect("registry entry");
+    let registry: PathBuf = registered(root.as_path(), true);
     let lease: [(&str, &str); 1] = [("CLI_GIT_PREPARATION_LEASE", "token")];
     for (values, forwarded) in [
         (
@@ -200,6 +223,27 @@ fn read_only_commands_skip_configuration_and_refusals() {
             "{values:?}"
         );
     }
+    assert!(registry.join(TRANSACTION_ID).exists());
+    // A registry recovery cannot read stops a read-only command that asked for the location,
+    // as the incumbent's recovery before read-only commands does.
+    std::fs::create_dir(registry.join("stray")).expect("stray entry");
+    let (stopped, stopped_asked) = run(&["log"], at_root(root.as_path()), &[]);
+    assert_eq!(stopped_asked, location_only());
+    match stopped {
+        WrappedOutcome::Exit { code, stderr } => {
+            assert_eq!(code, 2);
+            assert!(
+                stderr.contains("\"code\":\"content-unavailable\""),
+                "{stderr}"
+            );
+            assert!(
+                stderr.contains("Unexpected transaction registry entry"),
+                "{stderr}"
+            );
+        }
+        WrappedOutcome::Forward { .. } => panic!("an unreadable registry never forwards"),
+    }
+    std::fs::remove_dir(registry.join("stray")).expect("remove stray entry");
     // Commands exempt from require-root ask Git nothing at all.
     for values in [vec!["version"], vec!["help", "status"]] {
         assert_eq!(
@@ -252,8 +296,7 @@ fn read_only_commands_skip_configuration_and_refusals() {
 #[test]
 fn a_guarded_command_is_prepared_in_order() {
     let root: PathBuf = configured("wrapped-order", "this is not JSONC");
-    let registry: PathBuf = root.join(".git/cli-git-transactions");
-    std::fs::create_dir_all(registry.join("id")).expect("registry entry");
+    let registry: PathBuf = registered(root.as_path(), true);
     let lease: [(&str, &str); 1] = [("CLI_GIT_LANDING_LEASE", "")];
     // 1. A lease stops the command before Git is asked anything.
     assert_eq!(
@@ -274,7 +317,7 @@ fn a_guarded_command_is_prepared_in_order() {
             location_only()
         )
     );
-    // 3. Leftover state is reported before the invalid configuration.
+    // 3. A live transaction is reported before the invalid configuration.
     assert_eq!(
         run(&["commit", "-m", "x"], at_root(root.as_path()), &[]),
         (
@@ -282,7 +325,14 @@ fn a_guarded_command_is_prepared_in_order() {
             location_only()
         )
     );
+    // A dead one is recovered and no longer stops the command.
     std::fs::remove_dir_all(&registry).expect("remove registry");
+    registered(root.as_path(), false);
+    assert!(!matches!(
+        run(&["commit", "-m", "x"], at_root(root.as_path()), &[]).0,
+        WrappedOutcome::Exit { ref stderr, .. } if stderr.contains("commit transactions recorded")
+    ));
+    assert!(!registry.join(TRANSACTION_ID).exists());
     // 4. The invalid configuration is reported before the commit refusal.
     let (invalid, invalid_asked) = run(&["commit", "-m", "x"], at_root(root.as_path()), &[]);
     assert_eq!(invalid_asked, location_only());

@@ -280,3 +280,36 @@ pub fn copy_executable(from: &Path, to: &Path) {
         .success();
     assert!(copied, "fixture copy failed: {from:?} to {to:?}");
 }
+
+/// The transaction ID registry fixtures use.
+pub const TRANSACTION_ID: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10";
+
+/// What: Publish a transaction in a repository's registry, owned by this test process with its
+///       real birth identity (live) or with an identity no process has (dead).
+/// Why:  The wrapper decides liveness from the record, so this process stands in for an owner.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await publishTransactionDirectory({ root, transactionId, owner: await createTransactionOwnerRecord(...) });
+/// ```
+pub fn registered_transaction(repo: &Path, live: bool) -> PathBuf {
+    let registry: PathBuf = repo.join(".git/cli-git-transactions");
+    git_policy_cli::transaction_registry::ensure_transaction_root(registry.as_path())
+        .expect("registry");
+    let mut owner: git_policy_cli::transaction_owner::TransactionOwner =
+        git_policy_cli::transaction_owner::current_transaction_owner(
+            TRANSACTION_ID,
+            "2026-10-06T00:00:00.000Z",
+        )
+        .expect("owner");
+    if !live {
+        owner.owner_identity = String::from("linux:1");
+    }
+    git_policy_cli::transaction_registry::publish_transaction_directory(
+        registry.as_path(),
+        TRANSACTION_ID,
+        git_policy_cli::transaction_owner::encode_transaction_owner(&owner).as_bytes(),
+    )
+    .expect("published");
+    return registry;
+}

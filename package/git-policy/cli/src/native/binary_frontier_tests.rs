@@ -13,8 +13,8 @@
 
 /// Import the shared fixtures, the bounded process helpers and the refusal texts.
 use super::support::{
-    Fixture, Observed, fixture, git, observe, porcelain, remove, repository, run_direct,
-    run_wrapped, silent_success, stderr_of, stopped_with, wrapped,
+    Fixture, Observed, TRANSACTION_ID, fixture, git, observe, porcelain, registered_transaction,
+    remove, repository, run_direct, run_wrapped, silent_success, stderr_of, stopped_with, wrapped,
 };
 use git_policy_cli::policy_checks::{DEPENDENT_VERSION_BUMP_NEEDS, MARKDOWN_AUTOFIX_NEEDS};
 use git_policy_cli::policy_registry::PolicyId;
@@ -352,7 +352,8 @@ fn worktree_creation_and_aliases_are_refused_from_a_linked_worktree() {
     remove(&fixture);
 }
 
-/// Registered transactions, an interrupted worktree copy and an inherited lease stop a guarded command.
+/// Live transactions, an interrupted worktree copy and an inherited lease stop a guarded command;
+/// dead transactions are recovered first.
 #[test]
 fn leftover_state_and_leases_refuse_guarded_commands() {
     let fixture: Fixture = fixture("frontier-state");
@@ -363,8 +364,7 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
         run_wrapped(&fixture, repo.as_path(), &guarded),
         silent_success()
     );
-    let registry: PathBuf = repo.join(".git/cli-git-transactions");
-    std::fs::create_dir_all(registry.join("0123-transaction")).expect("registry entry");
+    let registry: PathBuf = registered_transaction(repo.as_path(), true);
     assert_eq!(
         run_wrapped(&fixture, repo.as_path(), &guarded),
         stopped_with(
@@ -376,7 +376,7 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
         run_wrapped(&fixture, linked.as_path(), &guarded),
         silent_success()
     );
-    // A read-only command is forwarded beside the same state.
+    // A read-only command is forwarded beside the same live transaction.
     assert_eq!(
         run_wrapped(
             &fixture,
@@ -386,15 +386,60 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
         .stdout,
         b"true\n"
     );
+    assert!(registry.join(TRANSACTION_ID).exists());
+    // A dead owner's transaction is recovered, and the command runs.
     std::fs::remove_dir_all(&registry).expect("remove registry");
+    registered_transaction(repo.as_path(), false);
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &guarded),
+        silent_success()
+    );
+    assert!(!registry.join(TRANSACTION_ID).exists());
+    // A published directory without a valid owner record stops the command, names the
+    // directory and keeps its contents.
+    let broken: PathBuf = registry.join(TRANSACTION_ID);
+    std::fs::create_dir(&broken).expect("published directory");
+    std::fs::write(broken.join("owner.json"), b"{}").expect("malformed owner");
+    std::fs::write(broken.join("preparing.json"), b"kept").expect("evidence");
+    let stopped: Observed = run_wrapped(&fixture, repo.as_path(), &guarded);
+    assert_eq!(stopped.code, Some(2));
+    assert_eq!(
+        stderr_of(&stopped),
+        format!(
+            "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"content-unavailable\",\"message\":\"Transaction owner record is malformed: {}\"}}\n",
+            broken.display()
+        )
+    );
+    assert_eq!(
+        std::fs::read(broken.join("owner.json")).expect("kept"),
+        b"{}"
+    );
+    assert_eq!(
+        std::fs::read(broken.join("preparing.json")).expect("kept"),
+        b"kept"
+    );
+    // A read-only command that asked for the location stops the same way.
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["log", "--oneline"]).code,
+        Some(2)
+    );
+    std::fs::remove_dir_all(&registry).expect("remove registry");
+    // The legacy directory stops with the instructions to recover it.
     let legacy: PathBuf = repo.join(".git/cli-git-transaction");
     std::fs::create_dir(&legacy).expect("legacy transaction directory");
     assert_eq!(
         run_wrapped(&fixture, repo.as_path(), &guarded),
         stopped_with(
-            unported_notice(&Unported::TransactionRecovery(legacy.clone()), "reset").as_str()
+            format!(
+                "cli-git: {} holds a commit journal in a format this executable does not recover. \
+                 Nothing was changed. Run any git command once with the previous cli-git executable to \
+                 recover it, then run this command again.\n",
+                legacy.display()
+            )
+            .as_str()
         )
     );
+    assert!(legacy.exists());
     std::fs::remove_dir(&legacy).expect("remove legacy directory");
     // An interrupted worktree copy concerns the linked worktree, not the main one.
     let journals: PathBuf = repo.join(".git/cli-git-worktree-copy/v1");

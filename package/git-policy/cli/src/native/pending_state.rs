@@ -1,11 +1,8 @@
-//! What: Whether a repository holds durable state the installed cli-git would recover or
-//!       wait for before running a command: commit transactions and interrupted worktree
-//!       copies.
-//! Why: The installed wrapper recovers a dead commit transaction at startup, makes a
-//!      command that writes the index wait for a landing commit, and finishes an
-//!      interrupted worktree copy. None of that is ported, and this executable cannot tell
-//!      a dead owner from a live one. Running a repository-changing command beside such
-//!      state could race a landing commit, so the caller refuses instead.
+//! What: Whether a repository holds an interrupted worktree copy the installed cli-git would
+//!       finish before running a command.
+//! Why: Finishing an interrupted worktree copy is not ported; running a repository-changing
+//!      command beside one could race it, so the caller refuses instead. Commit transactions
+//!      are recovered by `commit_recovery.rs` before this check.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -33,19 +30,6 @@ use std::ffi::OsStr;
 /// // string paths, but byte-preserving.
 /// ```
 use std::path::{Path, PathBuf};
-
-/// What: The directory, inside the invocation's Git directory, where the installed wrapper
-///       registers commit transactions and their locks. `&str` is text baked into the program.
-/// Why:  Any entry there is a transaction, a staging directory or a lock.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const TRANSACTION_REGISTRY_NAME = 'cli-git-transactions';
-/// ```
-pub const TRANSACTION_REGISTRY_NAME: &str = "cli-git-transactions";
-
-/// The single transaction directory earlier builds of the installed wrapper wrote.
-pub const LEGACY_TRANSACTION_NAME: &str = "cli-git-transaction";
 
 /// What: The directory, inside the common Git directory, where the installed wrapper
 ///       journals a worktree copy until it is complete, as path segments.
@@ -116,45 +100,6 @@ fn is_ignored(name: &OsStr, ignored: Option<&str>) -> bool {
     }
 }
 
-/// What: Whether anything exists at `path`, without following a link. A path that cannot
-///       be inspected counts as existing.
-/// Why:  The legacy transaction directory is state whatever it contains.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// async function exists(path: string): Promise<boolean> { try { await lstat(path); return true; } catch (e) { return e.code !== 'ENOENT'; } }
-/// ```
-fn exists(path: &Path) -> bool {
-    match std::fs::symlink_metadata(path) {
-        Ok(_) => return true,
-        Err(error) => return error.kind() != std::io::ErrorKind::NotFound,
-    }
-}
-
-/// What: The transaction state under one Git directory, if any. `Option<Unported>` is "a
-///       reason to refuse, or nothing".
-/// Why:  Both the registry and the legacy directory belong to the invocation's own Git
-///       directory, which differs per linked worktree.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// async function pendingTransactions(gitDir: string): Promise<Unported | undefined>;
-/// ```
-fn pending_transactions(git_dir: &Path) -> Option<Unported> {
-    // `.join` appends one path segment and returns an owned path.
-    let registry: PathBuf = git_dir.join(TRANSACTION_REGISTRY_NAME);
-    // `None` is the "absent" case: no name is ignored in the registry.
-    if holds_entries(registry.as_path(), None) {
-        // `Some(x)` is the "present" case of `Option`.
-        return Some(Unported::TransactionRecovery(registry));
-    }
-    let legacy: PathBuf = git_dir.join(LEGACY_TRANSACTION_NAME);
-    if exists(legacy.as_path()) {
-        return Some(Unported::TransactionRecovery(legacy));
-    }
-    return None;
-}
-
 /// What: The interrupted worktree copies under one common Git directory, if any.
 /// Why:  Journals are shared by every worktree of a repository; the settlement lock beside
 ///       them is not a journal.
@@ -175,44 +120,29 @@ fn pending_worktree_copies(common_dir: &Path) -> Option<Unported> {
     return None;
 }
 
-/// What: The first durable state that the installed wrapper would act on for this
+/// What: The interrupted worktree copy the installed wrapper would act on for this
 ///       repository location. `&WorktreeIdentity` borrows Git's answer about the location;
 ///       `skip_worktree_copy` is true when the caller passed `--no-worktree-copy`.
-/// Why:  Commit transactions are checked wherever there is a Git directory. Worktree
-///       copies are checked only where the installed wrapper synchronizes them: a linked
-///       worktree or a bare repository, and not when the caller opted out.
+/// Why:  Worktree copies are checked only where the installed wrapper synchronizes them: a
+///       linked worktree or a bare repository, and not when the caller opted out.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// async function pendingState(identity: WorktreeIdentity, skipWorktreeCopy: boolean): Promise<Unported | undefined>;
 /// ```
 pub fn pending_state(identity: &WorktreeIdentity, skip_worktree_copy: bool) -> Option<Unported> {
-    // What: `match` on the borrowed identity; `{ git_dir, common_dir, .. }` binds two
-    //       fields and ignores the rest; `|` joins patterns sharing one arm.
-    // Why:  Only the main worktree is exempt from worktree-copy recovery.
+    // What: `match` on the borrowed identity; `{ common_dir, .. }` binds one field and ignores
+    //       the rest; `|` joins patterns sharing one arm.
+    // Why:  Only linked worktrees and bare repositories synchronize worktree copies.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // switch (identity.kind) { case 'outside-worktree': return undefined; /* ... */ }
     // ```
     match identity {
-        WorktreeIdentity::OutsideWorktree => return None,
-        WorktreeIdentity::MainWorktree { git_dir, .. } => {
-            return pending_transactions(git_dir.as_path());
-        }
-        WorktreeIdentity::LinkedWorktree {
-            git_dir,
-            common_dir,
-            ..
-        }
-        | WorktreeIdentity::BareRepository {
-            git_dir,
-            common_dir,
-        } => {
-            // `if let Some(found) = ...` runs only when transaction state exists.
-            if let Some(found) = pending_transactions(git_dir.as_path()) {
-                return Some(found);
-            }
+        WorktreeIdentity::OutsideWorktree | WorktreeIdentity::MainWorktree { .. } => return None,
+        WorktreeIdentity::LinkedWorktree { common_dir, .. }
+        | WorktreeIdentity::BareRepository { common_dir, .. } => {
             if skip_worktree_copy {
                 return None;
             }

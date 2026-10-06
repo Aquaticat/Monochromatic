@@ -488,14 +488,22 @@ fn direct_commands_use_the_repository_configuration() {
     remove(root.as_path());
 }
 
-/// A direct command refuses beside commit transactions it cannot recover.
+/// A direct command refuses beside a live commit transaction and recovers a dead one.
 #[test]
 fn direct_commands_refuse_beside_registered_transactions() {
     let root: PathBuf = fixture("management-pending");
     let repo: PathBuf = repository(root.as_path(), "repo");
     let inputs: ResolutionInputs = with_git(root.as_path());
     let registry: PathBuf = repo.join(".git/cli-git-transactions");
-    std::fs::create_dir_all(registry.join("id")).expect("registry entry");
+    crate::transaction_registry::ensure_transaction_root(registry.as_path()).expect("registry");
+    let id: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10";
+    crate::transaction_registry::publish_transaction_directory(
+        registry.as_path(),
+        id,
+        crate::recovery_inspect::tests::owner_bytes(id, "2026-10-06T00:00:00.000Z", true)
+            .as_slice(),
+    )
+    .expect("live transaction");
     // An interrupted worktree copy does not concern a direct command.
     std::fs::create_dir_all(repo.join(".git/cli-git-worktree-copy/v1")).expect("journals");
     std::fs::write(repo.join(".git/cli-git-worktree-copy/v1/id.json"), b"{}").expect("journal");
@@ -519,7 +527,12 @@ fn direct_commands_refuse_beside_registered_transactions() {
             "{arguments:?}"
         );
     }
-    std::fs::remove_dir_all(&registry).expect("remove registry");
+    // A dead owner's transaction is recovered first, and the command runs.
+    std::fs::write(
+        registry.join(id).join("owner.json"),
+        crate::recovery_inspect::tests::owner_bytes(id, "2026-10-06T00:00:00.000Z", false),
+    )
+    .expect("dead owner");
     assert_eq!(
         plan(
             &["check", "--all", "--policy", "require-root"],
@@ -528,6 +541,23 @@ fn direct_commands_refuse_beside_registered_transactions() {
         ),
         exit(0, "", "")
     );
+    assert!(!registry.join(id).exists());
+    // A registry recovery cannot read stops the command with the failure.
+    std::fs::create_dir(registry.join("stray")).expect("stray entry");
+    match plan(
+        &["check", "--all", "--policy", "require-root"],
+        repo.as_path(),
+        &inputs,
+    ) {
+        Action::Exit { code, stderr, .. } => {
+            assert_eq!(code, 2);
+            assert!(
+                stderr.contains("Unexpected transaction registry entry"),
+                "{stderr}"
+            );
+        }
+        Action::Forward { .. } => panic!("a direct command never forwards"),
+    }
     remove(root.as_path());
 }
 
