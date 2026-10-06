@@ -9,6 +9,8 @@ mod reconcile;
 mod record;
 /// Find the folders watched for the language servers, with the search's ignore rules.
 mod server_scan;
+/// The watch thread's part for the servers on each wake: feed changes, removed folders, and scans.
+mod server_wake;
 /// Watch those folders after the tree and the displayed file, sharing the one inotify instance.
 mod server_watch;
 /// State shared by the UI handle, the watch thread, and the event handler.
@@ -185,7 +187,7 @@ impl ChangeWatcher {
         self.feeding = feeding;
         let mut guard = lock(&self.shared);
         guard.server.feed = feed;
-        guard.server.feed_changed = true;
+        guard.server.requests.feed_changed = true;
         drop(guard);
         wake(&self.wake);
     }

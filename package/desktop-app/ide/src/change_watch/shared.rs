@@ -51,6 +51,21 @@ pub struct ServerChange {
     pub kind: ServerChangeKind,
 }
 
+/// What arrived for the language servers since the watch thread last looked; taken as one value.
+#[derive(Debug, Default)]
+pub(super) struct ServerRequests {
+    /// The feed was set or cleared.
+    pub(super) feed_changed: bool,
+    /// Paths that may be new folders inside a watched folder; the scan thread checks which are.
+    pub(super) candidates: BTreeSet<PathBuf>,
+    /// Folders whose contents must be scanned again.
+    pub(super) rescans: BTreeSet<PathBuf>,
+    /// Watched folders that were removed or moved away; their watches and everything below them go.
+    pub(super) gone: BTreeSet<PathBuf>,
+    /// Finished scans.
+    pub(super) scanned: Vec<Scan>,
+}
+
 /// The language servers' part of the shared state: where changes go and which folders are watched for them.
 #[derive(Debug, Default)]
 pub(super) struct ServerShared {
@@ -62,20 +77,12 @@ pub(super) struct ServerShared {
     /// feed?: Queue<ServerChange>;
     /// ```
     pub(super) feed: Option<UnboundedSender<ServerChange>>,
-    /// The feed was set or cleared since the watch thread last looked.
-    pub(super) feed_changed: bool,
     /// Folders with a live watch for the servers, as last published by the watch thread.
     pub(super) watched: BTreeSet<PathBuf>,
     /// Watched folders that held no entries when scanned; their first change asks to classify them.
     pub(super) provisional: BTreeSet<PathBuf>,
-    /// Paths that may be new folders inside a watched folder; the scan thread checks which are.
-    pub(super) candidates: BTreeSet<PathBuf>,
-    /// Folders whose contents must be scanned again.
-    pub(super) rescans: BTreeSet<PathBuf>,
-    /// Watched folders that were removed or moved away; their watches and everything below them go.
-    pub(super) gone: BTreeSet<PathBuf>,
-    /// Finished scans waiting for the watch thread.
-    pub(super) scanned: Vec<Scan>,
+    /// What arrived for the watch thread since it last looked.
+    pub(super) requests: ServerRequests,
 }
 
 /// How finished an observed change to the displayed file looks.

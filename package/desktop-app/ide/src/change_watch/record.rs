@@ -151,7 +151,7 @@ fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool
         && guard.server.provisional.contains(folder)
     {
         if let Some(base) = folder.parent() {
-            guard.server.rescans.insert(base.to_path_buf());
+            guard.server.requests.rescans.insert(base.to_path_buf());
         }
         return true;
     }
@@ -171,11 +171,11 @@ fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool
     }
     let mut structure = false;
     if may_add_folder(kind) {
-        guard.server.candidates.insert(path.to_path_buf());
+        guard.server.requests.candidates.insert(path.to_path_buf());
         structure = true;
     }
     if change == ServerChangeKind::Deleted && guard.server.watched.contains(path) {
-        guard.server.gone.insert(path.to_path_buf());
+        guard.server.requests.gone.insert(path.to_path_buf());
         structure = true;
     }
     return structure;

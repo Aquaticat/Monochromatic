@@ -36,6 +36,9 @@ use std::{
     time::{Duration, Instant},
 };
 
+/// The steps about folders watched for the servers, and the relay the application's tick performs.
+mod watching;
+
 /// Pause between polls, as the application's timer polls its workers.
 const POLL: Duration = Duration::from_millis(20);
 
@@ -124,16 +127,7 @@ impl Session {
     /// poll() { for (const change of worker.takeAll()) { record(change); } }
     /// ```
     fn poll(&mut self) -> Result<()> {
-        // The application's tick: the watcher feeds the worker while some server wants file changes.
-        if let Some(watcher) = self.watcher.as_mut() {
-            let feed = self
-                .worker
-                .wants_file_changes()
-                .then(|| return self.worker.file_change_sender());
-            watcher.feed_servers(feed);
-            // The tree's invalidations have no reader here.
-            let _tree = watcher.take();
-        }
+        self.relay_file_changes();
         // `if let Some(x) = ...?` runs the block only when something new was published.
         if let Some(status) = self.worker.try_take_status()? {
             emit(self.started, json!({ "status": render::status(&status) }));
@@ -372,27 +366,8 @@ impl Session {
                     "droppedStaleRevision": after.stale_revision - before.stale_revision,
                 })
             }
-            Step::Write { file, text } => {
-                let path = self.project.join(file);
-                std::fs::write(&path, text)
-                    .with_context(|| return format!("Cannot write {}", path.display()))?;
-                json!({ "written": path.display().to_string() })
-            }
-            Step::Folders { minimum, seconds } => {
-                let least = *minimum;
-                let watched = move |session: &Session| {
-                    return session
-                        .watcher
-                        .as_ref()
-                        .is_some_and(|watcher| return watcher.server_folders() >= least);
-                };
-                let within = self.until(Duration::from_secs(*seconds), &watched)?;
-                let folders = self
-                    .watcher
-                    .as_ref()
-                    .map_or(0, |watcher| return watcher.server_folders());
-                json!({ "within": within, "folders": folders })
-            }
+            Step::Write { file, text } => self.write(file, text)?,
+            Step::Folders { minimum, seconds } => self.folders(*minimum, *seconds)?,
             Step::Sleep { milliseconds } => {
                 let never = |_: &Session| return false;
                 self.until(Duration::from_millis(*milliseconds), &never)?;
