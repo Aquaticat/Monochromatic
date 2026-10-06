@@ -37,6 +37,18 @@ monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0
 # loads its rules once per invocation and scans candidate bytes through `Scanner::scan`.
 # Its catch boundaries need this crate's effective profile to unwind; `scanner_adapter.rs` refuses to build otherwise.
 forbidden-strings = { path = "../../cli/forbidden-strings", version = "0.4.1" }
+# Lock and journal records are JSON that the incumbent writes with `JSON.stringify` and reads with `JSON.parse`;
+# both wrappers read each other's records (doc/handover/cli-git-native-transactions.md, "Dependencies").
+# The scanner already links this exact version, so it adds no package to the lockfile.
+serde_json = "1"
+# Unguessable lock tokens and transaction IDs, the incumbent's `randomUUID`, from the operating system's source.
+# Already in the lockfile through the scanner's `tempfile`.
+getrandom = "0.4"
+
+# `sigaction` with signal details, `kill` and process-group facts, which the standard library does not expose.
+# Already in the lockfile through the scanner's dependencies.
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 
 [lints.clippy]
 disallowed_methods = "deny"

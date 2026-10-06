@@ -311,3 +311,24 @@ pub mod scanner_failure_code;
 /// Process isolation and rule fixtures for scanner controls; never in the release build.
 #[cfg(test)]
 mod scanner_test_support;
+
+/// Private, crash-safe file primitives shared by every durable record.
+pub mod private_storage;
+
+/// Compact JSON records read and written with the incumbent's `JSON` semantics.
+pub mod json_record;
+
+/// Random identifiers in the layout of the incumbent's `randomUUID`.
+pub mod random_id;
+
+/// Text operations with the exact semantics of JavaScript's built-ins.
+pub mod js_text;
+
+/// Process-birth identities in the incumbent's exact spelling.
+pub mod process_identity;
+
+/// The owner record inside every owner-lock directory.
+pub mod owner_lock_record;
+
+/// Rename-published owner locks with dead-owner retirement and an unbounded wait.
+pub mod owner_lock;
