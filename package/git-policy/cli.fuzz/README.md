@@ -61,7 +61,8 @@ so it reads no configuration and starts no Git.
 Whatever the arguments,
 a forwarded command must not be a `git commit` without a dry-run or status-format option,
 a `git push` without a dry-run option while the built-in content policy is on,
-a `git add` in a worktree while that policy is on,
+a `git add` in a worktree while that policy is on
+(the fixed answers prepare no candidates, so that policy cannot read them),
 or a worktree creation or possible alias run from a linked worktree without `--no-worktree-copy`.
 The dry-run options are restated from Git's documentation instead of read from the subject's tables.
 
@@ -90,6 +91,50 @@ and that a refusal is one of the four reply failures.
 The target reads in-memory bytes only;
 the process that produces real replies is controlled beside the subject.
 
+### `stage_listing`
+
+Runs `parse_stage_records`,
+the reader of `git ls-files --stage -z` output that a `git add` prediction lists before and after the add,
+over the raw bytes,
+and `staged_delta` over two listings built from them in Git's index order,
+with conflict stages,
+every mode,
+and pathnames holding tabs,
+spaces and bytes that are not UTF-8.
+An accepted listing must be byte for byte Git's rendering of the returned records,
+and a refusal must be a malformed listing or an unsupported mode.
+The delta must equal one recomputed from sorted maps:
+every pathname whose records differ,
+with its records afterwards,
+pathnames of the first listing first and new ones after them.
+
+### `rules_file`
+
+Runs `check_rules_file`,
+the check of the `rulesFile` option of `security/forbidden-strings`,
+over text inputs as written and over values built from path words
+(separators,
+`.`,
+`..`,
+drive prefixes,
+backslashes and NUL).
+The answer must be the refusal restated from the value's words in the documented order,
+and an accepted value joined to a root must stay below it,
+with only ordinary components.
+
+### `final_newline`
+
+Runs `normalized_final_newline`,
+the `final-newline` rule that also decides what `git cli-git fix` writes,
+over raw bytes and over text built with a chosen number of trailing line feeds.
+A file is left alone only when it is empty,
+holds NUL,
+is not UTF-8,
+or already ends with exactly one LF;
+a replacement keeps every byte before the trailing LF run,
+ends with exactly one LF,
+and is itself left alone.
+
 ## Controls
 
 `mise run //package/git-policy/cli.fuzz:test` runs the generator controls.
@@ -100,7 +145,10 @@ every way a command region is read,
 every control effect,
 a control spelling that survives as a value or path,
 every ending of the lifecycle,
-and every reply kind and reply failure,
+every reply kind and reply failure,
+equal, changed, removed and new paths of a staged delta,
+every `rulesFile` refusal,
+and every final-newline outcome,
 so an invariant that is never reached cannot pass unnoticed.
 
 `mise run //package/git-policy/cli.fuzz:test:planted` proves the invariants can fail.
@@ -116,7 +164,10 @@ keep-going removed without being recorded,
 a forwarded real commit,
 a publishing push that skips the manual-push gate,
 object content accepted past its declared size,
-a reply accepted for another object),
+a reply accepted for another object,
+a changed path left out of the staged delta,
+a `rulesFile` value with `..` accepted,
+extra final line feeds kept),
 and requires a generator control to fail for each.
 Results are retained under `target/verification/planted-*`.
 Removing a flag from a mutation list alone is not a usable plant:

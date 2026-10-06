@@ -19,6 +19,9 @@ const targets = [
   { name: 'config_schema', dictionary: 'config_schema.dict' },
   { name: 'wrapper_controls', dictionary: 'controls.dict' },
   { name: 'batch_reply', dictionary: 'batch_reply.dict' },
+  { name: 'stage_listing', dictionary: 'stage_listing.dict' },
+  { name: 'rules_file', dictionary: 'rules_file.dict' },
+  { name: 'final_newline', dictionary: 'final_newline.dict' },
 ];
 const secondsPerTarget = 30;
 const maxInputBytes = 4096;

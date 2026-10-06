@@ -121,6 +121,27 @@ const plants = [
       to: 'if false {',
     }],
   },
+  {
+    name: 'a path whose index records changed is left out of the staged delta',
+    file: 'package/git-policy/cli/src/native/candidate_stage.rs',
+    edits: [{ from: 'if later != Some(*records) {', to: 'if later.is_none() {' }],
+  },
+  {
+    name: 'a rules file named with .. is accepted',
+    file: 'package/git-policy/cli/src/native/config_rules_file.rs',
+    edits: [{
+      from: 'if component == "." || component == ".." {',
+      to: 'if component == "." {',
+    }],
+  },
+  {
+    name: 'extra final line feeds are kept',
+    file: 'package/git-policy/cli/src/native/policy_final_newline.rs',
+    edits: [{
+      from: 'if content_end + 1 == bytes.len() {',
+      to: 'if content_end < bytes.len() {',
+    }],
+  },
 ];
 
 /** Run the generator controls in the disposable sidecar; report status and the failing control names. */

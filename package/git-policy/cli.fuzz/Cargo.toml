@@ -64,6 +64,27 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "stage_listing"
+path = "fuzz_targets/stage_listing.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "rules_file"
+path = "fuzz_targets/rules_file.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "final_newline"
+path = "fuzz_targets/final_newline.rs"
+test = false
+doc = false
+bench = false
+
 # libFuzzer records and minimizes a failing input by unwinding out of the assertion.
 [profile.release]
 panic = "unwind"
