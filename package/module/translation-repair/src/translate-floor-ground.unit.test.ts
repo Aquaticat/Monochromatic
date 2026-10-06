@@ -54,8 +54,9 @@ const UNREADABLE_PAGE = `${'>'.repeat(16_000,)} cat`;
  What the floor says of that page, as its own case pins it
  (`translate-validate.unit.test.ts`).
  */
-const UNREADABLE_PAGE_DETAIL = 'page could not be read: plain markdown also refused: RangeError: Maximum call '
-  + 'stack size exceeded';
+const UNREADABLE_PAGE_DETAIL = 'page could not be read: plain markdown also refused: MarkdownParseError: Plain '
+  + 'markdown body refused to parse because it is nested too deeply to read: its container markers pass the '
+  + 'bound of 256 at line 1, column 257.';
 
 /**
  A rendering the floors that read text leave alone.

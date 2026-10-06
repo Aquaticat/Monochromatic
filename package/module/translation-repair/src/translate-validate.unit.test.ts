@@ -678,8 +678,9 @@ In the morning it dozes on the windowsill.
           candidateText: 'The cat naps on the windowsill.',
         },),).toEqual({
           kind: 'unknown',
-          detail: 'page could not be read: plain markdown also refused: RangeError: Maximum call stack size '
-            + 'exceeded',
+          detail: 'page could not be read: plain markdown also refused: MarkdownParseError: Plain markdown body '
+            + 'refused to parse because it is nested too deeply to read: its container markers pass the bound of '
+            + '256 at line 1, column 257.',
         },);
         expect(validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。',

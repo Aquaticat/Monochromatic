@@ -274,5 +274,23 @@ await describe({
         },),).toEqual([LINKED,],);
       },
     },),
+    it({
+      name: 'LEAVES A CANDIDATE NESTED TOO DEEPLY TO READ to the floor that reads its shape, which refuses it, '
+        + 'where plain markdown\'s refusal once ended the validation',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: SOURCE,
+          candidateText: `${'>'.repeat(16_000,)} cat`,
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [
+            'Your translation could not be parsed as Markdown: MdxParseError: MDX body refused to parse because it '
+              + 'is nested too deeply to read: its container markers pass the bound of 256 at line 1, column 257; '
+              + 'corpus documents compile as MDX upstream, so failure signals corruption or an unsupported '
+              + 'construct.',
+          ],
+        },);
+      },
+    },),
   ],
 },);

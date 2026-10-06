@@ -201,6 +201,31 @@ await describe({
             },),).toBe(SOFT,);
           },
         },),
+        it({
+          name: 'LAYS OUT AS WRITTEN a text nested too deeply to read, whose paragraphs no parser can locate, '
+            + 'where plain markdown\'s refusal once ended the comparison',
+          fn: async () => {
+            /**
+             Thousands of nested quotation markers, past what the parser's stack holds.
+             */
+            const deep = `${'>'.repeat(16_000,)} cat`;
+
+            expect(wordingKey({
+              text: `${deep}\n\n`,
+              lineStructured: false,
+            },),).toBe(deep,);
+            expect(sameWording({
+              proposal: `${deep}\n`,
+              standing: deep,
+              lineStructured: false,
+            },),).toBe(true,);
+            expect(sameWording({
+              proposal: `${deep} dog`,
+              standing: deep,
+              lineStructured: false,
+            },),).toBe(false,);
+          },
+        },),
       ],
     },),
   ],
