@@ -505,11 +505,17 @@ Two measurements bound that IP-level path:
   The cgroup exemption,
   not the `AllowedIPs` entry,
   keeps that traffic direct.
+  The human chose to keep the entry anyway,
+  at a measured cost of `650` networks and `21711` bytes of generated value,
+  so a regeneration immediately before `up` still buys a working window.
 - `AS4167`,
   `AS400243`,
   `AS401551`,
   and `AS401864` contributed no networks even after a fresh `IPINFO_TOKEN` refresh,
   so those four `AS` lines currently subtract nothing.
+  `doc/troubleshooting/ipinfo-lite-missing-openai-anthropic-asns.md` traces that gap to the
+  2026-10-06 IPinfo Lite generation,
+  which holds five records total for both vendors.
 
 Adding the hostnames grew the generated value from `4022` to `6517` networks,
 because every removed host route splits the aggregate that contained it.
