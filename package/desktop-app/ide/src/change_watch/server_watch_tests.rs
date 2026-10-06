@@ -127,6 +127,59 @@ fn a_folder_both_want_keeps_one_watch() {
     );
 }
 
+/// A folder the servers already watch is shared when the tree shows it: no second kernel watch is added,
+/// and collapsing it in the tree leaves the servers' watch in place.
+#[test]
+fn a_folder_the_servers_watch_is_shared_with_the_tree() {
+    let now = Instant::now();
+    let mut fake = kernel(100);
+    let mut servers = ServerWatches {
+        desired: folders(&["a", "b"]),
+        ..ServerWatches::default()
+    };
+    let request = ServerRequest {
+        desired_changed: true,
+        tree_limited: false,
+    };
+    reconcile_servers(&mut servers, &BTreeSet::new(), request, now, &mut fake);
+    let mut tree = Watches::default();
+    {
+        let mut shared = TreeFirst {
+            inner: &mut fake,
+            servers: &mut servers,
+            tree_held: BTreeSet::new(),
+        };
+        let shown = Request {
+            desired: Some(folders(&["a"])),
+            ..Request::default()
+        };
+        reconcile(&mut tree, shown, now, &mut shared);
+    }
+    assert_eq!(tree.active, folders(&["a"]));
+    assert_eq!(
+        fake.adds.len(),
+        3,
+        "the tree added watches the servers already held"
+    );
+    {
+        let mut shared = TreeFirst {
+            inner: &mut fake,
+            servers: &mut servers,
+            tree_held: tree.active.clone(),
+        };
+        let collapsed = Request {
+            desired: Some(BTreeSet::new()),
+            ..Request::default()
+        };
+        reconcile(&mut tree, collapsed, now, &mut shared);
+    }
+    assert_eq!(
+        fake.live,
+        folders(&["a", "b"]),
+        "collapsing in the tree removed the servers' watch"
+    );
+}
+
 /// Under the limit, the tree gets the watches: one held only for the servers is given up, the servers
 /// enter their own limit state once, and they retry only after the backoff.
 #[test]
