@@ -13,29 +13,46 @@
 //! part or its inks changed. Reloads and file switches need no call: a held snapshot stops matching the
 //! displayed stamp and is no longer painted.
 
-/// The parent's state, its rendering entry point, and the generated marker and box rows.
+/// The parent's state and the generated marker and box rows.
 use super::{
-    AppWindow, State, render,
+    AppWindow, State,
     ui::{SourceMarker, SourceSelection},
 };
+/// The parent's rendering entry point, used only by `set_annotations`, which exists only in tests and
+/// debug builds; release builds would report the import as unused.
+#[cfg(any(test, debug_assertions))]
+use super::render;
 /// The selection logic, card text, and positioned frame.
-use ide_app::annotation::{Annotations, Visible, describe, rank};
+use ide_app::annotation::{Visible, describe, rank};
+/// The snapshot pair, built only by `set_annotations` (tests and debug builds).
+#[cfg(any(test, debug_assertions))]
+use ide_app::annotation::Annotations;
 /// Annotation inks and the positioned frame the raster paints.
 use ide_app::annotation_layout::{AnnotationColors, AnnotationFrame};
-/// Snapshot records and the stamp naming the displayed text.
-use ide_app::language::{
-    diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot, identity::DocumentStamp,
-};
+/// The stamp naming the displayed text.
+use ide_app::language::identity::DocumentStamp;
+/// Snapshot records, taken only by `set_annotations` (tests and debug builds).
+#[cfg(any(test, debug_assertions))]
+use ide_app::language::{diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot};
 /// Window property access.
 use slint::SharedString;
-/// What: `Rc<RefCell<State>>` is the UI thread's shared source state; `Arc` is the shared snapshot pointer.
-/// Why: The Language module hands snapshots out as `Arc`; the window state is single-threaded.
+/// What: `Arc` is the shared snapshot pointer.
+/// Why: The Language module hands snapshots out as `Arc`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Shared<T> = { current: T };
 /// ```
-use std::{cell::RefCell, rc::Rc, sync::Arc};
+use std::sync::Arc;
+/// What: `Rc<RefCell<State>>` is the UI thread's shared source state, taken only by `set_annotations`.
+/// Why: The window state is single-threaded; tests and debug builds alone call that function.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Shared<T> = { current: T };
+/// ```
+#[cfg(any(test, debug_assertions))]
+use std::{cell::RefCell, rc::Rc};
 
 /// What: At most this many problems are listed in the caret card; `usize` is the count type (siblings `u32`, `u64`).
 /// Why: A pathological pile of diagnostics at one character must not produce a card taller than the window.
