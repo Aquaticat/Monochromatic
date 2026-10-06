@@ -49,6 +49,9 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
+/// The find and search boxes and their clear controls through Slint's element handles, as assistive tools see them.
+#[cfg(test)]
+mod accessible_box_tests;
 /// Inlay hints and diagnostics: the snapshot setter, visible subset, marker rows, and caret card.
 mod annotate;
 /// Rendered annotation pixels in both schemes, untouched source pixels, and visible-only repaints.
