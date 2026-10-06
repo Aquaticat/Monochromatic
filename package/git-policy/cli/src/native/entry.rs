@@ -17,7 +17,10 @@ use super::effective_target::default_allowed_worktree_dirs;
 use super::forwarding::replace_process_with_real_git;
 use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
 use super::management::plan_management;
-use super::policy_checks::{CandidateSource, ShippedChecks};
+/// The shipped checks and their constructor.
+use super::policy_checks::{ShippedChecks, shipped_checks};
+/// A forwarded command starts with no candidate content.
+use super::policy_content::LifecycleContent;
 use super::real_git::{ResolutionInputs, process_resolution_inputs, resolve_real_git};
 use super::real_git_candidate::same_file;
 use super::repository_facts::{GitFacts, git_facts};
@@ -148,17 +151,17 @@ pub fn plan_invocation(
         overlay.as_slice(),
     );
     // `mut` lets the lifecycle cache facts and state what content policies can read.
-    let mut checks: ShippedChecks<GitFacts> = ShippedChecks {
+    let mut checks: ShippedChecks<GitFacts> = shipped_checks(
         facts,
         // `.clone()` copies the stripped arguments for the rule cores.
-        arguments: stripped.arguments.clone(),
-        candidates: CandidateSource::None,
-        allowed_worktree_dirs: default_allowed_worktree_dirs(
+        stripped.arguments.clone(),
+        LifecycleContent::None,
+        default_allowed_worktree_dirs(
             environment,
             // `.as_deref()` lends the optional owned path as an optional borrowed one.
             home_directory(environment).as_deref(),
         ),
-    };
+    );
     // `match` picks by variant and binds the fields each ending carries.
     match run_wrapped_command(&stripped, environment, &mut checks) {
         // `arguments: forwarded` binds the field under a new name.

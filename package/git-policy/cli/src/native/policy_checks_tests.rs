@@ -9,9 +9,14 @@
 //! ```
 
 /// The adapter under test, the engine types it returns and the scripted facts.
-use super::{CandidateSource, ShippedChecks};
+use super::{
+    DEPENDENT_VERSION_BUMP_NEEDS, DIRECT_FIX_NEEDS, FORBIDDEN_STRINGS_NEEDS,
+    MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks,
+};
+use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::diagnostics::EngineFailureCode;
+use crate::policy_content::LifecycleContent;
 use crate::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
 use crate::policy_registry::PolicyId;
 use crate::policy_test_support::{
@@ -27,12 +32,12 @@ use std::path::PathBuf;
 
 /// The shipped checks over a command, the given facts and no candidates.
 fn checks(values: &[&str], facts: ScriptedFacts) -> ShippedChecks<ScriptedFacts> {
-    return ShippedChecks {
+    return shipped_checks(
         facts,
-        arguments: os_arguments(values),
-        candidates: CandidateSource::None,
-        allowed_worktree_dirs: Vec::<PathBuf>::new(),
-    };
+        os_arguments(values),
+        LifecycleContent::None,
+        Vec::<PathBuf>::new(),
+    );
 }
 
 /// Run one pre-forward check and return its outcome with the facts it asked for.
@@ -350,9 +355,23 @@ fn add_explicit_never_asks_for_a_fact() {
     assert_eq!(asked, Vec::<String>::new());
 }
 
-/// Content policies report nothing without candidates and are unavailable where candidates cannot be read.
+/// The candidates of `git add file`.
+fn add_candidates() -> LifecycleContent {
+    return LifecycleContent::Requested(CandidateRequest::Add(os_arguments(&["file"])));
+}
+
+/// The content-unavailable failure of candidates these scripted facts cannot prepare.
+fn unprepared() -> PolicyOutcome {
+    return PolicyOutcome::Failed {
+        code: EngineFailureCode::ContentUnavailable,
+        message: String::from("the scripted facts prepare no candidates"),
+    };
+}
+
+/// Content policies report nothing without candidates; with candidates the ported ones
+/// read them and the unported ones refuse without reading.
 #[test]
-fn content_policies_follow_the_candidate_source() {
+fn content_policies_follow_the_lifecycle_content() {
     for policy in [
         PolicyId::FinalNewline,
         PolicyId::MarkdownAutofix,
@@ -368,21 +387,47 @@ fn content_policies_follow_the_candidate_source() {
             let mut without: ShippedChecks<ScriptedFacts> = checks(&["status"], unlocatable());
             assert_eq!(without.check(policy, trigger), clean(), "{policy:?}");
             assert_eq!(without.facts.asked, Vec::<String>::new());
-            let mut with: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
-            with.candidates = CandidateSource::NotPorted("the staged content of git add");
-            assert_eq!(
-                with.check(policy, trigger),
-                PolicyOutcome::Unavailable("the staged content of git add"),
-                "{policy:?}"
-            );
-            assert_eq!(with.facts.asked, Vec::<String>::new());
         }
     }
-    // A command policy is not a content policy: the candidate source does not touch it.
+    let unported: [(PolicyId, &str); 3] = [
+        (PolicyId::MarkdownAutofix, MARKDOWN_AUTOFIX_NEEDS),
+        (PolicyId::DependentVersionBump, DEPENDENT_VERSION_BUMP_NEEDS),
+        (PolicyId::ForbiddenStrings, FORBIDDEN_STRINGS_NEEDS),
+    ];
+    for (policy, needs) in unported {
+        let mut with: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
+        with.candidates = add_candidates();
+        assert_eq!(
+            with.check(policy, Trigger::PreForward),
+            PolicyOutcome::Unavailable(needs),
+            "{policy:?}"
+        );
+        assert_eq!(with.facts.asked, Vec::<String>::new(), "{policy:?}");
+    }
+    for policy in [PolicyId::FinalNewline, PolicyId::ForbiddenRootContext] {
+        for trigger in [Trigger::PreForward, Trigger::DirectCheck] {
+            let mut read: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
+            read.candidates = add_candidates();
+            assert_eq!(read.check(policy, trigger), unprepared(), "{policy:?}");
+            // A second content policy shares the one failed attempt and does not retry it.
+            assert_eq!(read.check(policy, trigger), unprepared(), "{policy:?}");
+            assert_eq!(read.facts.asked, vec![String::from("candidates")]);
+        }
+    }
+    // A correction of a direct fix is not ported yet: the policy refuses without reading.
+    let mut fixing: ShippedChecks<ScriptedFacts> = checks(&[], unlocatable());
+    fixing.candidates = add_candidates();
+    assert_eq!(
+        fixing.check(PolicyId::FinalNewline, Trigger::DirectFix),
+        PolicyOutcome::Unavailable(DIRECT_FIX_NEEDS)
+    );
+    assert_eq!(fixing.facts.asked, Vec::<String>::new());
+    // A command policy is not a content policy: the lifecycle content does not touch it.
     let mut command: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], scripted_facts());
-    command.candidates = CandidateSource::NotPorted("anything");
+    command.candidates = add_candidates();
     assert_eq!(
         command.check(PolicyId::AddExplicit, Trigger::PreForward),
         clean()
     );
+    assert_eq!(command.facts.asked, Vec::<String>::new());
 }

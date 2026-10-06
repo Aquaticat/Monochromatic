@@ -19,6 +19,10 @@
 /// ```ts
 /// import { indexQueryArguments, indexStateFromExit } from './rule_commit_index.ts';
 /// ```
+use super::candidate_error::CandidateError;
+/// Candidate preparation on a private index.
+use super::candidate_prediction::{CandidateRequest, PreparedCandidates, prepare_candidates};
+/// The captured-query runner and its byte helpers.
 use super::git_metadata::{MetadataOutput, path_from_git_bytes, run_metadata_git};
 use super::repository_location::{
     RepositoryLocation, location_query_arguments, parse_location_output,
@@ -61,6 +65,12 @@ pub trait RepositoryFacts {
     /// Whether `git switch <target>` or `git checkout <target>` would create a local
     /// branch from the one remote branch of that name.
     fn remote_guess_creates_branch(&mut self, target: &OsStr) -> Result<bool, String>;
+    /// The candidates a content policy reads for this request, prepared on a private
+    /// index; a failure carries the candidate layer's cause.
+    fn candidates(
+        &mut self,
+        request: &CandidateRequest,
+    ) -> Result<PreparedCandidates, CandidateError>;
 }
 
 /// What: The provider that asks real Git. A `struct` is a record with named fields;
@@ -215,6 +225,21 @@ impl RepositoryFacts for GitFacts {
             output.stdout.as_slice(),
             target.as_encoded_bytes(),
         ));
+    }
+
+    /// Prepare the candidates with this provider's Git, prefix and environment.
+    fn candidates(
+        &mut self,
+        request: &CandidateRequest,
+    ) -> Result<PreparedCandidates, CandidateError> {
+        // The same Git, prefix and environment as every other question, so the prediction
+        // looks at the repository the command will change.
+        return prepare_candidates(
+            self.real_git.as_path(),
+            self.global_prefix.as_slice(),
+            self.overlay.as_slice(),
+            request,
+        );
     }
 }
 

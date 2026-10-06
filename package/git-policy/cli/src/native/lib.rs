@@ -217,6 +217,15 @@ pub mod rule_add_explicit;
 /// The shipped policies as checks over rule cores and repository facts.
 pub mod policy_checks;
 
+/// What a lifecycle offers content policies, and its candidates once prepared.
+pub mod policy_content;
+
+/// The built-in final-newline policy: canonical final LF, preserved paths, findings.
+pub mod policy_final_newline;
+
+/// The optional root-context policy: no top-level `CONTEXT.md` enters the index.
+pub mod policy_root_context;
+
 /// The fixed argument transforms of a forwarded command, in order.
 pub mod policy_transforms;
 

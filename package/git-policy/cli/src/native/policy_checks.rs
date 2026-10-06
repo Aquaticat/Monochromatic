@@ -2,9 +2,10 @@
 //!       the pure rule cores and the repository facts they ask for.
 //! Why: The engine owns order, severity and stopping; the rule cores own decisions from
 //!      arguments; this module joins them and fetches a repository fact only when a core
-//!      asks. The five content policies need candidate content, which is not ported: they
-//!      report nothing where a lifecycle has no candidates and are unavailable where it
-//!      has some, so an unchecked file can never read as a clean one.
+//!      asks. The content policies read the lifecycle's candidates: they report nothing
+//!      where a lifecycle has none. The two content policies that are not ported are
+//!      unavailable wherever a lifecycle has candidates, so an unchecked file can never
+//!      read as a clean one.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -21,8 +22,14 @@
 /// ```
 use super::diagnostics::EngineFailureCode;
 use super::effective_target::{EffectiveTarget, classify_effective_target};
+/// What the lifecycle offers content policies, and its prepared candidates.
+use super::policy_content::{ContentState, LifecycleContent};
 use super::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
+/// The built-in final-newline check over candidates.
+use super::policy_final_newline::check_final_newline;
 use super::policy_registry::PolicyId;
+/// The optional root-context check over candidates.
+use super::policy_root_context::check_root_context;
 use super::policy_trigger::Trigger;
 use super::repository_facts::RepositoryFacts;
 use super::repository_location::{RepositoryLocation, effective_directory};
@@ -51,23 +58,17 @@ use std::ffi::OsString;
 /// `PathBuf` is an owned filesystem path of raw bytes.
 use std::path::PathBuf;
 
-/// What: What the current lifecycle offers a content policy. An `enum` is a closed set of
-///       named alternatives; `NotPorted` carries words naming what is missing.
-///       `#[derive(...)]` asks the compiler to generate copying, debug printing and `==`.
-/// Why:  "There are no files to check" and "there are files this executable cannot read
-///       yet" must never be confused: the first is clean, the second is unavailable.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type CandidateSource = { kind: 'none' } | { kind: 'not-ported'; needs: string };
-/// ```
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum CandidateSource {
-    /// The lifecycle has no candidate content, as for a forwarded command other than `git add`.
-    None,
-    /// The lifecycle has candidates, and reading them is not ported.
-    NotPorted(&'static str),
-}
+/// What the Markdown autofix policy needs that is not ported.
+pub const MARKDOWN_AUTOFIX_NEEDS: &str = "the native Markdown linter";
+
+/// What the dependent-version policy needs that is not ported.
+pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps";
+
+/// What the forbidden-strings policy needs that is not ported yet.
+pub const FORBIDDEN_STRINGS_NEEDS: &str = "scanning candidates for forbidden strings";
+
+/// What a correction of `git cli-git fix` needs that is not ported yet.
+pub const DIRECT_FIX_NEEDS: &str = "applying policy corrections to the worktree";
 
 /// What: The shipped policies over one invocation. `<F: RepositoryFacts>` says the record
 ///       works with any one type `F` that provides the facts interface, chosen where the
@@ -77,9 +78,8 @@ pub enum CandidateSource {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type ShippedChecks<F extends RepositoryFacts> = { facts: F; arguments: string[]; candidates: CandidateSource; allowedWorktreeDirs: string[] };
+/// type ShippedChecks<F extends RepositoryFacts> = { facts: F; arguments: string[]; candidates: LifecycleContent; allowedWorktreeDirs: string[]; content: ContentState };
 /// ```
-#[derive(Clone, Debug)]
 pub struct ShippedChecks<F: RepositoryFacts> {
     /// Where repository facts come from.
     pub facts: F,
@@ -87,9 +87,35 @@ pub struct ShippedChecks<F: RepositoryFacts> {
     /// global options written before `cli-git`.
     pub arguments: Vec<OsString>,
     /// What the lifecycle offers content policies.
-    pub candidates: CandidateSource,
+    pub candidates: LifecycleContent,
     /// Tool-cache directories exempt from linked-worktree enforcement.
     pub allowed_worktree_dirs: Vec<PathBuf>,
+    /// The candidates once a content policy prepared them, shared by every later one.
+    pub content: ContentState,
+}
+
+/// What: The shipped checks for one invocation, with no candidates yet prepared.
+///       `<F: RepositoryFacts>` accepts any facts provider.
+/// Why:  Every lifecycle builds its checks the same way; it only chooses what the
+///       content policies may read.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function shippedChecks(facts, args, candidates, allowedWorktreeDirs): ShippedChecks;
+/// ```
+pub fn shipped_checks<F: RepositoryFacts>(
+    facts: F,
+    arguments: Vec<OsString>,
+    candidates: LifecycleContent,
+    allowed_worktree_dirs: Vec<PathBuf>,
+) -> ShippedChecks<F> {
+    return ShippedChecks {
+        facts,
+        arguments,
+        candidates,
+        allowed_worktree_dirs,
+        content: ContentState::new(),
+    };
 }
 
 /// What: The outcome of a check whose repository fact could not be read.
@@ -258,18 +284,19 @@ fn check_add_explicit(arguments: &[OsString]) -> PolicyOutcome {
     }
 }
 
-/// What: The check of every policy that reads candidate content.
-/// Why:  Each of them derives every finding from the candidates, so no candidates means
-///       no findings, and unreadable candidates mean the policy cannot answer.
+/// What: The check of a content policy that is not ported. `&LifecycleContent` borrows
+///       what the lifecycle offers; `needs` names what is missing.
+/// Why:  No candidates means no findings; candidates nobody can check mean the policy
+///       cannot answer, which refuses the command instead of letting it through.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const candidates = await context.git.candidates(); if (candidates.length === 0) return [];
+/// const unportedContent = (candidates, needs) => candidates.kind === 'none' ? clean() : { kind: 'unavailable', needs };
 /// ```
-fn check_content(candidates: CandidateSource) -> PolicyOutcome {
+fn unported_content(candidates: &LifecycleContent, needs: &'static str) -> PolicyOutcome {
     match candidates {
-        CandidateSource::None => return clean(),
-        CandidateSource::NotPorted(needs) => return PolicyOutcome::Unavailable(needs),
+        LifecycleContent::None => return clean(),
+        LifecycleContent::Requested(_) => return PolicyOutcome::Unavailable(needs),
     }
 }
 
@@ -300,11 +327,24 @@ impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
                 return check_branch_worktree(&mut self.facts, self.arguments.as_slice());
             }
             PolicyId::AddExplicit => return check_add_explicit(self.arguments.as_slice()),
-            PolicyId::FinalNewline
-            | PolicyId::MarkdownAutofix
-            | PolicyId::ForbiddenRootContext
-            | PolicyId::DependentVersionBump
-            | PolicyId::ForbiddenStrings => return check_content(self.candidates),
+            PolicyId::FinalNewline => {
+                if trigger == Trigger::DirectFix {
+                    return unported_content(&self.candidates, DIRECT_FIX_NEEDS);
+                }
+                return check_final_newline(&mut self.content, &self.candidates, &mut self.facts);
+            }
+            PolicyId::ForbiddenRootContext => {
+                return check_root_context(&mut self.content, &self.candidates, &mut self.facts);
+            }
+            PolicyId::MarkdownAutofix => {
+                return unported_content(&self.candidates, MARKDOWN_AUTOFIX_NEEDS);
+            }
+            PolicyId::DependentVersionBump => {
+                return unported_content(&self.candidates, DEPENDENT_VERSION_BUMP_NEEDS);
+            }
+            PolicyId::ForbiddenStrings => {
+                return unported_content(&self.candidates, FORBIDDEN_STRINGS_NEEDS);
+            }
         }
     }
 }

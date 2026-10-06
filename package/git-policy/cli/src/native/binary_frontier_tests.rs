@@ -1,7 +1,7 @@
 //! What: The refusal frontier through the built executable: every command that needs work
 //!       this executable does not do stops with exit status 2, names what is missing and
 //!       leaves the repository untouched.
-//! Why: A commit, an unchecked `git add`, a real push, a worktree copy or a command beside
+//! Why: A commit, a `git add` an unported content policy should check, a real push, a worktree copy or a command beside
 //!      a landing transaction that reached Git would run without the installed wrapper's
 //!      protection, and nothing would show it. Each refusal has a positive control: the
 //!      neighbouring command that is forwarded really changes the repository.
@@ -16,11 +16,11 @@ use super::support::{
     Fixture, Observed, fixture, git, observe, porcelain, remove, repository, run_direct,
     run_wrapped, silent_success, stderr_of, stopped_with, wrapped,
 };
+use git_policy_cli::policy_checks::{DEPENDENT_VERSION_BUMP_NEEDS, MARKDOWN_AUTOFIX_NEEDS};
 use git_policy_cli::policy_registry::PolicyId;
 use git_policy_cli::policy_trigger::Trigger;
 use git_policy_cli::refusal_frontier::LEASE_VARIABLES;
 use git_policy_cli::unported::{Unported, unported_notice};
-use git_policy_cli::wrapped_command::ADD_CANDIDATES_NEED;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
@@ -124,75 +124,94 @@ fn a_real_commit_is_refused() {
     remove(&fixture);
 }
 
-/// `git add` is refused while a content policy is on, and stages when none is.
+/// The final-newline warning of `git add` about `file.txt`.
+const FILE_WARNING: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"path\":\"file.txt\",\"fix\":\"none\"}\n";
+
+/// The forbidden-root-context error of `git add` about the top-level `CONTEXT.md`.
+const CONTEXT_ERROR: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\"policyId\":\"mono/forbidden-root-context\",\"severity\":\"error\",\"code\":\"mono/forbidden-root-context/root-context-forbidden\",\"message\":\"Root CONTEXT.md is forbidden; read source code directly.\",\"path\":\"CONTEXT.md\",\"fix\":\"none\"}\n";
+
+/// `git add` runs the ported content policies over what it would stage, and is refused
+/// while an unported content policy is on.
 #[test]
-fn add_is_refused_while_a_content_policy_cannot_read_what_it_would_stage() {
+fn add_runs_ported_content_policies_and_refuses_unported_ones() {
     let fixture: Fixture = fixture("frontier-add");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
     std::fs::write(repo.join("file.txt"), b"no final newline").expect("file");
     std::fs::write(repo.join("second.txt"), b"second\n").expect("second file");
+    std::fs::write(repo.join("CONTEXT.md"), b"context\n").expect("context file");
+    // The built-in policy warns about the bytes the add stages, and Git stages them.
     assert_eq!(
         run_wrapped(&fixture, repo.as_path(), &["add", "--", "file.txt"]),
-        stopped_with(
-            unported_notice(
-                &Unported::PolicyNeeds {
-                    policy: PolicyId::FinalNewline,
-                    needs: ADD_CANDIDATES_NEED,
-                },
-                "add"
-            )
-            .as_str()
-        )
+        Observed {
+            code: Some(0),
+            stdout: Vec::<u8>::new(),
+            stderr: FILE_WARNING.as_bytes().to_vec(),
+        }
     );
     assert_eq!(
         porcelain(&fixture, repo.as_path()),
-        "?? file.txt\n?? second.txt\n"
+        "A  file.txt\n?? CONTEXT.md\n?? second.txt\n"
     );
-    // Positive control: with the only content policy escaped, the same command stages the file.
+    // A listed ported policy at error stops the add, and nothing is staged.
+    let configuration: PathBuf = repo.join("cli-git.config.jsonc");
+    std::fs::write(
+        &configuration,
+        "{ \"policies\": { \"mono/forbidden-root-context\": \"error\" } }\n",
+    )
+    .expect("configuration");
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["add", "--", "CONTEXT.md"]),
+        Observed {
+            code: Some(1),
+            stdout: Vec::<u8>::new(),
+            stderr: CONTEXT_ERROR.as_bytes().to_vec(),
+        }
+    );
+    // Each unported content policy refuses under its own name, and nothing is staged.
+    for (name, policy, needs) in [
+        (
+            "markdown/autofix",
+            PolicyId::MarkdownAutofix,
+            MARKDOWN_AUTOFIX_NEEDS,
+        ),
+        (
+            "mono/dependent-version-bump",
+            PolicyId::DependentVersionBump,
+            DEPENDENT_VERSION_BUMP_NEEDS,
+        ),
+    ] {
+        std::fs::write(
+            &configuration,
+            format!("{{ \"policies\": {{ \"{name}\": \"error\" }} }}\n"),
+        )
+        .expect("configuration");
+        assert_eq!(
+            run_wrapped(&fixture, repo.as_path(), &["add", "--", "second.txt"]),
+            stopped_with(unported_notice(&Unported::PolicyNeeds { policy, needs }, "add").as_str()),
+            "{name}"
+        );
+    }
+    assert_eq!(
+        porcelain(&fixture, repo.as_path()),
+        "A  file.txt\n?? CONTEXT.md\n?? cli-git.config.jsonc\n?? second.txt\n"
+    );
+    // Positive control: with the unported policy escaped, the same command stages the file.
     assert_eq!(
         run_wrapped(
             &fixture,
             repo.as_path(),
-            &["add", "--no-enforce-final-newline", "--", "file.txt"]
+            &[
+                "add",
+                "--no-enforce-mono/dependent-version-bump",
+                "--",
+                "second.txt"
+            ]
         ),
         silent_success()
     );
     assert_eq!(
         porcelain(&fixture, repo.as_path()),
-        "A  file.txt\n?? second.txt\n"
-    );
-    // A listed optional content policy refuses in the same way, under its own name.
-    std::fs::write(
-        repo.join("cli-git.config.jsonc"),
-        r#"{ "policies": { "final-newline": "off", "security/forbidden-strings": "error" } }"#,
-    )
-    .expect("configuration");
-    assert_eq!(
-        run_wrapped(&fixture, repo.as_path(), &["add", "--", "second.txt"]),
-        stopped_with(
-            unported_notice(
-                &Unported::PolicyNeeds {
-                    policy: PolicyId::ForbiddenStrings,
-                    needs: ADD_CANDIDATES_NEED,
-                },
-                "add"
-            )
-            .as_str()
-        )
-    );
-    // With every content policy off in the configuration, a plain `git add` stages.
-    std::fs::write(
-        repo.join("cli-git.config.jsonc"),
-        r#"{ "policies": { "final-newline": "off" } }"#,
-    )
-    .expect("configuration");
-    assert_eq!(
-        run_wrapped(&fixture, repo.as_path(), &["add", "--", "second.txt"]),
-        silent_success()
-    );
-    assert_eq!(
-        porcelain(&fixture, repo.as_path()),
-        "A  file.txt\nA  second.txt\n?? cli-git.config.jsonc\n"
+        "A  file.txt\nA  second.txt\n?? CONTEXT.md\n?? cli-git.config.jsonc\n"
     );
     remove(&fixture);
 }

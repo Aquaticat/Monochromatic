@@ -10,18 +10,26 @@
 
 /// Import the sibling modules the decision combines.
 use super::action::{Action, ENGINE_FAILURE_EXIT_CODE, failure};
+/// A direct command asks for the worktree files its scope selects.
+use super::candidate_prediction::CandidateRequest;
 use super::child_environment::child_environment_overlay;
 use super::config_error::ConfigError;
 use super::config_file::LoadedConfig;
+/// A scope that cannot be projected is a `transaction-failed` engine failure.
+use super::diagnostics::EngineFailureCode;
 use super::invocation_config::{config_invalid_event, legacy_warning_events, load_identity_config};
 use super::management_arguments::{
     MANAGEMENT_HELP, MANAGEMENT_USAGE, ManagementAction, ManagementRefusal, RetiredCommand,
     parse_management_arguments,
 };
 use super::pending_state::pending_state;
-use super::policy_checks::{CandidateSource, ShippedChecks};
+/// The shipped checks and their constructor.
+use super::policy_checks::{ShippedChecks, shipped_checks};
+/// What the direct command offers its content policies.
+use super::policy_content::LifecycleContent;
 use super::policy_engine::{StageEnd, StageRequest, pass_exit_code};
-use super::policy_events::render_policy_events;
+/// The events of a direct command and their rendering.
+use super::policy_events::{PolicyEvent, render_policy_events};
 use super::policy_pass::{PassResult, run_policy_pass};
 use super::policy_registry::{POLICY_REGISTRY, PolicyId, policy_by_name};
 use super::policy_trigger::Trigger;
@@ -150,17 +158,22 @@ fn direct_config_failure(error: &ConfigError) -> Action {
     };
 }
 
-/// What: What a direct command's content policies need that is not ported.
-///       `&str` is text baked into the program.
-/// Why:  `check` and `fix` read the worktree files their scope selects; a content policy
-///       asked by a direct command reports this as what it is missing.
+/// What: The pathspecs of a direct command's scope. `all` is `--all`; `Vec<OsString>`
+///       is the owned list of pathspecs written after `--`.
+/// Why:  `--all` selects the whole worktree from its top level, which Git spells `:/`,
+///       as the installed wrapper does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const DIRECT_CANDIDATES_NEED = 'reading the worktree files that git cli-git check and fix select';
+/// const directPathspecs = all ? [':/'] : pathspecs;
 /// ```
-pub const DIRECT_CANDIDATES_NEED: &str =
-    "reading the worktree files that git cli-git check and fix select";
+fn scope_pathspecs(all: bool, pathspecs: Vec<OsString>) -> Vec<OsString> {
+    if all {
+        // `vec![...]` builds the one-item list.
+        return vec![OsString::from(":/")];
+    }
+    return pathspecs;
+}
 
 /// What: Turn the selected policy names into policy identities.
 ///       `Result<Vec<PolicyId>, ConfigError>` is the identities, or the error naming the
@@ -227,12 +240,40 @@ fn run_direct_command(
     // Each event is one line, so the lines written so far are the next event number.
     // `.matches('\n').count()` counts them; `as u64` widens the count to the number type.
     let first_sequence: u64 = stdout.matches('\n').count() as u64;
+    let trigger: Trigger = if fix {
+        Trigger::DirectFix
+    } else {
+        Trigger::DirectCheck
+    };
+    // The selected files are staged on a private index before any policy runs, as the
+    // installed wrapper does, so a scope Git refuses is reported whatever is selected.
+    if let Err(error) = checks
+        .content
+        .prepare(&checks.candidates, &mut checks.facts)
+    {
+        stdout.push_str(
+            render_policy_events(
+                first_sequence,
+                &[PolicyEvent::EngineFailure {
+                    code: EngineFailureCode::TransactionFailed,
+                    message: error.message,
+                    // `Some(x)` is the "present" case of `Option`.
+                    trigger: Some(trigger),
+                    // `None` is the "absent" case: no policy has run.
+                    policy: None,
+                    path: None,
+                }],
+            )
+            .as_str(),
+        );
+        return Action::Exit {
+            code: ENGINE_FAILURE_EXIT_CODE,
+            stdout,
+            stderr: String::new(),
+        };
+    }
     let request: StageRequest = StageRequest {
-        trigger: if fix {
-            Trigger::DirectFix
-        } else {
-            Trigger::DirectCheck
-        },
+        trigger,
         // `.clone()` copies the settings and controls into the request.
         config: loaded.config.policies.clone(),
         controls: controls.clone(),
@@ -288,7 +329,7 @@ pub fn plan_management(
         Err(reason) => return refusal(reason),
     };
     // `match` picks by variant and binds the fields each one carries.
-    let (fix, policies): (bool, Vec<String>) = match parsed {
+    let (fix, policies, scope): (bool, Vec<String>, Vec<OsString>) = match parsed {
         ManagementAction::Help => {
             return Action::Exit {
                 code: 0,
@@ -311,8 +352,12 @@ pub fn plan_management(
                 stderr: retired_explanation(command),
             };
         }
-        // `..` ignores the scope fields: no ported policy reads the selected files yet.
-        ManagementAction::Direct { fix, policies, .. } => (fix, policies),
+        ManagementAction::Direct {
+            fix,
+            all,
+            policies,
+            pathspecs,
+        } => (fix, policies, scope_pathspecs(all, pathspecs)),
     };
     let selected: Vec<PolicyId> = match selected_policies(policies.as_slice()) {
         Ok(ids) => ids,
@@ -326,14 +371,14 @@ pub fn plan_management(
     let overlay: Vec<(OsString, OsString)> =
         child_environment_overlay(environment, real_git.as_path());
     // `mut` lets the pass cache facts it asks Git for.
-    let mut checks: ShippedChecks<GitFacts> = ShippedChecks {
-        facts: git_facts(real_git.as_path(), git_global_arguments, overlay.as_slice()),
+    let mut checks: ShippedChecks<GitFacts> = shipped_checks(
+        git_facts(real_git.as_path(), git_global_arguments, overlay.as_slice()),
         // `.to_vec()` copies the borrowed global options for the rule cores.
-        arguments: git_global_arguments.to_vec(),
-        candidates: CandidateSource::NotPorted(DIRECT_CANDIDATES_NEED),
+        git_global_arguments.to_vec(),
+        LifecycleContent::Requested(CandidateRequest::Direct(scope)),
         // `Vec::new()` is an empty owned list: no direct-command policy reads the tool caches.
-        allowed_worktree_dirs: Vec::<PathBuf>::new(),
-    };
+        Vec::<PathBuf>::new(),
+    );
     let location: RepositoryLocation = match checks.facts.location() {
         Ok(found) => found,
         Err(message) => return failure(message.as_str()),

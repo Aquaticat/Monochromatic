@@ -268,16 +268,21 @@ fn legacy_file_beside_jsonc_is_reported_by_check_only() {
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
     std::fs::write(
         repo.join(CONFIG_FILE_NAME),
-        r#"{ "policies": { "mono/dependent-version-bump": "off" } }"#,
+        "{ \"policies\": { \"mono/dependent-version-bump\": \"off\" } }\n",
     )
     .expect("valid configuration");
     std::fs::write(repo.join("cli-git.config.ts"), "export default {};\n").expect("legacy");
     std::fs::write(repo.join("cli-git.config.mjs"), "export default {};\n").expect("legacy");
-    // Positive control: the configuration really is loaded by this ordinary command.
+    // Positive control: the configuration really is loaded by this ordinary command, whose
+    // content policy then cannot predict an add of a file that does not exist.
     let ordinary: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "anything"]);
     assert_eq!(ordinary.code, Some(2));
     assert_eq!(ordinary.stdout, Vec::<u8>::new());
     let ordinary_stderr: String = String::from_utf8_lossy(&ordinary.stderr).into_owned();
+    assert!(
+        ordinary_stderr.contains("\"code\":\"content-unavailable\""),
+        "{ordinary_stderr}"
+    );
     assert!(!ordinary_stderr.contains("egacy"), "{ordinary_stderr}");
     assert!(
         !ordinary_stderr.contains("cli-git.config.ts"),
@@ -296,7 +301,7 @@ fn legacy_file_beside_jsonc_is_reported_by_check_only() {
         String::from_utf8_lossy(&fix.stderr)
     );
     let check: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "check", "--all"]);
-    assert_eq!(check.code, Some(2));
+    assert_eq!(check.code, Some(0));
     assert_eq!(
         String::from_utf8_lossy(&check.stdout),
         format!(

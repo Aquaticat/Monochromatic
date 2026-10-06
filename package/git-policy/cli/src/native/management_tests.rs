@@ -11,10 +11,11 @@
 #![cfg(unix)]
 
 /// Import the decision under test and shared fixtures.
-use super::{DIRECT_CANDIDATES_NEED, plan_management, retired_explanation};
+use super::{plan_management, retired_explanation};
 use crate::action::Action;
 use crate::config_file::CONFIG_FILE_NAME;
 use crate::management_arguments::{MANAGEMENT_HELP, MANAGEMENT_USAGE, RetiredCommand};
+use crate::policy_checks::DIRECT_FIX_NEEDS;
 use crate::policy_registry::PolicyId;
 use crate::real_git::{Platform, ResolutionInputs};
 use crate::test_support::{executable, fixture, remove, repository};
@@ -80,15 +81,48 @@ fn exit(code: i32, stdout: &str, stderr: &str) -> Action {
     };
 }
 
-/// The refusal of a direct command whose content policy cannot read the selected files.
-fn content_refused(policy: PolicyId, command: &str) -> String {
+/// The refusal of a direct fix whose correction is not ported yet.
+fn fix_refused(policy: PolicyId) -> String {
     return unported_notice(
         &Unported::PolicyNeeds {
             policy,
-            needs: DIRECT_CANDIDATES_NEED,
+            needs: DIRECT_FIX_NEEDS,
         },
-        command,
+        "cli-git fix",
     );
+}
+
+/// The final-newline warning of a direct check about `a.txt`, as event number `sequence`.
+fn final_newline_warning(sequence: u64) -> String {
+    return format!(
+        "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"path\":\"a.txt\",\"fix\":\"none\"}}\n"
+    );
+}
+
+/// The standard output of a direct command whose scope could not be projected, which the
+/// control requires to be one `transaction-failed` event for `trigger`, its message
+/// starting with `message`.
+fn projection_failed(action: Action, trigger: &str, message: &str) {
+    match action {
+        Action::Exit {
+            code,
+            stdout,
+            stderr,
+        } => {
+            assert_eq!(code, 2);
+            assert_eq!(stderr, "");
+            let head: String = format!(
+                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"transaction-failed\",\"message\":\"{message}"
+            );
+            assert!(stdout.starts_with(head.as_str()), "{stdout}");
+            assert!(
+                stdout.ends_with(format!("\",\"trigger\":\"{trigger}\"}}\n").as_str()),
+                "{stdout}"
+            );
+            assert_eq!(stdout.matches('\n').count(), 1, "{stdout}");
+        }
+        Action::Forward { .. } => panic!("a direct command is never forwarded"),
+    }
 }
 
 /// The require-root finding of a direct check run in `nested/` of `repo`, as event number `sequence`.
@@ -223,23 +257,27 @@ fn unknown_selected_policy_is_reported_on_stdout() {
     remove(root.as_path());
 }
 
-/// A direct command runs the ported policies and refuses at the first content policy that is on.
+/// A direct command projects its scope before any policy runs, then runs the policies
+/// over the selected worktree files; a scope Git refuses is a lifecycle failure.
 #[test]
-fn direct_commands_run_ported_policies_and_refuse_content_policies() {
+fn direct_commands_project_their_scope_and_run_the_policies() {
     let root: PathBuf = fixture("management-direct");
     let repo: PathBuf = repository(root.as_path(), "repo");
     let nested: PathBuf = repo.join("nested");
     std::fs::create_dir(&nested).expect("nested directory");
+    std::fs::write(repo.join("a.txt"), b"no final newline").expect("file");
+    let index_before: Vec<u8> = std::fs::read(repo.join(".git/index")).expect("index");
     let inputs: ResolutionInputs = with_git(root.as_path());
-    // Default settings: the built-in content policy is on and cannot read the selected files.
+    // Default settings: the built-in content policy reads the selected worktree file.
     assert_eq!(
         plan(&["check", "--all"], repo.as_path(), &inputs),
-        exit(
-            2,
-            "",
-            content_refused(PolicyId::FinalNewline, "cli-git check").as_str()
-        )
+        exit(0, final_newline_warning(0).as_str(), "")
     );
+    assert_eq!(
+        plan(&["check", "--", "a.txt"], repo.as_path(), &inputs),
+        exit(0, final_newline_warning(0).as_str(), "")
+    );
+    // A correction is not ported yet: the fix refuses instead of reporting a clean result.
     assert_eq!(
         plan(
             &[
@@ -254,22 +292,30 @@ fn direct_commands_run_ported_policies_and_refuse_content_policies() {
             repo.as_path(),
             &inputs
         ),
-        exit(
-            2,
-            "",
-            content_refused(PolicyId::FinalNewline, "cli-git fix").as_str()
-        )
+        exit(2, "", fix_refused(PolicyId::FinalNewline).as_str())
     );
-    // Outside a repository there is no configuration to reject and the same policy is on.
-    assert_eq!(
+    // A pathspec Git refuses stops the command before any policy, whichever is selected.
+    projection_failed(
+        plan(
+            &["check", "--policy", "require-root", "--", "missing.txt"],
+            repo.as_path(),
+            &inputs,
+        ),
+        "direct-check",
+        "cli-git could not read the selected worktree files: git add failed: fatal: pathspec",
+    );
+    projection_failed(
+        plan(&["fix", "--", "missing.txt"], repo.as_path(), &inputs),
+        "direct-fix",
+        "cli-git could not read the selected worktree files: git add failed: fatal: pathspec",
+    );
+    // Outside a repository there is no index to project into.
+    projection_failed(
         plan(&["check", "--all"], root.as_path(), &inputs),
-        exit(
-            2,
-            "",
-            content_refused(PolicyId::FinalNewline, "cli-git check").as_str()
-        )
+        "direct-check",
+        "cli-git could not read the selected worktree files: git rev-parse failed:",
     );
-    // Selecting only ported policies gives a real answer: clean at the top level ...
+    // Selecting only command policies gives their answer: clean at the top level ...
     for arguments in [
         vec!["check", "--all", "--policy", "require-root"],
         vec!["check", "--policy=require-root", "--", "a.txt"],
@@ -302,6 +348,11 @@ fn direct_commands_run_ported_policies_and_refuse_content_policies() {
         ),
         exit(0, "", "")
     );
+    assert_eq!(
+        std::fs::read(repo.join(".git/index")).expect("index"),
+        index_before,
+        "a direct command never changes the index"
+    );
     remove(root.as_path());
 }
 
@@ -318,15 +369,22 @@ fn controls_before_the_namespace_reach_a_direct_command() {
         plan(&["check", "--all"], nested.as_path(), &inputs),
         exit(1, not_at_root(0, repo.as_path()).as_str(), "")
     );
-    // Keep-going reports the finding and then reaches the content policy, which cannot answer.
+    // Keep-going reports the finding and then reaches the content policy, which reads the
+    // selected files: one without a final newline is reported after the finding.
+    std::fs::write(repo.join("a.txt"), b"no final newline").expect("file");
     let mut keep_going: Controls = no_controls();
     keep_going.keep_going = true;
     assert_eq!(
         plan_with(&["check", "--all"], nested.as_path(), &keep_going, &inputs),
         exit(
-            2,
-            not_at_root(0, repo.as_path()).as_str(),
-            content_refused(PolicyId::FinalNewline, "cli-git check").as_str()
+            1,
+            format!(
+                "{}{}",
+                not_at_root(0, repo.as_path()),
+                final_newline_warning(1)
+            )
+            .as_str(),
+            ""
         )
     );
     // An escape skips its policy.
@@ -377,18 +435,23 @@ fn direct_commands_use_the_repository_configuration() {
         plan(&["fix", "--all"], repo.as_path(), &inputs),
         exit(0, "", "")
     );
-    // A listed optional policy is on and cannot read the selected files.
+    // A listed optional policy is on and reads the selected files.
     std::fs::write(
         &source,
-        r#"{ "policies": { "final-newline": "off", "mono/forbidden-root-context": "error" } }"#,
+        "{ \"policies\": { \"final-newline\": \"off\", \"mono/forbidden-root-context\": \"error\" } }\n",
     )
     .expect("valid config");
     assert_eq!(
         plan(&["check", "--all"], repo.as_path(), &inputs),
+        exit(0, "", "")
+    );
+    std::fs::write(repo.join("CONTEXT.md"), b"context\n").expect("context");
+    assert_eq!(
+        plan(&["check", "--all"], repo.as_path(), &inputs),
         exit(
-            2,
-            "",
-            content_refused(PolicyId::ForbiddenRootContext, "cli-git check").as_str()
+            1,
+            "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"mono/forbidden-root-context\",\"severity\":\"error\",\"code\":\"mono/forbidden-root-context/root-context-forbidden\",\"message\":\"Root CONTEXT.md is forbidden; read source code directly.\",\"path\":\"CONTEXT.md\",\"fix\":\"none\"}\n",
+            ""
         )
     );
     // That policy does not run for a direct fix, so the fix is complete.

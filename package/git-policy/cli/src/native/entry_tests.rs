@@ -16,11 +16,9 @@ use crate::action::{Action, ENGINE_FAILURE_EXIT_CODE};
 use crate::child_environment::FORWARD_TARGET_VARIABLE;
 use crate::config_file::CONFIG_FILE_NAME;
 use crate::management_arguments::MANAGEMENT_HELP;
-use crate::policy_registry::PolicyId;
 use crate::real_git::{Platform, ResolutionInputs};
 use crate::test_support::{REAL_GIT, executable, fixture, remove, repository};
 use crate::unported::{Unported, unported_notice};
-use crate::wrapped_command::ADD_CANDIDATES_NEED;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
@@ -98,16 +96,29 @@ pub(super) fn stopped(action: Action) -> String {
     }
 }
 
-/// The refusal of `git add` while the built-in content policy cannot read what would be staged.
-fn add_refused() -> String {
-    return unported_notice(
-        &Unported::PolicyNeeds {
-            policy: PolicyId::FinalNewline,
-            needs: ADD_CANDIDATES_NEED,
-        },
-        "add",
-    );
+/// The forward action of `forward`, with these warning events written first.
+fn forward_after(arguments: Vec<OsString>, warnings: &str) -> Action {
+    // `match` takes the plain forward apart and rebuilds it with the warnings.
+    match forward(arguments) {
+        Action::Forward {
+            real_git,
+            arguments: forwarded,
+            overlay,
+            ..
+        } => {
+            return Action::Forward {
+                real_git,
+                arguments: forwarded,
+                overlay,
+                stderr: String::from(warnings),
+            };
+        }
+        Action::Exit { .. } => panic!("the plain forward is a forward"),
+    }
 }
+
+/// The final-newline warning of `git add` about `file`.
+const FILE_WARNING: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"path\":\"file\",\"fix\":\"none\"}\n";
 
 /// Native queries, option errors and a bare `git` are forwarded exactly as written.
 #[test]
@@ -304,10 +315,12 @@ fn policy_commands_validate_configuration_then_run_policies() {
     let arguments: Vec<OsString> = in_directory(repo.as_path(), &["add", "file"]);
     let source: PathBuf = repo.join(CONFIG_FILE_NAME);
     let legacy: PathBuf = repo.join("cli-git.config.ts");
-    // No configuration file: the defaults apply, and the built-in content policy cannot answer.
+    std::fs::write(repo.join("file"), b"no final newline").expect("file");
+    // No configuration file: the defaults apply, and the built-in content policy reads
+    // what the add would stage and warns before Git runs.
     assert_eq!(
-        stopped(plan_invocation(arguments.as_slice(), &[], &resolution)),
-        add_refused()
+        plan_invocation(arguments.as_slice(), &[], &resolution),
+        forward_after(arguments.clone(), FILE_WARNING)
     );
     // A valid file is accepted and its settings are used.
     std::fs::write(&source, r#"{ "policies": { "final-newline": "off" } }"#).expect("valid config");
