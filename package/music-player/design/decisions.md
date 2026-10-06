@@ -2862,6 +2862,27 @@ the agent's version of its copy is proposed in `doc/planning/music-player-first-
 
 No production implementation is authorized by this record.
 
+### D101. The declined first-run state is approved as built (2026-10-06)
+
+The human approved the agent's version of the declined state as built:
+
+- Title `The device music library can't be read`.
+- Body `It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.`
+- Buttons in this order:
+  `Allow access` filled,
+  then `Open a folder` and Settings outlined.
+- The true-peak explanation below the buttons,
+  as D10 asks.
+- The inner panel's left half blank,
+  as in the no-audio states.
+
+The question stated that once Android stops showing its permission prompt after repeated refusals,
+`Allow access` can only open the app's page in Android's settings,
+and that at 200% text the state now scrolls slightly on both panels.
+`evidence/first-run-access-boundaries.md` holds the study.
+
+No production implementation is authorized by this record.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

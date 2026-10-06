@@ -12,12 +12,17 @@ import { homedir, tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
 
-const names = ['inventory', 'license-texts', 'lone-copy-highlights', 'later-start-reuses-cache', 'damaged-cache-rebuilt', 'shadowing-query-ignored', 'concurrent-first-starts', 'damaged-embedded-part-reported', 'old-cache-folders-removed'];
+const names = ['inventory', 'license-texts', 'lone-copy-highlights', 'later-start-reuses-cache', 'damaged-cache-rebuilt', 'shadowing-query-ignored', 'concurrent-first-starts', 'damaged-embedded-part-reported', 'old-cache-folders-removed', 'crate-licenses'];
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
 for (const name of only ?? []) if (!names.includes(name)) throw new Error('Unknown check name ' + name + '; the checks are ' + names.join(', '));
 const executable = realpathSync(resolve(process.env.usage_file || 'dist/monochromatic-ide'));
 const runtime = realpathSync(resolve(process.env.usage_runtime || 'target/release/runtime'));
 const source = realpathSync(process.cwd());
+// The notices task writes the crate license list and the linked-crates task the linked crate list beside the
+// profile folders, so both sit two levels above the runtime directory.
+const targetDirectory = resolve(runtime, '..', '..');
+const crateLicensesFile = join(targetDirectory, 'crate-licenses.json');
+const linkedCratesFile = join(targetDirectory, 'linked-crates.txt');
 const privateRoot = join(homedir(), 'temp', 'agent');
 if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Scratch root must exclude group and other permissions: ' + privateRoot);
 const artifact = realpathSync(mkdtempSync(join(privateRoot, 'ide-bundle-check-')));
@@ -50,6 +55,7 @@ const expectedFiles = () => {
   }
   for (const relative of filesBelow(join(source, 'LICENSES'))) files.push(['LICENSES/' + relative, join(source, 'LICENSES', relative)]);
   for (const notice of ['Inter-LICENSE.txt', 'JetBrainsMono-OFL.txt']) files.push(['LICENSES/font/' + notice, join(source, 'asset', 'font', notice)]);
+  files.push(['LICENSES/crates.json', crateLicensesFile]);
   return files;
 };
 let binaryBytes;
@@ -117,7 +123,8 @@ const checks = {
       const name = relative.split('/').at(-1).toUpperCase();
       return name.includes('LICENSE') || name.includes('LICENCE') || name.startsWith('COPYING') || name.startsWith('NOTICE');
     };
-    const listed = expectedFiles().filter(([relative]) => relative.startsWith('LICENSES/') || relative.startsWith('runtime/licenses/') || licenseNamed(relative));
+    // The crate license list is printed entry by entry; the crate-licenses check reads those entries.
+    const listed = expectedFiles().filter(([relative]) => relative !== 'LICENSES/crates.json').filter(([relative]) => relative.startsWith('LICENSES/') || relative.startsWith('runtime/licenses/') || licenseNamed(relative));
     const listing = spawnSync(executable, ['--licenses'], { env: {}, cwd: artifact, maxBuffer: 64 * 1024 * 1024, timeout: 60_000 });
     demand(!listing.error, 'could not run ' + executable + ' --licenses: ' + listing.error?.message);
     demand(listing.status === 0, executable + ' --licenses exited with status ' + listing.status + ': ' + listing.stderr.toString('utf8').slice(0, 600));
@@ -447,6 +454,45 @@ checks['old-cache-folders-removed'] = async () => {
   const renewed = lstatSync(join(runtimeCache, own[0], 'last-used')).mtimeMs;
   demand(renewed >= now - 1000, 'this build\'s marker was not renewed at start');
   return { left, status: started.status, tidyElapsedUs: elapsed(output, 'runtime cache tidied') };
+};
+
+// The Rust crate license list: `--licenses` prints one section per text of target/crate-licenses.json, with its
+// heading, its crates, and the text in full; every crate `cargo tree --edges normal,no-proc-macro` lists as linked
+// (the linked-crates task writes target/linked-crates.txt) and every registry crate whose source path the
+// executable itself names is among the crates printed.
+checks['crate-licenses'] = async () => {
+  demand(isFile(crateLicensesFile), crateLicensesFile + ' is missing; run the notices task');
+  demand(isFile(linkedCratesFile), linkedCratesFile + ' is missing; run the linked-crates task');
+  const list = JSON.parse(readFileSync(crateLicensesFile, 'utf8'));
+  demand(Array.isArray(list.licenses) && list.licenses.length > 0, crateLicensesFile + ' lists no license text');
+  const listing = spawnSync(executable, ['--licenses'], { env: {}, cwd: artifact, maxBuffer: 64 * 1024 * 1024, timeout: 60_000 });
+  demand(!listing.error, 'could not run ' + executable + ' --licenses: ' + listing.error?.message);
+  demand(listing.status === 0, executable + ' --licenses exited with status ' + listing.status + ': ' + listing.stderr.toString('utf8').slice(0, 600));
+  const printed = listing.stdout.toString('utf8');
+  const rule = '='.repeat(78);
+  const section = /^Rust crates under (.+) \(([^()\n]+)\): (\d+) crates?\n((?:Used by: |         ).*\n(?:         .*\n)*)(Text from the crate file .+|Text: the standard text of this license \(no crate file was recognized\))\n={78}\n\n/gm;
+  const sections = [...printed.matchAll(section)];
+  demand(sections.length === list.licenses.length, '--licenses printed ' + sections.length + ' crate license sections, the list holds ' + list.licenses.length);
+  const covered = new Set();
+  for (const [index, license] of list.licenses.entries()) {
+    const [whole, name, id, count, usedBy] = sections[index];
+    demand(name === license.name && id === license.id, 'crate license section ' + index + ' names ' + name + ' (' + id + '), the list ' + license.name + ' (' + license.id + ')');
+    const tokens = usedBy.replace(/^Used by: /, '').replaceAll(',', ' ').split(/\s+/).filter(Boolean);
+    const crates = [];
+    for (let at = 0; at + 1 < tokens.length; at += 2) crates.push(tokens[at] + ' ' + tokens[at + 1]);
+    const expected = license.crates.map(item => item.name + ' ' + item.version);
+    demand(Number(count) === expected.length && crates.join(',') === expected.join(','), 'crate license section ' + index + ' (' + id + ') lists ' + crates.join(', ') + ' instead of ' + expected.join(', '));
+    demand(printed.includes(whole + license.text), 'the ' + id + ' text for ' + expected[0] + ' is not printed in full under its heading');
+    for (const item of crates) covered.add(item);
+  }
+  const linked = readFileSync(linkedCratesFile, 'utf8').split('\n').filter(Boolean).filter(line => !line.startsWith('ide '));
+  const uncovered = linked.filter(item => !covered.has(item));
+  demand(uncovered.length === 0, uncovered.length + ' of ' + linked.length + ' linked crates have no license text: ' + uncovered.slice(0, 12).join(', '));
+  const named = new Set();
+  for (const match of binary().toString('latin1').matchAll(/\/registry\/src\/index\.crates\.io-[0-9a-f]+\/([A-Za-z0-9_.+-]+?)-(\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.+-]*)?)\//g)) named.add(match[1] + ' ' + match[2]);
+  const unnamed = [...named].filter(item => !covered.has(item));
+  demand(unnamed.length === 0, 'crates whose sources the executable names have no license text: ' + unnamed.join(', '));
+  return { texts: list.licenses.length, cratesCovered: covered.size, linkedCrates: linked.length, cratesNamedInTheExecutable: named.size };
 };
 
 const results = [];

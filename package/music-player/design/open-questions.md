@@ -558,6 +558,9 @@ new IME work and native accessibility acceptance.
   `evidence/first-run-access-boundaries.md` records the scoped authored
   native study and `questions/first-run-access.html` is verified evidence,
   not a new preference ballot.
+  Since D95 and D100 (2026-10-06) only the declined state remains,
+  shown as an open but unreadable library;
+  its wording and layout were approved as built (D101).
   Production source-status/recovery binding and native accessibility
   acceptance remain separate.
 - **DEVELOPER-OWNED: desktop window default size (11c, D49).**
@@ -565,7 +568,9 @@ new IME work and native accessibility acceptance.
   implementation window frame around the Fold-derived treatments;
   do not use it as
   a separate visual design target.
-- **OPEN: custom display templating round (11e).**
+- Custom display templating (11e) is settled:
+  the editor (D89 to D96,
+  D98) and the two lines that get a template (D99).
 - **DEVELOPER-OWNED: MD3-on-Slint feasibility (A4).**
   The user assigned feasibility and
  porting studies to developers on 2026-09-17;

@@ -22,6 +22,8 @@ const guards = {
   'without-withdrawn-text': `capture.texts.some(text => typeof text !== 'string' || text.includes(withdrawn))`,
   'without-cohort': `if (!first) throw new Error('First-run review requires every authored state under every condition: ' + base);`,
   'without-drag-outcome': `typeof moved !== 'boolean' || moved !== (end !== undefined)`,
+  'without-declined-actions': `declinedActions.some(label => !capture.texts.includes(label))`,
+  'without-visit-count': '!html.includes(`${visits} visits contributed views`)',
 };
 const removed = process.argv[2];
 if (removed !== undefined) {
@@ -114,7 +116,7 @@ try {
   refusedPage({ change: page => page.replace(/\d+ visits contributed views/u, '99 visits contributed views'), diagnostic: 'does not name its' });
   refusedPage({ change: page => page.replace('<div class="gallery">', '<div class="gallery"><figure data-scene="not-opened"></figure>'), diagnostic: 'which is not an authored state' });
   refusedPage({ change: page => page.replace('<figure data-scene="declined">', '<figure data-scene="declined" data-position="scrolled">'), diagnostic: 'shows no figure for declined' });
-  refusedPage({ change: page => page.replace('For approval: the declined state', 'Also built'), diagnostic: 'is missing For approval: the declined state' });
+  refusedPage({ change: page => page.replace('The declined state, as approved', 'Also built'), diagnostic: 'is missing The declined state, as approved' });
   writeFileSync(templatePath, template);
   if (invoke('build').status !== 0 || invoke('validate').status !== 0) throw new Error('Restored template did not validate.');
   const output = join(fixture, 'questions', 'first-run-access.html');

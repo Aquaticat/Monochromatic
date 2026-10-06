@@ -7,8 +7,22 @@ use super::AppWindow;
 use super::find_clear_tests::opened;
 /// Real key events through the window and the wait for the find count, shared with the find tests.
 use super::find_tests::{chord, key, status, type_text};
+/// The range of ink lightness inside a region, shared with the search box's paint tests.
+use super::query_input_paint_tests::ink_range;
 /// Rendered frames and single pixels, shared with the sidebar paint tests.
 use super::sidebar_paint_tests::{frame, pixel};
+/// The scheme switch the desktop-settings watcher makes, and color bytes.
+use super::theme_tests::{rgba, switch};
+/// What: `ColorScheme` is the toolkit's scheme enum (`Unknown`, `Dark`, `Light`), reached through its unstable
+/// re-export module.
+/// Why: The selection ink is checked in both schemes.
+/// Gotcha: This module is not stable API; a toolkit upgrade can rename it and break only these tests.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ColorScheme } from 'slint/private';
+/// ```
+use slint::private_unstable_api::re_exports::ColorScheme;
 /// Pointer helpers and the pinned width of the divider's line.
 use super::sidebar_tests::{DIVIDER, press, release, settle};
 /// What: `Rgba8Pixel` is one pixel of four bytes; `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
@@ -313,4 +327,42 @@ fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
         "scrolling the text changed the clear cell"
     );
     window.hide().expect("close scrolling window");
+}
+
+/// Selected find text is drawn in the ink chosen from the selection fill, light in both schemes, like
+/// selected text in the search box, the selected rows, and the source view.
+#[test]
+fn find_box_selection_uses_the_ink_chosen_from_the_fill() {
+    let (_fixture, reader) = opened();
+    let window = &reader.window;
+    type_text(window, "needle");
+    chord(window, Key::Control, "a");
+    settle(window);
+    // The text area starts 12px inside the bar and 12px inside the box; the box's top is the clear cell's.
+    let start = (window.get_sidebar_width() + DIVIDER) as usize + 24;
+    let top = window.get_find_clear_y() as usize;
+    let glyphs = [start + 2, start + 40, top + 14, top + 34];
+    for (scheme, label) in [(ColorScheme::Dark, "dark"), (ColorScheme::Light, "light")] {
+        switch(window, scheme);
+        let shown = frame(window);
+        let fill = rgba(window.get_selection_fill().color());
+        // What: `.iter().any(...)` is true when some pixel of the region passes; `|found|` is an arrow function.
+        // Why: The selected text has the selection fill behind it.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const filled = pixels(shown, glyphs).some(found => [found.r, found.g, found.b, found.a] === fill);
+        // ```
+        let filled = pixels(&shown, glyphs)
+            .iter()
+            .any(|found| return [found.r, found.g, found.b, found.a] == fill);
+        assert!(filled, "{label}: selected find text has no selection fill behind it");
+        // The box's own fill far right of the text, left of the count.
+        let (darkest, lightest) = ink_range(&shown, glyphs, pixel(&shown, start + 300, top + 24));
+        assert!(
+            lightest > 0.7 && darkest > 0.3,
+            "{label}: selected find text is not drawn in light ink: darkest {darkest}, lightest {lightest}"
+        );
+    }
+    window.hide().expect("close find selection window");
 }

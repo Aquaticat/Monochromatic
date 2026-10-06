@@ -43,6 +43,8 @@ const cases = [
     fails: { inventory: 'LICENSES/LGPL-3.0-or-later.txt', 'license-texts': 'LICENSES/LGPL-3.0-or-later.txt' } },
   { name: 'embedded-helix-license-damaged', damage: flipInside(join(runtime, 'Helix-LICENSE')), checks: ['inventory', 'license-texts'],
     fails: { inventory: 'runtime/Helix-LICENSE', 'license-texts': 'runtime/Helix-LICENSE' } },
+  { name: 'embedded-crate-licenses-damaged', damage: flipInside(resolve(runtime, '..', '..', 'crate-licenses.json')), checks: ['inventory', 'license-texts', 'crate-licenses'],
+    fails: { inventory: 'LICENSES/crates.json', 'license-texts': 'LICENSES/crates.json', 'crate-licenses': 'LICENSES/crates.json' } },
 ];
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
 const selected = only ? cases.filter(item => only.has(item.name)) : cases;

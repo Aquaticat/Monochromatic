@@ -29,13 +29,16 @@ Read these files in order:
 The first-run/no-library study is in
 [`evidence/first-run-access-boundaries.md`](evidence/first-run-access-boundaries.md).
 Its [verified offline review](questions/first-run-access.html) presents
-32 first views,
+24 first views and 4 end views,
 not a policy ballot.
 The study was rebuilt on 2026-10-05 after D84 made true-peak analysis
-automatic:
-its explanation no longer ends with a choice to analyse,
-and with the shorter text nothing scrolls,
-so it has no second views.
+automatic,
+and again on 2026-10-06 for D100:
+a library is always open,
+so the declined state shows the device music library as open but unreadable,
+with `Allow access` and `Open a folder`,
+and the state with no source opened is gone.
+That state's wording and layout were approved as built (D101).
 The source states are authored inputs,
 not production permission/discovery evaluation or recovery acceptance.
 The owned native runtime was stopped after restoring its recorded fields.

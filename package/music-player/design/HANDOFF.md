@@ -152,23 +152,29 @@ and `AGENTS.md`'s APQ now says never to block pushes in this repository's linked
 which share its `.git/config`.
 The review page shows the two templates as decided.
 
-In progress:
-the first-run study rebuilt for D100.
-The proposal is in `doc/planning/music-player-first-run-access.md` under `Rebuild for D100`;
-the design-side builder,
-test and page template are committed
-(their verify and test tasks fail against the published cohort until the new one is published);
-the prototype is at `7a2ea6888cce59c9db23d556a520f4c60f8824c6`
+Built and published:
+the first-run study rebuilt for D100,
+proposed in `doc/planning/music-player-first-run-access.md` under `Rebuild for D100`.
+The prototype is at `7a2ea6888cce59c9db23d556a520f4c60f8824c6`
 (250 unit tests pass,
-12 of them the first-run fixture's);
-the capture runs through `run-template-editor-when-quiet.ts first-run`,
-into `settings-pane-native-private/first-run-cohort-7a2ea6888`.
-Then crops,
-inspection,
-publication,
-checks,
-the boundary document,
-and the approval question through the question tool.
+12 of them the first-run fixture's).
+`questions/first-run-access.html` shows 28 inspected views from 4 visits;
+`verify:first-run:access` and `test:first-run:access` pass,
+all five guard removals fail the test,
+and the offline browser check passed in four contexts.
+`evidence/first-run-access-boundaries.md` describes it.
+While it was captured,
+`systemd-oomd` repeatedly killed the shared command cgroup that other sessions' builds had filled,
+so long runs now go in their own user unit:
+`systemd-run --user --unit=<name> --collect --wait --property=MemoryMax=2G <command>`,
+with `wait-for-unit.ts <unit> <pattern>` to wait for it.
+
+The human approved the declined state as built (D101) and added the rule on long runs to the `CLAUDE.md` preamble in `file-enforcer.config.ts`.
+The first-run page shows the declined state as approved.
+
+Next:
+the remaining open questions in `open-questions.md`;
+nothing from this round waits on the human.
 
 To capture again,
 from `~/temp/agent`:

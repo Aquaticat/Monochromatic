@@ -65,13 +65,12 @@ dialog h2 { margin-block-start: 0; }
 <h1>Getting to music without a working system source</h1>
 <p>Purpose: inspect the first-run access and no-audio states under D10, D27, D95 and D100. A library is always open:
 the system music library opens automatically (D95). When device-wide music access was declined, that library is open
-but unreadable, and the state offers <strong>Allow access</strong> or <strong>Open a folder</strong>, with in-app
-Settings available (D100); its wording and layout are the agent's version, for approval. There is no state without a
+but unreadable, and the state offers <strong>Allow access</strong> or <strong>Open a folder</strong>,
+with in-app Settings available (D100); its wording and layout were approved as built (D101). There is no state without a
 source. True-peak analysis is automatic and not optional (D84), so these states offer no choice about analysis; where a
 state explains analysis, it only says that it happens.</p>
-<p>What to look at: the declined state on both panels and text sizes, and the section <strong>For approval: the
-declined state</strong>. How to respond: anything you would change goes in the last field; approval itself is asked
-in the conversation.</p>
+<p>What to look at: the three states on both panels, at 100% and 200% text, and the section <strong>The declined
+state, as approved</strong>. How to respond: anything you would change goes in the last field.</p>
 <p class="note">Every state is authored debug input, not real discovery or permission evaluation. The two no-audio
 states assume an explicitly complete read of their named scope. A partial, failed or unread source cannot justify
 those claims. Zero eligible audio in a source does not mean the device or folder has no files.</p>
@@ -112,8 +111,8 @@ scrolling in general.</p>
 <figure data-scene="system-no-audio" data-position="scrolled"><h3>Complete system scope: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored complete system-scope state at rest after the content was dragged up"><span>Open native complete system scope at rest after dragging</span></button><figcaption></figcaption></figure>
 <figure data-scene="folder-no-audio" data-position="scrolled"><h3>Complete chosen-folder scope: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored complete chosen-folder state at rest after the content was dragged up"><span>Open native complete chosen-folder scope at rest after dragging</span></button><figcaption></figcaption></figure>
 </div></details>
-<section aria-labelledby="approval-title"><h2 id="approval-title">For approval: the declined state</h2>
-<p>The agent's one version under D100. Nothing in this section is decided until you approve it.</p>
+<section aria-labelledby="declined-title"><h2 id="declined-title">The declined state, as approved</h2>
+<p>Built as the agent's one version under D100 and approved as built (D101).</p>
 <ul>
 <li>Title: <q>The device music library can't be read</q>, naming the open library the way the no-audio state names it.</li>
 <li>Body: <q>It is open as your library, but access to music on this device was not granted. Allow access, or open a
@@ -138,7 +137,7 @@ findings. This review does not pick a recovery owner, widen a chosen folder, ado
 <p>Static fit and source inspection establish neither real picker/Settings completion nor accessibility focus,
 speech, action-bound or contrast acceptance. All raw status-bearing images, hierarchies and logs remain private.
 The inspected published app-area crops retain exact RGB, opacity, dimensions and only essential PNG chunks.
-2 visits contributed views; each view's record names its visit.
+4 visits contributed views; each view's record names its visit.
 No digest of an image is recorded, and nothing is compared with a digest (D88).</p>
 </details>
 <fieldset><legend>Optional evidence observations</legend><label for="final-notes">Observed wrapping, clipping or missing evidence</label>
@@ -194,7 +193,8 @@ function render() {
   }
   document.getElementById('scroll-status').textContent = moved === 0 ?
     'Under the selected panel, text size and theme no state moved when dragged, so no second view exists.' :
-    'Under the selected panel, text size and theme ' + moved + ' of 4 states moved when dragged.';
+    'Under the selected panel, text size and theme ' + moved + ' of ' +
+    document.querySelectorAll('figure[data-scene]:not([data-position])').length + ' states moved when dragged.';
 }
 function resizePreview() {
   if (!state.preview) throw new Error('No native witness is open.');
