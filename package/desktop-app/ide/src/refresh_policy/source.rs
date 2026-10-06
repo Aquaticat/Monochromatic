@@ -47,6 +47,12 @@ impl SourceRefresh {
         return self.watched;
     }
 
+    /// True while a notification is unread: the next read is the one it asked for, which waited for the
+    /// writer. Every other read (the timer, the sweep, a highlighting retry, the first read) is not.
+    pub fn has_unread_change(&self) -> bool {
+        return self.pending_since.is_some();
+    }
+
     /// Record a notification; the latest classification wins, so delete then rewrite waits for the write.
     pub fn changed(&mut self, change: SourceChange, now: Instant) {
         if self.pending_since.is_none() {

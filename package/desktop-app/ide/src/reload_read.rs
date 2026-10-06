@@ -2,7 +2,7 @@
 
 /// Existing source reads retain regular-file and UTF-8 validation before producing a prepared change.
 use crate::{
-    file_reload::read_reload,
+    file_reload::{QuietRead, read_reload, read_reload_if_quiet},
     reload_worker::{ReloadReply, ReloadRequest, SyntaxReply},
     syntax::SyntaxEngine,
     workspace::Workspace,
@@ -61,11 +61,38 @@ pub(crate) fn prepare(
                 resolved_path: None,
                 result: Err(error),
                 syntax: None,
+                recent_write: false,
             };
         }
     };
-    // Lend the base snapshot and accepted path without sharing any mutable native state.
-    let result = read_reload(&request.snapshot, &path);
+    // What: `if let Some(quiet)` runs the quiet read only when the request requires quiet; `match` then
+    //       turns a recent write into an early reply and a finished read into the usual result.
+    // Why: A read no notification asked for must not show a save in progress.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const outcome = quiet === undefined ? readReload(...) : readReloadIfQuiet(..., quiet);
+    // if (outcome.kind === 'recentlyWritten') return { ..., recentWrite: true };
+    // ```
+    let result = if let Some(quiet) = request.require_quiet {
+        match read_reload_if_quiet(&request.snapshot, &path, quiet) {
+            Ok(QuietRead::RecentlyWritten) => {
+                // Ok(None) installs nothing; the flag tells the UI to wait for the writer.
+                return ReloadReply {
+                    generation: request.generation,
+                    resolved_path: Some(path),
+                    result: Ok(None),
+                    syntax: None,
+                    recent_write: true,
+                };
+            }
+            Ok(QuietRead::Read(update)) => Ok(update),
+            Err(error) => Err(error),
+        }
+    } else {
+        // Lend the base snapshot and accepted path without sharing any mutable native state.
+        read_reload(&request.snapshot, &path)
+    };
     let classified = match &result {
         Ok(Some(reload)) => Some(classify(
             syntax,
@@ -88,5 +115,6 @@ pub(crate) fn prepare(
         resolved_path: Some(path),
         result,
         syntax: classified,
+        recent_write: false,
     };
 }
