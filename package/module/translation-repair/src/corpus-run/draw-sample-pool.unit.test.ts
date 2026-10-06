@@ -28,6 +28,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import { writeSettledArtifact, } from './settled-v1-pool.test-fixture.ts';
 
 await describe({
@@ -108,6 +109,50 @@ await describe({
           `POOL read by pipeline ${digest}`,
           'POOL 2 entries across 1 pipeline generation',
         ],);
+      },
+    },),
+    it({
+      name: 'REFUSES with the first entry\'s refusal in code point order when two entries are refused and the '
+        + 'later one is refused first',
+      fn: async (ctx) => {
+        await using scratch = await scratchDir({ prefix: 'draw-pool-', },);
+        await writeSettledArtifact({
+          runsDir: scratch.path,
+          entryId: 'tabby',
+          issueIds: ['adjudicated/nap',],
+          repairRecorded: false,
+        },);
+        await writeSettledArtifact({
+          runsDir: scratch.path,
+          entryId: 'mittens',
+          issueIds: ['adjudicated/purr',],
+          repairRecorded: false,
+        },);
+
+        /**
+         Opened by the later entry's page read as it refuses, which the earlier
+         entry's page read waits for.
+         */
+        const laterRefused = Promise.withResolvers<undefined>();
+        using _capture = divertingConsoleLog({ sinon: ctx.sinon, },);
+
+        /**
+         What the pool read refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: readDrawPool({
+            runsDir: scratch.path,
+            readSource: async function refusesTabbyFirst({ relPath, },): Promise<string> {
+              if (relPath === 'people/tabby/page.md') {
+                laterRefused.resolve(undefined,);
+                throw new Error('the page of tabby was refused',);
+              }
+              await laterRefused.promise;
+              throw new Error('the page of mittens was refused',);
+            },
+          },),
+        },);
+        expect(String(refusal,),).toBe('Error: the page of mittens was refused',);
       },
     },),
   ],

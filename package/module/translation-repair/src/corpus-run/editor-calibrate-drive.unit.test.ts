@@ -29,6 +29,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '../roster-seats.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import {
   benchSliceOf,
   unjudgedRounds,
@@ -169,6 +170,43 @@ await describe({
               progressLineAt({ position: 2, },),
               progressLineAt({ position: 0, },),
             ],);
+          },
+        },),
+
+        it({
+          name: 'REFUSES with the first slice\'s refusal in sample order when two slices are refused and the later '
+            + 'one is refused first',
+          fn: async (ctx,) => {
+            using _printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+
+            /**
+             Opened by the last slice as it is refused, which the first slice
+             waits for.
+             */
+            const lastRefused = Promise.withResolvers<undefined>();
+
+            /**
+             What the driver refused with.
+             */
+            const refusal = await rejectionOf({
+              promise: driveEditorCalibrate({
+                sample: SAMPLE,
+                overlap: 3,
+                runSlice: async function refusingInReverse({ slice, },): Promise<SliceRounds> {
+                  if (slice.index === 2) {
+                    lastRefused.resolve(undefined,);
+                    throw new Error('slice 2 was refused',);
+                  }
+                  if (slice.index === 0) {
+                    await lastRefused.promise;
+                    throw new Error('slice 0 was refused',);
+                  }
+                  return roundsOf({ slice, },);
+                },
+              },),
+            },);
+
+            expect(String(refusal,),).toBe('Error: slice 0 was refused',);
           },
         },),
 

@@ -24,6 +24,7 @@ import {
   corpusNamesOf,
   readCorpusNames,
 } from '../dist/final/node/index.mjs';
+import { rejectionOf, } from './corpus-run/rejection-of.test-fixture.ts';
 
 /**
  Three invented entries: one declaring a Han name with an alias and an
@@ -250,6 +251,115 @@ await describe({
         if (!(caught instanceof CorpusReadError))
           throw new Error('the read failure must reach the caller as a CorpusReadError',);
         expect(caught.kind,).toBe('other',);
+      },
+    },),
+    it({
+      name: 'RETHROWS the failure of the first listed entry when two entries are refused for another reason and '
+        + 'the later one is refused first',
+      fn: async () => {
+        /**
+         Opened by the later entry's read as it is refused, which the earlier
+         entry's reads wait for.
+         */
+        const laterRefused = Promise.withResolvers<undefined>();
+        /**
+         Value caught from the walk over both entries.
+         */
+        const refusal = await rejectionOf({
+          promise: readCorpusNames({
+            pin: { cloneDir: '/nonexistent', commitSha: 'deadbeef', },
+            listPeople: async () => ['gum', 'tabby',],
+            readFile: async ({ relPath, },) => {
+              /**
+               What git says of a read it could not make.
+               */
+              const failure = new CorpusReadError({
+                detail: relPath,
+                cause: { stderr: 'fatal: ambiguous argument', },
+              },);
+              if (relPath.startsWith('people/tabby/',)) {
+                laterRefused.resolve(undefined,);
+                throw failure;
+              }
+              await laterRefused.promise;
+              throw failure;
+            },
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect(String(refusal,),).toBe(
+          'CorpusReadError: corpus read failed for people/gum/page.md (other); '
+            + 'check that the clone exists and the pinned commit is present.',
+        );
+      },
+    },),
+    it({
+      name: 'RETHROWS the failure of the original when both pages of an entry are refused for another reason '
+        + 'and the archive page is refused first',
+      fn: async () => {
+        /**
+         Opened by the archive read as it is refused, which the original's read
+         waits for.
+         */
+        const archiveRefused = Promise.withResolvers<undefined>();
+        /**
+         Value caught from the walk over the entry.
+         */
+        const refusal = await rejectionOf({
+          promise: readCorpusNames({
+            pin: { cloneDir: '/nonexistent', commitSha: 'deadbeef', },
+            listPeople: async () => ['gum',],
+            readFile: async ({ relPath, },) => {
+              /**
+               What git says of a read it could not make.
+               */
+              const failure = new CorpusReadError({
+                detail: relPath,
+                cause: { stderr: 'fatal: ambiguous argument', },
+              },);
+              if (relPath.endsWith('/page.en.md',)) {
+                archiveRefused.resolve(undefined,);
+                throw failure;
+              }
+              await archiveRefused.promise;
+              throw failure;
+            },
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect(String(refusal,),).toBe(
+          'CorpusReadError: corpus read failed for people/gum/page.md (other); '
+            + 'check that the clone exists and the pinned commit is present.',
+        );
+      },
+    },),
+    it({
+      name: 'STEPS OVER an entry whose original is absent at the pin even when its archive page is refused for '
+        + 'another reason first',
+      fn: async () => {
+        /**
+         Opened by the archive read as it is refused, which the original's read
+         waits for.
+         */
+        const archiveRefused = Promise.withResolvers<undefined>();
+        expect(await readCorpusNames({
+          pin: { cloneDir: '/nonexistent', commitSha: 'deadbeef', },
+          listPeople: async () => ['gum',],
+          readFile: async ({ relPath, },) => {
+            if (relPath.endsWith('/page.en.md',)) {
+              archiveRefused.resolve(undefined,);
+              throw new CorpusReadError({
+                detail: relPath,
+                cause: { stderr: 'fatal: ambiguous argument', },
+              },);
+            }
+            await archiveRefused.promise;
+            throw new CorpusReadError({
+              detail: relPath,
+              cause: { stderr: `fatal: path '${relPath}' does not exist in 'deadbeef'`, },
+            },);
+          },
+        },),).toEqual([],);
       },
     },),
   ],

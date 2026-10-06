@@ -20,6 +20,7 @@ import {
   type SettledCarve,
 } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 
 /**
  Original with one section.
@@ -225,6 +226,42 @@ await describe({
           ],
           written: [rowsDocumentOf({ entryId: 'Mittens', },),],
         },);
+      },
+    },),
+    it({
+      name: 'REFUSES with the first listed entry\'s refusal when two entries are refused and the later one is '
+        + 'refused first',
+      fn: async () => {
+        /**
+         Opened by the later entry's carve as it refuses, which the earlier
+         entry's carve waits for.
+         */
+        const laterRefused = Promise.withResolvers<undefined>();
+        /**
+         What the walk refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: probeDisplacement({
+            log: levelCapturingLogger({ lines: [], },),
+            listEntryIds: function listEntries(): Promise<readonly string[]> {
+              return Promise.resolve([
+                'Mittens',
+                'Tabby',
+              ],);
+            },
+            carve: async function refusesTabbyFirst(entryId,): Promise<SettledCarve> {
+              if (entryId === 'Tabby') {
+                laterRefused.resolve(undefined,);
+                throw new Error('Tabby was refused',);
+              }
+              await laterRefused.promise;
+              throw new Error('Mittens was refused',);
+            },
+            writeOut: function keep(): void {},
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(Error,);
+        expect(String(refusal,),).toBe('Error: Mittens was refused',);
       },
     },),
   ],

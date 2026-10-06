@@ -34,6 +34,7 @@ import {
   type VisionMessage,
 } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from './capturing-logger.test-fixture.ts';
+import { rejectionOf, } from './corpus-run/rejection-of.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -254,6 +255,69 @@ await describe({
         expect(log.calls,).toBe(0,);
         expect(repaired.findings,).toHaveLength(0,);
         expect(repaired.voices[0]?.value.translation,).toBe(GOOD_TEXT,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES with the first voice\'s refusal when the caller aborted, two voices\' follow-ups are '
+        + 'refused and the later voice is refused first',
+      fn: async () => {
+        /**
+         Opened by the later voice's follow-up as it is refused, which the
+         first voice's follow-up waits for.
+         */
+        const laterRefused = Promise.withResolvers<undefined>();
+
+        /**
+         Caller's abort, which makes a refused follow-up leave the repair
+         rather than cost a voice.
+         */
+        const stop = new AbortController();
+        stop.abort();
+
+        /**
+         What the repair refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: repairInvalidCandidates({
+            client: {
+              chatText: async () => {
+                throw new Error('chatText unused',);
+              },
+              chatJson: async <ValueT,>(
+                request: ChatJsonRequest<ValueT>,
+              ): Promise<ChatJsonOutcome<ValueT>> => {
+                if (request.modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER) {
+                  laterRefused.resolve(undefined,);
+                  throw new Error('the later voice was refused',);
+                }
+                await laterRefused.promise;
+                throw new Error('the first voice was refused',);
+              },
+              quotas: async () => {
+                throw new Error('quotas unused',);
+              },
+            },
+            voices: [
+              {
+                modelId: TRANSLATOR,
+                value: { translation: MERGED_TEXT, },
+              },
+              {
+                modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                value: { translation: MERGED_TEXT, },
+              },
+            ],
+            sourceText: SOURCE_TEXT,
+            incumbentText: '',
+            pageText: HEADED_PAGE,
+            priorMessages: PRIOR_MESSAGES,
+            signal: stop.signal,
+            perCallTimeoutMs: 1_000,
+            l,
+          },),
+        },);
+        expect(String(refusal,),).toBe('Error: the first voice was refused',);
       },
     },),
 

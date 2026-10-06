@@ -13,6 +13,8 @@
 
 import { join, } from 'node:path';
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
+
 import {
   caught,
   DEFAULT_CONCURRENCY,
@@ -257,6 +259,43 @@ await describe({
             },);
             expect(refusal,).toBeInstanceOf(RequiredProviderError,);
             expect((refusal as Error).message,).toContain('openrouter is not ready: budget dry',);
+          },
+        },),
+        it({
+          name: 'REFUSES NAMING THE FIRST REQUIRED PROVIDER when two meters cannot be read and the later one '
+            + 'is refused first',
+          fn: async () => {
+            /**
+             Opened when the second provider's meter has been asked, which the
+             first provider's answer waits for.
+             */
+            const laterAsked = Promise.withResolvers<undefined>();
+            /**
+             What the gate raised over two meters that refuse the key.
+             */
+            const refusal = await gateOutcome(async function gateBothUnreadable() {
+              await assertRequiredProvidersReady({
+                required: ['synthetic', 'hyper',],
+                env: {
+                  [KEY_NAMES.synthetic]: 'test-synthetic',
+                  [KEY_NAMES.hyper]: 'test-hyper',
+                },
+                transport: async function refusesHyperFirst(exchange,) {
+                  if (exchange.url === HYPER_CREDITS_URL) {
+                    laterAsked.resolve(undefined,);
+                    return { status: 401, bodyText: 'no such cat', };
+                  }
+                  await laterAsked.promise;
+                  // A turn of the event loop, after which every continuation the
+                  // later provider's refusal needed has run.
+                  await wait(0,);
+                  return { status: 401, bodyText: 'no such cat', };
+                },
+                signal: AbortSignal.timeout(5_000,),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+            expect((refusal as Error).message,).toContain('synthetic is not ready: meter unavailable',);
           },
         },),
         it({

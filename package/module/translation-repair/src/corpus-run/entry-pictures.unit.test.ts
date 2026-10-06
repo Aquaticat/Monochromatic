@@ -44,7 +44,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 import { sliceOf, } from '../content-slice-of.test-fixture.ts';
-import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import {
+  scratchDir,
+  scratchDirWith,
+} from '../scratch-dir.test-fixture.ts';
+import { writeGatedGit, } from './gated-git.test-fixture.ts';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
 
 /**
  Logger every gather in this file writes its progress to.
@@ -289,6 +294,48 @@ await describe({
           slices: quietSlices,
           l,
         },)).size,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES NAMING THE FIRST NAMED PICTURE when two pictures are unreadable for a reason that is no '
+        + 'absence and the second-named read ends first',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'entry-pictures-gated-', },);
+
+        /**
+         Git whose read of the first picture ends after the read of the second.
+         */
+        const gitPath = await writeGatedGit({
+          dir: scratch.path,
+          held: '/nap.webp',
+          releasedBy: '/purr.webp',
+          stderr: 'fatal: unable to read the object',
+        },);
+
+        /**
+         What the gather refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: gatherEntryPictures({
+            pin: {
+              cloneDir: scratch.path,
+              commitSha: 'c'.repeat(40,),
+              gitPath,
+            },
+            entryId: 'mittens',
+            slices: [sliceOf({
+              text: `${photoElement({ assetNames: ['nap.webp', 'purr.webp',], },)}\n`,
+              sliceIndex: 0,
+            },),],
+            l,
+          },),
+        },);
+
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${'c'.repeat(40,)}:people/mittens/photos/nap.webp (other); `
+            + 'check that the clone exists and the pinned commit is present.',
+        );
       },
     },),
 
