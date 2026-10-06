@@ -267,5 +267,6 @@ export * from './translate-barrel.ts';
 export * from './coverage-barrel.ts';
 export * from './consolidation-barrel.ts';
 export * from './context-barrel.ts';
+export * from './editor-runner-barrel.ts';
 
 //endregion Public barrel

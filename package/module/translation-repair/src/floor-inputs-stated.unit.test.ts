@@ -634,7 +634,7 @@ function floorInputOmissions({ files, }: { readonly files: readonly SourceText[]
 const MEASUREMENT_FILES: Readonly<Record<string, string>> = {
   'corpus-run/checker-sensitivity-run.ts': 'asks whether the resolution checkers can say no, on cat-themed sheets',
   'corpus-run/coverage-control.ts': 'asks the coverage roster about a passage before and after its anchors are cut',
-  'corpus-run/editor-calibrate.ts': 'ranks every model on the editor\'s job over drawn slices',
+  'corpus-run/editor-calibrate-lane.ts': 'ranks every model on the editor\'s job over drawn slices',
   'corpus-run/editor-width-arm.ts': 'one arm of the editor-width probe',
   'corpus-run/editor-width-contest.ts': 'the editor-width probe\'s head-to-head between its arms\' winners',
   'corpus-run/editor-width-input.ts': 'the critic and panel findings the editor-width probe\'s arms share',

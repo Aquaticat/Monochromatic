@@ -1,0 +1,279 @@
+import type { SyntheticClient, } from '../chat-contract.ts';
+import { wordForCount, } from '../count-word.ts';
+import type { CorpusPin, } from '../corpus-source.ts';
+import {
+  type CalibrationGrace,
+  STRAGGLER_GRACE_VAR,
+} from '../grace-override.ts';
+import {
+  type WriterGrace,
+  writerGraceOverrideNote,
+} from '../writer-grace-override.ts';
+import { readAskedCount, } from './asked-count.ts';
+import type { sampleBenchSlices, } from './bench-sample.ts';
+import type { CommandLineOf, } from './command-lines.ts';
+import { driveEditorCalibrate, } from './editor-calibrate-drive.ts';
+import {
+  printEditorCalibrateRefineReach,
+  printEditorCalibrateShipped,
+} from './editor-calibrate-closing.ts';
+import { runEditorLane, } from './editor-calibrate-lane.ts';
+import type { SliceRounds, } from './editor-calibrate-slice.ts';
+import { printEditorCalibrateStandings, } from './editor-calibrate-standings.ts';
+import { RUN_ROSTER, } from './run-config.ts';
+import {
+  CALIBRATION_OVERLAP,
+  type readOverlap as readOverlapFromEnvironment,
+} from './slice-overlap.ts';
+
+//region Editor calibrate run
+// WHICH OF THE ROSTER SHOULD EDIT, measured on the editor's own job.
+//
+// `producer-calibrate.ts` seated the three writers, and its instrument drives
+// `runTranslateStage`: a model writing English from Chinese, with nothing in
+// front of it but the source. An editor does something else. It is handed
+// archive text, a set of adjudicated claims against it, and a window of
+// neighbouring prose, and asked to repair what the claims name without
+// disturbing what they do not. Seating an editor on a writer's standing is one
+// step removed from the job, and this closes that step.
+//
+// IT DRIVES THE LANE RATHER THAN REPLAYING IT. `ChunkRepairOutcome.rounds`
+// already carries every slate judges saw with each candidate's producer
+// attached, plus every ballot, which is what a standing counts.
+// `repair-selection-rounds.ts` re-shapes it. So the critics, the panel and the
+// window are all real: the claims an editor works from here are claims models
+// actually raised about that passage, not fixtures.
+//
+// EVERY MODEL EDITS EVERY SLICE, for the reason the writer calibration gives:
+// a narrow slate compares only the models that happened to be seated, and a
+// standing then means something different for each of them.
+//
+// CHECKERS SELF-CERTIFY HERE, AND ONLY HERE. Production forbids a checker from
+// proving its own repair, so a full editor roster leaves nobody independent to
+// check, whatever the roster's width (eight when this was written, nine since
+// 2026-09-01). The alternative is rotating editors out, which
+// re-introduces the survivorship the shape exists to avoid. The trade is safe
+// for THIS measurement because checking runs after selection: a standing reads
+// the envelope and chunk-patch ballots, which are cast before any checker is
+// asked. What self-certification can move is how many rounds happen, not who
+// won the ones that did.
+//
+// IT RUNS THE NATURALNESS LANE TOO, so the refiner seat is measured rather
+// than assumed. `repairChunk` does NOT reach it: it takes `refinerModelIds`
+// only to compute the union of models it must seat, sets `refined: false`, and
+// returns. Refinement is a separate stage the document driver runs afterwards.
+// This was found live, by a nine-slice run reporting zero refiner rounds and no
+// refine activity in its log at all, against a module note here claiming the
+// refiner standing came off the same spend. It did not; it now does.
+//
+// THE REFINER SEAT WAS RESEATED ON THE SAME WRITING EVIDENCE the editor seat
+// was, so it is exactly as unmeasured, and leaving it that way while measuring
+// the seat beside it would answer half the question this runner exists for.
+//
+// EMPTY DEFINITIONS, honestly. A drawn slice has no document-level glossary
+// block behind it, so there is nothing to pass; that is a real value here, not
+// an absence dressed as one.
+//
+// THE TWO SEATS ARE CREDITED SEPARATELY, which takes work because the lane
+// unions them. `collectRefinedAuthors` merges the editors with any refiner
+// whose rewrite won, so the refined outcome's authorship names both seats in
+// one list that cannot be split back apart. The editor column is therefore read
+// off the accuracy lane's own outcome, and the refiner column off
+// `settleRefinedSlice`'s `refinedBy`.
+//
+// WHO IS MISSING FROM EACH TABLE IS REPORTED TOO, by `producer-silence.ts`, and
+// the two reasons are separated rather than lumped: a model its provider
+// refused wrote nothing, while a model whose wording every peer proposed word
+// for word shipped without a ballot. The first is evidence nobody bought yet
+// and the second is evidence already paid for.
+//
+// SPENDS QUOTA, and more per slice than the writer calibration does: a whole
+// repair lane rather than one stage. Point `TRANSLATION_REPAIR_RUNS_DIR` at a
+// throwaway directory.
+//
+// WHAT THE PROCESS HANDS IN, because this module reads neither the environment
+// nor the command line itself: the overlap dial, the corpus draw, the two
+// straggler windows and the client are each a function the entry file passes,
+// called at the point of the run where the command used to reach for it, so
+// the order of the output and of the refusals is the order the command had.
+
+/**
+ Slices drawn when the caller names no count.
+
+ SMALLER THAN THE WRITER CALIBRATION'S DEFAULT, because a slice here buys a
+ whole lane rather than one stage.
+ */
+const DEFAULT_SLICES = 6;
+
+/**
+ Runs the calibration and prints both standings.
+
+ Returns nothing: the report on stdout IS the output.
+
+ @param line - the calibration's command line, read whole by `reportingRefusals`
+
+ @param readOverlap - reads how many slices may be in flight at once from the
+ environment; called after the count is read and before the sample is drawn,
+ so a value nothing can read refuses before any work is done
+
+ @param drawSample - draws the slices every model edits from the corpus the
+ pin names
+
+ @param pin - corpus clone and commit the sample is drawn from
+
+ @param adoptGrace - adopts the straggler window the rounds wait under; called
+ after the sample is drawn and before any round, so an unreadable override
+ refuses the run before it spends anything
+
+ @param readWriterGrace - reads the writer rounds' own window, when a launch
+ gave them one
+
+ @param newClient - builds the client every slice shares, called once and
+ after the header is printed
+
+ @throws {@link StatedRefusalError} when the count, the overlap or a window
+ is not one this run can read
+
+ @example
+ ```ts
+ await runEditorCalibrate({ line, readOverlap, drawSample, pin, adoptGrace, readWriterGrace, newClient, },);
+ ```
+ */
+export async function runEditorCalibrate(
+  {
+    line,
+    readOverlap,
+    drawSample,
+    pin,
+    adoptGrace,
+    readWriterGrace,
+    newClient,
+  }: {
+    readonly line: CommandLineOf<'editor-calibrate'>;
+    readonly readOverlap: typeof readOverlapFromEnvironment;
+    readonly drawSample: typeof sampleBenchSlices;
+    readonly pin: CorpusPin;
+    readonly adoptGrace: () => CalibrationGrace;
+    readonly readWriterGrace: () => WriterGrace;
+    readonly newClient: () => SyntheticClient;
+  },
+): Promise<void> {
+  /**
+   Slices asked for on the command line, or the default.
+   */
+  const wanted = readAskedCount({
+    line,
+    fallback: DEFAULT_SLICES,
+    asks: 'slices',
+  },);
+
+  /**
+   How many slices may be in flight at once.
+
+   FOUR BY THE OWNER'S DECISION OF 2026-08-26, read from the environment so
+   one build still serves both arms of a comparison: `1` reproduces the
+   sequential driver exactly, which is what makes the sequential arm a control
+   rather than a different program. Read before the sample is drawn, so a
+   value nothing can read refuses before any work is done.
+   */
+  const overlap = readOverlap({ fallback: CALIBRATION_OVERLAP, },);
+
+  /**
+   Slices every model edits.
+   */
+  const sample = await drawSample({
+    count: wanted,
+    pin,
+  },);
+
+  console.log(
+    `editor-calibrate: ${String(sample.length,)} ${
+      wordForCount({
+        count: sample.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }, `
+      + `${String(RUN_ROSTER.length,)} ${
+        wordForCount({
+          count: RUN_ROSTER.length,
+          one: 'model',
+          many: 'models',
+        },)
+      } editing and judging each, `
+      + `${String(overlap,)} ${
+        wordForCount({
+          count: overlap,
+          one: 'slice',
+          many: 'slices',
+        },)
+      } in flight`,
+  );
+
+  /**
+   Straggler window this run's rounds wait under, and where it came from.
+
+   ADOPTED HERE, before any round, so an unreadable override refuses the run
+   before it spends anything, and printed so the log says which window this
+   run was under whether or not a voice was ever cut. The calibration's own
+   window is 300000 ms under four slices in flight, the owner's decision of
+   2026-08-26 on arm D; a launch that sets the variable is honored instead.
+   */
+  const grace = adoptGrace();
+  console.log(
+    `straggler window ${String(grace.effectiveMs,)}ms (${
+      (grace.source === 'override') ? `${STRAGGLER_GRACE_VAR} override` : 'calibration default'
+    })`,
+  );
+
+  /**
+   Note naming the writer rounds' window when a launch gave them their own.
+
+   PRINTED because this run's editor and refiner rounds ARE writer rounds: a
+   launch that set the dial changed what the standing measures, and a reader
+   must be able to tell that from the log alone.
+   */
+  const writerNote = writerGraceOverrideNote({ grace: readWriterGrace(), },);
+  if (writerNote !== '')
+    console.log(writerNote,);
+
+  /**
+   Client every slice shares, built once for the run.
+
+   ONCE RATHER THAN PER SLICE, because the client holds the budget cooldowns,
+   the meter caches and the per-model limiters: built per slice, a provider
+   held out on one slice was re-asked immediately on the next, and every
+   slice re-read the meters. The two probes already build theirs in `main`.
+
+   SHARED ACROSS SLICES IN FLIGHT TOO, on purpose. The per-model limiter is
+   what production routes through, so a slice overlapping another meets the
+   same slot rule a corpus pass would, and the comparison describes the
+   program that would ship rather than one with the limiter taken out.
+   */
+  const client = newClient();
+
+  /**
+   What every slice produced, in sample order.
+   */
+  const perSlice = await driveEditorCalibrate({
+    sample,
+    overlap,
+    runSlice: function laneOf({ slice, },): Promise<SliceRounds> {
+      return runEditorLane({
+        slice,
+        client,
+      },);
+    },
+  },);
+
+  printEditorCalibrateStandings({
+    roster: RUN_ROSTER,
+    perSlice,
+  },);
+
+  printEditorCalibrateRefineReach({ perSlice, },);
+
+  printEditorCalibrateShipped({ perSlice, },);
+}
+
+//endregion Editor calibrate run

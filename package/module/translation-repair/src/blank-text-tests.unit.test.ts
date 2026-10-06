@@ -1325,7 +1325,7 @@ const HELD_TESTS: Readonly<Record<string, {
     why: 'a link\'s destination, an address and no wording, where an empty one leads nowhere a page could '
       + 'owe',
   },
-  'corpus-run/editor-calibrate.ts#main': {
+  'corpus-run/editor-calibrate-run.ts#runEditorCalibrate': {
     tests: 1,
     why: ASSEMBLED,
   },
