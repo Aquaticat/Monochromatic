@@ -70,8 +70,12 @@ pub fn hex(value: &JsoncValue) -> Vec<u8> {
     return digits
         .chunks(2)
         .map(|pair| {
-            let high: u32 = char::from_u32(u32::from(pair[0])).and_then(|c| return c.to_digit(16)).unwrap_or_else(|| panic!("bad hex"));
-            let low: u32 = char::from_u32(u32::from(pair[1])).and_then(|c| return c.to_digit(16)).unwrap_or_else(|| panic!("bad hex"));
+            let high: u32 = char::from_u32(u32::from(pair[0]))
+                .and_then(|c| return c.to_digit(16))
+                .unwrap_or_else(|| panic!("bad hex"));
+            let low: u32 = char::from_u32(u32::from(pair[1]))
+                .and_then(|c| return c.to_digit(16))
+                .unwrap_or_else(|| panic!("bad hex"));
             return u8::try_from(high * 16 + low).unwrap_or_else(|error| panic!("{error}"));
         })
         .collect();
@@ -84,7 +88,10 @@ pub fn quote(value: &str) -> String {
 
 /// Bytes as a quoted lower-case hexadecimal string.
 pub fn quote_hex(bytes: &[u8]) -> String {
-    let digits: String = bytes.iter().map(|byte| return format!("{byte:02x}")).collect();
+    let digits: String = bytes
+        .iter()
+        .map(|byte| return format!("{byte:02x}"))
+        .collect();
     return format!("\"{digits}\"");
 }
 
@@ -115,7 +122,13 @@ pub fn canonical(value: &JsoncValue) -> String {
         JsoncKind::Record { entries } => {
             let rendered: Vec<String> = entries
                 .iter()
-                .map(|entry| return format!("{}:{}", json_quote_units(&entry.key.units), canonical(&entry.value)))
+                .map(|entry| {
+                    return format!(
+                        "{}:{}",
+                        json_quote_units(&entry.key.units),
+                        canonical(&entry.value)
+                    );
+                })
                 .collect();
             return format!("{{{}}}", rendered.join(","));
         }

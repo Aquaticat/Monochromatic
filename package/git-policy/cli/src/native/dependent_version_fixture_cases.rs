@@ -33,11 +33,21 @@ fn failed(error: &PlanError) -> String {
     let (class, detail): (&str, String) = match error {
         PlanError::ContentUnavailable(_) => ("unavailable", String::new()),
         PlanError::PolicyIncomplete(PolicyIncomplete::NotUtf8 { .. }) => ("decode", String::new()),
-        PlanError::PolicyIncomplete(PolicyIncomplete::ManifestSyntax { .. }) => ("syntax", String::new()),
-        PlanError::PolicyIncomplete(PolicyIncomplete::ManifestShape { problem, .. }) => ("shape", problem.clone()),
-        PlanError::PolicyIncomplete(PolicyIncomplete::DuplicateName { .. }) => ("graph", String::new()),
+        PlanError::PolicyIncomplete(PolicyIncomplete::ManifestSyntax { .. }) => {
+            ("syntax", String::new())
+        }
+        PlanError::PolicyIncomplete(PolicyIncomplete::ManifestShape { problem, .. }) => {
+            ("shape", problem.clone())
+        }
+        PlanError::PolicyIncomplete(PolicyIncomplete::DuplicateName { .. }) => {
+            ("graph", String::new())
+        }
     };
-    return object(&[("kind", quote("failed")), ("error", quote(class)), ("detail", quote(&detail))]);
+    return object(&[
+        ("kind", quote("failed")),
+        ("error", quote(class)),
+        ("detail", quote(&detail)),
+    ]);
 }
 
 /// The canonical plan result.
@@ -45,12 +55,23 @@ fn plan_output(outcome: &Result<PlanOutcome, PlanError>) -> String {
     match outcome {
         Err(error) => return failed(error),
         Ok(PlanOutcome::Unsupported(unsupported)) => {
-            return object(&[("kind", quote("unsupported")), ("message", quote(&unsupported_message(unsupported)))]);
+            return object(&[
+                ("kind", quote("unsupported")),
+                ("message", quote(&unsupported_message(unsupported))),
+            ]);
         }
         Ok(PlanOutcome::Planned(plan)) => {
             let bumps: Vec<String> = plan.bumps.iter().map(bump_output).collect();
-            let names: Vec<String> = plan.bumped_names.iter().map(|name| return quote(name)).collect();
-            return object(&[("kind", quote("planned")), ("bumpedNames", array(&names)), ("bumps", array(&bumps))]);
+            let names: Vec<String> = plan
+                .bumped_names
+                .iter()
+                .map(|name| return quote(name))
+                .collect();
+            return object(&[
+                ("kind", quote("planned")),
+                ("bumpedNames", array(&names)),
+                ("bumps", array(&bumps)),
+            ]);
         }
     }
 }
@@ -87,8 +108,16 @@ fn policy_output(outcome: &Result<Vec<DependentFinding>, PlanError>) -> String {
                     ]);
                 },
             );
-            let path: String = finding.path.as_deref().map_or_else(|| return String::from("null"), quote_hex);
-            return object(&[("code", quote(finding.code)), ("message", quote(&finding.message)), ("path", path), ("patch", patch)]);
+            let path: String = finding
+                .path
+                .as_deref()
+                .map_or_else(|| return String::from("null"), quote_hex);
+            return object(&[
+                ("code", quote(finding.code)),
+                ("message", quote(&finding.message)),
+                ("path", path),
+                ("patch", patch),
+            ]);
         })
         .collect();
     return object(&[("kind", quote("findings")), ("findings", array(&rendered))]);
@@ -112,18 +141,32 @@ pub fn load_files(files: &[JsoncValue], memory: &mut MemoryWorkspace) {
         let path: Vec<u8> = hex(field(file, "path"));
         let current: &JsoncValue = field(file, "current");
         let base: &JsoncValue = field(file, "base");
-        let bytes: Vec<u8> = if is_null(current) { Vec::new() } else { hex(current) };
+        let bytes: Vec<u8> = if is_null(current) {
+            Vec::new()
+        } else {
+            hex(current)
+        };
         let entry: MemoryFile = MemoryFile {
             path: path.clone(),
             mode: mode(field(file, "mode")),
-            base: if is_null(base) { None } else if is_true(base) { Some(bytes.clone()) } else { Some(hex(base)) },
+            base: if is_null(base) {
+                None
+            } else if is_true(base) {
+                Some(bytes.clone())
+            } else {
+                Some(hex(base))
+            },
             current: bytes,
         };
         memory.unreadable.retain(|refused| return *refused != path);
         if is_null(current) {
             memory.unreadable.push(path.clone());
         }
-        match memory.files.iter_mut().find(|existing| return existing.path == path) {
+        match memory
+            .files
+            .iter_mut()
+            .find(|existing| return existing.path == path)
+        {
             Some(existing) => *existing = entry,
             None => memory.files.push(entry),
         }
@@ -131,9 +174,16 @@ pub fn load_files(files: &[JsoncValue], memory: &mut MemoryWorkspace) {
 }
 
 /// The workspace a case reads: a shared workspace, then the case's own files.
-fn memory_workspace(input: &JsoncValue, shared: &mut dyn FnMut(&str) -> MemoryWorkspace) -> MemoryWorkspace {
+fn memory_workspace(
+    input: &JsoncValue,
+    shared: &mut dyn FnMut(&str) -> MemoryWorkspace,
+) -> MemoryWorkspace {
     let base_name: &JsoncValue = field(input, "workspace");
-    let mut memory: MemoryWorkspace = if is_null(base_name) { MemoryWorkspace::default() } else { shared(&text(base_name)) };
+    let mut memory: MemoryWorkspace = if is_null(base_name) {
+        MemoryWorkspace::default()
+    } else {
+        shared(&text(base_name))
+    };
     load_files(elements(field(input, "files")), &mut memory);
     return memory;
 }
@@ -149,7 +199,10 @@ fn workspace_case(input: &JsoncValue, shared: &mut dyn FnMut(&str) -> MemoryWork
                 "modified" => CandidateChange::Modified,
                 _ => CandidateChange::Deleted,
             };
-            return Candidate { path: hex(field(candidate, "path")), change };
+            return Candidate {
+                path: hex(field(candidate, "path")),
+                change,
+            };
         })
         .collect();
     let trigger: Trigger = match text(field(input, "trigger")).as_str() {
@@ -173,7 +226,10 @@ fn workspace_case(input: &JsoncValue, shared: &mut dyn FnMut(&str) -> MemoryWork
 fn graph_bump(bump: &PlannedBump) -> String {
     return object(&[
         ("name", quote(&bump.name)),
-        ("directory", quote(&String::from_utf8_lossy(&bump.directory))),
+        (
+            "directory",
+            quote(&String::from_utf8_lossy(&bump.directory)),
+        ),
         ("from", quote(&bump.bump.from)),
         ("to", quote(&bump.bump.to)),
     ]);
@@ -188,17 +244,34 @@ fn graph_case(input: &JsoncValue) -> String {
             return WorkspaceNode {
                 name: text(field(manifest, "name")),
                 directory: text(field(manifest, "directory")).into_bytes(),
-                version: if is_null(version) { None } else { Some(units(version)) },
+                version: if is_null(version) {
+                    None
+                } else {
+                    Some(units(version))
+                },
                 edge_names: texts(field(manifest, "edgeNames")),
             };
         })
         .collect();
-    match plan_dependent_bumps(&nodes, &texts(field(input, "bumpedNames")), &texts(field(input, "publishableNames"))) {
+    match plan_dependent_bumps(
+        &nodes,
+        &texts(field(input, "bumpedNames")),
+        &texts(field(input, "publishableNames")),
+    ) {
         Ok(bumps) => {
-            return object(&[("kind", quote("bumps")), ("value", array(&bumps.iter().map(graph_bump).collect::<Vec<String>>()))]);
+            return object(&[
+                ("kind", quote("bumps")),
+                (
+                    "value",
+                    array(&bumps.iter().map(graph_bump).collect::<Vec<String>>()),
+                ),
+            ]);
         }
         Err(unsupported) => {
-            return object(&[("kind", quote("unsupported")), ("message", quote(&unsupported_message(&unsupported)))]);
+            return object(&[
+                ("kind", quote("unsupported")),
+                ("message", quote(&unsupported_message(&unsupported))),
+            ]);
         }
     }
 }
@@ -215,37 +288,75 @@ pub fn evaluate(case: &JsoncValue, shared: &mut dyn FnMut(&str) -> MemoryWorkspa
     match string_kind(case).as_str() {
         "workspace" => return workspace_case(input, shared),
         "planDependentBumps" => return graph_case(input),
-        "patchBumpVersion" => match patch_bump_version(&string("name"), &units(field(input, "version"))) {
-            Ok(bump) => return object(&[("kind", quote("ok")), ("value", quote(&bump.to))]),
-            Err(unsupported) => {
-                return object(&[("kind", quote("unsupported")), ("message", quote(&unsupported_message(&unsupported)))]);
+        "patchBumpVersion" => {
+            match patch_bump_version(&string("name"), &units(field(input, "version"))) {
+                Ok(bump) => return object(&[("kind", quote("ok")), ("value", quote(&bump.to))]),
+                Err(unsupported) => {
+                    return object(&[
+                        ("kind", quote("unsupported")),
+                        ("message", quote(&unsupported_message(&unsupported))),
+                    ]);
+                }
             }
-        },
-        "readManifestDependencyFacts" => match read_manifest_facts(string("path").as_bytes(), &string("text")) {
-            Err(error) => return failed(&PlanError::PolicyIncomplete(error)),
-            Ok(facts) => {
-                let names = |list: &[String]| return array(&list.iter().map(|name| return quote(name)).collect::<Vec<String>>());
-                return object(&[
-                    ("kind", quote("facts")),
-                    ("name", quote(&facts.name)),
-                    ("version", facts.version.as_deref().map_or_else(|| return String::from("null"), json_quote_units)),
-                    ("runtime", names(&facts.runtime_dependency_names)),
-                    ("dev", names(&facts.dev_dependency_names)),
-                ]);
+        }
+        "readManifestDependencyFacts" => {
+            match read_manifest_facts(string("path").as_bytes(), &string("text")) {
+                Err(error) => return failed(&PlanError::PolicyIncomplete(error)),
+                Ok(facts) => {
+                    let names = |list: &[String]| {
+                        return array(
+                            &list
+                                .iter()
+                                .map(|name| return quote(name))
+                                .collect::<Vec<String>>(),
+                        );
+                    };
+                    return object(&[
+                        ("kind", quote("facts")),
+                        ("name", quote(&facts.name)),
+                        (
+                            "version",
+                            facts
+                                .version
+                                .as_deref()
+                                .map_or_else(|| return String::from("null"), json_quote_units),
+                        ),
+                        ("runtime", names(&facts.runtime_dependency_names)),
+                        ("dev", names(&facts.dev_dependency_names)),
+                    ]);
+                }
             }
-        },
+        }
         "replaceManifestVersion" => {
-            match replace_manifest_version(string("path").as_bytes(), &string("text"), &string("from"), &string("to")) {
-                Ok(replaced) => return object(&[("kind", quote("ok")), ("value", quote(&replaced))]),
+            match replace_manifest_version(
+                string("path").as_bytes(),
+                &string("text"),
+                &string("from"),
+                &string("to"),
+            ) {
+                Ok(replaced) => {
+                    return object(&[("kind", quote("ok")), ("value", quote(&replaced))]);
+                }
                 Err(error) => return failed(&PlanError::PolicyIncomplete(error)),
             }
         }
-        "importsPackage" => return boolean(imports_package(&string("sourceText"), &string("packageName"))),
+        "importsPackage" => {
+            return boolean(imports_package(
+                &string("sourceText"),
+                &string("packageName"),
+            ));
+        }
         "isNonTestSourcePath" => {
-            return boolean(is_non_test_source_path(string("directory").as_bytes(), string("path").as_bytes()));
+            return boolean(is_non_test_source_path(
+                string("directory").as_bytes(),
+                string("path").as_bytes(),
+            ));
         }
         "readPublishableNames" => {
-            let names: Vec<String> = read_publishable_names(&string("configText")).iter().map(|name| return quote(name)).collect();
+            let names: Vec<String> = read_publishable_names(&string("configText"))
+                .iter()
+                .map(|name| return quote(name))
+                .collect();
             return object(&[("kind", quote("names")), ("value", array(&names))]);
         }
         other => panic!("unknown case kind {other}"),

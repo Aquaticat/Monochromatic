@@ -89,6 +89,9 @@ fn requires_specifier_position() {
     assert!(!imports("x('@scope/b')"));
     assert!(!imports("from('@scope/b')"));
     assert!(imports("import('@scope/b')"));
+    // A callee keyword followed by one more letter is neither a keyword nor a call.
+    assert!(!imports("requirex '@scope/b'"));
+    assert!(!imports("importx '@scope/b'"));
 }
 
 /// An empty name follows the stated rule instead of looping as the incumbent does.

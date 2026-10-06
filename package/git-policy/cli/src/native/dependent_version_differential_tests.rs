@@ -36,17 +36,25 @@ fn unit_fixtures_match_the_incumbent() {
         let actual: String = evaluate(case, &mut no_shared_workspace);
         let expected: String = canonical(field(case, "expected"));
         if actual != expected {
-            mismatches.push(format!("{}\n  native:    {actual}\n  incumbent: {expected}", text(field(case, "name"))));
+            mismatches.push(format!(
+                "{}\n  native:    {actual}\n  incumbent: {expected}",
+                text(field(case, "name"))
+            ));
         }
     }
     assert!(mismatches.is_empty(), "{}", mismatches.join("\n"));
     // A fixture file that lost its cases would pass vacuously.
-    assert!(elements(&cases).len() >= 60, "only {} cases", elements(&cases).len());
+    assert!(
+        elements(&cases).len() >= 60,
+        "only {} cases",
+        elements(&cases).len()
+    );
 }
 
 /// Read a shared workspace file of the corpus.
 fn shared_workspace(path: &std::path::Path) -> MemoryWorkspace {
-    let source: String = std::fs::read_to_string(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+    let source: String =
+        std::fs::read_to_string(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
     let parsed: JsoncValue = parse_jsonc(&source).unwrap_or_else(|error| panic!("{error:?}"));
     let mut memory: MemoryWorkspace = MemoryWorkspace::default();
     load_files(elements(&parsed), &mut memory);
@@ -61,7 +69,8 @@ fn corpus_from_environment() {
     let directory: std::path::PathBuf = std::env::var_os("DEPENDENT_VERSION_CORPUS")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|| panic!("DEPENDENT_VERSION_CORPUS names the corpus directory"));
-    let cases: String = std::fs::read_to_string(directory.join("cases.jsonl")).unwrap_or_else(|error| panic!("{error}"));
+    let cases: String = std::fs::read_to_string(directory.join("cases.jsonl"))
+        .unwrap_or_else(|error| panic!("{error}"));
     let mut loaded: HashMap<String, MemoryWorkspace> = HashMap::new();
     let mut results: Vec<String> = Vec::new();
     for line in cases.lines() {
@@ -74,6 +83,9 @@ fn corpus_from_environment() {
         };
         results.push(evaluate(&case, &mut shared));
     }
-    std::fs::write(directory.join("rust-results.jsonl"), format!("{}\n", results.join("\n")))
-        .unwrap_or_else(|error| panic!("{error}"));
+    std::fs::write(
+        directory.join("rust-results.jsonl"),
+        format!("{}\n", results.join("\n")),
+    )
+    .unwrap_or_else(|error| panic!("{error}"));
 }
