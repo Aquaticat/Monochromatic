@@ -82,7 +82,7 @@ const cases = [
   // Through element handles, as assistive tools reach the box: setting the value runs find, and the
   // clear control is a button.
   { name: 'a11y-set-value-edits', file: 'ui/query-input.slint', before: '        root.text = value;\n        root.edited(value);\n', after: '        root.text = value;\n', native: true, test: 'find_box_and_clear_control_expose_role_label_value_and_actions', failure: "setting the find box's value did not run find" },
-  { name: 'a11y-clear-role', file: 'ui/query-input.slint', before: '                accessible-role: button;', after: '                accessible-role: none;', native: true, test: 'find_box_and_clear_control_expose_role_label_value_and_actions', failure: "the find box's clear control is not a button" },
+  { name: 'a11y-clear-role', file: 'ui/query-input.slint', before: '                accessible-role: button;', after: '                accessible-role: none;', native: true, test: 'find_box_and_clear_control_expose_role_label_value_and_actions', failure: 'assistive tools find no element labelled "Clear find text"' },
   { name: 'escape-topmost', file: 'ui/app.slint', before: 'root.find-open && !root.search-open {', after: 'root.find-open {', native: true, test: 'native_find_and_search_overlay_close_topmost_first', failure: 'Escape did not close the topmost search overlay' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
