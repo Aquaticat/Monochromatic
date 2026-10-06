@@ -32,6 +32,7 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
+    time::Instant,
 };
 
 /// The TypeScript family is served by the project's own TypeScript 7 server.
@@ -197,6 +198,8 @@ fn locate(server: &str, command: &str, root: &Path) -> Result<PathBuf, Unavailab
 /// function build(root: string, setup: LanguageSetup): Built
 /// ```
 fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
+    // `Instant::now` reads the monotonic clock; the phases below are logged with their durations.
+    let started = Instant::now();
     // The built-in `languages.toml` of the pinned Helix revision, compiled into helix-loader.
     let defaults = helix_loader::config::default_lang_config();
     let merged = match &setup.extra_languages {
@@ -241,6 +244,7 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
         .filter(|spelling| return spelling.as_path() != root)
         .into_iter()
         .collect();
+    let decoded = started.elapsed();
     let mut unavailable: HashMap<String, Unavailable> = HashMap::new();
     let mut definitions: HashMap<String, Definition> = HashMap::new();
     // `iter_mut` walks the table handing out modifiable borrows of each definition.
@@ -292,6 +296,7 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
         // ```
         definition.timeout = definition.timeout.saturating_mul(START_FACTOR);
     }
+    let located = started.elapsed();
     let mut configured: HashMap<String, Vec<String>> = HashMap::new();
     for language in configuration.language.iter_mut() {
         let mut names = Vec::new();
@@ -311,6 +316,22 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
             .retain(|features| return !unavailable.contains_key(&features.name));
     }
     let loader = Loader::new(configuration).context("Cannot build the language registry")?;
+    // What: `as_millis` gives whole milliseconds; `saturating_sub` cannot go below zero.
+    // Why: Building the registry resolves every server program on PATH and compiles every
+    //      language's patterns; the log shows which part a slow start spent its time in.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // log.debug({ definitions, unavailable, decodeMs, locateMs, loaderMs }, 'built the language registry');
+    // ```
+    tracing::debug!(
+        definitions = definitions.len(),
+        unavailable = unavailable.len(),
+        decode_ms = decoded.as_millis(),
+        locate_ms = located.saturating_sub(decoded).as_millis(),
+        loader_ms = started.elapsed().saturating_sub(located).as_millis(),
+        "built the language registry"
+    );
     // `Ok(...)` is the success variant of `Result`.
     return Ok(Built {
         loader,
