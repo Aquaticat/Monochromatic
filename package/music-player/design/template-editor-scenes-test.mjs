@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { defaultTemplate } from './template-reference.mjs';
-import { expected, library, scenes, standIns } from './template-editor-scenes.mjs';
+import { drawnTexts, expected, library, scenes, standIns } from './template-editor-scenes.mjs';
 
 //region What each authored state draws, written out so a change in the reference or the scenes is noticed
 const drawn = Object.fromEntries(scenes.map(state => [state.id, expected(state)]));
@@ -37,5 +37,19 @@ for (const state of Object.values(drawn)) {
 assert.deepEqual(Object.values(drawn).filter(state => state.focused).map(state => state.id), ['help', 'unknown-field', 'open-formula']);
 // Each preview pair shows one file with a true peak and one without, so the fallback is always on screen.
 for (const pair of [library, standIns]) assert.deepEqual(pair.map(track => track.peak === undefined), [false, true]);
+// The page's whole copy, in reading order: the list page is short, an editor page has its sections in a fixed order.
+assert.deepEqual(drawnTexts(scenes[0]).map(item => item.role + '=' + item.text),
+  ['page-title=Settings', 'section-templates=Templates', 'entry-title=Track row supporting line', 'entry-supporting=4:35 · \u22121.2 dBTP']);
+for (const state of scenes.slice(1)) {
+  const roles = drawnTexts(state).map(item => item.role);
+  assert.deepEqual(roles.filter(role => !/^(preview-supporting|error|help|field-(name|value|insert))-/u.test(role) && !/^preview-title-/u.test(role)),
+    ['page-title', 'section-preview', 'preview-note', 'field-label', 'template', 'section-fields', 'reset'], state.id);
+  assert.equal(roles.filter(role => role.startsWith('field-name-')).length, 7, state.id);
+  assert.equal(new Set(roles).size, roles.length, state.id);
+}
+// Both preview rows draw a second line; the unanalysed one holds only the duration.
+assert.deepEqual(drawnTexts(scenes[1]).filter(item => item.role.startsWith('preview-')).map(item => item.role),
+  ['preview-title-0', 'preview-supporting-0', 'preview-title-1', 'preview-supporting-1', 'preview-note']);
+assert.equal(drawnTexts(scenes.find(state => state.id === 'unknown-field')).find(item => item.role === 'error-0').text, 'mi: unknown field peek');
 //endregion
 console.log('Template editor scenes: ' + scenes.length + ' states and their drawn text passed.');

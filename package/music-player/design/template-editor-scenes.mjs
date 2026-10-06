@@ -65,6 +65,26 @@ export function expected(state) {
     listEntry: { title: 'Track row supporting line', supporting: shown[0].text },
   };
 }
+
+/** Every text a state's page draws, each with the role it plays, in reading order. */
+export function drawnTexts(state) {
+  const want = expected(state);
+  if (want.page === 'list') {
+    return [{ role: 'page-title', text: 'Settings' }, { role: 'section-templates', text: 'Templates' },
+      { role: 'entry-title', text: want.listEntry.title }, { role: 'entry-supporting', text: want.listEntry.supporting }];
+  }
+  return [{ role: 'page-title', text: 'Supporting line' }, { role: 'section-preview', text: 'Preview' },
+    ...want.previewRows.flatMap((row, index) => [{ role: 'preview-title-' + index, text: row.title },
+      // A row whose line is empty draws no second line at all.
+      ...(row.supporting === '' ? [] : [{ role: 'preview-supporting-' + index, text: row.supporting }])]),
+    { role: 'preview-note', text: want.previewNote }, { role: 'field-label', text: 'Template' }, { role: 'template', text: want.template },
+    ...want.errors.map((line, index) => ({ role: 'error-' + index, text: line })),
+    ...(want.help ? [{ role: 'help-signature', text: want.help.signature }, { role: 'help-description', text: want.help.description }] : []),
+    { role: 'section-fields', text: 'Fields' },
+    ...want.fields.flatMap(field => [{ role: 'field-name-' + field.insert, text: field.label },
+      { role: 'field-value-' + field.insert, text: field.value === '' ? 'No value yet' : field.value }, { role: 'field-insert-' + field.insert, text: field.insert }]),
+    { role: 'reset', text: 'Reset to default' }];
+}
 //endregion
 
 if (process.argv[1]?.endsWith('template-editor-scenes.mjs')) {
