@@ -149,6 +149,9 @@ and the length difference cost one row in the scene.
   as editord draws them,
   with spacing that ties a block of rows to the line under it.
   These frames replace the frames of that entry as the picture of the current design.
+  On 2026-10-06 the user decided that severity is a plain letter in front of the line number,
+  close to the number;
+  every frame was captured again after that change and shows each letter 4 px before its own line number.
   The values chosen along the way are listed in the package README section "Inlay hints and diagnostics"
   and stay open to the user's veto.
 - How the frames were made and measured:
@@ -182,7 +185,7 @@ What the frames show.
   the second frame shows the new text with the space of the old rows held open.
 - `wheel-1-scrolling-ended`, `wheel-2-rows-shown` (dark, scale 1):
   consecutive recorded frames after wheel scrolling during which hints and diagnostics had arrived;
-  line 98, the first visible line, stays where it is.
+  lines 96 and 97, the first visible lines, stay where they are.
 
 ### 2026-10-05 annotations as built
 
@@ -348,7 +351,7 @@ the source focused, the sidebar 256 px wide.
 
 ### Sessions
 
-Every frame comes from the package's native inspection task on `feat/ide-hint-rows`,
+Every frame comes from the package's native inspection task on `feat/ide-hint-rows` at `BUILD_COMMIT`,
 with injected annotations unless stated:
 
 ```sh
@@ -369,8 +372,11 @@ IDE_NATIVE_MCP_PORT=9425 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-ap
   The selection is a click on line 2 and Shift with Down three times and End;
   find is Ctrl+F and `type area`;
   the bottom is Ctrl+End.
-- A scale 2 frame is kept once three screenshots 1.2 s apart are byte-identical.
-  The find frames have a blinking input caret and are taken 7 s after the input instead.
+- A scale 2 frame is kept once three screenshots 1.2 s apart are byte-identical
+  and have the scaled width;
+  frames that the first sessions took before the scale change or the `resize` had reached the window
+  were taken again in fresh sessions that wait for the new width.
+  The find frames have a blinking input caret and are taken 7 s (scale 1) or 15 s (scale 2) after the input instead.
   Every frame was opened and compared with its scene;
   the code rows of each scale 2 frame stand within 0.75 logical pixels of those of its scale 1 frame.
 - The stored files are re-encoded losslessly without ancillary chunks.
@@ -396,13 +402,15 @@ the recordings themselves are not.
 ```sh
 # package/desktop-app/ide/mise.toml, task inspect:native
 # Arrival, and a reload after which annotations return within the hold:
-IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_ANNOTATION_DELAYS=4000,7000 IDE_NATIVE_ANNOTATION_RELOAD_DELAYS=300,700 \
+IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_SIZE=1400x1000 \
+  IDE_NATIVE_ANNOTATION_DELAYS=4000,7000 IDE_NATIVE_ANNOTATION_RELOAD_DELAYS=300,700 \
   mise run //package/desktop-app/ide:inspect:native dark annotations
 # A reload after which diagnostics return later than the hold:
-IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_ANNOTATION_DELAYS=9000,13000 IDE_NATIVE_ANNOTATION_RELOAD_DELAYS=300,3000 \
+IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_SIZE=1400x1000 \
+  IDE_NATIVE_ANNOTATION_DELAYS=9000,13000 IDE_NATIVE_ANNOTATION_RELOAD_DELAYS=300,3000 \
   mise run //package/desktop-app/ide:inspect:native dark annotations
 # Wheel scrolling across the arrival:
-IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_ANNOTATION_DELAYS=5500,8000 \
+IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_SIZE=1400x1000 IDE_NATIVE_ANNOTATION_DELAYS=5500,8000 \
   mise run //package/desktop-app/ide:inspect:native dark annotations
 ```
 
@@ -410,51 +418,59 @@ IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_ANNOTATION_DELAYS=5500,8000 \
   written to the fixture file while the session runs,
   so every annotated line stays where it was in the text.
 - The wheel recording sends one `wheel 700 400 0 1` notch every 240 ms for 10 s.
+- The arrival was recorded for 18 s in a session of its own, because the slow start under host load
+  left the first 9 s recording without the arrival.
 - Recorded frames:
-  arrival 539 at 60 per second, none dropped;
-  reload 227 kept and 100 dropped;
-  late reload 388, none dropped;
-  wheel 425 at 30 per second, none dropped;
-  TypeScript arrival 239 kept and 102 dropped;
-  TypeScript reload 130 kept and 63 dropped.
-  Dropped frames came from host load;
-  times taken from a recording with drops are approximate.
+  arrival 327 kept and 700 dropped;
+  reload 158 kept and 114 dropped;
+  late reload 116 kept and 253 dropped;
+  wheel 282 kept and 142 dropped;
+  TypeScript arrival 287 kept and 63 dropped;
+  TypeScript reload 108 kept and 87 dropped.
+  Dropped frames came from host load (a load average of 45 to 100 from other sessions);
+  times below come from the application's log, not from frame counts.
 
 ### Measurement
 
-A code row is found by the ink of its line number in the gutter.
-Its pixels,
-line number and code,
+A code row is found by the ink of its gutter, letter or line number.
+Its pixels from x 340 on,
+right of every severity letter,
 are then searched for in the next recorded frame,
 and the difference of the two positions is that line's movement.
 For the wheel recording only a row found again pixel for pixel counts,
 because neighbouring fixture lines look alike.
 
-- Arrival: two frames differ from the frame before them.
-  Hints: line 1 moved 0 px, line 2 26 px, line 3 68 px, line 4 158 px, lines 5 to 13 184 px, lines 14 to 17 210 px.
-  Diagnostics, 3 s later: lines 1 to 4 moved 0 px, lines 5 and 6 16 px, line 7 42 px, line 8 164 px;
+- Arrival: after the text and its syntax colors, two frames differ from the frame before them.
+  Hints: line 1 moved 0 px, line 2 26 px, line 3 68 px, line 4 158 px, lines 5 to 13 184 px, lines 14 to 20 210 px.
+  Diagnostics, 2.92 s later by the log: lines 1 to 4 moved 0 px, lines 5 and 6 16 px, line 7 42 px, line 8 164 px;
   later lines left the window.
 - Reload within the hold: three frames differ (the new text, hints back, diagnostics back);
   no code row moved in any of them.
-- Reload with late diagnostics: four frames differ.
-  Message space was given up 1.02 s after the reload (lines 5 and 6 moved up 16 px, line 7 42 px, line 8 164 px)
-  and taken again 3.15 s after it by the same amounts.
-- TypeScript 7.0.2, first open: by the application's log diagnostics were stored 0.19 s before hints,
-  and each moved lines once (line 14 by 336 px, then by 254 px).
-  External change: the rows were back 0.23 s after the reload by the application's log,
+- Reload with late diagnostics: by the log, message space was given up 1.01 s after the reload
+  and taken again with the diagnostics 3.16 s after it.
+  The recording shows the first of the two
+  (lines 5 and 6 moved up 16 px, line 7 42 px, line 8 164 px);
+  it kept no frame after the second.
+- TypeScript 7.0.2, first open: by the application's log hints and diagnostics were stored within 1 ms of each other,
+  2.03 s after the file was announced to the server,
+  and lines moved once, in one recorded frame.
+  External change: the rows were back 0.04 s after the reload by the application's log,
   two recorded frames differ,
   and no code row moved.
-- Wheel: 39 notches of 60 px took effect (2340 px).
-  In 145 frames every code row found again moved by one common amount,
-  never backwards,
-  at most 45 px in one frame.
+- Wheel: 42 notches were sent;
+  by the log the view came to rest at a scroll offset of 2280 px.
+  In 30 kept frames every code row found again moved by one common amount,
+  never backwards
+  (at most 119 px between two kept frames, because frames were dropped).
   Hints and diagnostics that arrived meanwhile were shown in one frame,
-  0.27 s after the last scrolling frame;
-  in it the first visible line did not move,
-  the six lines after it moved 26 px,
-  and later lines 52, 94, 120, and 146 px,
+  0.32 s after the last render that deferred them by the log;
+  in it lines 96 and 97, the first visible lines, did not move,
+  line 98 moved 26 px by its own new block,
+  and later lines 52 to 256 px,
   each by the blocks that appeared before it inside the window.
-  The 1228 px of blocks that appeared before the window moved nothing.
+  The 1202 px of blocks that appeared before the window moved nothing.
+  A recording of the build before the scroll-step rule (`862f20fac`) showed the first visible line moving 3 px
+  in that frame.
 
 ## How the 2026-10-05 UI batch 3 screenshots were produced
 

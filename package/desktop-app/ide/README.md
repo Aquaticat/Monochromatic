@@ -874,7 +874,7 @@ Measured on frames recorded from the nested compositor
   line 3 by 68 px,
   line 4 by 158 px,
   lines 5 to 13 by 184 px,
-  and lines 14 to 17 by 210 px,
+  and lines 14 to 20 by 210 px,
   in one frame;
   line 1 did not move.
   Diagnostics injected 3 s later moved lines 5 and 6 by 16 px,
@@ -884,18 +884,19 @@ Measured on frames recorded from the nested compositor
 - An external change with annotations returning 0.3 s and 0.7 s later changed three frames
   and moved no code row.
 - With diagnostics returning 3 s later,
-  message space was given up 1.02 s after the reload (lines moved up by 16, 42, and 164 px)
-  and taken again when the diagnostics arrived.
+  message space was given up 1.01 s after the reload (lines moved up by 16, 42, and 164 px)
+  and taken again when the diagnostics arrived, 3.16 s after it.
 - With a TypeScript 7.0.2 server,
-  diagnostics arrived first and hints 0.19 s later at the first open,
-  each moving lines once;
-  after an external change the rows were back within 0.23 s and no code row moved.
-- 39 wheel notches of 60 px,
-  sent while hints and diagnostics arrived,
-  gave 145 recorded frames in which every code row moved by one common amount,
+  hints and diagnostics arrived within 1 ms of each other at the first open
+  and moved lines once;
+  after an external change the rows were back within 0.04 s and no code row moved.
+- 42 wheel notches sent while hints and diagnostics arrived
+  gave 30 kept frames in which every code row found again moved by one common amount,
   never backwards;
-  the rows appeared in one frame 0.27 s after the last scrolling frame,
-  with the first visible line unmoved and the lines after it moved by 26 to 146 px.
+  the rows appeared in one frame 0.32 s after the last render that deferred them,
+  with the first visible lines unmoved and the lines after them moved by 26 to 256 px.
+- Times come from the application's log:
+  host load from other sessions dropped up to two thirds of the recorded frames.
 
 The native tests `rows_arriving_in_view_move_only_lines_beneath_them`,
 `rows_arriving_above_the_view_move_no_visible_pixel`,
