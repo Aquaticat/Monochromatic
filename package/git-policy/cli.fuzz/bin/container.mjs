@@ -18,6 +18,7 @@ const targets = [
   { name: 'config_loading', dictionary: 'arguments.dict' },
   { name: 'config_schema', dictionary: 'config_schema.dict' },
   { name: 'wrapper_controls', dictionary: 'controls.dict' },
+  { name: 'dependent_version', dictionary: 'dependent_version.dict' },
 ];
 const secondsPerTarget = 30;
 const maxInputBytes = 4096;

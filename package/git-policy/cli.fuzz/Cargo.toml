@@ -57,6 +57,13 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "dependent_version"
+path = "fuzz_targets/dependent_version.rs"
+test = false
+doc = false
+bench = false
+
 # libFuzzer records and minimizes a failing input by unwinding out of the assertion.
 [profile.release]
 panic = "unwind"

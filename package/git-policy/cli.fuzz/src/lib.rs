@@ -22,3 +22,6 @@ mod control_tables;
 
 /// Control-bearing argument vectors and the invariants of removal and of the refusal frontier.
 pub mod controls;
+
+/// Generated manifests and raw text through the dependent-version rewrite and specifier scan.
+pub mod dependent_version;
