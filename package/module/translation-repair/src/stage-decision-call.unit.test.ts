@@ -23,7 +23,6 @@ import {
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from './capturing-logger.test-fixture.ts';
-import { WHISKER_KEY, } from './quoting-failure.test-fixture.ts';
 import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
 
 /**
@@ -236,7 +235,7 @@ await describe({
     },),
 
     it({
-      name: 'LOGS A LOST VOICE BY CLASS AND HTTP STATUS and not by the provider body its message excerpts',
+      name: 'LOGS A LOST VOICE BY CLASS AND HTTP STATUS, then the provider\'s own words labelled as its own',
       fn: async () => {
         const warnings: string[] = [];
         await attemptStageCall({
@@ -246,14 +245,14 @@ await describe({
             decide: async () => {
               throw new SyntheticHttpError({
                 status: 400,
-                bodyText: `the cat key ${WHISKER_KEY} named an invalid_question`,
+                bodyText: `the cat named an invalid_question`,
               },);
             },
           },),
           decision: DECISION,
         },);
         expect(warnings,).toEqual([
-          `select ${SEAT_OPENROUTER_DECISIONS}: refused by SyntheticHttpError with HTTP 400, voice lost`,
+          `select ${SEAT_OPENROUTER_DECISIONS}: refused by SyntheticHttpError with HTTP 400 (the provider said: "the cat named an invalid_question"), voice lost`,
         ],);
       },
     },),

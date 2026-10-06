@@ -27,6 +27,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   reuseTwinOrBuy,
+  SyntheticHttpError,
   type TwinMemo,
   type TwinOrBought,
   type TwinStored,
@@ -439,6 +440,40 @@ await describe({
         await settle();
         expect(shop.warned,).toEqual([
           'twin memo: the buy for a shared key was abandoned (refused by TypeError), so any twin waiting on it asks for itself',
+        ],);
+        nonNullishOrThrow(shop.gates[1],).resolve({
+          record: 'r3',
+          persisted: true,
+        },);
+        await second;
+      },
+    },),
+
+    it({
+      name: 'a failed buy that was a provider status failure warns of its class and status, then the provider\'s own '
+        + 'words labelled as its own',
+      fn: async () => {
+        const memo: TwinMemo<string> = new Map();
+        const shop = buyer();
+        const first = collected({
+          run: asking({
+            memo,
+            shop,
+          },),
+        },);
+        await settle();
+        const second = asking({
+          memo,
+          shop,
+        },);
+        await settle();
+
+        nonNullishOrThrow(shop.gates[0],).reject(new SyntheticHttpError({ status: 429, bodyText: 'the cat is out of credit', },),);
+        await first;
+        await settle();
+        expect(shop.warned,).toEqual([
+          'twin memo: the buy for a shared key was abandoned (refused by SyntheticHttpError with HTTP 429 '
+          + '(the provider said: "the cat is out of credit")), so any twin waiting on it asks for itself',
         ],);
         nonNullishOrThrow(shop.gates[1],).resolve({
           record: 'r3',

@@ -23,6 +23,7 @@ import {
   type ChatTextReply,
   type ChatTextRequest,
   reaskElsewhereNudged,
+  SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 import { warnLinesDuring, } from './console-warn-lines.test-fixture.ts';
 import { quotingFailure, } from './quoting-failure.test-fixture.ts';
@@ -195,6 +196,27 @@ await describe({
         },);
         expect(warned,).toEqual([
           `[translation-repair] [reaskElsewhereNudged] ${SEAT_SYNTHETIC_TEXT_EVERYWHERE}: no re-ask elsewhere (refused by TypeError); keeping the first answer`,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'WARNS OF A REFUSED RE-ASK BY CLASS AND STATUS, then the provider\'s own words labelled as its own',
+      fn: async () => {
+        const { warned, } = await warnLinesDuring({
+          run: async () =>
+            reaskElsewhereNudged({
+              request: REQUEST,
+              first: { reply: FIRST_REPLY, outcome: FIRST_UNUSABLE, },
+              ask: async () => {
+                throw new SyntheticHttpError({ status: 400, bodyText: 'the cat refused this passage', },);
+              },
+            },),
+        },);
+        expect(warned,).toEqual([
+          `[translation-repair] [reaskElsewhereNudged] ${SEAT_SYNTHETIC_TEXT_EVERYWHERE}: no re-ask elsewhere `
+          + '(refused by SyntheticHttpError with HTTP 400 (the provider said: "the cat refused this passage")); '
+          + 'keeping the first answer',
         ],);
       },
     },),

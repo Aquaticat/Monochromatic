@@ -580,15 +580,15 @@ await describe({
                 TESSERACT_RUN,
               ],
               lines: [
-                `warn [readImageWithOcr] ${LETTER}: tesseract is not installed (Error: spawn tesseract ENOENT)`,
+                `warn [readImageWithOcr] ${LETTER}: tesseract is not installed`,
               ],
             },);
           },
         },),
 
         it({
-          name: 'REPORTS `ocr-failed` when the OCR reader runs and exits unhappy, warning with its '
-            + 'command line and what it complained of',
+          name: 'REPORTS `ocr-failed` when the OCR reader runs and exits unhappy, warning with its exit code and '
+            + 'never its command line or what it complained of',
           fn: async () => {
             /**
              A reading on a machine whose OCR reader gives up on the letter.
@@ -621,10 +621,48 @@ await describe({
                 TESSERACT_RUN,
               ],
               lines: [
-                `warn [readImageWithOcr] ${LETTER}: tesseract failed (Error: Command failed: tesseract `
-                + `${SCRATCH}/decoded.png ${SCRATCH}/reading -l chi_sim+eng\nthe cat sat on the scanner\n)`,
+                `warn [readImageWithOcr] ${LETTER}: tesseract exited with code 1`,
               ],
             },);
+          },
+        },),
+
+        it({
+          name: 'REPORTS `ocr-failed` naming the filesystem code when the OCR reader fails with one, such as a full '
+            + 'disk, and never the message that quotes a path',
+          fn: async () => {
+            /**
+             A reading on a machine whose scratch device fills up under the OCR reader.
+             */
+            const { shown, } = await observedReading({
+              assetName: LETTER,
+              words: WORDS,
+              programs: new Map([
+                [
+                  'dwebp',
+                  copyingDecoder,
+                ],
+                [
+                  'tesseract',
+                  async function fullDisk(): Promise<void> {
+                    /**
+                     Rejection a disk with no space left raises.
+                     */
+                    const failure = new Error('ENOSPC: no space left on device, write \'/scratch/reading.txt\'',);
+                    Object.defineProperty(
+                      failure,
+                      'code',
+                      { value: 'ENOSPC', },
+                    );
+                    throw failure;
+                  },
+                ],
+              ],),
+            },);
+
+            expect(shown.lines,).toEqual([
+              `warn [readImageWithOcr] ${LETTER}: tesseract failed with filesystem code ENOSPC`,
+            ],);
           },
         },),
 

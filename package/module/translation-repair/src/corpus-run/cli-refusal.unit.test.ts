@@ -403,6 +403,61 @@ await describe({
       },
     },),
     it({
+      name: 'CUTS THE FRAMES OFF WHERE THE STACK\'S HEADER ENDS, so a message holding a line break and then `at ` '
+        + 'prints no line of the message',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        await reportingRefusals({
+          what: 'score-verify',
+          argv: BARE_ARGV,
+          run: async () => {
+            throw new RangeError('the cat sat\n    at the whiskers of the diary page (diary.ts:3:4)\nand then slept',);
+          },
+        },);
+
+        /**
+         Everything the reporter said, as one body to search.
+         */
+        const said = printed.lines.join('\n',);
+
+        expect(said.includes('diary',),).toBe(false,);
+        expect((printed.lines[FRAMES_LINE] ?? '').includes('at ',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'NAMES NO FRAMES where the stack\'s header no longer holds the message it was built with, rather than '
+        + 'guess where the frames begin',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        await reportingRefusals({
+          what: 'score-verify',
+          argv: BARE_ARGV,
+          run: async () => {
+            /**
+             Fault whose message was rewritten after its stack was recorded.
+             */
+            const fault = new RangeError('the cat sat',);
+            /**
+             Stack read once, which is when the runtime writes its header: the header holds the message as it
+             stood then.
+             */
+            const recorded = fault.stack;
+            expect(recorded?.startsWith('RangeError: the cat sat\n',),).toBe(true,);
+            fault.message = 'the cat sat\n    at the whiskers of the diary page (diary.ts:3:4)';
+            throw fault;
+          },
+        },);
+
+        expect(printed.lines[FRAMES_LINE],).toBe(
+          '  (no frames: the stack\'s header does not hold the error\'s message, so where its frames begin is unknown)',
+        );
+      },
+    },),
+    it({
       name: 'REPEATS a refusal stated in our own words, at its own code and with no frames',
       fn: async () => {
         using held = holdingExitCode();

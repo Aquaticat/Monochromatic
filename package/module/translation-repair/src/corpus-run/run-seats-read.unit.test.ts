@@ -25,6 +25,7 @@ import {
   rosterQuorumSize,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
+  SyntheticHttpError,
   type BudgetView,
   WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
@@ -206,6 +207,26 @@ await describe({
             },);
             expect(warnings,).toEqual([
               'judge seats: the budget view could not be read (refused by TypeError); seating the full bench',
+            ],);
+          },
+        },),
+        it({
+          name: 'WARNS OF AN UNREADABLE VIEW BY CLASS AND STATUS, then the provider\'s own words labelled as its own',
+          fn: async () => {
+            const warnings: string[] = [];
+            await readJudgeSeats({
+              client: viewClient({
+                providerDryness: async () => {
+                  throw new SyntheticHttpError({ status: 502, bodyText: 'the cat meter is asleep', },);
+                },
+              },),
+              phase: 'consolidation',
+              signal: new AbortController().signal,
+              l: warningRecordingLogger({ base: l, warnings, },),
+            },);
+            expect(warnings,).toEqual([
+              'judge seats: the budget view could not be read (refused by SyntheticHttpError with HTTP 502 '
+              + '(the provider said: "the cat meter is asleep")); seating the full bench',
             ],);
           },
         },),

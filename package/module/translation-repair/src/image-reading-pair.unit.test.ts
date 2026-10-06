@@ -727,7 +727,7 @@ await describe({
               return line.startsWith('warn [readImagePair]',);
             },),).toStrictEqual([
               'warn [readImagePair] noticeboard.webp: the deterministic reader failed outright, so the models '
-              + 'are asked without its gate (Error: no space left on the scratch device)',
+              + 'are asked without its gate (refused by Error)',
             ],);
           },
         },),

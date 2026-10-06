@@ -28,6 +28,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
+  SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from './capturing-logger.test-fixture.ts';
 import { quotingFailure, } from './quoting-failure.test-fixture.ts';
@@ -323,6 +324,33 @@ await describe({
         },);
 
         expect(warnings,).toEqual([`purr-check ${MODEL_ID}: refused by TypeError, voice lost`,],);
+      },
+    },),
+
+    it({
+      name: 'LOGS A PROVIDER STATUS FAILURE BY CLASS AND STATUS, then the provider\'s own words labelled as its own '
+        + 'and kept to one line',
+      fn: async () => {
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
+        await callWith({
+          client: scriptedClient({
+            thrown: new SyntheticHttpError({
+              status: 400,
+              bodyText: 'the cat\nrefused "this" passage',
+            },),
+          },),
+          signal: new AbortController().signal,
+          logger,
+        },);
+
+        /**
+         The words as one quoted line, the line break written as an escape.
+         */
+        const quoted = String.raw`"the cat\nrefused \"this\" passage"`;
+        expect(warnings,).toEqual([
+          `purr-check ${MODEL_ID}: refused by SyntheticHttpError with HTTP 400 (the provider said: ${quoted}), voice lost`,
+        ],);
       },
     },),
 

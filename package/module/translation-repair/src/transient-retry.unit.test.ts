@@ -1070,6 +1070,29 @@ await describe({
             },),).toEqual(['[translation-repair] [exchangeWithRetry] hf:whiskers: transport failure: refused by TypeError',],);
           },
         },),
+        it({
+          name: 'NAMES A THROWN PROVIDER STATUS FAILURE BY CLASS AND STATUS on the retry line, then the provider\'s '
+            + 'own words labelled as its own',
+          fn: async () => {
+            const { warned, } = await warnLinesDuring({
+              run: async () =>
+                exchangeWithRetry({
+                  transport: scriptedTransport({
+                    script: [new SyntheticHttpError({ status: 503, bodyText: 'the cat is napping', },), OK_REPLY,],
+                    calls: { count: 0, },
+                  },),
+                  exchange: exchangeWith({ signal: new AbortController().signal, },),
+                  policy: FAST_POLICY,
+                },),
+            },);
+            expect(warned.map(function untilBackoff(line,): string {
+              return line.split('; retrying in',)[0] ?? '';
+            },),).toEqual([
+              '[translation-repair] [exchangeWithRetry] hf:whiskers: transport failure: refused by '
+              + 'SyntheticHttpError with HTTP 503 (the provider said: "the cat is napping")',
+            ],);
+          },
+        },),
       ],
     },),
 

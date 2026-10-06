@@ -26,6 +26,7 @@ import {
   type SeededErrorSpec,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
+import { warnLinesDuring, } from './console-warn-lines.test-fixture.ts';
 import {
   quotingFailure,
   WHISKER_KEY,
@@ -119,6 +120,7 @@ const restoringJudge: typeof runRestorationJudge = async ({ references, },) =>
 
 await describe({
   name: '',
+  concurrency: 1,
   children: [
     describe({
       name: contentWords.name,
@@ -786,6 +788,7 @@ await describe({
 
     describe({
       name: runRepairBenchmark.name,
+      concurrency: 1,
       children: [
         it({
           name: 'grades a scripted restoring repair through the seam',
@@ -949,6 +952,42 @@ await describe({
             },);
             expect(headerRefusal.records[0]?.detail,).toBe('refused by TypeError',);
             expect(statusRefusal.records[0]?.detail,).toBe('refused by SyntheticHttpError with HTTP 429',);
+          },
+        },),
+
+        it({
+          name: 'LOGS A THROWN REPAIR BY CLASS AND HTTP STATUS, then the provider\'s own words labelled as its own, '
+            + 'where its record keeps the class and status alone',
+          fn: async () => {
+            const { result, warned, } = await warnLinesDuring({
+              run: async () =>
+                runRepairBenchmark({
+                  client: UNUSED_CLIENT,
+                  judgeModelIds: MODELS.judgeModelIds,
+                  entries: [
+                    {
+                      entryId: 'whiskers',
+                      sourceText: '猫',
+                      targetText: CLEAN_TEXT,
+                      seeds: [BUTTERFLY_SEED,],
+                    },
+                  ],
+                  models: MODELS,
+                  signal: new AbortController().signal,
+                  perCallTimeoutMs: CALL_TIMEOUT_MS,
+                  repair: async () => {
+                    throw new SyntheticHttpError({ status: 429, bodyText: 'the cat is over its weekly credit', },);
+                  },
+                  judge: restoringJudge,
+                },),
+            },);
+            expect(warned.filter(function thrown(line,): boolean {
+              return line.includes('repair threw',);
+            },),).toEqual([
+              '[translation-repair-repair-benchmark] [runRepairBenchmark] whiskers: repair threw refused by SyntheticHttpError with '
+              + 'HTTP 429 (the provider said: "the cat is over its weekly credit")',
+            ],);
+            expect(result.records[0]?.detail,).toBe('refused by SyntheticHttpError with HTTP 429',);
           },
         },),
 
