@@ -577,11 +577,9 @@ the store the section "Inlay hints and diagnostics" describes,
 which hands a snapshot out only for the stamp of the text being drawn.
 The tick that stores one repaints the source once (`src/native/language/poll.rs`),
 so hints and diagnostics appear without another event.
-While the hover popup,
-a note,
-or the location list is shown,
-the caret's problem card is hidden so the two never overlap;
-its text stays in the source view's accessible description.
+The hover popup is anchored to the top of the hovered line's block of virtual rows
+or to the bottom of its code row,
+so it covers neither the line nor the hints and messages over it.
 At window close the worker is dropped after the window is gone,
 which waits up to about a second for servers to exit.
 
@@ -648,85 +646,259 @@ to open a disposable project below the system temporary directory instead of its
 
 ## Inlay hints and diagnostics
 
-The source view draws inlay hints and the displayed file's diagnostics from the Language module's
-`HintsSnapshot` and `DiagnosticsSnapshot`.
+The source view draws inlay hints and the displayed file's diagnostic messages on virtual rows
+that stand over the line they belong to,
+and underlines the characters each diagnostic marks.
+The user decided this placement on 2026-10-05:
+no hint inside or after a line,
+hints and messages on rows of their own as editord draws them
+(`package-paused/desktop-daemon/editord/src/client/inlay/`),
+and spacing that makes a block of such rows read as part of the line under it.
+An earlier build drew hints after the end of their line and showed messages in a card at the caret;
+the design record `design/README.md` keeps its frames as history.
+
+Snapshots come from the Language module's `HintsSnapshot` and `DiagnosticsSnapshot`.
 The window state keeps them in `State::annotations`,
 an `ide_app::annotation::Annotations` (`src/annotation.rs`).
-A language poll stores each polled snapshot with `accept_hints(displayed, snapshot)`
-or `accept_diagnostics(displayed, snapshot)`,
+A language poll stores each polled snapshot with `accept_hints(displayed, text, snapshot)`
+or `accept_diagnostics(displayed, text, snapshot)`,
 which refuse a snapshot of any other text,
 and renders once when either accepted;
 accepting draws nothing by itself.
-`annotate::set_annotations(window, state, hints, diagnostics)` in `src/native/annotate.rs`,
-both arguments `Option<Arc<...>>`,
-replaces both and renders.
-For a running language server the caller is the language poll in `src/native/language/poll.rs`,
-through the `accept_` methods;
-tests and the path described under "Inspection" inject snapshots with `set_annotations`.
+`annotate::set_annotations(window, state, hints, diagnostics)` in `src/native/annotate.rs` replaces both and renders;
+tests use it.
 
 A snapshot is painted only while its stamp names the displayed text:
 the file generation and the content revision.
-After an external change or a file switch the old snapshots draw nothing,
-and no caret card is shown,
-until snapshots for the new text arrive.
-Source text never moves in between,
-because no annotation takes space inside a line.
+Hints accumulate within one revision.
+A server is asked about the lines around the view,
+so each answer replaces the hints of the lines it was asked about and keeps those of every other line:
+rows seen once are still there when the view returns to them.
 
 ### Placement
 
-Hints are drawn after the end of their line,
-in source order,
-each in a box,
-in the source family's real italic face at 13 px and 70 percent of the source ink.
-A line where a diagnostic starts gets a severity marker between its text and its hints.
-Nothing is inserted into a line,
-so caret movement,
+A line with hints or messages gets a block of virtual rows directly over its code row.
+Hint rows come first and message rows after them,
+so messages are nearest to the code.
+These are the values at scale 1;
+each is a logical length and is multiplied by the display scale:
+
+- A code row is 24 px high (`row_map::CODE_ROW`).
+- A virtual row is 16 px high (`virtual_row::ROW_HEIGHT`),
+  set in Inter Variable at 13 px (`ROW_TEXT`).
+- A block starts with 10 px of empty space (`BLOCK_GAP`).
+  Nothing separates its rows from each other or from the code row they belong to.
+- A line without hints and messages has no block and no gap.
+
+Measured on `design/screenshots/2026-10-05-hint-rows/overview-dark-1x.png`,
+the empty space between the ink of a hint row and the ink of its own line is 10 px,
+and between that hint row and the ink of the line before it 22 px;
+baseline to baseline the distances are 20 px and 30 px.
+That difference is the only sign of which line a block belongs to:
+there is no box,
+rule,
+or background.
+
+#### Hint rows
+
+A hint is drawn at the pixel x of the character it is placed before,
+taken from the row the production shaper laid out,
+so tabs,
+CJK,
+combining marks,
+and ligatures put it where the character is.
+Hints are packed in position order,
+as editord packs them:
+a hint goes on the current row when it starts at least 8 px (`virtual_row::HINT_GAP`)
+after the end of the previous hint on that row,
+otherwise it starts a new row,
+and every later hint continues on that new row.
+A hint at the end of a line is drawn on its row at the x of the line end;
+nothing is drawn after a line.
+Labels are shown as the server sent them,
+without padding spaces,
+in the source ink at 70 percent,
+without a box.
+
+The packing never looks back at an earlier row,
+so a call with several short arguments can take one row per argument:
+`resize(box(1, 2), 3, 4, 5)` takes five rows in `overview-dark-1x.png`.
+Placing each hint on the first row with room is the alternative;
+the design record compares the two as the question `hint-packing`.
+
+#### Message rows
+
+Every diagnostic that starts on a line gets rows of its own in that line's block,
+starting at the pixel x of the diagnostic's first character.
+
+- Text: `Error E0308 (rustc): mismatched types`,
+  that is the severity in words,
+  the code and the source when the server gave them,
+  and the message.
+- Ink: the severity's ink.
+  The severity word is the second channel besides color,
+  and the underline style is a third.
+- Order: worst severity first,
+  then source order.
+- Line breaks: each line of a message starts a row.
+  Blank lines are dropped;
+  indentation is kept.
+- Long lines: a line wraps at a blank once it reaches 80 characters (`WRAP_COLUMNS`),
+  wide characters counting as two;
+  a longer word is cut.
+  Every row after a message's first is indented by 16 px (`CONTINUATION_INDENT`).
+  The limit is a count of characters,
+  so the height of a block is known without shaping its text.
+- Cap per message: 12 rows (`MESSAGE_ROWS`).
+  The last row of a longer message reads `… N more lines`.
+- Cap per line: 8 messages (`LINE_MESSAGES`).
+  One more row then reads `N more on this line, the worst: Warning`,
+  naming the worst severity left out.
+- A range over several lines: its message stands over the first line of the range only;
+  every line of the range is underlined.
+
+Rows do not wrap to the window:
+a row that starts far to the right runs past the right edge,
+as a long code line does,
+and the horizontal scroll range reaches its end.
+`narrow-dark-1x.png` shows that at the default window width.
+
+A message cut by either cap is spelled out in full in the source view's accessible description
+while the caret touches its diagnostic,
+up to eight problems.
+There is no pointer or keyboard way to read the rest on screen yet.
+
+#### Virtual rows are not source text
+
+- The caret never stands on a virtual row.
+  Up,
+  Down,
+  and the page keys move between code rows.
+- Selection fills cover code rows only,
+  and copying yields the source text alone.
+- Find matches source text only and paints its rectangles on code rows.
+- Line numbers stand beside code rows.
+- A press on a virtual row acts on the code line under it at the same x:
+  the click,
+  double click,
+  triple click,
+  Shift+click,
+  or drag is the one a press on that line would be.
+  A block belongs to its line for the pointer as it does for the eye.
+- A resting pointer and Ctrl+click on a virtual row are over no character,
+  so no hover and no definition request is sent.
+- The hover popup is anchored to the top of the hovered line's block or to the bottom of its code row,
+  so it covers neither the line nor its rows.
+- Hints are not exposed to accessibility tools.
+  The source view's accessible description starts with the problems at the caret.
+
+Caret movement,
 selection,
 hit testing,
 double-click words,
 find rectangles,
 tab stops,
 copying,
-and reload correspondence are those of the line without annotations.
-A click on a hint is a click past the end of its line and puts the caret at the line end.
+and reload correspondence within a line are those of the line without annotations,
+because nothing is inserted into a line.
 
-The scope delegates placement to evidence.
-Three placements were measured against the reading requirements with the production shaper
-(`tests/annotation_placement.rs`, printed by `test:annotations`),
-using the hints real servers returned in the `inspect:language` run of the Language module:
+### One vertical mapping
 
-- Inline virtual text (Helix's `InlineAnnotation`, also the convention of most editors) widens the line.
-  On the rust-analyzer line with four hints,
-  glyphs after the first hint move by up to 234 px;
-  on the TypeScript 7 line with two hints,
-  by up to 135 px.
-  A stale snapshot is never painted,
-  so every reload would move the text left and then right again when new hints arrive,
-  measured at 20 ms (TypeScript 7.0.2) and 40 ms (rust-analyzer) after the reload.
-  Hints are requested for one view height above and two below the visible lines,
-  so scrolling further moves arriving lines too.
-  A hint before a tab either changes the tab's width
-  (9 px without the hint, 18 px with it)
-  or leaves the tab 9 px past a tab stop.
-  Up and Down aim at a pixel x,
-  and 15 of 24 caret positions of a hinted line landed on another source position.
-- Hint rows above the line,
-  editord's placement
-  (`::before` blocks in `package-paused/desktop-daemon/editord/src/client/inlay/styles.ts`),
-  make hinted lines taller,
-  so every row below moves down by a whole row per hinted line above it,
-  again whenever hints arrive late.
-  Rows are a fixed 24 px throughout this view:
-  26 uses of that height in 8 source files and 10 `line-height` uses in `ui/app.slint` at the fork point.
-- End of line moves no source glyph and no row.
-  Its measured cost is association:
-  in the same inspection run,
-  1 of 2 hinted rust-analyzer lines and 2 of 3 hinted TypeScript lines carry more than one hint,
-  and their positions are then shown only by order.
+`RowMap` (`src/row_map.rs`) is the only code that converts between a vertical pixel and a source line.
+It holds the height of every block,
+sparsely with running sums,
+and answers `block_top(line)`,
+`code_top(line)`,
+`code_bottom(line)`,
+`height()`,
+`locate(y)`,
+`line_at(y)`,
+and `page(offset, height, forward)` by binary search.
+Painting,
+hit testing,
+caret and selection geometry,
+find rectangles,
+line numbers,
+caret following,
+the reveal of search results and jump targets,
+the page keys,
+scroll restore after a reload,
+the line range reported for inlay hints,
+and the language popup's anchor all ask it;
+nothing else multiplies a row number by a row height.
+Blocks come from `Annotations::assemble` (`src/annotation/blocks.rs`),
+which packs a line's hints once per snapshot and scale and counts message rows without shaping.
 
-End of line is the only placement that meets the no-jump and unchanged-geometry requirements,
-so it is used.
-`late_snapshots_move_no_source_pixel` checks the result on rendered pixels.
+### Stability
+
+Rows arrive after the text is shown,
+hints and diagnostics separately,
+and they take space,
+so the rules for what may move are part of the placement.
+
+- Rows for lines before the first visible line move no visible pixel.
+  The view keeps the distance between its scroll offset and the code row of its first line (`rows::settle`),
+  and a view at the very top stays there.
+- Rows for a visible line move only the lines after it,
+  by the height of the block:
+  26 px for one row and 16 px for each further row.
+- While the reader scrolls,
+  a change that would move the scroll offset waits until the offset has been still for 200 ms
+  (`rows::SCROLL_QUIET`),
+  so a wheel animation is never cut short.
+  Underlines are drawn at once;
+  they take no space.
+- After an external change the rows of the replaced text are not painted,
+  but their space is held over every line the change left in place (`rows::hold`).
+  Hint space is given up when hints for those lines arrive,
+  message space when diagnostics arrive,
+  and all of it after 1 s (`rows::ROW_HOLD`).
+  A server that answers within that time moves no line.
+- A first open has nothing to hold:
+  hints and diagnostics each move lines once when they arrive.
+- The vertical scroll range is the sum of the code rows and the blocks known so far.
+  It grows as hints arrive for lines further on.
+  The source view has no scroll bar,
+  so nothing shows that growth.
+- A caret line before the view is revealed together with its block.
+  A search result or jump target is revealed from the top of its block.
+
+Measured on frames recorded from the nested compositor
+(commands and frame names are in `design/README.md`, entry "2026-10-05 hint rows"):
+
+- Injected hints for the first lines of the scene moved line 2 by 26 px,
+  line 3 by 68 px,
+  line 4 by 158 px,
+  lines 5 to 13 by 184 px,
+  and lines 14 to 17 by 210 px,
+  in one frame;
+  line 1 did not move.
+  Diagnostics injected 3 s later moved lines 5 and 6 by 16 px,
+  line 7 by 42 px,
+  and line 8 by 164 px;
+  lines 1 to 4 did not move.
+- An external change with annotations returning 0.3 s and 0.7 s later changed three frames
+  and moved no code row.
+- With diagnostics returning 3 s later,
+  message space was given up 1.02 s after the reload (lines moved up by 16, 42, and 164 px)
+  and taken again when the diagnostics arrived.
+- With a TypeScript 7.0.2 server,
+  diagnostics arrived first and hints 0.19 s later at the first open,
+  each moving lines once;
+  after an external change the rows were back within 0.23 s and no code row moved.
+- 39 wheel notches of 60 px,
+  sent while hints and diagnostics arrived,
+  gave 145 recorded frames in which every code row moved by one common amount,
+  never backwards;
+  the rows appeared in one frame 0.27 s after the last scrolling frame,
+  with the first visible line unmoved and the lines after it moved by 26 to 146 px.
+
+The native tests `rows_arriving_in_view_move_only_lines_beneath_them`,
+`rows_arriving_above_the_view_move_no_visible_pixel`,
+`rows_above_the_view_wait_until_scrolling_has_stopped`,
+`a_reload_holds_row_space_until_annotations_return`,
+and `scrolling_across_annotated_lines_is_rigid` in `src/native/annotation_stability_tests.rs`
+pin on rendered pixels which lines may move and by how much.
 
 ### Diagnostic marks
 
@@ -737,12 +909,13 @@ CJK,
 combining marks,
 and ligature halves are covered exactly.
 Severity has two visible channels besides color:
-the underline style and the marker letter.
+the underline style,
+and the severity word that starts each message row.
 
-- Error: a wavy line and a marker `E`.
-- Warning: a dashed line and a marker `W`.
-- Information: a dotted line and a marker `I`.
-- Hint: sparse dots and a marker `H`.
+- Error: a wavy line.
+- Warning: a dashed line.
+- Information: a dotted line.
+- Hint: sparse dots.
 
 A diagnostic without a severity is shown as a warning, as Helix shows it.
 A range over several lines underlines each of its rows and marks a crossed line end like a selected terminator,
@@ -751,80 +924,122 @@ A point range gets a mark one terminator wide:
 after the text at a line end,
 centered on its position elsewhere.
 Where ranges overlap,
-the mildest severity is drawn first and the worst on top;
-the marker shows the worst severity starting on its line.
+the mildest severity is drawn first and the worst on top.
 Inside a selection an underline keeps its style but takes the selected-text ink,
 as selected glyphs do:
 the light-scheme severity inks reach only 1.16:1 to 1.39:1 against the selection fill `#0078D4`.
 
-When the caret touches a diagnostic,
-at either end of its range or inside it,
-a card under the caret's line lists every problem there,
-worst first,
-for example `Error E0308 (rustc): mismatched types`,
-with a stripe in the worst severity's ink.
-It moves above the line when the view ends first,
-shows only while the source view has keyboard focus,
-and lists at most eight problems.
-The same text starts the source view's accessible description.
-Hints are not exposed to accessibility tools and never appear in the source text they read.
-
-Severity inks have a light and a dark value each:
+Severity inks have a light and a dark value each (`ui/annotation.slint`):
 the WinUI system critical and caution fill colors for errors and warnings
 (`SystemFillColorCritical` and `SystemFillColorCaution` in `microsoft/microsoft-ui-xaml`,
 `controls/dev/CommonStyles/Common_themeresources_any.xaml`),
 the accent pair of Slint's fluent style for information,
 and a neutral gray for hints.
-Measured on rendered frames (`marks_and_hints_render_in_both_schemes_with_measured_contrast`),
-the error marker reaches 5.42:1 against the light background and 8.39:1 against the dark one,
-its letter the same against the marker,
-and hint text 7.68:1 (light) and 7.49:1 (dark) against its box.
-Computed from the declared values against the fluent backgrounds `#FAFAFA` and `#1C1C1C`,
-the warning ink reaches 5.03:1 and 12.91:1,
-the information ink 6.04:1 and 9.47:1,
-and the hint-severity gray 5.93:1 and 8.22:1.
+Measured on rendered frames (`rows_and_marks_render_in_both_schemes_with_measured_contrast`),
+against the light background hint rows reach 8.36:1,
+error rows 5.42:1 to 5.46:1,
+warning rows 5.06:1,
+information rows 6.06:1,
+and hint-severity rows 5.93:1;
+against the dark background 8.78:1,
+8.39:1,
+12.91:1,
+9.47:1,
+and 8.22:1.
 
 ### Cost and invalidation
 
-Each render takes the annotations of the materialized rows with two binary searches,
-one over hint positions and one over diagnostics indexed by start with the furthest end so far,
-so a range starting above the view is still found.
-The visible part is a frame-stamp input:
+Accepting diagnostics groups their messages by line and wraps them once.
+Accepting hints groups them by line;
+a line's hints are shaped and packed the first time its block is assembled,
+then kept until another answer covers the line or the display scale changes.
+The vertical mapping is rebuilt only when the store,
+the text,
+or the scale changed (`rows::refresh`).
+Each render takes the blocks and the diagnostics of the materialized rows with binary searches.
+That visible part is a frame-stamp input:
 a snapshot change outside the materialized rows repaints nothing,
-and installing the same snapshots again does nothing.
-A repaint shapes one layout per visible hint and checks each visible diagnostic against each materialized row.
-Hint labels past the widest line extend the scroll range.
+installing the same snapshots again does nothing,
+and rows that appear before the view only move the cached frame (`ShapedView::rebase`).
+A repaint shapes one layout per visible hint and message row
+and checks each visible diagnostic against each materialized row.
+Rows that end past the widest line extend the horizontal scroll range.
 
 ### Inspection
 
-Debug builds started with `IDE_INSPECT_ANNOTATIONS` naming a JSON file install that file's hints and diagnostics
-for the initially displayed text (`src/native/inspect.rs`),
+Debug builds started with `IDE_INSPECT_ANNOTATIONS` naming a JSON file show that file's hints and diagnostics
+for the displayed text (`src/native/inspect.rs`),
 for nested-compositor frames without a language server.
-`inspect:native dark annotations` and `inspect:native light annotations` write such a file for a fixture
-with a tab,
-CJK,
-a combining mark,
-a ligature,
-overlapping ranges,
-a range over a line end,
-and a point at a line end.
+The file may give delays after which hints and diagnostics arrive,
+separately,
+and delays after which they arrive again following each external reload.
+Such a window starts no language worker:
+a worker without servers reports "no problems" for the displayed text,
+which would replace the file's diagnostics.
 Release builds do not contain this path,
 and without the variable it does nothing.
 
+`inspect:native dark annotations` and `inspect:native light annotations` write such a file for a fixture
+whose first lines hold one case each:
+several hints on one row,
+hints that would touch,
+a tab and CJK line with a hint and a message,
+one message,
+every severity on one line,
+a long message,
+a message with line breaks,
+a range over several lines,
+and hints together with messages;
+further lines make the file long.
+`IDE_NATIVE_ANNOTATION_DELAYS` and `IDE_NATIVE_ANNOTATION_RELOAD_DELAYS`,
+each `HINTS,DIAGNOSTICS` in milliseconds,
+set the delays,
+and `IDE_NATIVE_SCALE` starts the nested output at another scale.
+A parent compositor that cannot make a window of the scaled size keeps the nested window smaller;
+the compositor's `scale` control command switches the scale of a running session without that limit.
+
 ### Differences from editord
 
-editord shows hints and diagnostic messages in rows above each line, in Inter,
-with every message always visible.
-Here hints sit after the line's text in the source family,
-and a message is shown only for the caret position.
-editord shows severity by color alone,
-in its wavy underlines and its message rows;
-here the underline style and a marker letter also differ.
-editord strips a type hint's leading `: ` and a parameter hint's trailing `:`;
-here labels are shown as the server sent them,
-without padding spaces.
+editord draws the same rows over each line in Inter,
+hints first and each diagnostic on a row of its own at its column.
+Deliberate differences:
 
-`test:annotations` covers the visible subset, layout, painting, the frame stamp, and the placement measurements.
+- Position: editord pads rows with spaces whose width it estimates from one measured ratio.
+  Here a hint or message starts at the pixel x the shaper gives its character.
+- Hint gap: editord lets a hint follow the previous one as soon as its column is reached,
+  counted in characters.
+  Here 8 px must stay free,
+  measured in pixels.
+- Hint labels: editord strips a type hint's leading `: ` and a parameter hint's trailing `:`.
+  Here labels are shown as the server sent them.
+- Message text: editord writes `error(rustc): message`.
+  Here the row reads `Error E0308 (rustc): message`,
+  with the code.
+- Message ink: editord colors a line's whole block,
+  hints included,
+  in the worst severity's color,
+  and shows severity by color alone.
+  Here each message has its own severity's ink and word,
+  hints keep the hint ink,
+  and underline styles differ.
+- Order and caps: editord lists messages in the server's order and wraps them to the editor's width without a cap.
+  Here they are listed worst first,
+  wrap at 80 characters,
+  and are capped per message and per line.
+- Spacing: editord gives every row a line height of 1.5 and no extra gap.
+  Here rows are 16 px with a 10 px gap before the block.
+- Arrival: editord lets the page reflow when rows arrive.
+  Here the view is held still for rows before it,
+  waits for scrolling to stop,
+  and holds row space across a reload.
+
+`test:annotations` covers the vertical mapping,
+the row rules,
+the store,
+layout,
+painting,
+the frame stamp,
+and the measurements of inline placement kept in `tests/annotation_placement.rs`.
 `test:annotations-native` drives injected snapshots through real key and pointer events in both schemes,
 and `test:native` includes it.
 `inspect:annotation-guards` removes each guard in a disposable copy and checks that its named test fails.
