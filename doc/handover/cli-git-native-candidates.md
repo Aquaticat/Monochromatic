@@ -25,17 +25,25 @@ their controls,
 a fuzz target,
 and the build inputs the new dependency needs.
 
+The branch also holds the pure mapping from these layers' failures to engine failure codes,
+described under "Failure codes by cause",
+and `main` is merged into it twice.
+
 Inspect first:
-the conflicts under "Merging into `main`",
+the mapping and its three adopted cases under "Failure codes by cause",
+what the engine must add before any of it reaches an event, under "What the engine must add",
+the merged-tree results under "Gate results", "Mutation testing" and "Fuzzing",
 the lockfile decision under "Lockfile",
 the edits to files outside this delegation under "Edits outside the owned files",
 and the choices under "Choices open to veto".
-Respond by merging the branch into the native wrapper work and by vetoing any listed choice.
+Respond by merging the branch into `main` and by vetoing any listed choice.
 
-The final gate and the mutation campaigns ran on the tree of commit `d34761d35`;
+The branch's own gate and its first mutation campaigns ran on the tree of commit `d34761d35`.
+The merged-tree gate,
+the mapping's mutation campaign
+and the merged-tree fuzz tasks ran on the tree of the merge commit `571fe1003`,
+as described under "Merged tree at `571fe1003`" in each of those sections;
 every later commit changes only this document.
-The fuzz smoke campaign started earlier,
-as described under "Smoke campaign".
 
 ## Branch and commits
 
@@ -65,7 +73,14 @@ Oldest first:
 - `b66b7ebe6`,
   `1519fd577`,
   `fd69aa2eb`,
-  `0bbac323d` and the commits after them:
+  `0bbac323d` and the commits after them up to `30c854f96`:
+  updates of this document only
+- `27af8f580` merge `main` at `817fb1daa`,
+  resolving six conflicts
+- `21f93b471` map candidate and scanner failures to engine failure codes by cause
+- `571fe1003` merge `main` at `fb64be854`,
+  without conflicts
+- the commits after `571fe1003`:
   updates of this document only
 
 The commit message of `2d2f4c7e4` states wrong counts;
@@ -78,12 +93,42 @@ and one crate name (`jiff-core`) appears in none.
 
 ## Merging into `main`
 
-`main` has moved since the branch base `2cfaf22b0`:
+### Merges done
+
+`main` is merged into the branch twice,
+each time with `git merge main` and a merge commit.
+
+- `27af8f580` merged `main` at `817fb1daa`.
+  The six conflicts listed under "Conflicts of the first merge" were resolved by those steps.
+  `git show --remerge-diff 27af8f580` shows each resolution against the conflicted merge:
+  both sides kept,
+  `main`'s entries first,
+  and in `package/git-policy/cli.fuzz/Cargo.toml` two whole `[[bin]]` tables.
+  Whether that merged tree was gated was not recorded;
+  it was not counted as gated.
+- `571fe1003` merged `main` at `fb64be854`,
+  14 commits later.
+  `git merge-tree --write-tree --name-only main HEAD` reported no conflict beforehand,
+  and the merge had none,
+  so `git rerere` (enabled in this repository) replayed nothing.
+  None of the 14 commits touches `package/git-policy/`,
+  the scanner,
+  `package/rust-module/`,
+  a Cargo manifest or lockfile,
+  or `file-enforcer.config.ts`.
+
+The tree of `571fe1003` is the one gated under "Merged tree at `571fe1003`" in "Gate results".
+A later merge of this branch into `main` conflicts only where `main` has moved again.
+
+### Conflicts of the first merge
+
+`main` had moved since the branch base `2cfaf22b0`:
 another delegation added library modules to the wrapper and the fuzz target `wrapper_controls` to the sidecar.
 A trial merge of this branch into `main` at `b3c21676d`
 (`git merge-tree --write-tree main HEAD`,
 which changes no file)
-reports conflicts in six files.
+reported conflicts in six files,
+the same six that `27af8f580` resolved.
 In each one both sides added an entry at the same place,
 so the resolution keeps both,
 `main`'s first.
@@ -121,22 +166,28 @@ so the resolution keeps both,
   so each sentence lists both sides' items.
 
 `package/git-policy/cli/mise.toml` merges without a conflict.
-Since the branch base,
-`main` changed no `Cargo.lock`,
+Measured between the branch base `2cfaf22b0` and `main` at `fb64be854`:
+`main` changed no lockfile of the wrapper,
+the sidecar or the scanner
+(its one changed `Cargo.lock` is `package/desktop-app/ide`'s),
 not the wrapper manifest,
-not the scanner's sources or manifest,
-and not the gate runner or its snapshot helper;
-its sidecar manifest change is the one `[[bin]]` table.
-The two lockfiles of this branch should therefore stand,
-and `--locked` in the gate and in the sidecar tasks reports it if they do not.
+not the scanner's sources,
+build script,
+data or manifest
+(only its tests,
+README,
+mutation runner and task file,
+none of which the gate snapshot copies),
+and not the gate runner or its snapshot helper.
+It changed the mutation runner
+(the two excluded mutant kinds named under "Campaigns")
+and one planted guard removal,
+and its sidecar manifest change is the one `[[bin]]` table.
+The two lockfiles of this branch therefore stand without regeneration;
+`--locked` in the gate and in the sidecar tasks would have refused them otherwise,
+and every run under "Merged tree at `571fe1003`" passed with it.
 
-The merged tree was not built or tested by this delegation.
-After the merge,
-run the gate,
-`mise run //package/git-policy/cli.fuzz:test`,
-`mise run //package/git-policy/cli.fuzz:test:planted`
-and `mise run //package/git-policy/cli.fuzz:smoke`.
-The mutation campaigns recorded under "Mutation testing" are bound to the gate image of this branch alone.
+The campaigns recorded under "Results" in "Mutation testing" are bound to the gate image of `d34761d35` alone.
 
 ## Candidate layer
 
@@ -416,6 +467,11 @@ pub fn rules_source(configured: Option<&OsStr>, repository_root: &Path) -> Rules
   the controls pass values directly.
   The call that reads the variable is the policy phase's to write.
 
+`rules_source` is unchanged by the mapping commit and by both merges,
+and it stays the one place to extend for `rulesFile`:
+outside the controls,
+no other module under `src/native/` in the merged tree of `571fe1003` names the variable or the default file
+(`scanner_test_support.rs` only removes the variable from a control's child environment).
 To add `rulesFile`,
 extend that one place:
 pass the option's value as `configured` when it is set and the variable's value otherwise,
@@ -514,8 +570,10 @@ It is the closest control to the ledger's consumer-level test that exists before
 
 - A candidate pathname containing a line break was an engine failure
   (`repositoryCandidateName` threw).
-  Here the scanner reports its fail-closed `PathnameLineBreak` finding.
-  Which code that maps to is an open question under "Failure codes by cause".
+  Here the scanner reports its fail-closed `PathnameLineBreak` finding,
+  which `finding_failure_code` maps to `policy-incomplete`,
+  so it stays an engine failure;
+  see "Failure codes by cause".
 - A `FORBIDDEN_STRINGS_RULES` value that is not UTF-8 is used as a path.
   The standalone scanner reads the variable as UTF-8 and treats such a value as unset.
 - The `executable` option is gone,
@@ -533,19 +591,45 @@ its rules cannot be loaded,
 or an internal error).
 `plugin-threw` is gone.
 
-`EngineFailureCode` in `src/native/diagnostics.rs` has `ContentUnavailable` on this branch.
-The engine delegation adds `policy-incomplete` on `main`;
-this branch does not edit the enum.
-No code on this branch maps a failure to `EngineFailureCode`:
-the candidate layer and the adapter return their own typed errors,
-and the mapping is the policy phase's.
-"Expressible today" in the lists that follow means only that the enum variant exists on this branch.
+`EngineFailureCode` in `src/native/diagnostics.rs` has both codes in the merged tree:
+`ContentUnavailable`,
+and `PolicyIncomplete`,
+which the engine delegation added on `main` in `090c147e7`.
+This branch does not edit the enum.
 
-Failures that should carry `content-unavailable`,
-all expressible today.
-Each is a `CandidateFailure`,
-reaching the policy as a `CandidateError` from `CandidateStore::version` or `CandidateStore::bytes`,
-or wrapped as `ScanRunError::Candidate` from `scan_version`:
+#### The mapping
+
+`src/native/scanner_failure_code.rs` (commit `21f93b471`) holds the mapping as four pure functions:
+
+```rust
+// package/git-policy/cli/src/native/scanner_failure_code.rs
+pub fn candidate_failure_code(failure: CandidateFailure) -> EngineFailureCode;
+pub fn scanner_failure_code(failure: ScannerFailure) -> EngineFailureCode;
+pub fn scan_run_failure_code(error: &ScanRunError) -> EngineFailureCode;
+pub fn finding_failure_code(finding: &ScanFinding) -> Option<EngineFailureCode>;
+```
+
+Each `match` names every variant and has no catch-all arm,
+so a cause added later does not compile until someone chooses its code.
+`scan_run_failure_code` returns the code of the failure it wraps.
+`finding_failure_code` returns no code for a violation.
+
+A previous delegate wrote the module and stopped before committing it.
+It was reviewed against the decision and the variant lists before the commit,
+kept as written apart from one sentence of its documentation
+(the line-break finding's reason said only the pathname was read;
+both fail-closed findings arrive after the whole candidate was read),
+and checked on the host with `native:check`,
+`native:clippy`,
+`native:lint:rust` and `native:format`
+before the merged-tree gate ran it.
+
+#### Which code each failure carries
+
+`content-unavailable`:
+every `CandidateFailure` except `StaleCandidate`.
+Each reaches the policy as a `CandidateError` from `CandidateStore::version` or `CandidateStore::bytes`,
+or wrapped as `ScanRunError::Candidate` from `scan_version`.
 
 - `GitNotStarted`:
   a listing command or the object reader could not be started.
@@ -569,8 +653,8 @@ or wrapped as `ScanRunError::Candidate` from `scan_version`:
   the object is not a blob,
   or `HEAD` does not name a commit.
 
-Failures that should carry `policy-incomplete`,
-which wait for the enum variant:
+`policy-incomplete`,
+as the decision names them:
 
 - `ScannerFailure::RulesNotLoaded`,
   as `ScannerError` from `CandidateScanner::load`:
@@ -579,11 +663,16 @@ which wait for the enum variant:
   an invalid rule and a cache configuration error all arrive as this one failure with the scanner's text,
   for the reason under "Gaps in the scanner's embedding API";
   under this decision all of them are `policy-incomplete`,
-  so that gap no longer blocks the choice of code.
+  so that gap does not block the choice of code.
 - `ScanFinding::EngineError` inside a returned `CandidateScan`:
   a matcher failed or panicked inside the scanner's catch boundary.
   It is not an `Err` of this branch;
   it arrives among the findings of that candidate and must not be read as a clean scan.
+
+`policy-incomplete`,
+adopted by the coordinating session and open to the owner's veto,
+because none of them is a failure to read repository content:
+
 - `ScannerFailure::PathnameUnrepresentable`,
   as `ScannerError` from `CandidateScanner::scan` or wrapped as `ScanRunError::Scanner`:
   the candidate's pathname bytes are not a native path on this platform.
@@ -591,30 +680,103 @@ which wait for the enum variant:
   and the listing parser never yields one;
   on other platforms a pathname that is not UTF-8 is refused.
   The pathname was read;
-  what failed is handing it to the scanner,
-  so this document recommends `policy-incomplete`.
-  The decision as relayed does not name this case.
+  what failed is handing it to the scanner.
 - `CandidateFailure::StaleCandidate`:
   the caller asked for the bytes of a candidate whose version `invalidate` retired.
   The content is readable through a fresh version,
   so this is a sequencing defect of the calling pass,
-  not unreadable content;
-  this document recommends `policy-incomplete`.
-  The decision as relayed does not name this case either.
-
-Open question,
-for the user:
-`ScanFinding::PathnameLineBreak`.
-The scanner could not inspect a pathname that contains a line break.
-The TypeScript policy made it an engine failure.
-Under the cause rule the nearest reading is `policy-incomplete`,
-because the pathname was read and the scan could not be completed;
-the alternative is to report it as a violation of the policy,
-since the committer can remove it by renaming the file.
+  not unreadable content.
+- `ScanFinding::PathnameLineBreak`:
+  the scanner could not inspect a pathname that contains a line break.
+  The pathname was read and the scan could not be completed.
+  The TypeScript policy made it an engine failure,
+  and this mapping keeps it one.
+  The alternative the owner may choose instead is to report it as a violation of the policy,
+  since the committer can remove it by renaming the file;
+  that would change `finding_failure_code` to return no code for it,
+  and the policy would then need a finding code of its own for it.
 
 Not failures:
 `ScanFinding::Content` and `ScanFinding::Name` are violations,
+for which `finding_failure_code` returns no code,
 and a `CacheWarning` is a warning after which the scan still runs.
+
+#### Controls by variant
+
+`src/native/scanner_failure_code_tests.rs` holds five unit tests in `scanner_failure_code::tests`.
+Every variant of every mapped type is asserted by name:
+
+- `every_candidate_failure_has_its_code`:
+  each of the 12 `CandidateFailure` variants listed for `content-unavailable`
+  (the test's `UNREADABLE` array),
+  and `StaleCandidate`;
+  13 of 13 variants.
+- `every_scanner_failure_is_policy_incomplete`:
+  `RulesNotLoaded` and `PathnameUnrepresentable`;
+  2 of 2.
+- `scan_run_errors_carry_the_code_of_the_failure_they_wrap`:
+  `ScanRunError::Candidate` with each of the 13 candidate causes,
+  and `ScanRunError::Scanner` with each of the 2 scanner causes;
+  2 of 2 variants.
+- `only_findings_that_are_not_matches_carry_a_code`:
+  `Content`,
+  `Name`,
+  `EngineError` and `PathnameLineBreak`;
+  4 of 4.
+- `the_two_codes_have_the_decided_names`:
+  `ContentUnavailable` prints as `content-unavailable`
+  and `PolicyIncomplete` as `policy-incomplete`.
+
+The test lists are written out by hand,
+so a variant added later is caught by the exhaustive `match` in the mapping,
+not by these tests.
+
+#### What the engine must add
+
+No event carries `policy-incomplete` from these layers yet,
+and none can without engine changes,
+which this branch does not make:
+
+- `PolicyOutcome::Failed(String)`
+  (`src/native/policy_engine.rs:80`)
+  carries a message and no code.
+  `run_policy_stage` reports every `Failed` as `EngineFailureCode::ContentUnavailable`
+  (`src/native/policy_engine.rs:255` to `256`).
+  The outcome needs a code,
+  for example `Failed { code: EngineFailureCode, message: String }`,
+  and `run_policy_stage` must put that code into the `EngineFailure` event.
+- Every place that builds `PolicyOutcome::Failed` then names its code:
+  `src/native/policy_checks.rs:150`,
+  `189` and `217`
+  (repository facts that could not be read,
+  so `content-unavailable`),
+  and the controls at `src/native/policy_engine_tests.rs:469`
+  and `src/native/policy_checks_tests.rs:141`,
+  `224` and `320`.
+- The content policies still answer `PolicyOutcome::Unavailable` through
+  `policy_checks::check_content`,
+  whose `policy_checks::CandidateSource` has only `None` and `NotPorted`.
+  The forbidden-strings check must call this branch's layers instead:
+  map each `Err` with `candidate_failure_code`,
+  `scanner_failure_code` or `scan_run_failure_code`,
+  and run `finding_failure_code` over every finding of every returned `CandidateScan`
+  before rendering any of them as a violation,
+  because `EngineError` and `PathnameLineBreak` arrive inside an `Ok` result.
+  A failing finding ends the policy with its code;
+  it is never printed as a rule violation.
+- Two public types are named `CandidateSource`:
+  `policy_checks::CandidateSource`
+  (the engine's "what this lifecycle offers")
+  and `candidate_version::CandidateSource`
+  (this branch's "which version to list").
+  Neither module re-exports the other,
+  so the merged tree compiles,
+  but the module that wires them together must import one under another name or rename one.
+- `PolicyEvent::EngineFailure` has a `path: Option<String>` field.
+  A candidate pathname is raw bytes that may be a forbidden string,
+  so a failure about one candidate should carry no path,
+  or the scanner's masked display path,
+  never the raw pathname.
 
 ## Manifest and lockfile
 
@@ -632,6 +794,22 @@ not inferred:
 It did rewrite the root `mise.toml` and `package/config/pnpr/config.yaml`,
 which is unrelated drift also present in the main checkout;
 those two changes were discarded here and are not part of this branch.
+
+After the merge `571fe1003`,
+`mise run file-enforcer` ran again in this worktree with exit status 0.
+Both manifests the branch touches,
+`package/git-policy/cli/Cargo.toml` and `package/git-policy/cli.fuzz/Cargo.toml`,
+match the glob `package/*/*/Cargo.toml` that `buildCargoManifestPlan` enforces,
+and both were left byte-identical,
+so there was no output of its own to commit.
+It again rewrote only the root `mise.toml` and `package/config/pnpr/config.yaml`.
+The `pnpr` change was the same diff as the main checkout's uncommitted one
+(three newly published packages);
+the `mise.toml` change added the same two `node_modules/.bin` entries as the main checkout's
+and also removed entries whose `node_modules/.bin` directory this worktree lacks
+(checked for `package/stub/throwing` and `package/git-policy/cli`),
+so it depends on what is installed where it runs.
+Both were discarded again.
 
 The manifest gains `[profile.dev.build-override]` and `[profile.release.build-override]` with `opt-level = 3`.
 Cargo reads profiles only from the root manifest,
@@ -710,9 +888,12 @@ The Clippy run uses the mounted host toolchain and still compiles for itself.
 
 ## Gate results
 
-The gate is `GIT_POLICY_NATIVE_IMAGE_TAG=candidates mise run //package/git-policy/cli:native:test:container`.
+The gate is `GIT_POLICY_NATIVE_IMAGE_TAG=<tag> mise run //package/git-policy/cli:native:test:container`,
+with the tag `candidates` for the branch alone and `candidates-merge` for the merged tree.
 Every run is listed,
 failed ones included.
+
+### Branch alone, up to `d34761d35`
 
 - Baseline on the merged tree (`2cfaf22b0`):
   322 unit tests,
@@ -782,6 +963,52 @@ failed ones included.
   Test image `9ffa5c481579a9f6501944626169fbb599602ce8458e0aa19f052c840ee65721`;
   evidence `native-fm9zle`.
   The commits after `a815718f4` change only the runner and this document.
+
+### Merged tree at `571fe1003`
+
+One run,
+`GIT_POLICY_NATIVE_IMAGE_TAG=candidates-merge`,
+on the tree of the merge commit `571fe1003`
+(this branch with the mapping commit `21f93b471`,
+and `main` at `fb64be854`).
+The snapshot was copied while the worktree's `package` directory matched that commit;
+only this document was being edited.
+It passed with exit status 0:
+
+- 523 unit tests in the library,
+  all passed:
+  the engine's tests from `main`,
+  the branch's candidate and scanner controls,
+  and the 5 mapping controls.
+  Before the merge,
+  the host's run of the mapping controls through `native:test:host` counted the same 523
+  (5 run,
+  518 filtered out);
+  the merge changed no file under `package/git-policy/`.
+- 0 unit tests in the executable.
+- 37 binary-level tests (`native_binary`),
+  all passed;
+  the 16 more than the branch alone had come from `main`,
+  since the branch changes no binary-level test file.
+- 1 public-interface consumer test (`native_candidates`),
+  passed.
+- Clippy passed with warnings denied.
+- The image's test build,
+  the test run and Clippy all pass `--locked`,
+  and none refused the lockfile,
+  so it needed no regeneration.
+
+The image build compiled the test targets in 2 minutes 24 seconds;
+the test container found them built in 0.18 seconds,
+and the library tests took 6.16 seconds.
+The host's load average,
+sampled four times during the run,
+was between 23 and 42.
+Test image `8ff0051a5b9a132ffa5ef1b01347039511d7ad3098a79831116d30ff0f1919e4`,
+built from base `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`;
+evidence `package/git-policy/cli/target/verification/native-mQEfwT`
+(`manifest.json`,
+and `passed.json` with tests and Clippy both true).
 
 ## Mutation testing
 
@@ -974,6 +1201,84 @@ The script that drove the containers is a scratch file outside the repository.
 Like every evidence directory named in this document,
 these are under an ignored `target` directory and exist only in this worktree on this host.
 
+### Merged tree at `571fe1003`
+
+One campaign:
+
+```sh
+# doc/handover/cli-git-native-candidates.md
+GIT_POLICY_NATIVE_IMAGE_TAG=candidates-merge mise run //package/git-policy/cli:native:mutation:scoped -- \
+  --file src/native/scanner_failure_code.rs --file src/native/lib.rs
+```
+
+It ran against the merged-tree gate image `8ff0051a5b9a132ffa5ef1b01347039511d7ad3098a79831116d30ff0f1919e4`,
+started right after that gate with no file edited in between except this document.
+The scope is the new mapping module
+and the one wrapper code file whose conflict was resolved in a merge
+(`lib.rs`, in `27af8f580`;
+the merge `571fe1003` had no conflict).
+The other conflicted code files,
+`src/lib.rs`,
+`bin/container.mjs` and `bin/planted-controls.mjs` under `package/git-policy/cli.fuzz/`,
+belong to the sidecar,
+which this runner does not mutate;
+the sidecar tasks under "Merged tree at `571fe1003`" in "Fuzzing" run all three.
+The runner of the merged tree excludes the two mutant kinds `main` added
+(`replace += with *=` and `replace -= with /=`);
+no other exclusion was added.
+
+- All five planted guard removals were noticed first.
+- cargo-mutants 27.1.0 found 5 mutants,
+  all in `scanner_failure_code.rs`;
+  `lib.rs` holds only module declarations and yields none.
+- 1 caught:
+  `finding_failure_code` replaced with `None`.
+- 4 unviable:
+  `candidate_failure_code`,
+  `scanner_failure_code` and `scan_run_failure_code` replaced with `Default::default()`,
+  and `finding_failure_code` replaced with `Some(Default::default())`;
+  `EngineFailureCode` has no default value.
+- 0 missed,
+  0 timed out;
+  exit status 0.
+- Unmutated baseline:
+  0 seconds to build,
+  15 seconds to test,
+  against the 90-second test bound.
+
+Evidence `package/git-policy/cli/target/verification/native-mutation-ZMVkNL`;
+its `manifest.json` records `baseImage` as the gate image above,
+and the campaign image is `9b89dbf1ac48eba26bb4c55d1a77fa57d28091c44ac980192fa745b01f4060e2`.
+
+Four of the five mutants say nothing about "returns a fixed code",
+so,
+as extra evidence and after every container run had finished,
+8 defects were planted by hand into the committed `scanner_failure_code.rs`,
+one at a time,
+each followed by `mise run //package/git-policy/cli:native:test:host -- scanner_failure_code` on the host
+(these controls start no Git)
+and by restoring the committed file;
+`git diff` showed the file equal to `HEAD` afterwards.
+A defect counts as noticed when the planted crate compiled,
+the task failed,
+and at least one control was reported `FAILED`.
+All 8 were noticed;
+the number after each is how many controls failed.
+
+- `StaleCandidate` maps to `content-unavailable` (2).
+- The twelve unreadable-content causes map to `policy-incomplete` (2).
+- Both scanner causes map to `content-unavailable` (2).
+- `scan_run_failure_code` returns one fixed code for every scanner failure (1)
+  and another for every candidate failure (1).
+- `PathnameLineBreak` returns no code,
+  as if the candidate were clean (1).
+- A `Content` or `Name` violation returns a code (1).
+- `EngineError` and `PathnameLineBreak` return `content-unavailable` (1).
+
+Evidence `package/git-policy/cli/target/verification/planted-mapping-20261006`
+(`planted-controls.json` and one log per defect).
+The script that planted them is a scratch file outside the repository.
+
 ## Fuzzing
 
 ### Target
@@ -1077,6 +1382,44 @@ both runs shared the host with other sessions,
 so the counts say the targets ran,
 not how fast they are.
 
+### Merged tree at `571fe1003`
+
+The three sidecar tasks ran one after another on the tree of `571fe1003`,
+after the merged-tree gate and mutation campaign,
+with `GIT_POLICY_NATIVE_IMAGE_TAG=candidates-merge`,
+and each exited with status 0.
+No file under `package/` was edited while they ran.
+
+- `mise run //package/git-policy/cli.fuzz:test`:
+  17 generator controls passed,
+  the 11 of the branch alone plus the 6 `controls::tests` controls of `main`'s `wrapper_controls` target.
+  `Cargo.lock` was left unchanged.
+- `mise run //package/git-policy/cli.fuzz:test:planted`:
+  the 17 unplanted controls passed,
+  then 11 of 11 planted defects were noticed,
+  `main`'s four and this branch's two among them.
+  "object content past its declared size is accepted"
+  and "an object reply for another object is accepted"
+  were each noticed by `batch::tests::fixed_hard_cases_hold` and `batch::tests::generated_replies_reach_every_outcome`,
+  as before the merge.
+  Evidence `package/git-policy/cli.fuzz/target/verification/planted-q2BzED`.
+- `mise run //package/git-policy/cli.fuzz:smoke`:
+  the 17 generator controls and Clippy passed in the build container,
+  then each of the five targets ran for 30 seconds with AddressSanitizer:
+  `global_arguments` 1,144,393 executions,
+  `config_loading` 223,948,
+  `config_schema` 43,206,
+  `wrapper_controls` 48,949
+  and `batch_reply` 159,306,
+  each with exit status 0.
+  `batch_reply` added 831 inputs to its corpus,
+  left no crash artifact
+  and peaked at 485 MiB resident memory.
+  The manifest records base image `62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884`,
+  the same as the branch's own second run,
+  and `rustc 1.100.0-nightly (1303417c4 2026-09-21)`.
+  Evidence `package/git-policy/cli.fuzz/target/verification/campaign-OVOU54`.
+
 ## Public API for the optional-policy phase
 
 All under `git_policy_cli::`.
@@ -1125,6 +1468,12 @@ pub fn scan_version(
     version: &CandidateVersion,
     rules_path: Option<&[u8]>,
 ) -> Result<Vec<forbidden_strings::CandidateScan>, ScanRunError>;
+
+// package/git-policy/cli/src/native/scanner_failure_code.rs
+pub fn candidate_failure_code(failure: CandidateFailure) -> EngineFailureCode;
+pub fn scanner_failure_code(failure: ScannerFailure) -> EngineFailureCode;
+pub fn scan_run_failure_code(error: &ScanRunError) -> EngineFailureCode;
+pub fn finding_failure_code(finding: &forbidden_strings::ScanFinding) -> Option<EngineFailureCode>;
 ```
 
 Also public:
@@ -1141,7 +1490,9 @@ create one `CandidateStore` per invocation with the caller's global prefix and c
 take `version(source)`;
 load one `CandidateScanner` if the policy is enabled;
 call `scan_version`;
-map each `CandidateScan` by `identity` back to `version.candidates()[identity]`.
+map each `CandidateScan` by `identity` back to `version.candidates()[identity]`;
+end the policy with the code `finding_failure_code` gives for any finding that has one,
+and end it with the code the matching function in `scanner_failure_code` gives for any `Err`.
 After a fix or replay,
 call `invalidate` and take the version again.
 
@@ -1244,6 +1595,13 @@ No `.ts` file and nothing under `package/cli/forbidden-strings` was edited.
   although a commit's delta cannot change.
   Taking a committed version again costs one process.
 - A stale candidate is refused instead of answered from its still-valid object name.
+- Three failures carry `policy-incomplete`,
+  adopted by the coordinating session and not named by the owner's decision:
+  `ScannerFailure::PathnameUnrepresentable`,
+  `CandidateFailure::StaleCandidate`
+  and the scanner's `ScanFinding::PathnameLineBreak` finding.
+  The reasons are under "Which code each failure carries";
+  a veto changes one arm of `src/native/scanner_failure_code.rs` and its control.
 - Gitlink bytes are the submodule commit's name and deleted bytes are empty,
   as in the TypeScript wrapper,
   instead of a separate "no content" variant.
@@ -1268,6 +1626,16 @@ No `.ts` file and nothing under `package/cli/forbidden-strings` was edited.
   and one was stopped by hand;
   each is listed under "Gate results".
   The first fuzz smoke run failed on a Podman error before it reached the new target.
+  The merged-tree gate,
+  campaign and sidecar tasks each passed on their one run.
+- The tree of the first merge,
+  `27af8f580`,
+  was not gated on its own;
+  the gated tree of `571fe1003` contains it,
+  and differs from it only by the mapping commit
+  and by `main`'s later documents and packages outside `package/git-policy/`.
+- `native:clippy:windows` was not run for the mapping module,
+  which holds no platform-specific code.
 - The control for a request written to an exited process could not be made to observe one fixed step,
   for the reason given there.
   The write-failure branch of `ObjectReader::request` is reached only when the pipe has no other holder.
@@ -1290,12 +1658,13 @@ No `.ts` file and nothing under `package/cli/forbidden-strings` was edited.
 
 ## What remains
 
-- Merge into `main`:
-  six files conflict,
-  and the merged tree is untested.
+- Merge the branch into `main`.
+  `main` at `fb64be854` is already merged into the branch and that tree is gated;
+  a merge into `main` conflicts only where `main` has moved since.
   See "Merging into `main`".
-- Decide the code of `ScanFinding::PathnameLineBreak`,
-  and confirm or change the two recommendations under "Failure codes by cause".
+- The owner may veto any of the three adopted `policy-incomplete` cases under "Which code each failure carries".
+- The engine changes under "What the engine must add",
+  without which no event carries `policy-incomplete` from these layers.
 - Images this delegation left on the host,
   by the names the runners' logs report:
   `localhost/git-policy-native-test` with the tags `candidates`,
@@ -1304,14 +1673,17 @@ No `.ts` file and nothing under `package/cli/forbidden-strings` was edited.
   `localhost/git-policy-native-mutation` with the same three tags
   (three images layered on it),
   `localhost/git-policy-cli-fuzz-build:candidates`
-  and `localhost/git-policy-cli-fuzz-run:candidates`.
+  and `localhost/git-policy-cli-fuzz-run:candidates`;
+  and from the merged-tree runs,
+  the same four names with the tag `candidates-merge`.
   The evidence directories name images by identity,
   so removing them loses no record.
 - Call these layers from the policy engine:
   build the `forbidden-strings` policy over `scan_version`,
   map `ScanFinding` values and cache warnings to JSONL events,
-  map failures to the codes under "Failure codes by cause",
-  and read the `rulesFile` option and the variable at the one place under "Where the rules path is resolved".
+  report failures with the codes the functions in `src/native/scanner_failure_code.rs` give,
+  and read the `rulesFile` option and the variable at the one place under "Where the rules path is resolved",
+  `scanner_selection::rules_source`.
 - Install a payload-free panic hook in `main.rs` before the first scan.
 - Candidate sources this branch does not provide:
   the `git add` staged delta between two index states
