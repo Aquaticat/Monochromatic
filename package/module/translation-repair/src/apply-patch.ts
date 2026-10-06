@@ -11,8 +11,15 @@ import {
 } from './markup-atom-preservation.ts';
 import { checkPreservation, } from './preservation-check.ts';
 
-import { spliceDisjointEdits, } from './disjoint-splice.ts';
+import {
+  type SpliceEdit,
+  spliceDisjointEdits,
+} from './disjoint-splice.ts';
 import { hashContent, } from './document-node.ts';
+import {
+  nestingWithEdit,
+  unreadableReason,
+} from './patch-nesting.ts';
 import { restoreTypography, } from './restore-typography.ts';
 import {
   clampQuoteDepth,
@@ -265,6 +272,12 @@ export function applyPatchOperations(
   const gated: GatedOperation[] = [];
 
   /**
+   The edits of the operations gated so far, as they would be written, which
+   the text a further edit leaves is read beside.
+   */
+  const acceptedEdits: SpliceEdit[] = [];
+
+  /**
    Refusals of the per-edit gates, in input order.
    */
   const rejected: PatchRejection[] = [];
@@ -394,6 +407,32 @@ export function applyPatchOperations(
 
     }
 
+    /**
+     Where the text the accepted edits and this one leave first passes the
+     nesting bound, which no grammar reads past.
+     */
+    const nesting = nestingWithEdit({
+      targetText,
+      accepted: acceptedEdits,
+      candidate: {
+        start: envelope.startOffset,
+        end: envelope.endOffset,
+        text: restored,
+      },
+    },);
+    if (nesting.kind === 'beyond') {
+      rejected.push({
+        operation,
+        reason: unreadableReason({ excess: nesting, },),
+      },);
+      continue;
+    }
+
+    acceptedEdits.push({
+      start: envelope.startOffset,
+      end: envelope.endOffset,
+      text: restored,
+    },);
     gated.push({
       operation,
       restored: {

@@ -9,6 +9,7 @@ import {
 import type { Candidate, } from './candidate-select-model.ts';
 import { gateParagraphRewrite, } from './inspect-paragraph.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
+import { isUnreadableReason, } from './patch-nesting.ts';
 import {
   type RefineReportWire,
   type RefineResolution,
@@ -222,13 +223,18 @@ export function resolveReply(
 /**
  The finding for one operation the patch refused.
 
- The only refusal this lane can reach is `unchanged-region`, a rewrite that
+ The refusal this lane reaches is `unchanged-region`, a rewrite that
  comes out as the paragraph it replaces. Its operations are bound to the
  sheet's own envelopes by the resolver (so the envelope is known, claimed once
  and carries its own hash), the envelopes are derived from the very text the
  patch is applied to (so the region cannot have drifted), and the patch runs
  with preservation skipped (so no preservation refusal exists). A bounded probe
  over generated documents reached no other reason.
+
+ The patch also refuses a text no grammar reads, which the atom gate has
+ already refused for a rewrite read alone, so a rewrite reaches it only where
+ the two readings disagree; it is named as an unreadable rewrite and never
+ ends the stage.
  Any other reason is a broken invariant and throws.
 
  @param modelId - rewriter whose operation was refused
@@ -240,8 +246,8 @@ export function resolveReply(
  @returns The refusal credited to its rewriter, naming the paragraph as the
  sheet numbers it
 
- @throws {@link Error} when the reason is any other than `unchanged-region`,
- or the operation names no paragraph of the sheet
+ @throws {@link Error} when the reason is any other than `unchanged-region`
+ or an unreadable replacement, or the operation names no paragraph of the sheet
 
  @example
  ```ts
@@ -263,11 +269,15 @@ function rejectionFinding(
    The reason without the detail it may quote.
    */
   const kind = kindOf({ detail: rejection.reason, },);
-  if (kind !== 'unchanged-region') {
+  /**
+   Whether the patch refused the rewrite for the text it would leave.
+   */
+  const unreadable = isUnreadableReason({ reason: rejection.reason, },);
+  if ((kind !== 'unchanged-region') && (!unreadable)) {
     throw new Error(
       `unreachable: the patch refused ${modelId}'s rewrite as ${kind}, but this lane binds its operations `
         + 'to its own envelopes, applies them to the text those envelopes came from with preservation '
-        + 'skipped, and so can be refused only as unchanged-region',
+        + 'skipped, and so can be refused only as unchanged-region or as a text no grammar reads',
     );
   }
 
@@ -289,7 +299,9 @@ function rejectionFinding(
         + 'though the resolver binds an operation only to a paragraph of the sheet',
     );
   }
-  return `${modelId}: refine-unchanged-rewrite (paragraph ${String(place + 1,)})`;
+  return unreadable
+    ? `${modelId}: refine-unreadable-rewrite (paragraph ${String(place + 1,)})`
+    : `${modelId}: refine-unchanged-rewrite (paragraph ${String(place + 1,)})`;
 }
 
 /**

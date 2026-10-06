@@ -17,6 +17,7 @@ import type { FootnoteGraphFinding, } from './footnote-model.ts';
 import {
   introducedFootnoteFindings,
   introducedStructuralRegressions,
+  UNREADABLE_PAGE,
 } from './assembly-regressions.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import {
@@ -410,22 +411,26 @@ export function guardFootnoteAssembly(
       }
 
       /**
-       Footnote defects this assembly introduced.
-       */
-      const introduced = introducedFootnoteFindings({
-        incumbentText: targetText,
-        assembledText,
-      },);
-
-      /**
        Parse regressions this assembly introduced, which no identifier names:
-       a stray comment opener masks markers document-wide, and a downgrade
-       means the strict parser refused what the archive accepted.
+       a stray comment opener masks markers document-wide, a downgrade
+       means the strict parser refused what the archive accepted, and a page
+       no grammar reads has no footnote graph to ask.
        */
       const regressions = introducedStructuralRegressions({
         incumbentText: targetText,
         assembledText,
       },);
+
+      /**
+       Footnote defects this assembly introduced, none read from a page that
+       no grammar reads.
+       */
+      const introduced = regressions.includes(UNREADABLE_PAGE,)
+        ? []
+        : introducedFootnoteFindings({
+          incumbentText: targetText,
+          assembledText,
+        },);
       if ((introduced.length === 0) && (regressions.length === 0)) {
         return {
           assembledText,

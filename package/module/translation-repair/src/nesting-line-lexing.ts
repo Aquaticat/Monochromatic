@@ -11,9 +11,9 @@ import { NESTING_BOUND, } from './nesting-vocabulary.ts';
 const TAB_COLUMNS = 4;
 
 /**
- Fewest fence characters in a run that opens or closes a fenced block.
+ Fewest rule characters in a thematic break.
  */
-const FENCE_MINIMUM = 3;
+const RULE_MINIMUM = 3;
 
 /**
  ASCII digits.
@@ -414,94 +414,46 @@ export function containerPrefixOf(
 }
 
 /**
- A run of fence characters that opens or closes a fenced block.
- */
-export type FenceRun = {
-  /**
-   Character the run is made of, the empty string for no fence.
-   */
-  readonly character: string;
+ Whether a line is a thematic break, so its delimiters nest nothing.
 
-  /**
-   How many of them there are, zero for no fence.
-   */
-  readonly length: number;
-};
-
-/**
- The reading of a line that is no fence.
- */
-export const NO_FENCE: FenceRun = {
-  character: '',
-  length: 0,
-};
-
-/**
- Reads a line as a fence marker.
-
- @param line - one line with its container markers and indentation removed
-
- @returns The fence run it begins with, or none
-
- @example
- ```ts
- fenceOf({ line: '```ts', },);
- // => { character: '`', length: 3, }
- ```
- */
-export function fenceOf({ line, }: { readonly line: string; },): FenceRun {
-  /**
-   Character the fence is made of.
-   */
-  const character = line[0] ?? '';
-  if (!isOneOf({
-    character,
-    set: '`~',
-  },))
-    return NO_FENCE;
-  /**
-   Index after the run of that character.
-   */
-  const end = characterRunEnd({
-    line,
-    from: 0,
-    set: character,
-  },);
-  if (end < FENCE_MINIMUM)
-    return NO_FENCE;
-  return {
-    character,
-    length: end,
-  };
-}
-
-/**
- Whether a line holds only rule characters, so its delimiters are a
- thematic break and nest nothing.
+ EXACTLY THE GRAMMAR'S BREAK: three or more of one of `*`, `_` and `-`, with
+ only spaces and tabs between them. A line mixing those characters is a
+ paragraph of emphasis delimiters and costs the parser as one (`*-` repeated
+ 24,000 times took 3.7 to 6.6 s to parse in four runs on the built package),
+ so it is no rule here.
 
  @param line - one line without its newline
 
- @returns True when every character is `*`, `_`, `-`, a space or a tab
+ @returns True when the line is a thematic break
 
  @example
  ```ts
  isRuleLine({ line: '* * *', },);
  // => true
+ isRuleLine({ line: '*-*-*-', },);
+ // => false
  ```
  */
 export function isRuleLine({ line, }: { readonly line: string; },): boolean {
-  for (const character of line) {
-    /**
-     Whether this character is one a rule is made of.
-     */
-    const isRuleCharacter = isOneOf({
-      character,
+  /**
+   What the line holds besides spaces and tabs, in order.
+   */
+  const marks = Array.from(line,)
+    .filter(function isMark(character,): boolean {
+      return !isBlank({ character, },);
+    },);
+  /**
+   The character the break would be made of.
+   */
+  const [first = '',] = marks;
+  return (marks.length >= RULE_MINIMUM)
+    && isOneOf({
+      character: first,
       set: '*_-',
-    },) || isBlank({ character, },);
-    if (!isRuleCharacter)
-      return false;
-  }
-  return true;
+    },)
+    && marks.every(function isFirst(character,): boolean {
+      return character === first;
+    },);
 }
 
 //endregion Nesting line lexing

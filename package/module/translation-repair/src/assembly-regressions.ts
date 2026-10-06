@@ -3,6 +3,7 @@ import {
   parseDocument,
   type ParseFinding,
 } from './parse-document.ts';
+import { requireMarkdownRefusal, } from './parse-mdx.ts';
 
 //region Assembly regressions
 // Whole-document differences shared by ordinary assembly and counterfactual withdrawal.
@@ -123,6 +124,17 @@ const STRUCTURAL_REGRESSION_KINDS: readonly ParseFinding['kind'][] = [
 ];
 
 /**
+ The regression an assembly carries when its page is read by no grammar.
+
+ THE STRONGEST ONE THERE IS. The nesting scan keeps what a fence holds across
+ lines, so a fence one replacement opens and never closes is closed by the fence
+ line of the replacement after it, and what that one skipped as code reads on
+ the page as a paragraph nested past the bound. Each replacement was read in
+ its own slice, where it read.
+ */
+export const UNREADABLE_PAGE = 'unreadable-page';
+
+/**
  Counts one parse-finding kind in a document.
 
  @param text - document to parse
@@ -162,7 +174,13 @@ function countParseFindings(
  @param assembledText - document spliced from the surviving replacements
 
  @returns Kinds the assembly carries MORE of, each named once; how many more
- is deliberately not reported, since one is already enough to withdraw over
+ is deliberately not reported, since one is already enough to withdraw over.
+ A page the plain grammar refuses, nested past the bound, is the one kind
+ {@link UNREADABLE_PAGE} alone, since it has no findings to count
+
+ @throws {@link import('./parse-mdx.ts').MarkdownParseError} when the
+ incumbent is read by no grammar, which is the archive's own text and was read
+ when the entry was prepared
 
  @example
  ```ts
@@ -178,15 +196,43 @@ export function introducedStructuralRegressions(
     readonly assembledText: string;
   },
 ): readonly string[] {
-  return STRUCTURAL_REGRESSION_KINDS.filter(function worsened(kind,): boolean {
-    return countParseFindings({
-      text: assembledText,
+  /**
+   What the incumbent carries of each kind, read first so that a refusal of
+   the incumbent is never charged to the assembly.
+   */
+  const standing = STRUCTURAL_REGRESSION_KINDS.map(function counted(kind,): {
+    readonly kind: ParseFinding['kind'];
+    readonly count: number;
+  } {
+    return {
       kind,
-    },) > countParseFindings({
-      text: incumbentText,
-      kind,
-    },);
+      count: countParseFindings({
+        text: incumbentText,
+        kind,
+      },),
+    };
   },);
+  try {
+    return standing
+      .filter(function worsened({
+        kind,
+        count,
+      },): boolean {
+        return countParseFindings({
+          text: assembledText,
+          kind,
+        },) > count;
+      },)
+      .map(function kindOf({ kind, },): string {
+        return kind;
+      },);
+  }
+  catch (error) {
+    // Only the plain grammar's own refusal makes the page unreadable; any
+    // other failure is an unexpected state that must keep propagating.
+    requireMarkdownRefusal({ error, },);
+    return [UNREADABLE_PAGE,];
+  }
 }
 
 //endregion Assembly regressions

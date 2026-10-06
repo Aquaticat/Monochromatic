@@ -41,6 +41,9 @@ function freshState(): ScanState {
     braces: 0,
     pendingTag: 'none',
     fence: NO_FENCE,
+    loose: NO_FENCE,
+    html: 'none',
+    mathSeen: false,
   };
 }
 

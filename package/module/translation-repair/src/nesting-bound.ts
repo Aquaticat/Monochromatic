@@ -1,12 +1,20 @@
 import {
+  certainFenceOf,
+  fenceOf,
+  type FenceRun,
+  NO_FENCE,
+} from './nesting-fence.ts';
+import {
+  htmlBlockAfter,
+  htmlBlockAfterBlank,
+} from './nesting-html-block.ts';
+import {
   type ScanState,
   scanInline,
 } from './nesting-inline-count.ts';
 import {
   blanksEnd,
   containerPrefixOf,
-  fenceOf,
-  NO_FENCE,
   indentationOf,
   isRuleLine,
 } from './nesting-line-lexing.ts';
@@ -43,8 +51,15 @@ import {
 //
 // THE MEASURE ERRS TOWARD REFUSING, never toward reading: it counts a bracket
 // inside a code span and an open tag it cannot match, which only a text no
-// reader writes would pile up. What it skips are the places the parser does not
-// nest in: fenced code, and a line made only of rule characters.
+// reader writes would pile up. It SKIPS A STRETCH ONLY WHERE THE PARSER
+// CERTAINLY READS NO NESTING IN IT: the inline counts of a fenced block
+// that opens at the start of a line outside every container and every raw
+// html block (and, under the strict grammar, every math block, expression and
+// open tag), and the delimiters of a thematic break. Anywhere else the scan
+// counts, so a fence in a quotation or a list item, an indented one, one with
+// a backtick in its backtick info string, and one the parser takes for raw
+// text all count the lines after them. Measured on the built package before
+// this rule: each of those passed a text that the parser then nested.
 
 /**
  The text the engine puts at the start of a stack exhaustion's message.
@@ -58,6 +73,193 @@ const STACK_OVERFLOW_MESSAGE = 'Maximum call stack size exceeded';
  Columns of indentation that make one level of nesting.
  */
 const INDENT_COLUMNS_PER_LEVEL = 2;
+
+/**
+ Whether a line that opens like a fence opens one the parser certainly reads.
+
+ A FENCE LINE IS NO FENCE where the parser reads raw text: inside an html
+ block, inside a math block under the strict grammar, and inside an
+ expression or a tag still open there. The scan counts the lines after a
+ fence it cannot be certain of, which is the direction that only refuses more.
+
+ @param state - counts carried from line to line
+
+ @param grammar - grammar that will read the body
+
+ @returns True when no raw text the parser reads could hold the line
+
+ @example
+ ```ts
+ const certain = fenceIsCertain({ state, grammar: 'markdown', },);
+ ```
+ */
+function fenceIsCertain(
+  {
+    state,
+    grammar,
+  }: {
+    readonly state: Readonly<ScanState>;
+    readonly grammar: NestingGrammar;
+  },
+): boolean {
+  if (state.html !== 'none')
+    return false;
+  if (grammar !== 'mdx')
+    return true;
+  if (state.mathSeen)
+    return false;
+  if (state.braces > 0)
+    return false;
+  return state.pendingTag === 'none';
+}
+
+/**
+ Whether a line closes a fence.
+
+ A closing fence is the same character, at least as long, with nothing but
+ blanks after it, wherever it is indented: closing a fence the parser still
+ reads only makes the lines after it count.
+
+ @param open - the fence that is open
+
+ @param run - the fence run the line begins with after its markers and blanks
+
+ @param line - the whole line
+
+ @param restStart - index where the line's text begins after its markers and blanks
+
+ @returns True when the line closes the fence
+
+ @example
+ ```ts
+ const closes = closesFence({ open: { character: '`', length: 3, }, run: { character: '`', length: 3, }, line: '```', restStart: 0, },);
+ ```
+ */
+function closesFence(
+  {
+    open,
+    run,
+    line,
+    restStart,
+  }: {
+    readonly open: FenceRun;
+    readonly run: FenceRun;
+    readonly line: string;
+    readonly restStart: number;
+  },
+): boolean {
+  return (run.character === open.character)
+    && (run.length >= open.length)
+    && (blanksEnd({
+      line,
+      from: restStart + run.length,
+    },) === line.length);
+}
+
+/**
+ Reads a line for the fence it opens or closes, under two readings of what a
+ fence is.
+
+ THE CERTAIN READING SKIPS, THE LOOSE READING ONLY WATCHES. A fence the parser
+ certainly reads (`certainFenceOf`) makes every line of it uncounted, up to a
+ line that closes it. A fence line the scan cannot be certain of (indented,
+ in a container, with a backtick in its info string, in raw html) is kept
+ open in the loose reading, in which the lines after it are counted, and
+ which only a closing line ends: the parser may be inside that fence, so a
+ fence line after it may close it where this scan would otherwise take it for
+ the opening of a fence of its own and skip what follows.
+
+ @param line - one line without its newline, not blank
+
+ @param rest - the line after its container markers and blanks
+
+ @param restStart - index where `rest` begins in the line
+
+ @param state - counts carried from line to line, updated in place
+
+ @param grammar - grammar that will read the body
+
+ @returns True when the line belongs to a fence the parser certainly reads, so
+ nothing on it is counted
+
+ @example
+ ```ts
+ const skipped = readFence({ line: '```ts', rest: '```ts', restStart: 0, state, grammar: 'markdown', },);
+ ```
+ */
+function readFence(
+  {
+    line,
+    rest,
+    restStart,
+    state,
+    grammar,
+  }: {
+    readonly line: string;
+    readonly rest: string;
+    readonly restStart: number;
+    readonly state: ScanState;
+    readonly grammar: NestingGrammar;
+  },
+): boolean {
+  /**
+   Fence run this line begins with after its markers and blanks.
+   */
+  const run = fenceOf({ line: rest, },);
+  /**
+   The fence the parser certainly reads and the one it may be inside, each
+   none when the body is inside no such fence.
+   */
+  const {
+    fence: certain,
+    loose,
+  } = state;
+  if (certain.length > 0) {
+    /**
+     Whether this line closes the fence the parser certainly reads.
+     */
+    const closed = closesFence({
+      open: certain,
+      run,
+      line,
+      restStart,
+    },);
+    if (closed)
+      state.fence = NO_FENCE;
+    return true;
+  }
+  if (loose.length > 0) {
+    /**
+     Whether this line closes the fence the parser may be inside.
+     */
+    const closedLoose = closesFence({
+      open: loose,
+      run,
+      line,
+      restStart,
+    },);
+    if (closedLoose)
+      state.loose = NO_FENCE;
+    return closedLoose;
+  }
+  if (run.length === 0)
+    return false;
+  /**
+   Fence this line opens, when the parser certainly reads one here.
+   */
+  const opener = fenceIsCertain({
+    state,
+    grammar,
+  },)
+    ? certainFenceOf({ line, },)
+    : NO_FENCE;
+  if (opener.length > 0) {
+    state.fence = opener;
+    return true;
+  }
+  state.loose = run;
+  return false;
+}
 
 /**
  Reads one line against every measure, updating the counts it carries.
@@ -128,36 +330,22 @@ function readLine(
    The line's text after its markers and indentation.
    */
   const rest = line.slice(restStart,);
-  /**
-   Fence run this line begins with, none when it begins with none.
-   */
-  const run = fenceOf({ line: rest, },);
-  /**
-   The fence the body is inside, if any.
-   */
-  const { fence: open, } = state;
-  if (open.length === 0) {
-    if (run.length > 0) {
-      state.fence = run;
-      return { kind: 'within', };
-    }
-  }
-  else {
-    // A closing fence is the same character, at least as long, with nothing
-    // but blanks after it. Inside a fence the parser nests nothing.
-    /**
-     Whether this line closes the fence that is open.
-     */
-    const closes = (run.character === open.character)
-      && (run.length >= open.length)
-      && (blanksEnd({
-        line,
-        from: restStart + run.length,
-      },) === line.length);
-    if (closes)
-      state.fence = NO_FENCE;
+  if (readFence({
+    line,
+    rest,
+    restStart,
+    state,
+    grammar,
+  },))
     return { kind: 'within', };
-  }
+  // A line that is no fence may open raw html or, under the strict grammar, a
+  // math block, inside which a line that looks like a fence opens none.
+  state.html = htmlBlockAfter({
+    before: state.html,
+    rest,
+  },);
+  if ((grammar === 'mdx') && rest.startsWith('$$',))
+    state.mathSeen = true;
   return scanInline({
     line,
     start: prefix.end,
@@ -202,6 +390,9 @@ export function firstNestingExcess(
     braces: 0,
     pendingTag: 'none',
     fence: NO_FENCE,
+    loose: NO_FENCE,
+    html: 'none',
+    mathSeen: false,
   };
   /**
    Lines of the body as the parser reads them, a leading byte order mark
@@ -221,6 +412,7 @@ export function firstNestingExcess(
       // carries past it.
       state.brackets = 0;
       state.delimiters = 0;
+      state.html = htmlBlockAfterBlank({ before: state.html, },);
       continue;
     }
     /**

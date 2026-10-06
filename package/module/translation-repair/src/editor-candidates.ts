@@ -15,6 +15,7 @@ import {
 } from './edit-wire.ts';
 import type { EditorCandidate, } from './editor-selection-result.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
+import { isUnreadableReason, } from './patch-nesting.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -129,17 +130,33 @@ export function buildEditorCandidates(
       wire: voice.value,
       envelopes: promptEnvelopes,
     },);
+    /**
+     This voice's operations through the apply gate.
+     */
+    const patch = applyPatchOperations({
+      targetText,
+      envelopes,
+      operations: resolution.operations,
+      preservation,
+    },);
     return {
       candidate: {
         modelId: voice.modelId,
-        patch: applyPatchOperations({
-          targetText,
-          envelopes,
-          operations: resolution.operations,
-          preservation,
-        },),
+        patch,
       },
-      findings: resolution.findings
+      findings: [
+        ...resolution.findings,
+        // An edit whose text no grammar reads is refused as this voice's and
+        // said so here, since a voice left with no applied edit carries its
+        // refusals nowhere else.
+        ...patch.rejected
+          .filter(function unreadable(rejection,): boolean {
+            return isUnreadableReason({ reason: rejection.reason, },);
+          },)
+          .map(function toReason(rejection,): string {
+            return rejection.reason;
+          },),
+      ]
         .map(function attribute(finding,) {
           return `${voice.modelId}: ${finding}`;
         },),

@@ -1,7 +1,8 @@
+import type { FenceRun, } from './nesting-fence.ts';
+import type { HtmlBlock, } from './nesting-html-block.ts';
 import {
   isOneOf,
   characterRunEnd,
-  type FenceRun,
 } from './nesting-line-lexing.ts';
 import {
   DELIMITER_BOUND,
@@ -86,9 +87,28 @@ export type ScanState = {
   pendingTag: PendingTag;
 
   /**
-   The fence run the body is inside, none when it is inside no fence.
+   The fence run the body is inside, none when it is inside no fence. Set
+   only for a fence the parser certainly reads (`nesting-bound.ts`).
    */
   fence: FenceRun;
+
+  /**
+   A fence the parser may be inside that the scan cannot be certain of, in
+   which the lines are counted and a fence line may close it, none when the
+   body is inside no such fence.
+   */
+  loose: FenceRun;
+
+  /**
+   Raw html the parser may be reading, inside which no line opens a fence.
+   */
+  html: HtmlBlock;
+
+  /**
+   Whether a line opening a math block has been read, after which the strict
+   grammar may read raw math where a line looks like a fence.
+   */
+  mathSeen: boolean;
 };
 
 /**

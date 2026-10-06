@@ -87,26 +87,6 @@ export {
   requireMarkdownRefusal,
   requireMdxRefusal,
 } from './parse-mdx.ts';
-export {
-  firstNestingExcess,
-  isStackOverflow,
-} from './nesting-bound.ts';
-export {
-  type ScanState,
-  scanInline,
-} from './nesting-inline-count.ts';
-export {
-  blanksEnd,
-  containerPrefixOf,
-  fenceOf,
-  indentationOf,
-  isRuleLine,
-  NO_FENCE,
-} from './nesting-line-lexing.ts';
-export {
-  DELIMITER_BOUND,
-  NESTING_BOUND,
-} from './nesting-vocabulary.ts';
 export { treeNodes, } from './mdast-tree-nodes.ts';
 export { type ParseFinding, } from './parse-document.ts';
 export {
@@ -256,6 +236,7 @@ export * from './control-barrel.ts';
 export * from './corpus-barrel.ts';
 export * from './displacement-barrel.ts';
 export * from './document-barrel.ts';
+export * from './nesting-barrel.ts';
 export * from './floor-barrel.ts';
 export * from './text-fold-barrel.ts';
 export * from './footnote-barrel.ts';
