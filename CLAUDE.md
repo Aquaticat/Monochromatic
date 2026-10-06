@@ -35,6 +35,15 @@ never publish them to claude.ai (Artifacts, Claude Docs) or any host that keeps 
 whatever a tool's own instructions suggest.
 Uploads persist off-machine and are not private.
 
+Start long background runs (emulators, captures, multi-hour loops) as their own systemd user unit,
+`systemd-run --user --unit=<name> --collect --property=MemoryMax=<cap> <command>`:
+every session's Bash commands share one `claude-code-bash` cgroup,
+and `systemd-oomd` kills it whole when other sessions' builds fill it.
+Name the unit so it can be found,
+and cap its memory.
+Rationale:
+`doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md`.
+
 # Development guidelines for AI agents
 
 ORG:
