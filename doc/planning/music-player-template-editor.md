@@ -496,3 +496,119 @@ template yields for the fixture tracks,
 and the builder refuses a capture whose drawn text differs from it,
 so no screenshot can show a result the grammar does not produce.
 No production implementation is authorized.
+
+### First look at the baseline
+
+The first build of the study
+(prototype commit `524b61c667e839fdcb3bba3871f0d392c5b0ded9`)
+was captured on the Fold emulator on 2026-10-05.
+The emulator ended in a segmentation fault during these visits too,
+so the views were collected over several boots.
+This reading used the views in hand at the time:
+the whole inner panel and the cover panel at 100% text,
+plus the first cover views at 200%.
+These views are a first look only and are not published;
+the build described under `Layouts being compared` replaces them.
+
+What the hierarchy and the images show:
+
+- At 100% text,
+  on both panels,
+  everything a typing state draws around the field is in view with the keyboard open:
+  both preview rows,
+  the note,
+  the field and the lines under it.
+  The page's scrolling window runs from pixel 314 to the keyboard at 1352 on the inner panel
+  and from 330 to 1605 on the cover panel.
+- At 200% text on the inner panel,
+  typing inside a call scrolls the whole preview out of view.
+  The field with its help is slightly taller than the window,
+  so the field's label slides under the header and the help sentence ends flush against the keyboard.
+- At 200% text on the inner panel,
+  the two error states keep the preview rows,
+  with the first row's title against the header or partly under it,
+  and the error line ends flush against the keyboard with no gap.
+- With the keyboard closed at 200% text,
+  the inner panel shows the preview,
+  the field and the first one or two fields of the list;
+  the rest of the list needs scrolling.
+- With the keyboard closed at 100% text the cover panel shows the whole page for the default template;
+  with a changed template `Reset to default` falls just outside.
+  The inner panel shows all but the last two fields.
+
+Where the page rests with the keyboard open was not designed in that build.
+It was whatever Compose does by default when a focused field's window shrinks.
+
+Two problems of the capture itself,
+not of the design:
+
+- The first time the keyboard opens after the text size changes,
+  Gboard draws its own notice above the keys,
+  `Keyboard font size updated`,
+  which makes the keyboard taller for that one view.
+  The capture now opens the keyboard once per condition before capturing,
+  and refuses a keyboard-open view whose keyboard edge differs from the panel's other views.
+- The hierarchy dump writes an attribute in single quotes when its value holds a double quote.
+  The first reader took only double-quoted attributes and so lost the text of the default template.
+  The dump also prints a `visibleFrame` between the keyboard's frame and its visible flag,
+  which the first pattern for the keyboard's edge did not allow for.
+  Both are now read from the saved dumps.
+
+### Layouts being compared
+
+The first look names one consequential concern the human did not raise:
+at large text,
+typing can hide the very preview that D89 keeps for feedback on every keystroke.
+The project's standard is to answer such a concern with built variants.
+Nothing here is decided.
+
+One rule is added to every layout,
+because without it the comparison would be about a default nobody chose:
+while the field has focus,
+the page scrolls just far enough that the lines under the field clear the keyboard by 8dp,
+and never so far that the field's own upper edge leaves the window.
+
+The layouts differ in where the preview is:
+
+- `flow`:
+  the baseline.
+  Two preview rows at the top of the scrolling page,
+  so they scroll away when the field and its lines need the room.
+- `rows`:
+  the two preview rows stay fixed under the header and the rest scrolls beneath them.
+  KWGT also keeps its preview fixed over the formula field.
+- `lines`:
+  only the two lines the template yields stay fixed under the header,
+  without the rows' titles,
+  as KWGT's single `Text Preview` line does.
+  It costs less height than `rows` and no longer looks like a track row.
+
+Each pinned layout is built for the three typing states and for one state at rest.
+The baseline also gains one view scrolled to the page's end,
+because the first build never showed the end of the field list or `Reset to default`.
+
+Considered and not built:
+
+- Error and help lines docked directly over the keyboard,
+  with or without a pinned preview.
+  At 200% text on the inner panel the help for one argument is about 550 pixels tall
+  (a signature line and six lines of description),
+  the pinned rows about 400,
+  and the window about 1040,
+  which would leave the field less than one of its own lines.
+  Docking only the error lines and the signature would fit,
+  but then differs from `rows` only for a template taller than the window.
+- A pinned preview that appears only while typing.
+  The page would jump when the field takes focus;
+  a layout with one rule is easier to predict.
+
+A second concern is noted and not built yet:
+the field list sits under the field,
+so with the keyboard open most of it is out of view,
+and inserting a field means scrolling away from the field.
+What to do about it depends on which layout is taken,
+because a pinned preview still shows the result while the field is scrolled away.
+
+The first build's error for a formula left open read
+`formula: the formula opened at character 1 is not closed`.
+It now reads `formula: the $ at character 1 has no closing $`.
