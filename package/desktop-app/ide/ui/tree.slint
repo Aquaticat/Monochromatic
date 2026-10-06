@@ -102,9 +102,8 @@ export component ProjectTree inherits Rectangle {
                 Rectangle {
                     width: parent.width;
                     height: parent.height;
-                    background: Palette.foreground;
-                    // Prototype selected-row-tint b: a selected row is never tinted.
-                    opacity: !entry.selected && (row-touch.has-hover || (tree-focus.has-focus && index == root.focused-row)) ? 0.08 : 0;
+                    background: entry.selected ? root.selected-tint : Palette.foreground;
+                    opacity: row-touch.has-hover || (tree-focus.has-focus && index == root.focused-row) ? 0.08 : 0;
                 }
                 Text {
                     x: 8px + entry.depth * 16px;
