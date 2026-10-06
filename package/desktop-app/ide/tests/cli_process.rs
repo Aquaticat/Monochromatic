@@ -205,8 +205,26 @@ fn expected_notices() -> Vec<(String, PathBuf)> {
     return expected;
 }
 
+/// The Rust crate license list the executable embeds: target/crate-licenses.json, which the
+/// `notices` task writes with cargo-about beside the profile folders.
+fn crate_licenses() -> Vec<serde_json::Value> {
+    let list = Path::new(env!("CARGO_BIN_EXE_monochromatic-ide"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("target folder")
+        .join("crate-licenses.json");
+    let parsed: serde_json::Value =
+        serde_json::from_slice(&fs::read(&list).expect("crate license list of the build"))
+            .expect("JSON crate license list");
+    return parsed["licenses"]
+        .as_array()
+        .expect("licenses array")
+        .clone();
+}
+
 /// `--licenses` prints every embedded license and notice text in full, each under a heading that
-/// names its component and its embedded path, and exits 0 without a display, a project, or a home
+/// names its component and its embedded path, then every Rust crate license text under a heading
+/// naming the license and the crates it covers, and exits 0 without a display, a project, or a home
 /// folder, writing nothing.
 #[test]
 fn licenses_prints_every_embedded_text_without_a_display_or_home() {
@@ -228,10 +246,16 @@ fn licenses_prints_every_embedded_text_without_a_display_or_home() {
         expected.len() > 30,
         "the build inputs hold the grammar notices: {expected:?}"
     );
+    let crates = crate_licenses();
+    assert!(
+        crates.len() > 100,
+        "the crate license list holds the crates' texts: {}",
+        crates.len()
+    );
     let introduction = format!(
         "Monochromatic IDE {} carries these {} license and notice texts, each in full below.\n",
         env!("CARGO_PKG_VERSION"),
-        expected.len()
+        expected.len() + crates.len()
     );
     assert!(
         text.starts_with(&introduction),
@@ -259,6 +283,29 @@ fn licenses_prints_every_embedded_text_without_a_display_or_home() {
             text.contains(&format!("\n{rule}\n{heading}\nEmbedded as ")),
             "missing heading {heading}"
         );
+    }
+    assert_eq!(text.matches("\nRust crates under ").count(), crates.len());
+    assert!(!text.contains("Embedded as LICENSES/crates.json"));
+    for license in &crates {
+        let count = license["crates"].as_array().expect("crates").len();
+        let noun = if count == 1 { "crate" } else { "crates" };
+        let heading = format!(
+            "\n{rule}\nRust crates under {} ({}): {count} {noun}\nUsed by: ",
+            license["name"].as_str().expect("name"),
+            license["id"].as_str().expect("id")
+        );
+        assert!(text.contains(&heading), "missing {heading}");
+        let body = format!("{rule}\n\n{}", license["text"].as_str().expect("text"));
+        assert!(text.contains(&body), "a text of {heading} is not printed in full");
+    }
+    // Every crate of the list is named by name and version under some heading.
+    for used in crates.iter().flat_map(|license| return license["crates"].as_array().expect("crates").iter()) {
+        let named = format!(
+            "{} {}",
+            used["name"].as_str().expect("crate name"),
+            used["version"].as_str().expect("crate version")
+        );
+        assert!(text.contains(&named), "{named} is not named");
     }
     assert_eq!(
         fs::read_dir(fixture.path())
