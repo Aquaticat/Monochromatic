@@ -714,7 +714,9 @@ Nothing here is decided until then.
 From the design decisions:
 
 - Track rows in the folder's track list:
-  a title and a supporting line (C2, D35).
+  a title and a supporting line
+  (C2,
+  D35).
   This is the template the editor already studies.
 - The playing track in the deck:
   a title and a subtitle that counts the track's place in its folder,
