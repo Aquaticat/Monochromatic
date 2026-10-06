@@ -2617,6 +2617,81 @@ not about appearance.
 The editor's layout on the Fold is still to be built and looked at.
 No production implementation is authorized by this record.
 
+### D91. The editor's preview scrolls with the page (2026-10-06)
+
+The editor study built three layouts of the preview,
+because at 200% text the baseline loses the preview while typing inside a call:
+the preview at the top of one scrolling page,
+both preview rows fixed under the header,
+and only the two result lines fixed under the header.
+The agent ranked the fixed result lines first and the scrolling baseline last.
+
+Asked through the question tool with the review page open,
+the human chose none of the offered options and wrote:
+"I've seen the preview,
+and I have to say this isn't the way.
+Least surprises vs the base platform is more appropriate,
+and it doesn't prevent users from wanting to see more in a easy manner.
+Preview scrolls."
+
+So the preview scrolls with the page,
+as the baseline has it,
+and nothing is fixed under the header.
+The two pinned layouts are rejected.
+The reason given is a standard beyond this page:
+prefer what surprises least against the base platform,
+when the user can still reach the rest easily.
+The agent's ranking weighed what stays in view at 200% text over that,
+and was wrong for this human.
+
+The rule the second build added,
+that the page scrolls while the field has focus so the lines under it clear the keyboard,
+was not asked about and is not decided by this answer.
+No production implementation is authorized by this record.
+
+### D92. The template language has no conditionals (2026-10-06)
+
+The study's assumptions were put to the human through the question tool:
+one template for the track row's supporting line;
+KWGT's spelling,
+with `mi`,
+`tf`,
+`tc`,
+`if` and `+`;
+the fields `title`,
+`file`,
+`ext`,
+`folder`,
+`path`,
+`len` and `peak`;
+the default template;
+and the D90 picks.
+The human answered:
+"Keep except conditionals.
+This is templating.
+For prior arts:
+We're not Vue,
+we're just HTML."
+
+So:
+
+- The language has no conditional.
+  `if` and the comparisons that exist only to feed it are removed.
+  This supersedes the entry of D89 that kept them.
+- Everything else put in that question stands and is no longer only assumed:
+  the one template studied,
+  the spelling without `if`,
+  the field list,
+  and the D90 picks.
+- The default template used `if` to leave out the true peak,
+  its separator and its unit while a file is not analysed.
+  It cannot stand as written.
+  What a row shows around a field that has no value is therefore open again,
+  and is asked of the human with options,
+  not picked by the agent.
+
+No production implementation is authorized by this record.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

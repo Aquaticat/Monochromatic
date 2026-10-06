@@ -347,6 +347,13 @@ QRX:
  batch them in the question tool and re-explain each item's context in plain words;
  never rely on the user recalling earlier messages.
 
+UQT:
+ Anything the user must see or answer (handoffs,
+ proposals,
+ flagged choices):
+ put it in the question tool;
+ transcript prose may go unread.
+
 YKZ:
  Before ranking several options:
  widen to plausible alternatives (with their libraries and repo incumbents);
