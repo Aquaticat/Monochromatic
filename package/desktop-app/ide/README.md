@@ -1666,8 +1666,20 @@ which logs 5000 records through the real subscriber while the output stalls for 
 `mise run //package/desktop-app/ide:inspect:log-stall <cache> [cargo] [seconds] [port]`
 runs the IDE in the nested compositor with every application record on
 and its standard output on a FIFO that is never read,
-moves the caret, and measures how long the window's Slint MCP server, which runs on the event loop, takes to answer;
-the same sources with the writer replaced by plain standard output are the control that must stop answering.
+moves the caret with key presses for 30 s,
+and reads from the IDE's own records the longest pause between two keys the window handled;
+it also records how long the window's Slint MCP server, which runs on the event loop, takes to answer.
+The same sources with the writer replaced by plain standard output are the control.
+On 2026-10-06, at a load average near 90 on 16 processors,
+the shipped build handled 494 keys with a longest pause of 2.2 s and answered every probe within 5 s,
+and the control handled 8 keys, then paused 31.8 s and left 6 probes unanswered
+(`~/temp/agent/ide-log-stall-RMpmMv/results.json`).
+A pause of 5 s or more fails the shipped build; single slower answers occur on a busy host without any log involved.
+
+A bare `RUST_LOG=debug` also turns on the debug records of every library:
+the log up to the first window grew from about 60 KB to about 747 KB,
+while the time to the first window stayed within the spread of three sessions each
+(0.7 to 10.5 s with the application's records, 1.4 to 2.6 s with every record, load average near 80).
 
 ## Build boundary
 

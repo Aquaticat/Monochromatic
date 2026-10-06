@@ -5,8 +5,8 @@
 // Two builds come from one disposable package copy: the sources as they are, and the same sources with the
 // log written synchronously from the logging thread (the writer swapped for plain standard output, where the
 // log goes). Each runs in the repository's nested compositor with every record of the application on
-// (`RUST_LOG=ide_app=debug,monochromatic_ide=debug`, the fixed level before 2026-10-06); a global `debug`
-// also turns on the regex crates' records and made startup take a minute.
+// (`RUST_LOG=ide_app=debug,monochromatic_ide=debug`, the fixed level before 2026-10-06); a bare `debug` would
+// add every library's records, about twelve times the startup log, without changing what is measured.
 // The IDE's standard output goes to a FIFO that this script opens and never reads, so once the kernel's
 // pipe buffer is full every write to it blocks. While keys move the caret, the script asks the IDE's Slint
 // MCP server, which runs on the window's event loop (`i-slint-backend-testing` 1.18.1, `mcp_server.rs`,
