@@ -138,7 +138,7 @@ at `66566ee3aa0bbd08b2fb087342f43b546cc88210`
 24 of them the fixture's;
 APK kept in `settings-pane-native-private/build-66566ee3aa0bbd08b2fb087342f43b546cc88210`);
 then a 72-view cohort
-(capturing with the visit prefix `d97`),
+(capturing with the visit prefix `rows`),
 publication,
 and the approval question through the question tool.
 Until that cohort is published,
