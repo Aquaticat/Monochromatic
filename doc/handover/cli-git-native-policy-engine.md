@@ -1307,13 +1307,150 @@ which is the test of this reading.
 
 ### Second campaign over every file
 
-Pending:
-the tree of commit `348d94cbe`,
-1208 mutants in 67 files after the two exclusions.
-The exclusions remove 26 of 1234 mutants,
+Tree of commit `348d94cbe`,
+the final tree.
+`mise run //package/git-policy/cli:native:mutation:list` finds 1234 mutants in 67 files.
+The two exclusions remove 26 of them,
 25 of the kind `replace += with *=`
 and 1 of the kind `replace -= with /=`,
-and no other mutant.
+and no other mutant,
+which leaves 1208.
+They ran in four parts of 302 side by side,
+all against the one gate image of evidence `native-eqKHwb`.
+
+- Part 0
+  (evidence `native-mutation-5mlFOt`,
+  unmutated test time 16 seconds):
+  270 caught,
+  30 unviable,
+  0 missed,
+  2 timeouts.
+- Part 1
+  (evidence `native-mutation-cDqmRV`,
+  unmutated test time 6 seconds):
+  275 caught,
+  25 unviable,
+  0 missed,
+  2 timeouts.
+- Part 2
+  (evidence `native-mutation-knEe30`,
+  unmutated test time 7 seconds):
+  260 caught,
+  41 unviable,
+  0 missed,
+  1 timeout.
+- Part 3
+  (evidence `native-mutation-if52O1`,
+  unmutated test time 23 seconds):
+  263 caught,
+  38 unviable,
+  0 missed,
+  1 timeout.
+
+Together:
+1068 caught,
+134 unviable,
+0 missed
+and 6 timeouts.
+The second reading set no caught mutant aside in any part.
+Every part exited nonzero,
+as the runner must with a timeout.
+
+No mutant of the first campaign that was missed,
+that stalled the scanner
+or that timed out there
+is among the six:
+
+- The five mutants of "Timeouts caused by a stalled host" were each caught,
+  after 4 to 10 seconds of test time.
+  That is the confirmation the first campaign's reading waited for.
+- The eight mutants that replace the result of the four scanner functions with `Ok(true)` or `Ok(false)`
+  were each caught,
+  after 1 to 19 seconds.
+- The two missed mutants that were given a test,
+  in `sequencer_head_paths` and `check_top_level_token`,
+  were caught.
+  The other three no longer exist.
+
+The six timeouts are two stalls of the host,
+read in the same way as those of the first campaign:
+
+- From 20:57:22 to 20:58:53,
+  parts 0 and 1 reached the limit in the same second:
+  `entry.rs`,
+  `run_process` replaced by `0`,
+  and `config_loading.rs`,
+  `&&` to `||` in `mixed_command`.
+  Parts 2 and 3 had not reached their first mutant yet.
+- From 21:21:51 to 21:23:31,
+  all four parts reached the limit within 9 seconds of each other:
+  `command_reset.rs`,
+  `==` to `!=` in `mode_of`;
+  `config_values.rs`,
+  `<` to `<=` in `safe_integer`;
+  `command_status.rs`,
+  `||` to `&&` in `parse_status_region`;
+  and `real_git_candidate.rs`,
+  `!=` to `==` in `identical_content`.
+
+None of the six sits in a loop condition or changes how a loop advances.
+The load average of the host was between 27 and 60 whenever it was read during the campaign,
+on 16 processors,
+with other sessions' containers and an emulator running.
+
+### Rerun of the six files with a timeout
+
+A timeout is not a caught mutant,
+so the six files were run again against the same gate image
+(image `e56fa45aa948`,
+the base image in every manifest of the second campaign and of this rerun):
+
+- `config_loading.rs`,
+  `config_values.rs`
+  and `command_reset.rs`
+  (evidence `native-mutation-ivjwZs`,
+  unmutated test time 8 seconds):
+  95 mutants,
+  90 caught,
+  5 unviable,
+  0 missed,
+  0 timeouts.
+- `real_git_candidate.rs`,
+  `command_status.rs`
+  and `entry.rs`
+  (evidence `native-mutation-UUOsDS`,
+  unmutated test time 7 seconds):
+  94 mutants,
+  87 caught,
+  7 unviable,
+  0 missed,
+  0 timeouts.
+
+Both runs exited 0,
+and the second reading set nothing aside.
+The six mutants that had timed out were each caught,
+after 3 to 15 seconds of test time.
+The slowest caught mutant of the rerun took 26 seconds.
+
+### Result on the final tree
+
+Every one of the 1208 mutants of the final tree is caught or does not compile
+in a run against the one gate image:
+1074 caught,
+134 unviable,
+0 missed.
+1068 of the caught ones are from the campaign over every file
+and 6 from the rerun.
+No mutant was excluded beyond the two kinds the human approved,
+and no test bound was changed.
+
+Stated plainly:
+the campaign over every file did not end with 0 timeouts.
+It ended with 6,
+on a host that other sessions kept stalling,
+and the claim of 0 timeouts holds only for the rerun of the affected files.
+A campaign over every file that ends clean in one run needs a quieter host;
+it was not obtained.
 
 ## Fuzzing
 
@@ -1343,6 +1480,11 @@ and every lifecycle ending is reached.
 and requires a control to fail for each
 (evidence `package/git-policy/cli.fuzz/target/verification/planted-snVlL5`).
 All nine are noticed.
+Both tasks were run again on the tree of commit `348d94cbe`,
+with the same result:
+13 controls pass,
+and all nine planted defects are noticed
+(evidence `package/git-policy/cli.fuzz/target/verification/planted-z8kyPr`).
 Four are new:
 a control spelling removed anywhere in a region read without a table,
 keep-going removed without being recorded,
@@ -1577,4 +1719,6 @@ each has a sibling `*_tests.rs`.
   and no shipped policy ported so far has machinery of its own that can fail.
 - The 263 `require-rustdoc` findings of the repository's Rust linter,
   if the wrapper is to pass that linter.
+- A mutation campaign over every file that ends with 0 timeouts in one run.
+  See "Result on the final tree".
 - A decision on each item under "Choices open to veto" and "Forwarded with a known omission".
