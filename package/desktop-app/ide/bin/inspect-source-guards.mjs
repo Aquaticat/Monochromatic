@@ -42,7 +42,7 @@ const cases = [
   { name: 'tab-leading-shortcut', file: 'src/tab_layout.rs', before: 'if *byte != ordinal {', after: 'if false {', integration: 'tab_geometry', test: 'tabs_end_on_multiples_of_two_measured_space_advances', failure: 'the tab ends at' },
   // Reading geometry: hits never split a grapheme, and a selected terminator is marked.
   { name: 'grapheme-snap', file: 'src/shaped_row.rs', before: 'return self.source_start + self.snapped(proposed, x * scale);', after: 'return self.source_start + proposed;', integration: 'reading_boundaries', test: 'every_pixel_hits_the_nearest_grapheme_boundary', failure: 'hit inside a grapheme' },
-  { name: 'terminator-mark', file: 'src/shaped_text.rs', before: 'if start <= row_end && end > row_end {', after: 'if false {', integration: 'reading_boundaries', test: 'selected_terminators_are_copied_and_marked', failure: 'terminator mark' },
+  { name: 'terminator-mark', file: 'src/shaped_text/view.rs', before: 'if start <= row_end && end > row_end {', after: 'if false {', integration: 'reading_boundaries', test: 'selected_terminators_are_copied_and_marked', failure: 'terminator mark' },
   // Vertical movement: the remembered column belongs to one caret position, and the text ends stop the caret.
   { name: 'stale-column', file: 'src/vertical_motion.rs', before: '        && column.head == head\n', after: '        && true\n', integration: 'vertical_motion', test: 'stale_preferred_column_is_ignored', failure: 'a column remembered for another caret position moved the caret' },
   { name: 'first-line-stop', file: 'src/vertical_motion.rs', before: 'if rows < 0 && row == 0 {', after: 'if false {', integration: 'vertical_motion', test: 'first_and_last_line_stop_at_the_ends_of_text', failure: equality },

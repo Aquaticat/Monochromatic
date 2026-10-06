@@ -4,8 +4,9 @@
 //! Every native function that places or finds a line vertically reads `State::row_map`; none multiplies a line
 //! number by a row height. The markup only scrolls and draws at positions handed to it.
 
-/// The window, the source state that owns the map, and the stamp of the displayed text.
-use super::{AppWindow, State, annotate::displayed};
+/// The window, the source state that owns the map, the stamp of the displayed text, and the choice of the
+/// materialized lines for an offset.
+use super::{AppWindow, State, annotate::displayed, viewport::place};
 /// What: `Assoc` says which side of inserted text a mapped position stays on; `ChangeSet` is Helix's edit list.
 /// Why: Rows of a replaced text keep their space above the lines their old lines became.
 ///
@@ -18,6 +19,8 @@ use helix_core::{Assoc, ChangeSet};
 use ide_app::annotation::Held;
 /// The mapping itself and the height of one code row.
 use ide_app::row_map::{CODE_ROW, RowMap};
+/// The stamp naming a displayed text, and one line's block of virtual rows.
+use ide_app::{language::identity::DocumentStamp, virtual_row::Block};
 /// What: `Model` gives a list its `row_count` and row access; `VecModel` is the toolkit's growable list model.
 /// Why: Line-number positions are updated row by row, so the markup keeps its text elements while scrolling.
 ///
@@ -29,24 +32,69 @@ use slint::{Model, ModelRc, VecModel};
 /// `Rc` shares the persistent model between the state and the window; `Duration` and `Instant` time held space.
 use std::{
     rc::Rc,
+    sync::Arc,
     time::{Duration, Instant},
 };
 
-/// What: Bring `current.blocks` and `current.row_map` up to date with the displayed text, its annotations,
-///       and the display `scale`, and answer the previous map when positions changed; `Option<RowMap>` is
-///       that map or nothing.
-/// Why: Blocks are assembled only when the text, the annotation store, or the scale changed, which the stored
-///      key records. Callers that move the view (a reload, a file switch) refresh before they compute an
-///      offset; the renderer refreshes at its start, so no frame is painted against an outdated map.
+/// What: How long the view must have stood still before a change of rows may move the scroll offset.
+/// Why: The toolkit animates a wheel notch for 180 ms (`WHEEL_SCROLL_DURATION` in Slint 1.18.1's
+///      `internal/core/items/flickable.rs`) through a binding on the offset, and assigning the offset removes
+///      that binding: the scroll would stop short. Waiting slightly longer than the animation lets it finish.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function refresh(current: State, scale: number): RowMap | undefined;
+/// const SCROLL_QUIET = 200; // milliseconds
 /// ```
-pub(super) fn refresh(current: &mut State, scale: f32) -> Option<RowMap> {
-    let stamp = displayed(current);
+const SCROLL_QUIET: Duration = Duration::from_millis(200);
+
+/// What: What the map key is made of: the displayed text's stamp, the annotation store's change counter, and
+///       the display scale as exact bits; `type` names the tuple once.
+/// Why: Blocks are assembled again only when one of the three changed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type RowKey = [stamp: DocumentStamp, version: number, scale: number];
+/// ```
+pub(super) type RowKey = (DocumentStamp, u64, u32);
+
+/// What: A freshly assembled vertical layout that is not installed yet: its key, the blocks of every annotated
+///       line, and the map they call for.
+/// Why: Whether the view can take it now is decided before anything in the state changes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Rebuilt = { key: RowKey; blocks: Block[]; map: RowMap };
+/// ```
+pub(super) struct Rebuilt {
+    /// What the layout was built from.
+    key: RowKey,
+    /// Blocks of virtual rows, in line order.
+    blocks: Vec<Arc<Block>>,
+    /// The mapping the blocks call for.
+    map: RowMap,
+}
+
+/// The key the displayed text, its annotations, and the display `scale` call for now.
+fn wanted_key(current: &State, scale: f32) -> RowKey {
     // `to_bits` turns the float into an integer that compares exactly.
-    let key = (stamp, current.annotations.version(), scale.to_bits());
+    return (
+        displayed(current),
+        current.annotations.version(),
+        scale.to_bits(),
+    );
+}
+
+/// What: Assemble the blocks and the map the displayed text, its annotations, and the display `scale` call for,
+///       or nothing when the state's layout was built from exactly these; `Option<Rebuilt>` is that result.
+/// Why: Blocks are assembled only when the text, the annotation store, or the scale changed, which the stored
+///      key records. Nothing in the state changes here except the store's packing cache.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function rebuilt(current: State, scale: number): Rebuilt | undefined;
+/// ```
+fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
+    let key = wanted_key(current, scale);
     if current.row_key == Some(key) {
         // `None`: nothing a block depends on changed.
         return None;
@@ -64,33 +112,125 @@ pub(super) fn refresh(current: &mut State, scale: f32) -> Option<RowMap> {
         annotations,
         ..
     } = &mut *current;
-    let blocks = annotations.assemble(stamp, document, shaper, scale);
+    let blocks = annotations.assemble(key.0, document, shaper, scale);
     let mut raised = Vec::new();
     for block in &blocks {
         raised.push((block.line, block.height()));
     }
-    let lines = document.text().len_lines();
-    let wanted = RowMap::new(lines, &raised);
-    current.blocks = blocks;
-    current.row_key = Some(key);
-    if wanted == current.row_map {
+    let map = RowMap::new(document.text().len_lines(), &raised);
+    // `Some(...)` hands the assembled layout to the caller, which decides when to install it.
+    return Some(Rebuilt { key, blocks, map });
+}
+
+/// What: Make `layout` the state's layout and answer the previous map when positions changed;
+///       `Option<RowMap>` is that map or nothing. `Rebuilt` is moved in.
+/// Why: The caller compares positions in both maps to keep the view still.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function install(current: State, layout: Rebuilt): RowMap | undefined;
+/// ```
+fn install(current: &mut State, layout: Rebuilt) -> Option<RowMap> {
+    current.blocks = layout.blocks;
+    current.row_key = Some(layout.key);
+    if layout.map == current.row_map {
         return None;
     }
     // What: `std::mem::replace` stores the new map and hands back the old one.
-    // Why: The caller compares positions in both to keep the view still.
+    // Why: The old positions are needed once more, to keep the view still.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const previous = current.rowMap; current.rowMap = wanted; return previous;
+    // const previous = current.rowMap; current.rowMap = layout.map; return previous;
     // ```
-    let previous = std::mem::replace(&mut current.row_map, wanted);
+    let previous = std::mem::replace(&mut current.row_map, layout.map);
     tracing::debug!(
-        lines,
+        lines = current.row_map.lines(),
         blocks = current.blocks.len(),
         height = current.row_map.height(),
         "row map rebuilt"
     );
     return Some(previous);
+}
+
+/// What: Bring `current.blocks` and `current.row_map` up to date at once and answer the previous map when
+///       positions changed.
+/// Why: Callers that place the view themselves (a reload, a file switch, a revealed line) refresh before they
+///      compute an offset.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function refresh(current: State, scale: number): RowMap | undefined;
+/// ```
+pub(super) fn refresh(current: &mut State, scale: f32) -> Option<RowMap> {
+    // `?` leaves with nothing when the layout is already current.
+    let layout = rebuilt(current, scale)?;
+    return install(current, layout);
+}
+
+/// Whether the reader scrolled so recently that a wheel animation may still be running.
+fn scrolling(current: &State) -> bool {
+    // `is_some_and` answers false when the view never scrolled and otherwise asks the closure.
+    return current
+        .scrolled_at
+        .is_some_and(|at| return at.elapsed() < SCROLL_QUIET);
+}
+
+/// What: Bring the vertical mapping up to date for a render and, when it changed, keep the view still: the
+///       answer is the scroll offset the window must take, or nothing. `view` holds the horizontal offset, the
+///       vertical offset, the width, and the height of the view in logical pixels.
+/// Why: Rows that appear, change, or vanish above the first visible code row must move nothing visible, so
+///      the offset follows them; the materialized lines are chosen again for the offset that results.
+///      While the reader is scrolling, a change that would move the offset waits: the rows it brings are
+///      above the view anyway, and assigning the offset would cut the toolkit's scroll animation short.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function settle(current: State, scale: number, view: [number, number, number, number]): number | undefined;
+/// ```
+pub(super) fn settle(current: &mut State, scale: f32, view: (f32, f32, f32, f32)) -> Option<f32> {
+    let (left, offset, width, height) = view;
+    let layout = rebuilt(current, scale)?;
+    let kept = anchored(&current.row_map, &layout.map, offset).min(limit(&layout.map, height));
+    // A layout for the same text may wait; one for another text never does, its caller placed the view.
+    let same_text = current
+        .row_key
+        .is_some_and(|(stamp, _, _)| return stamp == layout.key.0);
+    if kept != offset && same_text && scrolling(current) {
+        tracing::debug!(
+            offset,
+            "rows above the view wait until scrolling has stopped"
+        );
+        return None;
+    }
+    // `?` leaves with nothing when no position changed.
+    install(current, layout)?;
+    place(current, left, kept, width, height);
+    tracing::debug!(
+        before = offset,
+        after = kept,
+        "kept the view still across a change of virtual rows"
+    );
+    if kept == offset {
+        return None;
+    }
+    return Some(kept);
+}
+
+/// What: Whether the window must render now for the vertical mapping's sake: held space ran out of time, or
+///       rows that waited for scrolling to stop can be shown.
+/// Why: Neither comes with an event of its own; the source refresh timer asks every tick.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function due(current: State, scale: number): boolean;
+/// ```
+pub(super) fn due(current: &mut State, scale: f32) -> bool {
+    let expired = current.annotations.expire(Instant::now());
+    let waiting = current.row_key.is_some()
+        && current.row_key != Some(wanted_key(current, scale))
+        && !scrolling(current);
+    return expired || waiting;
 }
 
 /// What: The scroll offset in `next` that shows what `offset` showed in `previous`: the code row of the line
@@ -321,9 +461,4 @@ pub(super) fn hold(current: &mut State, carried: Vec<(usize, f32, f32)>, scale: 
         .annotations
         .hold(next, parts, Instant::now() + ROW_HOLD);
     refresh(current, scale);
-}
-
-/// Give up held space whose time has passed; the answer says whether the window must render.
-pub(super) fn expire(current: &mut State) -> bool {
-    return current.annotations.expire(Instant::now());
 }

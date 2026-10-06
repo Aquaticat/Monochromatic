@@ -344,7 +344,10 @@ fn held_space_keeps_block_heights_until_hints_return_or_time_passes() {
         file: 3,
         revision: 8,
     };
-    assert!(blocks(&mut store, other).is_empty());
+    assert!(
+        blocks(&mut store, other).is_empty(),
+        "held space was applied to another text"
+    );
     // Hints answering for lines 0 to 2 give up the hint space of line 1; its message space stays.
     let answer = ranged(SHOWN, (0, 3), vec![hint(5, ": i32")]);
     assert!(store.accept_hints(SHOWN, &text, unwrapped(answer)));

@@ -29,6 +29,8 @@ pub(super) fn reveal(window: &AppWindow, source: &Rc<RefCell<State>>, requested:
     let limit = rows::limit(&current.row_map, window.get_viewport_height());
     let target = current.row_map.block_top(line).min(limit);
     let extent = current.row_map.height();
+    // The window's next offset report is this reveal, not the reader scrolling.
+    current.offset = target;
     // Release the checked mutable borrow before native scroll callbacks can request another source borrow.
     drop(current);
     // Update extent before offset so the old height cannot clamp the new offset.

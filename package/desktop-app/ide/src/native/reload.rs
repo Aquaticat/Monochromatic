@@ -116,6 +116,8 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
         // the new text arrive; the line the view started in keeps its place in the view.
         rows::hold(&mut current, carried, window.window().scale_factor());
         let target = (current.row_map.code_top(first) + within).max(0.0);
+        // The window's next offset report is this mapping, not the reader scrolling.
+        current.offset = target;
         mapped_viewport = Some((target, current.row_map.height()));
         redraw = true;
     }
@@ -147,9 +149,13 @@ pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Ti
         let Some(active_window) = weak.upgrade() else {
             return;
         };
-        // Space held open for rows of a replaced text is given up when its time has passed.
-        let expired = rows::expire(&mut state.borrow_mut());
-        if expired {
+        // Space held open for rows of a replaced text is given up when its time has passed, and rows that
+        // waited for scrolling to stop are shown; neither comes with an event of its own.
+        let due = rows::due(
+            &mut state.borrow_mut(),
+            active_window.window().scale_factor(),
+        );
+        if due {
             render(&active_window, &state);
         }
         match worker.try_take() {

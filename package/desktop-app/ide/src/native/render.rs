@@ -7,9 +7,7 @@
 /// ```ts
 /// import { type State, AppWindow, SourceSelection } from '../native';
 /// ```
-use super::{
-    AppWindow, State, annotate, find::present::present, rows, ui::SourceSelection, viewport::place,
-};
+use super::{AppWindow, State, annotate, find::present::present, rows, ui::SourceSelection};
 /// Virtual-row texts and diagnostic marks are positioned against the frame's shaped rows.
 use ide_app::annotation_layout::lay_out;
 /// Match rectangles come from the same shaped rows as selection rectangles.
@@ -64,34 +62,6 @@ fn model_rows(rectangles: &[ReadingRect]) -> Vec<SourceSelection> {
     return rows;
 }
 
-/// What: Bring the vertical mapping up to date and, when it changed, keep the view still: the answer is the
-///       scroll offset the window must take, or nothing. `view` holds the horizontal offset, the vertical
-///       offset, the width, and the height of the view in logical pixels.
-/// Why: Rows that appear, change, or vanish above the first visible code row must move nothing visible, so
-///      the offset follows them; the materialized lines are chosen again for the offset that results.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function settle(current: State, scale: number, view: [number, number, number, number]): number | undefined;
-/// ```
-fn settle(current: &mut State, scale: f32, view: (f32, f32, f32, f32)) -> Option<f32> {
-    let (left, offset, width, height) = view;
-    // `?` leaves with nothing when no position changed.
-    let previous = rows::refresh(current, scale)?;
-    let limit = rows::limit(&current.row_map, height);
-    let kept = rows::anchored(&previous, &current.row_map, offset).min(limit);
-    place(current, left, kept, width, height);
-    tracing::debug!(
-        before = offset,
-        after = kept,
-        "kept the view still across a change of virtual rows"
-    );
-    if kept == offset {
-        return None;
-    }
-    return Some(kept);
-}
-
 /// Render shared shaped rows, releasing state before any Slint setter can reenter.
 pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let factor = window.window().scale_factor();
@@ -115,7 +85,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     );
     let mut current = state.borrow_mut();
     // No frame is painted against a map that no longer describes the displayed text and its annotations.
-    let scrolled = settle(&mut current, factor, view_now);
+    let scrolled = rows::settle(&mut current, factor, view_now);
     let first = current.first;
     let horizontal = current.horizontal;
     let viewport = Viewport {

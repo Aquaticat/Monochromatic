@@ -58,6 +58,22 @@ fn fixture_reader(text: &str) -> (tempfile::TempDir, Reader) {
     return (directory, opened);
 }
 
+/// What: Let a quarter of a second pass while the toolkit's timers run.
+/// Why: A scroll offset the test assigns counts as the reader scrolling, and rows above the view wait 200 ms
+///      after the last scroll before they may move the offset.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function idle(): Promise<void> { await sleep(250); }
+/// ```
+fn idle() {
+    let start = std::time::Instant::now();
+    while start.elapsed() < std::time::Duration::from_millis(250) {
+        update_timers_and_animations();
+        std::thread::sleep(std::time::Duration::from_millis(5));
+    }
+}
+
 /// `count` numbered lines, each [`LINE`] characters long with its terminator.
 fn numbered(count: usize) -> String {
     let mut text = String::new();
@@ -142,6 +158,37 @@ fn moved(
         );
     }
     return to - from;
+}
+
+/// What: The first pixel of the source view at which two frames differ, with both colors, or nothing when the
+///       source view is the same in both; `Option<String>` is that description or nothing.
+/// Why: A failing stability assertion must say where the frame changed, not only that it did. The project
+///      tree beside the source view selects the opened file on its own schedule and is not compared.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function difference(first: Frame, second: Frame): string | undefined;
+/// ```
+fn difference(
+    first: &SharedPixelBuffer<Rgba8Pixel>,
+    second: &SharedPixelBuffer<Rgba8Pixel>,
+) -> Option<String> {
+    let mut y = TEXT_TOP;
+    while y < first.height() as f32 {
+        let before = band(first, y);
+        let after = band(second, y);
+        for (index, (old, new)) in before.iter().zip(after.iter()).enumerate() {
+            if old != new {
+                // `Some(...)` carries the description of the first differing pixel.
+                return Some(format!(
+                    "pixel {},{y} changed from {old:?} to {new:?}",
+                    index + (TEXT_LEFT - GUTTER) as usize
+                ));
+            }
+        }
+        y += 1.0;
+    }
+    return None;
 }
 
 /// Hints arriving for visible lines move only what lies beneath them, by exactly their block's height, and
@@ -264,14 +311,17 @@ fn rows_arriving_above_the_view_move_no_visible_pixel() {
         "E1",
         "wrong",
     )];
+    // The test's own scroll counts as the reader scrolling; rows above the view wait until that is over.
+    idle();
     inject(&reader, hints, error.clone());
     assert_eq!(
         -window.get_scroll_y(),
         offset + 3.0 * row,
         "the offset did not follow the rows that arrived above the view"
     );
-    assert!(
-        frame(window).as_slice() == before.as_slice(),
+    assert_eq!(
+        difference(&before, &frame(window)),
+        None,
         "a visible pixel moved when rows arrived above the view"
     );
     assert_eq!(
@@ -286,8 +336,9 @@ fn rows_arriving_above_the_view_move_no_visible_pixel() {
         error,
     );
     assert_eq!(-window.get_scroll_y(), offset + 2.0 * row);
-    assert!(
-        frame(window).as_slice() == before.as_slice(),
+    assert_eq!(
+        difference(&before, &frame(window)),
+        None,
         "a visible pixel moved when a row vanished above the view"
     );
     assert_eq!(painted(), original);
@@ -303,14 +354,15 @@ fn rows_arriving_above_the_view_move_no_visible_pixel() {
         both,
     );
     assert_eq!(-window.get_scroll_y(), offset + 3.0 * row);
-    assert!(
-        frame(window).as_slice() == before.as_slice(),
+    assert_eq!(
+        difference(&before, &frame(window)),
+        None,
         "a visible pixel moved when rows arrived for the line just above the view"
     );
     // Positive control: a row for a visible line does change the frame.
     inject(&reader, vec![hint(at(103, 4), "d:")], Vec::new());
     assert!(
-        frame(window).as_slice() != before.as_slice(),
+        difference(&before, &frame(window)).is_some(),
         "a row in view changed nothing (positive control)"
     );
     // At the very top the view stays at the top: rows for the first line push the text down.
@@ -320,6 +372,74 @@ fn rows_arriving_above_the_view_move_no_visible_pixel() {
     assert_eq!(top_reader.window.get_scroll_y(), 0.0);
     assert_eq!(top_reader.source.borrow().row_map.code_top(0), row);
     assert_eq!(top_reader.window.get_caret_y(), row + 2.0);
+}
+
+/// While the reader is scrolling, rows arriving above the view wait: assigning the scroll offset would cut the
+/// toolkit's scroll animation short. They are shown, with the view kept still, once scrolling has stopped.
+/// Rows arriving in view never wait, because they need no change of the offset.
+#[test]
+fn rows_above_the_view_wait_until_scrolling_has_stopped() {
+    let (_directory, reader) = fixture_reader(&numbered(200));
+    let window = &reader.window;
+    let offset = 100.0 * 24.0 + 7.0;
+    let row = BLOCK_GAP + ROW_HEIGHT;
+    idle();
+    window.set_scroll_y(-offset);
+    update_timers_and_animations();
+    let before = frame(window);
+    // What: A closure that scrolls one pixel away and back, as the reader's wheel would.
+    // Why: Taking a frame takes time; the scroll the rows must wait for has to be the latest thing that
+    //      happened when they arrive.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const scroll = () => { window.scrollY = -(offset + 1); tick(); window.scrollY = -offset; tick(); };
+    // ```
+    let scroll = || {
+        window.set_scroll_y(-(offset + 1.0));
+        update_timers_and_animations();
+        window.set_scroll_y(-offset);
+        update_timers_and_animations();
+    };
+    // The reader scrolls, and a hint for line 10 arrives at once.
+    scroll();
+    inject(&reader, vec![hint(at(10, 4), "a:")], Vec::new());
+    assert_eq!(
+        -window.get_scroll_y(),
+        offset,
+        "rows above the view moved the offset while the reader was scrolling"
+    );
+    assert_eq!(reader.source.borrow().row_map.block_height(10), 0.0);
+    assert_eq!(difference(&before, &frame(window)), None);
+    // A hint for a visible line arrives together with the one above the view while the reader still scrolls.
+    scroll();
+    inject(
+        &reader,
+        vec![hint(at(10, 4), "a:"), hint(at(104, 4), "b:")],
+        Vec::new(),
+    );
+    assert_eq!(
+        reader.source.borrow().row_map.block_height(104),
+        0.0,
+        "a change that also moves the offset waits as a whole"
+    );
+    // Scrolling has stopped: the rows are shown and nothing above line 104's block moves.
+    eventually("rows that waited for scrolling were never shown", || {
+        return reader.source.borrow().row_map.block_height(10) == row;
+    });
+    update_timers_and_animations();
+    assert_eq!(-window.get_scroll_y(), offset + row);
+    let after = frame(window);
+    let shown = map(&reader);
+    let mut y = TEXT_TOP;
+    while y < TEXT_TOP + shown.block_top(104) - (offset + row) {
+        assert!(
+            band(&before, y) == band(&after, y),
+            "a visible pixel above the new row moved in window row {y}"
+        );
+        y += 1.0;
+    }
+    assert_eq!(shown.block_height(104), row);
 }
 
 /// After an external change the old rows are not painted, but their space stays, so no line moves; when the

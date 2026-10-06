@@ -34,12 +34,12 @@ use ide_app::shaped_text::{ShapedView, TextShaper};
 use ide_app::source_frame::FrameStamp;
 /// Raster output retains the exact glyph positions used by selection.
 use ide_app::text_raster::TextRaster;
+/// One line's block of virtual rows.
+use ide_app::virtual_row::Block;
 /// Explicit startup paths retain one canonical project boundary.
 use ide_app::{cli::Options, workspace::Workspace};
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
-/// The stamp naming a displayed text, and one line's block of virtual rows.
-use ide_app::{language::identity::DocumentStamp, virtual_row::Block};
 /// Toolkit handles and models bridge owned Rust state to the window.
 use slint::{ComponentHandle, SharedString, VecModel};
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
@@ -49,7 +49,7 @@ use slint::{ComponentHandle, SharedString, VecModel};
 /// ```ts
 /// const shared = { current: state };
 /// ```
-use std::{cell::RefCell, path::PathBuf, rc::Rc, sync::Arc};
+use std::{cell::RefCell, path::PathBuf, rc::Rc, sync::Arc, time::Instant};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
@@ -213,7 +213,18 @@ struct State {
     /// ```ts
     /// rowKey?: [stamp: DocumentStamp, version: number, scale: number];
     /// ```
-    row_key: Option<(DocumentStamp, u64, u32)>,
+    row_key: Option<rows::RowKey>,
+    /// Vertical scroll offset the materialized lines were last chosen for.
+    offset: f32,
+    /// What: When the reader last scrolled vertically; `Option<Instant>` is that moment or nothing.
+    /// Why: A change of rows that would move the scroll offset waits until the toolkit's scroll animation,
+    ///      which runs through a binding on that offset, has had time to finish.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// scrolledAt?: number;
+    /// ```
+    scrolled_at: Option<Instant>,
     /// What: `Rc<VecModel<f32>>` is a shared, growable toolkit list of floats.
     /// Why: The window draws one line number per entry at that vertical position; the list is updated in
     ///      place while scrolling.
@@ -267,6 +278,8 @@ impl State {
             row_map,
             blocks: Vec::new(),
             row_key: None,
+            offset: 0.0,
+            scrolled_at: None,
             line_tops: rows::line_model(),
             find: None,
             language_reload: None,

@@ -144,6 +144,8 @@ pub(super) fn apply(
         current.styles = SourceStyles::from([]);
         current.first = 0;
         current.horizontal = 0.0;
+        // A new file starts at its top; the window's next offset report is that reset, not scrolling.
+        current.offset = 0.0;
         current.document_width = 0.0;
         current.shaped = None;
         current.frame_stamp = None;

@@ -6,8 +6,8 @@ use super::{AppWindow, State, render, rows};
 use ide_app::row_map::CODE_ROW;
 /// ComponentHandle supplies weak references for callback lifetimes.
 use slint::ComponentHandle;
-/// Checked shared ownership remains confined to the UI thread.
-use std::{cell::RefCell, rc::Rc};
+/// Checked shared ownership remains confined to the UI thread; `Instant` times the reader's scrolling.
+use std::{cell::RefCell, rc::Rc, time::Instant};
 
 /// What: `&mut State` lends the source state mutably; `f32` is a 32-bit float of logical pixels;
 /// the `bool` answer says whether the materialized tile changed.
@@ -33,6 +33,9 @@ pub(super) fn place(
     // ```ts
     // const first = map.lineAt(Math.max(offset, 0)); const count = Math.ceil(height / CODE_ROW) + 3;
     // ```
+    // Every caller that moves the view itself passes its new offset here first, so the offset the window
+    // reports afterwards is recognized as not being the reader's own scrolling.
+    current.offset = offset;
     let first = current.row_map.line_at(offset.max(0.0));
     let count = (height.max(0.0) / CODE_ROW).ceil() as usize + 3;
     let tile_x = ((horizontal.max(0.0) / 128.0).floor() * 128.0 - 128.0).max(0.0);
@@ -83,6 +86,11 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         // const changed = place(state.current, horizontal, offset, width, height);
         // ```
         let mut current = state.borrow_mut();
+        // An offset nobody announced is the reader scrolling: by wheel, by touch, or by a drag past an edge.
+        if offset != current.offset {
+            // `Some(Instant::now())` records this moment as the latest scroll.
+            current.scrolled_at = Some(Instant::now());
+        }
         let changed = place(&mut current, horizontal, offset, viewport_width, height);
         drop(current);
         if !changed {

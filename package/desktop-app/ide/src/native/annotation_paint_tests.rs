@@ -312,11 +312,7 @@ fn display_scale_keeps_virtual_rows_in_place() {
             scale_factor: scale * 2.0,
         });
     update_timers_and_animations();
-    assert_eq!(
-        heights(),
-        before,
-        "blocks changed their logical height"
-    );
+    assert_eq!(heights(), before, "blocks changed their logical height");
     let doubled = window.get_source_image().size();
     assert_eq!(doubled.height, image.height * 2);
     assert_eq!(doubled.width, image.width * 2);
