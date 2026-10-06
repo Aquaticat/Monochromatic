@@ -15,6 +15,14 @@ use std::{
     time::{Duration, Instant},
 };
 
+/// Longest wait for one open: a hang detector, not a latency budget, and the same bound the
+/// Language integration tests use for any expected state (`PATIENCE` in `tests/language/support.rs`).
+/// The first open of every opener builds the syntax engine and compiles the language's queries,
+/// once; measured in a debug build with two processors shared by a loaded machine, that took
+/// 0.9 s at the median and up to 6 s, and with half a processor up to 7 s. Later opens take
+/// milliseconds. No product bound exists for opening a file.
+const OPEN_PATIENCE: Duration = Duration::from_secs(20);
+
 /// Drain a pending open or cancellation without relying on filesystem-read timing.
 fn finish(opener: &mut FileOpener) -> Result<Option<OpenedFile>> {
     let start = Instant::now();
@@ -24,8 +32,8 @@ fn finish(opener: &mut FileOpener) -> Result<Option<OpenedFile>> {
             return Ok(Some(opened));
         }
         assert!(
-            start.elapsed() < Duration::from_secs(3),
-            "file opener did not finish"
+            start.elapsed() < OPEN_PATIENCE,
+            "file opener did not finish within {OPEN_PATIENCE:?}"
         );
         std::thread::sleep(Duration::from_millis(2));
     }
