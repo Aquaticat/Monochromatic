@@ -27,11 +27,10 @@ struct Watching {
 }
 
 impl Watching {
-    /// Start both for `root`, with the scripted server registering `watchers` (JSON) after `initialized`.
-    fn new(root: &Path, watchers: Option<&str>) -> Self {
-        let variables: Vec<(&str, &str)> =
-            watchers.map_or(Vec::new(), |json| return vec![("WATCHERS", json)]);
-        let probe = Probe::new(root, support::scripted(root, &variables, 20));
+    /// Start both for `root`, with the scripted server configured by `variables` (`WATCHERS` is the JSON it
+    /// registers after `initialized`).
+    fn new(root: &Path, variables: &[(&str, &str)]) -> Self {
+        let probe = Probe::new(root, support::scripted(root, variables, 20));
         let watcher =
             ChangeWatcher::new(Workspace::new(root).expect("workspace")).expect("change watcher");
         return Self { probe, watcher };
@@ -180,7 +179,7 @@ fn changes_reach_the_server_by_glob_and_kind() {
         r#"[{{"globPattern":"**/*.scripted"}},{{"globPattern":{{"baseUri":"file://{}/src","pattern":"**/*.txt"}},"kind":1}}]"#,
         root.display()
     );
-    let mut session = Watching::new(&root, Some(&watchers));
+    let mut session = Watching::new(&root, &[("WATCHERS", &watchers), ("PULL", "1")]);
     session
         .probe
         .open(&root.join("src/main.scripted"), "watched\n");
@@ -199,6 +198,22 @@ fn changes_reach_the_server_by_glob_and_kind() {
     session.until_changes(&root, "the creations", |changes| {
         return changes.has("src/other.scripted", 1) && changes.has("src/notes.txt", 1);
     });
+    // Another file may change the displayed file's diagnostics, so they are pulled again afterwards.
+    support::report_until(
+        &root,
+        "a diagnostics pull after the file changes",
+        |lines| {
+            let methods = support::received(lines);
+            return methods
+                .iter()
+                .position(|method| return method == "workspace/didChangeWatchedFiles")
+                .is_some_and(|first| {
+                    return methods[first..]
+                        .iter()
+                        .any(|method| return method == "textDocument/diagnostic");
+                });
+        },
+    );
     fs::write(root.join("src/other.scripted"), "changed").expect("external change");
     fs::remove_file(root.join("src/notes.txt")).expect("external deletion");
     session.until_changes(&root, "the change", |changes| {
@@ -243,7 +258,10 @@ fn a_burst_arrives_gathered_with_the_final_kinds() {
         return;
     };
     project(&root);
-    let mut session = Watching::new(&root, Some(r#"[{"globPattern":"**/*.scripted"}]"#));
+    let mut session = Watching::new(
+        &root,
+        &[("WATCHERS", r#"[{"globPattern":"**/*.scripted"}]"#)],
+    );
     session
         .probe
         .open(&root.join("src/main.scripted"), "watched\n");
@@ -297,7 +315,10 @@ fn new_folders_are_followed_unless_ignored() {
         return;
     };
     project(&root);
-    let mut session = Watching::new(&root, Some(r#"[{"globPattern":"**/*.scripted"}]"#));
+    let mut session = Watching::new(
+        &root,
+        &[("WATCHERS", r#"[{"globPattern":"**/*.scripted"}]"#)],
+    );
     session
         .probe
         .open(&root.join("src/main.scripted"), "watched\n");
@@ -336,7 +357,7 @@ fn a_server_without_watchers_hears_nothing() {
         return;
     };
     project(&root);
-    let mut session = Watching::new(&root, None);
+    let mut session = Watching::new(&root, &[]);
     session
         .probe
         .open(&root.join("src/main.scripted"), "watched\n");
