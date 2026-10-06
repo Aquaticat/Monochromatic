@@ -1303,6 +1303,8 @@ The concrete caret and replacement-selection cases in the accepted scope pass th
 
 The tree and the displayed file follow external changes through Linux inotify,
 using the `notify` crate 8.2.0 (`INotifyWatcher` by name, default features off, no polling backend).
+The same inotify instance also watches the project's source folders for the language servers;
+see [Watching for the language servers](#watching-for-the-language-servers).
 Only what is shown is watched,
 each directory non-recursively:
 the project root,
@@ -1413,6 +1415,7 @@ When every shown folder has a watch again,
 one line says so.
 Folders without a watch keep the timers and the sweep meanwhile.
 See [Watch counts and the watch limit](#watch-counts-and-the-watch-limit).
+Folders watched for the language servers come after these and have their own limit state.
 
 Every second,
 every shown folder and the displayed file are reread anyway,
@@ -1461,27 +1464,8 @@ watching every expanded folder showed the change at once in 59 of 60 trials,
 1 ms late in the other.
 The IDE keeps watching every expanded folder.
 
-The language servers count against the same limit.
-Helix's built-in rust-analyzer definition sets `files.watcher = "server"`,
-so rust-analyzer watches by itself:
-it asks notify for a recursive watch of each workspace package's directory (`vfs-notify`),
-and notify then watches every directory below it,
-whatever rust-analyzer's own exclusions say.
-On a disposable 40-crate workspace whose first crate holds a `node_modules` of 2001 directories,
-it held 3081 watches,
-1080 for sources and 2001 for `node_modules` (`inspect:server-watches`, directories identified by inode);
-the workspace's `target` and `.git`,
-outside every package directory,
-held none.
-Adding the `node_modules` directory to `files.excludeDirs` left the count at 3081 in two runs,
-so the IDE sets no exclusion.
-Only client-side watching (`files.watcher = "client"`) takes rust-analyzer's watches away (0 measured),
-and the IDE does not yet report changes of files it does not display to servers,
-so it keeps Helix's setting.
-The TypeScript 7 server held no watches:
-Helix declares client-side file watching,
-which TypeScript 7.0.2 then uses instead of its own watcher (`internal/lsp/server.go`),
-and the application installs no watches for those registrations.
+The language servers count against the same limit;
+see [Watching for the language servers](#watching-for-the-language-servers).
 
 The IDE's own podman tasks run their containers with `--network=none`,
 except `fetch` and `runtime`, which download;
@@ -1500,6 +1484,130 @@ the backoff's longest wait.
 In the second run,
 Home in the tree scrolled it and retried the watches 43 ms later,
 with no watch call in the 1.5 s before.
+
+### Watching for the language servers
+
+Language servers learn about changes made outside the editor through `workspace/didChangeWatchedFiles`.
+Helix watches no files for its servers,
+so its built-in rust-analyzer definition sets `files.watcher = "server"`,
+and rust-analyzer then asks notify for a recursive watch of each workspace package's folder (`vfs-notify`),
+which watches every folder below it,
+`node_modules` included,
+whatever `files.excludeDirs` says.
+The TypeScript 7 server watches nothing itself:
+Helix declares client-side watching,
+which TypeScript 7.0.2 then relies on (`internal/lsp/server.go`),
+and before this change nothing told it about other files,
+so the displayed file's diagnostics did not follow a change of a file it imports.
+
+The IDE watches for the servers.
+While some server has registered file watchers (`client/registerCapability`),
+the change watcher watches every source folder of the project,
+each non-recursively,
+on its one inotify instance,
+and sends every change in them to the language worker,
+without passing through the interface thread.
+When no server has watchers any more,
+those watches are released.
+Source folders are the folders ripgrep lists files from with the search's settings (`src/search_process.rs`),
+so the search and the servers agree on `.gitignore`,
+`.ignore`,
+`.rgignore`,
+and hidden names;
+hidden folders such as `.cargo` are skipped as the search skips them.
+`node_modules`,
+`target`,
+and `.git` are never watched,
+even where no ignore file names them.
+ripgrep lists a folder named on its command line even when an ignore rule names it,
+but applies the ignore files of its parents below it (ripgrep 15.2.0),
+so a new folder is classified by scanning its parent again.
+An empty folder cannot be classified by a list of files:
+it is watched until its first change,
+which is held back until its parent has been scanned again;
+the files that scan lists in it are then sent as created,
+and a new ignored folder,
+such as a build's `dist`,
+never reaches a server.
+Scans run on their own thread.
+
+The language worker keeps each server's registrations itself.
+helix-lsp's own handler (`helix-lsp/src/file_event.rs` at the pinned revision) keeps only string patterns,
+ignores the kinds a watcher asks for,
+and always sends "changed",
+while both rust-analyzer and the TypeScript 7 server register relative patterns.
+Glob patterns follow the protocol:
+`*` and `?` stay inside one path segment,
+`**` spans segments,
+and `{}` and `[]` group.
+A watcher's kind decides which of created,
+changed,
+and deleted it hears,
+and a server that registered nothing gets nothing.
+Changes are gathered per path with the kind of its final state on disk
+(a deletion after a creation stays a deletion),
+and a burst is sent once it pauses for 50 ms,
+or 500 ms after it began,
+as one notification per server.
+Each server that heard about changes is then asked for the displayed file's diagnostics again,
+since another file may have changed them.
+A reload of the displayed file reaches the servers the same way.
+rust-analyzer is given `files.watcher = "client"`,
+set in code after the definitions are merged,
+because a merged `files` table replaces the whole table;
+it then registers watchers and takes no watches of its own.
+
+The tree and the displayed file come first under the watch limit.
+A folder both want keeps one watch,
+and collapsing it in the tree keeps the servers' watch.
+When the limit refuses a watch the tree wants,
+a watch held only for the servers is given up for it,
+and while the tree waits on the limit,
+the servers add nothing.
+The servers' limit is its own state:
+one warning naming `fs.inotify.max_user_watches`,
+one line when every source folder is watched again,
+and retries after the same growing wait (2 s doubling to 64 s),
+which the watch thread schedules itself.
+
+`inspect:server-watches` measured both on disposable projects,
+with the servers confined as in production,
+on a quiet host,
+two runs of each case in one session
+(`~/temp/agent/ide-server-watches-5jAwxc`).
+The Rust workspace has 40 crates,
+1080 source folders,
+a `target` of 6000 folders,
+a `.git` of 257,
+and a `node_modules` of 2001 folders inside its first crate,
+9345 folders in all.
+The displayed file calls a function another file defines,
+and the other file is changed outside the IDE to give it a parameter,
+which rust-analyzer's own analysis reports;
+`cargo check` is turned off (`checkOnSave = false`) so it cannot report the change instead.
+The TypeScript project has 1000 source files,
+3000 dependency packages,
+12328 folders in all,
+and its displayed file imports a constant whose export is removed outside the IDE.
+
+#### Before: the build at `45db45d02`
+
+- rust-analyzer watched by itself: 3081 watches in both runs, 1080 for sources and 2001 for `node_modules`.
+- TypeScript: no watches at all.
+
+#### After: the IDE watches for the servers
+
+- Rust: 1082 watches in both runs, all held by the IDE and all on source folders; rust-analyzer held none.
+  The displayed file's diagnostic appeared 2008 and 745 ms after the write.
+- TypeScript: 42 watches in both runs, all held by the IDE; the diagnostic appeared after 102 and 60 ms.
+
+#### Positive control: the same build without forwarding
+
+- Rust and TypeScript: no watches, and the diagnostics stayed unchanged for 60 s in both runs of each.
+
+On this repository,
+ripgrep lists files in 1549 folders,
+the count the IDE would watch for a server with the repository as its project.
 
 ### Threading and shutdown
 
@@ -1711,6 +1819,31 @@ no further adds,
 the backoff and its cap,
 immediate retries,
 and the displayed file's folder first.
+`change_watch/server_watch_tests.rs` drives the servers' watches with a fake kernel:
+one watch for a folder both want,
+a server watch given up for the tree,
+the servers waiting while the tree waits,
+and their own limit state.
+`change_watch/server_scan_tests.rs` checks the scan's ignore rules,
+pruned and empty folders,
+and new folders classified by their parent.
+`language/watched_files_tests.rs` checks the merge rule,
+glob patterns per the protocol,
+kinds,
+bursts,
+and servers that stopped.
+`tests/language/watched.rs` drives the worker and a change watcher with the scripted server,
+which registers watchers from `IDE_SCRIPTED_WATCHERS`:
+changes by glob and kind,
+the diagnostics pull after them,
+ignored,
+dependency,
+and unmatched files left out,
+a burst of 500 changes in a few notifications,
+new folders followed,
+a new ignored folder never sent,
+and nothing for a server without watchers.
+`native::language::watched_tests` checks the same through the shipped window's language tick.
 `inspect:watch-guards` removes each guard in a disposable copy and requires its named test to fail.
 `inspect:idle-cost`,
 `inspect:refresh-latency`,
@@ -1819,7 +1952,14 @@ So the assembled directory works wherever it is copied or moved as a whole,
 and a symbolic link to its executable works from any directory.
 A copy of the executable alone finds no runtime:
 it shows source as plain text,
-with a message that names the manifest it looked for.
+with a message that names the manifest it looked for,
+for files a language applies to.
+A file no language applies to,
+such as a `.txt` file,
+loses nothing,
+so it is plain text without a message or a warning;
+whether a language applies is decided by the compiled-in filename and shebang rules,
+which need no runtime.
 A file in the user's Helix configuration directory or under `HELIX_RUNTIME`
 replaces the bundled file of the same relative path,
 one file at a time.
