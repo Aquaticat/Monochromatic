@@ -31,6 +31,8 @@ pub struct SourceRefresh {
     pending_since: Option<Instant>,
     /// Time of the latest notification when it was an unfinished write; `None` when it was settled.
     unsettled_at: Option<Instant>,
+    /// The pending change includes a real write notification; a pending reread alone does not.
+    notified: bool,
     /// When the last read was admitted by the reader; `None` before the first read.
     last_request: Option<Instant>,
 }
@@ -61,27 +63,39 @@ impl SourceRefresh {
     /// True while a notification is unread: the next read is the one it asked for, which waited for the
     /// writer. Every other read (the timer, the sweep, a highlighting retry, the first read) is not.
     pub fn has_unread_change(&self) -> bool {
-        return self.pending_since.is_some();
+        return self.pending_since.is_some() && self.notified;
     }
 
-    /// Record a notification; the latest classification wins, so delete then rewrite waits for the write.
+    /// Record a notification; the latest write classification wins, so delete then rewrite waits for the write.
+    /// A reread keeps whatever write is already pending: an unfinished write still waits.
     pub fn changed(&mut self, change: SourceChange, now: Instant) {
-        if self.pending_since.is_none() {
+        let first = self.pending_since.is_none();
+        if first {
             self.pending_since = Some(now);
         }
-        // What: `match` on the two-variant enum chooses which timestamp to keep.
-        // Why: A later close-write settles an earlier unfinished write; a later write unsettles a delete.
+        // What: `match` on the three-variant enum chooses which timestamp to keep.
+        // Why: A later close-write settles an earlier unfinished write; a later write unsettles a delete;
+        //      a reread with no write behind it changes nothing that a real notification already set.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.unsettledAt = change === 'settled' ? undefined : now;
+        // if (change === 'settled') { this.unsettledAt = undefined; this.notified = true; }
+        // else if (change === 'unsettled') { this.unsettledAt = now; this.notified = true; }
+        // else if (first) this.notified = false;
         // ```
         match change {
             SourceChange::Settled => {
                 self.unsettled_at = None;
+                self.notified = true;
             }
             SourceChange::Unsettled => {
                 self.unsettled_at = Some(now);
+                self.notified = true;
+            }
+            SourceChange::Reread => {
+                if first {
+                    self.notified = false;
+                }
             }
         }
     }
@@ -142,5 +156,6 @@ impl SourceRefresh {
         self.last_request = Some(now);
         self.pending_since = None;
         self.unsettled_at = None;
+        self.notified = false;
     }
 }

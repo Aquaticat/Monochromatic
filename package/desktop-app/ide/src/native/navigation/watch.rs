@@ -3,7 +3,7 @@
 
 /// Navigation owns the watcher and the directory schedule; the source state owns its own schedule.
 use super::{Navigation, State};
-/// A full reread treats the displayed file as changed and finished.
+/// A full reread asks for a reread of the displayed file once it has been quiet.
 use ide_app::change_watch::SourceChange;
 /// What: `Rc<RefCell<State>>` is the UI-thread shared source state; `BTreeSet` is an ordered set.
 /// Why: The watcher compares whole sets, so an unchanged tree sends nothing to the watch thread.
@@ -68,8 +68,10 @@ pub(super) fn update(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     }
     let mut current = source.borrow_mut();
     if changes.everything {
-        current.refresh.changed(SourceChange::Settled, now);
-    } else if let Some(change) = changes.source {
+        // Events may have been lost, so nothing says whether a write is in progress: reread once quiet.
+        current.refresh.changed(SourceChange::Reread, now);
+    }
+    if let Some(change) = changes.source {
         current.refresh.changed(change, now);
     }
     // What: `as_deref` borrows the optional owned path as `Option<&Path>`; `and_then(Path::parent)` takes its directory.

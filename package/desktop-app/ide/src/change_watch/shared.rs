@@ -15,13 +15,14 @@ use std::{
 
 /// How finished an observed change to the displayed file looks.
 ///
-/// What: an `enum` with two payload-free variants, like a TS string-literal union.
+/// What: an `enum` with three payload-free variants, like a TS string-literal union.
 /// Why: A closed write can be read now; a write still in progress waits briefly,
-///      so a truncated or half-written file never replaces the displayed text.
+///      so a truncated or half-written file never replaces the displayed text; a reread with no
+///      write behind it is read promptly, but only once the file has been quiet.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type SourceChange = 'settled' | 'unsettled';
+/// type SourceChange = 'settled' | 'unsettled' | 'reread';
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SourceChange {
@@ -29,6 +30,9 @@ pub enum SourceChange {
     Settled,
     /// Created or written but not yet closed: read after the writer goes quiet.
     Unsettled,
+    /// No write was seen: a new watch, a newly displayed file, or a full reread after lost events.
+    /// Read promptly, but like a timer read: only bytes that have been quiet for the write-quiet period.
+    Reread,
 }
 
 /// Invalidations accumulated since the last `ChangeWatcher::take`; events carry no file data.

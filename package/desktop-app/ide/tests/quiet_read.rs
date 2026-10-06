@@ -215,3 +215,31 @@ fn only_the_read_a_notification_asked_for_skips_the_quiet_check() {
         "a read that admitted the notification left it unread"
     );
 }
+
+/// A reread with no write behind it (a new watch, a newly displayed file, a full reread) is read
+/// promptly but with the quiet requirement, and it never ends the wait of an unfinished write.
+#[test]
+fn a_reread_with_no_write_behind_it_requires_quiet() {
+    let start = Instant::now();
+    let later = start + REREAD_GAP;
+    let mut reread = SourceRefresh::default();
+    reread.requested(start);
+    reread.changed(SourceChange::Reread, later);
+    assert!(reread.due(later, false), "a reread was not read promptly");
+    assert!(
+        !reread.has_unread_change(),
+        "a reread with no write behind it skipped the quiet check"
+    );
+    let mut writing = SourceRefresh::default();
+    writing.requested(start);
+    writing.changed(SourceChange::Unsettled, later);
+    writing.changed(SourceChange::Reread, later);
+    assert!(
+        !writing.due(later, false),
+        "a reread ended the wait for an unfinished write"
+    );
+    assert!(
+        writing.has_unread_change(),
+        "a reread hid the pending write notification"
+    );
+}

@@ -107,11 +107,13 @@ fn apply(
     }
     // A new watch can miss changes made before it existed, so its directory is read once more.
     // The same holds for a newly displayed file in a directory that was already watched.
+    // No write was seen, so a write event recorded in the meantime keeps its own classification.
     let parent = watches.file.as_deref().and_then(Path::parent);
-    if outcome.switched
-        || parent.is_some_and(|directory| return outcome.established.contains(directory))
+    if (outcome.switched
+        || parent.is_some_and(|directory| return outcome.established.contains(directory)))
+        && published.pending.source.is_none()
     {
-        published.pending.source = Some(SourceChange::Settled);
+        published.pending.source = Some(SourceChange::Reread);
     }
     published.pending.directories.extend(outcome.established);
     return true;
