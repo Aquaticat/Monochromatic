@@ -4,8 +4,10 @@
 use crate::annotation_layout::AnnotationFrame;
 /// Canonical source remains in the read-only document.
 use crate::document::Document;
-/// Variable roman and real italic blobs retain stable cache identities.
-use crate::font_asset::code_faces;
+/// Variable roman and real italic blobs retain stable cache identities; the interface face sets virtual rows.
+use crate::font_asset::{code_faces, row_face};
+/// The one vertical mapping: where each line's code row starts and how tall rows and the caret are.
+use crate::row_map::{CODE_ROW, RowMap};
 /// What: `pub use` re-exports the row types under this module's name.
 /// Why: Callers written against `shaped_text` keep their imports while row geometry lives in its own file.
 ///
@@ -22,6 +24,8 @@ use crate::source_typography::SourceTypography;
 use crate::tab_layout::layout_with_tabs;
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::project_line;
+/// Height and text size of the virtual rows above annotated lines.
+use crate::virtual_row::{ROW_HEIGHT, ROW_TEXT};
 /// Construction failures identify unsupported source typography.
 use anyhow::Result;
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
@@ -32,6 +36,9 @@ use parley::{
 /// Font bytes are shared immutably across the font database.
 use std::borrow::Cow;
 
+/// Reading geometry of a prepared frame: hits, caret, selection and range rectangles, and rebasing.
+mod view;
+
 /// What: `pub const` exports a compile-time value; `f32` is a 32-bit float of logical pixels (sibling `f64`).
 /// Why: A selected line terminator has no glyph; a mark about one space wide shows that it is selected.
 ///
@@ -41,17 +48,17 @@ use std::borrow::Cow;
 /// ```
 pub const TERMINATOR_MARK: f32 = 9.0;
 
-/// What: Paint role of inlay-hint glyphs, a number outside the syntax roles; `u32` is the brush type of layouts.
-/// Why: The raster paints hint glyphs with the hint ink only, never with a syntax or selection color.
+/// What: Paint role of virtual-row glyphs, a number outside the syntax roles; `u32` is the brush type of layouts.
+/// Why: The raster paints hints and messages with one given ink each, never with a syntax or selection color.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export const HINT_ROLE = 65;
+/// export const ROW_ROLE = 65;
 /// ```
-pub const HINT_ROLE: u32 = 65;
+pub const ROW_ROLE: u32 = 65;
 
-/// Font size of hint labels in logical pixels, smaller than the 15 px source text so a label reads as an aside.
-pub const HINT_SIZE: f32 = 13.0;
+/// Family name of the bundled interface face, as its name table spells it.
+const ROW_FAMILY: &str = "Inter Variable";
 
 /// Logical dimensions and scale of the source viewport.
 #[derive(Clone, Copy, PartialEq)]
@@ -76,6 +83,11 @@ pub struct ShapedView {
     pub width: u32,
     /// Physical raster height.
     pub height: u32,
+    /// Top of the raster in logical pixels from the top of the text: the top of the first materialized
+    /// line's block.
+    pub origin: f32,
+    /// The vertical mapping this frame was shaped against; rows outside the frame are placed by it.
+    pub map: RowMap,
     /// Shared logical selection rectangles drive both native backgrounds and glyph clipping.
     pub selections: Vec<ReadingRect>,
     /// In-file find rectangles from the same row geometry; filled by the native renderer.
@@ -136,6 +148,8 @@ impl TextShaper {
         for blob in code_faces() {
             fonts.collection.register_fonts(blob, None);
         }
+        // Virtual rows are set in the bundled interface face, never in whatever the host calls by that name.
+        fonts.collection.register_fonts(row_face(), None);
         return Ok(Self {
             fonts,
             layouts: LayoutContext::new(),
@@ -170,7 +184,8 @@ impl TextShaper {
             FontStyle::Normal
         };
         builder.push_default(StyleProperty::FontStyle(style));
-        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(24.0)));
+        // Glyphs are set on a line box as tall as one code row; where that row sits is the row map's business.
+        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(CODE_ROW)));
         builder.push_default(StyleProperty::Brush(0));
         builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
             Cow::Borrowed(&self.typography.features),
@@ -187,26 +202,28 @@ impl TextShaper {
         return layout;
     }
 
-    /// Shape one inlay-hint label: the source family in its real italic face at [`HINT_SIZE`], with the
-    /// source font settings, painted in the [`HINT_ROLE`] ink. The label is never part of a source line.
-    pub fn hint_layout(&mut self, text: &str, scale: f32) -> Layout<u32> {
+    /// What: Shape the text of one virtual row, an inlay hint or one row of a diagnostic message: the
+    ///       interface face at [`ROW_TEXT`] on a line box of [`ROW_HEIGHT`], regular weight, upright.
+    ///       `&str` lends the text; the answer is an owned layout.
+    /// Why: The reference editor sets these rows in its interface face, which tells them from source text at
+    ///      a glance. The text is never part of a source line, and the raster paints it in one given ink.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rowLayout(text: string, scale: number): Layout;
+    /// ```
+    pub fn row_layout(&mut self, text: &str, scale: f32) -> Layout<u32> {
         let mut builder = self
             .layouts
             .ranged_builder(&mut self.fonts, text, scale, true);
         builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
-            Cow::Borrowed("JetBrains Mono"),
+            Cow::Borrowed(ROW_FAMILY),
         )));
-        builder.push_default(StyleProperty::FontSize(HINT_SIZE));
-        builder.push_default(StyleProperty::FontWeight(FontWeight::new(
-            self.typography.weight,
-        )));
-        // The real italic face is registered with the roman one, so no slant is synthesized.
-        builder.push_default(StyleProperty::FontStyle(FontStyle::Italic));
-        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(24.0)));
-        builder.push_default(StyleProperty::Brush(HINT_ROLE));
-        builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
-            Cow::Borrowed(&self.typography.features),
-        )));
+        builder.push_default(StyleProperty::FontSize(ROW_TEXT));
+        builder.push_default(StyleProperty::FontWeight(FontWeight::new(400.0)));
+        builder.push_default(StyleProperty::FontStyle(FontStyle::Normal));
+        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(ROW_HEIGHT)));
+        builder.push_default(StyleProperty::Brush(ROW_ROLE));
         let mut layout = builder.build(text);
         layout.break_all_lines(None);
         return layout;
@@ -247,14 +264,16 @@ impl TextShaper {
     }
 
     /// Shape one source line with syntax roles on a given common baseline.
+    /// `place` pairs the line with the top of its code row in logical pixels.
     fn shape_row(
         &mut self,
         document: &Document,
-        row: usize,
+        place: (usize, f32),
         scale: f32,
         styles: &[StyleSpan],
         baseline: f32,
     ) -> ShapedRow {
+        let (row, top) = place;
         let text = document.text();
         let source_start = text.line_to_char(row);
         let source = text.line(row).to_string();
@@ -281,6 +300,7 @@ impl TextShaper {
             .baseline;
         return ShapedRow {
             row,
+            top,
             source_start,
             projection,
             layout,
@@ -291,18 +311,39 @@ impl TextShaper {
 
     /// Shape one arbitrary source line for reading geometry, without syntax colors.
     /// Caret movement uses it for lines outside the materialized viewport; `row` is clamped to the last line.
+    /// The row has no vertical position: its `top` is zero, and only its horizontal geometry is meaningful.
     pub fn row(&mut self, document: &Document, row: usize, scale: f32) -> ShapedRow {
         let last = document.text().len_lines().saturating_sub(1);
         let baseline = self.baseline(scale);
-        return self.shape_row(document, row.min(last), scale, &[], baseline);
+        return self.shape_row(document, (row.min(last), 0.0), scale, &[], baseline);
     }
 
-    /// Prepare a visible viewport using native font advances rather than character cells.
+    /// Prepare a visible viewport of a text without virtual rows: line `n` starts at `n` code rows.
     pub fn prepare(
         &mut self,
         document: &Document,
         viewport: Viewport,
         styles: &[StyleSpan],
+    ) -> ShapedView {
+        let map = RowMap::plain(document.text().len_lines());
+        return self.prepare_rows(document, viewport, styles, &map);
+    }
+
+    /// What: Prepare a visible viewport using native font advances rather than character cells, with every
+    ///       row placed by `map`. `&RowMap` lends the vertical mapping; the view keeps its own copy.
+    /// Why: Lines with virtual rows above them start lower than their line number alone says; the frame,
+    ///      its selection rectangles, and its raster all take row positions from this one mapping.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// prepareRows(document: Document, viewport: Viewport, styles: StyleSpan[], map: RowMap): ShapedView;
+    /// ```
+    pub fn prepare_rows(
+        &mut self,
+        document: &Document,
+        viewport: Viewport,
+        styles: &[StyleSpan],
+        map: &RowMap,
     ) -> ShapedView {
         let text = document.text();
         let last = viewport
@@ -312,86 +353,27 @@ impl TextShaper {
         let baseline = self.baseline(viewport.scale);
         let mut rows = Vec::new();
         for row in viewport.first..last {
-            rows.push(self.shape_row(document, row, viewport.scale, styles, baseline));
+            let place = (row, map.code_top(row));
+            rows.push(self.shape_row(document, place, viewport.scale, styles, baseline));
         }
         let width = (viewport.width.max(1.0) * viewport.scale).ceil() as u32;
-        let height = ((last.saturating_sub(viewport.first).max(1) as f32) * 24.0 * viewport.scale)
-            .ceil() as u32;
+        // The raster spans every materialized line with its block; an empty frame is still one row tall.
+        let origin = map.block_top(viewport.first);
+        let extent = (map.block_top(last) - origin).max(CODE_ROW);
+        let height = (extent * viewport.scale).ceil() as u32;
         let mut view = ShapedView {
             rows,
             viewport,
             width,
             height,
+            origin,
+            // `clone` copies the mapping so the frame stays consistent while the window's own map moves on.
+            map: map.clone(),
             selections: Vec::new(),
             matches: Vec::new(),
             annotations: None,
         };
         view.selections = view.selection(document);
         return view;
-    }
-}
-
-/// Resolve reading geometry from the exact layouts used to paint source glyphs.
-impl ShapedView {
-    /// Convert a pointer to a source character using the shaping engine's hit test.
-    pub fn hit(&self, document: &Document, row: usize, x: f32) -> usize {
-        for shaped in &self.rows {
-            if shaped.row == row {
-                return shaped.hit(x, self.viewport.scale);
-            }
-        }
-        let bounded_row = row.min(document.text().len_lines().saturating_sub(1));
-        return document.text().line_to_char(bounded_row);
-    }
-
-    /// Return caret x using exactly the same glyph advances as drawing.
-    pub fn caret(&self, document: &Document) -> ReadingRect {
-        let head = document.position().head;
-        let row = document.text().char_to_line(head);
-        let mut x = 0.0;
-        for shaped in &self.rows {
-            if shaped.row == row {
-                x = shaped.caret_x(head, self.viewport.scale);
-            }
-        }
-        return ReadingRect {
-            x,
-            y: row as f32 * 24.0 + 2.0,
-            width: 2.0,
-            height: 20.0,
-        };
-    }
-
-    /// Return per-line selection rectangles without including annotations in source.
-    /// A selected line terminator is marked after the line's text, so a selected empty line stays visible.
-    pub fn selection(&self, document: &Document) -> Vec<ReadingRect> {
-        let position = document.position();
-        let start = position.anchor.min(position.head);
-        let end = position.anchor.max(position.head);
-        let mut result = Vec::new();
-        for shaped in &self.rows {
-            result.extend(shaped.range(start, end, self.viewport.scale));
-            // The terminator sits after the row's visible text and has no glyph of its own.
-            let row_end = shaped.source_start + shaped.source_len();
-            if start <= row_end && end > row_end {
-                result.push(ReadingRect {
-                    x: shaped.caret_x(row_end, self.viewport.scale),
-                    y: shaped.row as f32 * 24.0,
-                    width: TERMINATOR_MARK,
-                    height: 24.0,
-                });
-            }
-        }
-        return result;
-    }
-
-    /// Return per-line rectangles for any source character range in the materialized rows.
-    /// Selection and in-file find matches share this path, so neither reshapes a ligature.
-    pub fn range(&self, start: usize, end: usize) -> Vec<ReadingRect> {
-        let mut result = Vec::new();
-        for shaped in &self.rows {
-            result.extend(shaped.range(start, end, self.viewport.scale));
-        }
-        return result;
     }
 }

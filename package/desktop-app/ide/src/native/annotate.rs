@@ -4,22 +4,20 @@
 //! Snapshots live in `State::annotations`, an `ide_app::annotation::Annotations`. There are two ways in:
 //!
 //! - A poll that already holds the state mutably stores each polled snapshot with
-//!   `current.annotations.accept_hints(displayed, snapshot)` or `accept_diagnostics(displayed, snapshot)`,
+//!   `annotations.accept_hints(displayed, text, snapshot)` or `accept_diagnostics(displayed, text, snapshot)`,
 //!   and calls `render` once after releasing the state when either answered `true`.
 //!   Accepting draws nothing by itself.
 //! - [`set_annotations`] replaces both snapshots at once and renders; tests and the inspection path use it.
 //!
-//! Either way the render takes the visible part, and the frame stamp repaints the source image only when that
-//! part or its inks changed. Reloads and file switches need no call: a held snapshot stops matching the
-//! displayed stamp and is no longer painted.
+//! Either way the render first brings the vertical mapping up to date (`rows::refresh`), keeping the view still
+//! where rows appeared above it, then takes the visible part; the frame stamp repaints the source image only
+//! when that part or its inks changed. Reloads and file switches need no call: a held snapshot stops matching
+//! the displayed stamp and is no longer painted.
 
-/// The parent's state, its rendering entry point, and the generated marker and box rows.
-use super::{
-    AppWindow, State, render,
-    ui::{SourceMarker, SourceSelection},
-};
-/// The selection logic, card text, and positioned frame.
-use ide_app::annotation::{Annotations, Visible, describe, rank};
+/// The parent's state and its rendering entry point.
+use super::{AppWindow, State, render};
+/// The visible subset and the text of one problem.
+use ide_app::annotation::{Visible, describe};
 /// Annotation inks and the positioned frame the raster paints.
 use ide_app::annotation_layout::{AnnotationColors, AnnotationFrame};
 /// Snapshot records and the stamp naming the displayed text.
@@ -37,14 +35,15 @@ use slint::SharedString;
 /// ```
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
-/// What: At most this many problems are listed in the caret card; `usize` is the count type (siblings `u32`, `u64`).
-/// Why: A pathological pile of diagnostics at one character must not produce a card taller than the window.
+/// What: At most this many problems are named in the accessible description; `usize` is the count type
+///       (siblings `u32`, `u64`).
+/// Why: A pathological pile of diagnostics at one character must not produce a description without end.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const CARD_PROBLEMS = 8;
+/// const DESCRIBED_PROBLEMS = 8;
 /// ```
-const CARD_PROBLEMS: usize = 8;
+const DESCRIBED_PROBLEMS: usize = 8;
 
 /// What: Replace both snapshots at once and render; `Option<Arc<...>>` is a shared snapshot or nothing.
 ///       Snapshots for another file generation or revision are kept but never painted.
@@ -75,13 +74,26 @@ pub(super) fn set_annotations(
     // ```
     let hint_stamp = hints.as_ref().map(|snapshot| return snapshot.stamp);
     let diagnostic_stamp = diagnostics.as_ref().map(|snapshot| return snapshot.stamp);
+    let shown = displayed(&current);
     tracing::debug!(
         hints = ?hint_stamp,
         diagnostics = ?diagnostic_stamp,
-        displayed = ?displayed(&current),
+        displayed = ?shown,
         "annotation snapshots installed"
     );
-    current.annotations = Annotations::new(hints, diagnostics);
+    // What: Destructuring `&mut State` lends two fields separately.
+    // Why: The store is replaced while the displayed text is only read.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const { annotations, document } = current;
+    // ```
+    let State {
+        annotations,
+        document,
+        ..
+    } = &mut *current;
+    annotations.replace(shown, document.text(), hints, diagnostics);
     drop(current);
     render(window, state);
 }
@@ -99,7 +111,7 @@ fn rgba(color: slint::Color) -> [u8; 4] {
     return [color.red(), color.green(), color.blue(), color.alpha()];
 }
 
-/// Annotation inks of the current scheme, read from the window so markers and raster agree.
+/// Annotation inks of the current scheme, read from the window so every painter agrees.
 pub(super) fn colors(window: &AppWindow) -> AnnotationColors {
     return AnnotationColors {
         hint: rgba(window.get_hint_ink().color()),
@@ -110,9 +122,10 @@ pub(super) fn colors(window: &AppWindow) -> AnnotationColors {
     };
 }
 
-/// What: The annotations of the materialized rows, or nothing for stale snapshots; `Arc` lets the frame stamp
-///       and the layout share one list.
-/// Why: Computed on every render with two binary searches, so an unchanged visible part reuses the image.
+/// What: The annotations of the materialized rows: their blocks of virtual rows and the diagnostics touching
+///       them, or nothing for stale snapshots; `Arc` lets the frame stamp and the layout share one list.
+/// Why: Computed on every render with binary searches, so an unchanged visible part reuses the image.
+///      `State::blocks` must be current, which `rows::refresh` sees to at the start of every render.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -120,91 +133,65 @@ pub(super) fn colors(window: &AppWindow) -> AnnotationColors {
 /// ```
 pub(super) fn visible(current: &State) -> Arc<Visible> {
     let last = current.first.saturating_add(current.count);
-    let shown = current.annotations.visible(
+    // `partition_point` is a binary search for the first block at or below the first materialized line.
+    let from = current
+        .blocks
+        .partition_point(|block| return block.line < current.first);
+    let mut blocks = Vec::new();
+    for block in &current.blocks[from..] {
+        if block.line >= last {
+            break;
+        }
+        // `Arc::clone` copies the pointer to the shared block, not its rows.
+        blocks.push(Arc::clone(block));
+    }
+    let marks = current.annotations.marks(
         displayed(current),
         current.document.text(),
         current.first,
         last,
     );
-    return Arc::new(shown);
+    return Arc::new(Visible { blocks, marks });
 }
 
-/// What: Marker and hint-box rows for the window, from one positioned frame; the pair is (markers, boxes).
-/// Why: Markers and boxes change only together with the frame, like find rectangles.
+/// What: The problems at the caret as one text, worst first, each spelled out in full; empty when the caret
+///       touches no diagnostic.
+/// Why: The source view's accessible description starts with it, so assistive technology reads every problem
+///      at the caret completely, also one whose message rows are cut. Every render recomputes it, because any
+///      caret movement can enter or leave a range.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function rows(frame: AnnotationFrame): [SourceMarker[], SourceSelection[]];
+/// function problems(current: State): string;
 /// ```
-pub(super) fn rows(frame: &AnnotationFrame) -> (Vec<SourceMarker>, Vec<SourceSelection>) {
-    let mut markers = Vec::new();
-    for marker in &frame.markers {
-        markers.push(SourceMarker {
-            x: marker.x,
-            y: marker.row as f32 * 24.0,
-            // `i32::from` widens the byte rank to the toolkit's integer.
-            severity: i32::from(rank(marker.severity)),
-        });
-    }
-    let mut boxes = Vec::new();
-    for hint in &frame.hints {
-        boxes.push(SourceSelection {
-            x: hint.x,
-            y: hint.row as f32 * 24.0,
-            width: hint.width,
-            height: 24.0,
-        });
-    }
-    return (markers, boxes);
-}
-
-/// What: The caret card's text and the worst severity at the caret; empty text means no card.
-/// Why: Every render recomputes it, because any caret movement can enter or leave a range.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function card(current: State): [string, number];
-/// ```
-pub(super) fn card(current: &State) -> (String, i32) {
+pub(super) fn problems(current: &State) -> String {
     let head = current.document.position().head;
-    let problems = current.annotations.at(displayed(current), head);
+    let found = current.annotations.at(displayed(current), head);
     let mut lines = Vec::new();
-    for problem in problems.iter().take(CARD_PROBLEMS) {
+    for problem in found.iter().take(DESCRIBED_PROBLEMS) {
         lines.push(describe(problem));
     }
-    if problems.len() > CARD_PROBLEMS {
-        lines.push(format!("{} more", problems.len() - CARD_PROBLEMS));
+    if found.len() > DESCRIBED_PROBLEMS {
+        lines.push(format!("{} more", found.len() - DESCRIBED_PROBLEMS));
     }
-    // What: `first()` is the worst problem or nothing; `map_or` reads its rank or answers zero.
-    // Why: The card's stripe uses the worst severity's ink.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const worst = problems[0] ? rank(problems[0].mark.severity) : 0;
-    // ```
-    let worst = problems
-        .first()
-        .map_or(0, |problem| return i32::from(rank(problem.mark.severity)));
-    return (lines.join("\n"), worst);
+    return lines.join("\n");
 }
 
-/// Show the caret card text and severity; an unchanged text leaves the toolkit property alone.
-pub(super) fn present_card(window: &AppWindow, text: String, severity: i32) {
+/// Hand the caret's problems to the window; an unchanged text leaves the toolkit property alone.
+pub(super) fn present_problems(window: &AppWindow, text: String) {
     let shared = SharedString::from(text);
     if window.get_caret_problems() != shared {
         window.set_caret_problems(shared);
     }
-    window.set_caret_problem_severity(severity);
 }
 
-/// What: Right edge of the furthest annotation in logical pixels, or zero without a frame.
-/// Why: The scroll range must reach labels after the widest line.
+/// What: Right edge of the furthest virtual-row text in logical pixels, or zero without a frame.
+/// Why: The scroll range must reach hints and messages that end past the widest line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function extent(frame?: AnnotationFrame): number;
 /// ```
 pub(super) fn extent(frame: Option<&AnnotationFrame>) -> f32 {
-    // A line with only a marker reaches the marker's right edge, which the frame's extent includes.
     return frame.map_or(0.0, |positioned| return positioned.extent);
 }

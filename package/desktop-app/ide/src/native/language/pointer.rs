@@ -86,19 +86,26 @@ impl Rest {
     }
 }
 
-/// What: The source character under a point: `line` is the zero-based source line and `x` the
-///       logical distance from the start of its text, negative over the line numbers.
+/// What: The source character under a point: `y` is the logical distance from the top of the text
+///       and `x` the logical distance from the start of a line's text, negative over the line numbers.
 /// Why: Hover and Ctrl+click ask about the character the pointer is over, not the nearest caret
-///      boundary; a point past the end of a line or over the gutter is over no character.
+///      boundary; a point past the end of a line, over the gutter, below the text, or on a line's
+///      virtual rows (its hints and diagnostic messages) is over no character.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function characterAt(state: State, line: number, x: number): number | undefined
+/// function characterAt(state: State, y: number, x: number): number | undefined
 /// ```
-pub(super) fn character_at(state: &State, line: i32, x: f32) -> Option<usize> {
-    if line < 0 || x < 0.0 {
+pub(super) fn character_at(state: &State, y: f32, x: f32) -> Option<usize> {
+    if y < 0.0 || x < 0.0 || y >= state.row_map.height() {
         return None;
     }
+    // The vertical mapping names the line and tells its code row from the virtual rows above it.
+    let place = state.row_map.locate(y);
+    if place.in_block {
+        return None;
+    }
+    let line = place.line;
     // `?` returns nothing when no rows are shaped yet.
     let view = state.shaped.as_ref()?;
     let scale = view.viewport.scale;
@@ -106,7 +113,7 @@ pub(super) fn character_at(state: &State, line: i32, x: f32) -> Option<usize> {
     let row = view
         .rows
         .iter()
-        .find(|candidate| return candidate.row == line as usize)?;
+        .find(|candidate| return candidate.row == line)?;
     let length = row.source_len();
     let end = row.source_start + length;
     if length == 0 || x >= row.caret_x(end, scale) {

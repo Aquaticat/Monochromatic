@@ -330,11 +330,11 @@ runCargo(['test', '--no-default-features', '--lib', '--test', 'find', '--test', 
 """
 
 [tasks."test:annotations"]
-description = "Check inlay-hint and diagnostic layout, painting, stale-snapshot rejection, and the measured placement probe"
+description = "Check the vertical row mapping, virtual-row rules, inlay-hint and diagnostic layout, painting, stale-snapshot rejection, and the measured placement probe"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['test', '--no-default-features', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'source_frame', '--', '--nocapture'])
+runCargo(['test', '--no-default-features', '--test', 'row_map', '--test', 'virtual_row', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'source_frame', '--', '--nocapture'])
 """
 
 [tasks."test:annotations-native"]
@@ -473,7 +473,9 @@ console.log(JSON.stringify(record, null, 2))
 
 [tasks."lint:slint"]
 description = "Check the native UI declaration"
-run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/query-input.slint", "slint-viewer --check ui/divider.slint", "slint-viewer --check ui/hover.slint", "slint-viewer --check ui/references.slint", "slint-viewer --check ui/annotation.slint"]
+# ui/annotation.slint holds only a global, which the viewer cannot check on its own; app.slint imports it,
+# so the first command checks it too.
+run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/query-input.slint", "slint-viewer --check ui/divider.slint", "slint-viewer --check ui/hover.slint", "slint-viewer --check ui/references.slint"]
 
 [tasks.lint]
 run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rust", "mise run //package/desktop-app/ide:lint:slint"]
@@ -658,39 +660,87 @@ const lines = fixture === 'syntax' ? [
   'describe(猫);',
 ] : ['I am a big cat.', 'Select text and use the native Copy action.', '猫 and é are grapheme test cases.']
 if (fixture === 'scroll') { for (let index = 0; index < 200; index++) { lines.push('Line ' + String(index + 4) + ': smooth pixel scrolling, 猫 and Latin.') } }
-// The annotations fixture: hints and diagnostics are injected from a file through the debug-only inspection path,
-// over a tab, CJK, a combining mark, a ligature, overlapping ranges, a multi-line range, and a point at a line end.
+// The annotations fixture: hints and diagnostics are injected from a file through the debug-only inspection path.
+// Its first lines hold one scene each: several hints on one row, hints that would touch on further rows,
+// a tab and CJK line with a hint and a message, one message, a message of every severity on one line,
+// a long message, a message with line breaks, a range over several lines, and hints together with messages.
+// Further lines make the file long, with hints and messages spread over it and on its last line.
+// IDE_NATIVE_ANNOTATION_DELAYS=HINTS,DIAGNOSTICS makes them arrive that many milliseconds after startup, and
+// IDE_NATIVE_ANNOTATION_RELOAD_DELAYS=HINTS,DIAGNOSTICS makes them arrive again that long after each external reload.
 if (fixture === 'annotations') {
   const tab = String.fromCharCode(9)
+  const newline = String.fromCharCode(10)
   const accent = 'e' + String.fromCharCode(0x301)
   lines.splice(0, lines.length,
-    'const label = "héllo 😀"; const total = area(2, 3);',
-    'const count: number = "not a number";',
+    '// Hints stand on rows above their line, each at the x of its anchor.',
+    'const label = "héllo 😀", count = 3, ratio = 0.5;',
+    'const total = area(2, 3) + area(count, ratio);',
+    'const sized = resize(box(1, 2), 3, 4, 5);',
     tab + 'const 猫 = ' + accent + ' !== x;',
+    '// Diagnostic messages stand on rows of their own, beneath the hint rows.',
+    'const wrong: number = "not a number";',
+    'const every = [first, second, third, fourth, fifth];',
+    'const long = configure({ strict: true });',
+    'const shape: Shape = { kind: "circle", radius: "1" };',
+    'const range = compute(',
+    '  first,',
+    ');',
+    'const mixed = area(count, label);',
     'function area(width: number, height: number): number {',
     '  return width * height;',
     '}')
-  const text = lines.join(String.fromCharCode(10))
-  const at = (needle, within = 0) => { const index = text.indexOf(needle); if (index < 0) { throw new Error('fixture lacks ' + needle) } return [...text.slice(0, index)].length + within }
-  const annotations = {
-    hints: [
-      { position: at('label', 5), label: ': string' },
-      { position: at('total', 5), label: ': number' },
-      { position: at('area(2', 5), label: 'width:' },
-      { position: at('2, 3)', 3), label: 'height:' },
-      { position: at('猫', 1), label: ': boolean' },
-    ],
-    diagnostics: [
-      { source: 'ts', start: at('area(2'), end: at('area(2', 10), severity: 'error', code: '2448', message: "Block-scoped variable 'area' used before its declaration." },
-      { source: 'eslint', start: at('area(2'), end: at('area(2', 10), severity: 'hint', code: 'prefer-const', message: 'Call result could be inlined.' },
-      { source: 'ts', start: at('"not a number"'), end: at('"not a number"', 14), severity: 'error', code: '2322', message: "Type 'string' is not assignable to type 'number'." },
-      { source: 'ts', start: at('"not a number";', 15), end: at('"not a number";', 15), severity: 'information', code: '80001', message: 'A point at the end of the line.' },
-      { source: 'ts', start: at('猫'), end: at('猫', 1), severity: 'warning', code: '6133', message: "'猫' is declared but its value is never read." },
-      { source: 'eslint', start: at(accent), end: at('x;', 1), severity: 'information', code: 'eqeqeq', message: 'Comparison of an accented letter.' },
-      { source: 'eslint', start: at('!=='), end: at('!==', 3), severity: 'hint', code: 'no-ligature', message: 'Strict inequality.' },
-      { source: 'ts', start: at('x;'), end: at('function', 8), severity: 'warning', message: 'This range crosses a line end and has no code.' },
-    ],
+  const scenes = lines.length
+  const filler = 220
+  for (let index = 0; index < filler; index++) { lines.push('const value' + String(index) + ' = area(' + String(index) + ', ' + String(index + 1) + ');') }
+  lines.push('const last = area(7, 8);', 'export const done = last + missing;')
+  const points = (value) => [...value].length
+  const starts = []
+  let total = 0
+  for (const line of lines) { starts.push(total); total += points(line) + 1 }
+  const on = (line, needle, within = 0) => { const index = lines[line].indexOf(needle); if (index < 0) { throw new Error('fixture line ' + String(line) + ' lacks ' + needle) } return starts[line] + points(lines[line].slice(0, index)) + within }
+  const hint = (line, needle, within, label, kind) => ({ position: on(line, needle, within), label, kind })
+  const problem = (line, needle, length, severity, source, code, message) => ({ source, start: on(line, needle), end: on(line, needle, length), severity, code, message })
+  const hints = [
+    hint(1, 'label', 5, ': string', 'type'), hint(1, 'count', 5, ': number', 'type'), hint(1, 'ratio', 5, ': number', 'type'),
+    hint(2, 'total', 5, ': number', 'type'), hint(2, '2,', 0, 'width:', 'parameter'), hint(2, '3)', 0, 'height:', 'parameter'),
+    hint(2, 'count', 0, 'width:', 'parameter'), hint(2, 'ratio', 0, 'height:', 'parameter'),
+    hint(3, 'sized', 5, ': Box', 'type'), hint(3, 'box(', 0, 'shape:', 'parameter'), hint(3, '1,', 0, 'width:', 'parameter'),
+    hint(3, '2)', 0, 'height:', 'parameter'), hint(3, '3,', 0, 'scale:', 'parameter'), hint(3, '4,', 0, 'dx:', 'parameter'), hint(3, '5)', 0, 'dy:', 'parameter'),
+    hint(4, '猫', 1, ': boolean', 'type'),
+    hint(13, 'mixed', 5, ': number', 'type'), hint(13, 'count', 0, 'width:', 'parameter'), hint(13, 'label', 0, 'height:', 'parameter'),
+  ]
+  const diagnostics = [
+    problem(4, '猫', 1, 'warning', 'ts', '6133', "'猫' is declared but its value is never read."),
+    problem(6, '"not a number"', 14, 'error', 'ts', '2322', "Type 'string' is not assignable to type 'number'."),
+    problem(7, 'first', 5, 'error', 'ts', '2304', "Cannot find name 'first'."),
+    problem(7, 'second', 6, 'warning', 'eslint', 'no-undef', "'second' is not defined."),
+    problem(7, 'third', 5, 'information', 'ts', '80001', 'File is a CommonJS module; it may be converted to an ES module.'),
+    problem(7, 'fourth', 6, 'hint', 'ts', '6385', "'fourth' is deprecated."),
+    problem(7, 'fifth', 5, undefined, 'lint', undefined, 'A server may leave the severity out; such a problem is shown as a warning.'),
+    problem(8, '{ strict: true }', 16, 'warning', 'ts', '2345', "Argument of type '{ strict: boolean; }' is not assignable to parameter of type 'Options', because the property 'target' is missing in type '{ strict: boolean; }' but required in type 'Options', which is declared in 'configure.d.ts' and exported again from the entry point of the package."),
+    problem(9, 'shape', 5, 'error', 'ts', '2322', ["Type '{ kind: string; radius: string; }' is not assignable to type 'Shape'.", "  Types of property 'radius' are incompatible.", "    Type 'string' is not assignable to type 'number'."].join(newline)),
+    { source: 'ts', start: on(10, 'compute'), end: on(12, ')', 1), severity: 'error', code: '2554', message: 'Expected 2 arguments, but got 1.' },
+    problem(13, 'label', 5, 'error', 'ts', '2345', "Argument of type 'string' is not assignable to parameter of type 'number'."),
+    problem(13, 'mixed', 5, 'hint', 'eslint', 'no-unused-vars', "'mixed' is assigned a value but never used."),
+  ]
+  for (let index = 0; index < filler; index++) {
+    const line = scenes + index
+    const name = 5 + String(index).length
+    if (index % 6 === 3) { hints.push(hint(line, 'value', name, ': number', 'type')) }
+    if (index % 14 === 5) { hints.push(hint(line, '(', 1, 'width:', 'parameter'), hint(line, ', ', 2, 'height:', 'parameter')) }
+    if (index % 23 === 11) { diagnostics.push(problem(line, 'value', name, 'hint', 'ts', '6133', "'value" + String(index) + "' is declared but its value is never read.")) }
   }
+  const end = lines.length - 1
+  hints.push(hint(end - 1, 'last', 4, ': number', 'type'), hint(end - 1, '7', 0, 'width:', 'parameter'), hint(end - 1, '8', 0, 'height:', 'parameter'), hint(end, 'done', 4, ': number', 'type'))
+  diagnostics.push(problem(end, 'missing', 7, 'error', 'ts', '2304', "Cannot find name 'missing'."))
+  const pair = (name) => {
+    const raw = process.env[name]
+    if (!raw) { return undefined }
+    if (!/^[0-9]+,[0-9]+$/.test(raw)) { throw new Error(name + ' must be HINTS,DIAGNOSTICS in milliseconds') }
+    const [early, late] = raw.split(',').map(Number)
+    return { hints: early, diagnostics: late }
+  }
+  const annotations = { hints, diagnostics, delays: pair('IDE_NATIVE_ANNOTATION_DELAYS'), reload_delays: pair('IDE_NATIVE_ANNOTATION_RELOAD_DELAYS') }
   const annotationFile = join(scratch, 'annotations.json')
   writeFileSync(annotationFile, JSON.stringify(annotations, null, 2))
   env.IDE_INSPECT_ANNOTATIONS = annotationFile
@@ -704,7 +754,10 @@ const compositor = resolve('../../cli/nested-wayland-session/target/release/mono
 // IDE_NATIVE_SIZE starts the nested screen at another size; a locked host session ignores the control socket's resize.
 const size = process.env.IDE_NATIVE_SIZE ?? '1100x660'
 if (!/^[1-9][0-9]*x[1-9][0-9]*$/.test(size)) { throw new Error('IDE_NATIVE_SIZE must be WIDTHxHEIGHT') }
-execFileSync(compositor, ['--socket', socket, '--size', size, '--color-scheme', scheme, '--', resolve('target/debug/monochromatic-ide'), project, '--file', sourceFile], { env, stdio: 'inherit' })
+// IDE_NATIVE_SCALE starts the nested output at another scale; the window keeps its logical size.
+const scale = process.env.IDE_NATIVE_SCALE ?? '1'
+if (!/^[0-9]+([.][0-9]+)?$/.test(scale)) { throw new Error('IDE_NATIVE_SCALE must be a number such as 2 or 1.25') }
+execFileSync(compositor, ['--socket', socket, '--size', size, '--scale', scale, '--color-scheme', scheme, '--', resolve('target/debug/monochromatic-ide'), project, '--file', sourceFile], { env, stdio: 'inherit' })
 """
 
 [tasks.run]

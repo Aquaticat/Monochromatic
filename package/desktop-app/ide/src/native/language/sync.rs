@@ -18,6 +18,8 @@ use crate::native::{AppWindow, State};
 use anyhow::Result;
 /// Commands and the identities they carry.
 use ide_app::language::{hints::HintWindow, identity::DocumentStamp, sync::DocumentOpen};
+/// One code row is the least a line takes, which bounds how many lines the view can show.
+use ide_app::row_map::CODE_ROW;
 /// What: `Rc<RefCell<State>>` is the window's shared source state; `Duration` and `Instant`
 ///       measure how long the visible lines stayed the same.
 /// Why: The reload record is taken out of the source state once the worker accepted it.
@@ -119,19 +121,24 @@ pub(super) fn update(language: &mut Language, source: &Rc<RefCell<State>>) -> Re
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function hints(language: Language, window: AppWindow, stamp: DocumentStamp): void
+/// function hints(language: Language, window: AppWindow, source: Shared<State>, stamp: DocumentStamp): void
 /// ```
 pub(super) fn hints(
     language: &mut Language,
     window: &AppWindow,
+    source: &Rc<RefCell<State>>,
     stamp: DocumentStamp,
 ) -> Result<()> {
     let Some(worker) = language.worker.as_mut() else {
         return Ok(());
     };
-    // `as usize` truncates the non-negative line count; at least one line is always in view.
-    let first_line = ((-window.get_scroll_y()).max(0.0) / 24.0) as usize;
-    let visible_lines = ((window.get_viewport_height() / 24.0).ceil() as usize).max(1);
+    // The vertical mapping names the line at the top edge of the view. Every line takes at least one code
+    // row, so the view height in code rows is the most lines it can show; `as usize` truncates that count.
+    let first_line = source
+        .borrow()
+        .row_map
+        .line_at((-window.get_scroll_y()).max(0.0));
+    let visible_lines = ((window.get_viewport_height() / CODE_ROW).ceil() as usize).max(1);
     let wanted = HintWindow {
         first_line,
         visible_lines,
