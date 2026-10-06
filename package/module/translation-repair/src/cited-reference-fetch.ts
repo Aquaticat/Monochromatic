@@ -10,6 +10,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import { readMaskedJsonBody, } from './masked-json-body.ts';
 
 /**
  Where the contents endpoint lives.
@@ -311,6 +312,10 @@ async function sendContentsRequest(
  Reads the answer's body as JSON, a refusal naming the endpoint where the
  connection fails while the body arrives.
 
+ A CREDENTIAL THE REQUEST CARRIED IS MASKED OUT OF THE TEXT before it is
+ parsed (`masked-json-body.ts`), since what is read here is kept in a sheet
+ and in a cache.
+
  A BODY THAT IS NOT JSON is the parser's `SyntaxError` and passes on
  unchanged: its message quotes the text it refused, so the log names its class
  alone (ledger B166). An abort passes on unchanged too.
@@ -318,6 +323,9 @@ async function sendContentsRequest(
  @param response - the endpoint's answer, status already checked
 
  @param signal - the call's abort
+
+ @param headers - headers the request carried, which name the credentials
+ the body must not repeat
 
  @returns The parsed body
 
@@ -328,20 +336,25 @@ async function sendContentsRequest(
 
  @example
  ```ts
- const parsed = await readContentsBody({ response, signal, },);
+ const parsed = await readContentsBody({ response, signal, headers, },);
  ```
  */
 async function readContentsBody(
   {
     response,
     signal,
+    headers,
   }: {
     readonly response: Response;
     readonly signal: AbortSignal;
+    readonly headers: Readonly<Record<string, string>>;
   },
 ): Promise<unknown> {
   try {
-    return await response.json();
+    return await readMaskedJsonBody({
+      response,
+      headers,
+    },);
   } catch (error) {
     if (signal.aborted || (error instanceof SyntaxError))
       throw error;
@@ -388,17 +401,22 @@ export async function fetchCitedReference(
   },
 ): Promise<FetchedReference> {
   /**
+   Headers of the request, which name the credential its answer must not repeat.
+   */
+  const headers = {
+    'x-api-key': apiKey,
+    'content-type': 'application/json',
+    accept: 'application/json',
+  };
+
+  /**
    Endpoint's answer.
    */
   const response = await sendContentsRequest({
     fetchFn,
     init: {
       method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'content-type': 'application/json',
-        accept: 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         urls: [url,],
         text: { maxCharacters: REFERENCE_TEXT_CHARACTERS, },
@@ -417,6 +435,7 @@ export async function fetchCitedReference(
   const parsed = await readContentsBody({
     response,
     signal,
+    headers,
   },);
   return fetchedOf({ parsed, },);
 }

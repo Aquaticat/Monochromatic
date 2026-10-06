@@ -1,5 +1,6 @@
 import { isJsonRecord, } from './json-guard.ts';
 import type { LookupHit, } from './lookup-cache.ts';
+import { readMaskedJsonBody, } from './masked-json-body.ts';
 
 //region Work-title search
 // One call to the Exa search endpoint for one title.
@@ -189,6 +190,10 @@ async function sendSearch(
  Reads the answer's body as JSON, a refusal naming the endpoint where the
  connection fails while the body arrives.
 
+ A CREDENTIAL THE REQUEST CARRIED IS MASKED OUT OF THE TEXT before it is
+ parsed (`masked-json-body.ts`), since what is read here is kept in a sheet
+ and in a cache.
+
  A BODY THAT IS NOT JSON is the parser's `SyntaxError` and passes on
  unchanged: its message quotes the text it refused, so the log names its class
  alone (ledger B166). An abort passes on unchanged too.
@@ -196,6 +201,9 @@ async function sendSearch(
  @param response - the endpoint's answer, status already checked
 
  @param signal - the call's abort
+
+ @param headers - headers the request carried, which name the credentials
+ the body must not repeat
 
  @returns The parsed body
 
@@ -206,20 +214,25 @@ async function sendSearch(
 
  @example
  ```ts
- const parsed = await readSearchBody({ response, signal, },);
+ const parsed = await readSearchBody({ response, signal, headers, },);
  ```
  */
 async function readSearchBody(
   {
     response,
     signal,
+    headers,
   }: {
     readonly response: Response;
     readonly signal: AbortSignal;
+    readonly headers: Readonly<Record<string, string>>;
   },
 ): Promise<unknown> {
   try {
-    return await response.json();
+    return await readMaskedJsonBody({
+      response,
+      headers,
+    },);
   } catch (error) {
     if (signal.aborted || (error instanceof SyntaxError))
       throw error;
@@ -266,17 +279,22 @@ export async function searchWorkTitle(
   },
 ): Promise<readonly LookupHit[]> {
   /**
+   Headers of the request, which name the credential its answer must not repeat.
+   */
+  const headers = {
+    'x-api-key': apiKey,
+    'content-type': 'application/json',
+    accept: 'application/json',
+  };
+
+  /**
    Endpoint's answer.
    */
   const response = await sendSearch({
     fetchFn,
     init: {
       method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'content-type': 'application/json',
-        accept: 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         query,
         type: 'auto',
@@ -302,6 +320,7 @@ export async function searchWorkTitle(
   const parsed = await readSearchBody({
     response,
     signal,
+    headers,
   },);
   if (!isJsonRecord(parsed,)) {
     throw new WorkTitleLookupError({ detail: 'answered with a body that is not an object', },);

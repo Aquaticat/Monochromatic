@@ -44,6 +44,7 @@ export {
   searchWorkTitle,
   WorkTitleLookupError,
 } from './work-title-search.ts';
+export { readMaskedJsonBody, } from './masked-json-body.ts';
 export {
   lookupLinesOf,
   lookupWorkTitle,
