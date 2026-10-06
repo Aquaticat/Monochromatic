@@ -57,11 +57,14 @@ fn negation_cannot_reach_below_an_excluded_directory() {
     ));
 }
 
-/// No patterns, comments and blank lines exclude nothing.
+/// No patterns, comments and blank lines exclude nothing; an empty pathname, which names
+/// no file, is never excluded even by a pattern that matches everything.
 #[test]
 fn nothing_excludes_nothing() {
     assert!(!excluded(&[], b"a.md"));
     assert!(!excluded(&["# a.md", "", "   "], b"a.md"));
+    assert!(excluded(&["*"], b"a.md"));
+    assert!(!excluded(&["*"], b""));
 }
 
 /// A name that is not UTF-8 is matched by its directories and by wildcards, byte for byte.
