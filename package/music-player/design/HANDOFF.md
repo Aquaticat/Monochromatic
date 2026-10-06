@@ -169,15 +169,12 @@ so long runs now go in their own user unit:
 `systemd-run --user --unit=<name> --collect --wait --property=MemoryMax=2G <command>`,
 with `wait-for-unit.ts <unit> <pattern>` to wait for it.
 
+The human approved the declined state as built (D101) and added the rule on long runs to the `CLAUDE.md` preamble in `file-enforcer.config.ts`.
+The first-run page shows the declined state as approved.
+
 Next:
-ask the human,
-through the question tool,
-to approve the declined state's version
-(title,
-body,
-button order,
-blank left half,
-and that `Allow access` can only open Android's settings once Android stops showing its prompt).
+the remaining open questions in `open-questions.md`;
+nothing from this round waits on the human.
 
 To capture again,
 from `~/temp/agent`:

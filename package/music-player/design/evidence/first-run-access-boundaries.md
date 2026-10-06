@@ -49,7 +49,7 @@ The study was rebuilt for that on 2026-10-06.
 The declined state's wording,
 button order and blank left half are the agent's version,
 proposed in the continuation plan under `Rebuild for D100`,
-and await the human's approval.
+and the human approved them as built (D101).
 
 ## Fresh source boundary
 
@@ -204,10 +204,9 @@ hierarchies and logs remain private.
 ## Review and lifecycle
 
 [The first-run evidence review](../questions/first-run-access.html)
-shows the three states and a section for approval of the declined state's version.
-It asks nothing itself;
-approval is asked through the question tool,
-and its last field takes optional observations.
+shows the three states and the declined state's version as approved (D101).
+It asks nothing;
+its last field takes optional observations.
 It says that analysis is automatic and not optional,
 and it shows a second view only where content moved.
 [The verification record](../questions/evidence/first-run-access-review-verification.json)
@@ -225,7 +224,7 @@ hierarchy's scrolling mark,
 a page that names a visit count its views do not have,
 a figure for a state that is not authored,
 a state without its figure,
-and a page without the section for approval.
+and a page without the section on the approved declined state.
 `test:first-run:access` rejects 14 changed manifests and 4 changed pages,
 accepts a synthetic second view with a displaced body and refuses one without,
 and rejects a ballot,

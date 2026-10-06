@@ -38,7 +38,7 @@ a library is always open,
 so the declined state shows the device music library as open but unreadable,
 with `Allow access` and `Open a folder`,
 and the state with no source opened is gone.
-That state's wording and layout are the agent's version and await approval.
+That state's wording and layout were approved as built (D101).
 The source states are authored inputs,
 not production permission/discovery evaluation or recovery acceptance.
 The owned native runtime was stopped after restoring its recorded fields.
