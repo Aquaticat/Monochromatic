@@ -1,7 +1,7 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
 import { Palette } from "std-widgets.slint";
 import { ProjectTree, TreeEntry } from "tree.slint";
-import { SidebarDivider } from "divider.slint";
+import { SidebarDivider, SidebarDividerGrip } from "divider.slint";
 import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
 import { LanguagePopup } from "hover.slint";
@@ -63,8 +63,13 @@ export component AppWindow inherits Window {
     out property <bool> sidebar-divider-has-focus: sidebar-divider.has-focus;
     private property <length> sidebar-minimum-width: 160px;
     private property <length> source-minimum-width: 240px;
-    // The divider is its own layout cell at the minimum interactive size, so it never covers tree rows or source.
-    private property <length> divider-width: 48px;
+    // The divider's layout cell is only its 1px line. Its pointer zone is the grip placed over the layout,
+    // which also covers the tree's last columns and the source column's first ones (`SidebarDividerGrip.reach`).
+    private property <length> divider-width: 1px;
+    // Drag, keys, and accessibility actions cannot store a width outside the range that can be shown now.
+    function resize-sidebar(width: length) {
+        root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);
+    }
 
     in-out property <bool> search-open;
     in-out property <string> search-query;
@@ -91,6 +96,17 @@ export component AppWindow inherits Window {
     in property <bool> find-no-match;
     in property <string> find-error;
     out property <bool> find-has-focus: find-bar.query-has-focus;
+    // The 48px clear cells of the find text and the search query, in window coordinates, for geometry checks.
+    out property <bool> find-clear-shown: find-bar.clear-shown;
+    out property <length> find-clear-x: find-bar.clear-x;
+    out property <length> find-clear-y: find-bar.clear-y;
+    out property <length> find-clear-width: find-bar.clear-width;
+    out property <length> find-clear-height: find-bar.clear-height;
+    out property <bool> search-clear-shown: search-panel.clear-shown;
+    out property <length> search-clear-x: search-panel.clear-x;
+    out property <length> search-clear-y: search-panel.clear-y;
+    out property <length> search-clear-width: search-panel.clear-width;
+    out property <length> search-clear-height: search-panel.clear-height;
     callback find-request;
     callback find-edited(string);
     callback find-navigate(int);
@@ -150,6 +166,12 @@ export component AppWindow inherits Window {
     // Native code picks the selected-text ink from this fill, because the palette's ink follows the scheme instead.
     out property <brush> selection-fill: Palette.selection-background;
     out property <bool> dark-scheme: Palette.color-scheme == ColorScheme.dark;
+    // Ink for selected rows of the tree, the search results, and the location list. Native code sets it to
+    // the ink it chooses from the selection fill, the same one selected source text is drawn in.
+    in property <brush> selected-row-ink: Palette.selection-foreground;
+    // Tint of a hovered or focused selected tree row. Native code sets it to the opposite of that ink,
+    // so the tint never moves the fill toward the text.
+    in property <brush> selected-row-tint: Palette.foreground;
     // Inlay hints and diagnostics: native code reads these inks for the source raster, so hints and underlines
     // follow the scheme like the markers drawn here.
     out property <brush> hint-ink: AnnotationInk.hint;
@@ -253,23 +275,23 @@ export component AppWindow inherits Window {
             project-path: root.project-path;
             error-message: root.tree-error;
             focused-row <=> root.tree-focused-row;
+            selected-ink: root.selected-row-ink;
+            selected-tint: root.selected-row-tint;
             activate(index) => { root.tree-activate(index); }
             user-focus(index) => { root.tree-user-focus(index); }
             navigate(key, index) => { root.tree-navigate(key, index); }
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
+        // The keyboard half of the divider: this cell keeps the Tab order tree, divider, source.
         sidebar-divider := SidebarDivider {
-            // An invisible divider takes no pointer input and is not a Tab stop.
+            // An invisible divider is not a Tab stop.
             visible: root.project-visible;
             min-width: root.project-visible ? root.divider-width : 0px;
             max-width: root.project-visible ? root.divider-width : 0px;
             value: root.sidebar-width;
             minimum: root.sidebar-minimum-width;
             maximum: root.sidebar-maximum-width;
-            resize(width) => {
-                // Drag and keys cannot store a width outside the range that can be shown now.
-                root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);
-            }
+            resize(width) => { root.resize-sidebar(width); }
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
         VerticalLayout {
@@ -520,6 +542,18 @@ export component AppWindow inherits Window {
             }
         }
     }
+    // The pointer half of the divider. It is declared after the layout, so inside its zone it is above the
+    // tree and the source and takes the pointer first; the language and search surfaces are above it.
+    SidebarDividerGrip {
+        // An invisible grip takes no pointer input.
+        visible: root.project-visible;
+        x: project-tree.width - self.reach;
+        y: 0px;
+        height: parent.height;
+        value: root.sidebar-width;
+        keyboard-focus: sidebar-divider.has-focus;
+        resize(width) => { root.resize-sidebar(width); }
+    }
     language-popup := LanguagePopup {
         text: root.language-popup-text;
         note: root.language-popup-note;
@@ -539,6 +573,7 @@ export component AppWindow inherits Window {
             entries: root.references-entries;
             title: root.references-title;
             selected-row <=> root.references-selected;
+            selected-ink: root.selected-row-ink;
             anchor-x: root.language-anchor-left;
             anchor-top: root.language-anchor-top;
             anchor-bottom: root.language-anchor-top + root.line-height;
@@ -562,6 +597,7 @@ export component AppWindow inherits Window {
             entries: root.search-entries;
             query <=> root.search-query;
             selected-row <=> root.search-selected;
+            selected-ink: root.selected-row-ink;
             scope-label: root.search-scope;
             error-message: root.search-error;
             busy: root.search-busy;

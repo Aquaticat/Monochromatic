@@ -60,6 +60,9 @@ pub mod sync;
 /// Which directory Helix would root a server at, checked before anything is spawned.
 mod root;
 
+/// Answers a server still owes for the displayed text, and the bounded rule for asking again.
+mod owed;
+
 /// What the worker thread remembers.
 mod session;
 
@@ -74,6 +77,9 @@ mod request;
 
 /// Server-to-client traffic.
 mod traffic;
+
+/// The wait until every server process the worker started has been reaped.
+mod reap;
 
 /// The worker thread and its loop.
 mod worker;

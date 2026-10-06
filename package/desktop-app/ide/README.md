@@ -57,7 +57,7 @@ Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
 
 Drag the divider between the tree and the source to resize the tree.
 The width starts at 256 px,
-stays between 160 px and the window width minus the divider and a 240 px source column,
+stays between 160 px and the window width minus the divider's 1 px line and a 240 px source column,
 and lasts for the session only.
 A window too narrow for the chosen width shows the tree narrower,
 down to 160 px,
@@ -78,20 +78,97 @@ and set-value actions;
 Slint 1.18.1 has no splitter or separator role.
 A pointer press never takes keyboard focus.
 
-The idle divider is a faint 1 px line.
-Hover shows the column-resize cursor and a 3 px line in stronger ink;
-a drag keeps the 3 px line in full ink;
-keyboard focus adds a boundary around the whole divider.
+The divider is a 1 px line with no strip beside it.
+Each state is marked by more than color:
+
+- at rest,
+  one faint column;
+- under the pointer,
+  the column-resize cursor and three columns in stronger ink;
+- during a drag,
+  the cursor and three columns in full ink;
+- with keyboard focus,
+  three columns in the accent color
+  and a 5 px by 48 px handle in the same color in the middle of the line.
 
 ### Divider hit area
 
-The divider is its own 48 px layout cell between the tree and the source,
-and its pointer area is exactly that cell.
-It never overlaps tree rows,
-the tree scrollbar,
-or source text,
-so the last tree pixel and the first source pixel keep their own clicks.
-The cost is 47 px of permanent spacing beside the 1 px line.
+The divider's layout cell is its 1 px line,
+so the tree and the source column meet at it.
+Its pointer zone is 5 px wide over the whole window height:
+the line's column and two columns on each side.
+At sidebar width `W` those are the tree's last columns `W-2` and `W-1`,
+the line at `W`,
+and the source column's first columns `W+1` and `W+2`.
+A press there starts a drag and does nothing else.
+The zone takes presses only:
+a wheel turn over it scrolls the tree or the source under it.
+
+The zone is narrower than the 48 px minimum that every other interactive element of this application keeps.
+The user decided this on 2026-10-05 for this one element:
+the application runs on desktops only,
+every desktop has a pointer and a keyboard,
+dragging the divider is rare,
+and the width is also adjustable by keyboard.
+The exception does not extend to any other element.
+
+What the zone covers,
+measured in `ui/tree.slint`,
+`ui/app.slint`,
+and the toolkit's fluent scroll bar (Slint 1.18.1 `widgets/fluent/scrollview.slint`):
+
+- Tree columns `W-2` and `W-1`.
+  Rows span the whole tree width,
+  and their text ends 12 px before the edge,
+  so a row loses two columns of padding as a click target.
+  When the tree overflows,
+  its 14 px scroll bar lies over columns `W-14` to `W-1`.
+  The thumb is drawn in columns `W-6` and `W-5`,
+  or `W-10` to `W-5` under the pointer,
+  and the arrow buttons take columns `W-11` to `W-4`,
+  so the zone covers none of them.
+  The bar scrolls by a drag that starts anywhere on its width;
+  such a drag can no longer start on its last two columns.
+- Source columns `W+1` and `W+2`.
+  They are the first two of the 56 px line-number gutter.
+  Line numbers are right-aligned and end 12 px before the text,
+  and a gutter click puts the caret at the start of its line from any gutter column.
+  Source text and selection rectangles start at `W+57`.
+  Above and under the source view the zone lies in the 12 px padding of the file label and of the find bar.
+
+### Pointer zone precedent
+
+The zone's width follows desktop toolkits,
+read from their sources on 2026-10-05:
+
+- Qt gives a splitter handle narrower than 4 px a grab area of 4 or 5 px:
+  `QSplitterHandle::resizeEvent` adds `(5 - handleWidth) / 2` px of margin on each side,
+  5 px for a 1 px handle
+  (`qt/qtbase` at `f127f11f`, `src/widgets/widgets/qsplitter.cpp` lines 208 to 221).
+  KDE's Breeze style sets the handle width to 1 px
+  (`KDE/breeze` at `fab6402a`, `kstyle/breezemetrics.h` line 169),
+  so Breeze applications show a 1 px line with that 5 px grab area.
+  Once the pointer is on a handle,
+  Breeze also places a 24 px square proxy under it that keeps the drag reachable
+  (`kstyle/breezesplitterproxy.cpp` line 312,
+  `SplitterProxyWidth` 12 in `kstyle/breeze.kcfg`).
+  Qt's Fusion style uses a 4 px handle
+  (`src/widgets/styles/qfusionstyle.cpp` lines 2630 to 2632).
+- Visual Studio Code's sash is 4 px wide and centered on the boundary
+  (`microsoft/vscode` at `729f257f`,
+  `workbench.sash.size` default 4 in `src/vs/workbench/contrib/sash/browser/sash.contribution.ts` lines 22 to 26,
+  `src/vs/base/browser/ui/sash/sash.ts` lines 147 and 667).
+- GTK 4 extends a paned separator's pointer area by 6 px on every side unless `wide-handle` is set
+  (`GNOME/gtk` at `c2a232c4`, `gtk/gtkpaned.c` lines 131 and 297 to 310),
+  and libadwaita draws the separator 1 px wide
+  (`GNOME/libadwaita` at `19098711`, `src/stylesheet/widgets/_paned.scss` lines 2 to 4),
+  which makes 13 px.
+
+Qt's 5 px for a 1 px handle is used.
+Visual Studio Code's 4 px cannot be centered on a 1 px line.
+GTK's 6 px on the tree side would cover the scroll bar's thumb in columns `W-6` and `W-5`.
+Three columns on each side would still clear the thumb and the arrow buttons;
+four would cover the buttons' last column.
 
 ### Differences from editord
 
@@ -109,11 +186,17 @@ and keyboard adjustment.
 
 ### Sidebar checks
 
-`test:native` drives the divider with real pointer and key events,
-including clicks on the pixels on both sides of it at the default,
+`test:native` drives the divider with real pointer and key events:
+a drag from each of the zone's five columns and from the first column on each side of it,
+clicks on the zone and on the pixels beside it at the default,
 narrowest,
-and widest widths.
-`inspect:sidebar-guards` removes each width bound in a disposable copy
+and widest widths,
+a tree scroll-bar drag from the last column left of the zone,
+a wheel turn over the zone's tree columns and source columns,
+and the rendered columns of every state.
+`inspect:sidebar-guards` removes each width bound,
+each edge of the zone,
+and each keyboard-focus mark in a disposable copy
 and checks that its named test fails.
 
 ## Combined search
@@ -279,10 +362,10 @@ and the active match is the reading selection while the bar is still open.
   The offsets are assigned directly,
    without easing.
 - The find text is one line;
-  the toolkit input replaces pasted line breaks with spaces.
-- The find input is the toolkit `LineEdit`,
-  as in combined search,
-  including its built-in clear icon while it has focus and text.
+  the toolkit's `TextInput` replaces pasted line breaks with spaces.
+- The find input is the application's own text box,
+  the same one combined search uses;
+  see [Find and search text box](#find-and-search-text-box).
 
 ### Find painting
 
@@ -332,6 +415,125 @@ including reload,
  and the search overlay.
 `inspect:find-guards` removes each guard in a disposable copy and checks that its named test fails.
 
+## Find and search text box
+
+The find text and the search query are edited in `QueryInput` (`ui/query-input.slint`),
+a single-line box built on the toolkit's `TextInput` item.
+It replaces the toolkit's fluent `LineEdit` because of that widget's clear control:
+a cell 16 px wide whose width cannot be set from outside
+(Slint 1.18.1 `widgets/fluent/lineedit.slint` lines 58 to 67,
+`widgets/common/lineedit-base.slint` lines 189 to 196).
+The user decided on 2026-10-05 to keep the control and give it a click target of at least 48 px by 48 px.
+
+### Clear control
+
+The x at the trailing end of the box empties the text.
+Its click target is a 48 px by 48 px layout cell of the box:
+the glyph is 16 px in the middle,
+and the rest of the cell is padding that takes the click.
+Being a layout cell,
+it is never drawn over the text or over anything beside the box.
+While the control is hidden,
+the same cell is the box's 12 px trailing padding.
+
+The control follows the toolkit's rule for when it exists:
+the box has text,
+is enabled,
+and has keyboard focus.
+A click empties the text,
+reports the edit,
+so the find count and highlights or the search results go with it,
+and leaves keyboard focus in the box.
+A press released outside the cell clears nothing.
+As in the toolkit,
+the control is not a Tab stop;
+from the keyboard,
+Ctrl+A and Delete empty the box.
+
+Each pointer state has two marks:
+
+- at rest,
+  the glyph alone;
+- under the pointer,
+  a filled plate with a 1 px boundary;
+- pressed,
+  a stronger fill and a 2 px boundary.
+
+Accessibility tools see a `button` named `Clear find text` or `Clear search query`
+whose default action clears.
+The toolkit's control is not exposed to them at all.
+
+### Behavior kept from the toolkit box
+
+Read from `widgets/common/lineedit-base.slint` and `widgets/fluent/lineedit.slint` of Slint 1.18.1:
+
+- The placeholder shows while the text and any input-method composition are both empty.
+- Selected text has the palette's selection fill and the palette's accent ink,
+  which is black in the dark scheme and white in the light one.
+  The source view and selected rows choose their ink from the fill instead;
+  see [Selected text ink](#selected-text-ink).
+- A text wider than the box scrolls with the caret:
+  while the caret moves through the text it stays 24 px inside the text area,
+  and the end of the text reaches the area's edge.
+- A right click opens a menu with Undo,
+  Redo,
+  Cut,
+  Copy,
+  Paste,
+  and Select All;
+  Copy and Select All are disabled while the box is empty.
+- Editing keys,
+  clipboard shortcuts,
+  undo,
+  redo,
+  and input-method composition are `TextInput`'s own
+  (`i-slint-core` 1.18.1 `items/text.rs`),
+  so they are the same in both boxes.
+- Focus is marked by a 2 px accent line along the bottom edge and a different fill.
+- Accessibility tools see a `text-input` with its label,
+  value,
+  placeholder,
+  and enabled state,
+  and can set the value and the selection.
+
+Not carried over,
+because nothing here uses them:
+the password and read-only modes,
+the `accepted` callback,
+and the key callbacks.
+
+### Text box checks
+
+`test:native` drives both boxes with real window events:
+
+- a click on each corner pixel and on the center of the find box's clear cell clears,
+  a click one pixel outside each edge does not,
+  the cell's measured size is 48 px by 48 px,
+  and clearing keeps focus and removes the find count and the highlights;
+- the search box's clear cell has the same size,
+  and clearing removes the results and keeps focus;
+- editing keys,
+  every entry of the context menu,
+  and scrolling of a text wider than the box,
+  which never reaches the clear cell;
+- rendered pixels in both schemes:
+  placeholder,
+  focus marks,
+  selection colors,
+  and the clear control's three states.
+
+`inspect:find-guards` and `inspect:search-guards` remove the cell's size,
+its whole-cell click target,
+its edit report,
+and each half of its shown rule in a disposable copy
+and check that the named tests fail.
+Input-method composition was not exercised:
+the toolkit's public window events carry no composition event,
+and the nested compositor provides no input method.
+Accessible properties were read from the running application
+through the toolkit's inspection server during the native frame captures;
+see `design/README.md`.
+
 ## Language module
 
 The headless core in `src/language` drives Helix's language-server client on one worker thread.
@@ -355,6 +557,23 @@ A command method returns `false` when the queue is full;
 `enter_project_directory` must run once at startup,
  before any thread or Helix call,
 because Helix roots every server at the process working directory.
+
+Inlay hints and pull diagnostics are requests the worker makes on its own:
+when a file is displayed,
+ after a reload,
+ and when `request_hints` reports the visible lines.
+Nobody else would ask again,
+so a request the server supersedes (`-32801` or `-32800`)
+or leaves unanswered for its whole request timeout
+is sent again up to 3 times,
+and a hint request names the lines reported last.
+After that the server owes the answer (`src/language/owed.rs`):
+its next message of any kind makes the worker ask once more,
+at most 3 times for one displayed text.
+A failure the server states itself is final for that text.
+A definition,
+ references,
+ or hover request that times out is reported to its caller as a timeout and is not sent again.
 
 The TypeScript family uses the project's own TypeScript 7 server (`node_modules/typescript/bin/tsc --lsp --stdio`);
 a project without it shows the missing-executable state.
@@ -390,6 +609,11 @@ nothing falls back to an unconfined launch.
 
 `test:language` runs the unit rules and sessions against the scripted server `ide-scripted-lsp`,
 one child process per session.
+`IDE_SCRIPTED_STALL_AT` and `IDE_SCRIPTED_STALL_MS` hold the scripted server's read loop once,
+before the first message of the named method,
+so `tests/language/again.rs` makes a request time out without any load on the machine.
+`IDE_LANGUAGE_TEST_LOG=1` makes a session print the worker's debug log
+and the helix-lsp protocol log to standard error.
 `inspect:language` runs all five feature paths,
  a reload,
  and the stale-reply case
@@ -404,8 +628,51 @@ the mount and environment audits,
 and the same fixtures unconfined as the guard control.
 `inspect:language-guards` removes the fencing,
  readiness,
- and edit-refusal guards in a disposable copy
+ edit-refusal,
+ and ask-again guards in a disposable copy
 and checks that their named tests fail.
+
+`inspect:language-lifecycle` opens a file,
+sends one hover,
+closes,
+and lets the worker shut down against the same real confined servers.
+It fails on any ERROR-level record,
+on bare shutdown error text such as `context canceled`,
+and on any leftover process.
+Its second part ends the application process with `SIGKILL`
+and records which server and sandbox processes remain after 0, 1, 5, and 10 seconds.
+The quiet-shutdown checks fail at present, for causes outside this package:
+`helix-lsp` logs server standard-error lines,
+the end of that stream,
+and error responses at ERROR
+(`doc/troubleshooting/helix-lsp-transport-error-level-records.md`);
+the TypeScript 7 server reports its own exit as `context canceled`
+(`doc/troubleshooting/typescript-7-lsp-exit-context-canceled.md`);
+and rust-analyzer warns about a user configuration file that does not exist
+(`doc/troubleshooting/rust-analyzer-notify-missing-user-config.md`).
+`tests/language/quiet.rs` is the scripted-server form in the container suite:
+the enforced test allows `helix-lsp`'s end-of-stream record and nothing else at ERROR,
+and the ignored strict test is the acceptance test for whichever handling is adopted.
+`inspect:language-lifecycle-guards` observes both in a disposable copy,
+together with the worker's shutdown request,
+its wait for servers to end,
+and its reaping.
+
+When its handle is dropped,
+the worker sends `shutdown` and `exit` to every server,
+waits up to one second for the processes to end,
+and drops its runtime, which kills every server that is left.
+It then waits, for at most two more seconds,
+until the kernel lists no child process of the worker thread (`src/language/reap.rs`),
+so an ended server is not left in the process table as a zombie.
+`lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns` covers a server
+that ignores `exit` and the end of its input (`IDE_SCRIPTED_LINGER=1`).
+A killed process that the kernel needs more than two seconds to end,
+which was seen in measurements where processes stalled for seconds,
+stays a zombie until the application exits.
+`inspect:language-reap-rate` counts leftover processes by kind over many lifetimes,
+with the reaping and with the fixed 50 ms pause it replaced;
+`doc/troubleshooting/tokio-dropped-child-zombie-after-last-park.md` has the source trace and the measurements.
 
 ## Language navigation
 
@@ -453,7 +720,8 @@ as with the search overlay.
 Rows are 48 px tall;
 the selected row has the selection fill,
 a heavier weight,
-and a boundary.
+and a boundary,
+and its text is drawn in the ink described under [Selected rows](#selected-rows).
 Accessibility tools see a `list` named by the title,
 with `list-item` rows that report their selection and open on their default action.
 
@@ -527,9 +795,11 @@ Each note names the reason and the remedy:
   followed,
   while the server reports work in progress,
   by the advice to press the key again when it finishes;
+- a server that was not started because it could not be confined:
+  `typescript-native was not started, so go to definition is not available for this file:`
+  followed by the cause and, last, the remedy the launch policy names;
 - a server that cannot follow external changes,
   a failed start,
-  a launch the policy refused,
   a server root outside the project,
   and a file outside the project with no running server of its language;
 - a file without a recognized language or without a configured server;
@@ -849,6 +1119,40 @@ not automatic optical sizing.
 Idle DPI changes are covered by a native headless window-event regression.
 Live system-theme change and physical-output scale migration remain to be verified.
 
+### Selected rows
+
+The selected row of the tree,
+of the search results,
+and of the location list draws its text and marks in the ink native code chooses from the selection fill.
+It is the rule of [Selected text ink](#selected-text-ink) in `src/selection_ink.rs`,
+applied in `src/native/render.rs`.
+With the fluent palette that ink is white on `#0078D4` in both color schemes,
+where the palette's own selection ink is black in the dark scheme.
+The user chose this on 2026-10-05.
+
+Measured on rendered frames in both schemes
+by `selected_rows_use_the_ink_chosen_from_the_fill_with_measured_contrast`:
+
+- White on the fill reaches 4.53:1.
+  That holds for the tree's file name,
+  its slot badge,
+  the location list's label and detail,
+  and both lines of a search result,
+  whether or not the list has keyboard focus.
+  No part of a selected row is dimmed:
+  all of it uses the one ink at full opacity.
+- A selected tree row under the pointer or with keyboard focus is tinted.
+  The tint is the opposite of the ink,
+  black under white ink,
+  so it moves the fill away from the text:
+  the fill becomes `#006EC3` and the ratio 5.23:1.
+  Tinted with the foreground ink,
+  as unselected rows are,
+  the dark scheme's fill became `#1482D7` and the ratio fell to 4.04:1.
+
+`inspect:theme-guards` removes the ink choice and reverses the tint in a disposable copy
+and checks that the test fails.
+
 ## Source view keys
 
 The source view is read-only:
@@ -1037,10 +1341,18 @@ a removal,
 and a permission change are read at once.
 A write that is still open,
 including the truncation that starts an in-place save,
-and a newly created file are read once 150 ms pass without another write,
-and at most 250 ms after the first.
+and a newly created file are read once 50 ms pass without another write,
+and at most 100 ms after the first.
+The user chose both values on 2026-10-05.
+While such a write waits,
+neither the safety sweep (the periodic reread in [Recovery and timers](#recovery-and-timers))
+nor a highlighting request reads the file.
 The latest notification decides,
 so a save that deletes and rewrites the file waits for the rewrite.
+A writer that leaves the file unfinished for longer than the quiet period is read mid-write,
+and read again when it closes the file.
+A sweep read can also meet a save that began within the last timer tick;
+see [Measured write wait](#measured-write-wait).
 
 ### Recovery and timers
 
@@ -1058,18 +1370,40 @@ because inotify keeps following the moved directory under its old name.
 A shown item without a live watch keeps the previous timers:
 the displayed file every 250 ms,
 and unwatched folders one at a time every 500 ms.
-Failed watches are retried every 10 s.
+Failed watches are retried at each safety sweep,
+while anything shown lacks a watch.
+A failure is logged and followed by the full reread once,
+and again only when its error text changes;
+a watch that works again is logged once.
 
-Every 10 s,
+Every second,
 every shown folder and the displayed file are reread anyway,
-after all notified work.
+after all notified work:
+the safety sweep.
+The user chose the 1 s interval on 2026-10-05.
 inotify never reports some changes:
 network and FUSE mounts,
 writes through `mmap`,
 and unmounts (`notify` does not map `IN_UNMOUNT`).
 The sweep bounds how long those stay stale.
-It costs one listing per shown folder and one source read per 10 s,
-against 20 listings and 40 source reads per 10 s under the previous polling.
+One directory read starts per 20 ms timer tick,
+so one pass over more than about 50 shown folders outlasts the second.
+The next pass then starts when the previous one has read every folder,
+and each folder is reread once per pass.
+The sweep costs one listing per shown folder and one source read per second,
+where the previous polling did 2 listings and 4 source reads per second whatever was shown;
+see [Measured idle cost](#measured-idle-cost).
+
+With the sweep at 1 s,
+the 500 ms timer for unwatched folders shortens the longest time a folder goes unread
+only when one to three shown folders lack a watch:
+500 ms for one,
+900 ms for two,
+980 ms for three,
+and the sweep's 1 s from four
+(`tests/refresh_intervals.rs` prints these from the shipped schedule).
+The 250 ms timer for an unwatched displayed file stays four times as frequent as the sweep.
+Both timers are kept.
 
 ### Threading and shutdown
 
@@ -1090,21 +1424,134 @@ through the shipped bindings in the headless window,
 16 trials per case,
 three runs per build,
 with the same pseudo-random write gaps and target folders in both builds.
+The runs of the two builds alternated in one session on a busy host,
+with a load average of 49 to 156 on 16 processors.
 Polling (`48a1b5756`):
-a new file in one of 8 expanded folders took a median of 1657 to 1706 ms across runs,
-at most 4035 ms;
+a new file in one of 8 expanded folders took a median of 1672 to 1789 ms across runs,
+at most 4038 ms;
 with one expanded folder,
-651 to 785 ms,
-at most 988 ms;
+671 to 789 ms,
+at most 1524 ms;
 a rewrite of the displayed file,
-115 to 147 ms,
-at most 281 ms.
-Watching:
-a new file took a median of 29 to 35 ms with 8 folders and 31 to 35 ms with one,
-at most 96 ms;
-a rewrite took 44 to 56 ms,
-at most 92 ms.
-The medians of one build differed between its runs by at most 134 ms under polling and 6 ms under watching.
+93 to 148 ms,
+at most 288 ms.
+Watching,
+with the 1 s sweep and the 50 ms write wait:
+a new file took a median of 28 to 33 ms with 8 folders and 35 to 51 ms with one,
+at most 115 ms;
+a rewrite took 38 to 75 ms,
+at most 140 ms.
+The medians of one build differed between its runs by at most 118 ms under polling and 27 ms under watching.
+The schedule makes a change that lands within 100 ms after a sweep read of the same folder wait for the reread gap;
+with the sweep at 1 s that is about one change in ten,
+and the slowest trials near 100 ms fit it.
+
+### Measured write wait
+
+`inspect:refresh-latency` with the filter `write_wait_pause` plays an in-place save against the headless window:
+truncate,
+pause,
+write,
+close,
+with `am a` selected,
+8 trials per pause length in each of three runs.
+With the 50 ms quiet period and the 100 ms limit,
+no trial with a pause of 10 to 50 ms showed the truncated file,
+2 of 24 did at 60 ms,
+4 of 24 at 70 ms,
+and all 96 at 80 ms and longer.
+The wait is counted from the 20 ms timer tick that receives the notification,
+so the boundary lies between 50 and 80 ms.
+Every trial that showed the truncated file lost the selection;
+every other trial kept it on `was a`.
+A copy with the earlier 150 ms and 250 ms,
+measured in the same session,
+showed the truncated file in all 24 trials at 200 ms and in none at 100 and 150 ms.
+
+Two trials showed the truncated file at a pause below the quiet period:
+one of 200 trials with pauses of 10 to 50 ms across five runs at the shipped values,
+and one of 240 trials with pauses of 10 to 150 ms in the copy with 150 ms and 250 ms.
+Their cause is not established;
+the sweep is ruled out for the second,
+whose save began about 200 ms after a read had restarted the sweep clock.
+
+The filter `write_wait_timer` starts the same save,
+unfinished for 40 ms,
+at a pseudo-random time within the 400 ms that contain the next sweep read,
+120 trials per run.
+5 to 8 of 120 trials showed the truncated file across four runs,
+which is 17 to 27 ms before each sweep read.
+The sweep read is not asked for by the save's notification,
+so the write wait holds it back only once that notification has reached the schedule.
+The source timer is bound before the timer that receives notifications (`src/native.rs`),
+which fits a window of about one 20 ms tick.
+For a save that stays unfinished that long this is about 2 to 3 in 100 saves at the 1 s sweep;
+a save that is finished within a millisecond is exposed for that millisecond.
+
+### Measured idle cost
+
+`inspect:idle-cost` runs the release build in the nested compositor,
+expands sibling folders of eight files each through key input,
+and samples the idle IDE for 60 s:
+CPU time from `/proc/<pid>/stat`,
+read calls from `/proc/<pid>/io`,
+listings from the IDE's log,
+and every system call in one further session under `strace`.
+The shipped 1 s build and a build that differs only in a 10 s `SAFETY_SWEEP` alternate,
+three runs each;
+ranges give the lowest and highest run.
+
+#### One expanded folder
+
+- 1 s sweep: 3.0 to 3.2 ms of CPU per second, 59 to 67 read calls, 2 listings, 301 system calls per second.
+- 10 s sweep: 2.5 to 2.8 ms of CPU per second, 50 to 52 read calls, 0.2 listings, 256 system calls per second.
+
+#### 12 expanded folders
+
+- 1 s sweep: 7.3 to 8.2 ms of CPU per second, 84 to 90 read calls, 12.9 listings, 561 system calls per second.
+- 10 s sweep: 4.7 to 5.2 ms of CPU per second, 54 to 57 read calls, 1.3 listings, 284 system calls per second.
+
+#### 100 expanded folders
+
+- 1 s sweep: 45.0 to 45.5 ms of CPU per second, 154 to 168 read calls, 49.9 listings, 1353 system calls per second.
+- 10 s sweep: 26.0 to 26.3 ms of CPU per second, 73 to 90 read calls, 10.1 listings, 480 system calls per second.
+
+#### Reading the numbers
+
+Runs of one build differed by at most 0.84 ms of CPU and 17 read calls per second.
+With 100 expanded folders one pass over the 101 shown directories took 2.02 s,
+so the 1 s build reads without pause,
+and every directory was listed once per pass.
+There the 1 s build does 40 more listings per second than the 10 s build,
+for about 19 ms more CPU and about 870 more system calls per second:
+about 22 calls per listing,
+of which 8 are `readlink` (path resolution) and 4 are `write` (log lines).
+The 10 s build's cost also grows with the tree,
+from 2.5 to 26 ms of CPU per second;
+it sweeps too,
+at 10 listings per second with 100 folders,
+and what else grows with the tree was not separated.
+The IDE always logs at debug level (the filter is fixed in `src/native.rs`),
+four lines per listing:
+9,
+52,
+and 200 log lines per second at the 1 s sweep,
+against 0.9,
+5.3,
+and 40 at 10 s.
+The log is written from the UI thread,
+so a log destination that blocks stalls the window;
+one sample with the log on a busy disk stood still for 10 s,
+and the measurement keeps its live log in memory-backed storage for that reason.
+The displayed file was 640 bytes;
+the sweep reads the whole file once per second,
+so that part grows with the file,
+and was not measured for large files.
+The host was busy during the runs with one and 12 folders,
+with a load average of 6 to 48 on 16 processors,
+and nearly idle during the runs with 100;
+the builds alternate within each run,
+so each comparison shares its conditions.
 
 ### Deliberate differences from editord
 
@@ -1120,7 +1567,9 @@ and temporary file names;
 this reader lists those names like any other,
 so their changes appear.
 editord waits for a file's size to stay unchanged for 150 ms (`awaitWriteFinish`) before reporting it;
-this reader reads closed writes at once and waits 150 ms only for writes still open.
+this reader reads closed writes at once,
+and for writes still open it waits 50 ms,
+a shorter wait than editord's that the user chose on 2026-10-05.
 editord drops a folder's watch on an error;
 this reader rereads everything shown,
 keeps that folder on a timer,
@@ -1142,11 +1591,19 @@ removed,
 renamed,
 failed,
 and retried watches,
+a repeated failure reported once,
 refused outside and symbolic-link folders,
 and no watch left after shutdown.
 `tests/refresh_policy.rs` pins the intervals.
+`tests/refresh_intervals.rs` simulates the shipped schedule in 20 ms ticks:
+timers leave an unfinished write alone,
+a pass over more folders than one interval can read still rereads every folder,
+and the unwatched timer never makes a folder staler than the sweep alone.
 `native::watch_tests` checks the shipped tree and source in the headless window.
+`native::write_wait_tests` plays a slow writer against that window:
+an in-place save and a delete-then-rewrite are shown only when finished.
 `inspect:watch-guards` removes each guard in a disposable copy and requires its named test to fail.
+`inspect:idle-cost` and `inspect:refresh-latency` produce the measurements in this section.
 In the nested compositor,
 dark and light,
 external create,
@@ -1186,6 +1643,198 @@ while a listed grammar that fails to load is reported as a broken installation.
 Helix crates share a pinned upstream revision.
 Helix code and runtime assets retain their own license obligations;
 the application does not inherit Helix's modal commands or editing features.
+
+## Release build and application directory
+
+`mise run //package/desktop-app/ide:build:release` builds the optimized `monochromatic-ide` binary
+in the bounded container described under [Build boundary](#build-boundary).
+`mise run //package/desktop-app/ide:bundle` runs that build and assembles `dist/monochromatic-ide`,
+a directory that runs from any location,
+without the source tree and without `HELIX_RUNTIME` in the environment:
+
+```txt
+# package/desktop-app/ide/dist/monochromatic-ide
+monochromatic-ide             release binary; Inter and JetBrains Mono are compiled in
+runtime/manifest.json         pinned Helix revision and the bundled grammar libraries
+runtime/grammars/             one shared object per bundled grammar
+runtime/queries/              Helix query files at the pinned revision
+runtime/licenses/<grammar>/   license notice of each bundled grammar
+runtime/Helix-LICENSE         MPL-2.0 text for the Helix query files and the Helix crates in the binary
+LICENSES/                     LGPL-3.0-or-later and GPL-3.0-or-later texts of the application
+LICENSES/font/                SIL Open Font License notices of Inter and JetBrains Mono
+```
+
+Run it as `dist/monochromatic-ide/monochromatic-ide PROJECT`,
+with `--file FILE` as under [Project startup](#project-startup).
+`mise run //package/desktop-app/ide:run:bundle PROJECT` does the same from the package directory.
+`dist/` is ignored by Git.
+The existing `build` and `run` tasks stay the debug build that tests and inspection use;
+sibling applications name their release build `build`,
+and renaming here is left until the other tasks and documents that call `build` can change with it.
+
+The release build unsets `SLINT_EMIT_DEBUG_INFO`,
+which the debug tasks set so inspection can address interface elements by name,
+and builds only the application binary,
+not the runtime,
+inspection,
+and scripted-server helpers.
+The directory holds no desktop entry,
+icon,
+or installer,
+and no collected license notices of the Rust crates compiled into the binary;
+those are open decisions.
+
+### Where the binary finds its language runtime
+
+The pinned Helix loader (`prioritize_runtime_dirs` in `helix-loader/src/lib.rs`)
+looks for each runtime file in these directories,
+in this order,
+and takes the first that has the file:
+
+- `runtime` beside the directory `CARGO_MANIFEST_DIR` names,
+  only when that variable is set while the application runs;
+- `runtime` in Helix's configuration directory,
+  `$XDG_CONFIG_HOME/helix/runtime` or `~/.config/helix/runtime`;
+- the directory `HELIX_RUNTIME` names,
+  when it is set;
+- a directory fixed at build time through `HELIX_DEFAULT_RUNTIME`,
+  which no task of this package sets;
+- `runtime` beside the executable,
+  after symbolic links to the executable are resolved.
+
+So the assembled directory works wherever it is copied or moved as a whole,
+and a symbolic link to its executable works from any directory.
+A copy of the executable alone finds no runtime:
+it shows source as plain text,
+with a message that names the manifest it looked for.
+A file in the user's Helix configuration directory or under `HELIX_RUNTIME`
+replaces the bundled file of the same relative path,
+one file at a time.
+With an empty `queries/sql/highlights.scm` in a scratch configuration directory,
+the packaged application drew a SQL file without colors and reported nothing.
+
+### What the host provides
+
+- Linux on x86_64 with glibc 2.39 or later,
+  `libstdc++`,
+  `libgcc_s`,
+  and `libfontconfig`.
+  The build container is Fedora 41.
+- A Wayland session,
+  with `libwayland-client`,
+  `libwayland-egl`,
+  `libxkbcommon`,
+  and `libEGL`,
+  which the binary opens when it starts.
+  Only Wayland was checked.
+- `rg` (ripgrep) on `PATH` for [Combined search](#combined-search).
+- For language features:
+  `/usr/bin/bwrap` with unprivileged user namespaces,
+  and each language's server on `PATH`,
+  such as `rust-analyzer`.
+  TypeScript uses the project's own `node_modules/typescript` at version 7 or later,
+  started through `node`.
+  Without one of these the reader still works,
+  and a language action explains what is missing;
+  see [Language module](#language-module).
+- No fonts:
+  with the system copies of both families hidden,
+  the packaged binary drew the interface and the source in its own faces.
+
+The application writes language-server state below `$XDG_CACHE_HOME/monochromatic-ide`
+and nothing below the configuration or data directories.
+It logs to standard output at debug level,
+including language-server logs,
+with no setting to lower that yet.
+
+### Bundle checks
+
+`mise run //package/desktop-app/ide:inspect:bundle [directory] [only]` checks an assembled directory,
+`dist/monochromatic-ide` by default,
+without changing it:
+
+- `inventory`:
+  the executable,
+  the manifest,
+  and exactly the grammar libraries the manifest lists.
+- `license-texts`:
+  the application's license texts,
+  both font notices,
+  Helix's license,
+  and a notice with a copyright line for every bundled grammar.
+- `grammars-load`:
+  the package's four syntax test binaries,
+  run in the bounded container with `HELIX_RUNTIME` naming the checked directory's `runtime`,
+  mounted read-only.
+  They load every listed library,
+  compile the highlighting rules of every language that uses one,
+  and highlight a sample of each bundled language.
+- `starts-outside-source-tree`:
+  a copy below the private scratch root reports its version with an empty environment,
+  then runs in the nested compositor with no runtime variable
+  and an empty configuration directory,
+  and must highlight a SQL file from its own `runtime`.
+- `missing-runtime-reported`:
+  a copy without `runtime` must still open the file
+  and report the manifest it could not read.
+  The check reads the report from the application's log;
+  the window shows the same sentence under the source.
+
+The release binary has no headless backend
+(`SLINT_BACKEND=headless` without a display ends with "No backends configured"),
+so both startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`.
+SQL is the sample because it has a bundled grammar and no configured language server.
+Both also require a clean end:
+the application exits with status 0 within the compositor's 2 s after the close request,
+and the session leaves no application process,
+no private bus daemon,
+and no bus directory behind.
+A session that fails is ended through the compositor's `quit` first,
+because a compositor ended by a signal leaves its `dbus-daemon`,
+that daemon's directory below the temporary directory,
+and its hosted application running;
+whatever is left is stopped and removed.
+
+`mise run //package/desktop-app/ide:inspect:bundle-guards [directory] [only]` damages one copy per case
+and requires the matching check to fail on it while the unrelated checks still pass:
+a removed grammar library,
+an unlisted library,
+a cleared executable bit,
+removed query rules,
+a removed grammar notice,
+removed REUSE header lines,
+a removed font notice,
+a removed application license,
+a removed Helix license,
+a removed runtime,
+and an executable that still finds a runtime elsewhere.
+
+### Measured on 2026-10-05
+
+- Size:
+  81,516,093 bytes in 1,255 files.
+  The binary is 46,856,800 bytes with its symbol table
+  (35,666,600 after `strip --strip-all`, which the task does not run);
+  `runtime/grammars` is 33,463,328 bytes in 27 files,
+  `runtime/queries` 1,087,532 bytes in 1,193 files,
+  and the license texts and notices 107,898 bytes in 33 files.
+  Size is not a constraint for this package.
+- Build:
+  2 GiB and 2 CPUs are enough.
+  Two release builds from an empty release directory finished in 18 min 40 s and 15 min 22 s of Cargo time,
+  on a host whose load average was between 54 and 97 each time it was read during them,
+  so the second container averaged 1.04 of its 2 CPUs.
+  In the second,
+  sampled four times a second from the container's control group,
+  anonymous memory peaked at 1,116 MiB;
+  the group reached its 2,048 MiB limit only through reclaimable file cache,
+  used at most 19 MiB of swap,
+  and recorded no out-of-memory kill.
+  Both builds produced the same binary, byte for byte.
+- The release build prints one warning the debug build does not:
+  `set_annotations` in `src/native/annotate.rs` is unused,
+  because its only caller outside tests is the debug-only inspection path.
+  `lint:clippy` checks the debug profile and does not see it.
 
 [handover]: ../../../doc/handover/slint-ide-0x.md
 [scope]: ../../../doc/decision/slint-ide-0x-scope.md

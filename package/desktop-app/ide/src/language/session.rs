@@ -6,6 +6,8 @@ use super::diagnostics::DiagnosticStore;
 use super::hints::{HintWindow, InlayHint};
 /// Identities that tag every result.
 use super::identity::{DocumentStamp, ServerIdentity};
+/// Requests of the worker's own that a server left unanswered.
+use super::owed::Owed;
 /// The latest-value status rows are built from these records.
 use super::status::{DocumentState, Features, LanguageStatus, ServerState, ServerStatus};
 /// What: `Rope` is Helix's character-indexed text buffer; the `config` types describe one
@@ -39,7 +41,7 @@ use std::{path::PathBuf, sync::Arc};
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type ServerRecord = { identity: ServerIdentity; client?: Client; state: ServerState;
-///                       attached: boolean; opened: boolean; progress: [Token, string][] };
+///                       attached: boolean; opened: boolean; progress: [Token, string][]; owed: Owed };
 /// ```
 pub(super) struct ServerRecord {
     /// Name and process generation.
@@ -54,6 +56,9 @@ pub(super) struct ServerRecord {
     pub(super) opened: bool,
     /// Work the server reported as begun and not yet ended, with its title.
     pub(super) progress: Vec<(lsp::ProgressToken, String)>,
+    /// Hints and pull diagnostics for the displayed text that this server left unanswered
+    /// through their retries; they are asked again when the server next sends anything.
+    pub(super) owed: Owed,
 }
 
 /// Record behavior.
@@ -213,6 +218,8 @@ impl Session {
         for record in self.servers.iter_mut() {
             record.attached = false;
             record.opened = false;
+            // `Owed::default()` builds the empty record: nothing is owed for a file no longer displayed.
+            record.owed = Owed::default();
             // A server that could not follow the previous file's reloads is usable for a new file.
             if record.state == ServerState::Unsynchronized {
                 record.state = ServerState::Ready;
@@ -235,6 +242,7 @@ impl Session {
             attached: true,
             opened: false,
             progress: Vec::new(),
+            owed: Owed::default(),
         });
     }
 

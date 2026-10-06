@@ -238,8 +238,18 @@ their absence is not a completion claim.
 `mutation:markdown` runs full container tests and Clippy before scoped native Markdown mutation.
 `mutation:executable` does the same for the orchestration modules,
 the executable's entry point,
-and Rust rule selection;
-`mutation:processors:files` does the same for the processor modules.
+Rust rule selection,
+input expansion and the fix loop;
+`mutation:core` for configuration,
+findings,
+grouped edits and the syntax-only Rust rules;
+`mutation:semantic` for the semantic engine and the explicit-type rule;
+and `mutation:processors:files` for the processor modules.
+The executable and core scopes skip the five tests that load a Cargo workspace,
+which the semantic scope and the full container tests run.
+`mutation:coverage` compares the scopes' listings with the unscoped listing,
+name by name,
+and fails when any mutant is outside every scope.
 A campaign with a missed or timed-out mutant exits nonzero and is not a passing gate.
 
 Two kinds of mutation are never tried,

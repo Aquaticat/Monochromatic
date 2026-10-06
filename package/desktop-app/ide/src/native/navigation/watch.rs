@@ -81,12 +81,23 @@ pub(super) fn update(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     // ```
     let parent = current.file_path.as_deref().and_then(Path::parent);
     let watched = parent.is_some_and(|directory| return navigation.watched.contains(directory));
+    // A displayed file needs its folder watched; no displayed file needs nothing.
+    let file_covered = watched || parent.is_none();
     current.refresh.set_watched(watched);
     drop(current);
     if navigation
         .directories
         .start_sweep_if_due(&navigation.shown, now)
     {
-        navigation.watcher.retry();
+        // Retry failed watches once per sweep, and only while something shown lacks a watch,
+        // so a fully watched window does not wake the watch thread every second.
+        let all_watched = file_covered
+            && navigation
+                .shown
+                .iter()
+                .all(|path| return navigation.watched.contains(path));
+        if !all_watched {
+            navigation.watcher.retry();
+        }
     }
 }

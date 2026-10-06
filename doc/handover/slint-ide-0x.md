@@ -107,6 +107,90 @@ Those 13 cases are accepted as documented deliberate differences from editord's 
 
 ### Handoff state
 
+#### Current state on 2026-10-06
+
+This block is current;
+the items after it are the record of 2026-10-05 and older.
+
+- The host restarted overnight and cleared `/tmp`,
+  including the coordinating session's scratch scripts.
+  Durable coordinator scripts and the shared agent brief now live in `~/temp/agent/ide-coordinator/`
+  (`ide-fanout-common.md`,
+  `provision-worktree.mjs`,
+  `gate.mjs`,
+  `land-merge.mjs`,
+  `render-check.mjs`,
+  `inotify-usage.mjs`,
+  `fsmonitor-sockets.mjs`);
+  gate logs go to `~/temp/agent/ide-coordinator/logs/`.
+- Landed on `main` as merge `45db45d02`:
+  reaping and lifecycle checks (`feat/ide-language-verify`),
+  UI batch 2 (`feat/ide-ui-batch-2`),
+  re-asking for timed-out hints and pulled diagnostics (`fix/ide-hints-after-reload`),
+  the user's watch timing (`feat/ide-tree-watch` through `cefc9902d`),
+  and release packaging (`feat/ide-package`).
+  Gate at the integration commit `93ac17859`
+  (IDE tree `d1f5569c31fe7e4cb92e651820f0338ac68842aa`, load 4 to 15):
+  lint;
+  96 passing library and integration result lines;
+  102 of 102 native tests with 4 ignored measurements skipped.
+- Agents at work,
+  each in its own worktree from `main` at `45db45d02` unless noted:
+  - `feat/ide-hint-rows` (`.claude/worktrees/ide-hint-rows`, from `930d69fbb`):
+    hints and diagnostic messages on virtual rows above the code line,
+    grouped with it by spacing,
+    severity letters in the gutter;
+    then comparison frames for UI batch 3 on `prototype/ide-hint-row-variants`.
+    Brief: `~/temp/agent/ide-gate-logs-20261005/agent-w-hint-rows-brief.md` plus the severity-letter decision.
+    Expect conflicts with `main` in the row-height uses and `TEXT_LEFT` (360 on that branch's base, 313 on `main`).
+  - `feat/ide-logging` (`.claude/worktrees/ide-logging`):
+    re-labelling helix-lsp's healthy-server ERROR records,
+    warnings by default with `RUST_LOG`,
+    and log writing off the interface thread.
+  - `feat/ide-single-file` (`.claude/worktrees/ide-single-file`):
+    one executable carrying its runtime,
+    never reading the user's Helix runtime directory,
+    the home folder as the default project,
+    a Wayland app id,
+    an `install` task,
+    and the sibling task names.
+  - `fix/ide-watch-save` (`.claude/worktrees/ide-watch-save`):
+    a sweep read never shows a file mid-save,
+    fewer inotify watches with quiet back-off at the limit,
+    `--network=none` for the package's offline podman tasks,
+    and no warning or full reread for a displayed file outside the project.
+  - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`):
+    the timing failures seen in the gates,
+    an older hint answer replacing a newer window's,
+    and an unversioned diagnostics push dropped during the hold after a reload.
+- Waiting for an agent slot
+  (the harness runs at most five agents):
+  rerunnable accessibility tests with Slint's testing crate (user-approved),
+  and comparison frames for UI batch 2's open choices and the watch-limit message.
+- Inotify:
+  on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
+  about 462000 of them by `git fsmonitor--daemon` processes
+  (`core.fsmonitor=true` in `~/.gitconfig`),
+  one per worktree and per git-wrapper shadow git directory,
+  each watching every directory of its worktree including ignored `node_modules` and `target`
+  (146000 for another session's worktree,
+  135000 for the main checkout,
+  about 13900 for each IDE worktree with a build cache).
+  The coordinating session removed twelve clean,
+  fully pushed IDE worktrees it had created
+  (their branches remain);
+  the fsmonitor setting is the user's to decide.
+- Still owed to the user:
+  whether to add a launcher entry,
+  what to do about git's fsmonitor,
+  and UI batch 3 with screenshots
+  (hint row look,
+  label shortening,
+  diagnostic row wording,
+  the caret card beside the rows,
+  UI batch 2's open choices,
+  the watch-limit message).
+
 Claude Opus resumed the queue on 2026-10-05 from `e81b01c42`
 and fanned the work out to in-process subagents at the user's request.
 Unrelated concurrent commits from other sessions sit in the same history;

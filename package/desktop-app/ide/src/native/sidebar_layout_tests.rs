@@ -2,8 +2,8 @@
 
 /// Shared window fixture, pointer helpers, and the pinned layout measurements.
 use super::sidebar_tests::{
-    DIVIDER, GUTTER, HEADER, MINIMUM, SOURCE_MINIMUM, click, drag_to, fixture, motion, press,
-    release, resize, settle,
+    DIVIDER, GUTTER, HEADER, MINIMUM, REACH, SOURCE_MINIMUM, click, drag_to, fixture, motion,
+    press, release, resize, settle,
 };
 /// Generated window and search row types from the shipped markup, and the single rendering boundary.
 use super::{AppWindow, render, ui::SearchEntry};
@@ -169,11 +169,11 @@ fn window_resize_shrinks_the_sidebar_and_restores_the_request() {
         "a narrow window discarded the requested width"
     );
     shared.activated.set(-1);
-    click(window, narrow - 1.0, HEADER + 24.0);
+    click(window, narrow - REACH - 1.0, HEADER + 24.0);
     assert_eq!(
         shared.activated.get(),
         0,
-        "the last tree pixel did not take its click in a narrow window"
+        "the last tree pixel before the divider's zone did not take its click in a narrow window"
     );
     resize(window, 1100.0, 660.0);
     assert_eq!(
@@ -220,9 +220,10 @@ fn find_bar_and_search_overlay_keep_their_layout_beside_a_resized_sidebar() {
     // The 56px find bar is the bottom of the source column; its input starts 12px inside the column.
     let bar = 320.0 - 28.0;
     click(window, narrow + DIVIDER / 2.0, bar);
+    click(window, narrow + DIVIDER + REACH, bar);
     assert!(
         !window.get_find_has_focus(),
-        "the find bar extends under the divider"
+        "the find input reaches the divider or the bar's leading padding"
     );
     click(window, narrow + DIVIDER + 12.0 + 20.0, bar);
     assert!(

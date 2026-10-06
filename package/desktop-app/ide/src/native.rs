@@ -62,6 +62,9 @@ mod annotation_tests;
 mod caret_tests;
 /// In-file find bar, worker polling, and selection-based match navigation.
 mod find;
+/// The find box's 48px clear cell: every corner clears, its edges end it, and it follows focus and text.
+#[cfg(test)]
+mod find_clear_tests;
 /// File switching and the modal search overlay must coexist with an open find bar.
 #[cfg(test)]
 mod find_interplay_tests;
@@ -92,6 +95,12 @@ mod navigation_tests;
 /// Real pointer events select by character, word, and line, extend with Shift, and drag without panning.
 #[cfg(test)]
 mod pointer_tests;
+/// Rendered search box in both schemes: placeholder, focus mark, selection colors, and clear states.
+#[cfg(test)]
+mod query_input_paint_tests;
+/// The find box keeps the toolkit box's editing keys, context menu, and scrolling of long text.
+#[cfg(test)]
+mod query_input_tests;
 /// External-write-to-window timings for the tree and the displayed source; ignored by default.
 #[cfg(test)]
 mod refresh_latency_tests;
@@ -99,12 +108,18 @@ mod refresh_latency_tests;
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
+/// The search box's 48px clear cell empties the query and the results and keeps focus.
+#[cfg(test)]
+mod search_clear_tests;
 /// Replacement search queries cannot redirect an in-progress result click.
 #[cfg(test)]
 mod search_pointer_tests;
 /// Combined search exercises native key capture, real ripgrep, scope, and source-line navigation.
 #[cfg(test)]
 mod search_tests;
+/// Selected rows of the tree and both lists use the ink chosen from the selection fill.
+#[cfg(test)]
+mod selected_row_tests;
 /// Tree rows and source text beside the sidebar divider keep their own clicks at every width.
 #[cfg(test)]
 mod sidebar_adjacent_tests;
@@ -140,6 +155,12 @@ mod viewport;
 /// External changes reach the tree and source through inotify notifications, faster than polling could.
 #[cfg(test)]
 mod watch_tests;
+/// A save in progress is not shown before it finishes; an ignored measurement finds the pause that is.
+#[cfg(test)]
+mod write_wait_tests;
+/// An ignored measurement of saves that begin when the safety sweep comes due.
+#[cfg(test)]
+mod write_wait_timer_tests;
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.

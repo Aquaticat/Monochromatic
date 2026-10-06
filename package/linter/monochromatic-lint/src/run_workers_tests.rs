@@ -8,7 +8,9 @@
 //! ```
 
 /// Import the worker entry points and fixture helpers.
-use super::{contained_source, contained_with, panicked, process_plans};
+use super::{
+    WORKER_STACK_BYTES, contained_source, contained_with, lint_thread, panicked, process_plans,
+};
 use crate::run_file::{FileOutcome, SourceOutcome};
 use crate::run_lfs::LfsRepos;
 use crate::run_plan::FilePlan;
@@ -208,6 +210,42 @@ fn workers_parse_nesting_deeper_than_a_default_thread_stack_holds() {
         assert_eq!(outcome.findings, Vec::new());
         assert!(!outcome.written);
     }
+}
+
+/// Stack bytes the probe must use below its thread's first frame: 7.5 MiB, half a mebibyte under the lint
+/// stack, which leaves room for the thread's own start-up frames and its thread-local storage.
+const PROBE_BYTES: usize = 7 * 1024 * 1024 + 512 * 1024;
+
+/// Recurse in frames of at least 4 KiB until the frames below `top` span `target` bytes, and return that span.
+/// The span is measured from frame addresses, so it does not depend on how large the compiler makes each frame.
+fn stack_reach(top: usize, target: usize) -> usize {
+    let frame: [u8; 4096] = std::hint::black_box([0_u8; 4096]);
+    let span: usize = top.abs_diff((&raw const frame).addr());
+    if span >= target {
+        return span;
+    }
+    // Using the frame after the call keeps it alive across the recursion.
+    return stack_reach(top, target).max(usize::from(std::hint::black_box(frame[0])));
+}
+
+/// Probe how much stack the current thread can use, starting from this frame.
+fn probe_stack() -> usize {
+    let anchor: u8 = std::hint::black_box(0);
+    return stack_reach((&raw const anchor).addr(), PROBE_BYTES);
+}
+
+/// A thread from `lint_thread` holds 7.5 MiB of frames, so its stack is not below 8 MiB by more than its own
+/// start-up needs, and the constant is the documented 8 MiB. The nesting control passes from about 4 MiB, and every
+/// stack smaller than the probe's span overflows here and aborts the test binary.
+#[test]
+fn lint_threads_hold_the_documented_eight_mebibyte_stack() {
+    let reached: usize = lint_thread()
+        .spawn(probe_stack)
+        .expect("start a lint thread")
+        .join()
+        .expect("the probe returns");
+    assert!(reached >= PROBE_BYTES, "{reached}");
+    assert_eq!(WORKER_STACK_BYTES, 8 * 1024 * 1024);
 }
 
 /// A writer that panics, standing in for a defect inside per-file processing.

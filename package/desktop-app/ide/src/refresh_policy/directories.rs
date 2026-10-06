@@ -101,6 +101,18 @@ impl DirectoryRefresh {
         if now.saturating_duration_since(last) < SAFETY_SWEEP {
             return false;
         }
+        // What: `is_empty` is true once the current pass has read, or dropped as hidden, every directory.
+        // Why: One read starts per native tick, so a pass over many directories outlasts the interval.
+        //      Refilling the set then would restart at the top of the visible order each interval and
+        //      never reach the directories late in it; the next pass waits for this one instead.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.sweep.size > 0) return false;
+        // ```
+        if !self.sweep.is_empty() {
+            return false;
+        }
         self.last_sweep = Some(now);
         for path in shown {
             self.sweep.insert(path.clone());

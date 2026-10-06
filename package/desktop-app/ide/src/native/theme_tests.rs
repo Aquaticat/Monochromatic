@@ -40,15 +40,15 @@ const KEYWORD_LIGHT: [u8; 4] = [118, 54, 164, 255];
 
 /// Height of the file-label row above the source column and of the project row above the tree.
 const HEADER: usize = 32;
-/// Width of the divider's layout cell; its idle line is the column in its middle.
-const DIVIDER: usize = 48;
+/// Width of the divider's layout cell, which is its line: the pixel column right after the sidebar.
+const DIVIDER: usize = 1;
 /// Width of the line-number gutter at the left edge of the source column.
 const GUTTER: usize = 56;
 /// Height of the open find bar's single row at the bottom of the source column.
 const FIND_BAR: usize = 56;
 
 /// Apply a system color scheme exactly where the portal watcher applies it, then run change handlers.
-fn switch(window: &AppWindow, scheme: ColorScheme) {
+pub(super) fn switch(window: &AppWindow, scheme: ColorScheme) {
     // What: `from_pub` borrows the toolkit's internal window behind the public handle; `context()`
     // borrows the process-wide toolkit context that every window reads its color scheme from.
     // Why: This is the one value `Palette.color-scheme` follows.
@@ -64,7 +64,7 @@ fn switch(window: &AppWindow, scheme: ColorScheme) {
 }
 
 /// Copy a toolkit color into the four bytes the source raster uses.
-fn rgba(color: Color) -> [u8; 4] {
+pub(super) fn rgba(color: Color) -> [u8; 4] {
     return [color.red(), color.green(), color.blue(), color.alpha()];
 }
 
@@ -136,7 +136,7 @@ fn lightness(pixel: Rgba8Pixel) -> f32 {
 }
 
 /// Mean, darkest, and lightest pixel of a window region given as `[left, right, top, bottom]`.
-fn region(frame: &SharedPixelBuffer<Rgba8Pixel>, bounds: [usize; 4]) -> (f32, f32, f32) {
+pub(super) fn region(frame: &SharedPixelBuffer<Rgba8Pixel>, bounds: [usize; 4]) -> (f32, f32, f32) {
     let width = frame.width() as usize;
     let mut total = 0.0;
     let mut darkest: f32 = 1.0;
@@ -236,8 +236,8 @@ fn assert_scheme(reader: &Reader, dark: bool) -> Vec<u8> {
     // const at = (x: number, y: number) => lightness(frame.pixels[y * width + x]);
     // ```
     let at = |x: usize, y: usize| return lightness(frame.as_slice()[y * width + x]);
-    // The idle divider line is the middle column of its cell; the cell's edge column is background.
-    let line = at(sidebar + DIVIDER / 2, height / 2);
+    // The idle divider line is the column right after the sidebar; four columns further is gutter background.
+    let line = at(sidebar, height / 2);
     let cell = at(sidebar + 4, height / 2);
     // The non-active match's left border is one pixel left of its first character, here at mid-row.
     let found = window

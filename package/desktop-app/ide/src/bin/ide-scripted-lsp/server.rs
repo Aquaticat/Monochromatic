@@ -36,6 +36,8 @@ struct Session {
     probed: bool,
     /// Number of hover requests seen.
     hovers: u64,
+    /// Whether the scripted stall already happened.
+    stalled: bool,
 }
 
 /// Capabilities announced in the `initialize` answer.
@@ -79,6 +81,24 @@ impl Session {
         if let Err(error) = self.wire.send(message) {
             eprintln!("scripted language server cannot write: {error}");
         }
+    }
+
+    /// What: Sleep once, on the read loop itself, before the first message of the scripted
+    ///       method is handled. `&mut self` allows remembering that the stall happened.
+    /// Why: Unlike a delayed hover answer, which a helper thread sends late, this holds back
+    ///      everything: the message itself and all the client sends after it wait unread, so
+    ///      a request sent meanwhile can pass its timeout before the server reads it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// stall(method: string) { if (!this.stalled && method === script.stallAt) { this.stalled = true; sleepSync(script.stall); } }
+    /// ```
+    fn stall(&mut self, method: &str) {
+        if self.stalled || self.script.stall == 0 || method != self.script.stall_at {
+            return;
+        }
+        self.stalled = true;
+        thread::sleep(Duration::from_millis(self.script.stall));
     }
 
     /// Record the server's copy of a document and, when configured, push diagnostics that quote it.
@@ -264,7 +284,10 @@ impl Session {
         let uri = params["textDocument"]["uri"].as_str().unwrap_or("");
         let version = &params["textDocument"]["version"];
         if method == "exit" {
-            std::process::exit(0);
+            // A lingering server stays; the client then has to kill it.
+            if !self.script.linger {
+                std::process::exit(0);
+            }
         } else if method == "textDocument/didOpen" {
             let text = params["textDocument"]["text"].as_str().unwrap_or("");
             self.documents.insert(uri.to_string(), text.to_string());
@@ -314,6 +337,7 @@ pub fn run(script: Script) -> io::Result<()> {
         documents: HashMap::new(),
         probed: false,
         hovers: 0,
+        stalled: false,
     };
     // `lock()` on standard input returns a buffered reader this thread owns.
     let mut input = io::stdin().lock();
@@ -326,6 +350,8 @@ pub fn run(script: Script) -> io::Result<()> {
                 session
                     .wire
                     .record(json!({ "received": name, "id": id, "params": message["params"] }));
+                // The report shows the message as received before the scripted stall holds it back.
+                session.stall(name);
                 if id.is_null() {
                     session.notification(name, &message["params"]);
                 } else {
@@ -340,6 +366,19 @@ pub fn run(script: Script) -> io::Result<()> {
                 };
                 session.wire.resolve(id.as_u64().unwrap_or(0), reply);
             }
+        }
+    }
+    // What: `loop` without a condition repeats forever; `thread::sleep` pauses this thread.
+    // Why: A lingering server outlives the end of its input, as a stuck server would, until it
+    //      is killed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (script.linger) for (;;) await sleep(3_600_000);
+    // ```
+    if session.script.linger {
+        loop {
+            thread::sleep(Duration::from_secs(3600));
         }
     }
     // `Ok(())` reports success without a value.

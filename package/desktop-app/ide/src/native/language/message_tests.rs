@@ -98,6 +98,28 @@ fn each_outcome_names_its_reason_and_remedy() {
     );
 }
 
+/// A server that could not be started safely names what is unavailable, then the cause, and
+/// ends with the remedy the launch policy gave.
+#[test]
+fn refused_launch_names_the_unavailable_feature_and_ends_with_the_remedy() {
+    let refused = status(
+        DocumentState::Attached,
+        Some(ServerState::LaunchRefused {
+            reason: "cannot create /state/scripted-ls: Not a directory (os error 20). Make that path creatable as a directory, then restart the application".to_string(),
+        }),
+    );
+    assert_eq!(
+        single(Action::Definition, RequestOutcome::NoServer, &refused),
+        "scripted-ls was not started, so go to definition is not available for this file: cannot create /state/scripted-ls: Not a directory (os error 20). Make that path creatable as a directory, then restart the application."
+    );
+    assert_eq!(
+        message::explain(Action::Hover, &[], &refused),
+        "scripted-ls was not started, so hover information is not available for this file: cannot create /state/scripted-ls: Not a directory (os error 20). Make that path creatable as a directory, then restart the application."
+    );
+    // Pressing the key again cannot help; the remedy is outside the application.
+    assert!(!message::needs_reopen(&refused));
+}
+
 /// "No server" is explained by the document state or the server's own state.
 #[test]
 fn no_server_is_explained_by_the_status() {
