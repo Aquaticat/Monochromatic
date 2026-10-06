@@ -203,7 +203,10 @@ async function coverage() {
 }
 
 /** Build and run the tool over an immutable input image, then retain its complete report. */
-async function campaign({ scope, shard }) {
+async function campaign({ scope, shard, examine }) {
+  // cargo-mutants keeps a mutant that matches any `--re`, so a second one would widen a scope that has its own.
+  if (examine !== undefined && scope.select.includes('--re'))
+    throw new VerificationError('This scope already selects mutants by name; --re would widen it.');
   const timeoutSeconds = scope.timeoutSeconds ?? defaultTimeoutSeconds;
   const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-mutation-'));
   const evidenceRoot = join(process.cwd(), 'target', 'verification');
@@ -231,6 +234,9 @@ async function campaign({ scope, shard }) {
       // cargo-mutants numbers shards from 0; every shard runs the same arguments and its own baseline.
       ...(shard === undefined ? [] : ['--shard', shard]),
       ...scope.select,
+      // A rerun of some of a scope's mutants, for example one file's after a timeout on a loaded host,
+      // keeps the scope's files and tests and adds a name filter.
+      ...(examine === undefined ? [] : ['--re', examine]),
       ...scope.run,
     ];
     await writeFile(join(context, 'Containerfile'), [
@@ -273,6 +279,7 @@ async function campaign({ scope, shard }) {
       baseImage: base,
       campaignImage,
       shard: shard ?? null,
+      examine: examine ?? null,
       toolSha256,
       container,
       command,
@@ -308,7 +315,8 @@ function scopeFor(option) {
 }
 
 /**
- * Dispatch: a campaign by default, optionally one `--shard k/n` of it, `--list [scope]` for one listing,
+ * Dispatch: a campaign by default, optionally one `--shard k/n` of it or only the mutants whose names match
+ * `--re <regex>`, `--list [scope]` for one listing,
  * and `--coverage` for the scope-union proof.
  */
 async function main() {
@@ -334,9 +342,17 @@ async function main() {
       throw new VerificationError(`--shard needs k/n with k from 0 to n - 1, not ${shard}.`);
     options.splice(shardAt, 2);
   }
+  const examineAt = options.indexOf('--re');
+  let examine;
+  if (examineAt !== -1) {
+    examine = options[examineAt + 1];
+    if (examine === undefined || examine.length === 0)
+      throw new VerificationError('--re needs a mutant-name regex.');
+    options.splice(examineAt, 2);
+  }
   if (options.length > 1)
     throw new VerificationError(`Only one of ${[...scopes.keys()].join(', ')} is accepted.`);
-  await campaign({ scope: scopeFor(options[0]), shard });
+  await campaign({ scope: scopeFor(options[0]), shard, examine });
 }
 
 await main();
