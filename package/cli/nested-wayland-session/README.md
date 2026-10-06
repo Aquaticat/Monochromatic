@@ -579,8 +579,8 @@ Tasks fall back to the host automatically when the development libraries are pre
 - `mise run //package/cli/nested-wayland-session:test:all` runs them without stopping at the first failure.
 - `mise run //package/cli/nested-wayland-session:lint:clippy` runs clippy with warnings
   denied.
-- `mise run //package/cli/nested-wayland-session:lint:rust` runs the repo's Rust linter
-  (max-lines plus require-rustdoc).
+- `mise run lint:monochromatic-lint -- package/cli/nested-wayland-session` runs the repo's Rust linter
+  (`rust/max-lines` plus `rust/require-rustdoc`) from the repository root.
 - `mise run //package/cli/nested-wayland-session:verify:container` is the reference build
   that builds,
    clippys,

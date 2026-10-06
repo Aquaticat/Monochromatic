@@ -135,13 +135,6 @@ run = """
 runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs', '--all-targets'])
 """
 
-[tasks."lint:rust"]
-description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
-# Runs on the HOST, not in the container: the linter is a separate crate with
-# no pipewire/opus/clang deps, so it needs no container. .gitignore-aware
-# walking skips target/ (including Slint's generated .rs).
-run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
-
 [tasks.test]
 description = "cargo nextest run (macOS/Windows native, else Linux host if dev libs present, else container)"
 # The native (non-Linux) branch needs cargo-nextest on PATH (`cargo install

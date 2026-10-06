@@ -2308,7 +2308,10 @@ ${await cat(['./AGENTS.md',],)}`,
     'errors.ts',
     'full-content-patch.ts',
     'index.ts',
+    'lint-configuration.ts',
+    'lint-report.ts',
     'rewrite-candidates.ts',
+    'run-linter.ts',
   ].map(async function mirrorMarkdownLintPolicy(fileName,) {
     return overwrite({
       dest: `./package/git-policy/cli/src/optional/markdown-lint/${fileName}`,

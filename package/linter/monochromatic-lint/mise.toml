@@ -18,10 +18,6 @@ run = "cargo check"
 description = "Check Rust types and deny Clippy findings"
 run = ["cargo check", "cargo clippy --all-targets -- -D warnings"]
 
-[tasks."lint:rust"]
-description = "Check documented items and source code-line budgets using the incumbent Rust linter"
-run = "cargo run --quiet --manifest-path ../rust/Cargo.toml -- ."
-
 [tasks."format:rust"]
 description = "Format the native unified-linter source"
 run = "cargo fmt"

@@ -74,7 +74,7 @@ Routes:
 
 ## README images
 
-The `lfs-image-url` rule of `cli-markdown-lint` (`package/cli/markdown-lint`)
+The `markdown/lfs-image-url` rule of `monochromatic-lint` (`package/linter/monochromatic-lint`)
 rewrites a Markdown image whose target is an LFS-tracked file to
 `https://monochromatic-lfs.aquaticat.workers.dev/<oid>/<repo-relative path>`.
 The `markdown/autofix` cli-git policy (`package/git-policy/markdown-lint`) applies that rewrite inside every commit,

@@ -14,10 +14,6 @@ run = "cargo check"
 description = "Run clippy over the bin and tests"
 run = "cargo clippy --release --all-targets -- -D warnings"
 
-[tasks."lint:rust"]
-description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
-run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
-
 [tasks."test:unit"]
 description = "Run instruction and lifecycle unit tests"
 run = "cargo test"
@@ -94,4 +90,10 @@ execFileSync('sudo', [
 
 [tasks.buildAndTest]
 description = "Build wg-quicker-exempt and run its lints"
-run = ["mise run build", "mise run test:unit", "mise run lint", "mise run lint:clippy", "mise run lint:rust"]
+run = [
+  "mise run build",
+  "mise run test:unit",
+  "mise run lint",
+  "mise run lint:clippy",
+  "mise run //:lint:monochromatic-lint -- package/cli/wg-quicker-exempt",
+]

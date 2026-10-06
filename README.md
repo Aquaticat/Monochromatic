@@ -47,15 +47,17 @@ shell-command analysis,
 terminal titles) lives in
 [`agent-harness-shared`](package/agent-harness-shared/).
 
-**Pluggable Rust linter**:
-[`linter/rust`](package/linter/rust/) is a Rust linter written in Rust
-whose rules ship as plugins
-([`rust-linter-plugin/builtin`](package/rust-linter-plugin/builtin/))
-over shared crates
-([`rust-linter-core`](package/rust-module/rust-linter-core/),
-[`rust-linter-pattern`](package/rust-module/rust-linter-pattern/)).
-It enforces the repo's per-file code-line budget (`max-lines`)
-and rustdoc coverage (`require-rustdoc`) across all crates.
+**Unified linter**:
+[`linter/monochromatic-lint`](package/linter/monochromatic-lint/) is one Rust executable
+that lints Rust,
+Markdown,
+and MDX,
+including Rust fences in Markdown and the Markdown inside rustdoc.
+It enforces the repo's per-file code-line budget (`rust/max-lines`),
+rustdoc coverage (`rust/require-rustdoc`),
+and the Markdown rules across the whole tree,
+under the root `monochromatic-lint.config.jsonc`,
+from `mise run lint` and `mise run format`.
 A sibling Gradle-based Kotlin linter lives in
 [`linter/kotlin`](package/linter/kotlin/).
 
@@ -262,7 +264,7 @@ package/
   intellij-plugin/          IntelliJ plugins (islands-black theme)
   kwin/                     KWin scripting (key-helper script and service)
   learning/                 Learning exercises (rust)
-  linter/                   Custom linters (pluggable Rust linter, Kotlin linter)
+  linter/                   Custom linters (unified Rust/Markdown linter, Kotlin linter)
   mcp/                      Model Context Protocol servers (stdio framework, mvm)
   module/                   Core TypeScript libraries (logger, test harness, observable,
                               memoize, css/jsonc/toml editing, image diff, kv-store)
@@ -276,9 +278,7 @@ package/
   pi-shared/                Shared Pi plugin logic (model selection, model review)
   rolldown-plugin/          Rolldown/tsdown plugins (import-attributes)
   runtime-error/            Runtime error reproductions (bun)
-  rust-linter-plugin/       Rule plugins for the Rust linter (builtin)
-  rust-module/              Rust libraries (forbidden-regex, rust-linter-core,
-                              rust-linter-pattern)
+  rust-module/              Rust libraries (forbidden-regex, jsonc-edit)
   shim/                     API-compatible dependency shims
   ssg/                      Static site generator for aquati.cat
   stub/                     Dependency blocklist stubs

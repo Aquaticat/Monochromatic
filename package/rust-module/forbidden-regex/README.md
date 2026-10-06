@@ -210,8 +210,9 @@ patterns and is fastest when the caller already feeds length-sorted lines.
 
 - `mise run //package/rust-module/forbidden-regex:test` runs the unit and
   integration tests.
-- `mise run //package/rust-module/forbidden-regex:lint:rust` enforces the
-  code-line budget and required rustdoc.
+- `mise run lint:monochromatic-lint -- package/rust-module/forbidden-regex`,
+  from the repository root,
+  enforces the code-line budget and required rustdoc.
 - `mise run //package/rust-module/forbidden-regex:lint:clippy` runs clippy.
 - `mise run //package/rust-module/forbidden-regex:bench` measures throughput
   against `regex`.

@@ -2,7 +2,7 @@
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/git-policy-markdown-lint",
   "private": true,
-  "description": "Optional cli-git policy that runs cli-markdown-lint fixes over Markdown candidates inside the commit transaction.",
+  "description": "Optional cli-git policy that runs monochromatic-lint fixes over Markdown candidates inside the commit transaction.",
   "type": "module",
   "main": "dist/final/node/index.mjs",
   "types": "dist/final/node/index.d.mts",

@@ -167,12 +167,6 @@ run = """
 runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs', '--all-targets'])
 """
 
-[tasks."lint:rust"]
-description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
-# Runs on the HOST: the linter is a separate crate with no compositor deps, so it needs
-# no container. .gitignore-aware walking skips target/.
-run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
-
 [tasks.test]
 description = "cargo nextest run (host if dev libs present, else container)"
 shell = "node --input-type=module-typescript -e"

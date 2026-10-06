@@ -263,10 +263,6 @@ run = """
 runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'clippy', '--release', '--bin', 'monochromatic-ide', '--', '--deny', 'warnings'])
 """
 
-[tasks."lint:rust"]
-description = "Check source-line budget and Rust documentation"
-run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
-
 [tasks."inspect:search-runtime"]
 description = "Probe the actual ripgrep runtime available in the bounded IDE environment"
 shell = "node --input-type=module-typescript -e"
@@ -484,7 +480,7 @@ description = "Check the native UI declaration"
 run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/query-input.slint", "slint-viewer --check ui/divider.slint", "slint-viewer --check ui/hover.slint", "slint-viewer --check ui/references.slint"]
 
 [tasks.lint]
-run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rust", "mise run //package/desktop-app/ide:lint:slint"]
+run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //:lint:monochromatic-lint -- package/desktop-app/ide", "mise run //package/desktop-app/ide:lint:slint"]
 
 [tasks."format:rust"]
 description = "Format application-owned Rust sources"

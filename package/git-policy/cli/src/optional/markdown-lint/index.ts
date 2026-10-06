@@ -1,6 +1,6 @@
 // Generated from `package/git-policy/markdown-lint/src/index.ts` by file-enforcer; edit canonical source owner.
 /**
- markdown-lint cli-git policy plugin: runs `cli-markdown-lint --fix` over
+ markdown-lint cli-git policy plugin: runs `monochromatic-lint --fix` over
  Markdown candidates inside the commit transaction so selected rules land
  their fixes in the commit itself.
 
@@ -17,6 +17,7 @@ import {
 } from '../../api/index.ts';
 import * as v from 'valibot';
 
+import { LFS_IMAGE_URL_RULE, } from './lint-configuration.ts';
 import { rewriteCandidates, } from './rewrite-candidates.ts';
 
 /**
@@ -24,34 +25,32 @@ import { rewriteCandidates, } from './rewrite-candidates.ts';
  */
 export type MarkdownLintPolicyOptions = Readonly<{
   /**
-   Command and leading arguments that start markdown-lint, resolved from the
-   repository root. Defaults to the workspace source entry.
+   Command and leading arguments that start monochromatic-lint, resolved from
+   the repository root. Defaults to `monochromatic-lint` on `PATH`, which the
+   repository installs through mise.
    */
   command: readonly string[];
   /**
-   Rule ids markdown-lint runs. Defaults to the LFS image rewrite alone, so
-   prose rules never rewrite a commit unasked.
+   monochromatic-lint rule ids to enable at `error`. Defaults to the LFS image
+   rewrite alone, so prose rules never rewrite a commit unasked.
    */
   rules: readonly string[];
   /**
    gitignore-syntax patterns, relative to the repository root, naming
-   candidates the policy leaves alone and the `lfs-image-url` rule skips.
+   candidates the policy leaves alone and the `markdown/lfs-image-url` rule skips.
    */
   exclude: readonly string[];
 }>;
 
 /**
- Default command: the workspace markdown-lint source entry run by Node.
+ Default command: the monochromatic-lint executable on `PATH`.
  */
-const DEFAULT_COMMAND: readonly string[] = [
-  'node',
-  'package/cli/markdown-lint/src/cli.ts',
-];
+const DEFAULT_COMMAND: readonly string[] = ['monochromatic-lint',];
 
 /**
  Default rule set: the LFS image rewrite only.
  */
-const DEFAULT_RULES: readonly string[] = ['lfs-image-url',];
+const DEFAULT_RULES: readonly string[] = [LFS_IMAGE_URL_RULE,];
 
 /**
  markdown-lint policy option schema.
@@ -81,7 +80,7 @@ const markdownLintOptions = definePolicyOptions(v.object({
 },),);
 
 /**
- Rewrites Markdown candidates through markdown-lint fixes inside the commit
+ Rewrites Markdown candidates through monochromatic-lint fixes inside the commit
  transaction; report-only at lifecycle points that cannot apply patches.
 
  @example
@@ -109,7 +108,7 @@ export const markdownLintPolicy: PolicyDefinition<
   ],
   options: markdownLintOptions,
   /**
-   Runs markdown-lint over lifecycle-selected Markdown candidates.
+   Runs monochromatic-lint over lifecycle-selected Markdown candidates.
 
    @param context - Policy context exposing lazy Git candidates.
 
@@ -158,6 +157,11 @@ export const markdownLintPlugin: PluginDefinition<
 },);
 
 export { MarkdownLintPluginError, } from './errors.ts';
+export {
+  LFS_IMAGE_URL_RULE,
+  lintConfiguration,
+  type LintConfigurationParams,
+} from './lint-configuration.ts';
 export {
   createFullContentPatch,
   type CreateFullContentPatchParams,

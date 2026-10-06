@@ -54,10 +54,9 @@ already-layered clang and cmake supply the C++ toolchain cxx-qt needs.
 - `run`:
    debug build,
    then run the GUI on native Wayland (`QT_QPA_PLATFORM=wayland`).
-- `lint:rust`:
-   require-rustdoc plus max-lines (this package is a cxx-qt file,
-   so
-  require-rustdoc exempts its `use` imports and trait-impl methods).
+- The root `mise run lint` checks `rust/require-rustdoc` plus `rust/max-lines` here
+  (this package is a cxx-qt file,
+  so `rust/require-rustdoc` exempts its `use` imports and trait-impl methods).
 - `lint:clippy`:
    clippy with warnings denied.
 - `test`:

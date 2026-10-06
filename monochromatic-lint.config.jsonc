@@ -1,0 +1,137 @@
+// monochromatic-lint.config.jsonc
+// Repository configuration for `mise run lint` and `mise run format`, from the draft in
+// doc/planning/unified-linter.md (`Draft repository configuration`).
+[
+  {
+    "name": "ignored-trees",
+    "ignores": [
+      "package-paused/",
+      "package-deprecated/",
+      ".out-of-scope/",
+    ],
+  },
+  {
+    "name": "rust",
+    "files": [
+      "**/*.rs",
+    ],
+    "rules": {
+      "rust/max-lines": {
+        "severity": "error",
+        "max": 300,
+      },
+      "rust/require-rustdoc": {
+        "severity": "error",
+      },
+      // Owner decision 2026-10-05: warn everywhere until no finding is left, then error.
+      "rust/no-anonymous-functions": {
+        "severity": "warn",
+      },
+    },
+  },
+  {
+    "name": "rust-exemptions",
+    "files": [
+      "**/tests/**/*.rs",
+      "**/*_tests.rs",
+      "**/fuzz/**/*.rs",
+      "**/*.fuzz/**/*.rs",
+      "**/build.rs",
+      "**/fixture/**/*.rs",
+      "**/test-fixture/**/*.rs",
+      "**/invalid/**/*.rs",
+      "doc/audit/**/*.rs",
+    ],
+    "ignores": [
+      "**/*.md/**",
+      "**/*.mdx/**",
+    ],
+    "rules": {
+      "rust/max-lines": {
+        "severity": "off",
+      },
+      "rust/require-rustdoc": {
+        "severity": "off",
+      },
+    },
+  },
+  {
+    "name": "markdown",
+    "files": [
+      "**/*.md",
+      "**/*.mdx",
+    ],
+    "rules": {
+      "markdown/heading-increment": {
+        "severity": "error",
+      },
+      "markdown/commands-show-output": {
+        "severity": "error",
+      },
+      "markdown/no-duplicate-heading": {
+        "severity": "error",
+      },
+      "markdown/single-h1": {
+        "severity": "error",
+      },
+      "markdown/no-trailing-punctuation": {
+        "severity": "error",
+      },
+      "markdown/no-bare-urls": {
+        "severity": "error",
+      },
+      "markdown/no-emphasis-as-heading": {
+        "severity": "error",
+      },
+      "markdown/fenced-code-language": {
+        "severity": "error",
+      },
+      "markdown/link-image-reference-definitions": {
+        "severity": "error",
+      },
+      "markdown/link-image-style": {
+        "severity": "error",
+      },
+      "markdown/no-pipe-tables": {
+        "severity": "error",
+      },
+      "markdown/semantic-line-breaks": {
+        "severity": "error",
+      },
+      "markdown/lfs-image-url": {
+        "severity": "error",
+        "exclude": [
+          "package/ssg/",
+        ],
+      },
+    },
+  },
+  {
+    "name": "rustdoc",
+    "files": [
+      "**/*.rs/*.md",
+    ],
+    "rules": {
+      "markdown/single-h1": {
+        "severity": "off",
+      },
+    },
+  },
+  // Rust fences and doc tests report these two rules as warnings until step 8 of the plan fixes
+  // them; that step then deletes this block.
+  {
+    "name": "snippet-burn-down",
+    "files": [
+      "**/*.md/*.rs",
+      "**/*.mdx/*.rs",
+    ],
+    "rules": {
+      "rust/require-rustdoc": {
+        "severity": "warn",
+      },
+      "rust/max-lines": {
+        "severity": "warn",
+      },
+    },
+  },
+]

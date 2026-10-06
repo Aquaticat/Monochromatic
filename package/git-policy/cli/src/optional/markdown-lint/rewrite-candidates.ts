@@ -1,21 +1,19 @@
 // Generated from `package/git-policy/markdown-lint/src/rewrite-candidates.ts` by file-enforcer; edit canonical source owner.
 /**
- Run the markdown-lint CLI over each Markdown candidate and turn its output
+ Run monochromatic-lint over each Markdown candidate and turn its output
  into policy findings: a full-content patch when the fix changed the source,
  and a report-only finding for every violation the selected rules could not
  fix.
 
- The CLI runs as a subprocess because it carries a native parser that cannot
- be bundled into the trusted configuration artifact.
-
  @module
  */
 
-import { spawn, } from 'node:child_process';
-import { once, } from 'node:events';
-import { Readable, } from 'node:stream';
-import { text as consumeText, } from 'node:stream/consumers';
-import { pipeline, } from 'node:stream/promises';
+import {
+  mkdtempDisposable,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
 
 import type {
   CandidateFile,
@@ -23,10 +21,11 @@ import type {
 } from '../../api/index.ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import ignore, { type Ignore, } from 'ignore';
-import * as v from 'valibot';
 
-import { MarkdownLintPluginError, } from './errors.ts';
 import { createFullContentPatch, } from './full-content-patch.ts';
+import { lintConfiguration, } from './lint-configuration.ts';
+import type { ReportedDiagnostic, } from './lint-report.ts';
+import { runMonochromaticLint, } from './run-linter.ts';
 
 /**
  Finding code for a candidate the selected rules rewrote.
@@ -37,21 +36,6 @@ export const AUTOFIX_CODE = 'markdown-autofix';
  Finding code for a violation the selected rules reported without a fix.
  */
 export const VIOLATION_CODE = 'markdown-violation';
-
-/**
- Exit code markdown-lint uses when unfixed violations remain.
- */
-const VIOLATIONS_EXIT_CODE = 1;
-
-/**
- Exit code markdown-lint uses for a usage error.
- */
-const USAGE_EXIT_CODE = 2;
-
-/**
- Longest stderr excerpt quoted when the JSON report cannot be parsed.
- */
-const REPORT_EXCERPT_LENGTH = 200;
 
 /**
  Strict decoder; a candidate that is not UTF-8 is skipped rather than fed to
@@ -103,274 +87,56 @@ function isEligible(candidate: CandidateFile,): boolean {
 }
 
 /**
- One diagnostic of the JSON report markdown-lint writes; extra fields such as
- `path` and `fixable` are accepted and ignored.
+ Parameters for {@link violationFinding}.
  */
-const reportedDiagnosticSchema = v.object({
-  ruleId: v.string(),
-  message: v.string(),
-  line: v.number(),
-  column: v.number(),
-},);
-
-/**
- Complete JSON report: a flat array of diagnostics.
- */
-const reportSchema = v.array(reportedDiagnosticSchema,);
-
-/**
- One diagnostic of the JSON report markdown-lint writes.
- */
-type ReportedDiagnostic = Readonly<v.InferOutput<typeof reportedDiagnosticSchema>>;
-
-/**
- Parse the JSON report markdown-lint writes to stderr in stdin fix mode.
-
- @param stderr - subprocess stderr
-
- @returns reported diagnostics, empty when stderr carries none
-
- @throws {@link MarkdownLintPluginError} when stderr is not the JSON report
- */
-function parseReport(stderr: string,): readonly ReportedDiagnostic[] {
+type ViolationFindingParams = Readonly<{
   /**
-   Report text without surrounding whitespace.
+   Reported finding.
    */
-  const trimmed = stderr.trim();
-  if (trimmed === '') {
-    return [];
-  }
+  diagnostic: ReportedDiagnostic;
   /**
-   Parsed JSON value, whatever its shape.
-   */
-  const parsed: unknown = (function parseJson(): unknown {
-    try {
-      return JSON.parse(trimmed,);
-    }
-    catch (error) {
-      throw new MarkdownLintPluginError(
-        `markdown-lint report could not be parsed: ${stderr.slice(
-          0,
-          REPORT_EXCERPT_LENGTH,
-        )}`,
-        { cause: error, },
-      );
-    }
-  })();
-  /**
-   Shape check against the flat diagnostic array.
-   */
-  const checked = v.safeParse(
-    reportSchema,
-    parsed,
-  );
-  if (!checked.success) {
-    throw new MarkdownLintPluginError(
-      `markdown-lint report has an unexpected shape: ${checked.issues
-        .map(function issueMessage(issue,): string {
-          return issue.message;
-        },)
-        .join('; ',)}`,
-    );
-  }
-  return checked.output;
-}
-
-/**
- Outcome of one markdown-lint subprocess run.
- */
-type LintRun = Readonly<{
-  /**
-   Fixed source from stdout.
-   */
-  fixedText: string;
-  /**
-   Violations the selected rules could not fix.
-   */
-  remaining: readonly ReportedDiagnostic[];
-}>;
-
-/**
- Parameters for {@link runMarkdownLint}.
- */
-type RunMarkdownLintParams = Readonly<{
-  /**
-   Command and leading arguments that start markdown-lint.
-   */
-  command: readonly string[];
-  /**
-   Rule ids to run.
-   */
-  rules: readonly string[];
-  /**
-   gitignore-syntax patterns the `lfs-image-url` rule must skip.
-   */
-  exclude: readonly string[];
-  /**
-   Repository root, the subprocess working directory.
-   */
-  repositoryRoot: string;
-  /**
-   Repository-relative path the source is linted as.
+   Candidate path the finding belongs to.
    */
   path: string;
-  /**
-   Candidate text.
-   */
-  text: string;
-  /**
-   Engine cancellation signal.
-   */
-  signal: AbortSignal;
 }>;
 
 /**
- Run markdown-lint in stdin fix mode over one candidate.
+ Policy finding for one violation the selected rules could not fix.
 
- @param command - command and leading arguments that start markdown-lint
+ @param diagnostic - reported finding
 
- @param rules - rule ids to run
+ @param path - candidate path the finding belongs to
 
- @param exclude - gitignore-syntax patterns the `lfs-image-url` rule must skip
-
- @param repositoryRoot - repository root, the subprocess working directory
-
- @param path - repository-relative path the source is linted as
-
- @param text - candidate text
-
- @param signal - engine cancellation signal
-
- @returns fixed text and remaining violations
-
- @throws {@link MarkdownLintPluginError} when the subprocess cannot start, is interrupted, or reports a usage error
+ @returns report-only finding naming the rule and its first label's position
  */
-async function runMarkdownLint({
-  command,
-  rules,
-  exclude,
-  repositoryRoot,
+function violationFinding({
+  diagnostic,
   path,
-  text,
-  signal,
-}: RunMarkdownLintParams,): Promise<LintRun> {
+}: ViolationFindingParams,): PolicyFinding {
   /**
-   Executable and its leading arguments.
+   First label, when the finding has one.
    */
-  const [executable, ...leading] = command;
-  if (executable === undefined) {
-    throw new MarkdownLintPluginError('markdown-lint command is empty.',);
-  }
-  /**
-   Complete argv: leading arguments, fix mode, JSON report, stdin path, rules, excludes.
-   */
-  const args = [
-    ...leading,
-    '--fix',
-    '--format=json',
-    `--stdin-path=${path}`,
-    ...rules.map(function ruleFlag(rule: string,): string {
-      return `--rule=${rule}`;
-    },),
-    ...exclude.map(function excludeFlag(pattern: string,): string {
-      return `--lfs-image-exclude=${pattern}`;
-    },),
-  ];
-  /**
-   One markdown-lint process for this candidate. Raw `spawn` rather than a
-   wrapper because the fixed source must round-trip byte-exact: wrappers that
-   strip a final newline would make every candidate look rewritten.
-   */
-  const child = spawn(
-    executable,
-    args,
-    {
-      cwd: repositoryRoot,
-      signal,
-      stdio: [
-        'pipe',
-        'pipe',
-        'pipe',
-      ],
-    },
-  );
-  /**
-   Concurrent output consumers keep both pipes drained; the fixed source is
-   taken exactly as written, final newline included.
-   */
-  const output = Promise.all([
-    consumeText(child.stdout,),
-    consumeText(child.stderr,),
-  ],);
-  /**
-   Process exit and stdin delivery, settled independently: the CLI may exit
-   with a usage error before it reads stdin, which surfaces here as a broken
-   pipe and never as an uncaught stream error.
-   */
-  const [closed, delivered,] = await Promise.allSettled([
-    once(
-      child,
-      'close',
-    ),
-    pipeline(
-      Readable.from([text,],),
-      child.stdin,
-    ),
-  ],);
-  /**
-   Fixed source and JSON report.
-   */
-  const [stdout, stderr,] = await output;
-  if (closed.status === 'rejected') {
-    /**
-     Spawn or abort failure reported on the process itself.
-     */
-    const failure: unknown = closed.reason;
-    if (Error.isError(failure,) && (failure.name === 'AbortError')) {
-      throw new MarkdownLintPluginError(
-        'markdown-lint was interrupted by the engine.',
-        { cause: failure, },
-      );
-    }
-    throw new MarkdownLintPluginError(
-      'markdown-lint could not be started.',
-      { cause: failure, },
-    );
-  }
-  if (child.signalCode !== null) {
-    throw new MarkdownLintPluginError(
-      `markdown-lint was interrupted by ${child.signalCode}.`,
-      { cause: closed.value, },
-    );
-  }
-  if (child.exitCode === 0) {
-    if (delivered.status === 'rejected') {
-      throw new MarkdownLintPluginError(
-        'markdown-lint exited successfully without reading its input.',
-        { cause: delivered.reason, },
-      );
-    }
+  const [label,] = diagnostic.labels;
+  if (label === undefined) {
     return {
-      fixedText: stdout,
-      remaining: [],
+      code: VIOLATION_CODE,
+      message: `${diagnostic.code} at ${path}: ${diagnostic.message}`,
+      path,
     };
   }
-  if (child.exitCode === VIOLATIONS_EXIT_CODE) {
-    return {
-      fixedText: stdout,
-      remaining: parseReport(stderr,),
-    };
-  }
-  if (child.exitCode === USAGE_EXIT_CODE) {
-    throw new MarkdownLintPluginError(
-      `markdown-lint rejected its arguments: ${stderr.trim()}`,
-      { cause: delivered.status === 'rejected' ? delivered.reason : undefined, },
-    );
-  }
-  throw new MarkdownLintPluginError(
-    `markdown-lint exited with infrastructure status ${String(child.exitCode,)}: ${stderr.trim()}`,
-    { cause: delivered.status === 'rejected' ? delivered.reason : undefined, },
-  );
+  /**
+   One-based position of the first label.
+   */
+  const { span, } = label;
+  /**
+   `path:line:column` of the finding.
+   */
+  const location = `${path}:${String(span.line,)}:${String(span.column,)}`;
+  return {
+    code: VIOLATION_CODE,
+    message: `${diagnostic.code} at ${location}: ${diagnostic.message}`,
+    path,
+  };
 }
 
 /**
@@ -378,17 +144,17 @@ async function runMarkdownLint({
  */
 type RewriteCandidateParams = Readonly<{
   /**
-   Command and leading arguments that start markdown-lint.
+   Command and leading arguments that start monochromatic-lint.
    */
   command: readonly string[];
   /**
-   Rule ids to run.
+   Rule ids to run, as listed in the autofix message.
    */
   rules: readonly string[];
   /**
-   gitignore-syntax patterns the `lfs-image-url` rule must skip.
+   Configuration file selecting the rules.
    */
-  exclude: readonly string[];
+  configPath: string;
   /**
    Repository root, the subprocess working directory.
    */
@@ -410,11 +176,11 @@ type RewriteCandidateParams = Readonly<{
 /**
  Findings for one eligible candidate.
 
- @param command - command and leading arguments that start markdown-lint
+ @param command - command and leading arguments that start monochromatic-lint
 
  @param rules - rule ids to run
 
- @param exclude - gitignore-syntax patterns the `lfs-image-url` rule must skip
+ @param configPath - configuration file selecting the rules
 
  @param repositoryRoot - repository root, the subprocess working directory
 
@@ -429,7 +195,7 @@ type RewriteCandidateParams = Readonly<{
 async function rewriteCandidate({
   command,
   rules,
-  exclude,
+  configPath,
   repositoryRoot,
   canApplyPatches,
   candidate,
@@ -463,10 +229,9 @@ async function rewriteCandidate({
   /**
    Fixed text and remaining violations.
    */
-  const run = await runMarkdownLint({
+  const run = await runMonochromaticLint({
     command,
-    rules,
-    exclude,
+    configPath,
     repositoryRoot,
     path: candidate.path,
     text,
@@ -477,11 +242,10 @@ async function rewriteCandidate({
    */
   const violations: readonly PolicyFinding[] = run.remaining
     .map(function toFinding(diagnostic: ReportedDiagnostic,): PolicyFinding {
-      return {
-        code: VIOLATION_CODE,
-        message: `${diagnostic.ruleId} at ${candidate.path}:${String(diagnostic.line,)}:${String(diagnostic.column,)}: ${diagnostic.message}`,
+      return violationFinding({
+        diagnostic,
         path: candidate.path,
-      };
+      },);
     },);
   if (run.fixedText === text) {
     return violations;
@@ -491,7 +255,7 @@ async function rewriteCandidate({
    */
   const autofix: PolicyFinding = {
     code: AUTOFIX_CODE,
-    message: `markdown-lint --fix (${rules.join(', ',)}) rewrites ${candidate.path}.`,
+    message: `monochromatic-lint --fix (${rules.join(', ',)}) rewrites ${candidate.path}.`,
     path: candidate.path,
   };
   if ((!canApplyPatches) || ((typeof candidate.revision) !== 'string')) {
@@ -527,8 +291,8 @@ async function rewriteCandidate({
  */
 export type RewriteCandidatesParams = Readonly<{
   /**
-   Command and leading arguments that start markdown-lint, resolved from the
-   repository root.
+   Command and leading arguments that start monochromatic-lint, resolved from
+   the repository root.
    */
   command: readonly string[];
   /**
@@ -559,10 +323,12 @@ export type RewriteCandidatesParams = Readonly<{
 }>;
 
 /**
- Run markdown-lint over every eligible Markdown candidate, sequentially so a
- large commit never fans out one subprocess per file at once.
+ Run monochromatic-lint over every eligible Markdown candidate, sequentially
+ so a large commit never fans out one subprocess per file at once. The
+ configuration file lives in a private temporary directory that is removed
+ when the run ends, whether or not it succeeded.
 
- @param command - command and leading arguments that start markdown-lint
+ @param command - command and leading arguments that start monochromatic-lint
 
  @param rules - rule ids to run
 
@@ -581,8 +347,8 @@ export type RewriteCandidatesParams = Readonly<{
  @example
  ```ts
  await rewriteCandidates({
-   command: ['node', 'package/cli/markdown-lint/src/cli.ts'],
-   rules: ['lfs-image-url'],
+   command: ['monochromatic-lint'],
+   rules: ['markdown/lfs-image-url'],
    exclude: ['package/ssg/'],
    repositoryRoot: '/repo',
    canApplyPatches: true,
@@ -611,16 +377,45 @@ export async function rewriteCandidates({
   const eligible = candidates.filter(function inspects(candidate: CandidateFile,): boolean {
     return isEligible(candidate,) && (!excluded.ignores(candidate.path,));
   },);
+  if (eligible.length === 0) {
+    return [];
+  }
+  /**
+   Private directory, created with mode 0700, holding the configuration file
+   and removed with it when this scope ends.
+   */
+  await using configDirectory = await mkdtempDisposable(join(
+    tmpdir(),
+    'cli-git-markdown-autofix-',
+  ),);
+  /**
+   Configuration file the subprocess reads through `--config`.
+   */
+  const configPath = join(
+    configDirectory.path,
+    'monochromatic-lint.config.jsonc',
+  );
+  await writeFile(
+    configPath,
+    lintConfiguration({
+      rules,
+      exclude,
+    },),
+    {
+      flag: 'wx',
+      mode: 0o600,
+    },
+  );
   /**
    Findings accumulated one candidate at a time.
    */
   const findings: PolicyFinding[] = [];
-  /* oxlint-disable no-await-in-loop -- Each candidate starts a Node subprocess; sequential runs bound concurrent process count on large commits. */
+  /* oxlint-disable no-await-in-loop -- Each candidate starts a linter subprocess; sequential runs bound concurrent process count on large commits. */
   for (const candidate of eligible) {
     findings.push(...await rewriteCandidate({
       command,
       rules,
-      exclude,
+      configPath,
       repositoryRoot,
       canApplyPatches,
       candidate,

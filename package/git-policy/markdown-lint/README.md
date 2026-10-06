@@ -1,6 +1,6 @@
 # Git policy markdown-lint
 
-Optional cli-git policy that runs `cli-markdown-lint --fix` over the Markdown files of a commit,
+Optional cli-git policy that runs `monochromatic-lint --fix` over the Markdown files of a commit,
 inside the commit transaction,
 so the selected rules land their fixes in the commit itself.
 
@@ -12,28 +12,40 @@ Importing either package does not register or enable the policy.
 
 Issue #476:
 a Markdown image that points at an LFS-tracked file renders as pointer text on GitHub.
-The `lfs-image-url` rule of `cli-markdown-lint` rewrites such links to object URLs on the repository's LFS server,
+The `markdown/lfs-image-url` rule of `monochromatic-lint` rewrites such links to object URLs on the repository's LFS server,
 and this policy applies that rewrite at commit time so authors keep writing relative links.
 
 ## How it works
 
 For every candidate that is an added or modified `.md` or `.mdx` file,
 the policy pipes the exact candidate bytes into
-`markdown-lint --fix --format=json --stdin-path=<path> --rule=<id>...`
+`monochromatic-lint --config <file> --stdin --stdin-filename <path> --fix`
 with the repository root as working directory.
+The configuration file is written once per run into a private temporary directory,
+which is removed when the run ends:
+one block selecting `**/*.md` and `**/*.mdx`,
+with each selected rule at `error` and the `exclude` patterns as the option of `markdown/lfs-image-url`.
+The repository's own `monochromatic-lint.config.jsonc` therefore never decides what a commit rewrites.
 
 - A changed result becomes a `markdown-autofix` finding carrying a full-content `git-unified` patch,
   which cli-git applies to its private index before real Git commits.
   At lifecycle points that cannot apply patches the same finding is report-only.
-- Every violation the selected rules could not fix becomes a `markdown-violation` finding without a patch.
+- Every violation the selected rules could not fix becomes a `markdown-violation` finding without a patch,
+  read from the JSON Lines report on standard error with its line and column.
+- A candidate the linter could not process,
+  such as MDX that fails to parse,
+  exits 2 with the reason as a `core/processing-failure` finding;
+  the policy reports it as a `markdown-violation` and leaves the candidate unchanged.
 - Candidates that are not UTF-8 are skipped.
 - A subprocess that cannot start,
   is interrupted,
-  or reports a usage error raises `MarkdownLintPluginError`.
+  rejects its arguments or configuration,
+  or exits with a status outside 0,
+  1 and 2 raises `MarkdownLintPluginError`.
 
-The CLI runs as a subprocess because it carries a native parser that cannot be bundled into the trusted
-configuration artifact.
-Candidates are processed one at a time so a large commit never starts one Node process per file at once.
+The linter runs as a subprocess because it is a native executable,
+which cannot be bundled into the trusted configuration artifact.
+Candidates are processed one at a time so a large commit never starts one linter process per file at once.
 
 The fixed source is read from the subprocess byte-exact through `spawn` and a stream consumer;
 `nano-spawn` strips the final newline from `stdout`,
@@ -67,7 +79,7 @@ export default defineConfig({
     'markdown/autofix': [
       'warn',
       {
-        rules: ['lfs-image-url',],
+        rules: ['markdown/lfs-image-url',],
         exclude: ['package/ssg/',],
       },
     ],
@@ -80,14 +92,15 @@ Options:
 - `command`:
   executable and leading arguments,
   resolved from the repository root.
-  Default `['node', 'package/cli/markdown-lint/src/cli.ts']`.
+  Default `['monochromatic-lint']`,
+  the executable the repository installs through mise as `cargo:monochromatic-lint`.
 - `rules`:
-  rule ids markdown-lint runs.
-  Default `['lfs-image-url']`,
+  monochromatic-lint rule ids to enable at `error`.
+  Default `['markdown/lfs-image-url']`,
   so prose rules never rewrite a commit unasked.
 - `exclude`:
   gitignore-syntax patterns for candidates the policy leaves alone;
-  also forwarded to the `lfs-image-url` rule.
+  also given to the `markdown/lfs-image-url` rule as its `exclude` option.
   Default empty.
 
 The default severity is `warn` and the policy is warn-safe:
@@ -102,3 +115,8 @@ mise run //package/git-policy/markdown-lint:build
 mise run //package/git-policy/markdown-lint:test:unit
 mise run //package/git-policy/markdown-lint:lint
 ```
+
+The unit tests start the real `monochromatic-lint` found on `PATH`,
+so it has to be installed first,
+which `mise install` at the repository root does.
+Stand-in Node scripts cover the exit statuses and signals the real linter does not produce on demand.

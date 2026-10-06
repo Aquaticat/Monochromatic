@@ -213,7 +213,7 @@ Repo-owned policies ship in the same package-root MJS artifact but remain disabl
 The current optional exports are `repositoryPolicyPlugin`,
 `forbiddenStringsPlugin`,
 and `markdownLintPlugin`.
-`markdownLintPlugin` runs `cli-markdown-lint --fix` over Markdown candidates inside the commit transaction;
+`markdownLintPlugin` runs `monochromatic-lint --fix` over Markdown candidates inside the commit transaction;
 its source and options live in `package/git-policy/markdown-lint/README.md`.
 
 ```ts
