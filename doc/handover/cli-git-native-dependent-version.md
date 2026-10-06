@@ -389,7 +389,8 @@ No difference was found outside the probes.
 Each planted defect was built in a disposable copy of the crate
 (`--plant`),
 and the same corpus was compared again,
-on the tree of commit `7d9808522`;
+on commits `7d9808522` and `ac49900f2`,
+which differ only in this document;
 each run exited 1:
 
 - `wrong-component`
