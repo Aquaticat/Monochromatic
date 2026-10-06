@@ -53,7 +53,7 @@ not to the template language.
 ## Authored native fixture
 
 The owned branch `prototype/music-player-first-run-access` holds the study at
-`4df8e785cc7f5dff97c4d463c8c9358f5787bbff`.
+`66566ee3aa0bbd08b2fb087342f43b546cc88210`.
 Its production source is unchanged from `a5560abb223af9f700b9d9465eac1991a02aac07`,
 which the build checks with a source comparison,
 not a digest.
@@ -71,7 +71,10 @@ not logic.
 error lines and typing help),
 and `template-editor-scenes.mjs` computes from it every text each state must draw.
 A capture whose page draws anything else is refused.
-The fixture's own unit task passes with 22 cases.
+The fixture's own test class passes with 24 cases,
+and the app's whole unit task with 250.
+The deck's line is a parameter whose default is the earlier fixed text,
+so only this study draws the playing track's default there.
 
 Two launch options select what is drawn:
 

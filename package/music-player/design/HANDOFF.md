@@ -132,8 +132,13 @@ proposed in `doc/planning/music-player-template-editor.md` under
 The reference and scenes are committed
 (94 reference cases,
 9 scenes);
-the prototype fixture gains the `Playing track` editor and the `empty-library` state;
-then a 72-view cohort,
+the prototype fixture gains the `Playing track` editor and the `empty-library` state
+at `66566ee3aa0bbd08b2fb087342f43b546cc88210`
+(250 unit tests pass,
+24 of them the fixture's;
+APK kept in `settings-pane-native-private/build-66566ee3aa0bbd08b2fb087342f43b546cc88210`);
+then a 72-view cohort
+(capturing with the visit prefix `d97`),
 publication,
 and the approval question through the question tool.
 Until that cohort is published,
