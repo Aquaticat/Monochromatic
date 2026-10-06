@@ -332,3 +332,24 @@ pub mod owner_lock_record;
 
 /// Rename-published owner locks with dead-owner retirement and an unbounded wait.
 pub mod owner_lock;
+
+/// Line-oriented debug and warning diagnostics on standard error.
+pub mod diagnostic_log;
+
+/// The fail-closed failure of reading or recovering durable transaction state.
+pub mod recovery_error;
+
+/// The owner record of one commit-transaction directory and its liveness rule.
+pub mod transaction_owner;
+
+/// The per-worktree registry of commit-transaction directories.
+pub mod transaction_registry;
+
+/// The schema-version-2 journal records of one commit transaction and their filenames.
+pub mod transaction_journal;
+
+/// The exact encoding of every journal record.
+pub mod transaction_journal_encode;
+
+/// Strict parsers of every journal record.
+pub mod transaction_journal_parse;

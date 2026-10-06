@@ -479,3 +479,57 @@ fn failures_are_described() {
         "no source"
     );
 }
+
+/// Interoperability probe, run by `native-interop/owner-locks.mjs` in the interoperability
+/// image: one native lock or identity operation chosen by `INTEROP_ACTION`, its answer on
+/// standard output for the driver to compare with the incumbent.
+#[test]
+#[ignore = "run by the interoperability drivers, which set INTEROP_ACTION"]
+fn interop_probe() {
+    let action: String = std::env::var("INTEROP_ACTION").expect("INTEROP_ACTION");
+    if action == "identity" {
+        let pid: i64 = std::env::var("INTEROP_PID")
+            .expect("INTEROP_PID")
+            .parse()
+            .expect("PID");
+        match process_birth_identity(pid).expect("identity probe") {
+            Some(identity) => println!("identity={identity}"),
+            None => println!("identity-absent"),
+        }
+        return;
+    }
+    let lock_directory: PathBuf = PathBuf::from(std::env::var_os("INTEROP_LOCK").expect("lock"));
+    if action == "try" {
+        match try_acquire_owner_lock(lock_directory.as_path(), None).expect("try") {
+            Some(lock) => {
+                println!("acquired");
+                lock.release().expect("release");
+            }
+            None => println!("busy"),
+        }
+        return;
+    }
+    if action == "acquire" {
+        let lock: OwnerLock = acquire_owner_lock(
+            lock_directory.as_path(),
+            DEFAULT_POLL_DELAY,
+            &mut SilentWait,
+        )
+        .expect("acquire");
+        println!("acquired");
+        lock.release().expect("release");
+        return;
+    }
+    assert_eq!(action, "hold", "unknown INTEROP_ACTION");
+    let ready: PathBuf = PathBuf::from(std::env::var_os("INTEROP_READY").expect("ready"));
+    let release: PathBuf = PathBuf::from(std::env::var_os("INTEROP_RELEASE").expect("release"));
+    let lock: OwnerLock = try_acquire_owner_lock(lock_directory.as_path(), None)
+        .expect("try")
+        .expect("the lock is free");
+    std::fs::write(&ready, std::process::id().to_string()).expect("announce");
+    while !release.exists() {
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    lock.release().expect("release");
+    println!("released");
+}

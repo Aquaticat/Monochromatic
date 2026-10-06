@@ -12,6 +12,7 @@ import { once } from 'node:events';
 import {
   mkdir,
   mkdtemp,
+  readFile,
   writeFile,
 } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -230,4 +231,185 @@ export function expect({
   if (!condition)
     throw new InteropError(message);
   console.log(`ok: ${message}`);
+}
+
+/**
+ A process started in the background with its eventual outcome.
+ @typedef {{ child: import('node:child_process').ChildProcess, outcome: Promise<RunOutcome> }} BackgroundRun
+ */
+
+/**
+ Start one argument array in the background, capturing its output.
+
+ @param {{ command: string, args: readonly string[], cwd: string, env: Record<string, string> }} request -
+   executable, arguments, working directory and complete environment
+ @returns {BackgroundRun} the child and a promise of its outcome
+ */
+export function startBackground({
+  command,
+  args,
+  cwd,
+  env,
+}) {
+  const child = spawn(
+    command,
+    [...args],
+    {
+      cwd,
+      env,
+      stdio: [
+        'ignore',
+        'pipe',
+        'pipe',
+      ],
+    },
+  );
+  /** @type {Buffer[]} */
+  const out = [];
+  /** @type {Buffer[]} */
+  const err = [];
+  child.stdout.on(
+    'data',
+    function collectStdout(chunk) {
+      out.push(chunk);
+    },
+  );
+  child.stderr.on(
+    'data',
+    function collectStderr(chunk) {
+      err.push(chunk);
+    },
+  );
+  const outcome = once(
+    child,
+    'close',
+  )
+    .then(function finished([status, signal]) {
+      return {
+        status,
+        signal,
+        stdout: Buffer.concat(out)
+          .toString('utf8'),
+        stderr: Buffer.concat(err)
+          .toString('utf8'),
+      };
+    });
+  return {
+    child,
+    outcome,
+  };
+}
+
+/**
+ Wait until a file exists, failing after a bound.
+
+ @param {{ path: string, timeoutMs?: number }} request - file to wait for and the bound
+ @returns {Promise<string>} the file's text
+ */
+export async function waitForFile({
+  path,
+  timeoutMs = 60_000,
+}) {
+  const started = Date.now();
+  for (;;) {
+    try {
+      return await readFile(
+        path,
+        'utf8',
+      );
+    }
+    catch (error) {
+      if (error.code !== 'ENOENT')
+        throw error;
+    }
+    if (Date.now() - started > timeoutMs)
+      throw new InteropError(`${path} did not appear within ${String(timeoutMs)} ms`);
+    await sleep(20);
+  }
+}
+
+/**
+ Pause for a while.
+
+ @param {number} milliseconds - delay
+ @returns {Promise<void>} settles after the delay
+ */
+export function sleep(milliseconds) {
+  return new Promise(function schedule(resolveSleep) {
+    setTimeout(
+      resolveSleep,
+      milliseconds,
+    );
+  });
+}
+
+/** Directory of the native crate inside the image, where its release test binary was built. */
+export const NATIVE_CRATE = '/work/package/git-policy/cli';
+
+/**
+ Path of the release library test binary, which holds the native interoperability probes.
+
+ @returns {Promise<string>} absolute executable path
+ */
+export async function nativeProbeBinary() {
+  const listed = await runOk({
+    command: 'cargo',
+    args: [
+      'test',
+      '--offline',
+      '--locked',
+      '--release',
+      '--lib',
+      '--no-run',
+      '--message-format=json',
+    ],
+    cwd: NATIVE_CRATE,
+    env: {
+      ...process.env,
+    },
+  });
+  for (const line of listed.split('\n')) {
+    if (!line.startsWith('{'))
+      continue;
+    const message = JSON.parse(line);
+    if (message.reason === 'compiler-artifact' && typeof message.executable === 'string')
+      return message.executable;
+  }
+  throw new InteropError('cargo listed no library test executable');
+}
+
+/**
+ Run one native probe test with its parameters and return its answer lines.
+
+ @param {{ binary: string, test: string, env: Record<string, string>, cwd: string }} request -
+   test binary, exact test path, probe variables and working directory
+ @returns {Promise<string[]>} the probe's own output lines, harness lines removed
+ */
+export async function runNativeProbe({
+  binary,
+  test,
+  env,
+  cwd,
+}) {
+  const stdout = await runOk({
+    command: binary,
+    args: [
+      '--exact',
+      test,
+      '--ignored',
+      '--nocapture',
+      '--test-threads=1',
+      '--quiet',
+    ],
+    cwd,
+    env: {
+      PATH: SYSTEM_PATH,
+      HOME: process.env.HOME ?? '/home/tester',
+      ...env,
+    },
+  });
+  return stdout.split('\n')
+    .filter(function isAnswer(line) {
+      return /^(identity|busy|acquired|released)/u.test(line);
+    });
 }
