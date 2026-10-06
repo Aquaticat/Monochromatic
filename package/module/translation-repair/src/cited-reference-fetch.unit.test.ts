@@ -20,6 +20,7 @@ import {
 
 import {
   CitedReferenceFetchError,
+  CREDENTIAL_MARKER,
   EXA_CONTENTS_URL,
   fetchCitedReference,
   fetchedOf,
@@ -28,6 +29,7 @@ import {
   bodyCutBy,
   invalidHeaderRejection,
 } from './body-cut-response.test-fixture.ts';
+import { WHISKER_KEY, } from './quoting-failure.test-fixture.ts';
 import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 
 /**
@@ -267,6 +269,40 @@ await describe({
             },).toEqual({
               interrupted: `CitedReferenceFetchError: contents lost the network while ${EXA_CONTENTS_URL} was answering`,
               cause: cut,
+            },);
+          },
+        },),
+        it({
+          name: 'MASKS A SENT KEY THE ENDPOINT ECHOES before the body is parsed, in a title and in the page text, '
+            + 'since a fetched reference goes into a sheet a model reads and into the reference cache on disk',
+          fn: async () => {
+            /**
+             Transport answering with one page that repeats the key the request carried.
+
+             @returns A 200 whose page echoes the key twice
+             */
+            async function echoing(): Promise<Response> {
+              return Response.json({
+                results: [
+                  {
+                    title: `The Lost Cat of ${WHISKER_KEY}`,
+                    text: `Mittens wandered off at dusk with ${WHISKER_KEY}.`,
+                  },
+                ],
+                statuses: [{ status: 'success', },],
+              },);
+            }
+            expect(
+              await fetchCitedReference({
+                apiKey: WHISKER_KEY,
+                url: 'https://cats.example/post',
+                signal: SIGNAL,
+                fetchFn: echoing,
+              },),
+            ).toEqual({
+              status: 'success',
+              title: `The Lost Cat of ${CREDENTIAL_MARKER}`,
+              text: `Mittens wandered off at dusk with ${CREDENTIAL_MARKER}.`,
             },);
           },
         },),

@@ -20,6 +20,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CREDENTIAL_MARKER,
   EXA_SEARCH_URL,
   isLookupRecord,
   lookupCacheDir,
@@ -40,6 +41,7 @@ import {
   bodyCutBy,
   invalidHeaderRejection,
 } from './body-cut-response.test-fixture.ts';
+import { WHISKER_KEY, } from './quoting-failure.test-fixture.ts';
 import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
@@ -506,6 +508,42 @@ await describe({
               interrupted: `WorkTitleLookupError: search lost the network while ${EXA_SEARCH_URL} was answering`,
               cause: cut,
             },);
+          },
+        },),
+        it({
+          name: 'MASKS A SENT KEY THE ENDPOINT ECHOES before the body is parsed, in a title, an address and a '
+            + 'highlight, since a hit goes into a sheet a model reads and into the lookup cache on disk',
+          fn: async () => {
+            /**
+             Transport answering with one result that repeats the key the request carried.
+
+             @returns A 200 whose result echoes the key three times
+             */
+            async function echoing(): Promise<Response> {
+              return Response.json({
+                results: [
+                  {
+                    title: `Whiskers of ${WHISKER_KEY}`,
+                    url: `https://cats.example/${WHISKER_KEY}`,
+                    highlights: [`the key ${WHISKER_KEY} again`,],
+                  },
+                ],
+              },);
+            }
+            expect(
+              await searchWorkTitle({
+                apiKey: WHISKER_KEY,
+                query: '《活着》 official English title',
+                signal: SIGNAL,
+                fetchFn: echoing,
+              },),
+            ).toEqual([
+              {
+                title: `Whiskers of ${CREDENTIAL_MARKER}`,
+                url: `https://cats.example/${CREDENTIAL_MARKER}`,
+                highlight: `the key ${CREDENTIAL_MARKER} again`,
+              },
+            ],);
           },
         },),
       ],
