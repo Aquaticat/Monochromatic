@@ -333,6 +333,12 @@ pub fn run(options: Options) -> anyhow::Result<()> {
         language_worker,
     );
     render(&window, &state);
+    // Prototype watch-limit b: `IDE_PROTOTYPE_WATCH_LIMIT` stands in for the watch thread reporting the limit.
+    if std::env::var_os("IDE_PROTOTYPE_WATCH_LIMIT").is_some() {
+        window.set_watch_limit_message(SharedString::from(
+            "changes may show up to 1 s late. Raise it with sudo sysctl fs.inotify.max_user_watches=1048576",
+        ));
+    }
     // Debug builds started with `IDE_INSPECT_ANNOTATIONS` show that file's hints and diagnostics; see `inspect`.
     #[cfg(debug_assertions)]
     inspect::inject(&window, &state)?;

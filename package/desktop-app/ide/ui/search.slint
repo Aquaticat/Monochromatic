@@ -54,7 +54,10 @@ export component ProjectSearch inherits Rectangle {
     FocusScope {
         width: parent.width;
         height: parent.height;
-        // Prototype padding-click b: the scope is a focus owner again, as before 2026-10-05.
+        // Only the query input holds focus; this scope observes its keys. As a focus owner it would take
+        // keyboard focus from the input on a click in the panel's padding.
+        focus-on-tab-navigation: false;
+        focus-on-click: false;
         capture-key-pressed(event) => {
             if event.text == Key.Escape { root.dismiss(); return accept; }
             if event.text == Key.Tab { return accept; }

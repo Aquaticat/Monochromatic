@@ -169,6 +169,9 @@ export component AppWindow inherits Window {
     // Ink for selected rows of the tree, the search results, and the location list. Native code sets it to
     // the ink it chooses from the selection fill, the same one selected source text is drawn in.
     in property <brush> selected-row-ink: Palette.selection-foreground;
+    // Prototype watch-limit b: one line naming the reached watch limit and its remedy; empty hides it.
+    in property <string> watch-limit-message;
+    private property <length> watch-row-height: root.watch-limit-message == "" ? 0px : 32px;
     // Tint of a hovered or focused selected tree row. Native code sets it to the opposite of that ink,
     // so the tint never moves the fill toward the text.
     in property <brush> selected-row-tint: Palette.foreground;
@@ -262,6 +265,7 @@ export component AppWindow inherits Window {
             reject
         }
     HorizontalLayout {
+        height: parent.height - root.watch-row-height;
         spacing: 0px;
         project-tree := ProjectTree {
             visible: root.project-visible;
@@ -542,6 +546,25 @@ export component AppWindow inherits Window {
             }
         }
     }
+    // Prototype watch-limit b: a row along the bottom edge, only while the watch limit is reached.
+    // Two marks besides its text: the warning letter tile and a boundary above the row.
+    if root.watch-limit-message != "": Rectangle {
+        y: parent.height - self.height;
+        width: parent.width;
+        height: root.watch-row-height;
+        background: Palette.background;
+        accessible-role: text;
+        accessible-label: "File-watch limit reached: " + root.watch-limit-message;
+        Rectangle { y: 0px; width: parent.width; height: 1px; background: Palette.foreground; }
+        HorizontalLayout {
+            padding-left: 12px;
+            padding-right: 12px;
+            spacing: 8px;
+            VerticalLayout { alignment: center; SeverityMarker { severity: 1; } }
+            Text { text: "File-watch limit reached:"; color: Palette.foreground; font-weight: 700; vertical-alignment: center; accessible-role: none; }
+            Text { horizontal-stretch: 1; text: root.watch-limit-message; color: Palette.foreground; vertical-alignment: center; overflow: elide; accessible-role: none; }
+        }
+    }
     // The pointer half of the divider. It is declared after the layout, so inside its zone it is above the
     // tree and the source and takes the pointer first; the language and search surfaces are above it.
     SidebarDividerGrip {
@@ -549,7 +572,7 @@ export component AppWindow inherits Window {
         visible: root.project-visible;
         x: project-tree.width - self.reach;
         y: 0px;
-        height: parent.height;
+        height: parent.height - root.watch-row-height;
         value: root.sidebar-width;
         keyboard-focus: sidebar-divider.has-focus;
         resize(width) => { root.resize-sidebar(width); }
