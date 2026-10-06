@@ -103,15 +103,18 @@ fn private_index_failure(step: &str, error: &std::io::Error) -> CandidateError {
 /// await mkdir(directory, { mode: 0o700 }); // throws EEXIST
 /// ```
 fn create_private_directory(directory: &Path) -> std::io::Result<()> {
-    // `mut` lets the builder be configured before it runs.
-    let mut builder: std::fs::DirBuilder = std::fs::DirBuilder::new();
     #[cfg(unix)]
     {
-        /// The trait adds `.mode(..)`, the permission bits of the new directory.
+        /// `DirBuilderExt` adds `mode`, the permissions a new directory is created with.
         use std::os::unix::fs::DirBuilderExt;
-        builder.mode(0o700);
+        // `.mode(0o700)` configures the temporary builder; `.create` makes the directory.
+        return std::fs::DirBuilder::new().mode(0o700).create(directory);
     }
-    return builder.create(directory);
+    #[cfg(not(unix))]
+    {
+        // Other systems have no mode bits to set; the directory is created as it is.
+        return std::fs::DirBuilder::new().create(directory);
+    }
 }
 
 /// What: Copy the real index into `destination` and give the copy the real index's times.
