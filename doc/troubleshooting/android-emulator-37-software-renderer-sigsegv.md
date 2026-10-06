@@ -318,6 +318,29 @@ After each crash it checks for owners and moves the stale locks to a backup,
 as [the lock record](android-emulator-37-disposable-avd-lock-after-hard-stop.md)
 prescribes.
 
+### Fourth and fifth occurrences the same day
+
+Two more visits under that driver ended the same way,
+each with `Segmentation fault (core dumped)` as the emulator's last line:
+one after 19 views,
+with a load average near 27 read a few minutes after it,
+and one after 18 views,
+with a load average of 53 read a few minutes after it.
+During the second of these,
+the agent was also running a browser check in a separate 2 CPU container.
+Between them,
+one visit captured 32 views and shut down without a crash.
+
+So on this host the crash came after 5,
+19 and 18 views in three visits and not at all in a fourth of 32 views.
+That is too few visits to say whether load,
+the keyboard or the number of views decides it.
+The driver's answer stays the same:
+keep every finished view,
+record the crash,
+move the stale locks after the owner checks,
+and boot again.
+
 ## Verified workarounds
 
 Use `-gpu host` for this Linux host.
