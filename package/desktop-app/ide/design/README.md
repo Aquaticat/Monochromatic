@@ -93,34 +93,30 @@ so source order on rows adds little,
 while `b` saves rows exactly where blocks grow tallest.
 The default stays `a` until the user answers, because the brief asked for editord's packing.
 
-#### Elements beside message rows (`diagnostic-rows`)
+#### The caret card beside message rows and gutter letters (`diagnostic-rows`)
 
-The user decided for message rows; this question is only whether an older element stays beside them.
+The user decided for message rows,
+and on 2026-10-06 for a plain severity letter in front of the line number instead of an icon or a boxed marker,
+so the lettered box after the line end that this question first offered is gone.
+What is left is whether the earlier caret card stays beside them.
 The frames show the caret inside the string of line 7.
 
-- `a`, shipped: rows only, as editord.
+- `a`, shipped: message rows and gutter letters only.
   Gains: one place for every message;
   nothing covers code or changes with the caret.
   Costs: the full text of a message cut by the row caps is reachable only through the accessible description.
-- `b`: rows plus the lettered severity marker 12 px after the text of each line with a message.
-  Gains: a severity sign next to the code,
-  readable when the rows are scrolled sideways.
-  Costs: repeats what the row's severity word and ink say;
-  puts an element after the line end again,
-  where the user rejected hints;
-  widens the scroll range.
-- `c`: rows plus the card listing the problems at the caret.
+- `b`: the same plus the card listing the problems at the caret,
+  under the caret's line or over it when the view ends first.
   Gains: shows the full text of every problem at the caret,
   also of a message cut by the caps.
   Costs: covers the lines under the caret line and their rows while the caret is in a range,
-  in the frames line 8's message rows;
+  in the frames the first message rows of line 8;
   repeats the rows for every message that was not cut.
 
-Ranking: `a` > `c` > `b`,
-because `a` covers nothing and repeats nothing;
-`c` is the only option that shows otherwise unreachable text on screen,
-which `b` never does.
-A narrower `c` that opens the card only for a message cut by a cap would keep that gain at a smaller cost;
+Ranking: `a` > `b`,
+because `a` covers nothing and repeats nothing,
+while the text `b` adds is already on screen except for messages cut by a cap.
+A narrower `b` that opens the card only for a message cut by a cap would keep that gain at a smaller cost;
 it is not built.
 
 #### Message row text (`diagnostic-text`)
@@ -462,20 +458,25 @@ because neighbouring fixture lines look alike.
 ### Builds
 
 Every option is a real build of the application.
-Options that the branch `feat/ide-hint-rows` ships are its build at `fb0824037`.
+Options that the branch `feat/ide-hint-rows` ships are built from the prototype commit `c1edfcf40`,
+whose sources equal `feat/ide-hint-rows` at `970eebaae`, the build with the gutter letters.
 Every other option is one commit on the branch `prototype/ide-hint-row-variants`,
 in the worktree `.claude/worktrees/ide-hint-row-variants`.
-The tree of each commit is `fb0824037` plus only that option
+The tree of each commit is `c1edfcf40` plus only that option
 (each commit restores the files of the previous option),
 so checking one commit out builds that option alone.
 The branch is throwaway prototype code and is never merged.
 
-- `diagnostic-text` `a`, `46704e4c2`: editord wording without the code.
-- `hint-look` `b`, `d0d6663ae`: the source family italic in a box.
-- `hint-labels` `b`, `bc67a5b88`: editord label stripping.
-- `hint-packing` `b`, `56507b05d`: each hint on the first row with room.
-- `diagnostic-rows` `b`, `0c3e1e1fb`: rows plus the lettered severity marker.
-- `diagnostic-rows` `c`, `9d24ffcca`: rows plus the caret card.
+- `diagnostic-text` `a`, `ad6a6fac0`: editord wording without the code.
+- `hint-look` `b`, `c9873c837`: the source family italic in a box.
+- `hint-labels` `b`, `65184fbff`: editord label stripping.
+- `hint-packing` `b`, `d5736b7ed`: each hint on the first row with room.
+- `diagnostic-rows` `b`, `fce7a8852`: rows and gutter letters plus the caret card.
+
+The same options were first built on `fb0824037`, before the gutter letters,
+together with a lettered box after the line end that the user's decision of 2026-10-06 retired
+(commits `46704e4c2` to `9d24ffcca`);
+their frames were replaced by the frames of these builds.
 
 ### Command, fixture, and window size
 
