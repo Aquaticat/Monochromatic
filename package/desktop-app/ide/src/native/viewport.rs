@@ -1,11 +1,13 @@
 //! Native scrolling retains fractional offsets between raster tile updates.
 
-/// Parent state owns the document and the currently displayed tile.
-use super::{AppWindow, State, render};
+/// Parent state owns the document and the currently displayed tile; `rows` holds the map-based scroll rules.
+use super::{AppWindow, State, render, rows};
+/// Height of one code row: the least a line can take, which bounds how many lines a view can show.
+use ide_app::row_map::CODE_ROW;
 /// ComponentHandle supplies weak references for callback lifetimes.
 use slint::ComponentHandle;
-/// Checked shared ownership remains confined to the UI thread.
-use std::{cell::RefCell, rc::Rc};
+/// Checked shared ownership remains confined to the UI thread; `Instant` times the reader's scrolling.
+use std::{cell::RefCell, rc::Rc, time::Instant};
 
 /// What: `&mut State` lends the source state mutably; `f32` is a 32-bit float of logical pixels;
 /// the `bool` answer says whether the materialized tile changed.
@@ -15,22 +17,27 @@ use std::{cell::RefCell, rc::Rc};
 /// ```ts
 /// function place(current: State, horizontal: number, offset: number, width: number, height: number): boolean;
 /// ```
-fn place(
+pub(super) fn place(
     current: &mut State,
     horizontal: f32,
     offset: f32,
     viewport_width: f32,
     height: f32,
 ) -> bool {
-    // What: `as usize` truncates a non-negative float to an address-sized index (sibling `u32`).
-    // Why: Row indices address rope lines, whose interfaces use `usize`.
+    // What: The map names the line at the view's top edge; `as usize` truncates a non-negative float to an
+    //       address-sized index (sibling `u32`).
+    // Why: Row indices address rope lines, whose interfaces use `usize`. Every line takes at least one code
+    //      row, so this many lines always cover the view and its overscan, however many virtual rows there are.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const first = Math.floor(Math.max(offset, 0) / 24);
+    // const first = map.lineAt(Math.max(offset, 0)); const count = Math.ceil(height / CODE_ROW) + 3;
     // ```
-    let first = (offset.max(0.0) / 24.0) as usize;
-    let count = (height.max(0.0) / 24.0).ceil() as usize + 3;
+    // Every caller that moves the view itself passes its new offset here first, so the offset the window
+    // reports afterwards is recognized as not being the reader's own scrolling.
+    current.offset = offset;
+    let first = current.row_map.line_at(offset.max(0.0));
+    let count = (height.max(0.0) / CODE_ROW).ceil() as usize + 3;
     let tile_x = ((horizontal.max(0.0) / 128.0).floor() * 128.0 - 128.0).max(0.0);
     let width = viewport_width.max(1.0);
     if current.first == first.saturating_sub(1)
@@ -79,6 +86,11 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         // const changed = place(state.current, horizontal, offset, width, height);
         // ```
         let mut current = state.borrow_mut();
+        // An offset nobody announced is the reader scrolling: by wheel, by touch, or by a drag past an edge.
+        if offset != current.offset {
+            // `Some(Instant::now())` records this moment as the latest scroll.
+            current.scrolled_at = Some(Instant::now());
+        }
         let changed = place(&mut current, horizontal, offset, viewport_width, height);
         drop(current);
         if !changed {
@@ -116,15 +128,9 @@ pub(super) fn follow(window: &AppWindow, state: &Rc<RefCell<State>>, paged: f32)
     let mut current = state.borrow_mut();
     let text = current.document.text();
     let row = text.char_to_line(current.document.position().head);
-    let top = row as f32 * 24.0;
-    let limit = (text.len_lines() as f32 * 24.0 - height).max(0.0);
-    let mut offset = (before + paged).clamp(0.0, limit);
-    if top < offset {
-        offset = top;
-    } else if top + 24.0 > offset + height {
-        offset = top + 24.0 - height;
-    }
-    offset = offset.clamp(0.0, limit);
+    let limit = rows::limit(&current.row_map, height);
+    let paged_offset = (before + paged).clamp(0.0, limit);
+    let mut offset = rows::showing(&current.row_map, row, paged_offset, height).clamp(0.0, limit);
     // A fractional offset left by smooth scrolling is kept while the caret stays in view.
     if offset != before {
         offset = offset.round();
@@ -176,10 +182,10 @@ pub(super) fn reveal(window: &AppWindow, state: &Rc<RefCell<State>>, start: usiz
     let mut current = state.borrow_mut();
     let text = current.document.text();
     let row = text.char_to_line(start.min(text.len_chars()));
-    let top = row as f32 * 24.0;
-    if top < offset || top + 24.0 > offset + height {
-        let limit = (text.len_lines() as f32 * 24.0 - height).max(0.0);
-        offset = (top - ((height - 24.0) / 2.0).max(0.0))
+    let top = current.row_map.code_top(row);
+    if top < offset || top + CODE_ROW > offset + height {
+        let limit = rows::limit(&current.row_map, height);
+        offset = (top - ((height - CODE_ROW) / 2.0).max(0.0))
             .clamp(0.0, limit)
             .round();
     }

@@ -3,7 +3,7 @@
 
 /// The stamp, its inputs, and the visible annotation records.
 use ide_app::{
-    annotation::{Label, Mark, Visible},
+    annotation::{Mark, Visible},
     annotation_layout::AnnotationColors,
     document::Document,
     language::diagnostics::Severity,
@@ -11,6 +11,7 @@ use ide_app::{
     source_frame::FrameStamp,
     source_style::SourceStyles,
     text_raster::CodeColors,
+    virtual_row::{Block, HintPlace, MessageRow, ROW_HEIGHT},
 };
 /// Visible annotations are shared with the layout.
 use std::sync::Arc;
@@ -42,13 +43,32 @@ fn stamp(document: &Document, visible: Visible, inks: AnnotationColors) -> Frame
         .with_annotations(Arc::new(visible), inks);
 }
 
-/// One label and one mark.
-fn shown(label: &str, severity: Severity) -> Visible {
-    return Visible {
-        labels: vec![Label {
+/// The block above line 0 with one hint `label`, one message row `message`, and `held` message space.
+fn block(label: &str, message: &str, held: f32) -> Block {
+    return Block {
+        line: 0,
+        hint_rows: 1,
+        hints: vec![HintPlace {
+            row: 0,
             position: 3,
+            x: 27.0,
+            width: 30.0,
             text: label.to_string(),
         }],
+        messages: vec![MessageRow {
+            start: 0,
+            continued: false,
+            severity: Severity::Error,
+            text: message.to_string(),
+        }],
+        held: (0.0, held),
+    };
+}
+
+/// One block with a hint and a message, and one mark of `severity`.
+fn shown(label: &str, severity: Severity) -> Visible {
+    return Visible {
+        blocks: vec![Arc::new(block(label, "Error: wrong", 0.0))],
         marks: vec![Mark {
             start: 0,
             end: 3,
@@ -57,12 +77,15 @@ fn shown(label: &str, severity: Severity) -> Visible {
     };
 }
 
-/// Equal visible annotations reuse the image; a different label, mark, or ink repaints.
+/// Equal visible annotations reuse the image; a different label, message, held space, mark, or ink repaints.
 #[test]
 fn visible_annotations_and_inks_are_paint_inputs() {
     let document = Document::new("let x = 1;");
     let original = stamp(&document, shown(": i32", Severity::Error), INKS);
-    assert!(original == stamp(&document, shown(": i32", Severity::Error), INKS));
+    assert!(
+        original == stamp(&document, shown(": i32", Severity::Error), INKS),
+        "equal blocks in separate allocations must reuse the image"
+    );
     assert!(
         original != stamp(&document, shown(": u32", Severity::Error), INKS),
         "a different hint label must repaint"
@@ -74,6 +97,19 @@ fn visible_annotations_and_inks_are_paint_inputs() {
     assert!(
         original != stamp(&document, Visible::default(), INKS),
         "removing annotations must repaint"
+    );
+    let mut reworded = shown(": i32", Severity::Error);
+    reworded.blocks = vec![Arc::new(block(": i32", "Error: other", 0.0))];
+    assert!(
+        original != stamp(&document, reworded, INKS),
+        "a different message row must repaint"
+    );
+    // Held space changes where rows are inside the frame although no text differs.
+    let mut taller = shown(": i32", Severity::Error);
+    taller.blocks = vec![Arc::new(block(": i32", "Error: wrong", 3.0 * ROW_HEIGHT))];
+    assert!(
+        original != stamp(&document, taller, INKS),
+        "a different block height must repaint"
     );
     let mut light = INKS;
     light.error = [196, 43, 28, 255];

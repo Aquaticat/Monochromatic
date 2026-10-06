@@ -7,7 +7,7 @@
 /// ```ts
 /// import { state, render } from '../native';
 /// ```
-use super::{AppWindow, State, render};
+use super::{AppWindow, State, render, rows};
 /// Worker creation failure must surface rather than silently disabling external refresh.
 use anyhow::Result;
 /// An accepted reload is copied for the Language module before the document consumes it.
@@ -87,14 +87,19 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
             return;
         }
     };
-    let fractional_row = (-window.get_scroll_y()).max(0.0) % 24.0;
+    let offset = (-window.get_scroll_y()).max(0.0);
     let mut current = state.borrow_mut();
+    // How far the view's top edge lies below the top of the top line's code row; negative inside its virtual rows.
+    let top_line = current.row_map.line_at(offset);
+    let within = offset - current.row_map.code_top(top_line);
     let mut redraw = current.file_error.is_some();
     let mut mapped_viewport = None;
     if let Some(reload) = update {
         // Language servers need both texts and the edits between them, which `apply_reload`
         // consumes; the copy is handed over only when the document accepted the reload.
         let language_reload = DocumentReload::from_reload(current.file_generation, &reload);
+        // Where the old text's virtual rows end up in the new text; their space is held open there.
+        let carried = rows::carried(&current, reload.changes());
         if !current.document.apply_reload(reload) {
             return;
         }
@@ -102,13 +107,18 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
         current.language_reload = Some(language_reload);
         let position = current.document.position();
         let first = current.document.text().char_to_line(position.viewport);
-        let lines = current.document.text().len_lines();
         current.first = first.saturating_sub(1);
         current.document_width = 0.0;
         current.styles = SourceStyles::from([]);
         current.syntax_revision = None;
         current.syntax_error = None;
-        mapped_viewport = Some((first, lines));
+        // The new text has its own vertical mapping, with the old rows' space held open until annotations of
+        // the new text arrive; the line the view started in keeps its place in the view.
+        rows::hold(&mut current, carried, window.window().scale_factor());
+        let target = (current.row_map.code_top(first) + within).max(0.0);
+        // The window's next offset report is this mapping, not the reader scrolling.
+        current.offset = target;
+        mapped_viewport = Some((target, current.row_map.height()));
         redraw = true;
     }
     current.file_error = None;
@@ -116,10 +126,10 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
         redraw = apply_syntax(&mut current, syntax) || redraw;
     }
     drop(current);
-    if let Some((first, lines)) = mapped_viewport {
+    if let Some((target, extent)) = mapped_viewport {
         // Update extent before offset so the old height cannot clamp a mapped viewport.
-        window.set_total_lines(lines as i32);
-        window.set_scroll_y(-(first as f32 * 24.0 + fractional_row));
+        window.set_content_extent(extent);
+        window.set_scroll_y(-target);
     }
     if redraw {
         render(window, state);
@@ -139,6 +149,15 @@ pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Ti
         let Some(active_window) = weak.upgrade() else {
             return;
         };
+        // Space held open for rows of a replaced text is given up when its time has passed, and rows that
+        // waited for scrolling to stop are shown; neither comes with an event of its own.
+        let due = rows::due(
+            &mut state.borrow_mut(),
+            active_window.window().scale_factor(),
+        );
+        if due {
+            render(&active_window, &state);
+        }
         match worker.try_take() {
             Ok(Some(reply)) => {
                 apply(&active_window, &state, reply);

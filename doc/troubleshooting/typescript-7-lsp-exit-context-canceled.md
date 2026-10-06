@@ -214,7 +214,12 @@ Status 1 and `context canceled` in three of three runs each:
 
 ## Verified workarounds
 
-None is applied in the application.
+The server is unchanged, and so is the line it prints.
+Since 2026-10-06 the application logs that line at INFO instead of ERROR, with its text kept,
+as every line a server writes to standard error
+([`helix-lsp-transport-error-level-records.md`](helix-lsp-transport-error-level-records.md), "Verified workarounds");
+the repository owner kept `shutdown` and `exit` as the way the worker ends this server.
+No other handling is applied:
 
 - **End the server by closing standard input after `shutdown`.**
   Verified with the probe: status 0, nothing printed.

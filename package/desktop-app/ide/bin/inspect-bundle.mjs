@@ -170,7 +170,9 @@ const session = async ({ name, application, settled }) => {
   // SQL has a bundled grammar and no configured language server, so nothing but the application starts.
   writeFileSync(join(project, 'fixture.sql'), ['-- A comment, a keyword, a string, and a number.', "select 'cat' as name, 42 as answer from pets where name = 'cat';", ''].join('\n'));
   // Nothing may point at the source tree: no runtime variable, no Cargo variable, an empty configuration home.
-  const env = { ...process.env, XDG_CONFIG_HOME: join(directory, 'config'), XDG_CACHE_HOME: join(directory, 'cache'), XDG_DATA_HOME: join(directory, 'data') };
+  // The application logs warnings only unless RUST_LOG asks for more; the check reads its syntax record (debug)
+  // and the compositor's exit records (info), and both programs read RUST_LOG.
+  const env = { ...process.env, XDG_CONFIG_HOME: join(directory, 'config'), XDG_CACHE_HOME: join(directory, 'cache'), XDG_DATA_HOME: join(directory, 'data'), RUST_LOG: 'nested_wayland_session=info,ide_app=debug' };
   for (const key of ['HELIX_RUNTIME', 'CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_MCP_PORT', 'SLINT_SCALE_FACTOR']) delete env[key];
   const socket = join(directory, 'control.sock');
   const child = spawn(compositor, ['--socket', socket, '--size', '1100x660', '--color-scheme', 'dark', '--', join(application, 'monochromatic-ide'), project, '--file', 'fixture.sql'], { cwd: '/', env, stdio: ['ignore', 'pipe', 'pipe'] });

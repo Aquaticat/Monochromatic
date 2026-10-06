@@ -21,7 +21,16 @@ static CODE_ROMAN_BLOB: LazyLock<Blob<u8>> =
 static CODE_ITALIC_BLOB: LazyLock<Blob<u8>> =
     LazyLock::new(|| return Blob::new(Arc::new(CODE_ITALIC)));
 
+/// The roman interface face has one identity for every shaper, so cached glyph masks are shared between frames.
+static UI_ROMAN_BLOB: LazyLock<Blob<u8>> = LazyLock::new(|| return Blob::new(Arc::new(UI_ROMAN)));
+
 /// Return shared handles for both real code faces; cloning retains each blob's ID.
 pub(crate) fn code_faces() -> [Blob<u8>; 2] {
     return [CODE_ROMAN_BLOB.clone(), CODE_ITALIC_BLOB.clone()];
+}
+
+/// Return the shared handle of the roman interface face, which sets the text of virtual rows:
+/// inlay hints and diagnostic messages above a code row.
+pub(crate) fn row_face() -> Blob<u8> {
+    return UI_ROMAN_BLOB.clone();
 }
