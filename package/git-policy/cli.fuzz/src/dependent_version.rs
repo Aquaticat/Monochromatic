@@ -49,6 +49,7 @@ const DECOYS: &[&str] = &[
     "\"publishConfig\":{\"version\":\"9.9.9\"}",
     "\"tail\":[\"version\",{\"version\":\"0.0.0\"}]",
     "\"description\":\"version \\\"x\\\" /* , } ]\"",
+    "\"q\":\"say \\\"hi\"",
     "\"versions\":\"1\"",
     "\"a\":\"version\"",
     "\"x\":\"\\\\\"",
