@@ -188,7 +188,7 @@ class TemplateEditorFixtureTest {
         assertEquals(18, fixture.caret)
         assertEquals(libraryRows(), fixture.previewRows)
         assertEquals("Rows keep the last valid template.", fixture.previewNote)
-        assertEquals(listOf("formula: the formula opened at character 1 is not closed"), fixture.errors)
+        assertEquals(listOf("formula: the \$ at character 1 has no closing \$"), fixture.errors)
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertTrue(fixture.resetEnabled)
@@ -346,6 +346,91 @@ class TemplateEditorFixtureTest {
             val inside: Boolean = fixture.caret >= 0 && fixture.caret <= fixture.template.length
             assertTrue(scene, absent || inside)
         }
+    }
+
+    /**
+     * What: `templateEditorLayout(null)` passes Kotlin's null, the value an Android launch yields
+     * for a name it was not given.
+     * Why: A launch that names no layout must keep `flow`, the layout every scene was authored in.
+     * The layout and position names are this study's own presentation choices, not text the
+     * reference prints, so they are checked against the names the study's launches use.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * test('layout default', () => { expect(templateEditorLayout(null)).toBe('flow'); });
+     * ```
+     */
+    @Test fun layoutDefaultsToFlowWhenTheLaunchNamesNone() {
+        assertEquals("flow", templateEditorLayout(null))
+    }
+
+    /** Each of the three layout names is returned exactly as given. */
+    @Test fun layoutKeepsEachAllowedName() {
+        assertEquals("flow", templateEditorLayout("flow"))
+        assertEquals("rows", templateEditorLayout("rows"))
+        assertEquals("lines", templateEditorLayout("lines"))
+    }
+
+    /** A layout name outside the three stops the study with a message naming it. */
+    @Test fun unknownLayoutIsRejectedByName() {
+        var message: String? = null
+        try {
+            templateEditorLayout("grid")
+        } catch (error: IllegalArgumentException) {
+            message = error.message
+        }
+        assertEquals("Unknown template editor layout: grid", message)
+    }
+
+    /** An empty layout name is rejected like any other unknown name, never read as the default. */
+    @Test fun emptyLayoutNameIsRejected() {
+        var message: String? = null
+        try {
+            templateEditorLayout("")
+        } catch (error: IllegalArgumentException) {
+            message = error.message
+        }
+        assertEquals("Unknown template editor layout: ", message)
+    }
+
+    /** A launch that names no position leaves the scrolling body at its top. */
+    @Test fun positionDefaultsToTopWhenTheLaunchNamesNone() {
+        assertEquals("top", templateEditorPosition(null))
+    }
+
+    /** Each of the two position names is returned exactly as given. */
+    @Test fun positionKeepsEachAllowedName() {
+        assertEquals("top", templateEditorPosition("top"))
+        assertEquals("end", templateEditorPosition("end"))
+    }
+
+    /** A position name outside the two stops the study with a message naming it. */
+    @Test fun unknownPositionIsRejectedByName() {
+        var message: String? = null
+        try {
+            templateEditorPosition("middle")
+        } catch (error: IllegalArgumentException) {
+            message = error.message
+        }
+        assertEquals("Unknown template editor position: middle", message)
+    }
+
+    /** An empty position name is rejected like any other unknown name, never read as the default. */
+    @Test fun emptyPositionNameIsRejected() {
+        var message: String? = null
+        try {
+            templateEditorPosition("")
+        } catch (error: IllegalArgumentException) {
+            message = error.message
+        }
+        assertEquals("Unknown template editor position: ", message)
+    }
+
+    /** An authored scene carries the default layout and position until a launch replaces them. */
+    @Test fun authoredSceneCarriesTheDefaultLayoutAndPosition() {
+        val fixture: TemplateEditorFixture = templateEditorFixture("help")
+        assertEquals("flow", fixture.layout)
+        assertEquals("top", fixture.position)
     }
 }
 //endregion

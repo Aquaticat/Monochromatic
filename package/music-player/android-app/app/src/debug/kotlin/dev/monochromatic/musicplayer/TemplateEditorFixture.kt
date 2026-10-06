@@ -88,12 +88,17 @@ internal data class TemplateEditorListEntry(
  * `List<T>` is a read-only ordered collection; its siblings are MutableList (changeable after
  * creation) and Array (fixed-size, compared by identity). `TemplateEditorHelp?` ends in `?`, which
  * makes it nullable: a help record or null. Boolean is exactly true or false; its sibling is the
- * nullable Boolean?, which adds a third "unset" value.
+ * nullable Boolean?, which adds a third "unset" value. The last two fields end in `= "flow"` and
+ * `= "top"`: a default value, used whenever a constructor call leaves that field out. The sibling a
+ * reader might expect for these two is an enum class, Kotlin's closed list of named values.
  * Why: `caret` uses Int (not Long or Int?) because a text position fits 32 bits and -1 already says
  * "the field is not focused", so no null check is needed. The lists use List (not MutableList or
  * Array) for value equality in tests and so no state can be edited after it is authored. `help` is
  * nullable (not an empty record) because most states draw no help at all. `resetEnabled` uses
- * Boolean (not Boolean?) because the button is either usable or not.
+ * Boolean (not Boolean?) because the button is either usable or not. `layout` and `position` have
+ * defaults so every authored scene keeps the `flow` layout at the `top` position without naming
+ * them, and a launch replaces them only when it asks for another presentation. They are String
+ * (not an enum class) because the launch carries them as text, the way `page` already is.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -102,7 +107,9 @@ internal data class TemplateEditorListEntry(
  *   previewRows: readonly TemplateEditorPreviewRow[]; previewNote: string; errors: readonly string[];
  *   help: TemplateEditorHelp | null; fields: readonly TemplateEditorField[];
  *   resetEnabled: boolean; listEntry: TemplateEditorListEntry;
+ *   layout: 'flow' | 'rows' | 'lines'; position: 'top' | 'end';
  * }>;
+ * // A function building one defaults the last two: ({ layout = 'flow', position = 'top', ...rest }) => ...
  * ```
  */
 internal data class TemplateEditorFixture(
@@ -126,6 +133,10 @@ internal data class TemplateEditorFixture(
     val resetEnabled: Boolean,
     /** How the Settings page lists this template. */
     val listEntry: TemplateEditorListEntry,
+    /** Where the preview is drawn: `flow` inside the scrolling body, `rows` or `lines` pinned over it. */
+    val layout: String = "flow",
+    /** Where the scrolling body rests: `top` (a focused field may move it), or `end` for its last pixel. */
+    val position: String = "top",
 )
 
 /**
@@ -314,7 +325,7 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
             caret = 18,
             previewRows = templateEditorLibraryRows,
             previewNote = templateEditorKeptNote,
-            errors = listOf("formula: the formula opened at character 1 is not closed"),
+            errors = listOf("formula: the \$ at character 1 has no closing \$"),
             help = null,
             fields = templateEditorLibraryFields,
             resetEnabled = true,
@@ -373,5 +384,61 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
     // throw new Error(`Unknown authored template editor scene: ${scene}`);
     // ```
     throw IllegalArgumentException("Unknown authored template editor scene: $scene")
+}
+
+/**
+ * What: A named function turns a launch's optional layout value into one of the three layout names.
+ * `String?` is text or null, and null is what a launch yields for a value it was not given. Once
+ * the `name == null` check has returned, Kotlin treats `name` as certainly text for the rest of the
+ * function, the way TypeScript narrows `string | null`.
+ * Why: A launch that names no layout keeps `flow`, the layout every scene was authored in, and a
+ * mistyped name stops the study instead of drawing `flow` under another layout's label.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function templateEditorLayout(name: string | null): 'flow' | 'rows' | 'lines' {
+ *   if (name === null) return 'flow';
+ *   if (name === 'flow' || name === 'rows' || name === 'lines') return name;
+ *   throw new Error(`Unknown template editor layout: ${name}`);
+ * }
+ * ```
+ */
+internal fun templateEditorLayout(name: String?): String {
+    // No value given: the preview scrolls with the rest of the body.
+    if (name == null) return "flow"
+    // The same layout, asked for by name.
+    if (name == "flow") return name
+    // Both preview rows stay pinned over the scrolling body.
+    if (name == "rows") return name
+    // Only each preview row's supporting line stays pinned over the scrolling body.
+    if (name == "lines") return name
+    // Any other name, the empty one included, is a mistake in the launch and never a default.
+    throw IllegalArgumentException("Unknown template editor layout: $name")
+}
+
+/**
+ * What: A named function turns a launch's optional position value into one of the two position names.
+ * Why: A launch that names no position leaves the body at the `top`, where a focused field may
+ * still move it; `end` asks for the body's last pixel, which is how the end of a long page is
+ * captured. A mistyped name stops the study instead of capturing the wrong part of the page.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function templateEditorPosition(name: string | null): 'top' | 'end' {
+ *   if (name === null) return 'top';
+ *   if (name === 'top' || name === 'end') return name;
+ *   throw new Error(`Unknown template editor position: ${name}`);
+ * }
+ * ```
+ */
+internal fun templateEditorPosition(name: String?): String {
+    // No value given: the body starts at its first pixel.
+    if (name == null) return "top"
+    // The same position, asked for by name.
+    if (name == "top") return name
+    // The body is scrolled to its last pixel.
+    if (name == "end") return name
+    // Any other name, the empty one included, is a mistake in the launch and never a default.
+    throw IllegalArgumentException("Unknown template editor position: $name")
 }
 //endregion

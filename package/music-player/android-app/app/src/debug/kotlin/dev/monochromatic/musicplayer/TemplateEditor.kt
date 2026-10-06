@@ -22,7 +22,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 // Vertical placement of children inside a column taller than they are.
 import androidx.compose.foundation.layout.Arrangement
-// Empty sized element, here the status-bar spacer.
+// Plain container: the empty status-bar spacer, and the measured wrapper around the template field.
 import androidx.compose.foundation.layout.Box
 // Vertical stack.
 import androidx.compose.foundation.layout.Column
@@ -86,6 +86,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 // Runs a block once, or again when a listed value changes.
 import androidx.compose.runtime.LaunchedEffect
+// An observable box holding one whole number.
+import androidx.compose.runtime.mutableIntStateOf
 // Keeps one object across redraws of the same element.
 import androidx.compose.runtime.remember
 // Cross-axis alignment constants.
@@ -98,6 +100,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 // Opaque colour value.
 import androidx.compose.ui.graphics.Color
+// Runs a callback with an element's position and size each time layout has placed it.
+import androidx.compose.ui.layout.onPlaced
+// An element's top-left corner, measured from its parent's content.
+import androidx.compose.ui.layout.positionInParent
+// Current screen density, to convert the scroll margin from dp to pixels.
+import androidx.compose.ui.platform.LocalDensity
 // The window's software-keyboard controller, read from the surrounding UI tree.
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 // Accessibility role names.
@@ -126,6 +134,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 // Density-independent literal distance.
 import androidx.compose.ui.unit.dp
+// Rounds a fractional number to the nearest whole one.
+import kotlin.math.roundToInt
 
 /**
  * What: A composable draws the Settings page: status spacer, header, separator, a `Templates`
@@ -246,11 +256,17 @@ internal fun TemplateEditorListPage(modifier: Modifier, startSafe: Dp, endSafe: 
 
 /**
  * What: A composable draws the editor page: status spacer, header, separator, then one scrolling
- * column holding the preview, the template field, the field list and the way back to the default.
- * It takes the same inputs as the list page.
+ * column holding the template field, the field list and the way back to the default. The preview
+ * is drawn in one of three places, named by `fixture.layout`: `flow` puts its heading and both rows
+ * at the start of the scrolling column; `rows` pins both rows between the header and the scrolling
+ * column; `lines` pins only each row's supporting line there. The page also scrolls its body to an
+ * authored position. It takes the same inputs as the list page.
  * Why: The same page serves the cover's full-width page and the inner panel's right half; only the
  * caller-supplied insets differ. Typing, inserting a field and resetting are not connected: they
- * emit an event name and change nothing, because this study draws authored states only.
+ * emit an event name and change nothing, because this study draws authored states only. The three
+ * layouts are alternatives to compare with the keyboard open, where the `flow` preview can scroll
+ * out of view, and the authored position makes every capture of one state rest on the same pixels.
+ * `templateEditorLayout` and `templateEditorPosition` are what limit a launch to the names read here.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -267,7 +283,98 @@ internal fun TemplateEditorPage(modifier: Modifier, startSafe: Dp, endSafe: Dp, 
     LaunchedEffect(scroll.maxValue) {
         if (scroll.maxValue != Int.MAX_VALUE) onMeasure("TemplateEditor.scroll:max=${scroll.maxValue}")
     }
-    // The page is one column: status spacer, header, separator, scrolling body.
+    // What: `mutableIntStateOf(-1)` makes an observable box holding one Int, here -1 for "not
+    // measured yet"; `remember { ... }` keeps the same box across redraws. Its sibling is
+    // `mutableStateOf(-1)`, a box for a value of any type.
+    // Why: The top edge of the template field block is only known once layout has run, which is
+    // after this function, so layout writes it into a box and the page redraws with the number.
+    // `mutableIntStateOf` (not `mutableStateOf`) is the form made for a plain whole number, and it
+    // is read and written through `.intValue` with no further syntax.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const [blockTop, setBlockTop] = useState(-1);
+    // ```
+    val blockTop = remember { mutableIntStateOf(-1) }
+    // The block's bottom edge is kept the same way, and is -1 until the first layout.
+    val blockBottom = remember { mutableIntStateOf(-1) }
+    // What: `LocalDensity.current` reads the screen's pixels-per-dp from the surrounding UI tree.
+    // `with(x) { ... }` runs its block with `x` in scope, which is what lets `8.dp.roundToPx()`
+    // turn 8dp into a whole number of pixels there.
+    // Why: Scroll positions are counted in pixels, so the 8dp gap kept under the field's lines
+    // must be counted in pixels too.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const margin = Math.round(8 * density);
+    // ```
+    val margin: Int = with(LocalDensity.current) { 8.dp.roundToPx() }
+    // What: `.intValue` reads the whole number out of its box.
+    // Why: The scroll rule works on plain numbers read once per redraw, and a redraw happens
+    // whenever one of them changes.
+    // Gotcha: `top = 8.dp` inside a `padding(...)` call in this function is an argument passed by
+    // name, not an assignment to this `top`; the two never touch.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const top = blockTop;
+    // ```
+    val top: Int = blockTop.intValue
+    // The block's bottom edge, read the same way.
+    val bottom: Int = blockBottom.intValue
+    // `viewportSize` is the height of the scrolling window in pixels; it is 0 until the first layout.
+    val viewport: Int = scroll.viewportSize
+    // How many pixels the body can scroll; `Int.MAX_VALUE` until the first layout has measured it.
+    val maxScroll: Int = scroll.maxValue
+    // What: `LaunchedEffect(a, b, c, d) { ... }` reruns its block whenever any listed value
+    // changes. `scroll.scrollTo(n)` moves the body to n pixels at once, with no animation; it is a
+    // suspending call, Kotlin's counterpart of an awaited async call, which is why it sits inside
+    // an effect. `minOf` and `maxOf` are `Math.min` and `Math.max`.
+    // Why: This is the page's authored scroll rule, and it decides the resting position in place
+    // of whatever Compose would pick when the keyboard opens. A state launched at position `end`
+    // rests on the body's last pixel. Any other state with a focused field scrolls just far enough
+    // that the field's own lines (its error lines or typing help) clear the keyboard by 8dp, but
+    // never so far that the field's top edge leaves the window. An unfocused state at position
+    // `top` is left where it starts. The block reruns while the keyboard slides in, because the
+    // window height and the scroll range change on every frame, so it settles on the final
+    // geometry. Each applied scroll leaves one line for capture scripts.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { void (async () => {
+    //   const measured = maxScroll !== 2147483647;
+    //   if (fixture.position === 'end') {
+    //     if (measured && maxScroll > 0) { await scroll.scrollTo(maxScroll); onMeasure(`TemplateEditor.scroll:rule=end ...`); }
+    //   } else if (fixture.caret >= 0 && top >= 0 && bottom >= 0 && viewport > 0 && measured) {
+    //     const wanted = Math.min(top, Math.max(0, bottom + margin - viewport));
+    //     const target = Math.min(maxScroll, Math.max(0, wanted));
+    //     await scroll.scrollTo(target); onMeasure(`TemplateEditor.scroll:rule=lines ...`);
+    //   }
+    // })(); }, [top, bottom, viewport, maxScroll]);
+    // ```
+    LaunchedEffect(top, bottom, viewport, maxScroll) {
+        // Nothing may be scrolled or logged against a range the first layout has not measured yet.
+        val measured: Boolean = maxScroll != Int.MAX_VALUE
+        if (fixture.position == "end") {
+            // The end is scrolled to only once there is a measured, non-empty range to scroll through.
+            if (measured && maxScroll > 0) {
+                scroll.scrollTo(maxScroll)
+                onMeasure(
+                    "TemplateEditor.scroll:rule=end target=$maxScroll viewport=$viewport top=$top bottom=$bottom")
+            }
+        } else if (fixture.caret >= 0 && top >= 0 && bottom >= 0 && viewport > 0 && measured) {
+            // The smallest scroll that shows the block's bottom edge plus the margin, capped so the
+            // block's top edge stays inside the window.
+            val wanted: Int = minOf(top, maxOf(0, bottom + margin - viewport))
+            // Kept inside the range the body can actually scroll.
+            val target: Int = minOf(maxScroll, maxOf(0, wanted))
+            scroll.scrollTo(target)
+            onMeasure(
+                "TemplateEditor.scroll:rule=lines target=$target viewport=$viewport top=$top bottom=$bottom")
+        }
+    }
+    // The page is one column: status spacer, header, separator, a pinned preview in two of the
+    // three layouts, then the scrolling body.
     Column(modifier = modifier.fillMaxSize().background(pageColor)) {
         // Status-bar spacer, as on the list page.
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
@@ -276,13 +383,91 @@ internal fun TemplateEditorPage(modifier: Modifier, startSafe: Dp, endSafe: Dp, 
             onBack = { onEvent("back") }, startSafe = startSafe, endSafe = endSafe)
         // The strong separator that closes the header.
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
+        // What: An `if` with no `else` draws its block for the `rows` layout only. The block sits
+        // between the header's separator and the scrolling column, so it is not part of what scrolls.
+        // Why: Pinned here, the two preview rows stay in view however far the body is scrolled and
+        // however much of the window the keyboard takes. The layout draws no `Preview` heading: the
+        // rows sit directly under the page title.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // {fixture.layout === 'rows' && <>
+        //   {fixture.previewRows.map((row, index) => <>{index > 0 && <QuietDivider/>}<PreviewRow row={row}/></>)}
+        //   <StrongDivider/>
+        // </>}
+        // ```
+        if (fixture.layout == "rows") {
+            // What: `0 until n` is the run of whole numbers from 0 up to but not including n, and
+            // `for (index in ...)` visits each of them; `previewRows[index]` reads one entry by position.
+            // Why: The quiet separator belongs between the rows, so it is drawn before every row
+            // except the first, and that takes the row's position, not only the row.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // for (let index = 0; index < fixture.previewRows.length; index += 1) { ... }
+            // ```
+            for (index in 0 until fixture.previewRows.size) {
+                // `outlineVariant` is the quiet separator colour, as between the list page's rows.
+                if (index > 0) HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                TemplateEditorPreviewRowView(row = fixture.previewRows[index], startSafe = startSafe,
+                    endSafe = endSafe)
+            }
+            // The block is closed by the strong separator, because page content scrolls under this edge.
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
+        }
+        // What: The `lines` layout pins a plain Column with one `Text` per preview row and nothing
+        // else: no heading and no titles.
+        // Why: Only the lines the template yields are kept in view, which takes the least height
+        // from the window the keyboard leaves.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // {fixture.layout === 'lines' && <>
+        //   <div style={{ padding: `8px ${endSafe}px 8px ${startSafe}px` }}>
+        //     {fixture.previewRows.map(row => <p className="supporting">{row.supporting}</p>)}
+        //   </div>
+        //   <StrongDivider/>
+        // </>}
+        // ```
+        if (fixture.layout == "lines") {
+            // The block keeps the page's side insets, with 8dp over its first line and under its last.
+            Column(modifier = Modifier.fillMaxWidth()
+                .padding(start = startSafe, end = endSafe, top = 8.dp, bottom = 8.dp)) {
+                // What: A `for (row in rows)` loop emits one element per list entry, like `rows.map(...)` in JSX.
+                // Why: The lines are drawn in the order of the authored rows, first file first.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // {fixture.previewRows.map(row => <p>{row.supporting}</p>)}
+                // ```
+                for (row in fixture.previewRows) {
+                    // What: `Text` draws one string in the colour and type roles that
+                    // `TemplateEditorPreviewRowView` gives a row's supporting line; `maxLines = 1` with
+                    // `TextOverflow.Ellipsis` cuts a long line with "…".
+                    // Why: Unlike the row view, this draws the text even when it is empty. An empty
+                    // line keeps its height, so the second file's line never moves up into the place
+                    // of the first one's.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // <p style={{ color: scheme.onSurfaceVariant, font: type.bodySmall, whiteSpace: 'nowrap', textOverflow: 'ellipsis', minHeight: '1lh' }}>{row.supporting}</p>
+                    // ```
+                    Text(text = row.supporting, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+            // The same strong separator closes this block.
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
+        }
         // What: `imePadding()` shrinks this column by the software keyboard's height while it is
         // open. It comes before `verticalScroll`, so it is the scrolling window itself that shrinks,
         // not padding added inside the scrolled content. The navigation-bar padding after the scroll
-        // covers the closed case.
-        // Why: Compose scrolls a focused field back into view when its scrolling window shrinks. With
-        // the padding inside the content the window would keep its height and the keyboard would
-        // simply cover the focused template field.
+        // covers the closed case. `weight(1f)` gives the column the height the header and a pinned
+        // preview leave.
+        // Why: With the padding inside the content the window would keep its height and the keyboard
+        // would simply cover the focused template field. Shrinking the window is also what the
+        // authored scroll rule reads as `viewportSize`, and a pinned preview sits outside this
+        // column, so the keyboard takes height from the scrolling window only.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -292,21 +477,20 @@ internal fun TemplateEditorPage(modifier: Modifier, startSafe: Dp, endSafe: Dp, 
         // ```
         Column(modifier = Modifier.weight(1f).fillMaxWidth().imePadding().verticalScroll(scroll)
             .windowInsetsPadding(WindowInsets.navigationBars)) {
-            TemplateEditorSectionHeading(text = "Preview", startSafe = startSafe, endSafe = endSafe, bottom = 4.dp)
-            // What: A `for (row in rows)` loop emits one element per list entry, like `rows.map(...)` in JSX.
-            // Why: The two authored rows are drawn in order, each closed by a quiet separator.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // {fixture.previewRows.map(row => <><PreviewRow row={row}/><Divider/></>)}
-            // ```
-            for (row in fixture.previewRows) {
-                TemplateEditorPreviewRowView(row = row, startSafe = startSafe, endSafe = endSafe)
-                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+            // The `flow` layout draws the preview here, where it scrolls with the rest of the body.
+            if (fixture.layout == "flow") {
+                TemplateEditorSectionHeading(text = "Preview", startSafe = startSafe, endSafe = endSafe,
+                    bottom = 4.dp)
+                // The two authored rows are drawn in order, each closed by a quiet separator.
+                for (row in fixture.previewRows) {
+                    TemplateEditorPreviewRowView(row = row, startSafe = startSafe, endSafe = endSafe)
+                    HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                }
             }
             // What: `Text` draws one string; `color` and `style` name a theme colour role and a theme
             // type role instead of fixed values.
             // Why: The note says where the rows come from, in the quiet role D35 gives supporting text.
+            // In the `rows` and `lines` layouts it is the first thing in the scrolling column.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -315,7 +499,32 @@ internal fun TemplateEditorPage(modifier: Modifier, startSafe: Dp, endSafe: Dp, 
             Text(text = fixture.previewNote,
                 modifier = Modifier.padding(start = startSafe, end = endSafe, top = 8.dp, bottom = 16.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-            TemplateEditorTemplateField(fixture = fixture, onMeasure = onMeasure, startSafe = startSafe, endSafe = endSafe)
+            // What: A `Box` with a trailing lambda wraps its child and takes the child's size.
+            // `onPlaced { coordinates -> ... }` runs its lambda each time layout has positioned the
+            // box. `positionInParent()` is the box's top-left corner measured from the content of
+            // the scrolling column, so its `y` does not change when the body scrolls. `y` is a Float,
+            // a 32-bit fractional number whose sibling is the 64-bit Double, and `roundToInt()`
+            // rounds it to the nearest whole pixel. `coordinates.size.height` is the box's height in
+            // whole pixels, and `.intValue = ...` writes a number into its box.
+            // Why: The scroll rule needs the top and the bottom edge of the whole field block, its
+            // error lines or typing help included, and only layout knows them.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // <div ref={element => { if (element) { setBlockTop(element.offsetTop); setBlockBottom(element.offsetTop + element.offsetHeight); } }}>
+            //   <TemplateField/>
+            // </div>
+            // ```
+            Box(modifier = Modifier.onPlaced { coordinates ->
+                // The block's top edge, in whole pixels from the start of the scrolled content.
+                val placedTop: Int = coordinates.positionInParent().y.roundToInt()
+                blockTop.intValue = placedTop
+                // The bottom edge is the top edge plus the block's measured height.
+                blockBottom.intValue = placedTop + coordinates.size.height
+            }) {
+                TemplateEditorTemplateField(fixture = fixture, onMeasure = onMeasure, startSafe = startSafe,
+                    endSafe = endSafe)
+            }
             TemplateEditorSectionHeading(text = "Fields", startSafe = startSafe, endSafe = endSafe, bottom = 4.dp)
             // One row per insertable field, each closed by a quiet separator.
             for (field in fixture.fields) {

@@ -97,11 +97,15 @@ class TemplateEditorActivity : ComponentActivity() {
      * What: `override` implements the native callback; `Bundle?` permits no saved record. `?:` is
      * the "or else" operator: when the value on its left is null, the expression on its right runs,
      * here a `throw`.
-     * Why: Only an explicitly named authored scene is ever mounted, with no stored template behind it.
+     * Why: Only an explicitly named authored scene is ever mounted, with no stored template behind
+     * it, drawn in the layout and at the scroll position the launch asks for.
      *
      * In TS you'd write (pseudocode):
      * ```ts
-     * override onCreate(savedState: Bundle | null): void { const scene = requireScene(); mountStudy(scene); }
+     * override onCreate(savedState: Bundle | null): void {
+     *   const scene = requireScene(); const layout = optionalLayout(); const position = optionalPosition();
+     *   mountStudy({ ...templateEditorFixture(scene), layout, position });
+     * }
      * ```
      */
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,10 +114,32 @@ class TemplateEditorActivity : ComponentActivity() {
         // Use the required non-null scene name from the launch intent, or throw.
         val scene: String = intent.getStringExtra("scene")
             ?: throw IllegalArgumentException("Template editor study requires an explicit scene.")
-        // Replace the placeholder with the named authored state; an unknown name throws here.
-        shown = templateEditorFixture(scene)
-        // One tagged line records which authored scene this launch mounted.
-        Log.i("TemplateEditor", "TemplateEditorActivity.onCreate: authored scene=$scene")
+        // What: `intent.getStringExtra("layout")` yields the text the launch gave under that name, or
+        // null when it gave none; `templateEditorLayout` turns either into one of the three layout names.
+        // Why: A launch may ask for one of the pinned-preview layouts. One that does not keeps `flow`,
+        // and a mistyped name throws here, before anything is drawn.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const layout = templateEditorLayout(intent.getStringExtra('layout'));
+        // ```
+        val layout: String = templateEditorLayout(intent.getStringExtra("layout"))
+        // The same for where the body is scrolled to: `top` unless the launch names `end`.
+        val position: String = templateEditorPosition(intent.getStringExtra("position"))
+        // What: `.copy(layout = layout, position = position)` makes a new record from the one
+        // `templateEditorFixture(scene)` returned, with only the two named fields replaced. Every
+        // data class has this method.
+        // Why: The authored scenes all carry the default presentation, so the launch's choice is laid
+        // over the named scene here, replacing the placeholder. An unknown scene name throws here.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // setShown({ ...templateEditorFixture(scene), layout, position });
+        // ```
+        shown = templateEditorFixture(scene).copy(layout = layout, position = position)
+        // One tagged line records which authored scene this launch mounted, and how it is presented.
+        Log.i("TemplateEditor",
+            "TemplateEditorActivity.onCreate: authored scene=$scene layout=$layout position=$position")
         // Draw behind the system bars; the pages add their own status and navigation padding.
         enableEdgeToEdge()
         // What: Trailing lambdas supply native children and event callbacks; `{ event -> ... }` is a
