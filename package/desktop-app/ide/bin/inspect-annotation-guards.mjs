@@ -83,6 +83,10 @@ const cases = [
   { name: 'top-stays-top', file: 'src/native/rows.rs', before: '    if offset <= 0.0 {\n        return 0.0;\n    }\n', after: '', native: true, test: 'rows_arriving_above_the_view_move_no_visible_pixel', failure: equality },
   // Native: the scroll range reaches rows past the widest line.
   { name: 'scroll-extent', file: 'src/native/render.rs', before: 'document_width = document_width.max(annotate::extent(view.annotations.as_ref()) + CARET_ROOM);', after: '', native: true, test: 'rows_past_the_widest_line_extend_the_scroll_range', failure: 'the label is outside the scroll range' },
+  // Native: the gutter letter names the worst severity starting on a line, and its column never moves the text.
+  { name: 'gutter-letter', file: 'src/native/rows.rs', before: 'marks[block.line - current.first] = i32::from(rank(worst.severity)) + 1;', after: 'marks[block.line - current.first] = 0;\n            let _unused = worst;', native: true, test: 'gutter_letters_show_the_worst_severity_in_front_of_the_line_number', failure: 'marks handed to the window' },
+  { name: 'gutter-worst', file: 'src/native/rows.rs', before: 'if let Some(worst) = block.messages.first() {', after: 'if let Some(worst) = block.messages.last() {', native: true, test: 'gutter_letters_show_the_worst_severity_in_front_of_the_line_number', failure: 'marks handed to the window' },
+  { name: 'gutter-column-fixed', file: 'ui/app.slint', before: 'private property <length> gutter-width: root.mark-column + root.number-column;', after: 'private property <length> gutter-width: root.number-column + (root.line-marks[0] > 0 ? root.mark-column : 0px);', native: true, test: 'gutter_letters_show_the_worst_severity_in_front_of_the_line_number', failure: 'moved sideways when diagnostics arrived' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
