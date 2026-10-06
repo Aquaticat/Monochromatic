@@ -192,7 +192,8 @@ neither is part of the study.
 a scroll of the study's own on a typing view,
 a page that asks a question,
 a page that quotes a conditional,
-and a page without the section for approval or without a figure for each scene.
+a page without the section for approval or without a figure for each scene,
+and a page naming a number of capture visits other than its views record.
 Removing each of its four named guards makes that test fail.
 An offline browser check in a container bounded to 2 GiB of memory and 2 CPUs opened every embedded view,
 prepared replies,
