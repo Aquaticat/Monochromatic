@@ -2,7 +2,7 @@
 //! Notifications never carry listings or text: the existing readers reread and fence their replies.
 
 /// Navigation owns the watcher and the directory schedule; the source state owns its own schedule.
-use super::{Navigation, State};
+use super::{AppWindow, Navigation, State};
 /// A full reread asks for a reread of the displayed file once it has been quiet.
 use ide_app::change_watch::SourceChange;
 /// What: `Rc<RefCell<State>>` is the UI-thread shared source state; `BTreeSet` is an ordered set.
@@ -17,8 +17,39 @@ use std::{
     collections::BTreeSet,
     path::{Path, PathBuf},
     rc::Rc,
-    time::Instant,
+    time::{Duration, Instant},
 };
+
+/// Shortest time between two watch retries asked for by scrolling.
+const SCROLL_RETRY_GAP: Duration = Duration::from_secs(1);
+
+/// The user scrolling the tree is a moment to retry watches that wait on the inotify limit, without the
+/// backoff; while every shown folder is watched, scrolling asks for nothing.
+pub(super) fn scrolled(window: &AppWindow, navigation: &mut Navigation, now: Instant) {
+    let offset = window.get_tree_scroll_y();
+    // What: `f32` comparison of the toolkit's scroll offset with the previous tick's.
+    // Why: Any change is a scroll by the user or by a reveal; both mean the tree is in use.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (offset === navigation.treeScroll) return;
+    // ```
+    if (offset - navigation.tree_scroll).abs() < f32::EPSILON {
+        return;
+    }
+    navigation.tree_scroll = offset;
+    let unwatched = navigation
+        .shown
+        .iter()
+        .any(|path| return !navigation.watched.contains(path));
+    let rested = navigation
+        .scroll_retry
+        .is_none_or(|at| return now.saturating_duration_since(at) >= SCROLL_RETRY_GAP);
+    if unwatched && rested {
+        navigation.scroll_retry = Some(now);
+        navigation.watcher.retry_now();
+    }
+}
 
 /// Recompute the shown directories from the visible rows and send them with the displayed file.
 /// Collapsed folders drop out, so their watches are removed; descendants of collapsed folders are not shown.

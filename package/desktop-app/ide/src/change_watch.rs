@@ -145,6 +145,16 @@ impl ChangeWatcher {
         wake(&self.wake);
     }
 
+    /// The user acted on the tree, for example scrolled it: watches waiting on the inotify limit are tried
+    /// at once instead of after the backoff. The caller limits how often it asks.
+    pub fn retry_now(&self) {
+        if self.stopped {
+            return;
+        }
+        lock(&self.shared).user_retry = true;
+        wake(&self.wake);
+    }
+
     /// Take everything recorded since the last call; never blocks on the filesystem.
     pub fn take(&mut self) -> Changes {
         let mut guard = lock(&self.shared);

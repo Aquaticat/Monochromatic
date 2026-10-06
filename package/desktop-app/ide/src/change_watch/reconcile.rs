@@ -70,6 +70,8 @@ pub struct Request {
     pub desired: Option<BTreeSet<PathBuf>>,
     /// The safety sweep asked to retry watches that failed.
     pub retry: bool,
+    /// The user acted on the tree; watches waiting on the limit are tried without the backoff.
+    pub user_retry: bool,
     /// Live watches whose directory was removed or renamed.
     pub stale: BTreeSet<PathBuf>,
     /// The displayed file now.
@@ -281,7 +283,7 @@ pub fn reconcile(
             .is_some_and(|backoff| return backoff.may_retry(now));
     let allowed = Allowed {
         failed: request.retry,
-        limited: shown_changed || sweep_retry,
+        limited: shown_changed || sweep_retry || request.user_retry,
     };
     let pass = try_watches(watches, &allowed, kernel);
     let entered = update_limit(watches, &pass, sweep_retry, now);

@@ -250,3 +250,38 @@ fn the_backoff_is_capped() {
     assert!(!backoff.may_retry(now + LONGEST_LIMIT_RETRY - Duration::from_millis(1)));
     assert!(backoff.may_retry(now + LONGEST_LIMIT_RETRY));
 }
+
+/// Scrolling the tree retries a watch waiting on the limit at once, without waiting for the backoff,
+/// and a failed user retry does not lengthen the backoff.
+#[test]
+fn a_user_retry_skips_the_backoff() {
+    let start = Instant::now();
+    let mut watches = Watches::default();
+    let mut kernel = Fake {
+        free: 1,
+        adds: Vec::new(),
+    };
+    reconcile(&mut watches, expanded(&["a", "b"]), start, &mut kernel);
+    let before = kernel.adds.len();
+    let scrolled = Request {
+        user_retry: true,
+        ..Request::default()
+    };
+    let soon = start + Duration::from_millis(100);
+    let outcome = reconcile(&mut watches, scrolled, soon, &mut kernel);
+    assert_eq!(
+        kernel.adds.len(),
+        before + 1,
+        "a scroll did not retry at once"
+    );
+    assert!(
+        !outcome.everything,
+        "a user retry under the limit reread everything"
+    );
+    assert!(
+        watches
+            .limit
+            .is_some_and(|backoff| return backoff.may_retry(start + FIRST_LIMIT_RETRY)),
+        "a failed user retry lengthened the backoff"
+    );
+}

@@ -83,6 +83,7 @@ fn apply(
     let request = Request {
         desired: guard.desired.take(),
         retry: std::mem::take(&mut guard.retry),
+        user_retry: std::mem::take(&mut guard.user_retry),
         stale: std::mem::take(&mut guard.stale),
         file: guard.file.clone(),
     };

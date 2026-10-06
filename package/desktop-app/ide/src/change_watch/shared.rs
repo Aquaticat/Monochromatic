@@ -65,6 +65,8 @@ pub(super) struct Shared {
     pub(super) file: Option<PathBuf>,
     /// Retry watches that failed earlier, for example after a directory was recreated.
     pub(super) retry: bool,
+    /// The user acted on the tree (scrolled), so watches waiting on the limit are tried without the backoff.
+    pub(super) user_retry: bool,
     /// Set once by the UI handle's Drop; the watch thread exits at its next wake.
     pub(super) closing: bool,
     /// Live watches whose directory was removed or renamed; the watch thread drops and re-adds them.
@@ -93,6 +95,7 @@ impl Shared {
             desired: None,
             file: None,
             retry: false,
+            user_retry: false,
             closing: false,
             stale: BTreeSet::new(),
             pending: Changes::default(),
