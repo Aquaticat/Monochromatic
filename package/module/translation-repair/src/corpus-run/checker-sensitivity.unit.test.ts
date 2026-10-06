@@ -1,0 +1,81 @@
+/**
+ Tests for the checker sensitivity runner: the built command, run with every
+ provider key withheld so it can only refuse.
+
+ Fixtures are cat-themed invention. No corpus content appears here.
+
+ @module
+ */
+
+import {
+  DEFAULT_CONCURRENCY,
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import {
+  noKeyRefusal,
+  runBuiltWithoutKeys,
+} from './keyless-built-command.test-fixture.ts';
+
+/**
+ Exit code `reportingRefusals` sets for a stated refusal.
+ */
+const REFUSED_AS_STATED = 6;
+
+await describe({
+  name: '',
+  concurrency: 1,
+  children: [
+    describe({
+      name: 'checker-sensitivity as built',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES as stated and exits 6 when no provider key is set, before any call and with nothing on stdout',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'checker-sensitivity-', },);
+
+            /**
+             What the command wrote with every key withheld.
+             */
+            const run = await runBuiltWithoutKeys({
+              command: 'checker-sensitivity',
+              runsDir: scratch.path,
+              scratchDir: scratch.path,
+            },);
+
+            expect(run.code,).toBe(REFUSED_AS_STATED,);
+            expect(run.stdout,).toBe('',);
+            expect(run.stderr,).toBe(noKeyRefusal({ command: 'checker-sensitivity', },),);
+          },
+        },),
+
+        it({
+          name: 'REFUSES an argument it does not read as stated and exits 6, naming the argument and the usage',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'checker-sensitivity-', },);
+
+            /**
+             What the command wrote given one argument.
+             */
+            const run = await runBuiltWithoutKeys({
+              command: 'checker-sensitivity',
+              runsDir: scratch.path,
+              scratchDir: scratch.path,
+              args: ['--bogus',],
+            },);
+
+            expect(run.code,).toBe(REFUSED_AS_STATED,);
+            expect(run.stdout,).toBe('',);
+            expect(run.stderr,).toBe(
+              'checker-sensitivity: --bogus is not a flag this command reads. Usage: checker-sensitivity\n',
+            );
+          },
+        },),
+      ],
+    },),
+  ],
+},);
