@@ -12,6 +12,14 @@ use ide_app::{
 /// Bound worker waits instead of hanging an unattended regression run.
 use std::time::{Duration, Instant};
 
+/// Longest wait for one reply: a hang detector, not a latency budget, and the same bound as
+/// `OPEN_PATIENCE` in `tests/file_open.rs` and the Language tests' `PATIENCE`. Before its first
+/// reply the worker builds the syntax engine, processor work that takes far longer when the
+/// machine is busy: the reload worker was seen waiting 6 s for a processor while it ran for
+/// 0.2 s, and with a quarter processor 1 of 300 suite runs passed the 3 s bound this replaces.
+/// No product bound exists for a reload.
+const REPLY_PATIENCE: Duration = Duration::from_secs(20);
+
 /// Wait for a single test reply while retaining an explicit failure deadline.
 fn reply(worker: &mut ReloadWorker) -> ReloadReply {
     let start = Instant::now();
@@ -27,8 +35,8 @@ fn reply(worker: &mut ReloadWorker) -> ReloadReply {
             return response;
         }
         assert!(
-            start.elapsed() < Duration::from_secs(3),
-            "source worker did not reply"
+            start.elapsed() < REPLY_PATIENCE,
+            "source worker did not reply within {REPLY_PATIENCE:?}"
         );
         std::thread::sleep(Duration::from_millis(2));
     }
