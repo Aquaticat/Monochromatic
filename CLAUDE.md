@@ -515,10 +515,12 @@ RGP:
  always pass `.` or an absolute path.
 
 ATH:
- Before using `${HOME}/temp/agent` scratch:
- `mkdir --parents` it,
- then `chmod 700`;
- trust checks reject group/other permission bits.
+ Scratch goes in `${HOME}/temp/agent`,
+ never `/tmp` or the harness scratchpad
+ (reboots wipe them);
+ first `mkdir --parents` it,
+ then `chmod 700`
+ (trust checks reject group/other bits).
 
 CLN:
  Investigating package source:
