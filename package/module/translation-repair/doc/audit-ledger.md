@@ -28564,6 +28564,9 @@ which runs the unit suite as a child).
 None calls a provider.
 A follow-up for these was not merged at `f8e99b84d`.
 One name for the three fixtures that only rename `runBuiltCommand` waits for the last runner cluster.
+Both closed since:
+the children in `4049d9eb2` (B314),
+and the wrapper fixtures folded into `runBuiltCommand` in `3d36ba7b9` (B319).
 
 Open to the owner's veto:
 removing every `TRANSLATION_REPAIR_` variable and not the keys alone;
@@ -29041,6 +29044,8 @@ both reads fail for a commit the clone lacks,
 and which page the refusal names is whichever git child ends first.
 It failed again in the whole-suite run on `f8e99b84d` (B305),
 and its fix is in no commit through that one.
+Measured and fixed since,
+in `f3c2bae13` (B316).
 
 Open to the owner's veto:
 masking at the read and not by handing the lookups the masking transport;
@@ -29505,6 +29510,886 @@ and verbs and pronouns are reviewed by hand.
 Recurrence:
 `mistake-prevention.md`,
 "Counts in printed text".
+
+### B309: counts before a fixed plural in four more runners, and a noun chosen by a difference's sign
+
+Red in `a9d447691` for the fidelity probe's preflight line,
+fixed in `8206fa5c6`;
+the other lines were run red by the agents in their worktrees.
+
+Found on 2026-10-06 (UTC) by the agents moving seven runners into cased modules,
+whose cases pin whole printed lines:
+
+- `verify-published`:
+  a page one character shorter than its artifact implies printed "-1 characters",
+  since the noun followed the signed difference;
+- `coverage-census`:
+  a suite that printed one failure marker was refused as "1 FAIL markers";
+- `judge-fidelity-probe`:
+  a request selecting one reference printed "1 reviewed reference specifications selected",
+  and the suite's own helper pinned that plural for one;
+- `rendering-audit-settled`:
+  "BUYING 1 of 1 selectable subjects";
+- `rendering-audit-settled-report`:
+  "1 subjects".
+
+The fix:
+each noun follows its count through `wordForCount`,
+and the verifier's noun follows the size of the difference,
+not its sign,
+while the signed number is still printed so the direction stays visible.
+Cases pin each line at one and at many,
+the verifier's at minus one and minus seven.
+
+Not examined:
+why the `count-nouns` scan passed these;
+by the coverage census agent's account,
+its noun was a template literal in a file the move changed.
+
+Recurrence:
+`mistake-prevention.md`,
+"Counts in printed text";
+B308 records the same family in six other commands.
+
+### B310: `verify-published` printed its entry lines in the order the disk answered
+
+Red in `a9d447691`,
+fixed in `8206fa5c6`.
+
+Found on 2026-10-06 (UTC) by the agent moving the command.
+It read its entries together,
+and each read printed its lines as it finished,
+so a run's entry lines came in the order the reads ended,
+not in the order the run lists its entries,
+and two runs over one directory could print two orders.
+By the agent's measurement,
+six of six runs of the unmoved command over sixty settled entries printed them out of order.
+The red commit's case over sixty entries expects listing order.
+
+The fix:
+`judgePublishedEntry` (`corpus-run/verify-published-entry.ts`) returns its lines,
+the reads still run together,
+and `verifyPublishedRun` (`corpus-run/verify-published-run.ts`) prints each entry's lines in listing order.
+
+Open to the owner's veto:
+the listing order;
+the bytes of a report over two or more entries can differ from before in order only.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order",
+which named this defect from the lead's notes before its merge.
+
+### B311: `coverage-census` run where no build stands printed a listing error as a fault
+
+Red in `a9d447691`,
+fixed in `8206fa5c6`.
+
+Found on 2026-10-06 (UTC) by the agent moving the command.
+Run from a directory with no `dist/final/node`
+(the wrong working directory,
+or no build yet),
+the census listed the build directory with a bare read,
+whose `ENOENT` went up uncaught,
+and the command printed `refused by Error` with stack frames at exit 5,
+the exit of a fault in the command.
+
+The fix:
+`requireCoverageBuild` (`corpus-run/coverage-census-build.ts`) lists through `namesIn`
+and refuses as stated at exit 6,
+naming the directory,
+the filesystem code (`ENOENT`,
+`ENOTDIR`)
+and the task that builds with source maps.
+The lead made the census's logger a required parameter of its run and of its build check,
+owned by the entry file,
+where the agent had made it optional with the module's own as the default.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal":
+a directory the operator did not make is a stated refusal,
+never an uncaught listing error.
+
+### B312: the settled rendering audit named its runs directory only after buying every subject
+
+Fixed in `8206fa5c6`,
+with its case run red by the agent in its worktree.
+
+Found on 2026-10-06 (UTC) by the agent moving `rendering-audit-settled`.
+The runs directory was resolved when the run was kept,
+after the last roster call,
+so a directory that could not be named cost the whole roster's calls.
+
+The fix:
+`runSettledAudit` (`corpus-run/rendering-audit-settled-drive.ts`) resolves the runs directory
+right after the buying line,
+before the client is built;
+a case with a resolver that refuses asserts that no model,
+client or page read happened.
+
+Recurrence:
+`mistake-prevention.md`,
+"Work no floor can check":
+state known at the start is checked before anything is bought.
+
+### B313: a row of a settled run file that was no object was read as a row
+
+Red in `a9d447691`,
+fixed in `8206fa5c6`.
+
+Found on 2026-10-06 (UTC) by the agent moving `rendering-audit-settled-report`.
+`readRunRows` checked that a run file's `rows` was a list and cast what it held,
+so a row such as `7` or `null` passed:
+it was keyed as `undefined`,
+or ended a later reading in a `TypeError` printed as a fault.
+
+The fix:
+the reader refuses a row that is no object as stated,
+naming its position and never its content;
+the fallback in `sliceIndexOf` (`corpus-run/rendering-audit-settled-repeat.ts`) that answered for such a row,
+which the coverage census listed as cold,
+is an `unreachable:` throw saying why.
+
+Seen by the agents of B309 to B313 and left,
+to rule on or fix after `8206fa5c6`:
+the verifier counts a page's length in UTF-16 units and calls them characters;
+a request-operation `FidelityReferenceError`
+(an unknown entry,
+`--context`)
+prints as a fault at exit 5;
+the unpaired census ranks entries by unpaired source characters alone;
+a suite that exits 0 with no pass prints a census of nothing.
+
+Open to the owner's veto,
+for the three clusters of `8206fa5c6`:
+the fidelity probe reading its build digest and closure when the process starts,
+as the settled audit always did,
+where it read them after the corpus;
+the buyer of one slice passed into the window trial's walk;
+the five census steps passed as one object;
+each new refusal's wording.
+The whole suite on `8206fa5c6`,
+run in a side checkout:
+1,982 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and 41 source scans passing.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back":
+a file's elements are checked where the file is read.
+
+### B314: every child production code starts was handed the run's provider keys and settings
+
+Red in `93c30e8ea`,
+fixed in `4049d9eb2`.
+
+Found on 2026-10-06 (UTC),
+the item B291 left open.
+The git children of the corpus reads,
+of the artifact generation checks,
+of the cache account,
+of the run configuration and of the coverage census,
+the census's suite child,
+and the picture program
+were started with the run's whole environment,
+or with nothing said about it.
+A key could leave through a child's own log,
+a crash dump,
+a tool's debug output,
+or a hook or alias that a repository's configuration has a git child run.
+Measured by the lead on the red tree:
+the new scan reported thirteen starts,
+and all ten new cases failed,
+nine of them seeing the invented key and setting arrive beside the plain variable.
+
+The fix:
+`child-process-environment.ts` builds the environment of every child,
+the parent's with every name ending `_API_KEY` and every `TRANSLATION_REPAIR_` setting stated as absent,
+and every start of a child in the package's source passes it;
+`corpusGitEnvironment` is built on it.
+The lead made the four git starts of `corpus-run/coverage-census-commit.ts`
+and the suite child of `corpus-run/coverage-census-steps.ts`,
+which another agent was moving at the time.
+`production-children-keyless.unit.test.ts`,
+among the source scans,
+fails a production start whose `env` is not built by `childEnvironment`;
+`production-children-environment.unit.test.ts` starts each site's real child against an invented key
+and reads from the child's own side,
+git's trace or a file the program writes,
+that only the plain control variable arrives.
+The whole suite on `4049d9eb2`,
+run in a side checkout:
+1,985 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and 42 source scans passing.
+
+Not measured:
+a picture program reading a real picture without the removed names,
+and the whole suite run as the census's child without any setting of the package;
+the next whole-suite census measures the second.
+Out of the scan's reach,
+by its own header:
+a start through an alias (`const run = spawn`),
+a computed member,
+and starts in other workspace packages.
+
+Open to the owner's veto:
+removed names stated as `undefined`;
+the settings removed with the keys for every child,
+with no switch for a site;
+the sites reading the process's environment where they start the child;
+the cases writing invented variables to the test process's environment,
+one at a time.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B315: the corpus listing's git child kept the repository variables its guard meant to drop
+
+Red in `93c30e8ea`,
+fixed in `4049d9eb2`.
+
+Found on 2026-10-06 (UTC) by the agent of B314.
+`corpusGitEnvironment` left `GIT_DIR` and its kin out of the object it returned,
+which only `execFile` reads as absent;
+`nano-spawn` merges the object it is given over the process's environment,
+so every name left out came back from the parent.
+`listCorpusPeople` starts its git through `nano-spawn`,
+so with `GIT_DIR` pointing at another repository it failed its read with `CorpusReadError`,
+while `readCorpusBytes`,
+which starts its git through `execFile`,
+read the right bytes.
+The red commit's case sets `GIT_DIR` to another repository and expects the listing of the pinned clone.
+
+The fix:
+the environment states each removed name with the value `undefined`,
+which both spawn forms read as absent.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world":
+an environment for a merging spawner states what it removes,
+and the case reads the child's own environment.
+
+### B316: when several concurrent reads failed, the refusal named whichever ended first
+
+Red in `75085f17f`,
+fixed in `f3c2bae13`.
+
+Found on 2026-10-06 (UTC),
+the case B300 left open:
+`displacement-probe as built` failed in whole-suite runs on its expected stderr for a commit the clone lacks,
+and passed alone.
+`carveSettled` (`corpus-run/settled-carve.ts`) read an entry's `page.md` and `page.en.md` with `Promise.all`,
+both reads refuse for such a commit,
+and `Promise.all` rejects with whichever member fails first by the clock.
+The agent's real-git probe of 100 such pairs named `page.md` 98 times and `page.en.md` twice,
+which measures the reading B300 recorded as the lead's inference.
+The diff of the suite failure was cut,
+so tying that failure to this cause stays an inference.
+Measured by the lead on the red tree:
+nine site cases fail,
+each printing the later member's refusal,
+in `corpus-name-index`,
+`displacement-probe-run`,
+`draw-sample-pool`,
+`editor-calibrate-drive`,
+`entry-pictures`,
+`required-providers` and `translate-repair`.
+
+The fix:
+`allInInputOrder` (`all-in-input-order.ts`) takes promises the caller has already started,
+so the work still runs together;
+where members fail,
+it throws what the first failing member in input order rejected with,
+unchanged,
+once every member before it has settled.
+It cancels nothing and gives a caller's abort no precedence.
+Eight sites moved onto it with a case that scripts the later member failing first,
+`carveSettled` taking its corpus reader as a required parameter so its case can;
+B317 records the sites moved without one.
+By the agent's measurement,
+with the helper degraded to `Promise.all` seven of its cases and every site case fail.
+The whole suite on `f3c2bae13`,
+run in a side checkout:
+1,986 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and 42 source scans passing.
+
+Open,
+and given to a follow-up agent whose work is not merged at `3ce947dce`:
+the sites other agents were moving then
+(`pass-republish`,
+the settled audit's input and buy,
+the coverage census's reads,
+`verify-published-run`);
+a scan failing a bare `Promise.all` outside the helper;
+the bench sample's skip line,
+left on `Promise.all` because its cut of 80 UTF-16 units ends inside the commit hash,
+so both pages print one line;
+and lines several members print as they end,
+which still come out in completion order.
+
+Open to the owner's veto:
+first in input order as the rule,
+at the cost that a later failure waits for the earlier members to settle;
+one helper and no variant;
+in `corpus-name-index`,
+an entry whose original is absent is stepped over even when its archive page was refused for another reason;
+`translate-repair` moved though its voices' refusals differ only in a detail field.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B317: fifteen more concurrent read sets reported the failure that came first, two under docs saying otherwise
+
+Fixed in `f3c2bae13`,
+with no case at the sites;
+what holds them is the helper's own cases.
+
+Found on 2026-10-06 (UTC) by the agent of B316,
+in its census of every `Promise.all`,
+`allSettled`,
+`race` and `any` in the package's source:
+by its count,
+53 lines in 40 files called `Promise.all` in production code at its base,
+and 28 in 20 after the fix.
+Fifteen sites read with no parameter a case could script
+(a direct file read,
+`stat`,
+`rm`,
+`readlink` or a git child),
+among them the cache account's readers,
+the pass schema census and guard,
+the pipeline digest,
+the published tree listing,
+the report log read,
+the score probe's gather,
+the process identity and the cited reference lookup.
+The TSDoc of `readLogTexts` said it reported "the first to fail",
+which `Promise.all` did not deliver,
+and the comment of `score-probe-gather` said its first report was not fixed.
+
+The fix:
+each site goes through `allInInputOrder`,
+and the TSDoc and the comment say what the code does.
+
+Open to the owner's veto:
+the sites moved with no case of their own.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B318: two cases kept a late voice inside a grace window a slow timer could outrun
+
+Fixed in `f3c2bae13`.
+
+Found on 2026-10-06 (UTC) by the agent of B316,
+searching the tests for bounds on the clock.
+`lane-contest-stage.unit.test.ts`,
+"KEEPS DELAYED ELIGIBLE VOICES that arrive inside bounded grace",
+and `absolute-naturalness-review-stage.unit.test.ts`,
+"KEEPS REJECTION that arrives inside bounded post-quorum grace",
+each expected a voice delayed 30 ms to land inside a 100 ms grace window,
+which a loaded machine could outrun.
+
+The fix:
+both give a window of 60,000 ms,
+which the round never waits for,
+since it ends at the last answer.
+By the agent's measurement,
+each case fails at a window of 0,
+so the window is what keeps the late voice.
+
+Left by the agent,
+each with its reason and none shown to fail:
+peak-concurrency instruments that wait 10 ms,
+meters that wait 20 ms,
+a bound of 5,000 ms over about 50 ms of work,
+and a lower bound only.
+
+Open to the owner's veto:
+a window of 60,000 ms and no gate in the scripted clients.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
+
+### B319: nothing stopped a built command from running in a shell that held provider keys
+
+Red in `668340466`,
+fixed in `3d36ba7b9`;
+the configuration doc's paragraph broken at its semantic points in `c8196cf6c` (M133),
+and the corpus pass runbook's two direct starts given the marker in `5f3e26958`.
+
+Found on 2026-10-06 (UTC) after M120:
+an agent started a built command by hand from a shell holding the operator's real keys,
+and one start bought six model calls.
+The rule for agents that followed is no guard.
+
+The fix:
+`taskRunnerVerdict` (`task-runner-guard.ts`) lets a process that holds a key,
+a variable whose name ends `_API_KEY` with a value that is not blank,
+run a command only when `TRANSLATION_REPAIR_STARTED_BY` names that command;
+a process holding no key runs as before.
+`reportingRefusals` takes the process's environment as a required `env`
+and asks the guard before it reads the command line,
+so the refusal is the stated one every entry ends in,
+at exit 6.
+Each of the 42 entry files hands it `process.env`,
+and each of the 42 command tasks in `mise.toml` sets the marker to its command's name.
+`runBuiltCommand` of `child-environment.test-fixture.ts` is the one way a test starts a built command,
+and sets the marker for the command it starts unless a case asks otherwise;
+four wrapper fixtures were folded into it,
+by the agent's account 83 call sites in 26 test files.
+`task-runner-guard-reach.unit.test.ts`,
+among the source scans,
+fails a task that starts a built command without the marker,
+a built command no task starts,
+and an entry that hands no environment;
+on the red tree its package case reported 84 findings,
+the count of the 42 tasks and the 42 entry files the fix changes.
+
+The lead's change to the agent's wording,
+open to the owner's veto:
+the agent wrote the refusal as "unless its own task started it",
+the task as the one way out;
+the corpus pass runbook starts a built file directly where nothing may rebuild while a pass runs,
+so the marker is the process's own statement of the command it means to start,
+which the task,
+the test fixture or an operator by hand sets,
+and the refusal names both ways.
+The module's comment says the guard is no access control.
+Measured by the lead:
+started through its task from a shell holding the session's keys,
+`spend-report` built the package,
+passed the guard and printed its own refusal for a missing log file at exit 6;
+`mise tasks info` reads the marker on the task.
+The whole suite on `3d36ba7b9`,
+run in a side checkout:
+1,993 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and 44 source scans passing.
+
+Open:
+a process that imports the built library directly,
+a `node --eval` or a script,
+can still build a client from its environment,
+since the library cannot know what started it;
+a shell in a worktree still holds the keys.
+Three test files start a built command through `runKeyless` with their own path
+(`verify-published`,
+`editor-standing-read`,
+`sink-names-only`),
+keyless,
+so the guard passes them.
+
+Open to the owner's veto,
+the agent's:
+a blank key value counts as no key;
+a marker value is repeated in the refusal only when it has a command name's shape;
+`env` required on `reportingRefusals`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world" and "Guards that cannot fail".
+
+### B320: an editor's edit nested past the bound ended the repair chunk after its checkers were paid
+
+Red in `d0aebf8a7`,
+fixed in `71702c550`.
+
+Found on 2026-10-06 (UTC) by the agent following up B301,
+over every place a voice's text reaches a parse no stage catches.
+The editor's wire carries free text,
+and the apply gate checked what an edit kept and quoted,
+never whether a grammar reads what it leaves.
+An edit of 300 nested list markers,
+or of 300 open brackets,
+passed the gate,
+was judged and checked,
+and was then parsed by `settleChunkFromChecks`,
+which raised the plain grammar's `MarkdownParseError` out of `repairChunk`.
+In a document of two slices,
+both slices' repairs were lost,
+and the chunk's checkers had been paid for nothing.
+Quotation markers never reach the parse,
+since `clampQuoteDepth` reduces them to one level.
+
+The fix:
+`applyPatchOperations` (`apply-patch.ts`) reads,
+for each operation it accepts,
+the text the accepted edits and the candidate leave
+(`nestingWithEdit`,
+`patch-nesting.ts`,
+which runs `firstNestingExcess` under the plain grammar),
+and rejects an operation past the bound as `unreadable-replacement` with the measure's reason,
+through the gate's existing rejection path;
+`editor-candidates.ts` records the reason against the voice.
+The refine lane (`refine-stage-replies.ts`) names the same reason `refine-unreadable-rewrite` instead of throwing.
+A case pins the boundary:
+256 markers apply.
+The lead moved the nesting exports out of `index.ts` into `nesting-barrel.ts`,
+since the agent's lines would have taken `index.ts` past the 300 lines `eslint/max-lines` allows.
+The whole suite on `71702c550`,
+run in a side checkout:
+2,010 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and 44 source scans passing.
+
+Open to the owner's veto,
+the agent's:
+the gate reads the whole spliced text for each operation,
+quadratic in a slice's operations;
+the bounds of 256 levels and 1,024 delimiters stay;
+no parse in the gate for exhausting the stack below the bound,
+since by the agent's measurement the parser needs 82 to 1,175 frames against 13,899 available;
+the parses that read lane output after a floor stay throws.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a voice's text is refused as that voice's by its stage's own gate,
+before judges and checkers.
+
+### B321: the nesting scan skipped what a fence holds where the parser read no fence
+
+Red in `d0aebf8a7`,
+fixed in `71702c550`.
+
+Found on 2026-10-06 (UTC) by the agent of B320.
+The measure B301 added skipped every line after a fence line,
+where the parser reads no fence for a backtick fence with a backtick in its info,
+a fence indented four columns or a tab,
+a fence in a quotation or list item the next line leaves,
+or a fence line in raw html,
+a math block or an indented code block.
+Each passed texts the parser then nested:
+by the agent's measurement,
+to a tree depth of 303 for open tags and 3,003 for opened emphasis,
+and in 700 to 2,200 ms for a link in a link 3,200 deep and emphasis 3,000 deep.
+
+The fix:
+the scan skips a fenced stretch only where the parser certainly reads a fence
+(`certainFenceOf`,
+`nesting-fence.ts`):
+the line begins with the fence outside every container,
+a backtick fence has no backtick in its info,
+no raw html block is open (`nesting-html-block.ts`),
+and under the strict grammar no math block has been seen and no brace or tag is open.
+A fence line the scan cannot be certain of opens a loose fence whose lines are counted until a closing line.
+`nesting-fence-differential.unit.test.ts` reads a generated family of texts against the grammar's own parser.
+The agent's version pinned how many texts the scan passes (60,
+36 and 36);
+the lead's asserts that the passed texts are exactly those its stated rule skips,
+and its oracle rethrows any failure of the plain grammar's parser.
+By the agent's measurement,
+the same family at its base showed 422 passed texts nested past the limit under the plain grammar
+and 290 under each strict one,
+and none after.
+
+Open,
+the agent's stated over-refusals:
+a fence indented one to three columns,
+a closing line indented four,
+a fence in a container,
+a fence line in an html comment or `pre` block,
+every fence after a `$$` line under the strict grammar,
+and a raw-text html block left open before a fence holding 256 or more brackets,
+which the assembly guard then withdraws.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+the measure may refuse a text the parser reads,
+never skip a stretch the parser nests.
+
+### B322: the nesting scan read a line mixing stars and hyphens as a thematic break
+
+Red in `d0aebf8a7`,
+fixed in `71702c550`.
+
+Found on 2026-10-06 (UTC) by the agent of B320.
+`isRuleLine` took any line of stars,
+underscores,
+hyphens and blanks as a thematic break and skipped its emphasis delimiters,
+where the grammar's break is three or more of one character.
+By the agent's measurement,
+`*-` repeated 24,000 times passed the scan and parsed in 3.7 to 6.6 s over four runs,
+growing faster than the text.
+
+The fix:
+`isRuleLine` is the grammar's thematic break exactly,
+three or more of one of `*`,
+`_` and `-` with only blanks between,
+and a mixed line is counted.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
+
+### B323: a page nested past the bound by the join of two readable slices ended the document
+
+Red in `d0aebf8a7`,
+fixed in `71702c550`.
+
+Found on 2026-10-06 (UTC) by the agent of B320.
+An unclosed fence in one slice is closed by the fence line of the next,
+whose open brackets then nest on the page,
+so each slice read alone and the page did not.
+`guardFootnoteAssembly` parsed the page and raised `MarkdownParseError` out of `repairPreparedDocument`;
+the same guard runs for `translate-assemble.ts` and `page-assembly-rounds.ts`.
+
+The fix:
+`introducedStructuralRegressions` (`assembly-regressions.ts`) returns `unreadable-page`
+when the assembled page is refused,
+reading the incumbent first,
+so an incumbent the grammar refuses still throws;
+`assembly-integrity.ts` skips the footnote reading of an unreadable page,
+and the guard's existing single-withdrawal proof withdraws the replacement that made it.
+The lead's change to the agent's patch:
+the function pairs each kind with the incumbent's count of it,
+where the agent's version looked the count up by position with a `?? 0`,
+which would have read a missing count as zero.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+the assembly guard reads the page,
+not only the slices;
+and "Defaults that stand in for an input" for the positional zero.
+
+### B324: a page opening with a byte order mark was read as having no front matter
+
+Red in `75ea14bff`,
+fixed in `3ce947dce`.
+
+Found on 2026-10-06 (UTC),
+a residual the report behind B257 to B262 left,
+measured by the agent of this fix.
+`splitFrontMatter` looked for the opening fence at offset zero,
+so a page whose first character is U+FEFF read its YAML as body:
+a thematic break and a setext heading,
+translated,
+judged and counted in slices.
+With a mark on the archive only,
+the metadata slice was an insertion at offset zero,
+so a rewrite wrote the new front matter before the mark
+and left the archive's own in the body.
+By the agent's census,
+the pinned corpus holds no page opening with a mark (0 of 184),
+so the defect is unreached by it.
+
+The fix:
+the fence is read after a leading mark (`leadingMarkWidth`,
+`front-matter.ts`);
+`FrontMatterBlock.raw` excludes the mark,
+and the new required `startOffset` says where the fence stands;
+every offset stays an offset into the text as written;
+the metadata slice's spans start at each block's own fence,
+and an insertion lands after the archive's mark (`targetInsertionOffset`);
+a boundary after nothing but the mark is the start of the document;
+and the archive intake (`corpus-run/pass-archive.ts`) keeps a leading mark and still folds every other.
+The lead wrote the red commit's nine marks in the front matter cases as escapes,
+where the agent's file held the character itself (M135).
+The whole suite on `3ce947dce`,
+run in a side checkout:
+2,012 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and 44 source scans passing.
+
+Open to the owner's veto:
+the ruling itself,
+against the site:
+`markdown-yaml-metadata-parser` 3.0.0 opens front matter only at `^---`,
+and `readFileSync` keeps the mark,
+so the site reads such a page as having none;
+the alternative is to start at zero in `splitFrontMatter`,
+everything else staying correct under both readings.
+The intake keeping a leading mark while folding the others
+(the alternative is to exempt U+FEFF from the fold);
+and the mark outside the metadata slice,
+so no lane rewrites it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a rule about where a document starts is asked of one reader every consumer shares,
+and a test pairs a page with and without the mark.
+
+### B325: the slice parse welded the paragraphs a line holding only a mark parts
+
+Red in `75ea14bff`,
+fixed in `3ce947dce`.
+
+Found on 2026-10-06 (UTC) while settling the one archive with marks for B324.
+`parseDocument` blanks a line that shows nothing and is not blank to the parser before it parses,
+and `parseSliceBody` did not,
+so a slice holding such a line read as one block fewer than its page:
+by the agent's measurement,
+3,
+2 and 3 blocks for the 4,
+3 and 4 of three slices of `people/Toka_ls/page.en.md`.
+The corpus pass folds the archive first,
+so it did not reach production there;
+the bench sampler slices raw text and does.
+
+The fix:
+`parseSliceBody` masks invisible lines first,
+as the page parse does.
+
+Open to the owner's veto:
+a candidate line of a zero-width space alone is a paragraph break in the slice grammar.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+two parses of one text apply the same masks in the same order.
+
+### B326: three readers of a tag name each kept a name of their own
+
+Red in `75ea14bff`,
+fixed in `3ce947dce`.
+
+Found on 2026-10-06 (UTC),
+the residual B262 left on its container tag readers.
+The lone container tag masker took an ASCII letter and then everything up to the first whitespace,
+the inline reader took that name and looked one character past it,
+and the attribute restorer (`corpus-run/tag-attributes.ts`) took an ASCII letter and ASCII alphanumerics with `-`,
+`.` and `:`.
+By the agent's differential against `parseMdxBody`,
+over 148,252 spellings in each of three places of a name,
+the masker refused 49,018 starts the compiler accepts
+(`$`,
+`_` and every letter outside ASCII)
+and read 97,431 characters inside a name the compiler refuses
+(a zero-width space,
+a bidirectional control,
+a soft hyphen,
+an `@`),
+so a lone tag of such a name was masked as an element of that name where the slice should have been refused;
+and over 282 spellings the restorer read 24 the compiler refuses and missed 84 it accepts.
+The compiler hands the grammar UTF-16 units,
+so a letter past U+FFFF starts and continues no name.
+
+The fix:
+one `readTagName` (`mdx-tag-name.ts`),
+written from the states of `micromark-extension-mdx-jsx` 3.0.2
+and the classes of `estree-util-is-identifier-name` 3.0.0,
+used by the masker,
+the inline reader and the restorer,
+its start set shared with `opensMdxTag` (`mdx-tag-start.ts`).
+`tag-name-spellings.test-fixture.ts` holds the differential set,
+and each reader's test holds the reader to the strict grammar over it.
+The agent's case pinned how many spellings the grammar accepts (106);
+the lead's asserts that both verdicts occur,
+and a check of a list's length against itself is gone.
+The lead's change to the module comment:
+it names all three readers,
+where the agent's named two.
+
+Open:
+`nesting-inline-count.ts` reads a tag name of its own,
+not brought to the definition and not measured;
+`tag-attributes.ts` still reads attribute names with its ASCII set,
+unmeasured.
+
+Open to the owner's veto:
+`opensMdxTag` stays start-only,
+so an angle autolink stays a protected span,
+and its start set is the Basic Multilingual Plane's;
+the restorer reads tags named in any script and refuses 24 shapes it read.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+one definition of a construct's name,
+held by a differential case over every class of character against the compiler.
+
+### B327: the destination scan read neither the character reference nor the bracket of the autolink trail rule
+
+Red in `75ea14bff`,
+fixed in `3ce947dce`.
+
+Found on 2026-10-06 (UTC),
+the forms B259 left open on the trail rule.
+`micromark-extension-gfm-autolink-literal` 2.1.0 reads a well-formed character reference (`&amp;`)
+and a closing square bracket as no part of an address when an end follows them,
+and ends an address at a bracket before whitespace,
+`(`,
+`[` or the text's end.
+The scan kept `&amp` in `see https://c.example/a&amp;`,
+ended every address at the first `]`,
+and the tree reader,
+which takes the parse's own cut,
+named the shorter address.
+By the agent's differential over generated texts,
+the two readers disagreed on 5,048 of 26,452.
+
+The fix:
+`readTrail` (`corpus-run/dropped-destinations.ts`) is the rule as one reading of what follows a candidate end,
+`addressEnd` asks it at marks,
+`&` and `]`,
+`]` is no longer a stopper of a run,
+and the tree reader's autolink literal is cut by the same function (`literalAddress`).
+`destination-address-texts.test-fixture.ts` generates the texts.
+The agent's generator moved its prefix and its path length in step with the suffix,
+each chosen by the position's remainder alone,
+so a suffix only ever met one prefix,
+against its own comment;
+the lead's pairs every suffix with every prefix,
+and the case over 6,000 of its texts passes with no disagreement.
+The lead's change too:
+two TSDoc examples keep the escape of the full-width comma
+that the agent's tool had written as the character (M135).
+
+Open:
+the scan still ends an address at ASCII whitespace only,
+where the parse ends at any Unicode whitespace,
+and the generator draws none.
+
+Open to the owner's veto:
+an address now runs past a `]` the rule does not end it at.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a second reader of an address is held to the first by a generated differential,
+and the generator draws every form of the rule.
+
+### B328: a test helper sorted away the order the recheck guarantees
+
+Changed in `75ea14bff`;
+its red is the agent's measurement in its worktree,
+since the cases pass on the stage as it stands.
+
+Found on 2026-10-06 (UTC),
+the helper a review had flagged without settling.
+`missingChecksSorted` and `readingsInSeatOrder` put the findings and the ballots of every recheck verdict in order
+before the cases of `refine-recheck.unit.test.ts` compared them,
+for a gather order the stage no longer exposes:
+`repair-edit-stages.ts` returns them in the roster's order.
+By the agent's measurement,
+with the roster ordering removed from the stage every case of the file still passed,
+and with both helpers removed as well six failed.
+
+The fix:
+both helpers are gone from that file,
+and its cases assert the roster order as the stage returns it.
+
+Open:
+`refine-slice-settle.unit.test.ts` wraps `readingsInSeatOrder` the same way.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order":
+a case asserts an order exactly,
+never after a sort of its own.
 
 ## Process mistakes in this audit
 
@@ -31208,6 +32093,11 @@ What failed each time is that a command meant only to look was sent without bein
 Every command is reread for `;` before it is sent,
 a read-only one included,
 and a count that may be zero is a call of its own.
+Two more came on 2026-10-06 (UTC),
+the ninth and tenth after this entry was written,
+both reads of a log between two steps of a merge:
+`rg --count … ; rg …` over a red commit's logs,
+and `rg … | rg … ; rg --count …` over a named run on a fix tree.
 `mistake-prevention.md`,
 "Shell commands".
 
@@ -31403,6 +32293,13 @@ the fixture's own test starts a real child that prints the names it sees.
 Not closed at `f8e99b84d`:
 a shell in a worktree still holds the keys,
 and whether they should reach every such shell is the owner's to decide.
+Since `3d36ba7b9` (B319),
+a built command refuses to run in a process that holds a key
+unless that process names the command as the one it means to start,
+as the command's task does,
+so by the guard's rule the start this entry records would have ended at that refusal;
+a shell in a worktree still holds the keys,
+and a script importing the built library is outside the guard.
 `mistake-prevention.md`,
 "Tests touching the real world" and "Guards that cannot fail".
 
@@ -31699,6 +32596,139 @@ so it runs after the build.
 `mistake-prevention.md`,
 "Shell commands" and "Tasks,
 builds and bulk output".
+
+### M133: a doc changed in a fix commit went out without its Markdown lint
+
+Status:
+happened 2026-10-06 (UTC) in `3d36ba7b9`,
+found before the next commit,
+fixed in `c8196cf6c`.
+The start guard's fix added a paragraph to `doc/configuration.md`.
+The lead ran the Markdown lint for docs-only commits,
+and this was a code commit that touched a doc,
+so the lint was not run;
+it reported three `semantic-line-breaks` findings on the paragraph,
+on lines 191 and 200.
+Prevention:
+the Markdown lint runs on every doc a commit touches,
+whatever else the commit holds
+(`mise run //:lint:markdown <paths>`).
+`mistake-prevention.md`,
+"Lint and edits".
+
+### M134: a package task started from the repository root, where it was not found
+
+Status:
+happened 2026-10-06 (UTC),
+while the parse leftovers of B324 to B328 were being merged;
+the run only failed,
+and was repeated from the worktree.
+`mise run //package/module/translation-repair:source-scans` was started from the main repository's root
+and not from the worktree that holds the branch,
+and found no such task (exit 1).
+Prevention:
+every package task runs with the worktree named as its directory in the call
+(`cd -- <worktree> &&`),
+and a task that fails to start is read before the next step.
+`mistake-prevention.md`,
+"Tasks,
+builds and bulk output".
+
+### M135: escapes written through a tool's parameters landed as the characters they name
+
+Status:
+found 2026-10-06 (UTC);
+each instance in the commits named here was caught before its commit or mended in the merge that brought it.
+A tool that writes a file from a model's parameters decodes a backslash-u escape written there
+into the character it names.
+The lead's own edit meant to write `\u002D` wrote a hyphen,
+which showed when two edits were refused as changing nothing;
+a commit message draft written the same way held a literal U+FEFF,
+found by a search for invisible characters before the commit.
+The same decoding wrote the agents' literal characters:
+nine byte order marks in the parse agent's front matter cases,
+written as escapes in `75ea14bff`;
+two full-width commas in its TSDoc examples of `corpus-run/dropped-destinations.ts`,
+written as escapes again in `3ce947dce`;
+and a hyphen for the JSON escape of one in three comment lines of a patch not merged at `3ce947dce`.
+By the lead's inference,
+not measured,
+the same decoding wrote a soft hyphen and byte order marks that stand literally in older test files,
+which are not yet escaped at `3ce947dce`.
+Prevention:
+an escape is written through a shell edit,
+with the backslash doubled in the edit's replacement
+(`sed` with `\\u` where the file is to hold `\u`),
+and every file the lead or an agent wrote is searched,
+before it is committed,
+for invisible characters and for an escape that came out as its character;
+the brief agents read says so.
+`mistake-prevention.md`,
+"Escapes and the layer that reads them".
+
+### M136: agents' hand-back reports kept only in the session
+
+Status:
+happened on 2026-10-05 and 2026-10-06 (UTC);
+nothing was lost.
+Agents' final reports arrived as messages in the lead's session,
+and the lead read them there without writing them to files.
+Four were needed later,
+for merges and for this batch,
+and were extracted from the session's transcript
+by the hand-back extraction script into the hand-back folder.
+Prevention:
+a hand-back is written to a file under the hand-back folder when it arrives,
+before it is acted on.
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+### M137: agents' recurrences of recorded families, found in the lead's review of their patches
+
+Status:
+found 2026-10-06 (UTC) while merging the patches of B320 to B328;
+each was changed before or in its merge,
+and each change is named in its commit's message.
+
+- Counts pinned in tests,
+  against the owner's rule to avoid magic-number tests:
+  the nesting differential pinned how many texts the scan passes (60,
+  36 and 36),
+  replaced in `d0aebf8a7` by the property that the passed texts are those its stated rule skips;
+  the tag-name case pinned how many spellings the grammar accepts (106),
+  replaced in `75ea14bff` by a check that both verdicts occur,
+  and a check of a list's length against itself went with it;
+  one more stands in a patch not merged at `3ce947dce`.
+- A silent fallback (B21's seventh family):
+  a regression count looked up by position with `?? 0`,
+  paired by kind in `71702c550` (B323);
+  more stand in a patch not merged at `3ce947dce`.
+- Comments escaping their backticks,
+  which a Markdown reader shows with the backslash:
+  five lines in the deep-edit test,
+  mended in `d0aebf8a7`.
+  By the lead's probe of the comments the parser reports,
+  twelve more comment lines in five older files stand so at `3ce947dce`.
+- A generator whose comment claimed a coverage its code did not give,
+  every suffix after every prefix,
+  mended in `75ea14bff` (B327).
+- A module comment naming two readers of a tag name where three existed,
+  mended in `3ce947dce` (B326).
+- Invisible characters written literally in test text,
+  nine byte order marks,
+  written as escapes in `75ea14bff` (M135).
+
+Prevention:
+the rules each family already has stand;
+the lead's review reads every count a new case pins,
+every `??` in a new line,
+every comment that claims what code covers,
+and every new file for invisible characters,
+before the merge.
+`mistake-prevention.md`,
+"Guards that cannot fail",
+"Defaults that stand in for an input",
+"Claims without their evidence" and "Escapes and the layer that reads them".
 
 ### M79: a coverage census measuring compressed code
 

@@ -85,7 +85,9 @@ across 2026-10-05 and 2026-10-06 (UTC) (ledger M107,
 M116).
 Each of those last three was a read of a log by two searches whose results were both wanted.
 Five more followed around the merges of 2026-10-06 (UTC),
-two of them a `;` after `rg --count` to get past its exit of 1 on a count of zero (ledger M116).
+two of them a `;` after `rg --count` to get past its exit of 1 on a count of zero (ledger M116),
+and two more after those,
+each a read of a log between two steps of a merge (ledger M116).
 An agent stopped its own census with `pkill -f` on a pattern that matched every agent's census on the machine
 (ledger M126).
 Loops,
@@ -236,6 +238,16 @@ A guard is shown to remove,
 refuse or fail on the thing it is for,
 on a real instance of that thing,
 before anything is run behind it.
+
+Agents' cases pinned how many texts a scan passes over a generated family (60,
+36 and 36)
+and how many spellings a grammar accepts (106),
+and one compared a list's length with itself (ledger M137).
+A count read off a run moves with the fixture and says nothing of the property it stood for,
+and the owner's rule is to avoid magic-number tests.
+A case asserts the property itself:
+the passed texts are exactly those the stated rule skips,
+or both verdicts occur and every reader agrees with the grammar.
 
 The rule:
 a red guard is read case by case before the fix,
@@ -475,6 +487,11 @@ A claim of absence is printed only in the state that proves it,
 a branch that skips part of a report says so,
 a comment that states an order has a case for each tier it names,
 and an account its writer has not checked is labelled as whose it is.
+A generator's comment said every suffix followed every prefix where its code paired each with one,
+and a module comment named two of the three readers it served (ledger M137);
+a comment that states what code covers is read against the code.
+Four agents' reports were kept only in the session and had to be extracted from its transcript later (ledger M136);
+a report is written to a file when it arrives.
 
 The rule:
 every number,
@@ -839,6 +856,19 @@ A built command is started the same way by an agent as by a test,
 and an environment is never stripped,
 filtered or rebuilt by hand.
 
+Production code then started its own children with the run's whole environment:
+git children,
+the picture program and the coverage census's suite child (ledger B314);
+and the corpus listing's git child kept the repository variables its guard meant to drop,
+since the spawner merged the names left out back in from the parent (ledger B315).
+Every production start passes the environment `childEnvironment` builds.
+A built command then gained a guard of its own:
+in a process that holds a key,
+it runs only when `TRANSLATION_REPAIR_STARTED_BY` names it,
+which its task sets,
+and the test fixture,
+or an operator by hand where a pass forbids a rebuild (ledger B319).
+
 The rule:
 before a test drives a production entry point,
 list what that entry point reads outside the process
@@ -905,8 +935,19 @@ among the source scans,
 fails on a production start of a child that does not pass the environment `childEnvironment` builds
 (`child-process-environment.ts`,
 commit `4049d9eb2`,
-which closes the item ledger B291 left open).
-Nothing in the package holds a command an agent starts by hand.
+ledger B314 and B315,
+which close the item ledger B291 left open);
+`src/production-children-environment.unit.test.ts` starts each site's real child
+and reads from the child's own side that no key or setting arrived.
+`task-runner-guard.ts` refuses a built command started in a process that holds a key
+unless that process names the command (ledger B319),
+and `src/task-runner-guard-reach.unit.test.ts`,
+among the source scans,
+fails a task that starts a built command without the marker,
+a built command no task starts,
+and an entry file that hands the guard no environment.
+A process that imports the built library directly is outside the guard,
+and a shell in a worktree still holds the keys.
 
 ## Tests on the real clock
 
@@ -916,9 +957,18 @@ under the whole suite's load the window emptied first,
 and the case failed only there (M69,
 T5).
 
+Two stage cases expected a voice delayed 30 ms to land inside a 100 ms grace window,
+which a loaded machine could outrun (ledger B318).
+Their windows are 60,000 ms,
+which the round never waits for since it ends at the last answer,
+and each case fails at a window of 0,
+which shows the window is what keeps the late voice.
+
 The rule:
 a real-clock case asserts only bounds that load can widen and not break;
 a case that needs a caller asleep uses a window no stall outlasts;
+a grace window a case relies on is one the round never reaches,
+and the case is shown failing at a window of 0;
 a new timing case counts as passing only once the whole suite has run it.
 
 What enforces it:
@@ -1527,6 +1577,10 @@ the fix commit for it went out without a lint run,
 and the whole-suite run on that commit ended its lint with one warning (ledger M124).
 The scans run before a red commit as before a fix,
 and lint runs before any commit that adds a helper.
+A fix commit that changed a doc went out without the Markdown lint,
+which then found three findings in its paragraph (ledger M133):
+the Markdown lint runs on every doc a commit touches,
+a code commit's included.
 
 The rule:
 read a region with the Read tool before editing it.
@@ -1689,6 +1743,10 @@ The type check reads the built declarations,
 so it runs after the build;
 a count comes before a listing;
 and a message that resumes an agent says the whole task stands.
+A package task started from the main repository's root,
+not the worktree holding the branch,
+found no such task (ledger M134);
+every package task names its worktree as its directory in the call.
 
 The rule:
 a task that must not run with a fan-out parent is named outside the parent's prefix,
@@ -1875,6 +1933,12 @@ and a score command given a named file that was absent scored without it,
 under the note for a file nobody named (ledger B285).
 Absence is an answer only for an input nobody named,
 and a comment calling a loop's end unreachable is checked against every `continue` in the loop.
+
+An agent's regression count looked the incumbent's count up by position with `?? 0`,
+so a missing count would have read as zero (ledger B323,
+M137).
+A value that belongs to a key is carried with that key,
+and a read that cannot miss throws if it does.
 
 The rule:
 a call states every input that decides what a floor refuses,
@@ -2546,6 +2610,25 @@ each a different set (ledger B262).
 A role a scan gives a marker is asked of the parse the page is read under,
 and two readers of one construct share one predicate that a test checks against the grammar.
 
+The nesting measure skipped fenced stretches the parser reads no fence for,
+and took a line mixing stars and hyphens for a thematic break (ledger B321,
+B322);
+an editor's edit and the join of two slices that each read alone
+nested past the bound where no gate read them,
+and each ended a chunk or a document (ledger B320,
+B323).
+A page opening with a byte order mark read its front matter as body (ledger B324),
+the slice parse did not blank a line showing nothing as the page parse does (ledger B325),
+three readers of a tag name each kept their own name (ledger B326),
+and the destination scan read neither the character reference nor the bracket of the trail rule (ledger B327).
+A measure may refuse a text its parser reads,
+never skip a stretch the parser nests;
+a voice's text is refused as that voice's by its stage's own gate;
+one reader answers where a document starts and what a name is,
+held by a differential against the compiler over every class of character;
+two parses of one text apply the same masks in the same order;
+and a generator for a differential draws every form of the rule it tests.
+
 The rule:
 a question about what a passage's blocks are
 (how many quotes,
@@ -2626,6 +2709,12 @@ and a span across lines.
 Each B100 reader's tests carry the shape its split misread and the answer for a passage its grammar refuses.
 `anthropic-completion.unit.test.ts` carries the word as a tool's name and the error event,
 and `hyper-client.unit.test.ts` a body cut inside its terminator frame.
+`nesting-fence-differential.unit.test.ts` holds the nesting scan to the grammar's own parser over a generated family;
+`mdx-tag-name.unit.test.ts` and the masker's,
+the inline reader's and the restorer's tests hold every reader of a tag name to the strict grammar
+over `tag-name-spellings.test-fixture.ts`;
+and `corpus-run/dropped-destinations.unit.test.ts` holds the destination scan to the tree reader
+over `destination-address-texts.test-fixture.ts`.
 
 ## What a catch charges
 
@@ -2679,6 +2768,8 @@ the verify probe asked the whole roster and then refused a sheet already taken (
 the width probe bought its control for a draw holding no slice (ledger B299);
 a calibration drew the corpus for a roster of one seat (ledger B305);
 and a setup check printed that the plan was in order over a corpus yielding no entry (ledger B306).
+The settled rendering audit named its runs directory only after buying every subject,
+so a directory it could not name cost the whole roster's calls (ledger B312).
 State known at the start is checked before anything is drawn,
 gathered or bought.
 
@@ -3381,7 +3472,9 @@ B284,
 B290,
 B296,
 B303,
-B307).
+B307);
+and a census run where no build stands raised its listing error uncaught,
+printed as a fault at exit 5 (ledger B311).
 Two settings that can refuse were read in module constants,
 before the boundary that prints refusals ran,
 and exited 1 under a dump of source (ledger B302).
@@ -3483,8 +3576,11 @@ and a finding for an original with no content line read "more than 0 times" (led
 A count's sign is not its size:
 a noun chosen from a signed difference is chosen from the size of the difference,
 since a difference of minus one is one of the thing counted.
-The defect behind that sentence is in the lead's notes for a runner cluster not merged at `f8e99b84d`,
-and its fix is in no commit this doc can name yet.
+That defect,
+"-1 characters" in `verify-published`,
+is ledger B309,
+with four more runners' counts before a fixed plural,
+all fixed in `8206fa5c6`.
 
 The rule:
 a noun after a count that can be one is chosen by `wordForCount`,
@@ -3735,6 +3831,12 @@ empty sheet and manifest (ledger B297).
 A write that nothing may replace is made only once there is something to write,
 and a cleanup removes only what its own run created.
 
+A settled run file's rows were checked as a list and then cast,
+so a row that was no object passed into every later reading,
+keyed as `undefined` or ending one in a type error (ledger B313).
+A file's elements are checked where the file is read,
+not only its outer shape.
+
 The rule:
 a file this package writes and a later run parses is written through `writeFileAtomic`.
 Its reader tells a path nothing stands at from a file that is there,
@@ -3830,16 +3932,17 @@ and two cases had sorted the findings,
 which hid it (ledger B253).
 The author table of a score report ordered equal counts by the directory listing,
 which is not sorted (ledger B287).
-And one as-built case failed in two whole-suite runs and passed when its file ran alone.
-By the lead's reading,
-not measured in any commit through `f8e99b84d`,
-the command reads two pages at once,
-both reads fail,
-and the refusal names whichever ended first (ledger B300).
-The lead's notes hold one more of this family,
-lines printed in the order their reads finished,
-in a runner cluster not merged at that commit;
-its entry comes with that merge.
+And one as-built case failed in two whole-suite runs and passed when its file ran alone:
+the command read two pages at once,
+both reads failed,
+and the refusal named whichever ended first,
+which a probe of 100 such pairs measured at 98 against 2 (ledger B300,
+B316).
+Every concurrent read set a census found reports the first failure in input order since,
+fifteen of them with no case of their own (ledger B317).
+The verifier printed its entries' lines in the order its reads finished (ledger B310),
+and a test helper put the recheck's findings and ballots in order before comparing them,
+which hid a regression of the roster order the stage promises (ledger B328).
 
 The rule:
 what a command prints,
@@ -3848,6 +3951,10 @@ nor on the order a directory was listed in.
 Concurrent reads collect their results,
 and printing is sequential,
 in the order of the input.
+Where several started operations may fail,
+what is thrown is the first failure in input order,
+through `allInInputOrder` (`all-in-input-order.ts`),
+never `Promise.all`'s first by the clock.
 Voices are ordered by roster,
 ties by a stated key,
 and a case asserts the order exactly,
@@ -3855,6 +3962,50 @@ never after a sort of its own.
 
 What enforces it:
 habit and review;
+`all-in-input-order.unit.test.ts` holds the helper,
+each moved site with a parameter over what it reads has a case scripting the later member failing first,
+and no scan yet fails a bare `Promise.all`;
 `repair-edit-stages.unit.test.ts` holds the roster order whichever seats lost their first answer,
 and `corpus-run/score-crosscheck-authors.unit.test.ts` holds the author table's ties under both arrival orders.
 No scan finds a result ordered by arrival.
+
+## Escapes and the layer that reads them
+
+What happened:
+a tool that writes a file from a model's parameters decodes a backslash-u escape written there
+into the character it names,
+so an escape meant to stay visible in a file lands as the character itself (ledger M135).
+The lead's own edit meant to write `\u002D` wrote a hyphen,
+and a commit message draft held a literal U+FEFF;
+an agent's front matter cases held nine literal byte order marks,
+its TSDoc examples two full-width commas where escapes were meant,
+and another agent's comments a hyphen for the JSON escape of one.
+By the lead's inference,
+a soft hyphen and byte order marks standing literally in older test files came the same way.
+In the other direction,
+comments wrote a backtick with a backslash before it,
+as a template literal needs,
+where a Markdown reader of the comment shows the backslash
+and a fenced example no longer opens or shows valid code:
+five lines in one agent's test,
+mended before its merge,
+and twelve in five older files (ledger M137).
+
+The rule:
+an escape that must stay in a file is written through a shell edit,
+with its backslash doubled in the edit's replacement
+(`sed` with `\\u` where the file is to hold `\u`),
+never through a tool parameter;
+every file the lead or an agent wrote is searched for invisible characters,
+and for an escape that came out as its character,
+before it is committed.
+A character a reader cannot see is written in source as its escape.
+A comment is written for the layer that reads it:
+a code span holding a backtick is delimited by a longer run of backticks,
+and a fenced example holds the code as it is written,
+with no escape a template literal would need.
+
+What enforces it:
+habit and review at `3ce947dce`;
+no scan yet fails a literal invisible character or a comment's escaped backtick,
+and the older files that hold either are not yet mended at that commit.
