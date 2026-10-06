@@ -96,22 +96,66 @@ not the player's parser.
 
 ### Unfinished
 
-The editor study is not built.
-`doc/planning/music-player-template-editor.md` holds the agent's proposal
-under `Editor study: the agent's proposal`:
-one template for the track row's supporting line,
-KWGT's spelling,
-the field list,
-the default template and the states to capture.
-The proposal and the D90 picks were put to the human in chat on 2026-10-05,
-and the human had not answered when this was written.
+The editor study is built and its review form is not published yet.
+State on 2026-10-05,
+late evening:
+
+- The debug Compose host is on the prototype branch at
+  `82d2692b7471fcde27c86c9bb321a4d35557bbca`,
+  with 24 passing fixture unit tests.
+  Its APK is kept in `settings-pane-native-private/build-82d2692b7471fcde27c86c9bb321a4d35557bbca`.
+- A first build (`524b61c667e839fdcb3bba3871f0d392c5b0ded9`) was captured in full,
+  56 views in `settings-pane-native-private/template-editor-cohort`.
+  It is a first look only and is not published.
+  It showed that at 200% text the preview scrolls out of view while typing.
+  `doc/planning/music-player-template-editor.md` records the reading under
+  `First look at the baseline`.
+- The current build therefore has three layouts of the preview,
+  `flow`,
+  `rows` and `lines`,
+  an authored scroll rule,
+  and a view scrolled to the page's end.
+  `template-editor-scenes.mjs` names the scenes;
+  each is captured on both panels,
+  in light and dark,
+  at 100% and 200% text.
+- `run-template-editor-until-complete.ts layout a` repeats bounded emulator visits
+  (`layout-a`,
+  `layout-b` and so on)
+  until the cohort folder `settings-pane-native-private/template-editor-cohort-82d2692b7`
+  holds every view.
+  Writing `~/temp/agent/stop-repeat-visits` ends such a loop at its next visit boundary;
+  remove the file before starting another.
+- Then,
+  from `~/temp/agent`:
+  `prepare-template-editor-crops.ts`,
+  `make-template-editor-inspection.ts`,
+  look at every sheet,
+  write `template-editor-inspection/inspected.json` in the active study folder,
+  and run `publish-template-editor.ts apply`.
+- In the package,
+  `template-editor.mjs`,
+  `template-editor-test.mjs` and `questions/template-editor.template.html` are drafts.
+  The form's ranking is a placeholder until the layouts are measured,
+  so `lint:template-editor` refuses the page by design.
+  The `build:`,
+  `lint:`,
+  `verify:` and `test:template-editor` tasks fail until the witness manifest is published.
+- Still to do after publication:
+  fill in the ranking and check every sentence of the options against the measurements,
+  prove the test's guards by removing each,
+  check the page offline in a browser in light and dark,
+  write `evidence/template-editor-boundaries.md` and a review record without digests,
+  and hand the form to the human.
+
+The form asks one question,
+which layout to take.
+The fields,
+the spelling,
+the default template and the D90 picks are listed in it as assumptions open to objection.
+They were also put to the human in chat on 2026-10-05,
+with no answer when this was written.
 Silence is not an acceptance.
-Still to do:
-the debug Compose host and fixture in the prototype worktree,
-its unit tests and mutants,
-the captures,
-the viewer with its builder and test,
-and the review form.
 
 Production has a duration only for the current track
 (`PlaybackSnapshot.durationMs`) and draws no supporting line,
