@@ -1630,6 +1630,7 @@ const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
   'package/rust-module/forbidden-regex': CARGO_PROFILE_SCANNER,
   'package/cli/nested-wayland-session': CARGO_PROFILE_OVERFLOW,
   'package/linter/rust': CARGO_PROFILE_LINTER,
+  'package/linter/monochromatic-lint': CARGO_PROFILE_LINTER,
   'package/rust-module/forbidden-regex.bench': CARGO_PROFILE_BENCH,
   'package/music-player/truepeak-core.bench': CARGO_PROFILE_BENCH,
   'package/music-player/desktop-app': CARGO_PROFILE_MUSIC,

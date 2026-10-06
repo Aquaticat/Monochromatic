@@ -11,6 +11,7 @@ on:
         - monochromatic-nested-wayland-session
         - forbidden-regex
         - monochromatic-jsonc-edit
+        - monochromatic-lint
         default: forbidden-strings
       dry-run:
         description: 'Dry run (package + verify, no crates.io upload, no GH release, no attestation)'
@@ -23,6 +24,7 @@ on:
     - 'package/cli/nested-wayland-session/Cargo.toml'
     - 'package/rust-module/forbidden-regex/Cargo.toml'
     - 'package/rust-module/jsonc-edit/Cargo.toml'
+    - 'package/linter/monochromatic-lint/Cargo.toml'
 
 permissions:
   contents: read
@@ -45,8 +47,9 @@ jobs:
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
         # need before+after revs to detect a version bump on push events.
-        # fetch-depth: 2 is enough for normal pushes; the detect step
-        # degrades gracefully on first-push (no `before`) or force-push.
+        # fetch-depth: 2 holds `before` for a one-generation push; the detect
+        # step fetches it when a push carries more, and treats a first push
+        # (no `before`) as a bump.
         fetch-depth: 2
 
     - name: Detect version bump
@@ -61,9 +64,17 @@ jobs:
         after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
         before=''
         if [ -n "${BEFORE_SHA:-}" ] \
-          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ] \
-          && git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
-          before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ]; then
+          # A push can carry several generations, such as a merge whose second parent
+          # holds commits that were not on origin yet, so the pre-push head can lie
+          # outside the depth-2 checkout. Fetch it instead of reading its absence as
+          # a version bump; a failed fetch fails this job, so nothing publishes.
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BEFORE_SHA"
+          fi
+          if git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
+            before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          fi
         fi
         printf 'before=%s\nafter=%s\n' "$before" "$after"
         if [ -z "$after" ]; then
@@ -329,9 +340,17 @@ jobs:
         after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
         before=''
         if [ -n "${BEFORE_SHA:-}" ] \
-          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ] \
-          && git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
-          before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ]; then
+          # A push can carry several generations, such as a merge whose second parent
+          # holds commits that were not on origin yet, so the pre-push head can lie
+          # outside the depth-2 checkout. Fetch it instead of reading its absence as
+          # a version bump; a failed fetch fails this job, so nothing publishes.
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BEFORE_SHA"
+          fi
+          if git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
+            before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          fi
         fi
         printf 'before=%s\nafter=%s\n' "$before" "$after"
         if [ -z "$after" ]; then
@@ -580,9 +599,17 @@ jobs:
         after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
         before=''
         if [ -n "${BEFORE_SHA:-}" ] \
-          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ] \
-          && git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
-          before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ]; then
+          # A push can carry several generations, such as a merge whose second parent
+          # holds commits that were not on origin yet, so the pre-push head can lie
+          # outside the depth-2 checkout. Fetch it instead of reading its absence as
+          # a version bump; a failed fetch fails this job, so nothing publishes.
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BEFORE_SHA"
+          fi
+          if git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
+            before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          fi
         fi
         printf 'before=%s\nafter=%s\n' "$before" "$after"
         if [ -z "$after" ]; then
@@ -703,9 +730,17 @@ jobs:
         after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
         before=''
         if [ -n "${BEFORE_SHA:-}" ] \
-          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ] \
-          && git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
-          before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ]; then
+          # A push can carry several generations, such as a merge whose second parent
+          # holds commits that were not on origin yet, so the pre-push head can lie
+          # outside the depth-2 checkout. Fetch it instead of reading its absence as
+          # a version bump; a failed fetch fails this job, so nothing publishes.
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BEFORE_SHA"
+          fi
+          if git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
+            before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          fi
         fi
         printf 'before=%s\nafter=%s\n' "$before" "$after"
         if [ -z "$after" ]; then
@@ -801,3 +836,284 @@ jobs:
         else
           mise exec rust -- cargo publish --no-verify
         fi
+
+  # monochromatic-lint: the repository's Rust, Markdown and MDX linter
+  # (doc/planning/unified-linter.md, `Distribution and consumers`). It ships
+  # like forbidden-strings: the same eight release targets, and tag and asset
+  # names in cargo-binstall's default templates ({name}-v{version} tag,
+  # {name}-{version}-{target}.tar.gz or .zip, {name}-{version}-{target}/{bin}
+  # inside), so `cargo binstall monochromatic-lint` and mise's `cargo:` backend
+  # find the archives with no [package.metadata.binstall]. Two differences:
+  # - The publish step is the idempotent one of the later crates, because 0.1.0
+  #   is published by hand to bootstrap Trusted Publishing
+  #   (doc/runbook/publish-crate-first-time.md); a dispatch with dry-run off
+  #   then authenticates, skips the existing upload, and builds the release.
+  # - The binary matrix also runs in a dry run, so a dry dispatch proves every
+  #   release target still builds with the rust-analyzer and Satteri
+  #   dependencies; attestation and the release stay behind !inputs.dry-run.
+  # The matrix compiles with each runner's preinstalled rustup toolchain, not
+  # the repository's mise nightly, exactly as the forbidden-strings matrix does.
+
+  ml-detect:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.detect.outputs.should_publish }}
+      version: ${{ steps.detect.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 2
+
+    - name: Detect version bump
+      id: detect
+      env:
+        BEFORE_SHA: ${{ github.event.before }}
+        EVENT_NAME: ${{ github.event_name }}
+        INPUT_CRATE: ${{ github.event.inputs.crate }}
+      run: |
+        set -euo pipefail
+        cargo_toml='package/linter/monochromatic-lint/Cargo.toml'
+        after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
+        before=''
+        if [ -n "${BEFORE_SHA:-}" ] \
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ]; then
+          # A push can carry several generations, such as a merge whose second parent
+          # holds commits that were not on origin yet, so the pre-push head can lie
+          # outside the depth-2 checkout. Fetch it instead of reading its absence as
+          # a version bump; a failed fetch fails this job, so nothing publishes.
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BEFORE_SHA"
+          fi
+          if git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
+            before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          fi
+        fi
+        printf 'before=%s\nafter=%s\n' "$before" "$after"
+        if [ -z "$after" ]; then
+          echo 'No version found in Cargo.toml; refusing to publish.' >&2
+          exit 1
+        fi
+        publish=false
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ] && [ "$INPUT_CRATE" = 'monochromatic-lint' ]; then
+          publish=true
+        elif [ "$EVENT_NAME" = 'push' ] && [ "$before" != "$after" ]; then
+          publish=true
+        fi
+        if [ "$publish" = 'true' ]; then
+          {
+            echo "should_publish=true"
+            echo "version=$after"
+          } >> "$GITHUB_OUTPUT"
+        else
+          echo "should_publish=false" >> "$GITHUB_OUTPUT"
+        fi
+
+  ml-publish-crate:
+    needs: ml-detect
+    if: ${{ needs.ml-detect.outputs.should_publish == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Set up mise (skip auto-install of all tools)
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Same pinning rationale as the other jobs in this workflow:
+        # doc/troubleshooting/mise-action-version-ahead-of-release.md
+        minimum_release_age: 1d
+        install: false
+        cache: true
+
+    - name: Install only the tools this workflow needs
+      run: mise install rust
+
+    - name: Cache cargo registry + build
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          package/linter/monochromatic-lint/target
+        key: cargo-publish-ml-${{ runner.os }}-${{ hashFiles('package/linter/monochromatic-lint/Cargo.lock') }}
+
+    # Verifying compiles the packaged crate against its crates.io dependencies,
+    # including the published monochromatic-jsonc-edit rather than the path copy.
+    - name: Build .crate package (verifies by compile)
+      working-directory: package/linter/monochromatic-lint
+      run: mise exec rust -- cargo package
+
+    - name: Attest .crate provenance
+      if: ${{ !inputs.dry-run }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: 'package/linter/monochromatic-lint/target/package/monochromatic-lint-${{ needs.ml-detect.outputs.version }}.crate'
+
+    - name: Authenticate with crates.io (Trusted Publishing)
+      if: ${{ !inputs.dry-run }}
+      id: auth
+      uses: rust-lang/crates-io-auth-action@bbd81622f20ce9e2dd9622e3218b975523e45bbe
+
+    - name: Publish (dry run)
+      if: ${{ inputs.dry-run }}
+      working-directory: package/linter/monochromatic-lint
+      run: mise exec rust -- cargo publish --dry-run --no-verify
+
+    - name: Publish (skips if this version is already on crates.io)
+      if: ${{ !inputs.dry-run }}
+      working-directory: package/linter/monochromatic-lint
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        VERSION: ${{ needs.ml-detect.outputs.version }}
+      run: |
+        set -euo pipefail
+        if curl -sSf -H 'User-Agent: monochromatic-ci' \
+          "https://crates.io/api/v1/crates/monochromatic-lint/${VERSION}" >/dev/null 2>&1; then
+          echo "::notice::monochromatic-lint ${VERSION} already on crates.io; skipping publish."
+        else
+          mise exec rust -- cargo publish --no-verify
+        fi
+
+  ml-build-binary:
+    needs: ml-detect
+    # Not gated on !inputs.dry-run: a dry run builds every target too.
+    if: ${{ needs.ml-detect.outputs.should_publish == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - target: x86_64-unknown-linux-gnu
+          runner: ubuntu-latest
+        - target: x86_64-unknown-linux-musl
+          runner: ubuntu-latest
+          needs_musl: true
+        - target: aarch64-unknown-linux-gnu
+          runner: ubuntu-24.04-arm
+        - target: aarch64-unknown-linux-musl
+          runner: ubuntu-24.04-arm
+          needs_musl: true
+        - target: x86_64-apple-darwin
+          runner: macos-latest
+        - target: aarch64-apple-darwin
+          runner: macos-latest
+        - target: x86_64-pc-windows-msvc
+          runner: windows-latest
+        - target: aarch64-pc-windows-msvc
+          runner: windows-11-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Install musl tools
+      if: ${{ matrix.needs_musl }}
+      run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+    - name: Add rust target
+      shell: bash
+      run: rustup target add ${{ matrix.target }}
+
+    - name: Show the toolchain that builds the release
+      shell: bash
+      run: rustc --version --verbose
+
+    # --locked builds the dependency versions the published crate's Cargo.lock
+    # records; the release profile in Cargo.toml applies fat LTO and one codegen unit.
+    - name: Build binary
+      shell: bash
+      working-directory: package/linter/monochromatic-lint
+      run: cargo build --release --locked --target ${{ matrix.target }}
+
+    - name: Package binary archive
+      id: pkg
+      shell: bash
+      env:
+        VERSION: ${{ needs.ml-detect.outputs.version }}
+        TARGET: ${{ matrix.target }}
+      run: |
+        set -euo pipefail
+        bin='monochromatic-lint'
+        ext=''
+        case "$TARGET" in
+          *windows*) ext='.exe' ;;
+        esac
+        stage_dir="monochromatic-lint-${VERSION}-${TARGET}"
+        mkdir -p "dist/${stage_dir}"
+        cp "package/linter/monochromatic-lint/target/${TARGET}/release/${bin}${ext}" "dist/${stage_dir}/"
+        if [ -f package/linter/monochromatic-lint/README.md ]; then
+          cp package/linter/monochromatic-lint/README.md "dist/${stage_dir}/"
+        fi
+        case "$TARGET" in
+          *windows*)
+            archive="${stage_dir}.zip"
+            (cd dist && 7z a "${archive}" "${stage_dir}" >/dev/null)
+            ;;
+          *)
+            archive="${stage_dir}.tar.gz"
+            (cd dist && tar czf "${archive}" "${stage_dir}")
+            ;;
+        esac
+        archive_path="dist/${archive}"
+        echo "archive_path=${archive_path}" >> "$GITHUB_OUTPUT"
+        echo "archive_name=${archive}" >> "$GITHUB_OUTPUT"
+        ls -la dist/
+
+    - name: Attest binary provenance
+      if: ${{ !inputs.dry-run }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg.outputs.archive_path }}
+
+    # Uploaded in a dry run too, so the archive layout can be inspected and the
+    # binary run before anything is released.
+    - name: Upload archive as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: ml-bin-${{ matrix.target }}
+        path: ${{ steps.pkg.outputs.archive_path }}
+        if-no-files-found: error
+        retention-days: 7
+
+  ml-create-release:
+    needs: [ml-detect, ml-build-binary]
+    if: ${{ needs.ml-detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+    - name: Download all binary archives
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: ml-bin-*
+        path: assets
+        merge-multiple: true
+
+    - name: Create GitHub release with all archives
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.ml-detect.outputs.version }}
+        SHA: ${{ github.sha }}
+        REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        tag="monochromatic-lint-v${VERSION}"
+        ls -la assets/
+        gh release create "$tag" assets/* \
+          --repo "$REPO" \
+          --title "monochromatic-lint v${VERSION}" \
+          --notes "monochromatic-lint v${VERSION}. crates.io: https://crates.io/crates/monochromatic-lint/${VERSION}" \
+          --target "$SHA"

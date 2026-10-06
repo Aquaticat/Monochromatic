@@ -66,5 +66,14 @@ satteri-pulldown-cmark = "=0.6.3"
 satteri-arena = "=0.3.1"
 satteri-ast = "=0.5.3"
 
+# Published release binaries keep the optimized profile the incumbent Rust linter shipped with;
+# development builds use the default dev profile, so they skip fat LTO and one codegen unit
+# (doc/planning/unified-linter.md, `Package layout`). Enforced by file-enforcer.
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true
+
 # Standalone package, matching the repository's Cargo ownership convention.
 [workspace]
