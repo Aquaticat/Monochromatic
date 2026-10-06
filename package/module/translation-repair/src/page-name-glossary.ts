@@ -386,6 +386,14 @@ function headingPairs(
 /**
  Pairs the page shows, links first, one per source text.
 
+ A SOURCE TEXT THE ARCHIVE RENDERS TWO WAYS IS LEFT OUT. The pairs are keyed
+ by the original's text, and the original repeats a title, a name or a heading
+ that the archive words differently from place to place; keeping the first
+ would give one rendering as the page's and say nothing of the other. Left
+ out, the text is no paired name, so the stage settling repeated titles
+ (`page-title-spans.ts`) reads it. A text every pairing renders alike keeps
+ its first pair.
+
  @param sourceText - whole original document
 
  @param targetText - whole archive document
@@ -407,10 +415,6 @@ function pageNamePairs(
   },
 ): readonly PageName[] {
   /**
-   Source texts already named.
-   */
-  const named = new Set<string>();
-  /**
    What each page shows, which is all the names it renders (ledger E10: the
    front matter, comments and code fences paired names and shifted headings).
    */
@@ -418,15 +422,37 @@ function pageNamePairs(
     sourceText: visibleText({ text: sourceText, },),
     targetText: visibleText({ text: targetText, },),
   };
-  return [
+  /**
+   Every pair the page shows, links first.
+   */
+  const read = [
     ...linkedTextPairs(shown,),
     ...signaturePairs(shown,),
     ...headingPairs(shown,),
-  ].filter(function firstOnly(pair,): boolean {
-    if (named.has(pair.source,))
-      return false;
-    named.add(pair.source,);
-    return true;
+  ];
+  /**
+   Pairs gathered by the original's text they render, the groups in the order
+   each text is first met and the pairs of a group in the order they were read.
+   */
+  const bySource = Map.groupBy(
+    read,
+    function sourceOf(pair,): string {
+      return pair.source;
+    },
+  );
+  return [...bySource.values(),].flatMap(function firstWhereAlike(group,): readonly PageName[] {
+    /**
+     Distinct renderings the archive gives this source text.
+     */
+    const renderings = new Set(group.map(function renderingOf(member,): string {
+      return member.rendering;
+    },),);
+    return (renderings.size === 1)
+      ? group.slice(
+        0,
+        1,
+      )
+      : [];
   },);
 }
 

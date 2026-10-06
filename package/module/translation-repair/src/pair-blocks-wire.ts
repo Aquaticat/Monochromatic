@@ -454,14 +454,16 @@ export function assertPairsNameBlocks(
  Reads a model's pairing, refusing anything that cannot be used as one.
 
  REFUSES RATHER THAN REPAIRS. A pairing that runs backwards, names a block
- that does not exist, or pairs one translation block with two different
- originals is not a near-miss to be tidied up: it is evidence the model did
- not do the task, and using part of it would put mismatched passages in front
- of the critics exactly as before.
+ that does not exist, or names the same correspondence twice is not a
+ near-miss to be tidied up: it is evidence the model did not do the task, and
+ using part of it would put mismatched passages in front of the critics
+ exactly as before.
 
  ONE ORIGINAL MAY APPEAR TWICE, because a translation splitting a paragraph is
- the correspondence this exists to express. One TRANSLATION block may not,
- since a single passage renders one place in the original.
+ the correspondence this exists to express, and one TRANSLATION block may
+ appear twice, because a translation merging two paragraphs is another. The
+ same correspondence may not be named twice, adjacent or not, since the
+ agreement over voices counts each naming as a vote.
 
  @param value - parsed model reply
 
@@ -574,6 +576,27 @@ export function readBlockPairing(
       throw new BlockPairingError({
         message: `pairing moves backwards on the translation side at position ${String(at,)}`,
       },);
+  }
+  // A correspondence is named once, wherever it stands. The check of each pair
+  // against the one before it refuses an adjacent repeat, and a body pair
+  // named again after others steps backwards; a definition pair is outside
+  // the order rule, so a voice could name one again after another pair, and
+  // the agreement over voices counts every naming as a vote, so one voice
+  // would stand for two.
+  /**
+   Correspondences met so far, by original and translation block.
+   */
+  const named = new Set<string>();
+  for (const [at, pair,] of pairs.entries()) {
+    /**
+     Both blocks this correspondence names, as one key.
+     */
+    const key = `${String(pair.source,)},${String(pair.target,)}`;
+    if (named.has(key,))
+      throw new BlockPairingError({
+        message: `pairing repeats the same correspondence at position ${String(at,)}`,
+      },);
+    named.add(key,);
   }
   return pairs;
 }

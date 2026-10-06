@@ -74,6 +74,10 @@ export type PairAgreement<PairT extends IndexPair,> = {
 /**
  Counts every distinct pair across every voice's pairing.
 
+ A pairing names each pair once, which `readBlockPairing` and
+ `readSectionPairing` hold by refusing a reply that names one twice, so a
+ count of votes is a count of voices.
+
  @param pairings - one pairing per usable voice
 
  @returns Distinct pairs with their vote counts, in first-named order
