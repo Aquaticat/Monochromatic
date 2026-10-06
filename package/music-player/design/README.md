@@ -124,8 +124,11 @@ the viewer states these rather than deciding them.
 Real preferences,
 native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
-D81's template editor remains a separate design problem;
-no light surface from the original queue is left undrawn.
+D81's template editor is a separate design problem with its own built study:
+[`evidence/template-editor-boundaries.md`](evidence/template-editor-boundaries.md) describes it,
+and its [verified offline review](questions/template-editor.html) asks which layout of the preview to take.
+That question is open.
+No light surface from the original queue is left undrawn.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds

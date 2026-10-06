@@ -1195,7 +1195,27 @@ exact spelling of the grammar,
 and the editor's layout on the Fold.
 D90 records the agent's picks for the entries D89 left open,
 which the human delegated.
-The next step is a built editor study on the Fold in a verified review form.
+That study is built and its review page was published on 2026-10-06:
+`evidence/template-editor-boundaries.md` describes it,
+and `questions/template-editor.html` puts one question to the human.
+The question is where the preview sits,
+because at 200% text the baseline loses the preview while typing inside a call:
+at the top of the scrolling page,
+as two rows fixed under the header,
+or as two result lines fixed under the header.
+The agent ranks the result lines first and the baseline last,
+with the measured reasons on the page.
+It is open until the human answers.
+The page also lists what the study assumes
+(one template,
+KWGT's spelling,
+the fields,
+the default template,
+the D90 picks);
+each is open to objection and none is decided by being shown.
+After the answer:
+how the field list is reached while the keyboard is open,
+then row-type coverage and titles.
 
 ## 12. Existing-screen refinement, 3B settled and accepted
 

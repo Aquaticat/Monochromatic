@@ -94,85 +94,73 @@ with 96 passing cases (`test:template-reference`).
 It is design evidence for the editor study,
 not the player's parser.
 
-### Unfinished
+### Waiting for the human
 
-The editor study is built and its review form is not published yet.
-State on 2026-10-05,
-late evening:
+The editor study is built,
+captured,
+published and verified,
+and its review page waits for an answer.
+State on 2026-10-06:
 
-- The debug Compose host is on the prototype branch at
+- The review page is `questions/template-editor.html`
+  (about 33 MB,
+  self-contained).
+  It asks one question:
+  where the preview sits,
+  `flow`,
+  `rows` or `lines`.
+  The agent ranks `lines`,
+  then `rows`,
+  then `flow`,
+  for the measured reasons on the page.
+  The answer comes back as text prepared by the page and pasted into the chat.
+- `evidence/template-editor-boundaries.md` describes the study,
+  what was measured per layout and what was not exercised.
+  `questions/evidence/template-editor-review-verification.json` records the build,
+  test,
+  guard-removal and offline browser results,
+  with no digest.
+- The study's code is on the prototype branch at
   `82d2692b7471fcde27c86c9bb321a4d35557bbca`,
   with 24 passing fixture unit tests.
-  Its APK is kept in `settings-pane-native-private/build-82d2692b7471fcde27c86c9bb321a4d35557bbca`.
-- A first build (`524b61c667e839fdcb3bba3871f0d392c5b0ded9`) was captured in full,
-  56 views in `settings-pane-native-private/template-editor-cohort`.
-  It is a first look only and is not published.
-  It showed that at 200% text the preview scrolls out of view while typing.
-  `doc/planning/music-player-template-editor.md` records the reading under
-  `First look at the baseline`.
-- The current build therefore has three layouts of the preview,
-  `flow`,
-  `rows` and `lines`,
-  an authored scroll rule,
-  and a view scrolled to the page's end.
-  `template-editor-scenes.mjs` names the scenes;
-  each is captured on both panels,
-  in light and dark,
-  at 100% and 200% text.
-- `run-template-editor-until-complete.ts layout a` repeats bounded emulator visits
-  (`layout-a`,
-  `layout-b` and so on)
-  until the cohort folder `settings-pane-native-private/template-editor-cohort-82d2692b7`
-  holds every view.
-  Writing `~/temp/agent/stop-repeat-visits` ends such a loop at its next visit boundary;
-  remove the file before starting another.
-- When the session's usage limit was reached at about 22:30,
-  that loop was running as `run-template-editor-until-complete.ts layout h`
-  (log `~/temp/agent/template-editor-layout-loop-h.log`),
-  with 38 of 128 views captured.
-  It ends by itself:
-  at most twelve visits,
-  each restored and stopped by its own script,
-  and it stops early when two visits in a row add no view.
-  If it stopped short,
-  read the last `settings-pane-visit-layout-<letter>.log`,
-  fix the cause,
-  and start it again with the next unused letter.
-  A dry run of the page and of the offline browser check passed on partial captures
-  (`dry-run-template-editor-page.ts`,
-  `run-template-editor-browser.ts`);
-  do not run the browser check while the emulator captures,
-  because the fifth crash of the day came during one.
-- Then,
-  from `~/temp/agent`:
-  `prepare-template-editor-crops.ts`,
-  `make-template-editor-inspection.ts`,
-  look at every sheet,
-  write `template-editor-inspection/inspected.json` in the active study folder,
-  and run `publish-template-editor.ts apply`.
-- In the package,
-  `template-editor.mjs`,
-  `template-editor-test.mjs` and `questions/template-editor.template.html` are drafts.
-  The form's ranking is a placeholder until the layouts are measured,
-  so `lint:template-editor` refuses the page by design.
-  The `build:`,
-  `lint:`,
-  `verify:` and `test:template-editor` tasks fail until the witness manifest is published.
-- Still to do after publication:
-  fill in the ranking and check every sentence of the options against the measurements,
-  prove the test's guards by removing each,
-  check the page offline in a browser in light and dark,
-  write `evidence/template-editor-boundaries.md` and a review record without digests,
-  and hand the form to the human.
+  Its 128 views are in
+  `settings-pane-native-private/template-editor-cohort-82d2692b7`.
+  A first build's 56 views in `template-editor-cohort` were a first look only.
+- `verify:template-editor`,
+  `test:template-editor` and `test:template-reference` pass.
+- When the answer arrives:
+  record it as a decision,
+  keep only the chosen layout in the review (RVC),
+  then study how the field list is reached while the keyboard is open,
+  which depends on the layout.
+- The page lists what the study assumes
+  (one template,
+  KWGT's spelling,
+  the fields,
+  the default template,
+  the D90 picks).
+  These were also put to the human in chat on 2026-10-05,
+  with no answer when this was written.
+  Silence is not an acceptance.
+- Put to the human and unanswered:
+  whether D88 reaches the private capture scripts,
+  which still compare the APK's digest to keep one cohort to one build
+  and before replacing a package installed in the guest;
+  and two proposed `AGENTS.md` rules,
+  one against locking by hash,
+  one to search `doc/troubleshooting/` before working around a tool failure.
 
-The form asks one question,
-which layout to take.
-The fields,
-the spelling,
-the default template and the D90 picks are listed in it as assumptions open to objection.
-They were also put to the human in chat on 2026-10-05,
-with no answer when this was written.
-Silence is not an acceptance.
+To capture again,
+from `~/temp/agent`:
+`run-template-editor-until-complete.ts <prefix> <letter>` repeats bounded visits until the cohort of the current build is complete,
+then `prepare-template-editor-crops.ts`,
+`make-template-editor-inspection.ts`,
+a look at every sheet,
+`template-editor-inspection/inspected.json` in the active study folder,
+and `publish-template-editor.ts apply`.
+Writing `~/temp/agent/stop-repeat-visits` ends the loop at its next visit boundary;
+remove the file before starting another.
+Do not run the browser check while the emulator captures.
 
 Production has a duration only for the current track
 (`PlaybackSnapshot.durationMs`) and draws no supporting line,

@@ -612,3 +612,43 @@ because a pinned preview still shows the result while the field is scrolled away
 The first build's error for a formula left open read
 `formula: the formula opened at character 1 is not closed`.
 It now reads `formula: the $ at character 1 has no closing $`.
+
+### What the second build measured
+
+The second build
+(prototype commit `82d2692b7471fcde27c86c9bb321a4d35557bbca`)
+was captured in full on 2026-10-05 and published on 2026-10-06:
+128 views,
+every scene on both panels,
+in light and dark,
+at 100% and 200% text.
+`package/music-player/design/evidence/template-editor-boundaries.md` says how a view's contents are read.
+For the preview,
+the field and the lines under it:
+
+- At 100% text every layout keeps all of them in view in every typing state on both panels.
+- `flow` at 200% text loses the preview while typing inside a call on both panels.
+  On the cover panel it keeps the field and the whole help;
+  on the inner panel the field and the help reach the window's edges.
+- `rows` at 200% text keeps the preview everywhere.
+  Typing inside a call leaves only the help's first line on the inner panel,
+  cut at the keyboard,
+  and cuts the help's sentence on the cover panel.
+- `lines` at 200% text keeps the preview everywhere.
+  Typing inside a call keeps the help's first line whole on the inner panel and the whole help on the cover panel.
+- The error states fit in every layout at 200% text,
+  except that in `flow` the first preview title sits against the header on the inner panel.
+
+The agent's ranking,
+as the review page states it:
+`lines`,
+then `rows`,
+then `flow`.
+`lines` over `rows` because both keep the result in view and `lines` leaves more room for the help at 200% text,
+while what `rows` adds is the two titles,
+which a template never changes.
+`rows` over `flow` because `flow` loses the result while typing inside a call at 200% text,
+and the rows lose help instead,
+which can be scrolled to while the result stays in view.
+The choice is the human's and is asked on the review page,
+`package/music-player/design/questions/template-editor.html`.
