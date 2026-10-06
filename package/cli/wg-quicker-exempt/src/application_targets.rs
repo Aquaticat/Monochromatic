@@ -25,8 +25,12 @@ const HELIUM_SERVICE_PREFIX: &str =
 const FIREFOX_NIGHTLY_SERVICE_PREFIX: &str = "app-firefox\\x2dnightly@";
 /// ChatGPT desktop install tree whose every executable belongs to that application.
 const CHATGPT_INSTALL_DIRECTORY: &str = "/usr/lib/chatgpt";
+/// ChatGPT desktop service prefix observed from its desktop-entry identifier.
+const CHATGPT_SERVICE_PREFIX: &str = "app-chatgpt@";
 /// Interpreter executable family prefix shared by its AppImage file and bundled agents.
 const INTERPRETER_EXECUTABLE_PREFIX: &str = "interpreter";
+/// Interpreter desktop service prefix observed from its desktop-entry identifier.
+const INTERPRETER_SERVICE_PREFIX: &str = "app-interpreter@";
 
 /// Roots make process and cgroup discovery testable without real host state.
 pub struct ScanRoots<'a> {
@@ -67,6 +71,17 @@ pub fn is_helium_service_name(name: &str) -> bool {
 pub fn is_firefox_nightly_service_name(name: &str) -> bool {
     return name.starts_with(FIREFOX_NIGHTLY_SERVICE_PREFIX)
         && name.ends_with(".service");
+}
+
+/// Reports ChatGPT desktop-integration service name.
+pub fn is_chatgpt_service_name(name: &str) -> bool {
+    return name.starts_with(CHATGPT_SERVICE_PREFIX) && name.ends_with(".service");
+}
+
+/// Reports Interpreter desktop-integration service name, leaving the application's
+/// own executable-named scope to executable discovery.
+pub fn is_interpreter_service_name(name: &str) -> bool {
+    return name.starts_with(INTERPRETER_SERVICE_PREFIX) && name.ends_with(".service");
 }
 
 /// Reports numeric procfs directory name without regular expression parsing.
@@ -172,7 +187,8 @@ fn push_unique(paths: &mut Vec<PathBuf>, path: PathBuf) {
     }
 }
 
-/// Scans direct app slice entries identifying Ghostty, Steam, Helium, or Firefox Nightly services.
+/// Scans direct app slice entries identifying Ghostty, Steam, Helium, Firefox Nightly,
+/// ChatGPT, or Interpreter services.
 fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::Result<()> {
     for entry_result in std::fs::read_dir(roots.app_slice)? {
         let entry = entry_result?;
@@ -187,6 +203,8 @@ fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::
             || is_steam_service_name(name_text)
             || is_helium_service_name(name_text)
             || is_firefox_nightly_service_name(name_text)
+            || is_chatgpt_service_name(name_text)
+            || is_interpreter_service_name(name_text)
         {
             push_unique(targets, entry.path());
         }

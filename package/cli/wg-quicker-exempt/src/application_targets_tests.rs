@@ -2,9 +2,11 @@
 
 /// Discovery functions and injectable roots.
 use crate::application_targets::{
+    is_chatgpt_service_name,
     is_firefox_nightly_service_name,
     is_ghostty_cgroup_name,
     is_helium_service_name,
+    is_interpreter_service_name,
     scan_application_targets,
     ScanRoots,
 };
@@ -53,6 +55,22 @@ fn firefox_nightly_service_name_stays_channel_specific() {
     assert!(!is_firefox_nightly_service_name(
         "app-firefox\\x2dnightly@abc.scope"
     ));
+}
+
+/// Accepts exact ChatGPT and Interpreter desktop services without matching lookalikes.
+#[test]
+fn agent_service_names_use_desktop_entry_identifiers() {
+    assert!(is_chatgpt_service_name(
+        "app-chatgpt@154672a9c04f47348b46f5514349b059.service"
+    ));
+    assert!(!is_chatgpt_service_name("app-chatgpt-wrapper@abc.service"));
+    assert!(!is_chatgpt_service_name("app-chatgpt@abc.scope"));
+    assert!(is_interpreter_service_name(
+        "app-interpreter@e71b3b7638784ed28d000c8e59dce501.service"
+    ));
+    assert!(!is_interpreter_service_name("app-interpreter@abc.scope"));
+    // The application's own executable-named scope stays executable discovery's job.
+    assert!(!is_interpreter_service_name("app-interpreter-19784.scope"));
 }
 
 /// Creates one fake proc process with executable target and unified cgroup path.
@@ -231,18 +249,22 @@ fn scan_discovers_chatgpt_and_interpreter_cgroups() -> io::Result<()> {
     let proc_root = scratch.join("proc");
     std::fs::create_dir_all(&app_slice)?;
     std::fs::create_dir(&proc_root)?;
+    let chatgpt_service = app_slice.join("app-chatgpt@abc.service");
     let chatgpt_application = app_slice.join("app-chatgpt-54.scope");
     let chatgpt_agent = app_slice.join("app-chatgpt-codex-55.scope");
     let chatgpt_crashpad = app_slice.join("app-chatgpt-crashpad-56.scope");
+    let interpreter_service = app_slice.join("app-interpreter@abc.service");
     let interpreter_runtime = app_slice.join("app-interpreter-runtime-58.scope");
     let interpreter_application = app_slice.join("app-interpreter-59.scope");
     let interpreter_agent = app_slice.join("app-interpreter-exec-60.scope");
     let interpreter_cli = app_slice.join("app-interpreter-cli-61.scope");
     let unrelated = app_slice.join("app-org.example.Other.scope");
     for path in [
+        &chatgpt_service,
         &chatgpt_application,
         &chatgpt_agent,
         &chatgpt_crashpad,
+        &interpreter_service,
         &interpreter_runtime,
         &interpreter_application,
         &interpreter_agent,
@@ -333,9 +355,11 @@ fn scan_discovers_chatgpt_and_interpreter_cgroups() -> io::Result<()> {
         cgroup_root: &cgroup_root,
     })?;
     let mut expected = vec![
+        chatgpt_service,
         chatgpt_application,
         chatgpt_agent,
         chatgpt_crashpad,
+        interpreter_service,
         interpreter_runtime,
         interpreter_application,
         interpreter_agent,

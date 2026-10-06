@@ -227,7 +227,9 @@ The Rust watcher installs inotify on user's existing `app.slice` before its firs
 attaches the Ghostty service,
 every `app-ghostty-surface-transient-*.scope`,
 Steam's `app-steam@*.service`,
-and Firefox Nightly's `app-firefox\x2dnightly@*.service`,
+Firefox Nightly's `app-firefox\x2dnightly@*.service`,
+ChatGPT's `app-chatgpt@*.service`,
+and Interpreter's `app-interpreter@*.service`,
 drains queued events,
 and scans again to close creation race.
 It reacts to future cgroup creation and periodically maps every live Helium executable,

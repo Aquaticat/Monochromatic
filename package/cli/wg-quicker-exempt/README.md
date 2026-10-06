@@ -166,7 +166,9 @@ Release builds omit injection seam.
    Detached application watcher owns Ghostty,
    Steam,
    Helium,
-   and Firefox Nightly service enumeration plus future-cgroup inotify coverage.
+   Firefox Nightly,
+   ChatGPT,
+   and Interpreter service enumeration plus future-cgroup inotify coverage.
    It periodically rescans Helium,
    Pale Moon,
    Firefox Nightly,
