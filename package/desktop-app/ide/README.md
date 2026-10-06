@@ -636,27 +636,32 @@ and checks that their named tests fail.
 sends one hover,
 closes,
 and lets the worker shut down against the same real confined servers.
-It fails on any ERROR-level record,
-on bare shutdown error text such as `context canceled`,
+It runs with every `helix-lsp` record visible (`RUST_LOG=ide_app=debug,helix_lsp=debug`)
+and fails on any ERROR-level record,
+on shutdown error text such as `context canceled` at WARN or ERROR or outside a record,
+when the healthy-server records `helix-lsp` writes are missing or not below WARN,
 and on any leftover process.
 Its second part ends the application process with `SIGKILL`
 and records which server and sandbox processes remain after 0, 1, 5, and 10 seconds.
-The quiet-shutdown checks fail at present, for causes outside this package:
-`helix-lsp` logs server standard-error lines,
-the end of that stream,
-and error responses at ERROR
-(`doc/troubleshooting/helix-lsp-transport-error-level-records.md`);
+The servers still print what they printed before:
 the TypeScript 7 server reports its own exit as `context canceled`
-(`doc/troubleshooting/typescript-7-lsp-exit-context-canceled.md`);
+(`doc/troubleshooting/typescript-7-lsp-exit-context-canceled.md`),
 and rust-analyzer warns about a user configuration file that does not exist
 (`doc/troubleshooting/rust-analyzer-notify-missing-user-config.md`).
+The application re-labels those lines, as described in "Log",
+instead of letting `helix-lsp` log them at ERROR
+(`doc/troubleshooting/helix-lsp-transport-error-level-records.md`).
 `tests/language/quiet.rs` is the scripted-server form in the container suite:
-the enforced test allows `helix-lsp`'s end-of-stream record and nothing else at ERROR,
-and the ignored strict test is the acceptance test for whichever handling is adopted.
+`quiet::clean_lifetime_logs_no_error_level_record` makes the scripted server produce all three re-labelled shapes
+(`IDE_SCRIPTED_STDERR` writes one line to standard error at `shutdown`, `IDE_SCRIPTED_HOVER=modified-once`)
+and requires no ERROR record and each shape at its new level;
+`quiet::unknown_helix_error_records_keep_their_level` requires a refused `initialize` to log two ERROR records.
 `inspect:language-lifecycle-guards` observes both in a disposable copy,
-together with the worker's shutdown request,
+with each re-labelling removed, with the re-labelling widened to every transport error,
+with a full log queue that waits for room,
+and with the worker's shutdown request,
 its wait for servers to end,
-and its reaping.
+or its reaping removed.
 
 When its handle is dropped,
 the worker sends `shutdown` and `exit` to every server,
@@ -1531,7 +1536,8 @@ from 2.5 to 26 ms of CPU per second;
 it sweeps too,
 at 10 listings per second with 100 folders,
 and what else grows with the tree was not separated.
-The IDE always logs at debug level (the filter is fixed in `src/native.rs`),
+The IDE logged at debug level during these measurements
+(since 2026-10-06 the default is warnings, and the measurement sets `RUST_LOG` for the records it reads),
 four lines per listing:
 9,
 52,
@@ -1539,10 +1545,11 @@ and 200 log lines per second at the 1 s sweep,
 against 0.9,
 5.3,
 and 40 at 10 s.
-The log is written from the UI thread,
-so a log destination that blocks stalls the window;
+The log was written from the UI thread,
+so a log destination that blocked stalled the window;
 one sample with the log on a busy disk stood still for 10 s,
 and the measurement keeps its live log in memory-backed storage for that reason.
+Since 2026-10-06 a writer thread writes the log ("Log").
 The displayed file was 640 bytes;
 the sweep reads the whole file once per second,
 so that part grows with the file,
@@ -1611,6 +1618,68 @@ rename,
 and delete in an expanded folder,
 and both correspondence examples through atomic replace,
 show without polling.
+
+## Log
+
+The application writes its log to standard output.
+By default it holds warnings and errors.
+The standard `RUST_LOG` variable adds detail in `tracing-subscriber`'s directive syntax,
+for example `RUST_LOG=ide_app=debug,monochromatic_ide=debug` for every record of the application,
+which was the fixed level before 2026-10-06.
+A directive in `RUST_LOG` replaces an earlier one for the same target, so it can also reduce the log.
+`helix-lsp` writes every protocol message in full at INFO,
+so it stays at warnings whatever `RUST_LOG` says, unless `RUST_LOG` names a `helix_lsp` target itself;
+a bare level below warnings, such as `RUST_LOG=error`, applies to it too (`src/logging.rs`).
+
+`helix-lsp` logs three kinds of record at ERROR for servers that work as intended.
+The application lowers exactly those, keeping their text, target, and source location
+(`src/logging/relabel.rs`):
+
+- a line the server wrote to its standard error, `{name} err <- "{line}"`, to INFO;
+- the end of that stream, on every server exit, `{name} err: <- StreamClosed`, to DEBUG;
+- an error answer with code `-32801` (content modified) or `-32800` (request cancelled),
+  which the worker asks again for, to DEBUG.
+
+Every other `helix-lsp` record keeps its level,
+including error answers with any other code and failures to read or write a server's streams.
+`RUST_LOG=helix_lsp=debug` shows the re-labelled records together with the protocol messages.
+
+Records go through a queue to one writer thread (`src/logging/background.rs`),
+so no thread of the application, the interface thread included, waits for the output.
+A reader that stops reading, or a disk that holds an append for seconds, blocks only that writer thread.
+The queue holds at most 8 MiB of formatted records.
+A record that does not fit is dropped and counted;
+the next record that fits is preceded by one warning line,
+`N log records (B bytes) were not written because the log output did not accept them in time; the log has a gap here`,
+which the writer thread writes itself, without a level filter.
+A clean exit waits up to one second for the queue to be written, then exits anyway;
+records still queued then are lost without a report,
+because the only place to report them is the output that is not accepting.
+The inspection tool `ide-language-inspect` logs the worker's debug records by default, to standard error,
+through the same filter and re-labelling, and writes synchronously.
+
+Checks:
+`test:language logging` runs the filter, re-labelling, and queue tests,
+among them `logging::background::tests::a_blocked_output_never_delays_the_logging_thread`,
+which logs 5000 records through the real subscriber while the output stalls for 4 s;
+`inspect:language-lifecycle-guards` makes the full queue wait for room and observes that test fail.
+`mise run //package/desktop-app/ide:inspect:log-stall <cache> [cargo] [seconds] [port]`
+runs the IDE in the nested compositor with every application record on
+and its standard output on a FIFO that is never read,
+moves the caret with key presses for 30 s,
+and reads from the IDE's own records the longest pause between two keys the window handled;
+it also records how long the window's Slint MCP server, which runs on the event loop, takes to answer.
+The same sources with the writer replaced by plain standard output are the control.
+On 2026-10-06, at a load average near 90 on 16 processors,
+the shipped build handled 494 keys with a longest pause of 2.2 s and answered every probe within 5 s,
+and the control handled 8 keys, then paused 31.8 s and left 6 probes unanswered
+(`~/temp/agent/ide-log-stall-RMpmMv/results.json`).
+A pause of 5 s or more fails the shipped build; single slower answers occur on a busy host without any log involved.
+
+A bare `RUST_LOG=debug` also turns on the debug records of every library:
+the log up to the first window grew from about 60 KB to about 747 KB,
+while the time to the first window stayed within the spread of three sessions each
+(0.7 to 10.5 s with the application's records, 1.4 to 2.6 s with every record, load average near 80).
 
 ## Build boundary
 
@@ -1743,9 +1812,8 @@ the packaged application drew a SQL file without colors and reported nothing.
 
 The application writes language-server state below `$XDG_CACHE_HOME/monochromatic-ide`
 and nothing below the configuration or data directories.
-It logs to standard output at debug level,
-including language-server logs,
-with no setting to lower that yet.
+It logs to standard output,
+warnings and errors by default and more with `RUST_LOG` (see "Log").
 
 ### Bundle checks
 

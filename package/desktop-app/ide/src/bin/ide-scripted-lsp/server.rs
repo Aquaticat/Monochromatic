@@ -222,6 +222,10 @@ impl Session {
                 }
             }
         } else if method == "shutdown" {
+            // `if let Some` writes the configured line only when one was given.
+            if let Some(line) = &self.script.stderr_at_shutdown {
+                eprintln!("{line}");
+            }
             self.send(json!({ "id": id, "result": null }));
         } else if method == "textDocument/hover" {
             self.hover(id, params);

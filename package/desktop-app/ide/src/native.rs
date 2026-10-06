@@ -20,10 +20,10 @@ use anyhow::{Context, bail};
 use ide_app::annotation::Annotations;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
-/// The Language module's handle, its startup rule, its log directive, and the reload record.
-use ide_app::language::{
-    HELIX_LOG_DIRECTIVE, LanguageWorker, enter_project_directory, sync::DocumentReload,
-};
+/// The Language module's handle, its startup rule, and the reload record.
+use ide_app::language::{LanguageWorker, enter_project_directory, sync::DocumentReload};
+/// The log filter, the subscriber with the helix-lsp bridge, and the writer thread.
+use ide_app::logging::{self, background};
 /// The displayed file is reread on change notifications, or on the old timer while unwatched.
 use ide_app::refresh_policy::SourceRefresh;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
@@ -256,12 +256,20 @@ impl State {
 
 /// Run one project window after display-independent argument parsing has completed.
 pub fn run(options: Options) -> anyhow::Result<()> {
-    // helix-lsp logs every protocol message in full at `info`; its directive keeps it at warnings.
-    tracing_subscriber::fmt()
-        .with_env_filter(format!(
-            "ide_app=debug,monochromatic_ide=debug,{HELIX_LOG_DIRECTIVE}"
-        ))
-        .init();
+    // What: The writer thread owns standard output, where the log has always gone. `_log_flush` is
+    //       bound first, so it is dropped last, after every other value of this function, and waits
+    //       briefly for the queued records.
+    // Why: The window must never wait for a slow reader of its log, and the shutdown records written
+    //      after the window closed must still reach the output (`src/logging/background.rs`).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // using logFlush = startLogWriter(process.stdout); installLog(filterFromEnv(''), logFlush.writer);
+    // ```
+    let (log_writer, _log_flush) =
+        background::background(std::io::stdout()).context("Cannot start the log writer thread")?;
+    // Warnings and errors unless `RUST_LOG` asks for more; helix-lsp's healthy-server records are re-labelled.
+    logging::install(logging::filter(""), log_writer, None)?;
     let workspace = Workspace::new(&options.project)?;
     // Helix roots every server at the working directory it reads first, so the project root
     // becomes the working directory before any thread starts or any Helix call is made.
