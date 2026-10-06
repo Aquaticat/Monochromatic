@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { drawnTexts, expected, scenes } from './template-editor-scenes.mjs';
+import { drawnTexts, expected, layouts, pinned, scenes } from './template-editor-scenes.mjs';
 
 //region Inspected native cohort, each view checked from its own image, its record and the grammar
 // D88: nothing is compared with a recorded digest. What is checked about an image is read from the image,
@@ -8,10 +8,12 @@ import { drawnTexts, expected, scenes } from './template-editor-scenes.mjs';
 const question = join(process.cwd(), 'questions');
 const evidence = join(question, 'evidence');
 const manifest = JSON.parse(readFileSync(join(evidence, 'template-editor-witnesses.json'), 'utf8'));
-const panels = { inner: [2076, 2152], cover: [1080, 2424] };
-if (manifest.schema !== 1 || !Array.isArray(manifest.witnesses)) throw new Error('Template editor review manifest is not this study.');
+// Each panel's size and the upper edge of its navigation area, in physical pixels, as the emulator reports them.
+const panels = { inner: { size: [2076, 2152], navigationTop: 2074 }, cover: { size: [1080, 2424], navigationTop: 2365 } };
+if (manifest.schema !== 2 || !Array.isArray(manifest.witnesses)) throw new Error('Template editor review manifest is not this study.');
 const images = {};
 const facts = {};
+const keyboardTops = { inner: new Set(), cover: new Set() };
 for (const capture of manifest.witnesses) {
   const file = capture.file;
   if (!/^template-editor-(?:inner|cover)-[a-z-]+-(?:light|dark)-s(?:100|200)\.png$/.test(file)) {
@@ -22,7 +24,7 @@ for (const capture of manifest.witnesses) {
     throw new Error('Template editor capture filename and metadata disagree.');
   }
   const png = readFileSync(join(evidence, file));
-  const [physicalWidth, physicalHeight] = panels[capture.panel];
+  const [physicalWidth, physicalHeight] = panels[capture.panel].size;
   const crop = capture.cropPixels;
   // The status strip is removed and everything under it kept, the keyboard included.
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
@@ -39,11 +41,24 @@ for (const capture of manifest.witnesses) {
     offset += length + 12;
   }
   const want = expected(state);
+  if (capture.state !== state.state || capture.layout !== state.layout || capture.position !== state.position) {
+    throw new Error(`${file}: recorded state, layout or position differs from the scene.`);
+  }
   // A state that holds focus is captured with the keyboard open, and no other state is.
   if (capture.keyboardShown !== want.focused || (want.focused && !(Number.isInteger(capture.keyboardTop) &&
-      capture.keyboardTop > crop.y && capture.keyboardTop < physicalHeight))) {
+      capture.keyboardTop > crop.y && capture.keyboardTop < panels[capture.panel].navigationTop))) {
     throw new Error(`${file}: keyboard state differs from the authored state.`);
   }
+  if (want.focused) keyboardTops[capture.panel].add(capture.keyboardTop);
+  // The view ends at the keyboard when one is open and at the navigation area otherwise; what scrolls is in
+  // view only inside the page's scrolling window, which starts under the header and whatever a layout pins.
+  const viewBottom = want.focused ? capture.keyboardTop : panels[capture.panel].navigationTop;
+  if (capture.viewBottom !== viewBottom || !Number.isInteger(capture.viewTop) || capture.viewTop <= crop.y || capture.viewTop >= viewBottom) {
+    throw new Error(`${file}: the edges of the visible page are absent or differ from the panel.`);
+  }
+  // The study's own scroll rule: a focused state scrolls for the lines under its field, an end scene to the page's end.
+  const rule = state.position === 'end' ? 'end' : want.focused ? 'lines' : undefined;
+  if ((capture.scrollRule?.rule) !== rule) throw new Error(`${file}: the scroll rule applied differs from the scene.`);
   const called = drawnTexts(state);
   if (!Array.isArray(capture.drawn) || JSON.stringify(capture.drawn.map(item => [item.role, item.text])) !==
       JSON.stringify(called.map(item => [item.role, item.text]))) {
@@ -52,32 +67,44 @@ for (const capture of manifest.witnesses) {
   if (!Array.isArray(capture.uncalledPageTexts) || capture.uncalledPageTexts.length > 0) {
     throw new Error(`${file}: the page draws text its state does not call for.`);
   }
-  // What counts as in view is re-derived from each text's rectangle and the keyboard or navigation edge.
-  if (!Number.isInteger(capture.viewBottom) || capture.viewBottom !== (want.focused ? capture.keyboardTop : capture.viewBottom) ||
-      capture.viewBottom <= crop.y || capture.viewBottom > physicalHeight) {
-    throw new Error(`${file}: the lower edge of the visible page is absent or implausible.`);
-  }
+  // What counts as in view is re-derived from each text's rectangle. A text that scrolls must lie strictly
+  // inside the window: a rectangle touching an edge is cut there or flush against it, and the hierarchy
+  // cannot tell which. A text of the fixed part must lie between the status strip and the window.
   for (const item of capture.drawn) {
-    const inView = item.bounds.some(bounds => bounds[1] >= crop.y && bounds[3] <= capture.viewBottom);
-    if (item.inView !== inView) throw new Error(`${file}: recorded visibility of ${item.role} differs from its rectangle.`);
+    const fixed = pinned({ layout: state.layout, role: item.role });
+    const inView = item.bounds.some(bounds => fixed ? bounds[1] >= crop.y && bounds[3] <= capture.viewTop :
+      bounds[1] > capture.viewTop && bounds[3] < viewBottom);
+    if (item.pinned !== fixed || item.inView !== inView) throw new Error(`${file}: recorded visibility of ${item.role} differs from its rectangle.`);
+    // What a layout keeps fixed under the header must be in view in every one of its views; that is the layout's claim.
+    if (fixed && !inView) throw new Error(`${file}: ${item.role} is fixed in the ${state.layout} layout but is not in view.`);
   }
+  // A page scrolled to its end shows its last text.
+  if (state.position === 'end' && !capture.drawn.at(-1).inView) throw new Error(`${file}: the page's end is not in view.`);
   const key = `${capture.panel}/${capture.scene}/${capture.scheme}/${capture.fontScale}`;
   if (images[key]) throw new Error('Duplicate template editor capture.');
   images[key] = { file, width: crop.width, height: crop.height, density: 390, source: `data:image/png;base64,${png.toString('base64')}` };
   facts[key] = { keyboard: capture.keyboardShown, caretDrawn: capture.caretDrawn === true, scrolls: capture.scrollMax > 0,
-    outOfView: capture.drawn.filter(item => !item.inView).map(item => item.role) };
+    // A text with a rectangle on screen that is not strictly inside the view touches an edge or is cut by it.
+    outOfView: capture.drawn.filter(item => !item.inView && item.bounds.length === 0).map(item => item.role),
+    atEdge: capture.drawn.filter(item => !item.inView && item.bounds.length > 0).map(item => item.role) };
 }
 for (const panel of Object.keys(panels)) for (const scheme of ['light', 'dark']) for (const scale of [1, 2]) for (const state of scenes) {
   if (!images[`${panel}/${state.id}/${scheme}/${scale}`]) {
-    throw new Error(`Template editor review requires every authored state under every condition: ${panel}/${state.id}/${scheme}/${scale}`);
+    throw new Error(`Template editor review requires every authored scene under every condition: ${panel}/${state.id}/${scheme}/${scale}`);
   }
 }
 if (Object.keys(images).length !== manifest.witnesses.length) throw new Error('Template editor review holds a view outside the authored cohort.');
-// The theme must not change what is in view: a light and dark pair of the same state and size reports the same facts.
+// Every keyboard-open view of a panel met the same keyboard; a taller one would be the keyboard's own notice.
+for (const panel of Object.keys(panels)) {
+  if (keyboardTops[panel].size !== 1) throw new Error(`Keyboard-open views of the ${panel} panel do not share one keyboard edge.`);
+}
+// The theme must not change what is in view: a light and dark pair of the same scene and size reports the same facts.
 for (const key of Object.keys(facts)) {
   const [panel, scene, scheme, scale] = key.split('/');
-  if (scheme === 'light' && JSON.stringify(facts[key].outOfView) !== JSON.stringify(facts[`${panel}/${scene}/dark/${scale}`].outOfView)) {
-    throw new Error('Light and dark views of one state disagree about what is in view: ' + key);
+  const other = facts[`${panel}/${scene}/dark/${scale}`];
+  if (scheme === 'light' && (JSON.stringify(facts[key].outOfView) !== JSON.stringify(other.outOfView) ||
+      JSON.stringify(facts[key].atEdge) !== JSON.stringify(other.atEdge))) {
+    throw new Error('Light and dark views of one scene disagree about what is in view: ' + key);
   }
 }
 //endregion
@@ -98,9 +125,18 @@ if (process.argv[2] === 'build') {
 } else if (process.argv[2] === 'validate') {
   if (readFileSync(output, 'utf8') !== html) throw new Error('Template editor review differs from template and checked evidence.');
   for (const marker of ['color-scheme: light dark', 'Every state is authored', 'Typing is not connected',
-    'No production implementation is authorized', 'id="final-notes"', 'id="reply"', 'Native pixels', 'Reset 100% dp']) {
+    'No production implementation is authorized', 'id="final-notes"', 'id="reply"', 'Native pixels', 'Reset 100% dp',
+    'What this study assumes']) {
     if (!html.includes(marker)) throw new Error(`Template editor review is missing ${marker}.`);
   }
+  // The one question is which layout to take; each layout is a choice with its own built views.
+  for (const layout of layouts) {
+    if ((html.match(new RegExp(`<input\\b[^>]*type="radio"[^>]*name="layout"[^>]*value="${layout}"`, 'g')) ?? []).length !== 1) {
+      throw new Error(`Template editor review must offer the ${layout} layout exactly once.`);
+    }
+    if (!html.includes(`data-option="${layout}"`)) throw new Error(`Template editor review shows no views for the ${layout} layout.`);
+  }
+  if (!html.includes('Ranking:')) throw new Error('Template editor review gives no ranking of its options.');
   if ((html.match(/<form\b/g) ?? []).length !== 1 ||
       /__TEMPLATE_EDITOR_[A-Z]+__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html)) {
     throw new Error('Template editor review must be one self-contained form.');
