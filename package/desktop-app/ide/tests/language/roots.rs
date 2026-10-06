@@ -3,7 +3,6 @@
 
 use crate::support::{self, Layout, Probe, SERVER};
 use ide_app::language::{
-    config::LanguageSetup,
     reply::{RequestKind, RequestOutcome, Target},
     status::ServerState,
 };
@@ -224,50 +223,4 @@ fn project_reached_through_a_linked_working_directory_is_rooted_at_the_project()
         "the document was not recognized through its linked spelling"
     );
     assert_eq!(same.path, file);
-}
-
-/// The home folder opened as the project: a file with no root marker between itself and the home
-/// folder starts no server, because its root would be the whole home folder; a file inside a
-/// project with a marker below the home folder is rooted at that project.
-#[test]
-fn home_folder_as_project_roots_servers_only_at_markers_below_it() {
-    let Some(root) = support::child_root() else {
-        support::run_child(
-            "roots::home_folder_as_project_roots_servers_only_at_markers_below_it",
-            support::standard,
-        );
-        return;
-    };
-    fs::create_dir_all(root.join("notes")).expect("loose folder");
-    fs::create_dir_all(root.join("code/tool/src")).expect("project below home");
-    fs::write(root.join("code/tool/marker.toml"), "").expect("project marker");
-    let setup = LanguageSetup {
-        extra_languages: Some(support::scripted_with_roots(
-            &root,
-            &[],
-            3,
-            r#"["marker.toml"]"#,
-        )),
-        home: Some(root.clone()),
-        ..LanguageSetup::unconfined()
-    };
-    let mut probe = Probe::with_setup(&root, setup);
-    probe.open(&root.join("notes/file.scripted"), "alpha\n");
-    probe.until("the not-started state", |seen| {
-        return matches!(seen.state(SERVER), Some(ServerState::NotStarted { .. }));
-    });
-    let Some(ServerState::NotStarted { reason }) = probe.state(SERVER) else {
-        panic!("unexpected state {:?}", probe.state(SERVER));
-    };
-    assert!(reason.contains("home folder"), "{reason}");
-    assert!(reason.contains(&root.display().to_string()), "{reason}");
-    assert!(
-        support::children().is_empty() && support::report(&root).is_empty(),
-        "a server was started with the home folder as its workspace"
-    );
-    probe.open(&root.join("code/tool/src/file.scripted"), "beta\n");
-    probe.until_ready();
-    let lines = support::server_text_until(&root, "beta\n");
-    let expected = format!("file://{}", root.join("code/tool").display());
-    assert_eq!(initialize(&lines)["params"]["rootUri"], expected.as_str());
 }

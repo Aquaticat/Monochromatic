@@ -507,9 +507,8 @@ so newer builds look different there.
   "open with" on a folder through GLib (`gio launch` with the entry and the folder)
   and through KIO (`kioclient exec` with the folder URL,
   the IDE made the default for folders in that home only);
-  and starts with no folder but `--file`,
-  once for a file in a Rust project below the home folder
-  and once for a loose file directly in it.
+  and a start with no folder but `--file`
+  for a file in a Rust project below the home folder.
 - One frame of the `damaged-embedded-part-reported` bundle check:
   a copy with one changed byte inside its embedded `sql.so`.
 
@@ -554,11 +553,6 @@ The other frames:
   confined,
   rooted at `code/tool`,
   with its state below the home folder's `.cache`.
-- `home-dark-loose-file-hover-note`:
-  `scratch.rs` directly in the home folder,
-  and the note Ctrl+Q shows:
-  no server was started,
-  because its root would have been the whole home folder.
 - `open-folder-gio-dark` and `open-folder-kio-dark`:
   the folder `code/project-3`,
   opened through GLib's and KIO's launchers.

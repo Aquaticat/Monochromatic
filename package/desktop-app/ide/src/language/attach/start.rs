@@ -47,12 +47,6 @@ fn refusal_state(refusal: &RootRefusal) -> ServerState {
     // ```
     return match refusal {
         RootRefusal::OutsideProject(root) => ServerState::RootOutsideProject { root: root.clone() },
-        RootRefusal::HomeFolder(root) => ServerState::NotStarted {
-            reason: format!(
-                "no project marker of this language lies between the file and the home folder, so the server would get {} as its workspace and read every project in it. Open the folder of the file's own project, or add one of the language's root files (such as Cargo.toml or package.json) beside the file",
-                root.display()
-            ),
-        },
         RootRefusal::WrongWorkingDirectory(directory) => ServerState::WrongWorkingDirectory {
             directory: directory.clone(),
         },
@@ -214,10 +208,10 @@ pub(super) async fn start(
         }
     };
     let document = view.to_helix(&path);
-    if let Err(refusal) = view.lsp_root(config, &document, worker.languages.home()) {
+    if let Err(refusal) = view.lsp_root(config, &document) {
         tracing::warn!(
             ?refusal,
-            "language servers are not started: their root would be outside the project or cover the home folder"
+            "language servers are not started: their root would be outside the project"
         );
         for name in &startable {
             worker.session.report(name, refusal_state(&refusal));

@@ -561,16 +561,7 @@ A command method returns `false` when the queue is full;
 `enter_project_directory` must run once at startup,
  before any thread or Helix call,
 because Helix roots every server at the process working directory.
-A server root outside the project is refused before anything starts,
-and so is a root that is the home folder or a folder containing it
-(`covers_home` in `src/language/root.rs`, with `LanguageSetup::home` read from `HOME`):
-with the home folder as the project,
-a file with no root marker of its language between itself and the home folder
-would otherwise give its server the whole home folder as workspace.
-Such a server shows the not-started state,
-naming the root it would have had and the remedy:
-open the folder of the file's own project,
-or add one of the language's root files beside the file.
+A server root outside the project is refused before anything starts.
 
 Inlay hints and pull diagnostics are requests the worker makes on its own:
 when a file is displayed,
@@ -1888,9 +1879,13 @@ What changes:
   (see [Language module](#language-module)).
   A real bubblewrap probe in a disposable home wrote into the state folder and was refused beside it;
   with the former order the state write was refused too.
-- No server is rooted at the home folder or above it:
-  a file with no root marker of its language between itself and the home folder starts no server,
-  and its state names the root it would have had.
+- A loose file directly in the home folder,
+  opened without a project folder argument,
+  is a user error that gets no special handling (decided on 2026-10-06):
+  like any file with no root marker of its language between itself and the project root,
+  its server gets the project root,
+  here the whole home folder,
+  as workspace.
 - The tree reads only the folders shown,
   the change watcher watches only those (one inotify watch at start),
   and search runs `rg` over the home folder,
@@ -1973,7 +1968,6 @@ the cache tests in `src/runtime/cache_tests.rs`
 (`a_rewrite_replaces_the_file_instead_of_writing_into_it` fails with writes into the file in place,
 which `concurrent_first_uses_all_get_the_complete_library` did not always detect),
 the digest test in `src/runtime/embedded_tests.rs`,
-the home-folder root test in `tests/language/roots.rs`,
 the bind-order test,
 the state-directory test,
 and the home default in `tests/cli_args.rs`.

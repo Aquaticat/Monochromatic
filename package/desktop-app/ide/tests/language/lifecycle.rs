@@ -236,7 +236,6 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
         launch: refusing,
         state_root: None,
         extra_languages: Some(support::scripted(&root, &[], 3)),
-        home: None,
     };
     let mut probe = Probe::with_setup(&root, refused);
     probe.open(&root.join("file.scripted"), "alpha\n");
@@ -255,7 +254,6 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
         launch: needing_state,
         state_root: Some(root.clone()),
         extra_languages: Some(support::scripted(&root, &[], 3)),
-        home: None,
     };
     let mut second = Probe::with_setup(&root, unprepared);
     second.open(&root.join("file.scripted"), "alpha\n");

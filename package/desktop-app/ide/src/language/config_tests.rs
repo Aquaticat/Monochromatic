@@ -213,7 +213,6 @@ fn launch_policy_output_is_what_helix_is_given() {
         launch: wrapping_policy,
         state_root: Some(PathBuf::from("/var/tmp/ide-state")),
         extra_languages: Some(SCRIPTED.to_string()),
-        home: None,
     };
     let languages = Languages::new(&root, setup).expect("registry");
     let loader = languages.loader.load();
@@ -261,7 +260,6 @@ fn refused_launch_fails_closed() {
         launch: refusing_policy,
         state_root: None,
         extra_languages: Some(SCRIPTED.to_string()),
-        home: None,
     };
     let languages = Languages::new(&root, setup).expect("registry");
     assert_eq!(
