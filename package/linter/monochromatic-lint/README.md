@@ -245,7 +245,7 @@ findings,
 grouped edits and the syntax-only Rust rules;
 `mutation:semantic` for the semantic engine and the explicit-type rule;
 and `mutation:processors:files` for the processor modules.
-The executable and core scopes skip the five tests that load a Cargo workspace,
+The executable and core scopes skip the four tests that load a Cargo workspace,
 which the semantic scope and the full container tests run.
 The semantic scope has its own per-mutant limit,
 and any campaign accepts `-- --shard k/n` (zero-based,
