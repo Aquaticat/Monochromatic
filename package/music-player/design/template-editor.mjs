@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { drawnTexts, expected, layouts, pinned, scenes } from './template-editor-scenes.mjs';
+import { drawnTexts, expected, scenes } from './template-editor-scenes.mjs';
 
 //region Inspected native cohort, each view checked from its own image, its record and the grammar
 // D88: nothing is compared with a recorded digest. What is checked about an image is read from the image,
@@ -10,7 +10,7 @@ const evidence = join(question, 'evidence');
 const manifest = JSON.parse(readFileSync(join(evidence, 'template-editor-witnesses.json'), 'utf8'));
 // Each panel's size and the upper edge of its navigation area, in physical pixels, as the emulator reports them.
 const panels = { inner: { size: [2076, 2152], navigationTop: 2074 }, cover: { size: [1080, 2424], navigationTop: 2365 } };
-if (manifest.schema !== 2 || !Array.isArray(manifest.witnesses)) throw new Error('Template editor review manifest is not this study.');
+if (manifest.schema !== 3 || !Array.isArray(manifest.witnesses)) throw new Error('Template editor review manifest is not this study.');
 const images = {};
 const facts = {};
 const keyboardTops = { inner: new Set(), cover: new Set() };
@@ -41,8 +41,8 @@ for (const capture of manifest.witnesses) {
     offset += length + 12;
   }
   const want = expected(state);
-  if (capture.state !== state.state || capture.layout !== state.layout || capture.position !== state.position) {
-    throw new Error(`${file}: recorded state, layout or position differs from the scene.`);
+  if (capture.state !== state.state || capture.position !== state.position) {
+    throw new Error(`${file}: recorded state or position differs from the scene.`);
   }
   // A state that holds focus is captured with the keyboard open, and no other state is.
   if (capture.keyboardShown !== want.focused || (want.focused && !(Number.isInteger(capture.keyboardTop) &&
@@ -51,13 +51,13 @@ for (const capture of manifest.witnesses) {
   }
   if (want.focused) keyboardTops[capture.panel].add(capture.keyboardTop);
   // The view ends at the keyboard when one is open and at the navigation area otherwise; what scrolls is in
-  // view only inside the page's scrolling window, which starts under the header and whatever a layout pins.
+  // view only inside the page's scrolling window, which starts under the header.
   const viewBottom = want.focused ? capture.keyboardTop : panels[capture.panel].navigationTop;
   if (capture.viewBottom !== viewBottom || !Number.isInteger(capture.viewTop) || capture.viewTop <= crop.y || capture.viewTop >= viewBottom) {
     throw new Error(`${file}: the edges of the visible page are absent or differ from the panel.`);
   }
-  // The study's own scroll rule: a focused state scrolls for the lines under its field, an end scene to the page's end.
-  const rule = state.position === 'end' ? 'end' : want.focused ? 'lines' : undefined;
+  // Where a focused page rests is the platform's (D94); the study scrolls only an end scene, to show the page's end.
+  const rule = state.position === 'end' ? 'end' : undefined;
   if ((capture.scrollRule?.rule) !== rule) throw new Error(`${file}: the scroll rule applied differs from the scene.`);
   const called = drawnTexts(state);
   if (!Array.isArray(capture.drawn) || JSON.stringify(capture.drawn.map(item => [item.role, item.text])) !==
@@ -69,14 +69,14 @@ for (const capture of manifest.witnesses) {
   }
   // What counts as in view is re-derived from each text's rectangle. A text that scrolls must lie strictly
   // inside the window: a rectangle touching an edge is cut there or flush against it, and the hierarchy
-  // cannot tell which. A text of the fixed part must lie between the status strip and the window.
+  // cannot tell which. The page title sits in the header, between the status strip and the window.
   for (const item of capture.drawn) {
-    const fixed = pinned({ layout: state.layout, role: item.role });
+    const fixed = item.role === 'page-title';
     const inView = item.bounds.some(bounds => fixed ? bounds[1] >= crop.y && bounds[3] <= capture.viewTop :
       bounds[1] > capture.viewTop && bounds[3] < viewBottom);
-    if (item.pinned !== fixed || item.inView !== inView) throw new Error(`${file}: recorded visibility of ${item.role} differs from its rectangle.`);
-    // What a layout keeps fixed under the header must be in view in every one of its views; that is the layout's claim.
-    if (fixed && !inView) throw new Error(`${file}: ${item.role} is fixed in the ${state.layout} layout but is not in view.`);
+    if (item.inView !== inView) throw new Error(`${file}: recorded visibility of ${item.role} differs from its rectangle.`);
+    // The header does not scroll, so its title must be in view in every view of the editor.
+    if (fixed && !inView) throw new Error(`${file}: ${item.role} is in the header but is not in view.`);
   }
   // A page scrolled to its end shows its last text.
   if (state.position === 'end' && !capture.drawn.at(-1).inView) throw new Error(`${file}: the page's end is not in view.`);
@@ -126,17 +126,15 @@ if (process.argv[2] === 'build') {
   if (readFileSync(output, 'utf8') !== html) throw new Error('Template editor review differs from template and checked evidence.');
   for (const marker of ['color-scheme: light dark', 'Every state is authored', 'Typing is not connected',
     'No production implementation is authorized', 'id="final-notes"', 'id="reply"', 'Native pixels', 'Reset 100% dp',
-    'What this study assumes']) {
+    'What is decided', '$tf(mi(len), m:ss)$ $mi(peak)$']) {
     if (!html.includes(marker)) throw new Error(`Template editor review is missing ${marker}.`);
   }
-  // The one question is which layout to take; each layout is a choice with its own built views.
-  for (const layout of layouts) {
-    if ((html.match(new RegExp(`<input\\b[^>]*type="radio"[^>]*name="layout"[^>]*value="${layout}"`, 'g')) ?? []).length !== 1) {
-      throw new Error(`Template editor review must offer the ${layout} layout exactly once.`);
-    }
-    if (!html.includes(`data-option="${layout}"`)) throw new Error(`Template editor review shows no views for the ${layout} layout.`);
+  // The design is decided (D89 to D94): the page shows it and asks nothing, so it holds no choice to make.
+  if (/<input\b[^>]*type="(?:radio|checkbox)"|<select\b[^>]*\bname=|<[a-z]+\b[^>]*\srequired[\s>=]/i.test(html)) {
+    throw new Error('Template editor review asks a question; the decided design is evidence only.');
   }
-  if (!html.includes('Ranking:')) throw new Error('Template editor review gives no ranking of its options.');
+  // A template the page quotes must not use the conditional D92 removed.
+  if (/\$[^$]*\bif\(/.test(html.replace(/<script\b[\s\S]*?<\/script>/g, ''))) throw new Error('Template editor review quotes a conditional.');
   if ((html.match(/<form\b/g) ?? []).length !== 1 ||
       /__TEMPLATE_EDITOR_[A-Z]+__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html)) {
     throw new Error('Template editor review must be one self-contained form.');
