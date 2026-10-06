@@ -11,6 +11,7 @@
     <activity android:name='.TrackMenuActivity' android:exported='true' />
     <activity android:name='.ScanIndicatorActivity' android:exported='true' />
     <activity android:name='.SettingsPaneActivity' android:exported='true' />
+    <activity android:name='.TemplateEditorActivity' android:exported='true' android:windowSoftInputMode='adjustResize' />
     <!-- Do not restore or start inherited WorkManager jobs in the isolated host. -->
     <provider android:name='androidx.startup.InitializationProvider'
       android:authorities='${applicationId}.androidx-startup'>
