@@ -249,6 +249,13 @@ A case asserts the property itself:
 the passed texts are exactly those the stated rule skips,
 or both verdicts occur and every reader agrees with the grammar.
 
+A damage case checked only that its text held the borrowed sentence,
+which a sentence set anywhere also satisfies (ledger B331).
+Three guards no input can tell from their absence stood with nothing at their site to say so:
+one had a record saying every case passes without it,
+and the case that named it deleted (ledger B178);
+the other two were found by a review of the trial's cases (ledger B335).
+
 The rule:
 a red guard is read case by case before the fix,
 and each case must fail for the reason its name gives;
@@ -309,6 +316,14 @@ When one side of a compared pair becomes derived from the other,
 every guard comparing them is re-read:
 one that can no longer fail goes,
 and its record names the case that still carries the invariant.
+A guard whose mutant no input can catch is an equivalent mutant:
+no case is written for it,
+and it stays or goes by what it does for the code
+(a narrowing the type check needs,
+a plain word for an edge);
+one that stays carries a comment at its site saying why no case can separate it,
+so a reader of a later mutation run finds the reason beside the survivor,
+not in a ledger entry.
 
 What enforces it:
 the mutation harness in each fix's record,
@@ -521,6 +536,10 @@ A claim drawn from a census names the `census.json` field or the report line tha
 A fix that gives a model context starts by rendering the sheet and searching it for that context.
 An inference is labelled as one,
 or traced in the code before it is written.
+A claim that no code does a thing is a search's result:
+the search runs before the claim is drafted,
+since a commit message drafted first said no production code compares an artifact's commit with the corpus pin,
+and the search then found the pin stamped into artifacts and compared in three files (ledger M138).
 A claim about what a writer writes is measured over that writer's stored output,
 with a control the measurement must flag;
 the package's fixtures are its own copies,
@@ -670,6 +689,9 @@ and a search for that shape found five more code pointers by sequence in the tes
 which D33's scan does not read.
 A trial fix's comment named its check as "the check below",
 and the position scan turned the suite red before the change landed (M111).
+Six case names and a comment cited "the fidelity cluster",
+"the group cluster" and the like,
+names a writer gave its own work that no ledger entry holds (ledger B333).
 
 The rule:
 a reference names something a later reader can open:
@@ -686,6 +708,10 @@ and never a position
 "the next check",
 "the check just made"),
 which a later insertion silently repoints.
+A group of work is cited by the name the ledger gives it
+(an entry,
+or a numbered batch of a section),
+never by a name a writer made for it.
 Open work goes in the ledger,
 not only on a task list.
 A GitHub issue is cited only after `gh issue view` shows it is the one meant,
@@ -869,6 +895,14 @@ which its task sets,
 and the test fixture,
 or an operator by hand where a pass forbids a rebuild (ledger B319).
 
+A review of the trial's cases found the real corpus pin written as fixture data in nine test files,
+where no code the cases reach checks it against the pin (ledger B332),
+and a case that made a file unreadable with mode `000`,
+which the superuser reads anyway,
+so the case failed whenever the suite ran as root (ledger B334).
+Eight log lines that print a provider's failure had no case reaching them
+through the real client over the real transport (ledger B330).
+
 The rule:
 before a test drives a production entry point,
 list what that entry point reads outside the process
@@ -902,6 +936,17 @@ An environment variable a case points at its directory is written by a function 
 after the directory stands,
 and its disposer is bound after the directory's,
 so the variable is restored first.
+A fixture writes invented data where any value would do:
+a commit id no code checks against the corpus pin is an invented one (`feedface` repeated),
+and the real pin stands only where a comment records where something was measured
+or a production example shows the package's own pin.
+A fault a case makes holds whoever runs the suite:
+a file a case must fail to read is one Node refuses by its size
+(a sparse file of 2 GiB),
+never one a mode forbids.
+A line that prints a provider's failure is reached by a case
+through the real client over the real transport with a stubbed `fetch`
+(`provider-status-failure.test-fixture.ts`).
 
 What enforces it:
 the type checker:
@@ -2059,6 +2104,12 @@ B300).
 A reply is masked as text before anything parses,
 cuts or logs it,
 by whichever code first holds it.
+The mask then searched only the spellings the request sent,
+so a key a provider echoed percent-encoded,
+as a form value,
+in base64,
+as JSON unicode escapes
+or as the decoded pair of a `Basic` header passed through (ledger B329).
 
 The rule:
 a marked class writes its sentence itself,
@@ -2080,6 +2131,9 @@ a filesystem code or a class name,
 since its message is all an operator sees;
 where one class serves several checks,
 each throw site hands it a reason of its own.
+A credential is masked in every spelling a decoder of the reply's formats recovers,
+not only as the request sent it;
+a spelling the mask leaves out of reach is named as out of reach in its record.
 
 What enforces it:
 `message-names-only.unit.test.ts` fails on a marked class whose constructor interpolates a part the inventory does not name,
@@ -2102,6 +2156,11 @@ No scan finds a reader of a reply that the credential mask never reads;
 each of the three closed so far was found by reading (ledger B293,
 B295,
 B300).
+`credential-mask.unit.test.ts` holds each spelling the mask reads,
+and the case of each surface that prints a reply holds the other spellings masked there (ledger B329);
+a spelling no decoder named in that entry recovers,
+or nested past three decoders,
+is out of reach by rule.
 `prompt-payload-store.unit.test.ts` asserts each of the store's refusals as `tallyErrorText` prints it;
 no scan finds a marked class whose throw sites share one sentence,
 so that too is read by hand.
@@ -3981,7 +4040,9 @@ an agent's front matter cases held nine literal byte order marks,
 its TSDoc examples two full-width commas where escapes were meant,
 and another agent's comments a hyphen for the JSON escape of one.
 By the lead's inference,
-a soft hyphen and byte order marks standing literally in older test files came the same way.
+a soft hyphen and byte order marks standing literally in older test files came the same way;
+a scan then found 31 such characters in 9 files,
+tests and two production sets among them (ledger B336).
 In the other direction,
 comments wrote a backtick with a backslash before it,
 as a template literal needs,
@@ -3989,7 +4050,12 @@ where a Markdown reader of the comment shows the backslash
 and a fenced example no longer opens or shows valid code:
 five lines in one agent's test,
 mended before its merge,
-and twelve in five older files (ledger M137).
+and twelve in five older files (ledger M137,
+B337).
+The lead's first draft of the scan for them kept a span of one backslash only,
+and found a span of two,
+the JSON escape of one backslash,
+which renders as written (ledger M138).
 
 The rule:
 an escape that must stay in a file is written through a shell edit,
@@ -4002,10 +4068,61 @@ before it is committed.
 A character a reader cannot see is written in source as its escape.
 A comment is written for the layer that reads it:
 a code span holding a backtick is delimited by a longer run of backticks,
+a code span may hold nothing but backslashes,
 and a fenced example holds the code as it is written,
 with no escape a template literal would need.
+A script that writes escapes into source checks the character at each place it edits
+and refuses a place holding another,
+and each site is read for whether it is a plain string,
+an untagged template or something that reads the escape otherwise
+(`String.raw`,
+a comment).
 
 What enforces it:
-habit and review at `3ce947dce`;
-no scan yet fails a literal invisible character or a comment's escaped backtick,
-and the older files that hold either are not yet mended at that commit.
+two source scans,
+which `source-scans` runs (`2339cf5a6`,
+every finding mended in `0b3996534`):
+`literal-unseen-characters.unit.test.ts` fails on a code point of the Unicode property `Default_Ignorable_Code_Point`
+or `White_Space`,
+or of the general category `Cc`,
+other than space,
+tab,
+line feed and carriage return,
+written as itself in any TypeScript file under `src`;
+`comment-escaped-backticks.unit.test.ts` fails on a comment the parser reports
+that writes a backtick with a backslash before it,
+unless the run of backslashes it ends has a backtick just before it.
+Neither reads the docs,
+a commit message or a file outside `src`;
+those are searched by hand before a commit.
+
+## What a failing check prints
+
+What happened:
+the first red run of two new scans printed `expected [ …(31) ] to deeply equal []` and `[ …(13) ]`,
+the count of their findings and none of the findings,
+and reading them took a second run of each file outside the runner (ledger B338).
+The assertion library under `@monochromatic-dev/module-test` is chai 6.3.0,
+which cuts any value longer than 40 characters to its length in a failure's message
+(`config.truncateThreshold`),
+and the test package neither sets that nor exports it (issue 610).
+The same display stood in ledger B70,
+quoting a failure of its guard,
+recorded and not acted on (ledger M138).
+
+The rule:
+a check that fails over a list of findings fails listing them,
+each on a line of its own,
+before any comparison the library would cut;
+a scan over the package fails through `expectNoFindings` (`scan-findings.test-fixture.ts`).
+A diagnostic seen to hide what it reports is fixed when it is first seen,
+or recorded as open with what it hides.
+
+What enforces it:
+habit and review;
+the two scans of ledger B336 and B337 fail through `expectNoFindings`.
+By the lead's census,
+31 of the 43 scans compare a whole list or record through the library,
+four of them as those two did before the fixture,
+so a failure of any of them can still print a count where what differs runs past 40 characters.
+Issue 610 holds the cause in the test package.

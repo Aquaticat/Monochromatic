@@ -27587,9 +27587,9 @@ Left open at this commit and closed since:
 the opening excerpt the stream drain logs (B293),
 the listings of the model catalogue and the roster card (B295),
 and the two Exa lookups (B300),
-each of which read a reply the transport's mask never covered.
-Still open:
-a key in URL-encoded or base64 form is not searched for.
+each of which read a reply the transport's mask never covered;
+and a key in URL-encoded or base64 form,
+which the mask did not search for (B329).
 
 Open to the owner's veto:
 the minimum of 12 units;
@@ -30391,6 +30391,455 @@ Recurrence:
 a case asserts an order exactly,
 never after a sort of its own.
 
+### B329: a credential a provider echoed in another spelling left the transport unmasked
+
+Red in `03ec6a4fc`,
+fixed in `9a32c49`.
+
+Found on 2026-10-06 (UTC) by a census of the forms a credential can take in a reply,
+the item B266 left open:
+a key in URL-encoded or base64 form was not searched for.
+`maskCredentials` searched the header value and the token after its scheme word as written,
+as a JSON string holds them and with the slash escaped.
+A provider,
+proxy or HTTP library that echoed the same key percent-encoded
+(whole or in its reserved characters only,
+in either hex case),
+as a form value,
+in base64 or base64url
+(alone,
+padded or not,
+or inside a longer run at each of the three alignments),
+as JSON unicode escapes
+(once or inside a JSON string that is itself inside one),
+percent-encoded inside a JSON string,
+or as the decoded pair of a `Basic` header or the decoded form of a percent-escaped header,
+handed it to every reader of the reply.
+Nothing measured did this;
+nothing proved none did.
+By the agent's account,
+nine cases of `credential-mask.unit.test.ts` failed by assertion on the old mask in its own worktree;
+at the red commit that file cannot load,
+since its cases read the needles through `needlesOf`,
+which the fix exports,
+so the gap shows there through the four surfaces that print a reply:
+the transport's failure reply (`synthetic-transport`),
+the masked JSON read of the two lookups (`masked-json-body`),
+the listing (`corpus-run/provider-listing`)
+and the cut stream's opening (`stream-drain`).
+The lint failed at the red commit,
+19 errors and 103 warnings,
+each a use of an export the fix adds.
+
+The fix:
+`maskCredentials` finds every spelling of every credential in one Aho-Corasick pass
+(`credential-search.ts`,
+in place of a Knuth-Morris-Pratt pass per spelling);
+reads the reply through JSON string escapes and percent escapes,
+chained up to three deep,
+each unit of a decoded reading mapped back to the stretch of the original it came from
+(`credential-views.ts`);
+and searches each credential as it stands,
+as JSON writes it,
+as a form value,
+as the bytes of its UTF-8,
+and in base64 and base64url at each of the three alignments a prefix of unknown length gives
+(`credential-needles.ts`).
+A base64 find takes with it the one character at each edge that holds bits of the key,
+and the run's padding after the character that ends it.
+`credentialsOfHeaders` adds what a decoder reads out of a header's secret:
+a base64 body that spells printable text and each side of its first colon,
+and the secret with its escapes resolved (`credential-decoded-forms.ts`).
+
+The lead's changes to the agent's patch:
+the widening counts only characters that hold bits,
+so an `=` is no longer one of them,
+and padding is taken only after a tail character the find took;
+`Needle.padded`,
+which marked every base64 needle and so had the mask take the `=` after a key ending on a whole group of three bytes,
+is gone,
+and two of the lead's cases hold both edges;
+`FIXED_IN_TAIL`,
+a table mapping zero,
+one and two to themselves read with a `?? 0`,
+is the arithmetic it stood for;
+reads that cannot miss
+(a view's typed-array offsets,
+a find's needle,
+a reach mapped back to the original)
+throw on a miss,
+where a zero would have placed a marker at the text's start and left the credential where it stands;
+and three comment lines of `credential-views.ts` that held a hyphen where they mean its JSON escape
+hold the escape (M135).
+
+By the agent's account,
+not rerun by the lead:
+the cost per reply is one search pass
+plus one decode pass per decoder chain that finds an escape decoding to a unit some needle holds;
+under load,
+plain replies within 1.1 times the old mask,
+ordinary JSON replies within 1.4 times,
+and the worst shape measured,
+escaped backslashes in every frame,
+12 to 20 times at 256 KB to 4 MB,
+about 20 ms at 256 KB.
+Out of reach by rule:
+a key split by a line fold or a soft hyphen,
+a spelling no decoder named here recovers
+(hex,
+HTML entities,
+`\xHH`,
+`\u{...}`,
+a cipher,
+a hash,
+a case-folded key,
+base64 of bytes that are no UTF-8 of the key),
+and nesting past three decoders.
+The whole suite on `9a32c49`,
+run in a side checkout:
+2,017 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and 44 source scans passing.
+
+Open:
+by the agent's inference,
+not measured,
+`stream-drain.ts` logs `response.url` near lines 55 and 376,
+which after a redirect is an address the provider chose,
+unmasked;
+and the `blind-map-writes` scan reads a typed array's `set` as a Map write,
+so the patch wrote loops where `set` was the natural code.
+
+Open to the owner's veto,
+the agent's:
+every credential header's secret is decoded,
+not only a `Basic` one;
+Aho-Corasick in place of the pass per spelling;
+three decoders deep;
+base64 needles for the whole header value as well as the token;
+the plus form of every spelling;
+the head minimum of four units for a cut text applies to the base64 spellings too;
+the four helpers exported for built-artifact tests.
+The lead's:
+padding taken only after a tail character.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B330: eight log lines that print a provider's failure had no case through their own line
+
+Red in `03ec6a4fc`,
+fixed in `9a32c49`.
+
+Found on 2026-10-06 (UTC) by the census of B329.
+The lines of `image-reading-pair.ts`,
+`corpus-run/required-providers.ts`,
+`corpus-run/model-health-report.ts`,
+`corpus-run/coverage-probe-run.ts`,
+`corpus-run/window-trial-pick.ts`
+and the abort warnings of `translate-slice-attempt.ts`,
+`repair-refine-step.ts` and `repair-slice-buy.ts`
+had no case reaching them with a status failure the real client raised over the real transport.
+By the agent's reading,
+no line was wrong:
+each names the status,
+the provider or model and the provider's own words,
+and through the masked transport holds no credential.
+The abort warnings are reached only where the abort fires while the provider refuses,
+since `attemptStageCall` rethrows an error under an aborted signal unchanged.
+
+The fix:
+`provider-status-failure.test-fixture.ts` builds the failure
+through the real `createSyntheticClient` over the real `fetchTransport`,
+against a stubbed `fetch` whose invented provider echoes the key three ways,
+and one case per line holds the whole line;
+their red is the mask's gap of B329 showing through them.
+`buyRepairSlice` is exported through `repair-chunk-barrel.ts` for its first unit test file,
+and the own-unit-tests allow-list lost its line for `repair-slice-buy.ts`.
+The suites that stub `fetch` for the process run one case at a time.
+The lead's change:
+the fixture's count of base64 characters its prefix fills alone (5) is derived from the prefix and named group sizes,
+where the agent's file wrote the number.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B331: a damage case checked only that its text held the borrowed sentence
+
+Fixed in `e1c84094e`.
+
+Found by a cross-check of the four review reports on the trial's test cases against the branch,
+one of six findings the cross-check left open.
+The case that skips an empty donor sentence and borrows the first usable one
+(`fidelity-damage.unit.test.ts`)
+asserted that the damaged text contains the borrowed sentence,
+which a sentence set anywhere,
+or a wrong count or detail line,
+also satisfies.
+
+The fix:
+the case asserts the whole attempt:
+its kind,
+the damaged text with the sentence set after the clean text's second sentence,
+the changed count and the detail line,
+each count derived from the borrowed sentence's length.
+The lead measured that value from the built library before writing it
+(by the lead's notes,
+89 changed characters,
+the borrowed sentence's length).
+The whole suite on `e1c84094e`,
+run in a side checkout:
+2,017 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and 44 source scans passing.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail":
+a case over a pass that rewrites text asserts the whole text it returns.
+
+### B332: the real corpus pin stood as fixture data in nine test files
+
+Fixed in `e1c84094e`.
+
+Found by the same cross-check,
+which named one file (`corpus-run/editor-standing-read.unit.test.ts`);
+the lead's search found nine,
+writing the pin in full or cut to seven or nine characters,
+five of them in the seven-character form.
+Each case records,
+prints,
+parses or abbreviates the id,
+and none reaches code that checks it against the pin,
+so the real commit stood where any object id does.
+The owner's ruling of 2026-10-05 (UTC) that the corpus is public covers corpus text,
+and by the lead's reading of it unit fixtures stay invented.
+
+The fix:
+each of the nine writes an invented id (`feedface` repeated,
+or cut as the case cuts it),
+and every one passes with it.
+Comments that cite the pin as where a count was measured keep it,
+since that is what they record,
+and so do the production examples that show the package's own pin.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B333: case names and a comment cited clusters the ledger never names
+
+Fixed in `e1c84094e`.
+
+Found by the same cross-check.
+Six case names in `fidelity-damage.unit.test.ts`,
+`openrouter-cost.unit.test.ts` and `translate-skeleton.unit.test.ts`
+ended citing "the fidelity cluster" of ledger T8 and the like,
+and a comment of `group-run-anchor.ts`,
+which the cross-check did not name,
+cited "the group cluster";
+no ledger entry names those clusters,
+so no reader could open what they cited.
+
+The fix:
+the names say what they test and nothing more,
+and the comment cites the ledger's T8 section alone.
+The numbered-batch citations elsewhere stay,
+since the ledger names each batch:
+by the lead's count,
+the sixth 9 times,
+the ninth 7,
+the twelfth 5,
+the eighteenth 7 and the twenty-third 5.
+
+Recurrence:
+`mistake-prevention.md`,
+"References in code and docs".
+
+### B334: a read fault a case made with a file mode held for every user but the superuser
+
+Fixed in `e1c84094e`.
+
+Found by the same cross-check.
+The slice cache's resume case (`corpus-run/slice-cache-namespace-resume.unit.test.ts`)
+made a file unreadable with mode `000`,
+which a superuser reads anyway,
+so the case failed whenever the suite ran as root.
+
+The fix:
+the file is made one byte past the largest Node's `readFile` reads,
+2 GiB,
+held sparse so it takes no disk;
+Node refuses it from its size before reading,
+whoever runs the suite,
+and the case asserts that refusal's whole text,
+`RangeError [ERR_FS_FILE_TOO_LARGE]: File size (2147483648) is greater than 2 GiB`
+with the size written from the case's own constant.
+The lead measured the refusal's text on Node 26.10.0 with a sparse file of that size.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B335: three guards no case can tell from their absence
+
+Changed in `e1c84094e`.
+
+Found by the same cross-check:
+`list-spread-restore.ts`,
+`fidelity-damage.ts` and `rendering-audit-corroborate.ts` each hold a guard
+a case reaches and passes without.
+Each is an equivalent mutant,
+so no case can be written:
+lists pair only at the same item count,
+so a gapless list is gapless on both sides of its pair and reads alike either way;
+every text includes the empty string,
+so the refusal of an empty sentence holds without its line;
+and comparing missing bounds is false,
+so an unused side intersects nothing without its line,
+which the type check needs to reach the bounds at all.
+The lead measured the last two in Node.
+
+The fix:
+each guard stays,
+with a comment at its site saying why no case can separate it.
+B178 had recorded that every case of its file passes with the third guard cut out
+and deleted the case that named it,
+leaving the guard with no word on why it stays.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B336: characters a reader cannot see stood literally in the source
+
+Red in `2339cf5a6`,
+fixed in `0b3996534`.
+
+Found on 2026-10-06 (UTC):
+M135 had inferred,
+without measuring,
+that the decoding which wrote agents' literal characters wrote older ones too.
+`literal-unseen-characters.unit.test.ts` reads every TypeScript file under `src` code point by code point
+and finds each character with the Unicode property `Default_Ignorable_Code_Point` or `White_Space`,
+or of the general category `Cc`,
+other than space,
+tab,
+line feed and carriage return,
+written as itself rather than as its escape.
+Its fixture makes every such character with `String.fromCodePoint`,
+so the scan's own file holds none.
+On the red tree it found 31 in 9 files:
+byte order marks in the `duplicate-bodies` and `nesting-bound` tests;
+ideographic spaces in the `parse-document`,
+`image-reading-stage-padding` and `trailing-whitespace` tests
+and in a set of `translate-address-original.ts`;
+no-break and narrow no-break spaces in the `translator-answer-fold` and `corpus-run/emphasis-spans` tests
+and in a set of `quote-normalize.ts`;
+and a soft hyphen in the `translator-answer-fold` test.
+In a test such a character is fixture data no reader of the file can see,
+and in production code a member of a set no reader can see.
+
+The fix:
+each of the 31 is its `\u` escape,
+written at the line and column the scan named by a script that refused any place holding another character.
+Every site is a plain string or an untagged template,
+the `parse-document` fixture's included,
+so each value is the character it was.
+The whole suite on `0b3996534`,
+run in a side checkout:
+2,019 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and 46 source scans passing.
+
+Recurrence:
+`mistake-prevention.md`,
+"Escapes and the layer that reads them".
+
+### B337: comments wrote backticks with a backslash before them
+
+Red in `2339cf5a6`,
+fixed in `0b3996534`.
+
+Found on 2026-10-06 (UTC):
+the twelve lines in five older files M137 recorded.
+A comment is Markdown to every reader that renders it,
+and Markdown keeps a backslash before a backtick inside a code span or a fenced block,
+so a fence written with escaped backticks never opens
+and a template literal escaped inside an example shows code that does not compile.
+`comment-escaped-backticks.unit.test.ts` reads every comment the parser reports
+and finds a backtick with a backslash before it,
+unless the run of backslashes it ends has a backtick just before it,
+which is a code span holding nothing but backslashes.
+On the red tree it found 12 lines in 5 files:
+the `artifact-probe-read` test 7,
+`house-policy.ts` 2,
+`refine-prompt.ts` 1,
+the `local-program-failure` test 1
+and the `text-accumulators` test 1.
+The lead's first draft kept a span of one backslash only,
+and so found the span of two in a comment of `credential-views.ts`,
+the JSON escape of one backslash,
+which renders as written (M138).
+
+The fix:
+the 12 lines write their backticks bare:
+the test's two example fences open and close,
+the TSDoc examples of `house-policy.ts` and `refine-prompt.ts` show code that compiles
+(the refine prompt's example had escaped its substitution too),
+and the `text-accumulators` test's span,
+whose code holds backticks of its own,
+is delimited by two backticks.
+
+Recurrence:
+`mistake-prevention.md`,
+"Escapes and the layer that reads them".
+
+### B338: a failing scan over the package printed how many findings it had and not what they were
+
+Changed in `2339cf5a6`;
+issue 610.
+
+Found on 2026-10-06 (UTC):
+the first red run of the scans of B336 and B337 printed only
+`expected [ …(31) ] to deeply equal []` and `[ …(13) ]`,
+and reading the findings took a second run of each file outside the runner.
+By the lead's inference,
+the 13 are the 12 lines of B337 and the span its scan's first draft flagged.
+`@monochromatic-dev/module-test` builds `expect` on chai 6.3.0,
+whose `config.truncateThreshold` defaults to 40
+(`node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:860`)
+and is handed to loupe as the length a value is cut to (`index.js:928`);
+the test package neither sets it nor exports chai's `config`,
+so this package cannot change it.
+The same display stands in B70,
+quoting a failure of that entry's guard
+(`expected [ …(9) ] to deeply equal [ …(8) ]`),
+recorded and not acted on (M138).
+
+The change:
+`scan-findings.test-fixture.ts` (`expectNoFindings`) fails with every finding on a line of its own
+before the comparison runs,
+and the two scans fail through it.
+Issue 610 records the cause in the test package.
+
+Open:
+by the lead's census,
+31 of the 43 scans compare a whole list or record,
+so each can fail with a count where what differs runs past 40 characters;
+four of them
+(`dead-test-declarations`,
+`silent-test-cases`,
+`temp-dirs-scratch` and `trailing-whitespace`)
+assert as the two new scans did,
+and the red commit says they move onto the fixture in a later commit.
+
+Recurrence:
+`mistake-prevention.md`,
+"What a failing check prints".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -32098,6 +32547,9 @@ the ninth and tenth after this entry was written,
 both reads of a log between two steps of a merge:
 `rg --count … ; rg …` over a red commit's logs,
 and `rg … | rg … ; rg --count …` over a named run on a fix tree.
+An eleventh came the same day in the docs fork of batch six:
+two `git diff --no-index` calls chained with `;`
+while it wrote the diffs of its edited copies for the lead.
 `mistake-prevention.md`,
 "Shell commands".
 
@@ -32729,6 +33181,60 @@ before the merge.
 "Guards that cannot fail",
 "Defaults that stand in for an input",
 "Claims without their evidence" and "Escapes and the layer that reads them".
+
+### M138: the lead's own slips in the work of B329 to B338
+
+Status:
+happened 2026-10-06 (UTC);
+each was caught before the commit it would have reached,
+except the last,
+which stood in B70 through several batches.
+
+- A claim drafted before its search:
+  the first draft of the message of `e1c84094e` said
+  no production code compares an artifact's commit with the corpus pin.
+  A search then showed the run's pin stamped into artifacts
+  (`corpus-run/pass-entry-artifact.ts`,
+  `corpus-run/pass-decline.ts`)
+  and compared
+  (`fidelity-reference-read.ts`,
+  `fidelity-reference-request.ts`,
+  `sheet-binding.ts`);
+  the message says what the passing tests show instead (B332).
+- A scan rule narrower than the form it allows:
+  the backtick scan's first draft kept a code span of one backslash only,
+  and so found a span of two in a comment of `credential-views.ts`,
+  which renders as written;
+  the finding was read against the comment before the red commit (B337).
+- A case name promising a form its fixture did not plant:
+  the same scan's fixture case named a template literal escaped in an example,
+  and its fixture held none;
+  the line was planted before the red commit.
+- The red step's first lint found warnings in the lead's new files:
+  hex code points written ungrouped where the package writes them grouped by two (`0x20_0B`),
+  a condition mixing operators without parentheses,
+  a placeholder written in a plain string and a chain on one line;
+  each was restructured before the commit.
+- A search of the scratch folder ran into the agents' worktrees under it and timed out;
+  it was stopped by its own id and run again at a depth of one.
+- A display recorded and not acted on:
+  B70 quotes a failure of its guard as `expected [ …(9) ] to deeply equal [ …(8) ]`,
+  a list cut to its length,
+  and nothing followed,
+  so the first red run of B336 and B337 again printed counts alone (B338).
+
+Prevention:
+a claim about what code does or does not do is searched before it is written;
+a scan's allowed form is read against a real instance of it before the scan is committed,
+and a case's name against what its fixture plants;
+new code follows the package's spelling of what it writes,
+which the lint states;
+a search's scope is read before it runs;
+and a diagnostic that hid what it reports is fixed when it is first seen,
+or recorded as open with what it hides.
+`mistake-prevention.md`,
+"Claims without their evidence",
+"Guards that cannot fail" and "What a failing check prints".
 
 ### M79: a coverage census measuring compressed code
 
