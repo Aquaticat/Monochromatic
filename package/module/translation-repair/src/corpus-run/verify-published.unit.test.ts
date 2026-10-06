@@ -11,7 +11,6 @@
  @module
  */
 
-import { spawnSync, } from 'node:child_process';
 import {
   mkdir,
   readFile,
@@ -27,6 +26,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runKeyless, } from '../child-environment.test-fixture.ts';
 import {
   prepareDocumentPair,
   republishSettledPages,
@@ -146,43 +146,44 @@ async function publishedRun(): Promise<{
 }
 
 /**
+ Exit code the shared fixture reports for a child a signal ended.
+ */
+const SIGNALLED = -1;
+
+/**
  Runs the verifier over one runs directory.
 
  @param runsDir - directory to verify
 
  @returns Its exit code and what it printed
 
- @throws {@link Error} when a signal ended it, which leaves no exit code to read
+ @throws {@link Error} when a signal ended it, which leaves no exit code to read, or it never started
 
  @example
  ```ts
- const { status, stdout, } = verify({ runsDir, },);
+ const { status, stdout, } = await verify({ runsDir, },);
  ```
  */
-function verify(
+async function verify(
   { runsDir, }: { readonly runsDir: string; },
-): {
+): Promise<{
   readonly status: number;
   readonly stdout: string;
-} {
+}> {
   /**
    The finished process.
    */
-  const done = spawnSync(
-    process.execPath,
-    [VERIFIER,],
-    {
-      encoding: 'utf8',
-      env: {
-        ...process.env,
-        TRANSLATION_REPAIR_RUNS_DIR: runsDir,
-      },
+  const done = await runKeyless({
+    file: process.execPath,
+    args: [VERIFIER,],
+    extra: {
+      TRANSLATION_REPAIR_RUNS_DIR: runsDir,
     },
-  );
-  if (done.status === null)
-    throw new Error(`verify-published ended on signal ${String(done.signal,)}`,);
+  },);
+  if (done.code === SIGNALLED)
+    throw new Error('verify-published ended on a signal',);
   return {
-    status: done.status,
+    status: done.code,
     stdout: done.stdout,
   };
 }
@@ -199,7 +200,7 @@ await describe({
         /**
          What the verifier did.
          */
-        const { status, stdout, } = verify({ runsDir, },);
+        const { status, stdout, } = await verify({ runsDir, },);
         expect(stdout.includes('1 of 1 page carries every wording its artifact promised',),).toBe(true,);
         expect(status,).toBe(0,);
       },
@@ -226,7 +227,7 @@ await describe({
         /**
          What the verifier did.
          */
-        const { status, stdout, } = verify({ runsDir, },);
+        const { status, stdout, } = await verify({ runsDir, },);
         expect(stdout.includes('0 of 1 page carry every wording their artifacts promised',),).toBe(true,);
         expect(status,).toBe(0,);
       },
@@ -244,7 +245,7 @@ await describe({
         /**
          What the verifier did.
          */
-        const { status, stdout, } = verify({ runsDir, },);
+        const { status, stdout, } = await verify({ runsDir, },);
         expect(stdout.includes(`SETTLED AND NEVER PUBLISHED: ${ENTRY}`,),).toBe(true,);
         expect(stdout.includes('writes it from its artifact',),).toBe(true,);
         expect(status,).toBe(0,);
@@ -259,7 +260,7 @@ await describe({
         await using scratch = await scratchDir({ prefix: 'verify-published-empty-', },);
         const runsDir = scratch.path;
 
-        expect(verify({ runsDir, },).status,).toBe(2,);
+        expect((await verify({ runsDir, },)).status,).toBe(2,);
       },
     },),
   ],

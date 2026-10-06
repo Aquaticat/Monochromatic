@@ -35,8 +35,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
 
+import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import {
   type ChunkPair,
   type CorpusPin,
@@ -145,19 +145,17 @@ async function makeThrowawayCorpus(
   return await scratchDirWith({
     prefix: 'entry-pictures-corpus-',
     setup: async function seeded({ path: cloneDir, },): Promise<{ readonly pin: CorpusPin; }> {
-      await spawn(
-        REAL_GIT,
-        [
+      await spawnKeyless({
+        file: REAL_GIT,
+        args: [
           'init',
           cloneDir,
         ],
-        {
-          env: {
-            GIT_CONFIG_GLOBAL: devNull,
-            GIT_CONFIG_SYSTEM: devNull,
-          },
+        extra: {
+          GIT_CONFIG_GLOBAL: devNull,
+          GIT_CONFIG_SYSTEM: devNull,
         },
-      );
+      },);
 
       await Promise.all(pictures.map(async function writePicture(picture,): Promise<void> {
         /**

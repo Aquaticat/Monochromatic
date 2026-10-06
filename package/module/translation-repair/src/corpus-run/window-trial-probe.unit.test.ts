@@ -10,32 +10,19 @@
  @module
  */
 
-import { spawn, } from 'node:child_process';
-import { once, } from 'node:events';
-import { join, } from 'node:path';
-
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
  */
 const REFUSED_AS_STATED = 6;
-
-/**
- Exit reported when the child ended on a signal and so has no code.
- */
-const SIGNALLED = -1;
-
-/**
- Built command under test.
- */
-const COMMAND = join(import.meta.dirname, '../../dist/final/node/window-trial-probe.mjs',);
 
 /**
  What the built command wrote and how it exited.
@@ -70,64 +57,22 @@ type CommandRun = {
  */
 async function runWithoutKeys(): Promise<CommandRun> {
   /**
-   Runner environment with every provider key removed, so the child can
-   neither refuse for the wrong reason nor spend.
-   */
-  const env = Object.fromEntries(
-    Object
-      .entries(process.env,)
-      .filter(function keepsNoKey([name,],): boolean {
-        return !name.endsWith('_API_KEY',);
-      },),
-  );
-
-  /**
    Throwaway runs directory the child points at, removed once this function's
-   `await using` scope ends (after the child's streams close, below).
+   `await using` scope ends (after the child's streams close).
    */
   await using scratch = await scratchDir({ prefix: 'window-trial-probe-', },);
 
   /**
-   Child running the command against a throwaway runs directory.
+   The command as it ended; the shared fixture removes every provider key
+   from the child's environment, so the child can neither refuse for the
+   wrong reason nor spend.
    */
-  const child = spawn(
-    process.execPath,
-    [COMMAND,],
-    {
-      cwd: join(import.meta.dirname, '../..',),
-      env: {
-        ...env,
-        TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
-      },
-      stdio: [
-        'ignore',
-        'ignore',
-        'pipe',
-      ],
-    },
-  );
-
-  /**
-   Stderr as it arrives.
-   */
-  const written: string[] = [];
-
-  /**
-   Child's stderr, the only stream piped.
-   */
-  const { stderr, } = child;
-  stderr.setEncoding('utf8',);
-  stderr.on('data', function keep(chunk: string,): void {
-    written.push(chunk,);
+  const run = await runBuiltCommand({
+    command: 'window-trial-probe',
+    env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
   },);
 
-  // Wait for the streams to close, then read the exit off the child itself.
-  await once(child, 'close',);
-
-  return {
-    code: child.exitCode ?? SIGNALLED,
-    stderr: written.join('',),
-  };
+  return run;
 }
 
 await describe({

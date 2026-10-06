@@ -21,7 +21,6 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
 import {
   CorpusReadError,
   isMissingCorpusObject,
@@ -29,6 +28,7 @@ import {
   readCorpusBytes,
   readCorpusFile,
 } from '../dist/final/node/index.mjs';
+import { spawnKeyless, } from './child-environment.test-fixture.ts';
 import { fixtureGit, REAL_GIT, } from './hermetic-git-run.test-fixture.ts';
 import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { scratchDirWith, } from './scratch-dir.test-fixture.ts';
@@ -68,19 +68,17 @@ async function makeThrowawayClone(): Promise<
       readonly cloneDir: string;
       readonly commitSha: string;
     }> {
-      await spawn(
-        REAL_GIT,
-        [
+      await spawnKeyless({
+        file: REAL_GIT,
+        args: [
           'init',
           cloneDir,
         ],
-        {
-          env: {
-            GIT_CONFIG_GLOBAL: devNull,
-            GIT_CONFIG_SYSTEM: devNull,
-          },
+        extra: {
+          GIT_CONFIG_GLOBAL: devNull,
+          GIT_CONFIG_SYSTEM: devNull,
         },
-      );
+      },);
       await mkdir(
         join(
           cloneDir,
@@ -370,14 +368,14 @@ await describe({
         /**
          What the child printed.
          */
-        const { stdout, } = await spawn(
-          process.execPath,
-          [
+        const { stdout, } = await spawnKeyless({
+          file: process.execPath,
+          args: [
             '--input-type=module',
             '--eval',
             program,
           ],
-        );
+        },);
         expect(JSON.parse(stdout,),).toEqual({
           isCorpusReadError: false,
           name: 'Error',

@@ -17,7 +17,6 @@
  @module
  */
 
-import { spawnSync, } from 'node:child_process';
 import {
   mkdir,
   symlink,
@@ -31,40 +30,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runKeyless, } from '../child-environment.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '../roster-seats.test-fixture.ts';
-
-/**
- Points the runs directory variable at a path until the handle's scope ends.
-
- The directory itself is the caller's own scratch, bound first so it is
- removed after the variable is restored.
-
- @param path - directory the variable names meanwhile
-
- @returns Disposable handle restoring the variable as it stood
-
- @example
- ```ts
- using pointed = runsDirPointedAt({ path: fixture.archive, },);
- ```
- */
-function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
-  /**
-   Runs directory standing before this case ran.
-   */
-  const before = process.env
-    .TRANSLATION_REPAIR_RUNS_DIR;
-  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
-  return {
-    [Symbol.dispose]: function restore(): void {
-      if (before === undefined)
-        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
-      else
-        process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
-    },
-  };
-}
 
 //region Editor standing read listing tests
 
@@ -165,8 +133,8 @@ async function throwawayArchive(
  Runs the command over one archive.
 
  A NON-ZERO EXIT IS THE COMMAND'S OWN VERDICT HERE: it exits 1 when nothing it
- read recorded a judged round, which this fixture never does. `spawnSync`
- reports that status rather than throwing on it.
+ read recorded a judged round, which this fixture never does. The shared fixture
+ reports that exit code rather than rejecting on it.
 
  @param archive - archive the command reads
 
@@ -177,28 +145,23 @@ async function throwawayArchive(
 
  @example
  ```ts
- const { stdout, } = standingOver({ archive: fixture.archive, },);
+ const { stdout, } = await standingOver({ archive: fixture.archive, },);
  ```
  */
-function standingOver(
+async function standingOver(
   { archive, }: { readonly archive: string; },
-): StandingStreams {
+): Promise<StandingStreams> {
   /**
    Command as it finished, or why it never started.
    */
-  const finished = spawnSync(
-    process.execPath,
-    [
+  const finished = await runKeyless({
+    file: process.execPath,
+    args: [
       STANDING_ENTRY,
       archive,
     ],
-    { encoding: 'utf8', },
-  );
+  },);
 
-  if (finished.error !== undefined)
-    throw new Error(
-      `the command never started, so nothing here was exercised (${finished.error.name})`,
-    );
 
   return {
     stdout: finished.stdout,
@@ -233,23 +196,20 @@ async function standingOverArtifact(
         JSON.stringify(artifact,),
         'utf8',
       );
-      return standingOver({ archive: path, });
+      return await standingOver({ archive: path, },);
     },
   },);
 }
 
 await describe({
   name: STANDING_COMMAND,
-  // ONE AT A TIME: a case points the process-wide runs directory variable
-  // at its fixture (ledger B79).
-  concurrency: 1,
   children: [
     it({
       name: 'COUNTS only the regular file in an archive\'s artifacts directory, skipping a directory and a '
         + 'symlink named like an artifact (ledger B64)',
       fn: async () => {
         await using fixture = await throwawayArchive({ nested: true, },);
-        const { stdout, stderr, } = standingOver({ archive: fixture.archive, },);
+        const { stdout, stderr, } = await standingOver({ archive: fixture.archive, },);
         expect(stdout.includes('archives=1 artifacts=1 ',),).toBe(true,);
         expect(stderr.includes('Tabby.json',),).toBe(false,);
       },
@@ -259,7 +219,7 @@ await describe({
       name: 'COUNTS only the regular file in an archive that is itself the artifacts directory (ledger B64)',
       fn: async () => {
         await using fixture = await throwawayArchive({ nested: false, },);
-        const { stdout, stderr, } = standingOver({ archive: fixture.archive, },);
+        const { stdout, stderr, } = await standingOver({ archive: fixture.archive, },);
         expect(stdout.includes('archives=1 artifacts=1 ',),).toBe(true,);
         expect(stderr.includes('Tabby.json',),).toBe(false,);
       },
@@ -275,7 +235,7 @@ await describe({
             return { archive: join(path, 'never-written',), };
           },
         },);
-        const { stderr, } = standingOver({ archive: fixture.archive, },);
+        const { stderr, } = await standingOver({ archive: fixture.archive, },);
         expect(stderr.includes('no artifacts under',),).toBe(true,);
       },
     },),
@@ -482,12 +442,11 @@ await describe({
             return { archive: path, };
           },
         },);
-        using pointed = runsDirPointedAt({ path: fixture.archive, },);
-        const finished = spawnSync(
-          process.execPath,
-          [STANDING_ENTRY,],
-          { encoding: 'utf8', },
-        );
+        const finished = await runKeyless({
+          file: process.execPath,
+          args: [STANDING_ENTRY,],
+          extra: { TRANSLATION_REPAIR_RUNS_DIR: fixture.archive, },
+        },);
         // The summary names one artifact and the refusal names the fixture's own file, which a
         // read of the default runs directory could not.
         expect(finished.stdout.split('\n',).at(0,),).toBe(

@@ -12,41 +12,13 @@
  @module
  */
 
-import { spawn, } from 'node:child_process';
-import { once, } from 'node:events';
 import { join, } from 'node:path';
 
 import { digestPipeline, } from '../../dist/final/node/index.mjs';
-
-/**
- Exit reported when the child ended on a signal and so has no code.
- */
-const SIGNALLED = -1;
-
-/**
- What a built command wrote and how it exited.
-
- @example
- ```ts
- const run: BuiltRun = { code: 0, stdout: 'SOURCE /runs/artifacts\n', stderr: '', };
- ```
- */
-type BuiltRun = {
-  /**
-   Exit code, or -1 when the process was signalled.
-   */
-  readonly code: number;
-
-  /**
-   Everything written to stdout.
-   */
-  readonly stdout: string;
-
-  /**
-   Everything written to stderr.
-   */
-  readonly stderr: string;
-};
+import {
+  type ChildRun,
+  runKeyless,
+} from '../child-environment.test-fixture.ts';
 
 /**
  Path of a built command.
@@ -92,27 +64,6 @@ export async function builtPipelineDigest(): Promise<string> {
 }
 
 /**
- Runner environment without any key or any setting of the package, so the
- child can neither refuse for the wrong reason nor spend.
-
- @returns Environment entries the child may inherit
-
- @example
- ```ts
- const inherited = environmentWithoutKeys();
- ```
- */
-function environmentWithoutKeys(): NodeJS.ProcessEnv {
-  return Object.fromEntries(
-    Object
-      .entries(process.env,)
-      .filter(function keepsNoKey([name,],): boolean {
-        return !(name.endsWith('_API_KEY',) || name.startsWith('TRANSLATION_REPAIR_',));
-      },),
-  );
-}
-
-/**
  Runs a built score command against a runs directory the case wrote.
 
  @param command - built entry file, from `builtCommand`
@@ -142,75 +93,20 @@ export async function runBuiltScore(
     readonly runsDir: string;
     readonly setting: Readonly<Record<string, string>>;
   },
-): Promise<BuiltRun> {
-  /**
-   Child running the command.
-   */
-  const child = spawn(
-    process.execPath,
-    [
+): Promise<ChildRun> {
+  return await runKeyless({
+    file: process.execPath,
+    args: [
       command,
       ...args,
     ],
-    {
-      cwd: join(
-        import.meta.dirname,
-        '../..',
-      ),
-      env: {
-        ...environmentWithoutKeys(),
-        ...setting,
-        TRANSLATION_REPAIR_RUNS_DIR: runsDir,
-      },
-      stdio: [
-        'ignore',
-        'pipe',
-        'pipe',
-      ],
+    cwd: join(
+      import.meta.dirname,
+      '../..',
+    ),
+    extra: {
+      ...setting,
+      TRANSLATION_REPAIR_RUNS_DIR: runsDir,
     },
-  );
-
-  /**
-   Stdout as it arrives.
-   */
-  const out: string[] = [];
-
-  /**
-   Stderr as it arrives.
-   */
-  const err: string[] = [];
-
-  /**
-   Child's two piped streams.
-   */
-  const {
-    stdout,
-    stderr,
-  } = child;
-  stdout.setEncoding('utf8',);
-  stderr.setEncoding('utf8',);
-  stdout.on(
-    'data',
-    function keepOut(chunk: string,): void {
-      out.push(chunk,);
-    },
-  );
-  stderr.on(
-    'data',
-    function keepErr(chunk: string,): void {
-      err.push(chunk,);
-    },
-  );
-
-  // Wait for the streams to close, then read the exit off the child itself.
-  await once(
-    child,
-    'close',
-  );
-
-  return {
-    code: child.exitCode ?? SIGNALLED,
-    stdout: out.join('',),
-    stderr: err.join('',),
-  };
+  },);
 }

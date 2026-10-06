@@ -12,7 +12,6 @@
  @module
  */
 
-import { spawnSync, } from 'node:child_process';
 import {
   chmod,
   mkdir,
@@ -30,6 +29,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runKeyless, } from '../child-environment.test-fixture.ts';
 import {
   evictStaleLock,
   hostIdentity,
@@ -346,14 +346,11 @@ console.log('LOST_TAKEOVER ' + JSON.stringify({
   /**
    The child's run.
    */
-  const done = spawnSync(
-    process.execPath,
-    ['--input-type=module', '--eval', program,],
-    {
-      cwd: scratch.path,
-      encoding: 'utf8',
-    },
-  );
+  const done = await runKeyless({
+    file: process.execPath,
+    args: ['--input-type=module', '--eval', program,],
+    cwd: scratch.path,
+  },);
   /**
    Marker the child's one report line starts with.
    */
@@ -367,7 +364,7 @@ console.log('LOST_TAKEOVER ' + JSON.stringify({
       return text.startsWith(marker,);
     },);
   if (line === undefined)
-    throw new Error(`the child printed no report (status ${String(done.status,)}): ${done.stderr}`,);
+    throw new Error(`the child printed no report (status ${String(done.code,)}): ${done.stderr}`,);
   /**
    What the child reported, as parsed.
    */
@@ -867,14 +864,11 @@ console.log('LOCK_INTERLEAVE ' + JSON.stringify({ interleaved: state.interleaved
             /**
              The child's run.
              */
-            const done = spawnSync(
-              process.execPath,
-              ['--input-type=module', '--eval', program,],
-              {
-                cwd: scratch.path,
-                encoding: 'utf8',
-              },
-            );
+            const done = await runKeyless({
+              file: process.execPath,
+              args: ['--input-type=module', '--eval', program,],
+              cwd: scratch.path,
+            },);
             /**
              Marker the child's one report line starts with.
              */
@@ -888,7 +882,7 @@ console.log('LOCK_INTERLEAVE ' + JSON.stringify({ interleaved: state.interleaved
                 return text.startsWith(marker,);
               },);
             if (line === undefined)
-              throw new Error(`the child printed no report (status ${String(done.status,)}): ${done.stderr}`,);
+              throw new Error(`the child printed no report (status ${String(done.code,)}): ${done.stderr}`,);
             /**
              What the child reported, as parsed.
              */

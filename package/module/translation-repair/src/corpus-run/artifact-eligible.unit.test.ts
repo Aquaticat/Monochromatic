@@ -24,7 +24,6 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import spawn from 'nano-spawn';
 
 import {
   DEFAULT_CONCURRENCY,
@@ -33,6 +32,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import {
   censusByGeneration,
   EmptyPoolError,
@@ -79,31 +79,31 @@ async function gitBounds(): Promise<readonly [string, string,]> {
   /**
    First commit of this history, which contains nothing but itself.
    */
-  const root = (await spawn(
-    '/usr/bin/git',
-    [
+  const root = (await spawnKeyless({
+    file: '/usr/bin/git',
+    args: [
       '-C',
       import.meta.dirname,
       'rev-list',
       '--max-parents=0',
       'HEAD',
     ],
-  )).stdout
+  },)).stdout
     .trim()
     .split('\n',)[0] ?? '';
 
   /**
    Current commit, which contains the root.
    */
-  const head = (await spawn(
-    '/usr/bin/git',
-    [
+  const head = (await spawnKeyless({
+    file: '/usr/bin/git',
+    args: [
       '-C',
       import.meta.dirname,
       'rev-parse',
       'HEAD',
     ],
-  )).stdout
+  },)).stdout
     .trim();
 
   return [

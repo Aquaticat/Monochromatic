@@ -9,9 +9,8 @@ import {
   join,
 } from 'node:path';
 
-import spawn from 'nano-spawn';
-
 import { citedHash, } from '../../dist/final/node/index.mjs';
+import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import { REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
@@ -166,41 +165,41 @@ async function commitAt(
     GIT_AUTHOR_DATE: stamp,
     GIT_COMMITTER_DATE: stamp,
   };
-  await spawn(
-    REAL_GIT,
-    [
+  await spawnKeyless({
+    file: REAL_GIT,
+    args: [
       '-C',
       cloneDir,
       'add',
       '--all',
     ],
-    { env, },
-  );
-  await spawn(
-    REAL_GIT,
-    [
+    extra: env,
+  },);
+  await spawnKeyless({
+    file: REAL_GIT,
+    args: [
       '-C',
       cloneDir,
       'commit',
       '--message',
       subject,
     ],
-    { env, },
-  );
+    extra: env,
+  },);
 
   /**
    The new commit's id.
    */
-  const { stdout, } = await spawn(
-    REAL_GIT,
-    [
+  const { stdout, } = await spawnKeyless({
+    file: REAL_GIT,
+    args: [
       '-C',
       cloneDir,
       'rev-parse',
       'HEAD',
     ],
-    { env, },
-  );
+    extra: env,
+  },);
   return {
     hash: stdout.trim(),
     seconds,
@@ -322,21 +321,19 @@ export async function makeCacheAccountRepo(
   return await scratchDirWith({
     prefix: 'cache-account-repo-',
     setup: async function seeded({ path: cloneDir, },): Promise<RepoHistory> {
-      await spawn(
-        REAL_GIT,
-        [
+      await spawnKeyless({
+        file: REAL_GIT,
+        args: [
           '-C',
           cloneDir,
           'init',
           '--quiet',
         ],
-        {
-          env: {
-            GIT_CONFIG_GLOBAL: devNull,
-            GIT_CONFIG_SYSTEM: devNull,
-          },
+        extra: {
+          GIT_CONFIG_GLOBAL: devNull,
+          GIT_CONFIG_SYSTEM: devNull,
         },
-      );
+      },);
       if (versions !== 'none') {
         await writeAtRepo({
           cloneDir,

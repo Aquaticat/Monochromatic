@@ -8,8 +8,8 @@
 import { join, } from 'node:path';
 import { pathToFileURL, } from 'node:url';
 
-import spawn from 'nano-spawn';
 
+import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
@@ -49,14 +49,14 @@ export async function runBuiltInChild(
   /**
    What the child wrote, a failed exit refusing instead.
    */
-  const { stdout, } = await spawn(
-    process.execPath,
-    [
+  const { stdout, } = await spawnKeyless({
+    file: process.execPath,
+    args: [
       '--input-type=module',
       '--eval',
       `const built = await import(${JSON.stringify(builtUrl.href,)});\n${body}`,
     ],
-    { cwd: scratch.path, },
-  );
+    cwd: scratch.path,
+  },);
   return stdout;
 }

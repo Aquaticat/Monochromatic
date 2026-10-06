@@ -22,7 +22,6 @@ import {
 import { join, } from 'node:path';
 
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
-import spawn from 'nano-spawn';
 
 import {
   DEFAULT_CONCURRENCY,
@@ -31,6 +30,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import {
   buildSettledTwoLaneArtifact,
   NO_PAGE_ASSEMBLY,
@@ -151,20 +151,18 @@ async function fixtureGit(
   /**
    Subprocess result; only stdout is consumed.
    */
-  const { stdout, } = await spawn(
-    REAL_GIT,
-    [
+  const { stdout, } = await spawnKeyless({
+    file: REAL_GIT,
+    args: [
       '-C',
       cloneDir,
       ...args,
     ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: DEV_NULL,
-        GIT_CONFIG_SYSTEM: DEV_NULL,
-      },
+    extra: {
+      GIT_CONFIG_GLOBAL: DEV_NULL,
+      GIT_CONFIG_SYSTEM: DEV_NULL,
     },
-  );
+  },);
   return stdout;
 }
 
@@ -287,19 +285,17 @@ async function makeCorpus(): Promise<
       readonly cloneDir: string;
       readonly commitSha: string;
     }> {
-      await spawn(
-        REAL_GIT,
-        [
+      await spawnKeyless({
+        file: REAL_GIT,
+        args: [
           'init',
           cloneDir,
         ],
-        {
-          env: {
-            GIT_CONFIG_GLOBAL: DEV_NULL,
-            GIT_CONFIG_SYSTEM: DEV_NULL,
-          },
+        extra: {
+          GIT_CONFIG_GLOBAL: DEV_NULL,
+          GIT_CONFIG_SYSTEM: DEV_NULL,
         },
-      );
+      },);
 
       /**
        Commit the pair landed in, which every fixture artifact pins.

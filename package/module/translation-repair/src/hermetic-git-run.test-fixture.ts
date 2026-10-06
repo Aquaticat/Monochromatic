@@ -1,7 +1,8 @@
 import { devNull, } from 'node:os';
 
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
-import spawn from 'nano-spawn';
+
+import { spawnKeyless, } from './child-environment.test-fixture.ts';
 
 //region Hermetic git run
 // RUNS GIT AGAINST A THROWAWAY CLONE, hermetic against user and system git
@@ -48,20 +49,18 @@ export async function fixtureGit(
   /**
    Subprocess result; only stdout is consumed.
    */
-  const { stdout, } = await spawn(
-    REAL_GIT,
-    [
+  const { stdout, } = await spawnKeyless({
+    file: REAL_GIT,
+    args: [
       '-C',
       cloneDir,
       ...args,
     ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
+    extra: {
+      GIT_CONFIG_GLOBAL: devNull,
+      GIT_CONFIG_SYSTEM: devNull,
     },
-  );
+  },);
   return stdout;
 }
 

@@ -34,8 +34,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
 
+import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import {
   censusEntry,
   CorpusReadError,
@@ -278,19 +278,17 @@ async function throwawayCorpus(
         readonly commitSha: string;
       };
     }> {
-      await spawn(
-        REAL_GIT,
-        [
+      await spawnKeyless({
+        file: REAL_GIT,
+        args: [
           'init',
           cloneDir,
         ],
-        {
-          env: {
-            GIT_CONFIG_GLOBAL: devNull,
-            GIT_CONFIG_SYSTEM: devNull,
-          },
+        extra: {
+          GIT_CONFIG_GLOBAL: devNull,
+          GIT_CONFIG_SYSTEM: devNull,
         },
-      );
+      },);
       await mkdir(
         join(
           cloneDir,

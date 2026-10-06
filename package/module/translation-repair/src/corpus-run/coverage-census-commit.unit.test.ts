@@ -22,8 +22,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
 
+import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import {
   packageCommit,
   sourcesEditedSince,
@@ -35,10 +35,8 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
  repository.
  */
 const HERMETIC = {
-  env: {
-    GIT_CONFIG_GLOBAL: devNull,
-    GIT_CONFIG_SYSTEM: devNull,
-  },
+  GIT_CONFIG_GLOBAL: devNull,
+  GIT_CONFIG_SYSTEM: devNull,
 };
 
 /**
@@ -63,15 +61,15 @@ async function gitIn({
   readonly directory: string;
   readonly args: readonly string[];
 },) {
-  return spawn(
-    await resolveRealGit(),
-    [
+  return spawnKeyless({
+    file: await resolveRealGit(),
+    args: [
       '-C',
       directory,
       ...args,
     ],
-    HERMETIC,
-  );
+    extra: HERMETIC,
+  },);
 }
 
 /**

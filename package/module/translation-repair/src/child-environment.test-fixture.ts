@@ -129,7 +129,7 @@ export async function spawnKeyless(
  const run: ChildRun = { code: 6, stdout: '', stderr: 'window-trial-probe: ...\n', };
  ```
  */
-type ChildRun = {
+export type ChildRun = {
   /**
    Exit code, or -1 when the process was signalled.
    */

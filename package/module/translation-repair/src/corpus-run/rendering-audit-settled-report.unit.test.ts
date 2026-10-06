@@ -19,8 +19,6 @@
  @module
  */
 
-import { spawn, } from 'node:child_process';
-import { once, } from 'node:events';
 import {
   mkdir,
   writeFile,
@@ -43,6 +41,7 @@ import {
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 import { relayingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
@@ -56,25 +55,14 @@ const PROBE_NAME = 'rendering-audit-settled';
 const REFUSED_AS_STATED = 6;
 
 /**
- Exit reported when the child ended on a signal and so has no code.
+ Name of the built report command under test.
  */
-const SIGNALLED = -1;
+const REPORT_COMMAND = 'rendering-audit-settled-report';
 
 /**
- Built report command under test.
+ Name of the built audit command under test.
  */
-const REPORT_COMMAND = join(
-  import.meta.dirname,
-  '../../dist/final/node/rendering-audit-settled-report.mjs',
-);
-
-/**
- Built audit command under test.
- */
-const AUDIT_COMMAND = join(
-  import.meta.dirname,
-  '../../dist/final/node/rendering-audit-settled.mjs',
-);
+const AUDIT_COMMAND = 'rendering-audit-settled';
 
 /**
  Roster every fixture run records.
@@ -283,7 +271,7 @@ type CommandRun = {
  Runs a built command with every provider key withheld, so the child can
  neither refuse for the wrong reason nor spend.
 
- @param command - built entry file
+ @param command - built command's name
 
  @param args - arguments after it
 
@@ -304,78 +292,16 @@ async function runBuilt(
   },
 ): Promise<CommandRun> {
   /**
-   Runner environment with every provider key removed.
-   */
-  const env = Object.fromEntries(
-    Object
-      .entries(process.env,)
-      .filter(function keepsNoKey([name,],): boolean {
-        return !name.endsWith('_API_KEY',);
-      },),
-  );
-
-  /**
    Throwaway runs directory the child points at, removed once this function's
-   `await using` scope ends (after the child's streams close, below).
+   `await using` scope ends (after the child's streams close).
    */
   await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
 
-  /**
-   Child running the command.
-   */
-  const child = spawn(
-    process.execPath,
-    [
-      command,
-      ...args,
-    ],
-    {
-      cwd: join(
-        import.meta.dirname,
-        '../..',
-      ),
-      env: {
-        ...env,
-        TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
-      },
-      stdio: [
-        'ignore',
-        'pipe',
-        'pipe',
-      ],
-    },
-  );
-
-  /**
-   Both streams as they arrive.
-   */
-  const out: string[] = [];
-  const err: string[] = [];
-
-  /**
-   Child's streams, both piped.
-   */
-  const {
-    stdout,
-    stderr,
-  } = child;
-  stdout.setEncoding('utf8',);
-  stdout.on('data', function keep(chunk: string,): void {
-    out.push(chunk,);
+  return await runBuiltCommand({
+    command,
+    args,
+    env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
   },);
-  stderr.setEncoding('utf8',);
-  stderr.on('data', function keep(chunk: string,): void {
-    err.push(chunk,);
-  },);
-
-  // Wait for the streams to close, then read the exit off the child itself.
-  await once(child, 'close',);
-
-  return {
-    code: child.exitCode ?? SIGNALLED,
-    stdout: out.join('',),
-    stderr: err.join('',),
-  };
 }
 
 await describe({

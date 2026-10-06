@@ -33,7 +33,6 @@
  @module
  */
 
-import { spawnSync, } from 'node:child_process';
 import {
   chmod,
   readFile,
@@ -47,6 +46,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runKeyless, } from '../child-environment.test-fixture.ts';
 import {
   gatherAttributionEntries,
   lockRunsDir,
@@ -77,10 +77,10 @@ type CommandStreams = {
 
  A NON-ZERO EXIT IS NOT A FAILURE TO RUN HERE. `editor-standing-read` exits 1
  on a fixture that recorded no judged rounds, which is its own verdict and has
- nothing to do with the refusal these cases read. `spawnSync` reports a status
- rather than throwing on one, which is why it is used instead of a promisified
- `execFile`: that one rejects on any non-zero exit and hides the streams on the
- rejection.
+ nothing to do with the refusal these cases read. The shared fixture reports an
+ exit code rather than rejecting on one, which is why it is used instead of a
+ promisified `execFile`: that one rejects on any non-zero exit and hides the streams
+ on the rejection.
 
  @param args - argv the command receives, entry point first
 
@@ -90,28 +90,20 @@ type CommandStreams = {
 
  @example
  ```ts
- const { stderr, } = streamsOf({ args: [STANDING_ENTRY, dir,], },);
+ const { stderr, } = await streamsOf({ args: [STANDING_ENTRY, dir,], },);
  ```
  */
-function streamsOf(
+async function streamsOf(
   { args, }: { readonly args: readonly string[]; },
-): CommandStreams {
+): Promise<CommandStreams> {
   /**
    Command as it finished, or why it never started.
    */
-  const finished = spawnSync(
-    process.execPath,
-    [...args,],
-    { encoding: 'utf8', },
-  );
+  const finished = await runKeyless({
+    file: process.execPath,
+    args: [...args,],
+  },);
 
-  // A SPAWN FAULT IS NOT AN EMPTY REPORT. Reading past it would leave every
-  // assertion on this helper's output searching two empty strings and passing on a build that is
-  // not there.
-  if (finished.error !== undefined)
-    throw new Error(
-      `the command never started, so nothing here was exercised (${finished.error.name})`,
-    );
 
   return {
     stdout: finished.stdout,
@@ -512,7 +504,7 @@ await describe({
         /**
          What the command printed, on both streams.
          */
-        const { stderr, } = streamsOf({
+        const { stderr, } = await streamsOf({
           args: [
             STANDING_ENTRY,
             scratch.path,

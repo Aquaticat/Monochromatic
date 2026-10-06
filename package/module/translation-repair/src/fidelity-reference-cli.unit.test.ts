@@ -11,8 +11,6 @@
  @module
  */
 
-import { fileURLToPath, } from 'node:url';
-
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   DEFAULT_CONCURRENCY,
@@ -20,21 +18,16 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn, { SubprocessError, } from 'nano-spawn';
 
 import { REVIEWED_FIDELITY_REFERENCES, } from '../dist/final/node/index.mjs';
 
+import { runBuiltCommand, } from './child-environment.test-fixture.ts';
 import { refusalMessage, } from './fidelity-reference.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from './roster-seats.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 //region Preflight runs
 // The built command, run for its zero-call preflight only.
-
-/**
- Native compiled command, never a source import.
- */
-const CLI = fileURLToPath(new URL('../dist/final/node/judge-fidelity-probe.mjs', import.meta.url,),);
 
 /**
  Exit status the command gives a fault in its own request.
@@ -133,9 +126,20 @@ async function preflight(extra: readonly string[],): Promise<PreflightRun> {
    */
   const directory = owned.path;
   /**
-   Environment with every provider key blank.
+   What the built command did, whatever its exit code; the fixture removes
+   every provider key from its environment, and the blanks here keep the
+   command's own settings empty rather than absent.
    */
-  const options = {
+  const run = await runBuiltCommand({
+    command: 'judge-fidelity-probe',
+    args: [
+      '--cap',
+      '0',
+      '--candidates',
+      SEAT_HYPER_OPENROUTER_UNMEASURED,
+      '--candidates-alone',
+      ...extra,
+    ],
     cwd: directory,
     env: {
       TRANSLATION_REPAIR_RUNS_DIR: directory,
@@ -145,36 +149,12 @@ async function preflight(extra: readonly string[],): Promise<PreflightRun> {
       TRANSLATION_REPAIR_OPENROUTER_API_KEY: '',
       TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY: '',
     },
+  },);
+  return {
+    code: run.code,
+    stdout: linesOf({ text: run.stdout, },),
+    stderr: linesOf({ text: run.stderr, },),
   };
-  try {
-    const result = await spawn(
-      process.execPath,
-      [
-        CLI,
-        '--cap',
-        '0',
-        '--candidates',
-        SEAT_HYPER_OPENROUTER_UNMEASURED,
-        '--candidates-alone',
-        ...extra,
-      ],
-      options,
-    );
-    return {
-      code: 0,
-      stdout: linesOf({ text: result.stdout, },),
-      stderr: linesOf({ text: result.stderr, },),
-    };
-  }
-  catch (error) {
-    if (!(error instanceof SubprocessError))
-      throw error;
-    return {
-      code: nonNullishOrThrow(error.exitCode,),
-      stdout: linesOf({ text: error.stdout, },),
-      stderr: linesOf({ text: error.stderr, },),
-    };
-  }
 }
 
 /**

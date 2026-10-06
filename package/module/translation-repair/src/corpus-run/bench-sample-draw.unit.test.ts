@@ -28,7 +28,6 @@
  @module
  */
 
-import { spawnSync, } from 'node:child_process';
 import { fileURLToPath, } from 'node:url';
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
@@ -49,6 +48,7 @@ import {
   type CorpusPin,
   sampleBenchSlices,
 } from '../../dist/final/node/index.mjs';
+import { runKeyless, } from '../child-environment.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
@@ -89,10 +89,10 @@ const TARGET_PAGE = '## The windowsill\n\nThe kitten dozes on the windowsill. '
 
  @example
  ```ts
- const sha = git({ cwd, args: ['rev-parse', 'HEAD',], },);
+ const sha = await git({ cwd, args: ['rev-parse', 'HEAD',], },);
  ```
  */
-function git(
+async function git(
   {
     cwd,
     args,
@@ -100,21 +100,18 @@ function git(
     readonly cwd: string;
     readonly args: readonly string[];
   },
-): string {
+): Promise<string> {
   /**
    What git did, with its output captured rather than printed.
    */
-  const done = spawnSync(
-    'git',
+  const done = await runKeyless({
+    file: 'git',
     args,
-    {
-      cwd,
-      encoding: 'utf8',
-    },
-  );
+    cwd,
+  },);
 
-  if (done.status !== 0)
-    throw new Error(`git ${args.join(' ',)} exited ${String(done.status,)}: ${done.stderr}`,);
+  if (done.code !== 0)
+    throw new Error(`git ${args.join(' ',)} exited ${String(done.code,)}: ${done.stderr}`,);
 
   return done.stdout
     .trim();
@@ -145,7 +142,7 @@ async function clonedCorpusHolding(
       readonly cloneDir: string;
       readonly commitSha: string;
     }> {
-      git({
+      await git({
         cwd: cloneDir,
         args: [
           'init',
@@ -187,7 +184,7 @@ async function clonedCorpusHolding(
        */
       const paths = Object.keys(files,);
 
-      git({
+      await git({
         cwd: cloneDir,
         args: [
           'add',
@@ -195,7 +192,7 @@ async function clonedCorpusHolding(
           ...paths,
         ],
       },);
-      git({
+      await git({
         cwd: cloneDir,
         args: [
           '-c',
@@ -213,7 +210,7 @@ async function clonedCorpusHolding(
 
       return {
         cloneDir,
-        commitSha: git({
+        commitSha: await git({
           cwd: cloneDir,
           args: [
             'rev-parse',
@@ -279,10 +276,13 @@ assert.equal(process.env.PATH, pin.cloneDir);
 await assert.rejects(api.sampleBenchSlices({ count: 1, pin }), { name: 'RealGitNotFoundError' });
 console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOpens: counts.opens, readFileCalls: counts.reads, count: implicit.length }));
 `;
-        const done = spawnSync(process.execPath, ['--input-type=module', '--eval', program], {
-          cwd: pin.cloneDir, encoding: 'utf8', env: { PATH: process.env.PATH, HOME: pin.cloneDir },
-        });
-        expect(done.status).toBe(0);
+        const done = await runKeyless({
+          file: process.execPath,
+          args: ['--input-type=module', '--eval', program],
+          cwd: pin.cloneDir,
+          extra: { HOME: pin.cloneDir },
+        },);
+        expect(done.code).toBe(0);
         const marker = 'BENCH_RESOLVER_PROOF ';
         const line = done.stdout.split('\n').find(value => value.startsWith(marker));
         if (line === undefined) throw new Error(`Missing resolver observation: ${done.stderr}`);

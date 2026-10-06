@@ -20,7 +20,6 @@
  @module
  */
 
-import { spawnSync, } from 'node:child_process';
 import {
   mkdir,
   writeFile,
@@ -34,6 +33,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runKeyless, } from './child-environment.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 //region Console warn lines tests
@@ -52,7 +52,10 @@ const LOGGER_REPORT_PREFIX = 'logger internal error: ';
 
  @example
  ```ts
- spawnSync(process.execPath, ['--input-type=module', '--eval', childSource(),],);
+ await runKeyless({
+   file: process.execPath,
+   args: ['--input-type=module', '--eval', childSource(),],
+ },);
  ```
  */
 function childSource(): string {
@@ -111,22 +114,15 @@ await describe({
         /**
          The child as it finished, whatever it exited with.
          */
-        const child = spawnSync(
-          process.execPath,
-          [
+        const child = await runKeyless({
+          file: process.execPath,
+          args: [
             '--input-type=module',
             '--eval',
             childSource(),
           ],
-          {
-            cwd: scratch.path,
-            encoding: 'utf8',
-          },
-        );
-        // A SPAWN FAULT IS NOT A RESULT: reading past it would compare two
-        // empty streams.
-        if (child.error !== undefined)
-          throw new Error(`the child never started, so nothing was exercised (${child.error.name})`,);
+          cwd: scratch.path,
+        },);
         /**
          What a logger reports for the file standing where its log directory
          goes.
@@ -142,7 +138,7 @@ await describe({
         // logger and the test framework's before it diverts, and each has its
         // own file sink to verify.
         expect({
-          status: child.status,
+          status: child.code,
           stdout: child.stdout,
           reports: child.stderr
             .split('\n',)

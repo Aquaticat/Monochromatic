@@ -9,12 +9,12 @@ import {
 } from 'node:path';
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import spawn from 'nano-spawn';
 import {
   type CorpusPin,
   foldCarriageReturns,
   passArchiveText,
 } from '../dist/final/node/index.mjs';
+import { spawnKeyless, } from './child-environment.test-fixture.ts';
 import { scratchDirWith, } from './scratch-dir.test-fixture.ts';
 
 //region Disposable history fixtures
@@ -65,9 +65,9 @@ export async function namingFixtureGit({
   /**
    Metadata-only command result.
    */
-  const result = await spawn(
-    REAL_GIT,
-    [
+  const result = await spawnKeyless({
+    file: REAL_GIT,
+    args: [
       '--literal-pathspecs',
       '-C',
       cloneDir,
@@ -81,11 +81,11 @@ export async function namingFixtureGit({
       'commit.gpgSign=false',
       ...args,
     ],
-    { env: {
-      GIT_CONFIG_GLOBAL: devNull,
-      GIT_CONFIG_SYSTEM: devNull,
-    }, },
-  );
+    extra: {
+    GIT_CONFIG_GLOBAL: devNull,
+    GIT_CONFIG_SYSTEM: devNull,
+  },
+  },);
   return result.stdout;
 }
 

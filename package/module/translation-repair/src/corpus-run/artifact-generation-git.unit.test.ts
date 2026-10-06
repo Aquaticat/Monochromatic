@@ -30,8 +30,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
 
+import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import {
   resolveCommit,
   tipContains,
@@ -104,15 +104,15 @@ async function git(
     readonly args: readonly string[];
   },
 ): Promise<string> {
-  return (await spawn(
-    GIT,
-    [
+  return (await spawnKeyless({
+    file: GIT,
+    args: [
       '-C',
       repository,
       ...PER_CALL_CONFIG,
       ...args,
     ],
-  )).stdout
+  },)).stdout
     .trim();
 }
 
@@ -258,9 +258,9 @@ async function throwawayHistory(): Promise<ThrowawayHistory & AsyncDisposable> {
     const shallowScratch = await scratchDirPrepared({
       prefix: 'artifact-generation-shallow-',
       prepare: async function cloned({ path: shallow, },): Promise<void> {
-        await spawn(
-          GIT,
-          [
+        await spawnKeyless({
+          file: GIT,
+          args: [
             'clone',
             '--quiet',
             '--depth',
@@ -268,7 +268,7 @@ async function throwawayHistory(): Promise<ThrowawayHistory & AsyncDisposable> {
             `file://${fullScratch.path}`,
             shallow,
           ],
-        );
+        },);
       },
     },);
     return {
