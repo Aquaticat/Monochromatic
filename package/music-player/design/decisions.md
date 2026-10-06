@@ -235,6 +235,10 @@ Per the MD3 list spec (one-line 56,
 title;
  line two is `duration · true-peak` (e.g. `4:35 · −1.2 dBTP`),
  tabular numerals.
+Note added 2026-10-06:
+ line two is now what the supporting-line template yields (D81),
+ and its default is `$tf(mi(len), m:ss)$ $mi(peak)$`,
+ which reads `4:35 −1.2 dBTP` without the dot (D93).
 **Rejected.**
  Single-line rows (rows-a) and a columnar table layout (rows-b).
 
