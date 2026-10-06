@@ -242,6 +242,7 @@ impl Write for RecordWriter<'_> {
 
 /// The log subscriber obtains one record writer per record.
 impl<'owner> MakeWriter<'owner> for BackgroundWriter {
+    /// The per-record writer, borrowing this background writer.
     type Writer = RecordWriter<'owner>;
 
     /// Lend this background writer to one record.
@@ -357,7 +358,9 @@ fn drain<O: Write>(receiver: &mpsc::Receiver<Message>, output: &mut O, shared: &
 /// ```ts
 /// function background(output: Write): [BackgroundWriter, LogFlush]
 /// ```
-pub fn background<O: Write + Send + 'static>(output: O) -> io::Result<(BackgroundWriter, LogFlush)> {
+pub fn background<O: Write + Send + 'static>(
+    output: O,
+) -> io::Result<(BackgroundWriter, LogFlush)> {
     return background_with(output, QUEUE_BUDGET, FLUSH_GRACE);
 }
 

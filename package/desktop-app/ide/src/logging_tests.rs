@@ -51,7 +51,14 @@ fn written(defaults: &str, requested: Option<&str>) -> Vec<&'static str> {
     });
     let text = String::from_utf8(capture.0.lock().expect("capture").clone()).expect("text");
     let probes = [
-        "slint-warn", "slint-info", "app-warn", "app-info", "app-debug", "helix-warn", "helix-info", "helix-error",
+        "slint-warn",
+        "slint-info",
+        "app-warn",
+        "app-info",
+        "app-debug",
+        "helix-warn",
+        "helix-info",
+        "helix-error",
     ];
     let mut found = Vec::new();
     for probe in probes {
@@ -65,7 +72,10 @@ fn written(defaults: &str, requested: Option<&str>) -> Vec<&'static str> {
 #[test]
 fn directives_put_the_override_last() {
     assert_eq!(directives("", None), "warn,helix_lsp=warn");
-    assert_eq!(directives("ide_app=debug", None), "warn,helix_lsp=warn,ide_app=debug");
+    assert_eq!(
+        directives("ide_app=debug", None),
+        "warn,helix_lsp=warn,ide_app=debug"
+    );
     assert_eq!(
         directives("ide_app=debug", Some("info")),
         "warn,helix_lsp=warn,ide_app=debug,info"
@@ -85,7 +95,15 @@ fn the_default_is_warnings_and_errors() {
 fn a_global_override_adds_detail_but_keeps_helix_at_warnings() {
     assert_eq!(
         written("", Some("debug")),
-        vec!["slint-warn", "slint-info", "app-warn", "app-info", "app-debug", "helix-warn", "helix-error"]
+        vec![
+            "slint-warn",
+            "slint-info",
+            "app-warn",
+            "app-info",
+            "app-debug",
+            "helix-warn",
+            "helix-error"
+        ]
     );
 }
 
@@ -93,7 +111,14 @@ fn a_global_override_adds_detail_but_keeps_helix_at_warnings() {
 fn a_targeted_override_keeps_warnings_from_everything_else() {
     assert_eq!(
         written("", Some("ide_app=debug")),
-        vec!["slint-warn", "app-warn", "app-info", "app-debug", "helix-warn", "helix-error"]
+        vec![
+            "slint-warn",
+            "app-warn",
+            "app-info",
+            "app-debug",
+            "helix-warn",
+            "helix-error"
+        ]
     );
 }
 
@@ -101,11 +126,23 @@ fn a_targeted_override_keeps_warnings_from_everything_else() {
 fn naming_helix_in_the_override_replaces_its_directive() {
     assert_eq!(
         written("", Some("helix_lsp=info")),
-        vec!["slint-warn", "app-warn", "helix-warn", "helix-info", "helix-error"]
+        vec![
+            "slint-warn",
+            "app-warn",
+            "helix-warn",
+            "helix-info",
+            "helix-error"
+        ]
     );
     assert_eq!(
         written("", Some("helix_lsp::transport=info")),
-        vec!["slint-warn", "app-warn", "helix-warn", "helix-info", "helix-error"]
+        vec![
+            "slint-warn",
+            "app-warn",
+            "helix-warn",
+            "helix-info",
+            "helix-error"
+        ]
     );
 }
 

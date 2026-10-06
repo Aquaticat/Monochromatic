@@ -60,7 +60,11 @@ fn written(filter: &str, target: &str, level: log::Level, text: &str) -> String 
 #[test]
 fn a_server_stderr_line_is_recognized() {
     assert_eq!(
-        shape(TRANSPORT, log::Level::Error, r#"typescript-native err <- "context canceled\n""#),
+        shape(
+            TRANSPORT,
+            log::Level::Error,
+            r#"typescript-native err <- "context canceled\n""#
+        ),
         Some(Shape::ServerStderrLine)
     );
     assert_eq!(
@@ -76,7 +80,11 @@ fn a_server_stderr_line_is_recognized() {
 #[test]
 fn the_end_of_server_stderr_is_recognized() {
     assert_eq!(
-        shape(TRANSPORT, log::Level::Error, "rust-analyzer err: <- StreamClosed"),
+        shape(
+            TRANSPORT,
+            log::Level::Error,
+            "rust-analyzer err: <- StreamClosed"
+        ),
         Some(Shape::EndOfServerStderr)
     );
 }
@@ -84,11 +92,19 @@ fn the_end_of_server_stderr_is_recognized() {
 #[test]
 fn moot_error_answers_are_recognized() {
     assert_eq!(
-        shape(TRANSPORT, log::Level::Error, "rust-analyzer <- ServerError(-32801): content modified"),
+        shape(
+            TRANSPORT,
+            log::Level::Error,
+            "rust-analyzer <- ServerError(-32801): content modified"
+        ),
         Some(Shape::MootAnswer)
     );
     assert_eq!(
-        shape(TRANSPORT, log::Level::Error, "scripted-ls <- ServerError(-32800): request cancelled"),
+        shape(
+            TRANSPORT,
+            log::Level::Error,
+            "scripted-ls <- ServerError(-32800): request cancelled"
+        ),
         Some(Shape::MootAnswer)
     );
 }
@@ -97,12 +113,27 @@ fn moot_error_answers_are_recognized() {
 fn other_error_records_keep_their_level() {
     let kept = [
         // An error answer that is a real request failure.
-        (TRANSPORT, "scripted-ls <- InternalError: scripted initialize failure"),
-        (TRANSPORT, "scripted-ls <- ServerError(-32803): request failed"),
+        (
+            TRANSPORT,
+            "scripted-ls <- InternalError: scripted initialize failure",
+        ),
+        (
+            TRANSPORT,
+            "scripted-ls <- ServerError(-32803): request failed",
+        ),
         // A failure to read or write a server's streams.
-        (TRANSPORT, "rust-analyzer err: <- IO(Os { code: 32, kind: BrokenPipe, message: \"Broken pipe\" })"),
-        (TRANSPORT, "Exiting rust-analyzer after unexpected error: Parse(\"bad header\")"),
-        (TRANSPORT, "Could not close request on a closed channel (id=Num(3))"),
+        (
+            TRANSPORT,
+            "rust-analyzer err: <- IO(Os { code: 32, kind: BrokenPipe, message: \"Broken pipe\" })",
+        ),
+        (
+            TRANSPORT,
+            "Exiting rust-analyzer after unexpected error: Parse(\"bad header\")",
+        ),
+        (
+            TRANSPORT,
+            "Could not close request on a closed channel (id=Num(3))",
+        ),
         // The same text without a server name in front.
         (TRANSPORT, " err: <- StreamClosed"),
         (TRANSPORT, " err <- \"line\""),
@@ -110,14 +141,28 @@ fn other_error_records_keep_their_level() {
         // A quoted line that is cut off is not the stderr shape.
         (TRANSPORT, "scripted-ls err <- \"unterminated"),
         // Another helix-lsp module.
-        ("helix_lsp", "failed to initialize language server: scripted initialize failure"),
+        (
+            "helix_lsp",
+            "failed to initialize language server: scripted initialize failure",
+        ),
         ("helix_lsp", "scripted-ls err <- \"line\""),
     ];
     for (target, text) in kept {
-        assert_eq!(shape(target, log::Level::Error, text), None, "{target}: {text}");
+        assert_eq!(
+            shape(target, log::Level::Error, text),
+            None,
+            "{target}: {text}"
+        );
     }
     // A record that is not at ERROR is never touched, whatever its text.
-    assert_eq!(shape(TRANSPORT, log::Level::Warn, "scripted-ls err: <- StreamClosed"), None);
+    assert_eq!(
+        shape(
+            TRANSPORT,
+            log::Level::Warn,
+            "scripted-ls err: <- StreamClosed"
+        ),
+        None
+    );
 }
 
 #[test]
@@ -130,15 +175,20 @@ fn each_shape_has_its_level() {
 #[test]
 fn a_relabelled_record_keeps_its_target_and_text() {
     let text = r#"typescript-native err <- "context canceled\n""#;
-    let line = written("helix_lsp=debug", TRANSPORT, log::Level::Error, text);
+    let stderr_line = written("helix_lsp=debug", TRANSPORT, log::Level::Error, text);
     assert!(
-        line.ends_with(&format!(" INFO helix_lsp::transport: {text}\n")),
-        "{line}"
+        stderr_line.ends_with(&format!(" INFO helix_lsp::transport: {text}\n")),
+        "{stderr_line}"
     );
-    let line = written("helix_lsp=debug", TRANSPORT, log::Level::Error, "scripted-ls err: <- StreamClosed");
+    let end_line = written(
+        "helix_lsp=debug",
+        TRANSPORT,
+        log::Level::Error,
+        "scripted-ls err: <- StreamClosed",
+    );
     assert!(
-        line.ends_with(" DEBUG helix_lsp::transport: scripted-ls err: <- StreamClosed\n"),
-        "{line}"
+        end_line.ends_with(" DEBUG helix_lsp::transport: scripted-ls err: <- StreamClosed\n"),
+        "{end_line}"
     );
 }
 
@@ -146,28 +196,42 @@ fn a_relabelled_record_keeps_its_target_and_text() {
 fn a_relabelled_record_is_filtered_at_its_new_level() {
     let text = "scripted-ls err: <- StreamClosed";
     assert_eq!(written("warn", TRANSPORT, log::Level::Error, text), "");
-    assert_eq!(written("helix_lsp=info", TRANSPORT, log::Level::Error, text), "");
+    assert_eq!(
+        written("helix_lsp=info", TRANSPORT, log::Level::Error, text),
+        ""
+    );
     assert!(!written("helix_lsp=debug", TRANSPORT, log::Level::Error, text).is_empty());
 }
 
 #[test]
 fn an_unknown_error_record_stays_error() {
-    let text = "rust-analyzer err: <- IO(Os { code: 32, kind: BrokenPipe, message: \"Broken pipe\" })";
-    let line = written("warn", TRANSPORT, log::Level::Error, text);
+    let text =
+        "rust-analyzer err: <- IO(Os { code: 32, kind: BrokenPipe, message: \"Broken pipe\" })";
+    let transport_line = written("warn", TRANSPORT, log::Level::Error, text);
     assert!(
-        line.ends_with(&format!(" ERROR helix_lsp::transport: {text}\n")),
-        "{line}"
+        transport_line.ends_with(&format!(" ERROR helix_lsp::transport: {text}\n")),
+        "{transport_line}"
     );
-    let line = written("warn", "helix_lsp", log::Level::Error, "failed to initialize language server: refused");
+    let helix_line = written(
+        "warn",
+        "helix_lsp",
+        log::Level::Error,
+        "failed to initialize language server: refused",
+    );
     assert!(
-        line.ends_with(" ERROR helix_lsp: failed to initialize language server: refused\n"),
-        "{line}"
+        helix_line.ends_with(" ERROR helix_lsp: failed to initialize language server: refused\n"),
+        "{helix_line}"
     );
 }
 
 #[test]
 fn records_at_other_levels_pass_through_unchanged() {
-    let line = written("helix_lsp=info", TRANSPORT, log::Level::Info, "scripted-ls -> {\"jsonrpc\":\"2.0\"}");
+    let line = written(
+        "helix_lsp=info",
+        TRANSPORT,
+        log::Level::Info,
+        "scripted-ls -> {\"jsonrpc\":\"2.0\"}",
+    );
     assert!(
         line.ends_with(" INFO helix_lsp::transport: scripted-ls -> {\"jsonrpc\":\"2.0\"}\n"),
         "{line}"

@@ -52,7 +52,10 @@ impl Write for Gated {
         while !*open {
             open = changed.wait(open).expect("gate");
         }
-        self.written.lock().expect("written").extend_from_slice(bytes);
+        self.written
+            .lock()
+            .expect("written")
+            .extend_from_slice(bytes);
         return Ok(bytes.len());
     }
 
@@ -73,7 +76,10 @@ impl Write for RefusesFirst {
             self.refused = true;
             return Err(io::Error::new(io::ErrorKind::BrokenPipe, "refused once"));
         }
-        self.written.lock().expect("written").extend_from_slice(bytes);
+        self.written
+            .lock()
+            .expect("written")
+            .extend_from_slice(bytes);
         return Ok(bytes.len());
     }
 
@@ -91,7 +97,10 @@ fn reported(text: &str) -> Vec<Loss> {
         };
         let words: Vec<&str> = rest.split_whitespace().collect();
         let records = words[0].parse().expect("record count");
-        let bytes = words[3].trim_start_matches('(').parse().expect("byte count");
+        let bytes = words[3]
+            .trim_start_matches('(')
+            .parse()
+            .expect("byte count");
         found.push(Loss { records, bytes });
     }
     return found;
@@ -135,7 +144,9 @@ fn a_blocked_output_never_delays_the_logging_thread() {
     // The flush waits for the gate, then for every queued record and the report of the rest.
     drop(flush);
     let text = output.text();
-    let written = text.matches("a record logged while the output is stalled").count();
+    let written = text
+        .matches("a record logged while the output is stalled")
+        .count();
     let losses = reported(&text);
     let lost: u64 = losses.iter().map(|loss| return loss.records).sum();
     assert!(
@@ -154,8 +165,8 @@ fn a_blocked_output_never_delays_the_logging_thread() {
 fn queued_records_reach_the_output_in_order_at_the_exit_flush() {
     let output = Gated::closed();
     output.open();
-    let (writer, flush) =
-        background_with(output.clone(), 1024 * 1024, Duration::from_secs(10)).expect("writer thread");
+    let (writer, flush) = background_with(output.clone(), 1024 * 1024, Duration::from_secs(10))
+        .expect("writer thread");
     let mut expected = String::new();
     for number in 0..200 {
         let line = format!("record {number}\n");
@@ -182,7 +193,10 @@ fn a_loss_is_reported_before_the_next_record_that_fits() {
     // The writer thread releases a record's bytes from the budget after the output accepted it.
     let deadline = Instant::now() + Duration::from_secs(10);
     while !output.text().contains(&first) || writer.shared.queued.load(Ordering::SeqCst) != 0 {
-        assert!(Instant::now() < deadline, "the first record was not written");
+        assert!(
+            Instant::now() < deadline,
+            "the first record was not written"
+        );
         thread::sleep(Duration::from_millis(5));
     }
     write_record(&writer, &third);
@@ -191,7 +205,14 @@ fn a_loss_is_reported_before_the_next_record_that_fits() {
     let lines: Vec<&str> = text.lines().collect();
     assert_eq!(lines.len(), 3, "{text}");
     assert_eq!(lines[0], first.trim_end());
-    assert_eq!(reported(lines[1]), vec![Loss { records: 1, bytes: 60 }], "{text}");
+    assert_eq!(
+        reported(lines[1]),
+        vec![Loss {
+            records: 1,
+            bytes: 60
+        }],
+        "{text}"
+    );
     assert_eq!(lines[2], third.trim_end());
     assert!(!text.contains(&dropped));
 }
@@ -205,7 +226,13 @@ fn a_record_larger_than_the_budget_is_reported_at_the_exit_flush() {
         background_with(output.clone(), 10, Duration::from_secs(10)).expect("writer thread");
     write_record(&writer, "twenty bytes, more!\n");
     drop(flush);
-    assert_eq!(reported(&output.text()), vec![Loss { records: 1, bytes: 20 }]);
+    assert_eq!(
+        reported(&output.text()),
+        vec![Loss {
+            records: 1,
+            bytes: 20
+        }]
+    );
 }
 
 /// An output that refuses a write loses that record, and the loss is reported once it accepts again.
@@ -222,7 +249,14 @@ fn a_refused_write_is_counted_and_reported() {
     drop(flush);
     let text = String::from_utf8(written.lock().expect("written").clone()).expect("text");
     assert!(!text.contains("refused\n"), "{text}");
-    assert_eq!(reported(&text), vec![Loss { records: 1, bytes: 8 }], "{text}");
+    assert_eq!(
+        reported(&text),
+        vec![Loss {
+            records: 1,
+            bytes: 8
+        }],
+        "{text}"
+    );
 }
 
 /// An output that accepts nothing does not hold the exit longer than the grace.
@@ -246,12 +280,21 @@ fn the_exit_flush_gives_up_after_its_grace() {
 #[test]
 fn the_gap_report_reads_like_a_warning_record() {
     let mut line = Vec::new();
-    assert!(report(&mut line, Loss { records: 3, bytes: 42 }));
+    assert!(report(
+        &mut line,
+        Loss {
+            records: 3,
+            bytes: 42
+        }
+    ));
     let text = String::from_utf8(line).expect("text");
     assert!(text.ends_with(
         "  WARN ide_app::logging: 3 log records (42 bytes) were not written because the log output did not accept them in time; the log has a gap here\n"
     ), "{text}");
-    assert!(text.starts_with("20"), "the line starts with its timestamp: {text}");
+    assert!(
+        text.starts_with("20"),
+        "the line starts with its timestamp: {text}"
+    );
     let mut nothing = Vec::new();
     assert!(report(&mut nothing, Loss::default()));
     assert!(nothing.is_empty());

@@ -203,8 +203,9 @@ static RELABEL: Relabel = Relabel;
 /// ```
 pub fn install() -> anyhow::Result<()> {
     // `map_err` turns the `log` crate's error into one that names what failed.
-    log::set_logger(&RELABEL)
-        .map_err(|error| return anyhow::anyhow!("Cannot install the helix-lsp log bridge: {error}"))?;
+    log::set_logger(&RELABEL).map_err(|error| {
+        return anyhow::anyhow!("Cannot install the helix-lsp log bridge: {error}");
+    })?;
     log::set_max_level(tracing::level_filters::LevelFilter::current().as_log());
     return Ok(());
 }

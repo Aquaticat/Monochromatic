@@ -76,7 +76,9 @@ fn helix_directive(requested: Option<&str>) -> String {
 /// ```
 pub fn directives(defaults: &str, requested: Option<&str>) -> String {
     // `filter` keeps an override that has text; `str::trim` removes surrounding spaces first.
-    let wanted = requested.map(str::trim).filter(|text| return !text.is_empty());
+    let wanted = requested
+        .map(str::trim)
+        .filter(|text| return !text.is_empty());
     // `Vec<String>` is a growable list of owned texts (sibling: `Vec<&str>`, which cannot hold the
     // computed helix-lsp directive).
     let mut parts: Vec<String> = vec![BASE_DIRECTIVE.to_string(), helix_directive(wanted)];
@@ -141,7 +143,8 @@ where
         None => tracing::subscriber::set_global_default(builder.finish()),
     };
     // `map_err` replaces the library's error with one that names the operation.
-    installed.map_err(|error| return anyhow::anyhow!("Cannot install the application log: {error}"))?;
+    installed
+        .map_err(|error| return anyhow::anyhow!("Cannot install the application log: {error}"))?;
     relabel::install()?;
     return Ok(());
 }

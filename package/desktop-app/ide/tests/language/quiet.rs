@@ -71,7 +71,9 @@ fn records_at(text: &str, level: &str) -> Vec<String> {
 /// Assert that a record with this level and this ending is in the log.
 fn assert_record(text: &str, level: &str, ending: &str) {
     assert!(
-        records_at(text, level).iter().any(|line| return line.ends_with(ending)),
+        records_at(text, level)
+            .iter()
+            .any(|line| return line.ends_with(ending)),
         "no {level} record ending with {ending:?} in the log:\n{text}"
     );
 }
