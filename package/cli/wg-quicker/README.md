@@ -191,7 +191,9 @@ it warns that Ghostty,
  Steam,
  Helium,
  Pale Moon,
- and Firefox Nightly will use the tunnel and instructs the user to add
+ Firefox Nightly,
+ ChatGPT,
+ and Interpreter will use the tunnel and instructs the user to add
 `ExemptMark = 100` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 The warning is non-fatal;
@@ -225,7 +227,9 @@ The Rust watcher installs inotify on user's existing `app.slice` before its firs
 attaches the Ghostty service,
 every `app-ghostty-surface-transient-*.scope`,
 Steam's `app-steam@*.service`,
-and Firefox Nightly's `app-firefox\x2dnightly@*.service`,
+Firefox Nightly's `app-firefox\x2dnightly@*.service`,
+ChatGPT's `app-chatgpt@*.service`,
+and Interpreter's `app-interpreter@*.service`,
 drains queued events,
 and scans again to close creation race.
 It reacts to future cgroup creation and periodically maps every live Helium executable,
@@ -235,13 +239,24 @@ and crashpad processes,
 both Pale Moon executable names,
 and Firefox Nightly's `firefox` and `firefox-bin` executables under the exact `firefox-nightly` install directory
 back to their current cgroups.
+The same periodic scan maps every ChatGPT executable inside the root-owned `/usr/lib/chatgpt` package tree,
+so the `codex`,
+`rg`,
+and `node` agents that application spawns keep their bypass even in a cgroup of their own.
+It also maps every Interpreter executable whose name begins with `interpreter`,
+covering the AppImage file,
+the mounted Electron image,
+the bundled `interpreter-*` agents,
+and the same vendor's terminal agent.
 Known process-discovered cgroups remain attached until directory disappears,
 covering process restarts inside same service or scope.
 Process discovery attaches entire current cgroup,
 so sibling processes in a shared cgroup also bypass tunnel until cgroup disappears or watcher stops.
 A newly started Helium,
 Pale Moon,
-or Firefox Nightly process can create sockets before next 250-millisecond rescan;
+Firefox Nightly,
+ChatGPT,
+or Interpreter process can create sockets before next 250-millisecond rescan;
 applications already running during watcher startup are attached before readiness.
 Watcher state validates PID,
 process start time,

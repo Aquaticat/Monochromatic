@@ -1,28 +1,32 @@
 import assert from 'node:assert/strict';
 import { defaultTemplate } from './template-reference.mjs';
-import { drawnTexts, expected, layouts, library, pinned, scenes, standIns } from './template-editor-scenes.mjs';
+import { drawnTexts, expected, library, scenes, standIns } from './template-editor-scenes.mjs';
 
 //region What each authored state draws, written out so a change in the reference or the scenes is noticed
 const drawn = Object.fromEntries(scenes.map(state => [state.id, expected(state)]));
-assert.deepEqual(Object.keys(drawn), ['list', 'default', 'help', 'unknown-field', 'open-formula', 'custom', 'custom-end', 'no-library',
-  'rows-help', 'rows-unknown-field', 'rows-open-formula', 'rows-custom', 'lines-help', 'lines-unknown-field', 'lines-open-formula', 'lines-custom']);
-assert.deepEqual(layouts, ['flow', 'rows', 'lines']);
-const libraryRows = [{ title: 'Another Xronixle', supporting: '4:35 · −1.2 dBTP' }, { title: 'Burning Aquamarine', supporting: '5:12' }];
+assert.deepEqual(Object.keys(drawn), ['list', 'default', 'help', 'unknown-field', 'open-formula', 'custom', 'custom-end', 'no-library']);
+// Plain substitution (D93): the space before the empty peak stays in the second row's line.
+const libraryRows = [{ title: 'Another Xronixle', supporting: '4:35 −1.2 dBTP' }, { title: 'Burning Aquamarine', supporting: '5:12 ' }];
 for (const id of ['list', 'default', 'help', 'unknown-field', 'open-formula']) assert.deepEqual(drawn[id].previewRows, libraryRows, id);
-assert.deepEqual(drawn.custom.previewRows, [{ title: 'Another Xronixle', supporting: 'FLAC · 4:35' }, { title: 'Burning Aquamarine', supporting: 'FLAC · 5:12' }]);
-assert.deepEqual(drawn['no-library'].previewRows, [{ title: 'Track title', supporting: '3:20 · −1.0 dBTP' }, { title: 'Track not analysed yet', supporting: '3:20' }]);
-assert.deepEqual(drawn.list.listEntry, { title: 'Track row supporting line', supporting: '4:35 · −1.2 dBTP' });
+// A user's own separator stays when the peak is empty.
+const changedRows = [{ title: 'Another Xronixle', supporting: 'FLAC · 4:35 · −1.2 dBTP' }, { title: 'Burning Aquamarine', supporting: 'FLAC · 5:12 · ' }];
+assert.deepEqual(drawn.custom.previewRows, changedRows);
+assert.deepEqual(drawn['custom-end'].previewRows, changedRows);
+assert.deepEqual(drawn['no-library'].previewRows, [{ title: 'Track title', supporting: '3:20 −1.0 dBTP' }, { title: 'Track not analysed yet', supporting: '3:20 ' }]);
+assert.deepEqual(drawn.list.listEntry, { title: 'Track row supporting line', supporting: '4:35 −1.2 dBTP' });
 assert.equal(drawn.list.page, 'list');
 assert.deepEqual(drawn.help.help, { signature: 'tf(seconds, [format])', parameter: 'format',
   description: "Format: h, m and s for hours, minutes and seconds; a doubled letter pads with a zero; text between apostrophes is kept. Without it, m:ss." });
+assert.equal(drawn.help.caret, 15);
 assert.deepEqual(drawn['unknown-field'].errors, ['mi: unknown field peek']);
+assert.equal(drawn['unknown-field'].caret, drawn['unknown-field'].template.length);
 assert.deepEqual(drawn['open-formula'].errors, ['formula: the $ at character 1 has no closing $']);
 assert.equal(drawn.default.previewNote, 'From your library. The second file is not analysed yet.');
 assert.equal(drawn['unknown-field'].previewNote, 'Rows keep the last valid template.');
 assert.equal(drawn['no-library'].previewNote, 'No library is open. These are sample values.');
 assert.deepEqual(drawn.default.fields.map(field => field.label + '|' + field.insert + '|' + field.value), [
   'Title|mi(title)|Another Xronixle', 'File name|mi(file)|かめりあ(Camellia) - Another Xronixle', 'Extension|mi(ext)|flac', 'Folder|mi(folder)|Camellia',
-  'Path|mi(path)|Camellia/かめりあ(Camellia) - Another Xronixle.flac', 'Duration|mi(len)|275', 'True peak|mi(peak)|−1.2']);
+  'Path|mi(path)|Camellia/かめりあ(Camellia) - Another Xronixle.flac', 'Duration|mi(len)|275', 'True peak|mi(peak)|−1.2 dBTP']);
 //endregion
 
 //region Invariants every state keeps
@@ -35,44 +39,35 @@ for (const state of Object.values(drawn)) {
   assert.equal(state.previewRows.length, 2, state.id);
   assert.ok(state.caret === undefined || (state.caret >= 0 && state.caret <= state.template.length), state.id);
   assert.ok(!state.template.includes('|'), state.id);
-}
-assert.deepEqual(Object.values(drawn).filter(state => state.focused).map(state => state.id), ['help', 'unknown-field', 'open-formula',
-  'rows-help', 'rows-unknown-field', 'rows-open-formula', 'lines-help', 'lines-unknown-field', 'lines-open-formula']);
-// A scene under another layout or position draws the same authored state: nothing the grammar decides differs.
-for (const state of Object.values(drawn)) {
+  // No template of the study uses the conditional D92 removed.
+  assert.ok(!state.template.includes('if('), state.id);
+  // A scene under another position draws the same authored state: nothing the grammar decides differs.
   const base = drawn[state.state];
-  assert.ok(base && base.layout === 'flow' && base.position === 'top', state.id);
+  assert.ok(base && base.position === 'top', state.id);
   for (const key of ['page', 'template', 'caret', 'focused', 'valid', 'previewRows', 'previewNote', 'errors', 'help', 'fields', 'resetEnabled', 'listEntry']) {
     assert.deepEqual(state[key], base[key], state.id + ' ' + key);
   }
 }
+assert.deepEqual(Object.values(drawn).filter(state => state.focused).map(state => state.id), ['help', 'unknown-field', 'open-formula']);
 assert.deepEqual(Object.values(drawn).filter(state => state.position === 'end').map(state => state.id), ['custom-end']);
-for (const layout of layouts.slice(1)) {
-  assert.deepEqual(Object.values(drawn).filter(state => state.layout === layout).map(state => state.state), ['help', 'unknown-field', 'open-formula', 'custom'], layout);
-}
-// Each preview pair shows one file with a true peak and one without, so the fallback is always on screen.
+// Each preview pair shows one file with a true peak and one without, so the empty field is always on screen.
 for (const pair of [library, standIns]) assert.deepEqual(pair.map(track => track.peak === undefined), [false, true]);
 // The page's whole copy, in reading order: the list page is short, an editor page has its sections in a fixed order.
 assert.deepEqual(drawnTexts(scenes[0]).map(item => item.role + '=' + item.text),
-  ['page-title=Settings', 'section-templates=Templates', 'entry-title=Track row supporting line', 'entry-supporting=4:35 · \u22121.2 dBTP']);
+  ['page-title=Settings', 'section-templates=Templates', 'entry-title=Track row supporting line', 'entry-supporting=4:35 −1.2 dBTP']);
 for (const state of scenes.slice(1)) {
   const roles = drawnTexts(state).map(item => item.role);
   assert.deepEqual(roles.filter(role => !/^(preview-supporting|error|help|field-(name|value|insert))-/u.test(role) && !/^preview-title-/u.test(role)),
-    ['page-title', ...(state.layout === 'flow' ? ['section-preview'] : []), 'preview-note', 'field-label', 'template', 'section-fields', ...(expected(state).resetEnabled ? ['reset'] : [])], state.id);
-  // What a layout keeps fixed under the header: nothing but the title in `flow`, both rows in `rows`, both result lines in `lines`.
-  assert.deepEqual(roles.filter(role => pinned({ layout: state.layout, role })), ['page-title',
-    ...(state.layout === 'rows' ? ['preview-title-0', 'preview-supporting-0', 'preview-title-1', 'preview-supporting-1'] : []),
-    ...(state.layout === 'lines' ? ['preview-supporting-0', 'preview-supporting-1'] : [])], state.id);
-  assert.equal(roles.some(role => role.startsWith('preview-title-')), state.layout !== 'lines', state.id);
+    ['page-title', 'section-preview', 'preview-note', 'field-label', 'template', 'section-fields', ...(expected(state).resetEnabled ? ['reset'] : [])], state.id);
   assert.equal(roles.filter(role => role.startsWith('field-name-')).length, 7, state.id);
   assert.equal(new Set(roles).size, roles.length, state.id);
 }
-// Both preview rows draw a second line; the unanalysed one holds only the duration.
-assert.deepEqual(drawnTexts(scenes[1]).filter(item => item.role.startsWith('preview-')).map(item => item.role),
-  ['preview-title-0', 'preview-supporting-0', 'preview-title-1', 'preview-supporting-1', 'preview-note']);
+// Both preview rows draw a second line; the unanalysed one holds the duration and the space before the empty peak.
+assert.deepEqual(drawnTexts(scenes[1]).filter(item => item.role.startsWith('preview-')).map(item => item.role + '=' + item.text),
+  ['preview-title-0=Another Xronixle', 'preview-supporting-0=4:35 −1.2 dBTP', 'preview-title-1=Burning Aquamarine', 'preview-supporting-1=5:12 ',
+    'preview-note=From your library. The second file is not analysed yet.']);
 assert.equal(drawnTexts(scenes.find(state => state.id === 'unknown-field')).find(item => item.role === 'error-0').text, 'mi: unknown field peek');
 // Reset is on the page exactly for the states whose template is not the default.
-assert.deepEqual(scenes.filter(state => drawnTexts(state).some(item => item.role === 'reset')).map(state => state.id), ['unknown-field', 'open-formula', 'custom', 'custom-end',
-  'rows-unknown-field', 'rows-open-formula', 'rows-custom', 'lines-unknown-field', 'lines-open-formula', 'lines-custom']);
+assert.deepEqual(scenes.filter(state => drawnTexts(state).some(item => item.role === 'reset')).map(state => state.id), ['unknown-field', 'open-formula', 'custom', 'custom-end']);
 //endregion
 console.log('Template editor scenes: ' + scenes.length + ' states and their drawn text passed.');

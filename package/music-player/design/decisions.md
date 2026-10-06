@@ -2617,6 +2617,129 @@ not about appearance.
 The editor's layout on the Fold is still to be built and looked at.
 No production implementation is authorized by this record.
 
+### D91. The editor's preview scrolls with the page (2026-10-06)
+
+The editor study built three layouts of the preview,
+because at 200% text the baseline loses the preview while typing inside a call:
+the preview at the top of one scrolling page,
+both preview rows fixed under the header,
+and only the two result lines fixed under the header.
+The agent ranked the fixed result lines first and the scrolling baseline last.
+
+Asked through the question tool with the review page open,
+the human chose none of the offered options and wrote:
+"I've seen the preview,
+and I have to say this isn't the way.
+Least surprises vs the base platform is more appropriate,
+and it doesn't prevent users from wanting to see more in a easy manner.
+Preview scrolls."
+
+So the preview scrolls with the page,
+as the baseline has it,
+and nothing is fixed under the header.
+The two pinned layouts are rejected.
+The reason given is a standard beyond this page:
+prefer what surprises least against the base platform,
+when the user can still reach the rest easily.
+The agent's ranking weighed what stays in view at 200% text over that,
+and was wrong for this human.
+
+The rule the second build added,
+that the page scrolls while the field has focus so the lines under it clear the keyboard,
+was not asked about and is not decided by this answer.
+No production implementation is authorized by this record.
+
+### D92. The template language has no conditionals (2026-10-06)
+
+The study's assumptions were put to the human through the question tool:
+one template for the track row's supporting line;
+KWGT's spelling,
+with `mi`,
+`tf`,
+`tc`,
+`if` and `+`;
+the fields `title`,
+`file`,
+`ext`,
+`folder`,
+`path`,
+`len` and `peak`;
+the default template;
+and the D90 picks.
+The human answered:
+"Keep except conditionals.
+This is templating.
+For prior arts:
+We're not Vue,
+we're just HTML."
+
+So:
+
+- The language has no conditional.
+  `if` and the comparisons that exist only to feed it are removed.
+  This supersedes the entry of D89 that kept them.
+- Everything else put in that question stands and is no longer only assumed:
+  the one template studied,
+  the spelling without `if`,
+  the field list,
+  and the D90 picks.
+- The default template used `if` to leave out the true peak,
+  its separator and its unit while a file is not analysed.
+  It cannot stand as written.
+  What a row shows around a field that has no value is therefore open again,
+  and is asked of the human with options,
+  not picked by the agent.
+
+No production implementation is authorized by this record.
+
+### D93. An empty field is plain substitution (2026-10-06)
+
+Asked through the question tool what a template shows around a field that has no value,
+now that it has no conditional,
+the human chose plain substitution over optional brackets
+(foobar2000's `[...]`,
+which its reference calls a conditional section)
+and over before-and-after arguments
+(in the manner of git's `% x` placeholders).
+
+So:
+
+- Text outside `$...$` is always shown,
+  and a field with no value yields nothing,
+  as text in HTML would.
+  A separator a user writes next to an empty field stays in the line.
+- `mi(peak)` yields the true peak with its unit,
+  for example `−1.2 dBTP`,
+  and nothing while the file is not analysed yet.
+- The default template is `$tf(mi(len), m:ss)$ $mi(peak)$`.
+  An analysed file reads `4:35 −1.2 dBTP`;
+  one not analysed yet reads `5:12`.
+  D35's middle dot between duration and peak is gone from the default line.
+  Analysis is automatic (D84),
+  so the missing peak is temporary.
+
+No production implementation is authorized by this record.
+
+### D94. Where the page rests while typing is the platform's (2026-10-06)
+
+The second editor build replaced the platform's own scrolling to a focused field with an authored rule:
+scroll so the lines under the field clear the keyboard by 8dp,
+and never scroll the field's upper edge out of view.
+Asked through the question tool whether that should also follow the platform,
+as D91 asks of the preview,
+the human chose the platform default.
+
+So the authored rule is removed.
+When the field takes focus and the keyboard opens,
+the page rests wherever Android puts a focused text field.
+The first build's captures showed what that costs at 200% text:
+the last line under the field can end flush against the keyboard,
+and the field's label can slide under the header when the field and its help are taller than the visible page.
+This supersedes the last paragraph of D91,
+which left the rule undecided.
+
+No production implementation is authorized by this record.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

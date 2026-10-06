@@ -3,58 +3,44 @@ import { defaultTemplate, errorLines, evaluateTemplate, fields, helpAt } from '.
 //region Authored states of the template editor study, with what each must draw
 // One template is studied: the track row's supporting line (D35, D81). Every text a state draws is
 // computed here from the reference, so the native fixture's authored copy can be checked against
-// what the grammar yields. Design evidence only; no production implementation is authorized.
+// what the grammar yields. The preview scrolls with the page (D91) and the page rests where the
+// platform puts a focused field (D94). Design evidence only; no production implementation is authorized.
 
 /** Two files of the open library in the study: one analysed, one not analysed yet. */
 export const library = [
   { title: 'Another Xronixle', file: 'かめりあ(Camellia) - Another Xronixle', ext: 'flac', folder: 'Camellia',
-    path: 'Camellia/かめりあ(Camellia) - Another Xronixle.flac', len: 275, peak: '−1.2' },
+    path: 'Camellia/かめりあ(Camellia) - Another Xronixle.flac', len: 275, peak: '−1.2 dBTP' },
   { title: 'Burning Aquamarine', file: 'かめりあ(Camellia) - Burning Aquamarine', ext: 'flac', folder: 'Camellia',
     path: 'Camellia/かめりあ(Camellia) - Burning Aquamarine.flac', len: 312, peak: undefined },
 ];
 
 /** Stand-in rows for the preview when no library is open (D90). */
 export const standIns = [
-  { title: 'Track title', file: 'File name', ext: 'flac', folder: 'Folder', path: 'Folder/File name.flac', len: 200, peak: '−1.0' },
+  { title: 'Track title', file: 'File name', ext: 'flac', folder: 'Folder', path: 'Folder/File name.flac', len: 200, peak: '−1.0 dBTP' },
   { title: 'Track not analysed yet', file: 'File name', ext: 'flac', folder: 'Folder', path: 'Folder/File name.flac', len: 200, peak: undefined },
 ];
 
 /**
- * Where the editor draws its preview. `flow` puts two preview rows at the top of the scrolling page.
- * `rows` keeps those two rows fixed under the header. `lines` keeps only the two lines the template
- * yields fixed under the header, without titles.
- */
-export const layouts = ['flow', 'rows', 'lines'];
-
-/**
  * `caret` is a position in the template text and means the field has focus and the keyboard is open;
  * without it the field is not focused. `|` in `typed` marks that position and is not part of the template.
- * `state` names the authored native state a scene draws; several scenes draw one state under another
- * layout or scrolled to the page's end.
+ * `state` names the authored native state a scene draws; `position` is `end` only for a scene captured with
+ * the page scrolled to its end, which is how the capture shows the end of the page, not a behaviour.
  */
-function scene({ id, state = id, layout = 'flow', position = 'top', page = 'editor', typed, libraryOpen = true }) {
+function scene({ id, state = id, position = 'top', page = 'editor', typed, libraryOpen = true }) {
   const caret = typed.indexOf('|');
-  return { id, state, layout, position, page, template: typed.replace('|', ''), caret: caret < 0 ? undefined : caret, libraryOpen };
+  return { id, state, position, page, template: typed.replace('|', ''), caret: caret < 0 ? undefined : caret, libraryOpen };
 }
-const typing = [
-  ['help', defaultTemplate.replace('m:ss', 'm:|ss')],
-  ['unknown-field', '$tf(mi(len), m:ss)$ · $mi(peek)$ dBTP|'],
-  ['open-formula', '$tf(mi(len), m:ss)|'],
-];
-const changed = '$tc(up, mi(ext))$ · $tf(mi(len), m:ss)$';
+// A changed template whose separator stays when the peak is empty (D93), so the review shows what that means.
+const changed = '$tc(up, mi(ext))$ · $tf(mi(len), m:ss)$ · $mi(peak)$';
 export const scenes = [
   scene({ id: 'list', page: 'list', typed: defaultTemplate }),
   scene({ id: 'default', typed: defaultTemplate }),
-  ...typing.map(([id, typed]) => scene({ id, typed })),
+  scene({ id: 'help', typed: defaultTemplate.replace('m:ss', 'm:|ss') }),
+  scene({ id: 'unknown-field', typed: '$tf(mi(len), m:ss)$ $mi(peek)$|' }),
+  scene({ id: 'open-formula', typed: '$tf(mi(len), m:ss)|' }),
   scene({ id: 'custom', typed: changed }),
-  // The same state with the page scrolled to its end, so the whole field list and the way back are seen.
   scene({ id: 'custom-end', state: 'custom', position: 'end', typed: changed }),
   scene({ id: 'no-library', typed: defaultTemplate, libraryOpen: false }),
-  // Each pinned layout is shown for the three typing states and for one state at rest.
-  ...layouts.slice(1).flatMap(layout => [
-    ...typing.map(([state, typed]) => scene({ id: layout + '-' + state, state, layout, typed })),
-    scene({ id: layout + '-custom', state: 'custom', layout, typed: changed }),
-  ]),
 ];
 
 /** Every text the state draws that the grammar decides. */
@@ -70,7 +56,6 @@ export function expected(state) {
   return {
     id: state.id,
     state: state.state,
-    layout: state.layout,
     position: state.position,
     page: state.page,
     template: state.template,
@@ -96,13 +81,9 @@ export function drawnTexts(state) {
     return [{ role: 'page-title', text: 'Settings' }, { role: 'section-templates', text: 'Templates' },
       { role: 'entry-title', text: want.listEntry.title }, { role: 'entry-supporting', text: want.listEntry.supporting }];
   }
-  return [{ role: 'page-title', text: 'Supporting line' },
-    // A pinned preview has no heading of its own; it sits directly under the page header.
-    ...(want.layout === 'flow' ? [{ role: 'section-preview', text: 'Preview' }] : []),
-    ...want.previewRows.flatMap((row, index) => [
-      // The `lines` layout draws only what the template yields, without the row's title.
-      ...(want.layout === 'lines' ? [] : [{ role: 'preview-title-' + index, text: row.title }]),
-      // A row whose line is empty draws no text for it.
+  return [{ role: 'page-title', text: 'Supporting line' }, { role: 'section-preview', text: 'Preview' },
+    ...want.previewRows.flatMap((row, index) => [{ role: 'preview-title-' + index, text: row.title },
+      // A row whose line is empty draws no second line at all; a line of spaces is still drawn, as the native row does.
       ...(row.supporting === '' ? [] : [{ role: 'preview-supporting-' + index, text: row.supporting }])]),
     { role: 'preview-note', text: want.previewNote }, { role: 'field-label', text: 'Template' }, { role: 'template', text: want.template },
     ...want.errors.map((line, index) => ({ role: 'error-' + index, text: line })),
@@ -112,14 +93,6 @@ export function drawnTexts(state) {
       { role: 'field-value-' + field.insert, text: field.value === '' ? 'No value yet' : field.value }, { role: 'field-insert-' + field.insert, text: field.insert }]),
     // The way back to the default is drawn only when there is something to reset; a dimmed button would differ by colour alone.
     ...(want.resetEnabled ? [{ role: 'reset', text: 'Reset to default' }] : [])];
-}
-
-/** Whether a role belongs to the part of a layout that stays fixed under the header and never scrolls. */
-export function pinned({ layout, role }) {
-  if (role === 'page-title') return true;
-  if (layout === 'rows') return /^preview-(title|supporting)-/u.test(role);
-  if (layout === 'lines') return /^preview-supporting-/u.test(role);
-  return false;
 }
 //endregion
 
