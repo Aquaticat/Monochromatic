@@ -2,7 +2,8 @@
 //!
 //! The scripted server holds back its answer to the first hint request and writes it right
 //! after the answer to the second, so the earlier window is answered last on the same stream.
-//! A hover round trip afterwards proves the worker has handled that late answer.
+//! The test waits until the report shows both answers written, so nothing depends on when the
+//! worker reads them, and a hover round trip afterwards proves the worker has handled both.
 
 use crate::support::{self, Probe};
 use ide_app::language::{
@@ -20,6 +21,23 @@ fn first_hint_request(lines: &[Value]) -> Option<Value> {
         .iter()
         .find(|line| return line["received"] == "textDocument/inlayHint")
         .map(|line| return line["id"].clone());
+}
+
+/// How many answers to `textDocument/inlayHint` requests the server has written so far.
+fn hint_answers_sent(lines: &[Value]) -> usize {
+    // `filter` keeps the received hint requests; `map` lends each one's id.
+    let asked: Vec<&Value> = lines
+        .iter()
+        .filter(|line| return line["received"] == "textDocument/inlayHint")
+        .map(|line| return &line["id"])
+        .collect();
+    // An answer is a written message with an id and no method.
+    return lines
+        .iter()
+        .filter(|line| {
+            return line["sent"]["method"].is_null() && asked.contains(&&line["sent"]["id"]);
+        })
+        .count();
 }
 
 /// The hints of an earlier window, answered last, do not replace those of the window shown now.
@@ -65,15 +83,12 @@ fn late_answer_for_an_earlier_window_does_not_replace_the_current_hints() {
             .request_hints(probe.stamp(), current)
             .expect("second window")
     );
-    probe.until("hints for the current window", |seen| {
-        return seen
-            .hints
-            .as_ref()
-            .is_some_and(|hints| return (hints.first_line, hints.last_line) == (50, 80));
+    // The server writes the late answer right after the current one.
+    support::report_until(&root, "both hint answers written", |seen| {
+        return hint_answers_sent(seen) == 2;
     });
-    // The server wrote the late answer right after the current one and before it reads this
-    // hover, so the hover answer follows the late answer on the stream, and the worker handles
-    // the late answer first.
+    // Both answers were written before the server reads this hover, so the hover answer follows
+    // them on the stream, and the worker handles both hint answers first.
     let number = probe.request(RequestKind::Hover, 0);
     assert!(matches!(
         probe.answers(number)[0].outcome,
