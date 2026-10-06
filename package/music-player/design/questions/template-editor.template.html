@@ -130,6 +130,9 @@ There is no Save step; <strong>Reset to default</strong> is drawn only when the 
 does not, and something has to give. The baseline lets the preview scroll away, which hides the result of each
 keystroke. Two alternatives keep the preview fixed under the header. In all three, the page scrolls while the field has
 focus so that the lines under the field clear the keyboard, as far as they fit.</p>
+<p>The lines marked <strong>Measured</strong> under each option are read from the captures. They count the preview, the
+field and the lines under it. The field list sits under the field in every option and is mostly out of view whenever the
+keyboard is open; that is a separate concern, named at the end of this page.</p>
 <p><button type="button" id="show-large">Switch every image to 200% text</button></p>
 <section data-layout="flow" aria-labelledby="option-flow-title"><h3 id="option-flow-title">Preview at the top of the page (the baseline)</h3>
 <label><input type="radio" name="layout" value="flow" required> Take this: the preview scrolls with the page</label>
@@ -257,15 +260,19 @@ function render() {
   }
   controls.scale.value = String(state.fontScale);
 }
-// One sentence on what a view keeps in view, from the roles the builder recorded.
-function visibility(fact) {
-  const hidden = words(fact.outOfView);
-  const edge = words(fact.atEdge).filter(word => !hidden.includes(word));
-  if (hidden.length === 0 && edge.length === 0) return 'everything this state draws is in view';
+// One sentence on what a view keeps in view, from the roles the builder recorded. `only` narrows it to some roles.
+function visibility(fact, only) {
+  const kept = roles => only ? roles.filter(role => only.test(role)) : roles;
+  const hidden = words(kept(fact.outOfView));
+  const edge = words(kept(fact.atEdge)).filter(word => !hidden.includes(word));
+  if (hidden.length === 0 && edge.length === 0) return only ? 'all in view' : 'everything this state draws is in view';
   return [hidden.length ? 'not in view: ' + hidden.join(', ') : '', edge.length ? 'at an edge of the view: ' + edge.join(', ') : '']
     .filter(Boolean).join(' · ');
 }
 // What each layout keeps in view while typing, said per panel and text size from the same recorded facts.
+// Only the preview, the field and the lines under it are counted here: the field list and Reset to default sit
+// under the field in every layout and are mostly out of view whenever the keyboard is open.
+const aroundField = /^(section-preview|preview-|field-label|template|error-|help-)/;
 const typing = [['help', 'typing inside a call'], ['unknown-field', 'an unknown field'], ['open-formula', 'a formula left open']];
 function typingFact({ layout, panel, scale, scene }) {
   const fact = facts[[panel, (layout === 'flow' ? '' : layout + '-') + scene, 'light', scale].join('/')];
@@ -277,12 +284,11 @@ function measured() {
     const layout = list.dataset.measured;
     list.textContent = '';
     for (const scale of [1, 2]) for (const panel of ['inner', 'cover']) {
-      const parts = typing.map(entry => [entry[1], visibility(typingFact({ layout, panel, scale, scene: entry[0] }))]);
-      const whole = parts.every(part => part[1] === 'everything this state draws is in view');
+      const parts = typing.map(entry => [entry[1], visibility(typingFact({ layout, panel, scale, scene: entry[0] }), aroundField)]);
+      const whole = parts.every(part => part[1] === 'all in view');
       const item = document.createElement('li');
-      // The field list under the field is out of view in every typing state of every layout; it is named once, under the question.
       item.textContent = 'Measured, ' + panel + ' panel, ' + scale * 100 + '% text: ' +
-        (whole ? 'everything is in view in all three typing states.' : parts.map(part => part[0] + ': ' + part[1]).join('; ') + '.');
+        (whole ? 'the preview, the field and the lines under it are in view in all three typing states.' : parts.map(part => part[0] + ': ' + part[1]).join('; ') + '.');
       list.append(item);
     }
   }
