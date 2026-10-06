@@ -28,6 +28,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'score-agreement',
     argv: process.argv,
+    env: process.env,
     run: reportGrades,
   },);
 

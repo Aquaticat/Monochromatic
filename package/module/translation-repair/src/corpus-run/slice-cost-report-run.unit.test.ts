@@ -22,8 +22,8 @@ import {
   reportSliceCost,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import { runBuiltWithoutKeys, } from './built-command-without-keys.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { rejectionOf, } from './rejection-of.test-fixture.ts';
@@ -242,7 +242,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'slice-cost-report',
               args: [path,],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
@@ -275,7 +275,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'slice-cost-report',
               args: [path,],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
@@ -303,7 +303,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'slice-cost-report',
               args: [path,],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
@@ -324,7 +324,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'slice-cost-report',
               args: [],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
@@ -345,7 +345,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'slice-cost-report',
               args: ['--tabby', 'nap.log'],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },

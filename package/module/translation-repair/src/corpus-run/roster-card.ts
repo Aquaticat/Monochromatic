@@ -36,6 +36,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'roster-card',
     argv: process.argv,
+    env: process.env,
     run: printCard,
   },);
 

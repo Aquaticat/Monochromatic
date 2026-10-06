@@ -1,9 +1,9 @@
 /**
  Holds the task runner guard to every built command (the guard is
  `task-runner-guard.ts`): a command refuses to run in a process that holds
- provider keys unless its own task started it, so a task that starts a built
- command must say so, and an entry file must hand the guard the environment it
- runs in.
+ provider keys unless that process names the command as the one it means to
+ start, so a task that starts a built command must name it, and an entry file
+ must hand the guard the environment it runs in.
 
  WHAT THE SCAN READS, for each runner entry `src/build-entries.ts` lists (the
  library index left out):

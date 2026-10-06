@@ -7,10 +7,10 @@
  each state leaves, and the refusal of a malformed flag as one line. The
  functions it prints with have their own files.
 
- THE CHILD CARRIES NO PROVIDER KEY. `runBuiltReport` removes every variable
- whose name ends in `_API_KEY` from the environment it hands the child and
- points the runs directory at a scratch directory, so nothing here reads a real
- run.
+ THE CHILD CARRIES NO PROVIDER KEY. `runBuiltCommand` removes every variable
+ whose name ends in `_API_KEY` from the environment it hands the child, and
+ each case points the runs directory at a scratch directory, so nothing here
+ reads a real run.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -32,7 +32,7 @@ import {
   SUMMARY_POINTER,
   writeContest,
 } from './ledger-report.test-fixture.ts';
-import { runBuiltReport, } from './report-built-run.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -71,10 +71,10 @@ await describe({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'ledger-report',
           args: [],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({
@@ -111,13 +111,13 @@ await describe({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'ledger-report',
           args: [
             '--model',
             'tabby-1',
           ],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({
@@ -148,10 +148,10 @@ await describe({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'ledger-report',
           args: [],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({
@@ -186,10 +186,10 @@ await describe({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'ledger-report',
           args: [],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({
@@ -218,10 +218,10 @@ await describe({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'ledger-report',
           args: ['--model',],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run.code,).toBe(REFUSED_AS_STATED,);

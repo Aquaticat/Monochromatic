@@ -186,6 +186,22 @@ launch under `mise run`:
 a bare `node dist/...` launch has no key,
 and since 2026-08-25 it fails at once with the refusal instead of running half-dark.
 
+Since 2026-10-06 a built command also refuses the opposite start:
+a process that holds provider keys and does not name the command as the one it means to start
+(`src/task-runner-guard.ts`; exit 6, before the command line is read).
+A key here is any variable whose name ends in `_API_KEY` and whose value is not blank.
+The command's task names it by setting `TRANSLATION_REPAIR_STARTED_BY` to the command's name,
+so every `mise run //package/module/translation-repair:<command>` start is unchanged.
+A start that must not go through the task,
+because every task builds the package first and nothing may rebuild while a pass is running,
+sets the variable by hand for that one start:
+`TRANSLATION_REPAIR_STARTED_BY=<command>` before the launch line
+(`doc/runbook/translation-repair-corpus-pass.md` holds the two cases).
+A process that holds no key runs as before, with or without the variable.
+The guard stops a start nobody meant,
+a built file run by hand from a shell that happens to hold keys;
+it is not access control.
+
 Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N` line per seat to stderr,
 and a `SEATS DARK:` line naming every seat that was asked and never once produced a usable answer.
 A dark seat is a provider that cannot serve it,

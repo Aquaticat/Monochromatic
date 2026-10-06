@@ -1,6 +1,7 @@
 import { refusalText, } from '../refusal-text.ts';
 import { RunJsonUnreadableError, } from '../run-json-read.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import { taskRunnerVerdict, } from '../task-runner-guard.ts';
 import {
   RUN_SEATS,
   seatReportLines,
@@ -59,6 +60,12 @@ import {
 // A VERDICT SURVIVES because `process.exitCode` is set only in the catch here,
 // which was measured before the change rather than read off this file:
 // `verify-published` still exits `2` on a run it cannot check, byte-identical.
+//
+// THE FIRST THING IT DOES, before the command line is read, is ask the task
+// runner guard (`task-runner-guard.ts`) whether the process may run the command:
+// a process that holds provider keys and was not started by the command's own
+// task is refused as stated, and so every entry file hands in the environment
+// it runs in, since only a real process holds one.
 //
 // `ledger-report.ts` is wrapped like the rest, but almost nothing reaches this
 // from it. It reads a whole directory and reports the files that refused as a
@@ -195,6 +202,12 @@ function printingSeatReport({ seats, }: { readonly seats: SeatTally; },): Dispos
  argument the command does not read is refused rather than ignored (ledger
  B75)
 
+ @param env - environment of the process the command runs in, handed in by
+ the entry file because only a real process holds one; read before anything
+ else, so a process that holds provider keys and does not name the command as
+ the one it means to start refuses before its command line is read
+ (`task-runner-guard.ts`)
+
  @param run - CLI body to run, given the command line read
 
  @param seats - tally to print when the command ends; defaults to the
@@ -203,18 +216,20 @@ function printingSeatReport({ seats, }: { readonly seats: SeatTally; },): Dispos
  @example
  ```ts
  if (import.meta.main)
-   await reportingRefusals({ what: 'score-verify', argv: process.argv, run: main, },);
+   await reportingRefusals({ what: 'score-verify', argv: process.argv, env: process.env, run: main, },);
  ```
  */
 export async function reportingRefusals<const Command extends CommandName>(
   {
     what,
     argv,
+    env,
     run,
     seats = RUN_SEATS,
   }: {
     readonly what: Command;
     readonly argv: readonly string[];
+    readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly run: (input: { readonly line: CommandLineOf<Command>; },) => Promise<void>;
     readonly seats?: SeatTally;
   },
@@ -227,6 +242,20 @@ export async function reportingRefusals<const Command extends CommandName>(
   using _report = printingSeatReport({ seats, },);
 
   try {
+    // FIRST, before the command line is read and before the body touches a
+    // file, a clone or the network: a process that holds provider keys runs a
+    // command only when it names that command as the one it means to start,
+    // which the command's task does for it.
+    /**
+     Whether this process may run the command.
+     */
+    const verdict = taskRunnerVerdict({
+      env,
+      command: what,
+    },);
+    if (!verdict.allowed)
+      throw new StatedRefusalError({ says: verdict.says, },);
+
     await run({
       line: readCommandLine({
         command: what,

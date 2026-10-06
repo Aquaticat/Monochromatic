@@ -4,7 +4,7 @@
 
  The runner reads files and prints precision and agreement, so its as-built
  cases run to the end of the report on a fixture and read the whole of what
- it printed. Every child is started by `runBuiltScore`, whose environment
+ it printed. Every child is started by `runBuiltCommand`, whose environment
  carries no variable ending in `_API_KEY`.
 
  Fixtures are cat-themed invention. No corpus content appears here.
@@ -22,11 +22,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import {
-  builtCommand,
-  runBuiltScore,
-} from './score-built-command.test-fixture.ts';
 import {
   catDrawSheetText,
   catPreGradesText,
@@ -36,7 +33,7 @@ import {
 /**
  Built command under test.
  */
-const COMMAND = builtCommand({ name: 'score-agreement', },);
+const COMMAND = 'score-agreement';
 
 /**
  Precision line of the five-item sheet every case grades.
@@ -113,7 +110,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [
                 '--sheet',
@@ -123,8 +120,7 @@ await describe({
                 '--pre-grades',
                 paths.preGrades,
               ],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(0,);
@@ -162,14 +158,13 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [
                 '--sheet',
                 sheet,
               ],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(0,);
@@ -192,11 +187,10 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: ['--sheet',],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(6,);
@@ -235,7 +229,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [
                 '--sheet',
@@ -243,8 +237,7 @@ await describe({
                 '--manifest',
                 manifest,
               ],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(6,);

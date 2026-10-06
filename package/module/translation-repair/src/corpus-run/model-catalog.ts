@@ -32,6 +32,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'model-catalog',
     argv: process.argv,
+    env: process.env,
     run: printDrift,
   },);
 

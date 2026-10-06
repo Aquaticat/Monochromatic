@@ -15,6 +15,15 @@
  children). `test-children-keyless.unit.test.ts` fails any other test file
  that imports a spawning module or calls a spawning function.
 
+ THIS FIXTURE IS ALSO THE TEST WORLD'S TASK RUNNER. A built command refuses to
+ run in a process that holds provider keys unless that process names the
+ command as the one it means to start (`task-runner-guard.ts`), which the
+ command's task does by setting `TRANSLATION_REPAIR_STARTED_BY` to the
+ command's name. `runBuiltCommand` does the same for the command it starts,
+ after it removes the names the rule names, so a case that hands its child an
+ invented key still reaches what the command does; a case that wants the
+ refusal says so through `startedBy`.
+
  @module
  */
 
@@ -24,7 +33,10 @@ import { join, } from 'node:path';
 
 import nanoSpawn, { type Result, } from 'nano-spawn';
 
-import { isCredentialName, } from '../dist/final/node/index.mjs';
+import {
+  isCredentialName,
+  STARTED_BY_VARIABLE,
+} from '../dist/final/node/index.mjs';
 
 /**
  Prefix of every variable the package reads for its own settings.
@@ -235,6 +247,52 @@ export async function runKeyless(
 }
 
 /**
+ Which command a child's environment names as the one it means to start: the
+ command it runs, as that command's own task would name it (the marker names
+ the command); nothing (no marker); or another command (the marker names that
+ one).
+ */
+export type StartedBy =
+  | 'its own task'
+  | 'nothing'
+  | {
+    /**
+     Name of the other command the marker names.
+     */
+    readonly otherCommand: string;
+  };
+
+/**
+ The marker variable a child gets, as variables to add to its environment.
+
+ @param command - command the child runs
+
+ @param startedBy - who the marker says started it
+
+ @returns The marker, or no variable at all where nothing started it
+
+ @example
+ ```ts
+ const marker = markerFor({ command: 'spend-report', startedBy: 'its own task', },);
+ ```
+ */
+function markerFor(
+  {
+    command,
+    startedBy,
+  }: {
+    readonly command: string;
+    readonly startedBy: StartedBy;
+  },
+): Readonly<Record<string, string>> {
+  if (startedBy === 'nothing')
+    return {};
+  if (startedBy === 'its own task')
+    return { [STARTED_BY_VARIABLE]: command, };
+  return { [STARTED_BY_VARIABLE]: startedBy.otherCommand, };
+}
+
+/**
  Runs one built command (`dist/final/node/<command>.mjs`) with the keyless
  environment and reports how it ended whatever its exit code, for the
  as-built suites.
@@ -247,6 +305,9 @@ export async function runKeyless(
  lookup cache directory or the corpus clone directory
 
  @param cwd - directory it runs in, the package's own where absent
+
+ @param startedBy - who the child's marker says started it: the task of this
+ command unless the case says otherwise
 
  @returns Exit code, then stdout and stderr whole
 
@@ -263,11 +324,13 @@ export async function runBuiltCommand(
     args = [],
     env = {},
     cwd = PACKAGE_ROOT,
+    startedBy = 'its own task',
   }: {
     readonly command: string;
     readonly args?: readonly string[];
     readonly env?: Readonly<Record<string, string>>;
     readonly cwd?: string;
+    readonly startedBy?: StartedBy;
   },
 ): Promise<ChildRun> {
   return await runKeyless({
@@ -283,6 +346,12 @@ export async function runBuiltCommand(
       ...args,
     ],
     cwd,
-    extra: env,
+    extra: {
+      ...env,
+      ...markerFor({
+        command,
+        startedBy,
+      },),
+    },
   },);
 }

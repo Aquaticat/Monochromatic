@@ -45,6 +45,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'editor-calibrate',
     argv: process.argv,
+    env: process.env,
     run: main,
   },);
 

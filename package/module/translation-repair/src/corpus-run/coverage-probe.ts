@@ -53,6 +53,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'coverage-probe',
     argv: process.argv,
+    env: process.env,
     run: function runCoverageProbeEntry({ line, },) {
       return runCoverageProbe({
         line,

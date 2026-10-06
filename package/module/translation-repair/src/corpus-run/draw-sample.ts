@@ -36,6 +36,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'draw-sample',
     argv: process.argv,
+    env: process.env,
     run: drawSample,
   },);
 

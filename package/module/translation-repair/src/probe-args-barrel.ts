@@ -2,7 +2,9 @@
 // What an operator types to the corpus-run runners: the one reader of the
 // whole command line and the declaration of what each runner reads (ledger
 // B75), the readers of flag values every probe and audit shares, the bare
-// count a bench is asked for, and the coverage and fidelity probes' flags.
+// count a bench is asked for, the coverage and fidelity probes' flags, and the
+// verdict on whether the process an operator typed into may run a command at
+// all (the task runner guard).
 // Split out of `corpus-barrel.ts` when that file reached its line budget, at
 // the seam its earlier splits used, by AUDIENCE: these readers answer to the
 // person at the command line, and the pass driver calls none of them. They are
@@ -36,5 +38,9 @@ export {
   DEFAULT_TRIAL_CAP,
   readFidelityArguments,
 } from './corpus-run/judge-fidelity-args.ts';
+export {
+  STARTED_BY_VARIABLE,
+  taskRunnerVerdict,
+} from './task-runner-guard.ts';
 
 //endregion Probe arguments barrel

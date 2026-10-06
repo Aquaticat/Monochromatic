@@ -26,6 +26,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'run-timing-report',
     argv: process.argv,
+    env: process.env,
     run: reportRunTiming,
   },);
 

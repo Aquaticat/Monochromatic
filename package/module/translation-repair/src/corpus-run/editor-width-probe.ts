@@ -50,6 +50,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'editor-width-probe',
     argv: process.argv,
+    env: process.env,
     run: main,
   },);
 

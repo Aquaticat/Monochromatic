@@ -5,7 +5,7 @@
  The runner reads settled artifacts and prints the population a judge
  crosscheck would run over, so its as-built cases run to the end of the report
  on a fixture and read the whole of what it printed. Every child is started
- by `runBuiltScore`, whose environment carries no variable ending in `_API_KEY`.
+ by `runBuiltCommand`, whose environment carries no variable ending in `_API_KEY`.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -25,16 +25,13 @@ import {
   MITTENS_ARTIFACT,
   writeScoreArtifacts,
 } from './score-artifacts.test-fixture.ts';
-import {
-  builtCommand,
-  builtPipelineDigest,
-  runBuiltScore,
-} from './score-built-command.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
+import { builtPipelineDigest, } from './built-pipeline-digest.test-fixture.ts';
 
 /**
  Built command under test.
  */
-const COMMAND = builtCommand({ name: 'score-crosscheck', },);
+const COMMAND = 'score-crosscheck';
 
 /**
  What the pool prints as the pipeline that read it.
@@ -90,11 +87,10 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(0,);

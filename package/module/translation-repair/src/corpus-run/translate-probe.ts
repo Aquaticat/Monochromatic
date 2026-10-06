@@ -29,6 +29,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'translate-probe',
     argv: process.argv,
+    env: process.env,
     run: function runTranslateProbe() {
       return probeTranslate({
         entryId: PROBE_ENTRY,

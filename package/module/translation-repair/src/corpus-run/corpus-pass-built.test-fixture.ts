@@ -4,7 +4,7 @@ import {
   digestPipeline,
   readHeadSha,
 } from '../../dist/final/node/index.mjs';
-import { runBuiltWithoutKeys, } from './built-command-without-keys.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import type { CorpusCloneEntry, } from './corpus-pass-clone.test-fixture.ts';
 
 //region Corpus pass built command fixture
@@ -129,7 +129,7 @@ export async function runPass(
     readonly settings: Readonly<Record<string, string>>;
   },
 ): Promise<PassRun> {
-  return await runBuiltWithoutKeys({
+  return await runBuiltCommand({
     command: 'corpus-pass',
     args,
     env: {

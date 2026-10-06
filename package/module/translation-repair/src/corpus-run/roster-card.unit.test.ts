@@ -18,7 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runBuiltKeyless, } from './keyless-sampler-child.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -43,11 +43,11 @@ await describe({
         return it({
           name: `REFUSES as stated and exits 6, naming the key of ${provider}, when that key is not set`,
           fn: async () => {
-            // The keys are withheld by `runBuiltKeyless`, which builds the child's
+            // The keys are withheld by `runBuiltCommand`, which builds the child's
             // whole environment from the parent's without any `_API_KEY` variable.
-            const run = await runBuiltKeyless({
+            const run = await runBuiltCommand({
               command: 'roster-card',
-              argv: [
+              args: [
                 provider,
                 'hf:cat/Mittens-1',
               ],
@@ -65,9 +65,9 @@ await describe({
     it({
       name: 'REFUSES a provider that is none of the four, quoting what was typed, before any key is read',
       fn: async () => {
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'roster-card',
-          argv: [
+          args: [
             'bogus',
             'hf:cat/Mittens-1',
           ],
@@ -85,9 +85,9 @@ await describe({
     it({
       name: 'REFUSES a flag the command does not read, exits 6 and prints the refusal alone',
       fn: async () => {
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'roster-card',
-          argv: [
+          args: [
             'synthetic',
             'hf:cat/Mittens-1',
             '--flag',
@@ -106,9 +106,9 @@ await describe({
     it({
       name: 'REFUSES a command line with no provider and no served id, exits 6 and says what it needs',
       fn: async () => {
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'roster-card',
-          argv: [],
+          args: [],
           env: {},
         },);
 

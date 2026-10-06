@@ -28,9 +28,9 @@ import {
   MODEL_CARDS,
   reportCapCensus,
 } from '../../dist/final/node/index.mjs';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from '../roster-seats.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import { runBuiltWithoutKeys, } from './built-command-without-keys.test-fixture.ts';
 import {
   CAP_CENSUS_CLOSING_NOTE,
   spendLine,
@@ -329,7 +329,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'cap-census',
               args: [
                 scratch.path,
@@ -361,7 +361,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'cap-census',
               args: [],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
@@ -383,7 +383,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'cap-census',
               args: ['--tabby',],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },

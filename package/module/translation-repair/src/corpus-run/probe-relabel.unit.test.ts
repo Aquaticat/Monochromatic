@@ -17,8 +17,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import { runBuiltWithoutKeys, } from './keyless-built-command.test-fixture.ts';
+import { scratchPlaces, } from './keyless-built-command.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets when a run file would not read.
@@ -46,10 +47,12 @@ await describe({
             /**
              What the command wrote with every key withheld.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'probe-relabel',
-              runsDir: scratch.path,
-              scratchDir: scratch.path,
+              env: scratchPlaces({
+                runsDir: scratch.path,
+                scratchDir: scratch.path,
+              },),
             },);
 
             expect(run.code,).toBe(COULD_NOT_READ,);
@@ -82,10 +85,12 @@ await describe({
             /**
              What the command wrote with every key withheld.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'probe-relabel',
-              runsDir: scratch.path,
-              scratchDir: scratch.path,
+              env: scratchPlaces({
+                runsDir: scratch.path,
+                scratchDir: scratch.path,
+              },),
             },);
 
             expect(run.code,).toBe(0,);
@@ -114,11 +119,13 @@ await describe({
             /**
              What the command wrote given one argument.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'probe-relabel',
-              runsDir: scratch.path,
-              scratchDir: scratch.path,
               args: ['--bogus',],
+              env: scratchPlaces({
+                runsDir: scratch.path,
+                scratchDir: scratch.path,
+              },),
             },);
 
             expect(run.code,).toBe(6,);

@@ -1,11 +1,9 @@
 /**
- A built corpus-run command run in a child process that holds no provider key,
- and a throwaway corpus repository for it to read.
+ A throwaway corpus repository for the as-built suites of the probes to read,
+ and what those suites share around it.
 
- TEST SUPPORT, NOT PACKAGE SOURCE. The child is started by the shared keyless
- fixture (`child-environment.test-fixture.ts`), which removes every provider
- key and every setting of the package from its environment before the
- variables a case names are set.
+ TEST SUPPORT, NOT PACKAGE SOURCE. A child is started by the shared keyless
+ fixture (`child-environment.test-fixture.ts`) and by nothing here.
 
  Fixtures are invented and cat-themed.
 
@@ -28,10 +26,6 @@ import type {
   SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 import { namingFixtureGit, } from '../archive-naming.test-fixture.ts';
-import {
-  type ChildRun,
-  runBuiltCommand,
-} from '../child-environment.test-fixture.ts';
 import { criticClient, } from '../critic-scripted-client.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
@@ -39,17 +33,6 @@ import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
  Native executable, never the current repository's command-policy wrapper.
  */
 const REAL_GIT = await resolveGit();
-
-/**
- What a built command wrote and how it exited, under the name these suites
- call it by.
-
- @example
- ```ts
- const run: BuiltRun = { code: 0, stdout: 'PROBE done\n', stderr: '', };
- ```
- */
-export type BuiltRun = ChildRun;
 
 /**
  A throwaway corpus repository and the commit a run reads it at.
@@ -75,51 +58,6 @@ type ProbeCorpus = AsyncDisposable & {
    */
   readonly pin: CorpusPin;
 };
-
-/**
- Runs a built command with every variable whose name ends in `_API_KEY`
- removed from its environment, so the child can neither refuse for the wrong
- reason nor spend whatever the runner's own environment holds.
-
- @param command - built entry file's name, such as `sentinel-probe`
-
- @param args - arguments after it
-
- @param runsDir - throwaway runs directory the child writes under, required so
- no case leaves it to the worktree's own
-
- @param env - further variables added to the keyless environment, which a case
- uses to point the corpus and the caches at throwaway places
-
- @returns Exit code and both streams
-
- @example
- ```ts
- const run = await runBuiltWithoutKeys({ command: 'sentinel-probe', args: [], runsDir, env: {}, },);
- ```
- */
-export async function runBuiltWithoutKeys(
-  {
-    command,
-    args,
-    runsDir,
-    env,
-  }: {
-    readonly command: string;
-    readonly args: readonly string[];
-    readonly runsDir: string;
-    readonly env: Readonly<Record<string, string>>;
-  },
-): Promise<BuiltRun> {
-  return await runBuiltCommand({
-    command,
-    args,
-    env: {
-      ...env,
-      TRANSLATION_REPAIR_RUNS_DIR: runsDir,
-    },
-  },);
-}
 
 /**
  Builds a repository of invented files committed once, for a run to read as

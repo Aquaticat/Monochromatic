@@ -11,6 +11,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'cap-census',
     argv: process.argv,
+    env: process.env,
     run: reportCapCensus,
   },);
 

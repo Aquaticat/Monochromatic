@@ -24,12 +24,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { prepareDocumentPair, } from '../../dist/final/node/index.mjs';
+import {
+  type ChildRun,
+  runBuiltCommand,
+} from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
-  type BuiltRun,
   corpusEnvOf,
   makeProbeCorpus,
-  runBuiltWithoutKeys,
 } from './probes-b-built-command.test-fixture.ts';
 import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
 
@@ -119,7 +121,7 @@ async function runOverOneArtifact(
     readonly claims: 'own' | 'another';
     readonly args: readonly string[];
   },
-): Promise<BuiltRun> {
+): Promise<ChildRun> {
   await using corpus = await makeProbeCorpus({
     files: {
       'people/Mittens/page.md': SOURCE_PAGE,
@@ -153,11 +155,13 @@ async function runOverOneArtifact(
       ),
     'utf8',
   );
-  return await runBuiltWithoutKeys({
+  return await runBuiltCommand({
     command: 'displacement-probe',
     args,
-    runsDir: runs.path,
-    env: corpusEnvOf({ corpus, },),
+    env: {
+      ...corpusEnvOf({ corpus, },),
+      TRANSLATION_REPAIR_RUNS_DIR: runs.path,
+    },
   },);
 }
 
@@ -169,11 +173,13 @@ await describe({
       fn: async () => {
         await using corpus = await makeProbeCorpus({ files: { 'people/Mittens/page.md': SOURCE_PAGE, }, },);
         await using runs = await scratchDir({ prefix: 'displacement-probe-runs-', },);
-        const run = await runBuiltWithoutKeys({
+        const run = await runBuiltCommand({
           command: 'displacement-probe',
           args: [],
-          runsDir: runs.path,
-          env: corpusEnvOf({ corpus, },),
+          env: {
+            ...corpusEnvOf({ corpus, },),
+            TRANSLATION_REPAIR_RUNS_DIR: runs.path,
+          },
         },);
 
         expect({

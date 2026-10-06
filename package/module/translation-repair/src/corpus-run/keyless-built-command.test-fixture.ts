@@ -1,21 +1,17 @@
 import { join, } from 'node:path';
 
-import {
-  type ChildRun,
-  runBuiltCommand,
-} from '../child-environment.test-fixture.ts';
-
 //region Keyless built command
-// RUNS A BUILT RUNNER IN A CHILD PROCESS THAT CARRIES NO PROVIDER KEY, so a
-// case can read what the real command prints and how it exits without any
-// chance of a call leaving the machine, whatever the parent's own
-// environment holds.
+// WHAT AN AS-BUILT SUITE SHARES AROUND ITS CHILD: the places a runner reads
+// from the operator's machine, pointed at directories the case owns, and the
+// whole stderr a runner leaves when it reaches its first call with no provider
+// key set.
 //
-// TEST SUPPORT, NOT PACKAGE SOURCE. The child is started by the shared keyless
-// fixture (`child-environment.test-fixture.ts`), which removes every provider
-// key and every setting of the package from its environment, and the three
-// places a runner reads from the operator's machine (the runs directory, the
-// lookup cache and the corpus clone) point at directories the case owns.
+// TEST SUPPORT, NOT PACKAGE SOURCE. No child is started here. A case starts
+// its child with `runBuiltCommand` of `child-environment.test-fixture.ts`,
+// which removes every provider key and every setting of the package from the
+// child's environment, so a case can read what the real command prints and how
+// it exits without any chance of a call leaving the machine, whatever the
+// parent's own environment holds.
 
 /**
  The whole stderr a runner leaves when it reaches its first call with no
@@ -38,53 +34,44 @@ export function noKeyRefusal({ command, }: { readonly command: string; },): stri
 }
 
 /**
- Runs one built runner with every provider key withheld.
+ The three places a runner reads from the operator's machine, each pointed at
+ a directory the case owns.
 
- @param command - name of the built runner, as `build-entries.ts` names it
-
- @param runsDir - directory the child treats as its runs directory, owned by
- the calling case
+ @param runsDir - directory the child treats as its runs directory
 
  @param scratchDir - directory the child's lookup cache and corpus clone
  variables point under, so neither names the operator's own
 
- @param args - arguments after the script, none by default
-
- @returns Exit code and both streams
+ @returns Variables to hand `runBuiltCommand` as its `env`
 
  @example
  ```ts
- const run = await runBuiltWithoutKeys({ command: 'probe-sensitivity', runsDir, scratchDir, },);
+ const run = await runBuiltCommand({
+   command: 'probe-sensitivity',
+   env: scratchPlaces({ runsDir: scratch.path, scratchDir: scratch.path, },),
+ },);
  ```
  */
-export async function runBuiltWithoutKeys(
+export function scratchPlaces(
   {
-    command,
     runsDir,
     scratchDir,
-    args = [],
   }: {
-    readonly command: string;
     readonly runsDir: string;
     readonly scratchDir: string;
-    readonly args?: readonly string[];
   },
-): Promise<ChildRun> {
-  return await runBuiltCommand({
-    command,
-    args,
-    env: {
-      TRANSLATION_REPAIR_RUNS_DIR: runsDir,
-      TRANSLATION_REPAIR_LOOKUP_CACHE_DIR: join(
-        scratchDir,
-        'lookup-cache',
-      ),
-      TRANSLATION_REPAIR_CORPUS_CLONE_DIR: join(
-        scratchDir,
-        'corpus-clone',
-      ),
-    },
-  },);
+): Readonly<Record<string, string>> {
+  return {
+    TRANSLATION_REPAIR_RUNS_DIR: runsDir,
+    TRANSLATION_REPAIR_LOOKUP_CACHE_DIR: join(
+      scratchDir,
+      'lookup-cache',
+    ),
+    TRANSLATION_REPAIR_CORPUS_CLONE_DIR: join(
+      scratchDir,
+      'corpus-clone',
+    ),
+  };
 }
 
 //endregion Keyless built command

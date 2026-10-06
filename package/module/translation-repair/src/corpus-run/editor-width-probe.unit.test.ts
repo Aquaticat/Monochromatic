@@ -3,10 +3,10 @@
  process with every provider key withheld, so it can only refuse before any
  model is asked.
 
- THE CHILD'S ENVIRONMENT. `runBuiltWithoutKeys` drops every variable whose
+ THE CHILD'S ENVIRONMENT. `runBuiltCommand` drops every variable whose
  name ends in `_API_KEY` and every variable whose name starts
  `TRANSLATION_REPAIR_` before a case adds the locations it needs
- (`withheldFromChild` in `built-command-without-keys.test-fixture.ts`).
+ (`environmentWithoutKeys` in `child-environment.test-fixture.ts`).
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -20,8 +20,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import { runBuiltWithoutKeys, } from './built-command-without-keys.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -44,7 +44,7 @@ await describe({
             /**
              What the command wrote with every key withheld.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'editor-width-probe',
               args: [],
               env: {
@@ -71,7 +71,7 @@ await describe({
             /**
              What the command wrote given one flag it does not declare.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'editor-width-probe',
               args: ['--bogus',],
               env: {

@@ -26,11 +26,11 @@ import {
 
 import { digestPipeline, } from '../../dist/final/node/index.mjs';
 import { makeNamingArchive, } from '../archive-naming.test-fixture.ts';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
-  type KeylessRun,
-  runBuiltKeyless,
-} from './keyless-sampler-child.test-fixture.ts';
+  type ChildRun,
+  runBuiltCommand,
+} from '../child-environment.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { writeSettledArtifact, } from './settled-v1-pool.test-fixture.ts';
 
 /**
@@ -76,7 +76,7 @@ async function drawOverOneEntry(
     readonly repairRecorded: boolean;
   },
 ): Promise<{
-  readonly run: KeylessRun;
+  readonly run: ChildRun;
   readonly runsDir: string;
   readonly held: readonly string[];
 }> {
@@ -105,11 +105,11 @@ async function drawOverOneEntry(
     },);
   }
 
-  // The keys are withheld by `runBuiltKeyless`, which builds the child's
+  // The keys are withheld by `runBuiltCommand`, which builds the child's
   // whole environment from the parent's without any `_API_KEY` variable.
-  const run = await runBuiltKeyless({
+  const run = await runBuiltCommand({
     command: 'draw-sample',
-    argv,
+    args: argv,
     env: {
       TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
       TRANSLATION_REPAIR_CORPUS_CLONE_DIR: archive.pin.cloneDir,
@@ -211,9 +211,9 @@ await describe({
     it({
       name: 'REFUSES a flag the command does not read, exits 6 and prints the refusal alone',
       fn: async () => {
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'draw-sample',
-          argv: ['--bogus',],
+          args: ['--bogus',],
           env: {},
         },);
 
@@ -259,9 +259,9 @@ await describe({
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'draw-sample-built-', },);
 
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'draw-sample',
-          argv: [],
+          args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 

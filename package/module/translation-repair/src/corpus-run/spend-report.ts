@@ -22,6 +22,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'spend-report',
     argv: process.argv,
+    env: process.env,
     run: reportSpendCost,
   },);
 

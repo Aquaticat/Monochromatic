@@ -40,6 +40,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'rendering-audit-settled-report',
     argv: process.argv,
+    env: process.env,
     run: main,
   },);
 

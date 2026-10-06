@@ -14,10 +14,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
   noKeyRefusal,
-  runBuiltWithoutKeys,
+  scratchPlaces,
 } from './keyless-built-command.test-fixture.ts';
 
 /**
@@ -41,10 +42,12 @@ await describe({
             /**
              What the command wrote with every key withheld.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'checker-sensitivity',
-              runsDir: scratch.path,
-              scratchDir: scratch.path,
+              env: scratchPlaces({
+                runsDir: scratch.path,
+                scratchDir: scratch.path,
+              },),
             },);
 
             expect(run.code,).toBe(REFUSED_AS_STATED,);
@@ -61,11 +64,13 @@ await describe({
             /**
              What the command wrote given one argument.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'checker-sensitivity',
-              runsDir: scratch.path,
-              scratchDir: scratch.path,
               args: ['--bogus',],
+              env: scratchPlaces({
+                runsDir: scratch.path,
+                scratchDir: scratch.path,
+              },),
             },);
 
             expect(run.code,).toBe(REFUSED_AS_STATED,);

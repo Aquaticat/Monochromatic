@@ -33,6 +33,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'verify-published',
     argv: process.argv,
+    env: process.env,
     run: verifyHere,
   },);
 

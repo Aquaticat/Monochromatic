@@ -52,6 +52,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'ledger-report',
     argv: process.argv,
+    env: process.env,
     run: main,
   },);
 

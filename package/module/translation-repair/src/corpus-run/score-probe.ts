@@ -33,6 +33,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'score-probe',
     argv: process.argv,
+    env: process.env,
     run: main,
   },);
 

@@ -34,6 +34,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'cache-account-audit',
     argv: process.argv,
+    env: process.env,
     run: auditHere,
   },);
 

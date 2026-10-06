@@ -21,6 +21,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'coverage-control-probe',
     argv: process.argv,
+    env: process.env,
     run: function runCoverageControlProbe({ line, },) {
       return runCoverageControl({
         line,

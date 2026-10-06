@@ -38,6 +38,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'displacement-probe',
     argv: process.argv,
+    env: process.env,
     run: async function runDisplacementProbe(): Promise<void> {
       /**
        Runs directory whose settled artifacts name the population.

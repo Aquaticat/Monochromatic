@@ -151,6 +151,12 @@ const BARE_ARGV: readonly string[] = [
 ];
 
 /**
+ Environment of a process that holds no provider key and was started by no
+ task, which no case here reads for anything but the guard.
+ */
+const NO_KEYS: Readonly<NodeJS.ProcessEnv> = {};
+
+/**
  Collects what would have gone to stderr, restoring the real one on disposal.
 
  @param lines - collector the caller reads afterwards
@@ -328,6 +334,7 @@ await describe({
         await reportingRefusals({
           what: 'score-verify',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             throw fixtureRefusal();
           },
@@ -348,6 +355,7 @@ await describe({
         await reportingRefusals({
           what: 'score-verify',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             throw new RangeError(FAULT_MESSAGE,);
           },
@@ -367,6 +375,7 @@ await describe({
         await reportingRefusals({
           what: 'score-verify',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             throw new RangeError(FAULT_MESSAGE,);
           },
@@ -389,6 +398,7 @@ await describe({
         await reportingRefusals({
           what: 'score-verify',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             throw new RangeError(FAULT_MESSAGE,);
           },
@@ -412,6 +422,7 @@ await describe({
         await reportingRefusals({
           what: 'score-verify',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             throw new RangeError('the cat sat\n    at the whiskers of the diary page (diary.ts:3:4)\nand then slept',);
           },
@@ -436,6 +447,7 @@ await describe({
         await reportingRefusals({
           what: 'score-verify',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             /**
              Fault whose message was rewritten after its stack was recorded.
@@ -466,6 +478,7 @@ await describe({
         await reportingRefusals({
           what: 'score-verify',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             throw new StatedRefusalError({ says: STATED_MESSAGE, },);
           },
@@ -494,6 +507,7 @@ await describe({
         await reportingRefusals({
           what: 'coverage-census',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             await readBaselineFile({ path, },);
           },
@@ -517,6 +531,7 @@ await describe({
           await reportingRefusals({
             what: 'draw-sample',
             argv: BARE_ARGV,
+            env: NO_KEYS,
             run: async () => {
               throw refusal;
             },
@@ -536,6 +551,7 @@ await describe({
         await reportingRefusals({
           what: 'ledger-report',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             throw new LedgerShapeError({
               from: LEDGER_FILE,
@@ -576,6 +592,7 @@ await describe({
         await reportingRefusals({
           what: 'editor-calibrate',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             // A run that finishes, which is what a half-dark calibration hid behind.
           },
@@ -617,6 +634,7 @@ await describe({
         await reportingRefusals({
           what: 'editor-calibrate',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             throw new StatedRefusalError({ says: STATED_MESSAGE, },);
           },
@@ -643,6 +661,7 @@ await describe({
         await reportingRefusals({
           what: 'corpus-pass',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             // A run that finishes.
           },
@@ -663,6 +682,7 @@ await describe({
         await reportingRefusals({
           what: 'editor-calibrate',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             throw new RunConfigError({ variable: CONFIG_VARIABLE, },);
           },
@@ -685,6 +705,7 @@ await describe({
         await reportingRefusals({
           what: 'score-verify',
           argv: BARE_ARGV,
+          env: NO_KEYS,
           run: async () => {
             // A body that simply finishes, which is every ordinary run.
           },
@@ -713,6 +734,7 @@ await describe({
             '--only',
             'Tabby_01',
           ],
+          env: NO_KEYS,
           run: async () => {
             ran = true;
           },
@@ -743,6 +765,7 @@ await describe({
             '--only=Tabby_01',
             '--plan',
           ],
+          env: NO_KEYS,
           run: async ({ line, },) => {
             seen.push(
               line.flag('only',),
@@ -760,6 +783,68 @@ await describe({
           },
           true,
         ],);
+        expect(printed.lines,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REFUSES as stated and exits 6 when the process holds a key and names no command, before the command '
+        + 'line is read and before the body runs',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        /**
+         Whether the body ran at all.
+         */
+        let ran = false;
+        await reportingRefusals({
+          what: 'score-verify',
+          argv: [
+            ...BARE_ARGV,
+            '--only',
+            'Tabby_01',
+          ],
+          env: { WHISKER_API_KEY: 'purr', },
+          run: async () => {
+            ran = true;
+          },
+        },);
+
+        expect(ran,).toBe(false,);
+        expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
+        expect(printed.lines,).toEqual([
+          'score-verify: will not run in a process that holds provider keys '
+            + '(1 variable whose name ends in _API_KEY has a value) unless that process names this command as the '
+            + 'one it means to start. '
+            + 'The command\'s task does that: mise run //package/module/translation-repair:score-verify '
+            + '(the task builds the package first). '
+            + 'To start the built file without building, as when a pass is running and nothing may rebuild, '
+            + 'set TRANSLATION_REPAIR_STARTED_BY=score-verify for that one start. '
+            + 'A process that holds no provider key needs neither.',
+        ],);
+      },
+    },),
+    it({
+      name: 'RUNS the body when the process holds a key and names the command, as its own task does',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        /**
+         Whether the body ran at all.
+         */
+        let ran = false;
+        await reportingRefusals({
+          what: 'score-verify',
+          argv: BARE_ARGV,
+          env: { WHISKER_API_KEY: 'purr', TRANSLATION_REPAIR_STARTED_BY: 'score-verify', },
+          run: async () => {
+            ran = true;
+          },
+          seats: createSeatTally(),
+        },);
+
+        expect(ran,).toBe(true,);
         expect(printed.lines,).toEqual([],);
       },
     },),

@@ -18,12 +18,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import {
+  type ChildRun,
+  runBuiltCommand,
+} from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
-  type BuiltRun,
   corpusEnvOf,
   makeProbeCorpus,
-  runBuiltWithoutKeys,
 } from './probes-b-built-command.test-fixture.ts';
 
 /**
@@ -69,14 +71,16 @@ async function runOver(
     readonly files: Readonly<Record<string, string>>;
     readonly args: readonly string[];
   },
-): Promise<BuiltRun> {
+): Promise<ChildRun> {
   await using corpus = await makeProbeCorpus({ files, },);
   await using runs = await scratchDir({ prefix: 'translate-probe-runs-', },);
-  return await runBuiltWithoutKeys({
+  return await runBuiltCommand({
     command: 'translate-probe',
     args,
-    runsDir: runs.path,
-    env: corpusEnvOf({ corpus, },),
+    env: {
+      ...corpusEnvOf({ corpus, },),
+      TRANSLATION_REPAIR_RUNS_DIR: runs.path,
+    },
   },);
 }
 
@@ -104,11 +108,13 @@ await describe({
       fn: async () => {
         await using corpus = await makeProbeCorpus({ files: { 'people/Mittens/page.md': 'x\n', }, },);
         await using runs = await scratchDir({ prefix: 'translate-probe-runs-', },);
-        expect(await runBuiltWithoutKeys({
+        expect(await runBuiltCommand({
           command: 'translate-probe',
           args: [],
-          runsDir: runs.path,
-          env: corpusEnvOf({ corpus, },),
+          env: {
+            ...corpusEnvOf({ corpus, },),
+            TRANSLATION_REPAIR_RUNS_DIR: runs.path,
+          },
         },),).toEqual({
           code: REFUSED_AS_STATED,
           stdout: '',

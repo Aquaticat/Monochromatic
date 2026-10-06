@@ -38,86 +38,103 @@ run = ["mise run build", "mise run test:unit"]
 [tasks."corpus-pass"]
 description = "Run the pipeline over every complete corpus pair; artifacts land in node_modules/.monochromatic (append -- --plan for a zero-quota setup check, or -- --only Id1,Id2 to target named entries, which wants a throwaway TRANSLATION_REPAIR_RUNS_DIR, or -- --require-providers synthetic,hyper to refuse the run unless those providers' keys are set and their meters read wet)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "corpus-pass"
 run = "node dist/final/node/corpus-pass.mjs"
 
 [tasks."sentinel-probe"]
 description = "Run named corpus entries through the pipeline to validate a change (pass ids after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "sentinel-probe"
 run = "node dist/final/node/sentinel-probe.mjs"
 
 [tasks."draw-sample"]
 description = "Draw the stratified precision sample from settled artifacts into a grading sheet outside the repo (append -- --final for the gate sheet)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "draw-sample"
 run = "node dist/final/node/draw-sample.mjs"
 
 [tasks."score-attribution"]
 description = "Report per-critic calibration from a run's settled artifacts: what each critic was asked, what it raised, and how often an accepted issue rested on it alone"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "score-attribution"
 run = "node dist/final/node/score-attribution.mjs"
 
 [tasks."score-agreement"]
 description = "Report precision off a graded sheet, plus agreement against blind pre-grades when they exist (override with -- --sheet PATH --manifest PATH --pre-grades PATH)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "score-agreement"
 run = "node dist/final/node/score-agreement.mjs"
 
 [tasks."score-crosscheck"]
 description = "Report the population a judge crosscheck would run over, per author and per arm, spending no quota"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "score-crosscheck"
 run = "node dist/final/node/score-crosscheck.mjs"
 
 [tasks."score-probe"]
 description = "Report what the shadow-mode introduced-defect probe found across a run's settled artifacts, over distinct shipped regions (pass --repair-sheet PATH --manifest PATH after -- to score it against the human grades; both or neither)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "score-probe"
 run = "node dist/final/node/score-probe.mjs"
 
 [tasks."recall-benchmark"]
 description = "Measure recall: plant known omissions into clean translations, run the repair loop, and grade restoration against the deletions (append -- --plan for a zero-quota setup check)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "recall-benchmark"
 run = "node dist/final/node/recall-benchmark.mjs"
 
 [tasks."probe-sensitivity"]
 description = "Ask whether the introduced-defect probe can detect damage at all, each region under three prior-issue lists (none, withheld from the prompt as production sends, rendered as the abandoned prompt did), cat-themed fixtures only; SPENDS QUOTA"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "probe-sensitivity"
 run = "node dist/final/node/probe-sensitivity.mjs"
 
 [tasks."audit-sensitivity"]
 description = "Ask whether the rendering audit can detect a planted defect at all, and whether it invents one: one flipped rendering and one faithful, cat-themed fixtures only; SPENDS QUOTA"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "audit-sensitivity"
 run = "node dist/final/node/audit-sensitivity.mjs"
 
 [tasks."rendering-audit-settled"]
 description = "Run the rendering audit over every decided slice of every settled version 2 artifact in an archive, reading retained and replaced slices apart; TELEMETRY ONLY, nothing it says gates what ships; SPENDS QUOTA unless --cap 0 (pass --archive dir, --clone dir, --only ids, --cap n after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "rendering-audit-settled"
 run = "node dist/final/node/rendering-audit-settled.mjs"
 
 [tasks."rendering-audit-settled-report"]
 description = "Read a persisted settled-audit run: the archive and fresh halves apart, what each auditor thought was worth a claim, and the relocation candidates; SPENDS NO QUOTA (pass --run path after -- to read a run other than the newest, and --against path to print the across-run band against an earlier run)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "rendering-audit-settled-report"
 run = "node dist/final/node/rendering-audit-settled-report.mjs"
 
 [tasks."coverage-probe"]
 description = "PROTOTYPE for question 28: ask a roster whether the translation already carries each passage the aligners refuse to pair, at both scales; SPENDS QUOTA (pass --only ids and --cap n after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "coverage-probe"
 run = "node dist/final/node/coverage-probe.mjs"
 
 [tasks."coverage-control-probe"]
 description = "Ask the coverage roster about a passage, delete the spans it anchored on, and ask again, to find out whether an absence vote is reachable at all; SPENDS QUOTA (pass --only ids after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "coverage-control-probe"
 run = "node dist/final/node/coverage-control-probe.mjs"
 
 [tasks."run-timing-report"]
 description = "Read back where a run's wall-clock went, splitting every round into the time it worked and the time it waited on a straggler, and counting how many calls were in flight at once; SPENDS NO QUOTA (name one or more log paths after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "run-timing-report"
 run = "node dist/final/node/run-timing-report.mjs"
 
 [tasks."spend-report"]
 description = "Read what a run cost from the SPEND lines its own log carries, priced against a DATED Charm Hyper rate table; subscription seats are counted but never priced; SPENDS NO QUOTA (name one or more log paths after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "spend-report"
 run = "node dist/final/node/spend-report.mjs"
 
 [tasks."cache-account-audit"]
 description = "Ledger M28: before a launch, read every cache version constant the source declares, the commit that set each current value, and every non-test source commit since the earliest of them that no version's account names, then the slice-cache records under the runs directories (count, newest, versions set after it; ledger M57, M81); READ-ONLY, SPENDS NO QUOTA (pass --runs-under dir after --, repeatable, to also search a directory holding runs directories four levels down)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "cache-account-audit"
 run = "node dist/final/node/cache-account-audit.mjs"
 
 [tasks."source-scans"]
@@ -136,123 +153,148 @@ run = "rolldown --configLoader native --config rolldown.coverage.config.ts"
 description = "Ledger T8: build unminified with source maps, run the unit suite (or the unit test files named after --) under V8 coverage, and print the package code no test ran, mapped to source lines, with each stretch that is nothing but invariant throws (an Error whose message begins unreachable:, or a class named ...InvariantError) counted and listed apart from the cold code, since a guard is never removed to close a stretch; add --baseline <census.json> and --source <src/file.ts> after -- to read an earlier census's stretches against this run (a census written before invariant throws were counted apart is refused: take it again); rebuilds the normal build after; SPENDS NO QUOTA (the whole suite writes about 8 GB of coverage under ~/.cache/translation-repair/coverage, on disk rather than in a memory-backed /tmp, deleted once read; the census and the suite's log stay beside it)"
 depends = ["coverage-census:build"]
 depends_post = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "coverage-census"
 run = "node dist/final/node/coverage-census.mjs"
 
 [tasks."cap-census"]
 description = "Ledger P10: re-read the completion cap rule over pass-run logs before a launch, per seat and provider, with how many capped calls ran to the cap and whether they carried content; flags a pooled placeholder with a distribution, a rule reading off the card, and cuts over one percent; SPENDS NO QUOTA (name log files or directories after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "cap-census"
 run = "node dist/final/node/cap-census.mjs"
 
 [tasks."ledger-report"]
 description = "Read the candidate ledger a run wrote, saying who produced what, how often it was chosen, and what judges said about it; pass --model <id> after -- to read one seat's candidates and its judges' verbatim reasons; SPENDS NO QUOTA (prints corpus wording when a model is named)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "ledger-report"
 run = "node dist/final/node/ledger-report.mjs"
 
 [tasks."slice-cost-report"]
 description = "Read the per-slice cost telemetry a pass wrote, and say whether cost tracks slice size or a fixed overhead (pass a log path after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "slice-cost-report"
 run = "node dist/final/node/slice-cost-report.mjs"
 
 [tasks."displacement-probe"]
 description = "Read per-slice size ratios against each document's own median to find passages the translation moved across a section boundary; SPENDS NO QUOTA"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "displacement-probe"
 run = "node dist/final/node/displacement-probe.mjs"
 
 [tasks."editor-calibrate"]
 description = "Rank every model on the EDITOR's own job by driving the whole repair lane, every roster model editing and judging each slice, and report the refiner standing off the same spend; SPENDS QUOTA (pass a slice count after --, default 6; TRANSLATION_REPAIR_SLICE_OVERLAP=N runs N slices at once, default 4, and the straggler window is 300000 ms unless TRANSLATION_REPAIR_STRAGGLER_GRACE_MS says otherwise, both decided 2026-08-26)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "editor-calibrate"
 run = "node dist/final/node/editor-calibrate.mjs"
 
 [tasks."editor-width-probe"]
 description = "Run the same slices at the production editor width and at the whole roster, judged by one fixed panel, with the narrow arm repeated as a null band and the two winners contested in both seating orders; SPENDS QUOTA (pass a sample size after --, default 18 halved into two draws)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "editor-width-probe"
 run = "node dist/final/node/editor-width-probe.mjs"
 
 [tasks."judge-fidelity-probe"]
 description = "Judge fixed source-reviewed references against hash-verified damage; SPENDS QUOTA (pass --only reviewed-entry-ids, --cap n, --damage deletion|insertion|alteration, --candidates seatable,ids, --candidates-alone, --context to show judges the neighbouring sections' original, after --; --cap 0 is metadata-only preflight)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "judge-fidelity-probe"
 run = "node dist/final/node/judge-fidelity-probe.mjs"
 
 [tasks."translate-probe"]
 description = "PROTOTYPE for the translate-first re-design: ask a translator ensemble to render the corpus section with the worst coverage gap, which the repair loop cannot express"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "translate-probe"
 run = "node dist/final/node/translate-probe.mjs"
 
 [tasks."damage-sample"]
 description = "Draw shipped regions at random and ask a human the same source-anchored damage question the probe asks, with the probe's verdict kept in the manifest"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "damage-sample"
 run = "node dist/final/node/damage-sample.mjs"
 
 [tasks."probe-verify"]
 description = "Probe damaged and unread regions with the accepted issues withheld, and write one blind sheet asking whether each flagged edit really damaged the text"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "probe-verify"
 run = "node dist/final/node/probe-verify.mjs"
 
 [tasks."score-verify"]
 description = "Join the graded blind verification sheet to its manifest and report what the unlabelled probe's flags are worth on regions nobody had read"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "score-verify"
 run = "node dist/final/node/score-verify.mjs"
 
 [tasks."probe-relabel"]
 description = "Re-probe the regions a human read as damaged under three arms (the production disclosure, the other prompt, no list at all), to separate a suppressing prompt from a dismissing screen from a hard judgement; SPENDS QUOTA"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "probe-relabel"
 run = "node dist/final/node/probe-relabel.mjs"
 
 [tasks."roster-card"]
 description = "Print the model-cards.ts fragment for one model off a provider's live listing (usage: -- <synthetic|hyper|openrouter|bedrock> <served id>), so seating a model is one card and one list entry; read-only, key never printed"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "roster-card"
 run = "node dist/final/node/roster-card.mjs"
 
 [tasks."model-health"]
 description = "Ask every roster model one trivial structured question and report what came back, so schema-mismatch can be told apart from a dead model"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "model-health"
 run = "node dist/final/node/model-health.mjs"
 
 [tasks."budget-sample"]
 description = "Take one reading of both providers' meters and leave it in the log, so an outage's END is observed during the quiet stretches when no pass is running; SPENDS NO GENERATION (capture both streams: `> log 2>&1`)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "budget-sample"
 run = "node dist/final/node/budget-sample.mjs"
 
 [tasks."editor-standing-read"]
 description = "Read the EDITOR and REFINER standings off already-settled artifacts, reported per pipeline digest and never pooled across them; OBSERVATIONAL, so it ranks only models that held a seat and is silent about the rest; SPENDS NOTHING (pass one or more run directories after --, default this run's)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "editor-standing-read"
 run = "node dist/final/node/editor-standing-read.mjs"
 
 [tasks."meter-report"]
 description = "Read provider availability back out of run logs and report each provider's duty cycle and longest outage as bounded ranges; SPENDS NO QUOTA (pass one or more log paths after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "meter-report"
 run = "node dist/final/node/meter-report.mjs"
 
 [tasks."model-catalog"]
 description = "Compare what the provider serves against the compiled catalog, so a model that vanished stops costing a silent lost voice per call and a model holding no run role becomes visible"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "model-catalog"
 run = "node dist/final/node/model-catalog.mjs"
 [tasks."checker-sensitivity"]
 description = "Ask whether the resolution checkers can say no: a genuine fix, an untouched text, and a fix that damaged its slice, cat-themed fixtures only"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "checker-sensitivity"
 run = "node dist/final/node/checker-sensitivity.mjs"
 
 [tasks."producer-calibrate"]
 description = "Run the same corpus slices with every roster model writing and every one judging, then rank producers by the share of disinterested ballots their work drew; SPENDS QUOTA, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR (pass a slice count, then --candidates seatable,ids and --candidates-alone, after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "producer-calibrate"
 run = "node dist/final/node/producer-calibrate.mjs"
 
 [tasks."roster-bench"]
 description = "Run the same corpus slices through the translate lane at every producer-roster width, recording decline, tie, self-vote and cost rates; SPENDS QUOTA, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR (pass a slice count after --)"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "roster-bench"
 run = "node dist/final/node/roster-bench.mjs"
 
 [tasks."slice-census"]
 description = "Measure the pinned corpus after slicing: slice size spread, sections only one side carries, and blocks only the translation has; spends no quota"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "slice-census"
 run = "node dist/final/node/slice-census.mjs"
 
 [tasks."verify-published"]
 description = "Read a published tree back and check it against the artifacts that produced it: every settled entry has a page, and every page carries the wording its artifact says would ship; spends no quota, reads TRANSLATION_REPAIR_RUNS_DIR"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "verify-published"
 run = "node dist/final/node/verify-published.mjs"
 
 [tasks."window-trial-probe"]
 description = "Judge flagged slices and matched controls three times over ONE slate, narrow, narrow again, then with the neighbouring original, and report whether the window moved the replacement rate further than two narrow runs move it; SPENDS QUOTA, resumes from its ledger, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR"
 depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "window-trial-probe"
 run = "node dist/final/node/window-trial-probe.mjs"

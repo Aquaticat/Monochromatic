@@ -60,6 +60,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'window-trial-probe',
     argv: process.argv,
+    env: process.env,
     run: main,
   },);
 

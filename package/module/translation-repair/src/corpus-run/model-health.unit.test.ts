@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runBuiltKeyless, } from './keyless-sampler-child.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -30,11 +30,11 @@ await describe({
     it({
       name: 'REFUSES as stated and exits 6 when launched with no provider key, before any call',
       fn: async () => {
-        // The keys are withheld by `runBuiltKeyless`, which builds the child's
+        // The keys are withheld by `runBuiltCommand`, which builds the child's
         // whole environment from the parent's without any `_API_KEY` variable.
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'model-health',
-          argv: [],
+          args: [],
           env: {},
         },);
 
@@ -50,9 +50,9 @@ await describe({
     it({
       name: 'REFUSES a command-line argument the command does not read, exits 6 and prints the refusal alone',
       fn: async () => {
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'model-health',
-          argv: ['--bogus',],
+          args: ['--bogus',],
           env: {},
         },);
 

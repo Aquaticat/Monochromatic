@@ -507,6 +507,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'editor-standing-read',
     argv: process.argv,
+    env: process.env,
     run: reportStandings,
   },);
 

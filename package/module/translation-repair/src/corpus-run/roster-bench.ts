@@ -67,6 +67,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'roster-bench',
     argv: process.argv,
+    env: process.env,
     run: main,
   },);
 

@@ -59,6 +59,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'producer-calibrate',
     argv: process.argv,
+    env: process.env,
     run: main,
   },);
 

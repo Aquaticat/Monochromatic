@@ -16,6 +16,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'slice-census',
     argv: process.argv,
+    env: process.env,
     run: function runSliceCensus(): Promise<void> {
       return reportSliceCensus({
         pin: RUN_CORPUS_PIN,

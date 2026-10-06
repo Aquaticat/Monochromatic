@@ -32,9 +32,9 @@ import {
   textsInCodePointOrder,
   utcMinutes,
 } from '../../dist/final/node/index.mjs';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { fixtureGit, } from '../hermetic-git-run.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import { runBuiltWithoutKeys, } from './built-command-without-keys.test-fixture.ts';
 import {
   commitFileAt,
   makeCacheAccountRepo,
@@ -398,7 +398,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'cache-account-audit',
               args: [
                 '--runs-under',
@@ -453,7 +453,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'cache-account-audit',
               args: [],
               env: {
@@ -482,7 +482,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'cache-account-audit',
               args: ['--runs-under',],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
@@ -504,7 +504,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'cache-account-audit',
               args: ['--tabby',],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },

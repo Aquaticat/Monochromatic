@@ -34,6 +34,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'model-health',
     argv: process.argv,
+    env: process.env,
     run: askRoster,
   },);
 

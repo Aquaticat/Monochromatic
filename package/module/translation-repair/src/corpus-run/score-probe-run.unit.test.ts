@@ -30,7 +30,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { writeScoreArtifacts, } from './score-artifacts.test-fixture.ts';
-import { builtPipelineDigest, } from './score-built-command.test-fixture.ts';
+import { builtPipelineDigest, } from './built-pipeline-digest.test-fixture.ts';
 import {
   probeArtifactText,
   probedRecord,

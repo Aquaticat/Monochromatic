@@ -30,11 +30,8 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { writeScoreArtifacts, } from './score-artifacts.test-fixture.ts';
-import {
-  builtCommand,
-  builtPipelineDigest,
-  runBuiltScore,
-} from './score-built-command.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
+import { builtPipelineDigest, } from './built-pipeline-digest.test-fixture.ts';
 import {
   probeArtifactText,
   probedRecord,
@@ -44,7 +41,7 @@ import {
 /**
  Built command under test.
  */
-const COMMAND = builtCommand({ name: 'score-probe', },);
+const COMMAND = 'score-probe';
 
 /**
  What the pool prints as the pipeline that read it.
@@ -299,11 +296,10 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(0,);
@@ -334,7 +330,7 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [
                 '--repair-sheet',
@@ -343,8 +339,7 @@ await describe({
                   'sheet.md',
                 ),
               ],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(6,);
@@ -364,11 +359,10 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: ['--manifest',],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(6,);

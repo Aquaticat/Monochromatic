@@ -19,6 +19,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'sentinel-probe',
     argv: process.argv,
+    env: process.env,
     run: function runSentinelProbe({ line, },) {
       return probeCorpusEntries({
         line,

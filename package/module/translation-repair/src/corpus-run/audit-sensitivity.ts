@@ -112,6 +112,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'audit-sensitivity',
     argv: process.argv,
+    env: process.env,
     run: main,
   },);
 

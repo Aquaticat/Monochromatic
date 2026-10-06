@@ -3,10 +3,10 @@
  process with every provider key withheld and its corpus read from a
  throwaway clone, so it can reach its first refusal and no model.
 
- THE CHILD'S ENVIRONMENT. `runBuiltWithoutKeys` drops every variable whose
+ THE CHILD'S ENVIRONMENT. `runBuiltCommand` drops every variable whose
  name ends in `_API_KEY` and every variable whose name starts
  `TRANSLATION_REPAIR_` before a case adds the locations it needs
- (`withheldFromChild` in `built-command-without-keys.test-fixture.ts`).
+ (`environmentWithoutKeys` in `child-environment.test-fixture.ts`).
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -21,8 +21,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { RUN_ROSTER, } from '../../dist/final/node/index.mjs';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import { runBuiltWithoutKeys, } from './built-command-without-keys.test-fixture.ts';
 import { makeBenchClone, } from './editor-bench-clone.test-fixture.ts';
 
 /**
@@ -60,7 +60,7 @@ await describe({
             /**
              What the command wrote with every key withheld.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'editor-calibrate',
               args: [],
               env: {
@@ -89,7 +89,7 @@ await describe({
             /**
              What the command wrote with both windows overridden.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'editor-calibrate',
               args: ['3',],
               env: {
@@ -123,7 +123,7 @@ await describe({
             /**
              What the command wrote given a count of letters.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'editor-calibrate',
               args: ['four',],
               env: {
@@ -149,7 +149,7 @@ await describe({
             /**
              What the command wrote with the overlap variable misspelled as a word.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'editor-calibrate',
               args: [],
               env: {
@@ -176,7 +176,7 @@ await describe({
             /**
              What the command wrote given one flag it does not declare.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'editor-calibrate',
               args: ['--bogus',],
               env: {
@@ -201,7 +201,7 @@ await describe({
             /**
              What the command wrote when its clone directory is absent.
              */
-            const run = await runBuiltWithoutKeys({
+            const run = await runBuiltCommand({
               command: 'editor-calibrate',
               args: [],
               env: {

@@ -10,6 +10,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'slice-cost-report',
     argv: process.argv,
+    env: process.env,
     run: reportSliceCost,
   },);
 

@@ -35,6 +35,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'budget-sample',
     argv: process.argv,
+    env: process.env,
     run: sampleOverTheEnvironment,
   },);
 

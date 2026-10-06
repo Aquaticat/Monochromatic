@@ -33,6 +33,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'coverage-census',
     argv: process.argv,
+    env: process.env,
     run: function runCensus({ line, }: { readonly line: CommandLineOf<'coverage-census'>; },): Promise<void> {
       return runCoverageCensus({
         line,

@@ -18,12 +18,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import {
+  type ChildRun,
+  runBuiltCommand,
+} from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
-  type BuiltRun,
   corpusEnvOf,
   makeProbeCorpus,
-  runBuiltWithoutKeys,
 } from './probes-b-built-command.test-fixture.ts';
 
 /**
@@ -53,7 +55,7 @@ const KEY_REFUSAL = 'coverage-probe: TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANS
  */
 async function runOverOneEntry(
   { args, }: { readonly args: readonly string[]; },
-): Promise<BuiltRun> {
+): Promise<ChildRun> {
   await using corpus = await makeProbeCorpus({
     files: {
       'people/Mittens/page.md': 'Mittens naps.\n',
@@ -61,11 +63,13 @@ async function runOverOneEntry(
     },
   },);
   await using runs = await scratchDir({ prefix: 'coverage-probe-runs-', },);
-  return await runBuiltWithoutKeys({
+  return await runBuiltCommand({
     command: 'coverage-probe',
     args,
-    runsDir: runs.path,
-    env: corpusEnvOf({ corpus, },),
+    env: {
+      ...corpusEnvOf({ corpus, },),
+      TRANSLATION_REPAIR_RUNS_DIR: runs.path,
+    },
   },);
 }
 

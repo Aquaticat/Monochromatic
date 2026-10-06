@@ -110,6 +110,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'corpus-pass',
     argv: process.argv,
+    env: process.env,
     run: runCorpusPass,
   },);
 

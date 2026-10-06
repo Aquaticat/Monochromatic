@@ -7,10 +7,10 @@
  as one line with the exit code a stated refusal leaves. The functions it
  prints with have their own files.
 
- THE CHILD CARRIES NO PROVIDER KEY. `runBuiltReport` removes every variable
- whose name ends in `_API_KEY` from the environment it hands the child and
- points the runs directory at a scratch directory, so nothing here reads a real
- run.
+ THE CHILD CARRIES NO PROVIDER KEY. `runBuiltCommand` removes every variable
+ whose name ends in `_API_KEY` from the environment it hands the child, and
+ each case points the runs directory at a scratch directory, so nothing here
+ reads a real run.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -27,8 +27,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import { runBuiltReport, } from './report-built-run.test-fixture.ts';
 import {
   ROUND_NEVER_LINE,
   ROUND_STOOD_LINE,
@@ -95,13 +95,13 @@ await describe({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'run-timing-report',
           args: [
             rounds,
             calls,
           ],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({
@@ -144,10 +144,10 @@ await describe({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'run-timing-report',
           args: [old,],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({
@@ -188,10 +188,10 @@ it({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'run-timing-report',
           args: [closed,],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({
@@ -223,10 +223,10 @@ it({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'run-timing-report',
           args: [missing,],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({
@@ -257,13 +257,13 @@ it({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'run-timing-report',
           args: [
             twice,
             twice,
           ],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({
@@ -283,10 +283,10 @@ it({
         /**
          What the command wrote.
          */
-        const run = await runBuiltReport({
+        const run = await runBuiltCommand({
           command: 'run-timing-report',
           args: [],
-          runsDir: scratch.path,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
         expect(run,).toEqual({

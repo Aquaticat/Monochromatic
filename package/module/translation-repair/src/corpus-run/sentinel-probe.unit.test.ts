@@ -17,11 +17,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
   corpusEnvOf,
   makeProbeCorpus,
-  runBuiltWithoutKeys,
 } from './probes-b-built-command.test-fixture.ts';
 
 /**
@@ -44,11 +44,13 @@ await describe({
       fn: async () => {
         await using corpus = await makeProbeCorpus({ files: { 'people/mittens/page.md': 'Mittens naps.\n', }, },);
         await using runs = await scratchDir({ prefix: 'sentinel-probe-runs-', },);
-        const run = await runBuiltWithoutKeys({
+        const run = await runBuiltCommand({
           command: 'sentinel-probe',
           args: ['mittens',],
-          runsDir: runs.path,
-          env: corpusEnvOf({ corpus, },),
+          env: {
+            ...corpusEnvOf({ corpus, },),
+            TRANSLATION_REPAIR_RUNS_DIR: runs.path,
+          },
         },);
 
         expect(run,).toEqual({
@@ -63,11 +65,13 @@ await describe({
       fn: async () => {
         await using corpus = await makeProbeCorpus({ files: { 'people/mittens/page.md': 'Mittens naps.\n', }, },);
         await using runs = await scratchDir({ prefix: 'sentinel-probe-runs-', },);
-        const run = await runBuiltWithoutKeys({
+        const run = await runBuiltCommand({
           command: 'sentinel-probe',
           args: [],
-          runsDir: runs.path,
-          env: corpusEnvOf({ corpus, },),
+          env: {
+            ...corpusEnvOf({ corpus, },),
+            TRANSLATION_REPAIR_RUNS_DIR: runs.path,
+          },
         },);
 
         expect(run,).toEqual({
@@ -82,11 +86,13 @@ await describe({
       fn: async () => {
         await using corpus = await makeProbeCorpus({ files: { 'people/mittens/page.md': 'Mittens naps.\n', }, },);
         await using runs = await scratchDir({ prefix: 'sentinel-probe-runs-', },);
-        const run = await runBuiltWithoutKeys({
+        const run = await runBuiltCommand({
           command: 'sentinel-probe',
           args: ['--bogus',],
-          runsDir: runs.path,
-          env: corpusEnvOf({ corpus, },),
+          env: {
+            ...corpusEnvOf({ corpus, },),
+            TRANSLATION_REPAIR_RUNS_DIR: runs.path,
+          },
         },);
 
         expect(run,).toEqual({

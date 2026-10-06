@@ -4,7 +4,7 @@
 
  The runner reads settled artifacts and prints rates, so its as-built cases run
  to the end of the report on a fixture and read the whole of what it printed.
- Every child is started by `runBuiltScore`, whose environment carries no
+ Every child is started by `runBuiltCommand`, whose environment carries no
  variable ending in `_API_KEY`.
 
  Fixtures are cat-themed invention. No corpus content appears here.
@@ -21,12 +21,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import {
-  builtCommand,
-  builtPipelineDigest,
-  runBuiltScore,
-} from './score-built-command.test-fixture.ts';
+import { builtPipelineDigest, } from './built-pipeline-digest.test-fixture.ts';
 import {
   ATTRIBUTED_CAT_ARTIFACTS,
   writeScoreArtifacts,
@@ -40,7 +37,7 @@ const REFUSED_AS_STATED = 6;
 /**
  Built command under test.
  */
-const COMMAND = builtCommand({ name: 'score-attribution', },);
+const COMMAND = 'score-attribution';
 
 /**
  What the pool prints as the pipeline that read it.
@@ -75,11 +72,10 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(0,);
@@ -116,11 +112,10 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(0,);
@@ -160,11 +155,10 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [],
-              runsDir: scratch.path,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
 
             expect(run.code,).toBe(REFUSED_AS_STATED,);
@@ -199,11 +193,10 @@ await describe({
             /**
              What the command wrote.
              */
-            const run = await runBuiltScore({
+            const run = await runBuiltCommand({
               command: COMMAND,
               args: [],
-              runsDir,
-              setting: {},
+              env: { TRANSLATION_REPAIR_RUNS_DIR: runsDir, },
             },);
 
             expect(run.code,).toBe(REFUSED_AS_STATED,);

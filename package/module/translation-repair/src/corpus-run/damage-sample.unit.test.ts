@@ -24,11 +24,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { digestPipeline, } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
-  type KeylessRun,
-  runBuiltKeyless,
-} from './keyless-sampler-child.test-fixture.ts';
+  type ChildRun,
+  runBuiltCommand,
+} from '../child-environment.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { writeSettledV2, } from './settled-v2-pool.test-fixture.ts';
 
 /**
@@ -51,7 +51,7 @@ const REFUSED_AS_STATED = 6;
 async function drawOverOneEntry(
   { shippedSlices, }: { readonly shippedSlices: number; },
 ): Promise<{
-  readonly run: KeylessRun;
+  readonly run: ChildRun;
   readonly runsDir: string;
   readonly held: readonly string[];
 }> {
@@ -62,11 +62,11 @@ async function drawOverOneEntry(
     shippedSlices,
   },);
 
-  // The keys are withheld by `runBuiltKeyless`, which builds the child's
+  // The keys are withheld by `runBuiltCommand`, which builds the child's
   // whole environment from the parent's without any `_API_KEY` variable.
-  const run = await runBuiltKeyless({
+  const run = await runBuiltCommand({
     command: 'damage-sample',
-    argv: [],
+    args: [],
     env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
   },);
   return {
@@ -130,9 +130,9 @@ await describe({
     it({
       name: 'REFUSES a command-line argument the command does not read, exits 6 and prints the refusal alone',
       fn: async () => {
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'damage-sample',
-          argv: ['extra',],
+          args: ['extra',],
           env: {},
         },);
 
@@ -153,9 +153,9 @@ await describe({
           'artifacts',
         ),);
 
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'damage-sample',
-          argv: [],
+          args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
@@ -192,9 +192,9 @@ await describe({
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'damage-sample-built-', },);
 
-        const run = await runBuiltKeyless({
+        const run = await runBuiltCommand({
           command: 'damage-sample',
-          argv: [],
+          args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 

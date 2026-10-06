@@ -31,7 +31,7 @@ import {
   MITTENS_ARTIFACT,
   writeScoreArtifacts,
 } from './score-artifacts.test-fixture.ts';
-import { builtPipelineDigest, } from './score-built-command.test-fixture.ts';
+import { builtPipelineDigest, } from './built-pipeline-digest.test-fixture.ts';
 
 /**
  What the pool prints as the pipeline that read it.

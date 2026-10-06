@@ -28,6 +28,7 @@ if (import.meta.main)
   await reportingRefusals({
     what: 'meter-report',
     argv: process.argv,
+    env: process.env,
     run: reportMeters,
   },);
 
