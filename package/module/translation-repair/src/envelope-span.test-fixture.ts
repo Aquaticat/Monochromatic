@@ -11,26 +11,32 @@ import type { EditableEnvelope, } from '../dist/final/node/index.mjs';
 // here.
 
 /**
- Reads the fields of one envelope a case spells out.
+ Reads the fields of each envelope a case spells out.
 
- @param envelope - envelope the code under test derived
+ TAKES THE LIST, NOT ONE ENVELOPE, so a case never hands a function reference
+ to `map`, which the linter refuses for a function whose arity it cannot see
+ across the fixture's import.
 
- @returns Its offsets, base text and issue ids, without its hashed fields
+ @param envelopes - envelopes the code under test derived
+
+ @returns Offsets, base text and issue ids of each, without the hashed fields, in the order given
 
  @example
  ```ts
- expect(envelopes.map(envelopeSpanOf,),).toEqual([{ startOffset: 4, endOffset: 12, baseText: 'cat naps', issueIds: ['adjudicated/nap',], },],);
+ expect(envelopeSpansOf(envelopes,),).toEqual([{ startOffset: 4, endOffset: 12, baseText: 'cat naps', issueIds: ['adjudicated/nap',], },],);
  ```
  */
-export function envelopeSpanOf(
-  envelope: EditableEnvelope,
-): Pick<EditableEnvelope, 'baseText' | 'endOffset' | 'issueIds' | 'startOffset'> {
-  return {
-    startOffset: envelope.startOffset,
-    endOffset: envelope.endOffset,
-    baseText: envelope.baseText,
-    issueIds: envelope.issueIds,
-  };
+export function envelopeSpansOf(
+  envelopes: readonly EditableEnvelope[],
+): readonly Pick<EditableEnvelope, 'baseText' | 'endOffset' | 'issueIds' | 'startOffset'>[] {
+  return envelopes.map(function spanOf(envelope,): Pick<EditableEnvelope, 'baseText' | 'endOffset' | 'issueIds' | 'startOffset'> {
+    return {
+      startOffset: envelope.startOffset,
+      endOffset: envelope.endOffset,
+      baseText: envelope.baseText,
+      issueIds: envelope.issueIds,
+    };
+  },);
 }
 
 //endregion Envelope span
