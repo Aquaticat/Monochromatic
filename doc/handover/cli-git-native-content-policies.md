@@ -337,6 +337,23 @@ a `rulesFile` value with `..` accepted,
 extra final line feeds kept);
 evidence `package/git-policy/cli.fuzz/target/verification/planted-2Ml8kS`.
 
+Smoke campaign,
+`GIT_POLICY_NATIVE_IMAGE_TAG=content-policies mise run //package/git-policy/cli.fuzz:smoke` on `e37dad30a`'s fuzz package
+and `ed3f10514`'s subject
+(the later `e4725f72c` changes only the private index directory builder, which no target calls):
+the controls and Clippy passed in the container,
+then each of the eight targets ran 30 seconds under AddressSanitizer and exited 0
+with no artifact.
+Executions:
+`stage_listing` 227,141,
+`rules_file` 1,991,661,
+`final_newline` 2,653,607;
+the five existing targets between 13,916 (`config_schema`) and 290,050 (`global_arguments`).
+Compiler `rustc 1.100.0-nightly (1303417c4 2026-09-21)`,
+evidence `package/git-policy/cli.fuzz/target/verification/campaign-id61LK`.
+A first attempt ended with exit status 1 right after copying the sources and printed no error;
+the second attempt is the one recorded.
+
 ## Final gate
 
 On `e4725f72c`,
