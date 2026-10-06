@@ -73,9 +73,8 @@ export component SidebarDividerGrip inherits Rectangle {
     // The line. At rest it is one faint column. Under the pointer it is three columns in stronger ink,
     // beside the resize cursor; a drag uses full ink. Keyboard focus draws the three columns in the accent color.
     Rectangle {
-        // Prototype divider-focus c: keyboard focus draws five columns over the whole height and no handle.
-        x: root.keyboard-focus ? root.reach - 2px : (root.emphasized ? root.reach - 1px : root.reach);
-        width: root.keyboard-focus ? 5px : (root.emphasized ? 3px : 1px);
+        x: root.emphasized ? root.reach - 1px : root.reach;
+        width: root.emphasized ? 3px : 1px;
         height: parent.height;
         background: root.keyboard-focus ? Palette.accent-background : Palette.foreground;
         opacity: grip.pressed || root.keyboard-focus ? 1 : (grip.has-hover ? 0.6 : 0.2);
@@ -83,7 +82,7 @@ export component SidebarDividerGrip inherits Rectangle {
     // Keyboard focus also shows a handle in the middle of the line, so focus differs from a drag by color
     // and by shape, and from the resting line by weight, color, and shape.
     Rectangle {
-        visible: false;
+        visible: root.keyboard-focus;
         y: (parent.height - self.height) / 2;
         width: parent.width;
         height: 48px;

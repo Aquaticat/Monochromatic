@@ -159,8 +159,9 @@ export component QueryInput inherits Rectangle {
                 Rectangle {
                     x: (parent.width - self.width) / 2;
                     y: (parent.height - self.height) / 2;
-                    width: 32px;
-                    height: 32px;
+                    // Prototype clear-plate b: the plate fills the whole cell.
+                    width: 100%;
+                    height: 100%;
                     border-radius: 4px;
                     background: Palette.foreground.with-alpha(clear-touch.pressed ? 0.24 : (clear-touch.has-hover ? 0.1 : 0));
                     border-width: clear-touch.pressed ? 2px : (clear-touch.has-hover ? 1px : 0px);
