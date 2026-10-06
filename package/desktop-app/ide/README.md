@@ -476,9 +476,17 @@ so it shows the click target's real extent
 Its fill and boundary are the foreground ink at reduced opacity:
 the fill at 10 percent under the pointer and 24 percent pressed,
 the boundary at 50 percent and 80 percent.
-The box's border under the plate's boundary shows through it,
-and the focus line is drawn above the plate,
-so it keeps its color in every state.
+On the cell's top,
+right,
+and bottom edges the boundary lies on the box's border.
+The border is composited under it but shifts its color by only 2 to 8 gray levels,
+so while the plate shows,
+the boundary takes the border's place there.
+The focus line is drawn after the plate,
+so it keeps its color in every state;
+its contrast against the plate's fill is at least 3.5:1 in both schemes.
+The measured colors are in `design/README.md`,
+under "Applied frames of the 2026-10-06 UI batch 3b".
 
 Accessibility tools see a `button` named `Clear find text` or `Clear search query`
 whose default action clears.
