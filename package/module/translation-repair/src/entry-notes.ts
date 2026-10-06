@@ -2,6 +2,7 @@ import {
   isCommentFinding,
   type RepairDocument,
 } from './parse-document.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Entry notes
 // The notes an entry carries, rendered as identity-context lines so a sheet
@@ -219,7 +220,8 @@ export function headingWords(
 
  @param startOffset - where the comment opens, in the document's offsets
 
- @returns Phrase naming the nearest preceding heading, or the absence of one
+ @returns Phrase naming the nearest preceding heading, saying it has no words where it has none, or the
+ absence of one
 
  @example
  ```ts
@@ -246,7 +248,18 @@ function commentAnchor(
     .at(-1,);
   if (heading === undefined)
     return 'before the first heading';
-  return `under heading ${headingWords({ text: heading.text, },)}`;
+
+  /**
+   Words of that heading, which a heading of marks alone has none of.
+   */
+  const words = headingWords({ text: heading.text, },);
+
+  // A HEADING WITH NO WORDS NAMES NOTHING A READER CAN FIND IT BY, and the
+  // phrase with an empty name read "under heading :" in the sheet line, as if
+  // a word had been dropped.
+  if (rendersAsNothing({ text: words, },))
+    return 'under a heading that has no words';
+  return `under heading ${words}`;
 }
 
 /**
