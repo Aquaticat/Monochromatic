@@ -25,6 +25,15 @@ const crateInputs = [
   'package/git-policy/cli/README.md',
   'package/git-policy/cli/src/native',
   'package/rust-module/jsonc-edit',
+  // The crate links the scanner; `build.rs` and `data` hold the embedded baseline its library compiles in.
+  'package/cli/forbidden-strings/Cargo.toml',
+  'package/cli/forbidden-strings/Cargo.lock',
+  'package/cli/forbidden-strings/build.rs',
+  'package/cli/forbidden-strings/src',
+  'package/cli/forbidden-strings/data',
+  'package/rust-module/forbidden-regex/Cargo.toml',
+  'package/rust-module/forbidden-regex/Cargo.lock',
+  'package/rust-module/forbidden-regex/src',
 ];
 /** The crate, relative to a repository root. */
 const crateDirectory = 'package/git-policy/cli';
