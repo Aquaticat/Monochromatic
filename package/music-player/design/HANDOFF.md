@@ -138,7 +138,14 @@ at `66566ee3aa0bbd08b2fb087342f43b546cc88210`
 24 of them the fixture's;
 APK kept in `settings-pane-native-private/build-66566ee3aa0bbd08b2fb087342f43b546cc88210`);
 then a 72-view cohort
-(capturing with the visit prefix `rows`),
+(35 views captured by 2026-10-06 12:50 over visits with the prefixes `rows`,
+`again`,
+`more`,
+`next` and `later`;
+the host's load average of 60 to 100 from other work caused every failure,
+so `run-template-editor-when-quiet.ts` now waits,
+within a bound,
+for it to fall under 48 before each round),
 publication,
 and the approval question through the question tool.
 Until that cohort is published,
