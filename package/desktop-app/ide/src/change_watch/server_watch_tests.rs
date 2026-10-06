@@ -282,7 +282,10 @@ fn the_servers_wait_while_the_tree_waits() {
         tree_limited: true,
     };
     let established = reconcile_servers(&mut servers, &BTreeSet::new(), request, now, &mut fake);
-    assert!(established.is_empty());
+    assert!(
+        established.is_empty(),
+        "the servers added a watch while the tree waited"
+    );
     assert!(
         fake.adds.is_empty(),
         "the servers added a watch while the tree waited"
