@@ -29,15 +29,15 @@ use std::{
 };
 
 /// Text on disk before each save, with `am a` selected.
-const OLD: &str = "I am a big cat\n";
+pub(super) const OLD: &str = "I am a big cat\n";
 
 /// Text the save writes; the selection corresponds to `was a`.
-const NEW: &str = "I was a big cat, but now I am a human!\n";
+pub(super) const NEW: &str = "I was a big cat, but now I am a human!\n";
 
 /// How long the writer leaves the file unfinished in the asserting tests: below the 50 ms quiet period,
 /// and long enough for two 20 ms native ticks, so a read that did not wait happens during the pause.
 /// Timers run only inside the pause, so a stalled test thread cannot stretch the wait they observe.
-const PAUSE: Duration = Duration::from_millis(40);
+pub(super) const PAUSE: Duration = Duration::from_millis(40);
 
 /// Record the window's source text when it differs from every text recorded so far.
 fn note(window: &AppWindow, seen: &mut Vec<String>) {
@@ -55,7 +55,7 @@ fn note(window: &AppWindow, seen: &mut Vec<String>) {
 }
 
 /// Run native timers for `span`, recording every distinct source text the window shows.
-fn watch_texts(window: &AppWindow, span: Duration, seen: &mut Vec<String>) {
+pub(super) fn watch_texts(window: &AppWindow, span: Duration, seen: &mut Vec<String>) {
     let start = Instant::now();
     // The time check comes first, so a stalled thread leaves the loop without running timers late.
     while start.elapsed() < span {
@@ -66,7 +66,7 @@ fn watch_texts(window: &AppWindow, span: Duration, seen: &mut Vec<String>) {
 }
 
 /// Run native timers until the window shows `target`, recording every text shown on the way.
-fn until_text(window: &AppWindow, target: &str, seen: &mut Vec<String>) {
+pub(super) fn until_text(window: &AppWindow, target: &str, seen: &mut Vec<String>) {
     let start = Instant::now();
     loop {
         update_timers_and_animations();
@@ -76,7 +76,7 @@ fn until_text(window: &AppWindow, target: &str, seen: &mut Vec<String>) {
         }
         assert!(
             start.elapsed() < Duration::from_secs(2),
-            "the finished save was not shown; texts shown: {seen:?}"
+            "the window did not show the expected text within 2 s; texts shown: {seen:?}"
         );
         std::thread::sleep(Duration::from_millis(2));
     }
@@ -92,14 +92,14 @@ fn rest(window: &AppWindow) {
 /// Put `OLD` on disk by atomic replace, after a marker text, waiting until the window shows each.
 /// The read that shows `OLD` restarts the 1 s sweep clock, so the save that follows within a few
 /// hundred milliseconds cannot coincide with a sweep read.
-fn baseline(window: &AppWindow, displayed: &Path) {
+/// This is setup, so it waits with the 2 s bound; the watch tests assert that a replace shows promptly.
+pub(super) fn baseline(window: &AppWindow, displayed: &Path) {
     for text in ["marker\n", OLD] {
         let staged = displayed.with_extension("tmp");
         fs::write(&staged, text).expect("staged baseline");
         fs::rename(&staged, displayed).expect("atomic baseline");
-        promptly("the baseline text", || {
-            return window.get_source_text() == text;
-        });
+        let mut ignored = Vec::new();
+        until_text(window, text, &mut ignored);
     }
     rest(window);
 }
@@ -201,7 +201,21 @@ fn write_wait_pause_sweep() {
     for pause_ms in [10_u64, 20, 30, 40, 50, 60, 70, 80, 100, 150, 200] {
         let mut truncated_shown = 0;
         let mut selection_kept = 0;
+        // What: `Vec<u128>` collects, per trial that showed the truncated file, the milliseconds from the
+        //       start of the trial to the truncation (`as_millis` returns `u128`, an unsigned integer).
+        // Why: A read that the save's own notification did not ask for can still meet the unfinished file:
+        //      about 1000 ms points at the safety sweep, a few hundred at a read requested before the save.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const shownSetupMs: number[] = [];
+        // ```
+        let mut shown_setup_ms = Vec::new();
+        // The slowest setup of this pause length; about 400 ms is usual. Much more means the host or the
+        // fixture's disk stalled, or a baseline text arrived only with the sweep.
+        let mut slowest_setup = Duration::ZERO;
         for _ in 0..trials {
+            let begun = Instant::now();
             baseline(&window, &displayed);
             state.borrow_mut().document.select(ReadingPosition {
                 anchor: 2,
@@ -210,6 +224,8 @@ fn write_wait_pause_sweep() {
             });
             render(&window, &state);
             let mut seen = Vec::new();
+            let setup = begun.elapsed();
+            slowest_setup = slowest_setup.max(setup);
             let mut file = OpenOptions::new()
                 .write(true)
                 .truncate(true)
@@ -229,15 +245,17 @@ fn write_wait_pause_sweep() {
             // ```
             if seen.iter().any(String::is_empty) {
                 truncated_shown += 1;
+                shown_setup_ms.push(setup.as_millis());
             }
             if window.get_selected_text() == "was a" {
                 selection_kept += 1;
             }
         }
         println!(
-            "{{\"case\":\"write-wait-pause\",\"quiet_ms\":{},\"limit_ms\":{},\"pause_ms\":{pause_ms},\"trials\":{trials},\"truncated_shown\":{truncated_shown},\"selection_kept\":{selection_kept}}}",
+            "{{\"case\":\"write-wait-pause\",\"quiet_ms\":{},\"limit_ms\":{},\"pause_ms\":{pause_ms},\"trials\":{trials},\"truncated_shown\":{truncated_shown},\"selection_kept\":{selection_kept},\"shown_setup_ms\":{shown_setup_ms:?},\"slowest_setup_ms\":{}}}",
             WRITE_QUIET.as_millis(),
-            WRITE_WAIT_LIMIT.as_millis()
+            WRITE_WAIT_LIMIT.as_millis(),
+            slowest_setup.as_millis()
         );
     }
     window.hide().expect("close measurement window");
