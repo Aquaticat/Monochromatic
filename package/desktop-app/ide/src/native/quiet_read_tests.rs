@@ -44,7 +44,12 @@ fn reads_no_notification_asked_for_do_not_show_a_save_in_progress() {
         // Opened from a language target: outside the project, so nothing watches it.
         state.borrow_mut().outside_project = true;
         let mut seen = Vec::new();
-        // The startup reads finish, and the file has been quiet for longer than the quiet period.
+        // The reader thread starts by loading highlighting, which can outlast a save; once a highlighting
+        // answer for the displayed text was applied, it is idle, and the rest lets the startup rereads finish.
+        super::navigation_tests::wait_until(|| {
+            let current = state.borrow();
+            return current.syntax_revision == Some(current.document.revision());
+        });
         watch_texts(&window, Duration::from_millis(300), &mut seen);
         let truncated_at = Instant::now();
         let mut file = OpenOptions::new()
