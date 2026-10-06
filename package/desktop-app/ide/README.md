@@ -1669,30 +1669,24 @@ Helix crates share a pinned upstream revision.
 Helix code and runtime assets retain their own license obligations;
 the application does not inherit Helix's modal commands or editing features.
 
-## Release build and application directory
+## Release build and single executable
 
 `mise run //package/desktop-app/ide:build` builds the optimized `monochromatic-ide` binary
 in the bounded container described under [Build boundary](#build-boundary).
-`mise run //package/desktop-app/ide:bundle` runs that build and assembles `dist/monochromatic-ide`,
-a directory that runs from any location,
-without the source tree and without `HELIX_RUNTIME` in the environment:
-
-```txt
-# package/desktop-app/ide/dist/monochromatic-ide
-monochromatic-ide             release binary; Inter and JetBrains Mono are compiled in
-runtime/manifest.json         pinned Helix revision and the bundled grammar libraries
-runtime/grammars/             one shared object per bundled grammar
-runtime/queries/              Helix query files at the pinned revision
-runtime/licenses/<grammar>/   license notice of each bundled grammar
-runtime/Helix-LICENSE         MPL-2.0 text for the Helix query files and the Helix crates in the binary
-LICENSES/                     LGPL-3.0-or-later and GPL-3.0-or-later texts of the application
-LICENSES/font/                SIL Open Font License notices of Inter and JetBrains Mono
-```
-
-Run it as `dist/monochromatic-ide/monochromatic-ide PROJECT`,
-with `--file FILE` as under [Project startup](#project-startup).
-`mise run //package/desktop-app/ide:run:bundle PROJECT` does the same from the package directory.
+`mise run //package/desktop-app/ide:bundle` runs that build and copies the binary,
+unstripped,
+to `dist/monochromatic-ide`:
+one executable that carries its language runtime and its license texts
+(decided on 2026-10-06: "Ship as single file").
+It runs from any location,
+alone,
+without the source tree and without `HELIX_RUNTIME` in the environment.
 `dist/` is ignored by Git.
+
+Run it as `dist/monochromatic-ide [PROJECT]`,
+with `--file FILE` as under [Project startup](#project-startup);
+without `PROJECT` it opens the home folder.
+`mise run //package/desktop-app/ide:run:bundle [PROJECT]` does the same from the package directory.
 As in the sibling applications,
 `build` is the release build and `build:debug` the debug build;
 `run` starts the debug binary that `build:debug`,
@@ -1700,47 +1694,97 @@ the tests,
 and the inspection tasks use.
 `mise run //package/desktop-app/ide:lint:release` checks the application binary under the release profile,
 where code behind `cfg(debug_assertions)` is absent and unused items show only there.
-
 The release build unsets `SLINT_EMIT_DEBUG_INFO`,
 which the debug tasks set so inspection can address interface elements by name,
 and builds only the application binary,
 not the runtime,
 inspection,
 and scripted-server helpers.
-The directory holds no desktop entry,
-icon,
-or installer,
-and no collected license notices of the Rust crates compiled into the binary;
-those are open decisions.
 
-### Where the binary finds its language runtime
+### What the executable carries
 
-The pinned Helix loader (`prioritize_runtime_dirs` in `helix-loader/src/lib.rs`)
-looks for each runtime file in these directories,
-in this order,
-and takes the first that has the file:
+`build.rs` embeds these files of `target/<profile>/runtime` and of the package,
+for every build with the `gui` feature,
+the debug binary included,
+and records each one's path,
+bytes,
+and FNV-1a digest (`src/content_digest.rs`) in a table sorted by path:
 
-- `runtime` beside the directory `CARGO_MANIFEST_DIR` names,
-  only when that variable is set while the application runs;
-- `runtime` in Helix's configuration directory,
-  `$XDG_CONFIG_HOME/helix/runtime` or `~/.config/helix/runtime`;
-- the directory `HELIX_RUNTIME` names,
-  when it is set;
-- a directory fixed at build time through `HELIX_DEFAULT_RUNTIME`,
-  which no task of this package sets;
-- `runtime` beside the executable,
-  after symbolic links to the executable are resolved.
+```txt
+# Paths inside the embedded table of monochromatic-ide, built from target/release/runtime
+runtime/manifest.json            pinned Helix revision and the bundled grammar libraries
+runtime/grammars/<name>.so       one parser library per bundled grammar, only those the manifest lists
+runtime/queries/<language>/      Helix query files of every language at the pinned revision
+runtime/licenses/<grammar>/      license notice of each bundled grammar
+runtime/Helix-LICENSE            MPL-2.0 text for the Helix query files and the Helix crates in the binary
+LICENSES/                        LGPL-3.0-or-later and GPL-3.0-or-later texts of the application
+LICENSES/font/                   SIL Open Font License notices of Inter and JetBrains Mono
+```
 
-So the assembled directory works wherever it is copied or moved as a whole,
-and a symbolic link to its executable works from any directory.
-A copy of the executable alone finds no runtime:
-it shows source as plain text,
-with a message that names the manifest it looked for.
-A file in the user's Helix configuration directory or under `HELIX_RUNTIME`
-replaces the bundled file of the same relative path,
-one file at a time.
-With an empty `queries/sql/highlights.scm` in a scratch configuration directory,
-the packaged application drew a SQL file without colors and reported nothing.
+On 2026-10-06 that was 1,254 files and 34,659,293 bytes:
+27 parser libraries (33,463,328 bytes, from 11,098,288 for `sql.so` down to 20,464 for `json.so`),
+1,193 query files of 341 languages (1,087,532 bytes),
+28 grammar notices (39,593 bytes),
+Helix's license,
+the two application license texts,
+the two font notices,
+and the manifest.
+Inter and JetBrains Mono themselves are compiled in through Slint, as before.
+The executable holds no collected license notices of the Rust crates compiled into it,
+and offers no way yet to show the embedded texts;
+both are open questions for the user.
+The table's key (`c47e913b79bf6a42` for that runtime) is a digest of every path and file digest.
+
+### Where language files come from
+
+Highlighting reads only the application's own runtime,
+whatever Helix's loader would choose.
+That loader (`prioritize_runtime_dirs` in `helix-loader/src/lib.rs`) searches,
+for each file,
+`runtime` beside `CARGO_MANIFEST_DIR`,
+then `$XDG_CONFIG_HOME/helix/runtime`,
+then `HELIX_RUNTIME`,
+then a build-time directory,
+then `runtime` beside the executable,
+and takes the first that has it;
+a file in the user's Helix configuration replaced a bundled query
+(on 2026-10-05 an empty `queries/sql/highlights.scm` there drew SQL with 0 colored spans instead of 16).
+So the application no longer uses Helix's `Loader` to compile languages:
+`src/syntax_loader.rs` implements tree-house's `LanguageLoader` itself,
+keeps Helix's built-in language table only for recognition,
+and reads grammars and queries through `src/runtime.rs`:
+
+- The application binary installs its embedded table at startup.
+  Queries are read straight from it.
+- A parser library must be a file for the dynamic loader,
+  so the first time a language is needed its library is unpacked into
+  `$XDG_CACHE_HOME/monochromatic-ide/runtime/<key>/grammars/<name>.so`
+  (`~/.cache` when the variable is unset),
+  directories mode 0700,
+  files mode 0600.
+  Only the languages of displayed files (and of their injections) are unpacked.
+- Every load first checks the embedded bytes against their build-time digest,
+  then compares the cached file with them byte for byte.
+  A missing, shortened, or altered cached file is written again and logged as a warning;
+  a damaged embedded part is reported under the source
+  ("The language file runtime/grammars/sql.so embedded in … is damaged …"),
+  the file stays readable as plain text,
+  and nothing is unpacked for it.
+- A write goes to a private file named after the process and a counter,
+  then is renamed over the final name.
+  The rename replaces the directory entry in one step,
+  so concurrent first starts both write identical bytes,
+  a reader sees either complete file,
+  and a process that already loaded the old file keeps it.
+- Older `<key>` folders of earlier builds are not removed.
+
+Test and development programs have no embedded table;
+they read the directory `HELIX_RUNTIME` names,
+which the package `runtime` task prepares,
+again through `src/runtime.rs` and never through Helix's search.
+Their messages name that task;
+the executable's messages say to replace it with a fresh copy or build it again from source.
+A build with the `gui` feature and no prepared runtime stops with a message naming the `runtime` task.
 
 ### What the host provides
 
@@ -1756,6 +1800,9 @@ the packaged application drew a SQL file without colors and reported nothing.
   and `libEGL`,
   which the binary opens when it starts.
   Only Wayland was checked.
+- A writable private cache directory for the unpacked parser libraries,
+  on a file system that allows running code (a `noexec` mount refuses them,
+  and the message names `XDG_CACHE_HOME` as the way out).
 - `rg` (ripgrep) on `PATH` for [Combined search](#combined-search).
 - For language features:
   `/usr/bin/bwrap` with unprivileged user namespaces,
@@ -1770,100 +1817,214 @@ the packaged application drew a SQL file without colors and reported nothing.
   with the system copies of both families hidden,
   the packaged binary drew the interface and the source in its own faces.
 
-The application writes language-server state below `$XDG_CACHE_HOME/monochromatic-ide`
+The application writes language-server state and unpacked parser libraries below
+`$XDG_CACHE_HOME/monochromatic-ide`,
 and nothing below the configuration or data directories.
-It logs to standard output at debug level,
-including language-server logs,
-with no setting to lower that yet.
+
+### Install and launcher entry
+
+`mise run //package/desktop-app/ide:install` runs `bundle`,
+then `bin/install.mjs`,
+which copies `dist/monochromatic-ide` to `~/.local/bin/monochromatic-ide` (mode 0755)
+and `share/applications/monochromatic.ide.desktop` to `${XDG_DATA_HOME:-~/.local/share}/applications`,
+each through a private file renamed into place,
+then refreshes that folder's `mimeinfo.cache` with `update-desktop-database` when it is installed.
+It was verified only with disposable `HOME` folders,
+never against the real home.
+
+The entry follows the sibling entries in `package/desktop-app/terminal/share/applications/`
+and `package/music-player/desktop-app/share/applications/`:
+
+- `Exec=monochromatic-ide %f`.
+  The Desktop Entry Specification's `%f` is "a single file name (including the path)",
+  and "if the application should not open any file the %f, %u, %F and %U field codes must be removed
+  from the command line and ignored",
+  so an application menu starts it with no argument (the home folder)
+  and "open with" on a folder passes that folder's path.
+  `%u` could pass a `file:` URL,
+  which the command line does not accept.
+- `MimeType=inode/directory;` offers it for folders.
+  With the entry installed in a disposable home and `~/.local/bin` on `PATH`,
+  `gio mime inode/directory` listed it among the registered and recommended applications
+  while the default stayed `org.kde.dolphin.desktop` from the system `kde-mimeapps.list`.
+  GLib lists the entry only when the command is found on `PATH`;
+  this host's systemd user session `PATH` includes `~/.local/bin`.
+- `StartupWMClass=monochromatic.ide`,
+  the Wayland app id that `src/launcher.rs` stamps on the window
+  through Slint's winit backend hook,
+  as the sibling `launcher.rs` files do.
+  Runs with `SLINT_MCP_PORT` (debug inspection) or a non-winit `SLINT_BACKEND` keep Slint's own backend
+  and get no app id.
+- `Icon=accessories-text-editor`,
+  a stock name of the Icon Naming Specification present in this host's breeze,
+  breeze-dark,
+  and AdwaitaLegacy themes (Adwaita has only its symbolic variant);
+  the application's own icon is still the user's decision.
+- `desktop-file-validate` from desktop-file-utils 0.28 accepts the entry.
+
+In the nested compositor with a disposable home,
+opening a folder through GLib (`gio launch` with the entry and the folder)
+and through KIO (`kioclient exec` with the folder URL and `inode/directory`,
+the IDE made the default for folders in that home only)
+both started the installed copy with the folder as its only argument and on that folder;
+`gio launch` with the entry alone started it with no argument on the home folder.
+The Wayland protocol log of the window showed `set_app_id("monochromatic.ide")`
+and `set_title("Monochromatic IDE")`.
+
+### Home folder as the project
+
+Starting without a folder opens `HOME`.
+The tree's header names the folder (the last path component),
+the window title stays `Monochromatic IDE`,
+and the source column is empty until a file is chosen.
+What changes:
+
+- Language-server state lies inside the project,
+  below `~/.cache/monochromatic-ide/language`,
+  which the confinement now allows,
+  binding it writable after the read-only project
+  (see [Language module](#language-module)).
+  A real bubblewrap probe in a disposable home wrote into the state folder and was refused beside it;
+  with the former order the state write was refused too.
+- No server is rooted at the home folder or above it:
+  a file with no root marker of its language between itself and the home folder starts no server,
+  and its state names the root it would have had.
+- The tree reads only the folders shown,
+  the change watcher watches only those (one inotify watch at start),
+  and search runs `rg` over the home folder,
+  which skips hidden folders and,
+  inside git repositories,
+  ignored ones.
 
 ### Bundle checks
 
-`mise run //package/desktop-app/ide:inspect:bundle [directory] [only]` checks an assembled directory,
+`mise run //package/desktop-app/ide:inspect:bundle [file] [runtime] [only]` checks a single executable,
 `dist/monochromatic-ide` by default,
-without changing it:
+against the runtime directory it was built from,
+`target/release/runtime` by default,
+without changing either:
 
 - `inventory`:
-  the executable,
-  the manifest,
-  and exactly the grammar libraries the manifest lists.
+  a regular ELF executable that contains every file `build.rs` embeds,
+  byte for byte.
 - `license-texts`:
   the application's license texts,
   both font notices,
   Helix's license,
-  and a notice with a copyright line for every bundled grammar.
-- `grammars-load`:
-  the package's four syntax test binaries,
-  run in the bounded container with `HELIX_RUNTIME` naming the checked directory's `runtime`,
-  mounted read-only.
-  They load every listed library,
-  compile the highlighting rules of every language that uses one,
-  and highlight a sample of each bundled language.
-- `starts-outside-source-tree`:
-  a copy below the private scratch root reports its version with an empty environment,
-  then runs in the nested compositor with no runtime variable
-  and an empty configuration directory,
-  and must highlight a SQL file from its own `runtime`.
-- `missing-runtime-reported`:
-  a copy without `runtime` must still open the file
-  and report the manifest it could not read.
-  The check reads the report from the application's log;
-  the window shows the same sentence under the source.
+  and a notice with a copyright line for every bundled grammar,
+  each embedded byte for byte.
+- `lone-copy-highlights`:
+  a copy alone in its own folder reports its version with an empty environment,
+  then highlights a SQL file in the nested compositor with empty XDG homes,
+  unpacking exactly the runtime's `sql.so` and no partial file.
+- `later-start-reuses-cache`:
+  a second start on the same cache compares the cached parser and leaves the file untouched.
+- `damaged-cache-rebuilt`:
+  a cached parser with one changed byte is reported,
+  written again,
+  and highlighting works.
+- `shadowing-query-ignored`:
+  an empty `helix/runtime/queries/sql/highlights.scm` in the configuration home changes no span.
+- `concurrent-first-starts`:
+  two copies started at the same moment on one empty cache both highlight
+  and leave one intact parser.
+- `damaged-embedded-part-reported`:
+  a copy with one changed byte inside its embedded `sql.so` keeps the source readable,
+  names the damaged part,
+  the executable,
+  and the remedy,
+  and unpacks nothing.
 
-The release binary has no headless backend
-(`SLINT_BACKEND=headless` without a display ends with "No backends configured"),
-so both startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`.
+The startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`;
 SQL is the sample because it has a bundled grammar and no configured language server.
-Both also require a clean end:
+Each requires a clean end:
 the application exits with status 0 within the compositor's 2 s after the close request,
 and the session leaves no application process,
 no private bus daemon,
 and no bus directory behind.
-A session that fails is ended through the compositor's `quit` first,
-because a compositor ended by a signal leaves its `dbus-daemon`,
-that daemon's directory below the temporary directory,
-and its hosted application running;
-whatever is left is stopped and removed.
+A frame is taken only once the window shows more than eight colors.
+`RUST_LOG` is given to the application alone,
+because the compositor reads it too.
 
-`mise run //package/desktop-app/ide:inspect:bundle-guards [directory] [only]` damages one copy per case
-and requires the matching check to fail on it while the unrelated checks still pass:
-a removed grammar library,
-an unlisted library,
+`mise run //package/desktop-app/ide:inspect:bundle-guards [file] [runtime] [only]` damages one copy per case
+and requires the matching checks to fail on it while the unrelated ones still pass:
 a cleared executable bit,
-removed query rules,
-a removed grammar notice,
-removed REUSE header lines,
-a removed font notice,
-a removed application license,
-a removed Helix license,
-a removed runtime,
-and an executable that still finds a runtime elsewhere.
+and one changed byte inside the embedded SQL highlighting rules,
+the SQL parser,
+a grammar notice,
+a font notice,
+an application license,
+and Helix's license.
 
-### Measured on 2026-10-05
+Behavior cannot be removed from a finished file,
+so the run-time checks were also run on an altered debug build (on 2026-10-06):
+with the cache compared by length only,
+`damaged-cache-rebuilt` failed ("the damaged cached parser was not reported and written again");
+with a query file below `$XDG_CONFIG_HOME/helix/runtime` read first,
+`shadowing-query-ignored` failed (0 spans with the user query);
+with the digest check skipped,
+`damaged-embedded-part-reported` failed ("the damaged copy reported nothing").
+`lone-copy-highlights` passed on the same build.
+The unit and integration tests behind these rules were observed failing in a copy with each guard removed:
+`tests/syntax_shadowing.rs`,
+the cache tests in `src/runtime/cache_tests.rs`
+(`a_rewrite_replaces_the_file_instead_of_writing_into_it` fails with writes into the file in place,
+which `concurrent_first_uses_all_get_the_complete_library` did not always detect),
+the digest test in `src/runtime/embedded_tests.rs`,
+the home-folder root test in `tests/language/roots.rs`,
+the bind-order test,
+the state-directory test,
+and the home default in `tests/cli_args.rs`.
+
+### Measured on 2026-10-06
 
 - Size:
-  81,516,093 bytes in 1,255 files.
-  The binary is 46,856,800 bytes with its symbol table
-  (35,666,600 after `strip --strip-all`, which the task does not run);
-  `runtime/grammars` is 33,463,328 bytes in 27 files,
-  `runtime/queries` 1,087,532 bytes in 1,193 files,
-  and the license texts and notices 107,898 bytes in 33 files.
-  Size is not a constraint for this package.
+  the executable is 81,743,984 bytes,
+  34,887,184 more than the former directory's binary,
+  close to the 34,659,293 embedded bytes.
 - Build:
-  2 GiB and 2 CPUs are enough.
-  Two release builds from an empty release directory finished in 18 min 40 s and 15 min 22 s of Cargo time,
-  on a host whose load average was between 54 and 97 each time it was read during them,
-  so the second container averaged 1.04 of its 2 CPUs.
-  In the second,
-  sampled four times a second from the container's control group,
-  anonymous memory peaked at 1,116 MiB;
+  one release build from an empty release directory took 12 min 45 s of Cargo time
+  at host load averages between 45 and 78 when read during it;
+  anonymous memory peaked at 938 MiB (sampled from the container's control group),
   the group reached its 2,048 MiB limit only through reclaimable file cache,
-  used at most 19 MiB of swap,
+  used at most 45 MiB of swap,
   and recorded no out-of-memory kill.
-  Both builds produced the same binary, byte for byte.
-- The release build prints one warning the debug build does not:
-  `set_annotations` in `src/native/annotate.rs` is unused,
-  because its only caller outside tests is the debug-only inspection path.
-  `lint:clippy` checks the debug profile and does not see it.
+- First start and later start,
+  five runs each at host load averages of 90 to 99,
+  for the 11,098,288-byte `sql.so`:
+  unpacking took 7 to 586 ms (median 71 ms),
+  the byte comparison of a later start 8 to 34 ms (median 10 ms);
+  preparing the language as a whole (digest check, unpack or comparison, loading, and compiling its rules)
+  took 218 to 776 ms on a first start (median 449 ms) and 130 to 204 ms on a later one (median 162 ms).
+- Home folder:
+  a disposable home of 283,450 files and 359,585,884 bytes
+  (hidden caches and toolchains, documents, three 64 MiB binary downloads,
+  ten git projects with ignored `node_modules` and `target`, one project without git)
+  showed its tree 519 to 2,641 ms after the compositor started (three starts),
+  with one inotify watch.
+  Of its files,
+  `rg --files` with the application's arguments lists 15,429.
+  In the application,
+  a query that matches nothing finished its file-name search in 266 ms
+  and its content search in 4,618 ms;
+  a common word reached the 30-result cap in 33 ms.
+  Run directly with the same arguments,
+  the content search for a query that matches nothing took 456 ms to 11,383 ms (three runs, cold page cache first).
+
+### Measured on 2026-10-05 (former directory bundle)
+
+Before the single executable,
+`bundle` assembled a directory with the binary,
+`runtime/`,
+and `LICENSES/`:
+81,516,093 bytes in 1,255 files,
+the binary 46,856,800 bytes with its symbol table
+(35,666,600 after `strip --strip-all`).
+Two release builds from an empty release directory finished in 18 min 40 s and 15 min 22 s of Cargo time
+at load averages between 54 and 97;
+anonymous memory peaked at 1,116 MiB,
+and both builds produced the same binary,
+byte for byte.
 
 [handover]: ../../../doc/handover/slint-ide-0x.md
 [scope]: ../../../doc/decision/slint-ide-0x-scope.md
