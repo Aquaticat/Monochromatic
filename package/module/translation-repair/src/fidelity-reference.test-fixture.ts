@@ -1,11 +1,16 @@
+import { expect, } from '@monochromatic-dev/module-test/ts';
 import {
   alterSharedNumber,
   type DamageAttempt,
   deleteOneSentence,
+  type FidelityExpectedDamage,
+  FidelityReferenceError,
+  type FidelityReferenceOperation,
   type FidelityReferenceSpec,
   foldInvisibleVariants,
   hashContent,
   insertBorrowedSentence,
+  type ReviewedFidelityReference,
 } from '../dist/final/node/index.mjs';
 
 //region Invented reviewed-reference fixtures
@@ -19,7 +24,7 @@ const FIXTURE_COMMIT_WIDTH = 40;
 /**
  Invented source carrying the deliberately shared year.
  */
-const REVIEW_SOURCE: string = '2023年，灰白相间的小猫搬到旧书店楼上的安静公寓。她每天早上浇灌窗边的花，'
+export const REVIEW_SOURCE: string = '2023年，灰白相间的小猫搬到旧书店楼上的安静公寓。她每天早上浇灌窗边的花，'
   + '晚上在图书馆读书。她喜欢与邻居分享故事，也喜欢给来访的朋友准备茶点。书店里的角落明亮而温暖，'
   + '朋友们常在那里讨论书籍和花园。她认真保管明信片，记得每位朋友喜欢的图案。';
 
@@ -53,6 +58,29 @@ function fixtureDamage(damage: DamageAttempt,): Extract<DamageAttempt, { readonl
   if (damage.kind !== 'damaged')
     throw new Error('Invented reference fixture must admit its specified mutation',);
   return damage;
+}
+
+/**
+ Identity the manifest reviews for one damage variant: its family, the hash of
+ its damaged text and its changed-content count.
+
+ @param damage - variant a damage builder produced
+
+ @returns Its reviewed identity
+
+ @example
+ ```ts
+ const expected = damageIdentity({ damage, },);
+ ```
+ */
+function damageIdentity(
+  { damage, }: { readonly damage: Extract<DamageAttempt, { readonly kind: 'damaged'; }>; },
+): FidelityExpectedDamage {
+  return {
+    kind: damage.damageKind,
+    hash: hashContent({ content: damage.damagedText, },),
+    changedChars: damage.changedChars,
+  };
 }
 
 /**
@@ -174,16 +202,134 @@ export function reviewedFixture(): {
         endOffset: donorAt + REVIEW_DONOR.length,
         hash: hashContent({ content: REVIEW_DONOR, },),
       },
-      damages: damages.map(function expected(damage,) {
-        return {
-          kind: damage.damageKind,
-          hash: hashContent({ content: damage.damagedText, },),
-          changedChars: damage.changedChars,
-        };
+      damages: damages.map(function expected(damage,): FidelityExpectedDamage {
+        return damageIdentity({ damage, },);
       },),
       reviewedOn: '2026-09-11',
     },
   };
+}
+
+/**
+ Message a reviewed-fidelity refusal carries, spelled out so that no case builds
+ its expectation with the class under test.
+
+ @param referenceId - identifier the refusal names, empty when the manifest entry carried none
+
+ @param operation - verification boundary the refusal names
+
+ @returns The whole message
+
+ @example
+ ```ts
+ const message = refusalMessage({ referenceId: 'invented-reference', operation: 'source', },);
+ ```
+ */
+export function refusalMessage(
+  {
+    referenceId,
+    operation,
+  }: {
+    readonly referenceId: string;
+    readonly operation: FidelityReferenceOperation;
+  },
+): string {
+  return `reviewed fidelity reference ${referenceId} failed ${operation} verification;`
+    + ' use its pinned inputs and reviewed manifest, or source-review a replacement before calibration.';
+}
+
+/**
+ Waits for a call that must refuse and hands back what it rejected with.
+
+ @param pending - call expected to refuse
+
+ @returns The rejection, unchanged
+
+ @throws {@link Error} when the call answers instead of refusing
+
+ @example
+ ```ts
+ const refusal = await settledRefusal(readReviewedFidelityReferences({ pin, },),);
+ ```
+ */
+export async function settledRefusal(pending: Promise<unknown>,): Promise<unknown> {
+  try {
+    await pending;
+  }
+  catch (error) {
+    return error;
+  }
+  throw new Error('expected the call to refuse, but it answered',);
+}
+
+/**
+ Everything a built reference holds that a case compares whole, each damage
+ variant reduced to the identity the manifest reviews: its family, the hash of
+ its damaged text and its changed-content count.
+
+ @param reference - built reference
+
+ @returns Its spec, texts and reviewed damage identities
+
+ @example
+ ```ts
+ expect(summaryOf({ reference, },),).toEqual({ spec, sourceText, referenceText, damages: spec.damages, },);
+ ```
+ */
+export function summaryOf({ reference, }: { readonly reference: ReviewedFidelityReference; },): {
+  readonly spec: FidelityReferenceSpec;
+  readonly sourceText: string;
+  readonly referenceText: string;
+  readonly damages: readonly FidelityExpectedDamage[];
+} {
+  return {
+    spec: reference.spec,
+    sourceText: reference.sourceText,
+    referenceText: reference.referenceText,
+    damages: reference.damages
+      .map(function identity(damage,): FidelityExpectedDamage {
+        return damageIdentity({ damage, },);
+      },),
+  };
+}
+
+/**
+ Asserts that a caught value is the reviewed-fidelity refusal for one reference and
+ one verification boundary, whole message included.
+
+ @param refusal - value a call threw or rejected with
+
+ @param referenceId - identifier the refusal must name
+
+ @param operation - verification boundary the refusal must name
+
+ @example
+ ```ts
+ expectRefusal({ refusal, referenceId: 'invented-reference', operation: 'donor', },);
+ ```
+ */
+export function expectRefusal(
+  {
+    refusal,
+    referenceId,
+    operation,
+  }: {
+    readonly refusal: unknown;
+    readonly referenceId: string;
+    readonly operation: FidelityReferenceOperation;
+  },
+): void {
+  expect(refusal,)
+    .toBeInstanceOf(FidelityReferenceError,);
+  /**
+   The message the refusal must carry.
+   */
+  const message = refusalMessage({
+    referenceId,
+    operation,
+  },);
+  expect(String(refusal,),)
+    .toBe(`FidelityReferenceError: ${message}`,);
 }
 
 //endregion Invented reviewed-reference fixtures

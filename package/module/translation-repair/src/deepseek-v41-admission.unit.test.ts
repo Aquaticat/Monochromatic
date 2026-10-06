@@ -36,7 +36,7 @@ const QUOTED_USD_PER_MILLION = { input: 0.3, output: 1.2 } as const;
 const TOKENS_PER_QUOTE = 1_000_000;
 
 await describe({
-  name: '',
+  name: 'DeepSeek V4.1 roster admission',
   children: [
     it({
       name: 'registers the approved serving paths as exactly one new roster identity',

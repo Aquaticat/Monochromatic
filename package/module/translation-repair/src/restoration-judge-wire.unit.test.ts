@@ -161,47 +161,59 @@ await describe({
       ],
     },),
 
-    it({
-      name: 'REFUSES a reply that is no object, a judgment that is no object, and a reference that is no '
-        + 'number, since nothing there binds a judgment to a seed',
-      fn: async () => {
-        // NULL AND A NUMERAL IN QUOTES ARE THE VALUES THE GUARDS ARE FOR: a
-        // number or a word is refused by the checks behind them anyway, a
-        // field read off null throws, and `'1'` passes every arithmetic
-        // check a number would.
-        expect(isRestorationJudgeWire(null,),).toBe(false,);
-        expect(isRestorationJudgeWire({ judgments: [null,], },),).toBe(false,);
-        expect(isRestorationJudgeWire({
-          judgments: [{ reference: '1', verdict: 'restored', },],
-        },),).toBe(false,);
-        expect(isRestorationJudgeWire(5,),).toBe(false,);
-        expect(isRestorationJudgeWire({ judgments: [5,], },),).toBe(false,);
-        expect(isRestorationJudgeWire({
-          judgments: [{ reference: 'one', verdict: 'restored', },],
-        },),).toBe(false,);
-      },
+    describe({
+      name: `${isRestorationJudgeWire.name} nulls`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES a reply that is no object, a judgment that is no object, and a reference that is no '
+            + 'number, since nothing there binds a judgment to a seed',
+          fn: async () => {
+            // NULL AND A NUMERAL IN QUOTES ARE THE VALUES THE GUARDS ARE FOR: a
+            // number or a word is refused by the checks behind them anyway, a
+            // field read off null throws, and `'1'` passes every arithmetic
+            // check a number would.
+            expect(isRestorationJudgeWire(null,),).toBe(false,);
+            expect(isRestorationJudgeWire({ judgments: [null,], },),).toBe(false,);
+            expect(isRestorationJudgeWire({
+              judgments: [{ reference: '1', verdict: 'restored', },],
+            },),).toBe(false,);
+            expect(isRestorationJudgeWire(5,),).toBe(false,);
+            expect(isRestorationJudgeWire({ judgments: [5,], },),).toBe(false,);
+            expect(isRestorationJudgeWire({
+              judgments: [{ reference: 'one', verdict: 'restored', },],
+            },),).toBe(false,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'FINDS A DUPLICATE JUDGMENT where two judgments name one reference and KEEPS THE FIRST, since '
-        + 'one seed gets one verdict',
-      fn: async () => {
-        expect(resolveRestorationJudgment({
-          wire: {
-            judgments: [{
-              reference: 1,
-              verdict: 'restored',
-            }, {
-              reference: 1,
-              verdict: 'not-restored',
-            },],
+    describe({
+      name: `${resolveRestorationJudgment.name} duplicates`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'FINDS A DUPLICATE JUDGMENT where two judgments name one reference and KEEPS THE FIRST, since '
+            + 'one seed gets one verdict',
+          fn: async () => {
+            expect(resolveRestorationJudgment({
+              wire: {
+                judgments: [{
+                  reference: 1,
+                  verdict: 'restored',
+                }, {
+                  reference: 1,
+                  verdict: 'not-restored',
+                },],
+              },
+              seedIds: ['seed/omission-0',],
+            },),).toEqual({
+              verdicts: { 'seed/omission-0': 'restored', },
+              findings: ['duplicate-judgment (1)',],
+            },);
           },
-          seedIds: ['seed/omission-0',],
-        },),).toEqual({
-          verdicts: { 'seed/omission-0': 'restored', },
-          findings: ['duplicate-judgment (1)',],
-        },);
-      },
+        },),
+      ],
     },),
   ],
 },);

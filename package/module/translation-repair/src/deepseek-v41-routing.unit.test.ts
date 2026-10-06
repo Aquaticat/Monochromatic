@@ -60,7 +60,7 @@ function valid(value: unknown): value is { animal: 'cat'; count: 7 } {
 }
 
 await describe({
-  name: '',
+  name: createRoutingClient.name,
   children: [
     ...[
       { name: 'prefers Hyper when both approved routes are wet', hyper: false, openrouter: false,

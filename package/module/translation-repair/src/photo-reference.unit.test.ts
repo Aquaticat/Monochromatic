@@ -287,23 +287,29 @@ await describe({
       ],
     },),
 
-    it({
-      name: 'READS BOTH ASSETS where the element quotes one with a single mark and the other with a double, '
-        + 'the earlier opening quote kept, and READS NO ASSET where the path names no photos directory',
-      fn: async () => {
-        const mixed = photoReferences({
-          text: `<PhotoScroll photos={[ '\${path}/photos/tabby.webp', "\${path}/photos/sill.jpg" ]} />`,
-        },);
-        expect(mixed.map(function toName(reference,): string {
-          return reference.assetName;
-        },),).toEqual(['tabby.webp', 'sill.jpg',],);
-        const outside = photoReferences({
-          text: `<PhotoScroll photos={[ '\${path}/photos/tabby.webp', '\${path}/elsewhere/cat.webp' ]} />`,
-        },);
-        expect(outside.map(function toName(reference,): string {
-          return reference.assetName;
-        },),).toEqual(['tabby.webp',],);
-      },
+    describe({
+      name: `${photoReferences.name} mixed quotes`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS BOTH ASSETS where the element quotes one with a single mark and the other with a double, '
+            + 'the earlier opening quote kept, and READS NO ASSET where the path names no photos directory',
+          fn: async () => {
+            const mixed = photoReferences({
+              text: `<PhotoScroll photos={[ '\${path}/photos/tabby.webp', "\${path}/photos/sill.jpg" ]} />`,
+            },);
+            expect(mixed.map(function toName(reference,): string {
+              return reference.assetName;
+            },),).toEqual(['tabby.webp', 'sill.jpg',],);
+            const outside = photoReferences({
+              text: `<PhotoScroll photos={[ '\${path}/photos/tabby.webp', '\${path}/elsewhere/cat.webp' ]} />`,
+            },);
+            expect(outside.map(function toName(reference,): string {
+              return reference.assetName;
+            },),).toEqual(['tabby.webp',],);
+          },
+        },),
+      ],
     },),
   ],
 },);

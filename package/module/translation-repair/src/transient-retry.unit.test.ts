@@ -1096,32 +1096,38 @@ await describe({
       ],
     },),
 
-    it({
-      name: 'WRAPS a thrown value that is no Error into one, so the retry outcome always carries a failure '
-        + 'the caller can read',
-      fn: async () => {
-        /**
-         Exchange over a transport that throws a bare string.
-         */
-        const refusal = await rejectionOf(async function exhausted(): Promise<unknown> {
-          return await exchangeWithRetry({
-            transport: async function transport(): Promise<TransportReply> {
-              // A thrown value that is no Error, as a hostile transport might.
-              // Typed `unknown` so the throw carries no literal the lint reads
-              // as a non-Error shape.
-              const thrownValue: unknown = 'the cat knocked the cable';
-              throw thrownValue;
-            },
-            exchange: exchangeWith({ signal: new AbortController().signal, },),
-            policy: FAST_POLICY,
-          },);
-        },);
-        // THE CLASS FIRST: the message and the cause are read off an Error, so a
-        // string rejected unwrapped must fail here.
-        expect(refusal,).toBeInstanceOf(Error,);
-        expect(String(refusal,),).toBe('Error: the transport threw a value that is not an Error',);
-        expect(Error.isError(refusal,) ? refusal.cause : undefined,).toBe('the cat knocked the cable',);
-      },
+    describe({
+      name: `${exchangeWithRetry.name} thrown non-Errors`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'WRAPS a thrown value that is no Error into one, so the retry outcome always carries a failure '
+            + 'the caller can read',
+          fn: async () => {
+            /**
+             Exchange over a transport that throws a bare string.
+             */
+            const refusal = await rejectionOf(async function exhausted(): Promise<unknown> {
+              return await exchangeWithRetry({
+                transport: async function transport(): Promise<TransportReply> {
+                  // A thrown value that is no Error, as a hostile transport might.
+                  // Typed `unknown` so the throw carries no literal the lint reads
+                  // as a non-Error shape.
+                  const thrownValue: unknown = 'the cat knocked the cable';
+                  throw thrownValue;
+                },
+                exchange: exchangeWith({ signal: new AbortController().signal, },),
+                policy: FAST_POLICY,
+              },);
+            },);
+            // THE CLASS FIRST: the message and the cause are read off an Error, so a
+            // string rejected unwrapped must fail here.
+            expect(refusal,).toBeInstanceOf(Error,);
+            expect(String(refusal,),).toBe('Error: the transport threw a value that is not an Error',);
+            expect(Error.isError(refusal,) ? refusal.cause : undefined,).toBe('the cat knocked the cable',);
+          },
+        },),
+      ],
     },),
   ],
 },);

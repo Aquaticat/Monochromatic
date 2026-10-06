@@ -335,17 +335,23 @@ await describe({
       ],
     },),
 
-    it({
-      name: 'REFUSES a reply that is no object and an edit that is no object, since nothing there names a '
-        + 'region or its text',
-      fn: async () => {
-        // NULL IS THE VALUE THE GUARDS ARE FOR: a number is refused by the
-        // field reads behind them anyway, and a field read off null throws.
-        expect(isEditorReportWire(null,),).toBe(false,);
-        expect(isEditorReportWire({ edits: [null,], },),).toBe(false,);
-        expect(isEditorReportWire(5,),).toBe(false,);
-        expect(isEditorReportWire({ edits: [5,], },),).toBe(false,);
-      },
+    describe({
+      name: `${isEditorReportWire.name} nulls`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES a reply that is no object and an edit that is no object, since nothing there names a '
+            + 'region or its text',
+          fn: async () => {
+            // NULL IS THE VALUE THE GUARDS ARE FOR: a number is refused by the
+            // field reads behind them anyway, and a field read off null throws.
+            expect(isEditorReportWire(null,),).toBe(false,);
+            expect(isEditorReportWire({ edits: [null,], },),).toBe(false,);
+            expect(isEditorReportWire(5,),).toBe(false,);
+            expect(isEditorReportWire({ edits: [5,], },),).toBe(false,);
+          },
+        },),
+      ],
     },),
   ],
 },);
