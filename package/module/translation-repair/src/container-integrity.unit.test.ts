@@ -16,6 +16,7 @@
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
+  caught,
   describe,
   expect,
   it,
@@ -186,6 +187,16 @@ function blocksWithoutTags(): readonly DocumentNode[] {
   },);
 }
 
+/**
+ Translation whose container is a bare fragment, which carries no element name.
+ */
+const FRAGMENT_TEXT = 'The cat naps.\n\n<>\n\nShe dreams.\n\n</>\n\nShe wakes.\n';
+
+/**
+ Parsed fragment fixture, read once so its blocks and container describe the same parse.
+ */
+const FRAGMENT = parseDocument({ text: FRAGMENT_TEXT, },);
+
 await describe({
   name: assertContainerIntegrity.name,
   children: [
@@ -342,6 +353,80 @@ await describe({
             blocks: TARGET_NODES,
           },);
         },).not.toThrow();
+      },
+    },),
+    it({
+      name: 'NAMES A FRAGMENT AS "a fragment" where no block owns its opening tag, since a bare fragment tag has no '
+        + 'element name to say',
+      fn: async () => {
+        /**
+         Container the fixture's one fragment parsed to.
+         */
+        const fragment = nonNullishOrThrow(FRAGMENT.containers[0],);
+        /**
+         Blocks of the fragment page with the one holding the opening tag stopping short of it.
+         */
+        const orphaned = FRAGMENT.nodes
+          .map(function shrink(node,): DocumentNode {
+            return {
+              ...node,
+              startOffset: (node.startOffset === fragment.openerStartOffset)
+                ? fragment.openerEndOffset
+                : node.startOffset,
+            };
+          },);
+        /**
+         What the check refused with.
+         */
+        const refusal = caught(function checkOrphanedFragment(): unknown {
+          return assertContainerIntegrity({
+            slices: [],
+            containers: FRAGMENT.containers,
+            blocks: orphaned,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(ContainerIntegrityError,);
+        expect(String(refusal,),).toBe(
+          'ContainerIntegrityError: no block owns the opening tag of a fragment, though the container holds blocks: '
+            + 'extents were derived without widening onto container tags, so a range boundary can fall between '
+            + 'this tag and its partner',
+        );
+      },
+    },),
+    it({
+      name: 'REFUSES a block that starts part way through an opening tag, naming the element and the half '
+        + 'tag the block would carry',
+      fn: async () => {
+        /**
+         Container whose opening tag the block will start inside.
+         */
+        const container = onlyContainer();
+        /**
+         Blocks of the fixture with the one owning the opening tag starting two characters into it.
+         */
+        const halfOpened = TARGET_NODES.map(function cutInto(node,): DocumentNode {
+          return (node.startOffset === container.openerStartOffset)
+            ? {
+              ...node,
+              startOffset: container.openerStartOffset + 2,
+            }
+            : node;
+        },);
+        /**
+         What the check refused with.
+         */
+        const refusal = caught(function checkHalfOpened(): unknown {
+          return assertContainerIntegrity({
+            slices: [],
+            containers: TARGET_CONTAINERS,
+            blocks: halfOpened,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(ContainerIntegrityError,);
+        expect(String(refusal,),).toBe(
+          'ContainerIntegrityError: a block covers part of the opening tag of <details> without covering all of it, '
+            + 'so every range minted from that block would carry half a tag',
+        );
       },
     },),
   ],

@@ -24,6 +24,7 @@ import {
 
 import {
   communityRenderingDepartures,
+  communityTermsIn,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
 
@@ -158,6 +159,34 @@ await describe({
         expect(departuresOf({ sourceText: '猫可以治愈人。', text: 'A healing cat.', },),).toEqual([],);
         expect(departuresOf({ sourceText: '<!-- 猫被治愈 -->猫在睡觉。', text: 'The cat slept.', },),).toEqual([],);
         expect(departuresOf({ sourceText: '猫被治愈。', text: 'The cat slept.', },),).toHaveLength(1,);
+      },
+    },),
+    it({
+      name: 'FINDS NO OCCURRENCE of a term that is empty, which every text would otherwise be read to carry at every '
+        + 'index, and still finds a term that is written',
+      fn: async () => {
+        /**
+         Term that is empty, which no text carries.
+         */
+        const empty = {
+          term: '',
+          renderings: ['nothing',],
+          refusedForms: [],
+          why: 'an empty term',
+        };
+        /**
+         Term that is written.
+         */
+        const written = {
+          term: '猫',
+          renderings: ['cat',],
+          refusedForms: [],
+          why: 'the animal',
+        };
+        expect(communityTermsIn({
+          text: '猫被治愈。',
+          glossary: [empty, written,],
+        },),).toEqual([written,],);
       },
     },),
   ],

@@ -96,6 +96,19 @@ await describe({
             expect(error.message.isWellFormed(),).toBe(true,);
           },
         },),
+        it({
+          name: 'WITHHOLDS the excerpt from a message that gives no summary, leaving the plain status line, and keeps '
+            + 'the excerpt on the error for the log alone',
+          fn: async () => {
+            const error = new SyntheticHttpError({
+              status: 502,
+              bodyText: 'the cat knocked the bowl over',
+              excerpt: 'withheld',
+            },);
+            expect(error.message,).toBe('provider API returned HTTP 502',);
+            expect(error.bodyExcerpt,).toBe('the cat knocked the bowl over',);
+          },
+        },),
       ],
     },),
   ],

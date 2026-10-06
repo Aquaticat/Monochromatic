@@ -6,6 +6,7 @@
  @module
  */
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -20,12 +21,21 @@ import {
   buildChunkCandidates,
   CheckerIndependenceError,
   describeProducer,
+  hashContent,
   mergeProducers,
+  messageText,
   pickFallbackCandidate,
   producerModelIds,
   ProducerRosterError,
+  selectPerEnvelope,
   type CandidateProducer,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type EditableEnvelope,
+  type EditorCandidate,
   type PatchOutcome,
+  type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -37,6 +47,134 @@ import {
   ENVELOPE,
   TARGET_TEXT,
 } from './editor-candidate-envelope.test-fixture.ts';
+import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
+
+/**
+ Logger for the selection under test.
+ */
+const l = tagged({ tag: 'editor-ensemble-test', },);
+
+/**
+ Second envelope of the fixture document, covering the sentence after the one
+ `ENVELOPE` covers.
+ */
+const BOWL_ENVELOPE: EditableEnvelope = {
+  envelopeId: 'envelope/bowl',
+  startOffset: TARGET_TEXT.indexOf('The bowl stays full.',),
+  endOffset: TARGET_TEXT.indexOf('The bowl stays full.',)
+    + 'The bowl stays full.'.length,
+  baseText: 'The bowl stays full.',
+  baseHash: hashContent({ content: 'The bowl stays full.', },),
+  issueIds: ['adjudicated/bowl',],
+};
+
+/**
+ Replacement the judges back for the first envelope, written by the same model
+ that wrote the only proposal for the second.
+ */
+const BACKED_REPLACEMENT = 'The cat chases butterflies.';
+
+/**
+ Judges every selection here asks.
+ */
+const JUDGES: readonly RosterModelId[] = [
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+];
+
+/**
+ Client whose every judge backs the candidate carrying one sentence.
+
+ @param backed - sentence the backed candidate carries
+
+ @returns Client answering each ballot from what its sheet shows
+
+ @example
+ ```ts
+ const client = backingClient({ backed: BACKED_REPLACEMENT, },);
+ ```
+ */
+function backingClient({ backed, }: { readonly backed: string; },): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused by envelope selection',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      /**
+       Ballot backing the candidate that carries the sentence.
+       */
+      const scripted: unknown = {
+        best: candidateCarrying({
+          content: request.messages
+            .map(function toContent(message,): string {
+              return messageText({ message, },);
+            },)
+            .join('\n',),
+          needle: backed,
+        },),
+        reason: 'scripted',
+      };
+      if (!request.validate(scripted,))
+        throw new Error('stub script failed the ballot guard',);
+      return {
+        kind: 'ok',
+        value: scripted,
+        rawText: JSON.stringify(scripted,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused by envelope selection',);
+    },
+  };
+}
+
+/**
+ Builds one editor candidate proposing a replacement for each of the two
+ envelopes it is given.
+
+ @param modelId - proposing model
+
+ @param replacements - new text per envelope id the model proposed for
+
+ @returns Candidate carrying the gated patch
+
+ @example
+ ```ts
+ const candidate = candidateOverTwo({ modelId, replacements: { [ENVELOPE.envelopeId]: 'text', }, },);
+ ```
+ */
+function candidateOverTwo(
+  {
+    modelId,
+    replacements,
+  }: {
+    readonly modelId: RosterModelId;
+    readonly replacements: Readonly<Record<string, string>>;
+  },
+): EditorCandidate {
+  return {
+    modelId,
+    patch: applyPatchOperations({
+      targetText: TARGET_TEXT,
+      envelopes: [
+        ENVELOPE,
+        BOWL_ENVELOPE,
+      ],
+      operations: Object.entries(replacements,)
+        .map(function toOperation([envelopeId, newText,],) {
+          return {
+            envelopeId,
+            baseHash: (envelopeId === ENVELOPE.envelopeId) ? ENVELOPE.baseHash : BOWL_ENVELOPE.baseHash,
+            newText,
+          };
+        },),
+      preservation: { mode: 'skip', },
+    },),
+  };
+}
 
 /**
  Apply-gate outcome that repairs nothing, standing for the untouched chunk.
@@ -51,6 +189,62 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
+    describe({
+      name: selectPerEnvelope.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CREDITS A MODEL ONCE when it wrote an envelope adopted without a vote and the judged winner of '
+            + 'another, and credits the model whose proposal lost to nobody',
+          fn: async () => {
+            const selection = await selectPerEnvelope({
+              client: backingClient({ backed: BACKED_REPLACEMENT, },),
+              candidates: [
+                candidateOverTwo({
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  replacements: {
+                    [BOWL_ENVELOPE.envelopeId]: 'The bowl is full.',
+                    [ENVELOPE.envelopeId]: BACKED_REPLACEMENT,
+                  },
+                },),
+                candidateOverTwo({
+                  modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                  replacements: { [ENVELOPE.envelopeId]: 'The cat loves chasing butterflies.', },
+                },),
+              ],
+              envelopes: [
+                BOWL_ENVELOPE,
+                ENVELOPE,
+              ],
+              judgeModelIds: JUDGES,
+              sourceText: '猫猫喜欢追蝴蝶。',
+              targetText: TARGET_TEXT,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect({
+              contributors: selection.contributors,
+              soleCount: selection.soleCount,
+              judgedCount: selection.judgedCount,
+              declinedCount: selection.declinedCount,
+              operations: selection.operations.map(function toEnvelopeId(operation,): string {
+                return operation.envelopeId;
+              },),
+            },).toEqual({
+              contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+              soleCount: 1,
+              judgedCount: 1,
+              declinedCount: 0,
+              operations: [
+                BOWL_ENVELOPE.envelopeId,
+                ENVELOPE.envelopeId,
+              ],
+            },);
+          },
+        },),
+      ],
+    },),
     describe({
       name: mergeProducers.name,
       concurrency: DEFAULT_CONCURRENCY,

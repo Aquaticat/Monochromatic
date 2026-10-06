@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { carriesHandleToken, } from './handle-token.ts';
 import { extractDeclaredIdentity, } from './identity-context.ts';
 import {
@@ -121,7 +123,9 @@ export function declaredNamePairs(
     ): DeclaredNamePair {
       return {
         source: sourceForm,
-        rendering: renderings[index] ?? '',
+        // The two lists are the same length here, so every index of one is an
+        // index of the other.
+        rendering: nonNullishOrThrow(renderings[index],),
       };
     },)
       .filter(function differs(pair,): boolean {

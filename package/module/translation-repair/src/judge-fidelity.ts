@@ -320,6 +320,9 @@ function buildSlate(
 
  @returns Which text won, whether that is right, and every ballot
 
+ @throws {@link Error} when the clean text is not on the slate built from the
+ trial, which the slate's construction rules out
+
  @example
  ```ts
  const outcome = await runFidelityTrial({ client, trial, judgeModelIds, signal, perCallTimeoutMs, l, },);
@@ -376,7 +379,7 @@ export async function runFidelityTrial(
   // `buildSlate` always puts the clean text on the slate, which is exactly why
   // reaching this means the slate and the trial disagree about what they hold.
   if (cleanPosition === CANDIDATE_NONE)
-    throw new Error(`${trial.trialId}: the clean text is not on the slate it was built from`,);
+    throw new Error(`unreachable: trial ${trial.trialId}'s clean text is not on the slate built from that trial`,);
 
   /**
    Judges' verdict over the constructed pair, asked exactly what production

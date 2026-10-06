@@ -96,6 +96,20 @@ await describe({
       },
     },),
     it({
+      name: 'WITHHOLDS a paragraph written for an archive block that holds only a comment, naming the block as '
+        + '"nothing"',
+      fn: async () => {
+        expect(revisionShapeFindings({
+          modelId: REVIEWER,
+          blockText: '<!-- the cat left no words here -->',
+          replacementText: PARAGRAPH,
+        },),).toEqual([
+          `archive-revision-refused (${REVIEWER}): the block is nothing and the revision is 1 block (paragraph); `
+            + 'a revision keeps the block\'s own shape',
+        ],);
+      },
+    },),
+    it({
       name: 'WITHHOLDS a revision that keeps the block\'s own shape but drops a quote nested inside a container '
         + 'tag, which the shape check cannot see, and PASSES one that keeps the nested quote (ledger B110)',
       fn: async () => {

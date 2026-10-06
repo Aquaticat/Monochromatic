@@ -163,6 +163,27 @@ await describe({
             expect(resolution.findings,).toContain('missing-derivability-judgment (2)',);
           },
         },),
+        it({
+          name: 'KEEPS THE FIRST of two judgments naming one candidate and records the second as a duplicate',
+          fn: async () => {
+            expect(resolveDerivabilityJudgment({
+              wire: {
+                judgments: [
+                  { reference: 1, verdict: 'not-derivable', },
+                  { reference: 1, verdict: 'derivable', },
+                  { reference: 2, verdict: 'derivable', },
+                ],
+              },
+              seedIds: ['seed/omission-0', 'seed/omission-1',],
+            },),).toEqual({
+              verdicts: {
+                'seed/omission-0': 'not-derivable',
+                'seed/omission-1': 'derivable',
+              },
+              findings: ['duplicate-derivability-judgment (1)',],
+            },);
+          },
+        },),
       ],
     },),
 
@@ -241,6 +262,41 @@ await describe({
             // Unjudged defaults to derivable so a lost probe never excuses.
             expect(derivability['seed/omission-0']?.judged,).toBe(false,);
             expect(derivability['seed/omission-0']?.verdict,).toBe('derivable',);
+          },
+        },),
+
+        it({
+          name: 'COUNTS ONLY THE JUDGES WHO CAST A VERDICT on a seed, so a judge that left one candidate out is no '
+            + 'vote on it',
+          fn: async () => {
+            /** One judge answers only the first candidate, the other two answer both. */
+            const derivability = await runDerivabilityProbe({
+              client: probingClient({
+                verdictsByModel: {
+                  [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['not-derivable',],
+                  [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['derivable', 'not-derivable',],
+                  [SEAT_SYNTHETIC_VISION_WITHHELD]: ['partially-derivable', 'not-derivable',],
+                },
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫猫黎明追蝴蝶。碗是满的。',
+              references: REFERENCES,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(derivability,).toEqual({
+              'seed/omission-0': {
+                verdict: 'partially-derivable',
+                judged: true,
+                votes: 3,
+              },
+              'seed/omission-1': {
+                verdict: 'not-derivable',
+                judged: true,
+                votes: 2,
+              },
+            },);
           },
         },),
 

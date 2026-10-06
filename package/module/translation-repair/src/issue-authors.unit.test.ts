@@ -130,6 +130,48 @@ function declinedChunkRound(slate: readonly RepairSlateEntry[],): RepairJudgedRo
 }
 
 /**
+ Builds the record of an envelope whose judges refused every proposal, which
+ names no winner.
+
+ @param envelopeId - envelope refused
+
+ @param slate - proposals the judges refused
+
+ @returns Declined round
+
+ @example
+ ```ts
+ const round = declinedEnvelopeRound({ envelopeId: 'dropped', slate: [entry,], },);
+ ```
+ */
+function declinedEnvelopeRound(
+  {
+    envelopeId,
+    slate,
+  }: {
+    readonly envelopeId: string;
+    readonly slate: readonly RepairSlateEntry[];
+  },
+): RepairJudgedRound {
+  return {
+    kind: 'declined',
+    stage: 'envelope',
+    envelopeId,
+    slate,
+    ballots: [],
+    tally: {
+      judgesAvailable: 3,
+      ballots: 3,
+      abstentions: 0,
+      selfVotes: 0,
+    },
+    perCandidate: [],
+    reason: 'every judge refused every proposal',
+    disposition: 'rejection',
+  };
+}
+
+/**
  Builds the editor stage result the authorship read takes.
  */
 function editorOf(
@@ -327,6 +369,45 @@ await describe({
               envelopes: KEPT,
             },),).toEqual({
               perIssue: { [WHISKER]: [HELPER,], },
+              everyIssue: [],
+            },);
+          },
+        },),
+        it({
+          name: 'READS PAST AN ENVELOPE THE JUDGES REFUSED when the composite ships, since it names no winner '
+            + 'and wrote none of the composite, and names the authors of the envelope that was kept',
+          fn: async function refusedEnvelopesAreNotRead() {
+            expect(collectIssueAuthors({
+              editor: editorOf({
+                applied: [operationOf('kept',),],
+                rounds: [
+                  adoptedRound({
+                    envelopeId: 'kept',
+                    slate: [
+                      slateEntryOf({
+                        index: 1,
+                        modelId: AUTHOR,
+                      },),
+                    ],
+                  },),
+                  declinedEnvelopeRound({
+                    envelopeId: 'dropped',
+                    slate: [
+                      slateEntryOf({
+                        index: 1,
+                        modelId: HELPER,
+                      },),
+                    ],
+                  },),
+                ],
+                shippedProducer: {
+                  kind: 'composite',
+                  contributors: [AUTHOR,],
+                },
+              },),
+              envelopes: KEPT,
+            },),).toEqual({
+              perIssue: { [WHISKER]: [AUTHOR,], },
               everyIssue: [],
             },);
           },

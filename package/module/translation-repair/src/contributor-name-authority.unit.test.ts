@@ -185,6 +185,31 @@ await describe({
         },),
 
         it({
+          name: 'READS NO NAME from a reference link whose link text is empty, which shows a reader nothing, '
+            + 'beside the plain name before it',
+          fn: async () => {
+            expect(archiveContributorNameForms({
+              text: 'Contributors for this entry: Mika, [][n]\n\n[n]: https://example.test/n',
+            },),).toEqual(['Mika',],);
+          },
+        },),
+
+        it({
+          name: 'READS a reference link as the markup it is written in when the text nests too deep for the parser '
+            + 'to define its reference, and every plain name beside it as before',
+          fn: async () => {
+            expect(archiveContributorNameForms({
+              text: `Contributors for this entry: Mika, [Neko][n]\n\n[n]: https://example.test/n\n\n${
+                '>'.repeat(16_000,)
+              } cat`,
+            },),).toEqual([
+              '[Neko][n]',
+              'Mika',
+            ],);
+          },
+        },),
+
+        it({
           name: 'IGNORES ORDINARY PROSE carrying same words away from line start',
           fn: async () => {
             expect(archiveContributorNameForms({

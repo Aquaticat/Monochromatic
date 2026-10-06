@@ -76,9 +76,12 @@ const REGION_CONTEXT_CHARS = 40;
 /**
  Joins sheet names into one English list, with "and" before the last.
 
- @param names - names in sheet order, at least one
+ @param names - names in sheet order, at least two, since both halves of the markup kinds hold that many
 
  @returns The list as prose
+
+ @throws {@link Error} when fewer than two names are given, which neither half of `MARKUP_ATOM_SHEET_NAMES`
+ produces
 
  @example
  ```ts
@@ -86,13 +89,17 @@ const REGION_CONTEXT_CHARS = 40;
  ```
  */
 function listedNames({ names, }: { readonly names: readonly string[]; },): string {
-  return (names.length < 2)
-    ? names.join('',)
-    : `${names.slice(
-      0,
-      -1,
-    )
-      .join(', ',)} and ${nonNullishOrThrow(names.at(-1,),)}`;
+  if (names.length < 2) {
+    throw new Error(
+      `unreachable: the sheet list [${names.join(', ',)}] holds fewer than two names, though each half of `
+        + 'MARKUP_ATOM_SHEET_NAMES holds more than one kind',
+    );
+  }
+  return `${names.slice(
+    0,
+    -1,
+  )
+    .join(', ',)} and ${nonNullishOrThrow(names.at(-1,),)}`;
 }
 
 /**

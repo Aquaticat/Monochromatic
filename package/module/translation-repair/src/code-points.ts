@@ -155,6 +155,10 @@ export function codePointCount({ text, }: { readonly text: string; },): number {
  @returns The whole text where it fits, else its longest opening within the
  limit that ends on a whole character
 
+ @throws {@link Error} when no code point starts at the limit's last unit of a
+ text longer than the limit, which no limit above zero and text of that
+ length can produce
+
  @example
  ```ts
  wholeOpening({ text: 'nap\u{1F431}', units: 4, },); // 'nap'
@@ -170,10 +174,22 @@ export function wholeOpening({
   if (text.length <= units)
     return text;
   /**
+   Code point starting at the limit's last unit, read only for a limit above
+   zero, since no unit precedes the limit otherwise.
+   */
+  const limitPoint = (units > 0) ? text.codePointAt(units - 1,) : 0;
+  if (limitPoint === undefined) {
+    throw new Error(
+      `unreachable: no code point starts at offset ${String(units - 1,)} of a text of length ${
+        String(text.length,)
+      }, though the text is longer than the limit ${String(units,)} and so holds a unit there`,
+    );
+  }
+  /**
    Whether the code point starting at the limit's last unit runs past the
    limit, which only a surrogate pair split by it does.
    */
-  const cutsPair = (units > 0) && ((text.codePointAt(units - 1,) ?? 0) > BMP_MAX);
+  const cutsPair = limitPoint > BMP_MAX;
   return text.slice(
     0,
     cutsPair ? (units - 1) : units,

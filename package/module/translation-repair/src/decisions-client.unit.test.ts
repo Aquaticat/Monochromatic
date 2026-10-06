@@ -15,8 +15,11 @@ import {
 
 import {
   createDecisionsClient,
+  type DecisionReply,
   DecisionReplyShapeError,
   type ModelTransport,
+  resetRunSpend,
+  runSpendUsd,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
@@ -108,6 +111,9 @@ function recordedTransport(
 
 await describe({
   name: createDecisionsClient.name,
+  // ONE CASE AT A TIME: the spend case diverts `console.info` and reads the
+  // process-wide spend total, which a case running beside it would write to.
+  concurrency: 1,
   children: [
     it({
       name: 'POSTS the seat\'s served id, the state and the questions, and reads the answers, model and '
@@ -167,6 +173,69 @@ await describe({
           total_tokens: 519,
         },);
         expect(reply.costUsd,).toBe(0.0000215,);
+      },
+    },),
+
+    it({
+      name: 'REPORTS A SPEND LINE of unreported counts and no cost, and hands back no usage and no cost, when the '
+        + 'endpoint sent neither',
+      fn: async () => {
+        resetRunSpend();
+        const client = createDecisionsClient({
+          apiKey: 'test-key',
+          transport: recordedTransport({
+            status: 200,
+            bodyText: JSON.stringify({
+              model: 'typesafe/jev-1.13-20260917',
+              answers: { urgent: { type: 'noul', noul: 0.12, }, },
+            },),
+          },).transport,
+          retryPolicy: NO_RETRY,
+        },);
+        /**
+         Lines `console.info` received while the call ran.
+         */
+        const informed: string[] = [];
+        /**
+         `console.info` as it was, put back once the call returns.
+         */
+        const original = console.info;
+        console.info = (...parts: readonly unknown[]) => {
+          informed.push(parts.map(String,)
+            .join(' ',),);
+        };
+        /**
+         Decision asked while the console is diverted, put back as the call ends.
+
+         @returns Reply the client read
+         */
+        async function decideInformed(): Promise<DecisionReply> {
+          await using restore = {
+            [Symbol.asyncDispose]: async () => {
+              console.info = original;
+            },
+          };
+          return await client.decide({
+            modelId: SEAT_OPENROUTER_DECISIONS,
+            state: 'a cat',
+            questions: { urgent: { type: 'noul', instructions: 'Is the notice urgent?', }, },
+            signal: AbortSignal.timeout(5_000,),
+          },);
+        }
+        /**
+         Reply the call returned.
+         */
+        const reply = await decideInformed();
+        expect(reply.usage,).toBe(undefined,);
+        expect(reply.costUsd,).toBe(undefined,);
+        expect(runSpendUsd({ provider: 'openrouter', },),).toBe(0,);
+        expect(informed.filter(function isSpend(line,): boolean {
+          return line.includes(' SPEND ',);
+        },).map(function fromMarker(line,): string {
+          return line.slice(line.indexOf('SPEND ',),);
+        },),).toEqual([
+          'SPEND provider=openrouter model=typesafe/jev-1.13 prompt=unreported completion=unreported',
+        ],);
       },
     },),
 

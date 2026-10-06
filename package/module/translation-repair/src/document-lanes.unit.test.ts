@@ -14,6 +14,7 @@
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -446,6 +447,90 @@ await describe({
           .status,).toBe('unchanged',);
         expect(lanes.translate
           .translatedText,).toContain(FRESH,);
+      },
+    },),
+    it({
+      name: 'HANDS THE REPAIR LANE\'S DISPUTES TO THE TRANSLATE LANE, so a slice whose archive rendering the '
+        + 'repair lane\'s adjudicators disputed reads as a dispute there, and a slice nobody disputed does not',
+      fn: async () => {
+        /**
+         Slices an undisputed run settled, as the repair lane stored them under their keys.
+         */
+        const settled: { readonly key: string; readonly serialized: string; }[] = [];
+        const undisputed = await runLanes({
+          served: [],
+          repairSliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>(),
+            persist: async (slice,) => {
+              settled.push(slice,);
+            },
+          },
+        },);
+        /**
+         Key the undisputed run stored the first slice under.
+         */
+        const { key, } = nonNullishOrThrow(settled[0],);
+        /**
+         That slice as a run whose adjudicators accepted an addition claim against the archive would have
+         stored it, the addition mended and the checkers confirming it.
+         */
+        const mended: ChunkRepairOutcome = {
+          ...nonNullishOrThrow(undisputed.repair
+            .chunks[0],),
+          repairedText: '## Section one\n\nThe cat sleeps on the windowsill.',
+          changed: true,
+          accuracyPatchSelected: true,
+          issues: [
+            {
+              issueId: 'adjudicated/sleeping',
+              status: 'accepted',
+              severity: 'major',
+              claims: [
+                {
+                  claimId: 'issue/sleeping',
+                  claim: {
+                    category: 'accuracy/addition',
+                    severity: 'major',
+                    summary: 'The translation adds that the cat is doing the sleeping, which the original never says.',
+                    spans: [],
+                  },
+                },
+              ],
+              tallies: {},
+            },
+          ],
+          resolvedIssueIds: ['adjudicated/sleeping',],
+        };
+        const disputed = await runLanes({
+          served: [],
+          repairSliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>([[key, mended,],],),
+            persist: async () => {},
+          },
+        },);
+        /**
+         Dispute findings of the first slice's translate record, in each run.
+         */
+        const disputesOfFirst = [
+          undisputed,
+          disputed,
+        ].map(function disputesOf(lanes,): readonly string[] {
+          return nonNullishOrThrow(lanes.translate
+            .slices[0],)
+            .findings
+            .filter(function isDispute(finding,): boolean {
+              return finding.startsWith('translate-archive-disputed',);
+            },);
+        },);
+        expect(disputesOfFirst,).toEqual([
+          [],
+          [
+            'translate-archive-disputed (slice 0): the repair lane\'s adjudicators accepted 1 disputing claim(s) '
+            + '(accuracy/addition at any severity, any other accuracy claim the panel settled at major or worse) '
+            + 'against the archive rendering, so the repair lane\'s text stands in for it (classes one hundred seven '
+            + 'and one hundred seventy-six)',
+          ],
+        ],);
       },
     },),
     it({

@@ -155,8 +155,9 @@ function everyProviderDry(
  @returns One clause a reader can tell exhaustion from holds by
 
  @throws Error when a provider reads wet, which no call reaches:
- `readBudgetsPastHolds` calls this only after `everyProviderDry` held over
- the same view with the same refusal folded in
+ `readBudgetsPastHolds` calls this only with every provider reading dry in
+ the view, since a refuser whose meter reads wet is sent back to it, or
+ waited for, before any call reaches here
 
  @example
  ```ts
@@ -181,9 +182,12 @@ function measuredAt(
    */
   const meters = PROVIDER_ORDER.map(function clauseOf(provider,): string {
     /**
-     Whether this provider reads dry once the refusal is folded in.
+     Whether this provider's meter reads dry, which every provider's does
+     here: a refuser the meter reads wet leaves `readBudgetsPastHolds` for
+     the return to it when no hold is left, and for the wait when one is, so
+     no wet reading is read here.
      */
-    const dry = view[provider] || (refused === provider);
+    const dry = view[provider];
     if (!dry) {
       throw new Error(
         `unreachable: ${provider} read wet inside measuredAt, which runs only once every provider has `

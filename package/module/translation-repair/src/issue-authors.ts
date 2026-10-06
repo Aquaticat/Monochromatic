@@ -185,6 +185,9 @@ function roundWinnerAuthors(round: RepairJudgedRound,): readonly RosterModelId[]
 
  @returns Authors per issue id
 
+ @throws {@link Error} when an envelope with an applied operation has no round
+ among those given, which would leave its issues credited to nobody
+
  @example
  ```ts
  const perIssue = envelopeAuthorsFromRounds({ rounds, issuesByEnvelope, },);
@@ -225,7 +228,14 @@ function envelopeAuthorsFromRounds(
       /**
        Models that wrote this envelope's winning candidate.
        */
-      const authors = byEnvelope[envelopeId] ?? [];
+      const authors = byEnvelope[envelopeId];
+      if (authors === undefined) {
+        throw new Error(
+          `unreachable: envelope ${envelopeId} has an applied operation and no judged round, though every `
+            + 'operation a candidate applied was proposed for an envelope whose proposals the per-envelope '
+            + 'selection recorded a round for',
+        );
+      }
       return issueIds.flatMap(function forIssue(issueId,): readonly IssueAuthorPair[] {
         return authors.map(function withAuthor(author,): IssueAuthorPair {
           return [

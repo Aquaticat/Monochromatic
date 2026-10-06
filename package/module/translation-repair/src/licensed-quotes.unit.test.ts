@@ -197,5 +197,28 @@ await describe({
         },),).toEqual(['the tuna',],);
       },
     },),
+    it({
+      name: 'LICENSES NOTHING for an issue the list does not hold, so the gate asks the edit to keep every '
+        + 'wording the envelope replaces, and still licenses the quote of an issue it does hold',
+      fn: async () => {
+        expect(licensedFor({
+          issues: [issueOf({
+            issueId: 'adjudicated/nap',
+            spans: [{
+              side: 'target',
+              quotedText: 'the tuna',
+            },],
+          },),],
+          issueIds: [
+            'adjudicated/missing',
+            'adjudicated/nap',
+          ],
+        },),).toEqual(['the tuna',],);
+        expect(licensedFor({
+          issues: [],
+          issueIds: ['adjudicated/missing',],
+        },),).toEqual([],);
+      },
+    },),
   ],
 },);

@@ -64,6 +64,31 @@ await describe({
             expect(commentBody({ comment: '<!-- never closed', },),).toBe(' never closed',);
           },
         },),
+        it({
+          name: 'KEEPS THE WHOLE TEXT when a finding\'s span did not start on the opening delimiter, and still strips '
+            + 'the closing one',
+          fn: async () => {
+            expect(commentBody({ comment: 'a note the cat left -->', },),).toBe('a note the cat left ',);
+            expect(commentBody({ comment: 'a note the cat left', },),).toBe('a note the cat left',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: commentNoteLines.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SAYS THE HEADING HAS NO WORDS for a comment sitting under a heading that is nothing but its opening '
+            + 'marks, where the line read "under heading :" as if a word had been dropped',
+          fn: async () => {
+            expect(commentNoteLines({
+              document: parseDocument({ text: '#\n\n<!-- The cat left a note. -->\n\nShe naps.\n', },),
+              side: 'ARCHIVE',
+            },),).toEqual(['- ARCHIVE editor comment under a heading that has no words: The cat left a note.',],);
+          },
+        },),
       ],
     },),
 
