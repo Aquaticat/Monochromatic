@@ -264,7 +264,8 @@ Two later boots first read `2.0`.
 After the restore step was changed to run `sync` in the guest,
 wait eight seconds and run `sync` again before the console kill,
 the next boot first read `1.0`.
-That is one confirming boot,
+A second boot after another restore also first read `1.0`.
+That is two confirming boots,
 not a proof,
 and a read-back before shutdown says nothing about what the next boot reads:
 the next boot's first reading is the check.

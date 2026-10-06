@@ -295,6 +295,29 @@ the capture now keeps each finished state in one cohort folder and a later
 boot continues from the first missing state,
 with each view naming the boot that made it.
 
+### Third occurrence the same day
+
+A third crash followed that evening,
+a few minutes into a visit,
+after five views of another study.
+Three of those views had the system keyboard open,
+which the earlier crashed visits never did.
+The emulator's output again ended with `Segmentation fault (core dumped)`.
+The host's load average was between 21 and 30 this time,
+well under the earlier two,
+so heavy load is not required for the crash.
+Whether the keyboard matters is not known from one case.
+
+After this one,
+visits are repeated by a bounded driver until the cohort is complete:
+at most eight visits,
+each in the same 6 GiB,
+2 CPU container,
+stopping early if two visits in a row add no view.
+After each crash it checks for owners and moves the stale locks to a backup,
+as [the lock record](android-emulator-37-disposable-avd-lock-after-hard-stop.md)
+prescribes.
+
 ## Verified workarounds
 
 Use `-gpu host` for this Linux host.

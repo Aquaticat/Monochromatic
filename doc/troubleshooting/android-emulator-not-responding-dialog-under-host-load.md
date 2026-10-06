@@ -47,6 +47,22 @@ what else decides it was not established.
 - Keep each finished state as it completes,
   so a later attempt continues and does not start over.
 
+## Related: the navigation bar is not reported right after boot
+
+On the same day,
+the first capture of a visit failed because `dumpsys window` listed a
+`statusBars` inset source and no `navigationBars` source at all.
+An earlier study's first capture of a visit had the source but drew no
+gesture handle in it.
+Both were the first view after boot and after the study's package was installed.
+The capture now waits,
+within a bound,
+until the navigation source is reported,
+waits five seconds more when it had to wait at all,
+and then reads the hierarchy again.
+The next visit's first view was captured with the handle drawn.
+What delays the bar was not established.
+
 ## Not verified
 
 A global setting named `hide_error_dialogs` is an idea from memory for
