@@ -34,6 +34,7 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -347,6 +348,45 @@ await describe({
         if (reading.kind !== 'unavailable')
           throw new Error('unavailable by construction',);
         expect(reading.reason,).toBe('empty-reply',);
+      },
+    },),
+
+    it({
+      name: 'LOGS A READING\'S LENGTH IN THE SOLID CHARACTERS THE VERDICT COUNTED, not in UTF-16 units: fifteen '
+        + 'astral letters are fifteen characters and a short reading, twenty spaced ones are twenty and a read',
+      fn: async () => {
+        /**
+         Lines the stage logged for each reading, in the order the readings are listed.
+         */
+        const logged = await Promise.all(
+          ['\u{1D4B6}'.repeat(15,), Array.from({ length: 20, }, () => '\u{1D4B6}',).join(' ',),]
+            .map(async function readOne(text,): Promise<readonly string[]> {
+              /**
+               Lines this reading wrote.
+               */
+              const lines: string[] = [];
+              await readImageAsset({
+                client: replyingClient({ text, },).client,
+                modelId: READER,
+                bytes: bytesOf({ length: 64, },),
+                assetName: 'mittens.webp',
+                signal: AbortSignal.timeout(30_000,),
+                perCallTimeoutMs: 30_000,
+                l: capturingLogger({ messages: lines, },),
+              },);
+              return lines;
+            },),
+        );
+        /**
+         Every line, the first reading's first.
+         */
+        const messages = logged.flat();
+        expect(messages.filter(function isReading(line,): boolean {
+          return line.includes(' read mittens.webp: ',);
+        },),).toStrictEqual([
+          `[readImageAsset] ${READER} read mittens.webp: 15 characters, fewer than a transcript`,
+          `[readImageAsset] ${READER} read mittens.webp: 20 characters`,
+        ],);
       },
     },),
 

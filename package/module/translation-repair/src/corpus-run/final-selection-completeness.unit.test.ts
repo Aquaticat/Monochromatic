@@ -120,7 +120,10 @@ function sourceWith(
           },
         },],
       }
-      : { kind: 'not-run', },
+      : {
+        kind: 'settled',
+        slices: [],
+      },
   } as unknown as WouldShipSource;
 }
 
@@ -213,6 +216,29 @@ await describe({
         expect(String(refusal,),).toBe(
           'Error: unreachable: the artifact handed to persistence records its contest as pending-human-decision, '
             + 'though settledEntryArtifact, its one writer, records it as contested',
+        );
+      },
+    },),
+    it({
+      name: 'REFUSES an artifact whose consolidation has not run, since settledEntryArtifact records every '
+        + 'consolidation it hands persistence and no polish can stand on a stage that never ran',
+      fn: async () => {
+        /**
+         What reading an artifact with a consolidation that never ran throws.
+         */
+        const refusal = caught(function act(): unknown {
+          return finalSelectionFindings({
+            artifact: {
+              ...sourceWith({ verdict: { kind: 'settled-neither', archive: 'declined', }, },),
+              consolidation: { kind: 'not-run', },
+            },
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(Error,);
+        expect(String(refusal,),).toBe(
+          'Error: unreachable: the artifact handed to persistence records its consolidation as not-run, '
+            + 'though settledEntryArtifact, its one writer, records it as settled',
         );
       },
     },),

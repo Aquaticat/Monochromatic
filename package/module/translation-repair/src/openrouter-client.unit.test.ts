@@ -432,6 +432,95 @@ await describe({
         },),
 
         it({
+          name: 'SPENDS ONE EXCHANGE on a 200 stream whose error chunk carries a 4xx code, since the same '
+            + 'refusal over plain HTTP is returned unretried, and a 429 chunk rides the whole ladder',
+          fn: async () => {
+            /**
+             What each code drew and ended with, over a ladder of two retries.
+             */
+            const outcomes = await Promise.all([400, 429,].map(async function driveCode(code,): Promise<{
+              readonly code: string;
+              readonly exchanges: number;
+              readonly ended: string;
+            }> {
+              /**
+               Exchanges this code drew.
+               */
+              const exchanges: TransportExchange[] = [];
+              /**
+               Client whose every stream carries the error chunk.
+               */
+              const client = createOpenRouterClient({
+                apiKey: 'test-key',
+                transport: async function alwaysFails(exchange,) {
+                  exchanges.push(exchange,);
+                  return {
+                    status: 200,
+                    bodyText: chunkOf({
+                      delta: {},
+                      rest: {
+                        provider: 'ModelRun',
+                        error: {
+                          code,
+                          message: 'the sill refused',
+                          metadata: { error_type: 'invalid_request', },
+                        },
+                      },
+                    },),
+                  };
+                },
+                retryPolicy: {
+                  limit: 2,
+                  baseMs: 1,
+                },
+              },);
+              /**
+               What the call ended with.
+               */
+              const thrown = await client.chatText({
+                modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: SIGNAL,
+              },).then(
+                function noRefusal(): string {
+                  return 'returned';
+                },
+                function refused(error: unknown,): string {
+                  return Error.isError(error,) ? `${error.name}: ${error.message}` : String(error,);
+                },
+              );
+              return {
+                code: String(code,),
+                exchanges: exchanges.length,
+                ended: thrown,
+              };
+            },),);
+            /**
+             Exchanges each code drew.
+             */
+            const drawn = Object.fromEntries(outcomes.map(function toDrawn(outcome,): readonly [string, number,] {
+              return [outcome.code, outcome.exchanges,];
+            },),);
+            /**
+             What each code ended the call with.
+             */
+            const ended = Object.fromEntries(outcomes.map(function toEnded(outcome,): readonly [string, string,] {
+              return [outcome.code, outcome.ended,];
+            },),);
+            expect({ drawn, ended, },).toStrictEqual({
+              drawn: { '400': 1, '429': 3, },
+              ended: {
+                '400': 'InStreamRefusalError: stream carried a refusal of the request itself instead of a completion: '
+                  + 'code 400, type invalid_request, served by ModelRun; the gateway had already sent a success '
+                  + 'status, and repeating the request meets the same refusal',
+                '429': 'InStreamProviderError: stream carried a provider failure instead of a completion: code 429, '
+                  + 'type invalid_request, served by ModelRun; the gateway had already sent a success status',
+              },
+            },);
+          },
+        },),
+
+        it({
           name: 'THROWS the shared HTTP failure class on a non-success status, which the budget layer '
             + 'reads for 402 and 429',
           fn: async () => {

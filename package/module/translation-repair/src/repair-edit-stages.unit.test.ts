@@ -566,6 +566,96 @@ await describe({
     },),
 
     it({
+      name: 'ORDERS THE READINGS AND THE FINDINGS BY ROSTER whichever seats lost their first answer, since '
+        + 'the gather hands voices back by the round that heard them and one input must read the same twice',
+      fn: async () => {
+        /**
+         The first checker rules on both issues, the other two on the first
+         alone.
+         */
+        const reports: Readonly<Record<string, unknown>> = {
+          [CHECKERS[0]]: {
+            checks: [
+              {
+                issue: 1,
+                verdict: 'fixed',
+              },
+              {
+                issue: 2,
+                verdict: 'fixed',
+              },
+            ],
+          },
+          [CHECKERS[1]]: { checks: [{ issue: 1, verdict: 'fixed', },], },
+          [CHECKERS[2]]: { checks: [{ issue: 1, verdict: 'fixed', },], },
+        };
+
+        /**
+         What each run reads, keyed by the seats whose first answer was lost.
+         */
+        const runs = await Promise.all([[], [1, 2,], [0, 1,], [0, 2,],]
+          .map(async function readRun(lost,): Promise<readonly [string, unknown,]> {
+            /**
+             Answers each seat has given so far.
+             */
+            const answered = new Map<string, number>();
+            const result = await runStage({
+              client: {
+                ...checkerClient({ reportFor: (modelId,) => reports[modelId], },),
+                chatJson: async function loseFirstAnswer<ValueT,>(
+                  request: ChatJsonRequest<ValueT>,
+                ): Promise<ChatJsonOutcome<ValueT>> {
+                  /**
+                   Answers this seat has given before this one.
+                   */
+                  const before = answered.get(request.modelId,) ?? 0;
+                  answered.set(request.modelId, before + 1,);
+                  if ((before === 0) && lost.some(function isLost(at,): boolean {
+                    return CHECKERS[at] === request.modelId;
+                  },))
+                    return { kind: 'schema-mismatch', rawText: '', detail: 'scripted voice loss', };
+                  return await checkerClient({ reportFor: (modelId,) => reports[modelId], },).chatJson(request,);
+                },
+              },
+              issues: [
+                catIssue({ issueId: 'adjudicated/tense', },),
+                catIssue({ issueId: 'adjudicated/meaning', },),
+              ],
+            },);
+            return [
+              lost.join('+',),
+              {
+                heard: result.heardCheckers,
+                tenseBallots: result.readings['adjudicated/tense']?.ballots.map(function toSeat(ballot,): string {
+                  return ballot.modelId;
+                },),
+                findings: result.findings,
+              },
+            ];
+          },),);
+        const read = Object.fromEntries(runs,);
+
+        /**
+         What every run must read: all three heard, in roster order.
+         */
+        const expected = {
+          heard: 3,
+          tenseBallots: [...CHECKERS,],
+          findings: [
+            `missing-check (adjudicated/meaning, ${CHECKERS[1]}, unanswered)`,
+            `missing-check (adjudicated/meaning, ${CHECKERS[2]}, unanswered)`,
+          ],
+        };
+        expect(read,).toStrictEqual({
+          '': expected,
+          '1+2': expected,
+          '0+1': expected,
+          '0+2': expected,
+        },);
+      },
+    },),
+
+    it({
       name: 'NAMES each checker that skipped an issue, so two checkers skipping the second of two issues '
         + 'leave two findings that tell them apart and name the issue by id',
       fn: async () => {
@@ -597,11 +687,10 @@ await describe({
           ],
         },);
 
-        // Sorted, since the order voices arrive in is the gather's, not this stage's.
-        expect(result.findings.toSorted(),).toEqual([
+        expect(result.findings,).toEqual([
           `missing-check (adjudicated/meaning, ${CHECKERS[1]}, unanswered)`,
           `missing-check (adjudicated/meaning, ${CHECKERS[2]}, unanswered)`,
-        ].toSorted(),);
+        ],);
       },
     },),
 
@@ -648,12 +737,11 @@ await describe({
           ],
         },);
 
-        // Sorted, since the order voices arrive in is the gather's, not this stage's.
-        expect(result.findings.toSorted(),).toEqual([
+        expect(result.findings,).toEqual([
           'unknown-resolution-verdict (mostly)',
           `missing-check (adjudicated/meaning, ${CHECKERS[1]}, unknown-verdict)`,
           `missing-check (adjudicated/meaning, ${CHECKERS[2]}, unanswered)`,
-        ].toSorted(),);
+        ],);
       },
     },),
 
