@@ -218,7 +218,6 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
         .try_into()
         .context("Cannot decode the language definitions")?;
     typescript::apply(&mut configuration, root);
-    rust_analyzer::apply(&mut configuration, root);
     // What: Helix's spelling of the root, when it differs from the canonical one; `ok()` drops
     //       the refusal, which the start reports on its own.
     // Why: Helix gives servers this spelling, so a confined server must find the project there.
@@ -239,6 +238,10 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
     for (name, definition) in configuration.language_server.iter_mut() {
         let command = definition.command.clone();
         let outcome = locate(name, &command, root).and_then(|executable| {
+            // Only a rust-analyzer that will be launched is worth walking the project for.
+            if name == rust_analyzer::SERVER {
+                rust_analyzer::exclude_node_modules(&mut definition.config, root, &spellings);
+            }
             let request = LaunchRequest {
                 server: name.clone(),
                 executable,

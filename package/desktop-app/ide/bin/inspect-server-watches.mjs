@@ -23,7 +23,9 @@ const base = realpathSync(mkdtempSync(join(privateRoot, 'ide-server-watches-')))
 const results = join(base, 'results');
 mkdirSync(results);
 console.log('SERVER_WATCHES_ARTIFACT=' + base);
-const sampleSeconds = Number(process.env.SERVER_WATCH_SECONDS ?? '45');
+// rust-analyzer adds its watches only after loading the workspace and building compile-time dependencies,
+// which took from 9 s to over 60 s on a loaded host, so the servers are sampled for a long while.
+const sampleSeconds = Number(process.env.SERVER_WATCH_SECONDS ?? '150');
 
 const write = (root, relative, text) => {
   const target = join(root, relative);
@@ -214,6 +216,8 @@ for (const item of cases) {
   run.stderr.on('data', chunk => { stderr += chunk; });
   const done = once(run, 'exit');
   const peaks = new Map();
+  const sampleStart = performance.now();
+  let firstWatchSeconds = null;
   let kinds = {};
   let finished = false;
   done.then(() => { finished = true; });
@@ -222,6 +226,7 @@ for (const item of cases) {
       const key = row.comm;
       const previous = peaks.get(key) ?? { comm: row.comm, instances: 0, watches: 0 };
       peaks.set(key, { comm: row.comm, instances: Math.max(previous.instances, row.instances), watches: Math.max(previous.watches, row.watches) });
+      if (row.watches > 0 && firstWatchSeconds === null) firstWatchSeconds = Math.round((performance.now() - sampleStart) / 1000);
       if (row.watches > 0 && row.watches >= previous.watches) {
         const counted = {};
         for (const inode of watchedInodes(row.pid)) {
@@ -238,9 +243,9 @@ for (const item of cases) {
   writeFileSync(join(results, item.name + '.stderr.txt'), stderr);
   const events = stdout.split('\n').filter(Boolean).map(line => JSON.parse(line));
   const ready = events.find(event => event.step === 1)?.result?.ready === true;
-  const record = { name: item.name, exit: status, ready, processes: [...peaks.values()].sort((left, right) => right.watches - left.watches), watched_kinds: kinds };
+  const record = { name: item.name, exit: status, ready, processes: [...peaks.values()].sort((left, right) => right.watches - left.watches), watched_kinds: kinds, first_watch_seconds: firstWatchSeconds };
   summary.cases.push(record);
-  console.log(JSON.stringify({ name: record.name, exit: status, ready, processes: record.processes.filter(row => row.instances > 0).map(row => row.comm + '=' + row.watches + ' watches/' + row.instances + ' instances').join(', '), watched_kinds: kinds }));
+  console.log(JSON.stringify({ name: record.name, exit: status, ready, processes: record.processes.filter(row => row.instances > 0).map(row => row.comm + '=' + row.watches + ' watches/' + row.instances + ' instances').join(', '), watched_kinds: kinds, first_watch_seconds: firstWatchSeconds }));
 }
 writeFileSync(join(results, 'results.json'), JSON.stringify(summary, null, 2));
 console.log('directories: ' + JSON.stringify(summary.directories));

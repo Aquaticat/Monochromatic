@@ -1,7 +1,7 @@
 //! The walk for `node_modules` directories, the settings merge, and the configuration Helix is given.
 
 /// The functions under test.
-use super::{add_excluded, node_modules_below};
+use super::{add_excluded, exclude_node_modules, node_modules_below};
 /// The registry Helix reads, built the way the application builds it.
 use crate::language::config::{LanguageSetup, Languages};
 /// What: `json!` builds a JSON value from literal syntax; `symlink` creates a symbolic link.
@@ -85,9 +85,35 @@ fn the_built_configuration_hides_node_modules_from_rust_analyzer() {
         json!("server"),
         "Helix's server-side watching was lost"
     );
+    let expected: Vec<String> = ["crates/web/node_modules", "node_modules"]
+        .iter()
+        .map(|relative| return root.join(relative).display().to_string())
+        .collect();
     assert_eq!(
         settings["files"]["excludeDirs"],
-        json!(["crates/web/node_modules", "node_modules"]),
-        "the project's node_modules directories were not excluded"
+        json!(expected),
+        "the project's node_modules directories were not excluded by absolute path"
+    );
+}
+
+/// Each spelling of the root gets its own entries, because rust-analyzer compares the paths it was given.
+#[test]
+fn every_spelling_of_the_root_is_excluded() {
+    let (_directory, root) = project();
+    let mut settings = Some(json!({ "files": { "watcher": "server" } }));
+    exclude_node_modules(
+        &mut settings,
+        &root,
+        &[std::path::PathBuf::from("/srv/link")],
+    );
+    let mut expected = Vec::new();
+    for base in [root.display().to_string(), "/srv/link".to_string()] {
+        for relative in ["crates/web/node_modules", "node_modules"] {
+            expected.push(format!("{base}/{relative}"));
+        }
+    }
+    assert_eq!(
+        settings.expect("settings")["files"]["excludeDirs"],
+        json!(expected)
     );
 }

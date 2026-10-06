@@ -3,11 +3,11 @@
 //! takes one inotify watch for every directory below each package of the workspace. It already leaves
 //! out each package's `target` and `.git`, but a package that also holds JavaScript dependencies has every
 //! `node_modules` directory watched, which can be thousands of watches that never affect a Rust result.
-//! This adds the project's `node_modules` directories to `files.excludeDirs`, which takes paths relative to
-//! the workspace root and no patterns, so they are found by walking the project once when it is opened.
+//! This adds the project's `node_modules` directories to `files.excludeDirs`, which takes no patterns, so they
+//! are found by walking the project once when it is opened. Entries are absolute, one per spelling of the
+//! root, because rust-analyzer resolves relative ones against its own root, which Helix may place in a
+//! subdirectory of the project.
 
-/// Helix's typed configuration.
-use helix_core::syntax::config::Configuration;
 /// What: `Value` is any JSON value; `json!` builds one from literal syntax.
 /// Why: The server's settings table is JSON.
 ///
@@ -29,14 +29,14 @@ use std::{
 };
 
 /// Name of Helix's rust-analyzer definition.
-const SERVER: &str = "rust-analyzer";
+pub(super) const SERVER: &str = "rust-analyzer";
 
 /// Directories visited before the walk gives up and leaves the rest of the project as it is.
 const WALK_LIMIT: usize = 200_000;
 
-/// Directory names the walk does not enter: rust-analyzer already leaves out `target` and `.git`,
-/// and each `node_modules` is recorded rather than entered.
-const PRUNED: [&str; 3] = ["node_modules", "target", ".git"];
+/// Directory names the walk does not enter because rust-analyzer already leaves them out;
+/// each `node_modules` is recorded rather than entered.
+const PRUNED: [&str; 2] = ["target", ".git"];
 
 /// Every `node_modules` directory below `root`, as paths relative to it with `/` between names, sorted.
 /// Symbolic links are not followed, and the walk stops after `WALK_LIMIT` directories.
@@ -151,24 +151,35 @@ pub fn add_excluded(settings: &mut Value, excluded: &[String]) {
 }
 
 /// Hide the project's `node_modules` directories from rust-analyzer's own file watching.
-pub(super) fn apply(configuration: &mut Configuration, root: &Path) {
-    // What: `get_mut` borrows the definition for modification, or `None` when there is none.
-    // Why: A configuration without rust-analyzer needs no walk.
+/// `settings` is the definition's settings table; `spellings` are other spellings of `root` servers are given.
+pub(super) fn exclude_node_modules(
+    settings: &mut Option<Value>,
+    root: &Path,
+    spellings: &[PathBuf],
+) {
+    let found = node_modules_below(root);
+    if found.is_empty() {
+        return;
+    }
+    let mut excluded = Vec::new();
+    // What: `std::iter::once(root).chain(...)` walks the canonical root, then each other spelling.
+    // Why: rust-analyzer compares the paths it sees, which are in whichever spelling it was given.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const definition = configuration.languageServer[SERVER]; if (!definition) return;
+    // for (const base of [root, ...spellings]) for (const path of found) excluded.push(join(base, path));
     // ```
-    let Some(definition) = configuration.language_server.get_mut(SERVER) else {
-        return;
-    };
-    let excluded = node_modules_below(root);
-    if excluded.is_empty() {
-        return;
+    for base in std::iter::once(root).chain(spellings.iter().map(PathBuf::as_path)) {
+        for relative in &found {
+            // `to_str` is `None` for a root that is not Unicode; such entries cannot be JSON text.
+            if let Some(text) = base.join(relative).to_str() {
+                excluded.push(text.to_string());
+            }
+        }
     }
     // `get_or_insert_with` gives the existing settings table, or an empty one first.
-    let settings = definition.config.get_or_insert_with(|| return json!({}));
-    add_excluded(settings, &excluded);
+    let table = settings.get_or_insert_with(|| return json!({}));
+    add_excluded(table, &excluded);
 }
 
 /// The walk on disposable trees, the settings merge, and the configuration Helix is given.
