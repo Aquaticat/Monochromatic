@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { defaultTemplate, errorLines, evaluateTemplate, fields, functions, helpAt, parseTemplate } from './template-reference.mjs';
+import { defaultTemplate, errorLines, evaluateTemplate, fields, functions, helpAt, parseTemplate, playingFields, templates } from './template-reference.mjs';
 
 //region Fixture tracks: one analysed, one not yet analysed, one with nothing but a path
 const analysed = { title: 'Another Xronixle', file: 'かめりあ(Camellia) - Another Xronixle', ext: 'flac', folder: 'Camellia', path: 'Camellia/かめりあ(Camellia) - Another Xronixle.flac', len: 275, peak: '\u22120.3 dBTP' };
@@ -82,6 +82,29 @@ refuses({ text: '$mi(peak) != ""$', lines: ['formula: unexpected !='] });
 refuses({ text: '$mi(len) = 275$', lines: ['formula: unexpected ='] });
 refuses({ text: '$mi(len) > 1$', lines: ['formula: unexpected >'] });
 assert.equal(Object.hasOwn(functions, 'if'), false);
+cases += 1;
+//endregion
+
+//region Each template has its own default and fields (D97 version)
+const playing = { ...analysed, track: 1, total: 16 };
+assert.deepEqual(Object.keys(templates), ['track', 'playing']);
+assert.equal(templates.track.defaultTemplate, defaultTemplate);
+assert.equal(templates.track.fields, fields);
+assert.equal(templates.playing.fields, playingFields);
+assert.deepEqual(playingFields.map(field => field.mode), ['title', 'file', 'ext', 'folder', 'path', 'len', 'peak', 'track', 'total']);
+cases += 1;
+function showsPlaying({ text, track, expected }) {
+  const result = evaluateTemplate({ text, track, fields: playingFields });
+  assert.deepEqual({ valid: result.valid, text: result.text }, { valid: true, text: expected }, text);
+  cases += 1;
+}
+showsPlaying({ text: templates.playing.defaultTemplate, track: playing, expected: '1 of 16 \u22120.3 dBTP' });
+showsPlaying({ text: templates.playing.defaultTemplate, track: { ...playing, peak: undefined }, expected: '1 of 16 ' });
+showsPlaying({ text: '$mi(title)$ ($mi(track)$/$mi(total)$)', track: playing, expected: 'Another Xronixle (1/16)' });
+// The track rows' template has no place in a folder: the same field is unknown there.
+refuses({ text: '$mi(track)$ of $mi(total)$', lines: ['mi: unknown field track', 'mi: unknown field total'] });
+assert.equal(helpAt({ text: '$mi()$', caret: 4, fields: playingFields }).description, 'Field: one of title, file, ext, folder, path, len, peak, track, total.');
+assert.equal(helpAt({ text: '$mi()$', caret: 4 }).description, 'Field: one of title, file, ext, folder, path, len, peak.');
 cases += 1;
 //endregion
 
