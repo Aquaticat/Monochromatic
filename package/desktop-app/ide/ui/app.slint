@@ -6,7 +6,7 @@ import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
 import { LanguagePopup } from "hover.slint";
 import { ReferenceList, ReferenceEntry } from "references.slint";
-import { AnnotationInk } from "annotation.slint";
+import { AnnotationInk, ProblemCard } from "annotation.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -163,6 +163,9 @@ export component AppWindow inherits Window {
     // The problems at the caret as one text, worst first and in full; empty when the caret touches no diagnostic.
     // It is not drawn: every message stands above its line. It starts the accessible description.
     in property <string> caret-problems;
+    // Prototype variant: the caret card, hidden while a language surface is open.
+    in property <int> caret-problem-severity;
+    out property <bool> problem-card-visible: code-focus.has-focus && !root.language-surface-open && root.caret-problems != "";
     in property <string> source-text;
     in property <string> selected-text;
     in property <string> file-label: "Source-view verification";
@@ -477,6 +480,23 @@ export component AppWindow inherits Window {
                         width: 2px;
                         height: root.code-row - 4px;
                         background: Palette.foreground;
+                    }
+
+                    // Prototype variant: the problems at the caret, under the caret's line, or over it when the view
+                    // ends first.
+                    problem-card := ProblemCard {
+                        visible: root.problem-card-visible;
+                        text: root.caret-problems;
+                        severity: root.caret-problem-severity;
+                        widest: max(48px, scroll.width - root.gutter-width - 16px);
+                        private property <length> line-top: root.caret-y * 1px - 2px;
+                        private property <length> below: self.line-top + root.code-row + 2px;
+                        private property <length> view-top: -scroll.content-y;
+                        private property <length> view-left: -scroll.content-x;
+                        y: self.below + self.height <= self.view-top + scroll.height ? self.below
+                            : max(self.view-top, self.line-top - self.height - 2px);
+                        x: max(self.view-left + root.gutter-width,
+                            min(root.gutter-width + root.caret-x * 1px, self.view-left + scroll.width - self.width - 8px));
                     }
 
                     pointer := TouchArea {
