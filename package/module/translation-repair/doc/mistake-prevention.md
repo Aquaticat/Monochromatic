@@ -77,9 +77,10 @@ and the rule itself misread as three `&&` rather than three steps (M1).
 The slip recurred after every record of it,
 four times,
 then three more,
-then once more after M116 was written,
-on 2026-10-05 (UTC) alone (ledger M107,
+then three times after M116 was written,
+across 2026-10-05 and 2026-10-06 (UTC) (ledger M107,
 M116).
+Each of those last three was a read of a log by two searches whose results were both wanted.
 
 The rule:
 a Bash call holds at most three steps joined by `&&`,
@@ -191,6 +192,17 @@ and trial cases in seven files were refused before the line they named was read,
 or answered a status that never reached the throw they named (ledger B211).
 A refusal case hands in a record with one cause,
 and resumes the same record with that cause mended.
+
+Trial cases in twenty more files asserted what no change to the code under test could move:
+a default compared with its own expression,
+a check for `undefined` on a value never undefined,
+a sheet searched for a sentence its run is never given,
+a seed whose shuffle agrees with arrival order and with alphabetical order,
+a scripted verdict outside the wire's vocabulary,
+and a note never shown absent where its count is zero (ledger B225,
+B226).
+A case that reads the environment sets it and clears it,
+and a note or a finding is shown absent beside the input that raises it.
 
 The rule:
 a red guard is read case by case before the fix,
@@ -508,6 +520,10 @@ A lint a message reports ran on the bytes the commit holds,
 after the last edit to each file it reads
 (one message reported a clean ledger the commit's ledger failed,
 M106).
+A lint run for a side checkout takes that checkout's root as an argument,
+and its verdict is repeated only beside the root it read:
+one message reported a clean lint that a script holding the main checkout's path had run on the main checkout's files,
+whatever directory it was started from (M119).
 A constant a message or a comment names is read from its declaration first,
 and a correction is held to the same rule:
 one message quoted a quorum of 3 where both quorums were 2,
@@ -2300,6 +2316,14 @@ The slice census sliced a settled row by its recorded pairing
 and counted its added blocks by the deterministic aligner (ledger B197).
 A figure describing a carve is read off the steps that made the carve.
 
+The lone container tag masker ended an element name at a space alone
+and refused a closer carrying anything past its name,
+where the strict grammar steps over whitespace before a tag's closing bracket,
+so a lone closer written `</details >` stayed unmasked,
+and a closer written with a tab left its whole element reading as two lone tags (ledger B222).
+A reader of a tag's shape is shown the strict parser's verdict for each whitespace spelling,
+the spellings it does not take among them.
+
 The rule:
 a question about what a passage's blocks are
 (how many quotes,
@@ -2687,6 +2711,15 @@ and an attribute restored from the first of two a tag names (ledger B210).
 A heading cut at its last colon wrote a name holding a colon twice (ledger B198).
 The census's search pattern missed maps built from typed pairs and maps filled by `set` in a loop,
 where two of the eight stood.
+Three sites that census described and left were fixed next:
+a title linked twice in one slice,
+whose second link was never located (ledger B228);
+a refrain,
+compared only at the first place its wording stands (ledger B229);
+and an archive block found again by its text,
+so its revision was checked at the first place the text stands (ledger B230).
+A caller that cut a piece out of a text passes where the piece stands,
+and the callee does not find it again by its text.
 
 The rule:
 a table looked up by text is a `ReadonlyMap`,
@@ -2730,9 +2763,9 @@ whose value is an object literal at a module's top or `{}` anywhere,
 or that is written through a computed key;
 the red cases in each site's test file hold the inherited names.
 `validate-issue.unit.test.ts` and `critic-wire.unit.test.ts` hold a document repeating an id,
-and each site of ledger B203 to B210 holds its repeat in its own test file;
+and each site of ledger B203 to B210 and of B228 to B230 holds its repeat in its own test file;
 first-match lookups elsewhere are held by habit and review,
-the sites that census described and left among them (ledger B203,
+the sites that census described and that still stand among them (ledger B203,
 "Open").
 Out of the scan's reach,
 and read once by a typed census recorded in ledger B77:
@@ -3229,6 +3262,17 @@ a lane selection that was never contested read as nothing to report (ledger B199
 and a parsed list item with no offsets dropped its whole list (ledger B200).
 Each is an `unreachable:` throw now.
 
+Two more answered for such a state,
+each behind a case that pinned the answer:
+the width contest's `none` for a composite whose text is neither seat's,
+the same word it gives where no candidate won (ledger B223),
+and the refine boundary's verdict for a paragraph outside the body zone,
+which its case reached through a cast (ledger B224).
+No verdict is kept for a fixture production cannot build.
+Fourteen chain tails then wrote their invariant as a call to a helper that throws,
+a shape the census reads as code no test ran,
+until the helper became a class named for the invariant and thrown at the chain's end (ledger B231).
+
 The rule:
 a state no input produces is refused out loud,
 with `throw new Error('unreachable: <what was found and why it cannot occur>',)`
@@ -3271,6 +3315,7 @@ a format 2 baseline is refused by name and taken again,
 since it holds those throws among the cold code with nothing to tell them by.
 An invariant written another way
 (a call beside the throw,
+a helper called to throw for its caller,
 a message joined with `+`,
 `nonNullishOrThrow`)
 stays cold or goes unseen,
@@ -3402,6 +3447,12 @@ The union gained `duplicate` six days after the list was written.
 The clause checks that each listed member exists and not that every member is listed,
 so nothing failed,
 and a file carrying the new verdict was refused whole (ledger B169).
+A census of the package's other lists,
+lookup tables and branch chains over a union found none behind its union,
+and gave each that must be complete a form the compiler holds (ledger B227).
+The chains' closing refusal was first a helper called to throw,
+which the coverage census listed as untested code,
+and is now a thrown class (ledger B231).
 
 The rule:
 a value meant to name every member of a union is keyed by the union
@@ -3414,7 +3465,10 @@ An array typed or checked as `readonly Union[]` proves membership only.
 
 What enforces it:
 the compiler,
-for `KNOWN_VERDICTS`.
+for `KNOWN_VERDICTS` and for each list,
+record and chain ledger B227 converted;
+a chain ends in `throw new UnhandledMemberInvariantError(…)`,
+whose `never` parameter refuses a member no branch names.
 No scan finds a list typed by a union declared apart from it,
-and the package's other such lists have not been read against their unions (ledger B169,
-"Open").
+so a new one is held by review,
+and the lists that census read and left unconverted are named in ledger B227.
