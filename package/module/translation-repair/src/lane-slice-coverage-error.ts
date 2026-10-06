@@ -2,7 +2,7 @@ import {
   howOften,
   wordForCount,
 } from './count-word.ts';
-import { refuseUnhandledMember, } from './unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from './unhandled-member.ts';
 
 //region Lane slice coverage error
 // The failure both halves of the wording builder raise, in its own file so they
@@ -211,7 +211,7 @@ export type LaneSliceCoverageFault = {
 
  @returns Sentence written here
 
- @throws Error when a member of `LaneSliceCoverageFault` has no branch here, which the compiler rules out
+ @throws {@link UnhandledMemberInvariantError} when a member of `LaneSliceCoverageFault` has no branch here, which the compiler rules out
 
  @example
  ```ts
@@ -284,7 +284,7 @@ export function laneCoverageSentence({ fault, }: { readonly fault: LaneSliceCove
       String(fault.sliceIndex,)
     } after leaving an earlier one unexamined, which no early stop produces`;
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'lane slice coverage fault',
     member: fault,
   },);

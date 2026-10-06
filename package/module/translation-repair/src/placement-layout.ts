@@ -1,7 +1,7 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import { wordForCount, } from './count-word.ts';
-import { refuseUnhandledMember, } from './unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from './unhandled-member.ts';
 
 //region Placement layout
 // Whether a preparation's target spans can be written back into the document
@@ -156,7 +156,7 @@ export type PlacementFault = {
 
  @returns Sentence completing "slice at position N ..."
 
- @throws Error when a member of `PlacementFault` has no branch here, which the compiler rules out
+ @throws {@link UnhandledMemberInvariantError} when a member of `PlacementFault` has no branch here, which the compiler rules out
 
  @example
  ```ts
@@ -208,7 +208,7 @@ function placementSentence({ fault, }: { readonly fault: PlacementFault; },): st
     return `starts at ${String(fault.startOffset,)} while the slice before it runs to ${String(fault.boundary,)}, `
       + 'so writing one would move or overwrite the other';
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'placement fault',
     member: fault,
   },);

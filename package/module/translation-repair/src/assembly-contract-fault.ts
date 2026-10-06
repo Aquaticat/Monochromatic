@@ -1,5 +1,5 @@
 import { wordForCount, } from './count-word.ts';
-import { refuseUnhandledMember, } from './unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from './unhandled-member.ts';
 
 //region Assembly contract faults
 // What an assembly's change sets or returned document contradict, as a union
@@ -128,7 +128,7 @@ export type AssemblyContractFault = {
 
  @returns Sentence written here
 
- @throws Error when a member of `AssemblyContractFault` has no branch here, which the compiler rules out
+ @throws {@link UnhandledMemberInvariantError} when a member of `AssemblyContractFault` has no branch here, which the compiler rules out
 
  @example
  ```ts
@@ -182,7 +182,7 @@ export function assemblySentence({ fault, }: { readonly fault: AssemblyContractF
       + '`guardFootnoteAssembly` canonicalizes to no survivors, so pass what the guard let stand rather than '
       + 'what a lane proposed';
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'assembly contract fault',
     member: fault,
   },);

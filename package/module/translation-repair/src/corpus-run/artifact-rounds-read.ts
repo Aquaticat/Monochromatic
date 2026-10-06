@@ -20,7 +20,7 @@ import {
   type RepairJudgedRound,
   type RepairSlateEntry,
 } from '../repair-round-record.ts';
-import { refuseUnhandledMember, } from '../unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from '../unhandled-member.ts';
 import { requireProducer, } from './artifact-producer-read.ts';
 import {
   requireBallot,
@@ -137,7 +137,7 @@ function requireSlateEntry(
 
  @throws {@link OffRosterModelError} when it names a departed model
 
- @throws Error when a member of `RepairJudgedRound` kinds has no branch here, which the compiler rules out, after the kind has been read
+ @throws {@link UnhandledMemberInvariantError} when a member of `RepairJudgedRound` kinds has no branch here, which the compiler rules out, after the kind has been read
 
  @example
  ```ts
@@ -320,7 +320,7 @@ function requireJudgedRound(
       },),
     };
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'recorded round outcome',
     member: kind,
   },);

@@ -1,5 +1,5 @@
 import { wordForCount, } from './count-word.ts';
-import { refuseUnhandledMember, } from './unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from './unhandled-member.ts';
 
 //region Lane comparison faults
 // Why two lane ledgers cannot be compared, as a union the class words itself.
@@ -138,7 +138,7 @@ export type LaneComparisonFault = {
 
  @returns Sentence written here
 
- @throws Error when a member of `LaneComparisonFault` has no branch here, which the compiler rules out
+ @throws {@link UnhandledMemberInvariantError} when a member of `LaneComparisonFault` has no branch here, which the compiler rules out
 
  @example
  ```ts
@@ -191,7 +191,7 @@ export function comparisonSentence({ fault, }: { readonly fault: LaneComparisonF
       fault.translate
     } in the translate lane, so the two disagree about whether the archive translates it`;
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'lane comparison fault',
     member: fault,
   },);

@@ -1,6 +1,6 @@
 import type { MissingWording, } from './published-page-check.ts';
 import { wordForCount, } from '../count-word.ts';
-import { refuseUnhandledMember, } from '../unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from '../unhandled-member.ts';
 
 //region Published page disagreement
 // The refusal a page earns when it does not carry what its artifact says would
@@ -62,7 +62,7 @@ export type PageDisagreement = {
 
  @returns Sentence naming it without quoting any text
 
- @throws Error when a member of `PageDisagreement` has no branch here, which the compiler rules out
+ @throws {@link UnhandledMemberInvariantError} when a member of `PageDisagreement` has no branch here, which the compiler rules out
 
  @example
  ```ts
@@ -113,7 +113,7 @@ function disagreementSentence(
       + `${String(disagreement.expected,)} the archive plus every slice change comes to${caveat}`
       + '. Text no slice decided on was lost or added';
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'published page disagreement',
     member: disagreement,
   },);

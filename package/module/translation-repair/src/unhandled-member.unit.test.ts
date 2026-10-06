@@ -12,16 +12,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { refuseUnhandledMember, } from '../dist/final/node/index.mjs';
+import { UnhandledMemberInvariantError, } from '../dist/final/node/index.mjs';
 
 /**
- Runs the refusal with a member a caller's types would never let through.
+ Throws the failure with a member a caller's types would never let through,
+ built through `Reflect.construct` since the constructor takes `never`.
 
  @param what - union named in the message
 
  @param member - value no branch handled
 
- @returns What the refusal raised
+ @returns What the throw raised
 
  @example
  ```ts
@@ -37,10 +38,9 @@ function refusalFor(
     readonly member: unknown;
   },
 ): unknown {
-  return caught(function act(): unknown {
-    return Reflect.apply(
-      refuseUnhandledMember,
-      undefined,
+  return caught(function act(): never {
+    throw Reflect.construct(
+      UnhandledMemberInvariantError,
       [{
         what,
         member,
@@ -50,7 +50,7 @@ function refusalFor(
 }
 
 await describe({
-  name: refuseUnhandledMember.name,
+  name: UnhandledMemberInvariantError.name,
   concurrency: 1,
   children: [
     it({
@@ -68,8 +68,10 @@ await describe({
           },
         },);
 
-        expect(refusal,).toBeInstanceOf(Error,);
-        expect(String(refusal,),).toBe('Error: unreachable: cat mood carries a member no branch handles: kind purring',);
+        expect(refusal,).toBeInstanceOf(UnhandledMemberInvariantError,);
+        expect(String(refusal,),).toBe(
+          'UnhandledMemberInvariantError: unreachable: cat mood carries a member no branch handles: kind purring',
+        );
       },
     },),
     it({
@@ -91,8 +93,12 @@ await describe({
           member: { wording: 'Mittens naps on the warm sill.', },
         },);
 
-        expect(String(textRefusal,),).toBe('Error: unreachable: cat mood carries a member no branch handles: type string',);
-        expect(String(recordRefusal,),).toBe('Error: unreachable: cat mood carries a member no branch handles: type object',);
+        expect(String(textRefusal,),).toBe(
+          'UnhandledMemberInvariantError: unreachable: cat mood carries a member no branch handles: type string',
+        );
+        expect(String(recordRefusal,),).toBe(
+          'UnhandledMemberInvariantError: unreachable: cat mood carries a member no branch handles: type object',
+        );
       },
     },),
     it({
@@ -109,7 +115,9 @@ await describe({
           },
         },);
 
-        expect(String(refusal,),).toBe('Error: unreachable: cat mood carries a member no branch handles: type object',);
+        expect(String(refusal,),).toBe(
+          'UnhandledMemberInvariantError: unreachable: cat mood carries a member no branch handles: type object',
+        );
       },
     },),
     it({
@@ -131,8 +139,12 @@ await describe({
           member: [{ kind: 'purring', },],
         },);
 
-        expect(String(nullRefusal,),).toBe('Error: unreachable: cat mood carries a member no branch handles: type object',);
-        expect(String(arrayRefusal,),).toBe('Error: unreachable: cat mood carries a member no branch handles: type object',);
+        expect(String(nullRefusal,),).toBe(
+          'UnhandledMemberInvariantError: unreachable: cat mood carries a member no branch handles: type object',
+        );
+        expect(String(arrayRefusal,),).toBe(
+          'UnhandledMemberInvariantError: unreachable: cat mood carries a member no branch handles: type object',
+        );
       },
     },),
   ],

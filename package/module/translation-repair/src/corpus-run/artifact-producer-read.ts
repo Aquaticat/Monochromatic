@@ -7,7 +7,7 @@ import { requireKeyOf, } from '../artifact-exact-guard.ts';
 import type { CandidateProducer, } from '../candidate-select-model.ts';
 import type { RosterModelId, } from '../roster-id.ts';
 import { ROSTER_MODEL_IDS, } from '../roster-reach.ts';
-import { refuseUnhandledMember, } from '../unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from '../unhandled-member.ts';
 
 //region Artifact producer read
 // WHO WROTE A RECORDED CANDIDATE, read back out of an artifact and checked
@@ -190,7 +190,7 @@ function requireRosterModelIds(
 
  @throws {@link ArtifactParseError} when the kind or lane is not one `CandidateProducer` names, through `requireKeyOf`, or a field is malformed
 
- @throws Error when a member of `CandidateProducer` has no branch here, which the compiler rules out
+ @throws {@link UnhandledMemberInvariantError} when a member of `CandidateProducer` has no branch here, which the compiler rules out
 
  @example
  ```ts
@@ -266,7 +266,7 @@ export function requireProducer(
       },),
     };
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'recorded candidate producer',
     member: kind,
   },);

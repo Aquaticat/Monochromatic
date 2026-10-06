@@ -1,7 +1,7 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SliceDeliveryRecord, } from './slice-delivery.ts';
 import { wordForCount, } from './count-word.ts';
-import { refuseUnhandledMember, } from './unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from './unhandled-member.ts';
 import {
   type SliceReplacement,
   spliceSlices,
@@ -79,7 +79,7 @@ export type DeliveryInvariantFault = {
 
  @returns Sentence composed from slice indices and counts alone
 
- @throws Error when a member of `DeliveryInvariantFault` has no branch here, which the compiler rules out
+ @throws {@link UnhandledMemberInvariantError} when a member of `DeliveryInvariantFault` has no branch here, which the compiler rules out
 
  @example
  ```ts
@@ -124,7 +124,7 @@ export function deliveryInvariantSentence(
       },)
     } not say what the document carries`;
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'delivery invariant fault',
     member: fault,
   },);

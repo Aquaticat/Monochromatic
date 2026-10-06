@@ -1,6 +1,6 @@
 import type { ComparisonRowField, } from './artifact-two-lane-row-equality.ts';
 import { wordForCount, } from '../count-word.ts';
-import { refuseUnhandledMember, } from '../unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from '../unhandled-member.ts';
 
 //region Artifact version 2 comparison refusals
 // Why two version 2 ledgers, or two derivations of one comparison, cannot be
@@ -145,7 +145,7 @@ export type ArtifactComparisonFault =
  @returns Sentence naming the slice or position and what disagreed there,
  composed from numbers, lane names, kinds and field names alone
 
- @throws Error when a member of the version 2 comparison fault union has no branch here, which the compiler rules out
+ @throws {@link UnhandledMemberInvariantError} when a member of the version 2 comparison fault union has no branch here, which the compiler rules out
 
  @example
  ```ts
@@ -195,7 +195,7 @@ function comparisonFaultSentence(
         .join(', ',)
     }; one of them changed, and which artifacts mean what depends on which`;
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'version 2 comparison fault',
     member: fault,
   },);

@@ -1,5 +1,5 @@
 import { wordForCount, } from './count-word.ts';
-import { refuseUnhandledMember, } from './unhandled-member.ts';
+import { UnhandledMemberInvariantError, } from './unhandled-member.ts';
 
 //region Slice delivery faults
 // What a lane's slice reports say that cannot both be true, as a union the
@@ -224,7 +224,7 @@ export type SliceDeliveryFault = {
 
  @returns Sentence written here
 
- @throws Error when a member of `SliceDeliveryFault` has no branch here, which the compiler rules out
+ @throws {@link UnhandledMemberInvariantError} when a member of `SliceDeliveryFault` has no branch here, which the compiler rules out
 
  @example
  ```ts
@@ -320,7 +320,7 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
       fault.recorded
     } there, and its prepared chunk says the opposite`;
   }
-  return refuseUnhandledMember({
+  throw new UnhandledMemberInvariantError({
     what: 'slice delivery fault',
     member: fault,
   },);

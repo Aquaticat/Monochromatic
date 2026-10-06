@@ -393,6 +393,9 @@ const WITHHELD: Record<string, string> = {
   TimingLineError: 'quotes the whole timing line it could not read, so an operator can find it; the line was '
     + 'chosen by the round or completion marker the run\'s own logger writes, but nothing proves a line '
     + 'carrying that marker holds only labels, counts and durations (T8, nineteenth batch)',
+  UnhandledMemberInvariantError: 'names the discriminant of a value the types say cannot exist, which is '
+    + 'whatever text that value carries under `kind`; unreachable while every chain names every member of its '
+    + 'union, so the boundary never has to print it',
 };
 
 //endregion Marked message inventory
