@@ -37,6 +37,10 @@ mod frontier;
 #[path = "binary_builtin_tests.rs"]
 mod builtin;
 
+/// `pathBytes` and `changedPathBytes` for a file whose name is not UTF-8.
+#[path = "binary_event_path_tests.rs"]
+mod event_path;
+
 /// The `git cli-git` management namespace.
 #[path = "binary_management_tests.rs"]
 mod management;

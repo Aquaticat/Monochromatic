@@ -18,6 +18,8 @@ use super::candidate_version::CandidateVersion;
 use super::config_schema::{ForbiddenStringsOptions, PolicyConfig};
 /// Import the engine-failure codes.
 use super::diagnostics::EngineFailureCode;
+/// Import the event form of a pathname.
+use super::event_path::EventPath;
 /// Import the lifecycle's candidates.
 use super::policy_content::{ContentState, LifecycleContent};
 /// Import the finding and outcome types of a check.
@@ -127,6 +129,8 @@ fn failed(code: EngineFailureCode, message: &str) -> PolicyOutcome {
     return PolicyOutcome::Failed {
         code,
         message: String::from(message),
+        // `None`: a scan failure never names a pathname, which may hold a secret.
+        path: None,
     };
 }
 
@@ -176,7 +180,8 @@ fn match_finding(finding: &ScanFinding, display_path: &str) -> Option<PolicyFind
     return Some(PolicyFinding {
         code: FORBIDDEN_STRING_CODE,
         message,
-        path: Some(String::from(display_path)),
+        // The scanner's masked display is text only: its bytes would undo the masking.
+        path: Some(EventPath::display(display_path)),
         location: None,
         fix_available: false,
     });

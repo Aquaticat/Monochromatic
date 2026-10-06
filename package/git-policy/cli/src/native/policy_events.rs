@@ -22,6 +22,8 @@
 use super::diagnostics::{
     EngineFailureCode, SCHEMA_VERSION, engine_failure_code_name, json_string,
 };
+/// A pathname as events report it, and the encoding of its exact bytes.
+use super::event_path::{EventPath, base64_standard};
 use super::policy_registry::{PolicyId, Severity, policy_descriptor, severity_name};
 use super::policy_trigger::{Trigger, trigger_name};
 
@@ -54,7 +56,7 @@ pub struct FindingLocation {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type FindingEvent = { trigger; policyId; severity: 'warn' | 'error'; code; message; path?; location?; fix: 'none' | 'available' };
+/// type FindingEvent = { trigger; policyId; severity: 'warn' | 'error'; code; message; path?; pathBytes?; location?; fix: 'none' | 'available' };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FindingEvent {
@@ -69,7 +71,7 @@ pub struct FindingEvent {
     /// The explanation for the person who ran the command.
     pub message: String,
     /// The repository path the finding is about, when it has one.
-    pub path: Option<String>,
+    pub path: Option<EventPath>,
     /// The byte range the finding is about, when it has one.
     pub location: Option<FindingLocation>,
     /// Whether the engine holds a correction for this finding.
@@ -77,8 +79,8 @@ pub struct FindingEvent {
 }
 
 /// What: Every event a policy pass can produce. An `enum` is a closed set of named
-///       alternatives; each variant carries its own fields. `Vec<String>` is an owned list
-///       of owned text.
+///       alternatives; each variant carries its own fields. `Vec<EventPath>` is an owned
+///       list of pathnames in their event form.
 /// Why:  One list of events is rendered in order, whatever mixture of kinds it holds.
 ///
 /// In TS you'd write (pseudocode):
@@ -116,7 +118,7 @@ pub enum PolicyEvent {
         /// The policy that could not complete, when one is responsible.
         policy: Option<PolicyId>,
         /// The repository path responsible, when the failure is about one path.
-        path: Option<String>,
+        path: Option<EventPath>,
     },
     /// Corrections were applied.
     FixSummary {
@@ -125,7 +127,7 @@ pub enum PolicyEvent {
         /// How many passes changed candidate content before it settled.
         passes: u64,
         /// The changed paths, each once, in Git's byte order.
-        changed_paths: Vec<String>,
+        changed_paths: Vec<EventPath>,
     },
 }
 
@@ -176,9 +178,27 @@ fn push_text_field(line: &mut String, name: &str, value: &str) {
     line.push_str(format!(",\"{name}\":{}", json_string(value)).as_str());
 }
 
+/// What: Append `,"path":"..."` and, for a name that is not UTF-8, `,"pathBytes":"..."`.
+///       `&EventPath` borrows the pathname's event form.
+/// Why:  `path` keeps its meaning for every existing reader; `pathBytes` is the optional
+///       field schema version 1 allows (`SPEC.md`, "Unknown fields may be added only in a
+///       backward-compatible schema revision"), present only when `path` is not exact.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// line.path = path.text; if (path.exact) line.pathBytes = base64(path.exact);
+/// ```
+fn push_path_field(line: &mut String, path: &EventPath) {
+    push_text_field(line, "path", path.text());
+    // `if let Some(exact) = ...` runs only for a name that kept its bytes.
+    if let Some(exact) = path.exact() {
+        push_text_field(line, "pathBytes", base64_standard(exact).as_str());
+    }
+}
+
 /// What: Render a finding's fields after the shared opening.
 /// Why:  The order is the incumbent's: trigger, policy, severity, code, message, then the
-///       optional path and location, then the fix state.
+///       optional path (with its exact bytes) and location, then the fix state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -197,7 +217,7 @@ fn push_finding(line: &mut String, finding: &FindingEvent) {
     push_text_field(line, "message", finding.message.as_str());
     // `if let Some(path) = &finding.path` borrows the path only when one is present.
     if let Some(path) = &finding.path {
-        push_text_field(line, "path", path.as_str());
+        push_path_field(line, path);
     }
     if let Some(location) = finding.location {
         line.push_str(
@@ -216,14 +236,16 @@ fn push_finding(line: &mut String, finding: &FindingEvent) {
     push_text_field(line, "fix", fix);
 }
 
-/// What: Render changed paths as a JSON array of strings.
-/// Why:  A fix summary lists every path it changed.
+/// What: Render one JSON string per changed path: its text, or the base64 of its bytes.
+///       `fn(&EventPath) -> String` is a plain function pointer choosing what each entry holds.
+/// Why:  A fix summary lists every path it changed, and its byte list lines up with that
+///       list entry for entry.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// JSON.stringify(changedPaths)
+/// JSON.stringify(changedPaths.map(entry))
 /// ```
-fn path_array(paths: &[String]) -> String {
+fn path_array(paths: &[EventPath], entry: fn(&EventPath) -> String) -> String {
     // `String::from` copies the borrowed text into an owned, growable line.
     let mut array: String = String::from("[");
     // `.iter().enumerate()` yields `(index, path)` pairs in order.
@@ -231,10 +253,54 @@ fn path_array(paths: &[String]) -> String {
         if index > 0 {
             array.push(',');
         }
-        array.push_str(json_string(path.as_str()).as_str());
+        array.push_str(json_string(entry(path).as_str()).as_str());
     }
     array.push(']');
     return array;
+}
+
+/// What: The readable text of one changed path, as a `changedPaths` entry.
+/// Why:  A named function for `path_array`, because the repository bans anonymous functions.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const pathText = (path: EventPath) => path.text;
+/// ```
+fn path_text(path: &EventPath) -> String {
+    return String::from(path.text());
+}
+
+/// What: The base64 of one changed path's bytes, as a `changedPathBytes` entry.
+/// Why:  Names that are UTF-8 are listed too, so index `n` of both lists is the same file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const pathBytes = (path: EventPath) => base64(path.bytes);
+/// ```
+fn path_bytes(path: &EventPath) -> String {
+    return base64_standard(path.bytes());
+}
+
+/// What: Append `,"changedPaths":[...]` and, when any of them is not UTF-8,
+///       `,"changedPathBytes":[...]` with one base64 entry per path.
+/// Why:  An array cannot hold an absent entry without JSON `null`, which events never
+///       carry, so the byte list names every path once it is needed at all, and is
+///       absent while every name is exact.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// line.changedPaths = paths.map(p => p.text); if (paths.some(p => p.exact)) line.changedPathBytes = paths.map(p => base64(p.bytes));
+/// ```
+fn push_changed_paths(line: &mut String, paths: &[EventPath]) {
+    line.push_str(format!(",\"changedPaths\":{}", path_array(paths, path_text)).as_str());
+    for path in paths {
+        if path.exact().is_some() {
+            line.push_str(
+                format!(",\"changedPathBytes\":{}", path_array(paths, path_bytes)).as_str(),
+            );
+            return;
+        }
+    }
 }
 
 /// What: The wire spelling of an event's kind.
@@ -308,7 +374,7 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
                 push_text_field(&mut line, "policyId", policy_descriptor(*found).name);
             }
             if let Some(found) = path {
-                push_text_field(&mut line, "path", found.as_str());
+                push_path_field(&mut line, found);
             }
         }
         PolicyEvent::FixSummary {
@@ -317,13 +383,8 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
             changed_paths,
         } => {
             push_text_field(&mut line, "trigger", trigger_name(*trigger));
-            line.push_str(
-                format!(
-                    ",\"passes\":{passes},\"changedPaths\":{}",
-                    path_array(changed_paths.as_slice())
-                )
-                .as_str(),
-            );
+            line.push_str(format!(",\"passes\":{passes}").as_str());
+            push_changed_paths(&mut line, changed_paths.as_slice());
         }
     }
     line.push_str("}\n");

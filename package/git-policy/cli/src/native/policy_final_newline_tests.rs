@@ -17,6 +17,7 @@ use super::{
 use crate::candidate_object::CandidateMode;
 use crate::candidate_prediction::CandidateRequest;
 use crate::diagnostics::EngineFailureCode;
+use crate::event_path::EventPath;
 use crate::policy_content::Correction;
 use crate::policy_content::{ContentState, LifecycleContent};
 use crate::policy_engine::{PolicyFinding, PolicyOutcome};
@@ -102,7 +103,7 @@ fn finding_with(path: &str, fix_available: bool) -> PolicyFinding {
     return PolicyFinding {
         code: FINAL_NEWLINE_CODE,
         message: String::from(FINAL_NEWLINE_MESSAGE),
-        path: Some(String::from(path)),
+        path: Some(EventPath::from_git_bytes(path.as_bytes())),
         location: None,
         fix_available,
     };
@@ -220,6 +221,7 @@ fn the_check_reports_each_noncanonical_text_file() {
         PolicyOutcome::Failed {
             code: EngineFailureCode::ContentUnavailable,
             message: String::from("the scripted facts prepare no candidates"),
+            path: None,
         }
     );
     // A candidate whose bytes vanished fails the policy instead of being skipped.

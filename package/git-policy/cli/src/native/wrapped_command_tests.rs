@@ -14,6 +14,8 @@ use super::{WrappedOutcome, run_wrapped_command};
 use crate::command_test_support::os_arguments;
 use crate::config_file::CONFIG_FILE_NAME;
 use crate::diagnostics::EngineFailureCode;
+/// The event form of a pathname.
+use crate::event_path::EventPath;
 use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
 use crate::policy_content::LifecycleContent;
 use crate::policy_events::{FindingEvent, PolicyEvent, render_policy_events};
@@ -665,7 +667,7 @@ fn add_findings_come_from_what_the_add_would_stage() {
         severity: Severity::Warn,
         code: "noncanonical-final-newline",
         message: String::from("Non-empty text file must end with exactly one LF byte."),
-        path: Some(String::from("a.txt")),
+        path: Some(EventPath::from_git_bytes("a.txt".as_bytes())),
         location: None,
         fix_available: false,
     });
@@ -685,7 +687,7 @@ fn add_findings_come_from_what_the_add_would_stage() {
         severity: Severity::Error,
         code: "root-context-forbidden",
         message: String::from("Root CONTEXT.md is forbidden; read source code directly."),
-        path: Some(String::from("CONTEXT.md")),
+        path: Some(EventPath::from_git_bytes("CONTEXT.md".as_bytes())),
         location: None,
         fix_available: false,
     });

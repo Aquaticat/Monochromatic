@@ -196,6 +196,9 @@ pub mod policy_trigger;
 /// Policy events and their JSON Lines rendering.
 pub mod policy_events;
 
+/// A pathname as events report it: text, plus base64 `pathBytes` when it is not UTF-8.
+pub mod event_path;
+
 /// Ordered policy execution for one lifecycle point.
 pub mod policy_engine;
 

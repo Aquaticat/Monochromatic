@@ -16,6 +16,8 @@ use super::candidate_object::CandidateMode;
 use super::candidate_record::CandidateChange;
 /// Import the candidate and version types.
 use super::candidate_version::{Candidate, CandidateVersion};
+/// Import the event form of a pathname.
+use super::event_path::EventPath;
 /// Import the lifecycle's candidates and the correction a fix applies.
 use super::policy_content::{ContentState, Correction, LifecycleContent};
 /// Import the finding and outcome types of a check.
@@ -153,8 +155,8 @@ fn is_checked(candidate: &Candidate) -> bool {
     return !is_final_newline_excluded(candidate.path.as_slice());
 }
 
-/// What: The finding for one candidate. `String::from_utf8_lossy` renders the pathname
-///       as text, replacing bytes that are not UTF-8.
+/// What: The finding for one candidate. `EventPath::from_git_bytes` renders the pathname
+///       as text, replacing bytes that are not UTF-8, and keeps such bytes exactly.
 /// Why:  The finding names the file the person must change, and says whether this
 ///       lifecycle proposed the correction.
 ///
@@ -166,7 +168,7 @@ fn finding(candidate: &Candidate, fix_available: bool) -> PolicyFinding {
     return PolicyFinding {
         code: FINAL_NEWLINE_CODE,
         message: String::from(FINAL_NEWLINE_MESSAGE),
-        path: Some(String::from_utf8_lossy(candidate.path.as_slice()).into_owned()),
+        path: Some(EventPath::from_git_bytes(candidate.path.as_slice())),
         location: None,
         fix_available,
     };

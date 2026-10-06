@@ -14,6 +14,8 @@
 use super::candidate_record::CandidateChange;
 /// Import the version type.
 use super::candidate_version::CandidateVersion;
+/// Import the event form of a pathname.
+use super::event_path::EventPath;
 /// Import the lifecycle's candidates.
 use super::policy_content::{ContentState, LifecycleContent};
 /// Import the finding and outcome types of a check.
@@ -59,7 +61,8 @@ pub fn check_root_context<F: RepositoryFacts>(
         return PolicyOutcome::Findings(vec![PolicyFinding {
             code: ROOT_CONTEXT_CODE,
             message: String::from(ROOT_CONTEXT_MESSAGE),
-            path: Some(String::from(ROOT_CONTEXT_PATH)),
+            // The fixed name is UTF-8, so it is its own exact form.
+            path: Some(EventPath::from_git_bytes(ROOT_CONTEXT_PATH.as_bytes())),
             location: None,
             fix_available: false,
         }]);

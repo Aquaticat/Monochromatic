@@ -136,6 +136,8 @@ fn fact_unavailable(message: String) -> PolicyOutcome {
     return PolicyOutcome::Failed {
         code: EngineFailureCode::ContentUnavailable,
         message,
+        // `None`: a repository fact is about no single file.
+        path: None,
     };
 }
 

@@ -12,6 +12,8 @@
 use super::{ROOT_CONTEXT_CODE, ROOT_CONTEXT_MESSAGE, check_root_context};
 use crate::candidate_prediction::CandidateRequest;
 use crate::diagnostics::EngineFailureCode;
+/// The event form of a pathname.
+use crate::event_path::EventPath;
 use crate::policy_content::{ContentState, LifecycleContent};
 use crate::policy_engine::{PolicyFinding, PolicyOutcome};
 use crate::policy_test_support::{ScriptedFacts, scripted_facts};
@@ -43,7 +45,7 @@ fn only_a_top_level_context_file_entering_the_index_is_forbidden() {
     let forbidden: PolicyOutcome = PolicyOutcome::Findings(vec![PolicyFinding {
         code: ROOT_CONTEXT_CODE,
         message: String::from(ROOT_CONTEXT_MESSAGE),
-        path: Some(String::from("CONTEXT.md")),
+        path: Some(EventPath::from_git_bytes("CONTEXT.md".as_bytes())),
         location: None,
         fix_available: false,
     }]);
@@ -82,6 +84,7 @@ fn only_a_top_level_context_file_entering_the_index_is_forbidden() {
         PolicyOutcome::Failed {
             code: EngineFailureCode::ContentUnavailable,
             message: String::from("the scripted facts prepare no candidates"),
+            path: None,
         }
     );
     remove(root.as_path());

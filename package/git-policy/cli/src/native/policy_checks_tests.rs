@@ -144,6 +144,7 @@ fn require_root_rejects_a_directory_below_the_top_level() {
             PolicyOutcome::Failed {
                 code: EngineFailureCode::ContentUnavailable,
                 message: String::from("git could not be asked"),
+                path: None,
             },
             location_only()
         )
@@ -230,6 +231,7 @@ fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
             PolicyOutcome::Failed {
                 code: EngineFailureCode::ContentUnavailable,
                 message: String::from("git could not be asked"),
+                path: None,
             },
             location_only()
         )
@@ -330,6 +332,7 @@ fn branch_worktree_rejects_creation_and_guessed_creation() {
             PolicyOutcome::Failed {
                 code: EngineFailureCode::ContentUnavailable,
                 message: String::from("no git"),
+                path: None,
             },
             asked
         )
@@ -362,6 +365,7 @@ fn unprepared() -> PolicyOutcome {
     return PolicyOutcome::Failed {
         code: EngineFailureCode::ContentUnavailable,
         message: String::from("the scripted facts prepare no candidates"),
+        path: None,
     };
 }
 

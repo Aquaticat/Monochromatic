@@ -180,6 +180,8 @@ pub fn candidate_failure(error: &CandidateError) -> PolicyOutcome {
         code: candidate_failure_code(error.failure),
         // `.clone()` copies the message the remembered failure keeps.
         message: error.message.clone(),
+        // `None`: the layer's failures name no candidate.
+        path: None,
     };
 }
 

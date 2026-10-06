@@ -13,6 +13,8 @@ use super::{
     render_policy_event, render_policy_events,
 };
 use crate::diagnostics::EngineFailureCode;
+/// The event form of a pathname.
+use crate::event_path::EventPath;
 use crate::policy_registry::{PolicyId, Severity};
 use crate::policy_trigger::Trigger;
 
@@ -45,7 +47,7 @@ fn finding_has_the_incumbent_shape() {
         severity: Severity::Warn,
         code: "match",
         message: String::from("found"),
-        path: Some(String::from("dir/a.txt")),
+        path: Some(EventPath::from_git_bytes("dir/a.txt".as_bytes())),
         location: Some(FindingLocation {
             byte_start: 3,
             byte_end: 18_446_744_073_709_551_615,
@@ -121,7 +123,7 @@ fn engine_failure_prints_optional_fields_in_order() {
                 message: String::from("unreadable"),
                 trigger: Some(Trigger::DirectFix),
                 policy: Some(PolicyId::LinkedWorktreeOnly),
-                path: Some(String::from("a b")),
+                path: Some(EventPath::from_git_bytes("a b".as_bytes())),
             }
         ),
         "{\"schemaVersion\":1,\"sequence\":7,\"type\":\"engine-failure\",\"code\":\"content-unavailable\",\
@@ -142,7 +144,12 @@ fn engine_failure_prints_optional_fields_in_order() {
             None,
             ",\"policyId\":\"final-newline\"}\n",
         ),
-        (None, None, Some(String::from("p")), ",\"path\":\"p\"}\n"),
+        (
+            None,
+            None,
+            Some(EventPath::from_git_bytes(b"p")),
+            ",\"path\":\"p\"}\n",
+        ),
     ] {
         let rendered: String = render_policy_event(
             0,
@@ -172,7 +179,10 @@ fn fix_summary_has_the_incumbent_shape() {
             &PolicyEvent::FixSummary {
                 trigger: Trigger::DirectFix,
                 passes: 2,
-                changed_paths: vec![String::from("a.txt"), String::from("dir/b \"c\".md")],
+                changed_paths: vec![
+                    EventPath::from_git_bytes(b"a.txt"),
+                    EventPath::from_git_bytes(b"dir/b \"c\".md"),
+                ],
             }
         ),
         "{\"schemaVersion\":1,\"sequence\":3,\"type\":\"fix-summary\",\"trigger\":\"direct-fix\",\
@@ -184,7 +194,7 @@ fn fix_summary_has_the_incumbent_shape() {
             &PolicyEvent::FixSummary {
                 trigger: Trigger::PreForward,
                 passes: 0,
-                changed_paths: Vec::<String>::new(),
+                changed_paths: Vec::<EventPath>::new(),
             }
         ),
         "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summary\",\"trigger\":\"pre-forward\",\
@@ -197,7 +207,7 @@ fn fix_summary_has_the_incumbent_shape() {
 fn hostile_text_cannot_leave_its_field() {
     let mut hostile: FindingEvent = finding(Severity::Error);
     hostile.message = String::from("a\"}\n{\"type\":\"x\"\\");
-    hostile.path = Some(String::from("p\n\"q\"\u{1}"));
+    hostile.path = Some(EventPath::from_git_bytes("p\n\"q\"\u{1}".as_bytes()));
     let rendered: String = render_policy_event(0, &PolicyEvent::Finding(hostile));
     assert_eq!(
         rendered,
@@ -271,6 +281,91 @@ fn only_errors_and_core_findings_block() {
     assert!(!event_blocks(&PolicyEvent::FixSummary {
         trigger: Trigger::DirectFix,
         passes: 1,
-        changed_paths: Vec::<String>::new(),
+        changed_paths: Vec::<EventPath>::new(),
     }));
+}
+
+/// A finding about a name that is not UTF-8 prints the readable `path` and then its exact
+/// bytes as base64 `pathBytes`; a UTF-8 name, multi-byte characters included, prints none.
+#[test]
+fn a_finding_about_a_name_that_is_not_utf8_adds_path_bytes() {
+    let mut latin: FindingEvent = finding(Severity::Warn);
+    latin.path = Some(EventPath::from_git_bytes(b"caf\xe9.txt"));
+    assert_eq!(
+        render_policy_event(0, &PolicyEvent::Finding(latin)),
+        "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\
+         \"policyId\":\"require-root\",\"severity\":\"warn\",\"code\":\"require-root/not-at-root\",\
+         \"message\":\"Not at root\",\"path\":\"caf\u{fffd}.txt\",\"pathBytes\":\"Y2Fm6S50eHQ=\",\
+         \"fix\":\"none\"}\n"
+    );
+    let mut utf8: FindingEvent = finding(Severity::Warn);
+    utf8.path = Some(EventPath::from_git_bytes("café.txt".as_bytes()));
+    let rendered: String = render_policy_event(0, &PolicyEvent::Finding(utf8));
+    assert!(
+        rendered.contains(",\"path\":\"café.txt\",\"fix\""),
+        "{rendered}"
+    );
+    assert!(!rendered.contains("pathBytes"), "{rendered}");
+}
+
+/// An engine failure about one file adds `pathBytes` after `path` the same way.
+#[test]
+fn an_engine_failure_about_a_name_that_is_not_utf8_adds_path_bytes() {
+    assert_eq!(
+        render_policy_event(
+            1,
+            &PolicyEvent::EngineFailure {
+                code: EngineFailureCode::PolicyIncomplete,
+                message: String::from("m"),
+                trigger: Some(Trigger::DirectCheck),
+                policy: Some(PolicyId::MarkdownAutofix),
+                path: Some(EventPath::from_git_bytes(b"\xff\xfe.md")),
+            }
+        ),
+        "{\"schemaVersion\":1,\"sequence\":1,\"type\":\"engine-failure\",\"code\":\"policy-incomplete\",\
+         \"message\":\"m\",\"trigger\":\"direct-check\",\"policyId\":\"markdown/autofix\",\
+         \"path\":\"\u{fffd}\u{fffd}.md\",\"pathBytes\":\"//4ubWQ=\"}\n"
+    );
+}
+
+/// One rendered fix summary of one changed pass over `paths`.
+fn render_summary(paths: Vec<EventPath>) -> String {
+    return render_policy_event(
+        0,
+        &PolicyEvent::FixSummary {
+            trigger: Trigger::DirectFix,
+            passes: 1,
+            changed_paths: paths,
+        },
+    );
+}
+
+/// A fix summary whose paths are all UTF-8 has no byte list; one that holds a name that is
+/// not UTF-8 lists the bytes of every path, in the same order, so indices line up.
+#[test]
+fn a_fix_summary_lists_every_path_s_bytes_once_one_is_not_utf8() {
+    assert_eq!(
+        render_summary(vec![
+            EventPath::from_git_bytes(b"a.txt"),
+            EventPath::from_git_bytes(b"caf\xe9.txt"),
+            EventPath::from_git_bytes("é.md".as_bytes()),
+        ]),
+        "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summary\",\"trigger\":\"direct-fix\",\
+         \"passes\":1,\"changedPaths\":[\"a.txt\",\"caf\u{fffd}.txt\",\"é.md\"],\
+         \"changedPathBytes\":[\"YS50eHQ=\",\"Y2Fm6S50eHQ=\",\"w6kubWQ=\"]}\n"
+    );
+    let exact: String = render_summary(vec![
+        EventPath::from_git_bytes(b"a.txt"),
+        EventPath::from_git_bytes("é.md".as_bytes()),
+    ]);
+    assert!(!exact.contains("changedPathBytes"), "{exact}");
+    // The last path alone not being UTF-8 is enough.
+    let last: String = render_summary(vec![
+        EventPath::from_git_bytes(b"a.txt"),
+        EventPath::from_git_bytes(b"z\xff"),
+    ]);
+    assert!(
+        last.ends_with(",\"changedPathBytes\":[\"YS50eHQ=\",\"ev8=\"]}\n"),
+        "{last}"
+    );
 }

@@ -20,6 +20,8 @@ use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::config_schema::PolicyConfig;
 use crate::diagnostics::EngineFailureCode;
+/// The event form of a pathname.
+use crate::event_path::EventPath;
 use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
 use crate::policy_content::{Correction, LifecycleContent};
 use crate::policy_convergence::{
@@ -62,9 +64,9 @@ fn fix_checks(repo: &Path) -> ShippedChecks<ScriptedFacts> {
 
 /// The fix summary of `passes` changed passes over these paths.
 fn summary(passes: u64, paths: &[&str]) -> PolicyEvent {
-    let mut changed_paths: Vec<String> = Vec::new();
+    let mut changed_paths: Vec<EventPath> = Vec::new();
     for path in paths {
-        changed_paths.push(String::from(*path));
+        changed_paths.push(EventPath::from_git_bytes(path.as_bytes()));
     }
     return PolicyEvent::FixSummary {
         trigger: Trigger::DirectFix,
@@ -345,7 +347,7 @@ fn every_ending_reports_what_the_installed_wrapper_reports() {
             severity: Severity::Error,
             code: "noncanonical-final-newline",
             message: String::from("message"),
-            path: Some(String::from("a.txt")),
+            path: Some(EventPath::from_git_bytes("a.txt".as_bytes())),
             location: None,
             fix_available: false,
         })],

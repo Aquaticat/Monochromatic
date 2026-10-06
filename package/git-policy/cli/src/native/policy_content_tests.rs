@@ -42,6 +42,7 @@ fn not_prepared() -> PolicyOutcome {
         message: String::from(
             "cli-git read candidate content before the candidates were prepared; this is a defect in cli-git.",
         ),
+        path: None,
     };
 }
 
@@ -121,7 +122,7 @@ fn candidates_are_prepared_once_and_shared() {
     )
     .expect("remove the rewritten loose object");
     match fresh.bytes(&version.candidates()[0]) {
-        Err(PolicyOutcome::Failed { code, message }) => {
+        Err(PolicyOutcome::Failed { code, message, .. }) => {
             assert_eq!(code, EngineFailureCode::ContentUnavailable);
             assert!(!message.contains("a.txt"), "{message}");
         }
@@ -142,6 +143,7 @@ fn a_failed_preparation_is_remembered() {
     let expected: PolicyOutcome = PolicyOutcome::Failed {
         code: EngineFailureCode::ContentUnavailable,
         message: String::from("the scripted facts prepare no candidates"),
+        path: None,
     };
     for _attempt in 0..2 {
         assert_eq!(
@@ -178,6 +180,7 @@ fn candidate_failures_carry_the_code_of_their_cause() {
         PolicyOutcome::Failed {
             code: EngineFailureCode::ContentUnavailable,
             message: String::from("listing"),
+            path: None,
         }
     );
     assert_eq!(
@@ -188,6 +191,7 @@ fn candidate_failures_carry_the_code_of_their_cause() {
         PolicyOutcome::Failed {
             code: EngineFailureCode::PolicyIncomplete,
             message: String::from("stale"),
+            path: None,
         }
     );
 }

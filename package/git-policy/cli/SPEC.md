@@ -1335,10 +1335,17 @@ export type FindingEvent = EventBase & {
   readonly code: string;
   readonly message: string;
   readonly path?: RepositoryPath;
+  readonly pathBytes?: string;
   readonly location?: FindingLocation;
   readonly fix: 'none' | 'available';
 };
 ```
+
+`path` is text.
+A Git pathname that is not valid UTF-8 appears in `path` with each invalid sequence replaced by U+FFFD,
+and `pathBytes` then carries the exact pathname bytes as standard padded base64 (RFC 4648 section 4).
+`pathBytes` is absent whenever `path` is the exact name.
+The incumbent TypeScript wrapper stops on such a name and never emits the field.
 
 `code` is the complete `<policy-id>/<policy-local-code>` value.
 Patch bytes are never emitted.
@@ -1433,10 +1440,15 @@ export type FixSummaryEvent = EventBase & {
   readonly trigger: 'pre-forward' | 'direct-fix';
   readonly passes: number;
   readonly changedPaths: readonly RepositoryPath[];
+  readonly changedPathBytes?: readonly string[];
 };
 ```
 
 `changedPaths` are unique and sorted by Git path byte order.
+When any changed pathname is not valid UTF-8,
+`changedPathBytes` lists the base64 bytes of every changed path,
+entry for entry in the same order as `changedPaths`;
+otherwise it is absent.
 The event is absent when no bytes changed.
 
 ### Engine failure event
@@ -1466,9 +1478,11 @@ export type EngineFailureEvent = EventBase & {
   readonly trigger?: PolicyTrigger;
   readonly policyId?: string;
   readonly path?: RepositoryPath;
+  readonly pathBytes?: string;
 };
 ```
 
+`path` and `pathBytes` follow the finding event's rules.
 One causal engine-failure event is emitted for an engine exit.
 `core-incomplete` means a fixed transform failed unexpectedly rather than producing an expected core finding.
 `index-lock-unproven-owner` means a foreign `index.lock` with a dead or unproven owner outlasted

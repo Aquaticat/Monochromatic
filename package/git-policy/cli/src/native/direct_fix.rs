@@ -18,6 +18,8 @@
 use super::diagnostics::EngineFailureCode;
 /// Import the change list a converged fix installs, and the installer.
 use super::direct_fix_install::{InstallChange, install_corrections};
+/// Import the event form of a pathname.
+use super::event_path::EventPath;
 /// Import the shipped checks, whose content state carries the corrections.
 use super::policy_checks::ShippedChecks;
 /// Import one proposed correction.
@@ -237,9 +239,9 @@ pub fn settled_fix<F: RepositoryFacts>(
             message.as_str(),
         );
     }
-    let mut changed_paths: Vec<String> = Vec::new();
+    let mut changed_paths: Vec<EventPath> = Vec::new();
     for change in &changes {
-        changed_paths.push(String::from_utf8_lossy(change.path.as_slice()).into_owned());
+        changed_paths.push(EventPath::from_git_bytes(change.path.as_slice()));
     }
     let mut events: Vec<PolicyEvent> = pass.events;
     events.push(PolicyEvent::FixSummary {
