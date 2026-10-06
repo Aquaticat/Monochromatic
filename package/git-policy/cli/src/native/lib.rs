@@ -254,6 +254,18 @@ pub mod dependent_version_policy;
 #[cfg(test)]
 mod dependent_version_test_support;
 
+/// Differential fixture reading and canonical results; never in the release build.
+#[cfg(test)]
+mod dependent_version_fixture_json;
+
+/// One differential case evaluated by the native planner; never in the release build.
+#[cfg(test)]
+mod dependent_version_fixture_cases;
+
+/// The native planner against the incumbent's recorded results; never in the release build.
+#[cfg(test)]
+mod dependent_version_differential_tests;
+
 /// The shipped policies as checks over rule cores and repository facts.
 pub mod policy_checks;
 
