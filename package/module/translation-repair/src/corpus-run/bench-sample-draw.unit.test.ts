@@ -47,6 +47,7 @@ import {
 import {
   type CorpusPin,
   sampleBenchSlices,
+  StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 import { runKeyless, } from '../child-environment.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
@@ -292,7 +293,7 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
       },
     }),
     it({
-      name: 'REFUSES a pinned corpus holding no entry at all, since a bench drawn over nothing would '
+      name: 'REFUSES AS STATED a pinned corpus holding no entry at all, since a bench drawn over nothing would '
         + 'find every width indistinguishable and print that as a result',
       fn: async () => {
         /**
@@ -310,8 +311,41 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
           },);
         },);
 
-        expect(refusal,).toBeInstanceOf(Error,);
-        expect((refusal as Error).message,).toContain('bench sample found no slices in the pinned corpus',);
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect(String(refusal,),).toBe(
+          'StatedRefusalError: the corpus at the pin yields no slice to sample: 0 entries are listed there and '
+            + 'none could be sliced, so a bench drawn over it would compare on no work; check the clone and the '
+            + 'commit this run reads',
+        );
+      },
+    },),
+
+    it({
+      name: 'REFUSES AS STATED a pinned corpus whose one entry has no English page, counting it in the singular',
+      fn: async () => {
+        /**
+         Clone holding one entry with an original and no translation.
+         */
+        await using pin = await clonedCorpusHolding({
+          files: { [`people/${HALF_ENTRY_ID}/page.md`]: SOURCE_PAGE, },
+        },);
+
+        /**
+         What the draw said about it.
+         */
+        const refusal = await rejectionOf(async function overAHalfWrittenCorpus() {
+          await sampleBenchSlices({
+            count: 1,
+            pin,
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect(String(refusal,),).toBe(
+          'StatedRefusalError: the corpus at the pin yields no slice to sample: 1 entry is listed there and '
+            + 'none could be sliced, so a bench drawn over it would compare on no work; check the clone and the '
+            + 'commit this run reads',
+        );
       },
     },),
 
