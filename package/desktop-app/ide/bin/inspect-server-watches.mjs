@@ -267,12 +267,15 @@ for (const item of cases) {
   const events = stdout.split('\n').filter(Boolean).map(line => JSON.parse(line));
   const ready = events.find(event => event.step === 1)?.result?.ready === true;
   // What each labelled step returned: `within` for waits, `folders` for the folder count.
-  const outcome = label => events.find(event => event.step === steps.findIndex(step => step.label === label))?.result;
+  const stepEvent = label => events.find(event => event.step === steps.findIndex(step => step.label === label));
+  const outcome = label => stepEvent(label)?.result;
+  // The change step records when the file was written; the updated step records when the wait ended.
+  const updatedAfter = stepEvent('updated')?.result?.within ? stepEvent('updated').ms - stepEvent('change').ms : null;
   const processes = [...peaks.values()].sort((left, right) => right.watches - left.watches);
   const totalWatches = processes.reduce((sum, row) => sum + row.watches, 0);
-  const record = { name: item.name, exit: status, ready, total_watches: totalWatches, processes, watched_kinds: kinds, first_watch_seconds: firstWatchSeconds, folders: outcome('folders'), baseline: outcome('baseline'), updated: outcome('updated') };
+  const record = { name: item.name, exit: status, ready, total_watches: totalWatches, processes, watched_kinds: kinds, first_watch_seconds: firstWatchSeconds, folders: outcome('folders'), baseline: outcome('baseline'), updated: outcome('updated'), updated_after_ms: updatedAfter };
   summary.cases.push(record);
-  console.log(JSON.stringify({ name: record.name, exit: status, ready, total_watches: totalWatches, processes: processes.filter(row => row.instances > 0).map(row => row.comm + '=' + row.watches + ' watches/' + row.instances + ' instances').join(', '), watched_kinds: kinds, folders: record.folders, baseline_within: record.baseline?.within ?? null, updated_within: record.updated?.within ?? null }));
+  console.log(JSON.stringify({ name: record.name, exit: status, ready, total_watches: totalWatches, processes: processes.filter(row => row.instances > 0).map(row => row.comm + '=' + row.watches + ' watches/' + row.instances + ' instances').join(', '), watched_kinds: kinds, folders: record.folders, baseline_within: record.baseline?.within ?? null, updated_within: record.updated?.within ?? null, updated_after_ms: updatedAfter }));
 }
 writeFileSync(join(results, 'results.json'), JSON.stringify(summary, null, 2));
 console.log('directories: ' + JSON.stringify(summary.directories));
