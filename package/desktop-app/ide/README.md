@@ -198,6 +198,7 @@ and the rendered columns of every state.
 each edge of the zone,
 and each keyboard-focus mark in a disposable copy
 and checks that its named test fails.
+The divider's accessible slider is tested under [Accessibility checks](#accessibility-checks).
 
 ## Combined search
 
@@ -530,9 +531,91 @@ and check that the named tests fail.
 Input-method composition was not exercised:
 the toolkit's public window events carry no composition event,
 and the nested compositor provides no input method.
-Accessible properties were read from the running application
-through the toolkit's inspection server during the native frame captures;
-see `design/README.md`.
+The role,
+label,
+value,
+placeholder,
+and actions of both boxes and both clear controls are tested under [Accessibility checks](#accessibility-checks).
+
+## Accessibility checks
+
+`test:native` reads what assistive tools are given through Slint's element handles
+(`ElementHandle` of the test-only dependency `i-slint-backend-testing`),
+the same accessible properties and actions the toolkit hands to the platform accessibility bridge.
+The user allowed the dependency on 2026-10-06.
+It is internal to Slint and has no semver guarantee,
+so `Cargo.toml` requires exactly `=1.18.1`,
+the resolved `slint` version;
+both must be raised together.
+It was already in `Cargo.lock` through `slint`,
+so adding it added no package.
+
+An element is found by its accessible label,
+and exactly one element may carry it.
+A row is found by its role and label inside its own list,
+because each row's text is also an element with the row's name,
+and the tree and the search results can list the same file name.
+A handle does not keep its element alive,
+so a row is looked up again after the list changes.
+
+- `src/native/accessible_box_tests.rs`:
+  the find box and the search box are `text-input` elements with their label,
+  placeholder,
+  and value,
+  and the find box's description is the match count (`Match 1 of 2`);
+  setting the value runs find or search as typing does.
+  Each clear control is a `button` of at least 48 px by 48 px that is offered only while the box has text,
+  and its default action empties the box,
+  removes the count or the results,
+  and keeps keyboard focus in the box.
+- `src/native/accessible_divider_tests.rs`:
+  the divider is a horizontal `slider` named `Sidebar width`
+  that reports the width,
+  160 px and the widest width as its bounds,
+  and a 16 px step.
+  The increment,
+  decrement,
+  and set-value actions,
+  and Left,
+  Right,
+  Home,
+  and End with keyboard focus,
+  change the value it reports;
+  a set value above the widest width reports the widest.
+- `src/native/accessible_list_tests.rs`:
+  the tree,
+  the search results,
+  and the location list report their role,
+  name,
+  and row count.
+  Every row is a selectable `list-item` with its name and position.
+  In the tree the open file's row is the selected one,
+  and opening another file through its row's default action moves the selection;
+  a directory row is expandable,
+  and its expand action expands it.
+  In the search results and the location list the selected row follows Down and Up,
+  and a location row's default action chooses it.
+
+Each test has a guard-removal control,
+run in a disposable copy,
+that was observed to fail with its guard removed:
+`a11y-set-value-edits` and `a11y-clear-role` in `inspect:find-guards`,
+`a11y-clear-default-action` and `a11y-result-selected` in `inspect:search-guards`,
+`a11y-divider-increment` and `a11y-tree-row-selected` in `inspect:sidebar-guards`,
+and `a11y-location-selected` in `inspect:language-navigation-guards`.
+
+What these checks do not cover:
+
+- The platform bridge itself (AT-SPI on Linux) and a screen reader's speech:
+  element handles read the toolkit's side of the bridge.
+- Duplicated names:
+  each tree,
+  search,
+  and location row has a text child with the row's own name and the `text` role,
+  and so does the location list's title.
+  A screen reader may read such a name twice.
+- The search box has no description;
+  the result count is the results list's row count.
 
 ## Language module
 
