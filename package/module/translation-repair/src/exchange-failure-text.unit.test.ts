@@ -13,9 +13,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  exchangeFailureLogText,
   exchangeFailureText,
   NoProviderForModelError,
   SyntheticHttpError,
+  SyntheticRequestTooLargeError,
 } from '../dist/final/node/index.mjs';
 import {
   quotingFailure,
@@ -60,6 +62,60 @@ await describe({
       fn: async () => {
         expect(quotingFailure().message.includes(WHISKER_KEY,),).toBe(true,);
         expect(exchangeFailureText({ error: quotingFailure(), },),).toBe('refused by TypeError',);
+      },
+    },),
+
+    it({
+      name: 'LOG TEXT ADDS THE PROVIDER\'S WORDS labelled as its own, quoted so a line break or a quote cannot end '
+        + 'the line or the quotation early',
+      fn: async () => {
+        /**
+         The words as one quoted line, every control character and line separator written as an escape.
+         */
+        const quoted = String.raw`"the cat\nsaid \"no\"\u2028and\u2029left\u0085\u001b[0m"`;
+        expect(exchangeFailureLogText({
+          error: new SyntheticHttpError({
+            status: 400,
+            bodyText: 'the cat\nsaid "no"\u2028and\u2029left\u0085\u001B[0m',
+          },),
+        },),).toBe(
+          `refused by SyntheticHttpError with HTTP 400 (the provider said: ${quoted})`,
+        );
+      },
+    },),
+
+    it({
+      name: 'LOG TEXT ADDS THE PROVIDER\'S WORDS TO A MARKED SUBCLASS\'S OWN SENTENCE, the words its message withholds',
+      fn: async () => {
+        /**
+         Refusal whose message withholds the gateway's words and whose excerpt keeps them.
+         */
+        const failure = new SyntheticRequestTooLargeError({
+          status: 400,
+          bodyText: 'cat gateway: could not parse the body',
+          bodyBytes: 5_000_000,
+        },);
+        expect(exchangeFailureLogText({ error: failure, },),).toBe(
+          `${exchangeFailureText({ error: failure, },)} (the provider said: "cat gateway: could not parse the body")`,
+        );
+      },
+    },),
+
+    it({
+      name: 'LOG TEXT IS THE PLAIN TEXT where the provider said nothing: a blank excerpt, another class, or a thrown value',
+      fn: async () => {
+        /**
+         Failure whose body held only whitespace.
+         */
+        const blank = new SyntheticHttpError({ status: 502, bodyText: ' \n ', },);
+        /**
+         Failure whose body held only a zero-width space, which shows a reader nothing.
+         */
+        const invisible = new SyntheticHttpError({ status: 502, bodyText: '\u200B', },);
+        expect(exchangeFailureLogText({ error: blank, },),).toBe(exchangeFailureText({ error: blank, },),);
+        expect(exchangeFailureLogText({ error: invisible, },),).toBe(exchangeFailureText({ error: invisible, },),);
+        expect(exchangeFailureLogText({ error: quotingFailure(), },),).toBe('refused by TypeError',);
+        expect(exchangeFailureLogText({ error: 'a bare string', },),).toBe('refused by a thrown value that is not an Error',);
       },
     },),
 

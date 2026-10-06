@@ -5,7 +5,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { frontMatterRepairOutcome, } from './front-matter-repair.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
-import { exchangeFailureText, } from './exchange-failure-text.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import { cacheRefusalsOf, } from './repair-cache-gate.ts';
 import { repairChunk, } from './repair-chunk.ts';
 import type {
@@ -157,7 +157,7 @@ export async function buyRepairSlice(
       if (!signal.aborted)
         throw error;
       l.warn(
-        `chunk ${String(sliceIndex,)}: abandoned by the caller's abort (${exchangeFailureText({ error, },)})`,
+        `chunk ${String(sliceIndex,)}: abandoned by the caller's abort (${exchangeFailureLogText({ error, },)})`,
       );
       throw signal.reason;
     }

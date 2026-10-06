@@ -1,3 +1,4 @@
+import type { NamingError, } from '../refusal-text.ts';
 import type { WouldShipSource, } from './would-ship-text.ts';
 
 //region Publish defects
@@ -71,9 +72,11 @@ export type PublishCheckStep = Readonly<{
   check: PublishCheck;
 
   /**
-   Class the check throws when the page fails it.
+   Class the check throws when the page fails it, typed as one that declares
+   its message safe to repeat, since a defect carries that message into the
+   report.
    */
-  refusal: abstract new (...parameters: never[]) => Error;
+  refusal: abstract new (...parameters: never[]) => NamingError;
 
   /**
    Runs the check, throwing its refusal on a failure.

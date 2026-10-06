@@ -5,7 +5,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
-import { exchangeFailureText, } from './exchange-failure-text.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import {
   TranslateAbsenceError,
@@ -175,7 +175,7 @@ export async function attemptTranslateSlice(
     if (signal.aborted) {
       l.warn(
         `slice ${String(slice.target
-          .sliceIndex,)}: abandoned by the caller's abort (${exchangeFailureText({ error, },)})`,
+          .sliceIndex,)}: abandoned by the caller's abort (${exchangeFailureLogText({ error, },)})`,
       );
       throw signal.reason;
     }

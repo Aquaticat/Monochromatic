@@ -5,7 +5,7 @@ import {
   shortestHold,
   waitOutHold,
 } from '../budget-hold-wait.ts';
-import { exchangeFailureText, } from '../exchange-failure-text.ts';
+import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { BudgetView, } from '../provider-budget.ts';
 import {
   PROVIDER_ORDER,
@@ -123,7 +123,7 @@ async function readDrynessPastShortBench(
     try {
       return await client.providerDryness({ signal, },);
     } catch (error) {
-      l.warn(`judge seats: the budget view could not be read (${exchangeFailureText({ error, },)}); seating the full bench`,);
+      l.warn(`judge seats: the budget view could not be read (${exchangeFailureLogText({ error, },)}); seating the full bench`,);
       return providerRecord({ of: wetWhenUnread, },);
     }
   }

@@ -3,7 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from '../chat-contract.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
-import { exchangeFailureText, } from '../exchange-failure-text.ts';
+import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { TrialSlice, } from './window-trial-draw.ts';
 import type { WindowTrialRow, } from './window-trial-ledger.ts';
@@ -136,7 +136,7 @@ export async function runPick(
   catch (error) {
     l.warn(
       `${entryId}/${String(pick.sliceIndex,)} (${pick.sliceClass}): refused, ${
-        exchangeFailureText({ error, },)
+        exchangeFailureLogText({ error, },)
       }`,
     );
     return { kind: 'refused', };

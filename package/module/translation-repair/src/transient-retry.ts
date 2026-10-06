@@ -6,7 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { contextRoot, } from './log-context.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
-import { exchangeFailureText, } from './exchange-failure-text.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import { isStreamBoundCut, } from './stream-bound.ts';
 import { isSelfEndedStream, } from './stream-overrun.ts';
 import { deliveredCharsOf, } from './stream-delivered-chars.ts';
@@ -554,7 +554,7 @@ export async function exchangeWithRetry(
      Failure named in the retry log line.
      */
     const failureLabel = reply === undefined
-      ? `transport failure: ${exchangeFailureText({ error: thrown, },)}`
+      ? `transport failure: ${exchangeFailureLogText({ error: thrown, },)}`
       : `HTTP ${String(reply.status,)}`;
 
     /**

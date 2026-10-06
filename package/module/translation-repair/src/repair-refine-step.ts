@@ -4,7 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceCache, } from './slice-cache.ts';
-import { exchangeFailureText, } from './exchange-failure-text.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
 import {
   type RefinePhaseResult,
@@ -160,7 +160,7 @@ export async function refineSettledSlices(
     catch (error) {
       if (!signal.aborted)
         throw error;
-      l.warn(`refinement abandoned by the caller's abort (${exchangeFailureText({ error, },)})`,);
+      l.warn(`refinement abandoned by the caller's abort (${exchangeFailureLogText({ error, },)})`,);
       throw signal.reason;
     }
   })();

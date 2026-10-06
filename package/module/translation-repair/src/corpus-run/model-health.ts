@@ -3,7 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import { wholeOpening, } from '../code-points.ts';
 import { wordForCount, } from '../count-word.ts';
-import { exchangeFailureText, } from '../exchange-failure-text.ts';
+import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import {
   createRunClient,
   RUN_PER_CALL_TIMEOUT_MS,
@@ -178,14 +178,13 @@ async function reportModelHealth(): Promise<void> {
       // is running this.
       /**
        What was thrown, by class and HTTP status where the provider stated
-       one, never by a message: a runtime rejection for an unsendable header
-       quotes the key, and a status failure's message excerpts the provider's
-       body. Bounded so a marked class's long sentence cannot fill the report.
+       one, then the provider's own words labelled as its own (a probe exists
+       to show them), never by a message: a runtime rejection for an
+       unsendable header quotes the key. Not cut to a preview length, since a
+       cut would take the closing quote the words are delimited by; the words
+       are at most the excerpt bound the status failure was built with.
        */
-      const detail = wholeOpening({
-        text: exchangeFailureText({ error, },),
-        units: RAW_REPLY_PREVIEW_CHARS,
-      },);
+      const detail = exchangeFailureLogText({ error, },);
 
       unreachable.push(modelId,);
       // THE CLASS IS NAMED ONCE. `detail` already names it for every class

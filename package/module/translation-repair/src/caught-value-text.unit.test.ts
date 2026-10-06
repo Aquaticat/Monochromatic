@@ -120,9 +120,8 @@ const HELD: Readonly<Record<string, string>> = {
   'corpus-run/cap-census.ts#visit':
     'a directory listing failure printed to the terminal of the cap-census command; no provider is called',
   'corpus-run/cli-refusal.ts#framesOf':
-    'destructures the stack and keeps only the lines that begin with "at ", which drops the message line; a '
-    + 'message holding a line break followed by "at " would still print that line (file pending a change by '
-    + 'another agent; described in the report)',
+    'destructures the stack and the message, but the message is only searched for in the stack to find where its '
+    + 'header ends, and only the lines after that end are printed',
   'corpus-run/coverage-census-steps.ts#commandExit':
     'a child process failure whose message is the command line and exit code (nano-spawn result.js), the '
     + 'output going to a log file; no provider is called',
@@ -137,7 +136,8 @@ const HELD: Readonly<Record<string, string>> = {
   'corpus-run/pass-eligibility.ts#readSide':
     'reads the message of a CorpusReadError that isMissingCorpusObject narrowed, a marked class',
   'corpus-run/publish-defects.ts#defectOf':
-    'reads the message of the refusal class a check names; publish-fixed.ts passes only marked classes',
+    'reads the message of the refusal class a check names, which the step type holds to a class declaring '
+    + 'messageNamesOnly',
   'corpus-run/run-timing-report.ts#reportRunTiming':
     'reads the message of a NothingInFlightError, the only class the clause lets through, which declares it safe',
   'corpus-run/runner-closure.ts#readEntryText':
@@ -146,11 +146,6 @@ const HELD: Readonly<Record<string, string>> = {
     'printed to the terminal of a probe command whose operator owns the provider keys, not logged or stored',
   'corpus-run/window-trial-probe.ts#readPairTexts':
     'a missing-object corpus read narrowed by isMissingCorpusObject; the corpus is public',
-  'image-ocr.ts#askDeterministicReader':
-    'the deterministic reader is the local OCR tool run over a public-corpus picture; no provider is called',
-  'image-ocr.ts#readImageWithOcr':
-    'the local OCR tool run over a public-corpus picture, whose message quotes its own output; no provider is '
-    + 'called',
   'refusal-text.ts#refusalText':
     'reads the message only of a class that declares messageNamesOnly, which is what this function exists to do',
   'run-json-read.ts#parseRunJson':

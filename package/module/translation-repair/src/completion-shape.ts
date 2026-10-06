@@ -90,8 +90,10 @@ export class SyntheticHttpError extends Error {
   ) {
     // THE EXCERPT IS QUOTED INTO THE MESSAGE ON PURPOSE for this class, which
     // stays unmarked for that reason; a subclass that declares its message
-    // quote-free withholds it and keeps it on `bodyExcerpt` for the
-    // log alone.
+    // quote-free withholds it and keeps it on `bodyExcerpt`, which
+    // `exchangeFailureLogText` (`exchange-failure-text.ts`) reads for log
+    // lines alone; `provider-budget-refusal.ts` and
+    // `decision-context-refusal.ts` read it to classify a refusal.
     super(
       (excerpt === 'withheld')
         ? (summary ?? `provider API returned HTTP ${String(status,)}`)

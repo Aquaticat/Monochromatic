@@ -124,6 +124,7 @@ const MARKED_CLASSES: readonly string[] = [
   'LaneSliceCoverageError',
   'LedgerShapeError',
   'LegacyPipelineError',
+  'LocalProgramFailedError',
   'MalformedCompletionError',
   'MalformedImageUriError',
   'MdxParseError',
@@ -180,6 +181,7 @@ const MARKED_CLASSES: readonly string[] = [
   'TranslationRepairInterruptedError',
   'TrialLedgerLineError',
   'TrialSliceRefusalError',
+  'TransportRequestFailedError',
   'UnfoldedTranslationError',
   'UnknownArtifactGenerationError',
   'UnmeasurableRepairError',
@@ -232,6 +234,9 @@ const NAMED_PARTS: Record<string, string> = {
   'String(census.total,)': 'count',
   'String(charsSeen,)': 'count',
   'String(partialText.length,)': 'count',
+  'program': 'name of a program this package runs, a constant of this package',
+  'failure.code': 'filesystem or spawn code, an upper-case word of at most 32 characters (localProgramFailureOf)',
+  'String(failure.exitCode,)': 'exit code of a program this package ran',
   'exchangeFailureText({ error: cause, },)': 'a caught cause through exchangeFailureText: the cause\'s own sentence '
     + 'where its class declares one safe, the class name otherwise, with the HTTP status a provider answered with',
   'wordForCount({ count: partialText.length, one: \'character\', many: \'characters\', },)':

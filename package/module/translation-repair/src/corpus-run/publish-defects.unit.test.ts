@@ -67,6 +67,11 @@ function sliceShipping(
  */
 class WhiskerRefusalError extends Error {
   /**
+   Declares its message safe to repeat, as every check's refusal class must.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    Names the check so the message is recognisable in a defect.
    */
   constructor() {
@@ -85,6 +90,11 @@ class WhiskerRefusalError extends Error {
  ```
  */
 class TailRefusalError extends Error {
+  /**
+   Declares its message safe to repeat, as every check's refusal class must.
+   */
+  readonly messageNamesOnly: true = true;
+
   /**
    Names the check so the message is recognisable.
    */
@@ -139,6 +149,21 @@ await describe({
           name: 'COLLECTS NOTHING for checks that pass, the control the collection rests on',
           fn: async () => {
             expect(publishDefects({ steps: [PASSING,], },),).toStrictEqual([],);
+          },
+        },),
+        it({
+          name: 'HOLDS THE REFUSAL CLASS TO A MARKED ONE BY ITS TYPE, since a defect repeats the refusal\'s message',
+          fn: async () => {
+            /**
+             Step naming a class that declares no safe message, which the compiler refuses.
+             */
+            const unmarked: PublishCheckStep = {
+              check: 'headings',
+              // @ts-expect-error a class that does not declare messageNamesOnly is no refusal a defect may repeat
+              refusal: RangeError,
+              run: function passes(): void {},
+            };
+            expect(unmarked.check,).toBe('headings',);
           },
         },),
         it({

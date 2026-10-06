@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import { exchangeFailureText, } from './exchange-failure-text.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 
 //region Twin memo
 // In-run memoization of slices asking the same question, safe under overlap.
@@ -164,7 +164,7 @@ export async function reuseTwinOrBuy<Settled, Bought,>(
         memo.delete(key,);
         l.warn(
           `twin memo: the buy for a shared key was abandoned (${
-            exchangeFailureText({ error, },)
+            exchangeFailureLogText({ error, },)
           }), so any twin waiting on it asks for itself`,
         );
         return { kind: 'nothing', };

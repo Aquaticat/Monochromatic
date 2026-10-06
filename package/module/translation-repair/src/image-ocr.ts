@@ -26,6 +26,11 @@ import {
   rethrowUnlessMissingPath,
 } from './missing-path-error.ts';
 import type { OcrReader, } from './image-reading-pair.ts';
+import {
+  LocalProgramFailedError,
+  localProgramFailureOf,
+  readerFailureText,
+} from './local-program-failure.ts';
 import { refusalText, } from './refusal-text.ts';
 
 //region Image OCR
@@ -667,10 +672,19 @@ export async function readImageWithOcr(
      Whether the tool is absent rather than unhappy, which are different
      problems for whoever reads the run: a spawn of a program not installed
      fails with `ENOENT`, a run that fails carries its exit code instead. Read
-     off the code, not the error's text, which carries the tool's own output.
+     off the code, not the error's text, which carries the tool's own output
+     and the paths it was handed.
+     */
+    const failure = new LocalProgramFailedError({
+      program: OCR_READER,
+      failure: localProgramFailureOf({ error, },),
+      cause: error,
+    },);
+    /**
+     Whether the reader is not installed, which names the reason the reading carries.
      */
     const missing = isMissingPathError({ error, },);
-    ol.warn(`${assetName}: ${OCR_READER} ${missing ? 'is not installed' : 'failed'} (${String(error,)})`,);
+    ol.warn(`${assetName}: ${refusalText({ error: failure, },)}`,);
     return {
       kind: 'unavailable',
       reason: missing ? 'ocr-tool-missing' : 'ocr-failed',
@@ -832,7 +846,7 @@ export async function askDeterministicReader(
     signal.throwIfAborted();
     l.warn(
       `${assetName}: the deterministic reader failed outright, so the models are asked without its gate (${
-        String(error,)
+        readerFailureText({ error, },)
       })`,
     );
     return {

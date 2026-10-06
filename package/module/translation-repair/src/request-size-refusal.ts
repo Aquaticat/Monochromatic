@@ -107,8 +107,8 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
       // THE GATEWAY'S OWN WORDS ARE KEPT OFF THIS MESSAGE. This class declares
       // its message quote-free, and a gateway that echoed request bytes would
       // otherwise print corpus text at every CLI boundary; the words
-      // stay on `bodyExcerpt` for the log, where the searchable byte position
-      // still is.
+      // stay on `bodyExcerpt`, which `exchangeFailureLogText` prints on the
+      // lost-voice log lines, where the searchable byte position still is.
       excerpt: 'withheld',
       summary: `Synthetic API refused a request body of ${String(bodyBytes,)} ${
         wordForCount({

@@ -79,7 +79,7 @@ export const CHECKER_REFERENCE_RULE: string = 'Cited references, when that block
  const encoded = jsonLine({ text: 'hunts\u2028at noon', },);
  ```
  */
-function jsonLine({ text, }: { readonly text: string; },): string {
+export function jsonLine({ text, }: { readonly text: string; },): string {
   return JSON.stringify(text,)
     .replaceAll(
       '\u0085',

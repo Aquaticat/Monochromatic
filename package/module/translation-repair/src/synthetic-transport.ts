@@ -1,8 +1,17 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import {
+  credentialsOfHeaders,
+  maskCredentials,
+} from './credential-mask.ts';
 import { drainBody, } from './stream-drain.ts';
+import { StreamCutShortError, } from './stream-cut.ts';
 import type { StreamWireFormat, } from './stream-wire-format.ts';
-import { armIdleGuard, } from './stream-idle-guard.ts';
+import {
+  armIdleGuard,
+  type IdleGuard,
+} from './stream-idle-guard.ts';
+import { TransportRequestFailedError, } from './transport-request-error.ts';
 
 //region Transport abstraction
 // The one seam between the client and the network: tests inject a fake transport
@@ -112,6 +121,134 @@ export type ModelTransport = (
 ) => Promise<TransportReply>;
 
 /**
+ Sends the request, naming a rejection the runtime raised with no abort standing.
+
+ @param url - absolute request URL
+
+ @param label - what the call is for, named by the failure
+
+ @param dependentSignal - the signal the request carries, whose abort is steering or a stall
+
+ @param init - request init handed to `fetch`
+
+ @returns The platform response, headers read and body unread
+
+ @throws {@link TransportRequestFailedError} when the runtime rejects the request
+ and no abort stands, the rejection as its cause; an abort's rejection passes on
+
+ @example
+ ```ts
+ const response = await sendRequest({ url, label, dependentSignal, init, },);
+ ```
+ */
+async function sendRequest(
+  {
+    url,
+    label,
+    dependentSignal,
+    init,
+  }: {
+    readonly url: string;
+    readonly label: string;
+    readonly dependentSignal: AbortSignal;
+    readonly init: RequestInit;
+  },
+): Promise<Response> {
+  try {
+    return await fetch(
+      url,
+      init,
+    );
+  }
+  catch (error) {
+    // An abort, the caller's or the idle guard's, passes on as it came: the
+    // retry ladder and the stream bound read it by identity.
+    if (dependentSignal.aborted)
+      throw error;
+
+    throw new TransportRequestFailedError({
+      label,
+      cause: error,
+    },);
+  }
+}
+
+/**
+ Drains a body and, where the stream was cut, masks the credentials out of the
+ text the cut error carries.
+
+ @param response - response whose body is drained
+
+ @param guard - silence guard notified per chunk
+
+ @param callerSignal - caller's own signal
+
+ @param label - what the call is for
+
+ @param credentials - secrets the request carried
+
+ @param maxAnswerChars - bound for this call, when known
+
+ @param wireFormat - event grammar of the endpoint
+
+ @mutates response - the drain consumes its body
+
+ @returns Whole decoded body, unmasked
+
+ @throws {@link StreamCutShortError} rebuilt with masked partial text, the
+ same label, progress and cause
+
+ @example
+ ```ts
+ const text = await drainWithMaskedCut({ response, guard, callerSignal, label, credentials, },);
+ ```
+ */
+async function drainWithMaskedCut(
+  {
+    response,
+    guard,
+    callerSignal,
+    label,
+    credentials,
+    maxAnswerChars,
+    wireFormat,
+  }: {
+    readonly response: Response;
+    readonly guard: IdleGuard;
+    readonly callerSignal: AbortSignal;
+    readonly label: string;
+    readonly credentials: readonly string[];
+    readonly maxAnswerChars?: number;
+    readonly wireFormat?: StreamWireFormat;
+  },
+): Promise<string> {
+  try {
+    return await drainBody({
+      response,
+      guard,
+      callerSignal,
+      label,
+      ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
+      ...((wireFormat === undefined) ? {} : { wireFormat, }),
+    },);
+  }
+  catch (error) {
+    if (!(error instanceof StreamCutShortError))
+      throw error;
+
+    throw new StreamCutShortError({
+      label: error.label,
+      partialText: maskCredentials({
+        text: error.partialText,
+        credentials,
+      },),
+      progress: error.progress,
+      cause: error.cause,
+    },);
+  }
+}
+
+/**
  Default fetch-backed transport.
  `fetch` receives only locally owned values:
  primitive strings, a fresh headers copy, and a dependent signal,
@@ -121,7 +258,12 @@ export type ModelTransport = (
 
  @mutates exchange - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain the exchange signal, and undiciFetch retains the derived signal and may invoke abort listeners through it for the request lifetime.
 
- @returns Status and body text, whatever the status was
+ @returns Status and body text, whatever the status was, with every credential the
+ request carried masked out of the body (`maskCredentials`)
+
+ @throws {@link TransportRequestFailedError} when the runtime rejects the request
+ with no abort standing, the rejection kept as its cause; an abort passes on
+ unchanged
 
  @example
  ```ts
@@ -174,9 +316,11 @@ export async function fetchTransport(
    headers on a stream arrive before fetch's default headers timeout);
    reading to text drains the whole event stream.
    */
-  const response = await fetch(
+  const response = await sendRequest({
     url,
-    {
+    label,
+    dependentSignal,
+    init: {
       method,
       // Fresh copy: header values are primitive strings, so the platform
       // request holds no caller-owned object.
@@ -187,17 +331,29 @@ export async function fetchTransport(
         : { body: bodyJson, }),
       signal: dependentSignal,
     },
-  );
+  },);
+
+  /**
+   Secrets this request carried, which no reply body may repeat.
+   */
+  const credentials = credentialsOfHeaders({ headers, },);
 
   return {
     status: response.status,
-    bodyText: await drainBody({
-      response,
-      guard,
-      callerSignal: signal,
-      label,
-      ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
-      ...((wireFormat === undefined) ? {} : { wireFormat, }),
+    // MASKED AFTER THE WHOLE BODY IS ASSEMBLED, so a credential cut in two by
+    // a chunk boundary is whole again when it is looked for, and on a
+    // successful reply too, since an error event can arrive inside a 200 stream.
+    bodyText: maskCredentials({
+      text: await drainWithMaskedCut({
+        response,
+        guard,
+        callerSignal: signal,
+        label,
+        credentials,
+        ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
+        ...((wireFormat === undefined) ? {} : { wireFormat, }),
+      },),
+      credentials,
     },),
   };
 }

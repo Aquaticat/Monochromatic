@@ -70,6 +70,31 @@ type ClauseReading = {
 };
 
 /**
+ The child of a node that only spells a name, where an identifier spelled like
+ the binding is no use of it: the property after the dot of a member access and
+ the key of an object literal's entry (a shorthand entry's key is also its
+ value, so it stays).
+
+ @param node - node whose children are about to be visited
+
+ @returns The name-only child, or nothing when the node has none
+
+ @example
+ ```ts
+ const name = namePositionOf({ node: memberAccess, },); // the `error` of `console.error`
+ ```
+ */
+function namePositionOf({ node, }: { readonly node: TreeNode; },): unknown {
+  if ((node.type === 'MemberExpression') && (node.computed !== true))
+    return node.property;
+
+  if ((node.type === 'Property') && (node.computed !== true) && (node.shorthand !== true))
+    return node.key;
+
+  return undefined;
+}
+
+/**
  Reads one catch clause's body, not entering functions nested in it.
 
  @param body - the clause's block
@@ -127,12 +152,20 @@ function readClause(
      Whether the node's own operand is discarded.
      */
     const voids = (node.type === 'UnaryExpression') && (node.operator === 'void');
-    pending.push(...childNodes({ node, },).map(function withContext(child,) {
-      return {
-        node: child,
-        underVoid: voids,
-      };
-    },),);
+    /**
+     Child that only spells a name, which is no use of the binding.
+     */
+    const spellsName = namePositionOf({ node, },);
+    pending.push(...childNodes({ node, },)
+      .filter(function isUse(child,): boolean {
+        return child !== spellsName;
+      },)
+      .map(function withContext(child,) {
+        return {
+          node: child,
+          underVoid: voids,
+        };
+      },),);
   }
   return reading;
 }
@@ -210,8 +243,8 @@ await describe({
   name: 'caught errors kept (ledger B29)',
   children: [
     it({
-      name: 'FINDS a clause binding nothing, one discarding its error with void, and one that drops it, and leaves '
-        + 'clauses that log, rethrow or return it, and tests',
+      name: 'FINDS a clause binding nothing, one discarding its error with void, one that drops it, and one that only '
+        + 'names a property or a key spelled like it, and leaves clauses that log, rethrow or return it, and tests',
       fn: async () => {
         expect(droppedErrors({
           files: [
@@ -225,6 +258,8 @@ await describe({
                 + 'catch (error) { l.warn(\'no knead\'); return 0; } }',
                 'export function pounce(): number { try { return 1; } catch (error) { throw new Error(\'missed\'); } }',
                 'export function stretch(): string { try { return \'\'; } catch (error) { return String(error); } }',
+                'export function sulk(state: { error: number }): number { try { return 1; } '
+                + 'catch (error) { return { error: 0 }.error + state.error; } }',
                 'export function yawn(): string { try { return \'\'; } catch (error) { const later = () => error; return \'\'; } }',
               ].join('\n',),
               isTest: false,
@@ -239,6 +274,7 @@ await describe({
           'cat.ts#groom: neither logs, rethrows nor passes on error',
           'cat.ts#nap: binds no error',
           'cat.ts#purr: discards error with void',
+          'cat.ts#sulk: neither logs, rethrows nor passes on error',
           'cat.ts#yawn: neither logs, rethrows nor passes on error',
         ],);
       },

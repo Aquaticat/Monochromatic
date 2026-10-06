@@ -9,7 +9,7 @@ import type {
   DecisionQuestion,
   DecisionState,
 } from './decision-contract.ts';
-import { exchangeFailureText, } from './exchange-failure-text.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import { decisionsCardOf, } from './model-card-derive.ts';
 import { NoProviderForModelError, } from './provider-router.ts';
 // TYPE-ONLY AND DELIBERATELY CIRCULAR: `stage-call.ts` calls into this file
@@ -199,7 +199,7 @@ export async function attemptDecisionCall<ValueT,>(
      reads dry, which is a fact about the bench rather than the exchange.
      */
     const unreachable = error instanceof NoProviderForModelError;
-    l.warn(`${stage} ${modelId}: ${exchangeFailureText({ error, },)}, ${unreachable ? 'seat unreachable' : 'voice lost'}`,);
+    l.warn(`${stage} ${modelId}: ${exchangeFailureLogText({ error, },)}, ${unreachable ? 'seat unreachable' : 'voice lost'}`,);
     return {
       heard: false,
       answered: false,

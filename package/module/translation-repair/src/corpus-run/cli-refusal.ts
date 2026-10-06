@@ -104,6 +104,12 @@ const REFUSED_AS_STATED = 6;
  embed whatever it was given, and the cause chain is dropped because a parser's
  cause is exactly the thing that quotes.
 
+ THE FRAMES BEGIN WHERE THE STACK'S HEADER ENDS, not at any line that starts
+ with `at `: the header is the message as it was when the error was built,
+ and a message holding a line break and then `at ` would otherwise print that
+ line of itself. A header that does not hold the message (rewritten after the
+ stack was recorded) has no end this can tell, so no frames are printed.
+
  @param error - caught value, of unknown type by construction
 
  @returns Frame lines, or a note saying why there are none
@@ -125,7 +131,26 @@ function framesOf({ error, }: { readonly error: unknown; },): string {
   if ((typeof stack) !== 'string')
     return '  (no frames: this error recorded no stack)';
 
+  /**
+   The message the header was written with; searched for, never printed.
+   */
+  const { message, } = error;
+
+  /**
+   Where the header's message begins, which is nowhere for an empty message.
+   */
+  const messageAt = stack.indexOf(message,);
+  if (messageAt === (-1))
+    return '  (no frames: the stack\'s header does not hold the error\'s message, so where its frames begin is unknown)';
+
+  /**
+   Where the header ends: after the message, which is where it begins for an
+   empty one, leaving only the class name before the frames.
+   */
+  const headerEnd = messageAt + message.length;
+
   return stack
+    .slice(headerEnd,)
     .split('\n',)
     .filter(function isFrame(line,): boolean {
       return line

@@ -8,7 +8,7 @@ import type {
   SyntheticClient,
 } from './chat-contract.ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
-import { exchangeFailureText, } from './exchange-failure-text.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import { isDecisionSeat, } from './model-card-derive.ts';
 import { NoProviderForModelError, } from './provider-router.ts';
 import {
@@ -332,7 +332,7 @@ export async function attemptStageCall<ValueT,>(
      seat, which is a fact about the bench rather than about this exchange.
      */
     const unreachable = error instanceof NoProviderForModelError;
-    l.warn(`${stage} ${modelId}: ${exchangeFailureText({ error, },)}, ${unreachable ? 'seat unreachable' : 'voice lost'}`,);
+    l.warn(`${stage} ${modelId}: ${exchangeFailureLogText({ error, },)}, ${unreachable ? 'seat unreachable' : 'voice lost'}`,);
 
     // NOT ANSWERED. A thrown failure is a transport that never delivered one,
     // and the client's own ladder has already spent its retries on it.

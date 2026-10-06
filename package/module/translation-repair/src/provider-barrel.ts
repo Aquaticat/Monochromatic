@@ -15,7 +15,22 @@ export {
   errorName,
   failureName,
 } from './error-name.ts';
-export { exchangeFailureText, } from './exchange-failure-text.ts';
+export {
+  CREDENTIAL_MARKER,
+  credentialsOfHeaders,
+  maskCredentials,
+  MINIMUM_CREDENTIAL_UNITS,
+} from './credential-mask.ts';
+export {
+  exchangeFailureLogText,
+  exchangeFailureText,
+} from './exchange-failure-text.ts';
+export { TransportRequestFailedError, } from './transport-request-error.ts';
+export {
+  LocalProgramFailedError,
+  localProgramFailureOf,
+  readerFailureText,
+} from './local-program-failure.ts';
 export {
   isMissingPathError,
   rethrowUnlessMissingPath,
