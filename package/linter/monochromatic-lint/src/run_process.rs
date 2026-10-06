@@ -8,19 +8,30 @@
 //! // process.exitCode = runProcess();
 //! ```
 
-/// Import the command grammar, the injected-environment runner and output model.
+/// Import the command grammar, the injected-environment runner, output model and lint threads.
 use crate::{
     cli_options::CliOptions, run_command::run_command, run_failure::panic_text,
-    run_finish::PROGRAM, run_output::RunOutput,
+    run_finish::PROGRAM, run_output::RunOutput, run_workers::lint_thread,
 };
 /// Import the argument parser trait that provides `parse`.
 use clap::Parser;
-/// Import stream writing and panic containment.
+/// Import stream reading and writing, panic containment and scoped threads.
 use std::{
-    io::{ErrorKind, Write},
-    panic::{PanicHookInfo, catch_unwind},
-    path::PathBuf,
+    io::{ErrorKind, Read, Write},
+    panic::{AssertUnwindSafe, PanicHookInfo, catch_unwind},
+    path::{Path, PathBuf},
+    thread::{Builder, Scope, ScopedJoinHandle},
 };
+
+/// What: The signature of one complete invocation given its options, working directory and input.
+/// Why: The executable passes `run_command`; a test passes a runner that panics, to observe the
+/// process-wide panic hook from a separate process.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Runner = (options: CliOptions, cwd: string, stdin: Readable) => RunOutput;
+/// ```
+pub(crate) type Runner = fn(&CliOptions, &Path, &mut dyn Read) -> RunOutput;
 
 /// What: A panic hook that prints nothing.
 /// Why: The default hook writes a message to standard error for every panic, including ones this
@@ -35,10 +46,8 @@ use std::{
 fn silent_hook(_info: &PanicHookInfo<'_>) {}
 
 /// What: Whether this invocation silences panics: every run except one with `--debug`.
-/// Why: The process-wide hook is shared by every test in a test binary, so replacing it cannot be
-/// tested in process, and no known input makes the executable panic so a binary-level test could
-/// observe it. Naming the decision lets a test pin it; `parse_and_run` installs the silent hook
-/// exactly when this returns true.
+/// Why: Naming the decision lets a unit test pin both answers; `run_process_with` installs the
+/// silent hook exactly when this returns true, which a test observes from a child process.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -70,21 +79,32 @@ fn emit(stream: &mut dyn Write, text: &str) -> bool {
     }
 }
 
-/// What: Parse the real command line and run it with the real working directory and standard input.
-/// Why: The argument parser prints help, version and usage errors itself and exits with 0 or 2.
-/// This function takes no arguments, so it can be handed to `catch_unwind` by name, without a closure.
-/// An unreadable working directory is a setup error with status 2, like any other.
+/// What: The output reported when a panic escapes per-file containment.
+/// Why: The process must still end with its own explanation and status 2, never a bare runtime abort.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parseAndRun(): RunOutput;
+/// function internalError(payload: unknown): RunOutput;
 /// ```
-fn parse_and_run() -> RunOutput {
-    let options: CliOptions = CliOptions::parse();
-    if silences_panics(options.debug) {
-        // Box::new moves the function pointer to the heap, as the hook API requires an owned callable.
-        std::panic::set_hook(Box::new(silent_hook));
-    }
+fn internal_error(payload: &(dyn std::any::Any + Send)) -> RunOutput {
+    return RunOutput {
+        stdout: String::new(),
+        stderr: format!(
+            "{PROGRAM}: internal error: {}. No result was produced; rerun with --debug for the panic location.\n",
+            panic_text(payload)
+        ),
+        exit_code: 2,
+    };
+}
+
+/// What: Run one invocation with the real working directory and standard input.
+/// Why: An unreadable working directory is a setup error with status 2, like any other.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runWithEnvironment(options: CliOptions, run: Runner): RunOutput;
+/// ```
+fn run_with_environment(options: &CliOptions, run: Runner) -> RunOutput {
     let cwd: PathBuf = match std::env::current_dir() {
         Ok(directory) => directory,
         Err(error) => {
@@ -96,30 +116,72 @@ fn parse_and_run() -> RunOutput {
         }
     };
     let mut stdin: std::io::StdinLock<'static> = std::io::stdin().lock();
-    return run_command(&options, &cwd, &mut stdin);
+    return run(options, &cwd, &mut stdin);
 }
 
-/// What: Run the program, write both streams and return the exit status.
-/// Why: A panic that escapes per-file containment is reported as an internal error with status 2,
-/// never as a bare runtime abort.
+/// What: Run one invocation, converting a panic into the internal-error output.
+/// Why: `catch_unwind` needs a callable; the closure only forwards to the named `run_with_environment`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function runProcess(): number;
+/// function containedRun(options, run): RunOutput { try { return runWithEnvironment(options, run); } catch (error) { return internalError(error); } }
 /// ```
-pub fn run_process() -> u8 {
-    let attempt: Result<RunOutput, Box<dyn std::any::Any + Send>> = catch_unwind(parse_and_run);
-    let output: RunOutput = match attempt {
-        Ok(value) => value,
-        Err(payload) => RunOutput {
-            stdout: String::new(),
-            stderr: format!(
-                "{PROGRAM}: internal error: {}. No result was produced; rerun with --debug for the panic location.\n",
-                panic_text(payload.as_ref())
-            ),
-            exit_code: 2,
+fn contained_run(options: &CliOptions, run: Runner) -> RunOutput {
+    let attempt: Result<RunOutput, Box<dyn std::any::Any + Send>> =
+        catch_unwind(AssertUnwindSafe(|| {
+            return run_with_environment(options, run);
+        }));
+    match attempt {
+        Ok(output) => return output,
+        Err(payload) => return internal_error(payload.as_ref()),
+    }
+}
+
+/// What: Run one invocation on a scoped thread with the lint stack and wait for its output.
+/// Why: The main thread's stack is set by the platform, and deeply nested input recurses in the
+/// parser. If the operating system refuses the thread, the invocation runs on the calling thread
+/// instead of failing. `'scope` is the lifetime of the thread scope and `'env` of the borrowed options.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runInScope(scope, options, run): RunOutput;
+/// ```
+fn run_in_scope<'scope, 'env>(
+    scope: &'scope Scope<'scope, 'env>,
+    options: &'env CliOptions,
+    run: Runner,
+) -> RunOutput {
+    let builder: Builder = lint_thread().name(String::from(PROGRAM));
+    // The thread API needs a callable; the closure only forwards to the named `contained_run`,
+    // and `move` copies the borrowed options and the function pointer into it.
+    let spawned: std::io::Result<ScopedJoinHandle<'scope, RunOutput>> =
+        builder.spawn_scoped(scope, move || return contained_run(options, run));
+    match spawned {
+        Ok(handle) => match handle.join() {
+            Ok(output) => return output,
+            Err(payload) => return internal_error(payload.as_ref()),
         },
-    };
+        Err(_) => return contained_run(options, run),
+    }
+}
+
+/// What: Install the panic hook for these options, run the invocation on a lint thread, write both
+/// streams and return the exit status.
+/// Why: Every file, including a single file, a `--concurrency 1` run and standard input, is linted
+/// on a thread whose stack size is explicit. The runner is a parameter so a test can raise a panic
+/// inside a real invocation.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runProcessWith(options: CliOptions, run: Runner): number;
+/// ```
+pub(crate) fn run_process_with(options: &CliOptions, run: Runner) -> u8 {
+    if silences_panics(options.debug) {
+        // Box::new moves the function pointer to the heap, as the hook API requires an owned callable.
+        std::panic::set_hook(Box::new(silent_hook));
+    }
+    // The scope API needs a callable; the closure only forwards to the named `run_in_scope`.
+    let output: RunOutput = std::thread::scope(|scope| return run_in_scope(scope, options, run));
     let wrote_stdout: bool = emit(&mut std::io::stdout().lock(), output.stdout.as_str());
     let wrote_stderr: bool = emit(&mut std::io::stderr().lock(), output.stderr.as_str());
     if !wrote_stdout || !wrote_stderr {
@@ -128,7 +190,19 @@ pub fn run_process() -> u8 {
     return output.exit_code;
 }
 
-/// Stream-writing controls stay outside release artifacts.
+/// What: Parse the real command line, run it and return the exit status.
+/// Why: The argument parser prints help, version and usage errors itself and exits with 0 or 2.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runProcess(): number;
+/// ```
+pub fn run_process() -> u8 {
+    let options: CliOptions = CliOptions::parse();
+    return run_process_with(&options, run_command);
+}
+
+/// Stream-writing and panic-hook controls stay outside release artifacts.
 #[cfg(test)]
 #[path = "run_process_tests.rs"]
 mod tests;
