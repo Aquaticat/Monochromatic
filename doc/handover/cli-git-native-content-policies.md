@@ -18,12 +18,16 @@ Respond by merging the branch into `main` and by vetoing any item under "Choices
 
 ## Status
 
-In progress.
 Done:
-the differential harness probe,
-the two candidate sources (slice 1),
-the coded failure outcome (slice 2a),
-and `final-newline` and `mono/forbidden-root-context` for `git add` and `git cli-git check` (slice 2b).
+the two candidate sources,
+the coded failure outcome,
+`final-newline` and `mono/forbidden-root-context` for `git add` and `git cli-git check`,
+`security/forbidden-strings` with the `rulesFile` option,
+`git cli-git fix` with final-newline corrections,
+three fuzz targets,
+and the differential runs.
+The final gate,
+the fuzz smoke campaign and the mutation campaigns are recorded in their own sections below as they finish.
 
 ## Differential harness
 
@@ -184,3 +188,357 @@ same base,
 evidence `package/git-policy/cli/target/verification/native-BGz5rN`.
 The unit count equals the host count of that commit (543 passed and 10 that need Git 2.56),
 so the snapshot held the committed tree.
+
+### Slice 3, forbidden-strings
+
+Commit `b7bed7111`.
+
+- `security/forbidden-strings` (`src/native/policy_forbidden_strings.rs`) scans the lifecycle's candidates
+  through the linked scanner (`scanner_run::scan_version`).
+  Rules load once per invocation,
+  and only when at least one candidate is scannable,
+  so an add that only deletes never reads a rules file.
+  A load failure is remembered and reported to every later scan of the invocation.
+- Matches keep the incumbent's words
+  (`scanner-output.ts`:
+  "Forbidden string matched at line N (rule R)."
+  and "... in pathname segment N (rule R).")
+  and the scanner's masked display path.
+  Every result is checked for a failed matcher or a pathname with a line break before any match is reported;
+  either ends the policy as `policy-incomplete`.
+- `rulesFile` (`src/native/config_rules_file.rs`) is a new option of the policy.
+  A value is refused when it is empty,
+  starts with `/`,
+  starts with a drive letter and a colon,
+  holds a backslash or NUL,
+  or has an empty,
+  `.` or `..` component;
+  the configuration error names the key and the reason.
+  A value that names a missing file is not a configuration error:
+  loading reports it as `policy-incomplete` when the policy runs.
+- `scanner_selection::rules_source(rules_file, variable, root)` is the one place that picks the file:
+  the configured name,
+  else `FORBIDDEN_STRINGS_RULES` from the invocation's environment,
+  else `forbidden-strings.local.txt` in the top level.
+  Only the default file may be missing beside the built-in rules.
+- `src/native/panic_notice.rs` is the executable's panic hook,
+  installed first thing in `main.rs`.
+  It prints the source location and never the message,
+  which can hold scanned bytes.
+  `a_caught_panic_shows_only_the_notice_in_its_own_process` runs a caught panic in a child process with the hook
+  and,
+  as its positive control,
+  with the default hook,
+  which does print the payload.
+
+Gate on that tree:
+564 unit tests,
+38 binary-level tests,
+1 public-interface consumer test,
+Clippy passed,
+exit status 0;
+test image `3635275302f050430f5c0ebde7fff86162aa87b3abb22b19db145a19a9717793`,
+evidence `package/git-policy/cli/target/verification/native-akNbC8`.
+
+### Slice 4, direct fix
+
+Commit `ed3f10514`.
+
+- A finding with `fix_available` ends its stage as `StageEnd::Proposed`
+  (exit status 1),
+  whatever its severity and even under keep-going,
+  as `patchProposed` ends the incumbent's stage (`policy-stage.ts`).
+- `final-newline` proposes a full-content correction on `direct-fix` only,
+  where the incumbent's `canApplyPatches` is true;
+  its finding then says `"fix":"available"`.
+- `ContentState` keeps the proposals of a pass,
+  applies them after the pass over the prepared objects,
+  and every later read,
+  the scan included,
+  sees the corrected bytes
+  (`scanner_run::CandidateBytes` is the reader the scan pass now takes).
+  A file whose correction restores its original bytes stops counting as corrected,
+  so two states are equal exactly when every file holds the same bytes.
+- `src/native/direct_fix.rs` gives `policy_convergence::converge` its passes,
+  reports only the last pass,
+  and appends one `fix-summary`
+  (trigger,
+  changed passes,
+  corrected paths in byte order)
+  only when files changed and the last pass exits 0.
+  A cycle or the pass limit reports one engine failure and nothing else,
+  as `fixCycleFailure` and `fixPassLimitFailure` do;
+  the cycle message is the incumbent's direct-fix wording.
+- `src/native/direct_fix_install.rs` follows `direct-fix-install.ts`:
+  every corrected file must still hold the bytes the fix read,
+  each gets a backup copy and a new file beside it named `.cli-git-direct-fix-<pid>-<nanoseconds>-<count>`,
+  the new files are renamed over the originals with mode `0644` or `0755`,
+  and the real index must be byte-identical afterwards.
+  Any failure restores every replaced file from its backup
+  and reports one `transaction-failed` event.
+  A backup that cannot be restored is left in place and the message says so.
+- Only `final-newline`,
+  `markdown/autofix` and `mono/dependent-version-bump` run on `direct-fix`
+  (`policy_trigger.rs`, as in the incumbent),
+  so a fix never runs forbidden-strings or root-context.
+
+Gate on that tree:
+578 unit tests,
+39 binary-level tests,
+1 public-interface consumer test,
+Clippy passed,
+exit status 0;
+test image `355d6966e8532a7b3cf762a3309b06d5f9df70334fc317b10fb0d270ae858d7a`,
+evidence `package/git-policy/cli/target/verification/native-d97U92`.
+
+Commit `e4725f72c` then made the private index directory builder compile without an unused `mut` on Windows
+(`native:clippy:windows` denied it)
+and added `native:build`,
+which builds the executable on the host for the differential runs.
+
+### Fuzz targets
+
+Commit `e37dad30a`,
+in `package/git-policy/cli.fuzz`:
+
+- `stage_listing`:
+  `parse_stage_records` over raw bytes,
+  which must be refused as malformed or as an unsupported mode,
+  or accepted only when the bytes are exactly Git's rendering of the returned records;
+  and `staged_delta` over two generated listings in index order,
+  compared with a delta recomputed from sorted maps.
+- `rules_file`:
+  `check_rules_file` over text inputs and over values built from path words;
+  the answer must be the refusal restated from the value's words,
+  and an accepted value joined to a root must stay below it with only ordinary components.
+- `final_newline`:
+  `normalized_final_newline` over raw bytes and generated text;
+  left alone only when empty,
+  holding NUL,
+  not UTF-8 or already canonical,
+  and a replacement keeps the content,
+  ends with one LF and is itself left alone.
+
+The `wrapper_controls` target's fixed facts now refuse to prepare candidates,
+so its invariant that no unchecked `git add` is forwarded still holds and now goes through the content policy.
+
+The repository's installed wrapper corrected the final newline of the new seed files when they were committed
+(its `final-newline` exclusions do not cover this package's seeds),
+so every new seed ends with one LF.
+
+Generator controls:
+21 passed (`cargo test --lib` through `mise run //package/git-policy/cli.fuzz:test`).
+Planted defects:
+14 planted,
+14 noticed,
+including the three new ones
+(a changed path left out of the staged delta,
+a `rulesFile` value with `..` accepted,
+extra final line feeds kept);
+evidence `package/git-policy/cli.fuzz/target/verification/planted-2Ml8kS`.
+
+## Refusal frontier
+
+### Before, on `main` at `8ee6cbb39`
+
+- `git add` in a worktree refused with exit status 2 whenever any content policy was on,
+  which by default is always,
+  because `final-newline` is built in:
+  "cli-git: predicting what git add would stage, which the policy final-newline needs,
+  is not implemented in this native development executable, so git add was not run.
+  Run it with the installed cli-git."
+- `git cli-git check` and `git cli-git fix` refused the same way whenever a content policy was selected,
+  needing "reading the worktree files that git cli-git check and fix select".
+
+### After, at `e4725f72c`
+
+- `git add`,
+  `git cli-git check` and `git cli-git fix` run `final-newline`,
+  `mono/forbidden-root-context` and `security/forbidden-strings` and refuse nothing for them.
+- Whenever `markdown/autofix` or `mono/dependent-version-bump` is enabled
+  and the lifecycle has candidates,
+  the command still refuses with exit status 2 and the existing one-line notice,
+  for example
+  "cli-git: the native Markdown linter, which the policy markdown/autofix needs,
+  is not implemented in this native development executable, so git add was not run.
+  Run it with the installed cli-git."
+  and "planning dependent version bumps, which the policy mono/dependent-version-bump needs, ...".
+- Controls:
+  `binary_frontier_tests.rs`,
+  `add_runs_ported_content_policies_and_refuses_unported_ones`
+  (each unported policy refuses under its own name and nothing is staged;
+  the positive control escapes `mono/dependent-version-bump` and the add goes through);
+  `binary_policy_tests.rs`,
+  `direct_fix_corrects_only_worktree_files`
+  (a listed `markdown/autofix` refuses the fix and no file changes).
+- Commit transactions,
+  manual-push listings and post-commit stay outside this branch and keep their own refusals.
+
+## Differential results
+
+The driver is `${HOME}/temp/agent/content-policies-20261006/differential.ts`;
+its last full record is `differential-all.txt` beside it,
+from the executable built at `e4725f72c`.
+Each command runs on its own pair of fresh repositories built the same way:
+one with the incumbent's `cli-git.config.ts`
+(`mono/forbidden-root-context` at error,
+`security/forbidden-strings` at error with `builtinRules: false` and the release scanner from this worktree as its executable),
+one with the equivalent `cli-git.config.jsonc`,
+each committed before the case's own setup.
+The native executable runs by path through a `git` link outside `PATH`;
+neither wrapper is installed and neither touched this repository.
+Compared per command:
+exit status,
+standard output,
+standard error,
+`git ls-files --stage` of the index,
+a digest and mode of every worktree file,
+and whether the real index bytes changed.
+Directory names that differ between the two copies are normalized before comparing.
+
+44 commands over 17 cases ran;
+32 matched in every field.
+
+### Cases that matched
+
+- Clean file:
+  add,
+  check and fix all exit 0 with no output.
+- Missing final newline:
+  add stages with one warning on standard error,
+  check reports the warning on standard output,
+  `fix -- file.txt` and `fix --all` print one `fix-summary`,
+  correct the worktree file and leave the index unchanged.
+- Secret staged with a clean worktree copy:
+  add exits 0
+  (Git would stage the clean bytes),
+  check exits 0.
+- Clean staged copy with a secret in the worktree:
+  add exits 1 with the redacted match and stages nothing,
+  check exits 1 with the same match.
+- Forbidden root context:
+  add and check exit 1 with `root-context-forbidden`.
+- Rules from `FORBIDDEN_STRINGS_RULES`,
+  from the default `forbidden-strings.local.txt`,
+  and from configuration
+  (native `rulesFile: "rules/private.txt"`,
+  incumbent `FORBIDDEN_STRINGS_RULES` naming the same file):
+  identical matches.
+- Symbolic link,
+  staged deletion and intent-to-add entry:
+  add,
+  check and fix agree in every field.
+- `git add --patch` with closed standard input and `git add --pathspec-from-file=-`:
+  both wrappers forward and Git stages nothing.
+- From a subdirectory without keep-going:
+  check and add stop on `require-root` identically.
+
+### Differences
+
+All are intentional;
+none was fixed.
+
+- Missing rules file
+  (`FORBIDDEN_STRINGS_RULES` naming a file that does not exist),
+  add and check:
+  both exit 2,
+  the incumbent with `plugin-threw` "Forbidden-strings scanner exited with infrastructure status 2.",
+  the native wrapper with `policy-incomplete` "cli-git could not load the forbidden-strings rules,
+  so no file was scanned: read rules <path>: No such file or directory (os error 2).".
+  Failure codes follow their cause;
+  `plugin-threw` named plugins,
+  which the native wrapper does not have
+  (`doc/planning/cli-git-rust-open-decisions.md`,
+  section "Engine failure codes that lose their source",
+  and this delegation's failure-code item).
+- A pathname that is not UTF-8
+  (`caf` 0xE9 `.txt`):
+  the incumbent fails,
+  printing "The encoded data was not valid for encoding utf-8"
+  (exit 1 for add,
+  `transaction-failed` with exit 2 for check and fix);
+  the native wrapper checks,
+  stages and fixes the file and renders its name with a replacement character.
+  The plan forbids requiring UTF-8
+  (open decisions,
+  section "Non-UTF-8 paths in events and journals");
+  how an event carries the exact name is still the owner's open question,
+  so no `pathBytes` field was added.
+  With `--all` the native add-explicit policy rejects the bulk add before any content is read,
+  while the incumbent fails on the name first;
+  both exit 1.
+- From a subdirectory with keep-going,
+  check names the files `file.txt` and `secret.txt` in the incumbent
+  and `sub/file.txt` and `sub/secret.txt` in the native wrapper.
+  `SPEC.md` line 362 makes event paths repository-relative.
+- From a subdirectory,
+  `fix -- file.txt`:
+  the incumbent fails with `transaction-failed` "Deleted candidate lacks HEAD entry: file.txt";
+  the native wrapper corrects `sub/file.txt` and reports it.
+  The incumbent confuses the two relative forms.
+- `git add -- missing.txt`
+  (a pathspec that matches nothing):
+  the incumbent exits 1 with Git's message as plain text;
+  the native wrapper exits 2 with `content-unavailable`
+  "cli-git could not predict what git add stages: git add failed: fatal: pathspec 'missing.txt' did not match any files".
+  A failure before Git runs exits 2 under the spec's exit contract
+  (open decisions,
+  "A wrapper failure before Git runs").
+- `git cli-git check` and `fix` with that pathspec:
+  same exit status and code,
+  `transaction-failed`;
+  the message wording differs
+  ("git add --all -- missing.txt failed: ..." against
+  "cli-git could not read the selected worktree files: git add failed: ...").
+  The native message does not repeat the command's arguments;
+  Git's own message still quotes the pathspec.
+
+## Choices open to veto
+
+- Candidates for `git add` are prepared lazily,
+  by the first content policy that reads;
+  a direct command prepares before any policy runs,
+  as the incumbent does.
+- A failed `git add` replay is reported with Git's standard error in the message.
+- A direct command's scope that Git refuses is `transaction-failed`,
+  the incumbent's code,
+  not `content-unavailable`.
+- Corrections are applied in memory as full contents,
+  not staged into the private index as patches;
+  a fix pass starts no Git process for them.
+- A state equal to the one just before it counts as settled
+  (`policy_convergence::converge`, unchanged here);
+  the incumbent calls that a cycle.
+  No shipped correction can produce it.
+- `rulesFile` is checked by its words only;
+  a symbolic link inside the repository that points elsewhere is followed.
+- Installation failure messages name no file;
+  the incumbent's name the path.
+- The direct fix does not take the landing lock the incumbent takes around installation.
+- `git add --patch`,
+  `--interactive`,
+  `--edit` and `--pathspec-from-file=-` are replayed with standard input closed,
+  as the incumbent replays them,
+  so the policies see what such an add stages without input,
+  which is nothing.
+- No `pathBytes` field:
+  a name that is not UTF-8 is rendered with replacement characters,
+  as the foundation renders it.
+
+## What remains
+
+- `markdown/autofix` needs the native Markdown linter;
+  it keeps refusing.
+- `mono/dependent-version-bump` needs native dependent-version planning,
+  which another branch ports;
+  it keeps refusing,
+  and this branch did not touch those modules.
+- Manual-push listings,
+  commit transactions and post-commit candidates are outside this branch.
+
+## Manifests and lockfiles
+
+- `package/git-policy/cli/Cargo.toml` and both lockfiles are unchanged.
+- `package/git-policy/cli.fuzz/Cargo.toml` gained three `[[bin]]` entries for the new targets.
+- `package/git-policy/cli/mise.toml` gained `native:build`;
+  `package/git-policy/cli.fuzz/mise.toml` describes `test:planted` without a count.
