@@ -98,13 +98,13 @@ class TemplateEditorActivity : ComponentActivity() {
      * the "or else" operator: when the value on its left is null, the expression on its right runs,
      * here a `throw`.
      * Why: Only an explicitly named authored scene is ever mounted, with no stored template behind
-     * it, drawn in the layout and at the scroll position the launch asks for.
+     * it, drawn at the scroll position the launch asks for.
      *
      * In TS you'd write (pseudocode):
      * ```ts
      * override onCreate(savedState: Bundle | null): void {
-     *   const scene = requireScene(); const layout = optionalLayout(); const position = optionalPosition();
-     *   mountStudy({ ...templateEditorFixture(scene), layout, position });
+     *   const scene = requireScene(); const position = optionalPosition();
+     *   mountStudy({ ...templateEditorFixture(scene), position });
      * }
      * ```
      */
@@ -114,32 +114,30 @@ class TemplateEditorActivity : ComponentActivity() {
         // Use the required non-null scene name from the launch intent, or throw.
         val scene: String = intent.getStringExtra("scene")
             ?: throw IllegalArgumentException("Template editor study requires an explicit scene.")
-        // What: `intent.getStringExtra("layout")` yields the text the launch gave under that name, or
-        // null when it gave none; `templateEditorLayout` turns either into one of the three layout names.
-        // Why: A launch may ask for one of the pinned-preview layouts. One that does not keeps `flow`,
-        // and a mistyped name throws here, before anything is drawn.
+        // What: `intent.getStringExtra("position")` yields the text the launch gave under that name,
+        // or null when it gave none; `templateEditorPosition` turns either into one of the two
+        // position names.
+        // Why: A capture may ask for the end of the page. A launch that names no position keeps
+        // `top`, and a mistyped name throws here, before anything is drawn.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const layout = templateEditorLayout(intent.getStringExtra('layout'));
+        // const position = templateEditorPosition(intent.getStringExtra('position'));
         // ```
-        val layout: String = templateEditorLayout(intent.getStringExtra("layout"))
-        // The same for where the body is scrolled to: `top` unless the launch names `end`.
         val position: String = templateEditorPosition(intent.getStringExtra("position"))
-        // What: `.copy(layout = layout, position = position)` makes a new record from the one
-        // `templateEditorFixture(scene)` returned, with only the two named fields replaced. Every
+        // What: `.copy(position = position)` makes a new record from the one
+        // `templateEditorFixture(scene)` returned, with only the one named field replaced. Every
         // data class has this method.
-        // Why: The authored scenes all carry the default presentation, so the launch's choice is laid
-        // over the named scene here, replacing the placeholder. An unknown scene name throws here.
+        // Why: The authored scenes all rest at `top`, so the launch's position is laid over the
+        // named scene here, replacing the placeholder. An unknown scene name throws here.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // setShown({ ...templateEditorFixture(scene), layout, position });
+        // setShown({ ...templateEditorFixture(scene), position });
         // ```
-        shown = templateEditorFixture(scene).copy(layout = layout, position = position)
-        // One tagged line records which authored scene this launch mounted, and how it is presented.
-        Log.i("TemplateEditor",
-            "TemplateEditorActivity.onCreate: authored scene=$scene layout=$layout position=$position")
+        shown = templateEditorFixture(scene).copy(position = position)
+        // One tagged line records which authored scene this launch mounted, and where its body rests.
+        Log.i("TemplateEditor", "TemplateEditorActivity.onCreate: authored scene=$scene position=$position")
         // Draw behind the system bars; the pages add their own status and navigation padding.
         enableEdgeToEdge()
         // What: Trailing lambdas supply native children and event callbacks; `{ event -> ... }` is a

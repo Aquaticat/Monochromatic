@@ -40,17 +40,16 @@ class TemplateEditorFixtureTest {
     /**
      * What: A private val is a read-only field of the test class. Inside a Kotlin string, `$name`
      * splices a variable the way `${name}` does in a TypeScript template literal, so every literal
-     * dollar sign is written `\$`; `\"` is a literal double quote.
+     * dollar sign is written `\$`.
      * Why: Four states show the default template, and the reset rule compares against it.
      * Gotcha: An unescaped `$tf` would be read as "insert the variable tf" and fail to compile.
      *
      * In TS you'd write (pseudocode):
      * ```ts
-     * const defaultTemplate = '$tf(mi(len), m:ss)$$if(mi(peak) != "", " · " + mi(peak) + " dBTP")$';
+     * const defaultTemplate = '$tf(mi(len), m:ss)$ $mi(peak)$';
      * ```
      */
-    private val defaultTemplate: String =
-        "\$tf(mi(len), m:ss)\$\$if(mi(peak) != \"\", \" · \" + mi(peak) + \" dBTP\")\$"
+    private val defaultTemplate: String = "\$tf(mi(len), m:ss)\$ \$mi(peak)\$"
 
     /**
      * What: `listOf(a, b, ...)` builds a read-only List of the seven scene names. `List<String>` is
@@ -85,7 +84,7 @@ class TemplateEditorFixtureTest {
             TemplateEditorField("Folder", "mi(folder)", "Camellia"),
             TemplateEditorField("Path", "mi(path)", "Camellia/かめりあ(Camellia) - Another Xronixle.flac"),
             TemplateEditorField("Duration", "mi(len)", "275"),
-            TemplateEditorField("True peak", "mi(peak)", "−1.2"),
+            TemplateEditorField("True peak", "mi(peak)", "−1.2 dBTP"),
         )
     }
 
@@ -96,13 +95,13 @@ class TemplateEditorFixtureTest {
      *
      * In TS you'd write (pseudocode):
      * ```ts
-     * function libraryRows(): readonly TemplateEditorPreviewRow[] { return [{ title: 'Another Xronixle', supporting: '4:35 · −1.2 dBTP' }, { title: 'Burning Aquamarine', supporting: '5:12' }]; }
+     * function libraryRows(): readonly TemplateEditorPreviewRow[] { return [{ title: 'Another Xronixle', supporting: '4:35 −1.2 dBTP' }, { title: 'Burning Aquamarine', supporting: '5:12 ' }]; }
      * ```
      */
     private fun libraryRows(): List<TemplateEditorPreviewRow> {
         return listOf(
-            TemplateEditorPreviewRow("Another Xronixle", "4:35 · −1.2 dBTP"),
-            TemplateEditorPreviewRow("Burning Aquamarine", "5:12"),
+            TemplateEditorPreviewRow("Another Xronixle", "4:35 −1.2 dBTP"),
+            TemplateEditorPreviewRow("Burning Aquamarine", "5:12 "),
         )
     }
 
@@ -128,7 +127,7 @@ class TemplateEditorFixtureTest {
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertFalse(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 · −1.2 dBTP"), fixture.listEntry)
+        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
     }
 
     /** The editor as first opened shows the default template, not focused, with nothing to reset. */
@@ -143,7 +142,7 @@ class TemplateEditorFixtureTest {
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertFalse(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 · −1.2 dBTP"), fixture.listEntry)
+        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
     }
 
     /** A caret inside the format argument of `tf` shows that call's signature and description. */
@@ -162,22 +161,22 @@ class TemplateEditorFixtureTest {
         ), fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertFalse(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 · −1.2 dBTP"), fixture.listEntry)
+        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
     }
 
     /** A misspelt field name gives one error line while the rows keep the last valid template. */
     @Test fun unknownFieldSceneMatchesReference() {
         val fixture: TemplateEditorFixture = templateEditorFixture("unknown-field")
         assertEquals("editor", fixture.page)
-        assertEquals("\$tf(mi(len), m:ss)\$ · \$mi(peek)\$ dBTP", fixture.template)
-        assertEquals(37, fixture.caret)
+        assertEquals("\$tf(mi(len), m:ss)\$ \$mi(peek)\$", fixture.template)
+        assertEquals(30, fixture.caret)
         assertEquals(libraryRows(), fixture.previewRows)
         assertEquals("Rows keep the last valid template.", fixture.previewNote)
         assertEquals(listOf("mi: unknown field peek"), fixture.errors)
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertTrue(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 · −1.2 dBTP"), fixture.listEntry)
+        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
     }
 
     /** A formula left without its closing dollar sign is reported with the place it was opened. */
@@ -192,25 +191,25 @@ class TemplateEditorFixtureTest {
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertTrue(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 · −1.2 dBTP"), fixture.listEntry)
+        assertEquals(TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP"), fixture.listEntry)
     }
 
     /** A valid template other than the default changes both rows and the Settings entry. */
     @Test fun customSceneMatchesReference() {
         val fixture: TemplateEditorFixture = templateEditorFixture("custom")
         assertEquals("editor", fixture.page)
-        assertEquals("\$tc(up, mi(ext))\$ · \$tf(mi(len), m:ss)\$", fixture.template)
+        assertEquals("\$tc(up, mi(ext))\$ · \$tf(mi(len), m:ss)\$ · \$mi(peak)\$", fixture.template)
         assertEquals(-1, fixture.caret)
         assertEquals(listOf(
-            TemplateEditorPreviewRow("Another Xronixle", "FLAC · 4:35"),
-            TemplateEditorPreviewRow("Burning Aquamarine", "FLAC · 5:12"),
+            TemplateEditorPreviewRow("Another Xronixle", "FLAC · 4:35 · −1.2 dBTP"),
+            TemplateEditorPreviewRow("Burning Aquamarine", "FLAC · 5:12 · "),
         ), fixture.previewRows)
         assertEquals("From your library. The second file is not analysed yet.", fixture.previewNote)
         assertEquals(0, fixture.errors.size)
         assertNull(fixture.help)
         assertEquals(libraryFields(), fixture.fields)
         assertTrue(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "FLAC · 4:35"), fixture.listEntry)
+        assertEquals(TemplateEditorListEntry("Track row supporting line", "FLAC · 4:35 · −1.2 dBTP"), fixture.listEntry)
     }
 
     /** With no library open, the preview rows and every field value are stand-ins. */
@@ -220,8 +219,8 @@ class TemplateEditorFixtureTest {
         assertEquals(defaultTemplate, fixture.template)
         assertEquals(-1, fixture.caret)
         assertEquals(listOf(
-            TemplateEditorPreviewRow("Track title", "3:20 · −1.0 dBTP"),
-            TemplateEditorPreviewRow("Track not analysed yet", "3:20"),
+            TemplateEditorPreviewRow("Track title", "3:20 −1.0 dBTP"),
+            TemplateEditorPreviewRow("Track not analysed yet", "3:20 "),
         ), fixture.previewRows)
         assertEquals("No library is open. These are sample values.", fixture.previewNote)
         assertEquals(0, fixture.errors.size)
@@ -233,10 +232,33 @@ class TemplateEditorFixtureTest {
             TemplateEditorField("Folder", "mi(folder)", "Folder"),
             TemplateEditorField("Path", "mi(path)", "Folder/File name.flac"),
             TemplateEditorField("Duration", "mi(len)", "200"),
-            TemplateEditorField("True peak", "mi(peak)", "−1.0"),
+            TemplateEditorField("True peak", "mi(peak)", "−1.0 dBTP"),
         ), fixture.fields)
         assertFalse(fixture.resetEnabled)
-        assertEquals(TemplateEditorListEntry("Track row supporting line", "3:20 · −1.0 dBTP"), fixture.listEntry)
+        assertEquals(TemplateEditorListEntry("Track row supporting line", "3:20 −1.0 dBTP"), fixture.listEntry)
+    }
+
+    /**
+     * What: `previewRows[1]` reads the second row by position, as an array index does in TypeScript,
+     * and `.supporting` reads its line. Each expected text is written inline, trailing space included.
+     * Why: Plain substitution keeps the literal text before a field that yields nothing, so the row
+     * of a file not analysed yet ends in a space, exactly as the reference prints it. A line trimmed
+     * anywhere between the reference and the fixture fails here by name.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * expect(templateEditorFixture('default').previewRows[1].supporting).toBe('5:12 ');
+     * ```
+     */
+    @Test fun unanalysedRowKeepsTheSpaceBeforeItsEmptyPeak() {
+        assertEquals("5:12 ", templateEditorFixture("default").previewRows[1].supporting)
+        assertEquals("FLAC · 5:12 · ", templateEditorFixture("custom").previewRows[1].supporting)
+        assertEquals("3:20 ", templateEditorFixture("no-library").previewRows[1].supporting)
+    }
+
+    /** The default template is two formulas and the space between them, with no condition. */
+    @Test fun defaultTemplateIsPlainSubstitution() {
+        assertEquals("\$tf(mi(len), m:ss)\$ \$mi(peak)\$", templateEditorFixture("default").template)
     }
 
     /**
@@ -349,51 +371,17 @@ class TemplateEditorFixtureTest {
     }
 
     /**
-     * What: `templateEditorLayout(null)` passes Kotlin's null, the value an Android launch yields
+     * What: `templateEditorPosition(null)` passes Kotlin's null, the value an Android launch yields
      * for a name it was not given.
-     * Why: A launch that names no layout must keep `flow`, the layout every scene was authored in.
-     * The layout and position names are this study's own presentation choices, not text the
-     * reference prints, so they are checked against the names the study's launches use.
+     * Why: A launch that names no position must leave the scrolling body at its top. The position
+     * names are this study's own presentation choices, not text the reference prints, so they are
+     * checked against the names the study's launches use.
      *
      * In TS you'd write (pseudocode):
      * ```ts
-     * test('layout default', () => { expect(templateEditorLayout(null)).toBe('flow'); });
+     * test('position default', () => { expect(templateEditorPosition(null)).toBe('top'); });
      * ```
      */
-    @Test fun layoutDefaultsToFlowWhenTheLaunchNamesNone() {
-        assertEquals("flow", templateEditorLayout(null))
-    }
-
-    /** Each of the three layout names is returned exactly as given. */
-    @Test fun layoutKeepsEachAllowedName() {
-        assertEquals("flow", templateEditorLayout("flow"))
-        assertEquals("rows", templateEditorLayout("rows"))
-        assertEquals("lines", templateEditorLayout("lines"))
-    }
-
-    /** A layout name outside the three stops the study with a message naming it. */
-    @Test fun unknownLayoutIsRejectedByName() {
-        var message: String? = null
-        try {
-            templateEditorLayout("grid")
-        } catch (error: IllegalArgumentException) {
-            message = error.message
-        }
-        assertEquals("Unknown template editor layout: grid", message)
-    }
-
-    /** An empty layout name is rejected like any other unknown name, never read as the default. */
-    @Test fun emptyLayoutNameIsRejected() {
-        var message: String? = null
-        try {
-            templateEditorLayout("")
-        } catch (error: IllegalArgumentException) {
-            message = error.message
-        }
-        assertEquals("Unknown template editor layout: ", message)
-    }
-
-    /** A launch that names no position leaves the scrolling body at its top. */
     @Test fun positionDefaultsToTopWhenTheLaunchNamesNone() {
         assertEquals("top", templateEditorPosition(null))
     }
@@ -426,10 +414,9 @@ class TemplateEditorFixtureTest {
         assertEquals("Unknown template editor position: ", message)
     }
 
-    /** An authored scene carries the default layout and position until a launch replaces them. */
-    @Test fun authoredSceneCarriesTheDefaultLayoutAndPosition() {
+    /** An authored scene carries the default position until a launch replaces it. */
+    @Test fun authoredSceneCarriesTheDefaultPosition() {
         val fixture: TemplateEditorFixture = templateEditorFixture("help")
-        assertEquals("flow", fixture.layout)
         assertEquals("top", fixture.position)
     }
 }

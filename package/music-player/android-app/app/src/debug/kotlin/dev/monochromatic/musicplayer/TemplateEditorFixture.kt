@@ -88,17 +88,17 @@ internal data class TemplateEditorListEntry(
  * `List<T>` is a read-only ordered collection; its siblings are MutableList (changeable after
  * creation) and Array (fixed-size, compared by identity). `TemplateEditorHelp?` ends in `?`, which
  * makes it nullable: a help record or null. Boolean is exactly true or false; its sibling is the
- * nullable Boolean?, which adds a third "unset" value. The last two fields end in `= "flow"` and
- * `= "top"`: a default value, used whenever a constructor call leaves that field out. The sibling a
- * reader might expect for these two is an enum class, Kotlin's closed list of named values.
+ * nullable Boolean?, which adds a third "unset" value. The last field ends in `= "top"`: a default
+ * value, used whenever a constructor call leaves that field out. The sibling a reader might expect
+ * for it is an enum class, Kotlin's closed list of named values.
  * Why: `caret` uses Int (not Long or Int?) because a text position fits 32 bits and -1 already says
  * "the field is not focused", so no null check is needed. The lists use List (not MutableList or
  * Array) for value equality in tests and so no state can be edited after it is authored. `help` is
  * nullable (not an empty record) because most states draw no help at all. `resetEnabled` uses
- * Boolean (not Boolean?) because the button is either usable or not. `layout` and `position` have
- * defaults so every authored scene keeps the `flow` layout at the `top` position without naming
- * them, and a launch replaces them only when it asks for another presentation. They are String
- * (not an enum class) because the launch carries them as text, the way `page` already is.
+ * Boolean (not Boolean?) because the button is either usable or not. `position` has a default so
+ * every authored scene rests at the `top` without naming it, and a launch replaces it only when it
+ * asks for the end of the page. It is String (not an enum class) because the launch carries it as
+ * text, the way `page` already is.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -106,10 +106,9 @@ internal data class TemplateEditorListEntry(
  *   page: 'list' | 'editor'; template: string; caret: number;
  *   previewRows: readonly TemplateEditorPreviewRow[]; previewNote: string; errors: readonly string[];
  *   help: TemplateEditorHelp | null; fields: readonly TemplateEditorField[];
- *   resetEnabled: boolean; listEntry: TemplateEditorListEntry;
- *   layout: 'flow' | 'rows' | 'lines'; position: 'top' | 'end';
+ *   resetEnabled: boolean; listEntry: TemplateEditorListEntry; position: 'top' | 'end';
  * }>;
- * // A function building one defaults the last two: ({ layout = 'flow', position = 'top', ...rest }) => ...
+ * // A function building one defaults the last field: ({ position = 'top', ...rest }) => ...
  * ```
  */
 internal data class TemplateEditorFixture(
@@ -133,8 +132,6 @@ internal data class TemplateEditorFixture(
     val resetEnabled: Boolean,
     /** How the Settings page lists this template. */
     val listEntry: TemplateEditorListEntry,
-    /** Where the preview is drawn: `flow` inside the scrolling body, `rows` or `lines` pinned over it. */
-    val layout: String = "flow",
     /** Where the scrolling body rests: `top` (a focused field may move it), or `end` for its last pixel. */
     val position: String = "top",
 )
@@ -142,35 +139,39 @@ internal data class TemplateEditorFixture(
 /**
  * What: `private val` at file level is a constant only this file can read. Inside a Kotlin string,
  * `$name` splices a variable the way `${name}` does in a TypeScript template literal, so every
- * literal dollar sign is written `\$`; `\"` is a literal double quote.
+ * literal dollar sign is written `\$`.
  * Why: Four states show the default template, so it is written once and they cannot drift apart.
+ * It is two formulas and the space between them, with no condition: an empty field is plain
+ * substitution (D93), and `mi(peak)` yields the peak with its unit, or nothing before analysis.
  * Gotcha: An unescaped `$tf` would be read as "insert the variable tf" and fail to compile.
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * const templateEditorDefaultTemplate = '$tf(mi(len), m:ss)$$if(mi(peak) != "", " · " + mi(peak) + " dBTP")$';
+ * const templateEditorDefaultTemplate = '$tf(mi(len), m:ss)$ $mi(peak)$';
  * ```
  */
-private val templateEditorDefaultTemplate: String =
-    "\$tf(mi(len), m:ss)\$\$if(mi(peak) != \"\", \" · \" + mi(peak) + \" dBTP\")\$"
+private val templateEditorDefaultTemplate: String = "\$tf(mi(len), m:ss)\$ \$mi(peak)\$"
 
 /**
  * What: `listOf(a, b)` builds a read-only List from its arguments; each argument constructs one
  * record by passing its fields in declaration order.
  * Why: These are the default template's two results for the authored library: the first file is
- * analysed and shows its true peak, the second is not analysed yet and shows its duration alone.
+ * analysed and shows its duration and true peak, the second is not analysed yet, so its peak
+ * yields nothing.
+ * Gotcha: The second line is `5:12 ` with a trailing space. Plain substitution keeps the literal
+ * space between the two formulas even when the second one is empty, and the reference prints it.
  *
  * In TS you'd write (pseudocode):
  * ```ts
  * const templateEditorLibraryRows = [
- *   { title: 'Another Xronixle', supporting: '4:35 · −1.2 dBTP' },
- *   { title: 'Burning Aquamarine', supporting: '5:12' },
+ *   { title: 'Another Xronixle', supporting: '4:35 −1.2 dBTP' },
+ *   { title: 'Burning Aquamarine', supporting: '5:12 ' },
  * ] as const;
  * ```
  */
 private val templateEditorLibraryRows: List<TemplateEditorPreviewRow> = listOf(
-    TemplateEditorPreviewRow("Another Xronixle", "4:35 · −1.2 dBTP"),
-    TemplateEditorPreviewRow("Burning Aquamarine", "5:12"),
+    TemplateEditorPreviewRow("Another Xronixle", "4:35 −1.2 dBTP"),
+    TemplateEditorPreviewRow("Burning Aquamarine", "5:12 "),
 )
 
 /**
@@ -189,7 +190,7 @@ private val templateEditorLibraryFields: List<TemplateEditorField> = listOf(
     TemplateEditorField("Folder", "mi(folder)", "Camellia"),
     TemplateEditorField("Path", "mi(path)", "Camellia/かめりあ(Camellia) - Another Xronixle.flac"),
     TemplateEditorField("Duration", "mi(len)", "275"),
-    TemplateEditorField("True peak", "mi(peak)", "−1.2"),
+    TemplateEditorField("True peak", "mi(peak)", "−1.2 dBTP"),
 )
 
 /**
@@ -221,11 +222,11 @@ private val templateEditorKeptNote: String = "Rows keep the last valid template.
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * const templateEditorLibraryEntry = { title: 'Track row supporting line', supporting: '4:35 · −1.2 dBTP' } as const;
+ * const templateEditorLibraryEntry = { title: 'Track row supporting line', supporting: '4:35 −1.2 dBTP' } as const;
  * ```
  */
 private val templateEditorLibraryEntry: TemplateEditorListEntry =
-    TemplateEditorListEntry("Track row supporting line", "4:35 · −1.2 dBTP")
+    TemplateEditorListEntry("Track row supporting line", "4:35 −1.2 dBTP")
 
 /**
  * What: A named function returns the authored record for one exact scene name, and throws for any
@@ -303,11 +304,12 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
         )
     }
     if (scene == "unknown-field") {
-        // A misspelt field name: one error line, and the rows keep the default template's results.
+        // A misspelt field name with the caret at the end of the template: one error line, and the
+        // rows keep the default template's results.
         return TemplateEditorFixture(
             page = "editor",
-            template = "\$tf(mi(len), m:ss)\$ · \$mi(peek)\$ dBTP",
-            caret = 37,
+            template = "\$tf(mi(len), m:ss)\$ \$mi(peek)\$",
+            caret = 30,
             previewRows = templateEditorLibraryRows,
             previewNote = templateEditorKeptNote,
             errors = listOf("mi: unknown field peek"),
@@ -333,21 +335,23 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
         )
     }
     if (scene == "custom") {
-        // A valid template other than the default: both rows change and the way back is usable.
+        // A valid template other than the default, with ` · ` written between its three formulas:
+        // both rows change and the way back is usable. The second row's line ends in that separator,
+        // trailing space included, because plain substitution keeps literal text when the peak is empty.
         return TemplateEditorFixture(
             page = "editor",
-            template = "\$tc(up, mi(ext))\$ · \$tf(mi(len), m:ss)\$",
+            template = "\$tc(up, mi(ext))\$ · \$tf(mi(len), m:ss)\$ · \$mi(peak)\$",
             caret = -1,
             previewRows = listOf(
-                TemplateEditorPreviewRow("Another Xronixle", "FLAC · 4:35"),
-                TemplateEditorPreviewRow("Burning Aquamarine", "FLAC · 5:12"),
+                TemplateEditorPreviewRow("Another Xronixle", "FLAC · 4:35 · −1.2 dBTP"),
+                TemplateEditorPreviewRow("Burning Aquamarine", "FLAC · 5:12 · "),
             ),
             previewNote = templateEditorLibraryNote,
             errors = listOf(),
             help = null,
             fields = templateEditorLibraryFields,
             resetEnabled = true,
-            listEntry = TemplateEditorListEntry("Track row supporting line", "FLAC · 4:35"),
+            listEntry = TemplateEditorListEntry("Track row supporting line", "FLAC · 4:35 · −1.2 dBTP"),
         )
     }
     if (scene == "no-library") {
@@ -357,8 +361,8 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
             template = templateEditorDefaultTemplate,
             caret = -1,
             previewRows = listOf(
-                TemplateEditorPreviewRow("Track title", "3:20 · −1.0 dBTP"),
-                TemplateEditorPreviewRow("Track not analysed yet", "3:20"),
+                TemplateEditorPreviewRow("Track title", "3:20 −1.0 dBTP"),
+                TemplateEditorPreviewRow("Track not analysed yet", "3:20 "),
             ),
             previewNote = "No library is open. These are sample values.",
             errors = listOf(),
@@ -370,10 +374,10 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
                 TemplateEditorField("Folder", "mi(folder)", "Folder"),
                 TemplateEditorField("Path", "mi(path)", "Folder/File name.flac"),
                 TemplateEditorField("Duration", "mi(len)", "200"),
-                TemplateEditorField("True peak", "mi(peak)", "−1.0"),
+                TemplateEditorField("True peak", "mi(peak)", "−1.0 dBTP"),
             ),
             resetEnabled = false,
-            listEntry = TemplateEditorListEntry("Track row supporting line", "3:20 · −1.0 dBTP"),
+            listEntry = TemplateEditorListEntry("Track row supporting line", "3:20 −1.0 dBTP"),
         )
     }
     // What: `throw` raises an exception; `$scene` splices the rejected name into the message.
@@ -387,37 +391,10 @@ internal fun templateEditorFixture(scene: String): TemplateEditorFixture {
 }
 
 /**
- * What: A named function turns a launch's optional layout value into one of the three layout names.
+ * What: A named function turns a launch's optional position value into one of the two position names.
  * `String?` is text or null, and null is what a launch yields for a value it was not given. Once
  * the `name == null` check has returned, Kotlin treats `name` as certainly text for the rest of the
  * function, the way TypeScript narrows `string | null`.
- * Why: A launch that names no layout keeps `flow`, the layout every scene was authored in, and a
- * mistyped name stops the study instead of drawing `flow` under another layout's label.
- *
- * In TS you'd write (pseudocode):
- * ```ts
- * function templateEditorLayout(name: string | null): 'flow' | 'rows' | 'lines' {
- *   if (name === null) return 'flow';
- *   if (name === 'flow' || name === 'rows' || name === 'lines') return name;
- *   throw new Error(`Unknown template editor layout: ${name}`);
- * }
- * ```
- */
-internal fun templateEditorLayout(name: String?): String {
-    // No value given: the preview scrolls with the rest of the body.
-    if (name == null) return "flow"
-    // The same layout, asked for by name.
-    if (name == "flow") return name
-    // Both preview rows stay pinned over the scrolling body.
-    if (name == "rows") return name
-    // Only each preview row's supporting line stays pinned over the scrolling body.
-    if (name == "lines") return name
-    // Any other name, the empty one included, is a mistake in the launch and never a default.
-    throw IllegalArgumentException("Unknown template editor layout: $name")
-}
-
-/**
- * What: A named function turns a launch's optional position value into one of the two position names.
  * Why: A launch that names no position leaves the body at the `top`, where a focused field may
  * still move it; `end` asks for the body's last pixel, which is how the end of a long page is
  * captured. A mistyped name stops the study instead of capturing the wrong part of the page.
