@@ -94,7 +94,8 @@ const fontConfig = join(artifact, 'fonts.conf');
 writeFileSync(fontConfig, '<fontconfig><dir>/usr/share/fonts</dir><cachedir prefix="xdg">fontconfig</cachedir></fontconfig>');
 for (const name of ['config', 'cache', 'data']) mkdirSync(join(artifact, name));
 const runtime = [join(origin, 'target/debug/runtime'), join(cache, 'debug/runtime')].find(existsSync);
-const environment = { ...process.env, SLINT_BACKEND: 'winit', FONTCONFIG_FILE: fontConfig, XDG_CONFIG_HOME: join(artifact, 'config'), XDG_CACHE_HOME: join(artifact, 'cache'), XDG_DATA_HOME: join(artifact, 'data') };
+// The measurement reads the IDE's debug lines; a build that logs warnings by default shows more when RUST_LOG asks.
+const environment = { ...process.env, RUST_LOG: 'ide_app=debug,monochromatic_ide=debug', SLINT_BACKEND: 'winit', FONTCONFIG_FILE: fontConfig, XDG_CONFIG_HOME: join(artifact, 'config'), XDG_CACHE_HOME: join(artifact, 'cache'), XDG_DATA_HOME: join(artifact, 'data') };
 if (runtime) environment.HELIX_RUNTIME = runtime;
 delete environment.SLINT_MCP_PORT;
 
