@@ -229,6 +229,29 @@ impl TextShaper {
         return layout;
     }
 
+    /// Prototype variant: one hint label in the source family's real italic face at 13 px.
+    pub fn hint_layout(&mut self, text: &str, scale: f32) -> Layout<u32> {
+        let mut builder = self
+            .layouts
+            .ranged_builder(&mut self.fonts, text, scale, true);
+        builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
+            Cow::Borrowed("JetBrains Mono"),
+        )));
+        builder.push_default(StyleProperty::FontSize(ROW_TEXT));
+        builder.push_default(StyleProperty::FontWeight(FontWeight::new(
+            self.typography.weight,
+        )));
+        builder.push_default(StyleProperty::FontStyle(FontStyle::Italic));
+        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(ROW_HEIGHT)));
+        builder.push_default(StyleProperty::Brush(ROW_ROLE));
+        builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
+            Cow::Borrowed(&self.typography.features),
+        )));
+        let mut layout = builder.build(text);
+        layout.break_all_lines(None);
+        return layout;
+    }
+
     /// Physical advance of one space in the source font at `scale`, measured once per scale.
     /// Tab stops are multiples of this advance, so it comes from the font, not from an assumed cell width.
     pub(crate) fn space_advance(&mut self, scale: f32) -> f32 {

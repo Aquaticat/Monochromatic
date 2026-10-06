@@ -190,8 +190,9 @@ pub fn pack(
     let mut end: f32 = 0.0;
     for label in labels {
         let x = row.caret_x(label.position, scale);
-        let width = shaper.row_layout(&label.text, scale).full_width() / scale;
-        if rows == 0 || x < end + HINT_GAP {
+        // Prototype variant: the italic label, and boxes 5 px wider on each side that keep the gap between them.
+        let width = shaper.hint_layout(&label.text, scale).full_width() / scale;
+        if rows == 0 || x < end + HINT_GAP + 10.0 {
             rows += 1;
         }
         places.push(HintPlace {
@@ -250,7 +251,7 @@ pub fn lay_out(
             continue;
         };
         for hint in &block.hints {
-            let layout = shaper.row_layout(&hint.text, scale);
+            let layout = shaper.hint_layout(&hint.text, scale);
             let x = row.caret_x(hint.position, scale);
             let width = layout.full_width() / scale;
             extent = extent.max(x + width);
