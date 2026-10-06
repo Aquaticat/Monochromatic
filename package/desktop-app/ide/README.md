@@ -2087,6 +2087,16 @@ with the parser load no longer renewing the marker,
   a common word reached the 30-result cap in 33 ms.
   Run directly with the same arguments,
   the content search for a query that matches nothing took 456 ms to 11,383 ms (three runs, cold page cache first).
+- After the 30-day cleanup and `--licenses` (commit `0fe1d7ed8`):
+  the executable is 81,766,496 bytes,
+  22,512 more,
+  with the same embedded table (1,254 files, key `c47e913b79bf6a42`);
+  `--licenses` printed 34 texts in 117,354 bytes;
+  the start-time sweep of the runtime cache folder took 36 to 116 µs in the ten bundle-check sessions
+  that had nothing to remove,
+  and 438 µs in `old-cache-folders-removed`,
+  which removed a key folder and the rest of a cut-short removal
+  (host load average 69.5 when the checks started).
 
 ### Measured on 2026-10-05 (former directory bundle)
 
