@@ -388,27 +388,34 @@ No difference was found outside the probes.
 
 Each planted defect was built in a disposable copy of the crate
 (`--plant`),
-and the same corpus was compared again:
+and the same corpus was compared again,
+on the tree of commit `7d9808522`;
+each run exited 1:
 
 - `wrong-component`
   (the minor component bumped instead of the patch):
   10 unit,
   10 repository,
-  731 generated and 23 probe cases reported
-  (evidence `dependent-version-ZZ6zuR`).
+  744 generated
+  (every generated case whose plan has a bump)
+  and 22 probe cases reported
+  (evidence `dependent-version-LgLt1u`).
 - `skip-peer-dependencies`
   (`peerDependencies` dropped from the runtime fields):
   1 unit,
-  254 generated and 4 probe cases reported;
+  258 generated and 5 probe cases reported;
   no repository case,
   since no workspace manifest here names a workspace package under `peerDependencies`
-  (evidence `dependent-version-ZYkRJh`).
+  (evidence `dependent-version-QUy0hL`).
 - `skip-bundled-edges`
   (confirmed bundled edges dropped from the walk):
   2 unit,
   9 repository,
-  162 generated and 4 probe cases reported
-  (evidence `dependent-version-H7Ux9B`).
+  193 generated and 9 probe cases reported
+  (evidence `dependent-version-qBOw94`).
+
+The first harness found the same three plants
+(evidence `dependent-version-ZZ6zuR`, `dependent-version-ZYkRJh` and `dependent-version-H7Ux9B`).
 
 The driver exits 1 whenever a difference is unexplained.
 
