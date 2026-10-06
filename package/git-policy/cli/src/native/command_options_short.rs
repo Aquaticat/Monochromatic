@@ -157,7 +157,9 @@ pub(crate) fn scan_short_cluster(
             return Ok(matches!(taken, OptionValue::Detached { .. }));
         }
         // After the first letter, remaining letters get the typo check once (1082-1083).
-        if position == 2 && position < token.len() && spells_long_option(table, &token[1..]) {
+        // A cluster without remaining letters is too short to spell a long option, which
+        // the check itself decides, so no length is compared here.
+        if position == 2 && spells_long_option(table, &token[1..]) {
             return Err(OptionError {
                 kind: OptionErrorKind::SingleDashLongOption,
                 token: index,
