@@ -28,42 +28,88 @@ or with the next scope to mutate.
 
 ## Result
 
-All three campaigns exit 0 with no missed mutant and no timeout,
-against one test image,
-`5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`,
-built from linter source tree `ceb495865521beda0f988a536435ffd69cc1d100`.
-That tree,
-the mutation runner and the package tasks are unchanged at the commit that adds this section.
-Each campaign passes both exclusion patterns and keeps the 180 second per-mutant limit.
+Every production mutant was tried against one test image,
+`7526e26a714499174ff012c45175059ac39127333510cc8fa405264c902499f7`,
+built from linter source tree `c5f934d97d7579d9eca66741241ecc47291cc877`:
+no campaign missed a mutant,
+and the one timeout,
+in the executable scope,
+was caught when its file was rerun once on the same image.
+The scopes hold all 1,650 mutants of the unscoped listing with both exclusion patterns,
+name by name (`coverage-potTv8`),
+and every one of those names is in the outcomes of a campaign below.
+Each campaign passes both exclusion patterns;
+the semantic scope has a 1,200 second per-mutant limit and every other scope 180 seconds.
 
 - Executable scope,
-  `mutation-Sh3zLV`:
-  184 mutants,
-  131 caught,
-  53 unviable.
+  `mutation-zRZK4y`:
+  239 mutants,
+  178 caught,
+  60 unviable,
+  1 timeout,
+  exit status 3.
+  The timeout is `src/path_inputs.rs:21:22: replace == with != in has_glob`,
+  whose own test failed at once while two unrelated concurrency tests ran past 60 seconds on a loaded host.
+  The rerun of that file's 25 mutants on the same image,
+  `mutation-m8iNlm`,
+  caught 24 and found 1 unviable,
+  with no timeout and exit status 0;
+  the mutant failed its test in 1.1 seconds there.
+- Core scope,
+  `mutation-ZFIBGQ` and `mutation-URkAcl` (shards 0/2 and 1/2):
+  202 mutants,
+  182 caught,
+  20 unviable,
+  exit status 0 for both.
+- Semantic scope,
+  `mutation-9mpnyq`,
+  `mutation-ZtKdA6` and `mutation-Mq0oAq` (shards 0/3 to 2/3):
+  97 mutants,
+  75 caught,
+  22 unviable,
+  exit status 0 for all three.
 - Markdown scope,
-  `mutation-RjKWfe`:
+  `mutation-M41Su2` and `mutation-9AM99n` (shards 0/2 and 1/2):
   742 mutants,
   698 caught,
-  44 unviable.
+  44 unviable,
+  exit status 0 for both.
 - Processor scope,
-  `mutation-uVvFQn`:
+  `mutation-URvHN4`:
   355 mutants,
   330 caught,
-  25 unviable.
+  25 unviable,
+  exit status 0.
+- Constant-slot scope,
+  `mutation-bj1zDp`:
+  12 mutants,
+  10 caught,
+  2 unviable.
+- Parent-lookup scope,
+  `mutation-Ah0n0W`:
+  4 mutants,
+  4 caught.
+- Anonymous-function scope,
+  `mutation-F5vbwg`:
+  3 mutants,
+  2 caught,
+  1 unviable.
+- The five planted guard removals of the inline `mutation:processors` task,
+  `processors-mutation-NREykG`:
+  5 caught,
+  exit status 0,
+  on processor image `40bb315c9a71364031f0d9b425e14c411943523674fd641d6a068a6c153641dc`,
+  which `test:processors` built from the same test image and the same source tree.
 
-`Final campaigns` has the gate,
-the logs and the rounds that came before this one.
-No mutant exposed a defect on unmutated input;
-`Defects found` says what the campaigns did expose.
-`Remaining` lists what no campaign here covers.
-
-A second round on 2026-10-06 is closing the items that were under `Remaining`:
-every production module now belongs to a scope,
-and the executable lints every invocation on a thread with an explicit stack.
-`Gaps round` records its changes and evidence;
-its campaigns are still running,
-so the counts in this section describe the first round only.
+No campaign recorded a missed mutant.
+`Gaps round` has the gate,
+the discovery campaigns,
+the survivors they found and how each was killed,
+and the fuzz sidecar's run against the final library.
+`Final campaigns` keeps the first round,
+whose three campaigns passed on image `5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`.
+`Defects found` says what the campaigns and the stack reproduction exposed,
+and `Remaining` what is still open.
 
 ## Excluded mutation kinds
 
@@ -1017,7 +1063,7 @@ The parent-lookup scope is a subset of the Markdown scope,
 and the inline `mutation:processors` task a subset of the processor scope.
 The positive control is a copy of the runner without the core scope:
 it fails with 202 mutants outside every scope (`coverage-99OU43`).
-The comparison is repeated on the final tree once the round's campaigns are done.
+The comparison on the final tree is under `Final round`.
 
 Before this round the union was 347 mutants short,
 not only the 72 of the six files the first round listed as never mutated:
@@ -1298,6 +1344,106 @@ and the final round is the proof by cargo-mutants.
   Under the mutant the generated preparation reported 2 findings instead of 1 in the container,
   because the unexpanded macro left the call unresolved.
 
+### Final round
+
+Gate `gate-mutation-gaps-2.log`,
+at repository head `066b14ec5`,
+linter source tree `c5f934d97d7579d9eca66741241ecc47291cc877`
+with no uncommitted change under the package:
+389 library tests passed and one was ignored in 173.31 seconds,
+13 `binary` tests passed in 1.04 seconds,
+and Clippy with `-D warnings` finished with no finding.
+Test image `7526e26a714499174ff012c45175059ac39127333510cc8fa405264c902499f7`.
+Every campaign of the round,
+with its manifest's `baseImage`,
+mutated this image;
+the step logs' closing `test image` line shows the tag at the moment a step ended
+and is not the campaign's image.
+Commits after the gate change only the runner and this document;
+`src` is the same tree at the last commit,
+and no package file was edited while the round ran.
+
+`test:processors` (`gate-processors-gaps-final.log`) built processor image
+`40bb315c9a71364031f0d9b425e14c411943523674fd641d6a068a6c153641dc` from the test image
+and the working tree's `src` and `fixtures`,
+at the same head and source tree:
+389 library and 13 `binary` tests passed and the consumer program ran.
+The inline `mutation:processors` task mutated that image.
+
+The campaigns ran in six chains at once,
+three of them the semantic shards,
+and later the two core shards and the fuzz smoke run beside them,
+each in its own 2-CPU container,
+at host load averages of about 45 to 95 on 16 cores.
+Per-mutant test phases followed that load:
+
+- Executable scope:
+  baseline 43.8 seconds,
+  six caught mutants between 120 and 146.1 seconds,
+  and the one timeout at 180 seconds.
+  The timed-out mutant's log ends with
+  `run_workers::tests::every_limit_processes_each_plan_once_in_plan_order` and
+  `run_write::tests::concurrent_replacements_do_not_collide` running for over 60 seconds,
+  after `relative_absolute_and_literal_inputs_share_one_native_result_set` had already failed;
+  the same mutant failed its tests in 2.0 seconds in discovery and in 1.1 seconds in the rerun.
+- Core scope:
+  baselines 139.8 and 17.9 seconds,
+  longest caught mutants 136.2 and 128.8 seconds.
+- Semantic scope:
+  baselines 242.6,
+  258.3 and 365.6 seconds,
+  longest mutants 315.8,
+  298.4 and 357.8 seconds.
+  The 1,200 second limit was 4.8 times the 251 second discovery baseline it was set from,
+  and 4.9,
+  4.6 and 3.3 times these three;
+  cargo-mutants' own automatic limit would be five times the baseline.
+- Markdown and processor scopes:
+  longest mutants 67.7 and 24.8 seconds.
+
+The Markdown and processor scopes' mutated files,
+their listings and the fixtures are unchanged since the first round;
+both were rerun so that every scope has a result on this image,
+and their caught and unviable counts equal the first round's.
+
+Three things were stopped or lost on purpose or by accident,
+none of them a result:
+
+- The first launch of this round,
+  at 16:00 UTC,
+  died before any campaign container existed:
+  all six drivers ended at once with no exit line,
+  for a reason not found in the journal.
+  They left the empty evidence directories `mutation-OV61jL`,
+  `mutation-BV6Pgt`,
+  `mutation-JVeXz3`,
+  `mutation-pRdJIF` and `mutation-VPYDyQ`.
+  The relaunch started the six chains 20 seconds apart from one orchestrator.
+- The core scope ran as two shards started beside the executable campaign,
+  so the unsharded core step of the executable chain,
+  `mutation-vBdCI7`,
+  had its container removed as it started;
+  its `exit.json` records the removal.
+- `mutation-m8iNlm` is the rerun of `src/path_inputs.rs` in the executable scope,
+  with `-- --re '^src/path_inputs\.rs:'`,
+  the scope's own files and test selection,
+  and the 180 second limit;
+  its baseline tested in 2.6 seconds.
+
+`mutation:coverage` on the final tree (`coverage-potTv8`) again reports 1,650 unscoped mutants,
+a union of 1,650,
+none outside every scope and none unknown,
+and each scope's listing equals the mutant names in its campaigns' outcomes:
+executable 239,
+core 202,
+semantic 97,
+Markdown 742,
+processors 355,
+constant slots 12,
+parent lookup 4 and rust-style 3.
+The 7 mutants more than on tree `ceb495865521beda0f988a536435ffd69cc1d100` are the new functions of `run_process.rs`
+and `run_workers.rs` (6) and the named `cargo_config` (1).
+
 ### Fuzz sidecar against the final library
 
 The sidecar had no planted-defect controls.
@@ -1366,10 +1512,14 @@ by the listing comparison under `Coverage by listing`.
 
 The executable and core scopes start child processes and threads,
 and their test phases follow host load.
-In the final round the executable scope's baseline tested in 43 seconds,
+In the final round the executable scope's baseline tested in 43.8 seconds,
 six times its 7 seconds in discovery,
-and one mutant reached the 180 second limit while two unrelated concurrency tests were still running;
-`Final round` has the rerun.
+six caught mutants took 120 to 146.1 seconds,
+and one reached the 180 second limit while two unrelated concurrency tests were still running;
+one core shard's baseline took 139.8 seconds and its longest mutant 136.2.
+So the 180 second limit holds about 1.2 times the slowest caught mutant on a host loaded like that one,
+and a busier host would record timeouts that are only load;
+`Final round` has the rerun that disposed of the one it did record.
 A timeout in these scopes should be read against the baseline of its own run
 and the tests named as still running in the mutant's log
 before it is treated as a stall,
