@@ -264,7 +264,7 @@ await describe({
             },);
 
             expect(refusalOfDrawFromNothing,).toBeInstanceOf(BenchDrawError,);
-            expect((refusalOfDrawFromNothing as Error).message,).toContain('no slices',);
+            expect(String(refusalOfDrawFromNothing,),).toBe('BenchDrawError: a bench sample cannot be drawn from no slices',);
           },
         },),
       ],
@@ -302,16 +302,23 @@ await describe({
             + 'is the run-to-run band every width difference has to clear and the '
             + 'ends are its least representative points',
           fn: async () => {
-            const { widths, repeated, } = benchWidths({ roster: [
+            expect(benchWidths({ roster: [
               'a',
               'b',
               'c',
               'd',
               'e',
               'f',
-            ], },);
-            expect(repeated,).toBe(4,);
-            expect(widths,).toContain(repeated,);
+            ], },),).toEqual({
+              widths: [
+                2,
+                3,
+                4,
+                5,
+                6,
+              ],
+              repeated: 4,
+            },);
           },
         },),
 
@@ -327,7 +334,7 @@ await describe({
             },);
 
             expect(refusalOfBenchOneModel,).toBeInstanceOf(BenchReportError,);
-            expect((refusalOfBenchOneModel as Error).message,).toContain('nothing to vary',);
+            expect(String(refusalOfBenchOneModel,),).toBe('BenchReportError: a roster of 1 cannot be benched: nothing to vary',);
           },
         },),
       ],

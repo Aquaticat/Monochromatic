@@ -327,6 +327,48 @@ await describe({
         },),
 
         it({
+          name: 'ENDS A RUN AT EVERY WHITESPACE THE PARSE ENDS AN ADDRESS AT, the no-break, ideographic and other '
+            + 'Unicode spaces and the line and paragraph separators among them, after a trail as after a path, and '
+            + 'goes on past a next line mark and a zero-width space, which are no whitespace to the parse',
+          fn: async () => {
+            /**
+             Texts with the address the parse reads, each held to the scanner's: one per character after a
+             path, then a trail before a space past ASCII.
+             */
+            const texts = [
+              ...[
+                '\u{00A0}',
+                '\u{1680}',
+                '\u{2000}',
+                '\u{200A}',
+                '\u{2028}',
+                '\u{2029}',
+                '\u{202F}',
+                '\u{205F}',
+                '\u{3000}',
+                '\u{FEFF}',
+                '\u{000B}',
+                '\u{000C}',
+                '\u{0085}',
+                '\u{200B}',
+              ]
+                .map(function spaced(space,): string {
+                  return `see https://c.example/a${space}then`;
+                },),
+              'see https://c.example/a.\u{3000}then',
+              'see https://c.example/a]\u{00A0}then',
+              'see https://c.example/a&amp;\u{2028}then',
+              'see https://c.example/a)\u{3000}then',
+            ];
+            expect(texts.map(function scanned(text,): string {
+              return scanUrlRuns({ text, },).join('|',);
+            },),).toEqual(texts.map(function parsed(text,): string {
+              return parsedAddressesOf({ text, },).join('|',);
+            },),);
+          },
+        },),
+
+        it({
           name: 'READS THE ADDRESSES THE TREE READER READS over every generated text: the paths and sentences of '
             + 'the trail rule\'s forms (punctuation, emphasis marks, parentheses, character references, brackets), '
             + 'so the scanner and the tree reader name one address where the parse sheds a trail',
@@ -613,6 +655,22 @@ await describe({
             expect(check.dropped,).toStrictEqual([HOME,],);
             expect(check.page,).toHaveLength(2,);
             expect(check.findings,).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS a page that keeps an address and rewrites only the words after the ideographic space ending '
+            + 'it, since the parse ends the address at that space',
+          fn: async () => {
+            expect(droppedDestinations({
+              sourceText: `她的主页：${HOME}\u{3000}猫猫的相册`,
+              pageText: `Her page: ${HOME}\u{3000}the cat's album`,
+            },),).toStrictEqual({
+              source: [HOME,],
+              page: [HOME,],
+              dropped: [],
+              findings: [],
+            },);
           },
         },),
 

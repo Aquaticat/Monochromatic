@@ -5,7 +5,8 @@
 // punctuation, the emphasis marks, balanced and unbalanced parentheses, the
 // character reference form (`&amp;`) well formed and malformed, and the
 // bracket form (`]` before whitespace, before `(` or `[`, and before
-// anything else). The texts are enumerated and sampled by a fixed stride, not
+// anything else), and whitespace past ASCII after a path and after a trail.
+// The texts are enumerated and sampled by a fixed stride, not
 // drawn at random, so a failing text is the same one on every run. They hold
 // no character the scanner ends a run at by its own choice (a quotation mark,
 // an angle bracket, a backtick, full-width punctuation), where it differs
@@ -50,7 +51,10 @@ const PATH_PIECES: readonly string[] = [
 /**
  What follows the address in the text: nothing, whitespace and words, the
  punctuation a sentence ends with, a closing parenthesis, the forms of the
- trail rule, and a bracket closing the address's own opening one.
+ trail rule, a bracket closing the address's own opening one, and whitespace
+ past ASCII (a no-break space, an ideographic space, a line separator), which
+ the parse ends an address at as it ends one at a space, after a path and
+ after each form of the trail.
  */
 const SUFFIXES: readonly string[] = [
   '',
@@ -75,6 +79,11 @@ const SUFFIXES: readonly string[] = [
   '.]',
   '_]',
   '.&amp;]',
+  '\u{00A0}then',
+  '\u{3000}then',
+  '.\u{2028}then',
+  ']\u{3000}then',
+  '&amp;\u{00A0}then',
 ];
 
 /**

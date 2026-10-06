@@ -10,11 +10,64 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { readTags, } from '../../dist/final/node/index.mjs';
+import {
+  parseMdxBody,
+  readTags,
+  requireMdxRefusal,
+} from '../../dist/final/node/index.mjs';
 import {
   grammarAcceptsDocument,
   tagNameSpellings,
 } from '../tag-name-spellings.test-fixture.ts';
+
+/**
+ A node of the strict parse as this file reads it: its kind and, on a tag,
+ its attributes with their kind and name. The MDX nodes are not among the
+ types the parse's root declares, so they are read by shape.
+ */
+type ParsedTag = {
+  readonly type: string;
+  readonly attributes?: readonly {
+    readonly type: string;
+    readonly name?: unknown;
+  }[];
+};
+
+/**
+ Names the strict grammar reads for the attributes of the one tag a document
+ opens with, or none where the grammar refuses the document.
+
+ @param document - one self-closing tag
+
+ @returns Attribute names as the parse writes them, a prefixed name without
+ the whitespace around its colon
+
+ @throws Error when the document parses to anything but a tag first, which no
+ document this file writes does
+
+ @example
+ ```ts
+ const names = grammarAttributeNames({ document: '<Cat n="1"/>\n', },); // ['n']
+ ```
+ */
+function grammarAttributeNames({ document, }: { readonly document: string; },): readonly string[] {
+  try {
+    /**
+     The node the document opens with.
+     */
+    const [element,]: readonly ParsedTag[] = parseMdxBody({ body: document, },).children;
+    if ((element?.type !== 'mdxJsxFlowElement') || (element.attributes === undefined))
+      throw new Error(`a document of one tag parsed to ${String(element?.type,)} first`,);
+    return element.attributes.map(function nameOf(attribute,): string {
+      return ((typeof attribute.name) === 'string') ? attribute.name : attribute.type;
+    },);
+  }
+  catch (error) {
+    // Only the grammar's own refusal reads as a document it does not accept.
+    requireMdxRefusal({ error, },);
+    return [];
+  }
+}
 
 /**
  Whole reading of the one readable tag every case puts first.
@@ -42,6 +95,34 @@ await describe({
           .filter(function disagrees(name,): boolean {
             return grammarAcceptsDocument({ document: `<${name} n="1"/>\n`, },)
               !== (readTags({ text: `<${name} n="1"/>\n`, },).length === 1);
+          },);
+        expect(disagreeing,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'READS AN ATTRIBUTE NAME EXACTLY WHERE THE STRICT GRAMMAR READS ONE, over every spelling of the '
+        + 'differential set: a name starting with `$`, `_` or a letter of another script is read, a prefixed name '
+        + 'is one name however its colon is spaced, and a tag whose attribute name holds a character the grammar '
+        + 'refuses, a member separator among them, is not read',
+      fn: async () => {
+        /**
+         Spellings on which the reader and the grammar name different attributes, each the one attribute of a
+         self-closing tag.
+         */
+        const disagreeing = tagNameSpellings()
+          .filter(function disagrees(name,): boolean {
+            /**
+             The one-tag document.
+             */
+            const document = `<Cat ${name}="1"/>\n`;
+            return readTags({ text: document, },)
+              .flatMap(function attributeNames(tag,): readonly string[] {
+                return tag.attributes.map(function nameOf(attribute,): string {
+                  return attribute.name;
+                },);
+              },)
+              .join('|',) !== grammarAttributeNames({ document, },).join('|',);
           },);
         expect(disagreeing,).toEqual([],);
       },

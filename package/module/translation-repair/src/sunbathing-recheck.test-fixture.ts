@@ -2,7 +2,6 @@ import {
   type AdjudicatedIssue,
   type ChunkRepairOutcome,
   hashContent,
-  type IssueCheckerReading,
   type ResolutionVerdict,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
@@ -215,49 +214,6 @@ export function everyCheckerSays(
       verdict,
     ];
   },),);
-}
-
-/**
- A recheck's readings with each issue's ballots in the bench's seat order.
-
- ORDERED HERE because the gather hears checkers in the order its bench
- rotation takes from the prompt, which says nothing about the round: the
- same ballots in another order are the same reading.
-
- @param readings - readings a recheck returned or a settled slice carries
-
- @returns Every issue's reading, ballots sorted by the checker's seat
-
- @example
- ```ts
- const readings = readingsInSeatOrder({ readings: settled.outcome.recheckReadings, },);
- ```
- */
-export function readingsInSeatOrder(
-  { readings, }: { readonly readings: Readonly<Record<string, IssueCheckerReading>>; },
-): Readonly<Record<string, IssueCheckerReading>> {
-  return Object.fromEntries(
-    Object
-      .entries(readings,)
-      .map(function toOrdered([issueId, reading,],): readonly [
-        string,
-        IssueCheckerReading,
-      ] {
-        return [
-          issueId,
-          {
-            ...reading,
-            ballots: reading.ballots
-              .toSorted(function byBenchSeat(
-                left,
-                right,
-              ): number {
-                return CHECKERS.indexOf(left.modelId,) - CHECKERS.indexOf(right.modelId,);
-              },),
-          },
-        ];
-      },),
-  );
 }
 
 //endregion Sunbathing recheck

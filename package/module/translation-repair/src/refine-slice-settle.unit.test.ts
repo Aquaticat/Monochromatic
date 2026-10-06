@@ -66,7 +66,6 @@ import {
   ADDED_WORDING,
   CHECKERS,
   everyCheckerSays,
-  readingsInSeatOrder,
   REPAIRED_TEXT,
   REWRITTEN_TEXT,
   SOURCE_TEXT,
@@ -684,7 +683,7 @@ await describe({
           'stage-quorum-unmet (checker 0/3)',
           'refine-recheck-unheard (0 of 3 checkers heard)',
         ],);
-        expect(readingsInSeatOrder({ readings: settled.outcome.recheckReadings, },),).toEqual({
+        expect(settled.outcome.recheckReadings,).toEqual({
           [SUNBATHING_ISSUE.issueId]: {
             ballots: [],
             configuredCheckers: 3,
@@ -737,7 +736,7 @@ await describe({
           ...SELECTED_FINDINGS,
           'refine-recheck-passed (1 issue)',
         ],);
-        expect(readingsInSeatOrder({ readings: settled.outcome.recheckReadings, },),).toEqual({
+        expect(settled.outcome.recheckReadings,).toEqual({
           [SUNBATHING_ISSUE.issueId]: {
             ballots: CHECKERS.map(function toBallot(modelId,) {
               return {
@@ -787,7 +786,7 @@ await describe({
           ...SELECTED_FINDINGS,
           `refine-rolled-back (${SUNBATHING_ISSUE.issueId})`,
         ],);
-        expect(readingsInSeatOrder({ readings: settled.outcome.recheckReadings, },),).toEqual({
+        expect(settled.outcome.recheckReadings,).toEqual({
           [SUNBATHING_ISSUE.issueId]: {
             ballots: [
               {

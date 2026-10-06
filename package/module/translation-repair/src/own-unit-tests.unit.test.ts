@@ -586,7 +586,6 @@ const ALLOWLIST: readonly string[] = [
   'src/consolidation-polish-round.ts',
   'src/consolidation-polish-skip.ts',
   'src/contributor-translation-guard.ts',
-  'src/corpus-git-context.ts',
   'src/corpus-run/archive-block-source-context.ts',
   'src/corpus-run/archive-italic-spans.ts',
   'src/corpus-run/archive-name-runs.ts',

@@ -20,6 +20,10 @@ import {
   scanInline,
   type ScanState,
 } from '../dist/final/node/index.mjs';
+import {
+  grammarAcceptsDocument,
+  tagNameSpellings,
+} from './tag-name-spellings.test-fixture.ts';
 
 //region Nesting inline count tests
 
@@ -208,6 +212,95 @@ await describe({
               skipDelimiters: false,
             },);
             expect(state,).toEqual({ ...freshState(), tags: 1, },);
+          },
+        },),
+        it({
+          name: 'OPENS A TAG EXACTLY WHERE THE STRICT GRAMMAR READS ITS NAME, over every spelling of the differential '
+            + 'set, so a name starting with `$`, `_` or a letter of another script opens one and a name holding a '
+            + 'character the grammar refuses opens none',
+          fn: async () => {
+            /**
+             Spellings on which the count and the grammar disagree, each written as an opening tag its line
+             closes.
+             */
+            const disagreeing = tagNameSpellings()
+              .filter(function disagrees(name,): boolean {
+                /**
+                 State after the line holding the tag.
+                 */
+                const state = freshState();
+                scanInline({
+                  line: `<${name} n="1">`,
+                  start: 0,
+                  lineNumber: 1,
+                  grammar: 'mdx',
+                  state,
+                  skipDelimiters: false,
+                },);
+                return grammarAcceptsDocument({ document: `<${name} n="1"/>\n`, },) !== (state.tags === 1);
+              },);
+            expect(disagreeing,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'READS A TAG WHOSE NAME OR SEPARATOR REACHES THE END OF ITS LINE as the strict grammar reads it, the '
+            + 'line ending stepped over inside the tag: an opener goes on to its bracket on the next line, and a '
+            + 'closer begun with `</` at a line\'s end closes on the next',
+          fn: async () => {
+            /**
+             Openers split at a line's end, each closing its angle on its second line.
+             */
+            const splits: readonly (readonly [string, string,])[] = [
+              [
+                '<Paw',
+                '>',
+              ],
+              [
+                '<Paw.',
+                'Cat>',
+              ],
+              [
+                '<Paw:',
+                'cat>',
+              ],
+            ];
+            expect(splits.map(function tagsAfter([first, second,],): number {
+              /**
+               State after both lines.
+               */
+              const state = freshState();
+              for (const [position, line,] of [first, second,].entries()) {
+                scanInline({
+                  line,
+                  start: 0,
+                  lineNumber: position + 1,
+                  grammar: 'mdx',
+                  state,
+                  skipDelimiters: false,
+                },);
+              }
+              return state.tags;
+            },),).toEqual([
+              1,
+              1,
+              1,
+            ],);
+
+            /**
+             State holding one open tag, then reading a closer split after its slash.
+             */
+            const closing = { ...freshState(), tags: 1, };
+            for (const [position, line,] of ['</', 'Paw>',].entries()) {
+              scanInline({
+                line,
+                start: 0,
+                lineNumber: position + 1,
+                grammar: 'mdx',
+                state: closing,
+                skipDelimiters: false,
+              },);
+            }
+            expect(closing,).toEqual(freshState(),);
           },
         },),
         it({

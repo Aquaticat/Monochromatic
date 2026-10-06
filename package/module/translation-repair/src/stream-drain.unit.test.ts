@@ -139,6 +139,87 @@ function streamOf({ raw, }: { readonly raw: string; },): {
 }
 
 /**
+ Wraps a model thinking the same sentence forever in a response whose body's
+ own cancellation always fails, the way a socket that will not tear down
+ cleanly behaves, counting how often that cancellation ran.
+
+ @returns Response, and a reader of how many times its body's cancel ran
+
+ @example
+ ```ts
+ const { response, cancels, } = uncancellableRunaway();
+ ```
+ */
+function uncancellableRunaway(): {
+  readonly response: Response;
+  readonly cancels: () => number;
+} {
+  /**
+   A model thinking the same sentence forever, same shape as the other
+   runaway cases, so the ending is reached the same way.
+   */
+  const raw = frameOf({
+    channel: 'reasoning',
+    text: 'I will output. ',
+  },)
+    .repeat(30_000,);
+
+  /**
+   Pieces the body hands over one at a time.
+   */
+  const pieces = Array.from(
+    { length: Math.ceil(raw.length / PIECE_CHARS,), },
+    function piece(
+      _unused,
+      at,
+    ): string {
+      return raw.slice(
+        at * PIECE_CHARS,
+        (at + 1) * PIECE_CHARS,
+      );
+    },
+  );
+
+  /**
+   How many times the underlying source's own `cancel` ran.
+   */
+  const cancelled = { count: 0, };
+
+  /**
+   Encoder, since a body carries bytes.
+   */
+  const encoder = new TextEncoder();
+
+  /**
+   A body whose own cancellation always fails.
+   */
+  const body = new ReadableStream<Uint8Array>({
+    pull(controller,): void {
+      const next = pieces.shift();
+      if (next === undefined) {
+        controller.close();
+        return;
+      }
+      controller.enqueue(encoder.encode(next,),);
+    },
+    cancel(): never {
+      cancelled.count += 1;
+      throw quotingFailure();
+    },
+  },);
+
+  return {
+    response: new Response(
+      body,
+      { headers: { 'content-type': 'text/event-stream', }, },
+    ),
+    cancels(): number {
+      return cancelled.count;
+    },
+  };
+}
+
+/**
  What one drain did, as a value.
 
  @example
@@ -607,60 +688,12 @@ await describe({
         + 'replace the reason the call was ended with a reason it could not be torn down',
       fn: async () => {
         /**
-         A model thinking the same sentence forever, same shape as the other
-         runaway cases, so the ending is reached the same way.
+         A runaway whose body's cancellation always fails.
          */
-        const raw = frameOf({
-          channel: 'reasoning',
-          text: 'I will output. ',
-        },)
-          .repeat(30_000,);
-
-        /**
-         Pieces the body hands over one at a time.
-         */
-        const width = 4_096;
-        const pieces = Array.from(
-          { length: Math.ceil(raw.length / width,), },
-          function piece(
-            _unused,
-            at,
-          ): string {
-            return raw.slice(
-              at * width,
-              (at + 1) * width,
-            );
-          },
-        );
-
-        /**
-         How many times the underlying source's own `cancel` ran.
-         */
-        const cancelled = { count: 0, };
-
-        /**
-         Encoder, since a body carries bytes.
-         */
-        const encoder = new TextEncoder();
-
-        /**
-         A body whose own cancellation always fails, the way a socket that
-         will not tear down cleanly behaves.
-         */
-        const body = new ReadableStream<Uint8Array>({
-          pull(controller,): void {
-            const next = pieces.shift();
-            if (next === undefined) {
-              controller.close();
-              return;
-            }
-            controller.enqueue(encoder.encode(next,),);
-          },
-          cancel(): never {
-            cancelled.count += 1;
-            throw quotingFailure();
-          },
-        },);
+        const {
+          response,
+          cancels,
+        } = uncancellableRunaway();
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
@@ -674,7 +707,7 @@ await describe({
         } = await warnLinesDuring({
           run: async () =>
             drainOutcome({
-              response: new Response(body, { headers: { 'content-type': 'text/event-stream', }, },),
+              response,
               guard,
             },),
         },);
@@ -691,7 +724,51 @@ await describe({
         if (!(outcome.error instanceof StreamDegenerateError))
           throw new Error('a degeneration error by construction',);
         expect(outcome.error.channel,).toBe('reasoning',);
-        expect(cancelled.count,).toBe(1,);
+        expect(cancels(),).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'MASKS THE CREDENTIAL A REDIRECT LEFT IN THE ADDRESS the failed cancel names, since after a redirect '
+        + 'the address is one the provider chose and its query can repeat the key the request sent',
+      fn: async () => {
+        /**
+         A runaway whose body's cancellation always fails.
+         */
+        const { response, } = uncancellableRunaway();
+        // The address node's `fetch` leaves on a response whose request was
+        // redirected: the one the redirect named, its path and query as the
+        // provider wrote them. A constructed response has none of its own.
+        Object.defineProperty(
+          response,
+          'url',
+          { value: `https://stream.cat.example/landing?key=${WHISKER_KEY}`, },
+        );
+
+        using guard = armIdleGuard({
+          label: 'hf:whiskers',
+          firstByteMs: ROOMY_MS,
+          idleMs: ROOMY_MS,
+        },);
+
+        const {
+          result: outcome,
+          warned,
+        } = await warnLinesDuring({
+          run: async () =>
+            drainOutcome({
+              response,
+              guard,
+              credentials: [WHISKER_KEY,],
+            },),
+        },);
+
+        expect(warned,).toEqual([
+          `[translation-repair] [drainBody] could not cancel https://stream.cat.example/landing?key=${CREDENTIAL_MARKER}: `
+          + 'refused by TypeError',
+        ],);
+        if ((outcome.kind !== 'raised') || (!(outcome.error instanceof StreamDegenerateError)))
+          throw new Error('a degeneration error by construction',);
       },
     },),
 

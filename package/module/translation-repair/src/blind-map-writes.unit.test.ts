@@ -20,6 +20,17 @@
  and a key repeated by a loop over data that holds the read in a callee;
  review has to catch those.
 
+ A TYPED ARRAY'S SET IS NO MAP WRITE: `set(source, offset)` copies a source
+ into the array from an offset and has no key, and the credential mask's
+ copies of offsets were written as loops while the scan read them as map
+ writes. The scan tells the two apart by what the receiver is: a name whose
+ nearest declaration, in the scopes holding the write, makes it with a typed
+ array's constructor, `from` or `of`, or annotates it as one (a destructured
+ parameter by its member's type), is a typed array. A receiver the scan
+ cannot follow (a member of another value, a name a pattern binds without its
+ type, a name no scope of the file declares) stays a possible map write, the
+ side a scan for unread keys can afford.
+
  THE FIXTURE CASE COMES FIRST, so the package-wide case is read against a
  scan shown able to find each form (ledger M21). Fixtures are cat-themed; the
  package case reads this package's own source.
@@ -34,14 +45,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ancestorsOf,
   childNodes,
   identifierName,
   isTreeNode,
   memberName,
+  nodesUnder,
+  parentsOf,
   parseSource,
   readPackageSource,
   type SourceText,
   type TreeNode,
+  unwrapped,
 } from './source-scan.test-fixture.ts';
 import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
@@ -49,6 +64,433 @@ import { expectNoFindings, } from './scan-findings.test-fixture.ts';
  Node kinds that open a function.
  */
 const FUNCTION_KINDS: ReadonlySet<string> = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression',],);
+
+/**
+ Constructors of the typed arrays, whose `set(source, offset)` copies a source
+ into the array from an offset and writes no key.
+ */
+const TYPED_ARRAY_NAMES: ReadonlySet<string> = new Set([
+  'BigInt64Array',
+  'BigUint64Array',
+  'Float16Array',
+  'Float32Array',
+  'Float64Array',
+  'Int16Array',
+  'Int32Array',
+  'Int8Array',
+  'Uint16Array',
+  'Uint32Array',
+  'Uint8Array',
+  'Uint8ClampedArray',
+],);
+
+/**
+ Static methods of a typed array's constructor that make a new array of it.
+ */
+const TYPED_ARRAY_MAKERS: ReadonlySet<string> = new Set([
+  'from',
+  'of',
+],);
+
+/**
+ Node kinds whose `body` lists the statements of a block scope.
+ */
+const BLOCK_KINDS: ReadonlySet<string> = new Set([
+  'BlockStatement',
+  'Program',
+  'StaticBlock',
+],);
+
+/**
+ Node kinds that declare a name of their own beside the variables a block
+ declares.
+ */
+const NAMED_DECLARATION_KINDS: ReadonlySet<string> = new Set([
+  'ClassDeclaration',
+  'FunctionDeclaration',
+  'TSEnumDeclaration',
+],);
+
+/**
+ The field of each loop kind that holds the declaration of its head.
+ */
+const LOOP_HEADS: ReadonlyMap<string, string> = new Map([
+  [
+    'ForInStatement',
+    'left',
+  ],
+  [
+    'ForOfStatement',
+    'left',
+  ],
+  [
+    'ForStatement',
+    'init',
+  ],
+],);
+
+/**
+ What the declarations of one scope make of a name: a typed array, another
+ value, or nothing, where an outer scope decides.
+ */
+type Binding = 'typed-array' | 'other value' | 'undeclared';
+
+/**
+ Whether a type annotation names a typed array.
+
+ @param annotation - a node's `typeAnnotation` field, of any kind or none
+
+ @returns Whether it annotates a typed array's constructor name, with or
+ without type arguments
+
+ @example
+ ```ts
+ const typed = annotatesTypedArray({ annotation: identifier.typeAnnotation, },);
+ ```
+ */
+function annotatesTypedArray({ annotation, }: { readonly annotation: unknown; },): boolean {
+  if ((!isTreeNode(annotation,)) || (annotation.type !== 'TSTypeAnnotation'))
+    return false;
+  /**
+   The annotated type.
+   */
+  const { typeAnnotation: annotated, } = annotation;
+  return isTreeNode(annotated,)
+    && (annotated.type === 'TSTypeReference')
+    && TYPED_ARRAY_NAMES.has(identifierName({ node: annotated.typeName, },),);
+}
+
+/**
+ Whether an expression makes a typed array: its constructor called with `new`,
+ or its `from` or `of`.
+
+ @param expression - an initializer or a default, of any kind or none
+
+ @returns Whether the expression, its type assertions aside, makes one
+
+ @example
+ ```ts
+ const typed = makesTypedArray({ expression: declarator.init, },);
+ ```
+ */
+function makesTypedArray({ expression, }: { readonly expression: unknown; },): boolean {
+  /**
+   The expression inside any wrapper.
+   */
+  const { inner, } = unwrapped({ node: expression, },);
+  if (!isTreeNode(inner,))
+    return false;
+  if (inner.type === 'NewExpression')
+    return TYPED_ARRAY_NAMES.has(identifierName({ node: inner.callee, },),);
+  if (inner.type !== 'CallExpression')
+    return false;
+  /**
+   The called function.
+   */
+  const { callee, } = inner;
+  return isTreeNode(callee,)
+    && (callee.type === 'MemberExpression')
+    && TYPED_ARRAY_NAMES.has(identifierName({ node: callee.object, },),)
+    && TYPED_ARRAY_MAKERS.has(memberName({ node: callee, },),);
+}
+
+/**
+ What a name is to a declaration that binds it: a typed array where its type
+ or its value says so, another value otherwise.
+
+ @param annotation - the binding's own type annotation, of any kind or none
+
+ @param value - the value it starts with, of any kind or none
+
+ @returns The binding
+
+ @example
+ ```ts
+ const binding = boundAs({ annotation: id.typeAnnotation, value: declarator.init, },);
+ ```
+ */
+function boundAs({ annotation, value, }: { readonly annotation: unknown; readonly value: unknown; },): Binding {
+  return (annotatesTypedArray({ annotation, },) || makesTypedArray({ expression: value, },))
+    ? 'typed-array'
+    : 'other value';
+}
+
+/**
+ Whether a pattern mentions a name anywhere in it, keys and defaults included,
+ so a name it only mentions reads as another value and keeps its write found.
+
+ @param pattern - a binding pattern
+
+ @param name - name looked for
+
+ @returns Whether an identifier under the pattern carries the name
+
+ @example
+ ```ts
+ const mentioned = patternMentions({ pattern: declarator.id, name: 'beds', },);
+ ```
+ */
+function patternMentions({ pattern, name, }: { readonly pattern: TreeNode; readonly name: string; },): boolean {
+  return nodesUnder({ root: pattern, },).some(function carriesName(node,): boolean {
+    return identifierName({ node, },) === name;
+  },);
+}
+
+/**
+ The type annotation a destructured parameter's type literal gives one of its
+ members.
+
+ @param pattern - an object pattern annotated with a type literal
+
+ @param key - the member's name
+
+ @returns The member's annotation, or nothing where the pattern's type is no
+ literal or names no such member
+
+ @example
+ ```ts
+ const annotation = memberAnnotation({ pattern, key: 'bytes', },);
+ ```
+ */
+function memberAnnotation({ pattern, key, }: { readonly pattern: TreeNode; readonly key: string; },): unknown {
+  /**
+   The pattern's own annotation.
+   */
+  const { typeAnnotation: annotation, } = pattern;
+  if ((!isTreeNode(annotation,)) || (!isTreeNode(annotation.typeAnnotation,)))
+    return undefined;
+  /**
+   The members of the annotated type, none for a type that is no literal.
+   */
+  const { members, } = annotation.typeAnnotation;
+  return (Array.isArray(members,) ? members : [])
+    .filter(function isNode(member: unknown,): member is TreeNode {
+      return isTreeNode(member,);
+    },)
+    .find(function namesKey(member,): boolean {
+      return (member.type === 'TSPropertySignature') && (identifierName({ node: member.key, },) === key);
+    },)
+    ?.typeAnnotation;
+}
+
+/**
+ What one parameter of a function makes of a name.
+
+ @param parameter - the parameter, plain, defaulted or destructured
+
+ @param name - name looked for
+
+ @returns Its binding of the name, `undeclared` where it binds none
+
+ @example
+ ```ts
+ const binding = parameterBinding({ parameter: fn.params[0], name: 'bytes', },);
+ ```
+ */
+function parameterBinding({ parameter, name, }: { readonly parameter: TreeNode; readonly name: string; },): Binding {
+  if (identifierName({ node: parameter, },) === name) {
+    return boundAs({
+      annotation: parameter.typeAnnotation,
+      value: undefined,
+    },);
+  }
+  if ((parameter.type === 'AssignmentPattern') && isTreeNode(parameter.left,)) {
+    if (identifierName({ node: parameter.left, },) === name) {
+      return boundAs({
+        annotation: parameter.left.typeAnnotation,
+        value: parameter.right,
+      },);
+    }
+    return parameterBinding({
+      parameter: parameter.left,
+      name,
+    },);
+  }
+  if (parameter.type === 'ObjectPattern') {
+    for (const property of (parameter.properties as readonly TreeNode[])) {
+      /**
+       What the property binds, its default aside.
+       */
+      const target = (isTreeNode(property.value,) && (property.value.type === 'AssignmentPattern'))
+        ? property.value.left
+        : property.value;
+      if ((property.type === 'Property') && (property.computed !== true) && (identifierName({ node: target, },) === name)) {
+        return boundAs({
+          annotation: memberAnnotation({
+            pattern: parameter,
+            key: identifierName({ node: property.key, },),
+          },),
+          value: (isTreeNode(property.value,) && (property.value.type === 'AssignmentPattern'))
+            ? property.value.right
+            : undefined,
+        },);
+      }
+    }
+  }
+  return patternMentions({
+    pattern: parameter,
+    name,
+  },)
+    ? 'other value'
+    : 'undeclared';
+}
+
+/**
+ What one statement of a block declares of a name.
+
+ @param statement - a statement of the block's body, an export around a
+ declaration read as the declaration
+
+ @param name - name looked for
+
+ @returns Its binding of the name, `undeclared` where it declares none
+
+ @example
+ ```ts
+ const binding = statementBinding({ statement: program.body[0], name: 'rugs', },);
+ ```
+ */
+function statementBinding({ statement, name, }: { readonly statement: TreeNode; readonly name: string; },): Binding {
+  /**
+   The declaration the statement holds, an export unwrapped.
+   */
+  const declared = statement.type.startsWith('Export',) ? statement.declaration : statement;
+  if (!isTreeNode(declared,))
+    return 'undeclared';
+  if (NAMED_DECLARATION_KINDS.has(declared.type,))
+    return (identifierName({ node: declared.id, },) === name) ? 'other value' : 'undeclared';
+  if (declared.type !== 'VariableDeclaration')
+    return 'undeclared';
+  for (const declarator of (declared.declarations as readonly TreeNode[])) {
+    if (!isTreeNode(declarator.id,))
+      continue;
+    if (identifierName({ node: declarator.id, },) === name) {
+      return boundAs({
+        annotation: declarator.id.typeAnnotation,
+        value: declarator.init,
+      },);
+    }
+    if (patternMentions({
+      pattern: declarator.id,
+      name,
+    },))
+      return 'other value';
+  }
+  return 'undeclared';
+}
+
+/**
+ What one scope's own declarations make of a name: a function's parameters, a
+ block's statements, a loop's head or a catch's parameter.
+
+ @param scope - a node holding the write, of any kind
+
+ @param name - name looked for
+
+ @returns Its binding of the name, `undeclared` for a node that declares none
+ of it or declares nothing
+
+ @example
+ ```ts
+ const binding = scopeBinding({ scope: ancestor, name: 'starts', },);
+ ```
+ */
+function scopeBinding({ scope, name, }: { readonly scope: TreeNode; readonly name: string; },): Binding {
+  if (FUNCTION_KINDS.has(scope.type,)) {
+    for (const parameter of (scope.params as readonly TreeNode[])) {
+      /**
+       What this parameter binds of the name.
+       */
+      const binding = parameterBinding({
+        parameter,
+        name,
+      },);
+      if (binding !== 'undeclared')
+        return binding;
+    }
+    return (identifierName({ node: scope.id, },) === name) ? 'other value' : 'undeclared';
+  }
+  if (BLOCK_KINDS.has(scope.type,)) {
+    for (const statement of (scope.body as readonly TreeNode[])) {
+      /**
+       What this statement declares of the name.
+       */
+      const binding = statementBinding({
+        statement,
+        name,
+      },);
+      if (binding !== 'undeclared')
+        return binding;
+    }
+    return 'undeclared';
+  }
+  if ((scope.type === 'CatchClause') && isTreeNode(scope.param,)) {
+    return patternMentions({
+      pattern: scope.param,
+      name,
+    },)
+      ? 'other value'
+      : 'undeclared';
+  }
+  /**
+   A loop head's declaration, absent for any node that is no loop.
+   */
+  const head = LOOP_HEADS.get(scope.type,);
+  if ((head === undefined) || (!isTreeNode(scope[head],)))
+    return 'undeclared';
+  return statementBinding({
+    statement: scope[head],
+    name,
+  },);
+}
+
+/**
+ Whether a write's receiver is a typed array: a name whose nearest
+ declaration, in the scopes holding the write, makes or annotates one.
+
+ @param receiver - the object the write's `set` is called on
+
+ @param parents - each node's parent in the write's file
+
+ @returns True only for a name so declared; a member, or a name the file
+ declares nowhere or without its type, reads as no typed array
+
+ @example
+ ```ts
+ const copies = receiverIsTypedArray({ receiver: callee.object, parents, },);
+ ```
+ */
+function receiverIsTypedArray(
+  {
+    receiver,
+    parents,
+  }: {
+    readonly receiver: TreeNode;
+    readonly parents: ReadonlyMap<TreeNode, TreeNode>;
+  },
+): boolean {
+  /**
+   The receiver's name, empty for anything but a plain name.
+   */
+  const name = identifierName({ node: receiver, },);
+  if (name === '')
+    return false;
+  for (const scope of ancestorsOf({
+    node: receiver,
+    parents,
+  },)) {
+    /**
+     What this scope's own declarations make of the name.
+     */
+    const binding = scopeBinding({
+      scope,
+      name,
+    },);
+    if (binding !== 'undeclared')
+      return binding === 'typed-array';
+  }
+  return false;
+}
 
 /**
  Writes the package makes over a key it never reads, each with what makes the
@@ -241,11 +683,19 @@ function blindWrites({ file, }: { readonly file: SourceText; },): readonly strin
    */
   const found = new Set<string>();
   /**
+   The file's program.
+   */
+  const { program, } = parseSource({ file, },);
+  /**
+   Each node's parent, so a receiver is read through the scopes holding it.
+   */
+  const parents = parentsOf({ program, },);
+  /**
    Nodes still to visit, each with the functions that hold it, outermost
    first.
    */
   const pending: { readonly node: TreeNode; readonly holders: readonly TreeNode[]; }[] = [{
-    node: parseSource({ file, },).program,
+    node: program,
     holders: [],
   },];
   while (pending.length > 0) {
@@ -276,6 +726,11 @@ function blindWrites({ file, }: { readonly file: SourceText; },): readonly strin
      */
     const args = current.node.arguments as readonly TreeNode[];
     if ((memberName({ node: callee, },) !== 'set') || (args.length !== 2) || (!isTreeNode(callee.object,)))
+      continue;
+    if (receiverIsTypedArray({
+      receiver: callee.object,
+      parents,
+    },))
       continue;
     /**
      The map written and the key written, as text.
@@ -417,6 +872,70 @@ await describe({
         },),).toEqual([
           'cat.ts#each: beds.set(name,...)',
           'cat.ts#nap: beds.set(name,...)',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES A TYPED ARRAY\'S SET, which copies a source into the array at an offset and writes no key, where '
+        + 'the receiver is declared as one: made by a constructor or by `from`, annotated, or a parameter so typed, '
+        + 'plain or destructured',
+      fn: async () => {
+        expect(blindWrites({
+          file: {
+            path: 'cat.ts',
+            text: [
+              'export function copy(source: Int32Array, offset: number): Int32Array {',
+              '  const starts = new Int32Array(8);',
+              '  starts.set(source, offset);',
+              '  return starts;',
+              '}',
+              'export function fill(source: number[]): void {',
+              '  const ends = Int32Array.from(source);',
+              '  ends.set(source, 1);',
+              '  const marks: Uint8Array = make();',
+              '  marks.set(source, 0);',
+              '}',
+              'export function paste(bytes: Float64Array, source: Float64Array): void { bytes.set(source, 2); }',
+              'export function splice({ bytes, source, }: { readonly bytes: Uint16Array; readonly source: Uint16Array; }): void {',
+              '  bytes.set(source, 3);',
+              '}',
+            ].join('\n',),
+            isTest: false,
+          },
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'FINDS A MAP\'S SET WHERE A TYPED ARRAY OF THE SAME NAME stands in another function or an outer scope, '
+        + 'since the receiver is read through the binding the write names, and FINDS a set on a member it cannot follow',
+      fn: async () => {
+        expect(blindWrites({
+          file: {
+            path: 'cat.ts',
+            text: [
+              'const rugs = new Uint8Array(4);',
+              'export function copy(): Int32Array { const beds = new Int32Array(8); return beds; }',
+              'export function nap(name: string): void { const beds = new Map<string, number>(); beds.set(name, 1); }',
+              'export function purr(rugs: Map<string, number>, name: string): void { rugs.set(name, 1); }',
+              'export function knead(name: string): void {',
+              '  const mats = new Uint8Array(2);',
+              '  { const mats = new Map<string, number>(); mats.set(name, 1); }',
+              '}',
+              'export function groom({ beds, name, }: { readonly beds: Map<string, number>; readonly name: string; }): void {',
+              '  beds.set(name, 1);',
+              '}',
+              'export function stretch(view: { readonly starts: Int32Array; }, source: Int32Array): void {',
+              '  view.starts.set(source, 0);',
+              '}',
+            ].join('\n',),
+            isTest: false,
+          },
+        },),).toEqual([
+          'cat.ts#groom: beds.set(name,...)',
+          'cat.ts#knead: mats.set(name,...)',
+          'cat.ts#nap: beds.set(name,...)',
+          'cat.ts#purr: rugs.set(name,...)',
+          'cat.ts#stretch: view.starts.set(source,...)',
         ],);
       },
     },),
