@@ -2,7 +2,8 @@
 // Observe committed change-watch regressions failing after guard removal in a disposable package copy.
 // Guards: the read-event filter, root and canonical containment, full rereads on overflow, errors, and
 // lost or failed watches, unsettled-write waiting, collapse unwatching, the extra read after a new watch,
-// retries, the reread schedules, and the native wiring that turns notifications into reads.
+// retries and failures reported once, the reread schedules, and the native wiring that turns
+// notifications into reads and keeps a save in progress off the screen.
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -35,6 +36,7 @@ const replaceOne = (text, before, after) => {
 const equality = 'assertion `left == right` failed';
 const watch = 'change_watch';
 const policy = 'refresh_policy';
+const intervals = 'refresh_intervals';
 const cases = [
   // Event classification on notify's thread.
   { name: 'read-events-ignored', file: 'src/change_watch/record.rs', before: 'EventKind::Access(_) => {\n            return Reaction::Ignore;', after: 'EventKind::Access(_) => {\n            return Reaction::Entries(SourceChange::Settled);', integration: watch, test: 'source::the_ides_own_reads_report_nothing', failure: 'reads reported changes' },
@@ -53,28 +55,38 @@ const cases = [
   { name: 'switched-file-source', file: 'src/change_watch/watch_thread.rs', before: 'if switched || parent.is_some_and(|directory| return established.contains(directory)) {', after: 'if parent.is_some_and(|directory| return established.contains(directory)) {', integration: watch, test: 'entries::a_newly_displayed_file_in_a_watched_folder_is_reported_once', failure: 'the newly displayed file was not reported' },
   { name: 'folder-permission-reported', file: 'src/change_watch/record.rs', before: '            guard.pending.directories.insert(path.clone());', after: '', integration: watch, test: 'entries::a_permission_change_on_a_watched_folder_reports_it', failure: 'a permission change was not reported' },
   { name: 'failed-watch-rereads', file: 'src/change_watch/watch_thread.rs', before: '    if lost {\n        published.pending.everything = true;', after: '    if false {\n        published.pending.everything = true;', integration: watch, test: 'recovery::a_failed_watch_requests_a_full_reread_and_is_retried_on_request', failure: "a failed watch's full reread was not reported" },
-  { name: 'retry-failed', file: 'src/change_watch/watch_thread.rs', before: '    if retry {\n        watches.failed.clear();', after: '    if false {\n        watches.failed.clear();', integration: watch, test: 'recovery::a_failed_watch_requests_a_full_reread_and_is_retried_on_request', failure: 'the retried watch and its extra read was not reported' },
+  { name: 'retry-failed', file: 'src/change_watch/watch_thread.rs', before: 'if !retry && watches.failed.contains_key(path) {', after: 'if watches.failed.contains_key(path) {', integration: watch, test: 'recovery::a_failed_watch_requests_a_full_reread_and_is_retried_on_request', failure: 'the retried watch and its extra read was not reported' },
+  { name: 'failure-reported-once', file: 'src/change_watch/watch_thread.rs', before: 'if watches.failed.get(path) == Some(&message) {', after: 'if false {', integration: watch, test: 'recovery::a_watch_failing_the_same_way_is_reported_once_until_it_changes', failure: 'an unchanged failure was reported again' },
   // Reread schedules.
   { name: 'settled-now', file: 'src/refresh_policy/source.rs', before: '                None => {\n                    return true;', after: '                None => {\n                    return false;', integration: policy, test: 'unfinished_writes_wait_for_quiet_within_a_limit', failure: 'a finished write was not read at once' },
   { name: 'write-quiet', file: 'src/refresh_policy/source.rs', before: '>= WRITE_QUIET', after: '>= WRITE_WAIT_LIMIT', integration: policy, test: 'unfinished_writes_wait_for_quiet_within_a_limit', failure: 'a quiet unfinished write was not read' },
+  { name: 'write-wait-limit', file: 'src/refresh_policy/source.rs', before: '\n                        || now.saturating_duration_since(since) >= WRITE_WAIT_LIMIT', after: '', integration: policy, test: 'unfinished_writes_wait_for_quiet_within_a_limit', failure: 'a continuously written file waited past the limit' },
+  { name: 'timer-waits-for-write', file: 'src/refresh_policy/source.rs', before: '>= WRITE_WAIT_LIMIT;', after: '>= WRITE_WAIT_LIMIT\n                        || now.saturating_duration_since(last) >= SAFETY_SWEEP;', integration: intervals, test: 'timers_do_not_read_a_file_whose_write_is_unfinished', failure: 'the sweep read a file 10 ms into an unfinished write' },
   { name: 'watched-source-timer', file: 'src/refresh_policy/source.rs', before: '            SAFETY_SWEEP\n        } else {', after: '            UNWATCHED_SOURCE_POLL\n        } else {', integration: policy, test: 'source_timers_depend_on_whether_its_directory_is_watched', failure: 'a watched file was polled' },
   { name: 'notified-first', file: 'src/refresh_policy/directories.rs', before: '        if let Some(path) = first_ready(&mut self.changed, shown, &self.started, now) {\n            return Some(path);\n        }', after: '', integration: policy, test: 'notified_directories_are_read_first_in_visible_order', failure: equality },
   { name: 'only-unwatched-polled', file: 'src/refresh_policy/directories.rs', before: 'if !watched.contains(path) {', after: 'if true {', integration: policy, test: 'notified_directories_are_read_first_in_visible_order', failure: 'watched directories were polled' },
   { name: 'unwatched-interval', file: 'src/refresh_policy/directories.rs', before: '.is_none_or(|at| return now.saturating_duration_since(at) >= UNWATCHED_DIRECTORY_POLL)', after: '.is_none_or(|_at| return true)', integration: policy, test: 'unwatched_directories_keep_the_old_round_robin', failure: equality },
   { name: 'sweep-interval', file: 'src/refresh_policy/directories.rs', before: 'if now.saturating_duration_since(last) < SAFETY_SWEEP {', after: 'if true {', integration: policy, test: 'the_safety_sweep_rereads_everything_after_notifications', failure: 'the safety sweep did not start' },
-  { name: 'source-reread-gap', file: 'src/refresh_policy/source.rs', before: '        if let Some(since) = self.pending_since\n            && rested\n        {', after: '        if let Some(since) = self.pending_since {', integration: policy, test: 'notified_rereads_keep_a_gap_per_item', failure: 'a notified source reread did not wait for the gap' },
+  { name: 'sweep-finishes-first', file: 'src/refresh_policy/directories.rs', before: '        if !self.sweep.is_empty() {\n            return false;\n        }', after: '', integration: intervals, test: 'sweep_rereads_every_folder_when_one_pass_outlasts_the_interval', failure: 'while sweeps restarted from the top' },
+  { name: 'source-reread-gap', file: 'src/refresh_policy/source.rs', before: '            if !rested {\n                return false;\n            }', after: '', integration: policy, test: 'notified_rereads_keep_a_gap_per_item', failure: 'a notified source reread did not wait for the gap' },
   { name: 'highlight-reread-gap', file: 'src/refresh_policy/source.rs', before: 'if highlight_missing && rested {', after: 'if highlight_missing {', integration: policy, test: 'notified_rereads_keep_a_gap_per_item', failure: 'missing highlighting was requested again inside the gap' },
   { name: 'folder-reread-gap', file: 'src/refresh_policy/directories.rs', before: 'if rested && pending.remove(path) {', after: 'if pending.remove(path) {', integration: policy, test: 'notified_rereads_keep_a_gap_per_item', failure: 'a notified folder reread did not wait for the gap' },
   // Native wiring: notifications become due reads for the shipped tree and source.
-  { name: 'native-tree-notified', file: 'src/native/navigation/watch.rs', before: 'navigation.directories.changed(directory);', after: '', native: true, test: 'native_tree_follows_changes_in_one_of_many_expanded_folders', failure: 'a created file did not appear within' },
-  { name: 'native-shown-watched', file: 'src/native/navigation/present.rs', before: 'watch::show(source, navigation);', after: '', native: true, test: 'native_tree_follows_changes_in_one_of_many_expanded_folders', failure: 'did not appear within' },
+  // The first change of the tree test can meet a 1 s sweep by chance, so any later step may be the one that fails.
+  { name: 'native-tree-notified', file: 'src/native/navigation/watch.rs', before: 'navigation.directories.changed(directory);', after: '', native: true, test: 'native_tree_follows_changes_in_one_of_several_expanded_folders', failure: 'did not appear within' },
+  { name: 'native-shown-watched', file: 'src/native/navigation/present.rs', before: 'watch::show(source, navigation);', after: '', native: true, test: 'native_tree_follows_changes_in_one_of_several_expanded_folders', failure: 'did not appear within' },
   { name: 'native-source-notified', file: 'src/native/navigation/watch.rs', before: 'current.refresh.changed(change, now);', after: '', native: true, test: 'native_source_follows_atomic_replace_and_delete_then_recreate', failure: 'the caret replacement did not appear within' },
   { name: 'native-source-mode', file: 'src/native/navigation/watch.rs', before: 'current.refresh.set_watched(watched);', after: '', native: true, test: 'native_source_follows_atomic_replace_and_delete_then_recreate', failure: 'native navigation did not reach the expected state' },
+  // A save in progress stays off the screen: unfinished writes and new files wait for the writer.
+  { name: 'native-save-in-progress', file: 'src/change_watch/record.rs', before: 'EventKind::Modify(ModifyKind::Data(_)) => {\n            return Reaction::Content(SourceChange::Unsettled);', after: 'EventKind::Modify(ModifyKind::Data(_)) => {\n            return Reaction::Content(SourceChange::Settled);', native: true, test: 'native_source_does_not_show_an_in_place_save_before_it_finishes', failure: 'a save in progress was shown' },
+  { name: 'native-rewrite-in-progress', file: 'src/change_watch/record.rs', before: 'EventKind::Create(_) => {\n            return Reaction::Entries(SourceChange::Unsettled);', after: 'EventKind::Create(_) => {\n            return Reaction::Entries(SourceChange::Settled);', native: true, test: 'native_source_does_not_show_a_deleted_file_before_its_rewrite_finishes', failure: 'a rewrite in progress was shown' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
 const selected = only ? cases.filter(item => only.has(item.name)) : cases;
 if (only && selected.length !== only.size) throw new Error('Unknown guard name in: ' + process.env.usage_only);
+// Every anchor is checked before the first build, so one that no longer matches the source fails at once.
+for (const item of cases) replaceOne(readFileSync(join(source, item.file), 'utf8'), item.before, item.after);
 const results = [];
 const baselined = new Set();
 const run = (item, phase) => {

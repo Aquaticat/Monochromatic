@@ -1341,10 +1341,18 @@ a removal,
 and a permission change are read at once.
 A write that is still open,
 including the truncation that starts an in-place save,
-and a newly created file are read once 150 ms pass without another write,
-and at most 250 ms after the first.
+and a newly created file are read once 50 ms pass without another write,
+and at most 100 ms after the first.
+The user chose both values on 2026-10-05.
+While such a write waits,
+neither the safety sweep (the periodic reread in [Recovery and timers](#recovery-and-timers))
+nor a highlighting request reads the file.
 The latest notification decides,
 so a save that deletes and rewrites the file waits for the rewrite.
+A writer that leaves the file unfinished for longer than the quiet period is read mid-write,
+and read again when it closes the file.
+A sweep read can also meet a save that began within the last timer tick;
+see [Measured write wait](#measured-write-wait).
 
 ### Recovery and timers
 
@@ -1362,18 +1370,40 @@ because inotify keeps following the moved directory under its old name.
 A shown item without a live watch keeps the previous timers:
 the displayed file every 250 ms,
 and unwatched folders one at a time every 500 ms.
-Failed watches are retried every 10 s.
+Failed watches are retried at each safety sweep,
+while anything shown lacks a watch.
+A failure is logged and followed by the full reread once,
+and again only when its error text changes;
+a watch that works again is logged once.
 
-Every 10 s,
+Every second,
 every shown folder and the displayed file are reread anyway,
-after all notified work.
+after all notified work:
+the safety sweep.
+The user chose the 1 s interval on 2026-10-05.
 inotify never reports some changes:
 network and FUSE mounts,
 writes through `mmap`,
 and unmounts (`notify` does not map `IN_UNMOUNT`).
 The sweep bounds how long those stay stale.
-It costs one listing per shown folder and one source read per 10 s,
-against 20 listings and 40 source reads per 10 s under the previous polling.
+One directory read starts per 20 ms timer tick,
+so one pass over more than about 50 shown folders outlasts the second.
+The next pass then starts when the previous one has read every folder,
+and each folder is reread once per pass.
+The sweep costs one listing per shown folder and one source read per second,
+where the previous polling did 2 listings and 4 source reads per second whatever was shown;
+see [Measured idle cost](#measured-idle-cost).
+
+With the sweep at 1 s,
+the 500 ms timer for unwatched folders shortens the longest time a folder goes unread
+only when one to three shown folders lack a watch:
+500 ms for one,
+900 ms for two,
+980 ms for three,
+and the sweep's 1 s from four
+(`tests/refresh_intervals.rs` prints these from the shipped schedule).
+The 250 ms timer for an unwatched displayed file stays four times as frequent as the sweep.
+Both timers are kept.
 
 ### Threading and shutdown
 
@@ -1394,21 +1424,134 @@ through the shipped bindings in the headless window,
 16 trials per case,
 three runs per build,
 with the same pseudo-random write gaps and target folders in both builds.
+The runs of the two builds alternated in one session on a busy host,
+with a load average of 49 to 156 on 16 processors.
 Polling (`48a1b5756`):
-a new file in one of 8 expanded folders took a median of 1657 to 1706 ms across runs,
-at most 4035 ms;
+a new file in one of 8 expanded folders took a median of 1672 to 1789 ms across runs,
+at most 4038 ms;
 with one expanded folder,
-651 to 785 ms,
-at most 988 ms;
+671 to 789 ms,
+at most 1524 ms;
 a rewrite of the displayed file,
-115 to 147 ms,
-at most 281 ms.
-Watching:
-a new file took a median of 29 to 35 ms with 8 folders and 31 to 35 ms with one,
-at most 96 ms;
-a rewrite took 44 to 56 ms,
-at most 92 ms.
-The medians of one build differed between its runs by at most 134 ms under polling and 6 ms under watching.
+93 to 148 ms,
+at most 288 ms.
+Watching,
+with the 1 s sweep and the 50 ms write wait:
+a new file took a median of 28 to 33 ms with 8 folders and 35 to 51 ms with one,
+at most 115 ms;
+a rewrite took 38 to 75 ms,
+at most 140 ms.
+The medians of one build differed between its runs by at most 118 ms under polling and 27 ms under watching.
+The schedule makes a change that lands within 100 ms after a sweep read of the same folder wait for the reread gap;
+with the sweep at 1 s that is about one change in ten,
+and the slowest trials near 100 ms fit it.
+
+### Measured write wait
+
+`inspect:refresh-latency` with the filter `write_wait_pause` plays an in-place save against the headless window:
+truncate,
+pause,
+write,
+close,
+with `am a` selected,
+8 trials per pause length in each of three runs.
+With the 50 ms quiet period and the 100 ms limit,
+no trial with a pause of 10 to 50 ms showed the truncated file,
+2 of 24 did at 60 ms,
+4 of 24 at 70 ms,
+and all 96 at 80 ms and longer.
+The wait is counted from the 20 ms timer tick that receives the notification,
+so the boundary lies between 50 and 80 ms.
+Every trial that showed the truncated file lost the selection;
+every other trial kept it on `was a`.
+A copy with the earlier 150 ms and 250 ms,
+measured in the same session,
+showed the truncated file in all 24 trials at 200 ms and in none at 100 and 150 ms.
+
+Two trials showed the truncated file at a pause below the quiet period:
+one of 200 trials with pauses of 10 to 50 ms across five runs at the shipped values,
+and one of 240 trials with pauses of 10 to 150 ms in the copy with 150 ms and 250 ms.
+Their cause is not established;
+the sweep is ruled out for the second,
+whose save began about 200 ms after a read had restarted the sweep clock.
+
+The filter `write_wait_timer` starts the same save,
+unfinished for 40 ms,
+at a pseudo-random time within the 400 ms that contain the next sweep read,
+120 trials per run.
+5 to 8 of 120 trials showed the truncated file across four runs,
+which is 17 to 27 ms before each sweep read.
+The sweep read is not asked for by the save's notification,
+so the write wait holds it back only once that notification has reached the schedule.
+The source timer is bound before the timer that receives notifications (`src/native.rs`),
+which fits a window of about one 20 ms tick.
+For a save that stays unfinished that long this is about 2 to 3 in 100 saves at the 1 s sweep;
+a save that is finished within a millisecond is exposed for that millisecond.
+
+### Measured idle cost
+
+`inspect:idle-cost` runs the release build in the nested compositor,
+expands sibling folders of eight files each through key input,
+and samples the idle IDE for 60 s:
+CPU time from `/proc/<pid>/stat`,
+read calls from `/proc/<pid>/io`,
+listings from the IDE's log,
+and every system call in one further session under `strace`.
+The shipped 1 s build and a build that differs only in a 10 s `SAFETY_SWEEP` alternate,
+three runs each;
+ranges give the lowest and highest run.
+
+#### One expanded folder
+
+- 1 s sweep: 3.0 to 3.2 ms of CPU per second, 59 to 67 read calls, 2 listings, 301 system calls per second.
+- 10 s sweep: 2.5 to 2.8 ms of CPU per second, 50 to 52 read calls, 0.2 listings, 256 system calls per second.
+
+#### 12 expanded folders
+
+- 1 s sweep: 7.3 to 8.2 ms of CPU per second, 84 to 90 read calls, 12.9 listings, 561 system calls per second.
+- 10 s sweep: 4.7 to 5.2 ms of CPU per second, 54 to 57 read calls, 1.3 listings, 284 system calls per second.
+
+#### 100 expanded folders
+
+- 1 s sweep: 45.0 to 45.5 ms of CPU per second, 154 to 168 read calls, 49.9 listings, 1353 system calls per second.
+- 10 s sweep: 26.0 to 26.3 ms of CPU per second, 73 to 90 read calls, 10.1 listings, 480 system calls per second.
+
+#### Reading the numbers
+
+Runs of one build differed by at most 0.84 ms of CPU and 17 read calls per second.
+With 100 expanded folders one pass over the 101 shown directories took 2.02 s,
+so the 1 s build reads without pause,
+and every directory was listed once per pass.
+There the 1 s build does 40 more listings per second than the 10 s build,
+for about 19 ms more CPU and about 870 more system calls per second:
+about 22 calls per listing,
+of which 8 are `readlink` (path resolution) and 4 are `write` (log lines).
+The 10 s build's cost also grows with the tree,
+from 2.5 to 26 ms of CPU per second;
+it sweeps too,
+at 10 listings per second with 100 folders,
+and what else grows with the tree was not separated.
+The IDE always logs at debug level (the filter is fixed in `src/native.rs`),
+four lines per listing:
+9,
+52,
+and 200 log lines per second at the 1 s sweep,
+against 0.9,
+5.3,
+and 40 at 10 s.
+The log is written from the UI thread,
+so a log destination that blocks stalls the window;
+one sample with the log on a busy disk stood still for 10 s,
+and the measurement keeps its live log in memory-backed storage for that reason.
+The displayed file was 640 bytes;
+the sweep reads the whole file once per second,
+so that part grows with the file,
+and was not measured for large files.
+The host was busy during the runs with one and 12 folders,
+with a load average of 6 to 48 on 16 processors,
+and nearly idle during the runs with 100;
+the builds alternate within each run,
+so each comparison shares its conditions.
 
 ### Deliberate differences from editord
 
@@ -1424,7 +1567,9 @@ and temporary file names;
 this reader lists those names like any other,
 so their changes appear.
 editord waits for a file's size to stay unchanged for 150 ms (`awaitWriteFinish`) before reporting it;
-this reader reads closed writes at once and waits 150 ms only for writes still open.
+this reader reads closed writes at once,
+and for writes still open it waits 50 ms,
+a shorter wait than editord's that the user chose on 2026-10-05.
 editord drops a folder's watch on an error;
 this reader rereads everything shown,
 keeps that folder on a timer,
@@ -1446,11 +1591,19 @@ removed,
 renamed,
 failed,
 and retried watches,
+a repeated failure reported once,
 refused outside and symbolic-link folders,
 and no watch left after shutdown.
 `tests/refresh_policy.rs` pins the intervals.
+`tests/refresh_intervals.rs` simulates the shipped schedule in 20 ms ticks:
+timers leave an unfinished write alone,
+a pass over more folders than one interval can read still rereads every folder,
+and the unwatched timer never makes a folder staler than the sweep alone.
 `native::watch_tests` checks the shipped tree and source in the headless window.
+`native::write_wait_tests` plays a slow writer against that window:
+an in-place save and a delete-then-rewrite are shown only when finished.
 `inspect:watch-guards` removes each guard in a disposable copy and requires its named test to fail.
+`inspect:idle-cost` and `inspect:refresh-latency` produce the measurements in this section.
 In the nested compositor,
 dark and light,
 external create,

@@ -27,7 +27,7 @@ use notify::{Config, ErrorKind, INotifyWatcher, RecursiveMode, Watcher};
 /// import { Shared, Receiver, BoundedSender } from 'threads';
 /// ```
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeMap, BTreeSet},
     path::{Path, PathBuf},
     sync::{
         Arc, Mutex,
@@ -93,8 +93,16 @@ fn remove(watcher: &mut INotifyWatcher, path: &Path) {
 struct Watches {
     /// Directories with a live watch.
     active: BTreeSet<PathBuf>,
-    /// Desired directories whose last watch attempt failed; retried only on request.
-    failed: BTreeSet<PathBuf>,
+    /// What: `BTreeMap<PathBuf, String>` maps each directory whose last watch attempt failed to that
+    ///       failure's text (`BTreeSet`, the sibling, would hold the directories without their text).
+    /// Why: Failed directories are retried only on request, and a retry that fails with the same text
+    ///      is neither logged nor reported again, so a retry every sweep does not repeat itself.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// const failed = new Map<string, string>();
+    /// ```
+    failed: BTreeMap<PathBuf, String>,
     /// The UI's latest desired set.
     desired: BTreeSet<PathBuf>,
     /// The displayed file as of the previous wake, to notice a switch to another file.
@@ -131,9 +139,6 @@ fn apply(
     // displayed file before the switch reached that state went unrecorded.
     let switched = file.is_some() && file != watches.file;
     watches.file = file.clone();
-    if retry {
-        watches.failed.clear();
-    }
     for path in &stale {
         if watches.active.remove(path) {
             remove(watcher, path);
@@ -149,38 +154,61 @@ fn apply(
         remove(watcher, path);
         tracing::debug!(path = %path.display(), "stopped watching a directory that is no longer shown");
     }
-    // What: `retain` keeps only the entries for which the closure `|path| ...` returns true.
-    // Why: A directory that is no longer shown must not be retried later.
+    // What: `retain` keeps only the entries for which the closure `|path, _message| ...` returns true.
+    // Why: A directory that is no longer shown must not be retried later, and its failure is forgotten.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // failed = new Set([...failed].filter(path => desired.has(path)));
+    // for (const path of failed.keys()) if (!desired.has(path)) failed.delete(path);
     // ```
     watches
         .failed
-        .retain(|path| return watches.desired.contains(path));
+        .retain(|path, _message| return watches.desired.contains(path));
     let mut established = BTreeSet::new();
     let mut lost = false;
     for path in &watches.desired {
-        if watches.active.contains(path) || watches.failed.contains(path) {
+        if watches.active.contains(path) {
+            continue;
+        }
+        // A directory that already failed is tried again only when the UI asks for a retry.
+        if !retry && watches.failed.contains_key(path) {
             continue;
         }
         match add(watcher, workspace, path) {
             Ok(()) => {
-                tracing::debug!(path = %path.display(), "watching directory");
+                // What: `remove` returns `Some(message)` when the directory had failed before.
+                // Why: A watch that works again after a failure is a state change worth one log line.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // if (failed.delete(path)) log.info('restored'); else log.debug('watching');
+                // ```
+                if watches.failed.remove(path).is_some() {
+                    tracing::info!(path = %path.display(), "directory watch restored after an earlier failure");
+                } else {
+                    tracing::debug!(path = %path.display(), "watching directory");
+                }
                 watches.active.insert(path.clone());
                 established.insert(path.clone());
             }
             Err(error) => {
-                tracing::warn!(%error, "directory watch failed; rereading it on a timer and rereading everything shown");
-                watches.failed.insert(path.clone());
+                let message = format!("{error:#}");
+                // The same failure as last time is neither logged nor reported again.
+                if watches.failed.get(path) == Some(&message) {
+                    continue;
+                }
+                tracing::warn!(%message, "directory watch failed; rereading it on a timer and rereading everything shown");
+                watches.failed.insert(path.clone(), message);
                 lost = true;
             }
         }
     }
     let mut published = lock(shared);
-    published.watched = watches.active.clone();
-    published.watched_changed = true;
+    // Retries that change nothing must not make the UI copy the set again.
+    if published.watched != watches.active {
+        published.watched = watches.active.clone();
+        published.watched_changed = true;
+    }
     if lost {
         published.pending.everything = true;
     }
@@ -225,7 +253,7 @@ pub(super) fn run(
     tracing::info!(root = %workspace.root().display(), "started inotify file-change watching");
     let mut watches = Watches {
         active: BTreeSet::new(),
-        failed: BTreeSet::new(),
+        failed: BTreeMap::new(),
         desired: BTreeSet::new(),
         file: None,
     };

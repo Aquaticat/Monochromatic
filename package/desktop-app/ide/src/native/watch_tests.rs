@@ -1,5 +1,5 @@
 //! The shipped tree and source bindings follow external changes through inotify notifications,
-//! fast enough that the old polling could not have produced them.
+//! faster than the safety sweep or the old polling could have produced them.
 
 /// Tree-row lookup by label, shared with the navigation tests.
 use super::navigation_tests::row;
@@ -27,12 +27,13 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Every observed change must arrive within this bound. The old tree polling read one of 13 shown
-/// directories every 500 ms (one visit per 6.5 s); in watched mode the source timer is the 10 s safety sweep.
-const PROMPT: Duration = Duration::from_millis(1500);
+/// Every observed change must arrive within this bound. Each change is made right after a reread of the
+/// same item was observed, so without a notification its next reread is the following 1 s safety sweep,
+/// about 800 ms later for five shown directories; only the first change of a test can meet a sweep by chance.
+const PROMPT: Duration = Duration::from_millis(400);
 
 /// Run native timers until `ready` holds; fail when it takes longer than `PROMPT`.
-fn promptly(what: &str, mut ready: impl FnMut() -> bool) {
+pub(super) fn promptly(what: &str, mut ready: impl FnMut() -> bool) {
     let start = Instant::now();
     loop {
         update_timers_and_animations();
@@ -48,7 +49,7 @@ fn promptly(what: &str, mut ready: impl FnMut() -> bool) {
 }
 
 /// A shipped window over `root`, displaying `file`, with refresh and navigation timers kept alive.
-fn open(root: &Path, file: &Path) -> (AppWindow, Rc<RefCell<State>>, [Timer; 2]) {
+pub(super) fn open(root: &Path, file: &Path) -> (AppWindow, Rc<RefCell<State>>, [Timer; 2]) {
     let text = fs::read_to_string(file).expect("displayed source");
     let workspace = Workspace::new(root).expect("workspace");
     let window = AppWindow::new().expect("native watch window");
@@ -73,27 +74,27 @@ fn depth(window: &AppWindow, label: &str) -> Option<i32> {
     return Some(entry.depth);
 }
 
-/// Create, rename, move in, move out, and delete in the last of twelve expanded folders all show promptly.
+/// Create, rename, move in, move out, and delete in the last of four expanded folders all show promptly.
 #[test]
-fn native_tree_follows_changes_in_one_of_many_expanded_folders() {
+fn native_tree_follows_changes_in_one_of_several_expanded_folders() {
     let fixture = tempfile::tempdir().expect("disposable project");
     let displayed = fixture.path().join("view.txt");
     fs::write(&displayed, "view\n").expect("displayed source");
     fs::write(fixture.path().join("outer.txt"), "outer\n").expect("root file");
-    for index in 0..12 {
+    for index in 0..4 {
         let folder = fixture.path().join(format!("folder-{index:02}"));
         fs::create_dir(&folder).expect("fixture folder");
         fs::write(folder.join(format!("seed-{index:02}.txt")), "").expect("folder seed");
     }
     let (window, _state, _timers) = open(fixture.path(), &displayed);
-    for index in 0..12 {
+    for index in 0..4 {
         let label = format!("folder-{index:02}");
         super::navigation_tests::wait_until(|| return row(&window, &label).is_some());
         window.invoke_tree_activate(row(&window, &label).expect("folder row"));
         let seed = format!("seed-{index:02}.txt");
         super::navigation_tests::wait_until(|| return row(&window, &seed).is_some());
     }
-    let last = fixture.path().join("folder-11");
+    let last = fixture.path().join("folder-03");
     fs::write(last.join("created.txt"), "").expect("external create");
     promptly("a created file", || {
         return row(&window, "created.txt").is_some();
