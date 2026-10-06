@@ -398,6 +398,19 @@ Quotations are the user's words.
   The application is still made to use as few watches as it can,
   to back off and stay quiet when the limit is reached,
   and to keep its build containers from starting podman's network helper.
+- The IDE watches the project's source folders for the language servers
+  (skipping `node_modules`, `target`, `.git`, and git-ignored folders)
+  and reports changes to every server that registers for them;
+  rust-analyzer stops watching on its own ("IDE watches for the servers").
+  Measured before:
+  rust-analyzer held 3081 watches in a disposable 40-crate workspace,
+  2001 of them inside one `node_modules` folder its settings cannot exclude,
+  and the TypeScript 7 server watched nothing,
+  so changes to files other than the displayed one never reached it.
+- The file tree keeps watching every expanded folder ("Every expanded folder"):
+  measured with 60 expanded folders,
+  watching only the folders on screen would use 5 watches instead of 61
+  but showed a stale listing in 48 of 60 reveals for 60 to 150 ms.
 - git's file-system monitor is turned off for this repository only
   (`core.fsmonitor=false` in `.git/config`;
   the global setting stays):
