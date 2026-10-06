@@ -320,6 +320,58 @@ like what editord does."
   a CLI `--help` rule,
   and a font-verification rule.
 
+## Decisions of 2026-10-06
+
+Quotations are the user's words.
+
+- Severity markers are plain letters,
+  not icons or boxes,
+  drawn in the gutter in front of the line number:
+  "Also warning and error icons shouldn't be icons - they should just be W or E letters
+  and drawn in front of the line number.
+  This also reduces complexity."
+  Derived by the agent and open to the user's veto:
+  `I` and `H` for information and hint severities,
+  the worst severity's letter when several diagnostics start on one line,
+  and a gutter column that exists on every line so text never shifts when diagnostics arrive.
+- helix-lsp's ERROR-level records for healthy servers
+  (a server's standard-error line,
+  the end of its standard error,
+  an error response the worker retries)
+  are re-labelled by the application to a lower level with their text kept;
+  every other record keeps its level ("Re-label in the IDE").
+  Settled by the agent from the plain options:
+  the TypeScript server keeps the standard `shutdown` and `exit`,
+  rust-analyzer keeps watching files itself,
+  and stopped servers are collected for at most 2 s after the worker's runtime ends.
+- The application logs warnings and errors by default,
+  and the standard `RUST_LOG` variable turns on more detail ("Warnings, with override").
+- The application ships as one executable that carries its runtime files ("Ship as single file").
+  Derived by the agent from that answer and the sibling applications,
+  open to the user's veto:
+  an `install` task copies that file to `~/.local/bin`.
+- Started without a project folder,
+  the application opens the user's home folder:
+  "Started w/o a project folder opens the user's home folder."
+  The question whether to add a launcher entry is still open.
+- Slint's testing crate may be added as a test-only dependency
+  for rerunnable accessibility tests ("Allow it").
+- Settled by the agent from repository convention and the user's statement that size is not a constraint:
+  the release build keeps its debug symbols,
+  and the package's tasks follow the sibling names
+  (`build` for the release build,
+  `build:debug` for the debug build).
+- The user reported "lots of inotify limits warnings" and asked:
+  "Try making them not trigger by making our app use inotify smartly."
+  The agent measured on 2026-10-06 that about 462000 of the host's 524288 inotify watches
+  belonged to git's file-system monitor daemons
+  (`core.fsmonitor=true` in the user's `~/.gitconfig`),
+  one per worktree of this repository,
+  and that the application itself is a small consumer.
+  The application is still made to use as few watches as it can,
+  to back off and stay quiet when the limit is reached,
+  and to keep its build containers from starting podman's network helper.
+
 ## Verification boundary
 
 Completion requires the actual native application,
