@@ -4,6 +4,7 @@
 use crate::{
     file_reload::{QuietRead, read_reload, read_reload_if_quiet},
     reload_worker::{ReloadReply, ReloadRequest, SyntaxReply},
+    source_style::SourceStyles,
     syntax::SyntaxEngine,
     workspace::Workspace,
 };
@@ -21,16 +22,53 @@ fn classify(engine: &Result<SyntaxEngine>, path: &Path, text: &Rope, revision: u
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const result = engine.ok ? highlight(engine.value, path, text) : failure(engine.error);
+    // const result = engine.ok ? highlight(engine.value, path, text) : unstarted(engine.error, path, text);
     // ```
     let result = match engine {
         Ok(active) => active.highlight(path, text),
-        Err(error) => Err(anyhow::anyhow!(
-            "Cannot initialize highlighting for {}: {error:#}",
-            path.display()
-        )),
+        Err(error) => unstarted(error, path, text),
     };
     return SyntaxReply { revision, result };
+}
+
+/// What: The highlighting result when the engine could not start. `Ok(None)` is plain text; `Err` is
+///       the initialization failure, shown and logged as a warning by the caller.
+/// Why: A file no language applies to, such as plain text, loses nothing, so it is not a failure;
+///      a file some language applies to loses its highlighting, which stays a visible failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function unstarted(error: Error, path: string, text: Rope): Styles | undefined // throws for a language file
+/// ```
+fn unstarted(error: &anyhow::Error, path: &Path, text: &Rope) -> Result<Option<SourceStyles>> {
+    let failure = || {
+        return anyhow::anyhow!(
+            "Cannot initialize highlighting for {}: {error:#}",
+            path.display()
+        );
+    };
+    // What: `match` on the recognition result: `Ok(false)` is "no language applies", `Ok(true)` is
+    //       "a language applies", and `Err` is a recognition failure.
+    // Why: Only the first is plain text; the other two keep the initialization failure visible.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { if (!SyntaxEngine.namesALanguage(path, text)) return undefined; } catch (e) { log(e); }
+    // throw failure();
+    // ```
+    match SyntaxEngine::names_a_language(path, text) {
+        Ok(false) => {
+            tracing::debug!(path = %path.display(), %error, "highlighting cannot start, but no language applies to this file; it stays plain text");
+            return Ok(None);
+        }
+        Ok(true) => {
+            return Err(failure());
+        }
+        Err(recognition) => {
+            tracing::debug!(path = %path.display(), error = %recognition, "cannot tell whether a language applies to this file");
+            return Err(failure());
+        }
+    }
 }
 
 /// Project opens resolve within the explicit root; ordinary refreshes retain their already accepted target.
@@ -118,3 +156,8 @@ pub(crate) fn prepare(
         recent_write: false,
     };
 }
+
+/// The highlighting result when the engine could not start, for plain text and for a language file.
+#[cfg(test)]
+#[path = "reload_read_tests.rs"]
+mod tests;
