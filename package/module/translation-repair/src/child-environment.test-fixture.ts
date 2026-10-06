@@ -4,9 +4,11 @@
 
  THE OWNER'S RULE: keys come from the repository's task runner, and a test's
  child must never inherit them. Every variable whose name ends in `_API_KEY`
- is removed from a child's environment, and so is every variable whose name
- starts with `TRANSLATION_REPAIR_`, so the machine's pool and clone settings
- cannot reach a child either: a case that wants one names it in `extra`.
+ is removed from a child's environment (the name test is `isCredentialName`
+ of `child-process-environment.ts`, which production code uses too, so the
+ two cannot drift), and so is every variable whose name starts with
+ `TRANSLATION_REPAIR_`, so the machine's pool and clone settings cannot reach
+ a child either: a case that wants one names it in `extra`.
  `nano-spawn` only adds to the parent's environment, so a removed name is
  stated with an `undefined` value, which its merge and node's own `spawn`
  both read as absent (`child-environment.unit.test.ts` shows it with real
@@ -22,10 +24,7 @@ import { join, } from 'node:path';
 
 import nanoSpawn, { type Result, } from 'nano-spawn';
 
-/**
- Suffix of every variable that holds a credential.
- */
-const KEY_SUFFIX = '_API_KEY';
+import { isCredentialName, } from '../dist/final/node/index.mjs';
 
 /**
  Prefix of every variable the package reads for its own settings.
@@ -68,7 +67,7 @@ export function environmentWithoutKeys(
    */
   const kept: NodeJS.ProcessEnv = { ...process.env, };
   for (const name of Object.keys(kept,)) {
-    if (name.endsWith(KEY_SUFFIX,) || name.startsWith(SETTING_PREFIX,))
+    if (isCredentialName({ name, },) || name.startsWith(SETTING_PREFIX,))
       kept[name] = undefined;
   }
   return {

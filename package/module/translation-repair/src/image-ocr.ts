@@ -15,6 +15,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+import { childEnvironment, } from './child-process-environment.ts';
 import { wordForCount, } from './count-word.ts';
 import { extensionOf, } from './image-asset.ts';
 import {
@@ -193,6 +194,7 @@ export async function runInstalledProgram(
   await execFileAsync(
     program,
     args,
+    { env: childEnvironment({ parent: process.env, },), },
   );
 }
 

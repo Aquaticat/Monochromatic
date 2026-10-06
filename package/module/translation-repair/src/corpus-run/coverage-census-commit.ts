@@ -1,6 +1,7 @@
 import { posix, } from 'node:path';
 
 import spawn from 'nano-spawn';
+import { childEnvironment, } from '../child-process-environment.ts';
 
 import { resolveGit, } from './git-command.ts';
 
@@ -42,6 +43,7 @@ export async function packageCommit({ packageDirectory, }: { readonly packageDir
       '--short=9',
       'HEAD',
     ],
+    { env: childEnvironment({ parent: process.env, },), },
   );
   /**
    Changes under the package.
@@ -56,6 +58,7 @@ export async function packageCommit({ packageDirectory, }: { readonly packageDir
       '--',
       '.',
     ],
+    { env: childEnvironment({ parent: process.env, },), },
   );
   return {
     head: head.trim(),
@@ -120,6 +123,7 @@ export async function sourcesEditedSince(
       'rev-parse',
       '--show-prefix',
     ],
+    { env: childEnvironment({ parent: process.env, },), },
   );
   /**
    Changed paths relative to the work tree's root, each ended by NUL.
@@ -134,6 +138,7 @@ export async function sourcesEditedSince(
       '-z',
       head,
     ],
+    { env: childEnvironment({ parent: process.env, },), },
   );
   return new Set(changed
     .split('\0',)

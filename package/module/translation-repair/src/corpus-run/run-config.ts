@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import spawn from 'nano-spawn';
 
+import { childEnvironment, } from '../child-process-environment.ts';
 import { contextRoot, } from '../log-context.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import {
@@ -969,6 +970,7 @@ async function resolveWorktreeRoot(): Promise<string> {
       'rev-parse',
       '--show-toplevel',
     ],
+    { env: childEnvironment({ parent: process.env, },), },
   );
   return stdout;
 }
@@ -996,6 +998,7 @@ export async function readHeadSha(): Promise<string> {
       'rev-parse',
       'HEAD',
     ],
+    { env: childEnvironment({ parent: process.env, },), },
   );
   return stdout;
 }

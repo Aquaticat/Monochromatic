@@ -1,3 +1,4 @@
+import { childEnvironment, } from '../child-process-environment.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
 import spawn, { SubprocessError, } from 'nano-spawn';
 
@@ -348,6 +349,7 @@ export async function resolveCommit(
         '--verify',
         `${revision}^{commit}`,
       ],
+      { env: childEnvironment({ parent: process.env, },), },
     );
     return stdout.trim();
   }
@@ -391,6 +393,7 @@ async function isShallowRepository(
       'rev-parse',
       '--is-shallow-repository',
     ],
+    { env: childEnvironment({ parent: process.env, },), },
   );
   return stdout.trim() === 'true';
 }
@@ -464,6 +467,7 @@ export async function tipContains(
         commit,
         tip,
       ],
+      { env: childEnvironment({ parent: process.env, },), },
     );
     return true;
   }

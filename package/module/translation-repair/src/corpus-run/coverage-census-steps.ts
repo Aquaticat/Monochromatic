@@ -11,6 +11,7 @@ import {
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import spawn from 'nano-spawn';
+import { childEnvironment, } from '../child-process-environment.ts';
 
 import { wordForCount, } from '../count-word.ts';
 import { isJsonRecord, } from '../json-guard.ts';
@@ -109,7 +110,15 @@ export async function runSuite(
         args,
         {
           cwd,
-          env: { NODE_V8_COVERAGE: coverageDirectory, },
+          // The suite is handed no key and no setting of the package: a case
+          // that needs one invents it, and the suite's own children go
+          // through the keyless fixture.
+          env: childEnvironment({
+            parent: {
+              ...process.env,
+              NODE_V8_COVERAGE: coverageDirectory,
+            },
+          },),
           stdio: [
             'ignore',
             log.fd,

@@ -244,6 +244,7 @@ export {
   validateIssueClaim,
 } from './validate-issue.ts';
 
+export * from './child-process-environment.ts';
 export * from './fidelity-reference-barrel.ts';
 export * from './decision-barrel.ts';
 export * from './artifact-read-barrel.ts';

@@ -1,5 +1,6 @@
 import spawn from 'nano-spawn';
 
+import { childEnvironment, } from '../child-process-environment.ts';
 import {
   type SourceCommit,
   sourceCommitOf,
@@ -36,6 +37,7 @@ export async function cacheAccountGitOutput({ args, }: { readonly args: readonly
   const { stdout, } = await spawn(
     await resolveGit(),
     [...args,],
+    { env: childEnvironment({ parent: process.env, },), },
   );
   return stdout;
 }

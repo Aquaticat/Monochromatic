@@ -1,5 +1,7 @@
 import { devNull, } from 'node:os';
 
+import { childEnvironment, } from './child-process-environment.ts';
+
 //region Intrinsic corpus Git context
 // A pin names physical objects in its own clone, never inherited repository state.
 
@@ -46,9 +48,36 @@ const REPOSITORY_ENVIRONMENT: ReadonlySet<string> = new Set([
 ],);
 
 /**
- Isolates every corpus subprocess from inherited repository routing and grafts.
+ Whether a variable's name routes git to another repository or injects
+ configuration.
+
+ @param name - variable's name
+
+ @returns Whether the corpus child must not inherit it
+
+ @example
+ ```ts
+ const routed = routesRepository({ name: 'GIT_DIR', },); // true
+ ```
+ */
+function routesRepository({ name, }: { readonly name: string; },): boolean {
+  if (REPOSITORY_ENVIRONMENT.has(name,))
+    return true;
+  if (name.startsWith('GIT_CONFIG_KEY_',))
+    return true;
+  return name.startsWith('GIT_CONFIG_VALUE_',);
+}
+
+/**
+ Isolates every corpus subprocess from inherited repository routing and grafts,
+ and from every credential and setting of the package.
  Guards are assigned after inheritance, so callers cannot override them.
  No process-global environment is mutated or logged.
+
+ EVERY REMOVED NAME IS STATED AS `undefined`, NOT LEFT OUT: `nano-spawn` merges
+ this object over the process's own environment, so a name left out came back
+ from the parent and `GIT_DIR` reached the child of its listing, while node's
+ `execFile` read the same object as replacing the environment.
 
  @param environment - inherited process context, injectable for verification
 
@@ -65,14 +94,11 @@ export function corpusGitEnvironment({ environment = process.env, }: {
   /**
    Preserve unrelated process settings without exposing their values in logs.
    */
-  const inherited = Object.fromEntries(
-    Object.entries(environment,)
-      .filter(function outsideRepository([name,],): boolean {
-      return (!REPOSITORY_ENVIRONMENT.has(name,))
-        && (!name.startsWith('GIT_CONFIG_KEY_',))
-        && (!name.startsWith('GIT_CONFIG_VALUE_',));
-    },),
-  );
+  const inherited = childEnvironment({ parent: environment, },);
+  for (const name of Object.keys(inherited,)) {
+    if (routesRepository({ name, },))
+      inherited[name] = undefined;
+  }
   return {
     ...inherited,
     GIT_GRAFT_FILE: devNull,
