@@ -50,7 +50,7 @@ mod typescript;
 pub struct LanguageSetup {
     /// Decides what is spawned for every server; the default spawns the server itself.
     pub launch: LaunchPolicy,
-    /// Private application state directory, outside the project; needed by confining policies.
+    /// Private application state directory, not containing the project; needed by confining policies.
     pub state_root: Option<PathBuf>,
     /// Extra language and server definitions in Helix's `languages.toml` syntax, merged over the
     /// built-in ones. This is for definitions the application itself supplies; it must never be

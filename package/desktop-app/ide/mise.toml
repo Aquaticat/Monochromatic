@@ -91,18 +91,18 @@ for (const profile of ['debug', 'release']) {
 }
 """
 
-[tasks.build]
+[tasks."build:debug"]
 depends = ["runtime"]
-description = "Build the native IDE in the bounded container"
+description = "Build the debug IDE and its helper binaries in the bounded container"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['build'])
 """
 
-[tasks."build:release"]
+[tasks.build]
 depends = ["runtime"]
-description = "Build the optimized application binary in the bounded container"
+description = "Build the optimized application binary in the bounded container, as sibling applications name their release build"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
@@ -114,60 +114,53 @@ runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'build', '--release
 """
 
 [tasks.bundle]
-depends = ["build:release"]
-description = "Assemble dist/monochromatic-ide from the release binary, its language runtime, and license texts"
+depends = ["build"]
+description = "Copy the release binary to dist/monochromatic-ide: one executable that carries its language runtime and license texts"
 shell = "node --input-type=module-typescript -e"
 run = """
-const { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync } = await import('node:fs')
-const { join } = await import('node:path')
+const { chmodSync, copyFileSync, existsSync, mkdirSync, renameSync, rmSync, statSync } = await import('node:fs')
 const binary = 'target/release/monochromatic-ide'
-const runtime = 'target/release/runtime'
-if (!existsSync(binary)) throw new Error('Missing ' + binary + '; run the build:release task')
-const manifest = JSON.parse(readFileSync(join(runtime, 'manifest.json'), 'utf8'))
-// Assemble beside the destination and swap, so a failed copy never leaves a half-filled directory in place.
+if (!existsSync(binary)) throw new Error('Missing ' + binary + '; run the build task')
+// The build script embedded target/release/runtime and the license texts into the binary; nothing goes beside it.
+// It is copied unstripped, so its symbol names stay in backtraces and profiles.
+mkdirSync('dist', { recursive: true })
 const destination = 'dist/monochromatic-ide'
 const staging = destination + '.new'
 rmSync(staging, { recursive: true, force: true })
-mkdirSync(join(staging, 'runtime', 'grammars'), { recursive: true })
-copyFileSync(binary, join(staging, 'monochromatic-ide'))
-chmodSync(join(staging, 'monochromatic-ide'), 0o755)
-// Helix looks for a `runtime` directory beside the resolved executable, after its other locations.
-// Only what the manifest lists is copied: the build directory may still hold libraries of an earlier selection.
-for (const name of ['manifest.json', 'Helix-LICENSE']) copyFileSync(join(runtime, name), join(staging, 'runtime', name))
-cpSync(join(runtime, 'queries'), join(staging, 'runtime', 'queries'), { recursive: true })
-for (const library of manifest.grammars) {
-  copyFileSync(join(runtime, 'grammars', library), join(staging, 'runtime', 'grammars', library))
-  const name = library.slice(0, -3)
-  cpSync(join(runtime, 'licenses', name), join(staging, 'runtime', 'licenses', name), { recursive: true })
-}
-// The application's own license texts, and the notices of the two font families compiled into the binary.
-cpSync('LICENSES', join(staging, 'LICENSES'), { recursive: true })
-mkdirSync(join(staging, 'LICENSES', 'font'))
-for (const notice of ['Inter-LICENSE.txt', 'JetBrainsMono-OFL.txt']) copyFileSync(join('asset', 'font', notice), join(staging, 'LICENSES', 'font', notice))
+copyFileSync(binary, staging)
+chmodSync(staging, 0o755)
+// Until 2026-10-06 the bundle was a directory of this name; the file replaces it.
 rmSync(destination, { recursive: true, force: true })
 renameSync(staging, destination)
-console.log('Assembled ' + destination + ' with ' + manifest.grammars.length + ' grammars')
+console.log('Copied ' + destination + ' (' + statSync(destination).size + ' bytes)')
 """
 
+[tasks.install]
+depends = ["bundle"]
+description = "Install dist/monochromatic-ide as ~/.local/bin/monochromatic-ide and its launcher entry in ~/.local/share/applications"
+run = "node bin/install.mjs"
+
 [tasks."inspect:bundle"]
-description = "Check an assembled application directory: inventory, license texts, every bundled grammar through the syntax tests, and startup from a copy outside the source tree with and without its language runtime"
+description = "Check a single application executable: every runtime file and notice embedded byte for byte, and lone copies that highlight, reuse and repair their cache, ignore a user Helix runtime, start concurrently, and report a damaged embedded part"
 usage = '''
-arg "[directory]" default="dist/monochromatic-ide" help="Assembled directory to check"
+arg "[file]" default="dist/monochromatic-ide" help="Single executable to check"
+arg "[runtime]" default="target/release/runtime" help="Runtime directory the executable was built from"
 arg "[only]" help="Comma-separated check names to run; default is every check"
 '''
 run = "node bin/inspect-bundle.mjs"
 
 [tasks."inspect:bundle-guards"]
-description = "Damage copies of an assembled application directory and observe each bundle check fail on its damage"
+description = "Damage copies of a single application executable and observe each bundle check fail on its damage"
 usage = '''
-arg "[directory]" default="dist/monochromatic-ide" help="Assembled directory to copy and damage"
+arg "[file]" default="dist/monochromatic-ide" help="Single executable to copy and damage"
+arg "[runtime]" default="target/release/runtime" help="Runtime directory the executable was built from"
 arg "[only]" help="Comma-separated case names to run; default is every case"
 '''
 run = "node bin/inspect-bundle-guards.mjs"
 
 [tasks."run:bundle"]
-description = "Run the assembled application against a local root supplied as an argument"
-run = "./dist/monochromatic-ide/monochromatic-ide"
+description = "Run the single application executable; without a folder argument it opens the home folder"
+run = "./dist/monochromatic-ide"
 
 [tasks.test]
 depends = ["runtime"]
@@ -226,6 +219,7 @@ runCargo(['test', '--no-default-features', '--test', 'file_open'])
 """
 
 [tasks."test:cli"]
+depends = ["runtime"]
 description = "Verify native-path argument grammar and executable help without display startup"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -250,11 +244,23 @@ runCargo(['test', '--no-default-features', '--test', 'raster_reuse', '--', '--no
 """
 
 [tasks."lint:clippy"]
+# The application binary embeds target/debug/runtime, so its build needs the prepared runtime.
+depends = ["runtime"]
 description = "Check all IDE targets with warnings denied"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['clippy', '--all-targets', '--', '--deny', 'warnings'])
+"""
+
+[tasks."lint:release"]
+depends = ["runtime"]
+description = "Check the application binary under the release profile with warnings denied, as the build task compiles it"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+// Code behind cfg(debug_assertions) is absent from release builds, so unused items there show only in this profile.
+runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'clippy', '--release', '--bin', 'monochromatic-ide', '--', '--deny', 'warnings'])
 """
 
 [tasks."lint:rust"]
@@ -761,5 +767,5 @@ execFileSync(compositor, ['--socket', socket, '--size', size, '--scale', scale, 
 """
 
 [tasks.run]
-description = "Run the built IDE against a local root supplied as an argument"
+description = "Run the debug IDE from the build:debug task against a local root supplied as an argument"
 run = "./target/debug/monochromatic-ide"

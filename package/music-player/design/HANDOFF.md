@@ -152,9 +152,23 @@ and `AGENTS.md`'s APQ now says never to block pushes in this repository's linked
 which share its `.git/config`.
 The review page shows the two templates as decided.
 
-Next:
-rebuild the first-run study for D100
-(`evidence/first-run-access-boundaries.md` describes the current one).
+In progress:
+the first-run study rebuilt for D100.
+The proposal is in `doc/planning/music-player-first-run-access.md` under `Rebuild for D100`;
+the design-side builder,
+test and page template are committed
+(their verify and test tasks fail against the published cohort until the new one is published);
+the prototype is at `7a2ea6888cce59c9db23d556a520f4c60f8824c6`
+(250 unit tests pass,
+12 of them the first-run fixture's);
+the capture runs through `run-template-editor-when-quiet.ts first-run`,
+into `settings-pane-native-private/first-run-cohort-7a2ea6888`.
+Then crops,
+inspection,
+publication,
+checks,
+the boundary document,
+and the approval question through the question tool.
 
 To capture again,
 from `~/temp/agent`:
