@@ -96,30 +96,36 @@ fn first_ink(
     return None;
 }
 
-/// What: The rightmost column left of the line number's own place with pixels in `ink` in the code row starting at
-///       window y `top`, or nothing.
-/// Why: The space from the letter's last ink to the number's first ink is the gap the user sees.
+/// What: The runs of window columns with any ink, antialiased edges included, from the gutter's left edge to the
+///       text in the code row starting at window y `top`; each run is its first and last column.
+/// Why: The blank columns between the letter's run and the number's first run are the gap the user sees, and the
+///      blank columns between two digits of a number are what that gap is compared with.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function letterEnd(shown: Frame, top: number, line: number, ink: Color): number | undefined;
+/// function inkRuns(shown: Frame, top: number, background: Pixel): Array<[number, number]>;
 /// ```
-fn letter_end(
+fn ink_runs(
     shown: &SharedPixelBuffer<Rgba8Pixel>,
     top: f32,
-    line: usize,
-    ink: Color,
-) -> Option<usize> {
-    let mut found = None;
-    for x in (TEXT_LEFT - GUTTER) as usize..number_left(line) as usize {
-        for dy in 4..20 {
-            if near(pixel(shown, x as f32, top + dy as f32), ink) {
-                // `Some(x)` keeps the furthest column seen so far.
-                found = Some(x);
-            }
+    background: Rgba8Pixel,
+) -> Vec<(usize, usize)> {
+    let mut runs: Vec<(usize, usize)> = Vec::new();
+    for x in (TEXT_LEFT - GUTTER) as usize..(TEXT_LEFT - NUMBER_GAP) as usize {
+        // `any` asks whether some pixel of the column differs visibly from the background.
+        let inked = (2..22).any(|dy| {
+            return contrast(pixel(shown, x as f32, top + dy as f32), background) > 1.05;
+        });
+        if !inked {
+            continue;
+        }
+        // `last_mut` lends the latest run, which grows when this column continues it.
+        match runs.last_mut() {
+            Some(run) if run.1 + 1 == x => run.1 = x,
+            _ => runs.push((x, x)),
         }
     }
-    return found;
+    return runs;
 }
 
 /// `count` numbered lines, `line NNNN: value`.
@@ -281,7 +287,7 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
     errors_on(&reader, &[0, 9, 99]);
     let error = window.get_error_ink();
     let shown = frame(window);
-    let mut gaps = Vec::new();
+    let mut runs = Vec::new();
     for line in [0, 9] {
         let before = TEXT_TOP + line as f32 * 24.0;
         let after = TEXT_TOP + reader.source.borrow().row_map.code_top(line);
@@ -299,10 +305,9 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
                 "line {line}'s number or text changed when its letter appeared"
             );
         }
-        let letter = letter_end(&shown, after, line, error).expect("a letter before the number");
-        let number =
-            first_ink(&shown, after, letter as f32 + 1.0, background).expect("the line number");
-        gaps.push(number - letter);
+        let (matching, _) = letter_cell(&shown, line, after - TEXT_TOP, error, background);
+        assert!(matching > 5, "line {line} shows no letter in the error ink");
+        runs.push(ink_runs(&shown, after, background));
     }
     // Line 99 is below the view: scroll its code row into the view first, and read back the offset taken.
     let top = reader.source.borrow().row_map.code_top(99);
@@ -310,11 +315,32 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
     update_timers_and_animations();
     let row_y = TEXT_TOP + top + window.get_scroll_y();
     let scrolled = frame(window);
-    let letter = letter_end(&scrolled, row_y, 99, error).expect("a letter before 100");
-    let number = first_ink(&scrolled, row_y, letter as f32 + 1.0, background).expect("100");
-    gaps.push(number - letter);
+    let (matching, _) = letter_cell(&scrolled, 99, row_y - TEXT_TOP, error, background);
+    assert!(matching > 5, "line 99 shows no letter in the error ink");
+    runs.push(ink_runs(&scrolled, row_y, background));
+    // The letter is the first run and the number's first digit the second; `10` has its digits in two runs.
+    let gaps: Vec<usize> = runs
+        .iter()
+        .map(|found| return found[1].0 - found[0].1 - 1)
+        .collect();
+    assert_eq!(
+        runs[1].len(),
+        3,
+        "the gutter of line 10 holds a letter and two digits: {runs:?}"
+    );
+    let digits = runs[1][2].0 - runs[1][1].1 - 1;
     println!(
-        "gutter: columns from the letter's last ink to the number's first ink for 1, 10, 100: {gaps:?}"
+        "gutter: blank columns between the letter and the number for 1, 10, 100: {gaps:?}; between the digits of 10: {digits}; runs {runs:?}"
+    );
+    assert_eq!(
+        runs[0].len(),
+        2,
+        "the gutter of line 1 holds a letter and one digit"
+    );
+    assert_eq!(
+        runs[2].len(),
+        4,
+        "the gutter of line 100 holds a letter and three digits"
     );
     assert_eq!(
         gaps[0], gaps[1],
@@ -325,8 +351,8 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
         "the gap before a three-digit number differs"
     );
     assert!(
-        gaps[0] <= 8,
-        "the letter stands {} columns from its number",
+        gaps[0] > digits && gaps[0] <= 8,
+        "the letter stands {} blank columns from its number, digits {digits} apart",
         gaps[0]
     );
 }
