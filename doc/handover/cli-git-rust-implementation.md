@@ -1193,7 +1193,48 @@ all remain open to the user's veto.
   none is a failure to read repository content,
   and the incumbent treated the line-break case as an engine failure.
 
-The cutover questions of that brief are not asked or adopted yet.
+From the cutover items of the same brief,
+on the same basis and equally open to veto:
+
+- The wrapper checks the Git version once before work that depends on it (a commit, hooks, locks);
+  read-only commands are never checked.
+  Checking on every command costs a Git process each time,
+  and checking only at install misses a later change of Git.
+- Git 2.56.0 or newer counts as supported.
+  Requiring the exact release would stop commits after every system update of Git.
+  This host's Git is 2.55.0,
+  so it must be upgraded before cutover;
+  that is a change to the user's system and not something the main session does.
+- The retired trust commands print their explanation and exit 0.
+  Nothing outside the retiring workflow calls them,
+  and exit 0 lets one set of instructions serve both wrappers during rollback.
+- The whole native test suite runs on hosted macOS and Windows runners on every wrapper change.
+  This departs from the brief's ranking,
+  which put the platform-specific suites first:
+  the scanner's Windows run in this session found a platform difference in code believed neutral
+  (the cache-root reason),
+  hosted runners are free for this public repository,
+  and the cost is waiting time plus installing Git 2.56.0 on each runner.
+- The wrapper's line for `git --version` and its note for `git status` are printed first,
+  on standard error,
+  and the command is then handed to Git whole.
+  Printing after Git would keep the wrapper alive behind every such command,
+  and dropping them loses the only place the rules are shown.
+- `MONOCHROMATIC_VERBOSE` stays the switch for verbose diagnostics,
+  shared with the TypeScript tools.
+- The hk cleanup task is kept and moved to a TypeScript package that survives cutover.
+  Whether another machine still has the old settings cannot be measured from here,
+  and keeping it costs one move.
+  If the user knows that no machine does,
+  retiring it is the simpler end state.
+- The performance bar is "faster than the incumbent",
+  per scenario and by more than the measured noise.
+  The rewrite was requested because the wrapper felt slow,
+  and every other bar lets a slower result pass.
+- The commit the user reported at 8.9 seconds (staging and committing one Markdown file)
+  becomes a measured and gated scenario with this repository's real policies.
+
+No item of the brief is left unasked.
 
 ### User correction: no vetting decision gate
 
@@ -1252,8 +1293,9 @@ that is verification, not a decision for the user.
 - [x] The user chose to post the cargo-mutants prototype as a comment on upstream issue 545; it is posted.
 - [x] Transactions-phase decisions: four answered by the user,
   the rest adopted under the standing instruction (`User decisions 2026-10-05`).
-- [ ] Cutover decisions from `doc/planning/cli-git-rust-open-decisions.md`, section `Question batches`:
-  adopt the clearly dominant ones and ask the rest before cutover work starts.
+- [x] Cutover decisions: all adopted under the standing instruction and open to veto
+  (`User decisions 2026-10-05`, section `Adopted without a question`).
+- [ ] Before cutover: this host's Git must be 2.56.0 or newer (it is 2.55.0); the user's system, not ours to change.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
   for commands that need no commit transaction:
   on `main`, final engine tree `348d94cbe` (`Native policy engine`).
