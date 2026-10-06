@@ -58,6 +58,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "batch_reply"
+path = "fuzz_targets/batch_reply.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "dependent_version"
 path = "fuzz_targets/dependent_version.rs"
 test = false
@@ -70,6 +77,16 @@ panic = "unwind"
 
 [profile.dev]
 panic = "unwind"
+
+# The subject links the forbidden-strings scanner, whose `build.rs` precompiles its embedded
+# baseline through the forbidden-regex build-dependency. Cargo builds build scripts at
+# `opt-level = 0` by default and reads profiles only from this workspace root; see
+# ../../cli/forbidden-strings/Cargo.toml for the measurement.
+[profile.release.build-override]
+opt-level = 3
+
+[profile.dev.build-override]
+opt-level = 3
 
 # Independent workspace, matching the other fuzz sidecars.
 [workspace]

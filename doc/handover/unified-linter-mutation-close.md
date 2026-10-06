@@ -13,13 +13,49 @@ and reruns the Markdown and processor campaigns on the final snapshot.
 Inspect `Excluded mutation kinds` first,
 because it changes what every campaign measures.
 Then inspect `Timeouts removed`,
-because it changes production code and adds one error path,
+because it changes production code and adds two error paths,
 and read `Defects found` and `Remaining`.
 Respond with a veto of a named change or disposition,
 or with the next scope to mutate.
 
-This document is in progress;
-sections without results say so.
+## Result
+
+All three campaigns exit 0 with no missed mutant and no timeout,
+against one test image,
+`5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`,
+built from linter source tree `ceb495865521beda0f988a536435ffd69cc1d100`.
+That tree,
+the mutation runner and the package tasks are unchanged at the commit that adds this section.
+Each campaign passes both exclusion patterns and keeps the 180 second per-mutant limit.
+
+- Executable scope,
+  `mutation-Sh3zLV`:
+  184 mutants,
+  131 caught,
+  53 unviable.
+- Markdown scope,
+  `mutation-RjKWfe`:
+  742 mutants,
+  698 caught,
+  44 unviable.
+- Processor scope,
+  `mutation-uVvFQn`:
+  355 mutants,
+  330 caught,
+  25 unviable.
+
+`Final campaigns` has the gate,
+the logs and the rounds that came before this one.
+No mutant exposed a defect on unmutated input;
+`Defects found` says what the campaigns did expose.
+`Remaining` lists what no campaign here covers.
+
+A second round on 2026-10-06 is closing the items that were under `Remaining`:
+every production module now belongs to a scope,
+and the executable lints every invocation on a thread with an explicit stack.
+`Gaps round` records its changes and evidence;
+its campaigns are still running,
+so the counts in this section describe the first round only.
 
 ## Excluded mutation kinds
 
@@ -88,11 +124,21 @@ and no other mutant appears or disappears.
   (31 of `+=` to `*=`,
   1 of `-=` to `/=`).
 
-The `mutation:list:executable` and `mutation:list:markdown` tasks print 184 and 739 mutants.
+The `mutation:list:executable` and `mutation:list:markdown` tasks printed 184 and 739 mutants on that source.
 The same number of `+=` to `-=` and `-=` to `+=` mutants remains in each scope as was removed:
 5,
 11,
 11 and 2.
+
+The same comparison on the final tree gives the same removals.
+Only the Markdown and unscoped totals moved,
+by the 3 mutants of the new `MarkdownSource::subtree`:
+Markdown 753 before and 742 after,
+unscoped 1,675 before and 1,643 after.
+The executable,
+processor and constant-slot scopes are unchanged at 184,
+355 and 12 after exclusion,
+which are the totals the final campaigns report.
 
 ### What it covers here
 
@@ -647,7 +693,7 @@ The rerun under `Final campaigns` is the proof for each killing test.
 
 ## Defects found
 
-No mutant so far exposed a defect on unmutated input:
+No mutant exposed a defect on unmutated input:
 no wrong exit status,
 lost finding,
 corrupting fix or unbounded work in the released code.
@@ -682,10 +728,9 @@ followed by the three campaigns against that image with `mise run --skip-deps`,
 one at a time.
 Their three `manifest.json` files must name the same `baseImage`,
 and a round counts only if all three exit 0.
-The executable and processor campaigns run first,
-because their sources changed the most since they were last mutated
-(the processor restructuring under `Timeouts removed` had never been mutated);
-the Markdown campaign starts only if both pass.
+In each round the last campaign starts only if the two before it exit 0.
+Round 1 does not count and round 2 does;
+`Round 2` has the final results.
 
 A processor discovery pass on the gate 4 image (`mutation-dy0x0l`) was started and removed before its baseline,
 in favour of running the processor campaign once on the gate 5 image.
@@ -738,8 +783,9 @@ Its per-mutant logs name the test that failed under each mutant the first run mi
 - The redundant struct update in `check_rust_root` is gone,
   and its mutant is no longer generated.
 
-The executable campaign is rerun with the committed runner after the other two,
-so that all three final results come from the same runner and the same image.
+This run is evidence for those kills only.
+The executable campaign that counts is the one in `Round 2`,
+with the committed runner and the same image as the other two.
 
 ### Round 1
 
@@ -834,8 +880,400 @@ none on an item added by this work.
   and both `markdown_lfs_target::tests::lexical_normalization_resolves_dot_components`
   and `markdown_lfs_context::tests::targets_resolve_to_lfs_plain_and_missing` for `apply_segments`.
   All 18 mutants of the respelled `choose` and `majority` are caught.
+- Processor campaign,
+  `mutation-uVvFQn` (`campaign-processors-files-final-2.log`):
+  355 mutants,
+  330 caught,
+  0 missed,
+  25 unviable,
+  0 timeouts,
+  exit status 0,
+  57 minutes.
+  The baseline built in 137 seconds and tested in 22.0 seconds,
+  again a loaded host:
+  the same tests took 1.4 seconds in round 1.
+  No mutant's test phase reached 20 seconds,
+  and none ended by a signal.
+  Its caught and unviable lists are identical,
+  mutant for mutant,
+  to round 1's,
+  which mutated the same processor source.
 
-The processor result is pending.
+Round 2 counts.
+The three `manifest.json` files name the same `baseImage`,
+`5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`,
+the same cargo-mutants executable
+(27.1.0, SHA-256 `f985f265ee3ea3e453aa98b04c52134953911f692f8ce8abf137f3873202a2d0`),
+both exclusion patterns and the 180 second limit,
+and each `exit.json` records status 0.
+`git diff` between the gate 6 head `9e61f66a3` and the commit that records this
+shows no change under `package/linter/monochromatic-lint`,
+`package/rust-module/jsonc-edit` or `clippy.toml`,
+the inputs the test image is built from.
+
+### How the rounds were run
+
+Each campaign was started with `mise run --skip-deps //package/linter/monochromatic-lint:mutation:<scope>`
+and `MONOCHROMATIC_LINT_IMAGE_TAG=mutation-close`,
+after one `lint:container` run with the same tag,
+by a scratch driver that ran them one at a time and wrote one log per campaign.
+The driver is not committed.
+Without `--skip-deps` each mutation task would rebuild the test image through its `lint:container` dependency,
+and the three campaigns would not share one image.
+
+Every container was mount-free and network-disabled,
+with 2 GiB of memory,
+2 CPUs and 128 processes.
+The session that ran this work was interrupted more than once by API limits or errors;
+each time the state was re-read from the logs,
+the evidence directories and `podman ps` before anything was rerun,
+and no campaign had to be repeated because of an interruption.
+Two campaigns were stopped on purpose by removing their containers,
+`mutation-AuPwZ7` and `mutation-dy0x0l`,
+for the reasons given where they are named.
+
+## Gaps round
+
+A delegate of the main session closed the items of `Remaining` on 2026-10-06,
+with `MONOCHROMATIC_LINT_IMAGE_TAG=mutation-gaps`
+and the same container bounds as the first round.
+Evidence is in `package/linter/monochromatic-lint/target/verification/`.
+
+### Scopes for every production module
+
+Every scope is now one entry of a table in `bin/mutate-container.mjs`:
+the arguments that decide which mutants exist,
+the arguments that decide how each mutant is built and tested,
+and a per-mutant limit where it differs from 180 seconds.
+The campaign,
+`--list <scope>` and `--coverage` all read that table,
+so a listing can no longer drift from the campaign it describes,
+and the `mutation:list:*` tasks call `--list`.
+
+- The executable scope also mutates `file_discovery.rs`,
+  `path_inputs.rs` and `fix_loop.rs`,
+  the input expansion and fix loop it drives:
+  233 mutants instead of 184.
+- The new core scope (`mutation:core`) mutates configuration parsing,
+  lookup,
+  matching,
+  merging and rule-option validation,
+  findings,
+  grouped edits,
+  resolved rule settings,
+  and the syntax-only Rust rules with their shared parse:
+  202 mutants.
+  None of these loads a Cargo workspace,
+  so it uses the executable scope's test selection.
+- The new semantic scope (`mutation:semantic`) mutates `rust_file_engine.rs`,
+  `rust_toolchain.rs`,
+  `rust_workspace.rs`,
+  the `rust_explicit_*` modules,
+  `rust_generic_arguments.rs`,
+  `rust_semantic_*` and `rust_type_diagnostic.rs`:
+  96 mutants.
+  It runs the whole suite,
+  because the Cargo-workspace suites are its tests
+  and the rest of the suite costs little next to them.
+
+The four processor tasks that start containers,
+and the inline `mutation:processors` task,
+now honour `MONOCHROMATIC_LINT_IMAGE_TAG` like the other container tasks;
+they used the shared `development` tags before.
+
+### Coverage by listing
+
+`mutation:coverage` lists every scope and the unscoped crate
+with `cargo mutants --list --no-config` and both exclusion patterns,
+writes each listing to a `coverage-*` evidence directory,
+and fails unless the union of the scope listings equals the unscoped listing name by name.
+On the committed runner (`ed7c3080d`, linter source tree `ceb495865521beda0f988a536435ffd69cc1d100`)
+it reports 1,643 unscoped mutants and a union of 1,643,
+with none outside every scope and none unknown (`coverage-WgJPEx`):
+rust-style 3,
+Markdown 742,
+parent lookup 4,
+processors 355,
+constant slots 12,
+executable 233,
+core 202 and semantic 96.
+The parent-lookup scope is a subset of the Markdown scope,
+and the inline `mutation:processors` task a subset of the processor scope.
+The positive control is a copy of the runner without the core scope:
+it fails with 202 mutants outside every scope (`coverage-99OU43`).
+The comparison is repeated on the final tree once the round's campaigns are done.
+
+Before this round the union was 347 mutants short,
+not only the 72 of the six files named under `Remaining`:
+configuration,
+findings,
+edits,
+resolved rules,
+the syntax-only Rust rules
+and the explicit-type modules had been mutated by the full-scope campaign `mutation-1vJeuS` on an older snapshot,
+but no current scope held them.
+
+### Workspace tests in the fast scopes
+
+The executable and core scopes skip the tests that load a Cargo workspace by their full names,
+instead of five module names.
+`no_semantic_selection_avoids_workspace_initialization`
+and the three `rust_semantic_session` tests now run in both scopes,
+and so does `rust_workspace_tests::cargo_discovery_keeps_its_owner_boundary`:
+it rejects a project descriptor before anything is loaded,
+and took 0.16 seconds alone,
+so only four of the nine tests the scope used to skip load a workspace.
+
+`workspace-tests-cost-1.log` timed each test alone,
+on one test thread,
+in a bounded container of gate image `1afd09647c5615f9a60e51dd29a3f340c820c0a7e86a1059c416a1f26dc7ac89`
+at a host load average of about 85 on 16 cores:
+
+- `rust_workspace_tests::generated_definitions_and_build_failures_are_distinct`:
+  139.1 seconds.
+- `rust_file_engine::tests::selected_semantics_reuses_the_manifest_session`:
+  86.9 seconds.
+- `rust_explicit_types_tests::semantic_conformance_and_source_overlay_controls`:
+  65.7 seconds.
+- `rust_inferred_constants::tests::holes_resolve_against_the_parameter_in_their_own_slot`:
+  43.4 seconds.
+- `rust_workspace_tests::cargo_discovery_keeps_its_owner_boundary`:
+  0.16 seconds.
+- The rest of the library suite on two threads:
+  14.5 seconds;
+  the whole library suite on two threads:
+  250.7 seconds.
+
+These four run in `test:container`,
+in the semantic scope,
+and the constant-slot scope's two filters select two of them.
+
+### Invocation thread
+
+`run_process` now parses the command line,
+installs the panic hook,
+and runs the whole invocation on a scoped thread built by `lint_thread` in `run_workers.rs`,
+the same builder and 8 MiB stack the workers use.
+One file,
+`--concurrency 1`,
+`--stdin` and the semantic plans are therefore linted on a thread whose stack size is explicit.
+If the operating system refuses that thread,
+the invocation runs on the calling thread as before.
+
+The platform figure behind the change is from Microsoft's documentation,
+not recalled:
+the MSVC [`/STACK` reference](https://learn.microsoft.com/en-us/cpp/build/reference/stack-stack-allocations)
+says "For ARM64, x86, and x64 machines, the default stack size is 1 MB",
+and [Thread Stack Size](https://learn.microsoft.com/en-us/windows/win32/procthread/thread-stack-size)
+says "The default stack reservation size used by the linker is 1 MB"
+and that the main thread's size comes from the executable header.
+A GitHub code search of `rust-lang/rust` for `STACK` in `linker.rs` found only `-z noexecstack`,
+which suggests that rustc passes no `/STACK` reserve;
+that is a search result,
+not a Windows build,
+and no Windows or release build was run.
+
+The reproduction lints `fn main` with 1,200 nested parentheses,
+the input of the worker nesting control,
+with the debug executable in the bounded container,
+lowering the main thread's stack with `ulimit -s` in `sh -c` before `exec`.
+`stack-repro-before.log` is the unchanged tree,
+image `5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`
+(the container's default soft limit is 16,384 KiB):
+
+- One file at the default limit:
+  exit 0.
+- One file at 1,024 KiB:
+  exit 134,
+  `thread 'main' (4230) has overflowed its stack`.
+- Two files with `--concurrency 1` at 1,024 KiB:
+  exit 134,
+  the same overflow on `main`.
+- Two files with `--concurrency 2` at 1,024 KiB:
+  exit 0,
+  because both files run on 8 MiB workers.
+- `--stdin` at 1,024 KiB:
+  exit 134,
+  the same overflow on `main`.
+
+`a_small_main_thread_stack_does_not_limit_nesting` in `src/binary_tests.rs` runs the one-file,
+`--concurrency 1` and `--stdin` cases under a 1,024 KiB main stack
+and requires exit 0 with both streams empty.
+With the invocation thread replaced by a direct call on the calling thread,
+that test failed on the host:
+`the executable was killed by a signal: thread 'main' (532099) has overflowed its stack`
+(`hand-mutations-stack-hook.log`).
+
+### Panic hook and stack size controls
+
+The hook installation moved from `parse_and_run` into `run_process_with`,
+which takes the parsed options and the runner,
+so a test can run one real invocation whose runner panics.
+`only_debug_invocations_print_the_default_panic_message` starts its own test binary again
+with only the ignored `panic_hook_child` selected,
+once plain and once with `--debug`.
+The plain child must write exactly the program's internal-error line on standard error and exit 2;
+the debug child must write the default hook's message,
+naming the `monochromatic-lint` thread and the panic location,
+before that line.
+Because the hook is process-wide,
+the child test is ignored unless selected,
+and does nothing unless its environment variable names a mode.
+
+`lint_threads_hold_the_documented_eight_mebibyte_stack` starts a thread from `lint_thread`,
+recurses in frames of at least 4 KiB until the frames span 7.5 MiB measured from frame addresses,
+and then requires `WORKER_STACK_BYTES` to equal 8 MiB.
+The nesting controls alone pass with a 4 MiB stack;
+the probe does not.
+
+Hand mutations on the host,
+each written back and checked with `git diff --quiet` (`hand-mutations-stack-hook.log`):
+
+- The `set_hook` call deleted:
+  the hook control failed,
+  because the plain child's standard error began with `thread 'monochromatic-lint' (529092) panicked at`.
+- A 7 MiB and a 4 MiB stack:
+  the probe thread overflowed and the test binary aborted with signal 6.
+- A 4 MiB stack with only the two nesting controls selected:
+  both passed,
+  which is the gap the probe closes.
+- A 16 MiB stack:
+  the equality failed (`left: 16777216`, `right: 8388608`).
+  A larger stack is not a defect,
+  so only the equality distinguishes it.
+
+### Discovery campaigns
+
+Gate `gate-mutation-gaps-1.log`,
+at repository head `f430ab536`,
+linter source tree `b4f8c609dc6dbc35bdcf99481b1e9cf89529e05d`:
+386 library tests passed and one was ignored (the panic-hook child) in 244.71 seconds,
+13 `binary` tests passed in 96.00 seconds,
+and Clippy with `-D warnings` finished with no finding.
+Test image `1afd09647c5615f9a60e51dd29a3f340c820c0a7e86a1059c416a1f26dc7ac89`.
+The host load average reached 176 on 16 cores while it ran,
+which is why the binary tests took 96 seconds instead of 3.5.
+Every discovery campaign mutated this image.
+
+- Executable scope,
+  `mutation-t7RNjW` (`campaign-executable-gaps-1.log`):
+  239 mutants,
+  177 caught,
+  2 missed,
+  60 unviable,
+  0 timeouts,
+  exit status 2.
+  The baseline built in 145 seconds and tested in 7 seconds;
+  the longest test phase of any mutant was 94.0 seconds.
+  The scope grew from 233 to 239 mutants because the invocation thread added functions to `run_process.rs`.
+- Semantic scope,
+  three shards of a 1,200 second limit:
+  `mutation-AoaiDq` (shard 0/3,
+  32 mutants,
+  24 caught,
+  8 unviable,
+  exit status 0,
+  2 hours),
+  `mutation-cV2Ad8` (shard 2/3,
+  32 mutants,
+  16 caught,
+  6 missed,
+  10 unviable,
+  exit status 2,
+  67 minutes),
+  and `mutation-6G2hzn` (shard 1/3,
+  32 mutants,
+  28 caught,
+  4 unviable,
+  exit status 0,
+  2 hours).
+  The shard baselines tested in 224,
+  218 and 188 seconds,
+  and no mutant timed out.
+- Core scope,
+  `mutation-YJ48Vl` (`campaign-core-gaps-1.log`):
+  202 mutants,
+  182 caught,
+  0 missed,
+  20 unviable,
+  0 timeouts,
+  exit status 0,
+  2 hours.
+  The baseline built in 311 seconds and tested in 42 seconds.
+  It still skipped five tests by name,
+  because it started before the skip list was reduced to four.
+
+Two campaigns were stopped on purpose by removing their containers.
+`mutation-VFaIKp` was the unsharded semantic campaign:
+its baseline tested in 251 seconds,
+which made 96 mutants a run of about seven hours and set the 1,200 second limit,
+and it was stopped after the baseline in favour of three shards.
+`mutation-7j4HXK` was the first shard 1/3:
+its container ran shard 0/3's command,
+because two `podman build` runs started together,
+whose Containerfiles differed only in `CMD`,
+committed the same image with shard 0's `CMD`,
+although the second build printed its own.
+The runner now passes each campaign's command to `podman create`
+and refuses a container whose configured command differs from it.
+
+### Survivors of the discovery campaigns
+
+Locations are `line:column` on tree `b4f8c609dc6dbc35bdcf99481b1e9cf89529e05d`.
+Every disposition below is a kill;
+host hand mutations (`hand-mutations-survivors-1.log` and `hand-mutations-survivors-2.log`)
+and the bounded-container runs in `workspace-controls-container-2.log` show each new control failing,
+and the final round is the proof by cargo-mutants.
+
+- `src/path_inputs.rs:78:68: replace == with != in expand_glob`
+  and `src/path_inputs.rs:137:72: replace != with == in collect_inputs`.
+  Not equivalent:
+  a literal or glob input below a regular file would be refused as unreadable,
+  and other inspection errors would be skipped silently.
+  `inputs_below_a_regular_file_are_unmatched_not_unreadable` requires `a.md/x.md` and `a.md/sub/*.md`,
+  where `a.md` is a regular file,
+  to be unmatched inputs:
+  empty with `--no-error-on-unmatched-pattern`,
+  and the exact unmatched-input message without it.
+- `src/rust_workspace.rs:59:72: replace != with == in discover_manifest`.
+  Not equivalent,
+  the same "not a directory" answer for a manifest below a regular file.
+  `manifest_discovery_walks_past_a_regular_file_on_the_path` starts at `blocker/deeper/lib.rs`,
+  where `blocker` is a regular file,
+  and requires the manifest above it.
+- `src/rust_workspace.rs:90:9`,
+  `91:9`,
+  `92:9` and `93:9`:
+  `delete field` `sysroot_src`,
+  `metadata_extra_args`,
+  `extra_args` and `target_dir_config` from the backend's `CargoConfig`.
+  Not equivalent,
+  but invisible in the container.
+  In `ra_ap_project_model` 0.0.336,
+  a sysroot without `sysroot_src` goes through `discover_rust_lib_src_dir` (`sysroot.rs`),
+  which reads `RUST_SRC_PATH` before the toolchain's own source;
+  `metadata_extra_args` is appended to every `cargo metadata` (`cargo_workspace.rs`),
+  and without `--locked` a stale or missing lockfile is resolved again into a temporary copy;
+  `extra_args` reaches the build-script `cargo check` (`build_dependencies.rs`).
+  The image sets no `RUST_SRC_PATH`,
+  sets `CARGO_NET_OFFLINE=true`,
+  and every Cargo fixture runs `cargo generate-lockfile --offline` first,
+  so no workspace test can see a difference.
+  The settings moved into the named `cargo_config`,
+  and `cargo_settings_name_the_checked_library_and_keep_cargo_offline_and_locked`
+  compares the whole `CargoConfig` it builds with the expected one;
+  each hand-deleted field failed it.
+- `src/rust_workspace.rs:130:62: replace == with != in load_cargo_workspace`,
+  the proc-macro server choice.
+  Not equivalent:
+  the generated preparation would load no proc-macro server,
+  and source-only preparation would start one.
+  No fixture had a procedural macro.
+  `generated_definitions_and_build_failures_are_distinct` now has a workspace member with a function-like
+  procedural macro that defines `macro_generated`,
+  called from the checked file.
+  Under the mutant the generated preparation reported 2 findings instead of 1 in the container,
+  because the unexpanded macro left the call unresolved.
 
 ## Remaining
 
@@ -843,10 +1281,10 @@ The processor result is pending.
 
 No campaign has mutated these production files,
 and none of the three scopes here includes them
-(counts from `cargo mutants --list --no-config` at the first executable snapshot):
+(counts from `cargo mutants --list --no-config` with both exclusion patterns on the final tree):
 
 - `src/file_discovery.rs`: 20 mutants.
-- `src/fix_loop.rs`: 5 mutants.
+- `src/fix_loop.rs`: 4 mutants.
 - `src/path_inputs.rs`: 25 mutants.
 - `src/rust_file_engine.rs`: 5 mutants.
 - `src/rust_toolchain.rs`: 4 mutants.
@@ -882,3 +1320,111 @@ That is a factor of 2.7 below the 180 second limit at the load of that run.
 A timeout in this scope should be read against the baseline of its own run
 and the test named as still running in the mutant's log
 before it is treated as a stall.
+In the final executable campaign the baseline's test phase took 16.3 seconds
+and the longest mutant 41.1 seconds,
+a factor of 4.4 below the limit.
+
+### Scopes not rerun on the final tree
+
+The constant-slot scope (`mutation:inferred-constants`),
+the parent-lookup scope (`mutation:markdown:parent`),
+the anonymous-function scope (`mutation:rust-style`),
+the five planted guard removals of the inline `mutation:processors` task,
+and the unscoped `mutation` task were not run here.
+The first two last passed on test image `f1ccc6b562a7` in `unified-linter-mutation-survivors.md`.
+Their source files did not change in this work,
+except that `markdown_source.rs` gained the bounded walks,
+and the Markdown scope here mutates every `MarkdownSource::parent` replacement and catches all four.
+The exclusion patterns were added to all of them and checked only by listing,
+except the inline `mutation:processors` task,
+whose command array was evaluated and inspected but not run.
+
+### Fuzz sidecar
+
+`package/linter/monochromatic-lint.fuzz` was not edited.
+It calls none of the functions whose signatures changed
+(`has_ancestor`,
+`text_content`,
+`text_nodes`,
+`paragraph_for` and `delimiter_tail`),
+and its `lint:types` task
+(`cargo check --lib` and Clippy with warnings denied, on the host toolchain)
+passes against the final library.
+Its AddressSanitizer build,
+its unit controls and its smoke run were not rerun.
+
+### What the panic hook and the worker stack leave open
+
+- `parse_and_run` calls `std::panic::set_hook` when `silences_panics` returns true.
+  The decision is tested;
+  the call is not,
+  and cargo-mutants generates no mutant for it.
+- The worker stack control pins that 1,200 nested parentheses parse on a worker.
+  It does not pin the 8 MiB value:
+  a worker stack between about 4 and 8 MiB would pass it.
+- The platform risk under `Defects found` (a small main-thread stack with one file or `--concurrency 1`)
+  is a reading of the calibration,
+  not a measurement on Windows.
+
+### Existing rustdoc findings
+
+`lint:rust` reports 83 `builtin(require-rustdoc)` findings on the final tree and no code-line budget finding.
+85 were recorded before this work;
+the two that went were on `use` lines this work documented.
+None is on an item added here,
+and none was otherwise fixed.
+
+## Commits
+
+On `main`,
+in order.
+Commits that change only this document are left out;
+`git log -- doc/handover/unified-linter-mutation-close.md` lists them.
+
+### Commits for loops and walks
+
+- `b746a2144` finds definition line starts and escaped heading punctuation without hand-stepped loops.
+- `42dbf3f58` groups doc comments and splits physical lines over fixed ranges.
+- `878f79d48` bounds Markdown ancestor walks by the node count and reports a parent cycle.
+- `236f0db1c` counts shared path components and hashes whole blocks without stepped loops.
+- `63324540e` applies rustfmt to the parent-cycle control.
+- `6f0f3f656` splits hash input with `as_chunks`.
+- `9e61f66a3` bounds Markdown descendant walks by the node count and reports a child cycle.
+
+### Commits for the runner, tasks and README
+
+- `cb2d096ae` adds the executable mutation scope and its tasks.
+- `34c9b924b` corrects the parent-lookup scope's description.
+- `b311f969d` builds only the library tests in the Markdown scope.
+- `329e1c473` names the executable and processor mutation tasks in the README.
+- `af8431372` passes the two exclusion patterns in every cargo-mutants invocation.
+- `46b75dcf7` records the two excluded kinds in the README.
+
+### Commits for executable survivors
+
+- `d10137648` passes Rust settings to syntax dispatch without the redundant copy.
+- `a3fccbeba` adds the worker stack and workspace-progress controls.
+- `f0403ae7f` adds the failing-stream control.
+- `094a375cf` names the panic-hook decision and tests it.
+- `2af75268a` compares the two workspace-failure runs by location and code.
+
+### Commits for Markdown survivors
+
+- `33d4b3185` removes the redundant comment skip and adds the LFS configuration,
+  error-text and search controls.
+- `e7eee1d37` respells the hash's `choose` and `majority` functions.
+- `08b561920` compares applied destination segments by exact spelling.
+
+### Evidence location
+
+Evidence directories and logs are in the ignored build tree,
+`package/linter/monochromatic-lint/target/verification/`:
+`mutation-hQ4LIa`,
+`mutation-6Cgoi0`,
+`mutation-eGKI9C`,
+`mutation-Ij89RQ`,
+`mutation-CUW7ek`,
+`mutation-Sh3zLV`,
+`mutation-RjKWfe` and `mutation-uVvFQn`,
+with `gate-mutation-close-1.log` to `gate-mutation-close-6.log`
+and the `campaign-*.log` files named in the sections that use them.

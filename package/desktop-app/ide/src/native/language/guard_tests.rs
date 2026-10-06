@@ -5,6 +5,14 @@ use super::{
     Action, Pending,
     guard::{Verdict, verdict},
 };
+/// What: `Rope` is Helix's character-indexed text buffer.
+/// Why: The store groups what it accepts by the lines of the displayed text.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Rope } from 'helix-core';
+/// ```
+use helix_core::Rope;
 /// The snapshot store the poll fills and the source renderer reads.
 use ide_app::annotation::Annotations;
 /// Replies, identities, and snapshots as the worker produces them.
@@ -135,16 +143,18 @@ fn snapshots_for_other_text_are_not_stored_or_handed_out() {
         });
     };
     let mut store = Annotations::default();
+    // `Rope::from` copies the literal into a text buffer; `&text` lends it to the store.
+    let text = Rope::from("one line");
     assert!(
-        !store.accept_hints(displayed, hints(older)),
+        !store.accept_hints(displayed, &text, hints(older)),
         "hints for an earlier revision were stored"
     );
     assert!(
-        !store.accept_diagnostics(displayed, diagnostics(older)),
+        !store.accept_diagnostics(displayed, &text, diagnostics(older)),
         "diagnostics for an earlier revision were stored"
     );
-    assert!(store.accept_hints(older, hints(older)));
-    assert!(store.accept_diagnostics(older, diagnostics(older)));
+    assert!(store.accept_hints(older, &text, hints(older)));
+    assert!(store.accept_diagnostics(older, &text, diagnostics(older)));
     assert!(
         store.hints(displayed).is_none(),
         "hints for an earlier revision were handed out"

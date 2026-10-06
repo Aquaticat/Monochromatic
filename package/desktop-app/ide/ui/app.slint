@@ -1,12 +1,12 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
 import { Palette } from "std-widgets.slint";
 import { ProjectTree, TreeEntry } from "tree.slint";
-import { SidebarDivider } from "divider.slint";
+import { SidebarDivider, SidebarDividerGrip } from "divider.slint";
 import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
 import { LanguagePopup } from "hover.slint";
 import { ReferenceList, ReferenceEntry } from "references.slint";
-import { AnnotationInk, ProblemCard, SeverityMarker, SourceMarker } from "annotation.slint";
+import { AnnotationInk } from "annotation.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -18,8 +18,6 @@ export struct SourceSelection {
     width: float,
     height: float,
 }
-
-export { SourceMarker }
 
 export component AppWindow inherits Window {
     title: "Monochromatic IDE";
@@ -63,8 +61,13 @@ export component AppWindow inherits Window {
     out property <bool> sidebar-divider-has-focus: sidebar-divider.has-focus;
     private property <length> sidebar-minimum-width: 160px;
     private property <length> source-minimum-width: 240px;
-    // The divider is its own layout cell at the minimum interactive size, so it never covers tree rows or source.
-    private property <length> divider-width: 48px;
+    // The divider's layout cell is only its 1px line. Its pointer zone is the grip placed over the layout,
+    // which also covers the tree's last columns and the source column's first ones (`SidebarDividerGrip.reach`).
+    private property <length> divider-width: 1px;
+    // Drag, keys, and accessibility actions cannot store a width outside the range that can be shown now.
+    function resize-sidebar(width: length) {
+        root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);
+    }
 
     in-out property <bool> search-open;
     in-out property <string> search-query;
@@ -79,10 +82,6 @@ export component AppWindow inherits Window {
     callback search-dismiss;
     public function focus-search() { search-panel.focus-query(); }
     public function reset-search-scroll() { search-panel.reset-scroll(); }
-    public function reveal-source-line(line: int) {
-        scroll.content-x = 0px;
-        scroll.content-y = -min(max(0, line) * root.line-height, max(0px, scroll.content-height - scroll.height));
-    }
 
     in-out property <bool> find-open;
     in-out property <string> find-query;
@@ -91,6 +90,17 @@ export component AppWindow inherits Window {
     in property <bool> find-no-match;
     in property <string> find-error;
     out property <bool> find-has-focus: find-bar.query-has-focus;
+    // The 48px clear cells of the find text and the search query, in window coordinates, for geometry checks.
+    out property <bool> find-clear-shown: find-bar.clear-shown;
+    out property <length> find-clear-x: find-bar.clear-x;
+    out property <length> find-clear-y: find-bar.clear-y;
+    out property <length> find-clear-width: find-bar.clear-width;
+    out property <length> find-clear-height: find-bar.clear-height;
+    out property <bool> search-clear-shown: search-panel.clear-shown;
+    out property <length> search-clear-x: search-panel.clear-x;
+    out property <length> search-clear-y: search-panel.clear-y;
+    out property <length> search-clear-width: search-panel.clear-width;
+    out property <length> search-clear-height: search-panel.clear-height;
     callback find-request;
     callback find-edited(string);
     callback find-navigate(int);
@@ -104,12 +114,18 @@ export component AppWindow inherits Window {
     // The anchoring character: logical x from the start of the text, and its zero-based source line.
     in property <float> language-anchor-x;
     in property <int> language-anchor-line;
+    // Where everything that line owns lies, from the top of the text: its virtual rows and its code row.
+    // Native code computes both from its vertical mapping; this markup has no row arithmetic.
+    in property <float> language-anchor-y;
+    in property <float> language-anchor-height: 24;
     out property <bool> language-popup-has-pointer: language-popup.pointer-inside;
     out property <bool> language-popup-below: language-popup.placed-below;
     out property <length> language-popup-y: language-popup.y;
     out property <length> language-popup-height: language-popup.height;
-    // Top of the anchoring line in window coordinates; the popup and the list never cover that line.
-    out property <length> language-anchor-top: code-focus.absolute-position.y + root.language-anchor-line * root.line-height + scroll.content-y;
+    // Top of the anchoring line, with its virtual rows, in window coordinates; the popup and the list never cover
+    // that line or the rows that belong to it.
+    out property <length> language-anchor-top: code-focus.absolute-position.y + root.language-anchor-y * 1px + scroll.content-y;
+    private property <length> language-anchor-bottom: root.language-anchor-top + root.language-anchor-height * 1px;
     private property <length> language-anchor-left: code-focus.absolute-position.x + root.gutter-width + root.language-anchor-x * 1px + scroll.content-x;
     in-out property <bool> references-open;
     in property <string> references-title;
@@ -123,8 +139,10 @@ export component AppWindow inherits Window {
     in property <bool> file-outside-project;
     callback definition-request;
     callback hover-request;
-    callback definition-at-pointer(int, float);
-    callback pointer-moved(int, float);
+    // Pointer positions are logical pixels from the top of the text and from the start of a line's text;
+    // native code maps the vertical one to a source line.
+    callback definition-at-pointer(float, float);
+    callback pointer-moved(float, float);
     callback pointer-exited;
     callback language-dismiss;
     callback references-choose(int);
@@ -150,44 +168,61 @@ export component AppWindow inherits Window {
     // Native code picks the selected-text ink from this fill, because the palette's ink follows the scheme instead.
     out property <brush> selection-fill: Palette.selection-background;
     out property <bool> dark-scheme: Palette.color-scheme == ColorScheme.dark;
-    // Inlay hints and diagnostics: native code reads these inks for the source raster, so hints and underlines
-    // follow the scheme like the markers drawn here.
+    // Ink for selected rows of the tree, the search results, and the location list. Native code sets it to
+    // the ink it chooses from the selection fill, the same one selected source text is drawn in.
+    in property <brush> selected-row-ink: Palette.selection-foreground;
+    // Tint of a hovered or focused selected tree row. Native code sets it to the opposite of that ink,
+    // so the tint never moves the fill toward the text.
+    in property <brush> selected-row-tint: Palette.foreground;
+    // Inlay hints and diagnostics are drawn in the source image: hints and diagnostic messages on virtual rows
+    // above the code row of their line, underlines under the marked characters. Native code reads these inks
+    // for the raster, so all of it follows the scheme.
     out property <brush> hint-ink: AnnotationInk.hint;
     out property <color> error-ink: AnnotationInk.error;
     out property <color> warning-ink: AnnotationInk.warning;
     out property <color> information-ink: AnnotationInk.information;
     out property <color> suggestion-ink: AnnotationInk.suggestion;
-    // Severity markers and hint label boxes after line ends, positioned from the shaped rows.
-    in property <[SourceMarker]> source-markers;
-    in property <[SourceSelection]> hint-boxes;
-    // The problems at the caret as one text, worst first; empty when the caret touches no diagnostic.
+    // The problems at the caret as one text, worst first and in full; empty when the caret touches no diagnostic.
+    // It is not drawn: every message stands above its line. It starts the accessible description.
     in property <string> caret-problems;
-    in property <int> caret-problem-severity;
-    // The hover popup, a note, and the location list are placed beside the same caret line;
-    // the card yields to them so two surfaces never overlap. Its text stays in the accessible description.
-    out property <bool> problem-card-visible: code-focus.has-focus && !root.language-surface-open && root.caret-problems != "";
     in property <string> source-text;
     in property <string> selected-text;
     in property <string> file-label: "Source-view verification";
     in property <string> error-message;
-    in property <int> total-lines: 1;
+    // Height of the whole text with its virtual rows, the code-row top of each materialized line, and the first
+    // materialized line: all from native code's vertical mapping.
+    in property <float> content-extent: 24;
+    in property <[float]> line-tops;
+    // Per materialized line, one more than the rank of the worst diagnostic starting on it, or 0 for none.
+    in property <[int]> line-marks;
+    in property <int> first-line;
     in property <int> selection-anchor;
     in property <int> selection-head;
     in-out property <length> scroll-y: 0px;
     in-out property <length> scroll-x: 0px;
     out property <float> viewport-height: scroll.height / 1px;
     out property <float> viewport-width: (scroll.width - root.gutter-width) / 1px;
-    private property <length> line-height: 24px;
-    private property <length> gutter-width: 56px;
+    // Height of one code row; where rows are is decided by native code alone.
+    private property <length> code-row: 24px;
+    // The gutter, from its left edge: 6 px, a cell one letter wide, a 4 px gap, the line-number column, and 12 px
+    // before the text. The number column is as wide as the file's widest line number, at least three digits as in
+    // Helix. Each line's severity letter stands 4 px before that line's own number, whatever its digit count; the
+    // letter's room exists on every line, so text keeps its x when diagnostics arrive or go and moves only when the
+    // line count gains a digit past 999. Widths are whole logical pixels, so the source image stays on the grid.
+    in property <int> line-count: 1;
+    private property <length> mark-gap: 4px;
+    private property <length> number-gap: 12px;
+    private property <length> mark-advance: round(letter-probe.preferred-width / 1px) * 1px;
+    private property <length> number-width: round(number-probe.preferred-width / 1px) * 1px;
+    out property <length> gutter-width: 6px + root.mark-advance + root.mark-gap + root.number-width + root.number-gap;
     private property <length> font-size: 15px;
     // Converting a physical pixel tracks display scale even when logical window size is unchanged.
     private property <length> physical-pixel: 1phx;
     changed physical-pixel => { root.scale-changed(); }
-    private property <int> first-visible: max(0, floor((0px - root.scroll-y) / root.line-height) - 1);
 
     // A press places the caret or, repeated quickly, selects a word or a line; a drag reports further hits.
-    callback pointer-press(int, float, bool);
-    callback pointer-hit(int, float, bool);
+    callback pointer-press(float, float, bool);
+    callback pointer-hit(float, float, bool);
     callback key-input(string, bool, bool, bool);
     callback viewport-changed(float, float, float, float);
     callback theme-changed;
@@ -253,23 +288,23 @@ export component AppWindow inherits Window {
             project-path: root.project-path;
             error-message: root.tree-error;
             focused-row <=> root.tree-focused-row;
+            selected-ink: root.selected-row-ink;
+            selected-tint: root.selected-row-tint;
             activate(index) => { root.tree-activate(index); }
             user-focus(index) => { root.tree-user-focus(index); }
             navigate(key, index) => { root.tree-navigate(key, index); }
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
+        // The keyboard half of the divider: this cell keeps the Tab order tree, divider, source.
         sidebar-divider := SidebarDivider {
-            // An invisible divider takes no pointer input and is not a Tab stop.
+            // An invisible divider is not a Tab stop.
             visible: root.project-visible;
             min-width: root.project-visible ? root.divider-width : 0px;
             max-width: root.project-visible ? root.divider-width : 0px;
             value: root.sidebar-width;
             minimum: root.sidebar-minimum-width;
             maximum: root.sidebar-maximum-width;
-            resize(width) => {
-                // Drag and keys cannot store a width outside the range that can be shown now.
-                root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);
-            }
+            resize(width) => { root.resize-sidebar(width); }
             shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
         }
         VerticalLayout {
@@ -353,7 +388,7 @@ export component AppWindow inherits Window {
                     width: parent.width;
                     height: parent.height;
                     content-width: max(self.width, root.document-width * 1px + root.gutter-width);
-                    content-height: max(self.height, root.total-lines * root.line-height);
+                    content-height: max(self.height, root.content-extent * 1px);
                     content-y <=> root.scroll-y;
                     content-x <=> root.scroll-x;
                     // A mouse drag selects text. Panning by mouse drag would take a quick drag away from selection;
@@ -398,16 +433,6 @@ export component AppWindow inherits Window {
                         border-color: Palette.foreground.with-alpha(0.7);
                     }
 
-                    // Hint label boxes after line ends; the label glyphs are in the source image above them.
-                    for hint in root.hint-boxes: Rectangle {
-                        x: root.gutter-width + hint.x * 1px;
-                        y: hint.y * 1px + 3px;
-                        width: hint.width * 1px;
-                        height: hint.height * 1px - 6px;
-                        border-radius: 4px;
-                        background: AnnotationInk.hint-box;
-                    }
-
                     Image {
                         x: root.gutter-width + root.image-x * 1px;
                         y: root.image-y * 1px;
@@ -416,26 +441,55 @@ export component AppWindow inherits Window {
                         source: root.source-image;
                     }
 
-                    for row in ceil(scroll.height / root.line-height) + 2: Text {
-                        visible: row + root.first-visible < root.total-lines;
-                        x: 0px;
-                        y: (row + root.first-visible) * root.line-height;
-                        width: root.gutter-width - 12px;
-                        height: root.line-height;
-                        text: row + root.first-visible + 1;
-                        horizontal-alignment: right;
-                        vertical-alignment: center;
-                        color: Palette.foreground;
-                        opacity: 0.6;
+                    // Width probes for the gutter: one bold letter, and the widest line number of at least three digits.
+                    letter-probe := Text {
+                        visible: false;
+                        text: "W";
+                        font-family: "JetBrains Mono";
+                        font-size: root.font-size;
+                        font-weight: 700;
+                    }
+                    number-probe := Text {
+                        visible: false;
+                        text: max(root.line-count, 100);
                         font-family: "JetBrains Mono";
                         font-size: root.font-size;
                     }
 
-                    // One marker after the text of each line where a diagnostic starts, showing the worst severity.
-                    for marker in root.source-markers: SeverityMarker {
-                        x: root.gutter-width + marker.x * 1px;
-                        y: marker.y * 1px + (root.line-height - self.height) / 2;
-                        severity: marker.severity;
+                    // One number per materialized line, on that line's code row, never on its virtual rows, right-aligned
+                    // 12 px before the text. Where diagnostics start on the line, the worst severity's letter stands 4 px
+                    // before the number in that severity's ink. A mark of 0 is no diagnostic; a missing entry reads as 0.
+                    for top[index] in root.line-tops: Rectangle {
+                        x: 0px;
+                        y: top * 1px;
+                        width: root.gutter-width - root.number-gap;
+                        height: root.code-row;
+                        number := Text {
+                            x: parent.width - self.width;
+                            width: self.preferred-width;
+                            height: parent.height;
+                            text: root.first-line + index + 1;
+                            vertical-alignment: center;
+                            color: Palette.foreground;
+                            opacity: 0.6;
+                            font-family: "JetBrains Mono";
+                            font-size: root.font-size;
+                        }
+                        Text {
+                            visible: root.line-marks[index] > 0;
+                            x: number.x - root.mark-gap - self.width;
+                            width: root.mark-advance;
+                            height: parent.height;
+                            text: AnnotationInk.letter(root.line-marks[index] - 1);
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AnnotationInk.severity(root.line-marks[index] - 1);
+                            font-family: "JetBrains Mono";
+                            font-size: root.font-size;
+                            font-weight: 700;
+                            // The accessible description already starts with the problems at the caret.
+                            accessible-role: none;
+                        }
                     }
 
                     Rectangle {
@@ -443,25 +497,8 @@ export component AppWindow inherits Window {
                         x: root.gutter-width + root.caret-x * 1px;
                         y: root.caret-y * 1px;
                         width: 2px;
-                        height: root.line-height - 4px;
+                        height: root.code-row - 4px;
                         background: Palette.foreground;
-                    }
-
-                    // The problems at the caret, under the caret's line, or above it when the view ends first.
-                    // It never covers the caret's own line and stays inside the visible part of the view.
-                    problem-card := ProblemCard {
-                        visible: root.problem-card-visible;
-                        text: root.caret-problems;
-                        severity: root.caret-problem-severity;
-                        widest: max(48px, scroll.width - root.gutter-width - 16px);
-                        private property <length> line-top: root.caret-y * 1px - 2px;
-                        private property <length> below: self.line-top + root.line-height + 2px;
-                        private property <length> view-top: -scroll.content-y;
-                        private property <length> view-left: -scroll.content-x;
-                        y: self.below + self.height <= self.view-top + scroll.height ? self.below
-                            : max(self.view-top, self.line-top - self.height - 2px);
-                        x: max(self.view-left + root.gutter-width,
-                            min(root.gutter-width + root.caret-x * 1px, self.view-left + scroll.width - self.width - 8px));
                     }
 
                     pointer := TouchArea {
@@ -471,17 +508,17 @@ export component AppWindow inherits Window {
                         pointer-event(event) => {
                             if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
                                 code-focus.focus();
-                                root.pointer-press(floor(self.mouse-y / root.line-height),
+                                root.pointer-press(self.mouse-y / 1px,
                                     max(0, (self.mouse-x - root.gutter-width) / 1px),
                                     event.modifiers.shift);
                                 // Ctrl+click asks for the definition of the character under the pointer.
                                 if event.modifiers.control && !event.modifiers.shift && !event.modifiers.alt {
-                                    root.definition-at-pointer(floor(self.mouse-y / root.line-height),
+                                    root.definition-at-pointer(self.mouse-y / 1px,
                                         (self.mouse-x - root.gutter-width) / 1px);
                                 }
                             } else if event.kind == PointerEventKind.move && !self.pressed {
                                 // A resting pointer asks for hover information; x is negative over the line numbers.
-                                root.pointer-moved(floor(self.mouse-y / root.line-height),
+                                root.pointer-moved(self.mouse-y / 1px,
                                     (self.mouse-x - root.gutter-width) / 1px);
                             }
                         }
@@ -491,7 +528,7 @@ export component AppWindow inherits Window {
                         moved => {
                             // Only a drag with the left button extends; other buttons never started a selection.
                             if !self.pressed { return; }
-                            root.pointer-hit(floor(self.mouse-y / root.line-height),
+                            root.pointer-hit(self.mouse-y / 1px,
                                 max(0, (self.mouse-x - root.gutter-width) / 1px), true);
                         }
                     }
@@ -520,12 +557,24 @@ export component AppWindow inherits Window {
             }
         }
     }
+    // The pointer half of the divider. It is declared after the layout, so inside its zone it is above the
+    // tree and the source and takes the pointer first; the language and search surfaces are above it.
+    SidebarDividerGrip {
+        // An invisible grip takes no pointer input.
+        visible: root.project-visible;
+        x: project-tree.width - self.reach;
+        y: 0px;
+        height: parent.height;
+        value: root.sidebar-width;
+        keyboard-focus: sidebar-divider.has-focus;
+        resize(width) => { root.resize-sidebar(width); }
+    }
     language-popup := LanguagePopup {
         text: root.language-popup-text;
         note: root.language-popup-note;
         anchor-x: root.language-anchor-left;
         anchor-top: root.language-anchor-top;
-        anchor-bottom: root.language-anchor-top + root.line-height;
+        anchor-bottom: root.language-anchor-bottom;
         area-width: root.width;
         area-height: root.height;
     }
@@ -539,9 +588,10 @@ export component AppWindow inherits Window {
             entries: root.references-entries;
             title: root.references-title;
             selected-row <=> root.references-selected;
+            selected-ink: root.selected-row-ink;
             anchor-x: root.language-anchor-left;
             anchor-top: root.language-anchor-top;
-            anchor-bottom: root.language-anchor-top + root.line-height;
+            anchor-bottom: root.language-anchor-bottom;
             area-width: root.width;
             area-height: root.height;
             choose(index) => { root.references-choose(index); }
@@ -562,6 +612,7 @@ export component AppWindow inherits Window {
             entries: root.search-entries;
             query <=> root.search-query;
             selected-row <=> root.search-selected;
+            selected-ink: root.selected-row-ink;
             scope-label: root.search-scope;
             error-message: root.search-error;
             busy: root.search-busy;

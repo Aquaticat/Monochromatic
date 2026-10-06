@@ -1,9 +1,7 @@
 //! Rasterize shared shaped rows; glyphs retain their common baseline and advances.
 
-/// Hint text starts this far inside its label box.
-use crate::annotation_layout::LABEL_PADDING;
 /// Diagnostic underline styles and the tile both they and glyphs are drawn into.
-use crate::annotation_paint::{Tile, paint_underlines};
+use crate::annotation_paint::{Tile, TilePlace, paint_underlines};
 /// Bounded glyph images prevent repeating outline rasterization on every viewport update.
 use crate::glyph_cache::{GlyphCache, GlyphKey};
 /// Selection color follows geometry rather than recoloring an entire ligature glyph.
@@ -130,7 +128,7 @@ impl TextRaster {
     }
 
     /// Paint only the bounded materialized viewport; horizontal offset stays fractional.
-    /// Hint labels and diagnostic underlines of `view.annotations` are painted after the source glyphs.
+    /// Virtual-row texts and diagnostic underlines of `view.annotations` are painted after the source glyphs.
     pub fn paint(
         &mut self,
         view: &ShapedView,
@@ -148,10 +146,11 @@ impl TextRaster {
         let mut bytes = vec![0; length as usize];
         let factor = view.viewport.scale;
         for row in &view.rows {
-            let row_y = (row.row - view.viewport.first) as f32 * 24.0 * factor;
+            // Rows are placed by the frame's vertical mapping, relative to the top of the tile.
+            let row_y = (row.top - view.origin) * factor;
             let mut selected_intervals = Vec::new();
             for rectangle in &view.selections {
-                if rectangle.y == row.row as f32 * 24.0 {
+                if rectangle.y == row.top {
                     selected_intervals.push((
                         (rectangle.x - horizontal) * factor,
                         (rectangle.x + rectangle.width - horizontal) * factor,
@@ -174,40 +173,45 @@ impl TextRaster {
             )?;
         }
         // What: `if let Some(frame) = &view.annotations` borrows the positioned annotations when there are any.
-        // Why: Hint labels use the hint ink and no selection; underlines follow the glyphs they mark.
+        // Why: Virtual-row texts take one given ink and are never selected; underlines follow the glyphs they mark.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (view.annotations) { paintHints(...); paintUnderlines(...); }
+        // if (view.annotations) { paintRowTexts(...); paintUnderlines(...); }
         // ```
         if let Some(frame) = &view.annotations
             && let Some(top_row) = view.rows.first()
         {
-            for hint in &frame.hints {
-                let row_y = (hint.row - view.viewport.first) as f32 * 24.0 * factor;
-                let left = (hint.x + LABEL_PADDING - horizontal) * factor;
-                let origin = (left, row_y + hint.baseline_shift);
+            for text in &frame.texts {
+                // A virtual row lies its rise above the code row of the line it belongs to.
+                let top = view.map.code_top(text.line) - text.rise;
+                let origin = ((text.x - horizontal) * factor, (top - view.origin) * factor);
                 let mut tile = Tile {
                     bytes: &mut bytes,
                     width: view.width,
                     height: view.height,
                 };
-                let fixed = Some(frame.colors.hint);
-                self.draw(&hint.layout, origin, colors, fixed, &[], &mut tile)?;
+                // `Some(...)` fixes one ink for every glyph of the text.
+                let fixed = Some(text.ink);
+                self.draw(&text.layout, origin, colors, fixed, &[], &mut tile)?;
             }
             let mut tile = Tile {
                 bytes: &mut bytes,
                 width: view.width,
                 height: view.height,
             };
-            let origin = (view.viewport.first, horizontal);
             // Every row shares one baseline, so the first row's is the baseline of all of them.
+            let place = TilePlace {
+                top: view.origin,
+                left: horizontal,
+                scale: factor,
+                baseline: top_row.baseline,
+            };
             paint_underlines(
                 frame,
                 &mut tile,
-                origin,
-                top_row.baseline,
-                factor,
+                place,
+                &view.map,
                 &view.selections,
                 colors.selected,
             );

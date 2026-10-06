@@ -32,12 +32,25 @@ use std::{
 /// export const MINIMUM = 160;
 /// ```
 pub(super) const MINIMUM: f32 = 160.0;
-/// Width of the divider's own layout cell, which is also its whole input area.
-pub(super) const DIVIDER: f32 = 48.0;
+/// Width of the divider's own layout cell, which is its line.
+pub(super) const DIVIDER: f32 = 1.0;
+/// Pixel columns on each side of the line that also belong to the divider's pointer zone.
+pub(super) const REACH: f32 = 2.0;
 /// Narrowest source column; the widest sidebar is the window width minus this and the divider.
 pub(super) const SOURCE_MINIMUM: f32 = 240.0;
 /// Width of the line-number gutter at the left edge of the source column.
-pub(super) const GUTTER: f32 = 56.0;
+pub(super) const GUTTER: f32 = 58.0;
+/// Width of the tree column every fixture starts with.
+pub(super) const TREE: f32 = 256.0;
+/// What: Where source text starts in the window: right of the tree, the divider, and the gutter, whose 58 px for
+///       files of fewer than 1000 lines are 6 px, a 9 px letter cell, a 4 px gap, three 9 px digits, and 12 px.
+/// Why: Pointer tests aim at text positions; one derivation keeps them right when any of the three changes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const TEXT_LEFT = TREE + DIVIDER + GUTTER;
+/// ```
+pub(super) const TEXT_LEFT: f32 = TREE + DIVIDER + GUTTER;
 /// Height of the project and file label rows above the tree and the source.
 pub(super) const HEADER: f32 = 32.0;
 /// Vertical position used for divider drags, inside the tree rows and the source lines.
@@ -174,6 +187,7 @@ pub(super) fn click(window: &AppWindow, x: f32, y: f32) {
 
 /// Drag the divider's line with the left button until the sidebar is `target` wide.
 pub(super) fn drag_to(window: &AppWindow, target: f32) {
+    // The middle of the 1px line, which is the pixel column right after the sidebar.
     let line = window.get_sidebar_width() + DIVIDER / 2.0;
     let end = line + target - window.get_sidebar_width();
     press(window, line, DRAG_Y, PointerEventButton::Left);
@@ -366,5 +380,59 @@ fn divider_ignores_plain_clicks_and_other_buttons_and_keeps_keyboard_focus() {
         !window.get_sidebar_divider_has_focus(),
         "a pointer press focused the divider"
     );
+    window.hide().expect("close sidebar window");
+}
+
+/// What: `window: &AppWindow` lends the window; `start` is the logical x of the press in window pixels.
+/// Why: A short left-button drag by 10px either resizes the sidebar by 10px or leaves it alone,
+/// which tells whether the pressed pixel column belongs to the divider.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function shortDrag(window: AppWindow, start: number): void;
+/// ```
+fn short_drag(window: &AppWindow, start: f32) {
+    press(window, start, DRAG_Y, PointerEventButton::Left);
+    motion(window, start + 10.0, DRAG_Y);
+    release(window, start + 10.0, DRAG_Y, PointerEventButton::Left);
+    settle(window);
+}
+
+/// The pointer zone is the line's column and two columns on each side: a drag starts on each of the five
+/// and on no column beside them.
+#[test]
+fn divider_zone_takes_drags_on_five_columns_only() {
+    let shared = fixture(6);
+    let window = &shared.window;
+    // What: The array holds the zone's five column offsets from the line's own column, 256.
+    // Why: Each of them must start a drag that follows the pointer.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const offset of [-REACH, -1, 0, 1, REACH]) { ... }
+    // ```
+    for offset in [-REACH, -1.0, 0.0, 1.0, REACH] {
+        short_drag(window, 256.0 + offset + 0.5);
+        assert_eq!(
+            window.get_sidebar_width(),
+            266.0,
+            "the zone column at offset {offset} did not start a drag"
+        );
+        drag_to(window, 256.0);
+        assert_eq!(
+            window.get_sidebar_width(),
+            256.0,
+            "drag back to the default width"
+        );
+    }
+    // The next column on each side belongs to the tree or to the source.
+    for offset in [-REACH - 1.0, DIVIDER + REACH] {
+        short_drag(window, 256.0 + offset + 0.5);
+        assert_eq!(
+            window.get_sidebar_width(),
+            256.0,
+            "a drag from offset {offset}, outside the zone, resized the sidebar"
+        );
+    }
     window.hide().expect("close sidebar window");
 }

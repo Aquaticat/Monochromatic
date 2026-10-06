@@ -1,41 +1,26 @@
-//! Where one frame draws its annotations: underline segments under source glyphs, and a severity marker and
-//! hint labels after each line's text. Every position comes from the shaped rows that paint the source,
-//! and nothing is inserted into a row, so source geometry is the same with and without annotations.
+//! Where one frame draws its annotations: underline segments under source glyphs, and the texts of the
+//! virtual rows above annotated lines. Every horizontal position comes from the shaped rows that paint the
+//! source, and nothing is inserted into a row, so the geometry inside a code row is the same with and without
+//! annotations.
 
-/// The visible subset of the snapshots and the severity order.
-use crate::annotation::{Mark, Visible, rank};
-/// Line starts of the displayed text decide which row a marker or label belongs to.
-use crate::document::Document;
+/// The visible subset of the snapshots, hint labels, and the severity order.
+use crate::annotation::{Label, Mark, Visible, rank};
 /// Severities as the Language module names them.
 use crate::language::diagnostics::Severity;
 /// One shaped source row and its caret and range geometry.
 use crate::shaped_row::ShapedRow;
-/// The frame's shaped rows, the selected-terminator width, and the shaper that sets hint labels.
+/// The frame's shaped rows, the selected-terminator width, and the shaper that sets virtual-row text.
 use crate::shaped_text::{ShapedView, TERMINATOR_MARK, TextShaper};
+/// Placed hints and the spacing of virtual rows.
+use crate::virtual_row::{CONTINUATION_INDENT, HINT_GAP, HintPlace};
 /// What: `Layout<u32>` is a shaped paragraph whose glyph brushes are numbers.
-/// Why: Each hint label is shaped once per frame and painted by the raster like a source row.
+/// Why: Each virtual-row text is shaped once per frame and painted by the raster like a source row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { type Layout } from 'parley';
 /// ```
 use parley::Layout;
-
-/// What: Space between the end of a line's text and its first annotation, in logical pixels; `f32` is a 32-bit
-///       float (sibling `f64`), the unit of every glyph advance.
-/// Why: It is wider than the selected-terminator mark, so a selected line end never touches a marker or label.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export const ITEM_GAP = 12;
-/// ```
-pub const ITEM_GAP: f32 = 12.0;
-/// Width and height of the severity marker box after a line's text.
-pub const MARKER_SIZE: f32 = 18.0;
-/// Space between two annotations on one line.
-pub const LABEL_GAP: f32 = 6.0;
-/// Space between a hint label's box edge and its text.
-pub const LABEL_PADDING: f32 = 5.0;
 
 /// What: The inks annotations are painted with, as straight RGBA bytes; `[u8; 4]` is a fixed array of four bytes
 ///       (siblings `Vec<u8>`, `&[u8]`).
@@ -95,40 +80,39 @@ pub struct Underline {
     pub severity: Severity,
 }
 
-/// The severity marker after the text of a line where at least one diagnostic starts; it shows the worst one.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Marker {
-    /// Source line.
-    pub row: usize,
-    /// Left edge of the marker box.
+/// What: One shaped text on a virtual row: a hint label or one row of a diagnostic message. `[u8; 4]` is the
+///       straight RGBA ink. `Option<Severity>` is the message's severity, or nothing for a hint.
+/// Why: The raster paints every text of every virtual row the same way; tests read positions from here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type RowText = { line: number; rise: number; x: number; width: number; layout: Layout; ink: Rgba;
+///   severity?: Severity };
+/// ```
+pub struct RowText {
+    /// Source line whose block the text belongs to.
+    pub line: usize,
+    /// How far above the top of that line's code row the text's row starts, in logical pixels.
+    pub rise: f32,
+    /// Left edge in logical pixels from the start of the line's text.
     pub x: f32,
-    /// Worst severity starting on the line.
-    pub severity: Severity,
-}
-
-/// One shaped hint label and its box after a line's text.
-pub struct HintBox {
-    /// Source line.
-    pub row: usize,
-    /// Left edge of the box; the text starts [`LABEL_PADDING`] further right.
-    pub x: f32,
-    /// Box width, including padding on both sides.
+    /// Shaped width in logical pixels.
     pub width: f32,
-    /// The shaped label.
+    /// The shaped text.
     pub layout: Layout<u32>,
-    /// Physical translation from the label's own baseline to the row's common source baseline.
-    pub baseline_shift: f32,
+    /// Ink: the hint ink, or the ink of the message's severity.
+    pub ink: [u8; 4],
+    /// Severity of a message row; nothing for a hint.
+    pub severity: Option<Severity>,
 }
 
 /// Everything one frame paints for annotations, positioned against its shaped rows.
 pub struct AnnotationFrame {
     /// Underline runs, mildest severity first, so the worst is drawn on top where ranges overlap.
     pub underlines: Vec<Underline>,
-    /// Severity markers, one per line at most.
-    pub markers: Vec<Marker>,
-    /// Hint labels in source order.
-    pub hints: Vec<HintBox>,
-    /// Right edge of the furthest marker or label, so the scroll range can reach it.
+    /// Texts of the virtual rows of the materialized lines: hints first, then messages, line by line.
+    pub texts: Vec<RowText>,
+    /// Right edge of the furthest virtual-row text, so the scroll range can reach it.
     pub extent: f32,
     /// Inks the raster uses.
     pub colors: AnnotationColors,
@@ -182,39 +166,59 @@ fn runs(row: &ShapedRow, mark: Mark, scale: f32, out: &mut Vec<Underline>) {
     }
 }
 
-/// What: Whether character `position` belongs to row `row` of `document`; the last line also owns the end
-///       of the text.
-/// Why: A marker belongs to the line where its diagnostic starts, a label to the line of its position.
+/// What: Pack the hints of one line onto hint rows. `row` is the line's shaped code row, `labels` its hints
+///       in position order; `&mut TextShaper` is lent to measure each label. The answer pairs the number of
+///       rows with one placement per hint (a tuple).
+/// Why: Each hint stands at the exact pixel x of the position it annotates, so it sits above the place it
+///      describes. A hint that would start less than [`HINT_GAP`] after the previous hint's end starts a new
+///      row; like the reference editor's packing, only the current row is considered, so reading the rows top
+///      to bottom follows the source left to right.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function onRow(document: Document, row: number, position: number): boolean;
+/// function pack(row: ShapedRow, labels: Label[], shaper: TextShaper, scale: number): [rows: number, places: HintPlace[]];
 /// ```
-fn on_row(document: &Document, row: usize, position: usize) -> bool {
-    let text = document.text();
-    let lines = text.len_lines();
-    if position < text.line_to_char(row.min(lines)) {
-        return false;
+pub fn pack(
+    row: &ShapedRow,
+    labels: &[Label],
+    shaper: &mut TextShaper,
+    scale: f32,
+) -> (usize, Vec<HintPlace>) {
+    let mut places = Vec::new();
+    let mut rows: usize = 0;
+    // Right edge of the last hint placed on the current row.
+    let mut end: f32 = 0.0;
+    for label in labels {
+        let x = row.caret_x(label.position, scale);
+        let width = shaper.row_layout(&label.text, scale).full_width() / scale;
+        if rows == 0 || x < end + HINT_GAP {
+            rows += 1;
+        }
+        places.push(HintPlace {
+            row: rows - 1,
+            position: label.position,
+            x,
+            width,
+            // `clone` copies the label so the placement owns its text.
+            text: label.text.clone(),
+        });
+        end = x + width;
     }
-    if row + 1 >= lines {
-        return true;
-    }
-    return position < text.line_to_char(row + 1);
+    return (rows, places);
 }
 
-/// What: Position every visible annotation against the frame's rows. `&mut TextShaper` is lent so labels can
-///       be shaped; the other inputs are lent read-only.
-/// Why: Labels and markers start [`ITEM_GAP`] after the line's text and never move a source glyph, so late or
-///      stale snapshots change only annotation pixels. The cost per repaint is one label layout per visible
-///      label plus a pass over the visible marks for each materialized row.
+/// What: Position every visible annotation against the frame's rows. `&mut TextShaper` is lent so virtual-row
+///       texts can be shaped; the other inputs are lent read-only.
+/// Why: Underlines follow the glyphs they mark. A hint takes its x from the painted row's own caret geometry
+///      and a message row from its diagnostic's start, so both stand exactly above the characters they are
+///      about. The cost per repaint is one text layout per visible hint and message row plus a pass over the
+///      visible marks for each materialized row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function layOut(document: Document, view: ShapedView, visible: Visible, shaper: TextShaper,
-///   colors: AnnotationColors): AnnotationFrame;
+/// function layOut(view: ShapedView, visible: Visible, shaper: TextShaper, colors: AnnotationColors): AnnotationFrame;
 /// ```
 pub fn lay_out(
-    document: &Document,
     view: &ShapedView,
     visible: &Visible,
     shaper: &mut TextShaper,
@@ -222,69 +226,63 @@ pub fn lay_out(
 ) -> AnnotationFrame {
     let scale = view.viewport.scale;
     let mut underlines = Vec::new();
-    let mut markers = Vec::new();
-    let mut hints = Vec::new();
-    let mut extent: f32 = 0.0;
     for row in &view.rows {
-        let row_end = row.source_start + row.source_len();
-        // What: `Option<Severity>` is the worst severity found so far, or nothing.
-        // Why: Only a line where a diagnostic starts gets a marker.
+        for mark in &visible.marks {
+            runs(row, *mark, scale, &mut underlines);
+        }
+    }
+    let mut texts = Vec::new();
+    let mut extent: f32 = 0.0;
+    for block in &visible.blocks {
+        // What: `checked_sub` answers nothing for a line above the frame; `and_then` then asks the rows for
+        //       the entry at that index, which is nothing past the last row; `let ... else` skips the block.
+        // Why: Rows are materialized in line order from the frame's first line.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // let worst: Severity | undefined;
+        // const row = view.rows[block.line - view.viewport.first]; if (!row) continue;
         // ```
-        let mut worst: Option<Severity> = None;
-        for mark in &visible.marks {
-            runs(row, *mark, scale, &mut underlines);
-            if !on_row(document, row.row, mark.start) {
-                continue;
-            }
-            // `is_none_or` is true without a previous severity, otherwise asks the closure whether this one is worse.
-            if worst.is_none_or(|known| return rank(mark.severity) < rank(known)) {
-                worst = Some(mark.severity);
-            }
-        }
-        let mut x = row.caret_x(row_end, scale) + ITEM_GAP;
-        let mut placed = false;
-        if let Some(severity) = worst {
-            markers.push(Marker {
-                row: row.row,
-                x,
-                severity,
-            });
-            x += MARKER_SIZE + LABEL_GAP;
-            placed = true;
-        }
-        for label in &visible.labels {
-            if !on_row(document, row.row, label.position) {
-                continue;
-            }
-            let layout = shaper.hint_layout(&label.text, scale);
-            // What: `lines().next()` is the label's only line; `map_or` reads its baseline or uses the row's own.
-            // Why: The label's baseline is moved onto the row's common source baseline.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const natural = layout.lines()[0]?.metrics.baseline ?? row.baseline;
-            // ```
-            let natural = layout
-                .lines()
-                .next()
-                .map_or(row.baseline, |line| return line.metrics().baseline);
-            let width = layout.full_width() / scale + 2.0 * LABEL_PADDING;
-            hints.push(HintBox {
-                row: row.row,
+        let Some(row) = block
+            .line
+            .checked_sub(view.viewport.first)
+            .and_then(|index| return view.rows.get(index))
+        else {
+            continue;
+        };
+        for hint in &block.hints {
+            let layout = shaper.row_layout(&hint.text, scale);
+            let x = row.caret_x(hint.position, scale);
+            let width = layout.full_width() / scale;
+            extent = extent.max(x + width);
+            texts.push(RowText {
+                line: block.line,
+                rise: block.hint_rise(hint.row),
                 x,
                 width,
                 layout,
-                baseline_shift: row.baseline - natural,
+                ink: colors.hint,
+                // `None`: a hint has no severity.
+                severity: None,
             });
-            x += width + LABEL_GAP;
-            placed = true;
         }
-        if placed {
-            extent = extent.max(x - LABEL_GAP);
+        for (index, message) in block.messages.iter().enumerate() {
+            let layout = shaper.row_layout(&message.text, scale);
+            let mut x = row.caret_x(message.start, scale);
+            if message.continued {
+                x += CONTINUATION_INDENT;
+            }
+            let width = layout.full_width() / scale;
+            extent = extent.max(x + width);
+            texts.push(RowText {
+                line: block.line,
+                rise: block.message_rise(index),
+                x,
+                width,
+                layout,
+                ink: colors.severity(message.severity),
+                // `Some(...)` records the severity the row's ink and first word show.
+                severity: Some(message.severity),
+            });
         }
     }
     // What: `sort_by_key` is stable; `3 - rank` puts hints first and errors last.
@@ -297,8 +295,7 @@ pub fn lay_out(
     underlines.sort_by_key(|run| return 3 - rank(run.severity));
     return AnnotationFrame {
         underlines,
-        markers,
-        hints,
+        texts,
         extent,
         colors,
     };

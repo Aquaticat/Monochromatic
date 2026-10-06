@@ -26,15 +26,28 @@ use std::{
     thread::{Builder, Scope, ScopedJoinHandle},
 };
 
-/// What: Stack size for worker threads, in bytes.
-/// Why: Spawned threads default to a smaller stack than the main thread; parsers recurse on
-/// nested input, and a stack overflow cannot be caught. This matches the common main-thread size.
+/// What: Stack size for every thread that lints, in bytes: the invocation thread and the workers.
+/// Why: Parsers recurse on nested input, and a stack overflow cannot be caught. Spawned threads
+/// default to 2 MiB, and a main thread's stack is set by the platform: 8 MiB is the common Linux
+/// default, while the MSVC linker reserves 1 MB unless told otherwise. This value is the Linux main
+/// thread's, given to every lint thread explicitly so no platform default decides it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const WORKER_STACK_BYTES = 8 * 1024 * 1024;
 /// ```
-const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
+pub(crate) const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
+
+/// What: A thread builder with the lint stack, for the invocation thread and for every worker.
+/// Why: One constructor keeps every thread that lints on the same explicit stack size.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function lintThread(): ThreadOptions { return { stackBytes: WORKER_STACK_BYTES }; }
+/// ```
+pub(crate) fn lint_thread() -> Builder {
+    return Builder::new().stack_size(WORKER_STACK_BYTES);
+}
 
 /// What: State every worker reads while claiming and processing files.
 /// Why: Scoped threads borrow this for the duration of the run; nothing in it is mutated except
@@ -189,7 +202,7 @@ fn spawn_and_join<'scope, 'env>(
 ) -> Vec<(usize, FileOutcome)> {
     let mut handles: Vec<ScopedJoinHandle<'scope, Vec<(usize, FileOutcome)>>> = Vec::new();
     for _ in 0..workers {
-        let builder: Builder = Builder::new().stack_size(WORKER_STACK_BYTES);
+        let builder: Builder = lint_thread();
         // A spawn failure (resource exhaustion) leaves fewer workers; the rest still drain the queue.
         // The thread API needs a callable; the closure only forwards to the named `work`.
         if let Ok(handle) = builder.spawn_scoped(scope, || return work(shared)) {
@@ -223,8 +236,9 @@ fn run_workers(shared: &Shared<'_>, workers: usize) -> Vec<(usize, FileOutcome)>
 
 /// What: Process every plan and return outcomes in plan order.
 /// Why: Output order must not depend on thread scheduling. With a limit of one, or one file,
-/// no thread is started. Semantic-engine plans run on the calling thread after the workers finish,
-/// so the limit is never exceeded.
+/// no worker is started. Semantic-engine plans run on the calling thread after the workers finish,
+/// so the limit is never exceeded. The executable calls this on its invocation thread, which has
+/// the same stack as a worker (`run_process`).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

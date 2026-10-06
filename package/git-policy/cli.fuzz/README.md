@@ -65,6 +65,31 @@ a `git add` in a worktree while that policy is on,
 or a worktree creation or possible alias run from a linked worktree without `--no-worktree-copy`.
 The dry-run options are restated from Git's documentation instead of read from the subject's tables.
 
+### `batch_reply`
+
+Runs `read_batch_reply`,
+the reader of one `git cat-file --batch` reply,
+over two views of every input:
+the bytes split at the first line feed into a request and a raw stream,
+and the bytes mapped to a built reply together with the outcome it must have
+(a canonical reply,
+a missing notice,
+a reply for another object,
+content shorter or longer than declared,
+a stream that ends early,
+an overlong header,
+or a header Git never prints).
+Reply content is file content,
+so it may imitate a reply.
+It checks that reading is repeatable,
+that an accepted reply is byte for byte Git's canonical rendering of the returned value,
+that a reply to a request by name names that object,
+that bytes after the reply change nothing,
+that no sampled proper prefix of an accepted reply is accepted,
+and that a refusal is one of the four reply failures.
+The target reads in-memory bytes only;
+the process that produces real replies is controlled beside the subject.
+
 ### `dependent_version`
 
 Runs the dependent-version planner's two text scanners over three views of every input.
@@ -108,7 +133,8 @@ non-default accepted configurations,
 every way a command region is read,
 every control effect,
 a control spelling that survives as a value or path,
-and every ending of the lifecycle,
+every ending of the lifecycle,
+and every reply kind and reply failure,
 so an invariant that is never reached cannot pass unnoticed.
 
 `mise run //package/git-policy/cli.fuzz:test:planted` proves the invariants can fail.
@@ -122,7 +148,9 @@ a rejected `landing` section,
 a control spelling removed anywhere in a region read without a table,
 keep-going removed without being recorded,
 a forwarded real commit,
-a publishing push that skips the manual-push gate),
+a publishing push that skips the manual-push gate,
+object content accepted past its declared size,
+a reply accepted for another object),
 and requires a generator control to fail for each.
 Results are retained under `target/verification/planted-*`.
 Removing a flag from a mutation list alone is not a usable plant:

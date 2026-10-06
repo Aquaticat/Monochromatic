@@ -107,6 +107,107 @@ Those 13 cases are accepted as documented deliberate differences from editord's 
 
 ### Handoff state
 
+#### Current state on 2026-10-06
+
+This block is current;
+the items after it are the record of 2026-10-05 and older.
+
+- The host restarted overnight and cleared `/tmp`,
+  including the coordinating session's scratch scripts.
+  Durable coordinator scripts and the shared agent brief now live in `~/temp/agent/ide-coordinator/`
+  (`ide-fanout-common.md`,
+  `provision-worktree.mjs`,
+  `gate.mjs`,
+  `land-merge.mjs`,
+  `render-check.mjs`,
+  `inotify-usage.mjs`,
+  `fsmonitor-sockets.mjs`);
+  gate logs go to `~/temp/agent/ide-coordinator/logs/`.
+- Landed on `main` as merge `45db45d02`:
+  reaping and lifecycle checks (`feat/ide-language-verify`),
+  UI batch 2 (`feat/ide-ui-batch-2`),
+  re-asking for timed-out hints and pulled diagnostics (`fix/ide-hints-after-reload`),
+  the user's watch timing (`feat/ide-tree-watch` through `cefc9902d`),
+  and release packaging (`feat/ide-package`).
+  Gate at the integration commit `93ac17859`
+  (IDE tree `d1f5569c31fe7e4cb92e651820f0338ac68842aa`, load 4 to 15):
+  lint;
+  96 passing library and integration result lines;
+  102 of 102 native tests with 4 ignored measurements skipped.
+- Landed on `main` as merge `906ee5aed`:
+  the logging rework (`feat/ide-logging` through `2572405cc`)
+  and hint and diagnostic rows above the code line with gutter severity letters
+  (`feat/ide-hint-rows` through `b05776ede`).
+  Gate at the integration commit `93f9f4891`
+  (IDE tree `53fd6b369da8be4ea65c447cb2a4f2a6dd219897`, load 75 to 98):
+  lint;
+  99 passing library and integration result lines;
+  112 of 112 native tests with 4 ignored measurements skipped.
+  The merge resolved nine conflicted files by keeping both sides;
+  the three tests with a hard-coded `TEXT_LEFT` of 313 now take `sidebar_tests::TEXT_LEFT`
+  (256 + 1 + 58 = 315).
+  An earlier gate of the logging merge alone failed on two known timing tests,
+  which `fix/ide-test-flakes` owns.
+  UI batch 3 was asked with the page `package/desktop-app/ide/design/questions/2026-10-06-ui-batch-3.html`;
+  every answer matches what the build ships.
+- Agents at work,
+  each in its own worktree on a branch not yet merged:
+  - `feat/ide-single-file` (`.claude/worktrees/ide-single-file`):
+    one executable carrying its runtime (done, gated on `13ac7c9a7`),
+    plus the user's follow-up answers:
+    no special handling for a loose file in the home folder,
+    removal of other builds' grammar folders after 30 days unused,
+    and `--licenses`.
+  - `fix/ide-watch-save` (`.claude/worktrees/ide-watch-save`):
+    quiet reads, the watch-limit back-off, `--network=none`, and outside-project files (done, gated on `1a95d6a55`),
+    plus an IDE-owned project watcher that reports changes to the language servers
+    (rust-analyzer switches to client-side watching)
+    and no warning for plain text files.
+  - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`):
+    the timing failures seen in the gates,
+    an older hint answer replacing a newer window's,
+    and an unversioned diagnostics push dropped during the hold after a reload.
+  - `feat/ide-logging` (same worktree, on top of the landed commits):
+    each server's last output lines in the warning when it stops unexpectedly.
+  - `feat/ide-accessibility-tests` (`.claude/worktrees/ide-a11y`):
+    rerunnable accessibility tests with Slint's testing crate,
+    and comparison frames for UI batch 2's open choices and the watch-limit message
+    (prototype branch `prototype/ide-batch-2-choices`).
+- Inotify:
+  on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
+  about 462000 of them by `git fsmonitor--daemon` processes
+  (`core.fsmonitor=true` in `~/.gitconfig`),
+  one per worktree and per git-wrapper shadow git directory,
+  each watching every directory of its worktree including ignored `node_modules` and `target`
+  (146000 for another session's worktree,
+  135000 for the main checkout,
+  about 13900 for each IDE worktree with a build cache).
+  The coordinating session removed twelve clean,
+  fully pushed IDE worktrees it had created
+  (their branches remain).
+  The user then chose to turn the monitor off for this repository:
+  `core.fsmonitor=false` is in `.git/config`
+  (the wrapper's shadow git directories include that file),
+  and stopping the sixteen running daemons that served this repository freed 436062 watches;
+  49870 were in use afterwards.
+  Three daemons for another session's worktree `translation-repair` started again afterwards,
+  one through an explicit `git fsmonitor--daemon start` under the git wrapper's shadow git directory;
+  the cause is not established.
+- Reminder issues for the user to raise upstream themselves,
+  opened on 2026-10-06 as with #606 for Slint:
+  #608 (helix-lsp logs a server's normal exit at ERROR level)
+  and #609 (the TypeScript 7 language server exits with `context canceled`).
+  Each points at its troubleshooting document's draft.
+- Still owed to the user:
+  UI batch 3 with screenshots
+  (hint row look,
+  label shortening,
+  diagnostic row wording,
+  the caret card beside the rows,
+  UI batch 2's open choices,
+  the watch-limit message,
+  the launcher icon).
+
 Claude Opus resumed the queue on 2026-10-05 from `e81b01c42`
 and fanned the work out to in-process subagents at the user's request.
 Unrelated concurrent commits from other sessions sit in the same history;

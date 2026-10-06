@@ -25,9 +25,18 @@ path = "src/native/main.rs"
 name = "native_binary"
 path = "src/native/binary_tests.rs"
 
+# A consumer of the candidate and scanner layers that can reach only the library's public interface.
+[[test]]
+name = "native_candidates"
+path = "src/native/candidate_consumer_tests.rs"
+
 [dependencies]
 # Both native tools use the already adopted comment-preserving JSONC foundation.
 monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }
+# The repository's own scanner, linked in-process instead of spawned: `src/native/scanner_adapter.rs`
+# loads its rules once per invocation and scans candidate bytes through `Scanner::scan`.
+# Its catch boundaries need this crate's effective profile to unwind; `scanner_adapter.rs` refuses to build otherwise.
+forbidden-strings = { path = "../../cli/forbidden-strings", version = "0.4.1" }
 
 [lints.clippy]
 disallowed_methods = "deny"
@@ -40,6 +49,17 @@ shadow_unrelated = "deny"
 [profile.release]
 panic = "unwind"
 overflow-checks = true
+
+# The scanner's `build.rs` precompiles its embedded baseline through the forbidden-regex
+# build-dependency, which Cargo builds at `opt-level = 0` by default.
+# Profiles are read only from this workspace root, so the scanner manifest's own build-override
+# does not reach this crate; see ../../cli/forbidden-strings/Cargo.toml for the measurement
+# (390.8s unoptimized against 98.5s at `opt-level = 3`, identical output).
+[profile.release.build-override]
+opt-level = 3
+
+[profile.dev.build-override]
+opt-level = 3
 
 # The native implementation keeps the repository's standalone Cargo ownership convention.
 [workspace]

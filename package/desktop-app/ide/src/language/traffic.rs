@@ -279,5 +279,17 @@ pub(super) async fn on_call(worker: &mut Worker, server: LanguageServerId, call:
             );
         }
     }
+    // What: `index_of` finds the record of the server that sent the message, if it still has one.
+    // Why: A message of any kind shows that the server processes its input again. Hints and
+    //      pull diagnostics it left unanswered through their retries are asked for once more
+    //      now, which `request::catch_up` bounds per displayed text.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const index = worker.session.indexOf(server); if (index !== undefined) catchUp(worker, index);
+    // ```
+    if let Some(index) = worker.session.index_of(server) {
+        request::catch_up(worker, index);
+    }
     return;
 }

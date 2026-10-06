@@ -320,6 +320,130 @@ like what editord does."
   a CLI `--help` rule,
   and a font-verification rule.
 
+## Decisions of 2026-10-06
+
+Quotations are the user's words.
+
+- Severity markers are plain letters,
+  not icons or boxes,
+  drawn in the gutter in front of the line number:
+  "Also warning and error icons shouldn't be icons - they should just be W or E letters
+  and drawn in front of the line number.
+  This also reduces complexity."
+  Derived by the agent and open to the user's veto:
+  `I` and `H` for information and hint severities,
+  the worst severity's letter when several diagnostics start on one line,
+  and a gutter column that exists on every line so text never shifts when diagnostics arrive.
+- helix-lsp's ERROR-level records for healthy servers
+  (a server's standard-error line,
+  the end of its standard error,
+  an error response the worker retries)
+  are re-labelled by the application to a lower level with their text kept;
+  every other record keeps its level ("Re-label in the IDE").
+  Settled by the agent from the plain options:
+  the TypeScript server keeps the standard `shutdown` and `exit`,
+  rust-analyzer keeps watching files itself,
+  and stopped servers are collected for at most 2 s after the worker's runtime ends.
+- The application logs warnings and errors by default,
+  and the standard `RUST_LOG` variable turns on more detail ("Warnings, with override").
+- Language servers' own output lines are not shown at the default level;
+  the IDE keeps each server's last few lines and puts them into its warning
+  when a server stops unexpectedly ("Keep last lines for crashes").
+- On a normal quit the IDE waits at most 1 s for unwritten log lines ("1 s"),
+  and holds at most 8 MB of unwritten log lines while nothing reads the log,
+  reporting a gap when it has to drop lines ("8 MB").
+- Settled by the agent from the `arc-swap` precedent:
+  `tracing-log` becomes a direct dependency;
+  it was already built through `tracing-subscriber`,
+  and the lockfile gains one dependency edge and no package.
+- The application ships as one executable that carries its runtime files ("Ship as single file").
+  Derived by the agent from that answer and the sibling applications,
+  open to the user's veto:
+  an `install` task copies that file to `~/.local/bin`.
+- Started without a project folder,
+  the application opens the user's home folder:
+  "Started w/o a project folder opens the user's home folder."
+  The application gets a launcher entry,
+  written by the install task:
+  an app-menu item that opens the home folder,
+  and "Open with" for folders ("Add a launcher entry").
+  Its icon is asked later with screenshots.
+- A loose file directly in the home folder,
+  opened when no project folder was given,
+  gets no special handling:
+  "A loose file directly in home + user didn't launch with a project folder argument = user error
+  and we don't do special handling for it."
+  The agent's rule that refused language servers rooted at the home folder is removed.
+- The single executable's unpacked grammar folders of other builds are removed
+  after 30 days without use ("Remove after N days unused";
+  the 30 days are the agent's proposal).
+- The embedded license and notice texts are printed by `monochromatic-ide --licenses` ("--licenses flag").
+- Settled by the agent:
+  the application's private state folder may lie inside any open project folder,
+  since only that folder becomes writable either way.
+- Slint's testing crate may be added as a test-only dependency
+  for rerunnable accessibility tests ("Allow it").
+- Settled by the agent from repository convention and the user's statement that size is not a constraint:
+  the release build keeps its debug symbols,
+  and the package's tasks follow the sibling names
+  (`build` for the release build,
+  `build:debug` for the debug build).
+- The user reported "lots of inotify limits warnings" and asked:
+  "Try making them not trigger by making our app use inotify smartly."
+  The agent measured on 2026-10-06 that about 462000 of the host's 524288 inotify watches
+  belonged to git's file-system monitor daemons
+  (`core.fsmonitor=true` in the user's `~/.gitconfig`),
+  one per worktree of this repository,
+  and that the application itself is a small consumer.
+  The application is still made to use as few watches as it can,
+  to back off and stay quiet when the limit is reached,
+  and to keep its build containers from starting podman's network helper.
+- The IDE watches the project's source folders for the language servers
+  (skipping `node_modules`, `target`, `.git`, and git-ignored folders)
+  and reports changes to every server that registers for them;
+  rust-analyzer stops watching on its own ("IDE watches for the servers").
+  Measured before:
+  rust-analyzer held 3081 watches in a disposable 40-crate workspace,
+  2001 of them inside one `node_modules` folder its settings cannot exclude,
+  and the TypeScript 7 server watched nothing,
+  so changes to files other than the displayed one never reached it.
+- The file tree keeps watching every expanded folder ("Every expanded folder"):
+  measured with 60 expanded folders,
+  watching only the folders on screen would use 5 watches instead of 61
+  but showed a stale listing in 48 of 60 reveals for 60 to 150 ms.
+- git's file-system monitor is turned off for this repository only
+  (`core.fsmonitor=false` in `.git/config`;
+  the global setting stays):
+  "Off for this repo".
+  Measured before the change:
+  `git status` in the main checkout took 4.8 to 9.7 s with the monitor and 33 to 96 ms without it,
+  three alternating runs each under a load average near 100.
+
+### Interface decisions (UI batch 3)
+
+Asked on 2026-10-06 with built screenshots of every option
+(`package/desktop-app/ide/design/questions/2026-10-06-ui-batch-3.html`,
+frames in `package/desktop-app/ide/design/screenshots/2026-10-05-ui-batch-3/`).
+Every answer matches what the hint-row build already ships.
+
+- Hint rows look as editord draws them:
+  Inter at 13 px in a dimmed ink,
+  no box.
+- Hint labels stay as the server sent them,
+  colon included.
+- Several hints of one line share rows in source order,
+  as editord packs them,
+  not in the first row with room that the agent ranked first.
+  The user's reason:
+  "first row with room" cannot make readers immediately realize two things are not one thing
+  under the constraints we chose.
+- Diagnostic messages show on their rows with the gutter letters only;
+  the old card at the caret does not come back.
+- A message row keeps the error code,
+  for example `Error 2322 (ts): Type 'string' is not assignable to type 'number'.`
+- The line-number area keeps room for at least three digits,
+  so text starts at the same place for every file under 1000 lines.
+
 ## Verification boundary
 
 Completion requires the actual native application,

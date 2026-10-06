@@ -18,6 +18,10 @@ import {
 } from 'node:path';
 
 import {
+  scannerSnapshotEntries,
+  vendorLockedDependencies,
+} from './native-scanner-snapshot.mjs';
+import {
   NativeVerificationError,
   runCommand,
 } from './native-verification-process.mjs';
@@ -77,6 +81,7 @@ async function copySourceSnapshot({ context }) {
         ),
       };
     }),
+    ...scannerSnapshotEntries({ context }),
     {
       from: resolve('../../../clippy.toml'),
       to: join(
@@ -120,6 +125,7 @@ async function main() {
   // The audited Git 2.56.0 image is the rewrite's selected native consumer baseline.
   const base = '6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a';
   await copySourceSnapshot({ context: context.path });
+  await vendorLockedDependencies({ context: context.path });
   await writeFile(
     join(
       context.path,
@@ -128,12 +134,18 @@ async function main() {
     [
       `FROM ${base}`,
       'COPY package /work/package',
+      // Some crate archives carry files only their owner may read, so the tester must own the vendored copy.
+      'COPY --chown=1000:1000 vendor /work/vendor',
+      'COPY --chown=1000:1000 cargo-config /work/.cargo',
       'COPY clippy.toml /work/clippy.toml',
       'RUN ["mkdir", "--parents", "/home/tester/.cargo"]',
       'RUN ["chown", "--recursive", "1000:1000", "/work/package", "/home/tester"]',
       'ENV HOME=/home/tester CARGO_HOME=/home/tester/.cargo CARGO_NET_OFFLINE=true CARGO_BUILD_JOBS=2 CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0',
       'USER 1000:1000',
       'WORKDIR /work/package/git-policy/cli',
+      // Compile once while the image is built. The test run, each planted control and each mutant then rebuild
+      // only what changed, instead of the linked scanner and its dependencies every time.
+      'RUN ["cargo", "test", "--offline", "--locked", "--all-targets", "--no-run"]',
       'CMD ["cargo", "test", "--offline", "--locked", "--all-targets", "--", "--test-threads=2"]',
       '',
     ].join('\n'),

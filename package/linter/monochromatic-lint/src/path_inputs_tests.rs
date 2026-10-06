@@ -68,6 +68,32 @@ fn glob_punctuation_does_not_reinterpret_existing_files() {
     );
 }
 
+/// A literal or glob input below a regular file names nothing, like a missing path: the operating system answers
+/// "not a directory" for it, and that answer is an unmatched input, not an inspection failure.
+#[test]
+fn inputs_below_a_regular_file_are_unmatched_not_unreadable() {
+    let fixture: Fixture = Fixture::new();
+    std::fs::write(fixture.path.join("a.md"), "").expect("regular file");
+    let opts: DiscoveryOptions = options(&fixture);
+    for input in ["a.md/x.md", "a.md/sub/*.md"] {
+        assert!(
+            collect_inputs(&[PathBuf::from(input)], &opts, true)
+                .expect("an input below a file is allowed to match nothing")
+                .is_empty(),
+            "{input}"
+        );
+        let refused: String = collect_inputs(&[PathBuf::from(input)], &opts, false)
+            .expect_err("an unmatched input is refused without the allowance")
+            .message;
+        assert_eq!(
+            refused,
+            format!(
+                "Lint input {input} matched no supported source files. Correct the path/pattern or use --no-error-on-unmatched-pattern."
+            )
+        );
+    }
+}
+
 /// Invalid patterns differ from valid patterns that matched nothing.
 #[test]
 fn unmatched_policy_does_not_hide_invalid_patterns() {

@@ -70,6 +70,10 @@ Options:
 - `--init` writes a starter configuration and refuses to overwrite one.
 - `--rules` lists every shipped rule as JSON Lines.
 - `--concurrency <COUNT>` bounds worker threads.
+  Every file is linted on a thread with an 8 MiB stack,
+  including a single file,
+  `--concurrency 1` and standard input,
+  so how deeply nested a file may be does not depend on the platform's main-thread stack.
 - `--ignore-pattern <GLOB>`,
   `--ignore-path <FILE>`,
   and `--no-ignore` change which files the walk finds.
@@ -238,8 +242,21 @@ their absence is not a completion claim.
 `mutation:markdown` runs full container tests and Clippy before scoped native Markdown mutation.
 `mutation:executable` does the same for the orchestration modules,
 the executable's entry point,
-and Rust rule selection;
-`mutation:processors:files` does the same for the processor modules.
+Rust rule selection,
+input expansion and the fix loop;
+`mutation:core` for configuration,
+findings,
+grouped edits and the syntax-only Rust rules;
+`mutation:semantic` for the semantic engine and the explicit-type rule;
+and `mutation:processors:files` for the processor modules.
+The executable and core scopes skip the four tests that load a Cargo workspace,
+which the semantic scope and the full container tests run.
+The semantic scope has its own per-mutant limit,
+and any campaign accepts `-- --shard k/n` (zero-based,
+as in cargo-mutants) so that its shards can run in separate bounded containers at once.
+`mutation:coverage` compares the scopes' listings with the unscoped listing,
+name by name,
+and fails when any mutant is outside every scope.
 A campaign with a missed or timed-out mutant exits nonzero and is not a passing gate.
 
 Two kinds of mutation are never tried,

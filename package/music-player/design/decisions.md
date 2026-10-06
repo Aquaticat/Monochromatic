@@ -235,6 +235,10 @@ Per the MD3 list spec (one-line 56,
 title;
  line two is `duration · true-peak` (e.g. `4:35 · −1.2 dBTP`),
  tabular numerals.
+Note added 2026-10-06:
+ line two is now what the supporting-line template yields (D81),
+ and its default is `$tf(mi(len), m:ss)$ $mi(peak)$`,
+ which reads `4:35 −1.2 dBTP` without the dot (D93).
 **Rejected.**
  Single-line rows (rows-a) and a columnar table layout (rows-b).
 
@@ -2602,6 +2606,10 @@ each open to the human's veto:
   not stand-in values,
   so the user sees their own names and the rows where a field has no value.
   Stand-in values are used only when no library is open.
+  (D95,
+  2026-10-06:
+  a library is always open,
+  so stand-ins are used only while the open library holds no track.)
 - No list of ready-made examples.
   The default template is the example,
   and the field list inserts at the caret.
@@ -2615,6 +2623,181 @@ each open to the human's veto:
 These are picks about scope and behavior,
 not about appearance.
 The editor's layout on the Fold is still to be built and looked at.
+No production implementation is authorized by this record.
+
+### D91. The editor's preview scrolls with the page (2026-10-06)
+
+The editor study built three layouts of the preview,
+because at 200% text the baseline loses the preview while typing inside a call:
+the preview at the top of one scrolling page,
+both preview rows fixed under the header,
+and only the two result lines fixed under the header.
+The agent ranked the fixed result lines first and the scrolling baseline last.
+
+Asked through the question tool with the review page open,
+the human chose none of the offered options and wrote:
+"I've seen the preview,
+and I have to say this isn't the way.
+Least surprises vs the base platform is more appropriate,
+and it doesn't prevent users from wanting to see more in a easy manner.
+Preview scrolls."
+
+So the preview scrolls with the page,
+as the baseline has it,
+and nothing is fixed under the header.
+The two pinned layouts are rejected.
+The reason given is a standard beyond this page:
+prefer what surprises least against the base platform,
+when the user can still reach the rest easily.
+The agent's ranking weighed what stays in view at 200% text over that,
+and was wrong for this human.
+
+The rule the second build added,
+that the page scrolls while the field has focus so the lines under it clear the keyboard,
+was not asked about and is not decided by this answer.
+No production implementation is authorized by this record.
+
+### D92. The template language has no conditionals (2026-10-06)
+
+The study's assumptions were put to the human through the question tool:
+one template for the track row's supporting line;
+KWGT's spelling,
+with `mi`,
+`tf`,
+`tc`,
+`if` and `+`;
+the fields `title`,
+`file`,
+`ext`,
+`folder`,
+`path`,
+`len` and `peak`;
+the default template;
+and the D90 picks.
+The human answered:
+"Keep except conditionals.
+This is templating.
+For prior arts:
+We're not Vue,
+we're just HTML."
+
+So:
+
+- The language has no conditional.
+  `if` and the comparisons that exist only to feed it are removed.
+  This supersedes the entry of D89 that kept them.
+- Everything else put in that question stands and is no longer only assumed:
+  the one template studied,
+  the spelling without `if`,
+  the field list,
+  and the D90 picks.
+- The default template used `if` to leave out the true peak,
+  its separator and its unit while a file is not analysed.
+  It cannot stand as written.
+  What a row shows around a field that has no value is therefore open again,
+  and is asked of the human with options,
+  not picked by the agent.
+
+No production implementation is authorized by this record.
+
+### D93. An empty field is plain substitution (2026-10-06)
+
+Asked through the question tool what a template shows around a field that has no value,
+now that it has no conditional,
+the human chose plain substitution over optional brackets
+(foobar2000's `[...]`,
+which its reference calls a conditional section)
+and over before-and-after arguments
+(in the manner of git's `% x` placeholders).
+
+So:
+
+- Text outside `$...$` is always shown,
+  and a field with no value yields nothing,
+  as text in HTML would.
+  A separator a user writes next to an empty field stays in the line.
+- `mi(peak)` yields the true peak with its unit,
+  for example `−1.2 dBTP`,
+  and nothing while the file is not analysed yet.
+- The default template is `$tf(mi(len), m:ss)$ $mi(peak)$`.
+  An analysed file reads `4:35 −1.2 dBTP`;
+  one not analysed yet reads `5:12`.
+  The middle dot between duration and peak that C2 describes is gone from the default line.
+  Analysis is automatic (D84),
+  so the missing peak is temporary.
+
+No production implementation is authorized by this record.
+
+### D94. Where the page rests while typing is the platform's (2026-10-06)
+
+The second editor build replaced the platform's own scrolling to a focused field with an authored rule:
+scroll so the lines under the field clear the keyboard by 8dp,
+and never scroll the field's upper edge out of view.
+Asked through the question tool whether that should also follow the platform,
+as D91 asks of the preview,
+the human chose the platform default.
+
+So the authored rule is removed.
+When the field takes focus and the keyboard opens,
+the page rests wherever Android puts a focused text field.
+The first build's captures showed what that costs at 200% text:
+the last line under the field can end flush against the keyboard,
+and the field's label can slide under the header when the field and its help are taller than the visible page.
+This supersedes the last paragraph of D91,
+which left the rule undecided.
+
+No production implementation is authorized by this record.
+
+### D95. A library is always open (2026-10-06)
+
+Shown the rebuilt editor study,
+whose last state previewed sample values under the note that no library is open,
+the human wrote:
+"What do you mean 'No library open'?
+The app should always have a library open,
+even if the opened library is empty.
+It auto opens OS default library if no sessions are in the store."
+
+So no screen of the player has a state without a library.
+When no session is stored,
+the app opens the operating system's default library (D27),
+and that library may hold no track.
+The editor's preview uses sample values only while the open library holds no track,
+and says so.
+This corrects the reading of D90 that spoke of no library being open.
+
+Whether this also removes the first-run study's state without an opened source
+(`evidence/first-run-access-boundaries.md`)
+is put to the human,
+not assumed.
+
+No production implementation is authorized by this record.
+
+### D96. Scrolling suffices to reach the field list (2026-10-06)
+
+With the keyboard open the list of insertable fields sits under the template field and is mostly out of view.
+Asked through the question tool whether that is worth designing for under D91's standard,
+the human answered that scrolling suffices.
+The field list stays where it is.
+
+No production implementation is authorized by this record.
+
+### D97. Which rows get templates: one built version, for approval (2026-10-06)
+
+Asked what comes next in the template round,
+the human wrote:
+"Field list and other rows are pretty inconsequential and you only need to build one version
+(according to the best of your design skills)
+and ask for me to approve.
+Do both."
+
+The field list needs nothing more (D96).
+For the other rows the agent builds one version,
+its own design,
+and asks for approval;
+`doc/planning/music-player-template-editor.md` holds the proposal.
+Nothing in that proposal is decided until the human approves it.
+
 No production implementation is authorized by this record.
 
 ## Pending after the theme picks (2026-09-04)

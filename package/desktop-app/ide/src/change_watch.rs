@@ -120,6 +120,10 @@ impl ChangeWatcher {
 
     /// Retry watches that failed, for example on the safety sweep after a directory was recreated.
     pub fn retry(&self) {
+        // A stopped watch thread cannot retry; asking it every sweep would only log a dropped wake.
+        if self.stopped {
+            return;
+        }
         lock(&self.shared).retry = true;
         wake(&self.wake);
     }

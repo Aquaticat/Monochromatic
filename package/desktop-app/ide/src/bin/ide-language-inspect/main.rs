@@ -154,14 +154,14 @@ fn main() -> Result<()> {
         .canonicalize()
         .with_context(|| return format!("Cannot resolve project {}", plan.project.display()))?;
     ide_app::language::enter_project_directory(&project)?;
-    // Log to standard error so standard output carries only observations.
-    tracing_subscriber::fmt()
-        .with_env_filter(format!(
-            "ide_app=debug,{}",
-            ide_app::language::HELIX_LOG_DIRECTIVE
-        ))
-        .with_writer(std::io::stderr)
-        .init();
+    // Log to standard error so standard output carries only observations. The worker's debug records
+    // are what the inspection reads, so they are on unless `RUST_LOG` says otherwise; helix-lsp's
+    // records go through the same re-labelling as in the application.
+    ide_app::logging::install(
+        ide_app::logging::filter("ide_app=debug"),
+        std::io::stderr,
+        None,
+    )?;
     // The production setup confines every server; a plan may ask for the unconfined control.
     let mut setup = if plan.unconfined {
         LanguageSetup::unconfined()

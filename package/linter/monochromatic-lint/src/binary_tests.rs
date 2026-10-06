@@ -983,6 +983,72 @@ fn a_failing_output_stream_exits_two() {
     );
 }
 
+/// Run the executable as `run` does, but with the main thread's stack limited to `kibibytes` by the shell.
+/// `sh -c` receives the limit as `$0` and the executable with its arguments as `$@`, so nothing is quoted by hand,
+/// and `exec` replaces the shell, so the status is the executable's own.
+fn run_with_main_stack(cwd: &Path, kibibytes: &str, arguments: &[&str], input: &[u8]) -> Run {
+    let mut child: Child = Command::new("sh")
+        .args(["-c", "ulimit -s \"$0\" && exec \"$@\"", kibibytes, BINARY])
+        .args(arguments)
+        .current_dir(cwd)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("start the built executable through sh");
+    let mut stdin = child.stdin.take().expect("piped standard input");
+    stdin.write_all(input).expect("write standard input");
+    drop(stdin);
+    let output: Output = child.wait_with_output().expect("wait for the executable");
+    // A stack overflow aborts the process, which then has a signal and no exit code.
+    let Some(status): Option<i32> = output.status.code() else {
+        panic!(
+            "the executable was killed by a signal: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    };
+    return Run {
+        status,
+        stdout: String::from_utf8(output.stdout).expect("standard output is UTF-8"),
+        stderr: String::from_utf8(output.stderr).expect("standard error is UTF-8"),
+    };
+}
+
+/// One file, `--concurrency 1` and standard input are linted on a thread with the explicit lint stack, not on the
+/// main thread, whose stack the platform sets (the MSVC linker reserves 1 MB by default). With the main thread
+/// limited to 1 MiB, Rust nested 1,200 parentheses deep, which needed between 3 and 4 MiB in the bounded container,
+/// still parses in every mode. Before the invocation thread existed, all three runs aborted with a stack overflow.
+#[test]
+fn a_small_main_thread_stack_does_not_limit_nesting() {
+    let fixture: Fixture = Fixture::new();
+    fixture.write(CONFIG, RULES);
+    // Documented items and one nested expression, so a completed check has no finding at all.
+    let nested: String = format!(
+        "//! Nested expression.\n\n/// Entry point.\nfn main() {{\n    let x: u32 = {}1{};\n}}\n",
+        "(".repeat(1200),
+        ")".repeat(1200)
+    );
+    fixture.write("a.rs", nested.as_str());
+    fixture.write("b.rs", nested.as_str());
+    let modes: [(&[&str], &[u8]); 3] = [
+        (&["a.rs"], b""),
+        (&["--concurrency", "1", "a.rs", "b.rs"], b""),
+        (&["--stdin", "--stdin-filename", "a.rs"], nested.as_bytes()),
+    ];
+    for (arguments, input) in modes {
+        let limited: Run = run_with_main_stack(&fixture.path, "1024", arguments, input);
+        assert_eq!(
+            (
+                limited.status,
+                limited.stdout.as_str(),
+                limited.stderr.as_str()
+            ),
+            (0, "", ""),
+            "{arguments:?}"
+        );
+    }
+}
+
 /// Output is the same at every concurrency limit, and a reader that closes the pipe early causes no error output.
 #[test]
 fn concurrency_and_closed_pipes_do_not_change_results() {

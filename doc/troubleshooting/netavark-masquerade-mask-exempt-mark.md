@@ -11,8 +11,14 @@ Recorded from [issue 553](https://github.com/Aquaticat/Monochromatic/issues/553)
 
 ## Symptom
 
-Every Gradle build launched from an exempted application cgroup
-(Ghostty, Steam, Helium, Pale Moon, Firefox Nightly under the watched `app.slice`)
+Every Gradle build launched from an exempted application cgroup under the watched `app.slice`
+(Ghostty,
+ Steam,
+ Helium,
+ Pale Moon,
+ Firefox Nightly,
+ ChatGPT,
+ and Interpreter)
 fails with:
 
 ```text

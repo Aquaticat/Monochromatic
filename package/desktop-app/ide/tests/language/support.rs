@@ -35,6 +35,25 @@ pub const SERVER: &str = "scripted-ls";
 /// Longest wait for any expected state.
 const PATIENCE: Duration = Duration::from_secs(20);
 
+/// When set in the environment, the child process prints the worker's debug log and helix-lsp's
+/// protocol log to standard error, with wall-clock times. An intermittent failure is diagnosed
+/// from that log together with the scripted server's report.
+const LOG_VARIABLE: &str = "IDE_LANGUAGE_TEST_LOG";
+
+/// Install the opt-in log once per process; later probes of the same test find it installed.
+fn install_log() {
+    if std::env::var_os(LOG_VARIABLE).is_none() {
+        return;
+    }
+    // helix-lsp logs every message it writes and reads at `info`, and dropped answers at `debug`.
+    // The application's pipeline re-labels helix-lsp's records as in a real session. Installing
+    // fails only when an earlier probe of this process already installed the log.
+    let filter = tracing_subscriber::EnvFilter::builder().parse_lossy(
+        ide_app::logging::directives("ide_app=debug,helix_lsp=debug", None),
+    );
+    let _already_installed = ide_app::logging::install(filter, std::io::stderr, None);
+}
+
 /// Where the child process works: its project root, its working directory, and its `PWD`.
 pub struct Layout {
     /// Project root handed to the worker.
@@ -74,7 +93,15 @@ pub fn run_child(test: &str, layout: fn(&Path) -> Layout) {
     let placed = layout(&base);
     let mut command = Command::new(std::env::current_exe().expect("test executable"));
     command
-        .args([test, "--exact", "--nocapture", "--test-threads=1"])
+        // An ignored test that was asked for by name must run in the child too; without this the
+        // child would run nothing and report success.
+        .args([
+            test,
+            "--exact",
+            "--nocapture",
+            "--test-threads=1",
+            "--include-ignored",
+        ])
         .current_dir(&placed.cwd)
         .env(ROOT_VARIABLE, &placed.root);
     match &placed.pwd {
@@ -175,6 +202,7 @@ impl Probe {
 
     /// Start a worker for `root` with an explicit setup.
     pub fn with_setup(root: &Path, setup: LanguageSetup) -> Self {
+        install_log();
         let worker = LanguageWorker::with_setup(root, setup).expect("language worker");
         return Self {
             worker,

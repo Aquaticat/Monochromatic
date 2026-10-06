@@ -10,6 +10,8 @@ use crate::language::identity::ServerIdentity;
 use crate::language::launch::prepare;
 /// `didOpen` follows readiness.
 use crate::language::lifecycle::send_did_open;
+/// A new process owes no answers yet.
+use crate::language::owed::Owed;
 /// Root checks made before and after a start.
 use crate::language::root::{RootRefusal, RootView};
 /// Session records.
@@ -74,6 +76,8 @@ async fn adopt(worker: &mut Worker, name: String, client: Arc<Client>, view: &Ro
                 attached: false,
                 opened: false,
                 progress: Vec::new(),
+                // `Owed::default()` builds the empty record: nothing was asked yet.
+                owed: Owed::default(),
             });
             let seconds = worker.languages.timeout(client.name()) + START_MARGIN;
             worker.timer(

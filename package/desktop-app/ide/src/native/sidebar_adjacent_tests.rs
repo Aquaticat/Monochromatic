@@ -1,15 +1,23 @@
-//! Tree rows and source text directly beside the divider keep their own clicks at every sidebar width.
+//! Tree rows and source text beside the divider's five-column pointer zone keep their own clicks at every
+//! sidebar width, and the tree scrollbar works up to the zone.
 
 /// Shared window fixture, pointer helpers, and the pinned layout measurements.
 use super::sidebar_tests::{
-    DIVIDER, HEADER, MINIMUM, SOURCE_MINIMUM, click, drag_to, fixture, motion, press, release,
-    settle,
+    DIVIDER, HEADER, MINIMUM, REACH, SOURCE_MINIMUM, click, drag_to, fixture, motion, press,
+    release, settle,
 };
-/// Window ownership for closing the fixture, and the left pointer button for a scrollbar drag.
-use slint::{ComponentHandle, platform::PointerEventButton};
+/// Bounded waiting while the toolkit eases a wheel scroll, shared with the find tests.
+use super::find_tests::eventually;
+/// Window ownership for closing the fixture, the left pointer button for a scrollbar drag, and the
+/// wheel event a windowing backend reports.
+use slint::{
+    ComponentHandle, LogicalPosition,
+    platform::{PointerEventButton, WindowEvent},
+};
 
-/// The last tree pixel activates its row, both divider edges do nothing else, and the first source pixel
-/// places the caret, at the default, narrowest, and widest sidebar.
+/// The last tree pixel left of the zone activates its row, a click on any of the zone's five columns does
+/// nothing, and the first source pixel right of the zone places the caret, at the default, narrowest, and
+/// widest sidebar.
 #[test]
 fn clicks_beside_the_divider_reach_tree_rows_and_source_at_every_width() {
     // Six rows do not overflow, so no tree scrollbar sits between the rows and the divider.
@@ -44,34 +52,46 @@ fn clicks_beside_the_divider_reach_tree_rows_and_source_at_every_width() {
         // ```
         let y = HEADER + row as f32 * 48.0 + 24.0;
         shared.activated.set(-1);
-        click(window, width - 1.0, y);
+        click(window, width - REACH - 1.0, y);
         assert_eq!(
             shared.activated.get(),
             row,
-            "the last tree pixel before the divider did not activate its row at width {width}"
+            "the last tree pixel before the divider's zone did not activate its row at width {width}"
         );
         shared.activated.set(-1);
         let before = shared.source.borrow().document.position();
-        click(window, width, y);
-        click(window, width + DIVIDER - 1.0, y);
+        // What: The array holds the five column offsets of the zone, counted from the line's own column.
+        // Why: Two tree columns, the line, and two source columns belong to the divider and to nothing else.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // for (const offset of [-REACH, -1, 0, 1, REACH]) click(window, width + offset, y);
+        // ```
+        for offset in [-REACH, -1.0, 0.0, 1.0, REACH] {
+            click(window, width + offset, y);
+        }
         assert_eq!(
             shared.activated.get(),
             -1,
-            "the divider activated a tree row at width {width}"
+            "the divider's zone activated a tree row at width {width}"
         );
         assert_eq!(
             shared.source.borrow().document.position(),
             before,
-            "the divider moved the source caret at width {width}"
+            "the divider's zone moved the source caret at width {width}"
         );
         assert_eq!(
             window.get_sidebar_width(),
             width,
-            "clicks on the divider edges resized the sidebar"
+            "clicks in the divider's zone resized the sidebar"
         );
-        // Source lines are 24px tall below the 32px file label; the first source pixel is line-number gutter.
+        // Source lines are 24px tall below the 32px file label; the first source pixels are line-number gutter.
         let line = row as usize + 3;
-        click(window, width + DIVIDER, HEADER + line as f32 * 24.0 + 12.0);
+        click(
+            window,
+            width + DIVIDER + REACH,
+            HEADER + line as f32 * 24.0 + 12.0,
+        );
         // What: `borrow()` reads the shared state; `line_to_char` is the character index where a line starts.
         // Why: A gutter click places the caret at the start of the clicked line.
         //
@@ -84,7 +104,7 @@ fn clicks_beside_the_divider_reach_tree_rows_and_source_at_every_width() {
         assert_eq!(
             state.document.position().head,
             expected,
-            "the first source pixel after the divider did not place the caret on its line at width {width}"
+            "the first source pixel after the divider's zone did not place the caret on its line at width {width}"
         );
         drop(state);
     }
@@ -92,6 +112,7 @@ fn clicks_beside_the_divider_reach_tree_rows_and_source_at_every_width() {
 }
 
 /// Far reveal, row clicks after a reveal, and the tree scrollbar beside the divider work at both bounds.
+/// The scrollbar is dragged on its thumb and on the last tree column left of the divider's zone.
 #[test]
 fn tree_windowing_and_scrollbar_follow_the_sidebar_width() {
     let shared = fixture(60);
@@ -119,30 +140,73 @@ fn tree_windowing_and_scrollbar_follow_the_sidebar_width() {
         }
         window.invoke_reveal_tree(0);
         settle(window);
-        let scrolled = window.get_tree_scroll_y();
-        press(
-            window,
-            width - 5.0,
-            HEADER + 100.0,
-            PointerEventButton::Left,
-        );
-        motion(window, width - 5.0, HEADER + 200.0);
-        release(
-            window,
-            width - 5.0,
-            HEADER + 200.0,
-            PointerEventButton::Left,
-        );
-        settle(window);
-        assert!(
-            window.get_tree_scroll_y() < scrolled,
-            "the tree scrollbar beside the divider did not scroll at width {width}"
-        );
-        assert_eq!(
-            window.get_sidebar_width(),
-            width,
-            "dragging the tree scrollbar resized the sidebar"
-        );
+        // The 14px scrollbar's thumb ends 4px before the tree's right edge; its track continues to the zone.
+        for column in [width - 5.0, width - REACH - 1.0] {
+            let scrolled = window.get_tree_scroll_y();
+            press(window, column, HEADER + 100.0, PointerEventButton::Left);
+            motion(window, column, HEADER + 200.0);
+            release(window, column, HEADER + 200.0, PointerEventButton::Left);
+            settle(window);
+            assert!(
+                window.get_tree_scroll_y() < scrolled,
+                "the tree scrollbar did not scroll from column {column} at width {width}"
+            );
+            assert_eq!(
+                window.get_sidebar_width(),
+                width,
+                "dragging the tree scrollbar resized the sidebar"
+            );
+        }
     }
+    window.hide().expect("close sidebar window");
+}
+
+/// A wheel turn over the zone's tree columns scrolls the tree, and over its source columns the source:
+/// the divider takes presses there, not the wheel.
+#[test]
+fn wheel_over_the_divider_zone_scrolls_what_lies_under_it() {
+    let shared = fixture(60);
+    let window = &shared.window;
+    let tree_before = window.get_tree_scroll_y();
+    // What: `WindowEvent::PointerScrolled { .. }` is one variant of the event union, built with named
+    // fields; a negative `delta_y` is a wheel turn toward the user, which moves content up.
+    // Why: The position is the zone's first column, which lies over the tree's last columns.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // window.dispatchEvent({ kind: 'wheel', position: { x: 254.5, y: 300 }, deltaX: 0, deltaY: -96 });
+    // ```
+    window.window().dispatch_event(WindowEvent::PointerScrolled {
+        position: LogicalPosition::new(256.0 - REACH + 0.5, 300.0),
+        delta_x: 0.0,
+        delta_y: -96.0,
+    });
+    // What: `|| return ...` is a zero-argument arrow function that `eventually` calls until it holds.
+    // Why: The toolkit eases a wheel scroll over several frames.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // eventually(message, () => window.treeScrollY < treeBefore);
+    // ```
+    eventually(
+        "a wheel turn over the zone's tree columns did not scroll the tree",
+        || return window.get_tree_scroll_y() < tree_before,
+    );
+    let source_before = window.get_scroll_y();
+    // The zone's last column lies over the source column's first columns.
+    window.window().dispatch_event(WindowEvent::PointerScrolled {
+        position: LogicalPosition::new(256.0 + DIVIDER + REACH - 0.5, 300.0),
+        delta_x: 0.0,
+        delta_y: -96.0,
+    });
+    eventually(
+        "a wheel turn over the zone's source columns did not scroll the source",
+        || return window.get_scroll_y() < source_before,
+    );
+    assert_eq!(
+        window.get_sidebar_width(),
+        256.0,
+        "a wheel turn over the zone resized the sidebar"
+    );
     window.hide().expect("close sidebar window");
 }

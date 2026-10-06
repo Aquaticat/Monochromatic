@@ -1,0 +1,381 @@
+//! What: The per-invocation owner of candidate versions and candidate bytes.
+//! Why: Policies read committed or staged content, never whatever is in the live
+//!      worktree. A version costs one listing process, its bytes come from one
+//!      long-lived object reader, and neither count grows with the number of files.
+//!      After a fix or replay changed the index, `invalidate` retires every version.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // const store = new CandidateStore(git, prefix, overlay);
+//! // const version = await store.version({ kind: 'staged-against-head' });
+//! // const bytes = await store.bytes(version.candidates[0]);
+//! ```
+
+/// Import the layer's failure type and its closed list of causes.
+use super::candidate_error::{CandidateError, CandidateFailure};
+/// Import the candidate modes, the validated object name and its parser.
+use super::candidate_object::{CandidateMode, ObjectId, parse_object_id};
+/// Import the long-lived object reader.
+use super::candidate_reader::{ObjectReader, start_object_reader};
+/// Import the listing parser and its records.
+use super::candidate_record::{CandidateRecord, parse_raw_records};
+/// Import the version types and builder.
+use super::candidate_version::{Candidate, CandidateSource, CandidateVersion, build_version};
+/// Import the captured-query runner and its line helper.
+use super::git_metadata::{MetadataOutput, run_metadata_git, strip_git_line};
+/// `OsString` is owned operating-system text of raw OS bytes (sibling `String` must be UTF-8).
+use std::ffi::OsString;
+/// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw OS bytes.
+use std::path::{Path, PathBuf};
+/// What: `Rc<T>` is a shared, read-only handle to one heap value, counted so the value
+///       lives until its last handle is gone (siblings: `Box<T>`, a single owner, and
+///       `Arc<T>`, the thread-safe form).
+/// Why:  Several policies hold the same version and the same bytes at once. Nothing
+///       here crosses threads, so `Arc` would add cost for no benefit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Every object reference in TS already behaves like this.
+/// ```
+use std::rc::Rc;
+
+/// What: Everything one invocation needs to list and read candidates.
+///       `Option<ObjectReader>` is "a running reader or nothing"; `u64` is an unsigned
+///       64-bit counter (siblings `u32`, `usize`).
+/// Why:  The reader is started only when something needs it, so an invocation that
+///       reads no object starts no reader. `u64` cannot run out within a process.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class CandidateStore { #reader?: ObjectReader; #generation = 0n; #versions: [CandidateSource, CandidateVersion][] = [] }
+/// ```
+pub struct CandidateStore {
+    /// The real Git executable every listing and the reader start.
+    real_git: PathBuf,
+    /// The caller's arguments before the subcommand, replayed so Git selects the same repository.
+    global_prefix: Vec<OsString>,
+    /// Added environment pairs, such as a private index file or object directory.
+    overlay: Vec<(OsString, OsString)>,
+    /// The long-lived object reader, once started.
+    reader: Option<ObjectReader>,
+    /// Counts invalidations; candidates of an earlier generation are refused.
+    generation: u64,
+    /// Versions already listed in this generation, by source.
+    versions: Vec<(CandidateSource, Rc<CandidateVersion>)>,
+}
+
+/// What: Build the failure of a listing command that could not be started or exited unsuccessfully.
+/// Why:  The message names the Git operation, so the person can rerun it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function listingFailure(failure: CandidateFailure, operation: string, detail: string): CandidateError;
+/// ```
+fn listing_failure(failure: CandidateFailure, operation: &str, detail: &str) -> CandidateError {
+    return CandidateError::new(
+        failure,
+        format!("cli-git could not list candidate files: git {operation} {detail}").as_str(),
+    );
+}
+
+/// What: `impl CandidateStore { ... }` attaches the store's operations, like class methods.
+/// Why:  The store is the only place that starts Git for candidates, which is what
+///       keeps the process count bounded.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class CandidateStore { version(source) {} bytes(candidate) {} invalidate() {} }
+/// ```
+impl CandidateStore {
+    /// What: Create a store without starting any process.
+    ///       `&[OsString]` borrows the global arguments; `&[(OsString, OsString)]` borrows
+    ///       environment pairs; `.to_vec()` and `.to_path_buf()` copy them into owned storage.
+    /// Why:  The store outlives the caller's borrowed arguments, and commands that
+    ///       never ask for candidates pay nothing.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// constructor(realGit: string, globalPrefix: string[], overlay: [string, string][])
+    /// ```
+    pub fn new(
+        real_git: &Path,
+        global_prefix: &[OsString],
+        overlay: &[(OsString, OsString)],
+    ) -> CandidateStore {
+        return CandidateStore {
+            real_git: real_git.to_path_buf(),
+            global_prefix: global_prefix.to_vec(),
+            overlay: overlay.to_vec(),
+            // `None` is the "absent" variant: no reader yet.
+            reader: None,
+            generation: 0,
+            versions: Vec::new(),
+        };
+    }
+
+    /// What: The running reader, started on first use. `&mut ObjectReader` lends it for changing.
+    /// Why:  One reader serves every object read of the invocation.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// #reader(): ObjectReader { return (this.#reader ??= startObjectReader(...)); }
+    /// ```
+    fn reader(&mut self) -> Result<&mut ObjectReader, CandidateError> {
+        if self.reader.is_none() {
+            // A trailing `?` returns a start failure to our caller, or unwraps the reader.
+            let started: ObjectReader = start_object_reader(
+                self.real_git.as_path(),
+                self.global_prefix.as_slice(),
+                self.overlay.as_slice(),
+            )?;
+            // `Some(...)` is the "present" variant.
+            self.reader = Some(started);
+        }
+        // `.as_mut()` lends the stored reader; `let Some(..) = .. else` unwraps it.
+        let Some(reader) = self.reader.as_mut() else {
+            // `Err(...)` is the failure variant. The reader was stored just above, so this is not expected.
+            return Err(CandidateError::new(
+                CandidateFailure::ReaderEnded,
+                "cli-git could not read a Git object: the object reader was not started.",
+            ));
+        };
+        // `Ok(...)` is the success variant.
+        return Ok(reader);
+    }
+
+    /// What: Run one listing command and return its standard output.
+    ///       `Vec<u8>` is an owned byte list (sibling `String` would require UTF-8).
+    /// Why:  Listings print raw pathname bytes. A command that fails lists nothing
+    ///       trustworthy, so its output is discarded and Git's own message is reported.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async #runListing(operation: string, args: string[]): Promise<Buffer>
+    /// ```
+    fn run_listing(
+        &self,
+        operation: &str,
+        command: &[OsString],
+    ) -> Result<Vec<u8>, CandidateError> {
+        // `.clone()` copies the stored prefix; `.extend_from_slice(..)` appends the command after it.
+        let mut arguments: Vec<OsString> = self.global_prefix.clone();
+        arguments.extend_from_slice(command);
+        // `match` on the run's `Result`: `Err(error)` means Git could not be started.
+        let output: MetadataOutput = match run_metadata_git(
+            self.real_git.as_path(),
+            arguments.as_slice(),
+            self.overlay.as_slice(),
+        ) {
+            Ok(captured) => captured,
+            Err(error) => {
+                return Err(listing_failure(
+                    CandidateFailure::GitNotStarted,
+                    operation,
+                    format!("could not be started: {error}.").as_str(),
+                ));
+            }
+        };
+        if !output.success {
+            // `String::from_utf8_lossy` decodes Git's message for display, replacing invalid bytes.
+            return Err(listing_failure(
+                CandidateFailure::GitFailed,
+                operation,
+                format!(
+                    "failed: {}",
+                    String::from_utf8_lossy(output.stderr.as_slice()).trim()
+                )
+                .as_str(),
+            ));
+        }
+        return Ok(output.stdout);
+    }
+
+    /// What: The name of the empty tree in this repository's hash format.
+    /// Why:  A repository without commits has no `HEAD` to compare the index with; the
+    ///       empty tree makes every staged entry an addition. Git computes the name
+    ///       from empty input, so SHA-1 and SHA-256 repositories both work.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async #emptyTree(): Promise<ObjectId>
+    /// ```
+    fn empty_tree(&self) -> Result<ObjectId, CandidateError> {
+        // The query runner gives Git no standard input, which is the empty tree's content.
+        let output: Vec<u8> = self.run_listing(
+            "hash-object",
+            &[
+                OsString::from("hash-object"),
+                OsString::from("-t"),
+                OsString::from("tree"),
+                OsString::from("--stdin"),
+            ],
+        )?;
+        let Some(tree) = parse_object_id(strip_git_line(output.as_slice())) else {
+            return Err(listing_failure(
+                CandidateFailure::ListingMalformed,
+                "hash-object",
+                "did not print the empty tree's object name.",
+            ));
+        };
+        return Ok(tree);
+    }
+
+    /// What: List the index against a commit, or against the empty tree when there is none.
+    ///       `Option<&ObjectId>` is "a borrowed commit name or nothing".
+    /// Why:  `diff-index --cached` reads only the index and the tree, never the
+    ///       worktree. Rename detection is off, so a renamed file is one deleted path
+    ///       and one added path, each judged on its own.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async #listStaged(baseline?: ObjectId): Promise<Buffer>
+    /// ```
+    fn list_staged(&self, baseline: Option<&ObjectId>) -> Result<Vec<u8>, CandidateError> {
+        let tree: ObjectId = match baseline {
+            Some(commit) => commit.clone(),
+            None => self.empty_tree()?,
+        };
+        return self.run_listing(
+            "diff-index",
+            &[
+                OsString::from("diff-index"),
+                OsString::from("--cached"),
+                OsString::from("--raw"),
+                OsString::from("-z"),
+                OsString::from("--no-renames"),
+                OsString::from("--no-abbrev"),
+                OsString::from(tree.as_str()),
+                OsString::from("--"),
+            ],
+        );
+    }
+
+    /// What: List what one commit changed against each of its parents.
+    /// Why:  `-m` lists a merge once per parent and `--root` lists a first commit
+    ///       against nothing, so every commit shape yields its changed paths.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async #listCommitted(commit: ObjectId): Promise<Buffer>
+    /// ```
+    fn list_committed(&self, commit: &ObjectId) -> Result<Vec<u8>, CandidateError> {
+        return self.run_listing(
+            "diff-tree",
+            &[
+                OsString::from("diff-tree"),
+                OsString::from("--root"),
+                OsString::from("--no-commit-id"),
+                OsString::from("-r"),
+                OsString::from("-z"),
+                OsString::from("-m"),
+                OsString::from("--no-renames"),
+                OsString::from("--no-abbrev"),
+                OsString::from(commit.as_str()),
+            ],
+        );
+    }
+
+    /// What: The version of one source, listed once per generation and shared afterwards.
+    ///       `Rc::clone(..)` makes another handle to the same version without copying it.
+    /// Why:  Every policy of a pass sees the same paths, and asking again costs no process.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async version(source: CandidateSource): Promise<CandidateVersion>
+    /// ```
+    pub fn version(
+        &mut self,
+        source: &CandidateSource,
+    ) -> Result<Rc<CandidateVersion>, CandidateError> {
+        // `for (known, version) in &self.versions` destructures each borrowed pair.
+        for (known, version) in &self.versions {
+            if known == source {
+                return Ok(Rc::clone(version));
+            }
+        }
+        let output: Vec<u8> = match source {
+            CandidateSource::StagedAgainstHead => {
+                let head: Option<ObjectId> = self.reader()?.head_commit()?;
+                // `.as_ref()` turns `&Option<ObjectId>` into `Option<&ObjectId>`.
+                self.list_staged(head.as_ref())?
+            }
+            CandidateSource::StagedAgainstCommit(commit) => self.list_staged(Some(commit))?,
+            CandidateSource::Committed(commit) => self.list_committed(commit)?,
+        };
+        let records: Vec<CandidateRecord> = parse_raw_records(output.as_slice())?;
+        // `Rc::new(..)` moves the built version into shared storage.
+        let version: Rc<CandidateVersion> = Rc::new(build_version(self.generation, records));
+        self.versions.push((source.clone(), Rc::clone(&version)));
+        return Ok(version);
+    }
+
+    /// What: The exact bytes a candidate holds in its version.
+    ///       `Rc<[u8]>` is a shared read-only byte list.
+    /// Why:  Bytes come from the object the listing named, so an edit to the worktree
+    ///       file after staging is invisible here. A deleted path has no bytes. A
+    ///       gitlink has no blob in this repository, so its bytes are the submodule
+    ///       commit's name, as in the TypeScript wrapper. A candidate of a retired
+    ///       version is refused instead of answered with bytes that may be outdated.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async bytes(candidate: Candidate): Promise<Uint8Array>
+    /// ```
+    pub fn bytes(&mut self, candidate: &Candidate) -> Result<Rc<[u8]>, CandidateError> {
+        if candidate.identity.generation != self.generation {
+            return Err(CandidateError::new(
+                CandidateFailure::StaleCandidate,
+                "cli-git refused to read a candidate from a version that was invalidated by a fix or replay; \
+                 list the version again and use its candidates.",
+            ));
+        }
+        let Some(object) = candidate.object.as_ref() else {
+            // `Rc::from(Vec::new())` is a shared empty byte list.
+            return Ok(Rc::from(Vec::new()));
+        };
+        if candidate.mode == CandidateMode::Gitlink {
+            // `.as_bytes()` views the name's text as bytes; `Rc::from(..)` copies them into shared storage.
+            return Ok(Rc::from(object.as_str().as_bytes()));
+        }
+        return self.reader()?.blob(object);
+    }
+
+    /// What: Retire every version listed so far. `+= 1` advances the generation.
+    /// Why:  A fix or replay rewrites index entries, so earlier listings no longer
+    ///       describe what would be committed. Blob bytes stay remembered in the
+    ///       reader: an object name always denotes the same bytes.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// invalidate(): void { this.#versions = []; this.#generation += 1n; }
+    /// ```
+    pub fn invalidate(&mut self) {
+        self.versions.clear();
+        self.generation += 1;
+    }
+}
+
+/// Repository controls stay out of the release executable.
+#[cfg(test)]
+#[path = "candidate_store_tests.rs"]
+mod tests;
+
+/// Committed versions, invalidation and listing failures.
+#[cfg(test)]
+#[path = "candidate_store_lifecycle_tests.rs"]
+mod lifecycle_tests;
+
+/// The process-count bound and its per-file positive control.
+#[cfg(test)]
+#[path = "candidate_process_count_tests.rs"]
+mod process_count_tests;
+
+/// Unborn, SHA-256 and private-index listings.
+#[cfg(test)]
+#[path = "candidate_store_baseline_tests.rs"]
+mod baseline_tests;
+
+/// Listings that must be refused.
+#[cfg(test)]
+#[path = "candidate_store_failure_tests.rs"]
+mod failure_tests;

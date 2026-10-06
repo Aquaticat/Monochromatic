@@ -23,5 +23,8 @@ mod control_tables;
 /// Control-bearing argument vectors and the invariants of removal and of the refusal frontier.
 pub mod controls;
 
+/// Generated `git cat-file --batch` replies and the reply-reading invariants.
+pub mod batch;
+
 /// Generated manifests and raw text through the dependent-version rewrite and specifier scan.
 pub mod dependent_version;

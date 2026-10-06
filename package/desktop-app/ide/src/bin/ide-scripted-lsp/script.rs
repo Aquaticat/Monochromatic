@@ -105,6 +105,12 @@ pub struct Script {
     pub push_after_hover: bool,
     /// Milliseconds to wait before answering `initialize`.
     pub init_delay: u64,
+    /// Milliseconds the read loop sleeps before it handles the first message of `stall_at`;
+    /// everything the client sends meanwhile waits unread, as behind a server that stopped
+    /// responding for a while.
+    pub stall: u64,
+    /// Method whose first message starts the stall; empty text means no stall.
+    pub stall_at: String,
     /// Announce and answer pull diagnostics.
     pub pull_diagnostics: bool,
     /// Announce interest in save notifications.
@@ -126,6 +132,12 @@ pub struct Script {
     pub definition: Option<Value>,
     /// When present, the references answer is exactly this result; absent keeps the fixed failure.
     pub references: Option<Value>,
+    /// Ignore `exit` and stay alive after the client closed standard input, so that only a
+    /// kill ends the process.
+    pub linger: bool,
+    /// One line written to standard error when `shutdown` arrives, as a real server reports its
+    /// own shutdown there; nothing when absent.
+    pub stderr_at_shutdown: Option<String>,
 }
 
 /// What: Decode the JSON text of one variable. `Option<Value>` is nothing when the variable is
@@ -225,6 +237,8 @@ impl Script {
             push_diagnostics: read("PUSH", "1") == "1",
             push_after_hover: read("PUSH_AFTER_HOVER", "0") == "1",
             init_delay: read("INIT_DELAY_MS", "0").parse().unwrap_or(0),
+            stall: read("STALL_MS", "0").parse().unwrap_or(0),
+            stall_at: read("STALL_AT", ""),
             pull_diagnostics: read("PULL", "0") == "1",
             save: read("SAVE", "0") == "1",
             probe: read("PROBE", "0") == "1",
@@ -232,6 +246,9 @@ impl Script {
             report,
             definition: json("DEFINITION"),
             references: json("REFERENCES"),
+            linger: read("LINGER", "0") == "1",
+            // `.ok()` turns an unset or unreadable variable into "nothing".
+            stderr_at_shutdown: env::var("IDE_SCRIPTED_STDERR").ok(),
         };
     }
 

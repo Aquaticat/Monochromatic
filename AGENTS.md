@@ -316,6 +316,13 @@ QRX:
  batch them in the question tool and re-explain each item's context in plain words;
  never rely on the user recalling earlier messages.
 
+UQT:
+ Anything the user must see or answer (handoffs,
+ proposals,
+ flagged choices):
+ put it in the question tool;
+ transcript prose may go unread.
+
 YKZ:
  Before ranking several options:
  widen to plausible alternatives (with their libraries and repo incumbents);
@@ -477,10 +484,12 @@ RGP:
  always pass `.` or an absolute path.
 
 ATH:
- Before using `${HOME}/temp/agent` scratch:
- `mkdir --parents` it,
- then `chmod 700`;
- trust checks reject group/other permission bits.
+ Scratch goes in `${HOME}/temp/agent`,
+ never `/tmp` or the harness scratchpad
+ (reboots wipe them);
+ first `mkdir --parents` it,
+ then `chmod 700`
+ (trust checks reject group/other bits).
 
 CLN:
  Investigating package source:

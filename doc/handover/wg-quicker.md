@@ -11,14 +11,21 @@ It:
 - exempts Ghostty,
    Steam,
    Helium,
-   and Pale Moon sockets through cgroup-BPF;
+   Pale Moon,
+   Firefox Nightly,
+   ChatGPT,
+   and Interpreter sockets through cgroup-BPF;
 - keeps privileged BPF implementation in Rust;
 - does not move Ghostty into another systemd slice.
 
 The human brought real `mx-que-mx1` up during follow-up diagnosis and then brought it down after connectivity
 stopped.
 It is currently down.
-Its validated exemption watcher remains active with rebuilt companion and Pale Moon discovery.
+No exemption watcher was running when ChatGPT and Interpreter coverage landed on 2026-10-06:
+no WireGuard interface existed,
+no `wg-quicker-exempt` process ran,
+and no bypass `ip rule` was installed,
+so the next `up` starts a watcher from the current companion build.
 Do not bring tunnel up,
 restart it,
 or mutate live routing without explicit authorization.
@@ -38,6 +45,23 @@ That file was mode `0644` owned `root:user`;
 both configs are now mode `0600` owned `root:root`,
 matching the `0700 root:root` directory that already blocked other users.
 See `doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md`.
+
+On 2026-10-06 both configs stopped carrying a baked `AllowedIPs` value.
+Each `[Peer]` section's single `AllowedIPs` line,
+`90810` bytes holding `4082` networks generated on 2026-09-17,
+was replaced atomically with `AllowedIPsFromFiles = ~/allowed.txt ~/disallowed.txt`,
+so every `up` regenerates from the current input files.
+Both edits preserved mode `0600`,
+`root:root` ownership,
+single-link status,
+and the `unconfined_u:object_r:etc_t:s0` label.
+Pre-edit copies are `/root/wg-quicker-conf-backup-gb-lon-gb2.conf-20261006`
+and `/root/wg-quicker-conf-backup-mx-que-mx1.conf-20261006`,
+each mode `0600`.
+The directive expands through the runtime home directory,
+which the sudo launcher sets to the caller's home;
+a direct root invocation whose `HOME` is `/root` fails closed on the missing file
+instead of silently narrowing coverage.
 
 ## Completed tasks
 
@@ -70,6 +94,11 @@ See `doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md`.
    discover both installed Pale Moon executable names,
    verify live target enumeration,
    and update exemption diagnostics and documentation.
+- ChatGPT and Interpreter follow-up:
+   discover both applications' executables and desktop services,
+   verify live target enumeration against real desktop launches,
+   extend `~/disallowed.txt` with their measured endpoints,
+   and switch both live configs to `AllowedIPsFromFiles`.
 
 No tracked implementation task remains.
 
@@ -101,6 +130,7 @@ a41cb8efb missing-ExemptMark warning and live config note
 492b6914e actionable config-specific warning wording
 7b3621d47 Pale Moon process discovery and exemption documentation
 5c65b29ce exact Pale Moon matching and cgroup-boundary documentation
+c07f6e56e ChatGPT and Interpreter executable discovery
 ```
 
 Other commits interleaved at `HEAD` belong to concurrent work and are unrelated.
@@ -279,7 +309,7 @@ Fallback-specific debug functional tests inject typed object-pin failure so desc
 deterministic.
 Separate public-CLI lifecycle test retains native pin-path coverage.
 
-## Ghostty, Steam, Helium, Pale Moon, and Firefox Nightly coverage
+## Ghostty, Steam, Helium, Pale Moon, Firefox Nightly, ChatGPT, and Interpreter coverage
 
 `wg-quicker` starts Rust watcher only after bypass route exists.
 It stops watcher before removing bypass routing.
@@ -290,7 +320,9 @@ It states that Ghostty,
  Steam,
  Helium,
  Pale Moon,
- and Firefox Nightly will use the tunnel.
+ Firefox Nightly,
+ ChatGPT,
+ and Interpreter will use the tunnel.
 It instructs the user to add `ExemptMark = 100` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 `down` does not emit this warning.
@@ -336,12 +368,20 @@ Watcher behavior:
 - identifies Steam's `app-steam@*.service` immediately;
 - identifies Helium Chrome application-ID service immediately;
 - identifies Firefox Nightly's `app-firefox\x2dnightly@*.service` immediately;
+- identifies ChatGPT's `app-chatgpt@*.service` immediately;
+- identifies Interpreter's `app-interpreter@*.service` immediately;
 - maps live Helium,
   renderer,
   zygote,
   and crashpad executables to current cgroups;
 - maps exact `palemoon` and `palemoon-bin` executable names to current cgroups;
 - maps exact `firefox` and `firefox-bin` names under a `firefox-nightly` install directory to current cgroups;
+- maps every executable inside ChatGPT's root-owned `/usr/lib/chatgpt` package tree,
+  including the `resources/codex` app-server that application spawns,
+  to current cgroups;
+- maps every `interpreter`-prefixed executable,
+  including the AppImage file and the bundled `interpreter-*` agents,
+  to current cgroups;
 - periodically rescans processes entering existing cgroups;
 - retains known process-discovered cgroups through process restarts until cgroup removal;
 - holds links directly for watcher lifetime;
@@ -380,10 +420,38 @@ Firefox Nightly follow-up verification found:
 - both Nightly verification processes ended;
 - disposable headless profile was removed without changing live tunnel or application cgroups.
 
+ChatGPT and Interpreter follow-up verification found:
+
+- a disposable `app.slice` service running ChatGPT's own bundled `resources/cua_node/bin/node` appeared in
+  rebuilt `wg-quicker-exempt list-targets` output,
+  while a sibling service running `/usr/bin/sleep` did not;
+- normal KDE desktop launch created `app-chatgpt@<hex>.service` from `chatgpt.desktop`;
+- ChatGPT's Electron main process then moved itself into a Chromium-created
+  `app-org.chromium.Chromium-<pid>.scope`,
+  which also held the spawned `resources/codex` app-server,
+  so one running application occupied two cgroups;
+- `19` live ChatGPT executables resolved to `/usr/lib/chatgpt/ChatGPT`,
+  `resources/codex`,
+  and `browser_crashpad_handler`;
+- normal KDE desktop launch created `app-interpreter@<hex>.service` from `interpreter.desktop`,
+  and the AppImage created a second `app-interpreter-<pid>.scope` holding its `interpreter-app-server`
+  and `bwrap` children;
+- `9` live Interpreter executables resolved to `~/AppImages/interpreter.appimage`,
+  `/tmp/.mount_interp*/interpreter`,
+  and `/tmp/.mount_interp*/resources/interpreter-app-server`;
+- all `28` matched processes mapped to listed targets,
+  and the rebuilt listing added exactly those four agent cgroups to the five-target baseline;
+- privileged disposable-cgroup protocol coverage passed on the current kernel;
+- both applications were stopped,
+  failed unit state was reset,
+  and the listing returned to the exact baseline with no matched process left.
+
 Process discovery attaches entire current cgroup.
 Sibling processes sharing Helium,
 Pale Moon,
-or Firefox Nightly cgroup also receive exemption until cgroup disappears or watcher stops.
+Firefox Nightly,
+ChatGPT,
+or Interpreter cgroup also receive exemption until cgroup disappears or watcher stops.
 A newly started process-discovered application can create sockets before next 250-millisecond rescan;
 applications present at watcher startup are attached before readiness.
 
@@ -408,6 +476,85 @@ UDP4,
 and UDP6 socket probes from active watcher.
 Fixture cgroup and probe were removed;
 watcher remained active with empty error log.
+
+## ChatGPT and Interpreter clearnet coverage
+
+Both applications reach clearnet through two independent mechanisms as of 2026-10-06.
+
+Socket marking matches two shapes per application.
+ChatGPT matching accepts every executable inside the root-owned `/usr/lib/chatgpt` package tree,
+because that application spawns `resources/codex`,
+`resources/rg`,
+and `resources/cua_node/bin/node` agents that can live in a cgroup of their own.
+Interpreter matching accepts every executable whose name begins with `interpreter`,
+covering `~/AppImages/interpreter.appimage`,
+the mounted `/tmp/.mount_interp*/interpreter` Electron image,
+the bundled `interpreter-*` agents,
+and the same vendor's mise-installed terminal agent.
+Both applications also match their observed desktop services.
+Interpreter's own `app-interpreter-<pid>.scope` deliberately stays executable discovery's responsibility,
+since its name derives from the executable rather than the desktop entry.
+
+`AllowedIPs` generation gained the endpoints both applications use,
+measured with the built `wg-allowedips` command against the value generated before and after the edit.
+Sixteen of seventeen candidate hostnames left the generated value on the first regeneration:
+`api.openai.com`,
+`auth.openai.com`,
+`chat.openai.com`,
+`codex-portals.api.openai.com`,
+`realtime.chatgpt.com`,
+`learn.chatgpt.com`,
+`web-sandbox.oaiusercontent.com`,
+`images.openai.com`,
+`developers.openai.com`,
+`status.openai.com`,
+`admin.openai.com`,
+`statsigcdn.openai.com`,
+`model-spec.openai.com`,
+`privacy.openai.com`,
+`oi-new-server.fly.dev`,
+and `models.dev`.
+Two measurements bound that IP-level path:
+
+- `huggingface.co` sits behind CloudFront,
+  whose answers rotated through three distinct address sets within ten minutes,
+  so the first regenerated value covered none of the addresses a later client resolved
+  and a second regeneration covered only its own snapshot.
+  The cgroup exemption,
+  not the `AllowedIPs` entry,
+  keeps that traffic direct.
+  The human chose to keep the entry anyway,
+  at a measured cost of `650` networks and `21711` bytes of generated value,
+  so a regeneration immediately before `up` still buys a working window.
+- `AS4167`,
+  `AS400243`,
+  `AS401551`,
+  and `AS401864` contributed no networks even after a fresh `IPINFO_TOKEN` refresh,
+  so those four `AS` lines currently subtract nothing.
+  `doc/troubleshooting/ipinfo-lite-missing-openai-anthropic-asns.md` traces that gap to the
+  2026-10-06 IPinfo Lite generation,
+  which holds five records total for both vendors.
+
+Adding the hostnames grew the generated value from `4022` to `6517` networks,
+because every removed host route splits the aggregate that contained it.
+The route integration assertion still expected the pre-netavark `8888` recommendation
+and now expects the reserved `100`.
+
+Loading both live configs through `loadConfig` as root with the caller's home
+expanded the directive to `/var/home/user/allowed.txt` and `/var/home/user/disallowed.txt`,
+reported `exemptMark` `100`,
+and generated `6602` networks for `mx-que-mx1`.
+Membership probes against that generated value placed every added ChatGPT and Interpreter hostname
+outside it,
+kept `example.com` inside as a positive control,
+and covered `4` of `12` then-current `huggingface.co` addresses,
+which is the CloudFront rotation the human accepted when choosing to keep that entry.
+The same run showed `sillylittleguy.orgi` in the disallowed input was a typo:
+the corrected `sillylittleguy.org` resolves inside Anthropic's `2607:6bc0::/48`
+and now generates as clearnet.
+The four permanently dead Steam and Valve domain names remain,
+as chosen,
+and warn on every generation.
 
 ## Verification evidence
 
@@ -513,12 +660,19 @@ Privileged disposable-cgroup tests cover:
 Unit tests additionally cover target-name precision,
 fake procfs Helium,
 Pale Moon,
-and Firefox Nightly mapping,
+Firefox Nightly,
+ChatGPT,
+and Interpreter mapping,
 Firefox Nightly service,
 executable,
 channel,
 and install-directory boundaries,
 Pale Moon case and suffix near misses,
+ChatGPT package-tree and sibling-directory boundaries,
+Interpreter family,
+stem,
+and case near misses,
+ChatGPT and Interpreter desktop-service names,
 path-key injectivity,
 exact cleanup,
 atomic exchange,

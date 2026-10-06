@@ -1,4 +1,4 @@
-//! Discovers named Ghostty, Steam, Helium, and Firefox Nightly cgroups plus executable-owned browser cgroups.
+//! Discovers named Ghostty, Steam, Helium, and Firefox Nightly cgroups plus executable-owned application cgroups.
 
 /// Filesystem and process-race failures.
 use std::io;
@@ -23,6 +23,14 @@ const HELIUM_SERVICE_PREFIX: &str =
     "app-chrome\\x2dcadlkienfkclaiaibeoongdcgmdikeeg\\x2dDefault@";
 /// Firefox Nightly service prefix produced by its configured remoting name.
 const FIREFOX_NIGHTLY_SERVICE_PREFIX: &str = "app-firefox\\x2dnightly@";
+/// ChatGPT desktop install tree whose every executable belongs to that application.
+const CHATGPT_INSTALL_DIRECTORY: &str = "/usr/lib/chatgpt";
+/// ChatGPT desktop service prefix observed from its desktop-entry identifier.
+const CHATGPT_SERVICE_PREFIX: &str = "app-chatgpt@";
+/// Interpreter executable family prefix shared by its AppImage file and bundled agents.
+const INTERPRETER_EXECUTABLE_PREFIX: &str = "interpreter";
+/// Interpreter desktop service prefix observed from its desktop-entry identifier.
+const INTERPRETER_SERVICE_PREFIX: &str = "app-interpreter@";
 
 /// Roots make process and cgroup discovery testable without real host state.
 pub struct ScanRoots<'a> {
@@ -65,6 +73,17 @@ pub fn is_firefox_nightly_service_name(name: &str) -> bool {
         && name.ends_with(".service");
 }
 
+/// Reports ChatGPT desktop-integration service name.
+pub fn is_chatgpt_service_name(name: &str) -> bool {
+    return name.starts_with(CHATGPT_SERVICE_PREFIX) && name.ends_with(".service");
+}
+
+/// Reports Interpreter desktop-integration service name, leaving the application's
+/// own executable-named scope to executable discovery.
+pub fn is_interpreter_service_name(name: &str) -> bool {
+    return name.starts_with(INTERPRETER_SERVICE_PREFIX) && name.ends_with(".service");
+}
+
 /// Reports numeric procfs directory name without regular expression parsing.
 fn is_process_id(name: &str) -> bool {
     return !name.is_empty() && name.bytes().all(|byte| return byte.is_ascii_digit());
@@ -72,8 +91,8 @@ fn is_process_id(name: &str) -> bool {
 
 /// What:     `is_exempt_application_executable` borrows executable path as `&Path` and returns primitive `bool`.
 ///           Borrowing avoids ownership transfer; sibling `PathBuf` would require caller-owned allocation.
-/// Why:      Process scan must recognize Helium, Pale Moon, and Firefox Nightly
-///           without matching other Firefox channels.
+/// Why:      Process scan must recognize Helium, Pale Moon, Firefox Nightly, ChatGPT, and Interpreter
+///           without matching other Firefox channels or unrelated install trees.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -81,10 +100,13 @@ fn is_process_id(name: &str) -> bool {
 ///   const name = basename(path);
 ///   const isFirefoxNightly = path.endsWith('/firefox-nightly/firefox')
 ///     || path.endsWith('/firefox-nightly/firefox-bin');
+///   const isChatGpt = path.startsWith('/usr/lib/chatgpt/');
 ///   return name.toLowerCase().startsWith('helium')
 ///     || name === 'palemoon'
 ///     || name === 'palemoon-bin'
-///     || isFirefoxNightly;
+///     || isFirefoxNightly
+///     || isChatGpt
+///     || name.startsWith('interpreter');
 /// }
 /// ```
 fn is_exempt_application_executable(path: &Path) -> bool {
@@ -127,10 +149,28 @@ fn is_exempt_application_executable(path: &Path) -> bool {
     // ```
     let is_firefox_nightly = path.ends_with("firefox-nightly/firefox")
         || path.ends_with("firefox-nightly/firefox-bin");
+    // What:     `Path::starts_with` compares complete leading path components instead of a text prefix.
+    // Why:      ChatGPT spawns every bundled agent from its own root-owned package tree,
+    //           so that whole tree identifies the application even when a subprocess
+    //           runs in a cgroup of its own, while `/usr/lib/chatgpt-backup` stays tunnel-routed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const isChatGpt = path.startsWith('/usr/lib/chatgpt/');
+    // ```
+    let is_chatgpt = path.starts_with(CHATGPT_INSTALL_DIRECTORY);
+    // Interpreter's AppImage runtime file, its mounted inner binary, and its bundled agents
+    // all carry the lowercase `interpreter` name prefix.
+    // Unlike Helium's rule this comparison keeps the exact lowercase spelling,
+    // so a capitalized lookalike stays tunnel-routed, while a renamed AppImage file still matches
+    // through the lowercase inner binary it mounts.
+    let is_interpreter = name_text.starts_with(INTERPRETER_EXECUTABLE_PREFIX);
     return normalized_helium_name.starts_with("helium")
         || name_text == "palemoon"
         || name_text == "palemoon-bin"
-        || is_firefox_nightly;
+        || is_firefox_nightly
+        || is_chatgpt
+        || is_interpreter;
 }
 
 /// Extracts unified cgroup path from one procfs cgroup file.
@@ -150,7 +190,8 @@ fn push_unique(paths: &mut Vec<PathBuf>, path: PathBuf) {
     }
 }
 
-/// Scans direct app slice entries identifying Ghostty, Steam, Helium, or Firefox Nightly services.
+/// Scans direct app slice entries identifying Ghostty, Steam, Helium, Firefox Nightly,
+/// ChatGPT, or Interpreter services.
 fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::Result<()> {
     for entry_result in std::fs::read_dir(roots.app_slice)? {
         let entry = entry_result?;
@@ -165,6 +206,8 @@ fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::
             || is_steam_service_name(name_text)
             || is_helium_service_name(name_text)
             || is_firefox_nightly_service_name(name_text)
+            || is_chatgpt_service_name(name_text)
+            || is_interpreter_service_name(name_text)
         {
             push_unique(targets, entry.path());
         }
@@ -202,7 +245,8 @@ fn read_process_executable(path: &Path) -> io::Result<Option<PathBuf>> {
 
 /// What:     `scan_exempt_application_processes` borrows scan roots and mutable target list,
 ///           then returns `io::Result<()>`, Rust's success-or-I/O-error wrapper with no success payload.
-/// Why:      Live executables identify Helium, Pale Moon, and Firefox Nightly cgroups beyond named-service coverage.
+/// Why:      Live executables identify Helium, Pale Moon, Firefox Nightly, ChatGPT,
+///           and Interpreter cgroups beyond named-service coverage.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

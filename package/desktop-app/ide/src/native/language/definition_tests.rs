@@ -59,9 +59,11 @@ fn definition_in_the_same_file_moves_the_caret_and_reveals_it() {
     });
     let top = -reader.window.get_scroll_y();
     let bottom = top + reader.window.get_viewport_height();
+    // The vertical mapping places line 100: the scripted server's hint takes a row above the first line.
+    let row_top = reader.source.borrow().row_map.code_top(100);
     assert!(
-        top <= 100.0 * 24.0 && 101.0 * 24.0 <= bottom,
-        "line 100 is not in view: {top}..{bottom}"
+        top <= row_top && row_top + 24.0 <= bottom,
+        "line 100 at {row_top} is not in view: {top}..{bottom}"
     );
     assert!(reader.window.get_source_has_focus());
     assert_eq!(reader.window.get_language_popup_text(), "");
@@ -148,7 +150,7 @@ fn control_click_opens_a_definition_in_another_project_file() {
         return row(&reader.window, "main.scripted").is_some();
     });
     let x = caret_x(&reader, at(3, 6)) + 2.0;
-    control_click(&reader.window, point(&reader.window, 3, x));
+    control_click(&reader.window, point(&reader, 3, x));
     eventually("Ctrl+click did not open the definition's file", || {
         return reader.window.get_source_text() == "first\n  second line\n";
     });

@@ -63,6 +63,29 @@ and then reads the hierarchy again.
 The next visit's first view was captured with the handle drawn.
 What delays the bar was not established.
 
+## Related: a launch reported as `Status: timeout`
+
+On 2026-10-06,
+with the host's load average at about 60 to 70 from other work,
+`am start -W` for the template editor host printed:
+
+```text
+Status: timeout
+LaunchState: UNKNOWN (-1)
+Activity: dev.monochromatic.musicplayer/.TemplateEditorActivity
+WaitTime: 10572
+Complete
+```
+
+The app's own log showed the activity created once with the requested scene,
+so the launch had happened;
+the activity manager stopped waiting for its first frame.
+A capture that required `Status: ok` refused it,
+and two visits in a row captured nothing new.
+The capture now accepts `Status: timeout` and logs it,
+because the creation count it reads next still requires exactly one creation
+and every view is checked from its own hierarchy and frame.
+
 ## Not verified
 
 A global setting named `hide_error_dialogs` is an idea from memory for

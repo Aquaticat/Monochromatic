@@ -83,21 +83,43 @@ depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --inferred-constants"
 
 [tasks."mutation:executable"]
-description = "Mutate the executable's orchestration, entry point and Rust rule selection against every test except the Cargo-workspace semantic suites, after full container tests and Clippy"
+description = "Mutate the executable's orchestration, entry point, Rust rule selection, input expansion and fix loop against every test except the four Cargo-workspace tests, after full container tests and Clippy"
 depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --executable"
 
+[tasks."mutation:core"]
+description = "Mutate configuration, findings, grouped edits and the syntax-only Rust rules against every test except the four Cargo-workspace tests, after full container tests and Clippy"
+depends = ["lint:container"]
+run = "node bin/mutate-container.mjs --core"
+
+[tasks."mutation:semantic"]
+description = "Mutate the semantic engine and the explicit-type rule against the whole suite, with a per-mutant limit set from this scope's own baseline, after full container tests and Clippy"
+depends = ["lint:container"]
+run = "node bin/mutate-container.mjs --semantic"
+
+[tasks."mutation:coverage"]
+description = "Prove from listings that the mutation scopes together hold every mutant of the unscoped listing, name by name, without building"
+run = "node bin/mutate-container.mjs --coverage"
+
 [tasks."mutation:list:executable"]
 description = "Inspect the executable mutant scope without mutating or building source"
-run = "cargo mutants --list --no-config --exclude-re 'replace \\+= with \\*=' --exclude-re 'replace -= with /=' --file 'src/run_*.rs' --file src/main.rs --file src/rust_dispatch.rs --file src/rust_rule_settings.rs"
+run = "node bin/mutate-container.mjs --list --executable"
+
+[tasks."mutation:list:core"]
+description = "Inspect the configuration, findings, edits and syntax-only Rust rule mutant scope without mutating or building source"
+run = "node bin/mutate-container.mjs --list --core"
+
+[tasks."mutation:list:semantic"]
+description = "Inspect the semantic engine and explicit-type rule mutant scope without mutating or building source"
+run = "node bin/mutate-container.mjs --list --semantic"
 
 [tasks."mutation:list:markdown"]
 description = "Inspect the Markdown mutant scope without mutating or building source"
-run = "cargo mutants --list --no-config --exclude-re 'replace \\+= with \\*=' --exclude-re 'replace -= with /=' --file 'src/markdown_*.rs'"
+run = "node bin/mutate-container.mjs --list --markdown"
 
 [tasks."mutation:list:inferred-constants"]
 description = "Inspect the constant-slot resolver mutant scope without mutating or building source"
-run = "cargo mutants --list --no-config --exclude-re 'replace \\+= with \\*=' --exclude-re 'replace -= with /=' --file src/rust_inferred_constants.rs"
+run = "node bin/mutate-container.mjs --list --inferred-constants"
 
 [tasks."test:container"]
 description = "Run artifact tests in a mount-free, network-disabled 2 GiB / 2 CPU container"
@@ -123,7 +145,9 @@ import { spawnSync } from 'node:child_process';
 import { cp, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const tag = 'localhost/monochromatic-lint-processors:development';
+// Concurrent worktrees set MONOCHROMATIC_LINT_IMAGE_TAG so one snapshot never runs another's image.
+const imageTag = process.env.MONOCHROMATIC_LINT_IMAGE_TAG ?? 'development';
+const tag = 'localhost/monochromatic-lint-processors:' + imageTag;
 function command(args, allowFailure = false) {
   const result = spawnSync('podman', args, { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
   if (result.error) throw result.error;
@@ -132,7 +156,7 @@ function command(args, allowFailure = false) {
   return result;
 }
 const cached = command(['image', 'inspect', tag], true);
-const inspected = cached.status === 0 ? cached : command(['image', 'inspect', 'localhost/monochromatic-lint-test:development']);
+const inspected = cached.status === 0 ? cached : command(['image', 'inspect', 'localhost/monochromatic-lint-test:' + imageTag]);
 const base = JSON.parse(inspected.stdout)[0].Id.replace(/^sha256:/u, '');
 if (!/^[a-f0-9]{64}$/u.test(base)) throw new Error('Missing tested native base image');
 const context = await mkdtemp(join(tmpdir(), 'processor-snapshot-'));
@@ -177,7 +201,7 @@ function podman(args, allowFailure = false) {
   return result;
 }
 const container = podman(['create', '--init', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128',
-  'localhost/monochromatic-lint-processors:development', 'sh', '-c',
+  'localhost/monochromatic-lint-processors:' + (process.env.MONOCHROMATIC_LINT_IMAGE_TAG ?? 'development'), 'sh', '-c',
   'rustc --edition=2024 --extern monochromatic_lint=target/debug/libmonochromatic_lint.rlib -L dependency=target/debug/deps --out-dir /tmp /tmp/processors_consumer.rs && /tmp/processors_consumer']).stdout.trim();
 try {
   podman(['cp', 'src/processors_consumer.rs', container + ':/tmp/processors_consumer.rs']);
@@ -215,7 +239,7 @@ for (const name of names) sources['src/' + name] = createHash('sha256').update(a
 sources['fixtures/processors.json'] = createHash('sha256').update(await readFile('fixtures/processors.json')).digest('hex');
 for (const name of ['src/lib.rs', 'Cargo.toml', 'Cargo.lock'])
   sources[name] = createHash('sha256').update(await readFile(name)).digest('hex');
-const image = spawnSync('podman', ['image', 'inspect', 'localhost/monochromatic-lint-processors:development'], { encoding: 'utf8' });
+const image = spawnSync('podman', ['image', 'inspect', 'localhost/monochromatic-lint-processors:' + (process.env.MONOCHROMATIC_LINT_IMAGE_TAG ?? 'development')], { encoding: 'utf8' });
 if (image.error) throw image.error;
 if (image.status !== 0) throw new Error(image.stderr);
 const imageId = JSON.parse(image.stdout)[0].Id;
@@ -251,7 +275,9 @@ function podman(args, allowFailure = false) {
   if (!args.includes('inspect')) process.stdout.write(result.stdout + result.stderr);
   return result;
 }
-const base = JSON.parse(podman(['image', 'inspect', 'localhost/monochromatic-lint-processors:development']).stdout)[0].Id;
+// Concurrent worktrees set MONOCHROMATIC_LINT_IMAGE_TAG so one snapshot never runs another's image.
+const imageTag = process.env.MONOCHROMATIC_LINT_IMAGE_TAG ?? 'development';
+const base = JSON.parse(podman(['image', 'inspect', 'localhost/monochromatic-lint-processors:' + imageTag]).stdout)[0].Id;
 const context = await mkdtemp(join(tmpdir(), 'processor-mutants-'));
 await mkdir('target/verification', { recursive: true });
 const evidence = await mkdtemp(join(process.cwd(), 'target/verification/processors-mutation-'));
@@ -273,7 +299,7 @@ try {
     'RUN ["cargo","mutants","--version"]',
     'CMD ' + JSON.stringify(command), '',
   ].join('\n'));
-  const tag = 'localhost/monochromatic-lint-processors-mutation:development';
+  const tag = 'localhost/monochromatic-lint-processors-mutation:' + imageTag;
   podman(['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g',
     '--cpu-period=100000', '--cpu-quota=200000', '--tag', tag, context]);
   container = podman(['create', '--init', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128', tag]).stdout.trim();
@@ -313,7 +339,7 @@ const result = spawnSync('podman', [
   '--security-opt', 'label=disable', '--volume', compiler.stdout.trim() + ':/toolchain:ro',
   '--env', 'PATH=/toolchain/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
   '--env', 'RUSTC=/toolchain/bin/rustc', '--env', 'RUSTDOC=/toolchain/bin/rustdoc',
-  'localhost/monochromatic-lint-processors:development',
+  'localhost/monochromatic-lint-processors:' + (process.env.MONOCHROMATIC_LINT_IMAGE_TAG ?? 'development'),
   '/toolchain/bin/cargo', 'clippy', '--offline', '--locked', '--all-targets', '--', '-D', 'warnings',
 ], { stdio: 'inherit' });
 if (result.error) throw result.error;

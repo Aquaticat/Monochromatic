@@ -29,3 +29,7 @@ run = "node bin/container.mjs --build-only"
 [tasks.smoke]
 description = "Run generator controls, Clippy, then ASAN targets for 30s each in mount-free bounded containers"
 run = "node bin/container.mjs"
+
+[tasks."lock:subject"]
+description = "Seed the fuzz lockfile from the subject's lockfile, then let Cargo add only this sidecar's own packages, so both lock the same registry versions"
+run = ["cp ../cli/Cargo.lock Cargo.lock", "cargo update --workspace --offline"]
