@@ -18,18 +18,21 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type BudgetView,
   createRoutingClient,
   NoProviderForModelError,
   type ProviderName,
   type ProviderRecord,
   StreamBoundError,
   StreamCutShortError,
+  SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
 import { stubWetBudgets, } from './provider-router-wet-budgets.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from './roster-seats.test-fixture.ts';
 
 /**
@@ -58,10 +61,89 @@ const MESSAGES = [
 const SIGNAL = new AbortController().signal;
 
 /**
- Builds stub providers where Bedrock cuts each named model once at its
- stream bound, then answers.
+ Budgets reading every provider wet, none holding a call and none marked
+ refused, so a call is free to go to each provider in turn.
 
- @param slow - models Bedrock cuts on their first call
+ @returns Budgets of the shape the router reads
+
+ @example
+ ```ts
+ const budgets = stubFullyWetBudgets();
+ ```
+ */
+function stubFullyWetBudgets(): ReturnType<typeof stubWetBudgets> {
+  return {
+    read: async function readAllWet(): Promise<BudgetView> {
+      return {
+        synthetic: false,
+        hyper: false,
+        bedrock: false,
+        openrouter: false,
+      };
+    },
+    markRefused: async function markNobodyRefused(): Promise<void> {
+      return undefined;
+    },
+    holds: function holdNothingBack(): ProviderRecord<number> {
+      return {
+        synthetic: 0,
+        hyper: 0,
+        bedrock: 0,
+        openrouter: 0,
+      };
+    },
+  };
+}
+
+/**
+ Budgets that read a provider dry from the moment the router marks it
+ refused and wet before, none holding a call, so a call a provider refuses
+ goes on to one that has not refused yet.
+
+ @returns Budgets of the shape the router reads
+
+ @example
+ ```ts
+ const budgets = stubBudgetsDryOnceRefused();
+ ```
+ */
+function stubBudgetsDryOnceRefused(): ReturnType<typeof stubWetBudgets> {
+  /**
+   Providers the router has marked refused.
+   */
+  const refused = new Set<ProviderName>();
+  return {
+    read: async function readDryWhereRefused(): Promise<BudgetView> {
+      return {
+        synthetic: refused.has('synthetic',),
+        hyper: refused.has('hyper',),
+        bedrock: refused.has('bedrock',),
+        openrouter: refused.has('openrouter',),
+      };
+    },
+    markRefused: async function rememberRefused({ provider, }: { readonly provider: ProviderName; },): Promise<void> {
+      refused.add(provider,);
+    },
+    holds: stubWetBudgets().holds,
+  };
+}
+
+/**
+ Status a provider answers with when its budget is spent.
+ */
+const HTTP_TOO_MANY_REQUESTS = 429;
+
+/**
+ Builds stub providers where the cutting providers (Bedrock alone by default)
+ cut each named model once at its stream bound, then answer, and the refusing
+ providers (none by default) refuse every call on their budget.
+
+ @param slow - models the cutting providers cut on their first call
+
+ @param cutters - providers that cut, Bedrock alone when none are named
+
+ @param refusers - providers whose budget refuses every call, none when none
+ are named
 
  @returns Callers plus every provider and model asked, in order
 
@@ -70,7 +152,17 @@ const SIGNAL = new AbortController().signal;
  const { callers, asked, } = stubProviders({ slow: [SEAT_BEDROCK_ONLY_TEXT,], },);
  ```
  */
-function stubProviders({ slow, }: { readonly slow: readonly string[]; },): {
+function stubProviders(
+  {
+    slow,
+    cutters = ['bedrock',],
+    refusers = [],
+  }: {
+    readonly slow: readonly string[];
+    readonly cutters?: readonly ProviderName[];
+    readonly refusers?: readonly ProviderName[];
+  },
+): {
   readonly callers: ProviderRecord<{
     readonly chatText: (request: { readonly modelId: string; },) => Promise<{ readonly text: string; }>;
   }>;
@@ -81,7 +173,7 @@ function stubProviders({ slow, }: { readonly slow: readonly string[]; },): {
    */
   const asked: string[] = [];
   /**
-   Models Bedrock has already cut once.
+   Provider and model pairs already cut once.
    */
   const cut = new Set<string>();
 
@@ -90,14 +182,19 @@ function stubProviders({ slow, }: { readonly slow: readonly string[]; },): {
 
    @param provider - provider this caller stands for
 
-   @returns Caller that records the call and answers or cuts
+   @returns Caller that records the call and answers, cuts or refuses
    */
   function callerFor(provider: ProviderName,): { readonly chatText: (request: { readonly modelId: string; },) => Promise<{ readonly text: string; }>; } {
     return {
       chatText: async function chatText({ modelId, }: { readonly modelId: string; },): Promise<{ readonly text: string; }> {
         asked.push(`${provider}:${modelId}`,);
-        if ((provider === 'bedrock') && slow.includes(modelId,) && (!cut.has(modelId,))) {
-          cut.add(modelId,);
+        if (refusers.includes(provider,))
+          throw new SyntheticHttpError({
+            status: HTTP_TOO_MANY_REQUESTS,
+            bodyText: `${provider} napping`,
+          },);
+        if (cutters.includes(provider,) && slow.includes(modelId,) && (!cut.has(`${provider}:${modelId}`,))) {
+          cut.add(`${provider}:${modelId}`,);
           throw new StreamCutShortError({
             label: modelId,
             partialText: '',
@@ -162,7 +259,15 @@ function ask(
 /**
  Builds a router over the stubs with a clock the case advances.
 
- @param slow - models Bedrock cuts on their first call
+ @param slow - models the cutting providers cut on their first call
+
+ @param cutters - providers that cut, Bedrock alone when none are named
+
+ @param refusers - providers whose budget refuses every call, none when none
+ are named
+
+ @param budgets - what every provider's budget reads as, Synthetic dry and the
+ rest wet when none are given
 
  @returns Router, the calls asked, and the clock
 
@@ -171,12 +276,28 @@ function ask(
  const { client, asked, clock, } = routerOver({ slow: [SEAT_BEDROCK_ONLY_TEXT,], },);
  ```
  */
-function routerOver({ slow, }: { readonly slow: readonly string[]; },): {
+function routerOver(
+  {
+    slow,
+    cutters,
+    refusers,
+    budgets = stubWetBudgets(),
+  }: {
+    readonly slow: readonly string[];
+    readonly cutters?: readonly ProviderName[];
+    readonly refusers?: readonly ProviderName[];
+    readonly budgets?: ReturnType<typeof stubWetBudgets>;
+  },
+): {
   readonly client: ReturnType<typeof createRoutingClient>;
   readonly asked: string[];
   readonly clock: { now: number; };
 } {
-  const { callers, asked, } = stubProviders({ slow, },);
+  const { callers, asked, } = stubProviders({
+    slow,
+    ...((cutters === undefined) ? {} : { cutters, }),
+    ...((refusers === undefined) ? {} : { refusers, }),
+  },);
   /**
    Clock the router reads, advanced by the case.
    */
@@ -186,7 +307,7 @@ function routerOver({ slow, }: { readonly slow: readonly string[]; },): {
     clock,
     client: createRoutingClient({
       callers,
-      budgets: stubWetBudgets(),
+      budgets,
       modelHoldMs: HOLD_MS,
       now: function now(): number {
         return clock.now;
@@ -253,6 +374,72 @@ await describe({
           modelId: SEAT_HYPER_TEXT_BEDROCK,
         },);
         expect(other,).toEqual({ text: 'bedrock answers', },);
+      },
+    },),
+    it({
+      name: 'ENDS A CALL CUT AT ITS STREAM BOUND ON EVERY ONE OF THE FOUR PROVIDERS SERVING IT with the refusal a '
+        + 'model fewer providers serve ends with, naming the stream bound and the hold, after asking each once in '
+        + 'order, though the loop has no attempt left to read the holds on',
+      fn: async () => {
+        const { client, asked, } = routerOver({
+          slow: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
+          cutters: ['synthetic', 'bedrock', 'hyper', 'openrouter',],
+          budgets: stubFullyWetBudgets(),
+        },);
+
+        const outcome = await ask({
+          client,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },);
+
+        expect({
+          asked,
+          thrown: ('thrown' in outcome) ? String(outcome.thrown,) : 'answered',
+          class: ('thrown' in outcome) && (outcome.thrown instanceof NoProviderForModelError),
+        },).toEqual({
+          asked: [
+            `synthetic:${SEAT_SYNTHETIC_TEXT_EVERYWHERE}`,
+            `bedrock:${SEAT_SYNTHETIC_TEXT_EVERYWHERE}`,
+            `hyper:${SEAT_SYNTHETIC_TEXT_EVERYWHERE}`,
+            `openrouter:${SEAT_SYNTHETIC_TEXT_EVERYWHERE}`,
+          ],
+          thrown: `NoProviderForModelError: no provider can take ${SEAT_SYNTHETIC_TEXT_EVERYWHERE}: `
+            + `every provider serving this model ran past its stream bound; held out for another ${String(HOLD_MS,)}ms`,
+          class: true,
+        },);
+      },
+    },),
+    it({
+      name: 'ENDS A CALL THREE PROVIDERS REFUSED ON THEIR BUDGETS AND THE FOURTH CUT AT ITS STREAM BOUND with a '
+        + 'refusal that names both, since the three are not held out on a stream bound and nobody is left to ask',
+      fn: async () => {
+        const { client, asked, } = routerOver({
+          slow: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
+          cutters: ['openrouter',],
+          refusers: ['synthetic', 'bedrock', 'hyper',],
+          budgets: stubBudgetsDryOnceRefused(),
+        },);
+
+        const outcome = await ask({
+          client,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },);
+
+        expect({
+          asked,
+          thrown: ('thrown' in outcome) ? String(outcome.thrown,) : 'answered',
+          class: ('thrown' in outcome) && (outcome.thrown instanceof NoProviderForModelError),
+        },).toEqual({
+          asked: [
+            `synthetic:${SEAT_SYNTHETIC_TEXT_EVERYWHERE}`,
+            `bedrock:${SEAT_SYNTHETIC_TEXT_EVERYWHERE}`,
+            `hyper:${SEAT_SYNTHETIC_TEXT_EVERYWHERE}`,
+            `openrouter:${SEAT_SYNTHETIC_TEXT_EVERYWHERE}`,
+          ],
+          thrown: `NoProviderForModelError: no provider can take ${SEAT_SYNTHETIC_TEXT_EVERYWHERE}: `
+            + 'every provider serving this model refused this call or ran past its stream bound on it',
+          class: true,
+        },);
       },
     },),
   ],

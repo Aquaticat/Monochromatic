@@ -275,6 +275,46 @@ async function roundsAsked(
   return asks;
 }
 
+/**
+ Texts of the target slices prepared over the two-block pair under a budget.
+
+ @param sliceCharBudget - budget handed to the preparation, none for the built-in one
+
+ @returns Target text of each slice, in slice order
+
+ @example
+ ```ts
+ const slices = await targetSlicesUnder({ sliceCharBudget: 1, },);
+ ```
+ */
+async function targetSlicesUnder(
+  { sliceCharBudget, }: { readonly sliceCharBudget?: number; },
+): Promise<readonly string[]> {
+  /**
+   Preparation of the pair, both voices agreeing on the one-to-one pairing.
+   */
+  const { prepared, } = await prepareDocumentPairWithRoster({
+    client: cannedClient({
+      replyByModel: [
+        '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
+        '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
+      ],
+    },),
+    modelIds: ROSTER,
+    sourceText: SOURCE_TEXT,
+    targetText: TARGET_TEXT,
+    signal: new AbortController().signal,
+    exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+    l,
+    ...((sliceCharBudget === undefined) ? {} : { sliceCharBudget, }),
+  },);
+  return prepared.slices
+    .map(function targetOf(slice,): string {
+      return slice.target
+        .text;
+    },);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -315,6 +355,22 @@ await describe({
                 },
               ],
             },],);
+          },
+        },),
+        it({
+          name: 'HANDS THE SLICE BUDGET ON TO PREPARATION, so a budget of one character cuts each paired block into '
+            + 'a slice of its own where the built-in budget holds both blocks in one',
+          fn: async () => {
+            expect({
+              builtIn: await targetSlicesUnder({},),
+              oneCharacter: await targetSlicesUnder({ sliceCharBudget: 1, },),
+            },).toEqual({
+              builtIn: ['The cat slept in the box.\n\nShe did not move all afternoon.',],
+              oneCharacter: [
+                'The cat slept in the box.',
+                'She did not move all afternoon.',
+              ],
+            },);
           },
         },),
         it({

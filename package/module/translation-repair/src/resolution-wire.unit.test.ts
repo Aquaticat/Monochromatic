@@ -20,6 +20,7 @@ import {
   isResolutionReportWire,
   isResolutionVerdict,
   RESOLUTION_VERDICTS,
+  usableResolutionReportFor,
 } from '../dist/final/node/index.mjs';
 import { userText, } from './chat-message-reading.test-fixture.ts';
 
@@ -147,6 +148,45 @@ await describe({
                 expect(isResolutionReportWire({
                   checks: [{ issue: '1', verdict: 'fixed', },],
                 },),).toBe(false,);
+              },
+            },),
+          ],
+        },),
+        describe({
+          name: usableResolutionReportFor.name,
+          children: [
+            it({
+              name: 'REFUSES a reply that is no wire report at all, so a checker whose reply carries no list of '
+                + 'checks is read as unreadable and asked again',
+              fn: async () => {
+                /**
+                 Guard for a sheet that showed two issues.
+                 */
+                const usable = usableResolutionReportFor({ issueCount: 2, },);
+
+                expect([
+                  usable(5,),
+                  usable({ checks: 'none', },),
+                  usable({ checks: [5,], },),
+                ],).toEqual([false, false, false,],);
+              },
+            },),
+            it({
+              name: 'ACCEPTS a report with one known verdict on an issue the sheet showed, and REFUSES an empty '
+                + 'report, one checking only issues the sheet never showed and one whose only verdict is unknown',
+              fn: async () => {
+                /**
+                 Guard for a sheet that showed two issues.
+                 */
+                const usable = usableResolutionReportFor({ issueCount: 2, },);
+
+                expect([
+                  usable({ checks: [{ issue: 2, verdict: 'fixed', },], },),
+                  usable({ checks: [], },),
+                  usable({ checks: [{ issue: 3, verdict: 'fixed', },], },),
+                  usable({ checks: [{ issue: 0, verdict: 'fixed', },], },),
+                  usable({ checks: [{ issue: 1, verdict: 'pounced', },], },),
+                ],).toEqual([true, false, false, false, false,],);
               },
             },),
           ],

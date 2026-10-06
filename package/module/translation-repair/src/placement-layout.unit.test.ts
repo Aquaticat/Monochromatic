@@ -162,6 +162,38 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES a span that ends before it starts, naming both offsets, since slicing reads it as an empty '
+        + 'span and an assembly would take the mistake for an insertion',
+      fn: async () => {
+        /**
+         What the check raised on the one span running from ten back to five.
+         */
+        const refusal = caught(function checkEndsBeforeStart() {
+          assertPlacementLayout({
+            slices: [
+              spanAt({
+                sliceIndex: 0,
+                startOffset: 10,
+                endOffset: 5,
+              },),
+            ],
+            targetText: TARGET_TEXT,
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(PlacementLayoutError,);
+        expect(String(refusal,),).toBe(
+          'PlacementLayoutError: slice at position 0 ends at 5 before it starts at 10, which slicing reads as an '
+            + 'empty span rather than as the mistake it is',
+        );
+        expect((refusal as PlacementLayoutError).fault,).toEqual({
+          kind: 'backwards',
+          startOffset: 10,
+          endOffset: 5,
+        },);
+      },
+    },),
+    it({
       name: 'REFUSES a placement that moves BACKWARDS, which is one statement covering overlap too: two '
         + 'spans that overlap, two starting at one offset, and a list sorted differently from its slices '
         + 'are all the same defect seen from different sides',

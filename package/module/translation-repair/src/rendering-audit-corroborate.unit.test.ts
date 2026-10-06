@@ -831,6 +831,20 @@ await describe({
             ).toEqual([],);
           },
         },),
+        it({
+          name: 'READS a claim leaving the candidate side unused as touching no claim there, so two voices naming '
+            + 'defects in different sentences of the original are no near miss whichever side the other uses',
+          fn: async () => {
+            expect(
+              nearMisses({
+                claims: [
+                  DENIAL_LEFT_OUT_A,
+                  TWO_TO_THREE_A,
+                ],
+              },),
+            ).toEqual([],);
+          },
+        },),
       ],
     },),
   ],

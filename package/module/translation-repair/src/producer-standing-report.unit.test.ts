@@ -199,6 +199,27 @@ await describe({
 
         it({
           name:
+            'puts an UNJUDGED model that arrived after a measured one behind it and behind the model measured '
+            + 'at zero that arrived last',
+          fn: async () => {
+            expect(rankStandings({
+              standings: [
+                LEADER,
+                UNJUDGED,
+                MEASURED_ZERO,
+              ],
+            },).map(function idOf(standing,): string {
+              return standing.modelId;
+            },),).toEqual([
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+            ],);
+          },
+        },),
+
+        it({
+          name:
             'leaves two UNJUDGED models in the order they arrived, rather than inventing a lead between '
             + 'them: neither has any evidence, so neither can be ahead',
           fn: async () => {

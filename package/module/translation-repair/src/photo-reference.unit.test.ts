@@ -231,6 +231,30 @@ await describe({
         },),
 
         it({
+          name: 'STOPS AT A STRING THAT NEVER CLOSES inside its element, keeping the paths read before it, '
+            + 'whether the closing mark is missing from the passage or only stands past the element\'s end',
+          fn: async () => {
+            /**
+             Second path opened and never closed, with no later mark of its kind.
+             */
+            const unclosed = `<PhotoScroll photos={[ '${ENTRY}/photos/one.webp', '${ENTRY}/photos/two.webp ]} />`;
+            /**
+             Second path opened with a mark that next appears after the element's end.
+             */
+            const closedPastTheElement = `<PhotoScroll photos={[ '${ENTRY}/photos/one.webp', "${ENTRY}/photos/two.webp ]} />\n\n`
+              + 'She said "hello" to the cat.';
+
+            expect({
+              unclosed: photoReferences({ text: unclosed, },),
+              closedPastTheElement: photoReferences({ text: closedPastTheElement, },),
+            },).toEqual({
+              unclosed: [{ assetName: 'one.webp', },],
+              closedPastTheElement: [{ assetName: 'one.webp', },],
+            },);
+          },
+        },),
+
+        it({
           name: 'TERMINATES ON AN UNCLOSED ELEMENT rather than reading the rest of the document as its '
             + 'attributes, so one malformed page cannot make every later quotation look like a file',
           fn: async () => {

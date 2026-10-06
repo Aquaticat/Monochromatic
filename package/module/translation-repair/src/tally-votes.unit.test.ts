@@ -257,6 +257,59 @@ await describe({
         },),
 
         it({
+          name: 'WEIGHS A MERGE OPINION by the weight configured for its panelist, so one heavyweight saying '
+            + 'same-defect outvotes two default dissenters',
+          fn: async () => {
+            /** First member of the cluster. */
+            const first = member({ suffix: 'ggg-first', },);
+            /** Second member of the cluster. */
+            const second = member({ suffix: 'hhh-second', },);
+            /** Two-member cluster under merge vote. */
+            const cluster: ClaimCluster = {
+              clusterId: 'cluster/weighed',
+              position: 10,
+              members: [first, second,],
+            };
+            /** Ids voted on. */
+            const claimIds = [first.claimId, second.claimId,];
+            /** One heavyweight for merging against two default dissenters. */
+            const result = tallyVotes({
+              configuredPanelists: 3,
+              clusters: [cluster,],
+              ballots: {
+                heavy: uniformBallot({
+                  claimIds,
+                  vote: 'supported',
+                  mergeOpinions: { [cluster.clusterId]: true, },
+                },),
+                d1: uniformBallot({
+                  claimIds,
+                  vote: 'supported',
+                  mergeOpinions: { [cluster.clusterId]: false, },
+                },),
+                d2: uniformBallot({
+                  claimIds,
+                  vote: 'supported',
+                  mergeOpinions: { [cluster.clusterId]: false, },
+                },),
+              },
+              config: {
+                minBallotWeight: 3,
+                decisionThreshold: 1 / 2,
+                sourceDefectThreshold: 1 / 3,
+                weights: { heavy: 3, },
+              },
+            },);
+            expect(result.issues.map(function claimsOf(issue,): readonly string[] {
+              return issue.claims
+                .map(function idOf(claim,): string {
+                  return claim.claimId;
+                },);
+            },),).toEqual([claimIds,],);
+          },
+        },),
+
+        it({
           name: 'grades severity by upper median over claim and supported re-grades',
           fn: async () => {
             /** Claim graded minor by its proposer. */

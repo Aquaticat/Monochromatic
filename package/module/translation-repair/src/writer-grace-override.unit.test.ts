@@ -213,6 +213,42 @@ await describe({
     },),
 
     describe({
+      name: `${resolveWriterGraceMs.name} reading the launch's environment`,
+      // ONE AT A TIME: every case writes the same process-wide variable.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'READS THE WRITER VARIABLE WHEN NO TEXT IS HANDED IN, and falls back to the window it was handed '
+            + 'when the variable is unset, which is how an ordinary launch reaches it',
+          fn: async () => {
+            /**
+             Window read with the variable set.
+             */
+            const whenSet = (function readSet(): number {
+              using writer = dialSaying({
+                variable: WRITER_GRACE_VAR,
+                says: String(WRITER,),
+              },);
+              return resolveWriterGraceMs({ fallback: ROUND, },);
+            })();
+            /**
+             Window read with the variable unset.
+             */
+            const whenUnset = (function readUnset(): number {
+              using writer = dialSaying({ variable: WRITER_GRACE_VAR, },);
+              return resolveWriterGraceMs({ fallback: ROUND, },);
+            })();
+
+            expect({ whenSet, whenUnset, },).toEqual({
+              whenSet: WRITER,
+              whenUnset: ROUND,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: writerGraceOverrideNote.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [

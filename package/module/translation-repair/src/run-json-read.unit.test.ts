@@ -207,6 +207,44 @@ await describe({
       },
     },),
     it({
+      name: 'READS NO OFFSET OUT OF THE FILE\'S OWN WORDS, which V8 quotes back in a short refusal: a file '
+        + 'that says "at position" states a position of its own, never one the parser stopped at',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'run-json-read-', },);
+        /**
+         Refusal from a file whose words carry a number after the phrase V8
+         writes before its own offset.
+         */
+        const numbered = await refusalFrom({
+          path: await fixture({
+            dir: scratch.path,
+            name: 'numbered.json',
+            text: 'cat at position 7',
+          },),
+        },);
+        /**
+         Refusal from a file whose words carry no number after that phrase.
+         */
+        const worded = await refusalFrom({
+          path: await fixture({
+            dir: scratch.path,
+            name: 'worded.json',
+            text: 'cat at position x',
+          },),
+        },);
+
+        expect({
+          numbered: numbered.at,
+          worded: worded.at,
+          message: numbered.message,
+        },).toEqual({
+          numbered: 'unstated',
+          worded: 'unstated',
+          message: 'could not read numbered.json as JSON (SyntaxError)',
+        },);
+      },
+    },),
+    it({
       name: 'NAMES the file by base name, so a run path that could name a person stays out of it',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'run-json-read-', },);

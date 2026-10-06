@@ -143,5 +143,28 @@ await describe({
         expect(validateTranslatedSlice({ sourceText: SOURCE, candidateText, },).kind,).toBe('valid',);
       },
     },),
+    it({
+      name: 'COUNTS ONLY THE BLOCKS OF THE SHORT KIND when a page that never rendered it sits beside blocks of '
+        + 'other kinds on both sides, so a heading carrying no break is neither owed nor carried',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: `${SOURCE}\n\n## 猫`,
+          pageText: 'The cats nap.',
+          candidateText: `${FLAT}\n\n## The cat`,
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [
+            'The PAGE AS IT STANDS is 1 block (paragraph) and your translation is 2 (blockquote, heading (level 2)). '
+            + 'Every block of the PAGE AS IT STANDS has to appear in your translation, of the same kind and in the '
+            + 'same order. The ORIGINAL\'s blockquote, heading (level 2) has no block of its kind on the PAGE AS IT '
+            + 'STANDS, so carry the PAGE AS IT STANDS\'s blocks and add it after them in the ORIGINAL\'s own kind.',
+            'ORIGINAL blockquote block(s) carry 1 explicit line break(s), but your blockquote block(s) carry 0. '
+            + 'The PAGE AS IT STANDS has no blockquote block here, so the original alone sets that floor. Keep at '
+            + 'least the original count with Markdown hard breaks or intrinsic <br/> elements; soft newlines render '
+            + 'as spaces and do not preserve these lines. Keep your chosen wording.',
+          ],
+        },);
+      },
+    },),
   ],
 },);

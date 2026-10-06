@@ -178,6 +178,20 @@ await describe({
         },),
 
         it({
+          name: 'KEEPS A PASSAGE WHOLE WHEN THE ORIGINAL HOLDS NO BLOCK, since with nothing for the archive to '
+            + 'repeat there is no anchor to protect what follows, a quoted run included',
+          fn: async () => {
+            expect(splitTargetOnlyRun({
+              sourceText: '',
+              incumbentText: 'The cat naps.\n\n> Dear cat, rest well.',
+            },),).toEqual({
+              judgedText: 'The cat naps.\n\n> Dear cat, rest well.',
+              protectedText: '',
+            },);
+          },
+        },),
+
+        it({
           name: 'PROTECTS A TRANSCRIPT WRITTEN DIRECTLY AFTER ITS ANCHOR WITH NO BLANK LINE, a photo '
             + 'gallery component the archive repeats followed on the next line by a quoted caption of '
             + 'what the photos show, and keeps the archive\'s own bytes so restoring rebuilds it exactly',

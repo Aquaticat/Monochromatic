@@ -35,6 +35,23 @@ await describe({
       },
     },),
     it({
+      name: 'PICKS a later transcript the others carry more than the first, which is the odd one out, '
+        + 'and the longer of the two readings that carry each other',
+      fn: async () => {
+        const chosen = mostCarriedReading({
+          readings: [
+            { modelId: SEAT_HYPER_VISION, text: '今天的菜单：鱼、鸡肉和牛奶。', },
+            { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: '猫在窗边安静地睡觉，阳光很好。', },
+            { modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, text: '猫在窗边安静地睡觉，阳光很好，风铃在响。', },
+          ],
+        },);
+        expect(chosen,).toEqual({
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          text: '猫在窗边安静地睡觉，阳光很好，风铃在响。',
+        },);
+      },
+    },),
+    it({
       name: 'PREFERS the longer transcript on a tie, since the overlap divides by the smaller side and a fuller '
         + 'reading the others vouch for scores the same as the shorter one it extends',
       fn: async () => {

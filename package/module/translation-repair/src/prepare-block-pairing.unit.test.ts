@@ -279,6 +279,37 @@ await describe({
       },
     },),
     it({
+      name: 'CLAIMS the after-media transcript on a cached pairing stored without it, so a record an older build wrote '
+        + 'before media claims were part of what it kept resumes with the claims and says so, asking nobody',
+      fn: async () => {
+        const pathToken = ['$', '{path}'].join('');
+        const marker = `<PhotoScroll photos={['${pathToken}/photos/letter.webp']} />`;
+        const sourceText = `About the cat.\n\n${marker}\n\nRemember the cat.`;
+        const targetText = `About the cat.\n\n${marker}\n\n<details>\n<summary>Letter</summary>\n> Translated letter.\n</details>\n\nRemember the cat.`;
+        const reply = '{"pairs":[{"source":0,"target":0},{"source":1,"target":1},{"source":2,"target":4}]}';
+        const coldRun = fixture({ sourceText, targetText, reply });
+        const cold = await prepareBlockPairing(coldRun.input);
+        if (cold.kind !== 'paired') throw new Error('expected media-owned pairing');
+        const f = fixture({ sourceText, targetText, reply });
+        const { key } = blockPairingQuestion({ pair: f.input.pair, pictureContext: '', modelIds: roster });
+        const storedFinding = 'block-pairing section 7 paired 3 of 3 original and 3 of 5 translation blocks across 3 relations, from 2 usable voices of 2 heard';
+        f.stored.set(key, {
+          pairs: [{ source: 0, target: 0 }, { source: 1, target: 1 }, { source: 2, target: 4 }],
+          findings: [storedFinding],
+        });
+        const warm = await prepareBlockPairing(f.input);
+        if (warm.kind !== 'paired') throw new Error('expected resumed media-owned pairing');
+        expect(warm.pairs).toEqual(cold.pairs);
+        expect(warm.findings).toEqual([
+          storedFinding,
+          'block-pairing media-adjacent source 1 claims target 2',
+          'block-pairing media-adjacent source 1 claims target 3',
+        ]);
+        expect(f.calls).toHaveLength(0);
+        expect(f.writes).toHaveLength(0);
+      },
+    },),
+    it({
       name: 'propagates persistence failure instead of returning a completed preparation',
       fn: async () => {
         const f = fixture();

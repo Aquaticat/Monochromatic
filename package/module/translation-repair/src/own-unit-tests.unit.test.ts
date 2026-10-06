@@ -824,7 +824,6 @@ const ALLOWLIST: readonly string[] = [
   'src/unprepared-slice.ts',
   'src/upstream-model-hold.ts',
   'src/work-title-scan.ts',
-  'src/work-title-search.ts',
 ];
 
 await describe({

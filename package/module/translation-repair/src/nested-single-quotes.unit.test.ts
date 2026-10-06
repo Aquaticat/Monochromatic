@@ -75,5 +75,16 @@ await describe({
         },),).toBe('The *Whiskers*’s opening line was ‘meow.’',);
       },
     },),
+    it({
+      name: 'READS A STRAIGHT SINGLE QUOTE STANDING BETWEEN SPACES AS NEITHER MARK, so it neither closes the '
+        + 'quotation open before it nor opens one, and the pair around it still curls',
+      fn: async () => {
+        expect(restoreTypography({
+          replacement: 'The cat kept \'a nap \' alone\' today.',
+          replaced: '',
+          convention: CURLY_PAGE,
+        },),).toBe('The cat kept ‘a nap \' alone’ today.',);
+      },
+    },),
   ],
 },);

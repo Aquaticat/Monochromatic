@@ -207,6 +207,30 @@ await describe({
     },),
 
     it({
+      name: 'ENDS A TAG AT A BRACKET WITH SPACES BEHIND IT, whether one space or more than three, since only '
+        + 'a bracket at a line start is a blockquote marker, and curls the prose after it',
+      fn: async () => {
+        /**
+         Replacements each closing a tag at a bracket behind spaces, then quoting.
+         */
+        const replacements = [
+          '<p style="text-align: end;" >"Whiskers," she said.</p>',
+          '<p style="text-align: end;"     >"Whiskers," she said.</p>',
+        ];
+        expect(replacements.map(function restore(replacement,): string {
+          return restoreTypography({
+            replacement,
+            replaced: 'Tabby, she said.',
+            convention: `A neighbour said ${OPEN}hello${CLOSE}.`,
+          },);
+        },),).toEqual([
+          `<p style="text-align: end;" >${OPEN}Whiskers,${CLOSE} she said.</p>`,
+          `<p style="text-align: end;"     >${OPEN}Whiskers,${CLOSE} she said.</p>`,
+        ],);
+      },
+    },),
+
+    it({
       name: 'LEAVES the attributes of a tag straight wherever the MDX compiler opens one (ledger B18): a name '
         + 'outside ASCII, a name opening on an underscore, and a name after a no-break space',
       fn: async () => {
@@ -242,6 +266,18 @@ await describe({
           replaced: block,
           convention: `A neighbour said ${OPEN}hello${CLOSE}.`,
         },),).toBe(block,);
+      },
+    },),
+
+    it({
+      name: 'CURLS A PLURAL POSSESSIVE AFTER AN EMPHASIS SPAN when no word follows it and nothing in the '
+        + 'replacement could be its opening quote',
+      fn: async () => {
+        expect(restoreTypography({
+          replacement: 'The *cats*\' bowl is full.',
+          replaced: 'The bowl is full.',
+          convention: `Every other line here reads didn${APOSTROPHE}t.`,
+        },),).toBe(`The *cats*${APOSTROPHE} bowl is full.`,);
       },
     },),
 
