@@ -182,11 +182,17 @@ export component AppWindow inherits Window {
     out property <float> viewport-width: (scroll.width - root.gutter-width) / 1px;
     // Height of one code row; where rows are is decided by native code alone.
     private property <length> code-row: 24px;
-    // The gutter: a column for the severity letter, then the line numbers right-aligned 12 px before the text.
-    // The letter column exists on every line, so the text keeps its x when diagnostics arrive or go.
-    private property <length> mark-column: 16px;
-    private property <length> number-column: 56px;
-    private property <length> gutter-width: root.mark-column + root.number-column;
+    // The gutter, from its left edge: 6 px, a cell one letter wide, a 4 px gap, the line-number column, and 12 px
+    // before the text. The number column is as wide as the file's widest line number, at least three digits as in
+    // Helix. Each line's severity letter stands 4 px before that line's own number, whatever its digit count; the
+    // letter's room exists on every line, so text keeps its x when diagnostics arrive or go and moves only when the
+    // line count gains a digit past 999. Widths are whole logical pixels, so the source image stays on the grid.
+    in property <int> line-count: 1;
+    private property <length> mark-gap: 4px;
+    private property <length> number-gap: 12px;
+    private property <length> mark-advance: round(letter-probe.preferred-width / 1px) * 1px;
+    private property <length> number-width: round(number-probe.preferred-width / 1px) * 1px;
+    out property <length> gutter-width: 6px + root.mark-advance + root.mark-gap + root.number-width + root.number-gap;
     private property <length> font-size: 15px;
     // Converting a physical pixel tracks display scale even when logical window size is unchanged.
     private property <length> physical-pixel: 1phx;
@@ -413,38 +419,55 @@ export component AppWindow inherits Window {
                         source: root.source-image;
                     }
 
-                    // One number per materialized line, on that line's code row, never on its virtual rows.
-                    for top[index] in root.line-tops: Text {
-                        x: root.mark-column;
-                        y: top * 1px;
-                        width: root.number-column - 12px;
-                        height: root.code-row;
-                        text: root.first-line + index + 1;
-                        horizontal-alignment: right;
-                        vertical-alignment: center;
-                        color: Palette.foreground;
-                        opacity: 0.6;
+                    // Width probes for the gutter: one bold letter, and the widest line number of at least three digits.
+                    letter-probe := Text {
+                        visible: false;
+                        text: "W";
+                        font-family: "JetBrains Mono";
+                        font-size: root.font-size;
+                        font-weight: 700;
+                    }
+                    number-probe := Text {
+                        visible: false;
+                        text: max(root.line-count, 100);
                         font-family: "JetBrains Mono";
                         font-size: root.font-size;
                     }
 
-                    // The worst severity of the diagnostics starting on a line, as its letter in its ink, in front of
-                    // the line number. A mark of 0 is no diagnostic; a missing entry reads as 0, so nothing shows.
-                    for top[index] in root.line-tops: Text {
-                        visible: root.line-marks[index] > 0;
+                    // One number per materialized line, on that line's code row, never on its virtual rows, right-aligned
+                    // 12 px before the text. Where diagnostics start on the line, the worst severity's letter stands 4 px
+                    // before the number in that severity's ink. A mark of 0 is no diagnostic; a missing entry reads as 0.
+                    for top[index] in root.line-tops: Rectangle {
                         x: 0px;
                         y: top * 1px;
-                        width: root.mark-column;
+                        width: root.gutter-width - root.number-gap;
                         height: root.code-row;
-                        text: AnnotationInk.letter(root.line-marks[index] - 1);
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                        color: AnnotationInk.severity(root.line-marks[index] - 1);
-                        font-family: "JetBrains Mono";
-                        font-size: root.font-size;
-                        font-weight: 700;
-                        // The accessible description already starts with the problems at the caret.
-                        accessible-role: none;
+                        number := Text {
+                            x: parent.width - self.width;
+                            width: self.preferred-width;
+                            height: parent.height;
+                            text: root.first-line + index + 1;
+                            vertical-alignment: center;
+                            color: Palette.foreground;
+                            opacity: 0.6;
+                            font-family: "JetBrains Mono";
+                            font-size: root.font-size;
+                        }
+                        Text {
+                            visible: root.line-marks[index] > 0;
+                            x: number.x - root.mark-gap - self.width;
+                            width: root.mark-advance;
+                            height: parent.height;
+                            text: AnnotationInk.letter(root.line-marks[index] - 1);
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AnnotationInk.severity(root.line-marks[index] - 1);
+                            font-family: "JetBrains Mono";
+                            font-size: root.font-size;
+                            font-weight: 700;
+                            // The accessible description already starts with the problems at the caret.
+                            accessible-role: none;
+                        }
                     }
 
                     Rectangle {

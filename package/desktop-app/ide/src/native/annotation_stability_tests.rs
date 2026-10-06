@@ -39,7 +39,8 @@ use std::{fs, sync::Arc};
 const LINE: usize = 16;
 /// The gutter, severity letters and line numbers, starts this far left of the text.
 const GUTTER: f32 = super::sidebar_tests::GUTTER;
-/// Width of the gutter's severity-letter column, at its left edge.
+/// Part of the gutter at its left edge that holds the severity letter: 6 px and the 9 px letter cell, and 1 px more,
+/// in files of fewer than 1000 lines.
 const LETTERS: f32 = 16.0;
 /// Rows of a code row above its underline band; glyphs without descenders end there.
 const ABOVE_UNDERLINE: usize = 17;
