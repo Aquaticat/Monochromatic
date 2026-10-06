@@ -177,6 +177,54 @@ fn search_box_shows_its_placeholder_and_marks_focus_by_line_and_fill() {
     window.hide().expect("close placeholder window");
 }
 
+/// What: `bounds` is left, right, top, bottom in whole pixels; `background` is the box's own fill; the answer is
+/// a pair of 32-bit floats (sibling `f64`): the darkest and the lightest pixel inside the bounds that is not the
+/// background, on WCAG's lightness scale from 0 for black to 1 for white.
+/// Why: Selected glyphs sit on the selection fill; light ink keeps every such pixel above the fill's 0.4,
+/// while dark ink brings the darkest close to 0.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function inkRange(frame: Frame, bounds: [number, number, number, number], background: Pixel): [number, number];
+/// ```
+pub(super) fn ink_range(
+    frame: &SharedPixelBuffer<Rgba8Pixel>,
+    bounds: [usize; 4],
+    background: Rgba8Pixel,
+) -> (f32, f32) {
+    let mut darkest: f32 = 1.0;
+    let mut lightest: f32 = 0.0;
+    for y in bounds[2]..bounds[3] {
+        for x in bounds[0]..bounds[1] {
+            let found = pixel(frame, x, y);
+            if found == background {
+                continue;
+            }
+            // What: `f32::from(found.r)` widens a byte to a 32-bit float; the weights are WCAG's.
+            // Why: The same lightness scale as the scheme tests.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const value = (0.2126 * found.r + 0.7152 * found.g + 0.0722 * found.b) / 255;
+            // ```
+            let value = (0.2126 * f32::from(found.r)
+                + 0.7152 * f32::from(found.g)
+                + 0.0722 * f32::from(found.b))
+                / 255.0;
+            darkest = darkest.min(value);
+            lightest = lightest.max(value);
+        }
+    }
+    // What: `(darkest, lightest)` is a pair, returned as one value.
+    // Why: Callers check both ends of the range.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return [darkest, lightest];
+    // ```
+    return (darkest, lightest);
+}
+
 /// Selected text has the selection fill behind the ink native code chooses from that fill, the ink of every
 /// other selection: light ink in both schemes, where the toolkit box drew dark ink in the dark scheme.
 #[test]
@@ -207,30 +255,7 @@ fn search_box_selection_uses_the_ink_chosen_from_the_fill_in_both_schemes() {
         );
         // The fill's lightness is about 0.4; light ink pixels lie above it only. Rows above and below the fill
         // show the box's own background, sampled right of the text, and are left out.
-        let background = pixel(&shown, 800, MIDDLE);
-        let mut darkest: f32 = 1.0;
-        let mut lightest: f32 = 0.0;
-        for y in glyphs[2]..glyphs[3] {
-            for x in glyphs[0]..glyphs[1] {
-                let found = pixel(&shown, x, y);
-                if found == background {
-                    continue;
-                }
-                // What: `f32::from(found.r)` widens a byte to a 32-bit float (sibling `f64`); the weights are WCAG's.
-                // Why: The same lightness scale as the scheme tests, from 0 for black to 1 for white.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // const value = (0.2126 * found.r + 0.7152 * found.g + 0.0722 * found.b) / 255;
-                // ```
-                let value = (0.2126 * f32::from(found.r)
-                    + 0.7152 * f32::from(found.g)
-                    + 0.0722 * f32::from(found.b))
-                    / 255.0;
-                darkest = darkest.min(value);
-                lightest = lightest.max(value);
-            }
-        }
+        let (darkest, lightest) = ink_range(&shown, glyphs, pixel(&shown, 800, MIDDLE));
         assert!(
             lightest > 0.7 && darkest > 0.3,
             "{}: selected text is not drawn in light ink: darkest {darkest}, lightest {lightest}",
