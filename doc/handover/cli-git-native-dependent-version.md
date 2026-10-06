@@ -422,6 +422,13 @@ each run exited 1:
   193 generated and 9 probe cases reported
   (evidence `dependent-version-qBOw94`).
 
+The same three plants on commit `c2772ecbb`,
+after the merge of `main`,
+reported exactly the same counts
+(evidence `dependent-version-heMoFx`, `dependent-version-tKmUwV` and `dependent-version-KV5JAu`).
+That needed the planted copy to include the scanner crates the merged crate depends on;
+before `c2772ecbb` the copy failed to build
+(`failed to read .../package/cli/forbidden-strings/Cargo.toml`, evidence `dependent-version-5rHjCA`).
 The first harness found the same three plants
 (evidence `dependent-version-ZZ6zuR`, `dependent-version-ZYkRJh` and `dependent-version-H7Ux9B`).
 
@@ -828,7 +835,7 @@ and planning starts only for a commit that modifies a workspace manifest.
 - `package/git-policy/cli/src/native/lib.rs`:
   module declarations inserted after `pub mod rule_add_explicit;`
   (twelve modules,
-  and four test-only modules after `pub mod dependent_version_policy;`).
+  and five test-only modules after `pub mod dependent_version_policy;`).
 - `package/git-policy/cli/mise.toml`:
   one task block,
   `native:differential:dependent-version`,
@@ -872,6 +879,16 @@ The planner modules and their tests are byte for byte those of the gated commit 
   (`changeset version`, then the direct fix)
   was not run.
 - Only Linux was exercised.
+- `main` moved again after the final gate:
+  at `a2c7b8ec0` it has eight commits under `package/git-policy/` that this branch does not merge
+  (`git log 439672ddf..a2c7b8ec0 -- package/git-policy/`).
+  `git merge-tree` shows conflicts in the same five `cli.fuzz` files as the first merge,
+  where both sides append one entry;
+  none of the eight commits touches a `dependent_version_*` file;
+  and the one `jsonc-edit` change among them
+  (`f313a8933`, release 0.1.1)
+  renames local variables in `parse.rs` and `scan.rs` without changing behavior.
+  The gate, campaigns and fuzz runs here are on `fee63c86e`, which does not include them.
 - Processes started from the agent's shell ended early several times,
   for a cause not identified:
   the mutation runner of `native-mutation-nA947L` and of `native-mutation-EJyi9m`
@@ -909,4 +926,6 @@ On `feat/cli-git-native-dependent-version`, oldest first, first parent only:
 - `90300ff70` the fixture renderers split out for the Rust linter.
 - `fee63c86e` the fuzz dictionary escapes and the odd escaped-quote decoy; the final gated commit.
 - `bba8c3100` `doc/troubleshooting/libfuzzer-dictionary-escapes.md`.
-- `fe9cbc5fe` and later: this document.
+- `fe9cbc5fe`, `ae70c7c8f` this document: final gate, mutation, fuzzing.
+- `c2772ecbb` the planted differential copy includes the scanner crates.
+- Later commits: this document.
