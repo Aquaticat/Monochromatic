@@ -17,12 +17,12 @@ await describe({
   name: nameAuthorities.name,
   children: [
     it({
-      name: 'READS NO page rendering where the page names no section at that position, leaving the '
-        + 'handle to its pinyin reading',
+      name: 'READS NO page rendering where the page carries no signature at that position, leaving '
+        + 'the handle to its pinyin reading',
       fn: async () => {
         /**
-         Authorities of one named slice whose page carries no section for
-         the name at its position.
+         Authorities of one named slice whose page has a section heading but
+         no signature for the name at its position.
          */
         const authorities = nameAuthorities({
           slices: [pair({
@@ -32,7 +32,13 @@ await describe({
           },),],
           pageText: new Map([[1, '### Anon\n\nUnrelated.',],]),
         },);
-        expect(authorities.get('锦猫',)?.rendering,).toBe('Jinmao',);
+        expect([...authorities,],).toEqual([[
+          '锦猫',
+          {
+            rendering: 'Jinmao',
+            origin: 'the pinyin reading of the original\'s handle',
+          },
+        ],],);
       },
     },),
     it({

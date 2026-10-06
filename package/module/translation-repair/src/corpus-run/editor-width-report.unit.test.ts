@@ -456,8 +456,8 @@ await describe({
     },),
 
     it({
-      name: 'RENDERS a row that shipped nothing on either arm as n on both, beside one that shipped on '
-        + 'both',
+      name: 'RENDERS each row\'s narrow arm flag before its wide arm flag, as y/y where both shipped, n/n '
+        + 'where neither did, y/n where only the narrow arm did and n/y where only the wide arm did',
       fn: async () => {
         const written = await reportFor({
           controlHeld: true,
@@ -470,10 +470,24 @@ await describe({
             ...rowOf({ sliceIndex: 1, moved: false, churned: false, },),
             narrowShipped: false,
             wideShipped: false,
+          }, {
+            ...rowOf({ sliceIndex: 2, moved: false, churned: false, },),
+            narrowShipped: true,
+            wideShipped: false,
+          }, {
+            ...rowOf({ sliceIndex: 3, moved: false, churned: false, },),
+            narrowShipped: false,
+            wideShipped: true,
           },],
         },);
-        expect(written.text.includes('shipped y/y',),).toBe(true,);
-        expect(written.text.includes('shipped n/n',),).toBe(true,);
+        /**
+         Where the row of each slice opens, as far as its shipped flags.
+         */
+        const rowStart = `heard ${String(NARROW.length,)}/${String(WIDE.length,)}, shipped `;
+        expect(written.text.includes(`\`whiskers\` slice 0, issues 1, ${rowStart}y/y, `,),).toBe(true,);
+        expect(written.text.includes(`\`whiskers\` slice 1, issues 1, ${rowStart}n/n, `,),).toBe(true,);
+        expect(written.text.includes(`\`whiskers\` slice 2, issues 1, ${rowStart}y/n, `,),).toBe(true,);
+        expect(written.text.includes(`\`whiskers\` slice 3, issues 1, ${rowStart}n/y, `,),).toBe(true,);
       },
     },),
   ],

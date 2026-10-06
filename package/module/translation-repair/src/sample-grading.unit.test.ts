@@ -1,4 +1,5 @@
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -17,6 +18,7 @@ import {
   extractGradingCandidate,
   formatGradingSheet,
   type GradableIssue,
+  type GradableRepair,
   type GradingCandidate,
   MEDIUM_BAND_MAX_BYTES,
   type SizeBand,
@@ -233,8 +235,20 @@ await describe({
             it({
               name: 'refuses a fractional or negative byte count, since neither measures bytes',
               fn: async () => {
-                expect(() => assertSourceBytes(-1,),).toThrow('non-negative safe integer',);
-                expect(() => assertSourceBytes(1.5,),).toThrow('non-negative safe integer',);
+                for (const count of [-1, 1.5,]) {
+                  /**
+                   What the assertion raised, read for its class and its
+                   whole wording.
+                   */
+                  const refusal = caught(function assertCount(): unknown {
+                    return assertSourceBytes(count,);
+                  },);
+                  expect(refusal,).toBeInstanceOf(RangeError,);
+                  expect(String(refusal,),).toBe(
+                    `RangeError: A UTF-8 byte length is a non-negative safe integer; received ${String(count,)}. `
+                    + 'A fractional or negative value means the caller measured something other than bytes.',
+                  );
+                }
               },
             },),
           ],
@@ -289,11 +303,9 @@ await describe({
                 const candidate = extractGradingCandidate({
                   issue: {
                     issueId: 'adjudicated/empty',
-                    status: 'accepted',
                     severity: 'minor',
                     claims: [],
-                    tallies: {},
-                  } as unknown as Parameters<typeof extractGradingCandidate>[0]['issue'],
+                  },
                   entryId: 'Kitten',
                   band: 'small',
                 },);
@@ -308,14 +320,11 @@ await describe({
                 /**
                  Repair context the issue carries.
                  */
-                const repair = {
-                  issueIds: ['adjudicated/paw',],
-                  before: 'Whisker rendered as antenna.',
-                  editorAfter: 'Whisker rendered as whisker.',
+                const repair: GradableRepair = {
                   disposition: 'shipped',
                   regions: [],
                   refined: true,
-                } as unknown as NonNullable<Parameters<typeof extractGradingCandidate>[0]['repair']>;
+                };
                 const carried = extractGradingCandidate({
                   issue: catIssue({
                     issueId: 'adjudicated/paw',
@@ -327,7 +336,7 @@ await describe({
                   entryId: 'Kitten',
                   band: 'small',
                 },);
-                expect(carried,).toHaveProperty('repair',);
+                expect(carried.repair,).toBe(repair,);
                 const withoutRepair = extractGradingCandidate({
                   issue: catIssue({
                     issueId: 'adjudicated/paw',

@@ -64,7 +64,7 @@ await describe({
     },),
     it({
       name: 'SKIPS a variant the source already states even when the translation does not, since the '
-        + 'original supports it (ledger T8, the fidelity cluster)',
+        + 'original supports it',
       fn: async () => {
         expect(unsupportedVariant({
           original: '2009',
@@ -74,8 +74,7 @@ await describe({
       },
     },),
     it({
-      name: 'REPORTS no variant when every same-shape number already appears on one side or the other '
-        + '(ledger T8, the fidelity cluster)',
+      name: 'REPORTS no variant when every same-shape number already appears in the translation',
       fn: async () => {
         expect(unsupportedVariant({
           original: '2009',

@@ -20,23 +20,25 @@ import {
 /**
  One candidate for the draw fixtures.
 
- @param entryId - entry the issue came from
-
- @param band - size band of its source
-
- @param issueId - the issue itself
+ @param fields - entry the issue came from, size band of its source and the issue itself
 
  @returns Candidate shaped like the grading reader builds
 
  @example
  ```ts
- const candidate = candidateOf('Alpha', 'small', 'issue-a',);
+ const candidate = candidateOf({ entryId: 'Alpha', band: 'small', issueId: 'issue-a', },);
  ```
  */
 function candidateOf(
-  entryId: string,
-  band: GradingCandidate['band'],
-  issueId: string,
+  {
+    entryId,
+    band,
+    issueId,
+  }: {
+    readonly entryId: string;
+    readonly band: GradingCandidate['band'];
+    readonly issueId: string;
+  },
 ): GradingCandidate {
   return {
     entryId,
@@ -45,10 +47,10 @@ function candidateOf(
     category: 'accuracy/omission',
     severity: 'minor',
     summary: 'A clause the translation dropped.',
-    sourceAnchor: 'none',
+    sourceAnchor: 'unanchored',
     sourceQuotes: [],
     targetQuotes: [],
-  } as unknown as GradingCandidate;
+  };
 }
 
 await describe({
@@ -162,8 +164,8 @@ await describe({
              */
             const drawn = drawStratifiedSample({
               candidates: [
-                candidateOf('Zeta', 'small', 'issue-a',),
-                candidateOf('Alpha', 'small', 'issue-b',),
+                candidateOf({ entryId: 'Zeta', band: 'small', issueId: 'issue-a', },),
+                candidateOf({ entryId: 'Alpha', band: 'small', issueId: 'issue-b', },),
               ],
               size: 2,
               seed: 'meow',
@@ -173,8 +175,8 @@ await describe({
              */
             const reversed = drawStratifiedSample({
               candidates: [
-                candidateOf('Alpha', 'small', 'issue-b',),
-                candidateOf('Zeta', 'small', 'issue-a',),
+                candidateOf({ entryId: 'Alpha', band: 'small', issueId: 'issue-b', },),
+                candidateOf({ entryId: 'Zeta', band: 'small', issueId: 'issue-a', },),
               ],
               size: 2,
               seed: 'meow',
@@ -193,19 +195,35 @@ await describe({
           fn: async () => {
             /**
              Two candidates of one entry in one band, ranked by their
-             shuffled issue keys.
+             shuffled issue keys. This seed puts issue-b first, against
+             both arrival order and alphabetical order, so a sort by
+             arrival or by id fails it.
              */
             const drawn = drawStratifiedSample({
               candidates: [
-                candidateOf('Alpha', 'small', 'issue-b',),
-                candidateOf('Alpha', 'small', 'issue-a',),
+                candidateOf({ entryId: 'Alpha', band: 'small', issueId: 'issue-b', },),
+                candidateOf({ entryId: 'Alpha', band: 'small', issueId: 'issue-a', },),
               ],
               size: 2,
-              seed: 'seed-two',
+              seed: 'purr',
+            },);
+            /**
+             The same candidates arriving in the other order.
+             */
+            const reversed = drawStratifiedSample({
+              candidates: [
+                candidateOf({ entryId: 'Alpha', band: 'small', issueId: 'issue-a', },),
+                candidateOf({ entryId: 'Alpha', band: 'small', issueId: 'issue-b', },),
+              ],
+              size: 2,
+              seed: 'purr',
             },);
             expect(drawn.map(function issueOf(candidate,) {
               return candidate.issueId;
-            },),).toEqual(['issue-a', 'issue-b'],);
+            },),).toEqual(['issue-b', 'issue-a'],);
+            expect(reversed.map(function issueOf(candidate,) {
+              return candidate.issueId;
+            },),).toEqual(['issue-b', 'issue-a'],);
           },
         },),
       ],

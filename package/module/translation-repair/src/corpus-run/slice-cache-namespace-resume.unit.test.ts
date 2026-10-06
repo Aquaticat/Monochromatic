@@ -24,6 +24,7 @@ import {
   REPAIR_SLICE_NAMESPACE,
   sliceFileName,
 } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Slice cache resume tests
@@ -61,13 +62,50 @@ await describe({
           join(dir.path, sliceFileName({ key: 'k2', namespace: REPAIR_SLICE_NAMESPACE, },),),
           0o000,
         );
-        await expect(loadNamespacedSlices({
-          dir: dir.path,
-          namespace: REPAIR_SLICE_NAMESPACE,
-          isValue: function isText(value: unknown,): value is string {
-            return (typeof value) === 'string';
-          },
-        },),).rejects.toThrow();
+        /**
+         What the load raised, read for the permission fault it carries.
+         */
+        const refusal: unknown = await rejectionOf(async function load(): Promise<unknown> {
+          return await loadNamespacedSlices({
+            dir: dir.path,
+            namespace: REPAIR_SLICE_NAMESPACE,
+            isValue: function isText(value: unknown,): value is string {
+              return (typeof value) === 'string';
+            },
+          },);
+        },);
+        expect(String(refusal,),).toBe(
+          `Error: EACCES: permission denied, open '${
+            join(dir.path, sliceFileName({ key: 'k2', namespace: REPAIR_SLICE_NAMESPACE, },),)
+          }'`,
+        );
+      },
+    },),
+
+    it({
+      name: 'SURFACES a fault that is not a half-written file, here a guard that raises on a file that '
+        + 'reads, rather than recomputing it',
+      fn: async () => {
+        await using dir = await scratchDir({ prefix: 'slice-cache-namespace-', },);
+        await writeFile(
+          join(dir.path, sliceFileName({ key: 'k1', namespace: REPAIR_SLICE_NAMESPACE, },),),
+          '5',
+          'utf8',
+        );
+        /**
+         What the load raised, read for its class and its whole wording.
+         */
+        const refusal: unknown = await rejectionOf(async function load(): Promise<unknown> {
+          return await loadNamespacedSlices({
+            dir: dir.path,
+            namespace: REPAIR_SLICE_NAMESPACE,
+            isValue: function isTornGuard(value: unknown,): value is string {
+              throw new RangeError(`the cat knocked the guard over while it was handed ${typeof value}`,);
+            },
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(RangeError,);
+        expect(String(refusal,),).toBe('RangeError: the cat knocked the guard over while it was handed undefined',);
       },
     },),
   ],

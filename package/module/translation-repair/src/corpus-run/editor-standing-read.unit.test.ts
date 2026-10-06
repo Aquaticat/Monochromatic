@@ -281,8 +281,9 @@ await describe({
     },),
 
     it({
-      name: 'COUNTS an artifact whose chunks the schema predates as earlier-schema, and one naming a '
-        + 'model the roster dropped as off-roster',
+      name: 'COUNTS an artifact whose chunks the schema predates as earlier-schema, one naming a '
+        + 'model the roster dropped as off-roster, and one naming a seated model as read, rendering its '
+        + 'standing',
       fn: async () => {
         // The settled artifact the schema walk of 2026-10-04 mapped, with the
         // rounds the repair lane records under its result.
@@ -455,7 +456,18 @@ await describe({
             },
           },
         },);
-        expect(seated.stdout.includes('read=1',),).toBe(true,);
+        expect(seated.stderr,).toBe('',);
+        expect(seated.stdout,).toBe(
+          'editor-standing-read: archives=1 artifacts=1 read=1 earlierRoster=0 earlierSchema=0 digestsWithRounds=1\n'
+          + '  OBSERVATIONAL. Only models that held a seat ever wrote a candidate, so an absent model is '
+          + 'unmeasured rather than last. Rounds inside one entry are correlated, so read the entry count, '
+          + 'not the round count. Digests are never pooled.\n'
+          + '\n'
+          + `sha256-tree-v1:${'0'.repeat(64,)} over 1 entry\n`
+          + '  EDITOR : 1 judged round from 1 of 1 chunk\n'
+          + `      ${SEAT_SYNTHETIC_VISION_WITHHELD}: UNJUDGED (0 of 0 disinterested ballots, over 1 candidate)\n`
+          + '  REFINER: 0 judged rounds from 0 of 1 chunk\n',
+        );
       },
     },),
 
@@ -476,7 +488,15 @@ await describe({
           [STANDING_ENTRY,],
           { encoding: 'utf8', },
         );
-        expect(finished.stdout.includes('artifacts=',),).toBe(true,);
+        // The summary names one artifact and the refusal names the fixture's own file, which a
+        // read of the default runs directory could not.
+        expect(finished.stdout.split('\n',).at(0,),).toBe(
+          'editor-standing-read: archives=0 artifacts=1 read=0 earlierRoster=0 earlierSchema=0 digestsWithRounds=0',
+        );
+        expect(finished.stderr,).toBe(
+          `editor-standing-read: ${join(fixture.archive, 'artifacts', 'Mittens.json',)} refused, `
+          + 'artifact parse failed at artifact.artifactSchemaVersion: expected a number.\n',
+        );
       },
     },),
   ],

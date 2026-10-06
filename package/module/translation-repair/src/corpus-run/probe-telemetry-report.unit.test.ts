@@ -107,6 +107,44 @@ function reportedLines(
  */
 const ZERO_NOTE = 'NOTE repairShippedRecords=0';
 
+/**
+ Text identifying the degraded-roster note.
+ */
+const DEGRADED_NOTE = 'NOTE editorDegraded';
+
+/**
+ Text identifying the silent-refiner note.
+ */
+const SILENT_NOTE = 'NOTE refineSilent';
+
+/**
+ Whether any printed line opens with a note.
+
+ @param lines - every line a report printed
+
+ @param note - text the note's line opens with
+
+ @returns True where a line opens with the note
+
+ @example
+ ```ts
+ const printed = opensWithNote({ lines, note: DEGRADED_NOTE, },);
+ ```
+ */
+function opensWithNote(
+  {
+    lines,
+    note,
+  }: {
+    readonly lines: readonly string[];
+    readonly note: string;
+  },
+): boolean {
+  return lines.some(function opensWith(line,): boolean {
+    return line.startsWith(note,);
+  },);
+}
+
 await describe({
   name: reportProbeTelemetry.name,
   // ONE AT A TIME: cases divert the process-wide `console.log` (ledger B79).
@@ -187,7 +225,7 @@ await describe({
 
     it({
       name: 'NOTES THE DEGRADED EDITOR ROSTER, since chunks repaired with fewer editors than the roster '
-        + 'configures lose the property the ensemble exists for',
+        + 'configures lose the property the ensemble exists for, and stays silent where none degraded',
       fn: async (ctx,) => {
         const lines = reportedLines({
           gathered: {
@@ -196,12 +234,21 @@ await describe({
           },
           sinon: ctx.sinon,
         },);
-        expect(lines.join('\n',),).toContain('NOTE editorDegraded',);
+        expect(opensWithNote({ lines, note: DEGRADED_NOTE, },),).toBe(true,);
+        /**
+         The same report over a roster where no chunk degraded.
+         */
+        const quiet = reportedLines({
+          gathered: gatheredWith({ repairShippedRecords: 1, editorOffered: 1, },),
+          sinon: ctx.sinon,
+        },);
+        expect(opensWithNote({ lines: quiet, note: DEGRADED_NOTE, },),).toBe(false,);
       },
     },),
 
     it({
-      name: 'NOTES THE SILENT REFINER, since a naturalness lane no refiner answered could not run',
+      name: 'NOTES THE SILENT REFINER, since a naturalness lane no refiner answered could not run, and stays '
+        + 'silent where every slice had a refiner answer',
       fn: async (ctx,) => {
         const lines = reportedLines({
           gathered: {
@@ -210,7 +257,15 @@ await describe({
           },
           sinon: ctx.sinon,
         },);
-        expect(lines.join('\n',),).toContain('NOTE refineSilent',);
+        expect(opensWithNote({ lines, note: SILENT_NOTE, },),).toBe(true,);
+        /**
+         The same report over a roster where no slice lacked a refiner.
+         */
+        const quiet = reportedLines({
+          gathered: gatheredWith({ repairShippedRecords: 1, editorOffered: 1, },),
+          sinon: ctx.sinon,
+        },);
+        expect(opensWithNote({ lines: quiet, note: SILENT_NOTE, },),).toBe(false,);
       },
     },),
   ],
