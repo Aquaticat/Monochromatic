@@ -2,6 +2,8 @@
 
 /// Starting and attaching servers is its own step.
 use super::attach;
+/// The fixed fallback delay of the unversioned-diagnostics hold.
+use super::diagnostics::HOLD_FALLBACK;
 /// A reload renews what each server may be asked again for.
 use super::owed::Owed;
 /// Requests that follow every open and change.
@@ -26,8 +28,6 @@ use super::worker::{Internal, Worker};
 use helix_core::diff::compare_ropes;
 /// helix-lsp's client handle and the protocol's data types.
 use helix_lsp::{Client, lsp};
-/// The fixed fallback delay of the unversioned-diagnostics hold.
-use super::diagnostics::HOLD_FALLBACK;
 
 /// What: Build the address a document is announced under. `Option<lsp::Url>` is "an address,
 ///       or nothing" for a path that cannot be expressed as a `file` address.

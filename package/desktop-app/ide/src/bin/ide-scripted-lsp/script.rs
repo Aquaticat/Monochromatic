@@ -74,6 +74,79 @@ pub enum Hover {
     Silent,
 }
 
+/// What: What the server does with one inlay-hint or pull-diagnostics request, chosen by the
+///       request's number among the requests of its kind. `Copy` lets a value be passed like a number.
+/// Why: A test names exactly which request is left unanswered, held back, or superseded, so the
+///      client's reaction is the same however busy the machine is.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Step = 'answer' | 'silent' | 'hold' | 'modified' | 'modifiedThenNotify';
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Step {
+    /// Answer at once.
+    Answer,
+    /// Never answer.
+    Silent,
+    /// Keep the answer and write it right after the next answer of the same kind.
+    Hold,
+    /// Answer with error `-32801` (content modified).
+    Modified,
+    /// Answer with error `-32801`, then send a `window/logMessage` notification.
+    ModifiedThenNotify,
+}
+
+/// What: The steps of one variable: words separated by commas, one per request in order.
+///       `Vec<Step>` is a growable list (siblings: fixed `[Step; N]`, borrowed `&[Step]`).
+/// Why: Requests past the end of the list, and unknown words, are answered at once.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const steps = (name: string) => read(name, '').split(',').filter(Boolean).map(toStep);
+/// ```
+fn steps(name: &str) -> Vec<Step> {
+    // `Vec::new()` creates an empty list; `mut` allows pushing to it.
+    let mut found: Vec<Step> = Vec::new();
+    for word in read(name, "").split(',') {
+        let step = match word.trim() {
+            "" => continue,
+            "silent" => Step::Silent,
+            "hold" => Step::Hold,
+            "modified" => Step::Modified,
+            "modified-notify" => Step::ModifiedThenNotify,
+            _ => Step::Answer,
+        };
+        found.push(step);
+    }
+    return found;
+}
+
+/// What: The step for request number `seen`, counted from one. `&[Step]` lends the list.
+/// Why: Each kind of request keeps its own count, so a test scripts them independently.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const stepFor = (steps: Step[], seen: number) => steps[seen - 1] ?? 'answer';
+/// ```
+pub fn step_for(steps: &[Step], seen: u64) -> Step {
+    // What: `usize::try_from` converts the count to an index and returns `Result`; `get` returns
+    //       `Option<&Step>`; `copied` turns the borrow into a value; `unwrap_or` substitutes "answer".
+    // Why: Request zero does not exist, so a count of zero means "answer" too.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return steps[seen - 1] ?? 'answer';
+    // ```
+    let Some(index) = seen
+        .checked_sub(1)
+        .and_then(|before| return usize::try_from(before).ok())
+    else {
+        return Step::Answer;
+    };
+    return steps.get(index).copied().unwrap_or(Step::Answer);
+}
+
 /// What: One record of every setting. `Option<...>` fields are "a value, or nothing";
 ///       `u64` is an unsigned 64-bit integer (siblings: `u32`, `usize`).
 /// Why: Reading the environment once keeps the handlers free of string lookups.
@@ -105,14 +178,10 @@ pub struct Script {
     pub push_after_hover: bool,
     /// Milliseconds to wait before answering `initialize`.
     pub init_delay: u64,
-    /// Hold back the answer to the first inlay-hint request until the second one is answered.
-    pub hint_hold_first: bool,
-    /// Milliseconds the read loop sleeps before it handles the first message of `stall_at`;
-    /// everything the client sends meanwhile waits unread, as behind a server that stopped
-    /// responding for a while.
-    pub stall: u64,
-    /// Method whose first message starts the stall; empty text means no stall.
-    pub stall_at: String,
+    /// What each inlay-hint request gets, in order (`IDE_SCRIPTED_HINT_STEPS`).
+    pub hint_steps: Vec<Step>,
+    /// What each pull-diagnostics request gets, in order (`IDE_SCRIPTED_PULL_STEPS`).
+    pub pull_steps: Vec<Step>,
     /// Announce and answer pull diagnostics.
     pub pull_diagnostics: bool,
     /// Announce interest in save notifications.
@@ -236,9 +305,8 @@ impl Script {
             push_diagnostics: read("PUSH", "1") == "1",
             push_after_hover: read("PUSH_AFTER_HOVER", "0") == "1",
             init_delay: read("INIT_DELAY_MS", "0").parse().unwrap_or(0),
-            hint_hold_first: read("HINT_HOLD_FIRST", "0") == "1",
-            stall: read("STALL_MS", "0").parse().unwrap_or(0),
-            stall_at: read("STALL_AT", ""),
+            hint_steps: steps("HINT_STEPS"),
+            pull_steps: steps("PULL_STEPS"),
             pull_diagnostics: read("PULL", "0") == "1",
             save: read("SAVE", "0") == "1",
             probe: read("PROBE", "0") == "1",

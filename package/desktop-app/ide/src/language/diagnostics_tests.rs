@@ -406,10 +406,7 @@ fn set_pushed_during_the_hold_is_shown_when_the_server_answers() {
     let mut store = DiagnosticStore::new();
     store.open(FIRST, 0);
     store.reload(SECOND, 1, &[server("a")]);
-    assert_eq!(
-        push_unversioned(&mut store, "only push"),
-        PushVerdict::Held
-    );
+    assert_eq!(push_unversioned(&mut store, "only push"), PushVerdict::Held);
     assert!(
         messages(&store, &text).is_empty(),
         "a set pushed during the hold was shown before the hold ended"

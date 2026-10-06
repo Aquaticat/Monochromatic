@@ -1,7 +1,10 @@
-//! The inlay-hint answer, and holding back the first answer so a later request is answered first.
+//! The inlay-hint answer, and the scripted steps that leave one unanswered, hold it back, or
+//! supersede it.
 
 /// Framing and the report.
 use crate::framing::Wire;
+/// What a test scripted for this request.
+use crate::script::Step;
 /// What: `Value` is any JSON value; `json!` builds one from literal syntax.
 /// Why: The answer is one JSON object.
 ///
@@ -41,31 +44,48 @@ fn send(wire: &Wire, message: Value) {
     }
 }
 
-/// What: Answer one hint request. `seen` counts the hint requests of this process, this one
-///       included; with `hold_first`, the first answer is kept in `held` and written right after
-///       the second answer. `&mut Option<Value>` lends the slot for changing; `u64` is an
-///       unsigned 64-bit count (siblings: `u32`, `usize`).
-/// Why: The client then receives the answer to its earlier request after the answer to its
-///      later one, on the same stream, in that order however busy the machine is, which is the
-///      order a server that answers out of order produces.
+/// What: Answer one hint request as the test scripted it. `step` is what this request gets;
+///       `held` is the slot of an answer held back by an earlier request.
+///       `&mut Option<Value>` lends the slot for changing.
+/// Why: A held answer is written right after the next answer, so the client receives the answer
+///      to its earlier request after the answer to its later one, in that order however busy the
+///      machine is. A superseded answer makes the client send the request again; the
+///      notification after one gives the client a message that is not an answer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function respond(wire: Wire, id: unknown, seen: number, holdFirst: boolean, held: { value?: object }): void {
-///   if (holdFirst && seen === 1) { held.value = answer(id); return; }
-///   wire.send(answer(id));
+/// function respond(wire: Wire, id: unknown, step: Step, held: { value?: object }): void {
+///   if (step === 'silent') return;
+///   if (step === 'hold') { held.value = answer(id); return; }
+///   wire.send(step === 'answer' ? answer(id) : contentModified(id));
+///   if (step === 'modifiedThenNotify') wire.send(logMessage());
 ///   if (held.value) { wire.send(held.value); held.value = undefined; }
 /// }
 /// ```
-pub fn respond(wire: &Wire, id: &Value, seen: u64, hold_first: bool, held: &mut Option<Value>) {
-    if hold_first && seen == 1 {
-        // `Some(...)` is the "value present" variant of `Option`: the answer waits in the slot.
-        *held = Some(answer(id));
-        return;
+pub fn respond(wire: &Wire, id: &Value, step: Step, held: &mut Option<Value>) {
+    match step {
+        Step::Silent => return,
+        Step::Hold => {
+            // `Some(...)` is the "value present" variant of `Option`: the answer waits in the slot.
+            *held = Some(answer(id));
+            return;
+        }
+        Step::Answer => send(wire, answer(id)),
+        Step::Modified | Step::ModifiedThenNotify => {
+            send(
+                wire,
+                json!({ "id": id, "error": { "code": -32801, "message": "content modified" } }),
+            );
+            if step == Step::ModifiedThenNotify {
+                send(
+                    wire,
+                    json!({ "method": "window/logMessage", "params": { "type": 4, "message": "scripted notification after a superseded hint answer" } }),
+                );
+            }
+        }
     }
-    send(wire, answer(id));
     // What: `take()` moves the held answer out of the slot and leaves "nothing" behind.
-    // Why: The held answer is written exactly once, after the later answer.
+    // Why: A held answer is written exactly once, after the next answer.
     //
     // In TS you'd write (pseudocode):
     // ```ts

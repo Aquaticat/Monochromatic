@@ -1,7 +1,7 @@
 //! External-reload synchronization: the server's copy of the text must equal the document text
 //! for every negotiated synchronization kind and column unit.
 
-use crate::support::{self, Probe, SERVER};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe, SERVER};
 use ide_app::language::{
     reply::{RequestKind, RequestOutcome},
     status::ServerState,
@@ -64,8 +64,11 @@ fn incremental_reload_reaches_the_server_in_each_column_unit() {
     };
     for encoding in ["utf-8", "utf-16", "utf-32", ""] {
         std::fs::remove_file(support::report_path(&root)).unwrap_or_default();
-        let definitions =
-            support::scripted(&root, &[("SYNC", "incremental"), ("ENCODING", encoding)], 3);
+        let definitions = support::scripted(
+            &root,
+            &[("SYNC", "incremental"), ("ENCODING", encoding)],
+            PRODUCT_TIMEOUT,
+        );
         let mut probe = Probe::new(&root, definitions);
         let lines = follow_reloads(&root, &mut probe, "incremental.scripted");
         let changes = of_method(&lines, "textDocument/didChange");
@@ -96,7 +99,10 @@ fn full_reload_sends_the_whole_text() {
         support::run_child("sync::full_reload_sends_the_whole_text", support::standard);
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("SYNC", "full")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("SYNC", "full")], PRODUCT_TIMEOUT),
+    );
     let lines = follow_reloads(&root, &mut probe, "full.scripted");
     let changes = of_method(&lines, "textDocument/didChange");
     assert_eq!(changes.len(), 5);
@@ -116,7 +122,10 @@ fn server_without_change_notifications_is_reopened() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("SYNC", "none")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("SYNC", "none")], PRODUCT_TIMEOUT),
+    );
     let lines = follow_reloads(&root, &mut probe, "none.scripted");
     assert!(
         of_method(&lines, "textDocument/didChange").is_empty(),
@@ -145,7 +154,10 @@ fn server_without_synchronization_becomes_unsynchronized() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("SYNC", "absent")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("SYNC", "absent")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("absent.scripted"), CAT_BEFORE);
     probe.until_ready();
     support::server_text_until(&root, CAT_BEFORE);
@@ -190,7 +202,10 @@ fn did_save_follows_a_reload_when_the_server_asks_for_it() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("SAVE", "1")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("SAVE", "1")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("saved.scripted"), CAT_BEFORE);
     probe.until_ready();
     probe.reload(CAT_AFTER);
@@ -220,7 +235,7 @@ fn reload_during_start_is_delivered_by_the_eventual_did_open() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("INIT_DELAY_MS", "600")], 3);
+    let definitions = support::scripted(&root, &[("INIT_DELAY_MS", "600")], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("slow.scripted"), CAT_BEFORE);
     probe.until("the starting state", |seen| {
@@ -246,7 +261,7 @@ fn missed_reload_is_recomputed_from_the_synchronized_text() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("missed.scripted"), CAT_BEFORE);
     probe.until_ready();
     support::server_text_until(&root, CAT_BEFORE);

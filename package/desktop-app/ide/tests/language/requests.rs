@@ -1,7 +1,7 @@
 //! The five feature paths against the scripted server: targets, hover, hints, diagnostics, and
 //! the request states (unsupported, failed, superseded, empty, timeout, stale).
 
-use crate::support::{self, Probe, SERVER};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe, SERVER};
 use ide_app::language::{
     diagnostics::{Freshness, HOLD_FALLBACK},
     hints::{HintKind, HintWindow},
@@ -9,11 +9,6 @@ use ide_app::language::{
     target::TargetRefusal,
 };
 use std::time::{Duration, Instant};
-
-/// Request timeout of the scripted server, in seconds, in tests whose assertions do not depend on
-/// it: Helix's default, which the product uses for every server without its own value
-/// (`helix-core/src/syntax/config.rs` `default_timeout`, and `Languages::timeout`).
-const PRODUCT_TIMEOUT: u64 = 20;
 
 /// Line 0 has an accented letter and an astral character before offset 14; line 2 starts with both.
 const SOURCE: &str = "caf\u{e9} \u{1F600} hello world\n\n\u{e9}\u{1F600}cdef tail\n";
@@ -34,7 +29,7 @@ fn definition_targets_are_validated_and_converted() {
     let definitions = support::scripted(
         &root,
         &[("ENCODING", "utf-8"), ("OUTSIDE", outside_text.as_str())],
-        3,
+        PRODUCT_TIMEOUT,
     );
     let mut probe = Probe::new(&root, definitions);
     let file = root.join("main.scripted");
@@ -98,7 +93,7 @@ fn failed_request_carries_the_servers_error_code() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
     let number = probe.request(RequestKind::References, 3);
@@ -134,7 +129,7 @@ fn hover_position_and_range_use_the_negotiated_column_unit() {
         std::fs::remove_file(support::report_path(&root)).unwrap_or_default();
         let mut probe = Probe::new(
             &root,
-            support::scripted(&root, &[("ENCODING", encoding)], 3),
+            support::scripted(&root, &[("ENCODING", encoding)], PRODUCT_TIMEOUT),
         );
         probe.open(&root.join("main.scripted"), SOURCE);
         probe.until_ready();
@@ -169,7 +164,7 @@ fn hover_on_a_blank_line_is_an_empty_result() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
     let blank = SOURCE
@@ -194,7 +189,7 @@ fn missing_capabilities_are_reported_per_request() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("FEATURES", "minimal")], 3);
+    let definitions = support::scripted(&root, &[("FEATURES", "minimal")], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
@@ -247,7 +242,10 @@ fn superseded_request_is_retried_then_reported_as_superseded() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("HOVER", "modified")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("HOVER", "modified")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
     let number = probe.request(RequestKind::Hover, 3);
@@ -265,7 +263,7 @@ fn superseded_request_is_retried_then_reported_as_superseded() {
     assert_eq!(hovers, 4, "one request and three bounded retries");
     drop(probe);
     std::fs::remove_file(support::report_path(&root)).expect("previous report");
-    let once = support::scripted(&root, &[("HOVER", "modified-once")], 3);
+    let once = support::scripted(&root, &[("HOVER", "modified-once")], PRODUCT_TIMEOUT);
     let mut recovering = Probe::new(&root, once);
     recovering.open(&root.join("main.scripted"), SOURCE);
     recovering.until_ready();
@@ -293,6 +291,30 @@ fn unanswered_request_times_out() {
     );
 }
 
+/// A request keeps the request timeout although the server may take three request timeouts to
+/// start: an answer that comes after the request timeout is a timeout.
+#[test]
+fn request_keeps_the_request_timeout_while_the_start_allowance_is_longer() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "requests::request_keeps_the_request_timeout_while_the_start_allowance_is_longer",
+            support::standard,
+        );
+        return;
+    };
+    // A request timeout of 2 s gives a start allowance of 6 s; the hover answer comes after 5 s.
+    let definitions = support::scripted(&root, &[("HOVER_DELAY_MS", "5000")], 2);
+    let mut probe = Probe::new(&root, definitions);
+    probe.open(&root.join("main.scripted"), SOURCE);
+    probe.until_ready();
+    let number = probe.request(RequestKind::Hover, 3);
+    assert_eq!(
+        probe.answers(number)[0].outcome,
+        RequestOutcome::Failed(RequestFailure::Timeout),
+        "a request waited longer than its request timeout"
+    );
+}
+
 /// A reply overtaken by a reload or a file switch is dropped when it is read.
 #[test]
 fn reply_overtaken_by_a_reload_or_file_switch_is_dropped() {
@@ -303,7 +325,7 @@ fn reply_overtaken_by_a_reload_or_file_switch_is_dropped() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("HOVER_DELAY_MS", "400")], 3);
+    let definitions = support::scripted(&root, &[("HOVER_DELAY_MS", "400")], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
@@ -365,7 +387,7 @@ fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
     let definitions = support::scripted(
         &root,
         &[("HOVER", "modified"), ("HOVER_DELAY_MS", "400")],
-        3,
+        PRODUCT_TIMEOUT,
     );
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), SOURCE);
@@ -397,9 +419,6 @@ fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
     );
 }
 
-/// Request timeout of the scripted server in the hint test, in seconds.
-const HINT_TIMEOUT_SECONDS: u64 = 3;
-
 /// Hints are shaped for drawing, tagged with their text, and asked for again after a reload.
 #[test]
 fn inlay_hints_are_shaped_and_follow_reloads() {
@@ -410,7 +429,7 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], HINT_TIMEOUT_SECONDS));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), "plain text line\nsecond\n");
     probe.until_ready();
     let window = HintWindow {
@@ -449,7 +468,7 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
     // Exactly one request per displayed text. Only a request the server left unanswered for its
     // whole timeout is sent again, so each further request needs one more elapsed timeout; on a
     // machine that did not stall for that long the count is exactly two.
-    let timeouts = usize::try_from(asked.elapsed().as_secs() / HINT_TIMEOUT_SECONDS);
+    let timeouts = usize::try_from(asked.elapsed().as_secs() / PRODUCT_TIMEOUT);
     let allowed = 2 + timeouts.expect("small count");
     let requests = support::received(&support::report(&root))
         .iter()
@@ -471,7 +490,10 @@ fn versioned_diagnostics_follow_the_displayed_version() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("DIAG_VERSION", "1")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("DIAG_VERSION", "1")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("main.scripted"), "first\n");
     probe.until("diagnostics for the first text", |seen| {
         return seen.messages() == ["TEXT:first\n"];
@@ -604,7 +626,7 @@ fn pulled_diagnostics_follow_open_and_reload() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("PULL", "1"), ("PUSH", "0")], 3);
+    let definitions = support::scripted(&root, &[("PULL", "1"), ("PUSH", "0")], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), "first\n");
     probe.until_ready();

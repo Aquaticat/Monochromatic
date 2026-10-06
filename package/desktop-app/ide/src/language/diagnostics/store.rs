@@ -243,7 +243,9 @@ impl DiagnosticStore {
         return ended;
     }
 
-    /// True while the server's unversioned pushes are being kept back.
+    /// True while the server's unversioned pushes are being kept back. Only tests ask; `push`
+    /// finds the hold itself, because it also changes it.
+    #[cfg(test)]
     pub(crate) fn is_held(&self, server: &ServerIdentity) -> bool {
         // `iter().any(...)` is `Array.prototype.some`; `&self.holds` is only read.
         return self.holds.iter().any(|hold| return &hold.server == server);

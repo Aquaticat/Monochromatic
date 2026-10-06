@@ -5,7 +5,7 @@
 //! same bridge that turns helix-lsp's `log` records into application records. helix-lsp logs
 //! every line a server writes to standard error, so the capture holds that stream too.
 
-use crate::support::{self, Probe};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe};
 use ide_app::language::{
     HELIX_LOG_DIRECTIVE,
     reply::{RequestKind, RequestOutcome},
@@ -58,7 +58,7 @@ fn errors_of_a_clean_lifetime(root: &Path) -> Vec<String> {
         .with_ansi(false)
         .with_writer(capture.clone())
         .init();
-    let mut probe = Probe::new(root, support::scripted(root, &[], 3));
+    let mut probe = Probe::new(root, support::scripted(root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
     assert_eq!(support::children().len(), 1);

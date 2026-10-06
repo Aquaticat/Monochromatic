@@ -26,10 +26,11 @@ use super::worker::Worker;
 /// import { type Rope, LanguageServerFeature } from 'helix-core';
 /// ```
 use helix_core::{Rope, syntax::config::LanguageServerFeature};
-/// The column unit of one server and the protocol's data types.
-use helix_lsp::{OffsetEncoding, lsp};
+/// The column unit of one server, the protocol's data types, and its wire-level types.
+use helix_lsp::{OffsetEncoding, jsonrpc, lsp};
 /// What: `Future` is Rust's promise; `Pin<Box<dyn Future>>` is an owned, heap-stored promise
-///       whose concrete type is erased; `PathBuf` is an owned filesystem path.
+///       whose concrete type is erased; `PathBuf` is an owned filesystem path; `Duration` is a
+///       time span.
 /// Why: Each helix-lsp request method returns a differently typed future; erasing the type lets
 ///      one place await all five.
 ///
@@ -37,7 +38,7 @@ use helix_lsp::{OffsetEncoding, lsp};
 /// ```ts
 /// type PayloadFuture = Promise<Payload>;
 /// ```
-use std::{future::Future, path::PathBuf, pin::Pin};
+use std::{future::Future, path::PathBuf, pin::Pin, time::Duration};
 
 /// Classifying failures, retrying, and storing or replying.
 mod answer;
@@ -171,6 +172,33 @@ where
     return Box::pin(future);
 }
 
+/// What: Await one helix-lsp request for at most `seconds`; a request still unanswered then
+///       fails as timed out. `T` is one type parameter: whatever the request yields.
+///       `tokio::time::timeout` returns `Err` when the time passed first; `jsonrpc::Id::Null`
+///       stands for the request number, which helix-lsp does not hand out.
+/// Why: helix-lsp is given the server's start allowance, a multiple of the request timeout, so
+///      that a slow `initialize` is still accepted; every other request keeps the configured
+///      request timeout through this bound, and fails exactly as a helix-lsp timeout does.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function bounded<T>(seconds: number, request: Promise<T>): Promise<T> {
+///   return Promise.race([request, sleep(seconds * 1000).then(() => { throw new TimeoutError(); })]);
+/// }
+/// ```
+async fn bounded<T>(
+    seconds: u64,
+    request: impl Future<Output = helix_lsp::Result<T>>,
+) -> helix_lsp::Result<T> {
+    return match tokio::time::timeout(Duration::from_secs(seconds), request).await {
+        Ok(result) => result,
+        Err(elapsed) => {
+            tracing::debug!(%elapsed, seconds, "a language server request timed out");
+            Err(helix_lsp::Error::Timeout(jsonrpc::Id::Null))
+        }
+    };
+}
+
 /// What happened when a request was to be sent to one server.
 enum Sent {
     /// The request is on its way; the worker loop awaits its answer.
@@ -232,6 +260,8 @@ fn dispatch(
         return Sent::Starting;
     }
     let encoding = client.offset_encoding();
+    // helix-lsp only applies the longer start allowance; the request timeout is applied here.
+    let seconds = worker.languages.timeout(name);
     let identifier = lsp::TextDocumentIdentifier::new(document.url.clone());
     // What: Each arm asks helix-lsp for its typed future. The methods return `None` when the
     //       server did not announce the capability; `erase(async move { ... })` wraps the typed
@@ -249,27 +279,23 @@ fn dispatch(
             };
             match kind {
                 RequestKind::Definition => match client.goto_definition(identifier, at, None) {
-                    Some(request) => {
-                        Some(erase(
-                            async move { return Payload::Definition(request.await) },
-                        ))
-                    }
+                    Some(request) => Some(erase(async move {
+                        return Payload::Definition(bounded(seconds, request).await);
+                    })),
                     None => None,
                 },
                 RequestKind::References => {
                     match client.goto_reference(identifier, at, true, None) {
-                        Some(request) => {
-                            Some(erase(
-                                async move { return Payload::References(request.await) },
-                            ))
-                        }
+                        Some(request) => Some(erase(async move {
+                            return Payload::References(bounded(seconds, request).await);
+                        })),
                         None => None,
                     }
                 }
                 RequestKind::Hover => match client.text_document_hover(identifier, at, None) {
-                    Some(request) => {
-                        Some(erase(async move { return Payload::Hover(request.await) }))
-                    }
+                    Some(request) => Some(erase(async move {
+                        return Payload::Hover(bounded(seconds, request).await);
+                    })),
                     None => None,
                 },
             }
@@ -285,7 +311,9 @@ fn dispatch(
                 return Sent::Skipped;
             };
             match client.text_document_range_inlay_hints(identifier, range, None) {
-                Some(request) => Some(erase(async move { return Payload::Hints(request.await) })),
+                Some(request) => Some(erase(async move {
+                    return Payload::Hints(bounded(seconds, request).await);
+                })),
                 None => None,
             }
         }
@@ -295,7 +323,9 @@ fn dispatch(
                 .diagnostics
                 .previous_result_id(&record.identity);
             match client.text_document_diagnostic(identifier, previous) {
-                Some(request) => Some(erase(async move { return Payload::Pull(request.await) })),
+                Some(request) => Some(erase(async move {
+                    return Payload::Pull(bounded(seconds, request).await);
+                })),
                 None => None,
             }
         }

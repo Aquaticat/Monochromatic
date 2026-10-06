@@ -32,11 +32,7 @@ fn late_answer_for_an_earlier_window_does_not_replace_the_current_hints() {
         );
         return;
     };
-    let definitions = support::scripted(
-        &root,
-        &[("HINT_HOLD_FIRST", "1")],
-        TIMEOUT,
-    );
+    let definitions = support::scripted(&root, &[("HINT_STEPS", "hold")], TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     let mut text = String::new();
     for line in 0..120 {

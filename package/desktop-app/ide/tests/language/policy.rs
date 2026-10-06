@@ -1,6 +1,6 @@
 //! Server-to-client requests: every one is answered by policy, and every edit is refused.
 
-use crate::support::{self, Probe};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe};
 use ide_app::language::reply::{RequestKind, RequestOutcome};
 use serde_json::{Value, json};
 
@@ -25,7 +25,7 @@ fn server_requests_get_policy_replies_and_edits_change_nothing() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("PROBE", "1"), ("PULL", "1")], 3);
+    let definitions = support::scripted(&root, &[("PROBE", "1"), ("PULL", "1")], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     let file = root.join("guarded.scripted");
     let original = "original bytes \u{e9}\nsecond line\n";
