@@ -69,9 +69,6 @@ pub const MARKDOWN_AUTOFIX_NEEDS: &str = "the native Markdown linter";
 /// What the dependent-version policy needs that is not ported.
 pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps";
 
-/// What a correction of `git cli-git fix` needs that is not ported yet.
-pub const DIRECT_FIX_NEEDS: &str = "applying policy corrections to the worktree";
-
 /// What: The shipped policies over one invocation. `<F: RepositoryFacts>` says the record
 ///       works with any one type `F` that provides the facts interface, chosen where the
 ///       record is built: real Git in the executable, a script in tests.
@@ -336,10 +333,12 @@ impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
             }
             PolicyId::AddExplicit => return check_add_explicit(self.arguments.as_slice()),
             PolicyId::FinalNewline => {
-                if trigger == Trigger::DirectFix {
-                    return unported_content(&self.candidates, DIRECT_FIX_NEEDS);
-                }
-                return check_final_newline(&mut self.content, &self.candidates, &mut self.facts);
+                return check_final_newline(
+                    &mut self.content,
+                    &self.candidates,
+                    &mut self.facts,
+                    trigger,
+                );
             }
             PolicyId::ForbiddenRootContext => {
                 return check_root_context(&mut self.content, &self.candidates, &mut self.facts);

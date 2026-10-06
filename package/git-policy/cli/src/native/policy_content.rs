@@ -13,10 +13,16 @@
 
 /// Import the layer's failure type and its causes.
 use super::candidate_error::{CandidateError, CandidateFailure};
+/// Import the candidate's mode, which a correction keeps.
+use super::candidate_object::CandidateMode;
 /// Import what a lifecycle asks for and what preparing it yields.
 use super::candidate_prediction::{CandidateRequest, PreparedCandidates};
+/// Import the store the overlay reads through.
+use super::candidate_store::CandidateStore;
 /// Import the candidate and the immutable version type.
 use super::candidate_version::{Candidate, CandidateVersion};
+/// Import the change a converged fix installs, which also records a corrected file.
+use super::direct_fix_install::InstallChange;
 /// Import the outcome a check returns.
 use super::policy_engine::PolicyOutcome;
 /// Import the facts interface that prepares candidates.
@@ -25,10 +31,21 @@ use super::repository_facts::RepositoryFacts;
 use super::scanner_adapter::CandidateScanner;
 /// Import the code of each candidate failure.
 use super::scanner_failure_code::candidate_failure_code;
-/// Import the scan pass and its failure.
-use super::scanner_run::{ScanRunError, scan_version};
+/// Import the scan pass, its byte reader and its failure.
+use super::scanner_run::{CandidateBytes, ScanRunError, scan_version};
 /// The scanner library's per-candidate result.
 use forbidden_strings::CandidateScan;
+/// What: `BTreeMap<K, V>` is a map kept sorted by key (sibling `HashMap` is unordered).
+/// Why:  Corrected files are keyed by pathname bytes, and their sorted order is Git's
+///       byte order, the order a fix summary lists them in.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Map<string, Uint8Array>, iterated in sorted key order.
+/// ```
+use std::collections::BTreeMap;
+/// `Path` is a borrowed filesystem path.
+use std::path::Path;
 /// `Rc<T>` is a shared, read-only handle; versions and bytes are shared, not copied.
 use std::rc::Rc;
 
@@ -64,6 +81,89 @@ pub enum LifecycleContent {
 pub struct ContentState {
     /// The prepared candidates, or the failure of the one attempt to prepare them.
     prepared: Option<Result<PreparedCandidates, CandidateError>>,
+    /// Each corrected file by pathname: its mode, original bytes and corrected bytes.
+    ///  Every other file keeps its object's bytes.
+    corrected: BTreeMap<Vec<u8>, InstallChange>,
+    /// The corrections policies proposed in the current pass, in proposal order.
+    proposals: Vec<Correction>,
+}
+
+/// What: One proposed full-content correction: the file, the bytes it held when the policy
+///       read it, and the bytes it should hold. `#[derive(...)]` generates cloning, debug
+///       printing and `==`.
+/// Why:  A correction replaces a file's whole content, so applying it needs no patch
+///       format; the bytes it replaces are kept so the original of a file is known
+///       without reading it again.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Correction = { path: Uint8Array; mode: CandidateMode; before: Uint8Array; after: Uint8Array };
+/// ```
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Correction {
+    /// The pathname, relative to the repository's top level, as Git's raw bytes.
+    pub path: Vec<u8>,
+    /// The file's mode, which the correction keeps.
+    pub mode: CandidateMode,
+    /// The bytes the file held when the policy read it.
+    pub before: Rc<[u8]>,
+    /// The bytes the file should hold.
+    pub after: Rc<[u8]>,
+}
+
+/// What: The prepared store with the corrections laid over it, as a scan's byte reader.
+///       `'a` names how long both borrows last.
+/// Why:  A later pass of a direct fix scans the corrected bytes, not the objects.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const reader: CandidateBytes = { bytes: (c) => corrected.get(c.path) ?? store.bytes(c) };
+/// ```
+struct OverlaidStore<'a> {
+    /// The store bound to the private index.
+    store: &'a mut CandidateStore,
+    /// The corrected files, by pathname.
+    corrected: &'a BTreeMap<Vec<u8>, InstallChange>,
+}
+
+/// What: `impl CandidateBytes for OverlaidStore<'_>` reads corrected bytes first.
+/// Why:  The one byte rule every reader of a direct fix shares.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class OverlaidStore implements CandidateBytes {}
+/// ```
+impl CandidateBytes for OverlaidStore<'_> {
+    /// What: The corrected bytes of the candidate's file, or its object's bytes.
+    /// Why:  See `overlaid_bytes`.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// bytes(candidate) { return overlaidBytes(this.store, this.corrected, candidate); }
+    /// ```
+    fn candidate_bytes(&mut self, candidate: &Candidate) -> Result<Rc<[u8]>, CandidateError> {
+        return overlaid_bytes(self.store, self.corrected, candidate);
+    }
+}
+
+/// What: The corrected bytes of a candidate's file when a correction gave it some, else
+///       the bytes of its object through the store.
+/// Why:  Every policy of a later pass must read what the earlier passes made of the file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const overlaidBytes = (store, corrected, candidate) => corrected.get(candidate.path) ?? store.bytes(candidate);
+/// ```
+fn overlaid_bytes(
+    store: &mut CandidateStore,
+    corrected: &BTreeMap<Vec<u8>, InstallChange>,
+    candidate: &Candidate,
+) -> Result<Rc<[u8]>, CandidateError> {
+    // `if let Some(found) = ...get(..)` runs only when the file was corrected.
+    if let Some(found) = corrected.get(&candidate.path) {
+        return Ok(Rc::clone(&found.replacement));
+    }
+    return store.bytes(candidate);
 }
 
 /// What: The outcome of a content policy whose candidates could not be prepared or read.
@@ -100,8 +200,12 @@ impl ContentState {
     /// constructor() {}
     /// ```
     pub fn new() -> ContentState {
-        // `None` is the "absent" variant: nothing has been asked.
-        return ContentState { prepared: None };
+        // `None` is the "absent" variant: nothing has been asked; nothing is corrected yet.
+        return ContentState {
+            prepared: None,
+            corrected: BTreeMap::new(),
+            proposals: Vec::new(),
+        };
     }
 
     /// What: The candidate version, prepared on first use; `Ok(None)` when the lifecycle
@@ -155,8 +259,9 @@ impl ContentState {
         }
     }
 
-    /// What: The bytes of a candidate of the prepared version.
-    /// Why:  Bytes come from the store bound to the private index, never the live worktree.
+    /// What: The bytes of a candidate of the prepared version, with corrections applied.
+    /// Why:  Bytes come from the store bound to the private index, never the live worktree,
+    ///       unless a correction of this invocation replaced them.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -165,17 +270,126 @@ impl ContentState {
     pub fn bytes(&mut self, candidate: &Candidate) -> Result<Rc<[u8]>, PolicyOutcome> {
         // `&mut self.prepared` lends the remembered attempt for reading through its store.
         match &mut self.prepared {
-            Some(Ok(prepared)) => match prepared.store.bytes(candidate) {
-                Ok(read) => return Ok(read),
-                Err(error) => return Err(candidate_failure(&error)),
-            },
+            Some(Ok(prepared)) => {
+                match overlaid_bytes(&mut prepared.store, &self.corrected, candidate) {
+                    Ok(read) => return Ok(read),
+                    Err(error) => return Err(candidate_failure(&error)),
+                }
+            }
             Some(Err(_)) | None => return Err(candidate_failure(&not_prepared_error())),
+        }
+    }
+
+    /// What: The real index the prepared candidates were copied from, once prepared.
+    /// Why:  A direct fix proves that installing its corrections left that index unchanged.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// get realIndexPath(): string | undefined;
+    /// ```
+    pub fn real_index(&self) -> Option<&Path> {
+        // `match &self.prepared` borrows the remembered attempt read-only.
+        match &self.prepared {
+            Some(Ok(prepared)) => return Some(prepared.real_index.as_path()),
+            Some(Err(_)) | None => return None,
         }
     }
 }
 
+/// What: `impl ContentState { ... }` continued: corrections of a fixing lifecycle.
+/// Why:  A policy proposes, the fix loop applies after the pass, and later passes read
+///       the corrected bytes; nothing reaches the worktree until the fix installs them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class ContentState { propose(c) {} takeProposals() {} apply(cs) {} }
+/// ```
+impl ContentState {
+    /// What: Record one correction a policy proposes in the current pass.
+    /// Why:  Corrections wait until the pass ends, so every policy of the pass reads the
+    ///       same bytes.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// propose(correction: Correction): void;
+    /// ```
+    pub fn propose(&mut self, correction: Correction) {
+        self.proposals.push(correction);
+    }
+
+    /// What: Hand over the current pass's proposals and forget them.
+    ///       `std::mem::take` moves the list out and leaves an empty one behind.
+    /// Why:  Each pass starts with no proposals, and a proposal is applied at most once.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// takeProposals(): Correction[];
+    /// ```
+    pub fn take_proposals(&mut self) -> Vec<Correction> {
+        return std::mem::take(&mut self.proposals);
+    }
+
+    /// What: Apply corrections in order. A file whose correction restores its original
+    ///       bytes is no longer corrected.
+    /// Why:  The corrected map then equals another state's map exactly when both states
+    ///       hold the same bytes in every file, which the fix loop's cycle check needs. A
+    ///       file's original is the bytes its first correction replaced; a file restored
+    ///       and corrected again replaces those same bytes.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// apply(corrections: Correction[]): void;
+    /// ```
+    pub fn apply(&mut self, corrections: Vec<Correction>) {
+        for correction in corrections {
+            let original: Rc<[u8]> = match self.corrected.get(&correction.path) {
+                Some(file) => Rc::clone(&file.original),
+                None => correction.before,
+            };
+            if *original == *correction.after {
+                self.corrected.remove(&correction.path);
+            } else {
+                self.corrected.insert(
+                    correction.path.clone(),
+                    InstallChange {
+                        path: correction.path,
+                        mode: correction.mode,
+                        original,
+                        replacement: correction.after,
+                    },
+                );
+            }
+        }
+    }
+
+    /// What: A copy of every corrected file, by pathname. Copies share the bytes.
+    /// Why:  The fix loop keeps one per changed state to recognize a repeated state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// correctedState(): Map<string, InstallChange>;
+    /// ```
+    pub fn corrected_state(&self) -> BTreeMap<Vec<u8>, InstallChange> {
+        return self.corrected.clone();
+    }
+
+    /// What: Every corrected file, in Git's byte order of pathnames.
+    /// Why:  These are the changes a converged fix installs, and the order its summary
+    ///       lists them in.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// installChanges(): InstallChange[];
+    /// ```
+    pub fn install_changes(&self) -> Vec<InstallChange> {
+        // `.values().cloned().collect()` copies each change in key order into a list.
+        return self.corrected.values().cloned().collect();
+    }
+}
+
 /// What: `impl ContentState { ... }` continued: the scan of every scannable candidate.
-/// Why:  The scan pass reads bytes through the store the candidates were prepared in.
+/// Why:  The scan pass reads bytes through the store the candidates were prepared in,
+///       with this invocation's corrections laid over it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -199,7 +413,11 @@ impl ContentState {
         match &mut self.prepared {
             // The store is lent for writing and the version for reading: two separate fields.
             Some(Ok(prepared)) => {
-                return scan_version(scanner, &mut prepared.store, &prepared.version, rules_path);
+                let mut reader: OverlaidStore<'_> = OverlaidStore {
+                    store: &mut prepared.store,
+                    corrected: &self.corrected,
+                };
+                return scan_version(scanner, &mut reader, &prepared.version, rules_path);
             }
             Some(Err(_)) | None => return Err(ScanRunError::Candidate(not_prepared_error())),
         }

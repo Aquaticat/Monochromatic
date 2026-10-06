@@ -10,15 +10,23 @@
 #![cfg(unix)]
 
 /// Import the module under test.
-use super::{ContentState, LifecycleContent, candidate_failure};
+use super::{ContentState, Correction, LifecycleContent, candidate_failure};
 use crate::candidate_error::{CandidateError, CandidateFailure};
+use crate::candidate_object::CandidateMode;
 use crate::candidate_prediction::CandidateRequest;
 use crate::candidate_version::{Candidate, CandidateVersion};
 use crate::diagnostics::EngineFailureCode;
+use crate::direct_fix_install::InstallChange;
 use crate::policy_engine::PolicyOutcome;
 use crate::policy_test_support::{ScriptedFacts, scripted_facts};
+use crate::scanner_adapter::CandidateScanner;
+use crate::scanner_run::ScanRunError;
+use crate::scanner_selection::rules_source;
+use crate::scanner_test_support::{needle, rules_file, run_isolated};
 use crate::test_support::{fixture, remove, repository};
+use forbidden_strings::CandidateScan;
 use std::ffi::OsString;
+use std::path::Path;
 use std::path::PathBuf;
 use std::rc::Rc;
 
@@ -182,4 +190,133 @@ fn candidate_failures_carry_the_code_of_their_cause() {
             message: String::from("stale"),
         }
     );
+}
+
+/// A correction of `path` from `before` to `after`.
+fn correction(path: &str, before: &[u8], after: &[u8]) -> Correction {
+    return Correction {
+        path: path.as_bytes().to_vec(),
+        mode: CandidateMode::Regular,
+        before: Rc::from(before),
+        after: Rc::from(after),
+    };
+}
+
+/// The install change of `path` from `original` to `replacement`.
+fn change(path: &str, original: &[u8], replacement: &[u8]) -> InstallChange {
+    return InstallChange {
+        path: path.as_bytes().to_vec(),
+        mode: CandidateMode::Regular,
+        original: Rc::from(original),
+        replacement: Rc::from(replacement),
+    };
+}
+
+/// Corrections wait until taken, apply in order over the first original, disappear when
+/// they restore it, and are read by every later byte read and listed in byte order.
+#[test]
+fn corrections_overlay_the_prepared_bytes() {
+    let root: PathBuf = fixture("content-corrections");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    std::fs::write(repo.join("b.txt"), b"b").expect("b");
+    std::fs::write(repo.join("a.txt"), b"a").expect("a");
+    let mut facts: ScriptedFacts = scripted_facts();
+    facts.candidates_repository = Some(repo.clone());
+    let mut content: ContentState = ContentState::new();
+    assert_eq!(content.real_index(), None);
+    let version: Rc<CandidateVersion> = content
+        .version(&whole_worktree(), &mut facts)
+        .expect("read")
+        .expect("candidates");
+    assert_eq!(
+        content.real_index(),
+        Some(repo.join(".git/index").as_path())
+    );
+    // Proposals are held until taken, and taken once.
+    content.propose(correction("b.txt", b"b", b"b\n"));
+    content.propose(correction("a.txt", b"a", b"a\n"));
+    let proposals: Vec<Correction> = content.take_proposals();
+    assert_eq!(proposals.len(), 2);
+    assert_eq!(content.take_proposals(), Vec::<Correction>::new());
+    assert_eq!(
+        &content.bytes(&version.candidates()[0]).expect("a")[..],
+        b"a"
+    );
+    content.apply(proposals);
+    assert_eq!(
+        &content.bytes(&version.candidates()[0]).expect("a")[..],
+        b"a\n"
+    );
+    assert_eq!(
+        &content.bytes(&version.candidates()[1]).expect("b")[..],
+        b"b\n"
+    );
+    assert_eq!(
+        content.install_changes(),
+        vec![change("a.txt", b"a", b"a\n"), change("b.txt", b"b", b"b\n")]
+    );
+    // A second correction keeps the first original; one that restores it removes the file.
+    content.apply(vec![
+        correction("a.txt", b"a\n", b"a\n\n"),
+        correction("b.txt", b"b\n", b"b"),
+    ]);
+    assert_eq!(
+        content.install_changes(),
+        vec![change("a.txt", b"a", b"a\n\n")]
+    );
+    assert_eq!(
+        &content.bytes(&version.candidates()[1]).expect("b")[..],
+        b"b"
+    );
+    let state = content.corrected_state();
+    assert_eq!(state.len(), 1);
+    assert_eq!(
+        state.get(b"a.txt".as_slice()),
+        Some(&change("a.txt", b"a", b"a\n\n"))
+    );
+    remove(root.as_path());
+}
+
+/// The scan reads corrected bytes: a match that only a correction removes is not reported.
+#[test]
+fn the_scan_reads_corrected_bytes() {
+    run_isolated(
+        "policy_content::tests::the_scan_reads_corrected_bytes",
+        "content-scan-overlay",
+        scan_overlay,
+    );
+}
+
+/// The body of `the_scan_reads_corrected_bytes`.
+fn scan_overlay(work: &Path) {
+    let repo: PathBuf = repository(work, "repo");
+    std::fs::write(repo.join("a.txt"), format!("{}\n", needle())).expect("needle");
+    let mut facts: ScriptedFacts = scripted_facts();
+    facts.candidates_repository = Some(repo.clone());
+    let mut content: ContentState = ContentState::new();
+    let scanner: CandidateScanner = CandidateScanner::load(
+        &rules_source(None, Some(rules_file(work).as_os_str()), &repo),
+        false,
+    )
+    .expect("rules");
+    assert!(matches!(
+        content.scan(&scanner, None),
+        Err(ScanRunError::Candidate(_))
+    ));
+    content
+        .version(&whole_worktree(), &mut facts)
+        .expect("read")
+        .expect("candidates");
+    let before: Vec<CandidateScan> = content.scan(&scanner, None).expect("scan");
+    assert_eq!(before.len(), 1);
+    assert_eq!(before[0].findings.len(), 1);
+    content.apply(vec![Correction {
+        path: b"a.txt".to_vec(),
+        mode: CandidateMode::Regular,
+        before: Rc::from(format!("{}\n", needle()).as_bytes()),
+        after: Rc::from(&b"clean\n"[..]),
+    }]);
+    let after: Vec<CandidateScan> = content.scan(&scanner, None).expect("scan");
+    assert_eq!(after.len(), 1);
+    assert_eq!(after[0].findings, Vec::new());
 }

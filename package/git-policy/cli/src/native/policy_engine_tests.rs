@@ -659,4 +659,71 @@ fn exit_code_follows_ending_then_events() {
         ),
         2
     );
+    // A pending correction blocks even when every event is a warning.
+    assert_eq!(pass_exit_code(&[warning_event()], StageEnd::Proposed), 1);
+    assert_eq!(pass_exit_code(&[], StageEnd::Proposed), 1);
+}
+
+/// The finding `finding(code)` offering a fix.
+fn fixable(code: &'static str) -> PolicyFinding {
+    let mut offered: PolicyFinding = finding(code);
+    offered.fix_available = true;
+    return offered;
+}
+
+/// A policy that proposes a correction ends the stage after its own findings, whatever
+/// its severity and even under keep-going; a finding without a fix does not.
+#[test]
+fn a_proposed_correction_ends_the_stage() {
+    let mut keep_going: Controls = no_controls();
+    keep_going.keep_going = true;
+    for (severity, controls) in [
+        (Severity::Warn, no_controls()),
+        (Severity::Error, keep_going.clone()),
+    ] {
+        let config: PolicyConfig = with_severity(&all_listed(), PolicyId::FinalNewline, severity);
+        let (result, called) = run(
+            Trigger::DirectFix,
+            &config,
+            &controls,
+            &[],
+            vec![(
+                PolicyId::FinalNewline,
+                PolicyOutcome::Findings(vec![finding("plain"), fixable("fixed")]),
+            )],
+        );
+        assert_eq!(called, vec![PolicyId::FinalNewline], "{severity:?}");
+        assert_eq!(result.end, StageEnd::Proposed, "{severity:?}");
+        let mut expected_fixed: PolicyEvent = event(
+            Trigger::DirectFix,
+            PolicyId::FinalNewline,
+            severity,
+            "fixed",
+        );
+        if let PolicyEvent::Finding(offered) = &mut expected_fixed {
+            offered.fix_available = true;
+        }
+        assert_eq!(
+            result.events,
+            vec![
+                event(
+                    Trigger::DirectFix,
+                    PolicyId::FinalNewline,
+                    severity,
+                    "plain"
+                ),
+                expected_fixed,
+            ]
+        );
+    }
+    // Without a fix the stage goes on to the next policy.
+    let (plain, called) = run(
+        Trigger::DirectFix,
+        &all_listed(),
+        &no_controls(),
+        &[],
+        vec![(PolicyId::FinalNewline, found("plain"))],
+    );
+    assert_eq!(plain.end, StageEnd::Completed);
+    assert!(called.len() > 1, "{called:?}");
 }

@@ -15,7 +15,6 @@ use super::{plan_management, retired_explanation};
 use crate::action::Action;
 use crate::config_file::CONFIG_FILE_NAME;
 use crate::management_arguments::{MANAGEMENT_HELP, MANAGEMENT_USAGE, RetiredCommand};
-use crate::policy_checks::DIRECT_FIX_NEEDS;
 use crate::policy_registry::PolicyId;
 use crate::real_git::{Platform, ResolutionInputs};
 use crate::test_support::{executable, fixture, remove, repository};
@@ -81,16 +80,8 @@ fn exit(code: i32, stdout: &str, stderr: &str) -> Action {
     };
 }
 
-/// The refusal of a direct fix whose correction is not ported yet.
-fn fix_refused(policy: PolicyId) -> String {
-    return unported_notice(
-        &Unported::PolicyNeeds {
-            policy,
-            needs: DIRECT_FIX_NEEDS,
-        },
-        "cli-git fix",
-    );
-}
+/// The fix summary of a direct fix that corrected `a.txt` in one pass.
+const FIXED_A: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summary\",\"trigger\":\"direct-fix\",\"passes\":1,\"changedPaths\":[\"a.txt\"]}\n";
 
 /// The final-newline warning of a direct check about `a.txt`, as event number `sequence`.
 fn final_newline_warning(sequence: u64) -> String {
@@ -277,7 +268,8 @@ fn direct_commands_project_their_scope_and_run_the_policies() {
         plan(&["check", "--", "a.txt"], repo.as_path(), &inputs),
         exit(0, final_newline_warning(0).as_str(), "")
     );
-    // A correction is not ported yet: the fix refuses instead of reporting a clean result.
+    // A fix corrects the worktree file, reports only the summary, and a second fix finds
+    // nothing left to do.
     assert_eq!(
         plan(
             &[
@@ -292,8 +284,17 @@ fn direct_commands_project_their_scope_and_run_the_policies() {
             repo.as_path(),
             &inputs
         ),
-        exit(2, "", fix_refused(PolicyId::FinalNewline).as_str())
+        exit(0, FIXED_A, "")
     );
+    assert_eq!(
+        std::fs::read(repo.join("a.txt")).expect("fixed"),
+        b"no final newline\n"
+    );
+    assert_eq!(
+        plan(&["fix", "--", "a.txt"], repo.as_path(), &inputs),
+        exit(0, "", "")
+    );
+    std::fs::write(repo.join("a.txt"), b"no final newline").expect("file again");
     // A pathspec Git refuses stops the command before any policy, whichever is selected.
     projection_failed(
         plan(

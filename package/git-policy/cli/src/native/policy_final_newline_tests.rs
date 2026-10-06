@@ -14,14 +14,18 @@ use super::{
     FINAL_NEWLINE_CODE, FINAL_NEWLINE_MESSAGE, check_final_newline, is_final_newline_excluded,
     normalized_final_newline,
 };
+use crate::candidate_object::CandidateMode;
 use crate::candidate_prediction::CandidateRequest;
 use crate::diagnostics::EngineFailureCode;
+use crate::policy_content::Correction;
 use crate::policy_content::{ContentState, LifecycleContent};
 use crate::policy_engine::{PolicyFinding, PolicyOutcome};
 use crate::policy_test_support::{ScriptedFacts, scripted_facts};
+use crate::policy_trigger::Trigger;
 use crate::test_support::{fixture, git, remove, repository};
 use std::ffi::OsString;
 use std::path::PathBuf;
+use std::rc::Rc;
 
 /// Missing and extra final LF bytes are corrected; empty, NUL-holding, non-UTF-8 and
 /// canonical bytes are left alone; interior bytes are never touched.
@@ -93,14 +97,29 @@ fn preserved_paths_keep_their_bytes() {
     }
 }
 
-/// The finding about the file at `path`.
-fn finding(path: &str) -> PolicyFinding {
+/// The finding about the file at `path`, offering a fix or not.
+fn finding_with(path: &str, fix_available: bool) -> PolicyFinding {
     return PolicyFinding {
         code: FINAL_NEWLINE_CODE,
         message: String::from(FINAL_NEWLINE_MESSAGE),
         path: Some(String::from(path)),
         location: None,
-        fix_available: false,
+        fix_available,
+    };
+}
+
+/// The finding about the file at `path` of a lifecycle that does not correct.
+fn finding(path: &str) -> PolicyFinding {
+    return finding_with(path, false);
+}
+
+/// The correction of the file at `path` from `before` to `after`.
+fn correction(path: &str, mode: CandidateMode, before: &[u8], after: &[u8]) -> Correction {
+    return Correction {
+        path: path.as_bytes().to_vec(),
+        mode,
+        before: Rc::from(before),
+        after: Rc::from(after),
     };
 }
 
@@ -130,23 +149,74 @@ fn the_check_reports_each_noncanonical_text_file() {
         LifecycleContent::Requested(CandidateRequest::Add(vec![OsString::from("--all")]));
     let mut content: ContentState = ContentState::new();
     assert_eq!(
-        check_final_newline(&mut content, &lifecycle, &mut facts),
+        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::PreForward),
         PolicyOutcome::Findings(vec![
             finding("a-extra.txt"),
             finding("b-missing.txt"),
             finding("script.sh"),
         ])
     );
+    // A check proposes nothing; only a direct fix offers and proposes each correction.
+    assert_eq!(
+        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectCheck),
+        PolicyOutcome::Findings(vec![
+            finding("a-extra.txt"),
+            finding("b-missing.txt"),
+            finding("script.sh"),
+        ])
+    );
+    assert_eq!(content.take_proposals(), Vec::<Correction>::new());
+    assert_eq!(
+        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectFix),
+        PolicyOutcome::Findings(vec![
+            finding_with("a-extra.txt", true),
+            finding_with("b-missing.txt", true),
+            finding_with("script.sh", true),
+        ])
+    );
+    assert_eq!(
+        content.take_proposals(),
+        vec![
+            correction(
+                "a-extra.txt",
+                CandidateMode::Regular,
+                b"extra\n\n",
+                b"extra\n"
+            ),
+            correction(
+                "b-missing.txt",
+                CandidateMode::Regular,
+                b"missing",
+                b"missing\n"
+            ),
+            correction(
+                "script.sh",
+                CandidateMode::Executable,
+                b"#!/bin/sh",
+                b"#!/bin/sh\n"
+            ),
+        ]
+    );
     // Without candidates there is nothing to report and nothing is prepared.
     let mut idle: ScriptedFacts = scripted_facts();
     assert_eq!(
-        check_final_newline(&mut ContentState::new(), &LifecycleContent::None, &mut idle),
+        check_final_newline(
+            &mut ContentState::new(),
+            &LifecycleContent::None,
+            &mut idle,
+            Trigger::DirectFix
+        ),
         PolicyOutcome::Findings(Vec::new())
     );
     assert_eq!(idle.asked, Vec::<String>::new());
     // Candidates that cannot be prepared fail the policy.
     assert_eq!(
-        check_final_newline(&mut ContentState::new(), &lifecycle, &mut scripted_facts()),
+        check_final_newline(
+            &mut ContentState::new(),
+            &lifecycle,
+            &mut scripted_facts(),
+            Trigger::DirectCheck
+        ),
         PolicyOutcome::Failed {
             code: EngineFailureCode::ContentUnavailable,
             message: String::from("the scripted facts prepare no candidates"),
@@ -174,7 +244,12 @@ fn the_check_reports_each_noncanonical_text_file() {
             .join(&object[2..]),
     )
     .expect("remove the loose object");
-    match check_final_newline(&mut unreadable, &only, &mut unreadable_facts) {
+    match check_final_newline(
+        &mut unreadable,
+        &only,
+        &mut unreadable_facts,
+        Trigger::PreForward,
+    ) {
         PolicyOutcome::Failed { code, .. } => {
             assert_eq!(code, EngineFailureCode::ContentUnavailable);
         }

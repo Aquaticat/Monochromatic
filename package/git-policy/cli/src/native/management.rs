@@ -17,6 +17,8 @@ use super::config_error::ConfigError;
 use super::config_file::LoadedConfig;
 /// A scope that cannot be projected is a `transaction-failed` engine failure.
 use super::diagnostics::EngineFailureCode;
+/// The direct fix: converge corrections in memory, then install them.
+use super::direct_fix::run_direct_fix;
 use super::invocation_config::{config_invalid_event, legacy_warning_events, load_identity_config};
 use super::management_arguments::{
     MANAGEMENT_HELP, MANAGEMENT_USAGE, ManagementAction, ManagementRefusal, RetiredCommand,
@@ -39,6 +41,8 @@ use super::repository_location::RepositoryLocation;
 /// The variable that names the forbidden-strings rules file.
 use super::scanner_selection::RULES_VARIABLE;
 use super::unported::{unported_from_unavailable, unported_notice};
+/// The worktree's top level, where a fix installs corrected files.
+use super::worktree_identity::worktree_root;
 use super::wrapper_controls::Controls;
 /// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
@@ -50,7 +54,7 @@ use super::wrapper_controls::Controls;
 /// ```
 use std::ffi::OsString;
 /// `PathBuf` is an owned filesystem path of raw OS bytes.
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// What: The command word of a direct command.
 ///       `&'static str` borrows text compiled into the executable for its whole run.
@@ -232,6 +236,7 @@ fn run_direct_command(
     controls: &Controls,
     loaded: &LoadedConfig,
     checks: &mut ShippedChecks<GitFacts>,
+    root: Option<&Path>,
 ) -> Action {
     // Only `check` reports a legacy file left beside the JSONC file; `fix` stays silent.
     let mut stdout: String = if fix {
@@ -283,7 +288,12 @@ fn run_direct_command(
         controls: controls.clone(),
         selected,
     };
-    let pass: PassResult = run_policy_pass(&request, checks);
+    // A fix converges corrections and installs them; a check runs one pass.
+    let pass: PassResult = if fix {
+        run_direct_fix(&request, checks, root)
+    } else {
+        run_policy_pass(&request, checks)
+    };
     // `.as_slice()` lends the owned events as a borrowed view.
     stdout.push_str(render_policy_events(first_sequence, pass.events.as_slice()).as_str());
     // `if let StageEnd::Unavailable(x) = ...` runs only for that ending and binds what it carries.
@@ -398,7 +408,16 @@ pub fn plan_management(
         };
     }
     match load_identity_config(&location.identity) {
-        Ok(loaded) => return run_direct_command(fix, selected, controls, &loaded, &mut checks),
+        Ok(loaded) => {
+            return run_direct_command(
+                fix,
+                selected,
+                controls,
+                &loaded,
+                &mut checks,
+                worktree_root(&location.identity),
+            );
+        }
         Err(error) => return direct_config_failure(&error),
     }
 }

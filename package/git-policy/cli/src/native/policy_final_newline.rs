@@ -16,10 +16,12 @@ use super::candidate_object::CandidateMode;
 use super::candidate_record::CandidateChange;
 /// Import the candidate and version types.
 use super::candidate_version::{Candidate, CandidateVersion};
-/// Import the lifecycle's candidates.
-use super::policy_content::{ContentState, LifecycleContent};
+/// Import the lifecycle's candidates and the correction a fix applies.
+use super::policy_content::{ContentState, Correction, LifecycleContent};
 /// Import the finding and outcome types of a check.
 use super::policy_engine::{PolicyFinding, PolicyOutcome};
+/// Import the lifecycle points; only a direct fix corrects.
+use super::policy_trigger::Trigger;
 /// Import the facts interface that prepares candidates.
 use super::repository_facts::RepositoryFacts;
 /// `Rc<T>` is a shared, read-only handle.
@@ -153,35 +155,40 @@ fn is_checked(candidate: &Candidate) -> bool {
 
 /// What: The finding for one candidate. `String::from_utf8_lossy` renders the pathname
 ///       as text, replacing bytes that are not UTF-8.
-/// Why:  The finding names the file the person must change.
+/// Why:  The finding names the file the person must change, and says whether this
+///       lifecycle proposed the correction.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const finding = { code: 'noncanonical-final-newline', message, path: candidate.path };
+/// const finding = { code: 'noncanonical-final-newline', message, path: candidate.path, patch };
 /// ```
-fn finding(candidate: &Candidate) -> PolicyFinding {
+fn finding(candidate: &Candidate, fix_available: bool) -> PolicyFinding {
     return PolicyFinding {
         code: FINAL_NEWLINE_CODE,
         message: String::from(FINAL_NEWLINE_MESSAGE),
         path: Some(String::from_utf8_lossy(candidate.path.as_slice()).into_owned()),
         location: None,
-        fix_available: false,
+        fix_available,
     };
 }
 
 /// What: Check every candidate of the lifecycle. `<F: RepositoryFacts>` accepts any facts
-///       provider; `&mut ContentState` lends the shared candidates for reading.
+///       provider; `&mut ContentState` lends the shared candidates for reading and takes
+///       the corrections.
 /// Why:  One finding per file whose bytes are not canonical, in candidate order; no
 ///       candidates means no findings, and unreadable content means the policy failed.
+///       Only a direct fix applies corrections (the installed wrapper's
+///       `canApplyPatches`), so only there does each finding carry one.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function checkFinalNewline(content, lifecycle, facts): Promise<PolicyOutcome>;
+/// async function checkFinalNewline(content, lifecycle, facts, trigger): Promise<PolicyOutcome>;
 /// ```
 pub fn check_final_newline<F: RepositoryFacts>(
     content: &mut ContentState,
     lifecycle: &LifecycleContent,
     facts: &mut F,
+    trigger: Trigger,
 ) -> PolicyOutcome {
     let version: Rc<CandidateVersion> = match content.version(lifecycle, facts) {
         Ok(Some(found)) => found,
@@ -198,9 +205,20 @@ pub fn check_final_newline<F: RepositoryFacts>(
             Ok(read) => read,
             Err(outcome) => return outcome,
         };
-        if normalized_final_newline(&bytes).is_some() {
-            findings.push(finding(candidate));
+        let Some(normalized) = normalized_final_newline(&bytes) else {
+            continue;
+        };
+        let corrects: bool = trigger == Trigger::DirectFix;
+        if corrects {
+            content.propose(Correction {
+                path: candidate.path.clone(),
+                mode: candidate.mode,
+                before: bytes,
+                // `Rc::from(vec)` moves the bytes into a shared handle.
+                after: Rc::from(normalized),
+            });
         }
+        findings.push(finding(candidate, corrects));
     }
     return PolicyOutcome::Findings(findings);
 }

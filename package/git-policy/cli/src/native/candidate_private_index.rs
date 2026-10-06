@@ -31,8 +31,36 @@ use std::sync::atomic::{AtomicU64, Ordering};
 /// The name prefix of every private index directory; the installed wrapper uses the same one.
 pub const PRIVATE_INDEX_PREFIX: &str = "cli-git-add-policy-";
 
-/// How many private index directories this process has created, for unique names.
+/// How many unique names this process has made, for private index directories and sibling files.
 static CREATED: AtomicU64 = AtomicU64::new(0);
+
+/// What: A name part no other file of this process or another one chose: the process ID,
+///       the time in nanoseconds and this process's count, joined by `-`.
+/// Why:  Private index directories and the direct fix's sibling files are created beside
+///       files other processes use, so their names must not collide.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const uniqueSuffix = () => `${process.pid}-${nowNanoseconds()}-${created++}`;
+/// ```
+pub fn unique_suffix() -> String {
+    // What: `.fetch_add(1, ..)` returns the old count and stores one more;
+    //       `.as_nanos()` is the time since the epoch in nanoseconds.
+    // Why:  Process ID, time and count together name a file no one else chose.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const count = created++;
+    // ```
+    let count: u64 = CREATED.fetch_add(1, Ordering::Relaxed);
+    let nanoseconds: u128 = match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
+    {
+        Ok(elapsed) => elapsed.as_nanos(),
+        // A clock before 1970 still leaves the process ID and the count to tell names apart.
+        Err(_) => 0,
+    };
+    return format!("{}-{nanoseconds}-{count}", std::process::id());
+}
 
 /// What: A private index file in a directory this value owns. Fields are private, so the
 ///       directory can be removed only by dropping the value.
@@ -145,25 +173,7 @@ impl PrivateIndex {
                 "cli-git could not prepare a private copy of the index: Git named an index path without a directory.",
             ));
         };
-        // What: `.fetch_add(1, ..)` returns the old count and stores one more;
-        //       `.as_nanos()` is the time since the epoch in nanoseconds.
-        // Why:  Process ID, time and count together name a directory no one else chose.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const name = `${prefix}${process.pid}-${Date.now()}-${created++}`;
-        // ```
-        let count: u64 = CREATED.fetch_add(1, Ordering::Relaxed);
-        let nanoseconds: u128 =
-            match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
-                Ok(elapsed) => elapsed.as_nanos(),
-                // A clock before 1970 still leaves the process ID and the count to tell names apart.
-                Err(_) => 0,
-            };
-        let directory: PathBuf = parent.join(format!(
-            "{PRIVATE_INDEX_PREFIX}{}-{nanoseconds}-{count}",
-            std::process::id()
-        ));
+        let directory: PathBuf = parent.join(format!("{PRIVATE_INDEX_PREFIX}{}", unique_suffix()));
         if let Err(error) = create_private_directory(directory.as_path()) {
             return Err(private_index_failure("creating its directory", &error));
         }

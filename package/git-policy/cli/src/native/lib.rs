@@ -235,6 +235,12 @@ pub mod policy_forbidden_strings;
 /// The executable's panic hook: where an internal error happened, never its message.
 pub mod panic_notice;
 
+/// Installing a direct fix's corrections into the worktree, all or none.
+pub mod direct_fix_install;
+
+/// The direct fix: converge corrections in memory, then install them.
+pub mod direct_fix;
+
 /// The fixed argument transforms of a forwarded command, in order.
 pub mod policy_transforms;
 

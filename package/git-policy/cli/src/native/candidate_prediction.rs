@@ -98,6 +98,8 @@ pub struct PreparedCandidates {
     pub store: CandidateStore,
     /// The candidates, in the order the installed wrapper reports them.
     pub version: Rc<CandidateVersion>,
+    /// The real index the private copy was made from, which a direct fix proves unchanged.
+    pub real_index: PathBuf,
     /// Kept only so the private directory lives as long as the store; never read.
     _private: PrivateIndex,
 }
@@ -404,6 +406,7 @@ pub fn prepare_candidates(
     return Ok(PreparedCandidates {
         store,
         version,
+        real_index,
         _private: private,
     });
 }

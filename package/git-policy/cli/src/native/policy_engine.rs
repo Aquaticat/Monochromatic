@@ -149,7 +149,7 @@ pub enum Unavailable {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type StageEnd = 'completed' | 'stopped' | 'failed' | Unavailable;
+/// type StageEnd = 'completed' | 'stopped' | 'proposed' | 'failed' | Unavailable;
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum StageEnd {
@@ -157,6 +157,8 @@ pub enum StageEnd {
     Completed,
     /// An error finding stopped the pass.
     Stopped,
+    /// A policy proposed a correction, so the pass ends and restarts on corrected content.
+    Proposed,
     /// A policy could not finish; the last event is the engine failure naming its cause.
     Failed,
     /// A policy or the lifecycle cannot be evaluated by this executable.
@@ -276,8 +278,13 @@ pub fn run_policy_stage(
             }
         };
         let found_any: bool = !findings.is_empty();
+        let mut proposed: bool = false;
         // `for finding in findings` moves each finding out of the list into its event.
         for finding in findings {
+            // A finding offers a fix exactly when its policy proposed a correction.
+            if finding.fix_available {
+                proposed = true;
+            }
             events.push(PolicyEvent::Finding(FindingEvent {
                 trigger: request.trigger,
                 policy: *policy,
@@ -296,6 +303,14 @@ pub fn run_policy_stage(
                 policy: *policy,
             });
         }
+        // A proposal ends the stage whatever the severity, as `patchProposed` does in the
+        // installed wrapper's `policy-stage.ts`: later policies read the corrected content.
+        if proposed {
+            return StageResult {
+                events,
+                end: StageEnd::Proposed,
+            };
+        }
         if severity == Severity::Error && found_any && !request.controls.keep_going {
             return StageResult {
                 events,
@@ -311,17 +326,18 @@ pub fn run_policy_stage(
 
 /// What: The exit code of a pass that did not reach Git, from its events and its ending.
 ///       `&[PolicyEvent]` borrows the events of every stage of the pass.
-/// Why:  0 means clean or warnings only, 1 means an error finding or a fixed-transform
-///       rejection, and 2 means the pass could not decide.
+/// Why:  0 means clean or warnings only, 1 means an error finding, a fixed-transform
+///       rejection or a pending correction, and 2 means the pass could not decide.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const exitCode = !complete ? 2 : hasError ? 1 : 0;
+/// const exitCode = !complete ? 2 : (hasError || patchProposed) ? 1 : 0;
 /// ```
 pub fn pass_exit_code(events: &[PolicyEvent], end: StageEnd) -> i32 {
     // `Unavailable(_)` matches that variant whatever it carries; `{}` does nothing and goes on.
     match end {
         StageEnd::Failed | StageEnd::Unavailable(_) => return ENGINE_FAILURE_EXIT_CODE,
+        StageEnd::Proposed => return BLOCKED_EXIT_CODE,
         StageEnd::Completed | StageEnd::Stopped => {}
     }
     for event in events {

@@ -9,10 +9,7 @@
 //! ```
 
 /// The adapter under test, the engine types it returns and the scripted facts.
-use super::{
-    DEPENDENT_VERSION_BUMP_NEEDS, DIRECT_FIX_NEEDS, MARKDOWN_AUTOFIX_NEEDS, ShippedChecks,
-    shipped_checks,
-};
+use super::{DEPENDENT_VERSION_BUMP_NEEDS, MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
 use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::diagnostics::EngineFailureCode;
@@ -408,7 +405,11 @@ fn content_policies_follow_the_lifecycle_content() {
         PolicyId::ForbiddenRootContext,
         PolicyId::ForbiddenStrings,
     ] {
-        for trigger in [Trigger::PreForward, Trigger::DirectCheck] {
+        for trigger in [
+            Trigger::PreForward,
+            Trigger::DirectCheck,
+            Trigger::DirectFix,
+        ] {
             let mut read: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
             read.candidates = add_candidates();
             assert_eq!(read.check(policy, trigger), unprepared(), "{policy:?}");
@@ -417,14 +418,6 @@ fn content_policies_follow_the_lifecycle_content() {
             assert_eq!(read.facts.asked, vec![String::from("candidates")]);
         }
     }
-    // A correction of a direct fix is not ported yet: the policy refuses without reading.
-    let mut fixing: ShippedChecks<ScriptedFacts> = checks(&[], unlocatable());
-    fixing.candidates = add_candidates();
-    assert_eq!(
-        fixing.check(PolicyId::FinalNewline, Trigger::DirectFix),
-        PolicyOutcome::Unavailable(DIRECT_FIX_NEEDS)
-    );
-    assert_eq!(fixing.facts.asked, Vec::<String>::new());
     // A command policy is not a content policy: the lifecycle content does not touch it.
     let mut command: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], scripted_facts());
     command.candidates = add_candidates();
