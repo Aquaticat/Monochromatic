@@ -456,6 +456,11 @@ NXR:
  never repeat the same synchronous call;
  rerun in background or with a bound.
 
+TRB:
+ External tool fails with a diagnostic:
+ `rg` its message in `doc/troubleshooting/` before any workaround;
+ follow a recorded verified workaround as written.
+
 EDR:
  Parallel tool calls may run in any order,
  so a command reading a fresh edit can see the pre-edit file;
