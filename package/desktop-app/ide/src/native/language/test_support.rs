@@ -301,10 +301,8 @@ pub(super) fn eventually(message: &str, ready: impl FnMut() -> bool) {
 /// function serverState(reader: LanguageReader): ServerState | undefined
 /// ```
 fn server_state(reader: &LanguageReader) -> Option<ServerState> {
-    // `let Some(...) = ... else` leaves with nothing after the binding was closed.
-    let Some(binding) = reader.binding.as_ref() else {
-        return None;
-    };
+    // The trailing `?` leaves with nothing after the binding was closed.
+    let binding = reader.binding.as_ref()?;
     let language = binding.language.borrow();
     // `find` returns the first row for the server; `map` copies its state out of the borrow.
     return language
