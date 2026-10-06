@@ -446,6 +446,31 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
         y += 1.0;
     }
     assert_eq!(shown.block_height(104), row);
+    // A scroll step whose change handler has not run yet is scrolling too: rows that arrive in the render
+    // right after it wait, and are shown once scrolling has stopped.
+    idle();
+    let resting = -window.get_scroll_y();
+    window.set_scroll_y(-(resting + 3.0));
+    inject(
+        &reader,
+        vec![
+            hint(at(10, 4), "a:"),
+            hint(at(20, 4), "c:"),
+            hint(at(104, 4), "b:"),
+        ],
+        Vec::new(),
+    );
+    assert_eq!(
+        map(&reader).block_height(20),
+        0.0,
+        "rows above the view were shown during a scroll step whose change handler had not run yet"
+    );
+    eventually(
+        "rows that waited for a scroll step were never shown",
+        || {
+            return reader.source.borrow().row_map.block_height(20) == row;
+        },
+    );
 }
 
 /// After an external change the old rows are not painted, but their space stays, so no line moves; when the
