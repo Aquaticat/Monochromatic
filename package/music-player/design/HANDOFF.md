@@ -126,6 +126,23 @@ late evening:
   holds every view.
   Writing `~/temp/agent/stop-repeat-visits` ends such a loop at its next visit boundary;
   remove the file before starting another.
+- When the session's usage limit was reached at about 22:30,
+  that loop was running as `run-template-editor-until-complete.ts layout h`
+  (log `~/temp/agent/template-editor-layout-loop-h.log`),
+  with 38 of 128 views captured.
+  It ends by itself:
+  at most twelve visits,
+  each restored and stopped by its own script,
+  and it stops early when two visits in a row add no view.
+  If it stopped short,
+  read the last `settings-pane-visit-layout-<letter>.log`,
+  fix the cause,
+  and start it again with the next unused letter.
+  A dry run of the page and of the offline browser check passed on partial captures
+  (`dry-run-template-editor-page.ts`,
+  `run-template-editor-browser.ts`);
+  do not run the browser check while the emulator captures,
+  because the fifth crash of the day came during one.
 - Then,
   from `~/temp/agent`:
   `prepare-template-editor-crops.ts`,
