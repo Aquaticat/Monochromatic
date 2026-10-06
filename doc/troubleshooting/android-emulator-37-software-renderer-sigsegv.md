@@ -341,6 +341,20 @@ record the crash,
 move the stale locks after the owner checks,
 and boot again.
 
+### A visit that was killed, not a segmentation fault
+
+Later that night a visit ended differently.
+After 59 views in about 25 minutes,
+the emulator's guest process was `Killed` and its command returned `137`.
+The output has no segmentation fault line.
+`podman events` for that container reports its end and no out-of-memory event,
+and the kernel log could not be read without privileges.
+So the cause is not established:
+the 6 GiB bound of the container is a candidate and nothing more.
+The stale locks it left were moved the same way and the next visit booted.
+It is counted here because it interrupts a capture exactly as the crash does,
+and must not be reported as one.
+
 ## Verified workarounds
 
 Use `-gpu host` for this Linux host.
