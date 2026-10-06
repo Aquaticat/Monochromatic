@@ -510,6 +510,15 @@ and a marked refusal carries a caught error's text only from a catch narrowed to
 which `message-names-only.unit.test.ts` now checks at every construction.
 The census reading leaves sources edited since its baseline out of its counts,
 since it matches stretches by line (`d27a89dd0`).
+On 2026-10-06 (UTC),
+at `f8e99b84d`,
+T8 has gone past the library:
+the cold stretches a whole-suite census listed at `65bd3a645` were cased or made loud in three clusters,
+and 34 runner commands in nine clusters hold their wiring and one call,
+with their procedures in modules a test loads and a suite that runs each as built in a child holding no key.
+Seven commands in three clusters were not merged at that commit,
+and a final whole-suite census is still owed (ledger T8,
+and B232 to B308 for everything found in that stretch).
 Open:
 T8 (code no unit test runs;
 holding the launch for it is a quality call recorded for the owner to veto,

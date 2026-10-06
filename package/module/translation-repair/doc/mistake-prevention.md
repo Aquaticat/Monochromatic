@@ -30,7 +30,10 @@ not a memory of having done it.
     and the log's `[FAIL]` lines are counted (zero),
     not the exit code (M2,
     M12,
-    M19).
+    M19),
+    and not the `[PASS]` lines:
+    a suite with failing cases still prints its pass line,
+    so that count is the same in a red run and a green one (M125).
 3.  Lint reads the whole `src` tree,
     and its `Found 0 warnings and 0 errors` line is read (M10,
     M23,
@@ -81,6 +84,14 @@ then three times after M116 was written,
 across 2026-10-05 and 2026-10-06 (UTC) (ledger M107,
 M116).
 Each of those last three was a read of a log by two searches whose results were both wanted.
+Five more followed around the merges of 2026-10-06 (UTC),
+two of them a `;` after `rg --count` to get past its exit of 1 on a count of zero (ledger M116).
+An agent stopped its own census with `pkill -f` on a pattern that matched every agent's census on the machine
+(ledger M126).
+Loops,
+a sleep,
+polls of a running log and a heredoc chained to a second command came again,
+from the lead and from agents (ledger M132).
 
 The rule:
 a Bash call holds at most three steps joined by `&&`,
@@ -93,6 +104,11 @@ An edit script goes through the Write tool and runs in a call of its own,
 in a later response than the write,
 under a name no earlier script used.
 Git runs from the repository root or with `git -C`.
+A process is stopped by its own id,
+or by the task id of the call that started it,
+never by name or pattern.
+A count that may be zero is a call of its own,
+since `rg --count` exits 1 on zero.
 While a background task runs,
 the turn ends;
 a notification arrives when it finishes.
@@ -204,6 +220,23 @@ B226).
 A case that reads the environment sets it and clears it,
 and a note or a finding is shown absent beside the input that raises it.
 
+The consolidate store was first driven against the real stage on 2026-10-06 (UTC),
+and resumed a gate that heard fewer voices than its quorum,
+a settlement the stage returns and the persistence rule never writes (ledger B249).
+Cases in six more files could not fail on what they named:
+a refusal checked by its class alone,
+an input that could not tell one guard from another,
+a length read where the whole operation was meant (ledger B256).
+And an agent's strip of its shell's environment,
+built by filtering the printed environment for key names,
+removed nothing,
+since the filter printed the matched text and never a name,
+so a built command ran with the run's keys (ledger M120).
+A guard is shown to remove,
+refuse or fail on the thing it is for,
+on a real instance of that thing,
+before anything is run behind it.
+
 The rule:
 a red guard is read case by case before the fix,
 and each case must fail for the reason its name gives;
@@ -297,6 +330,23 @@ a source scan read a `satisfies` as typing a table with string keys,
 and missed a parameter destructured from an object until moving code changed its count (M98);
 and a search whose pattern `rg` refused printed its `|| echo` fallback,
 which read as finding nothing (M99).
+
+A fix was committed after a run of 35 named test files that left out the one file asserting the old wording,
+and the suite was red at that commit (ledger M122).
+A count of 26 files matching a pattern was taken as proof a form was in use,
+with no match read and no lint run,
+and the linter warns on the form (ledger M124).
+A probe for a byte order mark matched three code points and not three bytes,
+found nothing,
+and its positive control used another pattern (ledger M128).
+And a census over named paths counted a log once for every path that reached it,
+which moved the percentile a cap rule reads (ledger B288).
+A named run after a wording change holds every test file that holds the old words,
+found by a search for the words;
+precedent is a match that was read,
+never a count;
+a positive control uses the probe's own pattern and tool;
+and a census collapses its inputs to distinct files before it counts.
 
 The rule:
 a search whose result licenses a change runs uncapped over all of `src` (or `--count` first),
@@ -404,6 +454,28 @@ read by a test in another file (ledger B179).
 A claim that nothing can observe a value is measured,
 by looking for a test that already observes it.
 
+Every count of `[PASS]` lines this audit quoted was a count of suites that print,
+and 44 cases in ten files sat in a suite with an empty name,
+which the test module logs at `debug`,
+so they passed without a line (ledger B277).
+The same count cannot show a failure either:
+a suite with failing cases still prints its pass line (ledger M125).
+Report commands claimed what their own figures deny:
+that no call went to the metered provider where every metered call sat on an unpriced seat,
+a zero total under a line saying silence is not a zero,
+one note for three different states,
+and a block left out with no word that it was (ledger B280,
+B286,
+B289).
+A comparator's comment stated an order its code did not keep,
+with no case for either tier (ledger B304).
+A notes file for agents described three fixtures before they were read (ledger M129),
+and a commit message repeated an agent's account of code the lead had not read (ledger M131).
+A claim of absence is printed only in the state that proves it,
+a branch that skips part of a report says so,
+a comment that states an order has a case for each tier it names,
+and an account its writer has not checked is labelled as whose it is.
+
 The rule:
 every number,
 log line,
@@ -445,6 +517,10 @@ names every stretch cold since the baseline,
 leaves unmapped code out of every status it reads (`coverage-census-report.unit.test.ts`),
 and asks git about every file of the work tree;
 `rendered-sheets.test-fixture.ts` renders every sheet so reading one is a call away.
+`src/silent-test-cases.unit.test.ts`,
+among the source scans,
+fails on a case whose nearest suite has an empty name or none,
+so every passing case prints a line (ledger B277).
 
 ## Current-state docs
 
@@ -487,6 +563,12 @@ named a task-list number as a GitHub issue,
 and gave a cause that no command had yet shown (M16,
 M39,
 M49).
+
+A red commit's message named three test files as failing and not the scan that failed beside them (ledger M123),
+and a check of a message for task-list numbers matched the message's own words,
+and stopped the commit without a word (ledger M130).
+A message that names what fails names every failure of its tree,
+and a check that stops a commit says that it stopped it.
 
 The rule:
 a message states only what `git show --stat` of that commit shows;
@@ -732,6 +814,31 @@ and one case read the pinned checkout for an invented entry (ledger B185).
 A default is looked for at every function that hands a seam on,
 not only where the seam is first read.
 
+Each test that started a child process built the child's environment itself,
+or passed none,
+so the children of 27 test files and fixtures could inherit the provider keys the suite holds under `mise`,
+and one fixture,
+merged unread,
+started a node child on the built package with the parent's environment whole (ledger B291,
+M121).
+None called a provider.
+`nano-spawn` merges the environment it is given into the parent's,
+so a variable left out of that object is still there:
+an environment for a merging spawner states each name it removes,
+with the value `undefined`.
+An agent then ran a built command from its own shell,
+behind a strip of its own making that removed nothing,
+and bought six provider calls (ledger M120).
+A test starts a child only through `src/child-environment.test-fixture.ts`
+(`spawnKeyless`,
+`runKeyless`,
+`runBuiltCommand`),
+which removes every variable whose name ends in `_API_KEY` and every `TRANSLATION_REPAIR_` setting,
+and only then sets what the case names.
+A built command is started the same way by an agent as by a test,
+and an environment is never stripped,
+filtered or rebuilt by hand.
+
 The rule:
 before a test drives a production entry point,
 list what that entry point reads outside the process
@@ -787,6 +894,19 @@ A seam added to make a function testable never takes the production value as its
 among the source scans,
 fails on a direct `mkdtemp` or `tmpdir` call in a test or fixture outside the kept sites it names with why,
 and on a `scratchDir` call that is not the initializer of an `await using` declaration.
+`src/test-children-keyless.unit.test.ts` (ledger B291),
+among the source scans,
+fails on a test file or fixture,
+other than the shared one,
+that imports a spawning module or calls a spawning function;
+the shared fixture's own test starts real children that print the names they see.
+`src/production-children-keyless.unit.test.ts`,
+among the source scans,
+fails on a production start of a child that does not pass the environment `childEnvironment` builds
+(`child-process-environment.ts`,
+commit `4049d9eb2`,
+which closes the item ledger B291 left open).
+Nothing in the package holds a command an agent starts by hand.
 
 ## Tests on the real clock
 
@@ -992,6 +1112,10 @@ and the deterministic reader's in non-whitespace code points,
 so one text was usable as a model's reading and no text as the deterministic reader's (ledger B186).
 A constant is compared with one count,
 defined beside it.
+
+A picture reading's length was logged in UTF-16 units beside a verdict that counted solid characters,
+so fifteen astral letters logged as thirty (ledger B252).
+A length printed beside a verdict is counted the way the verdict counted it.
 
 The rule:
 text is ordered with `compareCodePoints` from `code-points.ts`,
@@ -1291,6 +1415,11 @@ A gather returns the quorum it closed on,
 and a reader takes that field,
 never a number read back out of a finding or sized a second time.
 
+The damage sample recorded a region no prober answered for as silent,
+which is the human grade's negative reference (ledger B298).
+No answer is never written down as an answer:
+an unheard region is printed as unheard and left off the sheet.
+
 The rule:
 when a rule changes what a quorum counts,
 census every threshold derived from a gather,
@@ -1391,6 +1520,13 @@ its message putting the lint off to a change that then went to agents,
 shipped a lint warning to the twelve agent checkouts made from it (ledger M114);
 and a line range for an in-place edit was counted off a print whose first line the tool had trimmed,
 so the edit replaced the wrong lines of a TSDoc (ledger M117).
+
+A red commit went out without the source scans,
+and a scan failed at it on two test files that each built one body (ledger M123);
+the fix commit for it went out without a lint run,
+and the whole-suite run on that commit ended its lint with one warning (ledger M124).
+The scans run before a red commit as before a fix,
+and lint runs before any commit that adds a helper.
 
 The rule:
 read a region with the Read tool before editing it.
@@ -1544,6 +1680,16 @@ its task reported exit 0,
 its log went unread,
 and an agent was sent to a worktree that did not exist (ledger M114).
 
+The type check ran before the build on a fix tree and reported ten errors in two test files,
+read against the old built declarations (ledger M132).
+Two listings printed several hundred file names into a session where a count was wanted (ledger M132).
+A message that resumed stopped agents said they had been stopped for a usage limit,
+and one read it as being cut short and handed back part of its work (ledger M127).
+The type check reads the built declarations,
+so it runs after the build;
+a count comes before a listing;
+and a message that resumes an agent says the whole task stands.
+
 The rule:
 a task that must not run with a fan-out parent is named outside the parent's prefix,
 and a new task's first run is read in its log for every task it started.
@@ -1629,6 +1775,10 @@ which reads settled renderings after a run,
 was shown the declared names and never the cited references the critics and panels had read (ledger B29),
 and the rule it needed could not be the critics' copy:
 that one names a TRANSLATION the audit never shows and a category its wire rejects.
+
+The relabel probe's arm that claims no issue list is known sent the production disclosure with an empty list,
+which under a rendered disclosure writes a list's heading into the prompt (ledger B283).
+An arm that claims a thing is absent sends the form production sends when it is absent.
 
 The rule:
 a sheet whose rules name a block carries that block wherever its caller holds it.
@@ -1716,6 +1866,15 @@ keyed as the empty destination (ledger B175).
 A rule written for one kind of input is applied to that kind alone,
 told apart by what the parse says,
 and a key never maps a value that names something onto the key of nothing.
+
+A percentile no rank belongs to was answered with zero (ledger B272);
+a routed call that left its loop with no attempt left said every provider refused it,
+under a comment calling that end unreachable (ledger B275);
+seed detection skipped an issue naming a slice the preparation lacks (ledger B276);
+and a score command given a named file that was absent scored without it,
+under the note for a file nobody named (ledger B285).
+Absence is an answer only for an input nobody named,
+and a comment calling a loop's end unreachable is checked against every `continue` in the loop.
 
 The rule:
 a call states every input that decides what a floor refuses,
@@ -1816,6 +1975,27 @@ and names the possibilities where it cannot tell them apart:
 the lookups' first wording said the network had failed,
 which is untrue of a request the transport will not send.
 
+A census of every place a caught value becomes text found 22 functions that logged or stored one whole:
+a parse refusal quoting a reply's opening,
+a failed exchange quoting a header or a provider's body,
+a cut stream repeating its cause (ledger B232 to B236).
+A caught value now reaches a line,
+a record or a message by its class,
+through `refusalText` or `exchangeFailureText` (ledger B237).
+That took the provider's own account of a refusal out of every log line,
+and a typed read put it back for log lines alone (`exchangeFailureLogText`,
+ledger B268).
+A credential the request sent could come back inside a reply and leave by any reader of the reply.
+The transport masks it out of the assembled body (ledger B266),
+and three kinds of reader the transport's mask never covered were masked one by one:
+the stream drain's opening line,
+two listing readers and two lookups (ledger B293,
+B295,
+B300).
+A reply is masked as text before anything parses,
+cuts or logs it,
+by whichever code first holds it.
+
 The rule:
 a marked class writes its sentence itself,
 from counts,
@@ -1850,6 +2030,14 @@ or lists as forwarding from a catch narrowed to anything but marked classes.
 It reads a narrowing by its presence in the catch,
 not as proof that it guards the throw,
 so each listed site is still read by hand.
+`caught-value-text.unit.test.ts`,
+which `source-scans` runs,
+fails on a caught value turned into text whole outside the functions it holds with a reason each (ledger B237),
+and `body-excerpt-readers.unit.test.ts` holds the reply excerpt field to five named files (ledger B268).
+No scan finds a reader of a reply that the credential mask never reads;
+each of the three closed so far was found by reading (ledger B293,
+B295,
+B300).
 `prompt-payload-store.unit.test.ts` asserts each of the store's refusals as `tallyErrorText` prints it;
 no scan finds a marked class whose throw sites share one sentence,
 so that too is read by hand.
@@ -2068,6 +2256,19 @@ or throws on the refusals its construction rules out;
 and a step that cannot place something refuses it there,
 by name.
 
+A refusal added so that a dropped translation block would be loud left its whole page refused,
+where the archive's own bytes could be kept:
+the block is carried as unplaced and named in a finding,
+and the refusal class is gone (ledger B247).
+A block still held at a seal crossed it and was refused as a layout fault;
+it becomes unplaced at the seal (ledger B248).
+A step that cannot place a part keeps the part as it stands where that is sound,
+and refuses the whole only where nothing can be kept.
+One voice's reply nested thousands of markers deep exhausted the parser's stack inside the translate stage,
+and the engine's own error left the stage and took every other voice's candidate with it (ledger B301).
+Text one voice wrote is bounded before a parser that descends once per level reads it,
+and every reader of that parser has its refusal.
+
 The rule:
 a step that can refuse on input a page can carry refuses as its sibling refusals do,
 leaving the steps that held applied,
@@ -2136,6 +2337,11 @@ The pinned archives held no such block,
 which a census showed before the check was tightened,
 so the looseness had decided nothing yet.
 
+A report printed the first 400 units of a candidate and no word that it was cut,
+so a reader took the opening for the whole (ledger B279).
+An excerpt shown as evidence says that it is one,
+and how much of the whole it shows.
+
 The rule:
 a check that vouches for a whole block's kind
 reads every part a reader sees,
@@ -2175,6 +2381,14 @@ transport fields read as present,
 and page-assembly passes taking an invisible heading or signature for a rendering
 (ledger B189 to B194).
 The census first classed page text as parsed text and missed the page passes.
+
+More readers took text that shows a reader nothing for a name,
+a quote or a heading's words:
+the signer floor,
+the source quote floor and the archive's signature authority (ledger B260),
+a prior quote of one invisible character that dismissed every claim carrying it (ledger B261),
+and an entry note under a heading of marks alone,
+which named an empty heading (ledger B271).
 
 The rule:
 whether text a model wrote shows a reader anything is asked of `rendersAsNothing` (`renders-as-nothing.ts`),
@@ -2324,6 +2538,14 @@ and a closer written with a tab left its whole element reading as two lone tags 
 A reader of a tag's shape is shown the strict parser's verdict for each whitespace spelling,
 the spellings it does not take among them.
 
+The mention scan called a marker a definition after any indentation,
+which the footnote graph reads under one grammar only (ledger B258);
+the destination scan kept the emphasis marks the parse's trail rule sheds (ledger B259);
+and the two container tag readers stepped over fewer whitespace characters than the strict grammar,
+each a different set (ledger B262).
+A role a scan gives a marker is asked of the parse the page is read under,
+and two readers of one construct share one predicate that a test checks against the grammar.
+
 The rule:
 a question about what a passage's blocks are
 (how many quotes,
@@ -2415,6 +2637,12 @@ so a refusal of the original's or the page's YAML was charged to a sound candida
 and sent its author to revise it
 (ledger B44).
 
+Two commands built their client inside the catch that reports one slice as failed or lost,
+so a missing key printed as one failed slice after another and the command exited 0 (ledger B294,
+B305).
+A catch that charges one unit of work holds none of the setup every unit shares,
+and rethrows a refusal that would be every unit's.
+
 The rule:
 a try holds only the call whose failure its catch describes,
 and the catch narrows to the class that call raises
@@ -2445,6 +2673,14 @@ and on a slice the archive translates every call bought nothing
 The consolidation asked its writers there too,
 and the floor refused all they wrote
 (ledger B45).
+
+Commands bought work before a check they could have made for nothing:
+the verify probe asked the whole roster and then refused a sheet already taken (ledger B282);
+the width probe bought its control for a draw holding no slice (ledger B299);
+a calibration drew the corpus for a roster of one seat (ledger B305);
+and a setup check printed that the plan was in order over a corpus yielding no entry (ledger B306).
+State known at the start is checked before anything is drawn,
+gathered or bought.
 
 The rule:
 a stage that buys work a deterministic check must pass asks first whether the check can pass anything on that input,
@@ -2561,6 +2797,15 @@ A probe counting the family first missed readers handed on as values (`.map(Numb
 (ledger M90),
 and a call about what providers write was first made from the package's fixtures,
 not their stored listings (ledger M91).
+
+An offset was read out of a parse refusal's message,
+which quotes a short file back whole,
+so a file's own words gave the offset (ledger B274);
+and a request rate written with a fraction was read as a rate,
+and made the pace read its list of starts between two entries (ledger B292).
+Text a message may quote is never searched for a phrase the message uses as structure,
+and a count of places is a whole number of one or more,
+or is refused where it is read.
 
 The rule:
 a reader of a number in text accepts only the spelling its writer writes,
@@ -2721,6 +2966,28 @@ so its revision was checked at the first place the text stands (ledger B230).
 A caller that cut a piece out of a text passes where the piece stands,
 and the callee does not find it again by its text.
 
+The other sites that census described and left were closed after those,
+each a reader that answered for one of two elements under one key:
+a roster seating one model twice,
+a confirmation fitting two rounds,
+a tally table,
+a region's slice,
+a ledger row for an arm,
+a subject on two rows,
+a sheet position named twice and a prober answering a region twice (ledger B238 to B245),
+with a card dropped by a repeated served id (ledger B246).
+A second census,
+over map writes,
+loops that return at a first match,
+sets that drop repeats and keys of parsed objects,
+found a page name the archive renders two ways given by its first rendering (ledger B263)
+and one voice counted twice for naming a pair twice (ledger B264).
+A report's merge key that left out two of four providers' states merged readings that differed there (ledger B281).
+A reader says what a repeated key means,
+by a refusal,
+a count or a finding,
+and a key holds every field that tells two records apart.
+
 The rule:
 a table looked up by text is a `ReadonlyMap`,
 and a record filled by a key is a `Map` until it is handed on whole,
@@ -2763,10 +3030,14 @@ whose value is an object literal at a module's top or `{}` anywhere,
 or that is written through a computed key;
 the red cases in each site's test file hold the inherited names.
 `validate-issue.unit.test.ts` and `critic-wire.unit.test.ts` hold a document repeating an id,
-and each site of ledger B203 to B210 and of B228 to B230 holds its repeat in its own test file;
-first-match lookups elsewhere are held by habit and review,
-the sites that census described and that still stand among them (ledger B203,
-"Open").
+and each site of ledger B203 to B210,
+of B228 to B230 and of B238 to B246 holds its repeat in its own test file;
+`blind-map-writes.unit.test.ts`,
+which `source-scans` runs,
+fails a two-argument `set` whose enclosing functions never read the same key of the same map,
+outside the writes it allows with what makes each key unique (ledger B265);
+first-match loops,
+sets that drop a differing repeat and doubled keys in parsed JSON are held by habit and review.
 Out of the scan's reach,
 and read once by a typed census recorded in ledger B77:
 a table built by `Object.fromEntries` or handed back from a function and then read by text,
@@ -2883,6 +3154,11 @@ a round line short of its fields was refused for a missing unit,
 a completion line without its outcome read as an empty outcome,
 and calls spanning no time divided by a zero span (ledger B82).
 
+Two report commands counted the closing newline of a log as a line,
+and totalled a log named twice (ledger B278).
+A log's lines are what its newlines end,
+and a reader that totals refuses a log it is handed twice.
+
 The rule:
 a reader of a line the package writes starts from the writer:
 list every shape the writer can emit,
@@ -2938,6 +3214,9 @@ or wrote a signer's name over its title (ledger B84).
 The contributor name pass already checked the count for signatures,
 one line away.
 
+A replacement for a slice the page lacks was taken with the archive read as empty text (ledger B273).
+A row that names a slice is read through the reader that refuses a slice the page does not hold.
+
 The rule:
 pair two lists by position only where they carry the same count
 at the level the positions are read:
@@ -2974,6 +3253,12 @@ and placed a refusal naming no span at the start of the body,
 though the parser had read to the body's end;
 a page whose first named break was withdrawn then read as stopping at offset 0,
 and the guard gave up every replacement (ledger B86).
+
+The parser skips a byte order mark that opens its input without counting it,
+so every position of the tree sat one character short of the body as written (ledger B257).
+A parser that drops input without counting it moves every offset it reports,
+and the shift is undone where the offsets are made,
+not in each reader.
 
 The rule:
 an offset means something only in the text it indexes.
@@ -3081,6 +3366,32 @@ the thrower read its refusal as the operator's mistake and the printer as a bug.
 A refusal's class says which of the two it is,
 and a case drives each such class through the printer.
 
+Five of the classes B221 left became stated refusals,
+and the sixth stays a fault with its reason said (ledger B254).
+The runners that no test had run as built held the same shape many times over:
+an unreadable or missing log,
+a missing `artifacts` directory,
+a sheet and a manifest of different lengths,
+a listing that is not JSON,
+an empty corpus,
+a roster too narrow,
+each with a message telling the operator what to do,
+printed as a fault with frames (ledger B278,
+B284,
+B290,
+B296,
+B303,
+B307).
+Two settings that can refuse were read in module constants,
+before the boundary that prints refusals ran,
+and exited 1 under a dump of source (ledger B302).
+A refusal that is always the operator's is a stated refusal by class,
+never caught and wrapped where it happens to be printed;
+a class that is a fault elsewhere is restated at the one site where it is the operator's;
+and a setting that can refuse is read inside the boundary.
+A refusal that arrives in a 200 stream's error chunk with a 4xx code is returned unretried,
+as the same refusal over plain HTTP is (ledger B251).
+
 The rule:
 where one event is read by two layers,
 each layer's reading is stated beside the other's,
@@ -3110,6 +3421,8 @@ and `probe-verify-sheet.unit.test.ts` holds
 and the refusal of a claim the screen did not corroborate.
 `corpus-run/cli-refusal.unit.test.ts` holds a case for each of the seven classes of ledger B221,
 asserting the printed line and the exit code;
+each moved runner's suite "<command> as built" asserts the printed line and the exit code of its refusals,
+from a child process;
 no scan finds an operator's mistake still thrown as a class the printer reads as a fault.
 
 ## One field carrying two kinds of text
@@ -3161,6 +3474,17 @@ A marked refusal still wrote `destination(s)` after its count
 and several slices under the singular `slice` (ledger B217),
 which the count-nouns scan had passed;
 why it passed was not looked into.
+
+The runners no test had run as built held the same family:
+a noun,
+a verb or a pronoun fixed after a count in the lines of six commands,
+found when cases first pinned their whole lines (ledger B308);
+and a finding for an original with no content line read "more than 0 times" (ledger B255).
+A count's sign is not its size:
+a noun chosen from a signed difference is chosen from the size of the difference,
+since a difference of minus one is one of the thing counted.
+The defect behind that sentence is in the lead's notes for a runner cluster not merged at `f8e99b84d`,
+and its fix is in no commit this doc can name yet.
 
 The rule:
 a noun after a count that can be one is chosen by `wordForCount`,
@@ -3272,6 +3596,22 @@ No verdict is kept for a fixture production cannot build.
 Fourteen chain tails then wrote their invariant as a call to a helper that throws,
 a shape the census reads as code no test ran,
 until the helper became a class named for the invariant and thrown at the chain's end (ledger B231).
+
+The sibling arm B199 left,
+a consolidation recorded as not run read as nothing to report,
+is an `unreachable:` throw too (ledger B250).
+The coverage clusters of 2026-10-06 (UTC) then read every cold fallback the whole-suite census listed,
+and made loud or total each default for a state its caller rules out,
+twenty by the three commits' own counts,
+where no input reaches the state (ledger T8).
+Three fallbacks could be reached after all:
+by a percentile no rank belongs to,
+which the signature admits and no caller passes (ledger B272);
+by a file whose own words read as a position (ledger B274);
+and by a call cut at its stream bound on every provider,
+under a comment calling that end unreachable (ledger B275).
+A fallback is called unreachable only after every way into it is read,
+a comment that says so included.
 
 The rule:
 a state no input produces is refused out loud,
@@ -3387,6 +3727,14 @@ so a path that is not there raised the read's own error (ledger B183).
 A command refuses an unreadable input file by name,
 before it spends a suite on it.
 
+A final draw wrote an empty gate sheet that an exclusive create then protected for ever;
+a failed draw removed a sheet another draw had made,
+since its tracker recorded a path before the write;
+and an empty pool left a kept,
+empty sheet and manifest (ledger B297).
+A write that nothing may replace is made only once there is something to write,
+and a cleanup removes only what its own run created.
+
 The rule:
 a file this package writes and a later run parses is written through `writeFileAtomic`.
 Its reader tells a path nothing stands at from a file that is there,
@@ -3472,3 +3820,41 @@ whose `never` parameter refuses a member no branch names.
 No scan finds a list typed by a union declared apart from it,
 so a new one is held by review,
 and the lists that census read and left unconverted are named in ledger B227.
+
+## Output decided by arrival order
+
+What happened:
+one checker round read twice gave its findings and readings in two orders,
+by which seat lost its first answer,
+and two cases had sorted the findings,
+which hid it (ledger B253).
+The author table of a score report ordered equal counts by the directory listing,
+which is not sorted (ledger B287).
+And one as-built case failed in two whole-suite runs and passed when its file ran alone.
+By the lead's reading,
+not measured in any commit through `f8e99b84d`,
+the command reads two pages at once,
+both reads fail,
+and the refusal names whichever ended first (ledger B300).
+The lead's notes hold one more of this family,
+lines printed in the order their reads finished,
+in a runner cluster not merged at that commit;
+its entry comes with that merge.
+
+The rule:
+what a command prints,
+records or reports does not depend on which of several concurrent operations ended first,
+nor on the order a directory was listed in.
+Concurrent reads collect their results,
+and printing is sequential,
+in the order of the input.
+Voices are ordered by roster,
+ties by a stated key,
+and a case asserts the order exactly,
+never after a sort of its own.
+
+What enforces it:
+habit and review;
+`repair-edit-stages.unit.test.ts` holds the roster order whichever seats lost their first answer,
+and `corpus-run/score-crosscheck-authors.unit.test.ts` holds the author table's ties under both arrival orders.
+No scan finds a result ordered by arrival.

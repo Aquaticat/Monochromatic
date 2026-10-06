@@ -7376,6 +7376,210 @@ Two scan slips in the edit
 a position word in its comment)
 were caught and fixed forward.
 
+WHOLE-SUITE CENSUS AND THE CLUSTERS CUT FROM IT (2026-10-06 UTC):
+a whole-suite census was taken at `65bd3a645` (`census-5RzoUC`),
+with the unit suite at 1,621 pass lines.
+Its report reads:
+library source,
+103 files,
+137 stretches over 380 lines,
+4 functions never called;
+entry files,
+5 files,
+17 stretches over 714 lines,
+9 functions never called;
+invariant throws counted apart,
+41 stretches,
+all in library source;
+and 36 bundles no test loaded,
+carrying 39 sources and 14,029 physical lines.
+B231 records the fourteen chain tails that census listed as cold.
+The clusters of this passage were cut from that census,
+by file,
+and given to agents in side checkouts.
+The lead merged each patch,
+with red cases committed apart from their fix;
+what the lead measured stands in each commit's message,
+and M121,
+M123 and M124 record what the lead's reading and checks missed.
+
+The library's cold stretches went in three clusters.
+The files from a to l:
+cases for twenty-two library files,
+four states made loud,
+one dead operand removed,
+and one defect (B271),
+in `f18d0b9b1` and `b8e30dce2`.
+The `corpus-run` files:
+cases in seventeen test files and one new one,
+five defaults for states their callers rule out made loud,
+and two defects (B272,
+B273),
+in `96dad6b2c` and `5723cd071`.
+The files from m to z:
+cases in seventeen test files and six new ones,
+eleven silent defaults made loud or total,
+and three defects (B274 to B276),
+in `f45278048`,
+`71974714f` and `230623bec`.
+The agents of the first two clusters each report a census over their test files
+that lists no stretch of the cluster's files the whole-suite census listed,
+and all three list their new throws among the invariant throws
+(the agents' accounts,
+not rerun by the lead).
+A fourth piece closed what the third left,
+the fallbacks of `request-pace.ts` and the rethrow of `transient-retry.ts` (B292).
+
+One stretch of library source stays cold on purpose.
+`translate-slice.ts` keeps its quote-loss refusal,
+which ships the whole archive by the owner's rule of 2026-09-27 and which no input reaches,
+since the floor counts the same passages.
+The lead's ruling,
+open to the owner's veto:
+it stays as a defence the owner decided,
+and the final census is expected to list exactly this stretch in library source.
+
+The runner entry files came next,
+the work this entry had left for after the library.
+A runner's procedures moved out of its entry file into modules beside it,
+each with a test file of its own over scripted clients and readers,
+and each command gained a suite that runs it as built,
+in a child process that holds no key (B291).
+The entry file keeps its wiring and one call.
+Nine clusters,
+34 commands,
+were merged by `f8e99b84d`,
+with entry lines after and before by each agent's count:
+
+- `ledger-report`,
+  `run-timing-report`,
+  `spend-report` and `meter-report`
+  (58,
+  32,
+  28 and 34 lines,
+  from 378,
+  271,
+  463 and 496),
+  in `5e116395a` and `387af02b7` (B278 to B281);
+- `probe-sensitivity`,
+  `probe-verify`,
+  `probe-relabel`,
+  `checker-sensitivity` and `audit-sensitivity`
+  (61,
+  57,
+  78,
+  50 and 118,
+  from 190,
+  264,
+  306,
+  363 and 523),
+  in `139a31f4a` and `abb506b7b` (B282,
+  B283);
+- `score-attribution`,
+  `score-verify`,
+  `score-agreement`,
+  `score-probe` and `score-crosscheck`
+  (32,
+  42,
+  34,
+  39 and 38,
+  from 280,
+  325,
+  353,
+  401 and 414),
+  in `a13f71ba8` and `1088e72d9` (B284 to B287);
+- `cap-census`,
+  `slice-cost-report` and `cache-account-audit`
+  (17,
+  16 and 40,
+  from 443,
+  533 and 462),
+  in `53e25b458` (B288 to B290);
+- `sentinel-probe`,
+  `displacement-probe`,
+  `coverage-control-probe`,
+  `coverage-probe` and `translate-probe`
+  (35,
+  62,
+  37,
+  75 and 44,
+  from 212,
+  588,
+  321,
+  437 and 394),
+  in `7d2ca2604` and `da8a963cc` (B294);
+- `model-health`,
+  `model-catalog`,
+  `roster-card`,
+  `draw-sample`,
+  `damage-sample` and `budget-sample`
+  (40,
+  38,
+  42,
+  42,
+  55 and 41,
+  from 223,
+  129,
+  180,
+  427,
+  412 and 174),
+  in `17a66fa66` and `097b6ac40` (B295 to B298);
+- `editor-calibrate` and `editor-width-probe`
+  (51 and 56,
+  from 596 and 312),
+  in `327ea1de0` and `77a213478` (B299);
+- `corpus-pass`
+  (116,
+  from 675),
+  in `ea16d3b51` and `9a68e3c78` (B302 to B304);
+- `producer-calibrate`,
+  `recall-benchmark` and `roster-bench`
+  (65,
+  51 and 73,
+  from 315,
+  446 and 405),
+  in `cd78288d7` and `f8e99b84d` (B305 to B307).
+
+B308 records the counts those moves found standing before a fixed word.
+Each agent reports a census over its own test files that shows its bundles loaded,
+and no cold stretch in its entry files or new modules beyond the invariant throws its commit names
+(the agents' accounts,
+not rerun by the lead;
+the editor cluster's is in its report and not in its commit's message;
+two entry files of the sampler cluster each keep one cold character,
+which B296 records).
+What a keyless child cannot reach stays unreached,
+and each commit says what:
+a run to its end,
+a round that reaches a provider,
+a real settlement.
+
+The whole suite at the close of this passage,
+on `f8e99b84d` in a side checkout:
+1,938 `[PASS]` lines and 2 `[FAIL]` lines,
+both for one case that fails under load (B300,
+B305),
+the lint finding nothing,
+and the 41 source scans passing.
+Until `63f8f838a` every count of pass lines left out the cases B277 records.
+
+Still open at `f8e99b84d`:
+
+- three runner clusters,
+  seven commands,
+  were not merged at that commit
+  (`verify-published` and `window-trial-probe`;
+  `slice-census` and `coverage-census`;
+  `judge-fidelity-probe`,
+  `rendering-audit-settled` and `rendering-audit-settled-report`);
+- no whole-suite census has been taken since `65bd3a645`,
+  so the counts this passage rests on are the agents' own,
+  and the recount B231 owes is still owed;
+- the moved procedures of `ledger-report` and `meter-report` set the exit code themselves (B281),
+  where the rule for the later clusters is that a procedure returns its code;
+- the clusters' observations left to rule on,
+  each in the entry of its cluster under "Open".
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -23487,6 +23691,10 @@ as the reader's own failure line in the same file does,
 where the package's rule for a logged failure is `refusalText`.
 A census of every place a caught value is turned into text whole was launched on 2026-10-05 (UTC)
 and had not handed back when this was written.
+It has since:
+red in `afee9dcda`,
+fixed in `4c26a48a0`,
+and recorded as B232 to B237.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -23570,7 +23778,8 @@ Open to the owner's veto:
 the count moved to the constant's file,
 where the other way keeps it in `image-ocr.ts` behind a value import cycle.
 
-Open:
+Open when this entry was written,
+closed in B252 (`df807a8b5`):
 `image-reading-stage.ts` still logs a reading's length in UTF-16 units,
 a number that can read larger than the count the verdict used.
 
@@ -23618,7 +23827,9 @@ Open to the owner's veto:
 the four refusals themselves,
 of which the `rewrapped` and `archiveKept` ones carry the least.
 
-Open:
+Open when this entry was written,
+closed in B249 (`df807a8b5`),
+which also drives settlements of the real stage through the store and back:
 a gate whose `usable` count is short of `CONSOLIDATE_GATE_QUORUM` is still resumed,
 though the stage never persists one,
 since the store's own comment documents a gate that heard nobody as valid
@@ -23887,7 +24098,8 @@ so the restore has a place to write the signer;
 read as unsigned,
 the line would stay nameless.
 
-Open,
+Open when this entry was written,
+closed in B260 (`68df23b05`),
 seen by the agent and outside this family:
 a candidate that signs with an invisible name passes the signer floor (`translate-signer-handle.ts`),
 which the restore now repairs at assembly;
@@ -23947,7 +24159,8 @@ a blank needle handed to a search,
 a length floor on text that was never trimmed,
 and a trimming helper whose result another function compares.
 
-Open:
+Open when this entry was written,
+closed in B261 (`68df23b05`):
 one held key is a known gap,
 `introduced-defect-screen.ts#isUsable`,
 which keeps a prior quote of one invisible character;
@@ -24004,7 +24217,9 @@ and the row keeps `carve` as one word beside a separate `pairingRefusal`,
 two fields that must agree,
 where the other way makes the carve an object carrying its refusal.
 
-Open:
+Open when this entry was written,
+closed in `df807a8b5`,
+as B253 notes:
 the sentence is worded in two places,
 here and in `rebuildPreparation`,
 until one shares it with the other.
@@ -24114,7 +24329,8 @@ the arm throws,
 its message opening `unreachable:` and naming the kind found and the writer that records it as contested.
 The case that asserted the empty list asserts the whole message.
 
-Open:
+Open when this entry was written,
+closed in B250 (`df807a8b5`):
 the sibling arm of the same function,
 for a consolidation that never ran,
 has the same shape and was left,
@@ -24256,7 +24472,8 @@ Open to the owner's veto:
 `conflict_error` (409) stays retried,
 since its documentation says to resolve the conflict and then retry.
 
-Open:
+Open when this entry was written,
+closed in B251 (`df807a8b5`):
 `InStreamProviderError` (`openrouter-stream-error.ts`) carrying a 4xx code still rides the ladder,
 and the Bedrock reader names no error event in its stream end.
 
@@ -24347,7 +24564,12 @@ fixed in `65bd3a645`,
 and recorded since as B228 to B230,
 so the first three sites of this list are closed.
 The other took the readers after them in this list
-and had not handed back:
+and had not handed back when this was written.
+It has since:
+red in `d00bc71b4`,
+fixed in `8ce45ae86`,
+and recorded as B238 to B245,
+so every site of this list is closed:
 
 - `corpus-run/title-reference-link.ts`:
   a title linked twice in one slice has its second link's rendering never located,
@@ -24826,6 +25048,10 @@ by that timing the cost grows faster than the text,
 about 4.6 times the time for twice the markers,
 it is the Markdown library's own,
 and no follow-up was launched for it.
+Both are closed since:
+the indented definition in B258 (`68df23b05`),
+and the nested text in B301 (`41d5f9267`),
+which bounds the nesting a parser is handed and does not make the parse linear.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -24894,6 +25120,8 @@ which it did not before the fix either;
 about 450 of 40,000 generated texts show the difference,
 by the agent's count.
 A follow-up was launched and had not handed back when this was written.
+It has since:
+B259 (`68df23b05`) sheds the three marks as the parse's trail rule does.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -25078,6 +25306,9 @@ a paragraph preceded by a byte order mark got an envelope whose text begins with
 (`parse-document.ts`),
 and whether two runs of one input can order a checker round's findings differently was not settled.
 A follow-up was launched for each and had not handed back when this was written.
+Both have since:
+the byte order mark is B257 (`68df23b05`),
+and the order of a checker round's findings is B253 (`df807a8b5`).
 
 Recurrence:
 `mistake-prevention.md`,
@@ -25243,6 +25474,9 @@ and open:
 the page is refused,
 where the other way carries the block with the archive's bytes untouched so that the entry proceeds.
 A follow-up was launched for that and had not handed back when this was written.
+It has since:
+B247 (`df807a8b5`) carries such a block as the archive has it,
+and removes the refusal class this entry added.
 Seen by the agent and not looked into:
 two generated inputs of the second seed ended in `PlacementLayoutError`,
 from supplied pairings that repeat a pair.
@@ -25372,6 +25606,9 @@ and `CoverageFileError`,
 `SourceMapFileError` and `CorpusReadError`,
 which the agent read as faults of the environment without running each command.
 A follow-up is prepared for these six and was not launched when this was written.
+It was launched and merged since:
+B254 (`51ccd8680`) makes five of the six stated refusals,
+and keeps `CoverageFileError` a fault with its reason said.
 `LedgerShapeError`,
 `BedrockLedgerShapeError` and `ArtifactParseError` are damaged data and stay faults,
 which an existing case pins.
@@ -25432,12 +25669,14 @@ a form feed,
 a vertical tab and a carriage return before the bracket all parse,
 and a zero-width space is refused.
 
-Open:
+Open when this entry was written,
+closed in B262 (`68df23b05`):
 the masker matches a space and a tab alone,
 so it still differs from the grammar on the other whitespace the grammar takes;
 and `inline-container-tags.ts` reads tags its own way and was not examined.
-A follow-up for both was launched on 2026-10-06 (UTC),
-and nothing of it was merged when this was written.
+A follow-up for both was launched on 2026-10-06 (UTC)
+and merged in that commit,
+which gives both readers the grammar's whitespace through one predicate.
 
 The whole suite ran on `f7653073b` in a side checkout,
 which holds the changes of B222 to B227:
@@ -25583,13 +25822,20 @@ the change from `all` to `full` was not shown red by a mutation,
 and the branch of `lockRunsDir` that names the holder after a lost race is still run by no case.
 The whole suite's run on `f7653073b` is recorded in B222.
 
-Open:
+Open when this entry was written,
+closed in B256 (`042a9245d`):
 that branch,
 and dog-themed fixture text left in two older cases
 (`seeded-error.unit.test.ts`,
 `introduced-defect-wire.unit.test.ts`).
-A follow-up holding both was launched on 2026-10-06 (UTC),
-and nothing of it was merged when this was written.
+A follow-up holding both was launched on 2026-10-06 (UTC)
+and merged in that commit.
+Two cases reach both arms of the lost takeover;
+the rebase case of the first file is cat-themed and its case with a dog needle is deleted;
+and a search of both files for `dog` at `f8e99b84d`,
+letter case ignored,
+finds nothing,
+where the same search for `cat` finds lines in each.
 
 Open to the owner's veto:
 `concurrency: 1` on the suite whose case writes a process variable.
@@ -25729,13 +25975,16 @@ The closing refusal was written as a call to a helper,
 a shape the coverage census reads as code no test ran;
 B231 records that and its repair.
 
-Open:
+Open when this entry was written,
+answered in B249 (`df807a8b5`):
 whether the decision `no-voice-heard`,
 which maps to a terminal cached as settled,
 can reach the persistence check
 (the agent's question,
-handed to a follow-up launched on 2026-10-06 (UTC),
-nothing of which was merged when this was written).
+handed to a follow-up launched on 2026-10-06 (UTC)).
+No input reaches it today,
+by that follow-up's sweep,
+and a settlement on which no voice was heard is no longer kept.
 Read by the agent and left unconverted,
 each complete at this commit by its reading:
 `CARD_PROVIDERS` (`model-card-derive.ts`),
@@ -25853,10 +26102,10 @@ The whole suite's run on `65bd3a645` is recorded in B228.
 Open to the owner's veto:
 silence where the two texts carry a wording a different number of times.
 
-Open:
+Open when this entry was written,
+closed in B255 (`51ccd8680`):
 the repeated-line finding prints a number before a counted noun (the agent's note),
-handed to a follow-up launched on 2026-10-06 (UTC),
-nothing of which was merged when this was written.
+handed to a follow-up launched on 2026-10-06 (UTC).
 
 Recurrence:
 `mistake-prevention.md`,
@@ -25961,6 +26210,3301 @@ Recurrence:
 "Guards a census wants gone":
 an invariant is written in a shape the census reads,
 and a helper that throws for its caller is not one.
+
+### B232: a model reply's opening reached log lines and stored details through the parse refusal
+
+Red in `afee9dcda`,
+fixed in `4c26a48a0`.
+
+Found by a census of every place a caught value becomes text,
+and merged on 2026-10-06 (UTC).
+`parseModelJson` (`model-content.ts`) returned `String(error,)` of its `JSON.parse` failure as `detail`,
+and `readJsonPastFalseStart`,
+`readJsonBeforeTrailingText` and `readPayload` (`stream-delta-scan.ts`) logged or kept the same.
+V8's `SyntaxError` quotes ten characters of the text it refused:
+a model's reply,
+a provider's body or a stream frame.
+The detail reached the schema-mismatch detail of `chat-json-outcome.ts` and the `stage-call.ts` lines,
+while `lookup-cache.ts` already said this detail must never be repeated.
+The red cases are the parse refusal of a reply opening with a ten-character word,
+asserted against `refused by SyntaxError`,
+and the package case of the scan B237 records.
+
+The fix:
+`parseModelJson` returns `refusalText` of the failure,
+and the three readers go through `parseModelJson` where each caught a parse itself.
+The parser is still a bare try around `JSON.parse`,
+so the stream path does no more work per frame.
+The reply's own opening and the stop reason stay in the outcome;
+V8's reason and position are lost.
+
+The lead ran 35 named test files before the fix was committed,
+the scan among them,
+with the 37 source scans and a clean type check.
+The whole suite's runs on this change are recorded in B235.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B233: a failed model exchange was logged and recorded by its own message
+
+Red in `afee9dcda`,
+fixed in `4c26a48a0`.
+
+Found by the census of B232.
+Twenty-two functions turned a caught exchange failure into text with `String(error,)` or `caughtValueText`,
+among them `attemptStageCall`,
+`attemptDecisionCall`,
+`reaskElsewhereNudged`,
+`reuseTwinOrBuy`,
+`readImagePair` (a rejected `allSettled` reader),
+`runPick`,
+`readDryness`,
+`gateProvider`,
+`reportModelHealth`,
+the coverage probe,
+`runRepairBenchmark` (two log lines and the stored `detail`),
+and the abort-path lines of `repair-refine-step.ts`,
+`repair-slice-buy.ts` and `translate-slice-attempt.ts`.
+Three kinds of message can ride there.
+A runtime `fetch` rejection for a header it cannot send quotes the header's value,
+which is the key
+(measured as a `TypeError` in the model-provider probe of 2026-10-05,
+by the agent's report);
+V8's JSON parse failure quotes the opening of the text it refused;
+and `SyntheticHttpError` excerpts the provider's reply body on purpose.
+The red cases throw a `TypeError` quoting a stand-in key (`quoting-failure.test-fixture.ts`,
+invented)
+and a `SyntheticHttpError` with a body,
+and the logged lines held both.
+
+The fix:
+`exchangeFailureText` (`exchange-failure-text.ts`) prints a marked class's own sentence,
+`refused by SyntheticHttpError with HTTP <status>` for a provider's status failure,
+and the class name for anything else.
+Every site named here uses it.
+The lead's edit on the agent's change:
+the model-health probe names an unreachable model's failure class once,
+where it read `UNREACHABLE (TypeError): refused by TypeError`.
+
+What was lost:
+no log line carried a provider's own account of a refusal any more,
+only its status,
+and two comments (`completion-shape.ts`,
+`request-size-refusal.ts`) that said the account stays on `bodyExcerpt` "for the log" became untrue for every class.
+That account is the evidence a model is dropped on.
+B266 and B268 record the follow-up that put it back by a typed read.
+
+Not cased:
+the abort-path lines,
+the provider gate and the two probe commands have no behavioural case and rest on the scan (the agent's report).
+
+Open to the owner's veto:
+a separate `exchangeFailureText` where a wider `refusalText` is the alternative;
+the picture reader's two lines left printing the local reader's failure text at this commit
+(held in the scan with that reason,
+and closed by B269).
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B234: the retry ladder logged a raw transport rejection and wrapped a non-Error without its cause
+
+Red in `afee9dcda`,
+fixed in `4c26a48a0`.
+
+Found by the census of B232.
+`exchangeWithRetry` (`transient-retry.ts`) logged `String(thrown,)` on every retry of a thrown transport failure,
+the one place the unsendable-header rejection reaches before any marked class wraps it,
+and `attemptExchange` turned a thrown value that is no `Error` into `new Error(String(error,),)` with no `cause`.
+The red cases throw the quoting `TypeError`,
+and a bare string,
+and read the retry line and the wrapped error.
+
+The fix:
+the retry line goes through `exchangeFailureText`,
+and the wrapper states `the transport threw a value that is not an Error` with the value as `cause`.
+
+Open to the owner's veto:
+the wrapper sentence no longer carries the thrown text.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B235: a cut stream's message repeated its cause and stayed withheld from every refusal printer
+
+Red in `afee9dcda`,
+fixed in `4c26a48a0`,
+with one stale case repaired in `495f040b6`.
+
+Found by the census of B232.
+`StreamCutShortError` (`stream-cut.ts`) interpolated `String(cause,)`,
+so it stayed withheld from `messageNamesOnly`,
+and every `refusalText` caller printed `refused by StreamCutShortError`
+while a `String` of it printed whatever the stream's failure said.
+`stopReading` (`stream-drain.ts`) logged the cancel failure by `String` too.
+The red cases cut a stream with a quoting cause and a stalled cause,
+and cancel a body whose cancel throws the quoting failure.
+
+The fix:
+the class declares `messageNamesOnly`,
+the inventory names the three parts it builds from,
+and the cancel line uses `refusalText`.
+The agent's patch stated the cause through `refusalText`;
+the lead changed that to `exchangeFailureText`,
+so a cause that is a provider's status failure keeps its HTTP status,
+and a case asserts it.
+
+The fix left the suite red at one case.
+`stream-idle-guard.unit.test.ts`,
+"reports caller steering as itself,
+not as a stall",
+still asserted that the cut's message contains the steering error's own words.
+The lead had run 35 named test files before the commit and that file was not among them (M122).
+The whole-suite run on `4c26a48a0` in a side checkout found it:
+1,624 `[PASS]` lines and 3 `[FAIL]` lines,
+all three that one case and its two enclosing suites,
+with the lint finding nothing and the 37 source scans passing.
+`495f040b6` makes the case assert what it is named for:
+the thrown value is a `StreamCutShortError`,
+its `cause` is the caller's own error by identity,
+and its whole text is `StreamCutShortError: hf:whiskers: stream cut after 0 characters (refused by Error)`.
+The whole suite then ran on `8ce45ae86`,
+which holds this fix and that of B238 to B246:
+1,628 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 37 source scans passing.
+
+Open to the owner's veto:
+marking `StreamCutShortError`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B236: the window trial's two refusals were `RangeError`s the pick could only name by class
+
+Red in `afee9dcda`,
+fixed in `4c26a48a0`.
+
+Found by the census of B232.
+`runPick` (`window-trial-pick.ts`) logged `String(error,)` of anything the arms raised,
+and `runSliceArms` raised two `RangeError`s whose sentences were its only account of why a slice was refused.
+Naming the class alone would have lost which refusal it was.
+The red case refuses a lone slice and expects the sentence in the warning.
+
+The fix:
+`TrialSliceRefusalError` (`window-trial-refusal.ts`) is marked and built from an entry id and a slice index,
+the pick logs it through `exchangeFailureText`,
+and the sentences are unchanged.
+One test file the agent's patch no longer applied to,
+`window-trial-slice.unit.test.ts`,
+was merged by hand by the lead.
+
+Open to the owner's veto:
+the class change of the two refusals,
+which were `RangeError`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B237: no scan held the rule that a caught value never becomes text whole
+
+Scan and red cases in `afee9dcda`,
+wired and green in `4c26a48a0`.
+
+Found by the census of B232.
+Nothing read a caught value turned into text whole:
+`caught-errors-kept.unit.test.ts` accepts any use of the binding,
+and the inventory in `message-names-only.unit.test.ts` reads only the constructors of marked classes
+and the sites that hand them a caught text.
+
+The fix:
+`caught-value-text.unit.test.ts` flags the forms listed in its module comment
+(the argument of `String`,
+`caughtValueText`,
+`JSON.stringify` or a logger,
+a template,
+`.message`,
+`.stack`,
+destructuring),
+keyed by file and enclosing function with a reason for each held function,
+over a fixture case that finds every form.
+Run on the agent's base it found 22 functions fixed by B232 to B236 and 22 held (the agent's count);
+on the lead's red tree its package case listed 22 functions outside the held list.
+The lead wired it into the `source-scans` task,
+which ran 37 files from then.
+
+Not reached,
+by the agent's account:
+a copy into another binding,
+a value carried across a function under another name,
+and text reaching a sink through a callback.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B238: a roster seating one model twice was gathered as several voices
+
+Red in `d00bc71b4`,
+fixed in `8ce45ae86`.
+
+Found on 2026-10-06 (UTC)
+by the second pass over the first-match census of B203,
+which read the sites that census described and left.
+`gatherStageVoices` counted each seat of a roster as a voice toward quorum.
+The panel,
+the critics and the page title bench keyed what they read by model id,
+so a roster naming one model twice met quorum on voices that were one model and kept one of its replies.
+Editors and checkers were refused a repeated id where their rosters are composed.
+The agent's probe of the unfixed build gathered the panel,
+critic and page-title stages over a roster of three seats naming one id twice,
+and all three were accepted.
+
+The fix:
+such a roster is refused at the start of `gatherStageVoices`,
+before any seat is asked,
+as `StageRosterRepeatError` (`stage-roster-repeat.ts`),
+marked,
+naming the stage and each repeated id once.
+The lead merged the inventory lines for the class and its `stage` part by hand beside another change's additions.
+
+Measured by the lead:
+no roster a run can seat trips the refusal.
+`judgeSeatsFor`,
+over all 16 combinations of four providers dry or wet,
+returned 278 arrays of ids with no repeated member,
+and 70 exported roster-like arrays hold none;
+the same reader finds the repeat in a control roster.
+Rosters a stage builds from these,
+and a roster an operator's flag names,
+were not read.
+
+The whole suite's run on `8ce45ae86` is recorded in B235.
+
+Open to the owner's veto:
+a refusal in the gather for any stage.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B239: a stored naturalness confirmation bound to the first of two rounds it fits
+
+Red in `d00bc71b4`,
+fixed in `8ce45ae86`.
+
+Found by the second pass B238 records.
+`parseNaturalnessConfirmations` bound each confirmation to the first decisive round carrying its candidate's digests.
+A correction chain that returns to a candidate it had reviewed leaves two rounds that fit,
+and `assertNaturalnessCorrectionChain` does not refuse such a chain,
+so the order and roster checks read the first round while the confirmation names neither.
+
+The fix:
+the reader gathers every fitting round and refuses a confirmation that fits more than one,
+as `ArtifactParseError` naming the confirmation's position.
+
+The agent's count,
+not rerun by the lead:
+76 stored artifacts carry no confirmation,
+so the measurement refuses nothing and proves nothing,
+and the writer records one round today.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B240: probe tallies took the later of two regions under one envelope id
+
+Red in `d00bc71b4`,
+fixed in `8ce45ae86`.
+
+Found by the second pass B238 records.
+`readRecordedTallies` built the tally table with `Object.fromEntries`,
+so a second region under one envelope id in a stored record replaced the first tally without a word.
+
+The fix:
+the reader refuses the second region as `ArtifactParseError`,
+naming its position and not the id.
+
+The agent's count,
+not rerun by the lead:
+3,187 tally blocks in 76 stored artifacts,
+none repeating an envelope id.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B241: the first slice carrying a replaced text was taken as the region's slice
+
+Red in `d00bc71b4`,
+fixed in `8ce45ae86`.
+
+Found by the second pass B238 records.
+`locateSlice` and the control gatherer of the relabel probe took the first slice
+whose translation included a region's replaced text.
+A short replaced text can stand in several slices,
+and the probe would then rebuild its prompt from the wrong one.
+
+The fix:
+`holdingSlices` gathers every carrying slice and refuses more than one,
+as `ArtifactParseError` naming the text's length,
+in the case builder and in the control.
+
+The agent's count,
+not rerun by the lead:
+each of the eight damaged-case positions has one carrying slice on the stored round-three run,
+so none is refused,
+and a two-letter text stood in 5 of 5 slices as the positive control.
+The control's candidate regions were not counted.
+
+Open to the owner's veto:
+the relabel control refusing an ambiguous region where skipping it is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B242: the window trial report let a later ledger row replace an earlier one for an arm
+
+Red in `d00bc71b4`,
+fixed in `8ce45ae86`.
+
+Found by the second pass B238 records.
+`groupBySlice` set each arm of a slice with `Map.set`,
+so a ledger holding two rows for one arm credited the later one.
+
+The fix:
+a slice with two rows for one arm is left out whole and counted in `ClassReport.repeated`.
+A refusal was rejected,
+since the ledger is append-only
+and the report would stay unreadable for want of a repair nobody may make.
+`windowTrialReportLine` (`window-trial-report.ts`),
+moved out of the probe's `main` so a case can read it,
+ends with the count of slices left out for an arm the ledger holds twice.
+The case is "PRINTS THE SLICES LEFT OUT FOR AN ARM THE LEDGER HOLDS TWICE
+beside the incomplete and degraded counts,
+with the noun agreeing with the count",
+for two slices and for one.
+
+Not measured:
+no stored window-trial ledger was found to count repeats in.
+
+Open to the owner's veto:
+a count where a refusal is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B243: settled audit runs were paired by a subject key built from a file the reader casts
+
+Red in `d00bc71b4`,
+fixed in `8ce45ae86`.
+
+Found by the second pass B238 records.
+`auditRepeatsAcross` keyed a run's rows by a subject key from rows the reader casts.
+A repeated subject replaced the earlier row,
+and a row without a numeric `sliceIndex` keyed as `undefined`.
+The six stored run files,
+written before commit `49e5a41cd` renamed the field `chunkIndex` to `sliceIndex`,
+hold 124 rows that the old key collapsed to 15
+and that are distinct by `chunkIndex` (the agent's count).
+
+The fix:
+both runs go through one reader that refuses a row naming no subject by either name,
+and a subject on two rows,
+as `StatedRefusalError` naming positions.
+`sliceIndexOf` reads `chunkIndex` for a row with no `sliceIndex`,
+so a run of that generation pairs with one of this generation by that value.
+The case is "PAIRS A RUN WRITTEN BEFORE THE RENAME OF `chunkIndex` TO `sliceIndex`
+with a run of this generation by that value,
+since the rename changed the field's name and not what it holds".
+
+Measured by the lead:
+the rename was a rename alone in the audit's sources.
+In commit `49e5a41cd`,
+across the nine rendering-audit files it touches,
+every removed line is one of that file's added lines with the field's name respelled;
+across all 205 files of that commit the same test leaves 80 lines in 18 files unexplained,
+so the test can show a difference.
+Whether slicing itself changed between the stored runs of 2026-08-17 and that commit was not read.
+
+Open to the owner's veto:
+reading `chunkIndex` where refusing a run of that generation is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B244: a pre-grade file naming one sheet position twice was scored by its later verdict
+
+Red in `d00bc71b4`,
+fixed in `8ce45ae86`.
+
+Found by the second pass B238 records.
+`scoreGradeAgreement` keyed pre-grades by sheet position with a map built from pairs,
+so a file naming one position twice and carrying one row too many
+matched the sheet's length and scored the later verdict.
+
+The fix:
+the map is built in a loop that refuses a repeated position as `StatedRefusalError` naming the position,
+and the length check compares the count of rows.
+`grade-agreement.unit.test.ts` is the module's first test file of its own,
+so its line left the allow-list of `own-unit-tests.unit.test.ts`.
+That scan was red at `d00bc71b4` for the stale line,
+by the agent's run,
+and the red commit's message says so.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B245: a prober answering one region twice was counted by its first check without a word
+
+Red in `d00bc71b4`,
+fixed in `8ce45ae86`.
+
+Found by the second pass B238 records.
+`screenIntroducedDefects` searched each prober's checks for the first on a region
+and said nothing of a second.
+
+The fix:
+`resolveProberChecks` resolves each prober once,
+first kept,
+and writes `<model id>: duplicate-check (<region>)` for each later check,
+as `resolveResolutionChecks` does for checkers.
+The tallies are unchanged.
+`runIntroducedDefectProbe` appends those findings to `IntroducedDefectReport.findings` after the gather's own.
+The case is "REPORTS A PROBER THAT ANSWERS ONE REGION TWICE as a duplicate-check finding under its model id,
+and counts its first check once".
+
+Open:
+the findings are not written into artifacts,
+since `repair-record.ts` rebuilds the probe block field by field and leaves them out on purpose,
+and the agent did not trace which scorecard prints them.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B246: a card dropped by a repeated served id was invisible to the key check
+
+Fixed in `8ce45ae86`,
+with its case,
+which needs a name the fix adds.
+
+Found by the second pass B238 records.
+`servedRecord` (`model-card-derive.ts`) built its record with `Object.fromEntries` and checked key sets afterwards,
+which cannot see a card replaced by a later card with the same served id.
+
+The fix:
+`recordOfDistinctIds` refuses the repeat where the record is built,
+naming the provider and the id.
+The real cards are distinct,
+since the catalogs build at import and every test imports them,
+so the case drives the helper.
+The refusal was a `RangeError` at this commit and became an `Error` in `71974714f`,
+whose message leaves that open to the owner's veto.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B247: a translation block ahead of a sealing note that no paired run could take stopped the whole page
+
+Red in `3d4558d9c`,
+fixed in `df807a8b5`.
+
+Found on 2026-10-06 (UTC),
+as the item B219 left open:
+the commit that added `UnplacedTranslationBlocksError` made the drop loud and left the page refused.
+`mergeOneSidedRuns` (`group-merge.ts`) threw for a held translation block when a sealed run stood in the section,
+where the archive's own bytes could be kept.
+The agent's seeded generator of 3,000 sections reached the refusal for 176 on one seed
+(its measurement,
+not rerun by the lead).
+
+The fix:
+`mergeOneSidedRuns` hands such blocks back as `unplacedTargetIds`,
+`groupNodesSealed` and `subdivideSealedChunkPair` carry them,
+and `prepareDocumentPair` keeps the blocks in no slice,
+lists them in `unclaimedTargetBlocks`,
+and names them by positional id in an `alignment target-unplaced` finding.
+The refusal class is removed with its barrel line and its inventory name,
+since no translation block remains that cannot be carried.
+The cases are in `group-aligned.unit.test.ts`:
+"CARRIES a translation block ahead of the sealing note that no paired run can take as unplaced,
+with no run for it and the letter's original sealed",
+and "PREPARES the same page through prepareDocumentPair with the greeting kept as the archive has it,
+handed to the block correction round and named in a finding by its id".
+
+The agent's measurements,
+not rerun by the lead:
+after the change all 9,000 sections of three seeds prepare,
+and every translation block lands in exactly one of slice,
+sealed,
+declined and unplaced.
+Measured by the lead:
+83 named test files pass,
+with the 37 source scans and a clean type check;
+the slice census over the pinned corpus prints the same sixteen summary lines as before the change
+(92 complete pairs,
+1 incomplete,
+1,259 slices).
+No page of the corpus met the old refusal,
+so that census does not exercise the new path.
+The whole suite ran on `df807a8b5` in a side checkout:
+1,629 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 37 source scans passing.
+No cache version moved for B247 to B253:
+the stores key on the pipeline digest,
+which this build changes (the agent's note).
+
+Open to the owner's veto:
+carrying an unplaced block where refusing the page is the alternative;
+the unclaimed record not telling unplaced from declined,
+which only the finding's label does.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation":
+a step that cannot place a part keeps the part as it stands where that is sound,
+and refuses the whole only where nothing can be kept.
+
+### B248: a translation block held at a seal crossed it and was written out of order
+
+Fixed in `df807a8b5`,
+with its case,
+which the agent ran red in its worktree.
+
+Found by the generator of B247,
+on 2 of 3,000 sections of another seed,
+which threw a layout fault (`PlacementLayoutError`,
+`overlaps-previous`).
+`mergeOneSidedRuns` left a held translation block,
+an unpaired heading ahead of the note,
+held past the seal,
+and it joined the original after the note,
+so a slice at offset 0 came after an insertion at the seal's end.
+
+The fix:
+a translation block still held at a seal becomes unplaced there.
+The case is "PREPARES a page whose heading ahead of the sealing note is unpaired
+and whose later originals follow the seal,
+keeping the heading out of every run that stands after the seal".
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation".
+
+### B249: the consolidate store resumed a gate that heard fewer voices than its quorum
+
+Red in `3d4558d9c`,
+fixed in `df807a8b5`.
+
+Found on 2026-10-06 (UTC),
+closing the item B187 left open:
+the store had never been driven against the real stage.
+`isGateOutcomeOrAbsent` checked a gate's count against its ballots and never against `CONSOLIDATE_GATE_QUORUM`,
+and the real stage returns `gate-kept-standing` with `usable: 0` when no gate voice answers.
+The persistence rule never writes that settlement,
+but the store resumed it.
+
+The fix:
+the store refuses a gate short of the quorum,
+since a thin panel is the hour and not the slice.
+A new file,
+`corpus-run/consolidate-settlement-roundtrip.unit.test.ts`,
+drives ten settlements of the real `settleConsolidation` through `persistConsolidationSettlement`
+into an `openConsolidateCache` store and resumes each from a second one.
+The cases are "REFUSES TO RESUME A GATE THAT HEARD TOO FEW VOICES,
+the settlement the real stage returns when no gate voice answers and which the persistence rule never writes,
+since a short gate is the hour and not the slice",
+and "WRITES AND RESUMES WHOLE every settlement the real stage leaves worth keeping,
+and writes none of the rest:
+the store refused nothing the persistence rule wrote".
+
+A second rule came with it,
+for a state no input reaches today.
+`consolidationWorthResuming` kept `slate-unjudged-standing` whatever its decision.
+The agent's sweep of 160 inputs to `settleConsolidation` reached `no-voice-heard` in 12,
+all of them a blank standing text beside a blank lane text,
+which `laneTextsForSlate` never hands the stage.
+Such a settlement is no longer kept,
+since a later run could hear a voice.
+
+Open:
+the persisted variant of `wrap-erased-difference` is still proven only by the store's hand-built fixture,
+since the real one in the table is kept as the archive has it.
+
+Open to the owner's veto:
+the guard for a settlement nobody was heard on.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B250: the final-selection findings read a consolidation that never ran as nothing to report
+
+Red in `3d4558d9c`,
+fixed in `df807a8b5`.
+
+Found on 2026-10-06 (UTC),
+closing the item B199 left open.
+`finalSelectionFindings` read a consolidation recorded as not run as an empty list,
+where `settledEntryArtifact`,
+its one writer,
+records every consolidation as settled.
+
+The fix:
+it throws `unreachable:` naming the kind found and that writer.
+No input reaches it:
+the writer sets the kind as a literal and `assertFinalNaturalnessComplete` already refuses it.
+The case is "REFUSES an artifact whose consolidation has not run,
+since settledEntryArtifact records every consolidation it hands persistence
+and no polish can stand on a stage that never ran".
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+### B251: a 200 stream whose error chunk carried a 4xx code drew the whole retry ladder
+
+Red in `3d4558d9c`,
+fixed in `df807a8b5`.
+
+Found on 2026-10-06 (UTC),
+closing the item B202 left open.
+A 200 stream whose OpenRouter error chunk carried a 400 or a 402 drew 3 exchanges for one request,
+where the same refusal over plain HTTP is returned unretried (the agent's probe on a ladder of two retries).
+
+The fix:
+`InStreamRefusalError`,
+a marked status failure carrying the code as its status,
+is thrown by `requireNoStreamError` for a whole-number 4xx code other than 408 and 429,
+and the retry ladder returns it unretried;
+every other code still throws `InStreamProviderError`.
+`requireBedrockStreamEnd` reads an error chunk before it asks for its terminator,
+so an error chunk is named by its cause and not as a stream cut off before its end.
+The cases are "SPENDS ONE EXCHANGE on a 200 stream whose error chunk carries a 4xx code,
+since the same refusal over plain HTTP is returned unretried,
+and a 429 chunk rides the whole ladder" (`openrouter-client.unit.test.ts`),
+and "NAMES AN ERROR CHUNK on either route by its cause,
+a refusal for a 4xx code and a provider failure for any other,
+where both read as a stream cut off before its end" (`bedrock-stream-end.unit.test.ts`).
+The lead added the `@throws` lines of the two clients' whole-message checks.
+
+Not read from a captured frame:
+the Bedrock reading is the OpenAI-compatible convention.
+AWS documents no error frame in a stream,
+by the agent's reading of its pages on 2026-10-06,
+so a real Bedrock error frame may look different.
+
+Open to the owner's veto:
+a 409 chunk is now unretried.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal".
+
+### B252: a picture reading's length was logged in UTF-16 units beside a verdict in solid characters
+
+Red in `3d4558d9c`,
+fixed in `df807a8b5`.
+
+Found on 2026-10-06 (UTC),
+closing the item B186 left open.
+`readImageAsset` logged `trimmed.length`,
+so fifteen astral letters logged as thirty characters beside a verdict that counted fifteen.
+
+The fix:
+it logs `solidCharacters` of the trimmed reading.
+The case is "LOGS A READING'S LENGTH IN THE SOLID CHARACTERS THE VERDICT COUNTED,
+not in UTF-16 units:
+fifteen astral letters are fifteen characters and a short reading,
+twenty spaced ones are twenty and a read".
+
+Recurrence:
+`mistake-prevention.md`,
+"Text by code point".
+
+### B253: one checker round read twice ordered its findings by which seat lost its first answer
+
+Red in `3d4558d9c`,
+fixed in `df807a8b5`.
+
+Found on 2026-10-06 (UTC).
+`runCheckerStage` took the gather's order,
+the retry round and then the prompt rotation of the bench.
+One input gave its findings and readings in two orders,
+depending on which seat lost its first answer,
+and two cases had sorted the findings,
+which hid it.
+
+The fix:
+heard voices are ordered by roster through `inRosterOrder`,
+so ballots,
+findings,
+readings and log lines follow the roster,
+and the two sorts are removed from the cases,
+whose assertions are now exact.
+The case is "ORDERS THE READINGS AND THE FINDINGS BY ROSTER whichever seats lost their first answer,
+since the gather hands voices back by the round that heard them and one input must read the same twice".
+
+With the same change,
+and with no change of behaviour,
+the sentence for a pairing set aside is shared by the two commands that print it
+(`pairingSetAsideSentence`,
+the item B196 left open).
+
+Open:
+`refine-recheck.unit.test.ts` sorts its missing-check lines,
+which may now be redundant (the agent's note).
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B254: five refusals an operator can mend printed as faults of the command
+
+Fixed in `51ccd8680`,
+with their cases.
+
+Found on 2026-10-06 (UTC) by a housekeeping pass over items earlier entries left open.
+`HardCapOverrideError` and `RunsDirectoryBusyError` extended `Error`,
+so `reportingRefusals` printed "This is a fault in the command" with frames and exited 5,
+for a ceiling the operator set and a second pass started beside a live one.
+`SourceMapFileError` and `CorpusReadError` did the same,
+for a build without a source map and a clone or pin without the commit,
+each with a message that already told the operator what to do.
+`SheetBindingError` took a finished message that quoted the seed,
+the corpus pin and the draw digests read off the sheet and the manifest,
+was unmarked,
+and printed as a fault.
+
+The fix:
+the first four extend `StatedRefusalError`,
+messages unchanged,
+and print one line at exit 6;
+`CorpusReadError` keeps its kind and its cause.
+`CoverageFileError` stays a fault,
+since the census writes that file itself.
+`SheetBindingError` is rebuilt from a closed kind,
+a closed sheet label and the two paths the operator named,
+is marked,
+and is a stated refusal that says to name a pair one draw wrote.
+The two scorers pass the paths (`score-probe.ts`,
+`score-agreement.ts`).
+The case list `OPERATOR_MISTAKES` in `corpus-run/cli-refusal.unit.test.ts` holds each class's printed line and code,
+and every case in `sheet-binding.unit.test.ts` asserts the whole message.
+
+The agent's measurement,
+not rerun by the lead:
+the four classes printed at exit 5 with frames before and at exit 6 with one line after.
+Measured by the lead:
+38 named test files pass,
+with the 37 source scans and a clean type check after a fresh build.
+The whole suite ran on `51ccd8680` in a side checkout:
+1,629 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 37 source scans passing.
+
+Open to the owner's veto:
+the four classes and `SheetBindingError` made stated refusals;
+`CoverageFileError` kept a fault;
+the binding refusal no longer printing the differing seed,
+pin or digests,
+which the operator reads in the two files it names.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal".
+This closes the six classes B221 left as they were:
+five became stated refusals here,
+and `CoverageFileError` stays a fault with its reason said.
+
+### B255: a repeated-line finding for an original with no content line read "more than 0 times"
+
+Red in `042a9245d`,
+fixed in `51ccd8680`.
+
+Found on 2026-10-06 (UTC),
+closing the item B229 left open.
+An original holding no content line got the finding "repeats no line more than 0 times",
+where the count helper's own contract starts at one.
+
+The fix:
+the finding says the original has no line to repeat;
+the wording for a line allowed once is unchanged.
+One case in `line-structure-guard.unit.test.ts` holds both wordings whole.
+On the lead's red tree that file failed with three failure lines,
+its new case by an assertion on the finding's words.
+
+Open to the owner's veto:
+the "has no line to repeat" wording,
+where the count helper throwing on zero is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Counts in printed text".
+
+### B256: cases in six test files could not fail on what they named, and two housekeeping leftovers
+
+Tests in `042a9245d`,
+housekeeping in `51ccd8680`.
+
+Found on 2026-10-06 (UTC) by the pass B254 records,
+over cases earlier entries called weak and a branch that had no steady case.
+Each of these passes before and after:
+
+- `refine-wire.unit.test.ts`:
+  two cases use cat fixtures and assert the whole operations
+  (envelope id,
+  base hash,
+  new text),
+  where they read a length and one id.
+- `corpus-name-index.unit.test.ts`:
+  three cases assert the whole lines,
+  the names and the sorted list of paths asked.
+- `provider-router.unit.test.ts`:
+  four refusal cases assert the whole message,
+  where they read the class alone or a part of it.
+- `seeded-error.unit.test.ts`:
+  the rebase case asserts the seeded text and the whole applications.
+  The case "throws SeedApplicationError on absent and ambiguous needles" is deleted:
+  it asserted the class alone,
+  and "REFUSES A NEEDLE THE TEXT LACKS" in the same file holds both messages whole (read by the lead).
+- `introduced-defect-wire.unit.test.ts`:
+  the refusal case sends a region that is the string "1".
+  The old input,
+  the string "one",
+  could not tell the type guard from the integer guard.
+- `corpus-run/runs-lock.unit.test.ts`:
+  two new cases reach both arms of the lost takeover,
+  a rival's lock that reads back and one that does not,
+  through a child process that wraps `rename`,
+  so the rival's lock appears the instant the stale one is evicted.
+
+The agent's measurements,
+not rerun by the lead:
+with a guard or a wording of the production code mutated,
+each new case fails on its mutant,
+and the old files pass the mutants for the router's hold wording and two refusal reasons,
+the wire's type guard,
+the dropped base hash in two refine cases and the lock's holder arm.
+
+Two leftovers closed in `51ccd8680`.
+Nine production files cited a scratch path in a comment;
+each now cites the ledger entry or the document holding the figure,
+or states the fact without a path,
+and a search for the scratch root over production sources returns nothing (the agent's search).
+Fifteen names were re-exported twice across the barrels;
+the second statement of each is removed (`index.ts`,
+`pipeline-barrel.ts`,
+`bedrock-barrel.ts`,
+`sheet-barrel.ts`),
+with 2,885 distinct explicit names and the built index's 1,938 runtime export keys unchanged (the agent's count).
+
+One item of the pass was a false premise.
+The lead's brief,
+repeating commit `27726ecc0`'s message,
+asked about a field `RankedCandidate.issueKey` as written and never read.
+That type has no such field at that commit;
+the field stands on `KeyedCandidate`,
+where the sort of one entry's issues reads it
+(B226 records the correction,
+posted on `27726ecc0` as commitcomment-203602282).
+
+Open to the owner's veto:
+the deleted case;
+making the lock's race by wrapping `rename` in a child process;
+the barrel deletions.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B257: the parse counted a leading byte order mark as nothing, so every later offset was short
+
+Red in `5abbb9c66`,
+fixed in `68df23b05`.
+
+Found on 2026-10-05 (UTC) by an agent's probe of the parse entries.
+`micromark` skips a `U+FEFF` that opens its input without counting it,
+so every position of the tree sat one character short of the body as written,
+and a column on the first line one short as well.
+A paragraph after the mark read as text starting with the mark and ending one character before its end:
+the envelope's `baseText` lost its last character,
+a container's tags and a footnote reference were placed one too early,
+and `strictRefusalOffset` named an offset one short.
+The mark also opens a body after front matter.
+
+The fix:
+`parseMdxBody` and `parseMarkdownBody`,
+where the offsets are made,
+count the dropped mark into every position:
+every node and JSX attribute moves one offset,
+and one column on the first line;
+the root keeps its start.
+`MdxParseError` carries the dropped columns,
+so a first-line refusal names its column in the body as written.
+The red cases are in the `parse-mdx`,
+`parse-document` and `strict-refusal-offset` test files.
+
+The agent's measurement,
+not rerun by the lead:
+109 positions of two bodies under both grammars,
+compared with the mark-free parse shifted by one,
+0 wrong.
+Measured by the lead on the pinned corpus,
+by bytes and with a control on the same test (M128):
+none of the 276 Markdown files under `people` opens with a byte order mark;
+one archive,
+`people/Toka_ls/page.en.md`,
+holds three lines that are a lone mark,
+which `maskInvisibleLines` blanks before the page is parsed.
+Whether any slice of that page is parsed starting at such a line was not measured,
+so no real page is known to exercise the leading-mark path.
+
+For B257 to B262 together,
+measured by the lead:
+136 named test files pass,
+with the 37 source scans and a clean type check,
+and the slice census over the pinned corpus prints the same sixteen summary lines as before the change
+(92 complete pairs,
+1 incomplete,
+1,259 slices).
+The whole suite ran on `68df23b05` in a side checkout:
+1,633 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 37 source scans passing.
+
+Open:
+a byte order mark before the opening front matter fence leaves the document without front matter
+(`front-matter.ts`,
+not changed here).
+
+Open to the owner's veto:
+a block starts after a leading mark and never holds it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Offsets and positions":
+a parser that drops input without counting it moves every offset it reports,
+so the shift is undone where the offsets are made and not in each reader.
+
+### B258: the mention scan read a definition after any indentation, which the graph reads under one grammar only
+
+Red in `5abbb9c66`,
+fixed in `68df23b05`.
+
+Found on 2026-10-05 (UTC) by a review of `opensDefinition`,
+the rule B212 added.
+The scan called `[^1]:` a definition after any leading whitespace.
+Strict MDX has no indented code and reads a definition at four spaces or a tab;
+plain markdown reads an indented code block,
+or a continuation line of a paragraph when no blank line parts the two.
+The footnote graph reads the grammar the page is parsed under,
+so on a page downgraded to plain markdown the scan and the graph disagreed,
+and on any page for a label nested in a list item or in another definition,
+which the graph does not read.
+
+The fix:
+`fragmentReadingOf` replaces `parsedSpansOf`:
+one parse gives the spans and the offsets where the page's own grammar opens a top-level footnote definition,
+strict MDX where it accepts the text and plain markdown where it does not,
+containers dissolved as the footnote graph dissolves them.
+`footnoteMentions` calls a marker a definition only at such an offset.
+The definition starts live in the new `footnote-definition-starts.ts`.
+Where plain markdown cannot read the text for its nesting,
+the line alone decides,
+as before.
+
+The agent's measurement,
+not rerun by the lead:
+over 96 generated pages
+(48 fragments,
+each read as strict MDX and as plain markdown)
+the scan disagreed with the graph on 36 before and on 0 after.
+
+Open to the owner's veto:
+a slice is read as strict MDX where the strict grammar accepts it,
+an inference from the corpus compiling as MDX and not a measurement of a slice inside a page that downgraded;
+passing the page's grammar down from `validateTranslatedSlice` is the fuller fix.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a role a scan gives a marker is asked of the parse the page is read under.
+
+### B259: the destination scan kept the emphasis marks the parse's trail rule sheds
+
+Red in `5abbb9c66`,
+fixed in `68df23b05`.
+
+Found on 2026-10-05 (UTC) by comparing the scan with the tree reader on generated texts.
+The trail rule of `micromark-extension-gfm-autolink-literal` (`tokenizeTrail`) reads `_`,
+`*` and `~` beside the sentence punctuation as no part of an address,
+and the scan's `RUN_TRAILERS` held only the punctuation.
+`see https://c.example/a_)` therefore named `https://c.example/a_` to the scan
+and `https://c.example/a` to the tree reader.
+A scanned run was also cut a second time,
+without the characters that follow the run.
+
+The fix:
+the three marks are trailers,
+and `trimDestination` takes where the address ends,
+so a scanned run is shed of its trailers and not cut again.
+
+The agent's measurements,
+not rerun by the lead:
+over 40,000 generated texts of each of two mixes the two readers differed on 1,709 and 2,238 before,
+on 2 and 33 with the marks added and the second cut still there,
+and on none after;
+the tree reader's agreement with the parser's own address did not move.
+
+Open:
+the scan does not read the character-reference and bracket forms of the trail rule.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a reader of a destination takes the parse's own trail rule,
+and a second reader is measured against the first on generated texts.
+
+### B260: the signer floor, the source quote floor and the archive authority took invisible text for a name or a quote
+
+Red in `5abbb9c66`,
+fixed in `68df23b05`.
+
+Found on 2026-10-05 (UTC),
+closing the sites B194 left open.
+`signerFinding` (`translate-signer-handle.ts`) passed a candidate that signed with `U+200B` or `U+3164`,
+since a name with no Latin letters matches no reading and the function answered no finding,
+and `signerHandleFindings` let a page signer of the same kind excuse the candidate.
+`isArchiveSourceQuoteAnchored` (`archive-block-evidence.ts`) counted invisible characters toward its four code points,
+so two ideographs among zero-width spaces anchored a claim.
+`nameAuthorities` (`corpus-run/contributor-name-authorities.ts`) took the archive's aligned signature name
+with no blank test,
+and the restore wrote a zero-width space over the heading naming the signer.
+
+The fix:
+each asks `rendersAsNothing`.
+The floor refuses a signer that shows nothing,
+with the instruction it gives a signer left in Han;
+a page signer that shows nothing governs nothing;
+the quote counts only what shows;
+and an archive signature that shows nothing falls to the page's rendering and then to the pinyin reading.
+`archive-block-evidence.ts` had no test file of its own;
+with one added,
+its line left the allow-list of `own-unit-tests.unit.test.ts` (the lead's edit,
+in the red commit so that scan stayed green).
+
+Open to the owner's veto:
+the quote floor counts no space either,
+so a quote of three ideographs with spaces between them,
+which anchored,
+no longer does;
+the signer floor refuses an invisible signer where assembly would have repaired it to the bare reading.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text that shows nothing".
+
+### B261: a prior quote of one invisible character dismissed every claim that carried it
+
+Red in `5abbb9c66`,
+fixed in `68df23b05`.
+
+Found on 2026-10-05 (UTC),
+closing the gap B195 named when it held this key.
+`isUsable` of `collectPriorQuotes` (`introduced-defect-screen.ts`)
+kept a prior quote that the screen's fold left non-empty,
+so a stored issue quoting one `U+200B` or `U+3164` stayed among the prior quotes,
+and an added-wording claim whose evidence held that character was counted as restating the issue:
+it read `pre-existing` where it was `corroborated`.
+
+The fix:
+`isUsable` asks `rendersAsNothing`.
+The lead removed the held key `introduced-defect-screen.ts#isUsable` from `blank-text-tests.unit.test.ts`,
+its gap closed,
+and corrected the returns line of `collectPriorQuotes`,
+which still said "blank ones dropped".
+
+Recurrence:
+`mistake-prevention.md`,
+"Text that shows nothing":
+a filter that drops blank text asks the question that names it.
+
+### B262: the container tag readers stepped over fewer whitespace characters than the grammar
+
+Red in `5abbb9c66`,
+fixed in `68df23b05`.
+
+Found on 2026-10-05 (UTC) by a review of the masker's space and tab fix (B222),
+by the report of the agent that fixed it,
+and fixed by the follow-up B222 records as launched on 2026-10-06 (UTC),
+closing the note B222 left open.
+The masker ended a tag's name at a space or a tab,
+and the inline reader at a space,
+a tab,
+a line feed or a return.
+The strict grammar (`micromark-extension-mdx-jsx`,
+`unicodeWhitespace`,
+the ECMAScript `\s`) steps over twenty-five characters between a name and an attribute or the bracket
+(`U+0009` to `U+000D`,
+`U+0020`,
+`U+00A0`,
+`U+1680`,
+`U+2000` to `U+200A`,
+`U+2028`,
+`U+2029`,
+`U+202F`,
+`U+205F`,
+`U+3000` and `U+FEFF`)
+and refuses every other,
+a zero-width space among them.
+So a tag with an ideographic space before its bracket was another element's name,
+and a whole element read lone at both its tags.
+A tag that crosses a line break was not read as a tag line at all,
+and a lone one stayed in the slice for the grammar to refuse.
+
+The fix:
+one predicate,
+`isTagWhitespace`,
+the grammar's twenty-five,
+is the whitespace of both readers,
+and the masker reads a tag across lines when no blank line parts it and nothing follows its bracket.
+
+The agent's measurement,
+not rerun by the lead:
+asked of the grammar at run time over thirty-four spellings in five forms,
+the masker disagreed on 110 before and on none after.
+
+Open:
+a tag name holding a character the grammar refuses is still part of the name.
+
+Open to the owner's veto:
+the masker's reading of a tag across lines,
+which goes beyond the spellings the review named.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+two readers of one construct share one predicate,
+and a test asks the grammar for its verdict.
+
+### B263: the page-name glossary gave the first of two renderings as the page's
+
+Red in `76c75dce9`,
+fixed in `a6d1fe4f7`.
+
+Found on 2026-10-06 (UTC) by a second census of lookups keyed by text,
+over the surfaces the census of B203 did not read:
+map writes,
+loops that return at a first match,
+sets used to drop repeats,
+and keys of parsed objects.
+`pageNamePairs` (`page-name-glossary.ts`) pairs links,
+signatures and headings by the original's text,
+and kept the first pair for an original text with a filter that remembered the texts it had met.
+The archive renders one original text two ways where a title repeats as two headings
+or one name is linked to two addresses,
+and the sheet then gave the first rendering as the page's and said nothing of the other.
+
+The fix:
+an original text with more than one distinct rendering is left out of the sheet's lines and of `pairedPageNames`,
+so the stage that settles repeated titles reads it;
+a text every pairing renders alike keeps its first pair.
+The lead's edit:
+the fix walks the groups once,
+where the agent's filter rebuilt a group's renderings for every pair,
+with the same result and order.
+On the lead's red tree `page-name-glossary.unit.test.ts` failed by an assertion on the sheet's lines.
+
+The agent's count,
+not rerun by the lead:
+at the pinned corpus,
+312 glossary pairs over 92 page pairs hold 310 distinct original texts and none under more than one rendering,
+so no sheet changes there.
+Measured by the lead for B263 to B265:
+26 named test files pass,
+with the 38 source scans and a clean type check.
+The whole suite ran on `a6d1fe4f7` in a side checkout:
+1,634 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 38 source scans passing.
+
+Open:
+the contributor-name authorities keep the first signature of a name signed twice
+(none at the pin,
+by the agent's count).
+
+Open to the owner's veto:
+a conflicted text is left out,
+where keeping every pairing as its own line or a finding are the alternatives
+(the module has no findings channel).
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B264: one voice naming a footnote-definition pair twice counted as two voices
+
+Red in `76c75dce9`,
+fixed in `a6d1fe4f7`.
+
+Found by the census of B263.
+`readBlockPairing` (`pair-blocks-wire.ts`) refused a pair repeated next to itself,
+and a body pair named again after others steps backwards,
+but a footnote-definition pair is outside the order rule,
+so a reply could name one again after another pair.
+`agreePairs` counts each naming across the voices' pairings as a vote,
+so one voice naming a definition pair twice agreed with itself at two votes needed
+(the agent's run of the unfixed build).
+
+The fix:
+the reader refuses a correspondence named twice anywhere in a reply,
+in the words it already used for an adjacent repeat.
+Its TSDoc,
+which said a translation block may not appear twice against the merge it accepts,
+says what it does.
+On the lead's red tree `pair-blocks-wire.unit.test.ts` failed because the expected refusal did not come.
+
+Not measured:
+whether a live model does this.
+
+Open:
+a doubled key in parsed JSON keeps the later value unseen,
+which needs a reader aware of repeated keys and is a decision of its own.
+
+Open to the owner's veto:
+the repeat is refused in the reader,
+which costs a voice that repeats a definition pair,
+where counting a pair once per voice is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B265: no scan held a map write over a key its function never reads
+
+Added in `a6d1fe4f7`.
+
+Found by the census of B263,
+which read every two-argument `set` in production code by hand.
+Nothing stopped a new one from replacing an earlier value without a word,
+the shape of B242 and B263.
+
+The fix:
+`blind-map-writes.unit.test.ts` fails a two-argument `set` whose enclosing functions never `get` or `has`
+the same key of the same map,
+unless an allowance says what makes the key unique,
+and an allowance for a write that is gone fails too.
+The lead wired it into the `source-scans` task,
+which ran 38 files from then,
+and edited three allow-list lines for sites that changed after the agent's base:
+two writes added
+(`rowsBySubject`,
+refused through a second map under the same key;
+`resolveProberChecks`,
+keyed by the own keys of one record)
+and one allowance gone stale
+(`groupBySlice`,
+whose reader now refuses a repeat).
+
+Not reached,
+by the agent's account:
+a read of the key under another name or in another function passes;
+first-match loops,
+sets that drop a differing repeat and doubled keys in parsed JSON are not held by a scan.
+
+Open to the owner's veto:
+the scan counts a read in any enclosing function as a read.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B266: a credential the request sent could leave the transport inside a reply body
+
+Red in `54b3d2535`,
+fixed in `a29a9dc42`.
+
+Found on 2026-10-06 (UTC) by the follow-up to the census of B232,
+which showed that a provider's reply body reaches `SyntheticHttpError`'s message and `bodyExcerpt`,
+the raw reply preview `model-health.ts` prints,
+a malformed-completion message and a cached reply.
+A provider that echoes the sent `Authorization` value in an authentication failure,
+or inside an error event of a 200 stream,
+handed the key to every reader of the body.
+Nothing measured did this;
+nothing proved none did.
+The red cases script a reply echoing a stand-in key,
+the whole header value and the bare token,
+in a failure reply,
+in a stream split across two chunks,
+and in the partial text of a cut stream.
+
+The fix:
+`fetchTransport` masks every credential the request's headers carried out of the assembled reply body
+(`maskCredentials`,
+new `credential-mask.ts`):
+the whole header value and the token after its scheme word,
+as written,
+as a JSON string holds it and with the slash escaped,
+each found in one linear pass with no regular expression built from a key.
+A successful reply is masked too,
+since an error event can arrive inside a 200 stream,
+and so is the partial text a cut stream carries on its error.
+The marker is `[masked: credential sent with this request]`;
+a secret under 12 UTF-16 units is left alone.
+
+The agent's measurement,
+not rerun by the lead:
+masking costs about 28 ms per megabyte of body and grows linearly,
+a body of repeated prefixes included.
+Measured by the lead for B266 to B270:
+86 named test files pass,
+among them every test file that holds the wording of a lost voice,
+a refusal or a provider's excerpt,
+and the transport and client suites,
+with the 39 source scans and a clean type check.
+The whole suite ran on `a29a9dc42` in a side checkout:
+1,638 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 39 source scans passing.
+
+Left open at this commit and closed since:
+the opening excerpt the stream drain logs (B293),
+the listings of the model catalogue and the roster card (B295),
+and the two Exa lookups (B300),
+each of which read a reply the transport's mask never covered.
+Still open:
+a key in URL-encoded or base64 form is not searched for.
+
+Open to the owner's veto:
+the minimum of 12 units;
+the marker's wording;
+masking the cut stream's partial text in the transport.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B267: a request the runtime refused to send reached the lost-voice line as its class alone
+
+Red in `54b3d2535`,
+fixed in `a29a9dc42`.
+
+Found by the follow-up B266 records.
+After B233 a log line named a `fetch` rejection by class,
+so the lost-voice line said `refused by TypeError` for an unreachable network and for an unsendable header alike.
+
+The fix:
+the transport catches the rejection where it is raised,
+with no abort standing,
+and throws the marked `TransportRequestFailedError`,
+whose account names the possibilities and picks none,
+with the runtime's rejection kept as its `cause`.
+An abort passes on unchanged.
+The retry ladder retries the new class as it retried the runtime's own rejection,
+read by the lead in `transient-retry.ts`:
+anything thrown that is not a self-ended stream,
+a bound cut or an unretried status is retried.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B268: the provider's own account of a refusal reached no log line
+
+Red in `54b3d2535`,
+fixed in `a29a9dc42`.
+
+Found by the follow-up B266 records,
+and caused by B233's fix.
+`exchangeFailureText` dropped the body excerpt,
+and the two comments saying a withheld excerpt stays on `bodyExcerpt` "for the log" were untrue:
+nothing logged it.
+The only evidence of why a provider refused one request and not another,
+a moderation refusal,
+a context limit or a data-policy mismatch,
+was in no log line.
+The red cases throw a `SyntheticHttpError` with a body through each reachable log site and expect the words:
+the lost-voice lines of the two stage calls,
+the retry line,
+the re-ask warning,
+the abandoned buy,
+the unreadable budget view and a thrown repair,
+where the stored record keeps class and status alone.
+
+The fix:
+`exchangeFailureLogText` is `exchangeFailureText` followed,
+for any provider status failure whose reply excerpt shows a reader something,
+by `(the provider said: "<words>")`,
+quoted onto one line.
+Every site that logs a failed exchange uses it;
+every stored record,
+finding and thrown message keeps `exchangeFailureText`.
+The two comments say where the log reads the field.
+A new scan,
+`body-excerpt-readers.unit.test.ts`,
+holds the field to five named files;
+the lead wired it into the `source-scans` task,
+which ran 39 files from then.
+The lead's edit:
+the window trial's refusal line uses the log form,
+in a file the agent was told to leave.
+
+Not cased:
+no case reaches the log line of `image-reading-pair`,
+`required-providers`,
+`model-health`,
+`coverage-probe`,
+the window trial or the three abort-path warnings with a provider status failure.
+
+Open to the owner's veto:
+the provider's words printed whole by `model-health`,
+where a cut at 300 units stood;
+`jsonLine` exported from `resolution-sheet-evidence.ts` for the quoting.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B269: the local picture reader's failure line repeated the tool's output and paths
+
+Red in `54b3d2535`,
+fixed in `a29a9dc42`.
+
+Found by the census of B232,
+which held the two lines with a note,
+and fixed by the follow-up B266 records.
+`readImageWithOcr` and `askDeterministicReader` printed the local reader's whole failure text,
+which holds the command line,
+the scratch paths and standard error,
+against their own comment and `decoderFailureLine`.
+
+The fix:
+`LocalProgramFailedError` (new `local-program-failure.ts`) states an exit code,
+a filesystem code or that the program is missing,
+and `readerFailureText` names the class and the code;
+the two held entries leave the scan of B237.
+The red cases are in the `image-ocr` and `image-reading-pair` test files.
+
+Open to the owner's veto:
+`LocalProgramFailedError` for the local reader.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B270: the refusal printer's frames could include a line of the message, and one scan read a property as a use
+
+Red in `54b3d2535`,
+fixed in `a29a9dc42`.
+
+Found by the follow-up B266 records.
+`framesOf` (`corpus-run/cli-refusal.ts`) kept every stack line starting with `at `,
+so a message holding a line break followed by `at ` printed that line of itself among the frames.
+`readClause` of `caught-errors-kept.unit.test.ts` counted a property or a key spelled like the binding as a use of it.
+The `refusal` parameter of `defectOf` was typed as any `Error` class,
+while every caller passes a marked one.
+
+The fix:
+the printer cuts the frames off where the stack's header ends;
+the scan skips name positions;
+and `defectOf` takes only a class that declares its message safe,
+so the compiler holds it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B271: an entry note under a heading with no words named an empty heading
+
+Red in `f18d0b9b1`,
+fixed in `b8e30dce2`.
+
+Found on 2026-10-06 (UTC) by the coverage cluster over the library files from a to l (T8).
+`commentAnchor` (`entry-notes.ts`) names the heading an editor's comment sits under,
+so a sheet working one slice knows which heading "this title" points at.
+For a heading that is nothing but its opening marks the name was empty,
+and the sheet line read `- ARCHIVE editor comment under heading : <note>`,
+as if a word had been dropped.
+The agent pinned that line as current behaviour and said it did not endorse it;
+the lead rewrote the case to expect that the line says the heading has no words.
+
+The fix:
+the line reads `under a heading that has no words`,
+asked through `rendersAsNothing`,
+so a heading of invisible characters reads the same way.
+
+Measured by the lead:
+of 42 named test files on the red tree 41 pass,
+and `entry-notes.unit.test.ts` fails by the one assertion meant to fail;
+on the fix tree 8 named test files pass,
+the note's own among them,
+with the 39 source scans and a clean type check.
+Not measured:
+no page of the pinned corpus was searched for such a heading.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text that shows nothing".
+
+### B272: `percentileOf` answered zero for a percentile no rank belongs to
+
+Red in `96dad6b2c`,
+fixed in `5723cd071`.
+
+Found on 2026-10-06 (UTC) by the coverage cluster over the `corpus-run` files (T8),
+in a fallback the census listed as a cold stretch of `census-spread.ts`.
+`percentileOf` answered zero for a percentile under zero or not a number on a sample that holds values,
+since the rank read nothing and `?? 0` filled in.
+No caller passes such a percentile
+(the reported ones are 50,
+90 and 99,
+by the agent's reading),
+so no printed figure was wrong.
+
+The fix:
+such a percentile throws a `RangeError` naming it,
+and the value at a clamped rank is an `unreachable:` throw.
+A percentile over 100 still reads the last rank,
+and an empty sample still reads zero.
+The case is "REFUSES a percentile below zero or not a number";
+on the lead's red tree it failed with `Expected act to throw, but it returned`.
+
+Measured by the lead for B272 and B273:
+37 named test files pass on the fix tree,
+with the 39 source scans and a clean type check.
+The whole suite ran on `5723cd071` in a side checkout:
+1,648 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 39 source scans passing.
+That run started a child with the provider keys in its environment,
+through a fixture this commit added (M121,
+closed by B291).
+
+Open to the owner's veto:
+the refusal,
+where clamping to rank zero is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input".
+
+### B273: a replacement for a slice the page lacks was taken with the archive read as empty text
+
+Red in `96dad6b2c`,
+fixed in `5723cd071`.
+
+Found by the coverage cluster of B272.
+`restoreNameGlossLines` (`name-gloss-restore.ts`) read the archive of a slice the pairs lack as empty text
+and passed the row on.
+
+The fix:
+it reads through `pageTextOf`,
+which throws `SliceNotOnPageError`,
+the refusal the other page passes give.
+The page text of a slice in `quote-style-unify.ts` is read through `pageTextOf` too,
+over a map built from the same slices.
+On the lead's red tree the case failed with `Expected act to throw, but it returned`.
+
+Open to the owner's veto:
+the refusal,
+where passing the row on is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Pairing by position".
+
+### B274: a parse offset was read out of a file's own words
+
+Red in `f45278048`,
+fixed in `71974714f`.
+
+Found on 2026-10-06 (UTC) by the coverage cluster over the library files from m to z (T8).
+`offsetIn` (`run-json-read.ts`) took the digits after the first ` at position ` of V8's refusal
+as the offset the parser stopped at.
+V8 quotes a short file back whole,
+so a file reading `cat at position 7` was reported unreadable `at byte 7`,
+an offset no parser stated.
+
+The fix:
+a refusal that ends ` is not valid JSON` quotes the file and states no position,
+so it yields none.
+A V8 refusal with a position phrase and no whole offset,
+and `JSON.parse` throwing a value that is no error,
+are `unreachable:` throws.
+On the lead's red tree `run-json-read.unit.test.ts` failed by assertion.
+
+Measured by the lead for B274 to B276:
+of 48 named test files 47 passed and the duplicate-bodies scan failed,
+until a shared fixture closed it (M123);
+with the fixture in place the two test files that use it pass,
+with the 39 source scans and a clean type check.
+The whole suite ran on `71974714f` in a side checkout:
+1,656 `[PASS]` lines and no `[FAIL]` line,
+the 39 source scans passing,
+and the lint ending with one warning,
+which `230623bec` removed (M124).
+
+Open to the owner's veto:
+the position phrase throwing if V8 changes its wording.
+
+Recurrence:
+`mistake-prevention.md`,
+"Numbers read back from text":
+text a message may quote is never searched for a phrase the same message uses as structure.
+
+### B275: a routed call that left its loop with no attempt left said every provider refused it
+
+Red in `f45278048`,
+fixed in `71974714f`.
+
+Found by the coverage cluster of B274.
+`routedText` (`provider-router.ts`) ended a call that left its loop with no attempt left
+as `every provider refused this call`,
+under a comment calling that end unreachable.
+It is reached when the last attempt is cut at its stream bound,
+which takes a model all four providers serve.
+
+The fix:
+the stream bound holds are read there as the next decision would have read them
+(`reachPastBoundHoldsOrRefusal`,
+shared with `chooseProvider`),
+so four providers cut in turn end with the reason a model three providers serve already ends with,
+naming the hold.
+Where a provider before the last refused on its budget,
+the reason says the providers refused the call or ran past their bound.
+
+The ending and one of the two cases are the lead's.
+The agent's fix worded the end as every provider serving the model having run past its stream bound,
+which the loop can also reach after budget refusals,
+so that wording would have been false there.
+The cases are in `provider-router-stream-bound.unit.test.ts`:
+one cuts the call at its stream bound on all four providers,
+the other has three providers refuse on their budgets and the fourth cut,
+and on the lead's red tree both failed with the old reason in place of the expected one.
+
+Open to the owner's veto:
+the two reasons.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input":
+a comment calling a loop's end unreachable is checked against every `continue` in the loop.
+
+### B276: seed detection skipped an issue naming a slice the preparation lacks
+
+Red in `f45278048`,
+fixed in `71974714f`.
+
+Found by the coverage cluster of B274.
+`gradeSeedDetection` skipped an issue naming a slice the preparation lacks without a word,
+which reads every seed of that slice as never reported.
+
+The fix:
+it throws.
+On the lead's red tree `seed-detection-slicing.unit.test.ts` failed by assertion.
+
+Open to the owner's veto:
+the throw.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input".
+
+### B277: 44 test cases in ten files passed without printing a pass line
+
+Scan red in `0634aa8bc`,
+fixed in `63f8f838a`.
+
+Found on 2026-10-06 (UTC).
+An agent closing housekeeping items reported that `fidelity-reference-read.unit.test.ts` "prints nothing and exits 0",
+in a file that was not its own,
+and the lead followed it up.
+`describe` of the test module logs the passing children of a suite named `''` at `debug`,
+so a case whose nearest suite has an empty name passes without a `[PASS]` line.
+A failure there still prints and still fails the file (the agent's control run),
+so nothing was hidden but the count.
+Every count of `[PASS]` lines this ledger quotes is a count of suites that print,
+and such cases were in none of them
+(the T8 entry already records that the count is of named suites and not of cases).
+
+The fix:
+`silent-test-cases.unit.test.ts` finds every `it` whose nearest `describe` has an empty name,
+or none,
+and names the file,
+the suite chain and the case.
+Its package case failed with 44 findings in ten files.
+`deepseek-v41-admission.unit.test.ts` and `deepseek-v41-routing.unit.test.ts`
+kept every case in a root suite named `''`;
+the roots take a name.
+Five files each kept a case loose beside their named suites
+(`displacement-class`,
+`edit-wire`,
+`photo-reference`,
+`restoration-judge-wire` with two,
+`transient-retry`);
+each case sits in a named suite of its own.
+The four `fidelity-reference*` test files are rewritten under named suites.
+Every refusal case there asserts the whole message and names the boundary that fired,
+through fixture helpers that spell the message out and do not build it with the class under test,
+and the command-line case no longer names a real page:
+it reads the entry that lacks an alteration from the checked-in manifest.
+The scan joined the `source-scans` task,
+which ran 40 files from then.
+
+The agent's measurements,
+not rerun by the lead:
+38 single-site mutations of the fidelity-reference modules,
+each caught by a rewritten case,
+23 of them by none of the cases they replace;
+with every file run by name against one build,
+1,644 `[PASS]` lines where 1,628 stood,
+the rise being suites that print now and did not.
+No production file changed.
+The whole suite ran on `63f8f838a` in a side checkout:
+1,672 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 40 source scans passing.
+
+Not reached,
+by the agent's account:
+a suite named by a variable or a member reads as named whatever it holds,
+and `describe` or `it` imported under another name is not followed.
+
+Open:
+the six allow-list lines of `own-unit-tests.unit.test.ts` for the fidelity-reference modules stay,
+since the one test file reaches several modules and splitting it is a change of its own.
+
+Open to the owner's veto:
+the root names and the six wrapper suite names;
+the row for an unsupported damage family kept through `as never`,
+as the case of a loud guard production cannot reach.
+
+Recurrence:
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+### B278: three report commands faulted on an unreadable log and totalled a log named twice
+
+Red in `5e116395a`,
+fixed in `387af02b7`.
+
+Found on 2026-10-06 (UTC) while moving the four report runners into modules a test can load
+(T8,
+the runner entry files).
+`run-timing-report`,
+`spend-report` and `meter-report` read each named log with `readFile`.
+A log path that could not be read left the command as a fault,
+exit 5,
+naming nothing.
+A log named twice was totalled twice by `run-timing-report` and `spend-report`,
+so every call,
+round and credit doubled.
+The line count was a split on the newline,
+so the closing newline every log a run wrote ends with counted as one more line.
+
+The fix:
+the three share `report-log-read.ts`.
+`readLogTexts` refuses an unreadable log as a stated refusal,
+exit 6,
+naming the path as typed and the filesystem's code.
+`refuseRepeatedLogs` refuses a path named twice,
+the two paths compared once made absolute,
+in the two commands that total;
+`meter-report` keeps accepting one,
+since it collapses exact repeats by design.
+`linesOfLog` drops the empty piece after a closing newline.
+The cases are in each command's suite "<command> as built",
+which runs the built command in a child process over files the case writes,
+and in the test files of the run modules.
+Measured by the lead on the red tree:
+`ledger-report` passes as it stands,
+and the other three as-built files fail by the assertions named
+(three cases,
+two and one).
+
+For B278 to B281,
+measured by the lead on the fix tree:
+35 named test files pass,
+with the 40 source scans and a lint that finds nothing,
+its type check included.
+The agent's measurement,
+not rerun by the lead:
+a census over its 16 test files lists none of the four bundles among those no test loaded,
+and no cold stretch in the entry files or the new modules beyond two `unreachable:` throws.
+The whole suite first ran over this change on `53e25b458`,
+with the two runner clusters that followed it:
+1,821 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 40 source scans passing.
+
+Open:
+two paths that reach one log through a symbolic link are not seen as one.
+
+Open to the owner's veto:
+refusing a log named twice,
+where totalling it twice was the behaviour.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal",
+for the fault,
+and "Readers of the package's own log lines".
+
+### B279: `ledger-report --model` cut a candidate at 400 units with no word that it was cut
+
+Fixed in `387af02b7`,
+with its cases,
+which the agent ran red in its worktree.
+
+Found by the move B278 records.
+`printReading` printed each candidate through `wholeOpening` at 400 UTF-16 units and nothing else.
+A candidate of 450 units showed its opening with no sign it was longer,
+so a reader weighing a seat's wording took the opening for the whole.
+
+The fix:
+a cut opening is followed by a line saying how many of the whole's units are shown.
+The cases in `ledger-report-print.unit.test.ts` hold an excerpt of exactly 400 units,
+a cut,
+and a cut that would split a surrogate pair.
+
+Open to the owner's veto:
+the line after a cut candidate.
+
+Recurrence:
+`mistake-prevention.md`,
+"Checks that vouch for a whole block":
+an excerpt of evidence shown to a reader states its cut.
+
+### B280: `spend-report` said four things its own figures deny
+
+Fixed in `387af02b7`,
+with its cases,
+which the agent ran red in its worktree.
+
+Found by the move B278 records,
+reading each printer whole.
+
+- `printCost` said no call went to the metered provider wherever no seat was priced.
+  A run whose every metered call sat on a seat the price table has no row for said so,
+  then listed those seats under the heading for unpriced ones.
+  It says none was priced in that state,
+  and keeps the old line where no metered call exists.
+- The USD group holds OpenRouter and Bedrock seats,
+  and its heading and total said OpenRouter,
+  so a Bedrock bill read as OpenRouter's.
+  Heading and total name the providers present,
+  byte for byte unchanged for a run on OpenRouter alone;
+  a seat of neither provider throws `unreachable:`.
+- The floor note wrote `1 call reported no usage block, so their tokens`.
+  The pronoun follows the count through `wordForCount`.
+- A log with no spend line printed NOTHING RECORDED,
+  whose own line says silence is not a zero,
+  and then a zero credit total.
+  The report stops after its notes where no seat was read.
+
+Open to the owner's veto:
+nothing printed after NOTHING RECORDED.
+
+Recurrence:
+`mistake-prevention.md`,
+"Claims without their evidence":
+a claim of absence is printed only in the state that proves it.
+
+### B281: `meter-report` merged two readings that shared a stamp and the first two providers' states
+
+Fixed in `387af02b7`,
+with its cases,
+which the agent ran red in its worktree.
+
+Found by the move B278 records.
+The merge key was the stamp,
+the Synthetic and Hyper states and the numbers joined with a comma.
+It left out the OpenRouter and Bedrock states,
+and the join let one field holding a comma read as two fields.
+Two readings that differed only there collapsed into one.
+
+The fix:
+the key is every field of the reading,
+so a reading differing in the third or fourth provider's state,
+or in a number,
+is a reading of its own;
+exact repeats still collapse.
+
+Open:
+`reportLedger` and `reportMeters` set `process.exitCode` themselves,
+so their cases hold and restore it.
+The lead's rule for the clusters after this one is that a moved procedure returns its code and the entry sets it;
+these two are left to change with that follow-up.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tables keyed by text".
+
+### B282: `probe-verify` asked the whole roster before it refused a sheet already taken
+
+Fixed in `abb506b7b`,
+with its cases,
+which the agent ran red in its worktree.
+
+Found on 2026-10-06 (UTC) while moving five probe and sensitivity runners into modules (T8).
+`probe-verify` asked the whole roster about every damaged and control region,
+and only then found the sheet or its manifest already in the runs directory,
+refused,
+and wrote nothing.
+A rerun over a graded sheet paid for the whole run.
+
+The fix:
+the check is `assertSheetPairFree`,
+taken out of `writeSheetPair` (`sheet-write.ts`),
+which still uses it,
+and it runs before anything is gathered or asked.
+
+The as-built suites of the five commands are in `139a31f4a` and pass against the unmoved commands and the moved ones,
+so the move is shown to change nothing a keyless run can see.
+Measured by the lead for B282 and B283:
+the 22 test files of the cluster and 10 guard and inventory files pass;
+lint ends with no warning and no error,
+its type check included;
+of the 40 source scans 39 pass,
+and `dead-test-declarations` fails on four fixture names of `a13f71ba8`,
+which only the test files of `1088e72d9` read.
+The agent's measurement,
+not rerun by the lead:
+a census over its 23 test files lists none of the five bundles among those no test loaded,
+and no cold stretch in the entry files or new modules beyond one throw.
+The whole suite's run over this change is the one B278 records.
+
+Open to the owner's veto:
+a builder of clients in place of a client,
+since a client answers a prompt it was already asked from its stored reply;
+the gatherers passed in by the entry;
+`resolveRunsDir()` read before the audits in `audit-sensitivity`,
+where it was read after.
+
+Recurrence:
+`mistake-prevention.md`,
+"Work no floor can check":
+state known at the start is checked before anything is bought.
+
+### B283: the `issues-absent` arm of `probe-relabel` sent the production disclosure with an empty list
+
+Fixed in `abb506b7b`,
+with its case,
+which the agent ran red in its worktree.
+
+Found by the move B282 records.
+The arm that claims no issue list is known sent the production disclosure with an empty list,
+which under a rendered disclosure writes the heading for a list into the prompt.
+
+The fix:
+it sends the withheld disclosure.
+Production's setting is withheld today,
+so today's output is unchanged.
+
+Recurrence:
+`mistake-prevention.md`,
+"What each sheet is shown".
+
+### B284: the score commands' refusals reached the operator as faults with no words
+
+Red in `a13f71ba8`,
+fixed in `1088e72d9`.
+
+Found on 2026-10-06 (UTC) while moving the five score runners into modules (T8).
+Each of these ended at exit 5 with a stack and no words:
+
+- `score-verify` and `score-probe` over a sheet and a manifest of different lengths;
+- a manifest row with a wrong position;
+- `score-attribution`,
+  `score-probe` and `score-crosscheck` over a runs directory with no `artifacts` directory;
+- a graded sheet that could not be read,
+  absent or a directory,
+  in `score-verify`,
+  `score-agreement` and `score-probe`,
+  which named no path.
+
+The fix:
+each is a stated refusal,
+exit 6.
+The length refusals name the counts;
+the position refusal no longer quotes the file's value;
+`requireArtifactsDir` (`score-artifacts-dir.ts`) names the directory and the filesystem's reason;
+and `readSheetText` (`score-sheet-text.ts`) names the path,
+the reason and what to name instead.
+Measured by the lead on the red tree:
+`score-probe` and `score-crosscheck` pass against the unmoved commands,
+and `score-attribution`,
+`score-verify` and `score-agreement` fail by assertion
+(two cases,
+two and one).
+
+For B284 to B287,
+measured by the lead on a tree that also held the files of `53e25b458`:
+44 test files pass,
+this cluster's 22 among them,
+with the 40 source scans and a lint that finds nothing.
+The tree of `1088e72d9` is that one less the files of `53e25b458` and its lines in two files both commits edit;
+it was not built on its own,
+and its message says so.
+The agent's measurement,
+not rerun by the lead:
+a census over its 22 test files lists none of the five bundles among those no test loaded,
+and no cold stretch in the entry files or new modules beyond the throws.
+The whole suite's run over this change is the one B278 records.
+
+Open,
+to rule on:
+`resolvePool` (`artifact-pool.ts`) reads the environment itself;
+`score-verify` counts a sheet answer of `Duplicate` as unscored,
+where `score-agreement` reports duplicates apart.
+
+Open to the owner's veto:
+`requireArtifactsDir` as a listing of its own before the gather's;
+full paths in the two readers' refusals.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal".
+
+### B285: `score-agreement` scored without a file the operator named
+
+Red in `a13f71ba8`,
+fixed in `1088e72d9`.
+
+Found by the move B284 records.
+`--manifest` or `--pre-grades` with a path that was not there printed the note for a file nobody named,
+and scored without the file the operator typed the flag to supply.
+
+The fix:
+`readNamedOrBeside` refuses a named file that is absent,
+and `readOptional` states every other read failure in words.
+
+Open to the owner's veto:
+refusing a named file that is absent.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input":
+absence is an answer only for a file nobody named.
+
+### B286: score reports said nothing, or one thing for three states
+
+Fixed in `1088e72d9`,
+with their cases,
+which the agent ran red in its worktree.
+
+Found by the move B284 records.
+
+- `score-verify` over a sheet and a manifest with no item printed only its closing note,
+  which reads as a report over something.
+  It prints a line saying no set was reported.
+- `score-crosscheck` printed its status breakdown label and nothing more
+  where every judgeable claim was accepted.
+  It prints `none`.
+- `score-crosscheck` said no entry carried attribution in three different states.
+  Where every claim was proposed by the whole roster,
+  it said so and returned before its warning about unjudgeable claims;
+  where entries carried attribution and no issue joined to it,
+  it said the same.
+  Each state has its own note,
+  and the whole-roster note is followed by the warning.
+
+Three branches no input reaches are `unreachable:` throws:
+the rate of a critic heard on no chunk,
+which rendered `n/a` or `INCONSISTENT`,
+and the joins of positions behind a length check in `score-verify` and `score-probe`.
+
+Open to the owner's veto:
+a line for an empty verify sheet,
+where a refusal is the alternative;
+the unreachable rate throwing where it rendered a word.
+
+Recurrence:
+`mistake-prevention.md`,
+"Claims without their evidence":
+an early return names which state reached it.
+
+### B287: the author table of `score-crosscheck` ordered ties by the directory listing
+
+Fixed in `1088e72d9`,
+with its case,
+which the agent ran red in its worktree.
+
+Found by the move B284 records.
+Authors with equal accepted counts came out in whichever order the artifacts were read,
+and the listing is not sorted.
+
+The fix:
+`tallyAuthors` breaks a tie by model id in code-point order.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B288: `cap-census` counted a log once for every named path that reached it, and one unreadable log ended the census
+
+Fixed in `53e25b458`,
+with its cases,
+which the agent ran red in its worktree.
+
+Found on 2026-10-06 (UTC) while moving three report runners into modules (T8).
+`capCensusLogsUnder` listed a log once for every named path that reached it,
+so a directory named beside a log inside it counted each of that log's calls twice
+and moved the percentile the cap rule reads.
+The walk counted a directory it could not list and went on,
+but a log it could not open ended the whole census as a fault,
+exit 5,
+discarding the census of every readable log.
+
+The fix:
+each log is taken once,
+by its resolved path;
+and a log that cannot be opened is counted and named like the directory,
+through the one printer `reportCapCensusUnreadable`.
+The cases are "TAKES A LOG ONCE where the paths named reach it twice"
+and the one that begins "COUNTS A LOG IT CANNOT READ".
+
+The as-built suites of the three commands arrive with the move and not in a red commit of their own,
+since they share their files with the cases of the moved functions.
+For B288 to B290,
+measured by the lead:
+44 test files pass,
+the 18 of these three commands among them;
+after one local was renamed,
+the 40 source scans pass and lint ends with no warning and no error.
+Before the two edits named here as the lead's,
+two of the 40 scans failed,
+on those two lines alone.
+The held entry of `caught-value-text` names `reportCapCensusUnreadable`,
+where the agent's report named `visit`;
+and a local of `slice-cost-bands.ts` whose name was a position word became `smallerBound`,
+since the position-reference scan reads the word as a pointer by position,
+a finding the agent's report did not list (M131).
+The whole suite ran on `53e25b458` in a side checkout:
+1,821 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 40 source scans passing.
+
+Recurrence:
+`mistake-prevention.md`,
+"Searches and censuses that miss":
+a census over named paths collapses its inputs before it counts,
+and the two reads of one walk share one policy.
+
+### B289: `slice-cost-report` printed no spread block and no word about it, and a missing log as a fault
+
+Fixed in `53e25b458`,
+with its cases,
+which the agent ran red in its worktree.
+
+Found by the move B288 records.
+`printSpread` returned without a word for a log with fewer than two priced slices,
+or one whose cheapest priced slice took no measurable time,
+so a reader could not tell an omitted block from a clean one.
+A log that was not there was a fault with a stack,
+exit 5.
+
+The fix:
+both arms say why no spread is shown;
+and a missing log is a stated refusal naming the path,
+exit 6,
+while other read errors still leave as the fault they are.
+A fallback of zero for a band with no bound before it (`slice-cost-bands.ts`) is an `unreachable:` throw.
+
+Recurrence:
+`mistake-prevention.md`,
+"Claims without their evidence":
+a branch that skips a block of a report says so.
+
+### B290: two refusals of `cache-account-audit` printed as faults of the command
+
+Fixed in `53e25b458`,
+with its cases,
+which the agent ran red in its worktree.
+
+Found by the move B288 records.
+The audit read every tracked file with no check that the file existed,
+so a removal not yet committed ended a check made before a launch as a fault,
+exit 5.
+A cache version declared in a form the audit cannot read raised `CacheAccountReadError`,
+whose message tells the operator how to write the declaration,
+and it printed as a fault of the command with frames.
+
+The fix:
+the missing file is a stated refusal naming the file,
+and `CacheAccountReadError` extends `StatedRefusalError`.
+`cache-account-slice-report.ts` takes the runs directory where it looked it up,
+and has a test file of its own.
+
+Open,
+to rule on:
+`unaccountedCommits` and `printSliceCacheAccount` compare times to the second,
+so a version set in the same second as a record reads as not set after that record;
+telling the two apart needs ancestry and not seconds.
+
+Open to the owner's veto:
+`resolveRunsDir()` read before the audit,
+where it was read after the version report.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal".
+
+### B291: each test that started a child built the child's environment itself, and several passed the keys on
+
+Scan red in `a67f453cb`,
+fixed in `cebfcc122`.
+
+Found on 2026-10-06 (UTC),
+after a fixture merged with a coverage cluster was found to start a child
+with the parent's environment whole (M121).
+The owner's rule is that keys come from the task runner and no child of a test inherits them.
+Nothing held it:
+each test file that started a child built the child's environment itself,
+or passed none.
+`nano-spawn` merges the `env` it is given into the parent's environment
+(the lead's reading of its type definitions,
+stated in the agent's brief),
+so leaving a variable out of that object removes nothing.
+No child of any of these files calls a provider,
+so no key was used or shown.
+
+The fix:
+`src/child-environment.test-fixture.ts` is the one place a test may start a child.
+It hands the child the test process's environment with every variable whose name ends in `_API_KEY` removed,
+and every variable whose name starts `TRANSLATION_REPAIR_` too,
+then the variables the case names
+(`environmentWithoutKeys`,
+`spawnKeyless` over `nano-spawn`,
+`runKeyless` over node's own `spawn`,
+`runBuiltCommand` for a built command).
+A removed name is stated as `undefined`,
+which the merge inside `nano-spawn` and node's `spawn` both read as absent.
+Its test file starts real children that print the names they see,
+with a control case that hands a child a key-named variable and sees it arrive.
+
+`src/test-children-keyless.unit.test.ts` reads every test file and fixture but that one.
+It fails on an import of a spawning module
+(`nano-spawn`,
+`node:child_process`,
+`execa`,
+`cross-spawn`) under any form,
+and on a call of a spawning function.
+It joined the `source-scans` task,
+which ran 41 files from then.
+Its package case failed with 54 findings in 27 files,
+an import and a call in each.
+Of the 27,
+five are the keyless fixtures of the runner clusters merged since the agent's base,
+where the agent counted 44 findings in 22 files.
+
+Every child of the 27 files goes through the fixture.
+`git` in a throwaway repository runs through `spawnKeyless`,
+node on a script or a built command through `runKeyless`,
+and built commands through `runBuiltCommand`.
+Three files passed more than the rule allows,
+by the agent's reading:
+`verify-published.unit.test.ts` spread the parent's environment into its child,
+keys included;
+`fidelity-reference-cli` blanked the keys it knew of and let the rest through;
+and `editor-standing-read.unit.test.ts` wrote the runs directory into the parent's own environment,
+for its child to inherit.
+That file hands the directory to the child by name,
+so its helper `runsDirPointedAt`,
+the two inventory lines of `duplicate-bodies` that named it and the suite's `concurrency: 1` are gone.
+The five fixtures of the runner clusters are the lead's edits:
+three keep their exported names and call `runBuiltCommand`,
+one calls `runKeyless`,
+and one runs git through `spawnKeyless`.
+
+Measured by the lead on the red tree:
+the new scan alone fails with the 54 findings and its own fixture case passes;
+the fixture's test file passes;
+and the `source-scans` task prints 41 pass lines and fails on that one case alone.
+Measured by the lead on the fix tree,
+with the two red test files of `3c74be74a` also in it:
+the whole unit suite prints 1,823 pass lines and 10 fail lines,
+every one of the 10 in those two files (M125);
+the `source-scans` task prints 41 pass lines and no fail line;
+and lint ends with no warning and no error.
+The agent could not run `bench-sample-draw.unit.test.ts` in its worktree,
+where the git policy shim was not built;
+it runs in the whole suite.
+The whole suite ran on `040656c51` in a side checkout,
+which holds the fixes of B291 to B293:
+1,823 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 41 source scans passing.
+
+Open:
+production code starts children that inherit the parent's environment whole
+(`git` from `corpus-source.ts`,
+`artifact-generation.ts`,
+`coverage-census-commit.ts`,
+`cache-account-git.ts` and `run-config.ts`;
+the image readers of `image-ocr.ts`;
+and the coverage census,
+which runs the unit suite as a child).
+None calls a provider.
+A follow-up for these was not merged at `f8e99b84d`.
+One name for the three fixtures that only rename `runBuiltCommand` waits for the last runner cluster.
+
+Open to the owner's veto:
+removing every `TRANSLATION_REPAIR_` variable and not the keys alone;
+a case's own variable winning over the removal,
+so a case can hand a child a key-named variable on purpose;
+`runKeyless` reporting a signalled child as code -1;
+no standard input for `runBuiltCommand`;
+and the node child of `bench-sample-draw` inheriting the environment less keys and settings,
+with `HOME` set by the case,
+where it was given `PATH` and `HOME` alone.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B292: a request rate with a fraction made the pace wait a whole window
+
+Red in `3c74be74a`,
+fixed in `040656c51`.
+
+Found on 2026-10-06 (UTC) by a coverage agent of T8,
+whose probe of a fallback in `request-pace.ts` the follow-up's brief names,
+and fixed by that follow-up.
+`hyperRequestsPerHour` read any plain decimal of `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR` as a rate.
+A fraction made the pace read its list of starts at a fractional position,
+miss,
+and wait a whole window.
+With starts at 0 and 600 ms in a window of 1,000 ms,
+a pace of 1.5 places read a wait of 1,000 ms at 700 ms where two places read 300
+(the agent's probe,
+not rerun by the lead).
+
+The fix:
+`hyperRequestsPerHour` refuses a value that is not a whole number of one or more written in digits,
+as a stated refusal naming the variable,
+the value as written and what is accepted.
+`createRequestPace` throws a `RangeError` for a count of places that is not a whole number of one or more,
+so a pace built by hand cannot reach that read either.
+The mode that paced nothing for a count of zero or less goes with it;
+no production caller used it,
+and its cases are removed.
+The two fallbacks on the list of starts are `nonNullishOrThrow` reads:
+the first sits behind a length check,
+and the second's index is in range for a whole count.
+The red cases build a pace with 1.5,
+0,
+-1,
+`NaN`,
+`Infinity` and 2 to the 60th,
+and set the variable to `1.5` and `0.5`.
+
+With it,
+no defect:
+`sleepBackoff` (`transient-retry.ts`) rethrew whatever its timer rejected with when the caller had not aborted.
+By the agent's reading of the runtime's own `timers/promises` source and its probe on Node 26.10.0,
+a timer given a number and an abort signal rejects only when that signal aborts,
+so no input reaches the rethrow.
+It is an `unreachable:` throw that keeps the rejection as its cause.
+
+`doc/configuration.md` said a bad value of the variable was not refused and silently left the default,
+which the code had already stopped doing,
+by the agent's reading of the ledger;
+it says what is refused,
+and `doc/seats-and-calibration.md` says the rate is a whole number
+(both the lead's edits,
+in `040656c51`).
+
+Measured by the lead on the red tree for B292 and B293:
+the whole unit suite prints 1,823 pass lines and 10 fail lines,
+every one of the 10 in the two red files
+(two cases of `request-pace` and four of `stream-drain`,
+with the lines of the suites that hold them),
+each by assertion.
+The whole suite's run on `040656c51` is recorded in B291.
+
+Open to the owner's veto:
+removing the mode that paced nothing;
+the wording of the refusals and of the `unreachable:` throws.
+
+Recurrence:
+`mistake-prevention.md`,
+"Numbers read back from text".
+
+### B293: the stream drain's opening line was never read by the credential mask
+
+Red in `3c74be74a`,
+fixed in `040656c51`.
+
+Found on 2026-10-06 (UTC) as the path B266 left open.
+`drainBody` logs an opening excerpt of the generated text,
+and the upstream's name,
+through a line the credential mask of the transport never read.
+An endpoint that echoed the key it was sent would have put the key in the log.
+No such echo was seen;
+the cases use a fixture's invented key,
+never one from the environment.
+
+The fix:
+`drainBody` takes the request's credentials,
+which `fetchTransport` already holds and passes.
+The whole assembled opening text is masked before the excerpt is cut from it,
+so a key split across chunks or frames is masked whole.
+A stream torn down inside a key holds no whole copy,
+so `maskCredentialsInCutText` (`credential-mask.ts`) also masks an ending of four units or more
+that is the opening of a credential.
+The upstream's name is masked too.
+`stream-cut.ts`,
+which writes the line,
+is unchanged.
+Four red cases expect a sent credential masked:
+echoed whole in the first content;
+arriving in two chunks or two frames;
+cut inside the key,
+where no head of it may show;
+and in the gateway's name field.
+A fifth case,
+a stream that never echoes the key,
+pins the line as it was and passes before and after.
+`credential-mask.unit.test.ts` gains three cases for the new function.
+
+The lead's edit:
+`drainBody` requires its `credentials` argument,
+where the agent gave it a default of none.
+A default would let a later caller start a drain that masks nothing without saying so.
+The transport is the one production caller and names its list,
+and each test call that carries none says `credentials: []`.
+With the argument made required,
+the suite and the scans each failed on one case alone,
+the TSDoc example scan naming the example of `drainBody` that lacked the key;
+with the key in the example that scan passes run alone,
+and nothing but that one comment line changed after the last whole run on the lead's tree.
+
+The agent's measurements,
+not rerun by the lead:
+over a stream of one megabyte the masked and unmasked drains differ by less than the spread between runs
+(25 runs each after a warm-up),
+with about 5 ms more at the median where one frame carries the whole megabyte.
+The whole suite's run on `040656c51` is recorded in B291.
+
+Open to the owner's veto:
+four units as the shortest head masked at a cut,
+which leaves the first three units of a key to show there
+and masks an excerpt's ending that happens to match a key's head;
+the credentials as a parameter of `drainBody`,
+where masking inside `stream-cut.ts` is the alternative;
+and masking the upstream's name.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries":
+every line that carries a provider's text is read by the mask before it is cut.
+
+### B294: `translate-probe` without a key reported three failed slices and exited 0
+
+Red in `7d2ca2604`,
+fixed in `da8a963cc`.
+
+Found on 2026-10-06 (UTC) while moving five probe runners into modules a test can load (T8).
+`translate-probe` built its client inside the `try` that reports one slice as failed.
+With no provider key,
+the stated refusal printed as `SLICE FAILED: RunConfigError: ...` once for each of three slices,
+and the command ended at exit 0 having asked nobody.
+
+The fix:
+the client is built before the `try`.
+A refusal to build one stops the command,
+exit 6,
+and a failure inside the gather is still reported for its slice.
+
+Two more in the same commit,
+each cased red first by the agent in its worktree:
+`translate-probe` printed `probing the first 3` whatever the count of slices was,
+and prints the smaller of the count and three;
+and B308 records the count of `coverage-probe`.
+With them,
+no defect:
+`displacement-probe` answered `false` without a word
+where a relocation candidate named a slice its slicing did not hold,
+in the two filters that count transcription suspects and markup donors.
+No input builds that state,
+so it is an `unreachable:` throw naming the slice and the slice count,
+and no case drives it.
+
+Measured by the lead on the red tree:
+four of the five as-built test files pass against the unmoved commands,
+and `translate-probe` fails in that one case by assertion,
+exit 0 where 6 is expected.
+The agent's measurement,
+not rerun by the lead:
+a census over its 20 test files lists none of the five bundles among those no test loaded,
+and no cold stretch in the entry files or new modules beyond the one throw.
+The whole suite ran on `da8a963cc` in a side checkout:
+1,858 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 41 source scans passing.
+
+Open,
+to rule on:
+`coverage-control-probe` refuses the whole run where an entry lacks a page,
+and `coverage-probe` skips such an entry as an ordinary state of the corpus.
+
+Open to the owner's veto:
+the client built before the `try` for one slice,
+where rethrowing a stated refusal from the catch is the alternative,
+which would also stop a slice whose gather refused;
+`probing the first 1` and `probing the first 2` in the existing form of the line;
+the stamps of the log lines of `displacement-probe` read as `<time>` in its as-built cases,
+where pinning them wants a clock handed to the logger.
+
+Recurrence:
+`mistake-prevention.md`,
+"What a catch charges":
+a catch that charges one unit of work does not also hold the setup every unit shares.
+
+### B295: two listing readers parsed a provider's reply before any mask read it
+
+Red in `17a66fa66`,
+fixed in `097b6ac40`,
+whose masking cases the agent ran red in its worktree.
+
+Found on 2026-10-06 (UTC) while moving six sampler and card runners into modules (T8),
+as a path B266 left.
+`model-catalog` and `roster-card` read a provider's listing with `reply.json()`
+and never passed its text through the credential mask.
+A reply that echoed the key would have been parsed,
+and a catalog id carrying it printed.
+No such echo was seen;
+the cases use an invented key.
+
+The fix:
+both read through `readProviderListing`,
+which masks the text before it is parsed,
+whatever transport it is handed.
+
+The agent's account,
+not rerun by the lead:
+its masking cases failed before the mask was written;
+it did not take the mask out again afterwards to see them fail a second time.
+The whole suite ran on `097b6ac40` in a side checkout,
+which holds the fixes of B295 to B298:
+1,886 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 41 source scans passing.
+
+Open to the owner's veto:
+a limit of 60 seconds on a listing read,
+where there was none;
+the mask in `readProviderListing` on top of the transport's own;
+listing reads through `fetchTransport` in place of the global `fetch`;
+a listing status read as 200 to 299.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries":
+a reply is masked as text before anything parses it.
+
+### B296: the samplers' and cards' refusals reached the operator as faults
+
+Red in `17a66fa66` for the two draws,
+fixed in `097b6ac40`,
+with the listing cases run red by the agent in its worktree.
+
+Found by the move B295 records.
+Each of these ended at exit 5:
+
+- a listing body that was not JSON,
+  or a catalog listing of the wrong shape,
+  with a stack;
+- `draw-sample` and `damage-sample` over a runs directory with no `artifacts` directory;
+- a final draw whose sample carries no recorded repair,
+  which refused in clear words but as a fault.
+
+The fix:
+each is a stated refusal,
+exit 6.
+The listing refusals name the URL and quote neither the body nor the parse failure.
+`listSettledNames` names the directory and the variable that sets it.
+`UnmeasurableRepairError` (`sample-grading.ts`) extends `StatedRefusalError`,
+the lead's choice of the two ways the agent set out,
+so the draw calls `assertRepairMeasurable` with no catch around it.
+
+Measured by the lead on the red tree for B296 and B297:
+four of the six as-built test files pass against the unmoved commands,
+and `draw-sample` and `damage-sample` fail in two cases each by assertion,
+exit 5 or 0 where 6 is expected.
+The agent's measurement,
+not rerun by the lead:
+a census over its 35 test files lists none of the six bundles among those no test loaded
+and no cold stretch in the new modules;
+two entry files each keep one cold character,
+the continuation after an awaited call that a keyless run refuses before it returns
+(`model-health.ts`,
+`damage-sample.ts`).
+The whole suite's run on `097b6ac40` is recorded in B295.
+
+Open,
+to rule on:
+`resolvePool` (`artifact-pool.ts`) reads the environment and prints through `console.log` itself,
+and `loadEntry` (`draw-entry-load.ts`) takes a reader but reads the run's corpus pin itself.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal".
+
+### B297: a draw that could not finish left or removed a sheet that blocks the next draw
+
+Red in `17a66fa66` for the empty damage pool,
+fixed in `097b6ac40`,
+with the other two cased red first by the agent in its worktree.
+
+Found by the move B295 records.
+
+- A final draw over a pool with no accepted issue wrote an empty gate sheet,
+  which a final path's exclusive create then protects for ever,
+  blocking the real draw.
+  It is refused before any file is written.
+- A failed final draw removed a file it had not created.
+  The tracker recorded a path before its write,
+  so a write that found the path taken had another draw's sheet removed.
+  The tracker releases a path the exclusive create did not make.
+- An empty damage pool wrote a kept,
+  empty sheet and manifest and ended at exit 0,
+  blocking the next run.
+  It is refused before any client opens.
+
+The whole suite's run on `097b6ac40` is recorded in B295.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back":
+a cleanup removes only what its own run created,
+and a write that nothing may replace is made only once there is something to write.
+
+### B298: a region no prober answered for was recorded as silent
+
+Fixed in `097b6ac40`,
+with its cases,
+which the agent ran red in its worktree.
+
+Found by the move B295 records.
+`damage-sample` recorded a region no prober answered for as silent,
+which is the human grade's negative reference.
+A region nobody heard and a region every prober passed read the same on the sheet.
+
+The fix:
+such a region is printed as unheard and left off the sheet,
+and a run in which no region is heard refuses.
+A tally missing after a region was probed is an `unreachable:` throw.
+The whole suite's run on `097b6ac40` is recorded in B295.
+
+Open to the owner's veto:
+an unheard region left off the sheet and counted in a printed line,
+where refusing the whole run at the first one is the alternative;
+one client opened for each region of the damage sample,
+as before.
+
+Recurrence:
+`mistake-prevention.md`,
+"Which seats a quorum counts":
+no answer is never recorded as an answer.
+
+### B299: `editor-width-probe` over a draw holding no slice bought the control and wrote a report with no row
+
+Tests in `327ea1de0`,
+fixed in `77a213478`,
+with its case,
+which the agent ran red in its worktree.
+
+Found on 2026-10-06 (UTC) while moving `editor-calibrate` and `editor-width-probe` into modules (T8).
+`editor-width-probe 1 b` drew one slice,
+of which draw B takes none,
+then bought the positive control and wrote a report with no row:
+a clean finish over no work,
+paid for.
+
+The fix:
+a draw that holds no slice is a stated refusal before the control,
+naming how many slices that draw needs.
+
+The as-built cases are in `327ea1de0` and pass against the unmoved commands and the moved ones:
+six for `editor-calibrate` and two for `editor-width-probe`,
+every child through the keyless fixture,
+over a throwaway repository holding one invented entry.
+The whole suite ran on `77a213478` in a side checkout:
+1,898 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 41 source scans passing.
+
+Open,
+seen by the agent and left to rule on:
+`editor-calibrate-standing.ts` counts a round whose lone composite candidate has no ballot as judged,
+while the shipped table counts it as not unvoted;
+and the wording of the reach line,
+"the rest carried no paragraph",
+which the agent questions.
+B307 closes the third thing it saw,
+the bare `Error` of `bench-sample.ts`.
+
+Open to the owner's veto:
+the stage seams of the width probe (`controlHolds`,
+`gather`,
+`runSlice`,
+`writeReport`) and the draw passed in as functions;
+the wording of the empty-draw refusal;
+`readOverlap`,
+`adoptGrace`,
+`readWriterGrace` and `newClient` passed as functions.
+
+Recurrence:
+`mistake-prevention.md`,
+"Work no floor can check":
+state known at the start is checked before anything is bought.
+
+### B300: the two Exa lookups parsed and kept a reply before any mask read it
+
+Red in `251df99c4`,
+fixed in `c67279f66`.
+
+Found on 2026-10-06 (UTC) among the paths the agent of B266 listed as not reached
+(its list,
+in the lead's notes).
+`searchWorkTitle` (`work-title-search.ts`) and `fetchCitedReference` (`cited-reference-fetch.ts`)
+send the Exa key in an `x-api-key` header and read the answer with `response.json()`.
+Neither passed the answer's text through the credential mask,
+and neither goes through the transport that masks for the chat clients,
+since each takes the `fetch` it is handed,
+and a pass hands them the global `fetch` (`corpus-run/pass-outside-reads.ts`).
+What they read is kept:
+a hit's title,
+address and highlight,
+and a fetched page's title and text,
+go into a sheet a model reads and into the lookup and reference caches on disk.
+An endpoint that echoed the key it was sent would have put the key in all three places.
+No such echo was seen;
+the cases use an invented key from a fixture.
+
+The fix:
+both read their reply through `readMaskedJsonBody` (`masked-json-body.ts`).
+The body's text is taken once,
+every credential the request's headers carried is masked out of it
+(`credentialsOfHeaders`,
+`maskCredentials`,
+the pair the transport uses),
+and only then is it parsed.
+A parse failure's message,
+which quotes the text it refused,
+quotes the masked text.
+Each lookup builds its headers once and hands the same object to the request and to the read,
+so the read cannot mask a different key from the one that was sent.
+`masked-json-body.unit.test.ts` holds four cases.
+
+Measured by the lead on the red tree:
+`work-title-lookup.unit.test.ts` and `cited-reference-fetch.unit.test.ts` each fail in the one new case,
+by `AssertionError`,
+and in no other.
+On the lead's fix tree the whole unit suite printed 1,899 pass lines and 2 fail lines,
+both for one case this change does not touch:
+`displacement-probe as built`,
+"REFUSES as stated and exits 6 when an artifact names a commit the clone lacks"
+(the case and its suite).
+Its file,
+rerun alone on the same build,
+printed one pass line and no fail line.
+The whole suite then ran on `c67279f66` in a side checkout:
+1,899 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 41 source scans passing.
+
+Open:
+that case fails under load.
+The lead's reading,
+an inference not measured in any commit through `f8e99b84d`:
+the probe reads an entry's two pages with `Promise.all` (`corpus-run/settled-carve.ts`),
+both reads fail for a commit the clone lacks,
+and which page the refusal names is whichever git child ends first.
+It failed again in the whole-suite run on `f8e99b84d` (B305),
+and its fix is in no commit through that one.
+
+Open to the owner's veto:
+masking at the read and not by handing the lookups the masking transport;
+one helper for both lookups.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries",
+and for the case that fails under load,
+"Output decided by arrival order".
+
+### B301: one reply nested thousands of markers deep ended the translate stage for every voice
+
+Red in `c720721a9`,
+fixed in `41d5f9267`.
+
+Found on 2026-10-06 (UTC) by a follow-up to the cost B212 left open.
+The Markdown parser descends once per nesting level,
+and so does the tree transform it runs on its own output,
+so a reply of thousands of nested quotation markers exhausted the stack.
+Whether it did depended on how deep the caller already stood
+(the agent measured 5,989 quotation markers parsed from a shallow caller and 5,957 through the translate stage),
+so one reply could pass in one place and fail in another.
+The strict entry turned the overflow into its own refusal,
+with the message "at RangeError (RangeError)" and no cause.
+The plain entry let the engine's `RangeError` out,
+`requireMarkdownRefusal` took any `RangeError` for it,
+and two readers of the plain entry had no catch:
+the fold that lays a paragraph out as it renders
+(`soft-break-fold.ts`,
+read by `pageLayout` and two judge sheets)
+and the floor that reads a rendering's atoms (`translate-unwrapped-link.ts`).
+One voice's reply of 16,000 nested markers left `runTranslateStage`,
+by the agent's trace through the first of the two,
+and the voices that wrote ordinary renderings lost their work with it.
+Other shapes never overflowed and cost minutes:
+a link nested in a link,
+an image in a link,
+a list nested by indentation
+(the agent's timings,
+in its report).
+
+The fix:
+
+- `nesting-bound.ts` reads a body in one linear pass before any parse,
+  against one bound:
+  256 levels of the container markers opening a line,
+  of a line's indentation,
+  of a paragraph's open brackets and,
+  under the strict grammar,
+  of open tags and open braces;
+  and 1,024 emphasis delimiters in a block.
+  Fenced code and a line of rule characters are skipped for what they cannot nest.
+- Both entries refuse a body past the bound with the refusal their callers already read:
+  `MdxParseError`,
+  or for plain markdown a new `MarkdownParseError`,
+  a `RangeError` by class.
+  The message names the measure,
+  the bound,
+  the line and the column,
+  and quotes nothing.
+- Both entries catch the engine's stack exhaustion,
+  for a shape the lexical measure does not see,
+  and raise the same refusal with the exhaustion as its cause.
+  Anything else propagates unchanged.
+- `requireMarkdownRefusal` reads `MarkdownParseError` alone,
+  so another `RangeError` is no longer taken for the grammar's refusal.
+- `foldSoftBreaks` returns a refused text as written,
+  and the atoms floor reads no atoms from one;
+  the floor that reads the candidate's shape refuses the same text with its own finding.
+
+The lead's edits on the agent's work:
+the byte order mark the scan drops is written as an escape,
+where the agent's source held the invisible character itself;
+and `MarkdownParseError` carries no `line` or `column` field,
+since nothing read them and they were not adjusted for a leading mark as the strict refusal's are.
+
+Measured by the lead on the red tree:
+five test files fail as described and in no other case
+(`translate-deep-reply` one case of two,
+`wording-key` one,
+`unwrapped-link` one,
+`translate-validate` one,
+`translate-floor-ground` two).
+The agent's measurements,
+not rerun by the lead:
+the lowest overflow over every shape it tried is 2,995 bullet markers from a shallow caller;
+the deepest page of the pinned corpus nests 3 container levels,
+2 brackets,
+2 open tags,
+2 open braces and 36 delimiters in a block
+(184 pages of 93 entries,
+read through the package's own corpus readers);
+a parse at the bound takes 8 to 330 ms for every shape measured,
+and a body one past it is refused in at most 5 ms;
+a scan of `src` for functions that reach themselves found 12,
+none over text a model or a page wrote.
+Its two cases at the stack's edge prove the catch at one measured edge each,
+on one runtime build.
+The whole suite ran on `41d5f9267` in a side checkout:
+1,909 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 41 source scans passing.
+
+Open,
+with no fix in any commit through `f8e99b84d`:
+callers of `parseDocument` that take text assembled from model output and have no catch
+(`consolidation-polish-round.ts`,
+`refine-phase.ts`,
+`refine-slice-settle.ts`,
+`repair-chunk-verdict.ts`,
+`assembly-regressions.ts`,
+`archive-footnote-order.ts`),
+where the agent did not trace whether a floor refuses a deep reply first;
+and,
+found on the lead's reading,
+inline counts are skipped inside what the scan reads as a fence,
+and its fence rule is looser than the parser's,
+so nested brackets after such a line are not counted.
+There the catch still turns an overflow into the refusal,
+and the slow bracket shapes are not bounded.
+
+Open to the owner's veto:
+the bound's values;
+`MarkdownParseError` as a `RangeError`;
+a cause on `MdxParseError` for the stack exhaustion alone;
+an indented line of 514 or more columns refused;
+markers and indentation counted inside a fence;
+brackets and delimiters counted inside code spans and addresses;
+a refused text folded as written and given no atoms,
+where propagating is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation":
+text one voice wrote is bounded before a parser that descends once per level reads it,
+and every reader of that parser has its refusal.
+
+### B302: `corpus-pass` resolved its cap and its spend ceiling before its refusal boundary
+
+Red in `ea16d3b51`,
+fixed in `9a68e3c78`.
+
+Found on 2026-10-06 (UTC) while moving `corpus-pass` into modules a test can load (T8).
+The cap for one entry and the spend ceiling were resolved in module constants,
+before the refusal boundary ran.
+An unreadable `TRANSLATION_REPAIR_HARD_CAP_MINUTES`,
+or an unreadable spend ceiling,
+exited 1 under a dump of bundled source,
+although both refusals are stated ones.
+
+The fix:
+the entry reads the cap,
+the ceiling and both windows inside its run callback,
+in that order,
+before the lock is taken.
+The procedure is `corpus-pass-run.ts`,
+which takes the environment,
+the clock,
+the tip,
+the client factory,
+the settlement and the corpus pin as required parameters and reads none of them itself.
+The lead read the moved procedure against the one it replaces:
+the steps run in the order they ran.
+
+Measured by the lead on the red tree for B302 and B303:
+`corpus-pass.unit.test.ts`,
+eight cases that hold against the command as it stood,
+prints one pass line and no fail line;
+`corpus-pass-refusals.unit.test.ts` fails in its four cases and passes in none.
+The agent's measurements,
+not rerun by the lead:
+a census over its eleven test files shows no cold stretch in the entry file,
+in the sources it loads or in any new module,
+and one invariant throw (`corpus-pass-order.ts`).
+Not reachable without a key,
+by the same agent:
+a run to its end as built,
+since the run client is built before the `--plan` return and before the queue;
+wet meters over the real transport;
+a real settlement of an entry.
+The whole suite ran on `9a68e3c78` in a side checkout,
+which holds the fixes of B302 to B304:
+1,924 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 41 source scans passing.
+
+Open,
+seen by the agent and left:
+`run-config.ts` resolves the corpus pin at load,
+so an unreadable `TRANSLATION_REPAIR_CORPUS_COMMIT` exits 1 with a stack,
+the same shape as the cap;
+the `ONLY` line says the ordering is bypassed although the entries asked for are still ordered;
+the detail of an `INCOMPLETE` line says to check that the clone exists for a page that is simply absent;
+and the pair target on the `DONE` line is a literal 92.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal":
+a setting that can refuse is read inside the boundary that prints refusals,
+never in a module constant.
+
+### B303: the artifact guards' five refusals printed as faults of `corpus-pass`
+
+Red in `ea16d3b51`,
+fixed in `9a68e3c78`.
+
+Found by the move B302 records.
+An artifact nothing can place,
+and four more refusals of the artifact guards,
+each printed as a fault in the command,
+at exit 5 under frames,
+for a message that tells an operator what to do next.
+
+The fix,
+the lead's on the agent's work:
+the five guard classes
+(`UnplaceableArtifactError`,
+`LegacyPipelineError`,
+`GenerationDriftError`,
+`SchemaGenerationError`,
+`MislabelledArtifactError`)
+extend `StatedRefusalError`.
+The agent had caught the five in the pass and rethrown each inside a `StatedRefusalError`.
+A refusal that is always an operator's is one by class,
+as the samplers' is (B296),
+and the catch,
+its cause chain and two inventory entries it wanted are not in the commit.
+`corpus-pass-guards.unit.test.ts` holds each refusal as its own class,
+a stated refusal,
+with its whole message.
+The whole suite's run on `9a68e3c78` is recorded in B302.
+
+Open to the owner's veto:
+the guard classes as stated refusals.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal":
+a refusal that is always the operator's is a stated refusal by class.
+
+### B304: the pass order left medium and large bands tied, and retried a failing entry first on every run
+
+Fixed in `9a68e3c78`,
+with its cases,
+which the agent ran red in its worktree.
+
+Found by the move B302 records,
+reading the comparator against its own comment.
+The comparator's comment and the bands' own doc say the larger band leads within one rank,
+and that the fewest attempts go first so a flaky entry is deprioritized.
+The code let only the small band trail,
+so medium and large tied.
+Ranks are unique within a band,
+so the attempts tier could only ever break that one tie:
+an entry that kept failing kept its place in the walk and was retried first on every run.
+
+The fix:
+large leads medium leads small within a rank,
+and a band's ranks follow fewest attempts first,
+so a tried entry waits behind the untried ones of its band.
+Which entry a pass starts first can differ from before.
+`smallBandIds` (`band-order.ts`),
+which the new order leaves with no caller,
+is removed with its cases and its barrel line;
+and `selectPendingEntries` computed the order twice and dropped the first result,
+and computes it once.
+The whole suite's run on `9a68e3c78` is recorded in B302.
+
+Not measured:
+no pass ran under the new order,
+and no count was taken of how often a tried entry led a past run.
+
+Open to the owner's veto:
+the order as described,
+and reverting to the comparator as it was.
+
+Recurrence:
+`mistake-prevention.md`,
+"Claims without their evidence":
+a comment that states an order is a claim,
+and a case holds each tier it names.
+
+### B305: `producer-calibrate` printed a standing over rounds that never ran
+
+Red in `cd78288d7`,
+fixed in `f8e99b84d`.
+
+Found on 2026-10-06 (UTC) while moving `producer-calibrate`,
+`recall-benchmark` and `roster-bench` into modules (T8).
+
+- The run client was built inside the catch that counts a slice as lost.
+  A launch with no provider key printed `LOST (RunConfigError)` for every slice,
+  then a standing over no round,
+  and exited 0.
+  The loop rethrows a stated refusal.
+- `producer-calibrate --candidates <one id> --candidates-alone` drew the corpus
+  and asked the translate stage for every slice,
+  which refused the same roster of one seat each time;
+  each refusal was read as a lost slice.
+  The roster is checked before the draw,
+  and the stage's own refusal is stated.
+- A calibration in which no round finished printed `STANDING over 0 rounds` and exited 0.
+  It refuses,
+  after the lost lines,
+  naming how many slices were drawn.
+
+The first is cased in `cd78288d7`;
+the other two were cased red first by the agent in its worktree.
+
+Measured by the lead on the red tree for B305 to B307:
+six cases fail,
+each on the assertion its commit message names,
+and no other case of the four files fails.
+Measured by the lead on the fix tree:
+the cluster's thirteen test files,
+the three as-built suites among them,
+print no fail line against a fresh build;
+the source scans print 41 pass lines and no fail line;
+and lint reports no warning and no error.
+The agent's measurements,
+not rerun by the lead:
+a census over its eleven test files shows every one of the eleven sources loaded and no cold stretch,
+with two invariant throws (`producer-calibrate-run.ts`,
+`roster-bench-run.ts`).
+Not reachable without a key,
+by the same agent:
+a round that reaches a provider,
+a recall run with real quorums,
+a report written from a live row.
+
+The whole suite ran on `f8e99b84d` in a side checkout and is not green:
+1,938 `[PASS]` lines and 2 `[FAIL]` lines,
+the lint finding nothing,
+and the 41 source scans passing.
+Both fail lines are for one case this change does not touch,
+the case and its suite:
+`displacement-probe as built`,
+"REFUSES as stated and exits 6 when an artifact names a commit the clone lacks".
+B300 records that case,
+the lead's reading of why it fails under load,
+and that its fix is in no commit through `f8e99b84d`.
+
+Open,
+seen by the agent and left:
+`BenchReportError` is not a stated class,
+so any other caller of `benchWidths` prints its refusal as a fault;
+and `drawPinned` is written twice,
+once in each of two entry files.
+
+Open to the owner's veto:
+the missing-key refusal comes at the first slice,
+after the draw and the opening line,
+since each slice builds a fresh client;
+the wording of each new refusal.
+
+Recurrence:
+`mistake-prevention.md`,
+"What a catch charges":
+a catch that counts one unit as lost rethrows a refusal that would be every unit's.
+
+### B306: `recall-benchmark --plan` printed `PLAN ok` over a corpus that yielded no entry
+
+Red in `cd78288d7`,
+fixed in `f8e99b84d`.
+
+Found by the move B305 records.
+`--plan` is the setup check before a run of hours.
+Over a clone that holds no entry the plan passed,
+and the key refusal followed.
+
+The fix:
+it refuses before a client is built.
+The whole suite's run on `f8e99b84d` is recorded in B305.
+
+Open:
+`recall-benchmark` without `--plan` over a corpus that yields no entry still builds a client
+and keeps an empty scorecard before its own refusal,
+where the plan refuses before the client.
+
+Recurrence:
+`mistake-prevention.md`,
+"Work no floor can check":
+a setup check that found nothing to run over does not print that the plan is in order.
+
+### B307: an empty corpus and a roster too narrow to judge printed as faults of the bench commands
+
+Red in `cd78288d7` for the empty corpus,
+fixed in `f8e99b84d`,
+with the roster's case run red by the agent in its worktree.
+
+Found by the move B305 records,
+and for the empty corpus by the cluster of B299,
+which saw it in a file it did not own.
+
+- `sampleBenchSlices` (`bench-sample.ts`) threw a plain `Error` for a corpus that yields no slice,
+  which `producer-calibrate` and `roster-bench` both printed as a fault at exit 5.
+  It raises a `StatedRefusalError` naming how many entries the pin lists.
+  The cases and the change are the lead's.
+- `roster-bench` printed the refusal of a roster of fewer than two as a fault in the command,
+  at exit 5 under frames.
+  It states the refusal before the corpus is drawn.
+
+`refuseUnjudgeableRoster` restates a `ProducerRosterError`,
+a class that elsewhere is a fault and so is not stated by class.
+The whole suite's run on `f8e99b84d` is recorded in B305.
+
+Open to the owner's veto:
+the narrow-roster refusal as a stated refusal and not an invariant;
+the clock and the report writer as parameters of the roster bench.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal".
+
+### B308: counts in the runners' printed lines stood before a fixed plural, verb or pronoun
+
+Fixed across the runner moves,
+each with a case the moving agent ran red in its worktree,
+or a red case in the commit named:
+
+- `spend-report`:
+  `1 call reported no usage block, so their tokens` (`387af02b7`);
+- `score-attribution` and `score-crosscheck`:
+  `1 artifact could not be read and are in NEITHER population`
+  (red in `a13f71ba8` for the attribution report,
+  fixed in `1088e72d9`);
+- `cache-account-audit`:
+  `1 cache versions`,
+  on the terminal and in its progress line (`53e25b458`);
+- `coverage-probe`:
+  `1 unpaired passages` (`da8a963cc`);
+- `corpus-pass`:
+  "1 minutes" on the line naming the ceiling a run ran under
+  (red in `ea16d3b51`,
+  fixed in `9a68e3c78`),
+  and "1 more cache records" and "its 1 cache records are" on the `REATTEMPT` and `STALLED` lines (`9a68e3c78`).
+
+Found on 2026-10-06 (UTC) by the agents moving the runners,
+whose cases pin whole printed lines.
+Until the moves no test ran these commands as built,
+by the messages of the commits that added their as-built suites.
+
+The fix:
+each noun,
+verb and pronoun follows its count through `wordForCount`.
+With `passage` a counted noun of the coverage probe,
+the `count-nouns` scan named the fixed plural of `sideClause` (`quote-preservation.ts`),
+which had an arm for one and a fixed plural for the rest.
+The agent proposed an exemption;
+the lead had the helper take its noun from `wordForCount`,
+which says the same text without one.
+One exemption is added to that scan for a line of `corpus-pass` where "records" is a verb.
+
+Not examined:
+why the `count-nouns` scan had passed each noun.
+By `mistake-prevention.md`,
+"Counts in printed text",
+it reads a noun the package already counts with `wordForCount`,
+and verbs and pronouns are reviewed by hand.
+
+Recurrence:
+`mistake-prevention.md`,
+"Counts in printed text".
 
 ## Process mistakes in this audit
 
@@ -27157,6 +30701,10 @@ and the other order would have run a list naming a file that does not exist.
 Prevention:
 a command that reads a fresh edit is sent after the edit returns,
 never beside it.
+The lead's notes count a third occurrence on 2026-10-06 (UTC):
+a write was refused for want of a prior read,
+while the named run that needed the file launched in the same batch,
+and the run was repeated after the write landed.
 
 ### M110: a package task run from the main checkout
 
@@ -27647,6 +31195,19 @@ each a read whose two halves were both wanted,
 which this entry's own prevention sends to two calls of one batch.
 What would stop it is a check of the command's text before it runs,
 which no hook makes yet.
+Five more slips followed,
+the fourth to the eighth after this entry was written,
+around the merges of 2026-10-06 (UTC).
+Two were quick looks while merging:
+a listing redirected to a file and chained to a count,
+and a listing piped to a search and chained to a count of another file.
+Two put `;` between an `rg --count` and a second command,
+to get past the count's exit of 1 on a count of zero,
+and one put it after a search expected to find nothing.
+What failed each time is that a command meant only to look was sent without being reread.
+Every command is reread for `;` before it is sent,
+a read-only one included,
+and a count that may be zero is a call of its own.
 `mistake-prevention.md`,
 "Shell commands".
 
@@ -27734,6 +31295,410 @@ A copy of the lint that takes the root first was written for the next docs commi
 and prints the linter's exit beside each file.
 `mistake-prevention.md`,
 "Commit messages".
+
+### M120: an agent ran a built command with the run's keys, from its own shell
+
+Status:
+happened 2026-10-06 (UTC),
+from 05:55:21Z to about 05:57:28Z,
+stopped by the agent that started it;
+telling the owner is the lead's,
+and the lead's notes list it as owed.
+An agent moving `verify-published` and `window-trial-probe` into modules,
+a runner cluster not merged at `f8e99b84d`,
+ran the built `window-trial-probe` from its shell and not through the keyless fixture,
+to capture the unmoved command's output.
+It meant the run to hold no key and stripped the environment by hand.
+The command started `env` with a list of `-u` options built by
+`$(env | rg '_API_KEY=' -o | sed 's/=//' | sed 's/^/-u /' | tr '\n' ' ')`
+and then `node` on `dist/final/node/window-trial-probe.mjs`.
+`rg -o` printed only the matched text `_API_KEY=`,
+never a variable's name,
+so nothing was unset.
+The same command unset the corpus clone variable,
+so slices were drawn from the operator's real clone.
+The agent noticed when the call was moved to the background at the tool's limit of 120 s,
+and stopped it by its task id.
+
+What it bought,
+read by the lead from the agent's two capture files
+(`wtp-out.txt`,
+17 lines,
+and `wtp-err.txt`,
+one line,
+in the agent's scratch):
+three credit and quota reads,
+and one translate round of six calls.
+Bedrock `google.gemma-4-26b-a4b`,
+0.00067 USD printed;
+Hyper `glm-5.3-flash` and `minimax-m3`,
+token counts only;
+Synthetic `hf:moonshotai/Kimi-K3` and `hf:Qwen/Qwen3.8-27B`,
+token counts only;
+OpenRouter `inception/mercury-2.5`,
+0.00080 USD printed as estimated and abandoned,
+after a 504.
+The METERS line of that run printed the accounts' balances.
+The run's scratch runs directory is empty,
+so no ledger was written.
+Neither capture file holds a key or a passage.
+
+Why the agent's shell had keys at all:
+every tool shell of the session holds the keys,
+which it inherits from the session's own environment
+(the agent counted 23 `_API_KEY` variables,
+and the lead counted 23 the same day in a plain shell inside a side checkout,
+one whose task runner had been told to unset them).
+The keyless fixture of B291 covers a child a test starts.
+It covers nothing an agent starts by hand.
+
+What the lead did:
+told the four agents still running,
+by message,
+never to start a built command except through `runBuiltCommand` or `runKeyless`,
+and never to strip an environment by hand;
+and added the rule to the notes file later agents read.
+
+A second agent,
+moving `judge-fidelity-probe` and the settled rendering audit,
+started the built `judge-fidelity-probe.mjs` three times from its shell with the keys present,
+before the lead's warning reached it,
+and disclosed it in its hand-back.
+Its account:
+`--cap kitten` ended at the cap refusal,
+exit 6;
+`--cap 1 --candidates hf:cat/none --candidates-alone` ended at the not-seatable refusal,
+exit 6;
+and `--cap 1 --candidates deepseek-v4.1-flash --candidates-alone`,
+with the clone variable set to an empty scratch folder,
+printed the `judges:` line and ended at a failed corpus read,
+exit 6.
+The lead's reading of `src/corpus-run/judge-fidelity-probe.ts` as it stood:
+the argument read,
+`probeRosterWith`,
+`reviewedFidelityRequest` and `readReviewedFidelityReferences` all come before `createRunClient`,
+and nothing before them asks a provider.
+No output file of those three runs was kept,
+so where each stopped is the agent's account and not a measurement.
+
+A third agent's probe,
+in the cluster of B305,
+started built commands with an environment built by hand:
+a fresh object taking every variable whose name neither ends `_API_KEY` nor begins `TRANSLATION_REPAIR_`,
+then four scratch settings.
+Read by the lead,
+that strip removes what the fixture removes.
+It predates the rule,
+and it is the shape the rule forbids,
+because a wrong one fails without a word,
+as the first agent's did.
+
+Prevention:
+a built command is started only through `runBuiltCommand` or `runKeyless` of `src/child-environment.test-fixture.ts`,
+by an agent as by a test,
+and an environment is never stripped,
+filtered or rebuilt by hand.
+A strip built by filtering the printed environment was never shown to remove a key;
+the fixture's own test starts a real child that prints the names it sees.
+Not closed at `f8e99b84d`:
+a shell in a worktree still holds the keys,
+and whether they should reach every such shell is the owner's to decide.
+`mistake-prevention.md`,
+"Tests touching the real world" and "Guards that cannot fail".
+
+### M121: a test fixture merged unread started a child with the keys in its environment
+
+Status:
+happened 2026-10-06 (UTC) in `5723cd071`,
+found afterwards by the lead,
+fixed in `cebfcc122` (B291).
+That commit merged a coverage cluster's cases with a new fixture,
+`corpus-run/built-child.test-fixture.ts`,
+which starts a node child on the built package through `nano-spawn` with only the working directory set.
+`nano-spawn` merges what it is given into the parent's environment,
+so the child got the parent's environment whole,
+and every whole-suite run from that commit until the fix started it with the key variables present.
+The child calls `resolveGit()` only;
+no key was used or shown.
+The lead's review of the patch printed its production sections and skipped the untracked fixture.
+The commit's own message lists the fixture among the choices open to the owner's veto,
+"as an unrestricted child",
+so the agent had said what it was.
+Prevention:
+the lead reads every new fixture of a patch,
+since a fixture can start a process;
+and the scan of B291 fails a test file or fixture that starts a child outside the shared keyless fixture.
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### M122: a fix committed after a named run that left out a file holding the old wording
+
+Status:
+happened 2026-10-06 (UTC) in `4c26a48a0`,
+found by the whole-suite run on that commit,
+repaired in `495f040b6` (B235).
+The fix changed what `StreamCutShortError` says of its cause.
+Before the commit the lead ran 35 named test files,
+and `stream-idle-guard.unit.test.ts`,
+which asserted the old wording,
+was not among them.
+The suite was red at that commit:
+1,624 `[PASS]` lines and 3 `[FAIL]` lines,
+all three one case and its two enclosing suites.
+Prevention:
+when a message's wording changes,
+the named list holds every test file that holds the old wording,
+found by a search for the old words over `src` and not by the list of files the patch touches.
+`mistake-prevention.md`,
+"Searches and censuses that miss".
+
+### M123: a red commit made without the source scans
+
+Status:
+happened 2026-10-06 (UTC) in `f45278048`,
+found on the fix tree,
+fixed in `71974714f`
+and corrected by a comment on `f45278048` (commitcomment-203621236).
+The red commit's message names three test files as failing on purpose.
+The `duplicate-bodies` scan failed there too:
+two test files,
+written by two agents and landed in the last two test commits,
+each projected an envelope with one body.
+The lead had run the named test files and the type check before that commit,
+and not the scans.
+M114 records a commit left without its lint;
+a red commit adds test files as well,
+and the scans read those.
+The fix commit adds `envelope-span.test-fixture.ts`,
+which both test files use.
+Prevention:
+the source scans run before a red commit too,
+and a message that names what fails names every failure of its tree.
+`mistake-prevention.md`,
+"Lint and edits".
+
+### M124: a count of matching lines taken as proof a form was in use, and a commit without its lint
+
+Status:
+happened 2026-10-06 (UTC) in `71974714f`,
+found by the whole-suite run on that commit,
+fixed in `230623bec`.
+The fixture M123 records exported `envelopeSpanOf`,
+which two test files passed by reference to `map`.
+Before choosing that form the lead counted lines matching a pattern for it in the package's tests,
+took 26 matching files as proof the form was in use,
+read none of them,
+and ran no lint.
+The linter warns on the form where it cannot see the function's arity across an import
+(`no-array-callback-reference`),
+and the run on `71974714f` ended its lint with one warning.
+`envelopeSpansOf` takes the envelopes and maps them itself.
+The commit went out without a lint run,
+which M114 already forbids.
+Prevention:
+precedent is a match that was read,
+beside the check that enforces the form,
+never a count;
+and lint runs before a commit that adds a helper,
+not the scans and the type check alone.
+`mistake-prevention.md`,
+"Searches and censuses that miss" and "Lint and edits".
+
+### M125: the count of pass lines read as if it could show a failing case
+
+Status:
+recorded 2026-10-06 (UTC) from the lead's directive for this docs batch,
+which lists a gate result read from a pass line while a fail line stood.
+The lead's notes hold the fact behind it and no account of the reading,
+so which result was read so is not established here.
+The fact:
+a suite with failing cases still prints a `[PASS]` line listing the cases that passed,
+so the count of pass lines does not move when a case fails.
+The whole unit suite printed 1,823 pass lines on the tree of `cebfcc122` with two red test files in it,
+beside 10 fail lines,
+and 1,823 on `040656c51`,
+beside none (B291).
+B277 had already shown that the count is of suites that print and not of cases.
+Prevention:
+a run is green when its count of `[FAIL]` lines is zero and its exit says so;
+the count of `[PASS]` lines is quoted beside that and never in place of it.
+A background command that ends in an `echo` of its exit code reports success whatever ran,
+so its log is read.
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+### M126: an agent stopped its own census by a pattern that matches every agent's
+
+Status:
+happened on 2026-10-05 or 2026-10-06 (UTC),
+the hour not established,
+disclosed by the agent in its hand-back.
+The agent of the coverage cluster over the `corpus-run` files (B272) had listed a test file that does not exist,
+and stopped its own coverage census with `pkill -f` on the census command line,
+twice,
+by two patterns.
+Those patterns match any agent's census on the machine.
+Its own shell died,
+and it could not rule out that another agent's census was stopped.
+No other run is known to have been lost:
+the census of the cluster over the library files from a to l finished,
+and the agent of the cluster from m to z,
+told by the lead,
+reported that its one census finished normally.
+The lead's brief gave agents a long-running command and no rule for stopping it.
+Prevention:
+a process is stopped by its own id,
+or by the task id of the call that started it,
+never by name or pattern;
+the rules file every agent reads says so since.
+`mistake-prevention.md`,
+"Shell commands".
+
+### M127: a message to resume read by an agent as a notice that it was cut short
+
+Status:
+happened on 2026-10-05 or 2026-10-06 (UTC),
+the hour not established.
+A usage limit stopped the lead,
+the lead stopped five running agents,
+and resumed them by message after the reset.
+The message said the lead had stopped the agent for a usage limit.
+The agent of the cluster of B282 read that as being cut short
+and handed back a partial report with three of its five runners.
+The lead sent it on,
+and it handed back whole.
+Prevention:
+a message that resumes an agent says the limit is over and the whole task stands.
+`mistake-prevention.md`,
+"Tasks,
+builds and bulk output".
+
+### M128: a probe whose positive control used another pattern than the probe
+
+Status:
+happened 2026-10-06 (UTC),
+caught before the count was relied on.
+To count the corpus pages that hold a byte order mark (B257),
+the lead first ran `git grep --perl-regexp '\xEF\xBB\xBF'`,
+which found none,
+and its positive control used another pattern (`^---`,
+276 files).
+The pattern matched the code points U+00EF,
+U+00BB and U+00BF,
+and not the three bytes.
+Read by bytes in a script,
+with a control on the same test,
+one file holds the mark.
+Prevention:
+a positive control exercises the same pattern and the same tool as the probe,
+on a text known to hold the thing looked for.
+`mistake-prevention.md`,
+"Searches and censuses that miss".
+
+### M129: a notes file for agents written before the fixtures it described were read
+
+Status:
+happened 2026-10-06 (UTC),
+caught before any agent was launched on it.
+The lead wrote a notes file for the next runner agents
+saying three keyless fixtures removed the package's own variables from a child's environment.
+One search then showed two of them removed the keys alone.
+The file was corrected before launch.
+Prevention:
+a brief states of a file only what a read of that file showed in the same sitting.
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+### M130: a commit-message check whose match stopped the commit without a word
+
+Status:
+happened 2026-10-06 (UTC);
+nothing was lost.
+The lead's check of a commit message for task-list numbers matched its own sentence about the `source-scans` task,
+where the word "task" stood directly before a count of pass lines.
+The commit did not run,
+and the only sign was the matching line in the output,
+which the lead had to notice.
+Prevention:
+a check that stops a commit says that it stopped it,
+and the commit's own result is read before the next step.
+`mistake-prevention.md`,
+"Commit messages".
+
+### M131: two accounts of a check, one an agent's of a scan and one a commit message's of code unread
+
+Status:
+happened 2026-10-06 (UTC),
+the first found by the lead's own scan run before `53e25b458`,
+the second standing in `da8a963cc`.
+The agent of the cluster of B288 reported that the source scans failed only on inventory lines its move changed.
+On the lead's tree two scans failed on two lines:
+the held `caught-value-text` key named another function than the report did,
+since the agent moved the print after writing the paragraph;
+and a local whose name was a position word failed the position-reference scan,
+which the agent had read as the moved exemption alone.
+Both were mended before the commit (B288).
+The message of `da8a963cc` says `coverage-control-probe` builds its client before it reads `--only`,
+"which a case pins".
+That is the agent's account;
+the lead had not read that code when the message was written,
+and the message does not label it.
+Prevention:
+an agent lists each scan finding by its text,
+never as a kind;
+and a commit message labels as the agent's account whatever the lead has not read.
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+### M132: further slips against the shell and task rules, the lead's and agents'
+
+Status:
+happened 2026-10-05 and 2026-10-06 (UTC),
+the hours not established;
+no file was changed by any of them and no result was lost.
+The lead's:
+
+- a step that did nothing in a staging command,
+  a `sed` whose output went to the null device;
+- two polls of a running background command's log,
+  one by a count and one by `tail`,
+  where the rule is to wait for the task's end;
+- a heredoc followed by a second command in one call,
+  twice,
+  against the lead's own rule that a heredoc stands alone;
+- two listings of several hundred file names printed into the session to answer how many files hold an unnamed suite,
+  where a count would have done;
+- the type check run before the build on a fix tree,
+  where it reported ten errors in two test files against the old built declarations
+  (`51ccd8680` records the clean check after a fresh build);
+- a session transcript is longer than one JavaScript string holds,
+  so a reader of one goes line by line
+  (the lead's note;
+  what failed first is not recorded).
+
+Agents',
+each disclosed in its hand-back:
+
+- a shell `for` loop,
+  in three clusters (those of B272,
+  B302 and B305),
+  against the rule of no loops;
+- two throwaway clones and one empty directory left under the system's temporary directory,
+  by the probes of the cluster of B302,
+  which the agent removed by exact path;
+- a `sleep 1` and a `;` in launches moved to the background,
+  in the cluster of B299.
+
+Prevention:
+the rules stand as written,
+and M116 already records that writing a slip down has not stopped it.
+A count comes before a listing,
+and a listing is printed only when the count is small.
+The type check reads the built declarations,
+so it runs after the build.
+`mistake-prevention.md`,
+"Shell commands" and "Tasks,
+builds and bulk output".
 
 ### M79: a coverage census measuring compressed code
 

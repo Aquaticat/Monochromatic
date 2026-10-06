@@ -140,6 +140,9 @@ each uses an empty export as given.
     ModelRun's 504 timeouts on MiniMax M3,
     2026-09-04,
     were the case).
+    A chunk whose code is a 4xx status other than 408 and 429 is `InStreamRefusalError`,
+    which the retry ladder returns unretried,
+    as it returns the same refusal over plain HTTP (ledger B251).
 
 -   `TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY`.
     Bearer token for the fourth provider,
