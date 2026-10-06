@@ -125,39 +125,31 @@ that scrolling suffices to reach the field list (D96),
 and that the agent builds one version of which other rows get templates
 and asks for approval (D97).
 
-In progress:
+Built and published:
 the D97 version,
 proposed in `doc/planning/music-player-template-editor.md` under
 `Which rows get templates: the agent's version`.
-The reference and scenes are committed
-(94 reference cases,
-9 scenes);
-the prototype fixture gains the `Playing track` editor and the `empty-library` state
-at `66566ee3aa0bbd08b2fb087342f43b546cc88210`
+The prototype is at `66566ee3aa0bbd08b2fb087342f43b546cc88210`
 (250 unit tests pass,
 24 of them the fixture's;
-APK kept in `settings-pane-native-private/build-66566ee3aa0bbd08b2fb087342f43b546cc88210`);
-then a 72-view cohort
-(35 views captured by 2026-10-06 12:50 over visits with the prefixes `rows`,
-`again`,
-`more`,
-`next` and `later`;
-every failure
-(slow boots and launches,
-not-responding dialogs,
-lost focus)
-came with the host's load average at 60 to 100 from other work,
-so `run-template-editor-when-quiet.ts` now waits,
+APK kept in `settings-pane-native-private/build-66566ee3aa0bbd08b2fb087342f43b546cc88210`).
+`questions/template-editor.html` shows 72 inspected views;
+`verify:template-editor`,
+`test:template-editor` (with all four guard-removal proofs) and `test:template-reference` pass,
+and the offline browser check passed in four contexts.
+`questions/evidence/template-editor-review-verification.json` records it,
+quoting the tasks' own result lines.
+The capture needed many visits while other work loaded the host;
+`run-template-editor-when-quiet.ts` waits,
 within a bound,
-for it to fall under 48 before each round),
-publication,
-and the approval question through the question tool.
-Until that cohort is published,
-`verify:template-editor` and `test:template-editor` fail against the 64 published views,
-which have the old scenes.
-D95 may also remove the first-run study's state without an opened source;
-that is to be asked,
-not assumed.
+for the five-minute load average to fall under 48 before each round of visits.
+
+Next:
+ask the human,
+through the question tool,
+to approve the D97 version,
+whether D95 removes the first-run study's states without an opened source,
+and whether a rule should keep agents from blocking pushes in this repository's linked worktrees.
 
 To capture again,
 from `~/temp/agent`:

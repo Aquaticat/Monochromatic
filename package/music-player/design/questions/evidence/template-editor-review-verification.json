@@ -1,20 +1,20 @@
 {
   "schema": 2,
-  "scope": "Consumer verification of the template editor review as rebuilt for D91 to D94. It verifies this page and its checks, not production behaviour, a parser, or native accessibility.",
-  "supersedes": "The record of the layout study (128 views, one layout question), whose question the human answered on 2026-10-06.",
+  "scope": "Consumer verification of the template editor review with the D97 version for approval and the D95 empty library. It verifies this page and its checks, not production behaviour, a parser, or native accessibility.",
+  "supersedes": "The record of the 64-view review of the decided editor (D89 to D94), published earlier on 2026-10-06. Its consumer-test line said six rejected pages while the test ran five; the test now counts them as they run.",
   "verified": "2026-10-06",
   "noDigests": "This record holds no digest of the page, template, builder, test, manifest or any report. Nothing is locked by hash (D88); later edits to those files are allowed and are not covered by this record.",
   "build": {
     "task": "//package/music-player/design:verify:template-editor",
-    "result": "Built the offline template editor review with 64 inspected native views; validated against its evidence and the template reference."
+    "result": "Built the offline template editor review with 72 inspected native views. Validated the offline template editor review against its evidence and the template reference."
   },
   "consumerTest": {
     "task": "//package/music-player/design:test:template-editor",
-    "result": "Template editor review consumer: positive, 20 rejected manifests, six rejected pages and a changed-output check passed."
+    "result": "Template editor review consumer: positive, 20 rejected manifests, 7 rejected pages and a changed-output check passed."
   },
   "referenceTests": {
     "task": "//package/music-player/design:test:template-reference",
-    "result": "Template reference: 88 cases passed. Template editor scenes: 8 states and their drawn text passed."
+    "result": "Template reference: 94 cases passed. Template editor scenes: 9 states and their drawn text passed."
   },
   "guardRemovalProofs": [
     {
@@ -36,8 +36,8 @@
   ],
   "browser": {
     "engine": "Chromium, offline, in a container bounded to 2 GiB of memory and 2 CPUs",
-    "imagesEmbedded": 64,
-    "imagesDecodedAndOpened": 64,
+    "imagesEmbedded": 72,
+    "imagesDecodedAndOpened": 72,
     "contexts": [
       {
         "width": 1440,
@@ -123,6 +123,8 @@
       "No production implementation is authorized",
       "What is decided",
       "$tf(mi(len), m:ss)$ $mi(peak)$",
+      "For approval: which lines get a template",
+      "$mi(track)$ of $mi(total)$ $mi(peak)$",
       "No digest of an image is recorded, and nothing is compared with a digest (D88)"
     ],
     "renderedAbsent": [
@@ -131,12 +133,12 @@
       "if("
     ],
     "screenshotsLookedAt": [
-      "review-390-light.png",
-      "decided-1440-dark.png"
+      "decided-1440-light.png",
+      "review-390-dark.png"
     ],
     "limits": "Every embedded view was opened once in the first context; controls, the notes and one modal were exercised in all four contexts. Axe audits are of the closed page only, not native acceptance. Firefox and an open-dialog accessibility audit were not run."
   },
-  "visualInspection": "All 64 published views were read in full on eight sheets, one per panel, text size and theme, below their native size: no status strip, system dialog, notification or keyboard notice. The three inner-panel typing views at 200% text were also read at half scale. Small text was checked from each view's hierarchy, not by eye.",
+  "visualInspection": "All 72 published views were read in full on eight sheets, one per panel, text size and theme, below their native size: no status strip, system dialog, notification or keyboard notice. The deck line on the inner panel was checked in all 36 inner hierarchies: each draws 1 of 16 −1.2 dBTP and none the earlier fixed text. Small text was checked from each view's hierarchy, not by eye.",
   "notExercised": [
     "Real typing and caret movement by touch",
     "Scrolling by hand",

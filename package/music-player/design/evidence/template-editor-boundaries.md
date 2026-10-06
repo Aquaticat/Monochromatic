@@ -123,8 +123,8 @@ the study's `empty-library` state shows that.
 
 ## Captured cohort and visible boundaries
 
-The cohort is 64 views:
-the eight scenes of `template-editor-scenes.mjs` on both Fold panels,
+The cohort is 72 views:
+the nine scenes of `template-editor-scenes.mjs` on both Fold panels,
 in light and dark,
 at 100% and 200% text.
 States that hold focus are captured with the system keyboard open;
@@ -159,7 +159,17 @@ with the keyboard open:
 
 Those are the costs D94 named when it chose the platform's scrolling.
 The field list sits under the field and is mostly out of view while the keyboard is open;
-reaching it is the round's next concern.
+D96 keeps it there.
+The rectangles of these typing states are the same as in the 64-view cohort captured before the D97 version;
+only the page title changed.
+
+The playing track's editor and the empty library keep the preview,
+its note and the field in view on both panels at both text sizes,
+with the field list partly below.
+At 200% text on the cover panel the playing track's default wraps inside its last formula,
+so its closing `$` stands alone on the field's third line;
+the field wraps where its width ends,
+not at the formulas' edges.
 
 The view scrolled to the end shows the whole field list and `Reset to default` on the cover panel at 100% text,
 and all but the top of the list on the inner panel at 200% text.
@@ -180,7 +190,9 @@ neither is part of the study.
 `verify:template-editor` builds the page and validates it against the views and the reference.
 `test:template-editor` proves the builder refuses changed evidence,
 a scroll of the study's own on a typing view,
-a page that asks a question and a page that quotes a conditional.
+a page that asks a question,
+a page that quotes a conditional,
+and a page without the section for approval or without a figure for each scene.
 Removing each of its four named guards makes that test fail.
 An offline browser check in a container bounded to 2 GiB of memory and 2 CPUs opened every embedded view,
 prepared replies,
@@ -194,15 +206,25 @@ The private capture scripts no longer compare the APK's digest either:
 the human said on 2026-10-06 that D88 covers them,
 and this cohort is the first one captured without it.
 
-The views were captured over three emulator visits on 2026-10-06,
+The views were captured on 2026-10-06 over many emulator visits,
 each in a container bounded to 6 GiB of memory and 2 CPUs,
-on a host also loaded by other work.
-The first ended in a segmentation fault after 25 views,
-and the second when a guest command timed out after 12 more;
-finished views were kept,
-and each view's record names its visit.
-The last visit restored the guest's recorded settings and shut down with no container or emulator process left.
-`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md` records the crash.
+while other work held the host's load average between about 45 and 100 on its 16 cores.
+Seven visits contributed views;
+each view's record names its visit.
+The others ended without a new view:
+boots that took longer than the bound,
+launches the activity manager reported as timed out,
+not-responding dialogs from the study's own app,
+and lost focus.
+`systemd-oomd` also killed the loop that ran the visits,
+leaving its emulator container to be restored and stopped by hand.
+The capture now accepts a launch reported as timed out when the app's own log shows one creation,
+the boot bound is fifteen minutes,
+and the last round started only once the five-minute load average fell under 48;
+it captured the remaining 37 views in one visit.
+That visit restored the guest's recorded settings and shut down with no container or emulator process left.
+`doc/troubleshooting/android-emulator-not-responding-dialog-under-host-load.md` and
+`doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md` record these.
 
 ## Not exercised
 
@@ -219,10 +241,8 @@ The last visit restored the guest's recorded settings and shut down with no cont
 
 The editor's language,
 default,
-preview placement and scrolling are decided (D89 to D94).
-Still open in this round:
-reaching the field list while the keyboard is open,
-then the questions D81 leaves open,
-such as which other rows get a template.
+preview placement,
+scrolling and field list are decided (D89 to D96).
+Which lines get a template awaits the human's approval of the D97 version.
 No production parser,
 storage or row change is authorized.
