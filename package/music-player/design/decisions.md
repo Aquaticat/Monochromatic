@@ -2692,6 +2692,54 @@ So:
 
 No production implementation is authorized by this record.
 
+### D93. An empty field is plain substitution (2026-10-06)
+
+Asked through the question tool what a template shows around a field that has no value,
+now that it has no conditional,
+the human chose plain substitution over optional brackets
+(foobar2000's `[...]`,
+which its reference calls a conditional section)
+and over before-and-after arguments
+(in the manner of git's `% x` placeholders).
+
+So:
+
+- Text outside `$...$` is always shown,
+  and a field with no value yields nothing,
+  as text in HTML would.
+  A separator a user writes next to an empty field stays in the line.
+- `mi(peak)` yields the true peak with its unit,
+  for example `−1.2 dBTP`,
+  and nothing while the file is not analysed yet.
+- The default template is `$tf(mi(len), m:ss)$ $mi(peak)$`.
+  An analysed file reads `4:35 −1.2 dBTP`;
+  one not analysed yet reads `5:12`.
+  D35's middle dot between duration and peak is gone from the default line.
+  Analysis is automatic (D84),
+  so the missing peak is temporary.
+
+No production implementation is authorized by this record.
+
+### D94. Where the page rests while typing is the platform's (2026-10-06)
+
+The second editor build replaced the platform's own scrolling to a focused field with an authored rule:
+scroll so the lines under the field clear the keyboard by 8dp,
+and never scroll the field's upper edge out of view.
+Asked through the question tool whether that should also follow the platform,
+as D91 asks of the preview,
+the human chose the platform default.
+
+So the authored rule is removed.
+When the field takes focus and the keyboard opens,
+the page rests wherever Android puts a focused text field.
+The first build's captures showed what that costs at 200% text:
+the last line under the field can end flush against the keyboard,
+and the field's label can slide under the header when the field and its help are taller than the visible page.
+This supersedes the last paragraph of D91,
+which left the rule undecided.
+
+No production implementation is authorized by this record.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
