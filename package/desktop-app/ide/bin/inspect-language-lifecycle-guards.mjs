@@ -93,8 +93,9 @@ const cases = [
   { name: 'no-shutdown-request', test: strict, file: 'src/language/worker.rs', before: 'client.force_shutdown();', after: '', failure: ['the server was not asked to shut down'] },
   // The worker asks, then drops the registry without waiting for the processes to end.
   { name: 'no-wait-for-exit', test: strict, file: 'src/language/worker.rs', before: 'while running > 0 {', after: 'while false {', failure: ['the server was not asked to shut down'] },
-  // The worker thread ends right after its runtime, without reaping the server it had to kill.
-  { name: 'no-reap-after-kill', test: killed, file: 'src/language/worker.rs', before: 'reap::finish(REAP_GRACE);', after: '', failure: ['a child process was left when the drop returned', "'Z'"] },
+  // The worker thread ends right after its runtime, without reaping the server it had to kill. The child is usually
+  // a zombie by the time the test looks; on a busy host it can still be running (state R), killed but not yet ended.
+  { name: 'no-reap-after-kill', test: killed, file: 'src/language/worker.rs', before: 'reap::finish(REAP_GRACE);', after: '', failure: ['a child process was left when the drop returned', 'ide-scripted-ls'] },
 ];
 for (const name of only ?? []) if (!cases.some(item => item.name === name)) throw new Error('Unknown case: ' + name);
 const selected = cases.filter(item => !only || only.has(item.name));
