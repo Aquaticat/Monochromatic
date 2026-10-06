@@ -1,13 +1,21 @@
 //! OS file-change notifications for what the window shows, reported as invalidations the UI polls.
 //! Events never carry data: the existing bounded readers reread, and their request fencing decides.
 
+/// Retry backoff while this user's inotify watch limit is reached.
+mod limit;
+/// Decide which watches one wake adds and removes, with the kernel calls passed in.
+mod reconcile;
 /// Turn notify events into pending invalidations on notify's thread.
 mod record;
 /// State shared by the UI handle, the watch thread, and the event handler.
 mod shared;
+/// Add and remove one watch, and describe a failure.
+mod watch_ops;
 /// The thread that owns the inotify watcher.
 mod watch_thread;
 
+/// The watch-limit backoff and its intervals, public so the schedule is tested with chosen times.
+pub use limit::{FIRST_LIMIT_RETRY, LONGEST_LIMIT_RETRY, LimitBackoff};
 /// Invalidation kinds returned by `ChangeWatcher::take`.
 pub use shared::{Changes, SourceChange};
 
