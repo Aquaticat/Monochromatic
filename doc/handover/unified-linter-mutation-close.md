@@ -796,7 +796,24 @@ Test image `5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`.
 and 83 `builtin(require-rustdoc)` findings,
 none on an item added by this work.
 
-Campaign results are pending.
+- Executable campaign,
+  `mutation-Sh3zLV` (`campaign-executable-final-2.log`):
+  184 mutants,
+  131 caught,
+  0 missed,
+  53 unviable,
+  0 timeouts,
+  exit status 0,
+  34 minutes.
+  The baseline built in 167 seconds and tested in 16.3 seconds,
+  eight times the 2.0 seconds of the previous executable run,
+  at a host load average of about 55 on 16 cores.
+  The longest test phase of any mutant was 41.1 seconds.
+  Six mutants ended with the stack-overflow abort of the nesting control (signal 6),
+  which does not depend on load;
+  none ended with a memory kill.
+
+The Markdown and processor results are pending.
 
 ## Remaining
 
