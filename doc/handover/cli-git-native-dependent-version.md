@@ -15,9 +15,8 @@ section "What the wiring step needs" lists what that later step must do.
 
 What to inspect:
 
-- the mutation gate,
-  which is not met:
-  both campaigns ended with timeouts and no missed mutant,
+- the mutation evidence,
+  where one timeout of the final campaign was caught on its one rerun,
   in section "Mutation";
 - the intentional differences, each with its reason,
   in section "Intentional differences";
@@ -592,11 +591,51 @@ and documented each `use` line.
 
 ### Mutation
 
-The gate is not met:
-both campaigns ended with timeouts.
+Every viable mutant of the twelve planner modules is caught,
+on the gate image of the final gated commit `fee63c86e`
+(image `1782030bb936`):
+the full campaign left one timeout,
+and the one rerun of its file caught every mutant with no timeout.
 No campaign reported a missed mutant.
+Neither the 90-second test limit nor the exclusion list was changed.
 
-#### First campaign
+#### Final campaign
+
+`GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/dependent_version_*.rs'`,
+evidence `package/git-policy/cli/target/verification/native-mutation-EJyi9m`:
+206 mutants,
+187 caught,
+18 unviable,
+1 timeout
+(`replace is_specifier_position -> bool with true`,
+`dependent_version_imports.rs:86:5`),
+0 missed.
+The unmutated baseline took 10 seconds to test.
+The runner's five planted guard removals were all noticed.
+The runner process ended before its container did and wrote no `exit.json`;
+`exit-collected-manually.json` records the container's exit status (3, from `podman inspect`),
+and the report was copied out with `podman cp`.
+
+The timed-out mutant,
+run alone in the same image and limits with a 600-second test limit,
+was caught with a 6-second test phase against a 10-second baseline
+(`native-mutation-EJyi9m/timeout-diagnostic`).
+Its neighbours in the campaign took 17 to 64 seconds,
+while the sampled load average was between 27 and 55 on 16 CPUs from work outside this branch.
+
+#### Rerun of the file with the timeout
+
+The same task with `--file src/native/dependent_version_imports.rs`,
+against the same image,
+evidence `native-mutation-fmJr79`
+(`exit.json` with status 0):
+29 mutants,
+29 caught,
+0 timeouts,
+0 missed;
+the baseline took 13 seconds to test.
+
+#### Earlier campaign before the merge
 
 `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/dependent_version_*.rs'`
 against the gate image of commit `b8afd3d74`,
@@ -614,7 +653,7 @@ The 9 timeouts are in `dependent_version_text.rs` (6),
 `dependent_version_imports.rs` (2)
 and `dependent_version_policy.rs` (1).
 
-#### Rerun of the three files with timeouts
+#### Its rerun of the three files with timeouts
 
 The same task with `--file` for those three files,
 against the same image,
@@ -629,7 +668,7 @@ The runner process ended before its container did and wrote no `exit.json`;
 `exit-collected-manually.json` records the container's exit status (3, from `podman inspect`),
 and the report was copied out with `podman cp`.
 
-#### Why the timeouts are attributed to host load
+#### Why those timeouts are attributed to host load
 
 - The sets differ between runs:
   of the 78 mutants in both runs,
@@ -659,11 +698,49 @@ and the report was copied out with `podman cp`.
   which none of the timed-out mutants touches.
 
 Neither the timeout nor the exclusion list was changed.
-A campaign on a quieter host is what would close the gate.
 
 ### Fuzzing
 
-Pending.
+On the tree of `fee63c86e`:
+
+- `mise run //package/git-policy/cli.fuzz:test`:
+  21 generator and invariant controls passed,
+  4 of them for `dependent_version`.
+- `mise run //package/git-policy/cli.fuzz:test:planted`:
+  all 14 planted defects were noticed,
+  the three of `bin/planted-dependent-version.mjs` among them
+  (a nested `version` key rewritten,
+  a subpath import missed,
+  an escaped quote that ends a string literal);
+  evidence `package/git-policy/cli.fuzz/target/verification/planted-YDYB0d`.
+- `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli.fuzz:smoke`
+  (30 seconds per target, AddressSanitizer, 2 GiB and 2 CPUs, no mounts):
+  `dependent_version` ran 276,737 executions and exited 0 with no crash artifact,
+  its dictionary loaded with 32 entries;
+  evidence `package/git-policy/cli.fuzz/target/verification/campaign-4XyQRH`.
+  The other targets in the same run:
+  `global_arguments` 1,477,892,
+  `config_loading` 500,219,
+  `config_schema` 63,229,
+  `wrapper_controls` 93,647,
+  `batch_reply` 304,992,
+  each exiting 0.
+
+Two defects of this branch's target were found on the way and fixed in `fee63c86e`:
+
+- The first smoke run stopped before any execution with `ParseDictionaryFile: error in line 30`,
+  because the dictionary spelled whitespace as `\n`, `\r\n` and `\t`,
+  which libFuzzer does not accept
+  (evidence `campaign-8fWevh/dependent_version`;
+  `doc/troubleshooting/libfuzzer-dictionary-escapes.md`).
+  The entries are now `\x0a`, `\x0d\x0a` and `\x09`.
+- The first planted run did not notice "an escaped quote ends a string literal"
+  (evidence `planted-CIAYk2`):
+  the only escaped quotes in the generated manifests came in pairs inside one string,
+  which restores the parity the defect flips.
+  A decoy member with one escaped quote,
+  `"q":"say \"hi"`,
+  now breaks every layout that puts it before the version.
 
 ## Choices open to veto
 
@@ -708,16 +785,6 @@ The seam has no pathspec;
 the planner selects paths itself.
 In this repository that is 11,443 paths per planning run,
 and planning starts only for a commit that modifies a workspace manifest.
-
-### Mutation evidence from the image before the merge
-
-The full campaign ran against the gate image of `b8afd3d74`,
-before `main` was merged.
-The merge changed no planner module and no planner test,
-and only `lib.rs` names the planner modules,
-so every caught mutant is caught by the same tests on the merged tree.
-The alternative is a full campaign on the merged gate image,
-on a host quiet enough that the crate's other tests fit the 90-second limit.
 
 ## What the wiring step needs
 
@@ -805,11 +872,41 @@ The planner modules and their tests are byte for byte those of the gated commit 
   (`changeset version`, then the direct fix)
   was not run.
 - Only Linux was exercised.
-- The mutation gate:
-  see section "Mutation".
+- Processes started from the agent's shell ended early several times,
+  for a cause not identified:
+  the mutation runner of `native-mutation-nA947L` and of `native-mutation-EJyi9m`
+  while their containers kept running
+  (their reports were collected from the containers,
+  as each `exit-collected-manually.json` states),
+  and the runner of `native-mutation-LaSpZU` during its planted guard controls,
+  before any campaign;
+  that rerun was started again and is `native-mutation-fmJr79`.
+  The last sequence
+  (the rerun of `dependent_version_imports.rs`, the fuzz planted controls and the smoke)
+  ran as a user unit started with `systemd-run --user`
+  so that it would outlive the agent's shell;
+  each step is the package task named in its section.
 - The Oxlint 1.86.0 default formatter aborted earlier in this work
   (a panic at `apps/oxlint/src/output_formatter/default.rs:181:14`)
   while linting a harness file with many findings;
   `--format=unix` worked.
   It did not recur in the package-wide run,
   and no reproducer was kept.
+
+## Commits
+
+On `feat/cli-git-native-dependent-version`, oldest first, first parent only:
+
+- `f463f055c` the planning core.
+- `c246ef070`, `926a93a40` the differential harness and its outcome counts.
+- `b8afd3d74` the test that kills the callee-position mutant; the first gated commit.
+- `cabd397b7` the `dependent_version` fuzz target.
+- `84d38472e` this document.
+- `0d7318ff2`, `3a0ed3610` the harness rewritten to the bin-script lint rules.
+- `7d9808522`, `ac49900f2`, `583aaf6f7`, `de22245c4` this document: rerun corpus, mutation, planted controls.
+- `343a2696c` the merge of `main`.
+- `ee68b8895`, `4a5ddd23f` this document: merge, lint state, gate on the merge.
+- `90300ff70` the fixture renderers split out for the Rust linter.
+- `fee63c86e` the fuzz dictionary escapes and the odd escaped-quote decoy; the final gated commit.
+- `bba8c3100` `doc/troubleshooting/libfuzzer-dictionary-escapes.md`.
+- `fe9cbc5fe` and later: this document.
