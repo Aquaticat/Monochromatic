@@ -3,9 +3,9 @@
 // and observe the defect it replaced as the guard control.
 //
 // Two builds come from one disposable package copy: the sources as they are, and the same sources with
-// the log written synchronously from the logging thread (the application's writer swapped for standard
-// error). Each runs in the repository's nested compositor with `RUST_LOG=debug`. The IDE's standard error
-// goes to a FIFO that this script opens and never reads, so once the kernel's pipe buffer is full every
+// the log written synchronously from the logging thread (the application's writer swapped for plain
+// standard output, where the log goes). Each runs in the repository's nested compositor with `RUST_LOG=debug`.
+// The IDE's standard output goes to a FIFO that this script opens and never reads, so once the kernel's pipe buffer is full every
 // write to it blocks. While keys move the caret, the script asks the IDE's Slint MCP server, which runs on
 // the window's event loop (`i-slint-backend-testing` 1.18.1, `mcp_server.rs`, `spawn_local`), for the source
 // element over and over and records how long each answer takes. A blocked event loop answers nothing.
@@ -66,7 +66,7 @@ const nativePath = join(source, 'src/native.rs');
 const native = readFileSync(nativePath, 'utf8');
 const variants = [{ name: 'background-writer', binary: build('background-writer') }];
 try {
-  writeFileSync(nativePath, replaceOne(native, 'logging::install(logging::filter(""), log_writer, None)?;', 'drop(log_writer);\n    logging::install(logging::filter(""), std::io::stderr, None)?;'));
+  writeFileSync(nativePath, replaceOne(native, 'logging::install(logging::filter(""), log_writer, None)?;', 'drop(log_writer);\n    logging::install(logging::filter(""), std::io::stdout, None)?;'));
   variants.push({ name: 'synchronous-writer', binary: build('synchronous-writer') });
 } finally { writeFileSync(nativePath, native); }
 // endregion
@@ -102,7 +102,7 @@ const percentile = (values, share) => values.length === 0 ? null : [...values].s
 const session = async variant => {
   const directory = join(artifact, variant.name);
   mkdirSync(directory);
-  const fifo = join(directory, 'stderr.fifo');
+  const fifo = join(directory, 'stdout.fifo');
   if (spawnSync('mkfifo', ['--mode=600', fifo]).status !== 0) throw new Error('mkfifo failed for ' + fifo);
   // Opened for reading and writing so the open does not wait for a writer; nothing is read until the drain.
   const unread = openSync(fifo, 'r+');
@@ -111,8 +111,10 @@ const session = async variant => {
   const environment = { ...process.env, SLINT_BACKEND: 'winit', SLINT_MCP_PORT: port, FONTCONFIG_FILE: fontConfig, XDG_CONFIG_HOME: join(artifact, 'config'), XDG_CACHE_HOME: join(artifact, 'cache'), XDG_DATA_HOME: join(artifact, 'data'), IDE_STALL_FIFO: fifo, IDE_STALL_RUST_LOG: 'debug' };
   if (runtime) environment.HELIX_RUNTIME = runtime;
   delete environment.RUST_LOG;
-  // Only the IDE's standard error goes to the FIFO, and only the IDE gets RUST_LOG; the compositor logs to a file.
-  const launcher = ['/bin/sh', '-c', 'RUST_LOG="$IDE_STALL_RUST_LOG" exec "$0" "$@" 2>"$IDE_STALL_FIFO"', variant.binary, project, '--file', file];
+  // Only the IDE's standard output goes to the FIFO, and only the IDE gets RUST_LOG; the compositor logs to a file.
+  // The compositor hands its own standard streams to the program it hosts, so the redirection happens in a shell
+  // that then becomes the IDE (`exec`); redirecting the compositor itself would stall the compositor too.
+  const launcher = ['/bin/sh', '-c', 'RUST_LOG="$IDE_STALL_RUST_LOG" exec "$0" "$@" >"$IDE_STALL_FIFO"', variant.binary, project, '--file', file];
   const host = spawn(compositor, ['--socket', socketPath, '--size', '1100x660', '--color-scheme', 'dark', '--', ...launcher], { env: environment, stdio: ['ignore', compositorLog, compositorLog] });
   const exited = new Promise(done => host.on('exit', (code, signal) => done({ code, signal })));
   const latencies = [];
@@ -170,7 +172,7 @@ const session = async variant => {
     closeSync(unread);
     closeSync(compositorLog);
     const text = Buffer.concat(drained).toString().replaceAll(/\u001b\[[0-9;]*m/g, '');
-    writeFileSync(join(directory, 'ide-stderr-drained.log'), text);
+    writeFileSync(join(directory, 'ide-log-drained.log'), text);
     variant.drainedBytes = Buffer.concat(drained).length;
     variant.forcedByCompositor = readFileSync(join(directory, 'compositor.log'), 'utf8').includes('forcing shutdown');
     variant.gapWarnings = text.split('\n').filter(line => line.includes('were not written because the log output did not accept them')).map(line => line.slice(0, 220));

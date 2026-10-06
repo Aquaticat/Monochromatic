@@ -352,7 +352,7 @@ fn drain<O: Write>(receiver: &mpsc::Receiver<Message>, output: &mut O, shared: &
 
 /// What: Start the writer thread for `output` with the default budget and grace.
 ///       `O: Write + Send + 'static` means the output can move to another thread and lives on its own.
-/// Why: The application hands standard error to this; tests hand an output they control.
+/// Why: The application hands standard output to this; tests hand an output they control.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

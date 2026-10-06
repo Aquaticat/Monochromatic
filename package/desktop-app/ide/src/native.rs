@@ -256,17 +256,18 @@ impl State {
 
 /// Run one project window after display-independent argument parsing has completed.
 pub fn run(options: Options) -> anyhow::Result<()> {
-    // What: The writer thread owns standard error; `_log_flush` is bound first so it is dropped
-    //       last, after every other value of this function, and waits briefly for the queued records.
+    // What: The writer thread owns standard output, where the log has always gone. `_log_flush` is
+    //       bound first, so it is dropped last, after every other value of this function, and waits
+    //       briefly for the queued records.
     // Why: The window must never wait for a slow reader of its log, and the shutdown records written
     //      after the window closed must still reach the output (`src/logging/background.rs`).
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // using logFlush = startLogWriter(process.stderr); installLog(filterFromEnv(''), logFlush.writer);
+    // using logFlush = startLogWriter(process.stdout); installLog(filterFromEnv(''), logFlush.writer);
     // ```
     let (log_writer, _log_flush) =
-        background::background(std::io::stderr()).context("Cannot start the log writer thread")?;
+        background::background(std::io::stdout()).context("Cannot start the log writer thread")?;
     // Warnings and errors unless `RUST_LOG` asks for more; helix-lsp's healthy-server records are re-labelled.
     logging::install(logging::filter(""), log_writer, None)?;
     let workspace = Workspace::new(&options.project)?;
